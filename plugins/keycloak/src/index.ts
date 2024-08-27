@@ -1,10 +1,10 @@
 import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks'
 import {
-  upsertProject,
   deleteProject,
-  retrieveKeycloakUserByEmail,
   retrieveKeycloakAdminUsers,
+  retrieveKeycloakUserByEmail,
   updateUserAdminKcGroupMembership,
+  upsertProject,
 } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'

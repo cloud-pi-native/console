@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
-import { type AllUsers, formatDate, sortArrByObjKeyAsc, type Role } from '@cpn-console/shared'
+import { type AllUsers, type Role, formatDate, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminRoleStore } from '@/stores/admin-role.js'
@@ -80,7 +80,6 @@ onBeforeMount(async () => {
   allUsers.value = await projectMemberStore.getAllUsers()
   snackbarStore.isWaitingForResponse = false
 })
-
 </script>
 
 <template>

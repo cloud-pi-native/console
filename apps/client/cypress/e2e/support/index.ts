@@ -13,7 +13,9 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-import type { Project, Repository, CiForm } from '../../types.js'
+/* eslint-disable ts/method-signature-style */
+
+import type { CiForm, Project, Repository } from '../../types.js'
 import './commands.js'
 
 Cypress.on('window:before:load', (win) => {
@@ -29,7 +31,7 @@ Cypress.on('window:before:load', (win) => {
 })
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+  // eslint-disable-next-line ts/no-namespace
   namespace Cypress {
     interface Chainable {
       /**

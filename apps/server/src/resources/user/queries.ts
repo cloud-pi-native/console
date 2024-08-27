@@ -8,7 +8,7 @@ type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>
 // SELECT
 export const getUsers = (where?: Prisma.UserWhereInput) => prisma.user.findMany({ where })
 
-export const getUserInfos = async (id: User['id']) => {
+export async function getUserInfos(id: User['id']) {
   const usr = await prisma.user.findMany({
     where: { id },
     include: {
@@ -18,32 +18,36 @@ export const getUserInfos = async (id: User['id']) => {
   return exclude(usr, dbKeysExcluded)
 }
 
-export const getMatchingUsers = (where: Prisma.UserWhereInput) =>
-  prisma.user.findMany({
+export function getMatchingUsers(where: Prisma.UserWhereInput) {
+  return prisma.user.findMany({
     where,
     take: 5,
   })
+}
 
-export const getUserById = (id: User['id']) =>
-  prisma.user.findUnique({ where: { id } })
+export function getUserById(id: User['id']) {
+  return prisma.user.findUnique({ where: { id } })
+}
 
-export const getUserOrThrow = (id: User['id']) =>
-  prisma.user.findUniqueOrThrow({
+export function getUserOrThrow(id: User['id']) {
+  return prisma.user.findUniqueOrThrow({
     where: { id },
   })
+}
 
-export const getUserByEmail = (email: User['email']) =>
-  prisma.user.findUnique({ where: { email } })
+export function getUserByEmail(email: User['email']) {
+  return prisma.user.findUnique({ where: { email } })
+}
 
 // CREATE
-export const createUser = async ({ id, email, firstName, lastName }: UserCreate) => {
+export async function createUser({ id, email, firstName, lastName }: UserCreate) {
   const user = await getUserByEmail(email)
   if (user) throw new Error('Un utilisateur avec cette adresse e-mail existe déjà')
   return prisma.user.create({ data: { id, email, firstName, lastName } })
 }
 
 // UPDATE
-export const updateUserById = async ({ id, email, firstName, lastName }: UserCreate) => {
+export async function updateUserById({ id, email, firstName, lastName }: UserCreate) {
   const user = await getUserById(id)
   const isEmailAlreadyTaken = await getUserByEmail(email)
   if (!user) throw new Error('L\'utilisateur demandé n\'existe pas')
@@ -54,5 +58,6 @@ export const updateUserById = async ({ id, email, firstName, lastName }: UserCre
 }
 
 // TECH
-export const _createUser = (data: Prisma.UserCreateInput) =>
-  prisma.user.upsert({ where: { id: data.id }, create: data, update: data })
+export function _createUser(data: Prisma.UserCreateInput) {
+  return prisma.user.upsert({ where: { id: data.id }, create: data, update: data })
+}

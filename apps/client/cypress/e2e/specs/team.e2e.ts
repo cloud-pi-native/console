@@ -140,9 +140,9 @@ describe('Team view', () => {
     cy.wait('@transferOwnership')
       .its('response.statusCode')
       .should('match', /^20\d$/)
-      cy.wait('@getProjectMembers')
-        .its('response.statusCode')
-        .should('match', /^20\d$/)
+    cy.wait('@getProjectMembers')
+      .its('response.statusCode')
+      .should('match', /^20\d$/)
 
     cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire').should('have.length', 1)
     cy.getByDataTestid('showTransferProjectBtn')

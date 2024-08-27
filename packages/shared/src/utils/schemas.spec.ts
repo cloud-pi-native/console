@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, ProjectSchemaV2, ProjectV2, QuotaSchema, RepoBusinessSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
+import type { ProjectV2 } from '../index.js'
+import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, ProjectSchemaV2, QuotaSchema, RepoBusinessSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 
-describe('Schemas utils', () => {
-  it('Should not validate an undefined object', () => {
+describe('schemas utils', () => {
+  it('should not validate an undefined object', () => {
     // @ts-ignore
     expect(RepoBusinessSchema.safeParse(undefined).error).toBeInstanceOf(ZodError)
   })
 
-  it('Should validate a correct repository schema', () => {
+  it('should validate a correct repository schema', () => {
     const toParse = {
       id: faker.string.uuid(),
       projectId: faker.string.uuid(),
@@ -24,7 +25,7 @@ describe('Schemas utils', () => {
     expect(RepoBusinessSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
-  it('Should validate a correct environment schema', () => {
+  it('should validate a correct environment schema', () => {
     const toParse = {
       id: faker.string.uuid(),
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
@@ -37,7 +38,7 @@ describe('Schemas utils', () => {
     expect(EnvironmentSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
-  it('Should validate a correct organization schema', () => {
+  it('should validate a correct organization schema', () => {
     const toParse = {
       id: faker.string.uuid(),
       source: faker.lorem.word(),
@@ -55,7 +56,7 @@ describe('Schemas utils', () => {
     expect(OrganizationSchema.safeParse(toParse)).toStrictEqual({ data: parsed, success: true })
   })
 
-  it('Should validate a correct project schema', () => {
+  it('should validate a correct project schema', () => {
     const toParse: ProjectV2 = {
       id: faker.string.uuid(),
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
@@ -95,7 +96,7 @@ describe('Schemas utils', () => {
     expect(ProjectSchemaV2.safeParse(toParse)).toStrictEqual({ data: parsed, success: true })
   })
 
-  it('Should validate a correct user schema', () => {
+  it('should validate a correct user schema', () => {
     const toParse = {
       id: faker.string.uuid(),
       email: faker.internet.email(),
@@ -113,7 +114,7 @@ describe('Schemas utils', () => {
     expect(UserSchema.safeParse(toParse)).toStrictEqual({ data: parsed, success: true })
   })
 
-  it('Should validate a correct quota schema', () => {
+  it('should validate a correct quota schema', () => {
     const toParse = {
       id: faker.string.uuid(),
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
@@ -126,7 +127,7 @@ describe('Schemas utils', () => {
     expect(QuotaSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
-  it('Should validate a correct stage schema', () => {
+  it('should validate a correct stage schema', () => {
     const toParse = {
       id: faker.string.uuid(),
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
@@ -137,7 +138,7 @@ describe('Schemas utils', () => {
     expect(StageSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
-  it('Should not validate an organization schema with wrong external data', () => {
+  it('should not validate an organization schema with wrong external data', () => {
     const toParse = {
       id: faker.string.uuid(),
       source: [],
@@ -153,7 +154,7 @@ describe('Schemas utils', () => {
       .toMatch('Validation error: Expected string, received array at "source"')
   })
 
-  it('Should validate a repo business schema', () => {
+  it('should validate a repo business schema', () => {
     const toParse = {
       id: faker.string.uuid(),
       projectId: faker.string.uuid(),
@@ -170,7 +171,7 @@ describe('Schemas utils', () => {
       .toStrictEqual({ data: toParse, success: true })
   })
 
-  it('Should validate a cluster details schema, case 1', () => {
+  it('should validate a cluster details schema, case 1', () => {
     const toParse = {
       id: faker.string.uuid(),
       label: 'cluster',
@@ -193,7 +194,7 @@ describe('Schemas utils', () => {
       .toStrictEqual({ data: toParse, success: true })
   })
 
-  it('Should validate a cluster details schema, case 2', () => {
+  it('should validate a cluster details schema, case 2', () => {
     const toParse = {
       id: faker.string.uuid(),
       label: 'cluster',
@@ -214,7 +215,7 @@ describe('Schemas utils', () => {
       .toStrictEqual({ data: { ...toParse, infos: '' }, success: true })
   })
 
-  it('Should not validate a repository schema with wrong internal repo name', () => {
+  it('should not validate a repository schema with wrong internal repo name', () => {
     const toParse = {
       id: faker.string.uuid(),
       projectId: faker.string.uuid(),
@@ -252,7 +253,7 @@ describe('Schemas utils', () => {
       .toStrictEqual({ data: toParse, success: true })
   })
 
-  it('Should not validate a too short project name', () => {
+  it('should not validate a too short project name', () => {
     const toParse = {
       id: faker.string.uuid(),
       name: faker.string.alpha({ casing: 'lower' }),
@@ -272,7 +273,7 @@ describe('Schemas utils', () => {
       .toMatch('Validation error: String must contain at least 2 character(s) at "name"')
   })
 
-  it('Should not validate a too long project name', () => {
+  it('should not validate a too long project name', () => {
     const toParse = {
       id: faker.string.uuid(),
       name: faker.string.alpha({ length: 24, casing: 'lower' }),
@@ -292,7 +293,7 @@ describe('Schemas utils', () => {
       .toMatch('Validation error: String must contain at most 20 character(s) at "name"')
   })
 
-  it('Should not validate a too long project description', () => {
+  it('should not validate a too long project description', () => {
     const toParse = {
       id: faker.string.uuid(),
       name: 'candilib',
@@ -310,7 +311,7 @@ describe('Schemas utils', () => {
       .error).toBeInstanceOf(ZodError)
   })
 
-  it('Should validate a single key with given schema', () => {
+  it('should validate a single key with given schema', () => {
     const toParse = { internalRepoName: 'candilib' }
 
     expect(RepoSchema
@@ -319,7 +320,7 @@ describe('Schemas utils', () => {
       .toStrictEqual({ data: toParse, success: true })
   })
 
-  it('Should not validate a single key with given schema', () => {
+  it('should not validate a single key with given schema', () => {
     const toParse = { internalRepoName: 'candi lib' }
 
     expect(RepoSchema
@@ -329,7 +330,7 @@ describe('Schemas utils', () => {
       .error).toBeInstanceOf(ZodError)
   })
 
-  it('Should return truthy schema', () => {
+  it('should return truthy schema', () => {
     expect(instanciateSchema(RepoSchema.omit({ id: true }), true)).toStrictEqual({
       internalRepoName: true,
       externalRepoUrl: true,
@@ -341,7 +342,7 @@ describe('Schemas utils', () => {
     })
   })
 
-  it('Should return true schema', () => {
+  it('should return true schema', () => {
     expect(instanciateSchema(RepoSchema.omit({ id: true }), true)).toStrictEqual({
       internalRepoName: true,
       externalRepoUrl: true,

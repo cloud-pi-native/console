@@ -5,18 +5,18 @@
   "compilerOptions": {
     "baseUrl": "./",
     "rootDir": "./src",
-    "outDir": "./dist",
-    "declarationDir": "./types",
     "paths": {
       "@/*": ["src/*"]
     },
+    "declarationDir": "./types",
+    "outDir": "./dist"
   },
   "include": [
     "./src/**/*.ts",
-    "./src/**/*.js",
+    "./src/**/*.js"
   ],
   "exclude": [
     "./src/**/*.spec.ts",
-    "./src/**/__mocks__",
-  ],
+    "./src/**/__mocks__"
+  ]
 }

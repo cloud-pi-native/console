@@ -1,14 +1,14 @@
-import type { KeycloakInitOptions, KeycloakConfig } from 'keycloak-js'
+import type { KeycloakConfig, KeycloakInitOptions } from 'keycloak-js'
 import Keycloak from 'keycloak-js'
 
+import type { UserProfile } from '@cpn-console/shared'
 import {
-  keycloakProtocol,
-  keycloakDomain,
   keycloakClientId,
+  keycloakDomain,
+  keycloakProtocol,
   keycloakRealm,
   keycloakRedirectUri,
 } from '../env.js'
-import { type UserProfile } from '@cpn-console/shared'
 
 export const keycloakInitOptions: KeycloakInitOptions = {
   onLoad: 'check-sso',
@@ -24,14 +24,14 @@ export const keycloakConfig: KeycloakConfig = {
 
 let keycloak: Keycloak
 
-export const getKeycloak = () => {
+export function getKeycloak() {
   if (!keycloak) {
     keycloak = new Keycloak(keycloakConfig)
   }
   return keycloak
 }
 
-export const getUserProfile = (): UserProfile => {
+export function getUserProfile(): UserProfile {
   try {
     const keycloak = getKeycloak()
     const { email, sub: id, given_name: firstName, family_name: lastName, groups } = keycloak.idTokenParsed as { email: string, sub: string, given_name: string, firstName: string, family_name: string, lastName: string, groups: string[] }
@@ -48,7 +48,7 @@ export const getUserProfile = (): UserProfile => {
   }
 }
 
-export const keycloakInit = async () => {
+export async function keycloakInit() {
   keycloakInitOptions.redirectUri = keycloakInitOptions.redirectUri?.concat(location.pathname)
   try {
     const { onLoad, redirectUri, flow } = keycloakInitOptions
@@ -60,7 +60,7 @@ export const keycloakInit = async () => {
   }
 }
 
-export const keycloakLogin = async () => {
+export async function keycloakLogin() {
   try {
     const keycloak = getKeycloak()
     await keycloak.login()
@@ -70,7 +70,7 @@ export const keycloakLogin = async () => {
   }
 }
 
-export const keycloakLogout = async () => {
+export async function keycloakLogout() {
   try {
     const keycloak = getKeycloak()
     await keycloak.logout()

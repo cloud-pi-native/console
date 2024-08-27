@@ -1,8 +1,8 @@
 {
   "name": "@cpn-console/ts-config",
-  "description": "",
   "version": "1.1.0",
   "private": false,
+  "description": "",
   "main": "index.js",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",

@@ -11,7 +11,7 @@ import { plugin as vault } from '@cpn-console/vault-plugin'
 import { pluginManagerOptions } from './utils/plugins.js'
 import { pluginsDir } from './utils/env.js'
 
-export const initPm = async () => {
+export async function initPm() {
   const pm = pluginManager(pluginManagerOptions)
   pm.register(argo)
   pm.register(gitlab)
@@ -24,7 +24,9 @@ export const initPm = async () => {
 
   if (!statSync(pluginsDir, {
     throwIfNoEntry: false,
-  })) return pm
+  })) {
+    return pm
+  }
   for (const dirName of readdirSync(pluginsDir)) {
     const moduleAbsPath = `${pluginsDir}/${dirName}`
     try {

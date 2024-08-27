@@ -1,12 +1,12 @@
-name: "🐛 Rapport de bug"
+name: 🐛 Rapport de bug
 description: Créer un ticket pour un bug.
 title: "🐛 [BUG] - <title>"
-labels: ["bug"]
+labels: [bug]
 body:
   - type: textarea
     id: description
     attributes:
-      label: "Description"
+      label: Description
       description: Veuillez saisir une description explicite de votre problème.
       placeholder: Description courte et explicite de votre incident...
     validations:
@@ -15,7 +15,7 @@ body:
   - type: textarea
     id: reprod
     attributes:
-      label: "Etapes de reproduction"
+      label: Etapes de reproduction
       description: Veuillez saisir une description explicite pour reproduire votre problème.
       value: |
         1. Aller à '...'
@@ -40,7 +40,7 @@ body:
   - type: textarea
     id: logs
     attributes:
-      label: "Logs"
+      label: Logs
       description: Veuillez copier/coller tous les logs pertinents. Ces données seront automatiquement formatées en code.
     validations:
       required: false
@@ -48,7 +48,7 @@ body:
   - type: dropdown
     id: browsers
     attributes:
-      label: "Navigateurs"
+      label: Navigateurs
       description: Quels sont les navigateurs sur lesquels vous constatez le problème ?
       multiple: true
       options:
@@ -65,7 +65,7 @@ body:
   - type: dropdown
     id: os
     attributes:
-      label: "OS"
+      label: OS
       description: Quels sont les systèmes d'exploitation sur lesquels vous constatez le problème ?
       multiple: true
       options:
@@ -80,14 +80,14 @@ body:
     attributes:
       label: Version de la console impactée
       description: Quelle version de la console est impactée par le bug ?
-      placeholder: "v1.2.3"
+      placeholder: v1.2.3
     validations:
       required: false
 
   - type: checkboxes
     id: dod
     attributes:
-      label: "Définition du fini"
+      label: Définition du fini
       description: Cochez les différents élément de la Definition Of Done.
       options:
         - label: Le correctif est terminé

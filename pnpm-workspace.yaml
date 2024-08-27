@@ -1,5 +1,5 @@
 packages:
-  - "packages/**"
   - "apps/**"
+  - "packages/**"
   - "plugins/**"
   - "!apps/server/src/plugins/external/**"

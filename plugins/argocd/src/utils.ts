@@ -1,8 +1,8 @@
-import { KubeConfig, CoreV1Api, CustomObjectsApi } from '@kubernetes/client-node'
+import { createHmac } from 'node:crypto'
+import { CoreV1Api, CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
-import { createHmac } from 'crypto'
 
-export const generateAppProjectName = (org: string, proj: string, env: string) => {
+export function generateAppProjectName(org: string, proj: string, env: string) {
   const envHash = createHmac('sha256', '')
     .update(env)
     .digest('hex')
@@ -10,7 +10,7 @@ export const generateAppProjectName = (org: string, proj: string, env: string) =
   return `${org}-${proj}-${env}-${envHash}`
 }
 
-export const generateApplicationName = (org: string, proj: string, env: string, repo: string) => {
+export function generateApplicationName(org: string, proj: string, env: string, repo: string) {
   const envHash = createHmac('sha256', '')
     .update(env)
     .digest('hex')
@@ -23,7 +23,7 @@ const config: {
   url?: string
 } = {}
 
-export const getConfig = (): Required<typeof config> => {
+export function getConfig(): Required<typeof config> {
   config.namespace = config.namespace ?? requiredEnv('ARGO_NAMESPACE')
   config.url = removeTrailingSlash(requiredEnv('ARGOCD_URL'))
 
@@ -31,7 +31,7 @@ export const getConfig = (): Required<typeof config> => {
   return config
 }
 
-const getClient = () => {
+function getClient() {
   const kubeconfigCtx = process.env.KUBECONFIG_CTX
   const kubeconfigPath = process.env.KUBECONFIG_PATH
   const kc = new KubeConfig()
@@ -50,12 +50,12 @@ const getClient = () => {
 let k8sApi: CoreV1Api | undefined
 let customK8sApi: CustomObjectsApi | undefined
 
-export const getK8sApi = (): CoreV1Api => {
+export function getK8sApi(): CoreV1Api {
   k8sApi = k8sApi ?? getClient().makeApiClient(CoreV1Api)
   return k8sApi
 }
 
-export const getCustomK8sApi = (): CustomObjectsApi => {
+export function getCustomK8sApi(): CustomObjectsApi {
   customK8sApi = customK8sApi ?? getClient().makeApiClient(CustomObjectsApi)
   return customK8sApi
 }

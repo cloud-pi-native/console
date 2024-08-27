@@ -18,17 +18,17 @@ on:
         description: Nodejs version used to run tests
         required: true
         type: string
-        default: "20.16.0"
+        default: 20.16.0
       PNPM_VERSION:
         description: Pnpm version used to run tests
         required: true
         type: string
-        default: "9.7.1"
+        default: 9.7.1
       BROWSERS:
         description: Comma separeted browser list to run tests on (Options are 'electron', 'chrome', 'edge', 'firefox')
         required: false
         type: string
-        default: "electron"
+        default: electron
 
 jobs:
   matrix:

@@ -1,11 +1,11 @@
-import { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
+import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateStageSchema,
+  DeleteStageSchema,
   GetStageEnvironmentsSchema,
   ListStagesSchema,
   UpdateStageSchema,
-  DeleteStageSchema,
 } from '../schemas/index.js'
 
 export const stageContract = contractInstance.router({

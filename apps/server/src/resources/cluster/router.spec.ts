@@ -1,11 +1,12 @@
 import { faker } from '@faker-js/faker'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { clusterContract, ClusterDetails } from '@cpn-console/shared'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ClusterDetails } from '@cpn-console/shared'
+import { clusterContract } from '@cpn-console/shared'
 import app from '../../app.js'
-import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
 import { getUserMockInfos } from '../../utils/mocks.js'
 import { BadRequest400 } from '../../utils/errors.js'
+import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -16,12 +17,12 @@ const businessCreateMock = vi.spyOn(business, 'createCluster')
 const businessUpdateMock = vi.spyOn(business, 'updateCluster')
 const businessDeleteMock = vi.spyOn(business, 'deleteCluster')
 
-describe('Test clusterContract', () => {
+describe('test clusterContract', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
   describe('listClusters', () => {
-    it('As non admin', async () => {
+    it('as non admin', async () => {
       const user = getUserMockInfos(false)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -36,7 +37,7 @@ describe('Test clusterContract', () => {
       expect(response.json()).toStrictEqual([])
       expect(response.statusCode).toEqual(200)
     })
-    it('As admin', async () => {
+    it('as admin', async () => {
       const user = getUserMockInfos(true)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -54,7 +55,7 @@ describe('Test clusterContract', () => {
   })
 
   describe('getClusterDetails', () => {
-    it('Should return cluster details', async () => {
+    it('should return cluster details', async () => {
       const cluster: ClusterDetails = { id: faker.string.uuid(), clusterResources: true, infos: '', label: faker.string.alpha(), privacy: 'public', stageIds: [], zoneId: faker.string.uuid(), kubeconfig: { cluster: { tlsServerName: faker.string.alpha() }, user: {} } }
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
@@ -68,7 +69,7 @@ describe('Test clusterContract', () => {
       expect(response.json()).toEqual(cluster)
       expect(response.statusCode).toEqual(200)
     })
-    it('Should return 403 if not admin', async () => {
+    it('should return 403 if not admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -82,7 +83,7 @@ describe('Test clusterContract', () => {
   })
 
   describe('getClusterEnvironments', () => {
-    it('Should return cluster environments', async () => {
+    it('should return cluster environments', async () => {
       const envs = []
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
@@ -96,7 +97,7 @@ describe('Test clusterContract', () => {
       expect(response.json()).toEqual([])
       expect(response.statusCode).toEqual(200)
     })
-    it('Should return 403 if not admin', async () => {
+    it('should return 403 if not admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -112,7 +113,7 @@ describe('Test clusterContract', () => {
   describe('createCluster', () => {
     const cluster: ClusterDetails = { id: faker.string.uuid(), clusterResources: true, infos: '', label: faker.string.alpha(), privacy: 'public', stageIds: [], zoneId: faker.string.uuid(), kubeconfig: { cluster: { tlsServerName: faker.string.alpha() }, user: {} } }
 
-    it('Should return created cluster', async () => {
+    it('should return created cluster', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -125,7 +126,7 @@ describe('Test clusterContract', () => {
       expect(response.json()).toEqual(cluster)
       expect(response.statusCode).toEqual(201)
     })
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -137,7 +138,7 @@ describe('Test clusterContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 if not admin', async () => {
+    it('should return 403 if not admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -154,7 +155,7 @@ describe('Test clusterContract', () => {
     const clusterId = faker.string.uuid()
     const cluster: Omit<ClusterDetails, 'id'> = { clusterResources: true, infos: '', label: faker.string.alpha(), privacy: 'public', stageIds: [], zoneId: faker.string.uuid(), kubeconfig: { cluster: { tlsServerName: faker.string.alpha() }, user: {} } }
 
-    it('Should return created cluster', async () => {
+    it('should return created cluster', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -167,7 +168,7 @@ describe('Test clusterContract', () => {
       expect(response.json()).toEqual({ id: clusterId, ...cluster })
       expect(response.statusCode).toEqual(200)
     })
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -179,7 +180,7 @@ describe('Test clusterContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 if not admin', async () => {
+    it('should return 403 if not admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -193,7 +194,7 @@ describe('Test clusterContract', () => {
   })
 
   describe('deleteCluster', () => {
-    it('Should return empty when delete', async () => {
+    it('should return empty when delete', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -205,7 +206,7 @@ describe('Test clusterContract', () => {
       expect(response.body).toBeFalsy()
       expect(response.statusCode).toEqual(204)
     })
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -216,7 +217,7 @@ describe('Test clusterContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 if not admin', async () => {
+    it('should return 403 if not admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 

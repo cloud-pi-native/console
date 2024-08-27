@@ -1,22 +1,23 @@
 import fp from 'fastify-plugin'
 import type { Repository } from '@prisma/client'
-import { PluginsManifests, RepoCreds, ServiceInfos, editStrippers, populatePluginManifests } from '@cpn-console/hooks'
+import type { PluginsManifests, RepoCreds, ServiceInfos } from '@cpn-console/hooks'
+import { editStrippers, populatePluginManifests } from '@cpn-console/hooks'
 import { DEFAULT, DISABLED, PROJECT_PERMS } from '@cpn-console/shared'
-import { UserDetails } from '../types/index.js'
 import { faker } from '@faker-js/faker'
-import * as utilsController from '../utils/controller.js'
+import type { UserDetails } from '../types/index.js'
+import type * as utilsController from '../utils/controller.js'
 
 let requestor: Requestor
 
-export const setRequestor = (user: Requestor = getRandomRequestor()) => {
+export function setRequestor(user: Requestor = getRandomRequestor()) {
   requestor = user
 }
 
-export const getRequestor = () => {
+export function getRequestor() {
   return requestor
 }
 
-export const mockSessionPlugin = async () => {
+export async function mockSessionPlugin() {
   const sessionPlugin = (app, opt, next) => {
     app.addHook('onRequest', (req, res, next) => {
       req.session = { user: getRequestor() }
@@ -28,7 +29,7 @@ export const mockSessionPlugin = async () => {
   return { default: fp(sessionPlugin) }
 }
 
-export const mockHooksPackage = async () => {
+export async function mockHooksPackage() {
   const hookTemplate = {
     execute: () => ({
       args: {},
@@ -193,13 +194,15 @@ export const filteredOrganizations = [
 export type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
 
 type Requestor = Partial<UserDetails>
-export const getRandomRequestor = (user?: Requestor): Partial<UserDetails> => ({
-  id: user?.id ?? faker.string.uuid(),
-  email: user?.email ?? faker.internet.email(),
-  firstName: user?.firstName ?? faker.person.firstName(),
-  lastName: user?.lastName ?? faker.person.lastName(),
-  ...user?.groups !== null && { groups: user?.groups ?? [] },
-})
+export function getRandomRequestor(user?: Requestor): Partial<UserDetails> {
+  return {
+    id: user?.id ?? faker.string.uuid(),
+    email: user?.email ?? faker.internet.email(),
+    firstName: user?.firstName ?? faker.person.firstName(),
+    lastName: user?.lastName ?? faker.person.lastName(),
+    ...user?.groups !== null && { groups: user?.groups ?? [] },
+  }
+}
 
 export function getUserMockInfos(isAdmin: boolean, user?: UserDetails): utilsController.UserProfile
 export function getUserMockInfos(isAdmin: boolean, user?: UserDetails, project?: utilsController.ProjectPermState): utilsController.UserProjectProfile

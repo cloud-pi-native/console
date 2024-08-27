@@ -39,7 +39,7 @@ describe('connect', () => {
     vi.clearAllMocks()
   })
 
-  it('Should connect to postgres', async () => {
+  it('should connect to postgres', async () => {
     await getConnection()
 
     expect(app.log.info.mock.calls).toHaveLength(2)
@@ -47,7 +47,7 @@ describe('connect', () => {
     expect(app.log.info.mock.calls).toContainEqual(['Connected to Postgres!'])
   })
 
-  it('Should fail to connect once, then connect to postgres', async () => {
+  it('should fail to connect once, then connect to postgres', async () => {
     const errorToCatch = new PrismaClientInitializationError('Failed to connect', '2.19.0', 'P1001')
 
     prisma.$connect.mockRejectedValueOnce(errorToCatch)

@@ -1,5 +1,6 @@
 import KcAdminClient from '@keycloak/keycloak-admin-client'
 import { requiredEnv } from '@cpn-console/shared'
+
 export const keycloakToken = process.env.KEYCLOAK_ADMIN_PASSWORD
 export const keycloakUser = process.env.KEYCLOAK_ADMIN
 
@@ -7,7 +8,7 @@ let keycloakDomain: string | undefined
 let keycloakProtocol: string | undefined
 let keycloakRealm: string | undefined
 
-export const getkcClient = async () => {
+export async function getkcClient() {
   keycloakDomain = keycloakDomain ?? requiredEnv('KEYCLOAK_DOMAIN')
   keycloakProtocol = keycloakProtocol ?? requiredEnv('KEYCLOAK_PROTOCOL')
   keycloakRealm = keycloakRealm ?? requiredEnv('KEYCLOAK_REALM')
@@ -26,6 +27,6 @@ export const getkcClient = async () => {
   return kcClient
 }
 
-export const start = () => {
+export function start() {
   getkcClient()
 }

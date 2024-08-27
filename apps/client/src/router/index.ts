@@ -1,7 +1,7 @@
 import {
+  type RouteRecordRaw,
   createRouter,
   createWebHistory,
-  type RouteRecordRaw,
 } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
@@ -10,6 +10,7 @@ import { uuid } from '@/utils/regex.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
+
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
 const UserProfile = () => import('@/views/UserProfile.vue')
@@ -253,7 +254,7 @@ router.beforeEach(async (to, _from, next) => {
     && userStore.isLoggedIn
   ) {
     await systemStore.listSystemSettings('maintenance')
-    if (systemStore.systemSettingsByKey['maintenance']?.value === 'on' && userStore.adminPerms === 0n) return next('/maintenance')
+    if (systemStore.systemSettingsByKey.maintenance?.value === 'on' && userStore.adminPerms === 0n) return next('/maintenance')
   }
 
   next()

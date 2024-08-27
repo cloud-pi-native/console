@@ -5,22 +5,22 @@
   "compilerOptions": {
     "baseUrl": "./",
     "rootDir": "./src",
-    "outDir": "./dist",
-    "declarationDir": "./types",
     "paths": {
       "@/*": ["src/*"]
     },
-    "plugins": [{ "transform": "typescript-transform-paths" }],
-    "useUnknownInCatchVariables": false
+    "useUnknownInCatchVariables": false,
+    "declarationDir": "./types",
+    "outDir": "./dist",
+    "plugins": [{ "transform": "typescript-transform-paths" }]
   },
   "include": [
     "./src/**/*.ts",
-    "./src/**/*.js",
+    "./src/**/*.js"
   ],
   "exclude": [
     "./src/**/*.spec.ts",
     "./src/**/__mocks__",
     "./src/mocks/utils.ts",
-    "./src/utils/mocks.ts",
+    "./src/utils/mocks.ts"
   ]
 }

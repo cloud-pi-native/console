@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
+import type { CreateEnvironmentBody, Environment, UpdateEnvironmentBody } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
-import type { Environment, CreateEnvironmentBody, UpdateEnvironmentBody } from '@cpn-console/shared'
 import { projectMissing } from '@/utils/const.js'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 

@@ -21,12 +21,20 @@
       "cache": false
     },
     "format": {
+      "dependsOn": ["//#format:root"],
+      "outputs": []
+    },
+    "//#format:root": {
       "outputs": []
     },
     "format:style": {
       "outputs": []
     },
     "lint": {
+      "dependsOn": ["//#lint:root"],
+      "outputs": []
+    },
+    "//#lint:root": {
       "outputs": []
     },
     "lint:ts": {

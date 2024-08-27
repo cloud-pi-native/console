@@ -1,8 +1,8 @@
 import { CoreV1Api, KubeConfig } from '@kubernetes/client-node'
-import { type ClusterObject } from '@cpn-console/hooks'
+import type { ClusterObject } from '@cpn-console/hooks'
 import { AnyObjectsApi } from './customApiClass.js'
 
-export const createCoreV1Api = (cluster: ClusterObject) => {
+export function createCoreV1Api(cluster: ClusterObject) {
   if (!cluster.user.keyData && !cluster.user.token) {
     // Special case: disable direct calls to the cluster
     console.log(`Direct kubernetes API calls are disabled for cluster ${cluster.label}`)
@@ -18,16 +18,17 @@ export const createCoreV1Api = (cluster: ClusterObject) => {
     ...cluster.user,
     name: cluster.id,
   }
-  if (cluster.cluster.skipTLSVerify) delete clusterConfig.caData
+  if (cluster.cluster.skipTLSVerify)
+    delete clusterConfig.caData
   kc.loadFromClusterAndUser(clusterConfig, userConfig)
   return kc.makeApiClient(CoreV1Api)
 }
 
-export const createCoreV1Apis = (clusters: ClusterObject[]) => {
+export function createCoreV1Apis(clusters: ClusterObject[]) {
   return clusters.map(createCoreV1Api)
 }
 
-export const createCustomObjectApi = (cluster: ClusterObject) => {
+export function createCustomObjectApi(cluster: ClusterObject) {
   if (!cluster.user.keyData && !cluster.user.token) {
     // Special case: disable direct calls to the cluster
     return
@@ -42,7 +43,8 @@ export const createCustomObjectApi = (cluster: ClusterObject) => {
     ...cluster.user,
     name: cluster.id,
   }
-  if (cluster.cluster.skipTLSVerify) delete clusterConfig.caData
+  if (cluster.cluster.skipTLSVerify)
+    delete clusterConfig.caData
   kc.loadFromClusterAndUser(clusterConfig, userConfig)
   return kc.makeApiClient(AnyObjectsApi)
 }

@@ -23,6 +23,6 @@
     // Makdown
     "yzhang.markdown-all-in-one",
     // Kubernetes
-    "ms-kubernetes-tools.vscode-kubernetes-tools",
+    "ms-kubernetes-tools.vscode-kubernetes-tools"
   ]
 }

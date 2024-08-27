@@ -6,12 +6,12 @@ on:
       - main
 
 env:
-  REGISTRY: "ghcr.io"
+  REGISTRY: ghcr.io
   NAMESPACE: "${{ github.repository }}"
   MULTI_ARCH: true
   USE_QEMU: false
-  NODE_VERSION: "20.16.0"
-  PNPM_VERSION: "9.7.1"
+  NODE_VERSION: 20.16.0
+  PNPM_VERSION: 9.7.1
 
 jobs:
   expose-vars:

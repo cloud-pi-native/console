@@ -31,26 +31,38 @@
   "githubPullRequests.pullBranch": "never",
   // eslint
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
+    "source.fixAll.eslint": "explicit"
   },
   "eslint.validate": [
     "javascript",
-    "typescript",
     "javascriptreact",
+    "typescript",
     "typescriptreact",
     "vue",
     "html",
     "markdown",
     "json",
     "jsonc",
-    "json5"
+    "yaml",
+    "github-actions-workflow",
+    "toml",
+    "xml",
+    "gql",
+    "graphql",
+    "astro",
+    "svelte",
+    "css",
+    "less",
+    "scss",
+    "pcss",
+    "postcss"
   ],
   // stylelint
   "css.validate": true,
   "less.validate": true,
   "scss.validate": true,
   "files.associations": {
-    "*.css": "postcss",
+    "*.css": "postcss"
   },
   // languages
   "[javascript]": {
@@ -102,5 +114,5 @@
   "sonarlint.connectedMode.project": {
     "connectionId": "https://sonarqube.fabrique-numerique.fr",
     "projectKey": "cloud-pi-native_console_AYsa46O31ebDtzs-pYyZ"
-  },
+  }
 }

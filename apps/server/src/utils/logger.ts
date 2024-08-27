@@ -1,5 +1,5 @@
-import { FastifyLoggerOptions, FastifyRequest, RawServerBase } from 'fastify'
-import { FastifyBaseLogger, PinoLoggerOptions } from 'fastify/types/logger.js'
+import type { FastifyLoggerOptions, FastifyRequest, RawServerBase } from 'fastify'
+import type { FastifyBaseLogger, PinoLoggerOptions } from 'fastify/types/logger.js'
 
 export const loggerConf: Record<string, false | FastifyLoggerOptions<RawServerBase> & PinoLoggerOptions | FastifyBaseLogger> = {
   development: {
@@ -24,7 +24,7 @@ interface ReqLogsInput {
   error?: Record<string, unknown> | string | Error
 }
 
-export const addReqLogs = ({ req, error, message, infos }: ReqLogsInput) => {
+export function addReqLogs({ req, error, message, infos }: ReqLogsInput) {
   const logInfos = {
     description: message,
     infos,

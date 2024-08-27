@@ -1,11 +1,12 @@
 import { faker } from '@faker-js/faker'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { Stage, stageContract } from '@cpn-console/shared'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Stage } from '@cpn-console/shared'
+import { stageContract } from '@cpn-console/shared'
 import app from '../../app.js'
-import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
 import { getUserMockInfos } from '../../utils/mocks.js'
 import { BadRequest400 } from '../../utils/errors.js'
+import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -15,13 +16,13 @@ const businessCreateMock = vi.spyOn(business, 'createStage')
 const businessUpdateMock = vi.spyOn(business, 'updateStage')
 const businessDeleteMock = vi.spyOn(business, 'deleteStage')
 
-describe('Test stageContract', () => {
+describe('test stageContract', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
   describe('listStages', () => {
-    it('Should return list of stages', async () => {
+    it('should return list of stages', async () => {
       const stages = []
       businessListMock.mockResolvedValueOnce(stages)
 
@@ -36,7 +37,7 @@ describe('Test stageContract', () => {
   })
 
   describe('getStageEnvironments', () => {
-    it('Should return stage environments for admin', async () => {
+    it('should return stage environments for admin', async () => {
       const environments = []
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
@@ -50,7 +51,7 @@ describe('Test stageContract', () => {
       expect(response.json()).toEqual(environments)
       expect(response.statusCode).toEqual(200)
     })
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -61,7 +62,7 @@ describe('Test stageContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 for non-admin', async () => {
+    it('should return 403 for non-admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -77,7 +78,7 @@ describe('Test stageContract', () => {
   describe('createStage', () => {
     const stage: Stage = { id: faker.string.uuid(), name: faker.string.alpha({ length: 5 }), clusterIds: [], quotaIds: [] }
 
-    it('Should create and return stage for admin', async () => {
+    it('should create and return stage for admin', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -91,7 +92,7 @@ describe('Test stageContract', () => {
       expect(response.json()).toEqual(stage)
       expect(response.statusCode).toEqual(201)
     })
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -103,7 +104,7 @@ describe('Test stageContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 for non-admin', async () => {
+    it('should return 403 for non-admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -121,7 +122,7 @@ describe('Test stageContract', () => {
     const stageId = faker.string.uuid()
     const stage = { name: faker.string.alpha({ length: 5 }), clusterIds: [], quotaIds: [] }
 
-    it('Should update and return stage for admin', async () => {
+    it('should update and return stage for admin', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -135,7 +136,7 @@ describe('Test stageContract', () => {
       expect(response.json()).toEqual({ id: stageId, ...stage })
       expect(response.statusCode).toEqual(200)
     })
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -147,7 +148,7 @@ describe('Test stageContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 for non-admin', async () => {
+    it('should return 403 for non-admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -162,7 +163,7 @@ describe('Test stageContract', () => {
   })
 
   describe('deleteStage', () => {
-    it('Should delete stage for admin', async () => {
+    it('should delete stage for admin', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -175,7 +176,7 @@ describe('Test stageContract', () => {
       expect(response.body).toBeFalsy()
       expect(response.statusCode).toEqual(204)
     })
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -186,7 +187,7 @@ describe('Test stageContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 for non-admin', async () => {
+    it('should return 403 for non-admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 

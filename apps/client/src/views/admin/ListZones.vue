@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { ref, onMounted, watch, computed } from 'vue'
-import { type Zone, sortArrByObjKeyAsc, type CreateZoneBody, type UpdateZoneBody } from '@cpn-console/shared'
+import { computed, onMounted, ref, watch } from 'vue'
+import { type CreateZoneBody, type UpdateZoneBody, type Zone, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { useClusterStore } from '@/stores/cluster'
@@ -21,7 +21,7 @@ const zones = computed(() => zoneStore.zones)
 const allClusters = computed(() => clusterStore.clusters)
 const associatedClusters = computed(() => allClusters.value.filter(cluster => cluster.zoneId === selectedZone.value?.id))
 
-const setZoneTiles = (zones: Zone[]) => {
+function setZoneTiles(zones: Zone[]) {
   zoneList.value = sortArrByObjKeyAsc(zones, 'name')
     .map(zone => ({
       id: zone.id,
@@ -30,7 +30,7 @@ const setZoneTiles = (zones: Zone[]) => {
     }))
 }
 
-const setSelectedZone = async (zone: Zone) => {
+async function setSelectedZone(zone: Zone) {
   if (selectedZone.value?.id === zone.id) {
     selectedZone.value = undefined
     return
@@ -39,17 +39,17 @@ const setSelectedZone = async (zone: Zone) => {
   isNewZoneForm.value = false
 }
 
-const showNewZoneForm = () => {
+function showNewZoneForm() {
   isNewZoneForm.value = !isNewZoneForm.value
   selectedZone.value = undefined
 }
 
-const cancel = () => {
+function cancel() {
   isNewZoneForm.value = false
   selectedZone.value = undefined
 }
 
-const createZone = async (zone: CreateZoneBody) => {
+async function createZone(zone: CreateZoneBody) {
   snackbarStore.isWaitingForResponse = true
   await zoneStore.createZone(zone)
   await Promise.all([
@@ -60,7 +60,7 @@ const createZone = async (zone: CreateZoneBody) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const updateZone = async ({ zoneId, label, description }: UpdateZoneBody & { zoneId: Zone['id'] }) => {
+async function updateZone({ zoneId, label, description }: UpdateZoneBody & { zoneId: Zone['id'] }) {
   snackbarStore.isWaitingForResponse = true
   await zoneStore.updateZone(zoneId, { label, description })
   await Promise.all([
@@ -71,7 +71,7 @@ const updateZone = async ({ zoneId, label, description }: UpdateZoneBody & { zon
   snackbarStore.isWaitingForResponse = false
 }
 
-const deleteZone = async (zoneId: Zone['id']) => {
+async function deleteZone(zoneId: Zone['id']) {
   snackbarStore.isWaitingForResponse = true
   await zoneStore.deleteZone(zoneId)
   await Promise.all([
@@ -93,7 +93,6 @@ onMounted(async () => {
 watch(zones, async () => {
   setZoneTiles(zones.value)
 })
-
 </script>
 
 <template>

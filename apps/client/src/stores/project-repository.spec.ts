@@ -1,5 +1,5 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
 import { createRandomDbSetup } from '@cpn-console/test-utils'
 import { apiClient } from '../api/xhr-client.js'
 import { useProjectRepositoryStore } from './project-repository.js'
@@ -14,7 +14,7 @@ vi.mock('./project.js', async () => ({
   }),
 }))
 
-describe('Repository Store', () => {
+describe('repository Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -22,7 +22,7 @@ describe('Repository Store', () => {
     setActivePinia(createPinia())
   })
 
-  it('Should add a project repository by api call', async () => {
+  it('should add a project repository by api call', async () => {
     const projectRepositoryStore = useProjectRepositoryStore()
 
     listRepositories.mockReturnValueOnce(Promise.resolve({ status: 200, body: [] }))
@@ -40,7 +40,7 @@ describe('Repository Store', () => {
     expect(apiClientPost).toHaveBeenCalledTimes(1)
   })
 
-  it('Should delete a project repository by api call', async () => {
+  it('should delete a project repository by api call', async () => {
     const projectRepositoryStore = useProjectRepositoryStore()
 
     listRepositories.mockReturnValueOnce(Promise.resolve({ status: 200, body: [] }))

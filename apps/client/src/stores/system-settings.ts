@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import {
-  resourceListToDictByKey,
   type SystemSetting,
   type SystemSettings,
   type UpsertSystemSettingBody,
+  resourceListToDictByKey,
 } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
@@ -21,8 +21,7 @@ export const useSystemSettingsStore = defineStore('systemSettings', () => {
       .then(response => extractData(response, 201))
     systemSettings.value = systemSettings.value
       .toSpliced(systemSettings.value
-        .findIndex(systemSetting => systemSetting.key === res.key),
-          1, res)
+        .findIndex(systemSetting => systemSetting.key === res.key), 1, res)
     return res
   }
 

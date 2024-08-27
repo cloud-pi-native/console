@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { apiPrefix, contractInstance, RoleSchema } from '../index.js'
+import { RoleSchema, apiPrefix, contractInstance } from '../index.js'
 import { ErrorSchema } from '../schemas/utils.js'
 
 export const projectRoleContract = contractInstance.router({

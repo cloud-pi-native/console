@@ -1,13 +1,14 @@
-import type { Environment, Project, Prisma } from '@prisma/client'
+import type { Environment, Prisma, Project } from '@prisma/client'
+import type { Quota } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
-import { Quota } from '@cpn-console/shared'
 
 // SELECT
-export const getEnvironmentByIdOrThrow = (id: Environment['id']) =>
-  prisma.environment.findUniqueOrThrow({ where: { id }, include: { quota: true, stage: true } })
+export function getEnvironmentByIdOrThrow(id: Environment['id']) {
+  return prisma.environment.findUniqueOrThrow({ where: { id }, include: { quota: true, stage: true } })
+}
 
-export const getEnvironmentInfos = (id: Environment['id']) =>
-  prisma.environment.findUniqueOrThrow({
+export function getEnvironmentInfos(id: Environment['id']) {
+  return prisma.environment.findUniqueOrThrow({
     where: { id },
     include: {
       project: {
@@ -34,17 +35,20 @@ export const getEnvironmentInfos = (id: Environment['id']) =>
       stage: true,
     },
   })
+}
 
-export const getEnvironmentsByProjectId = async (projectId: Project['id']) => prisma.environment.findMany({
-  where: { projectId },
-  include: {
-    quota: true,
-    stage: true,
-  },
-})
+export async function getEnvironmentsByProjectId(projectId: Project['id']) {
+  return prisma.environment.findMany({
+    where: { projectId },
+    include: {
+      quota: true,
+      stage: true,
+    },
+  })
+}
 
-export const getEnvironmentByIdWithCluster = (id: Environment['id']) =>
-  prisma.environment.findUnique({
+export function getEnvironmentByIdWithCluster(id: Environment['id']) {
+  return prisma.environment.findUnique({
     where: { id },
     include: {
       cluster: {
@@ -52,27 +56,26 @@ export const getEnvironmentByIdWithCluster = (id: Environment['id']) =>
       },
     },
   })
+}
 
 // INSERT
-export const initializeEnvironment = (
-  data: Prisma.EnvironmentUncheckedCreateInput,
-) => prisma.environment.create({
-  data,
-  include: {
-    project: {
-      include: {
-        repositories: {
-          where: { isInfra: true },
+export function initializeEnvironment(data: Prisma.EnvironmentUncheckedCreateInput) {
+  return prisma.environment.create({
+    data,
+    include: {
+      project: {
+        include: {
+          repositories: {
+            where: { isInfra: true },
+          },
         },
       },
     },
-  },
-})
+  })
+}
 
-export const updateEnvironment = (
-  { id, quotaId }: { id: Environment['id'], quotaId: Quota['id'] },
-) =>
-  prisma.environment.update({
+export function updateEnvironment({ id, quotaId }: { id: Environment['id'], quotaId: Quota['id'] }) {
+  return prisma.environment.update({
     where: {
       id,
     },
@@ -80,14 +83,17 @@ export const updateEnvironment = (
       quotaId,
     },
   })
+}
 
 // DELETE
-export const deleteEnvironment = (id: Environment['id']) =>
-  prisma.environment.delete({
+export function deleteEnvironment(id: Environment['id']) {
+  return prisma.environment.delete({
     where: { id },
   })
+}
 
-export const deleteAllEnvironmentForProject = (id: Project['id']) =>
-  prisma.environment.deleteMany({
+export function deleteAllEnvironmentForProject(id: Project['id']) {
+  return prisma.environment.deleteMany({
     where: { projectId: id },
   })
+}

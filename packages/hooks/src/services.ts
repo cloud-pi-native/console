@@ -1,8 +1,8 @@
-import { Monitor, MonitorInfos, PluginConfig, PluginsUpdateBody } from '@cpn-console/shared'
-import type { EnvironmentObject, ClusterObject } from './hooks/index.js'
+import type { Monitor, MonitorInfos, PluginConfig, PluginsUpdateBody } from '@cpn-console/shared'
+import type { ClusterObject, EnvironmentObject } from './hooks/index.js'
 
-type ToUrlObject = { to: string, title?: string, description?: string, imgSrc?: string }
-export type ToUrlFnParamaters = {
+interface ToUrlObject { to: string, title?: string, description?: string, imgSrc?: string }
+export interface ToUrlFnParamaters {
   project: string
   organization: string
   store: PluginsUpdateBody
@@ -11,7 +11,7 @@ export type ToUrlFnParamaters = {
 }
 type ToUrlFnResponse = ToUrlObject | ToUrlObject[] | string | void
 
-export type ServiceInfos = {
+export interface ServiceInfos {
   name: string
   to?: ({ project, organization, store, clusters, environments }: ToUrlFnParamaters) => ToUrlFnResponse
   monitor?: Monitor
@@ -27,7 +27,8 @@ export type ServiceStatus = MonitorInfos & { name: string }
 export const services = {
   getStatus: (): Array<ServiceStatus> => {
     return Object.values(servicesInfos).reduce((acc, serviceInfos) => {
-      if (!serviceInfos?.monitor?.lastStatus) return acc
+      if (!serviceInfos?.monitor?.lastStatus)
+        return acc
       return [...acc, { ...serviceInfos.monitor.lastStatus, name: serviceInfos.title }]
     }, [] as Array<ServiceStatus>)
   },

@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { CreateProjectBody, Organization, ProjectV2, UpdateProjectBody, projectContract, getPermsByUserRoles, PROJECT_PERMS, resourceListToDict, projectRoleContract, Role } from '@cpn-console/shared'
-import { apiClient, extractData } from '@/api/xhr-client.js'
+import type { CreateProjectBody, Organization, ProjectV2, Role, UpdateProjectBody, projectContract, projectRoleContract } from '@cpn-console/shared'
+import { PROJECT_PERMS, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
 import { useUserStore } from './user.js'
 import { useOrganizationStore } from './organization.js'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export type ProjectWithOrganization = ProjectV2 & { organization: Organization }
 
@@ -26,13 +27,6 @@ export const useProjectStore = defineStore('project', () => {
     selectedProject.value = projects.value.find(project => project.id === id)
   }
 
-  const updateProject = async (projectId: string, data: UpdateProjectBody) => {
-    const project = await apiClient.Projects.updateProject({ body: data, params: { projectId } })
-      .then(response => extractData(response, 200))
-    await listProjects()
-    return project
-  }
-
   const listProjects = async (query: typeof projectContract.listProjects.query._type = { filter: 'member', statusNotIn: 'archived' }) => {
     const res = await apiClient.Projects.listProjects({ query })
       .then(response => extractData(response, 200))
@@ -41,6 +35,13 @@ export const useProjectStore = defineStore('project', () => {
     if (selectedProject.value) {
       setSelectedProject(selectedProject.value.id)
     }
+  }
+
+  const updateProject = async (projectId: string, data: UpdateProjectBody) => {
+    const project = await apiClient.Projects.updateProject({ body: data, params: { projectId } })
+      .then(response => extractData(response, 200))
+    await listProjects()
+    return project
   }
 
   const createProject = async (body: CreateProjectBody) => {

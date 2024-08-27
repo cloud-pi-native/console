@@ -3,8 +3,8 @@ import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
-import SuggestionInput from '@/components/SuggestionInput.vue'
 import { createRandomDbSetup } from '@cpn-console/test-utils'
+import SuggestionInput from '@/components/SuggestionInput.vue'
 
 describe('SuggestionInput.vue', () => {
   it('Should mount a SuggestionInput', () => {

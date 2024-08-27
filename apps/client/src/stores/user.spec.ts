@@ -1,8 +1,8 @@
 import Keycloak from 'keycloak-js'
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
-import { useUserStore } from './user.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
+import { useUserStore } from './user.js'
 
 const authMock = vi.spyOn(apiClient.Users, 'auth')
 const listAdminRoles = vi.spyOn(apiClient.AdminRoles, 'listAdminRoles')
@@ -27,7 +27,7 @@ vi.mock('keycloak-js', () => {
 })
 const keycloak = new Keycloak()
 
-describe('User Store', () => {
+describe('user Store', () => {
   beforeEach(() => {
     // creates a fresh pinia and make it active so it's automatically picked
     // up by any useStore() call without having to pass it to it: `useStore(pinia)`
@@ -37,7 +37,7 @@ describe('User Store', () => {
     vi.clearAllMocks()
   })
 
-  it('Should retrieve isLoggedIn from Keycloak (true)', async () => {
+  it('should retrieve isLoggedIn from Keycloak (true)', async () => {
     const userStore = useUserStore()
 
     expect(userStore.isLoggedIn).toBeUndefined()
@@ -47,7 +47,7 @@ describe('User Store', () => {
     expect(userStore.isLoggedIn).toEqual(true)
   })
 
-  it('Should retrieve userProfile from Keycloak', async () => {
+  it('should retrieve userProfile from Keycloak', async () => {
     const userStore = useUserStore()
 
     expect(userStore.userProfile).toMatchObject({})
@@ -62,7 +62,7 @@ describe('User Store', () => {
     })
   })
 
-  it('Should call Keycloak login function', async () => {
+  it('should call Keycloak login function', async () => {
     const userStore = useUserStore()
 
     await userStore.login()
@@ -70,7 +70,7 @@ describe('User Store', () => {
     expect(keycloak.login).toBeCalledTimes(1)
   })
 
-  it('Should call Keycloak logout function', async () => {
+  it('should call Keycloak logout function', async () => {
     const userStore = useUserStore()
 
     await userStore.logout()

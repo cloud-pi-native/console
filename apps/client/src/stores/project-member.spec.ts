@@ -1,5 +1,5 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useProjectMemberStore } from './project-member.js'
 
@@ -21,7 +21,7 @@ vi.mock('./users.js', async () => ({
   }),
 }))
 
-describe('User Store', () => {
+describe('user Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -29,7 +29,7 @@ describe('User Store', () => {
     setActivePinia(createPinia())
   })
 
-  it('Should add a user to project by api call', async () => {
+  it('should add a user to project by api call', async () => {
     apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: [{ projectId: 'projectId', role: 'user', id: 'a', user: { id: 'b', email: 'michel@test.com' } }] }))
     const projectMemberStore = useProjectMemberStore()
 
@@ -38,7 +38,7 @@ describe('User Store', () => {
     expect(apiClientPost).toHaveBeenCalledTimes(1)
   })
 
-  it('Should remove a user to from project by api call', async () => {
+  it('should remove a user to from project by api call', async () => {
     apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 200, body: {} }))
     const projectMemberStore = useProjectMemberStore()
 

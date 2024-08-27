@@ -7,13 +7,13 @@ const config: {
   password?: string
 } = {}
 
-export const getConfig = (): Required<typeof config> => {
+export function getConfig(): Required<typeof config> {
   config.url = config.url ?? removeTrailingSlash(requiredEnv('SONARQUBE_URL'))
   config.user = config.user ?? requiredEnv('SONAR_API_TOKEN')
   // @ts-ignore
   return config
 }
-export const getAxiosOptions = () => {
+export function getAxiosOptions() {
   return {
     baseURL: `${getConfig().url}/api/`,
     auth: {
@@ -26,11 +26,11 @@ export const getAxiosOptions = () => {
   }
 }
 
-export const getAxiosInstance = () => {
+export function getAxiosInstance() {
   return axios.create(getAxiosOptions())
 }
 
-export type VaultSonarSecret = {
+export interface VaultSonarSecret {
   SONAR_USERNAME: string
   SONAR_PASSWORD: string
   SONAR_TOKEN: string

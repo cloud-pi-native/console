@@ -2,11 +2,12 @@
 
 // Code dupliqué et modifier de https://github.com/kubernetes-client/javascript/blob/0.20.0/src/gen/api/customObjectsApi.ts
 
+import type http from 'node:http'
 import localVarRequest from 'request'
-import http from 'http'
 
 /* tslint:disable:no-unused-locals */
-import { V1DeleteOptions, ObjectSerializer, Authentication, VoidAuth, Interceptor, ApiKeyAuth, HttpError } from '@kubernetes/client-node'
+import type { Authentication, Interceptor, V1DeleteOptions } from '@kubernetes/client-node'
+import { ApiKeyAuth, HttpError, ObjectSerializer, VoidAuth } from '@kubernetes/client-node'
 
 const defaultBasePath = 'http://localhost'
 
@@ -14,7 +15,7 @@ export enum CustomObjectsApiApiKeys {
   BearerToken,
 }
 
-export type UrlParams = {
+export interface UrlParams {
   namespace?: string
   group?: string
   version: string
@@ -59,6 +60,10 @@ export class AnyObjectsApi {
     this._defaultHeaders = defaultHeaders
   }
 
+  get useQuerystring() {
+    return this._useQuerystring
+  }
+
   get defaultHeaders() {
     return this._defaultHeaders
   }
@@ -72,14 +77,17 @@ export class AnyObjectsApi {
     if (group) {
       path.push('apis')
       path.push(encodeURIComponent(String(group)))
-    } else path.push('api')
+    } else {
+      path.push('api')
+    }
     path.push(encodeURIComponent(String(version)))
     if (namespace) {
       path.push('namespaces')
       path.push(encodeURIComponent(String(namespace)))
     }
     path.push(encodeURIComponent(String(plural)))
-    if (name) path.push(encodeURIComponent(String(name)))
+    if (name)
+      path.push(encodeURIComponent(String(name)))
     return path.join('/')
   }
 
@@ -96,23 +104,23 @@ export class AnyObjectsApi {
   }
 
   /**
-     * Creates a namespace scoped Custom object
-     * @param group The custom resource\&#39;s group name
-     * @param version The custom resource\&#39;s version
-     * @param namespace The custom resource\&#39;s namespace
-     * @param plural The custom resource\&#39;s plural name. For TPRs this would be lowercase plural kind.
-     * @param body The JSON schema of the Resource to create.
-     * @param pretty If \&#39;true\&#39;, then the output is pretty printed.
-     * @param dryRun When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
-     * @param fieldManager fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.
-     */
+   * Creates a namespace scoped Custom object
+   * @param group The custom resource\&#39;s group name
+   * @param version The custom resource\&#39;s version
+   * @param namespace The custom resource\&#39;s namespace
+   * @param plural The custom resource\&#39;s plural name. For TPRs this would be lowercase plural kind.
+   * @param body The JSON schema of the Resource to create.
+   * @param pretty If \&#39;true\&#39;, then the output is pretty printed.
+   * @param dryRun When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
+   * @param fieldManager fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.
+   */
   public async createNamespacedCustomObject(group?: string, version: string, namespace: string, plural: string, body: object, pretty?: string, dryRun?: string, fieldManager?: string, options: { headers: { [name: string]: string } } = { headers: {} }): Promise<{ response: http.IncomingMessage, body: object }> {
     const localVarPath = this.urlMaker({ group, version, namespace, plural })
     const localVarQueryParameters: any = {}
     const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders)
     const produces = ['application/json']
     // give precedence to 'application/json'
-    if (produces.indexOf('application/json') >= 0) {
+    if (produces.includes('application/json')) {
       localVarHeaderParams.Accept = 'application/json'
     } else {
       localVarHeaderParams.Accept = produces.join(',')
@@ -207,25 +215,25 @@ export class AnyObjectsApi {
   }
 
   /**
-     * Deletes the specified namespace scoped custom object
-     * @param group the custom resource\&#39;s group
-     * @param version the custom resource\&#39;s version
-     * @param namespace The custom resource\&#39;s namespace
-     * @param plural the custom resource\&#39;s plural name. For TPRs this would be lowercase plural kind.
-     * @param name the custom object\&#39;s name
-     * @param gracePeriodSeconds The duration in seconds before the object should be deleted. Value must be non-negative integer. The value zero indicates delete immediately. If this value is nil, the default grace period for the specified type will be used. Defaults to a per object value if not specified. zero means delete immediately.
-     * @param orphanDependents Deprecated: please use the PropagationPolicy, this field will be deprecated in 1.7. Should the dependent objects be orphaned. If true/false, the \&quot;orphan\&quot; finalizer will be added to/removed from the object\&#39;s finalizers list. Either this field or PropagationPolicy may be set, but not both.
-     * @param propagationPolicy Whether and how garbage collection will be performed. Either this field or OrphanDependents may be set, but not both. The default policy is decided by the existing finalizer set in the metadata.finalizers and the resource-specific default policy.
-     * @param dryRun When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
-     * @param body
-     */
+   * Deletes the specified namespace scoped custom object
+   * @param group the custom resource\&#39;s group
+   * @param version the custom resource\&#39;s version
+   * @param namespace The custom resource\&#39;s namespace
+   * @param plural the custom resource\&#39;s plural name. For TPRs this would be lowercase plural kind.
+   * @param name the custom object\&#39;s name
+   * @param gracePeriodSeconds The duration in seconds before the object should be deleted. Value must be non-negative integer. The value zero indicates delete immediately. If this value is nil, the default grace period for the specified type will be used. Defaults to a per object value if not specified. zero means delete immediately.
+   * @param orphanDependents Deprecated: please use the PropagationPolicy, this field will be deprecated in 1.7. Should the dependent objects be orphaned. If true/false, the \&quot;orphan\&quot; finalizer will be added to/removed from the object\&#39;s finalizers list. Either this field or PropagationPolicy may be set, but not both.
+   * @param propagationPolicy Whether and how garbage collection will be performed. Either this field or OrphanDependents may be set, but not both. The default policy is decided by the existing finalizer set in the metadata.finalizers and the resource-specific default policy.
+   * @param dryRun When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
+   * @param body
+   */
   public async deleteNamespacedCustomObject(group?: string, version: string, namespace: string, plural: string, name: string, gracePeriodSeconds?: number, orphanDependents?: boolean, propagationPolicy?: string, dryRun?: string, body?: V1DeleteOptions, options: { headers: { [name: string]: string } } = { headers: {} }): Promise<{ response: http.IncomingMessage, body: object }> {
     const localVarPath = this.urlMaker({ group, version, namespace, plural, name })
     const localVarQueryParameters: any = {}
     const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders)
     const produces = ['application/json']
     // give precedence to 'application/json'
-    if (produces.indexOf('application/json') >= 0) {
+    if (produces.includes('application/json')) {
       localVarHeaderParams.Accept = 'application/json'
     } else {
       localVarHeaderParams.Accept = produces.join(',')
@@ -324,20 +332,20 @@ export class AnyObjectsApi {
   }
 
   /**
-     * Returns a namespace scoped custom object
-     * @param group the custom resource\&#39;s group
-     * @param version the custom resource\&#39;s version
-     * @param namespace The custom resource\&#39;s namespace
-     * @param plural the custom resource\&#39;s plural name. For TPRs this would be lowercase plural kind.
-     * @param name the custom object\&#39;s name
-     */
+   * Returns a namespace scoped custom object
+   * @param group the custom resource\&#39;s group
+   * @param version the custom resource\&#39;s version
+   * @param namespace The custom resource\&#39;s namespace
+   * @param plural the custom resource\&#39;s plural name. For TPRs this would be lowercase plural kind.
+   * @param name the custom object\&#39;s name
+   */
   public async getNamespacedCustomObject(group?: string, version: string, namespace: string, plural: string, name: string, options: { headers: { [name: string]: string } } = { headers: {} }): Promise<{ response: http.IncomingMessage, body: object }> {
     const localVarPath = this.urlMaker({ group, version, namespace, plural, name })
     const localVarQueryParameters: any = {}
     const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders)
     const produces = ['application/json']
     // give precedence to 'application/json'
-    if (produces.indexOf('application/json') >= 0) {
+    if (produces.includes('application/json')) {
       localVarHeaderParams.Accept = 'application/json'
     } else {
       localVarHeaderParams.Accept = produces.join(',')
@@ -419,29 +427,29 @@ export class AnyObjectsApi {
   }
 
   /**
-     * list or watch namespace scoped custom objects
-     * @param group The custom resource\&#39;s group name
-     * @param version The custom resource\&#39;s version
-     * @param namespace The custom resource\&#39;s namespace
-     * @param plural The custom resource\&#39;s plural name. For TPRs this would be lowercase plural kind.
-     * @param pretty If \&#39;true\&#39;, then the output is pretty printed.
-     * @param allowWatchBookmarks allowWatchBookmarks requests watch events with type \&quot;BOOKMARK\&quot;. Servers that do not implement bookmarks may ignore this flag and bookmarks are sent at the server\&#39;s discretion. Clients should not assume bookmarks are returned at any specific interval, nor may they assume the server will send any BOOKMARK event during a session. If this is not a watch, this field is ignored. If the feature gate WatchBookmarks is not enabled in apiserver, this field is ignored.
-     * @param _continue The continue option should be set when retrieving more results from the server. Since this value is server defined, clients may only use the continue value from a previous query result with identical query parameters (except for the value of continue) and the server may reject a continue value it does not recognize. If the specified continue value is no longer valid whether due to expiration (generally five to fifteen minutes) or a configuration change on the server, the server will respond with a 410 ResourceExpired error together with a continue token. If the client needs a consistent list, it must restart their list without the continue field. Otherwise, the client may send another list request with the token received with the 410 error, the server will respond with a list starting from the next key, but from the latest snapshot, which is inconsistent from the previous list results - objects that are created, modified, or deleted after the first list request will be included in the response, as long as their keys are after the \&quot;next key\&quot;.  This field is not supported when watch is true. Clients may start a watch from the last resourceVersion value returned by the server and not miss any modifications.
-     * @param fieldSelector A selector to restrict the list of returned objects by their fields. Defaults to everything.
-     * @param labelSelector A selector to restrict the list of returned objects by their labels. Defaults to everything.
-     * @param limit limit is a maximum number of responses to return for a list call. If more items exist, the server will set the &#x60;continue&#x60; field on the list metadata to a value that can be used with the same initial query to retrieve the next set of results. Setting a limit may return fewer than the requested amount of items (up to zero items) in the event all requested objects are filtered out and clients should only use the presence of the continue field to determine whether more results are available. Servers may choose not to support the limit argument and will return all of the available results. If limit is specified and the continue field is empty, clients may assume that no more results are available. This field is not supported if watch is true.  The server guarantees that the objects returned when using continue will be identical to issuing a single list call without a limit - that is, no objects created, modified, or deleted after the first request is issued will be included in any subsequent continued requests. This is sometimes referred to as a consistent snapshot, and ensures that a client that is using limit to receive smaller chunks of a very large result can ensure they see all possible objects. If objects are updated during a chunked list the version of the object that was present at the time the first list result was calculated is returned.
-     * @param resourceVersion When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it\&#39;s 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.
-     * @param resourceVersionMatch resourceVersionMatch determines how resourceVersion is applied to list calls. It is highly recommended that resourceVersionMatch be set for list calls where resourceVersion is set See https://kubernetes.io/docs/reference/using-api/api-concepts/#resource-versions for details.  Defaults to unset
-     * @param timeoutSeconds Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.
-     * @param watch Watch for changes to the described resources and return them as a stream of add, update, and remove notifications.
-     */
+   * list or watch namespace scoped custom objects
+   * @param group The custom resource\&#39;s group name
+   * @param version The custom resource\&#39;s version
+   * @param namespace The custom resource\&#39;s namespace
+   * @param plural The custom resource\&#39;s plural name. For TPRs this would be lowercase plural kind.
+   * @param pretty If \&#39;true\&#39;, then the output is pretty printed.
+   * @param allowWatchBookmarks allowWatchBookmarks requests watch events with type \&quot;BOOKMARK\&quot;. Servers that do not implement bookmarks may ignore this flag and bookmarks are sent at the server\&#39;s discretion. Clients should not assume bookmarks are returned at any specific interval, nor may they assume the server will send any BOOKMARK event during a session. If this is not a watch, this field is ignored. If the feature gate WatchBookmarks is not enabled in apiserver, this field is ignored.
+   * @param _continue The continue option should be set when retrieving more results from the server. Since this value is server defined, clients may only use the continue value from a previous query result with identical query parameters (except for the value of continue) and the server may reject a continue value it does not recognize. If the specified continue value is no longer valid whether due to expiration (generally five to fifteen minutes) or a configuration change on the server, the server will respond with a 410 ResourceExpired error together with a continue token. If the client needs a consistent list, it must restart their list without the continue field. Otherwise, the client may send another list request with the token received with the 410 error, the server will respond with a list starting from the next key, but from the latest snapshot, which is inconsistent from the previous list results - objects that are created, modified, or deleted after the first list request will be included in the response, as long as their keys are after the \&quot;next key\&quot;.  This field is not supported when watch is true. Clients may start a watch from the last resourceVersion value returned by the server and not miss any modifications.
+   * @param fieldSelector A selector to restrict the list of returned objects by their fields. Defaults to everything.
+   * @param labelSelector A selector to restrict the list of returned objects by their labels. Defaults to everything.
+   * @param limit limit is a maximum number of responses to return for a list call. If more items exist, the server will set the &#x60;continue&#x60; field on the list metadata to a value that can be used with the same initial query to retrieve the next set of results. Setting a limit may return fewer than the requested amount of items (up to zero items) in the event all requested objects are filtered out and clients should only use the presence of the continue field to determine whether more results are available. Servers may choose not to support the limit argument and will return all of the available results. If limit is specified and the continue field is empty, clients may assume that no more results are available. This field is not supported if watch is true.  The server guarantees that the objects returned when using continue will be identical to issuing a single list call without a limit - that is, no objects created, modified, or deleted after the first request is issued will be included in any subsequent continued requests. This is sometimes referred to as a consistent snapshot, and ensures that a client that is using limit to receive smaller chunks of a very large result can ensure they see all possible objects. If objects are updated during a chunked list the version of the object that was present at the time the first list result was calculated is returned.
+   * @param resourceVersion When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it\&#39;s 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.
+   * @param resourceVersionMatch resourceVersionMatch determines how resourceVersion is applied to list calls. It is highly recommended that resourceVersionMatch be set for list calls where resourceVersion is set See https://kubernetes.io/docs/reference/using-api/api-concepts/#resource-versions for details.  Defaults to unset
+   * @param timeoutSeconds Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.
+   * @param watch Watch for changes to the described resources and return them as a stream of add, update, and remove notifications.
+   */
   public async listNamespacedCustomObject(group?: string, version: string, namespace: string, plural: string, pretty?: string, allowWatchBookmarks?: boolean, _continue?: string, fieldSelector?: string, labelSelector?: string, limit?: number, resourceVersion?: string, resourceVersionMatch?: string, timeoutSeconds?: number, watch?: boolean, options: { headers: { [name: string]: string } } = { headers: {} }): Promise<{ response: http.IncomingMessage, body: object }> {
     const localVarPath = this.urlMaker({ group, version, namespace, plural })
     const localVarQueryParameters: any = {}
     const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders)
     const produces = ['application/json', 'application/json;stream=watch']
     // give precedence to 'application/json'
-    if (produces.indexOf('application/json') >= 0) {
+    if (produces.includes('application/json')) {
       localVarHeaderParams.Accept = 'application/json'
     } else {
       localVarHeaderParams.Accept = produces.join(',')
@@ -558,24 +566,24 @@ export class AnyObjectsApi {
   }
 
   /**
-     * patch the specified namespace scoped custom object
-     * @param group the custom resource\&#39;s group
-     * @param version the custom resource\&#39;s version
-     * @param namespace The custom resource\&#39;s namespace
-     * @param plural the custom resource\&#39;s plural name. For TPRs this would be lowercase plural kind.
-     * @param name the custom object\&#39;s name
-     * @param body The JSON schema of the Resource to patch.
-     * @param dryRun When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
-     * @param fieldManager fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint. This field is required for apply requests (application/apply-patch) but optional for non-apply patch types (JsonPatch, MergePatch, StrategicMergePatch).
-     * @param force Force is going to \&quot;force\&quot; Apply requests. It means user will re-acquire conflicting fields owned by other people. Force flag must be unset for non-apply patch requests.
-     */
+   * patch the specified namespace scoped custom object
+   * @param group the custom resource\&#39;s group
+   * @param version the custom resource\&#39;s version
+   * @param namespace The custom resource\&#39;s namespace
+   * @param plural the custom resource\&#39;s plural name. For TPRs this would be lowercase plural kind.
+   * @param name the custom object\&#39;s name
+   * @param body The JSON schema of the Resource to patch.
+   * @param dryRun When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
+   * @param fieldManager fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint. This field is required for apply requests (application/apply-patch) but optional for non-apply patch types (JsonPatch, MergePatch, StrategicMergePatch).
+   * @param force Force is going to \&quot;force\&quot; Apply requests. It means user will re-acquire conflicting fields owned by other people. Force flag must be unset for non-apply patch requests.
+   */
   public async patchNamespacedCustomObject(group?: string, version: string, namespace: string, plural: string, name: string, body: object, dryRun?: string, fieldManager?: string, force?: boolean, options: { headers: { [name: string]: string } } = { headers: {} }): Promise<{ response: http.IncomingMessage, body: object }> {
     const localVarPath = this.urlMaker({ group, version, namespace, plural, name })
     const localVarQueryParameters: any = {}
     const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders)
     const produces = ['application/json']
     // give precedence to 'application/json'
-    if (produces.indexOf('application/json') >= 0) {
+    if (produces.includes('application/json')) {
       localVarHeaderParams.Accept = 'application/json'
     } else {
       localVarHeaderParams.Accept = produces.join(',')
@@ -675,23 +683,23 @@ export class AnyObjectsApi {
   }
 
   /**
-     * replace the specified namespace scoped custom object
-     * @param group the custom resource\&#39;s group
-     * @param version the custom resource\&#39;s version
-     * @param namespace The custom resource\&#39;s namespace
-     * @param plural the custom resource\&#39;s plural name. For TPRs this would be lowercase plural kind.
-     * @param name the custom object\&#39;s name
-     * @param body The JSON schema of the Resource to replace.
-     * @param dryRun When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
-     * @param fieldManager fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.
-     */
+   * replace the specified namespace scoped custom object
+   * @param group the custom resource\&#39;s group
+   * @param version the custom resource\&#39;s version
+   * @param namespace The custom resource\&#39;s namespace
+   * @param plural the custom resource\&#39;s plural name. For TPRs this would be lowercase plural kind.
+   * @param name the custom object\&#39;s name
+   * @param body The JSON schema of the Resource to replace.
+   * @param dryRun When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
+   * @param fieldManager fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.
+   */
   public async replaceNamespacedCustomObject(group?: string, version: string, namespace: string, plural: string, name: string, body: object, dryRun?: string, fieldManager?: string, options: { headers: { [name: string]: string } } = { headers: {} }): Promise<{ response: http.IncomingMessage, body: object }> {
     const localVarPath = this.urlMaker({ group, version, namespace, plural, name })
     const localVarQueryParameters: any = {}
     const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders)
     const produces = ['application/json']
     // give precedence to 'application/json'
-    if (produces.indexOf('application/json') >= 0) {
+    if (produces.includes('application/json')) {
       localVarHeaderParams.Accept = 'application/json'
     } else {
       localVarHeaderParams.Accept = produces.join(',')

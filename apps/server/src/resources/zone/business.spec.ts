@@ -1,13 +1,14 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { Cluster, Zone } from '@prisma/client'
+import type { Cluster, Zone } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
+import { BadRequest400 } from '../../utils/errors.ts'
 import { createZone, deleteZone, listZones, updateZone } from './business.ts'
 import * as queries from './queries.js'
-import { BadRequest400 } from '../../utils/errors.ts'
+
 const linkZoneToClustersMock = vi.spyOn(queries, 'linkZoneToClusters')
 
-describe('Test zone business', () => {
+describe('test zone business', () => {
   const zones: Zone[] = [{
     id: faker.string.uuid(),
     label: faker.company.name(),
@@ -33,7 +34,7 @@ describe('Test zone business', () => {
     vi.resetAllMocks()
   })
   describe('listZones', () => {
-    it('Should return zones', async () => {
+    it('should return zones', async () => {
       prisma.zone.findMany.mockResolvedValueOnce(zones)
 
       const response = await listZones()
@@ -41,7 +42,7 @@ describe('Test zone business', () => {
     })
   })
   describe('createZone', () => {
-    it('Should create zone without description and clusterIds', async () => {
+    it('should create zone without description and clusterIds', async () => {
       const newZone = { label: zones[0].label, slug: zones[0].slug }
 
       prisma.zone.create.mockResolvedValueOnce(zones[0])
@@ -57,7 +58,7 @@ describe('Test zone business', () => {
       })
       expect(linkZoneToClustersMock).toHaveBeenCalledTimes(0)
     })
-    it('Should create zone with description and clusterIds', async () => {
+    it('should create zone with description and clusterIds', async () => {
       const newZone = { label: zones[0].label, slug: zones[0].slug, clusterIds: clusters.map(({ id }) => id), description: faker.lorem.lines(2) }
 
       prisma.zone.create.mockResolvedValueOnce(zones[0])
@@ -73,7 +74,7 @@ describe('Test zone business', () => {
       })
       expect(linkZoneToClustersMock).toHaveBeenCalledTimes(1)
     })
-    it('Should not create zone, conflict label', async () => {
+    it('should not create zone, conflict label', async () => {
       const newZone = { label: zones[0].label, slug: zones[0].slug }
 
       prisma.zone.findUnique.mockResolvedValueOnce(zones[0])
@@ -86,7 +87,7 @@ describe('Test zone business', () => {
     })
   })
   describe('updateZone', () => {
-    it('Should filter keys and update zone', async () => {
+    it('should filter keys and update zone', async () => {
       await updateZone(zones[0].id, {
         description: '',
         label: zones[0].label,
@@ -99,13 +100,13 @@ describe('Test zone business', () => {
     })
   })
   describe('deleteZone', () => {
-    it('Should not delete zone, cluster attached', async () => {
+    it('should not delete zone, cluster attached', async () => {
       prisma.cluster.findFirst.mockResolvedValueOnce(clusters[0])
       const response = await deleteZone(zones[0].id)
       expect(response).instanceOf(BadRequest400)
       expect(prisma.cluster.delete).toHaveBeenCalledTimes(0)
     })
-    it('Should delete zone', async () => {
+    it('should delete zone', async () => {
       prisma.cluster.findFirst.mockResolvedValueOnce(undefined)
       const response = await deleteZone(zones[0].id)
       expect(response).toEqual(null)

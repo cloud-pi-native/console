@@ -1,7 +1,6 @@
 <script lang="ts" setup>
-import { type ProjectService } from '@cpn-console/shared'
-import { PluginsUpdateBody } from '@cpn-console/shared'
-import { ref, computed } from 'vue'
+import type { PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
+import { computed, ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectServiceStore } from '@/stores/project-services.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -12,7 +11,7 @@ const project = computed(() => projectStore.selectedProject)
 const snackbarStore = useSnackbarStore()
 
 const services = ref<ProjectService[]>([])
-const reload = async () => {
+async function reload() {
   if (!project.value) return
   const resServices = await projectServiceStore.getProjectServices(project.value.id)
   services.value = []
@@ -21,14 +20,14 @@ const reload = async () => {
   services.value = filteredServices
 }
 
-const save = async (data: PluginsUpdateBody) => {
+async function save(data: PluginsUpdateBody) {
   if (!project.value) return
 
   snackbarStore.isWaitingForResponse = true
   try {
     await projectServiceStore.updateProjectServices(data, project.value.id)
     snackbarStore.setMessage('Paramètres sauvegardés', 'success')
-  } catch (error) {
+  } catch (_error) {
     snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
   }
   await reload()
@@ -38,7 +37,6 @@ const save = async (data: PluginsUpdateBody) => {
 onBeforeMount(() => {
   reload()
 })
-
 </script>
 
 <template>

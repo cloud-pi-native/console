@@ -1,5 +1,5 @@
 import { Gitlab } from '@gitbeaker/rest'
-import { Gitlab as IGitlab } from '@gitbeaker/core'
+import type { Gitlab as IGitlab } from '@gitbeaker/core'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 
@@ -17,17 +17,19 @@ const config: {
   projectsRootDir: undefined,
 }
 
-export const getGroupRootId = async (): Promise<number> => {
+export async function getGroupRootId(): Promise<number> {
   const gitlabApi = getApi()
   const projectRootDir = getConfig().projectsRootDir
-  if (groupRootId) return groupRootId
+  if (groupRootId)
+    return groupRootId
   const groupRootSearch = await gitlabApi.Groups.search(projectRootDir)
   groupRootId = (groupRootSearch.find(grp => grp.full_path === projectRootDir))?.id
-  if (!groupRootId) throw Error(`Gitlab inaccessible, impossible de trouver le groupe ${projectRootDir}`)
+  if (!groupRootId)
+    throw new Error(`Gitlab inaccessible, impossible de trouver le groupe ${projectRootDir}`)
   return groupRootId
 }
 
-export const getApi = (): IGitlab => {
+export function getApi(): IGitlab {
   if (!api) {
     const gitlabUrl = removeTrailingSlash(requiredEnv('GITLAB_URL'))
     const gitlabToken = requiredEnv('GITLAB_TOKEN')
@@ -38,11 +40,11 @@ export const getApi = (): IGitlab => {
   return api
 }
 
-export const getConfig = (): {
+export function getConfig(): {
   token: string
   url: string
   projectsRootDir: string
-} => {
+} {
   if (!config.projectsRootDir || !config.token || !config.url) {
     config.token = requiredEnv('GITLAB_TOKEN')
     config.url = removeTrailingSlash(requiredEnv('GITLAB_URL'))
@@ -55,7 +57,7 @@ export const getConfig = (): {
 export const infraAppsRepoName = 'infra-apps'
 export const internalMirrorRepoName = 'mirror'
 
-export type VaultSecrets = {
+export interface VaultSecrets {
   GITLAB: {
     ORGANIZATION_NAME: string
     PROJECT_NAME: string
@@ -64,8 +66,9 @@ export type VaultSecrets = {
   }
 }
 
-export const cleanGitlabError = <T>(error: T): T => {
+export function cleanGitlabError<T>(error: T): T {
   if (error instanceof GitbeakerRequestError && error.cause?.description) {
+    // eslint-disable-next-line regexp/no-super-linear-backtracking
     error.cause.description = error.cause.description.replaceAll(/\/\/(.*):(.*)@/g, '//MASKED:MASKED@')
   }
   return error

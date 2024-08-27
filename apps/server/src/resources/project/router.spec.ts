@@ -1,11 +1,12 @@
 import { faker } from '@faker-js/faker'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { PROJECT_PERMS, projectContract, ProjectV2 } from '@cpn-console/shared'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ProjectV2 } from '@cpn-console/shared'
+import { PROJECT_PERMS, projectContract } from '@cpn-console/shared'
 import app from '../../app.js'
-import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
 import { getProjectMockInfos, getRandomRequestor, getUserMockInfos } from '../../utils/mocks.js'
 import { BadRequest400 } from '../../utils/errors.js'
+import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -17,7 +18,7 @@ const businessSyncMock = vi.spyOn(business, 'replayHooks')
 const businessGetSecretsMock = vi.spyOn(business, 'getProjectSecrets')
 const businessGenerateDataMock = vi.spyOn(business, 'generateProjectsData')
 
-describe('Test projectContract', () => {
+describe('test projectContract', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
@@ -47,7 +48,7 @@ describe('Test projectContract', () => {
   }
   describe('check unauthorized user on project behaviour', () => {
     // UPDATE
-    it('On Update', async () => {
+    it('on Update', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -62,7 +63,7 @@ describe('Test projectContract', () => {
       expect(response.json()).toEqual({ message: 'Not Found' })
     })
 
-    it('On Update without enough perms', async () => {
+    it('on Update without enough perms', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.LIST_ENVIRONMENTS })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -78,7 +79,7 @@ describe('Test projectContract', () => {
     })
 
     // REPLAY
-    it('On replay', async () => {
+    it('on replay', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -93,7 +94,7 @@ describe('Test projectContract', () => {
     })
 
     // SECRETS
-    it('On replay', async () => {
+    it('on see secret', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -108,7 +109,7 @@ describe('Test projectContract', () => {
     })
 
     // ARCHIVE
-    it('On archive', async () => {
+    it('on archive', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -124,7 +125,7 @@ describe('Test projectContract', () => {
   })
   describe('check locked project behaviour', () => {
     // UPDATE
-    it('On Update as manager', async () => {
+    it('on Update as manager', async () => {
       const projectPerms = getProjectMockInfos({ projectLocked: true })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -137,7 +138,7 @@ describe('Test projectContract', () => {
       expect(businessUpdateMock).toHaveBeenCalledTimes(0)
       expect(response.statusCode).toEqual(403)
     })
-    it('On Update as admin and locked to false', async () => {
+    it('on Update as admin and locked to false', async () => {
       const projectPerms = getProjectMockInfos({ projectLocked: true, projectPermissions: 0n })
       const user = getUserMockInfos(true, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -151,7 +152,7 @@ describe('Test projectContract', () => {
       expect(businessUpdateMock).toHaveBeenCalledTimes(1)
       expect(response.statusCode).toEqual(200)
     })
-    it('On Update as admin and locked unset', async () => {
+    it('on Update as admin and locked unset', async () => {
       const projectPerms = getProjectMockInfos({ projectLocked: true, projectPermissions: 0n })
       const user = getUserMockInfos(true, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -167,7 +168,7 @@ describe('Test projectContract', () => {
     })
 
     // REPLAY
-    it('On replay as manager', async () => {
+    it('on replay as manager', async () => {
       const projectPerms = getProjectMockInfos({ projectLocked: true })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -181,7 +182,7 @@ describe('Test projectContract', () => {
     })
 
     // ARCHIVE
-    it('On archive as manager', async () => {
+    it('on archive as manager', async () => {
       const projectPerms = getProjectMockInfos({ projectLocked: true, projectPermissions: PROJECT_PERMS.MANAGE })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -197,7 +198,7 @@ describe('Test projectContract', () => {
   })
   describe('check archived project behaviour', () => {
     // UPDATE
-    it('On Update as manager', async () => {
+    it('on Update as manager', async () => {
       const projectPerms = getProjectMockInfos({ projectStatus: 'archived' })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -210,7 +211,7 @@ describe('Test projectContract', () => {
       expect(businessUpdateMock).toHaveBeenCalledTimes(0)
       expect(response.statusCode).toEqual(403)
     })
-    it('On Update as admin', async () => {
+    it('on Update as admin', async () => {
       const projectPerms = getProjectMockInfos({ projectStatus: 'archived', projectPermissions: 0n })
       const user = getUserMockInfos(true, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -226,7 +227,7 @@ describe('Test projectContract', () => {
     })
 
     // REPLAY
-    it('On replay as manager', async () => {
+    it('on replay as manager', async () => {
       const projectPerms = getProjectMockInfos({ projectStatus: 'archived' })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -239,7 +240,7 @@ describe('Test projectContract', () => {
       expect(response.statusCode).toEqual(403)
     })
 
-    it('On see secrets as manager and admin', async () => {
+    it('on see secrets as manager and admin', async () => {
       const projectPerms = getProjectMockInfos({ projectStatus: 'archived', projectPermissions: PROJECT_PERMS.MANAGE })
       const user = getUserMockInfos(true, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -253,7 +254,7 @@ describe('Test projectContract', () => {
     })
 
     // ARCHIVE
-    it('On archive as manager', async () => {
+    it('on archive as manager', async () => {
       const projectPerms = getProjectMockInfos({ projectStatus: 'archived', projectPermissions: PROJECT_PERMS.MANAGE })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -268,7 +269,7 @@ describe('Test projectContract', () => {
     })
   })
   describe('listProjects', () => {
-    it('Should return list of projects', async () => {
+    it('should return list of projects', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
       const projects = []
@@ -281,11 +282,11 @@ describe('Test projectContract', () => {
       expect(response.json()).toEqual(projects)
       expect(response.statusCode).toEqual(200)
     })
-    it('Should return 400 for non-admin with "all" filter', async () => {
+    it('should return 400 for non-admin with "all" filter', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
       const response = await app.inject()
-        .get(projectContract.listProjects.path + '?filter=all')
+        .get(`${projectContract.listProjects.path}?filter=all`)
         .end()
 
       expect(response.statusCode).toEqual(400)
@@ -293,7 +294,7 @@ describe('Test projectContract', () => {
   })
 
   describe('createProject', () => {
-    it('Should create and return project for authorized user', async () => {
+    it('should create and return project for authorized user', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -308,7 +309,7 @@ describe('Test projectContract', () => {
       expect(response.statusCode).toEqual(201)
     })
 
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -325,7 +326,7 @@ describe('Test projectContract', () => {
   describe('updateProject', () => {
     const projectUpdated: Partial<ProjectV2> = { description: faker.string.alpha({ length: 5 }) }
 
-    it('Should update and return project for authorized user', async () => {
+    it('should update and return project for authorized user', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -340,7 +341,7 @@ describe('Test projectContract', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('Should not update ownerId if not permitted', async () => {
+    it('should not update ownerId if not permitted', async () => {
       const userDetails = getRandomRequestor()
       const projectPerms = getProjectMockInfos({ projectOwnerId: faker.string.uuid(), projectPermissions: PROJECT_PERMS.MANAGE })
       const projectUpdated = { ownerId: faker.string.uuid(), description: faker.lorem.words() }
@@ -358,7 +359,7 @@ describe('Test projectContract', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('Should update ownerId and return project', async () => {
+    it('should update ownerId and return project', async () => {
       const requestor = getRandomRequestor()
       const projectPerms = getProjectMockInfos({ projectOwnerId: requestor.id, projectPermissions: PROJECT_PERMS.MANAGE })
       const projectUpdated = { ownerId: faker.string.uuid(), description: faker.lorem.words() }
@@ -376,7 +377,7 @@ describe('Test projectContract', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -392,7 +393,7 @@ describe('Test projectContract', () => {
   })
 
   describe('archiveProject', () => {
-    it('Should archive project for authorized user', async () => {
+    it('should archive project for authorized user', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -406,7 +407,7 @@ describe('Test projectContract', () => {
       expect(response.statusCode).toEqual(204)
     })
 
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -417,7 +418,7 @@ describe('Test projectContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return projects data for admin', async () => {
+    it('should return projects data for admin', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.LIST_ENVIRONMENTS })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -432,7 +433,7 @@ describe('Test projectContract', () => {
   })
 
   describe('getProjectSecrets', () => {
-    it('Should return project secrets for authorized user', async () => {
+    it('should return project secrets for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.SEE_SECRETS })
       const user = getUserMockInfos(true, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -448,7 +449,7 @@ describe('Test projectContract', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE })
       const user = getUserMockInfos(true, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -460,7 +461,7 @@ describe('Test projectContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 for unauthorized access to secrets', async () => {
+    it('should return 403 for unauthorized access to secrets', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.LIST_REPOSITORIES })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -474,7 +475,7 @@ describe('Test projectContract', () => {
   })
 
   describe('replayHooksForProject', () => {
-    it('Should replay hooks for authorized user', async () => {
+    it('should replay hooks for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE })
       const user = getUserMockInfos(true, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -489,7 +490,7 @@ describe('Test projectContract', () => {
       expect(response.statusCode).toEqual(204)
     })
 
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE })
       const user = getUserMockInfos(true, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -501,7 +502,7 @@ describe('Test projectContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 for unauthorized access to replay hooks', async () => {
+    it('should return 403 for unauthorized access to replay hooks', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.LIST_ENVIRONMENTS })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -514,7 +515,7 @@ describe('Test projectContract', () => {
   })
 
   describe('getProjectsData', () => {
-    it('Should return projects data for admin', async () => {
+    it('should return projects data for admin', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -529,7 +530,7 @@ describe('Test projectContract', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('Should return 403 for non-admin user', async () => {
+    it('should return 403 for non-admin user', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 

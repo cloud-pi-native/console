@@ -1,11 +1,12 @@
-import { Pinia, createPinia, setActivePinia } from 'pinia'
+import type { Pinia } from 'pinia'
+import { createPinia, setActivePinia } from 'pinia'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
-import StageForm from '@/components/StageForm.vue'
 import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomStage, repeatFn } from '@cpn-console/test-utils'
+import StageForm from '@/components/StageForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 describe('StageForm.vue', () => {

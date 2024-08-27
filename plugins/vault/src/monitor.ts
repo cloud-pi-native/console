@@ -1,4 +1,4 @@
-import { type MonitorInfos, MonitorStatus, requiredEnv, Monitor } from '@cpn-console/shared'
+import { Monitor, type MonitorInfos, MonitorStatus, requiredEnv } from '@cpn-console/shared'
 import axios from 'axios'
 
 const vaultStatusCode = [200, 429, 472, 473, 501, 503]
@@ -14,7 +14,7 @@ type VaultRes = {
   version: string
 } | undefined
 
-const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
+async function monitor(instance: Monitor): Promise<MonitorInfos> {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
     const res = await axios.get(`${requiredEnv('VAULT_URL')}v1/sys/health?standbyok=true`, {

@@ -1,8 +1,8 @@
+import type { Prisma, SystemSetting } from '@prisma/client'
 import prisma from '@/prisma.js'
-import { Prisma, SystemSetting } from '@prisma/client'
 
-export const upsertSystemSetting = (newSystemSetting: SystemSetting) =>
-  prisma.systemSetting.upsert({
+export function upsertSystemSetting(newSystemSetting: SystemSetting) {
+  return prisma.systemSetting.upsert({
     create: {
       ...newSystemSetting,
     },
@@ -13,5 +13,6 @@ export const upsertSystemSetting = (newSystemSetting: SystemSetting) =>
       key: newSystemSetting.key,
     },
   })
+}
 
 export const getSystemSettings = (where?: Prisma.SystemSettingWhereInput) => prisma.systemSetting.findMany({ where })

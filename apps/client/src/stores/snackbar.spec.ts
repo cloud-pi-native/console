@@ -1,8 +1,8 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
 import { useSnackbarStore } from './snackbar.js'
 
-describe('Snackbar Store', () => {
+describe('snackbar Store', () => {
   beforeEach(() => {
     vi.clearAllTimers()
     vi.useFakeTimers()
@@ -11,7 +11,7 @@ describe('Snackbar Store', () => {
     setActivePinia(createPinia())
   })
 
-  it('Should display message in snackbar with default values', () => {
+  it('should display message in snackbar with default values', () => {
     const snackbarStore = useSnackbarStore()
 
     expect(snackbarStore.message).toBeUndefined()
@@ -34,7 +34,7 @@ describe('Snackbar Store', () => {
     expect(vi.getTimerCount()).toEqual(0)
   })
 
-  it('Should display message in snackbar with custom timer', () => {
+  it('should display message in snackbar with custom timer', () => {
     const snackbarStore = useSnackbarStore()
 
     expect(snackbarStore.message).toBeUndefined()
@@ -62,7 +62,7 @@ describe('Snackbar Store', () => {
     expect(vi.getTimerCount()).toEqual(0)
   })
 
-  it('Should display message in snackbar with custom type', () => {
+  it('should display message in snackbar with custom type', () => {
     const snackbarStore = useSnackbarStore()
 
     expect(snackbarStore.message).toBeUndefined()
@@ -81,7 +81,7 @@ describe('Snackbar Store', () => {
     expect(vi.getTimerCount()).toEqual(1)
   })
 
-  it('Should display message in snackbar and don\'t hide it if type error', () => {
+  it('should display message in snackbar and don\'t hide it if type error', () => {
     const snackbarStore = useSnackbarStore()
 
     expect(snackbarStore.message).toBeUndefined()
@@ -100,7 +100,7 @@ describe('Snackbar Store', () => {
     expect(vi.getTimerCount()).toEqual(0)
   })
 
-  it('Should display message in snackbar with custom type', () => {
+  it('should display last message in snackbar', () => {
     const snackbarStore = useSnackbarStore()
 
     expect(snackbarStore.message).toBeUndefined()
@@ -129,7 +129,7 @@ describe('Snackbar Store', () => {
     expect(vi.getTimerCount()).toEqual(1)
   })
 
-  it('Should hide message in snackbar', () => {
+  it('should hide message in snackbar', () => {
     const snackbarStore = useSnackbarStore()
 
     expect(snackbarStore.message).toBeUndefined()

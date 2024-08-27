@@ -1,7 +1,7 @@
 import { getApi } from './utils.js'
-import { Project as HarborProject, Quota } from './api/Api.js'
+import type { Project as HarborProject, Quota } from './api/Api.js'
 
-export const createProject = async (projectName: string, storageLimit: number = -1): Promise<HarborProject> => {
+export async function createProject(projectName: string, storageLimit: number = -1): Promise<HarborProject> {
   const api = getApi()
   const existingProject = await api.projects.getProject(projectName, {
     headers: {
@@ -41,7 +41,7 @@ export const createProject = async (projectName: string, storageLimit: number = 
   return newProject.data
 }
 
-const removeRepositories = async (projectName: string) => {
+async function removeRepositories(projectName: string) {
   const api = getApi()
   const repositories = await api.projects.listRepositories(projectName, { page_size: 100 })
 
@@ -55,7 +55,7 @@ const removeRepositories = async (projectName: string) => {
   }
 }
 
-export const deleteProject = async (projectName: string) => {
+export async function deleteProject(projectName: string) {
   const api = getApi()
   const project = await api.projects.getProject(projectName, {
     validateStatus: status => [200, 404].includes(status),

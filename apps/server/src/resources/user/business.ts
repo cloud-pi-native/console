@@ -1,10 +1,10 @@
 import type { Prisma, User } from '@prisma/client'
+import type { userContract } from '@cpn-console/shared'
 import { getMatchingUsers as getMatchingUsersQuery, getUsers as getUsersQuery } from '@/resources/queries-index.js'
-import { userContract } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
-import { UserDetails } from '@/types/index.js'
+import type { UserDetails } from '@/types/index.js'
 
-export const getUsers = (query: typeof userContract.getAllUsers.query._type) => {
+export function getUsers(query: typeof userContract.getAllUsers.query._type) {
   const where: Prisma.UserWhereInput = {}
   if (query.adminRoleId) {
     where.adminRoleIds = { has: query.adminRoleId }
@@ -12,7 +12,7 @@ export const getUsers = (query: typeof userContract.getAllUsers.query._type) => 
   return getUsersQuery(where)
 }
 
-export const getMatchingUsers = async (query: typeof userContract.getMatchingUsers.query._type) => {
+export async function getMatchingUsers(query: typeof userContract.getMatchingUsers.query._type) {
   const AND: Prisma.UserWhereInput[] = []
   if (query.notInProjectId) {
     AND.push({ ProjectMembers: { none: { projectId: query.notInProjectId } } })
@@ -36,7 +36,7 @@ export const getMatchingUsers = async (query: typeof userContract.getMatchingUse
   })
 }
 
-export const patchUsers = async (users: typeof userContract.patchUsers.body._type) => {
+export async function patchUsers(users: typeof userContract.patchUsers.body._type) {
   for (const user of users) {
     await prisma.user.update({
       where: {

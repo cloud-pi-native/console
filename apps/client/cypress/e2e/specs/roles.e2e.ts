@@ -1,4 +1,4 @@
-import { Environment, ProjectPermsKeys, ProjectRole, ProjectV2, Repo, User } from '@cpn-console/shared'
+import type { Environment, ProjectPermsKeys, ProjectRole, ProjectV2, Repo, User } from '@cpn-console/shared'
 import { getModel, getModelById } from '../support/func.js'
 
 const roles: ProjectRole[] = getModel('projectRole')
@@ -55,7 +55,7 @@ describe('Project roles', () => {
         .should('be.enabled')
         .click()
       cy.wait('@createRole')
-      .its('response.statusCode').should('match', /^20\d$/)
+        .its('response.statusCode').should('match', /^20\d$/)
       cy.getByDataTestid('snackbar').within(() => {
         cy.get('p').should('contain', 'Rôle ajouté')
       })

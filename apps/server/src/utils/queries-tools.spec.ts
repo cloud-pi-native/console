@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest'
-import { filterObjectByKeys } from './queries-tools.js'
+import { describe, expect, it } from 'vitest'
 import { exclude } from '@cpn-console/shared'
+import { filterObjectByKeys } from './queries-tools.js'
 
 describe('queries-tools', () => {
-  it('Should return a filtered object', () => {
+  it('should return a filtered object (filterObjectByKeys)', () => {
     const initial = {
       id: 'thisIsAnId',
       name: 'alsoKeepThisKey',
@@ -19,7 +19,7 @@ describe('queries-tools', () => {
     expect(transformed).toMatchObject(desired)
   })
 
-  it('Should return a filtered object', () => {
+  it('should return a filtered object (exclude)', () => {
     const initial = {
       id: 'thisIsAnId',
       name: 'myProjectName',

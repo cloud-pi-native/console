@@ -4,7 +4,7 @@ export * from './hook-project.js'
 export * from './hook-user.js'
 
 export type Organization = string
-export type PartialEnvironment = { environment: string, stage: string, clusterLabel: string }
+export interface PartialEnvironment { environment: string, stage: string, clusterLabel: string }
 export type InternalRepoName = string
 export type ExternalRepoUrl = string
 export type ExternalUserName = string
@@ -12,13 +12,13 @@ export type ExternalToken = string
 export type IsPrivate = boolean
 export type IsInfra = boolean
 export type InternalUrl = string
-export type UserObject = {
+export interface UserObject {
   firstName: string
   lastName: string
   id: string
   email: string
 }
-export type EnvironmentObject = {
+export interface EnvironmentObject {
   id: string
   name: string
   createdAt: Date
@@ -41,12 +41,12 @@ export interface KubeCluster {
   readonly tlsServerName?: string
 }
 
-export type ZoneObject = {
+export interface ZoneObject {
   id: string
   slug: string
 }
 
-export type ClusterObject = {
+export interface ClusterObject {
   id: string
   label: string
   privacy: 'public' | 'dedicated'

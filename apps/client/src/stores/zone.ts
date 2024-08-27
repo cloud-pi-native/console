@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import {
-  type Zone,
   type CreateZoneBody,
   type UpdateZoneBody,
+  type Zone,
   resourceListToDict,
 } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'

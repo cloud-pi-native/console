@@ -1,9 +1,9 @@
 {
   "name": "@cpn-console/client",
-  "version": "8.10.1",
-  "description": "cpn-console client",
-  "private": false,
   "type": "module",
+  "version": "8.10.1",
+  "private": false,
+  "description": "cpn-console client",
   "scripts": {
     "build": "run-s type-check build-only",
     "build-only": "vite --mode=production build",
@@ -47,6 +47,11 @@
     "vue-router": "^4.4.0",
     "vue3-json-viewer": "^2.2.2"
   },
+  "optionalDependencies": {
+    "@cypress/vue": "^6.0.1",
+    "cypress": "^13.12.0",
+    "cypress-vite": "^1.5.0"
+  },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/test-utils": "workspace:^",
@@ -76,11 +81,6 @@
     "vitest": "^1.6.0",
     "vue-eslint-parser": "^9.4.3",
     "vue-tsc": "^2.0.22"
-  },
-  "optionalDependencies": {
-    "@cypress/vue": "^6.0.1",
-    "cypress": "^13.12.0",
-    "cypress-vite": "^1.5.0"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",

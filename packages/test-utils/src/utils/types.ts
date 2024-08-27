@@ -1,4 +1,4 @@
-export type Organization = {
+export interface Organization {
   id: string
   name: string
   label: string
@@ -8,7 +8,7 @@ export type Organization = {
   updatedAt?: Date | string
 }
 
-export type Repository = {
+export interface Repository {
   id: string
   projectId: string
   internalRepoName: string
@@ -21,7 +21,7 @@ export type Repository = {
   externalToken?: string
 }
 
-export type User = {
+export interface User {
   id: string
   email: string
   firstName: string
@@ -30,7 +30,7 @@ export type User = {
   createdAt?: Date
 }
 
-export type Role = {
+export interface Role {
   userId: string
   projectId: string
   role: string
@@ -39,12 +39,12 @@ export type Role = {
   user?: User
 }
 
-export type Member = {
+export interface Member {
   userId: User['id']
   role: string
 }
 
-export type Permission = {
+export interface Permission {
   id: string
   environmentId: string
   userId: string
@@ -54,7 +54,7 @@ export type Permission = {
   createdAt?: Date
 }
 
-export type Cluster = {
+export interface Cluster {
   id: string
   label: string
   infos?: string
@@ -77,7 +77,7 @@ export type Cluster = {
   createdAt?: Date
 }
 
-export type Environment = {
+export interface Environment {
   id: string
   name: string
   projectId: string
@@ -90,7 +90,7 @@ export type Environment = {
   createdAt?: Date
 }
 
-export type Log = {
+export interface Log {
   id: string
   action: string
   userId: string
@@ -105,7 +105,7 @@ export type Log = {
   requestId: null
 }
 
-export type Project = {
+export interface Project {
   id: string
   name: string
   organizationId: string

@@ -1,8 +1,7 @@
-import process from 'node:process'
 import { getPreparedApp } from './prepare-app.js'
 import { closeConnections } from './connect.js'
 
-import { port, isDev, isTest, isCI, isDevSetup, isProd } from './utils/env.js'
+import { isCI, isDev, isDevSetup, isProd, isTest, port } from './utils/env.js'
 
 const app = await getPreparedApp()
 
@@ -15,7 +14,7 @@ try {
 
 app.log.debug({ isDev, isTest, isCI, isDevSetup, isProd })
 
-export const exitGracefully = async (error?: Error) => {
+export async function exitGracefully(error?: Error) {
   if (error instanceof Error) {
     app.log.error(error)
   }
@@ -26,11 +25,11 @@ export const exitGracefully = async (error?: Error) => {
   process.exit(error instanceof Error ? 1 : 0)
 }
 
-const logExitCode = (code: number) => {
+function logExitCode(code: number) {
   console.log(`received signal: ${code}`)
 }
 
-const logUnhandledRejection = (reason: unknown, promise: Promise<unknown>) => {
+function logUnhandledRejection(reason: unknown, promise: Promise<unknown>) {
   console.log('Unhandled Rejection at:', promise, 'reason:', reason)
 }
 

@@ -1,17 +1,17 @@
 import fp from 'fastify-plugin'
-import { User } from '@cpn-console/test-utils'
+import type { User } from '@cpn-console/test-utils'
 
 let requestor: User
 
-export const setRequestor = (user: User) => {
+export function setRequestor(user: User) {
   requestor = user
 }
 
-export const getRequestor = () => {
+export function getRequestor() {
   return requestor
 }
 
-export const mockSessionPlugin = async () => {
+export async function mockSessionPlugin() {
   const sessionPlugin = (app, opt, next) => {
     app.addHook('onRequest', (req, res, next) => {
       req.session = { user: getRequestor() }

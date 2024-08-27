@@ -1,5 +1,6 @@
-import { Organization } from '@cpn-console/shared'
+import type { Organization } from '@cpn-console/shared'
 import { getModel, getModelById } from './func.js'
+
 const organizations = getModel('organization')
 const orgMi = organizations.find(({ name }) => name === 'mi') as Organization
 

@@ -1,6 +1,6 @@
 global:
   env:
-    NODE_ENV: "production"
+    NODE_ENV: production
   keycloak:
     domain: keycloak.dso.local
     realm: cloud-pi-native
@@ -27,9 +27,9 @@ config:
 
 ingress:
   enabled: true
-  className: "traefik"
+  className: traefik
   hosts:
-    - "console.dso.local"
+    - console.dso.local
   tls: []
 
 server:
@@ -41,8 +41,8 @@ server:
     - name: wait-for-keycloak
       image: docker.io/wbitt/network-multitool:alpine-minimal
       command:
-        - "/bin/sh"
-        - "-c"
+        - /bin/sh
+        - -c
       args:
         - "while [ $(curl -sw '%{http_code}' http://$KEYCLOAK_DOMAIN -o /dev/null) -ne 200 ]; do sleep 3; echo 'Waiting for keycloak...'; done"
       env:
@@ -64,24 +64,24 @@ client:
 
 postgresql:
   enabled: true
-  architecture: "standalone"
+  architecture: standalone
   auth:
-    postgresPassword: "admin"
-    username: "admin"
-    password: "admin"
-    database: "dso-console-db"
+    postgresPassword: admin
+    username: admin
+    password: admin
+    database: dso-console-db
   primary:
     persistence:
-      size: "1Gi"
+      size: 1Gi
 
 keycloak:
   enabled: true
   auth:
-    adminUser: "admin"
-    adminPassword: "admin"
+    adminUser: admin
+    adminPassword: admin
   ingress:
     enabled: true
-    hostname: "keycloak.dso.local"
+    hostname: keycloak.dso.local
     tls: false
   production: false
   tls:
@@ -106,15 +106,15 @@ keycloak:
       name: extensions
   postgresql:
     enabled: true
-    architecture: "standalone"
+    architecture: standalone
     auth:
-      postgresPassword: "admin"
-      username: "admin"
-      password: "admin"
-      database: "keycloak"
+      postgresPassword: admin
+      username: admin
+      password: admin
+      database: keycloak
     primary:
       persistence:
-        size: "1Gi"
+        size: 1Gi
   extraEnvVars:
     - name: DSFR_THEME_HOME_URL
       value: http://console.dso.local

@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { ClusterPrivacy, type Environment, ProjectAuthorized, projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { ClusterPrivacy, ProjectAuthorized, projectIsLockedInfo, sortArrByObjKeyAsc, type Environment } from '@cpn-console/shared'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-type EnvironmentTile = {
+interface EnvironmentTile {
   id: string
   title: string
   data: Environment
@@ -30,7 +30,7 @@ const projectClustersIds = computed(() => ([
   ...projectStore.selectedProject?.clusterIds ?? [],
 ]))
 
-const setEnvironmentsTiles = async () => {
+async function setEnvironmentsTiles() {
   environmentsTiles.value = sortArrByObjKeyAsc(projectEnvironmentStore.environments, 'name')
     .map(environment => ({
       id: environment.id,
@@ -39,7 +39,7 @@ const setEnvironmentsTiles = async () => {
     }) as unknown as EnvironmentTile)
 }
 
-const setSelectedEnvironment = (environment?: Environment) => {
+function setSelectedEnvironment(environment?: Environment) {
   if (selectedEnvironment.value?.id === environment?.id) {
     selectedEnvironment.value = undefined
     return
@@ -48,17 +48,17 @@ const setSelectedEnvironment = (environment?: Environment) => {
   isNewEnvironmentForm.value = false
 }
 
-const showNewEnvironmentForm = () => {
+function showNewEnvironmentForm() {
   isNewEnvironmentForm.value = !isNewEnvironmentForm.value
   selectedEnvironment.value = undefined
 }
 
-const cancel = () => {
+function cancel() {
   isNewEnvironmentForm.value = false
   selectedEnvironment.value = undefined
 }
 
-const addEnvironment = async (environment: Omit<Environment, 'id' | 'projectId'>) => {
+async function addEnvironment(environment: Omit<Environment, 'id' | 'projectId'>) {
   snackbarStore.isWaitingForResponse = true
   if (projectStore.selectedProject && !projectStore.selectedProject.locked) {
     await projectEnvironmentStore.addEnvironmentToProject({ ...environment, projectId: projectStore.selectedProject.id })
@@ -67,7 +67,7 @@ const addEnvironment = async (environment: Omit<Environment, 'id' | 'projectId'>
   snackbarStore.isWaitingForResponse = false
 }
 
-const putEnvironment = async (environment: Pick<Environment, 'quotaId' | 'id'>) => {
+async function putEnvironment(environment: Pick<Environment, 'quotaId' | 'id'>) {
   snackbarStore.isWaitingForResponse = true
   if (projectStore.selectedProject && !projectStore.selectedProject.locked) {
     await projectEnvironmentStore.updateEnvironment(environment.id, environment)
@@ -76,7 +76,7 @@ const putEnvironment = async (environment: Pick<Environment, 'quotaId' | 'id'>) 
   snackbarStore.isWaitingForResponse = false
 }
 
-const deleteEnvironment = async (environmentId: Environment['id']) => {
+async function deleteEnvironment(environmentId: Environment['id']) {
   snackbarStore.isWaitingForResponse = true
   await projectEnvironmentStore.deleteEnvironment(environmentId)
   setSelectedEnvironment()
@@ -174,7 +174,7 @@ const canManageEnvs = computed(() => !projectStore.selectedProject?.locked && Pr
           :is-project-locked="projectStore.selectedProject.locked"
           :can-manage="canManageEnvs"
           :all-clusters="allClusters"
-          @put-environment="(environmentUpdate: Pick<Environment, 'quotaId'>) => putEnvironment({...environmentUpdate, id: environment.id })"
+          @put-environment="(environmentUpdate: Pick<Environment, 'quotaId'>) => putEnvironment({ ...environmentUpdate, id: environment.id })"
           @delete-environment="(environmentId: Environment['id']) => deleteEnvironment(environmentId)"
           @cancel="cancel()"
         />

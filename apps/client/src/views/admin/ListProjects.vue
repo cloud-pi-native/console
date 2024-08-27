@@ -2,18 +2,8 @@
 import { onBeforeMount, ref } from 'vue'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import {
-  type PluginsUpdateBody,
-  formatDate,
-  statusDict,
-  sortArrByObjKeyAsc,
-  type ProjectV2,
-  type ProjectService,
-  type Organization,
-  type Repo,
-  type Environment,
-  projectContract,
-} from '@cpn-console/shared'
+import type { Environment, Organization, PluginsUpdateBody, ProjectService, ProjectV2, Repo, projectContract } from '@cpn-console/shared'
+import { formatDate, sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useOrganizationStore } from '@/stores/organization.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
@@ -164,7 +154,7 @@ const envRows = computed(() => {
           modelValue: quotaId,
           selectId: 'quota-select',
           options: quotaStore.quotas.filter(quota => quota.stageIds.includes(stageId)).map(quota => ({
-            text: quota.name + ' (' + quota.cpu + 'CPU, ' + quota.memory + ')',
+            text: `${quota.name} (${quota.cpu}CPU, ${quota.memory})`,
             value: quota.id,
           })),
           'onUpdate:model-value': (event: string) => updateEnvironmentQuota({ environmentId: id, quotaId: event }),
@@ -196,7 +186,7 @@ const repoRows = computed(() => {
     )
 })
 
-const getAllProjects = async () => {
+async function getAllProjects() {
   snackbarStore.isWaitingForResponse = true
   await projectStore.listProjects(filterMethods[activeFilter.value])
   tableKey.value = getRandomId('table')
@@ -204,7 +194,7 @@ const getAllProjects = async () => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const selectProject = async (projectId: string) => {
+async function selectProject(projectId: string) {
   const project = projectStore.projects.find(project => project.id === projectId)
   if (!project) return
   await Promise.all([
@@ -221,7 +211,7 @@ const selectProject = async (projectId: string) => {
   repositoriesCtKey.value = getRandomId('repository')
 }
 
-const updateEnvironmentQuota = async ({ environmentId, quotaId }: { environmentId: string, quotaId: string }) => {
+async function updateEnvironmentQuota({ environmentId, quotaId }: { environmentId: string, quotaId: string }) {
   snackbarStore.isWaitingForResponse = true
   const environment = projectEnvironmentStore.environments.find(environment => environment.id === environmentId)
   if (!environment) return
@@ -231,14 +221,14 @@ const updateEnvironmentQuota = async ({ environmentId, quotaId }: { environmentI
   snackbarStore.isWaitingForResponse = false
 }
 
-const handleProjectLocking = async (projectId: string, lock: boolean) => {
+async function handleProjectLocking(projectId: string, lock: boolean) {
   snackbarStore.isWaitingForResponse = true
   await projectStore.handleProjectLocking(projectId, lock)
   await getAllProjects()
   snackbarStore.isWaitingForResponse = false
 }
 
-const replayHooks = async (projectId: string) => {
+async function replayHooks(projectId: string) {
   snackbarStore.isWaitingForResponse = true
   await projectStore.replayHooksForProject(projectId)
   await getAllProjects()
@@ -246,7 +236,7 @@ const replayHooks = async (projectId: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const archiveProject = async (projectId: string) => {
+async function archiveProject(projectId: string) {
   if (!selectedProject.value) return
   snackbarStore.isWaitingForResponse = true
   await projectStore.archiveProject(projectId)
@@ -255,7 +245,7 @@ const archiveProject = async (projectId: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const addUserToProject = async (email: string) => {
+async function addUserToProject(email: string) {
   if (!selectedProject.value) return
   snackbarStore.isWaitingForResponse = true
   selectedProject.value.members = await projectMemberStore.addMember(selectedProject.value.id, email)
@@ -264,7 +254,7 @@ const addUserToProject = async (email: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const removeUserFromProject = async (userId: string) => {
+async function removeUserFromProject(userId: string) {
   if (!selectedProject.value) return
   snackbarStore.isWaitingForResponse = true
   if (selectedProject.value.id) {
@@ -275,7 +265,7 @@ const removeUserFromProject = async (userId: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const transferOwnerShip = async (nextOwnerId: string) => {
+async function transferOwnerShip(nextOwnerId: string) {
   if (!selectedProject.value) return
   snackbarStore.isWaitingForResponse = true
   const updatedProject = await projectStore.updateProject(selectedProject.value.id, { ownerId: nextOwnerId })
@@ -287,7 +277,7 @@ const transferOwnerShip = async (nextOwnerId: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const generateProjectsDataFile = async () => {
+async function generateProjectsDataFile() {
   file.value = new File([await projectStore.generateProjectsData()], 'dso-projects.csv', {
     type: 'text/csv;charset=utf-8',
   })
@@ -312,7 +302,7 @@ onBeforeMount(async () => {
 })
 
 const projectServices = ref<ProjectService[]>([])
-const reloadProjectServices = async (projectId: ProjectV2['id']) => {
+async function reloadProjectServices(projectId: ProjectV2['id']) {
   const resServices = await projectServiceStore.getProjectServices(projectId, 'admin')
   projectServices.value = []
   await nextTick()
@@ -320,7 +310,7 @@ const reloadProjectServices = async (projectId: ProjectV2['id']) => {
   projectServices.value = filteredServices
 }
 
-const saveProjectServices = async (data: PluginsUpdateBody) => {
+async function saveProjectServices(data: PluginsUpdateBody) {
   if (!selectedProject.value) return
 
   snackbarStore.isWaitingForResponse = true
@@ -336,13 +326,13 @@ const saveProjectServices = async (data: PluginsUpdateBody) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const untruncateDescription = (span: HTMLElement) => {
+function untruncateDescription(span: HTMLElement) {
   span.innerHTML = span.title
 
   span.setAttribute('open', 'true')
 }
-
 </script>
+
 <template>
   <div
     class="relative"
@@ -432,8 +422,8 @@ const untruncateDescription = (span: HTMLElement) => {
         />
         <DsfrButton
           data-testid="handleProjectLockingBtn"
-          :label="`${selectedProject.locked ? 'Déverrouiller': 'Verrouiller'} le projet`"
-          :icon="selectedProject.locked ? 'ri-lock-unlock-fill': 'ri-lock-fill'"
+          :label="`${selectedProject.locked ? 'Déverrouiller' : 'Verrouiller'} le projet`"
+          :icon="selectedProject.locked ? 'ri-lock-unlock-fill' : 'ri-lock-fill'"
           secondary
           @click="handleProjectLocking(selectedProject.id, !selectedProject.locked)"
         />
@@ -481,19 +471,19 @@ const untruncateDescription = (span: HTMLElement) => {
         :nav-items="[
           {
             to: `#${environmentsId}`,
-            text: '#Environnements'
+            text: '#Environnements',
           },
           {
             to: `#${repositoriesId}`,
-            text: '#Dépôts'
+            text: '#Dépôts',
           },
           {
             to: `#${membersId}`,
-            text: '#Membres'
+            text: '#Membres',
           },
           {
             to: `#${servicesId}`,
-            text: '#Services'
+            text: '#Services',
           },
         ]"
       />

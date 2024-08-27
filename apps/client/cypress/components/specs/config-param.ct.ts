@@ -3,8 +3,8 @@ import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
-import ConfigParamComponent from '@/components/ConfigParam.vue'
 import { ref } from 'vue'
+import ConfigParamComponent from '@/components/ConfigParam.vue'
 
 describe('ConfigParamComponent.vue', () => {
   it('Affiche correctement le composant avec un champ de texte', () => {

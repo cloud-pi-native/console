@@ -1,12 +1,6 @@
 import { getApi } from './utils.js'
 
-/**
- * @param {String} projectName - The name of harbor project
- * @param {String} groupName - The name of the keycloak group
- * @param {Number} accessLevel - By default 3 (guest)
- * @returns {Promise}
- */
-export const addProjectGroupMember = async (projectName: string, groupName: string, accessLevel: number = 3): Promise<any> => {
+export async function addProjectGroupMember(projectName: string, groupName: string, accessLevel: number = 3): Promise<any> {
   const api = getApi()
   const members = await api.projects.listProjectMembers(projectName)
   const member = members.data.find(m => m.entity_name === groupName)

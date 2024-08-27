@@ -1,23 +1,23 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { systemPluginContract } from '@cpn-console/shared'
 import app from '../../../app.js'
-import * as business from './business.js'
 import * as utilsController from '../../../utils/controller.js'
 import { getUserMockInfos } from '../../../utils/mocks.js'
 import { BadRequest400 } from '../../../utils/errors.js'
+import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
 const businessGetPluginsConfigMock = vi.spyOn(business, 'getPluginsConfig')
 const businessUpdatePluginConfigMock = vi.spyOn(business, 'updatePluginConfig')
 
-describe('Test systemPluginContract', () => {
+describe('test systemPluginContract', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
   describe('getPluginsConfig', () => {
-    it('Should return plugin configurations for authorized users', async () => {
+    it('should return plugin configurations for authorized users', async () => {
       const user = getUserMockInfos(true)
       const pluginsConfig = []
 
@@ -33,7 +33,7 @@ describe('Test systemPluginContract', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('Should return 403 for unauthorized users', async () => {
+    it('should return 403 for unauthorized users', async () => {
       const user = getUserMockInfos(false)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -49,7 +49,7 @@ describe('Test systemPluginContract', () => {
 
   describe('updatePluginsConfig', () => {
     const newConfig = { plugin1: { keyId: 'value' } }
-    it('Should update plugin configurations for authorized users', async () => {
+    it('should update plugin configurations for authorized users', async () => {
       const user = getUserMockInfos(true)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -64,7 +64,7 @@ describe('Test systemPluginContract', () => {
       expect(response.statusCode).toEqual(204)
     })
 
-    it('Should return 403 for unauthorized users', async () => {
+    it('should return 403 for unauthorized users', async () => {
       const user = getUserMockInfos(false)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -78,7 +78,7 @@ describe('Test systemPluginContract', () => {
       expect(response.statusCode).toEqual(403)
     })
 
-    it('Should return error if business logic fails', async () => {
+    it('should return error if business logic fails', async () => {
       const user = getUserMockInfos(true)
 
       authUserMock.mockResolvedValueOnce(user)

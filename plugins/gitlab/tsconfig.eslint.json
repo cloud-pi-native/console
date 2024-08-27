@@ -4,13 +4,13 @@
     "./**/*.ts",
     "./**/*.js",
     "./**/*.cjs",
-    "./**/*.mjs",
+    "./**/*.mjs"
   ],
   "exclude": [
     "./node_modules",
     "./dist",
     "./types",
     "./coverage",
-    "./**/*.d.ts",
+    "./**/*.d.ts"
   ]
 }

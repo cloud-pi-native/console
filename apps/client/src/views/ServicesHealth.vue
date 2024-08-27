@@ -1,12 +1,12 @@
 <script  lang="ts" setup>
-import { useServiceStore, alertTypeMapper } from '@/stores/services-monitor.js'
-import { ref, onBeforeMount, type Ref } from 'vue'
+import { type Ref, onBeforeMount, ref } from 'vue'
+import { alertTypeMapper, useServiceStore } from '@/stores/services-monitor.js'
 
 const serviceStore = useServiceStore()
 
 const isUpdating: Ref<boolean> = ref(true)
 
-const checkServicesHealth = async () => {
+async function checkServicesHealth() {
   isUpdating.value = true
   await serviceStore.checkServicesHealth()
   isUpdating.value = false

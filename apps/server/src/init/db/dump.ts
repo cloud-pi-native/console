@@ -7,10 +7,10 @@
  * cut/paste to packages/test-utils/src/imports/data.ts
  */
 
-import prisma from '@/prisma.js'
-import { writeFileSync } from 'fs'
-import { associations, manyToManyRelation, modelKeys, models, resourceListToDict } from './utils.js'
+import { writeFileSync } from 'node:fs'
 import { Prisma } from '@prisma/client'
+import { associations, manyToManyRelation, modelKeys, models, resourceListToDict } from './utils.js'
+import prisma from '@/prisma.js'
 
 const Models = resourceListToDict(Prisma.dmmf.datamodel.models)
 

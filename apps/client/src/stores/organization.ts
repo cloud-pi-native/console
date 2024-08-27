@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import {
-  type Organization,
-  type CreateOrganizationBody,
-  type UpdateOrganizationBody,
-  resourceListToDict,
+import type {
+  CreateOrganizationBody,
+  Organization,
+  UpdateOrganizationBody,
   organizationContract,
+} from '@cpn-console/shared'
+import {
+  resourceListToDict,
 } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
