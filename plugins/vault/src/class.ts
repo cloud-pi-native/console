@@ -86,7 +86,7 @@ export class VaultProjectApi extends PluginApi {
         validateStatus: status => (options.throwIfNoEntry ? [200] : [200, 404]).includes(status),
       },
     )
-    return await response.data.data
+    return response.data.data
   }
 
   public async write(body: object, path: string = '/') {

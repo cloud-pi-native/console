@@ -164,7 +164,7 @@ model Repository {
   projectId        String   @db.Uuid
   internalRepoName String
   externalRepoUrl  String
-  externalUserName String?
+  externalUserName String   @default("")
   isInfra          Boolean  @default(false)
   isPrivate        Boolean  @default(false)
   createdAt        DateTime @default(now())
@@ -204,7 +204,7 @@ model Zone {
 }
 
 model SystemSetting {
-  key   String @unique @id
+  key   String @id @unique
   value String
 }
 

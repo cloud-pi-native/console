@@ -1,6 +1,5 @@
 import { type Pinia, createPinia, setActivePinia } from 'pinia'
 import { createRandomDbSetup } from '@cpn-console/test-utils'
-import { allOrganizations } from '@cpn-console/shared'
 
 import '@gouvminint/vue-dsfr/styles'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
@@ -20,30 +19,8 @@ describe('RepoForm.vue', () => {
     setActivePinia(pinia)
   })
 
-  it.skip('Should mount a new repo RepoForm', { browser: '!firefox' }, () => {
-    cy.intercept('GET', '/api/v1/organizations', allOrganizations)
-    cy.intercept('POST', '/api/v1/ci-files', {
-      statusCode: 201,
-      body: {
-        content: {
-          'gitlab-ci-dso': 'gitlab-ci file',
-          node: 'node file',
-          vault: 'vault file',
-          rules: 'rules file',
-          docker: 'docker file',
-        },
-      },
-    })
-
+  it('Should mount a new repo RepoForm', () => {
     const props = {
-      repo: {
-        internalRepoName: 'candilib',
-        externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
-        isPrivate: true,
-        isInfra: false,
-        externalUserName: 'clairenlet',
-        externalToken: 'eddddsqsq',
-      },
       canManage: true,
     }
 
@@ -53,48 +30,46 @@ describe('RepoForm.vue', () => {
 
     cy.mount(RepoForm, { props })
 
-    cy.get('h1').should('contain', 'Ajouter un dépôt au projet')
+    cy.get('h2').should('contain', 'Ajouter un dépôt au projet')
     cy.getByDataTestid('repoFieldset').should('have.length', 1)
-    cy.get('select#type-language-select').should('not.be.visible')
-    cy.getByDataTestid('internalRepoNameInput').should('have.value', props.repo.internalRepoName)
-    cy.getByDataTestid('externalRepoUrlInput').should('have.value', props.repo.externalRepoUrl)
-    cy.getByDataTestid('input-checkbox-privateRepoCbx').should('be.checked')
-    cy.getByDataTestid('externalUserNameInput').should('have.value', props.repo.externalUserName)
-    cy.getByDataTestid('externalTokenInput').should('have.value', props.repo.externalToken)
-    cy.getByDataTestid('input-checkbox-infraRepoCbx').should('not.be.checked')
-    cy.getByDataTestid('addRepoBtn').should('be.enabled')
-    cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
-    cy.getByDataTestid('input-checkbox-privateRepoCbx').uncheck({ force: true })
+    // Case 1 : no Git source
+    cy.getByDataTestid('internalRepoNameInput')
+      .should('have.value', '')
+      .type('candilib')
+    cy.getByDataTestid('externalRepoUrlInput').should('have.value', '')
+    cy.getByDataTestid('input-checkbox-privateRepoCbx').should('not.exist')
     cy.getByDataTestid('externalUserNameInput').should('not.exist')
     cy.getByDataTestid('externalTokenInput').should('not.exist')
+    cy.getByDataTestid('input-checkbox-infraRepoCbx')
+      .should('not.be.checked')
+      .and('be.enabled')
     cy.getByDataTestid('addRepoBtn').should('be.enabled')
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
-    cy.getByDataTestid('gitlabCIAccordion').click()
-    cy.get('select#type-language-select').should('be.visible')
-      .select('node')
-    cy.getByDataTestid('nodeVersionInput').type('20.16.0')
-    cy.getByDataTestid('nodeInstallInput').type('npm install')
-    cy.getByDataTestid('nodeBuildInput').type('npm build')
-    cy.getByDataTestid('workingDirInput').type('./')
-    cy.getByDataTestid('generateCIBtn').click()
-    cy.getByDataTestid('generatedCI').should('be.visible')
-    cy.getByDataTestid('zip-download-link').should('contain', 'Télécharger tous les fichiers')
-    cy.getByDataTestid('copy-gitlab-ci-dso-ContentBtn').click()
-      .window().then((win) => {
-        win.navigator.clipboard.readText().then((text) => {
-          expect(text).to.eq('gitlab-ci file')
-        })
-      })
-    cy.get('.fr-link--download').first()
-      .find('span').should(($span) => {
-        const text = $span.text()
-        expect(text).to.match(/zip – \d* bytes/)
-      })
-    cy.get('.fr-link--download').last()
-      .find('span').should(($span) => {
-        const text = $span.text()
-        expect(text).to.match(/YAML – \d* bytes/)
-      })
+    // Case 2 : no Git source, infra
+    cy.getByDataTestid('input-checkbox-infraRepoCbx').check({ force: true })
+    cy.getByDataTestid('addRepoBtn').should('be.enabled')
+    cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
+    // Case 3 : Git source
+    cy.getByDataTestid('externalRepoUrlInput')
+      .type('https://github.com/LAB-MI/candilibV2.git')
+      .blur()
+    cy.getByDataTestid('addRepoBtn').should('be.enabled')
+    cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
+    // Case 4 : Git source, private
+    cy.getByDataTestid('input-checkbox-privateRepoCbx')
+      .should('exist')
+      .and('be.enabled')
+    cy.getByDataTestid('input-checkbox-privateRepoCbx').check({ force: true })
+    cy.getByDataTestid('externalUserNameInput').should('exist')
+    cy.getByDataTestid('externalTokenInput').should('exist')
+    cy.getByDataTestid('addRepoBtn').should('be.disabled')
+    cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
+    cy.getByDataTestid('externalUserNameInput').type('claire+nlet')
+    cy.getByDataTestid('externalTokenInput')
+      .type('aaaaaa')
+      .blur()
+    cy.getByDataTestid('addRepoBtn').should('be.enabled')
+    cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
   })
 
   it('Should mount an update repo RepoForm', () => {
@@ -134,5 +109,48 @@ describe('RepoForm.vue', () => {
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
     cy.getByDataTestid('externalTokenInput').type('aaaaaaa').blur()
     cy.getByDataTestid('updateRepoBtn').should('be.enabled')
+
+    // Case 1 privacy handling
+    cy.getByDataTestid('input-checkbox-privateRepoCbx')
+      .uncheck({ force: true })
+    cy.getByDataTestid('input-checkbox-privateRepoCbx').check({ force: true })
+    cy.getByDataTestid('externalUserNameInput').should('exist')
+    cy.getByDataTestid('externalTokenInput').should('exist')
+    cy.getByDataTestid('updateRepoBtn').should('be.disabled')
+    cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
+    cy.getByDataTestid('externalUserNameInput').type(props.repo.externalUserName)
+    cy.getByDataTestid('externalTokenInput')
+      .type('aaaaaa')
+      .blur()
+    cy.getByDataTestid('updateRepoBtn').should('be.enabled')
+    cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
+    // Case 2 : no Git source
+    cy.getByDataTestid('externalRepoUrlInput')
+      .clear()
+      .should('have.value', '')
+      .blur()
+    cy.getByDataTestid('input-checkbox-privateRepoCbx')
+      .should('not.exist')
+    cy.getByDataTestid('externalUserNameInput').should('not.exist')
+    cy.getByDataTestid('externalTokenInput').should('not.exist')
+    cy.getByDataTestid('input-checkbox-infraRepoCbx')
+      .should('not.be.checked')
+      .and('be.enabled')
+    cy.getByDataTestid('updateRepoBtn').should('be.enabled')
+    cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
+    // Case 3 : no Git source, infra
+    cy.getByDataTestid('input-checkbox-infraRepoCbx').check({ force: true })
+    cy.getByDataTestid('updateRepoBtn').should('be.enabled')
+    cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
+    // Case 4 : Git source
+    cy.getByDataTestid('externalRepoUrlInput')
+      .type(props.repo.externalRepoUrl)
+      .blur()
+    cy.getByDataTestid('updateRepoBtn').should('be.enabled')
+    cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
+    // Case 5 : Git source, private
+    cy.getByDataTestid('input-checkbox-privateRepoCbx')
+      .should('exist')
+      .and('be.enabled')
   })
 })

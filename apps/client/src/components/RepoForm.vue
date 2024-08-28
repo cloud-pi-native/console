@@ -9,13 +9,13 @@ const props = withDefaults(defineProps<{
   canManage: boolean
   isProjectLocked: boolean
 }>(), {
-  repo: () => ({ isInfra: false, isPrivate: false, internalRepoName: '' }),
+  repo: () => ({ isInfra: false, isPrivate: false, internalRepoName: '', externalRepoUrl: '' }),
   canManage: false,
   isProjectLocked: false,
 })
 
 const emit = defineEmits(['save', 'delete', 'cancel'])
-const localRepo = ref(props.repo)
+const localRepo = ref({ ...props.repo })
 const updatedValues = ref<Record<keyof Omit<typeof localRepo.value, 'id' | 'projectId'>, boolean>>(instanciateSchema(RepoSchema, false))
 const repoToDelete = ref('')
 const isDeletingRepo = ref(false)
@@ -34,6 +34,12 @@ const isRepoValid = computed(() => !errorSchema.value)
 function updateRepo<K extends keyof Omit<typeof localRepo.value, 'id' | 'projectId'>>(key: K, value: typeof localRepo.value[K]) {
   localRepo.value[key] = value
   updatedValues.value[key] = true
+
+  if (key === 'externalRepoUrl' && value === '') {
+    localRepo.value.isPrivate = false
+    localRepo.value.externalUserName = undefined
+    localRepo.value.externalToken = undefined
+  }
 
   if (key === 'isPrivate') {
     localRepo.value.externalUserName = undefined
@@ -91,18 +97,27 @@ function cancel() {
             v-model="localRepo.externalRepoUrl"
             data-testid="externalRepoUrlInput"
             type="text"
-            :required="true"
             :disabled="props.isProjectLocked || !canManage"
             :error-message="!!updatedValues.externalRepoUrl && !RepoSchema.pick({ externalRepoUrl: true }).safeParse({ externalRepoUrl: localRepo.externalRepoUrl }).success ? 'L\'url du dépôt doit commencer par https et se terminer par .git' : undefined"
             label="Url du dépôt Git externe"
             label-visible
-            hint="Url du dépôt Git qui servira de source pour la synchronisation"
+            hint="Url de l'éventuel dépôt Git source pour la synchronisation"
             placeholder="https://github.com/cloud-pi-native/console.git"
             class="fr-mb-2w"
             @update:model-value="updateRepo('externalRepoUrl', $event)"
           />
         </div>
         <DsfrCheckbox
+          id="infraRepoCbx"
+          v-model="localRepo.isInfra"
+          :disabled="props.isProjectLocked || !canManage"
+          label="Dépôt contenant du code d'infrastructure"
+          hint="Cochez la case s'il s'agit d'un dépôt d'infrastructure (si le dépôt contient des manifestes de déploiement)"
+          name="infraRepoCbx"
+          @update:model-value="updateRepo('isInfra', $event)"
+        />
+        <DsfrCheckbox
+          v-if="localRepo.externalRepoUrl"
           id="privateRepoCbx"
           v-model="localRepo.isPrivate"
           :disabled="props.isProjectLocked || !canManage"
@@ -137,24 +152,15 @@ function cancel() {
               type="text"
               :required="localRepo.isPrivate"
               :disabled="props.isProjectLocked || !canManage"
-              label="Token d'accès au dépôt Git externe"
+              label="Token d'accès au dépôt Git source"
               label-visible
-              hint="Token d'accès permettant le clone du dépôt par la chaîne DevSecOps"
+              hint="Token d'accès permettant le clone du dépôt Git source par la chaîne DevSecOps"
               placeholder="hoqjC1vXtABzytBIWBXsdyzubmqMYkgA"
               class="fr-mb-2w"
               @update:model-value="updateRepo('externalToken', $event)"
             />
           </div>
         </div>
-        <DsfrCheckbox
-          id="infraRepoCbx"
-          v-model="localRepo.isInfra"
-          :disabled="props.isProjectLocked || !canManage"
-          label="Dépôt contenant du code d'infrastructure"
-          hint="Cochez la case s'il s'agit d'un dépôt d'infrastructure (si le dépôt contient des manifestes de déploiement)"
-          name="infraRepoCbx"
-          @update:model-value="updateRepo('isInfra', $event)"
-        />
       </DsfrFieldset>
     </DsfrFieldset>
     <div
@@ -178,7 +184,7 @@ function cancel() {
       />
     </div>
     <div
-      v-if="canManage"
+      v-if="canManage && localRepo.id"
       data-testid="deleteRepoZone"
       class="danger-zone"
     >
