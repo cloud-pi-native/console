@@ -62,8 +62,7 @@ export class VaultProjectApi extends PluginApi {
       validateStatus: code => [200, 404].includes(code),
     })
 
-    if (response.status === 404)
-      return listSecretPath
+    if (response.status === 404) return listSecretPath
     for (const key of response.data.data.keys) {
       if (key.endsWith('/')) {
         const subSecrets = await this.list(`${path.substring(this.basePath.length)}/${key}`)
@@ -128,8 +127,7 @@ export class VaultProjectApi extends PluginApi {
 
   public async upsertRole() {
     const appRoleEnabled = await this.isAppRoleEnabled()
-    if (!appRoleEnabled)
-      return
+    if (!appRoleEnabled) return
     this.upsertPolicy()
     this.axios.post(
       `/v1/auth/approle/role/${this.roleName}`,
@@ -150,8 +148,7 @@ export class VaultProjectApi extends PluginApi {
 
   public async getAppRoleCredentials(): Promise<AppRoleCredentials> {
     const appRoleEnabled = await this.isAppRoleEnabled()
-    if (!appRoleEnabled)
-      return this.defaultAppRoleCredentials
+    if (!appRoleEnabled) return this.defaultAppRoleCredentials
     const { data: dataRole } = await this.axios.get(
       `/v1/auth/approle/role/${this.roleName}/role-id`,
       {

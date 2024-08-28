@@ -87,8 +87,7 @@ async function createClusterSecret(cluster: ClusterObject) {
     await k8sApi.replaceNamespacedSecret(cluster.secretName, getConfig().namespace, convertClusterToSecret(cluster))
   } catch (error) {
     // @ts-ignore add control on error
-    if (error?.response?.statusCode !== 404)
-      throw error
+    if (error?.response?.statusCode !== 404) throw error
     await k8sApi.createNamespacedSecret(getConfig().namespace, convertClusterToSecret(cluster))
   }
 }
@@ -99,7 +98,6 @@ export async function deleteClusterSecret(secretName: ClusterObject['secretName'
     await k8sApi.deleteNamespacedSecret(secretName, getConfig().namespace)
   } catch (error) {
     // @ts-ignore add control on error
-    if (error.response.statusCode !== 404)
-      throw error
+    if (error.response.statusCode !== 404) throw error
   }
 }

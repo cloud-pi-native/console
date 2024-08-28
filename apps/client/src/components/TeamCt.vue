@@ -125,11 +125,9 @@ function setRows() {
 
 const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) => {
   // Ne pas lancer de requête à moins de 3 caractères tapés
-  if (letters.length < 3)
-    return
+  if (letters.length < 3) return
   // Ne pas relancer de requête à chaque lettre ajoutée si aucun user ne correspond aux premières lettres données
-  if (lettersNotMatching.value && letters.includes(lettersNotMatching.value) && !usersToAdd.value?.length)
-    return
+  if (lettersNotMatching.value && letters.includes(lettersNotMatching.value) && !usersToAdd.value?.length) return
   usersToAdd.value = await projectMemberStore.getMatchingUsers(props.project.id, letters)
   // Stockage des lettres qui ne renvoient aucun résultat
   if (!usersToAdd.value?.length) {
@@ -138,10 +136,8 @@ const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) =>
 }, 300)
 
 async function addUserToProject() {
-  if (!newUserEmail.value)
-    return
-  if (isUserAlreadyInTeam.value)
-    return snackbarStore.setMessage('L\'utilisateur semble déjà faire partie du projet')
+  if (!newUserEmail.value) return
+  if (isUserAlreadyInTeam.value) return snackbarStore.setMessage('L\'utilisateur semble déjà faire partie du projet')
 
   emit('addMember', newUserEmail.value.trim())
 

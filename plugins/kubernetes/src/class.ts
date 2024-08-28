@@ -44,23 +44,20 @@ class KubernetesNamespace {
   }
 
   public async create() {
-    if (!this.coreV1Api)
-      return
+    if (!this.coreV1Api) return
     const ns = await this.coreV1Api.createNamespace(this.nsObject) as { body: V1NamespacePopulated }
     this.nsObject = ns.body
     return this.nsObject
   }
 
   public async delete() {
-    if (!this.coreV1Api)
-      return
+    if (!this.coreV1Api) return
     return this.coreV1Api.deleteNamespace(this.nsObject.metadata.name)
   }
 
   public async getFromCluster() {
     try {
-      if (!this.coreV1Api)
-        return
+      if (!this.coreV1Api) return
       const ns = await this.coreV1Api.readNamespace(this.nsObject.metadata?.name) as { body: V1NamespacePopulated }
       this.nsObject = ns.body
       return this.nsObject
@@ -75,8 +72,7 @@ class KubernetesNamespace {
   }
 
   public async createOrPatchRessource(r: ResourceParams) {
-    if (!this.anyObjectApi)
-      return
+    if (!this.anyObjectApi) return
 
     const nsName = this.nsObject.metadata.name
     const objToCreate = structuredClone(r.body)
@@ -84,10 +80,11 @@ class KubernetesNamespace {
     objToCreate.metadata.name = r.name
 
     // ajout des labels
-    if (!objToCreate.metadata.labels)
+    if (objToCreate.metadata.labels) {
+      objToCreate.metadata.labels['app.kubernetes.io/managed-by'] = 'dso-console'
+    } else {
       objToCreate.metadata.labels = { 'app.kubernetes.io/managed-by': 'dso-console' }
-    else objToCreate.metadata.labels['app.kubernetes.io/managed-by'] = 'dso-console'
-
+    }
     try {
       await this.anyObjectApi.getNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
       await this.anyObjectApi.deleteNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
@@ -98,8 +95,7 @@ class KubernetesNamespace {
   }
 
   public async setQuota(quota: ResourceQuotaType) {
-    if (!this.coreV1Api)
-      return
+    if (!this.coreV1Api) return
 
     const resourceQuotaName = 'dso-quota'
     const nsName = this.nsObject.metadata.name

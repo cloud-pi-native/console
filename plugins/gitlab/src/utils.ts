@@ -20,12 +20,12 @@ const config: {
 export async function getGroupRootId(): Promise<number> {
   const gitlabApi = getApi()
   const projectRootDir = getConfig().projectsRootDir
-  if (groupRootId)
-    return groupRootId
+  if (groupRootId) return groupRootId
   const groupRootSearch = await gitlabApi.Groups.search(projectRootDir)
   groupRootId = (groupRootSearch.find(grp => grp.full_path === projectRootDir))?.id
-  if (!groupRootId)
+  if (!groupRootId) {
     throw new Error(`Gitlab inaccessible, impossible de trouver le groupe ${projectRootDir}`)
+  }
   return groupRootId
 }
 

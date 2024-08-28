@@ -25,8 +25,7 @@ export const RepoSchema = z.object({
 export const CreateRepoBusinessSchema = RepoSchema.omit({ id: true, projectId: true }).refine(
   ({ isPrivate, externalToken, externalUserName }) => {
     if (isPrivate) {
-      if (!externalToken && !externalUserName)
-        return false
+      if (!externalToken && !externalUserName) return false
       return true
     }
     return true

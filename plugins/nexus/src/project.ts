@@ -16,8 +16,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
     const res: any = {}
 
     // @ts-ignore to delete when in own plugin
-    if (!payload.apis.vault)
-      throw new Error('no Vault available')
+    if (!payload.apis.vault) throw new Error('no Vault available')
     // create local repo maven
     for (const repVersion of ['release', 'snapshot']) {
       await axiosInstance({
