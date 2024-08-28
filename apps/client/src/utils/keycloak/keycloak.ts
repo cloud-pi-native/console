@@ -27,6 +27,19 @@ let keycloak: Keycloak
 export function getKeycloak() {
   if (!keycloak) {
     keycloak = new Keycloak(keycloakConfig)
+    keycloak.onAuthSuccess = () => {
+      if (!(keycloak.refreshTokenParsed?.exp && keycloak.tokenParsed?.exp && keycloak.refreshTokenParsed.exp < keycloak.tokenParsed.exp)) {
+        return
+      }
+      console.warn('Keycloak misconfiguration : refreshToken should not expire before token.')
+      const refreshTokenDelay = (keycloak.tokenParsed.exp * 1000 - Date.now()) / 2
+      setTimeout(() => {
+        keycloak.updateToken()
+      }, refreshTokenDelay)
+    }
+    keycloak.onTokenExpired = () => {
+      keycloak.updateToken(30)
+    }
   }
   return keycloak
 }
