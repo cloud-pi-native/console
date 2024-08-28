@@ -47,8 +47,7 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
       body: getSecretObject({ DOCKER_CONFIG: creds.DOCKER_CONFIG }),
     })
 
-    if (!projectCreated.project_id)
-      throw new Error('Unable to retrieve project_id')
+    if (!projectCreated.project_id) throw new Error('Unable to retrieve project_id')
     return {
       status: {
         result: 'OK',

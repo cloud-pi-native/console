@@ -18,8 +18,7 @@ async function monitor(instance: Monitor): Promise<MonitorInfos> {
       const data = res.data as GitlabRes
       const failedComponents = Object.entries(data)
         .reduce((acc, [name, value]) => {
-          if (value.status === HealthStatus.failed)
-            return [...acc, name]
+          if (value.status === HealthStatus.failed) return [...acc, name]
           return acc
         }, [] as string[])
       const failedCoreComponents = failedComponents.filter(name => coreComponents.includes(name))

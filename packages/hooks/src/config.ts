@@ -60,8 +60,7 @@ export function populatePluginManifests({ data, select, permissionTarget, plugin
 
   const selected: Partial<PluginConfig> = {}
   for (const [scope] of objectEntries(select).filter(([_scope, bool]) => bool)) {
-    if (!manifest?.[scope])
-      continue
+    if (!manifest?.[scope]) continue
     selected[scope] = manifest[scope].filter(item => item.permissions[permissionTarget].read || item.permissions[permissionTarget].write).map((item) => {
       const row = data[scope]?.find(candidate => candidate.pluginName === pluginName && candidate.key === item.key)
       if (item.kind === 'switch') {

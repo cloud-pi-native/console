@@ -6,8 +6,7 @@ export async function getOrganizationId(organization: string) {
   const orgSearch = await api.Groups.allSubgroups(rootId)
   const org = orgSearch.find(org => org.name === organization)
 
-  if (org)
-    return org.id
+  if (org) return org.id
   console.log(`Organization's group ${organization} does not exist on Gitlab, creating one...`) // TODO à attacher au logger de app
   return (await api.Groups.create(organization, organization, {
     parentId: rootId,

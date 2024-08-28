@@ -12,14 +12,12 @@ export async function getUser(user: { email: string, username: string, id: strin
   // test finding by extern_uid by searching with email
   const usersByEmail = await api.Users.all({ search: user.email })
   gitlabUser = usersByEmail.find(gitlabUser => gitlabUser?.externUid === user.id)
-  if (gitlabUser)
-    return gitlabUser
+  if (gitlabUser) return gitlabUser
 
   // if not found, test finding by extern_uid by searching with username
   const usersByUsername = await api.Users.all({ username: user.username })
   gitlabUser = usersByUsername.find(gitlabUser => gitlabUser?.externUid === user.id)
-  if (gitlabUser)
-    return gitlabUser
+  if (gitlabUser) return gitlabUser
 
   // if not found, test finding by email or username
   const allUsers = [...usersByEmail, ...usersByUsername]

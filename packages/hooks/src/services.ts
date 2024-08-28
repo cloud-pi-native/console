@@ -27,8 +27,7 @@ export type ServiceStatus = MonitorInfos & { name: string }
 export const services = {
   getStatus: (): Array<ServiceStatus> => {
     return Object.values(servicesInfos).reduce((acc, serviceInfos) => {
-      if (!serviceInfos?.monitor?.lastStatus)
-        return acc
+      if (!serviceInfos?.monitor?.lastStatus) return acc
       return [...acc, { ...serviceInfos.monitor.lastStatus, name: serviceInfos.title }]
     }, [] as Array<ServiceStatus>)
   },

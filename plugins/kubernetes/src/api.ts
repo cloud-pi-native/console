@@ -18,8 +18,9 @@ export function createCoreV1Api(cluster: ClusterObject) {
     ...cluster.user,
     name: cluster.id,
   }
-  if (cluster.cluster.skipTLSVerify)
+  if (cluster.cluster.skipTLSVerify) {
     delete clusterConfig.caData
+  }
   kc.loadFromClusterAndUser(clusterConfig, userConfig)
   return kc.makeApiClient(CoreV1Api)
 }
@@ -43,8 +44,9 @@ export function createCustomObjectApi(cluster: ClusterObject) {
     ...cluster.user,
     name: cluster.id,
   }
-  if (cluster.cluster.skipTLSVerify)
+  if (cluster.cluster.skipTLSVerify) {
     delete clusterConfig.caData
+  }
   kc.loadFromClusterAndUser(clusterConfig, userConfig)
   return kc.makeApiClient(AnyObjectsApi)
 }

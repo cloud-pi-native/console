@@ -282,6 +282,5 @@ async function deleteRepo(projectKey: string) {
 async function ensureUserAndVault(vaultApi: VaultProjectApi, username: string, projectName: string, organizationName: string) {
   const vaultUserSecret = await vaultApi.read('SONAR', { throwIfNoEntry: false }) as VaultSonarSecret | undefined
   const newUserSecret = await ensureUserExists(username, projectName, organizationName, vaultUserSecret)
-  if (newUserSecret)
-    await vaultApi.write(newUserSecret, 'SONAR')
+  if (newUserSecret) await vaultApi.write(newUserSecret, 'SONAR')
 }

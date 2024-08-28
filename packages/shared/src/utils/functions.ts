@@ -51,8 +51,7 @@ export function exclude<T>(result: T, keys: string[]): T {
   const newObj: Record<string, unknown> = {}
   // @ts-ignore
   Object.entries(result).forEach(([key, value]) => {
-    if (keys.includes(key))
-      return
+    if (keys.includes(key)) return
     if (Array.isArray(value) && typeof value[0] === 'string') {
       newObj[key] = value
       return
@@ -86,8 +85,7 @@ export function objectValues<Obj extends Record<string, unknown>>(obj: Obj): (Ob
 
 export function requiredEnv(envName: string): string {
   const envValue = process.env[envName]
-  if (envValue)
-    return envValue
+  if (envValue) return envValue
 
   throw new Error(`env: ${envName} is not defined !`)
 }

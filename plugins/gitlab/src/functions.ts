@@ -140,8 +140,7 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
 export const deleteDsoProject: StepCall<Project> = async (payload) => {
   try {
     const group = await payload.apis.gitlab.getProjectGroup()
-    if (group)
-      await deleteGroup(group?.id)
+    if (group) await deleteGroup(group?.id)
 
     return {
       status: {

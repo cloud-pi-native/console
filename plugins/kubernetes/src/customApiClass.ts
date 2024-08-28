@@ -86,8 +86,9 @@ export class AnyObjectsApi {
       path.push(encodeURIComponent(String(namespace)))
     }
     path.push(encodeURIComponent(String(plural)))
-    if (name)
+    if (name) {
       path.push(encodeURIComponent(String(name)))
+    }
     return path.join('/')
   }
 
