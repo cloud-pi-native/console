@@ -57,12 +57,14 @@ La fonction `to` peux renvoyer une `String` ou un objet contenant une clé `to` 
 ```ts
 // Valid
 const to1 = () => 'une url'
-const to2 = () => { to: 'url', title: 'Un titre', description: 'description', imgSrc: 'url' }
-const to3 = () => [
-  { to: 'url générale', title: 'Service générale', description: 'description générale' },
-  { to: 'url1', title: 'Service 1', description: 'description 1' },
-  { to: 'url2', title: 'Service 2', description: 'description 2' },
-]
+const to2 = () => ({ to: 'url', title: 'Un titre', description: 'description', imgSrc: 'url' })
+function to3() {
+  return [
+    { to: 'url générale', title: 'Service générale', description: 'description générale' },
+    { to: 'url1', title: 'Service 1', description: 'description 1' },
+    { to: 'url2', title: 'Service 2', description: 'description 2' },
+  ]
+}
 // Invalid
 const to3 = () => ['url', 'url1', 'url2']
 ```
@@ -74,11 +76,11 @@ Cette fonction sera éxécutée par un `setInterval` toutes les 5 min ou selon l
 
 ```ts
 // monitor.ts
-import { type MonitorInfos, MonitorStatus, Monitor } from '@cpn-console/shared'
+import { Monitor, type MonitorInfos, MonitorStatus } from '@cpn-console/shared'
 
-const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
+async function monitor(instance: Monitor): Promise<MonitorInfos> {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
-  // Votre fonction ne devrait jamais lever d'exception  
+  // Votre fonction ne devrait jamais lever d'exception
   try {
     // faites des trucs
     // mettez à jour les clés en fonction de votre résultat:
@@ -104,7 +106,7 @@ Pour informer le plugin manager sur quels hooks vous voulez exécuter une foncti
 ```ts
   subscribedHooks: {
     createProject: {
-      steps: { 
+      steps: {
         pre: createDsoProjectFirst,
         post: createDsoProjectLast,
       },
@@ -133,7 +135,7 @@ export const createDsoProjectFirst: StepCall<CreateProjectExecArgs> = async (pay
     // oh j'ai un payload typé !
     return {
       status: {
-        result: 'OK'
+        result: 'OK',
         message: 'ça s\'est bien passé' // optionnel si OK
       },
       foo: {
@@ -143,7 +145,7 @@ export const createDsoProjectFirst: StepCall<CreateProjectExecArgs> = async (pay
   } catch (error) {
     return {
       status: {
-        result: 'KO';
+        result: 'KO',
         message: 'Ouille !' // Obligatoire pour explique ce qui n'a pas réussi'
       },
     }
@@ -156,7 +158,7 @@ export const createDsoProjectLast: StepCall<CreateProjectExecArgs> = async (payl
     // oh j'ai un payload typé !
     return {
       status: {
-        result: 'OK'
+        result: 'OK',
         message: `${payload.results.my_plugin.foo.bar} a vraiment bien été crée` // optionnel si OK
       },
       une_clé: {
@@ -166,7 +168,7 @@ export const createDsoProjectLast: StepCall<CreateProjectExecArgs> = async (payl
   } catch (error) {
     return {
       status: {
-        result: 'KO';
+        result: 'KO',
         message: 'Ouille !' // Obligatoire pour explique ce qui n'a pas réussi'
       },
     }
@@ -185,7 +187,7 @@ Vous pouvez, comme lui, déclarer des apis sur des hooks. Pour l'uniformité, d�
 // api.ts
 import { PluginApi } from '@cpn-console/hooks'
 
-export class ClusterApi extends PluginApi {} 
+export class ClusterApi extends PluginApi {}
 ```
 
 ```ts
@@ -215,9 +217,9 @@ Pour y arriver il va falloir deux étapes
 // index.ts
 declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
-    vault: Args extends CreateClusterExecArgs | DeleteClusterExecArgs
-    ? ClusterApi
-    : undefined
+    vault: Args extends CreateClusterExecArgs | DeleteClusterExecArgs
+      ? ClusterApi
+      : undefined
   }
 }
 ```

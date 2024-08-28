@@ -1,15 +1,17 @@
 import type { Cluster, Kubeconfig, Project, ProjectRole, Zone } from '@prisma/client'
 import type { ClusterObject, Config, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository } from '@cpn-console/hooks'
 import { hooks } from '@cpn-console/hooks'
-import { AsyncReturnType, resourceListToDict, ProjectAuthorized, getPermsByUserRoles } from '@cpn-console/shared'
-import { archiveProject, getClusterByIdOrThrow, getAdminPlugin, getHookProjectInfos, getHookRepository, getProjectStore, saveProjectStore, updateProjectCreated, updateProjectFailed, getClustersAssociatedWithProject, updateProjectClusterHistory } from '@/resources/queries-index.js'
+import type { AsyncReturnType } from '@cpn-console/shared'
+import { ProjectAuthorized, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
 import { genericProxy } from './proxy.js'
-import { ConfigRecords, dbToObj } from '@/resources/project-service/business.js'
+import { archiveProject, getAdminPlugin, getClusterByIdOrThrow, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed } from '@/resources/queries-index.js'
+import type { ConfigRecords } from '@/resources/project-service/business.js'
+import { dbToObj } from '@/resources/project-service/business.js'
 
 export type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
 export type ProjectInfos = AsyncReturnType<typeof getHookProjectInfos>
 
-const getProjectPayload = async (projectId: Project['id'], reposCreds?: ReposCreds) => {
+async function getProjectPayload(projectId: Project['id'], reposCreds?: ReposCreds) {
   const [
     project,
     store,
@@ -70,12 +72,7 @@ const project = {
 } as const
 
 type ProjectAction = keyof typeof project
-const manageProjectStatus = async (
-  projectId: Project['id'],
-  hookReply: HookResult<ProjectPayload>,
-  action: ProjectAction,
-  envClusterIds: Cluster['id'][],
-): Promise<AsyncReturnType<typeof updateProjectCreated>> => {
+async function manageProjectStatus(projectId: Project['id'], hookReply: HookResult<ProjectPayload>, action: ProjectAction, envClusterIds: Cluster['id'][]): Promise<AsyncReturnType<typeof updateProjectCreated>> {
   if (!hookReply.failed && hookReply.results?.kubernetes) {
     await updateProjectClusterHistory(projectId, envClusterIds)
   }
@@ -86,7 +83,7 @@ const manageProjectStatus = async (
   } else if (action === 'delete') {
     return archiveProject(projectId)
   }
-  throw Error('unknown action')
+  throw new Error('unknown action')
 }
 
 const cluster = {
@@ -156,18 +153,18 @@ export const hook = {
   user: genericProxy(user, {}),
 }
 
-const formatClusterInfos = (
-  { kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt' | 'createdAt' | 'zoneId' | 'kubeConfigId'>
-  & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug'> },
-) => ({
-  user: kubeconfig.user as unknown as KubeUser,
-  cluster: kubeconfig.cluster as unknown as KubeCluster,
-  ...cluster,
-  privacy: cluster.privacy,
-})
+function formatClusterInfos({ kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt' | 'createdAt' | 'zoneId' | 'kubeConfigId'>
+  & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug'> }) {
+  return {
+    user: kubeconfig.user as unknown as KubeUser,
+    cluster: kubeconfig.cluster as unknown as KubeCluster,
+    ...cluster,
+    privacy: cluster.privacy,
+  }
+}
 export type RolesById = Record<ProjectRole['id'], ProjectRole['permissions']>
 
-export const transformToHookProject = (project: ProjectInfos, store: Config, reposCreds: ReposCreds = {}): ProjectPayload => {
+export function transformToHookProject(project: ProjectInfos, store: Config, reposCreds: ReposCreds = {}): ProjectPayload {
   const clusters = project.clusters.map(cluster => formatClusterInfos(cluster))
   const rolesById = resourceListToDict(project.roles)
 
@@ -185,7 +182,8 @@ export const transformToHookProject = (project: ProjectInfos, store: Config, rep
             ro: ProjectAuthorized.ListEnvironments({ adminPermissions: 0n, projectPermissions: getPermsByUserRoles(member.roleIds, rolesById, project.everyonePerms) }),
             rw: ProjectAuthorized.ManageEnvironments({ adminPermissions: 0n, projectPermissions: getPermsByUserRoles(member.roleIds, rolesById, project.everyonePerms) }),
           },
-        }))],
+        })),
+      ],
       ...environment,
     })),
     repositories: project.repositories.map(repo => ({ ...repo, newCreds: reposCreds[repo.internalRepoName] })),

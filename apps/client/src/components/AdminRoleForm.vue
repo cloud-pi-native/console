@@ -1,14 +1,12 @@
 <script lang="ts" setup>
-import { ref, computed, onBeforeMount } from 'vue'
-import { shallowEqual, ADMIN_PERMS, adminPermsDetails, User, LettersQuery, AdminPermsKeys, SharedZodError, RoleSchema } from '@cpn-console/shared'
-import SuggestionInput from './SuggestionInput.vue'
+import { computed, onBeforeMount, ref } from 'vue'
+import type { AdminPermsKeys, LettersQuery, SharedZodError, User } from '@cpn-console/shared'
+import { ADMIN_PERMS, RoleSchema, adminPermsDetails, shallowEqual } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
+import SuggestionInput from './SuggestionInput.vue'
 import { useUsersStore } from '@/stores/users.js'
-
-const usersStore = useUsersStore()
-const newUserInputKey = ref(getRandomId('input'))
 
 const props = withDefaults(defineProps<{
   id: string
@@ -19,6 +17,13 @@ const props = withDefaults(defineProps<{
   name: 'Nouveau rôle',
   oidcGroup: '',
 })
+defineEmits<{
+  delete: []
+  save: [{ name: string, permissions: string, oidcGroup: string }]
+  cancel: []
+}>()
+const usersStore = useUsersStore()
+const newUserInputKey = ref(getRandomId('input'))
 
 const role = ref({
   ...props,
@@ -46,12 +51,12 @@ const initialSelectedIndex = 0
 const asc = ref(true)
 const selectedTabIndex = ref(initialSelectedIndex)
 
-const selectTab = (idx: number) => {
+function selectTab(idx: number) {
   asc.value = selectedTabIndex.value < idx
   selectedTabIndex.value = idx
 }
 
-const updateChecked = (checked: boolean, name: AdminPermsKeys) => {
+function updateChecked(checked: boolean, name: AdminPermsKeys) {
   if (checked) {
     role.value.permissions |= ADMIN_PERMS[name]
   } else {
@@ -66,7 +71,7 @@ const lettersNotMatching = ref('')
 const usersToAdd = ref<User[]>([])
 const usersToSuggest = computed(() => usersToAdd.value.map(userToAdd => ({
   value: userToAdd.email,
-  furtherInfo: userToAdd.firstName + ' ' + userToAdd.lastName,
+  furtherInfo: `${userToAdd.firstName} ${userToAdd.lastName}`,
 })))
 
 const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) => {
@@ -88,7 +93,7 @@ const isUserAlreadyInTeam = computed(() => {
   return !!(newUserInput.value && usersInRole.value.find(member => member.id === newUser.value?.id))
 })
 
-const switchUserMembership = async (checked: boolean, user: User, fromSuggestion = false) => {
+async function switchUserMembership(checked: boolean, user: User, fromSuggestion = false) {
   const newUserAdminRoleIds = user.adminRoleIds.filter(roleId => roleId !== role.value.id)
   if (checked) {
     newUserAdminRoleIds.push(role.value.id)
@@ -108,17 +113,10 @@ const switchUserMembership = async (checked: boolean, user: User, fromSuggestion
 onBeforeMount(async () => {
   users.value = await usersStore.listUsers({ adminRoleId: role.value.id })
 })
-
-defineEmits<{
-  delete: []
-  save: [{ name: string, permissions: string, oidcGroup: string }]
-  cancel: []
-}>()
-
 </script>
+
 <template>
   <DsfrTabs
-    ref="roleTabs"
     :tab-list-name="tabListName"
     :tab-titles="tabTitles"
     :initial-selected-index="initialSelectedIndex"
@@ -179,7 +177,7 @@ defineEmits<{
         secondary
         :disabled="!isUpdated || errorSchema"
         class="mr-5"
-        @click="$emit('save', {...role, permissions: role.permissions.toString() })"
+        @click="$emit('save', { ...role, permissions: role.permissions.toString() })"
       />
       <DsfrButton
         data-testid="deleteBtn"
@@ -257,7 +255,7 @@ defineEmits<{
       :asc="asc"
       @click="() => $emit('cancel')"
     >
-      {{ selectedTabIndex === tabTitles.length -1 && $emit('cancel') }}
+      {{ selectedTabIndex === tabTitles.length - 1 && $emit('cancel') }}
     </DsfrTabContent>
   </DsfrTabs>
 </template>

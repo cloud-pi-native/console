@@ -1,10 +1,10 @@
-import { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
+import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
+import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   GetMatchingUsersSchema,
   UserSchema,
 } from '../schemas/index.js'
-import { z } from 'zod'
 import { ErrorSchema } from '../schemas/utils.js'
 
 export const userContract = contractInstance.router({

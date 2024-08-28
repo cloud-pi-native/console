@@ -1,11 +1,12 @@
 import { faker } from '@faker-js/faker'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { Organization, organizationContract } from '@cpn-console/shared'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Organization } from '@cpn-console/shared'
+import { organizationContract } from '@cpn-console/shared'
 import app from '../../app.js'
-import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
 import { getUserMockInfos } from '../../utils/mocks.js'
 import { BadRequest400, Unprocessable422 } from '../../utils/errors.js'
+import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -14,13 +15,13 @@ const businessCreateMock = vi.spyOn(business, 'createOrganization')
 const businessFetchMock = vi.spyOn(business, 'fetchOrganizations')
 const businessUpdateMock = vi.spyOn(business, 'updateOrganization')
 
-describe('Test organizationContract', () => {
+describe('test organizationContract', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
   describe('listOrganizations', () => {
-    it('Should return list of organizations', async () => {
+    it('should return list of organizations', async () => {
       const organizations = []
       businessListMock.mockResolvedValueOnce(organizations)
 
@@ -37,7 +38,7 @@ describe('Test organizationContract', () => {
   describe('createOrganization', () => {
     const organization: Organization = { id: faker.string.uuid(), name: faker.string.alpha({ length: 5, casing: 'lower' }), label: faker.string.alpha({ length: 5, casing: 'lower' }), source: 'console', createdAt: (new Date()).toISOString(), updatedAt: (new Date()).toISOString(), active: true }
 
-    it('Should return created organization', async () => {
+    it('should return created organization', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -51,7 +52,7 @@ describe('Test organizationContract', () => {
       expect(response.statusCode).toEqual(201)
     })
 
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -64,7 +65,7 @@ describe('Test organizationContract', () => {
       expect(response.statusCode).toEqual(400)
     })
 
-    it('Should return 403 if not admin', async () => {
+    it('should return 403 if not admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -78,7 +79,7 @@ describe('Test organizationContract', () => {
   })
 
   describe('syncOrganizations', () => {
-    it('Should sync organizations', async () => {
+    it('should sync organizations', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -94,7 +95,7 @@ describe('Test organizationContract', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -106,7 +107,7 @@ describe('Test organizationContract', () => {
       expect(response.statusCode).toEqual(422)
     })
 
-    it('Should return 403 if not admin', async () => {
+    it('should return 403 if not admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -121,7 +122,7 @@ describe('Test organizationContract', () => {
   describe('updateOrganization', () => {
     const organization: Organization = { id: faker.string.uuid(), name: faker.string.alpha({ length: 5, casing: 'lower' }), label: faker.string.alpha({ length: 5, casing: 'lower' }), source: 'console', createdAt: (new Date()).toISOString(), updatedAt: (new Date()).toISOString(), active: true }
 
-    it('Should return updated organization', async () => {
+    it('should return updated organization', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -135,7 +136,7 @@ describe('Test organizationContract', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -148,7 +149,7 @@ describe('Test organizationContract', () => {
       expect(response.statusCode).toEqual(400)
     })
 
-    it('Should return 403 if not admin', async () => {
+    it('should return 403 if not admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 

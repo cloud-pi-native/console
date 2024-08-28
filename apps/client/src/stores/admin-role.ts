@@ -1,13 +1,19 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import type { AdminRole, adminRoleContract } from '@cpn-console/shared'
+import { AdminAuthorized } from '@cpn-console/shared'
 import { apiClient, extractData } from '../api/xhr-client.js'
-import { AdminAuthorized, AdminRole, adminRoleContract } from '@cpn-console/shared'
 import { useUserStore } from './user.js'
 
 export const useAdminRoleStore = defineStore('adminRole', () => {
   const userStore = useUserStore()
   const roles = ref<AdminRole []>([])
   const memberCounts = ref<Record<string, number>>({})
+
+  const countMembersRoles = async () => {
+    memberCounts.value = await apiClient.AdminRoles.adminRoleMemberCounts().then(res => extractData(res, 200))
+    return memberCounts.value
+  }
 
   const listRoles = async () => {
     roles.value = await apiClient.AdminRoles.listAdminRoles()
@@ -16,11 +22,6 @@ export const useAdminRoleStore = defineStore('adminRole', () => {
       await countMembersRoles()
     }
     return roles.value
-  }
-
-  const countMembersRoles = async () => {
-    memberCounts.value = await apiClient.AdminRoles.adminRoleMemberCounts().then(res => extractData(res, 200))
-    return memberCounts.value
   }
 
   const createRole = async () => {

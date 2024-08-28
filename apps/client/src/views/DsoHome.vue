@@ -1,18 +1,18 @@
 <script lang="ts" setup>
-import { ref, type Ref } from 'vue'
+import { type Ref, ref } from 'vue'
 
-type TabTitle = {
+interface TabTitle {
   title: string
   icon: string
 }
 
-type MailType = {
+interface MailType {
   to: string
   label: string
   address: string
 }
 
-type KnowMoreBtn = {
+interface KnowMoreBtn {
   label: string
   title: string
   onClick: any
@@ -52,12 +52,11 @@ const knowMoreBtn: Ref<KnowMoreBtn> = ref({
   onClick: () => setWindowLocation(mail.to),
 })
 
-const setWindowLocation = (to: string) => {
+function setWindowLocation(to: string) {
   // TODO
   // @ts-ignore
   window.location = to
 }
-
 </script>
 
 <template>

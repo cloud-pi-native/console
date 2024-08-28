@@ -21,6 +21,6 @@ module.exports = {
       },
     ],
     'no-descending-specificity': null,
-    'selector-class-pattern': '^((sm|md|lg|xl|2xl):)?[a-z][-_/a-z0-9]*$'
+    'selector-class-pattern': '^((sm|md|lg|xl|2xl):)?[a-z][-_/a-z0-9]*$',
   },
 }

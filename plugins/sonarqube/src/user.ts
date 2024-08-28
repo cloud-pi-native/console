@@ -1,9 +1,10 @@
 // import type { StepCall, ArchiveProjectExecArgs } from '@cpn-console/hooks'
 import { generateRandomPassword } from '@cpn-console/hooks'
-import { VaultSonarSecret, getAxiosInstance } from './tech.js'
+import type { VaultSonarSecret } from './tech.js'
+import { getAxiosInstance } from './tech.js'
 import type { SonarPaging } from './project.js'
 
-export type SonarUser = {
+export interface SonarUser {
   login: string
   name: string
   active: boolean
@@ -19,7 +20,7 @@ export type SonarUser = {
   sonarLintLastConnectionDate: Date
 }
 
-export const createUser = async (username: string, projectName: string, organizationName: string) => {
+export async function createUser(username: string, projectName: string, organizationName: string) {
   const axiosInstance = getAxiosInstance()
   const fakeEmail = `${projectName}@${organizationName}`
 
@@ -38,7 +39,7 @@ export const createUser = async (username: string, projectName: string, organiza
   return newPwd
 }
 
-export const changeToken = async (username: string) => {
+export async function changeToken(username: string) {
   const axiosInstance = getAxiosInstance()
   await axiosInstance({
     url: 'user_tokens/revoke',
@@ -59,7 +60,7 @@ export const changeToken = async (username: string) => {
   return newToken.data.token
 }
 
-export const getUser = async (username: string): Promise<SonarUser | undefined> => {
+export async function getUser(username: string): Promise<SonarUser | undefined> {
   const axiosInstance = getAxiosInstance()
   const users: { paging: SonarPaging, users: SonarUser[] } = (await axiosInstance({
     url: 'users/search',
@@ -70,7 +71,7 @@ export const getUser = async (username: string): Promise<SonarUser | undefined> 
   return users.users.find(u => u.login === username)
 }
 
-export const ensureUserExists = async (username: string, projectName: string, organizationName: string, vaultUserSecret: VaultSonarSecret | undefined): Promise<VaultSonarSecret | undefined> => {
+export async function ensureUserExists(username: string, projectName: string, organizationName: string, vaultUserSecret: VaultSonarSecret | undefined): Promise<VaultSonarSecret | undefined> {
   const user = await getUser(username)
   if (!user) {
     return {

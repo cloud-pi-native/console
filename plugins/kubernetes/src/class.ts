@@ -1,10 +1,11 @@
-import { ClusterObject, Environment, PluginApi, Project, ResourceQuotaType, UserObject } from '@cpn-console/hooks'
-import { getNsObject } from './namespace.js'
-import { CoreV1Api, V1Namespace, V1ObjectMeta } from '@kubernetes/client-node'
-import { createCoreV1Api, createCustomObjectApi } from './api.js'
+import type { ClusterObject, Environment, Project, ResourceQuotaType, UserObject } from '@cpn-console/hooks'
+import { PluginApi } from '@cpn-console/hooks'
+import type { CoreV1Api, V1Namespace, V1ObjectMeta } from '@kubernetes/client-node'
 import { objectValues } from '@cpn-console/shared'
+import { getNsObject } from './namespace.js'
+import { createCoreV1Api, createCustomObjectApi } from './api.js'
 import { getQuotaObject } from './quota.js'
-import { AnyObjectsApi } from './customApiClass.js'
+import type { AnyObjectsApi } from './customApiClass.js'
 
 type V1ObjectMetaPopulated = V1ObjectMeta & {
   name: string
@@ -14,7 +15,7 @@ export type V1NamespacePopulated = V1Namespace & {
   metadata: V1ObjectMetaPopulated
 }
 
-type BasicManifest = {
+interface BasicManifest {
   kind: string
   metadata: {
     name: string
@@ -23,7 +24,7 @@ type BasicManifest = {
   [x: string]: any
 }
 
-type ResourceParams = {
+interface ResourceParams {
   group?: string
   version: string
   plural: string
@@ -60,7 +61,7 @@ class KubernetesNamespace {
       const ns = await this.coreV1Api.readNamespace(this.nsObject.metadata?.name) as { body: V1NamespacePopulated }
       this.nsObject = ns.body
       return this.nsObject
-    } catch (error) {
+    } catch (_error) {
       return undefined
     }
   }
@@ -79,9 +80,11 @@ class KubernetesNamespace {
     objToCreate.metadata.name = r.name
 
     // ajout des labels
-    if (!objToCreate.metadata.labels) objToCreate.metadata.labels = { 'app.kubernetes.io/managed-by': 'dso-console' }
-    else objToCreate.metadata.labels['app.kubernetes.io/managed-by'] = 'dso-console'
-
+    if (objToCreate.metadata.labels) {
+      objToCreate.metadata.labels['app.kubernetes.io/managed-by'] = 'dso-console'
+    } else {
+      objToCreate.metadata.labels = { 'app.kubernetes.io/managed-by': 'dso-console' }
+    }
     try {
       await this.anyObjectApi.getNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
       await this.anyObjectApi.deleteNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
@@ -101,7 +104,7 @@ class KubernetesNamespace {
       await this.coreV1Api.readNamespacedResourceQuota(resourceQuotaName, this.nsObject.metadata.name)
       // @ts-ignore
       await this.coreV1Api.replaceNamespacedResourceQuota(resourceQuotaName, nsName, quotaObject)
-    } catch (error) {
+    } catch (_error) {
       // @ts-ignore
       return this.coreV1Api.createNamespacedResourceQuota(nsName, quotaObject)
     }

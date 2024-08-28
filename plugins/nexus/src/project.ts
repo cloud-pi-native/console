@@ -1,5 +1,6 @@
-import axios, { AxiosInstance } from 'axios'
-import type { StepCall, Project } from '@cpn-console/hooks'
+import type { AxiosInstance } from 'axios'
+import axios from 'axios'
+import type { Project, StepCall } from '@cpn-console/hooks'
 import { generateRandomPassword, parseError } from '@cpn-console/hooks'
 import { getAxiosOptions } from './functions.js'
 
@@ -15,7 +16,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
     const res: any = {}
 
     // @ts-ignore to delete when in own plugin
-    if (!payload.apis.vault) throw Error('no Vault available')
+    if (!payload.apis.vault) throw new Error('no Vault available')
     // create local repo maven
     for (const repVersion of ['release', 'snapshot']) {
       await axiosInstance({
@@ -206,7 +207,7 @@ export const deleteNexusProject: StepCall<Project> = async ({ args: project }) =
   }
 }
 
-const deleteIfExists = async (url: string, axiosInstance: AxiosInstance) => {
+async function deleteIfExists(url: string, axiosInstance: AxiosInstance) {
   const res = await axiosInstance({
     method: 'get',
     url,

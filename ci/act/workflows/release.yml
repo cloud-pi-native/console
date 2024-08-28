@@ -4,16 +4,16 @@ on:
   workflow_call:
     outputs:
       release-created:
-        description: "Has the releease been created"
+        description: Has the releease been created
         value: ${{ jobs.release.outputs.release-created }}
       major-tag:
-        description: "Major version tag"
+        description: Major version tag
         value: ${{ jobs.release.outputs.major-tag }}
       minor-tag:
-        description: "Minor version tag"
+        description: Minor version tag
         value: ${{ jobs.release.outputs.minor-tag }}
       patch-tag:
-        description: "Patch version tag"
+        description: Patch version tag
         value: ${{ jobs.release.outputs.patch-tag }}
 
 jobs:

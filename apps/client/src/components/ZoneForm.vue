@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { ZoneSchema, SharedZodError, type CreateZoneBody, type UpdateZoneBody, type Zone, type Quota, type Cluster } from '@cpn-console/shared'
+import type { Cluster, CreateZoneBody, Quota, SharedZodError, UpdateZoneBody, Zone } from '@cpn-console/shared'
+import { ZoneSchema } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
@@ -23,6 +24,12 @@ const props = withDefaults(defineProps<{
   associatedClusters: () => [],
 })
 
+const emit = defineEmits<{
+  add: [value: CreateZoneBody]
+  update: [value: UpdateZoneBody & { zoneId: Zone['id'] }]
+  cancel: []
+  delete: [value: Zone['id']]
+}>()
 const localZone = ref(props.zone)
 const isDeletingZone = ref(false)
 const zoneToDelete = ref('')
@@ -38,22 +45,15 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
 })
 const isZoneValid = computed(() => !errorSchema.value)
 
-const updateClusters = (value: string[]) => {
+function updateClusters(value: string[]) {
   localZone.value.clusterIds = value
 }
 
-const emit = defineEmits<{
-  add: [value: CreateZoneBody]
-  update: [value: UpdateZoneBody & { zoneId: Zone['id'] }]
-  cancel: []
-  delete: [value: Zone['id']]
-}>()
-
-const addZone = () => {
+function addZone() {
   if (isZoneValid.value) emit('add', localZone.value)
 }
 
-const updateZone = () => {
+function updateZone() {
   const updatedZone = {
     zoneId: localZone.value.id,
     label: localZone.value.label,
@@ -63,7 +63,7 @@ const updateZone = () => {
   if (isZoneValid.value) emit('update', updatedZone)
 }
 
-const cancel = () => {
+function cancel() {
   emit('cancel')
 }
 
@@ -71,7 +71,6 @@ onBeforeMount(() => {
   // Retrieve array of clusters from parent component, map it into array of cluster labels and pass it to child component.
   localZone.value = props.zone
 })
-
 </script>
 
 <template>
@@ -115,7 +114,7 @@ onBeforeMount(() => {
         id="clusters-select"
         :wrapped="false"
         label="Clusters associés"
-        :description="!props.isNewZone ? 'Veuillez procéder aux associations dans le formulaire des clusters concernés.': 'Sélectionnez les clusters autorisés à utiliser cette zone.'"
+        :description="!props.isNewZone ? 'Veuillez procéder aux associations dans le formulaire des clusters concernés.' : 'Sélectionnez les clusters autorisés à utiliser cette zone.'"
         :options="props.allClusters"
         :options-selected="props.allClusters.filter(({ id }) => localZone.clusterIds?.includes(id))"
         label-key="label"

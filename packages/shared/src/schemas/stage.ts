@@ -5,7 +5,7 @@ export const StageSchema = z.object({
   id: z.string()
     .uuid(),
   name: z.string()
-    .regex(/^[a-zA-Z0-9]+$/)
+    .regex(/^[a-z0-9]+$/i)
     .min(2, { message: 'must be at least 2 character long' })
     .max(20, { message: 'must not exceed 20 characters' }),
   clusterIds: z.string().uuid().array(),

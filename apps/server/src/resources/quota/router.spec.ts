@@ -1,11 +1,11 @@
 import { faker } from '@faker-js/faker'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { quotaContract } from '@cpn-console/shared'
 import app from '../../app.js'
-import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
 import { getUserMockInfos } from '../../utils/mocks.js'
 import { BadRequest400, NotFound404 } from '../../utils/errors.js'
+import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -15,13 +15,13 @@ const businessCreateMock = vi.spyOn(business, 'createQuota')
 const businessUpdateMock = vi.spyOn(business, 'updateQuota')
 const businessDeleteMock = vi.spyOn(business, 'deleteQuota')
 
-describe('Test quotaContract', () => {
+describe('test quotaContract', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
   describe('listQuotas', () => {
-    it('As non admin', async () => {
+    it('as non admin', async () => {
       const user = getUserMockInfos(false)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -36,7 +36,7 @@ describe('Test quotaContract', () => {
       expect(response.json()).toStrictEqual([])
       expect(response.statusCode).toEqual(200)
     })
-    it('As admin', async () => {
+    it('as admin', async () => {
       const user = getUserMockInfos(true)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -54,7 +54,7 @@ describe('Test quotaContract', () => {
   })
 
   describe('listQuotaEnvironments', () => {
-    it('Should return quota environments', async () => {
+    it('should return quota environments', async () => {
       const envs = []
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
@@ -68,7 +68,7 @@ describe('Test quotaContract', () => {
       expect(response.json()).toEqual([])
       expect(response.statusCode).toEqual(200)
     })
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -79,7 +79,7 @@ describe('Test quotaContract', () => {
 
       expect(response.statusCode).toEqual(404)
     })
-    it('Should return 403 if not admin', async () => {
+    it('should return 403 if not admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -95,7 +95,7 @@ describe('Test quotaContract', () => {
   describe('createQuota', () => {
     const quota = { id: faker.string.uuid(), name: faker.company.name(), cpu: 10, memory: '1Gi', isPrivate: false, stageIds: [] }
 
-    it('Should return created quota', async () => {
+    it('should return created quota', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -108,7 +108,7 @@ describe('Test quotaContract', () => {
       expect(response.json()).toEqual(quota)
       expect(response.statusCode).toEqual(201)
     })
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -120,7 +120,7 @@ describe('Test quotaContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 if not admin', async () => {
+    it('should return 403 if not admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -137,7 +137,7 @@ describe('Test quotaContract', () => {
     const quotaId = faker.string.uuid()
     const quota = { name: faker.company.name(), cpu: 10, memory: '1Gi', isPrivate: false, stageIds: [] }
 
-    it('Should return updated quota', async () => {
+    it('should return updated quota', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -150,7 +150,7 @@ describe('Test quotaContract', () => {
       expect(response.json()).toEqual({ id: quotaId, ...quota })
       expect(response.statusCode).toEqual(200)
     })
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -162,7 +162,7 @@ describe('Test quotaContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 if not admin', async () => {
+    it('should return 403 if not admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -176,7 +176,7 @@ describe('Test quotaContract', () => {
   })
 
   describe('deleteQuota', () => {
-    it('Should return empty when delete', async () => {
+    it('should return empty when delete', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -188,7 +188,7 @@ describe('Test quotaContract', () => {
       expect(response.body).toBeFalsy()
       expect(response.statusCode).toEqual(204)
     })
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -199,7 +199,7 @@ describe('Test quotaContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 if not admin', async () => {
+    it('should return 403 if not admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 

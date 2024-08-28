@@ -1,4 +1,4 @@
-import { type MonitorInfos, MonitorStatus, Monitor } from '@cpn-console/shared'
+import { Monitor, type MonitorInfos, MonitorStatus } from '@cpn-console/shared'
 import { getApi } from './utils.js'
 
 enum HealthStatus {
@@ -7,7 +7,7 @@ enum HealthStatus {
 }
 const coreComponents = ['core', 'database', 'portal', 'registry', 'registryctl']
 
-const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
+async function monitor(instance: Monitor): Promise<MonitorInfos> {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
     const res = await getApi().health.getHealth({

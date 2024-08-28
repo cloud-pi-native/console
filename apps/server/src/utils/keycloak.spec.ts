@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { keycloakConf } from './keycloak.js'
 
 describe('keycloak', () => {
-  it('Should map keycloak user object to DSO user object without groups', () => {
+  it('should map keycloak user object to DSO user object without groups', () => {
     const payload = {
       sub: 'thisIsAnId',
       email: 'test@test.com',
@@ -21,7 +21,7 @@ describe('keycloak', () => {
     expect(transformed).toMatchObject(desired)
   })
 
-  it('Should map keycloak user object to DSO user object with groups', () => {
+  it('should map keycloak user object to DSO user object with groups', () => {
     const payload = {
       sub: 'thisIsAnId',
       email: 'test@test.com',

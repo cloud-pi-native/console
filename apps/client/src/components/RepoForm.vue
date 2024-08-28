@@ -1,6 +1,7 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
-import { SharedZodError, RepoBusinessSchema, RepoSchema, CreateRepoBusinessSchema, instanciateSchema, type Repo } from '@cpn-console/shared'
+import { computed, ref } from 'vue'
+import type { Repo, SharedZodError } from '@cpn-console/shared'
+import { CreateRepoBusinessSchema, RepoBusinessSchema, RepoSchema, instanciateSchema } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
@@ -13,6 +14,7 @@ const props = withDefaults(defineProps<{
   isProjectLocked: false,
 })
 
+const emit = defineEmits(['save', 'delete', 'cancel'])
 const localRepo = ref(props.repo)
 const updatedValues = ref<Record<keyof Omit<typeof localRepo.value, 'id' | 'projectId'>, boolean>>(instanciateSchema(RepoSchema, false))
 const repoToDelete = ref('')
@@ -29,7 +31,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
 })
 const isRepoValid = computed(() => !errorSchema.value)
 
-const updateRepo = <K extends keyof Omit<typeof localRepo.value, 'id' | 'projectId'>>(key: K, value: typeof localRepo.value[K]) => {
+function updateRepo<K extends keyof Omit<typeof localRepo.value, 'id' | 'projectId'>>(key: K, value: typeof localRepo.value[K]) {
   localRepo.value[key] = value
   updatedValues.value[key] = true
 
@@ -39,19 +41,16 @@ const updateRepo = <K extends keyof Omit<typeof localRepo.value, 'id' | 'project
   }
 }
 
-const emit = defineEmits(['save', 'delete', 'cancel'])
-
-const saveRepo = () => {
+function saveRepo() {
   updatedValues.value = instanciateSchema(RepoSchema.omit({ id: true, projectId: true }), true)
 
   if (!isRepoValid.value) return
   emit('save', localRepo.value)
 }
 
-const cancel = () => {
+function cancel() {
   emit('cancel')
 }
-
 </script>
 
 <template>
@@ -79,7 +78,7 @@ const cancel = () => {
             type="text"
             :required="true"
             :disabled="localRepo.id || props.isProjectLocked || !canManage"
-            :error-message="!!updatedValues.internalRepoName && !RepoSchema.pick({internalRepoName: true}).safeParse({internalRepoName: localRepo.internalRepoName}).success ? 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique': undefined"
+            :error-message="!!updatedValues.internalRepoName && !RepoSchema.pick({ internalRepoName: true }).safeParse({ internalRepoName: localRepo.internalRepoName }).success ? 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique' : undefined"
             label="Nom du dépôt Git interne"
             label-visible
             hint="Nom du dépôt Git créé dans le Gitlab interne de la plateforme"
@@ -94,7 +93,7 @@ const cancel = () => {
             type="text"
             :required="true"
             :disabled="props.isProjectLocked || !canManage"
-            :error-message="!!updatedValues.externalRepoUrl && !RepoSchema.pick({externalRepoUrl: true}).safeParse({externalRepoUrl: localRepo.externalRepoUrl}).success ? 'L\'url du dépôt doit commencer par https et se terminer par .git': undefined"
+            :error-message="!!updatedValues.externalRepoUrl && !RepoSchema.pick({ externalRepoUrl: true }).safeParse({ externalRepoUrl: localRepo.externalRepoUrl }).success ? 'L\'url du dépôt doit commencer par https et se terminer par .git' : undefined"
             label="Url du dépôt Git externe"
             label-visible
             hint="Url du dépôt Git qui servira de source pour la synchronisation"
@@ -122,7 +121,7 @@ const cancel = () => {
               type="text"
               :required="localRepo.isPrivate"
               :disabled="props.isProjectLocked || !canManage"
-              :error-message="!!updatedValues.externalUserName && !RepoSchema.pick({externalUserName: true}).safeParse({externalUserName: localRepo.externalUserName}).success ? 'Le nom du propriétaire du token est obligatoire en cas de dépôt privé': undefined"
+              :error-message="!!updatedValues.externalUserName && !RepoSchema.pick({ externalUserName: true }).safeParse({ externalUserName: localRepo.externalUserName }).success ? 'Le nom du propriétaire du token est obligatoire en cas de dépôt privé' : undefined"
               label="Nom d'utilisateur"
               label-visible
               hint="Nom de l'utilisateur propriétaire du token"

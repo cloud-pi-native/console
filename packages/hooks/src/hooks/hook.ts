@@ -1,8 +1,8 @@
-import { PluginApi } from '../utils/utils.js'
-import * as hooks from './index.js'
+import type { PluginApi } from '../utils/utils.js'
+import type * as hooks from './index.js'
 
 export type DefaultArgs = Record<any, any>
-export type PluginResult = {
+export interface PluginResult {
   status: { result: 'OK', message?: string } | { result: 'KO', message: string }
   store?: Record<string, string | number>
   [key: string]: any
@@ -43,7 +43,7 @@ export type Hook<E extends DefaultArgs, V extends DefaultArgs> = {
 } & Record<HookStepsNames, HookStep>
 export type HookList<E extends DefaultArgs, V extends DefaultArgs> = Record<keyof typeof hooks, Hook<E, V>>
 
-const executeStep = async <Args extends DefaultArgs>(step: HookStep, payload: HookPayload<Args>, stepName: string) => {
+async function executeStep<Args extends DefaultArgs>(step: HookStep, payload: HookPayload<Args>, stepName: string) {
   const names = Object.keys(step)
   const fns = names.map(async (name) => {
     if (payload.results[name]?.executionTime) {
@@ -70,7 +70,7 @@ const executeStep = async <Args extends DefaultArgs>(step: HookStep, payload: Ho
   return payload
 }
 
-export const createHook = <E extends DefaultArgs, V extends DefaultArgs>(unique = false) => {
+export function createHook<E extends DefaultArgs, V extends DefaultArgs>(unique = false) {
   const check: HookStep = {}
   const pre: HookStep = {}
   const main: HookStep = {}

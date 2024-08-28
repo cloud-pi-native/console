@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import type { PluginsUpdateBody, ProjectService, PermissionTarget } from '@cpn-console/shared'
+import type { PermissionTarget, PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
 
 const props = withDefaults(defineProps<{
   services: ProjectService[]
@@ -11,7 +11,12 @@ const props = withDefaults(defineProps<{
   displayGlobal: true,
 })
 
-const refTheValues = (services: ProjectService[]) => {
+const emit = defineEmits<{
+  update: [value: PluginsUpdateBody]
+  reload: []
+}>()
+
+function refTheValues(services: ProjectService[]) {
   return services.map((service) => {
     return {
       ...service,
@@ -23,19 +28,19 @@ const refTheValues = (services: ProjectService[]) => {
   })
 }
 
-const update = (data: { value: string, key: string, plugin: string }) => {
+const updated = ref<PluginsUpdateBody>({})
+
+function update(data: { value: string, key: string, plugin: string }) {
   if (!updated.value[data.plugin]) updated.value[data.plugin] = {}
   updated.value[data.plugin][data.key] = data.value
 }
 
 const servicesUnwrapped = ref<Record<string, boolean>>({})
 
-const swapWrap = (serviceName: string) => {
+function swapWrap(serviceName: string) {
   if (servicesUnwrapped.value[serviceName]) delete servicesUnwrapped.value[serviceName]
   else servicesUnwrapped.value[serviceName] = true
 }
-
-const updated = ref<PluginsUpdateBody>({})
 
 const services = computed(() => refTheValues(props.services)
   .map(service => ({
@@ -50,19 +55,15 @@ const services = computed(() => refTheValues(props.services)
     return b.urls.length - a.urls.length
   }))
 
-const emit = defineEmits<{
-  update: [value: PluginsUpdateBody]
-  reload: []
-}>()
-
-const save = () => {
+function save() {
   emit('update', updated.value)
   updated.value = {}
 }
-const reload = () => {
+function reload() {
   emit('reload')
 }
 </script>
+
 <template>
   <div
     v-if="!services.length"
@@ -107,7 +108,7 @@ const reload = () => {
         </button>
       </div>
       <a
-        v-for="url in service.urls.slice(0,2)"
+        v-for="url in service.urls.slice(0, 2)"
         :key="url.to"
         :href="url.to"
         target="_blank"
@@ -116,7 +117,7 @@ const reload = () => {
         <DsfrButton
           :label="url.name"
           :title="url.to"
-          :icon="url.name ? '': 'ri-external-link-line'"
+          :icon="url.name ? '' : 'ri-external-link-line'"
           :icon-only="!url.name"
         />
       </a>
@@ -147,7 +148,7 @@ const reload = () => {
           <DsfrButton
             :title="url.to"
             :label="url.name"
-            :icon="url.name ? '': 'ri-external-link-line'"
+            :icon="url.name ? '' : 'ri-external-link-line'"
             :icon-only="!url.name"
           />
         </a>
@@ -176,9 +177,9 @@ const reload = () => {
             name: item.title,
             // @ts-ignore Sisi il y a potentiellement un placeholder
             placeholder: item.placeholder || '',
-            disabled: !item.permissions[permissionTarget].write
+            disabled: !item.permissions[permissionTarget].write,
           }"
-          @update="(value: string) => update({ key: item.key, value, plugin: service.name})"
+          @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
         />
         <div
           v-if="service.manifest.global?.length && props.displayGlobal"
@@ -196,9 +197,9 @@ const reload = () => {
             name: item.title,
             // @ts-ignore si si il y a potentiellement un placeholder
             placeholder: item.placeholder || '',
-            disabled: !item.permissions[permissionTarget].write
+            disabled: !item.permissions[permissionTarget].write,
           }"
-          @update="(value: string) => update({ key: item.key, value, plugin: service.name})"
+          @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
         />
       </div>
     </div>

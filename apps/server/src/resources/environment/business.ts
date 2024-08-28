@@ -1,17 +1,19 @@
 import type { Cluster, Environment, Project, Quota, Stage, User } from '@prisma/client'
-import { XOR } from '@cpn-console/shared'
+import type { XOR } from '@cpn-console/shared'
 import {
   addLogs,
   deleteEnvironment as deleteEnvironmentQuery,
   getEnvironmentInfos as getEnvironmentInfosQuery,
+  getEnvironmentsByProjectId,
   getPublicClusters,
   initializeEnvironment,
   updateEnvironment as updateEnvironmentQuery,
-  getEnvironmentsByProjectId,
 } from '@/resources/queries-index.js'
 import type { UserDetails } from '@/types/index.js'
-import {
+import type {
   ErrorResType,
+} from '@/utils/errors.js'
+import {
   BadRequest400,
   NotFound404,
   Unprocessable422,
@@ -20,7 +22,7 @@ import { hook } from '@/utils/hook-wrapper.js'
 import prisma from '@/prisma.js'
 
 // Fetch infos
-export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
+export async function getEnvironmentInfosAndClusters(environmentId: string) {
   const env = await getEnvironmentInfosQuery(environmentId)
   if (!env) return new NotFound404()
 
@@ -30,12 +32,12 @@ export const getEnvironmentInfosAndClusters = async (environmentId: string) => {
 
 export const getEnvironmentInfos = async (environmentId: string) => getEnvironmentInfosQuery(environmentId)
 
-export const getProjectEnvironments = (
-  projectId: Project['id'],
-) => getEnvironmentsByProjectId(projectId)
+export function getProjectEnvironments(projectId: Project['id']) {
+  return getEnvironmentsByProjectId(projectId)
+}
 
 // Routes logic
-type CreateEnvironmentParam = {
+interface CreateEnvironmentParam {
   userId: User['id']
   projectId: Project['id']
   name: Environment['name']
@@ -45,16 +47,15 @@ type CreateEnvironmentParam = {
   requestId: string
 }
 
-export const createEnvironment = async (
-  {
-    userId,
-    projectId,
-    name,
-    clusterId,
-    quotaId,
-    stageId,
-    requestId,
-  }: CreateEnvironmentParam) => {
+export async function createEnvironment({
+  userId,
+  projectId,
+  name,
+  clusterId,
+  quotaId,
+  stageId,
+  requestId,
+}: CreateEnvironmentParam) {
   const environment = await initializeEnvironment({ projectId, name, clusterId, quotaId, stageId })
 
   const { results } = await hook.project.upsert(projectId)
@@ -70,19 +71,19 @@ export const createEnvironment = async (
   }
 }
 
-type UpdateEnvironmentParam = {
+interface UpdateEnvironmentParam {
   user: UserDetails
   environmentId: Environment['id']
   quotaId: Quota['id']
   requestId: string
 }
 
-export const updateEnvironment = async ({
+export async function updateEnvironment({
   user,
   environmentId,
   requestId,
   quotaId,
-}: UpdateEnvironmentParam) => {
+}: UpdateEnvironmentParam) {
   // Modification du quota
   const env = await updateEnvironmentQuery({ id: environmentId, quotaId })
   if (quotaId) {
@@ -96,19 +97,19 @@ export const updateEnvironment = async ({
   return env
 }
 
-type DeleteEnvironmentParam = {
+interface DeleteEnvironmentParam {
   userId: User['id']
   environmentId: Environment['id']
   projectId: Project['id']
   requestId: string
 }
 
-export const deleteEnvironment = async ({
+export async function deleteEnvironment({
   userId,
   environmentId,
   projectId,
   requestId,
-}: DeleteEnvironmentParam) => {
+}: DeleteEnvironmentParam) {
   await deleteEnvironmentQuery(environmentId)
 
   const { results } = await hook.project.upsert(projectId)
@@ -119,7 +120,7 @@ export const deleteEnvironment = async ({
   return null
 }
 
-type checkEnvironmentInput = {
+type CheckEnvironmentInput = {
   allowInvalidQuotaStage: boolean
   allowPrivateQuota: boolean
   quotaId: Quota['id']
@@ -131,7 +132,7 @@ type checkEnvironmentInput = {
 }, {
     environmentId: Environment['id'] // mode update
   }>
-export const checkEnvironmentInput = async (input: checkEnvironmentInput): Promise<ErrorResType | undefined> => {
+export async function checkEnvironmentInput(input: CheckEnvironmentInput): Promise<ErrorResType | undefined> {
   const [quota, environment, stage, sameNameEnvironment, cluster] = await Promise.all([
     prisma.quota.findUnique({ where: { id: input.quotaId }, include: { stages: true } }),
     input.environmentId

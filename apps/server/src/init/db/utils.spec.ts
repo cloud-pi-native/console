@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
-import { moveBefore, resourceListToDict, modelKeys } from './utils.js'
 import prisma from '../../__mocks__/prisma.js'
+import { modelKeys, moveBefore, resourceListToDict } from './utils.js'
 
 vi.mock('fs', () => ({ writeFileSync: vi.fn() }))
 for (const modelKey of modelKeys) {
   prisma[modelKey].findMany.mockResolvedValue([])
 }
 
-describe('Test moveBefore', () => {
+describe('test moveBefore', () => {
   it('should be moved', () => {
     const arr = ['a', 'b', 'c']
     const arrSorted = moveBefore(arr, 'c', 'b')

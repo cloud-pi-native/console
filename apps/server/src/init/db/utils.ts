@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { Prisma } from '@prisma/client'
 
+// eslint-disable-next-line no-extend-native
 BigInt.prototype.toJSON = function () {
   return `${this.toString()}n`
 }
@@ -8,19 +9,21 @@ BigInt.prototype.toJSON = function () {
 export type ResourceByName<T extends {
   name: string
 }> = Record<T['name'], T>
-export const resourceListToDict = <T extends { name: string }>(resList: Array<T>): ResourceByName<T & { id?: string }> => resList.reduce((acc, curr) => {
-  return {
-    ...acc,
-    [curr.name]: curr,
-  }
-}, {} as ResourceByName<T & { id?: string }>)
+export function resourceListToDict<T extends { name: string }>(resList: Array<T>): ResourceByName<T & { id?: string }> {
+  return resList.reduce((acc, curr) => {
+    return {
+      ...acc,
+      [curr.name]: curr,
+    }
+  }, {} as ResourceByName<T & { id?: string }>)
+}
 
 // @ts-ignore
 const Models = resourceListToDict(Prisma.dmmf.datamodel.models)
 let ModelsNames = Object.keys(Models)
 let ModelsOrder = [...ModelsNames]
 
-export const moveBefore = <T extends string[]> (arr: T, toMove: T[number], ref: T[number]): T | false => {
+export function moveBefore<T extends string[]>(arr: T, toMove: T[number], ref: T[number]): T | false {
   const iref = arr.indexOf(ref)
   const moveref = arr.indexOf(toMove)
   if (moveref <= iref) return false
@@ -33,14 +36,14 @@ export const moveBefore = <T extends string[]> (arr: T, toMove: T[number], ref: 
 }
 
 export const manyToManyRelation: [string, string, string][] = []
-const sort = () => {
+function sort() {
   let hasChanged = false
   for (const model of ModelsNames) {
     for (const field of Models[model].fields) {
       if (field.isId) Models[model].id = field.name
       if (field.type in Models) {
         const relationField = Models[field.type].fields.find(({ type }) => type === model)
-        if (!relationField) throw Error('unable to find matching model')
+        if (!relationField) throw new Error('unable to find matching model')
         if (
           (relationField.isRequired && field.isRequired && !relationField.isList)
           || (relationField.isRequired && !field.isRequired)

@@ -1,5 +1,5 @@
 import { type Cluster, type ClusterDetails, ClusterPrivacy, type Project, type Stage } from '@cpn-console/shared'
-import { getModelById, getModel } from '../../support/func.js'
+import { getModel, getModelById } from '../../support/func.js'
 
 describe('Administration clusters', () => {
   const clusters: Cluster[] = getModel('cluster')

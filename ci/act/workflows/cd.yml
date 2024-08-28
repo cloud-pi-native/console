@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  REGISTRY: "ghcr.io"
+  REGISTRY: ghcr.io
   NAMESPACE: "${{ github.repository }}"
   PLATFORM: "linux/amd64,linux/arm64"
 

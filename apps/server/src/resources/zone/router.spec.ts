@@ -1,11 +1,12 @@
 import { faker } from '@faker-js/faker'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { Zone, zoneContract } from '@cpn-console/shared'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Zone } from '@cpn-console/shared'
+import { zoneContract } from '@cpn-console/shared'
 import app from '../../app.js'
-import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
 import { getUserMockInfos } from '../../utils/mocks.js'
 import { BadRequest400 } from '../../utils/errors.js'
+import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -14,13 +15,13 @@ const businessCreateMock = vi.spyOn(business, 'createZone')
 const businessUpdateMock = vi.spyOn(business, 'updateZone')
 const businessDeleteMock = vi.spyOn(business, 'deleteZone')
 
-describe('Test zoneContract', () => {
+describe('test zoneContract', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
   describe('listZones', () => {
-    it('Should return list of zones', async () => {
+    it('should return list of zones', async () => {
       const zones = []
       businessListMock.mockResolvedValueOnce(zones)
 
@@ -37,7 +38,7 @@ describe('Test zoneContract', () => {
   describe('createZone', () => {
     const zone = { id: faker.string.uuid(), label: faker.string.alpha({ length: 5 }), slug: faker.string.alpha({ length: 5, casing: 'lower' }), description: '' }
 
-    it('Should create and return zone for admin', async () => {
+    it('should create and return zone for admin', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -51,7 +52,7 @@ describe('Test zoneContract', () => {
       expect(response.json()).toEqual(zone)
       expect(response.statusCode).toEqual(201)
     })
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -63,7 +64,7 @@ describe('Test zoneContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 for non-admin', async () => {
+    it('should return 403 for non-admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -81,7 +82,7 @@ describe('Test zoneContract', () => {
     const zoneId = faker.string.uuid()
     const zone: Omit<Zone, 'id'> = { label: faker.string.alpha({ length: 5 }), slug: faker.string.alpha({ length: 5, casing: 'lower' }), description: '' }
 
-    it('Should update and return zone for admin', async () => {
+    it('should update and return zone for admin', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -95,7 +96,7 @@ describe('Test zoneContract', () => {
       expect(response.json()).toEqual({ id: zoneId, ...zone })
       expect(response.statusCode).toEqual(200)
     })
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -107,7 +108,7 @@ describe('Test zoneContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 for non-admin', async () => {
+    it('should return 403 for non-admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -122,7 +123,7 @@ describe('Test zoneContract', () => {
   })
 
   describe('deleteZone', () => {
-    it('Should delete zone for admin', async () => {
+    it('should delete zone for admin', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -135,7 +136,7 @@ describe('Test zoneContract', () => {
       expect(response.body).toBeFalsy()
       expect(response.statusCode).toEqual(204)
     })
-    it('Should pass business error', async () => {
+    it('should pass business error', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -146,7 +147,7 @@ describe('Test zoneContract', () => {
 
       expect(response.statusCode).toEqual(400)
     })
-    it('Should return 403 for non-admin', async () => {
+    it('should return 403 for non-admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 

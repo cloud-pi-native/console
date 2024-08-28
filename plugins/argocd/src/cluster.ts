@@ -1,5 +1,5 @@
 import type { V1Secret } from '@kubernetes/client-node'
-import { type StepCall, type ClusterObject, parseError } from '@cpn-console/hooks'
+import { type ClusterObject, type StepCall, parseError } from '@cpn-console/hooks'
 import { getConfig, getK8sApi } from './utils.js'
 
 export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
@@ -45,20 +45,22 @@ export const deleteCluster: StepCall<ClusterObject> = async (payload) => {
 }
 
 // ...désolé
-const convertConfig = (cluster: ClusterObject) => ({
-  ...cluster.user?.username && { username: cluster.user?.username },
-  ...cluster.user?.password && { password: cluster.user?.password },
-  ...cluster.user?.token && { bearerToken: cluster.user?.token },
-  tlsClientConfig: {
-    ...cluster.user?.keyData && { keyData: cluster.user?.keyData },
-    ...cluster.user?.certData && { certData: cluster.user?.certData },
-    ...(cluster.cluster?.caData && !cluster.cluster?.skipTLSVerify) && { caData: cluster.cluster?.caData },
-    ...cluster.cluster?.skipTLSVerify && { insecure: cluster.cluster.skipTLSVerify },
-    serverName: cluster.cluster.tlsServerName,
-  },
-})
+function convertConfig(cluster: ClusterObject) {
+  return {
+    ...cluster.user?.username && { username: cluster.user?.username },
+    ...cluster.user?.password && { password: cluster.user?.password },
+    ...cluster.user?.token && { bearerToken: cluster.user?.token },
+    tlsClientConfig: {
+      ...cluster.user?.keyData && { keyData: cluster.user?.keyData },
+      ...cluster.user?.certData && { certData: cluster.user?.certData },
+      ...(cluster.cluster?.caData && !cluster.cluster?.skipTLSVerify) && { caData: cluster.cluster?.caData },
+      ...cluster.cluster?.skipTLSVerify && { insecure: cluster.cluster.skipTLSVerify },
+      serverName: cluster.cluster.tlsServerName,
+    },
+  }
+}
 
-const convertClusterToSecret = (cluster: ClusterObject): V1Secret => {
+function convertClusterToSecret(cluster: ClusterObject): V1Secret {
   return {
     apiVersion: 'v1',
     kind: 'Secret',
@@ -78,7 +80,7 @@ const convertClusterToSecret = (cluster: ClusterObject): V1Secret => {
   }
 }
 
-const createClusterSecret = async (cluster: ClusterObject) => {
+async function createClusterSecret(cluster: ClusterObject) {
   const k8sApi = getK8sApi()
   try {
     await k8sApi.readNamespacedSecret(cluster.secretName, getConfig().namespace)
@@ -90,7 +92,7 @@ const createClusterSecret = async (cluster: ClusterObject) => {
   }
 }
 
-export const deleteClusterSecret = async (secretName: ClusterObject['secretName']) => {
+export async function deleteClusterSecret(secretName: ClusterObject['secretName']) {
   const k8sApi = getK8sApi()
   try {
     await k8sApi.deleteNamespacedSecret(secretName, getConfig().namespace)

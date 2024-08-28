@@ -1,18 +1,20 @@
-import { projectRoleContract } from '@cpn-console/shared'
+import type { projectRoleContract } from '@cpn-console/shared'
 import type { Project, ProjectRole } from '@prisma/client'
 import {
-  listRoles as listRolesQuery,
   deleteRole as deleteRoleQuery,
-  updateRole,
   listMembers,
+  listRoles as listRolesQuery,
+  updateRole,
 } from '@/resources/queries-index.js'
 import { BadRequest400 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
-export const listRoles = async (projectId: Project['id']) => listRolesQuery(projectId)
-  .then(roles => roles.map(role => ({ ...role, permissions: role.permissions.toString() })))
+export async function listRoles(projectId: Project['id']) {
+  return listRolesQuery(projectId)
+    .then(roles => roles.map(role => ({ ...role, permissions: role.permissions.toString() })))
+}
 
-export const patchRoles = async (projectId: Project['id'], roles: typeof projectRoleContract.patchProjectRoles.body._type) => {
+export async function patchRoles(projectId: Project['id'], roles: typeof projectRoleContract.patchProjectRoles.body._type) {
   const dbRoles = await listRoles(projectId)
   const positionsAvailable: number[] = []
 
@@ -38,7 +40,7 @@ export const patchRoles = async (projectId: Project['id'], roles: typeof project
   return listRoles(projectId)
 }
 
-export const createRole = async (projectId: Project['id'], role: typeof projectRoleContract.createProjectRole.body._type) => {
+export async function createRole(projectId: Project['id'], role: typeof projectRoleContract.createProjectRole.body._type) {
   const dbMaxPosRole = (await prisma.projectRole.findFirst({
     where: { projectId },
     orderBy: { position: 'desc' },
@@ -57,7 +59,7 @@ export const createRole = async (projectId: Project['id'], role: typeof projectR
   return listRoles(projectId)
 }
 
-export const countRolesMembers = async (projectId: Project['id']) => {
+export async function countRolesMembers(projectId: Project['id']) {
   const roles = await listRoles(projectId)
   const members = await listMembers(projectId)
   const rolesCounts: Record<ProjectRole['id'], number> = Object.fromEntries(roles.map(role => [role.id, 0])) // {role uuid: 0}
@@ -69,7 +71,7 @@ export const countRolesMembers = async (projectId: Project['id']) => {
   return rolesCounts
 }
 
-export const deleteRole = async (roleId: Project['id']) => {
+export async function deleteRole(roleId: Project['id']) {
   await deleteRoleQuery(roleId)
   return null
 }

@@ -1,4 +1,4 @@
-import { type UpsertSystemSettingBody } from '@cpn-console/shared'
+import type { UpsertSystemSettingBody } from '@cpn-console/shared'
 import {
   getSystemSettings as getSystemSettingsQuery,
   upsertSystemSetting as upsertSystemSettingQuery,

@@ -1,24 +1,24 @@
-import type { Stage, Cluster } from '@prisma/client'
-import { type CreateStageBody, UpdateStageBody } from '@cpn-console/shared'
+import type { Cluster, Stage } from '@prisma/client'
+import type { CreateStageBody, UpdateStageBody } from '@cpn-console/shared'
 import {
-  getStageByName,
   createStage as createStageQuery,
   deleteStage as deleteStageQuery,
-  getStageById,
-  linkStageToClusters,
-  removeClusterFromStage,
-  linkStageToQuotas,
-  getStageAssociatedEnvironmentById,
-  updateStageName,
-  unlinkStageFromQuotas,
-  listStages as listStagesQuery,
-  linkClusterToStages as linkClusterToStagesQuery,
   getAllStageIds,
+  getStageAssociatedEnvironmentById,
+  getStageById,
+  getStageByName,
+  linkClusterToStages as linkClusterToStagesQuery,
+  linkStageToClusters,
+  linkStageToQuotas,
+  listStages as listStagesQuery,
+  removeClusterFromStage,
+  unlinkStageFromQuotas,
+  updateStageName,
 } from '@/resources/queries-index.js'
 import { BadRequest400, NotFound404 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
-export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
+export async function getStageAssociatedEnvironments(stageId: Stage['id']) {
   const environments = await getStageAssociatedEnvironmentById(stageId)
   return environments.map(env => ({
     organization: env.project.organization.name,
@@ -30,7 +30,7 @@ export const getStageAssociatedEnvironments = async (stageId: Stage['id']) => {
   }))
 }
 
-export const createStage = async ({ clusterIds = [], name, quotaIds = [] }: CreateStageBody) => {
+export async function createStage({ clusterIds = [], name, quotaIds = [] }: CreateStageBody) {
   const isNameTaken = await getStageByName(name)
   if (isNameTaken) return new BadRequest400('Un type d\'environnement portant ce nom existe déjà')
 
@@ -52,7 +52,7 @@ export const createStage = async ({ clusterIds = [], name, quotaIds = [] }: Crea
   }
 }
 
-export const updateStage = async (stageId: Stage['id'], { clusterIds, name, quotaIds }: UpdateStageBody) => {
+export async function updateStage(stageId: Stage['id'], { clusterIds, name, quotaIds }: UpdateStageBody) {
   const dbStage = await getStageById(stageId)
   if (!dbStage) return new NotFound404()
   if (name === dbStage.name) {
@@ -95,7 +95,7 @@ export const updateStage = async (stageId: Stage['id'], { clusterIds, name, quot
   }
 }
 
-export const deleteStage = async (stageId: Stage['id']) => {
+export async function deleteStage(stageId: Stage['id']) {
   const attachedEnvironment = await prisma.environment.findFirst({ where: { stageId }, select: { id: true } })
   if (attachedEnvironment) return new BadRequest400('Impossible de supprimer le stage, des environnements en activité y ont souscrit')
 
@@ -103,7 +103,7 @@ export const deleteStage = async (stageId: Stage['id']) => {
   return null
 }
 
-export const listStages = async () => {
+export async function listStages() {
   const stages = await listStagesQuery()
 
   return stages.map((stage) => {
@@ -116,7 +116,7 @@ export const listStages = async () => {
   })
 }
 
-export const linkClusterToStages = async (clusterId: Cluster['id'], stageIds: Stage['id'][], linkToAll: boolean = false) => {
+export async function linkClusterToStages(clusterId: Cluster['id'], stageIds: Stage['id'][], linkToAll: boolean = false) {
   if (linkToAll === true) {
     stageIds = await getAllStageIds()
   }

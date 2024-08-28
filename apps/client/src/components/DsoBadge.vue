@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
-import { statusDict, type Project } from '@cpn-console/shared'
+import { type Project, statusDict } from '@cpn-console/shared'
 
-type ResourceBase = {
+interface ResourceBase {
   id: Project['id']
   wording: string
 }
@@ -34,7 +34,6 @@ const global = computed(() => {
   const locked = props.resource[type]
   return statusDict[type][locked]
 })
-
 </script>
 
 <template>

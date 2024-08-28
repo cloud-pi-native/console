@@ -38,6 +38,7 @@ export const DEFAULT = 'default'
 
 export const atomicValidators = {
   switch: z.enum([DISABLED, DEFAULT, ENABLED]),
+  // eslint-disable-next-line regexp/prefer-w, regexp/use-ignore-case
   text: z.string().trim().regex(/[a-zA-Z-_0-9 ]*/),
 }
 

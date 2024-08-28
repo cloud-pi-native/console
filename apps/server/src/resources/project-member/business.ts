@@ -1,19 +1,20 @@
 import type { Project, User } from '@prisma/client'
+import type { XOR, projectMemberContract } from '@cpn-console/shared'
+import { UserSchema } from '@cpn-console/shared'
+import { logUser } from '../user/business.js'
 import {
   addLogs,
   deleteMember,
   listMembers as listMembersQuery,
   upsertMember,
 } from '@/resources/queries-index.js'
-import { projectMemberContract, UserSchema, XOR } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 import { BadRequest400, NotFound404 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
-import { logUser } from '../user/business.js'
 
 export const listMembers = async (projectId: Project['id']) => listMembersQuery(projectId)
 
-export const addMember = async (projectId: Project['id'], user: XOR<{ userId: string }, { email: string }>, requestorId: User['id'], requestId: string, projectOwnerId: Project['ownerId']) => {
+export async function addMember(projectId: Project['id'], user: XOR<{ userId: string }, { email: string }>, requestorId: User['id'], requestId: string, projectOwnerId: Project['ownerId']) {
   let userInDb: User | undefined | null
 
   if (user.userId) {
@@ -45,14 +46,14 @@ export const addMember = async (projectId: Project['id'], user: XOR<{ userId: st
   return listMembers(projectId)
 }
 
-export const patchMembers = async (projectId: Project['id'], members: typeof projectMemberContract.patchMembers.body._type) => {
+export async function patchMembers(projectId: Project['id'], members: typeof projectMemberContract.patchMembers.body._type) {
   for (const member of members) {
     await upsertMember({ projectId, userId: member.userId, roleIds: member.roles })
   }
   return listMembers(projectId)
 }
 
-export const removeMember = async (projectId: Project['id'], userId: User['id']) => {
+export async function removeMember(projectId: Project['id'], userId: User['id']) {
   await deleteMember({ projectId, userId })
   return listMembers(projectId)
 }

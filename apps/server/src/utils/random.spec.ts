@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { createRandomDbSetup } from '@cpn-console/test-utils'
 
-describe('Random utils', () => {
+describe('random utils', () => {
   // TODO
-  it.skip('Should create a random db for tests', () => {
+  it.skip('should create a random db for tests', () => {
     const db = createRandomDbSetup({ nbUsers: 3, nbRepo: 1, envs: ['dev', 'prod'] })
     expect(db).toEqual(
       expect.objectContaining({
@@ -155,7 +155,8 @@ describe('Random utils', () => {
             email: expect.any(String),
             firstName: expect.any(String),
             lastName: expect.any(String),
-          }]),
+          },
+        ]),
       }),
     )
   })

@@ -1,9 +1,11 @@
-import { PluginApi, objectEntries } from './utils/utils.js'
+import type { Monitor } from '@cpn-console/shared'
+import type { PluginApi } from './utils/utils.js'
+import { objectEntries } from './utils/utils.js'
 import * as hooks from './hooks/index.js'
 import { type ServiceInfos, servicesInfos } from './services.js'
-import { Monitor } from '@cpn-console/shared'
 import type { HookStepsNames, StepCall } from './hooks/hook.js'
 import { addPlugin, editStrippers } from './config.js'
+
 export * from './utils/logger.js'
 
 export type HookChoice = keyof typeof hooks
@@ -20,7 +22,7 @@ export type PluginsFunctions = Partial<{
   }
 }>
 
-export type Plugin = {
+export interface Plugin {
   infos: ServiceInfos
   subscribedHooks: PluginsFunctions
   monitor?: Monitor
@@ -29,13 +31,13 @@ export type Plugin = {
 
 export type RegisterFn = (plugin: Plugin) => void
 export type UnregisterFn = (name: Plugin['infos']['name']) => void
-export type PluginManager = {
+export interface PluginManager {
   servicesInfos: Record<string, ServiceInfos>
   register: RegisterFn
   unregister: UnregisterFn
 }
 
-export type PluginManagerOptions = {
+export interface PluginManagerOptions {
   startPlugins?: boolean
   mockMonitoring?: boolean
   mockHooks?: boolean
@@ -44,20 +46,23 @@ export type PluginManagerOptions = {
 }
 
 let config: PluginManagerOptions
-const pluginManager = (options: PluginManagerOptions): PluginManager => {
+function pluginManager(options: PluginManagerOptions): PluginManager {
   config = options
   const register: RegisterFn = (plugin: Plugin) => {
     if (plugin.infos.config) {
       addPlugin(plugin.infos.name, plugin.infos.config, editStrippers)
     }
 
-    if (plugin.infos.to && config.mockExternalServices) plugin.infos.to = () => [{ name: 'Lien', to: 'https://theuselessweb.com/' }]
-    if (plugin.start && options.startPlugins) plugin.start({})
+    if (plugin.infos.to && config.mockExternalServices)
+      plugin.infos.to = () => [{ name: 'Lien', to: 'https://theuselessweb.com/' }]
+    if (plugin.start && options.startPlugins)
+      plugin.start({})
     const message: string[] = []
     if (plugin.monitor && config.mockMonitoring) {
       plugin.monitor.monitorFn = async (instance: Monitor) => instance.lastStatus
     }
-    if (plugin.monitor) plugin.monitor.refresh()
+    if (plugin.monitor)
+      plugin.monitor.refresh()
     servicesInfos[plugin.infos.name] = {
       ...plugin.infos,
       monitor: plugin.monitor,
@@ -78,7 +83,8 @@ const pluginManager = (options: PluginManagerOptions): PluginManager => {
           hooks[hook].apis[name] = functions.api
         }
         for (const [step, fn] of objectEntries(functions?.steps ?? {})) {
-          if (fn === undefined) continue
+          if (fn === undefined)
+            continue
           if (hook === 'checkServices' && step !== 'check') {
             console.warn({
               message: `Plugin ${name} tried to register on 'checkServices' hook at ${step} which is invalid`,

@@ -1,10 +1,10 @@
 import type { CreateUserOptions, UserSchema } from '@gitbeaker/rest'
+import type { UserObject } from '@cpn-console/hooks'
 import { getApi } from './utils.js'
-import { UserObject } from '@cpn-console/hooks'
 
 export const createUsername = (email: string) => email.replace('@', '.')
 
-export const getUser = async (user: { email: string, username: string, id: string }): Promise<UserSchema | undefined> => {
+export async function getUser(user: { email: string, username: string, id: string }): Promise<UserSchema | undefined> {
   const api = getApi()
 
   let gitlabUser: UserSchema | undefined
@@ -25,7 +25,7 @@ export const getUser = async (user: { email: string, username: string, id: strin
     || allUsers.find(gitlabUser => gitlabUser.username === user.username)
 }
 
-export const upsertUser = async (user: UserObject): Promise<UserSchema> => {
+export async function upsertUser(user: UserObject): Promise<UserSchema> {
   const api = getApi()
   const username = createUsername(user.email)
   const existingUser = await getUser({ ...user, username })

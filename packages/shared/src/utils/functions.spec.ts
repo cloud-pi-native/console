@@ -1,14 +1,14 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { calcProjectNameMaxLength, exclude, identity, removeTrailingSlash } from './functions.js'
 
-describe('Function utils: identity', () => {
-  it('Should return identity', () => {
+describe('function utils: identity', () => {
+  it('should return identity', () => {
     expect(identity('Test')).toStrictEqual('Test')
   })
 })
 
-describe('Function utils: exclude', () => {
-  it('Should exclude keys', () => {
+describe('function utils: exclude', () => {
+  it('should exclude keys', () => {
     const emptyInput = {}
     const simpleInput = {
       hello: 'world',
@@ -35,7 +35,7 @@ describe('Function utils: exclude', () => {
     expect(exclude(complexInput, ['hello'])).toStrictEqual(complexExpectedOutput)
   })
 
-  it('Should not mutate input', () => {
+  it('should not mutate input', () => {
     const simpleInput = {
       hello: 'world',
       foo: 'bar',
@@ -45,15 +45,15 @@ describe('Function utils: exclude', () => {
   })
 })
 
-describe('Function utils: calcProjectNameMaxLength', () => {
-  it('Should return max length', () => {
+describe('function utils: calcProjectNameMaxLength', () => {
+  it('should return max length', () => {
     expect(calcProjectNameMaxLength('mtest')).toStrictEqual(45)
     expect(calcProjectNameMaxLength('')).toStrictEqual(50)
   })
 })
 
-describe('Function utils: removeTrailingSlash', () => {
-  it('Should return string without ending slash', () => {
+describe('function utils: removeTrailingSlash', () => {
+  it('should return string without ending slash', () => {
     expect(removeTrailingSlash('mtest')).toStrictEqual('mtest')
     expect(removeTrailingSlash('mtest/')).toStrictEqual('mtest')
   })

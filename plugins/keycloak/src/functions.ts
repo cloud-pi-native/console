@@ -1,8 +1,9 @@
-import type { StepCall, Project, UserEmail, UserAdmin, EmptyPayload } from '@cpn-console/hooks'
-import { getOrCreateChildGroup, getOrCreateProjectGroup, getGroupByName, getAllSubgroups, CustomGroup, consoleGroupName } from './group.js'
-import { getkcClient } from './client.js'
+import type { EmptyPayload, Project, StepCall, UserAdmin, UserEmail } from '@cpn-console/hooks'
 import { parseError } from '@cpn-console/hooks'
-import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
+import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
+import type { CustomGroup } from './group.js'
+import { consoleGroupName, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateProjectGroup } from './group.js'
+import { getkcClient } from './client.js'
 
 export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: { email } }) => {
   const kcClient = await getkcClient()
@@ -154,11 +155,14 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
 
       // Ensure envs permissions membership exists
       for (const permission of environment.permissions) {
-        if (permission.permissions.ro) await kcClient.users.addToGroup({ id: permission.userId, groupId: roGroup.id })
-        else await kcClient.users.delFromGroup({ id: permission.userId, groupId: roGroup.id })
-
-        if (permission.permissions.rw) await kcClient.users.addToGroup({ id: permission.userId, groupId: rwGroup.id })
-        else await kcClient.users.delFromGroup({ id: permission.userId, groupId: rwGroup.id })
+        if (permission.permissions.ro) {
+          await kcClient.users.addToGroup({ id: permission.userId, groupId: roGroup.id })
+        } else {
+          await kcClient.users.delFromGroup({ id: permission.userId, groupId: roGroup.id })
+        }
+        if (permission.permissions.rw) {
+          await kcClient.users.addToGroup({ id: permission.userId, groupId: rwGroup.id })
+        } else { await kcClient.users.delFromGroup({ id: permission.userId, groupId: rwGroup.id }) }
       }
     }
     for (const subGroup of envGroups) {

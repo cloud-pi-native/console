@@ -12,7 +12,7 @@ on:
         description: Image tag used to run tests
         required: true
         type: string
-        default: "latest"
+        default: latest
 
 jobs:
   deploy-check:

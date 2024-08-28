@@ -22,11 +22,11 @@ services:
     volumes:
       - ../keycloak/realms:/opt/bitnami/keycloak/data/import
       - ../keycloak/data/dev:/opt/bitnami/keycloak/data/h2
-      # - type: volume
-      #   source: dso-keycloak-dsfr-theme
-      #   target: /opt/bitnami/keycloak/providers/keycloak-theme-dsfr.jar
-      #   volume:
-      #     subpath: keycloak-theme-dsfr.jar
+    # - type: volume
+    #   source: dso-keycloak-dsfr-theme
+    #   target: /opt/bitnami/keycloak/providers/keycloak-theme-dsfr.jar
+    #   volume:
+    #     subpath: keycloak-theme-dsfr.jar
     user: root
     environment:
       KEYCLOAK_ADMIN: admin
@@ -35,12 +35,12 @@ services:
       # DSFR_THEME_HOME_URL: http://localhost:8080
       # DSFR_THEME_SERVICE_TITLE: Console Cloud π Native
       # DSFR_THEME_BRAND_TOP: Ministère<br/>de l'Intérieur</br>et des Outre-Mer
-      # DSFR_THEME_TOS_URL: 
+      # DSFR_THEME_TOS_URL:
       # DSFR_THEME_CONTACT_EMAIL: cloudpinative-relations@interieur.gouv.fr
     entrypoint: /opt/bitnami/keycloak/bin/kc.sh
     command: start-dev --import-realm
     healthcheck:
-      test: ["CMD", "curl", "--head","fsS", "http://localhost:8080/health/ready"]
+      test: [CMD, curl, --head, fsS, "http://localhost:8080/health/ready"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -90,7 +90,7 @@ services:
       target: dev
     image: dso-console/server:dev
     container_name: dso-console_server
-    command: ["dev"] # use "debug" to run debug mode
+    command: [dev] # use "debug" to run debug mode
     depends_on:
       keycloak:
         condition: service_healthy

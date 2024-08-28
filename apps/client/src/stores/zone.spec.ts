@@ -1,5 +1,5 @@
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useZoneStore } from './zone.js'
 
@@ -8,7 +8,7 @@ const apiClientPost = vi.spyOn(apiClient.Zones, 'createZone')
 const apiClientPut = vi.spyOn(apiClient.Zones, 'updateZone')
 const apiClientDelete = vi.spyOn(apiClient.Zones, 'deleteZone')
 
-describe('Zone Store', () => {
+describe('zone Store', () => {
   beforeEach(() => {
     // creates a fresh pinia and make it active so it's automatically picked
     // up by any useStore() call without having to pass it to it: `useStore(pinia)`
@@ -18,7 +18,7 @@ describe('Zone Store', () => {
     vi.clearAllMocks()
   })
 
-  it('Should retrieve all zones', async () => {
+  it('should retrieve all zones', async () => {
     const zoneStore = useZoneStore()
 
     expect(zoneStore.zones).toEqual([])
@@ -32,7 +32,7 @@ describe('Zone Store', () => {
     expect(zoneStore.zones).toMatchObject(zones)
   })
 
-  it('Should create a new zone', async () => {
+  it('should create a new zone', async () => {
     const adminZoneStore = useZoneStore()
 
     const zone = { label: 'Zone à défendre', slug: 'zad' }
@@ -43,7 +43,7 @@ describe('Zone Store', () => {
     expect(apiClientPost).toHaveBeenCalledTimes(1)
   })
 
-  it('Should update a zone', async () => {
+  it('should update a zone', async () => {
     const adminZoneStore = useZoneStore()
 
     const zone = { id: 'zoneId', label: 'Zod à update' }
@@ -54,7 +54,7 @@ describe('Zone Store', () => {
     expect(apiClientPut).toHaveBeenCalledTimes(1)
   })
 
-  it('Should delete a zone', async () => {
+  it('should delete a zone', async () => {
     const adminZoneStore = useZoneStore()
 
     const zoneId = 'zoneId'

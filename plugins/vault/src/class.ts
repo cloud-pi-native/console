@@ -1,11 +1,13 @@
-import axios, { AxiosInstance } from 'axios'
-import { PluginApi, ProjectLite } from '@cpn-console/hooks'
+import type { AxiosInstance } from 'axios'
+import axios from 'axios'
+import type { ProjectLite } from '@cpn-console/hooks'
+import { PluginApi } from '@cpn-console/hooks'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 
-type readOptions = {
+interface readOptions {
   throwIfNoEntry: boolean
 }
-type AppRoleCredentials = {
+interface AppRoleCredentials {
   url: string
   kvName: string
   roleId: string
@@ -47,7 +49,8 @@ export class VaultProjectApi extends PluginApi {
   }
 
   public async list(path: string = '/'): Promise<string[]> {
-    if (!path.startsWith('/')) path = '/' + path
+    if (!path.startsWith('/'))
+      path = `/${path}`
 
     const listSecretPath: string[] = []
     const response = await this.axios({
@@ -67,14 +70,15 @@ export class VaultProjectApi extends PluginApi {
           listSecretPath.push(`${key}${secret}`)
         })
       } else {
-        listSecretPath.push('/' + key)
+        listSecretPath.push(`/${key}`)
       }
     }
     return listSecretPath.flat()
   }
 
   public async read(path: string = '/', options: readOptions = { throwIfNoEntry: true }) {
-    if (path.startsWith('/')) path = path.slice(1)
+    if (path.startsWith('/'))
+      path = path.slice(1)
     const response = await this.axios.get(
       `/v1/${this.kvName}/data/${this.projectRootDir}/${this.basePath}/${path}`,
       {
@@ -86,13 +90,15 @@ export class VaultProjectApi extends PluginApi {
   }
 
   public async write(body: object, path: string = '/') {
-    if (path.startsWith('/')) path = path.slice(1)
+    if (path.startsWith('/'))
+      path = path.slice(1)
     const response = await this.axios.post(
       `/v1/${this.kvName}/data/${this.projectRootDir}/${this.basePath}/${path}`,
       {
         headers: { 'X-Vault-Token': await this.getToken() },
         data: body,
-      })
+      },
+    )
     return await response.data
   }
 
@@ -164,12 +170,14 @@ export class VaultProjectApi extends PluginApi {
   }
 
   public async destroy(path: string = '/') {
-    if (path.startsWith('/')) path = path.slice(1)
+    if (path.startsWith('/'))
+      path = path.slice(1)
     return this.axios.delete(
       `/v1/${this.kvName}/metadata/${this.projectRootDir}/${this.basePath}/${path}`,
       {
         headers: { 'X-Vault-Token': await this.getToken() },
-      })
+      },
+    )
   }
 
   public async destroyRole() {

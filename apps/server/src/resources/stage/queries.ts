@@ -1,41 +1,45 @@
 import type { Cluster, Quota, Stage } from '@prisma/client'
 import prisma from '@/prisma.js'
 
-export const listStages = () =>
-  prisma.stage.findMany({
+export function listStages() {
+  return prisma.stage.findMany({
     include: {
       clusters: true,
       quotas: true,
     },
   })
+}
 
-export const getAllStageIds = async () =>
-  (await prisma.stage.findMany({
+export async function getAllStageIds() {
+  return (await prisma.stage.findMany({
     select: {
       id: true,
     },
   })).map(({ id }) => id)
+}
 
-export const getStageById = (id: Stage['id']) =>
-  prisma.stage.findUnique({
+export function getStageById(id: Stage['id']) {
+  return prisma.stage.findUnique({
     where: { id },
     include: {
       clusters: true,
       quotas: true,
     },
   })
+}
 
-export const getStageByIdOrThrow = (id: Stage['id']) =>
-  prisma.stage.findUniqueOrThrow({
+export function getStageByIdOrThrow(id: Stage['id']) {
+  return prisma.stage.findUniqueOrThrow({
     where: { id },
     include: {
       clusters: true,
       quotas: true,
     },
   })
+}
 
-export const getStageAssociatedEnvironmentById = (id: Stage['id']) =>
-  prisma.environment.findMany({
+export function getStageAssociatedEnvironmentById(id: Stage['id']) {
+  return prisma.environment.findMany({
     where: {
       stageId: id,
     },
@@ -58,21 +62,24 @@ export const getStageAssociatedEnvironmentById = (id: Stage['id']) =>
       quota: true,
     },
   })
+}
 
-export const getStageAssociatedEnvironmentLengthById = (id: Stage['id']) =>
-  prisma.environment.count({
+export function getStageAssociatedEnvironmentLengthById(id: Stage['id']) {
+  return prisma.environment.count({
     where: {
       stageId: id,
     },
   })
+}
 
-export const getStageByName = (name: Stage['name']) =>
-  prisma.stage.findUnique({
+export function getStageByName(name: Stage['name']) {
+  return prisma.stage.findUnique({
     where: { name },
   })
+}
 
-export const linkStageToClusters = (id: Stage['id'], clusterIds: Cluster['id'][]) =>
-  prisma.stage.update({
+export function linkStageToClusters(id: Stage['id'], clusterIds: Cluster['id'][]) {
+  return prisma.stage.update({
     where: {
       id,
     },
@@ -82,16 +89,18 @@ export const linkStageToClusters = (id: Stage['id'], clusterIds: Cluster['id'][]
       },
     },
   })
+}
 
-export const createStage = ({ name }: { name: Stage['name'] }) =>
-  prisma.stage.create({
+export function createStage({ name }: { name: Stage['name'] }) {
+  return prisma.stage.create({
     data: {
       name,
     },
   })
+}
 
-export const updateStageName = (id: Stage['id'], name: Stage['name']) =>
-  prisma.stage.update({
+export function updateStageName(id: Stage['id'], name: Stage['name']) {
+  return prisma.stage.update({
     where: {
       id,
     },
@@ -99,9 +108,10 @@ export const updateStageName = (id: Stage['id'], name: Stage['name']) =>
       name,
     },
   })
+}
 
-export const linkStageToQuotas = (stageId: Stage['id'], quotaIds: Quota['id'][]) =>
-  Promise.all(quotaIds.map(quotaId => prisma.stage.update({
+export function linkStageToQuotas(stageId: Stage['id'], quotaIds: Quota['id'][]) {
+  return Promise.all(quotaIds.map(quotaId => prisma.stage.update({
     where: {
       id: stageId,
     },
@@ -109,9 +119,10 @@ export const linkStageToQuotas = (stageId: Stage['id'], quotaIds: Quota['id'][])
       quotas: { connect: { id: quotaId } },
     },
   })))
+}
 
-export const unlinkStageFromQuotas = (stageId: Stage['id'], quotaIds: Quota['id'][]) =>
-  Promise.all(quotaIds.map(quotaId => prisma.stage.update({
+export function unlinkStageFromQuotas(stageId: Stage['id'], quotaIds: Quota['id'][]) {
+  return Promise.all(quotaIds.map(quotaId => prisma.stage.update({
     where: {
       id: stageId,
     },
@@ -119,8 +130,10 @@ export const unlinkStageFromQuotas = (stageId: Stage['id'], quotaIds: Quota['id'
       quotas: { disconnect: { id: quotaId } },
     },
   })))
+}
 
-export const deleteStage = (id: Stage['id']) =>
-  prisma.stage.delete({
+export function deleteStage(id: Stage['id']) {
+  return prisma.stage.delete({
     where: { id },
   })
+}

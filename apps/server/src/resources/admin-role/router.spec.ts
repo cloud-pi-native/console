@@ -1,11 +1,11 @@
 import { faker } from '@faker-js/faker'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { adminRoleContract } from '@cpn-console/shared'
 import app from '../../app.js'
-import * as business from './business.js'
 import * as utilsController from '../../utils/controller.js'
 import { BadRequest400 } from '../../utils/errors.js'
 import { getUserMockInfos } from '../../utils/mocks.js'
+import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -15,13 +15,13 @@ const businessPatchRolesMock = vi.spyOn(business, 'patchRoles')
 const businessCountRolesMembersMock = vi.spyOn(business, 'countRolesMembers')
 const businessDeleteRoleMock = vi.spyOn(business, 'deleteRole')
 
-describe('Test adminRoleContract', () => {
+describe('test adminRoleContract', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
   describe('listAdminRoles', () => {
-    it('Should return list of admin roles', async () => {
+    it('should return list of admin roles', async () => {
       const roles = [{ id: faker.string.uuid(), name: 'Role 1', oidcGroup: '', position: 0, permissions: '1' }]
       businessListRolesMock.mockResolvedValueOnce(roles)
 
@@ -36,7 +36,7 @@ describe('Test adminRoleContract', () => {
   })
 
   describe('createAdminRole', () => {
-    it('Should create a role for authorized users', async () => {
+    it('should create a role for authorized users', async () => {
       const user = getUserMockInfos(true)
       const newRole = { id: 'newRole', name: 'New Role' }
       const roleData = { name: 'New Role' }
@@ -54,7 +54,7 @@ describe('Test adminRoleContract', () => {
       expect(response.statusCode).toEqual(201)
     })
 
-    it('Should return 403 for unauthorized users', async () => {
+    it('should return 403 for unauthorized users', async () => {
       const user = getUserMockInfos(false)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -72,7 +72,7 @@ describe('Test adminRoleContract', () => {
   describe('patchAdminRoles', () => {
     const updatedRoles = [{ id: faker.string.uuid(), name: 'Role 1', oidcGroup: '', position: 0, permissions: '1' }]
     const rolesData = [{ id: updatedRoles[0].id, name: 'Updated Role' }]
-    it('Should update roles for authorized users', async () => {
+    it('should update roles for authorized users', async () => {
       const user = getUserMockInfos(true)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -88,7 +88,7 @@ describe('Test adminRoleContract', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('Should return error if business logic fails', async () => {
+    it('should return error if business logic fails', async () => {
       const user = getUserMockInfos(true)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -103,7 +103,7 @@ describe('Test adminRoleContract', () => {
       expect(response.statusCode).toEqual(400)
     })
 
-    it('Should return 403 for unauthorized users', async () => {
+    it('should return 403 for unauthorized users', async () => {
       const user = getUserMockInfos(false)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -119,7 +119,7 @@ describe('Test adminRoleContract', () => {
   })
 
   describe('adminRoleMemberCounts', () => {
-    it('Should return counts of role members for admin', async () => {
+    it('should return counts of role members for admin', async () => {
       const user = getUserMockInfos(true)
       const counts = { role1: 5, role2: 3 }
 
@@ -135,7 +135,7 @@ describe('Test adminRoleContract', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('Should return 403 if user is not admin', async () => {
+    it('should return 403 if user is not admin', async () => {
       const user = getUserMockInfos(false)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -151,7 +151,7 @@ describe('Test adminRoleContract', () => {
 
   describe('deleteAdminRole', () => {
     const roleId = faker.string.uuid()
-    it('Should delete a role for authorized users', async () => {
+    it('should delete a role for authorized users', async () => {
       const user = getUserMockInfos(true)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -165,7 +165,7 @@ describe('Test adminRoleContract', () => {
       expect(response.statusCode).toEqual(204)
     })
 
-    it('Should return 403 for unauthorized users', async () => {
+    it('should return 403 for unauthorized users', async () => {
       const user = getUserMockInfos(false)
 
       authUserMock.mockResolvedValueOnce(user)

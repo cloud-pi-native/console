@@ -1,11 +1,11 @@
 import { z } from 'zod'
 import { longestEnvironmentName, projectStatus } from '../utils/const.js'
+import { CoerceBooleanSchema } from '../utils/schemas.js'
+import { permissionLevelSchema } from '../utils/permissions.js'
 import { AtDatesToStringExtend, ErrorSchema } from './utils.js'
 import { RepoSchema } from './repository.js'
 import { MemberSchema, UserSchema } from './user.js'
 import { OrganizationSchema } from './organization.js'
-import { CoerceBooleanSchema } from '../utils/schemas.js'
-import { permissionLevelSchema } from '../utils/permissions.js'
 import { RoleSchema } from './role.js'
 
 export const descriptionMaxLength = 280

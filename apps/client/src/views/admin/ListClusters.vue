@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import {
-  sortArrByObjKeyAsc,
-  type CreateClusterBody,
-  type UpdateClusterBody,
   type Cluster,
-  type Stage,
   type ClusterAssociatedEnvironments,
   type ClusterDetails,
+  type CreateClusterBody,
+  type Stage,
+  type UpdateClusterBody,
+  sortArrByObjKeyAsc,
 } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useOrganizationStore } from '@/stores/organization.js'
@@ -35,7 +35,7 @@ const isUpdatingCluster = ref(false)
 const isNewClusterForm = ref(false)
 const associatedEnvironments = ref<ClusterAssociatedEnvironments>([])
 
-const setClusterTiles = (clusterArr: typeof clusters.value) => {
+function setClusterTiles(clusterArr: typeof clusters.value) {
   clusterList.value = sortArrByObjKeyAsc(clusterArr, 'label')
     .map(cluster => ({
       id: cluster.id,
@@ -44,7 +44,7 @@ const setClusterTiles = (clusterArr: typeof clusters.value) => {
     }))
 }
 
-const setSelectedCluster = async (id: Cluster['id']) => {
+async function setSelectedCluster(id: Cluster['id']) {
   if (clusterStore.selectedCluster?.id === id) {
     clusterStore.selectedCluster = undefined
     return
@@ -56,23 +56,23 @@ const setSelectedCluster = async (id: Cluster['id']) => {
   isNewClusterForm.value = false
 }
 
-const getClusterAssociatedEnvironments = async (clusterId: string) => {
+async function getClusterAssociatedEnvironments(clusterId: string) {
   isUpdatingCluster.value = true
   associatedEnvironments.value = await clusterStore.getClusterAssociatedEnvironments(clusterId) ?? []
   isUpdatingCluster.value = false
 }
 
-const showNewClusterForm = () => {
+function showNewClusterForm() {
   isNewClusterForm.value = !isNewClusterForm.value
   clusterStore.selectedCluster = undefined
 }
 
-const cancel = () => {
+function cancel() {
   isNewClusterForm.value = false
   clusterStore.selectedCluster = undefined
 }
 
-const addCluster = async (cluster: CreateClusterBody) => {
+async function addCluster(cluster: CreateClusterBody) {
   isUpdatingCluster.value = true
   cancel()
   await clusterStore.addCluster(cluster)
@@ -80,7 +80,7 @@ const addCluster = async (cluster: CreateClusterBody) => {
   isUpdatingCluster.value = false
 }
 
-const updateCluster = async (cluster: UpdateClusterBody & { id: Cluster['id'] }) => {
+async function updateCluster(cluster: UpdateClusterBody & { id: Cluster['id'] }) {
   isUpdatingCluster.value = true
   await clusterStore.updateCluster(cluster)
   await clusterStore.getClusters()
@@ -88,7 +88,7 @@ const updateCluster = async (cluster: UpdateClusterBody & { id: Cluster['id'] })
   isUpdatingCluster.value = false
 }
 
-const deleteCluster = async (clusterId: Cluster['id']) => {
+async function deleteCluster(clusterId: Cluster['id']) {
   isUpdatingCluster.value = true
   await clusterStore.deleteCluster(clusterId)
   await clusterStore.getClusters()
@@ -111,7 +111,6 @@ onMounted(async () => {
 watch(clusters, () => {
   setClusterTiles(clusters.value)
 })
-
 </script>
 
 <template>

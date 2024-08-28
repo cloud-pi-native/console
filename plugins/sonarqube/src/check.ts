@@ -1,16 +1,16 @@
-import { parseError, type PluginResult } from '@cpn-console/hooks'
+import { type PluginResult, parseError } from '@cpn-console/hooks'
 import { getAxiosInstance } from './tech.js'
 
 let status: PluginResult
 
-export const getStatus = async () => {
+export async function getStatus() {
   if (!status?.result) {
     status = await check()
   }
   return status
 }
 
-export const check = async (): Promise<PluginResult> => {
+export async function check(): Promise<PluginResult> {
   const axiosInstance = getAxiosInstance()
 
   try {

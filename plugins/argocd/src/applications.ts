@@ -1,10 +1,8 @@
-import { ArgoDestination } from './app-project.js'
+import type { ArgoDestination } from './app-project.js'
 import { getConfig } from './utils.js'
 
-export const getApplicationObject = (
-  { name, destination, repoURL, appProjectName }:
-  { name: string, destination: ArgoDestination, repoURL: string, appProjectName: string },
-) => {
+export function getApplicationObject({ name, destination, repoURL, appProjectName }:
+{ name: string, destination: ArgoDestination, repoURL: string, appProjectName: string }) {
   return {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',

@@ -23,7 +23,7 @@ Exemple :
 ### Entries
 
 ```js
-{ 
+{
   // args come from controllers
   args: {
     projectName: 'toto',

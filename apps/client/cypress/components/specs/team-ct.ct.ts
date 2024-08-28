@@ -1,21 +1,22 @@
-import { Pinia, createPinia, setActivePinia } from 'pinia'
+import type { Pinia } from 'pinia'
+import { createPinia, setActivePinia } from 'pinia'
 import '@gouvminint/vue-dsfr/styles'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
-import TeamCt from '@/components/TeamCt.vue'
 import { createRandomDbSetup, getRandomUser } from '@cpn-console/test-utils'
+import type { ProjectV2 } from '@cpn-console/shared'
+import { faker } from '@faker-js/faker'
+import TeamCt from '@/components/TeamCt.vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUsersStore } from '@/stores/users.js'
-import { ProjectV2 } from '@cpn-console/shared'
-import { faker } from '@faker-js/faker'
 
 const ownerId = faker.string.uuid()
 const props: {
-project: ProjectV2
-canManage: boolean
-canTransfer: boolean
+  project: ProjectV2
+  canManage: boolean
+  canTransfer: boolean
 } = {
   project: {
     members: [{

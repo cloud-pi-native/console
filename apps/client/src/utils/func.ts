@@ -1,6 +1,6 @@
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-export const copyContent = async (content: string): Promise<void> => {
+export async function copyContent(content: string): Promise<void> {
   const snackbarStore = useSnackbarStore()
   try {
     await navigator.clipboard.writeText(content)
@@ -10,24 +10,27 @@ export const copyContent = async (content: string): Promise<void> => {
   }
 }
 
-export const toCodeComponent = (value: string) => ({
-  component: 'code',
-  text: value,
-  title: 'Copier la valeur',
-  class: 'fr-text-default--info text-xs cursor-pointer',
-  onClick: () => copyContent(value),
-})
+export function toCodeComponent(value: string) {
+  return {
+    component: 'code',
+    text: value,
+    title: 'Copier la valeur',
+    class: 'fr-text-default--info text-xs cursor-pointer',
+    onClick: () => copyContent(value),
+  }
+}
 
 export const bts = (v: boolean) => v ? 'true' : 'false'
 
 const maxDescriptionLength = 60
-export const truncateDescription = (description: string) => {
+export function truncateDescription(description: string) {
   let innerHTML: string
 
-  if (description.length <= maxDescriptionLength) innerHTML = description
-  else {
+  if (description.length <= maxDescriptionLength) {
+    innerHTML = description
+  } else {
     const lastSpaceIndex = description.slice(0, maxDescriptionLength).lastIndexOf(' ')
-    innerHTML = description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionLength) + ' ...'
+    innerHTML = `${description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionLength)} ...`
   }
 
   return {

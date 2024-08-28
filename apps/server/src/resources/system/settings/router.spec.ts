@@ -1,22 +1,22 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { systemSettingsContract } from '@cpn-console/shared'
 import app from '../../../app.js'
-import * as business from './business.js'
 import * as utilsController from '../../../utils/controller.js'
 import { getUserMockInfos } from '../../../utils/mocks.js'
+import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
 const businessGetSystemSettingsMock = vi.spyOn(business, 'getSystemSettings')
 const businessUpsertSystemSettingMock = vi.spyOn(business, 'upsertSystemSetting')
 
-describe('Test systemSettingsContract', () => {
+describe('test systemSettingsContract', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
   describe('listSystemSettings', () => {
-    it('Should return plugin configurations for authorized users', async () => {
+    it('should return plugin configurations for authorized users', async () => {
       const user = getUserMockInfos(true)
       const systemSettings = []
 
@@ -35,7 +35,7 @@ describe('Test systemSettingsContract', () => {
 
   describe('upsertSystemSetting', () => {
     const newConfig = { key: 'key1', value: 'value1' }
-    it('Should update system setting, authorized users', async () => {
+    it('should update system setting, authorized users', async () => {
       const user = getUserMockInfos(true)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -50,7 +50,7 @@ describe('Test systemSettingsContract', () => {
       expect(response.statusCode).toEqual(201)
     })
 
-    it('Should return 403 for unauthorized users', async () => {
+    it('should return 403 for unauthorized users', async () => {
       const user = getUserMockInfos(false)
 
       authUserMock.mockResolvedValueOnce(user)

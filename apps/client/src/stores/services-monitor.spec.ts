@@ -1,12 +1,12 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import type { ServiceBody } from '@cpn-console/shared'
 import { apiClient } from '../api/xhr-client.js'
 import { useServiceStore } from './services-monitor.js'
-import type { ServiceBody } from '@cpn-console/shared'
 
 const apiClientGet = vi.spyOn(apiClient.Services, 'getServiceHealth')
 
-describe('Service Store', () => {
+describe('service Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -14,10 +14,11 @@ describe('Service Store', () => {
     setActivePinia(createPinia())
   })
 
-  it('Should get services health by api call (healthy)', async () => {
+  it('should get services health by api call (healthy)', async () => {
     const data: ServiceBody = [
       { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'OK', name: 'Keycloak', status: 'OK' },
-      { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'Service perdu', name: 'Gitlab', status: 'OK' }]
+      { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'Service perdu', name: 'Gitlab', status: 'OK' },
+    ]
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const serviceStore = useServiceStore()
 
@@ -35,10 +36,11 @@ describe('Service Store', () => {
     expect(serviceStore.services).toMatchObject(data)
   })
 
-  it('Should get services health by api call (unhealthy)', async () => {
+  it('should get services health by api call (unhealthy)', async () => {
     const data = [
       { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'OK', name: 'Keycloak', status: 'OK' },
-      { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'Service perdu', name: 'Gitlab', status: 'Inconnu' }]
+      { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'Service perdu', name: 'Gitlab', status: 'Inconnu' },
+    ]
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const serviceStore = useServiceStore()
 

@@ -1,6 +1,6 @@
 import { getApi, getGroupRootId } from './utils.js'
 
-export const getOrganizationId = async (organization: string) => {
+export async function getOrganizationId(organization: string) {
   const api = getApi()
   const rootId = await getGroupRootId()
   const orgSearch = await api.Groups.allSubgroups(rootId)
@@ -15,7 +15,7 @@ export const getOrganizationId = async (organization: string) => {
   })).id
 }
 
-export const deleteGroup = async (groupId: number) => {
+export async function deleteGroup(groupId: number) {
   const api = getApi()
   return api.Groups.remove(groupId)
 }

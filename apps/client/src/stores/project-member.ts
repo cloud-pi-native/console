@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
+import type { projectMemberContract } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
-import { projectMemberContract } from '@cpn-console/shared'
 
 export const useProjectMemberStore = defineStore('project-member', () => {
   const getAllUsers = () =>
@@ -9,7 +9,7 @@ export const useProjectMemberStore = defineStore('project-member', () => {
 
   const getMatchingUsers = async (projectId: string, letters: string) =>
     apiClient.Users.getMatchingUsers({ query: { letters, notInProjectId: projectId } })
-    .then(response => extractData(response, 200))
+      .then(response => extractData(response, 200))
 
   const addMember = async (projectId: string, email: string) =>
     apiClient.ProjectsMembers.addMember({ params: { projectId }, body: { email } })

@@ -7,7 +7,7 @@ export const RepoSchema = z.object({
   internalRepoName: z.string()
     .min(2, { message: 'Longueur minimum 2 caractères' })
     .max(20, { message: 'Longueur maximum 2 caractères' })
-    .regex(/^[a-z0-9]+[a-z0-9-]*[a-z0-9]+$/, { message: 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique' }),
+    .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/, { message: 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique' }),
   externalRepoUrl: z.string()
     .regex(/^https:\/\/.*\.git$/, { message: 'L\'adresse doit commencer par https et se terminer par .git' })
     .url({ message: 'Url invalide' }),

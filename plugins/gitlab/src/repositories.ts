@@ -1,17 +1,17 @@
-import { Project, Repository } from '@cpn-console/hooks'
+import type { Project, Repository } from '@cpn-console/hooks'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
+import type { CondensedProjectSchema, ProjectSchema } from '@gitbeaker/rest'
+import { shallowEqual } from '@cpn-console/shared'
 import type { GitlabProjectApi } from './class.js'
 import { provisionMirror } from './project.js'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
-import { CondensedProjectSchema, ProjectSchema } from '@gitbeaker/rest'
 import { infraAppsRepoName, internalMirrorRepoName } from './utils.js'
-import { shallowEqual } from '@cpn-console/shared'
 
-type ProjectMirrorCreds = {
+interface ProjectMirrorCreds {
   botAccount: string
   token: string
 }
 
-export const ensureRepositories = async (gitlabApi: GitlabProjectApi, project: Project, vaultApi: VaultProjectApi, projectMirrorCreds: ProjectMirrorCreds) => {
+export async function ensureRepositories(gitlabApi: GitlabProjectApi, project: Project, vaultApi: VaultProjectApi, projectMirrorCreds: ProjectMirrorCreds) {
   const specialRepos = await gitlabApi.getSpecialRepositories()
   const gitlabRepositories = await gitlabApi.listRepositories()
 
@@ -42,13 +42,7 @@ export const ensureRepositories = async (gitlabApi: GitlabProjectApi, project: P
   await Promise.all(promises)
 }
 
-const ensureRepositoryExists = async (
-  gitlabRepositories: CondensedProjectSchema[],
-  repository: Repository,
-  gitlabApi: GitlabProjectApi,
-  projectMirrorCreds: ProjectMirrorCreds,
-  vaultApi: VaultProjectApi,
-) => {
+async function ensureRepositoryExists(gitlabRepositories: CondensedProjectSchema[], repository: Repository, gitlabApi: GitlabProjectApi, projectMirrorCreds: ProjectMirrorCreds, vaultApi: VaultProjectApi) {
   let gitlabRepository: CondensedProjectSchema | ProjectSchema | void = gitlabRepositories.find(gitlabRepository => gitlabRepository.name === repository.internalRepoName)
   const externalRepoUrn = repository.externalRepoUrl.split(/:\/\/(.*)/s)[1]
   const vaultCredsPath = `${repository.internalRepoName}-mirror`

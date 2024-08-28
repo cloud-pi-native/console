@@ -1,6 +1,7 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
-import { Member, PROJECT_PERMS, projectPermsDetails, type Project, shallowEqual, RoleBigint } from '@cpn-console/shared'
+import { computed, ref } from 'vue'
+import type { Member, Project, RoleBigint } from '@cpn-console/shared'
+import { PROJECT_PERMS, projectPermsDetails, shallowEqual } from '@cpn-console/shared'
 
 const props = defineProps<{
   id: string
@@ -11,6 +12,12 @@ const props = defineProps<{
   isEveryone: boolean
 }>()
 
+defineEmits<{
+  delete: []
+  updateMemberRoles: [checked: boolean, userId: Member['userId']]
+  save: [value: Omit<RoleBigint, 'position'>]
+  cancel: []
+}>()
 const router = useRouter()
 const role = ref({
   ...props,
@@ -34,30 +41,22 @@ const initialSelectedIndex = 0
 const asc = ref(true)
 const selectedTabIndex = ref(initialSelectedIndex)
 
-const selectTab = (idx: number) => {
+function selectTab(idx: number) {
   asc.value = selectedTabIndex.value < idx
   selectedTabIndex.value = idx
 }
 
-const updateChecked = (checked: boolean, value: bigint) => {
+function updateChecked(checked: boolean, value: bigint) {
   if (checked) {
     role.value.permissions |= value
   } else {
     role.value.permissions &= ~value
   }
 }
-
-defineEmits<{
-  delete: []
-  updateMemberRoles: [checked: boolean, userId: Member['userId']]
-  save: [value: Omit<RoleBigint, 'position'>]
-  cancel: []
-}>()
-
 </script>
+
 <template>
   <DsfrTabs
-    ref="roleTabs"
     :tab-list-name="tabListName"
     :tab-titles="tabTitles"
     :initial-selected-index="initialSelectedIndex"
@@ -106,7 +105,7 @@ defineEmits<{
         secondary
         :disabled="!isUpdated"
         class="mr-5"
-        @click="$emit('save',role)"
+        @click="$emit('save', role)"
       />
       <DsfrButton
         v-if="!role.isEveryone"
@@ -175,7 +174,7 @@ defineEmits<{
         :asc="asc"
         @click="() => $emit('cancel')"
       >
-        {{ selectedTabIndex === tabTitles.length -1 && $emit('cancel') }}
+        {{ selectedTabIndex === tabTitles.length - 1 && $emit('cancel') }}
       </DsfrTabContent>
     </div>
   </DsfrTabs>

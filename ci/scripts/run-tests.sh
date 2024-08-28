@@ -116,7 +116,7 @@ printf "\nScript settings:
   -> kind version: ${KIND_VERSION}
   -> run unit tests: ${RUN_UNIT_TESTS}
   -> run component tests: ${RUN_COMPONENT_TESTS}
-  -> run e2e tests (kube: ${RUN_E2E_WITH_KUBE}): ${RUN_E2E_TESTS}
+  -> run e2e tests: ${RUN_E2E_TESTS}  (kube: ${RUN_E2E_WITH_KUBE})
   -> run deploy status check: ${RUN_STATUS_CHECK}\n"
 
 

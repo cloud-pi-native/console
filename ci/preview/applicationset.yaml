@@ -8,14 +8,14 @@ metadata:
   namespace: <argocd_namespace>
 spec:
   generators:
-  - pullRequest:
-      github:
-        owner: cloud-pi-native
-        repo: console
-        labels:
-        - preview
-        - built
-        appSecretName: <repo_secret> # Secret containing Github App infos (cf. https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#github-app-repositories)
+    - pullRequest:
+        github:
+          owner: cloud-pi-native
+          repo: console
+          labels:
+            - preview
+            - built
+          appSecretName: <repo_secret> # Secret containing Github App infos (cf. https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#github-app-repositories)
   template:
     metadata:
       name: cpn-console-preview-pr-{{number}}
@@ -39,7 +39,7 @@ spec:
             ...
       syncPolicy:
         syncOptions:
-        - CreateNamespace=true
-        - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true
         automated:
           selfHeal: true

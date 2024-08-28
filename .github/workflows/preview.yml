@@ -26,7 +26,7 @@ jobs:
         with:
           message: |
             🤖 Hey !
-            
+
             A preview of the application is available at : ${{ steps.generate-url.outputs.CONSOLE_URL }}
 
             *Please be patient, deployment may take a few minutes.*

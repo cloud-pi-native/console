@@ -1,13 +1,11 @@
-import { type Zone } from '@cpn-console/shared'
+import type { Zone } from '@cpn-console/shared'
+import { linkZoneToClusters } from './queries.js'
 import { BadRequest400 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
-import { linkZoneToClusters } from './queries.js'
 
 export const listZones = prisma.zone.findMany
 
-export const createZone = async (
-  data: { slug: string, label: string, description?: string | null, clusterIds?: string[] },
-) => {
+export async function createZone(data: { slug: string, label: string, description?: string | null, clusterIds?: string[] }) {
   const { slug, label, description, clusterIds } = data
 
   const existingZone = await prisma.zone.findUnique({
@@ -29,7 +27,7 @@ export const createZone = async (
   return zone
 }
 
-export const updateZone = async (zoneId: Zone['id'], data: Pick<Zone, 'label' | 'description'>) => {
+export async function updateZone(zoneId: Zone['id'], data: Pick<Zone, 'label' | 'description'>) {
   const { label, description } = data
 
   return prisma.zone.update({
@@ -43,7 +41,7 @@ export const updateZone = async (zoneId: Zone['id'], data: Pick<Zone, 'label' | 
   })
 }
 
-export const deleteZone = async (zoneId: Zone['id']) => {
+export async function deleteZone(zoneId: Zone['id']) {
   const attachedCluster = await prisma.cluster.findFirst({ where: { zoneId }, select: { id: true } })
   if (attachedCluster) return new BadRequest400('Vous ne pouvez supprimer cette zone, car des clusters y sont associés.')
 

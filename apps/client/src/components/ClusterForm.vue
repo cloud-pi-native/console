@@ -1,25 +1,25 @@
 <script lang="ts" setup>
-import { ref, computed, onBeforeMount, watch } from 'vue'
-import {
-  ClusterPrivacy,
-  ClusterDetailsSchema,
-  KubeconfigSchema,
+import { computed, onBeforeMount, ref, watch } from 'vue'
+import type {
+  ClusterAssociatedEnvironments,
+  ClusterDetails,
   SharedZodError,
-  type ClusterAssociatedEnvironments,
-  type ClusterDetails,
-  type Stage,
-  type Zone,
+  Stage,
+  Zone,
+} from '@cpn-console/shared'
+import {
+  ClusterDetailsSchema,
+  ClusterPrivacy,
+  KubeconfigSchema,
 } from '@cpn-console/shared'
 // @ts-ignore 'js-yaml' missing types
 import { load } from 'js-yaml'
 // @ts-ignore 'vue3-json-viewer' missing types
 import { JsonViewer } from 'vue3-json-viewer'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import ChoiceSelector from './ChoiceSelector.vue'
-import { toCodeComponent } from '@/utils/func.js'
 import type { ProjectWithOrganization } from '../stores/project.js'
-
-const snackbarStore = useSnackbarStore()
+import ChoiceSelector from './ChoiceSelector.vue'
+import { useSnackbarStore } from '@/stores/snackbar.js'
+import { toCodeComponent } from '@/utils/func.js'
 
 const props = withDefaults(defineProps<{
   isNewCluster: boolean
@@ -52,6 +52,15 @@ const props = withDefaults(defineProps<{
   associatedEnvironments: () => [],
 })
 
+const emit = defineEmits<{
+  add: [value: Omit<ClusterDetails, 'id'>]
+  update: [value: Partial<ClusterDetails>]
+  delete: [value: typeof localCluster.value['id']]
+  cancel: []
+}>()
+
+const snackbarStore = useSnackbarStore()
+
 const jsonKConfig = ref<Record<any, any>>({})
 const kConfigError = ref<string | undefined>(undefined)
 const isMissingCurrentContext = ref<boolean>(false)
@@ -78,7 +87,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
 const isClusterValid = computed(() => !errorSchema.value)
 const chosenZoneDescription = computed(() => props.allZones.find(zone => zone.id === localCluster.value.zoneId)?.description)
 
-const updateKubeconfig = (files: FileList) => {
+function updateKubeconfig(files: FileList) {
   kConfigError.value = undefined
   localCluster.value.kubeconfig.cluster = {
     tlsServerName: '',
@@ -110,7 +119,7 @@ const updateKubeconfig = (files: FileList) => {
   }
 }
 
-type ContextType = {
+interface ContextType {
   user: {
     username: string
     password: string
@@ -126,7 +135,7 @@ type ContextType = {
   }
 }
 
-const retrieveUserAndCluster = (context: ContextType) => {
+function retrieveUserAndCluster(context: ContextType) {
   try {
     const {
       username,
@@ -157,7 +166,7 @@ const retrieveUserAndCluster = (context: ContextType) => {
   }
 }
 
-const getRows = (associatedEnvironments: ClusterAssociatedEnvironments) => {
+function getRows(associatedEnvironments: ClusterAssociatedEnvironments) {
   return associatedEnvironments
     ?.map(associatedEnvironment => ([
       toCodeComponent(associatedEnvironment.organization),
@@ -167,22 +176,15 @@ const getRows = (associatedEnvironments: ClusterAssociatedEnvironments) => {
     ]))
 }
 
-const emit = defineEmits<{
-  add: [value: Omit<ClusterDetails, 'id'>]
-  update: [value: Partial<ClusterDetails>]
-  delete: [value: typeof localCluster.value['id']]
-  cancel: []
-}>()
-
-const addCluster = () => {
+function addCluster() {
   if (isClusterValid.value) emit('add', localCluster.value)
 }
 
-const updateCluster = () => {
+function updateCluster() {
   if (isClusterValid.value) emit('update', localCluster.value)
 }
 
-const cancel = () => {
+function cancel() {
   emit('cancel')
 }
 
@@ -207,7 +209,6 @@ watch(selectedContext, () => {
   }
 })
 const isConnectionDetailsShown = ref(true)
-
 </script>
 
 <template>
@@ -217,7 +218,7 @@ const isConnectionDetailsShown = ref(true)
     <h1
       class="fr-h1"
     >
-      {{ isNewCluster ? 'Ajouter un cluster' : 'Mettre à jour le cluster ' + localCluster.label }}
+      {{ isNewCluster ? 'Ajouter un cluster' : `Mettre à jour le cluster ${localCluster.label}` }}
     </h1>
     <div
       class="cursor-pointer"
@@ -280,7 +281,7 @@ const isConnectionDetailsShown = ref(true)
         label="Nom du serveur Transport Layer Security (TLS)"
         label-visible
         :required="true"
-        :error-message="localCluster.kubeconfig.cluster.tlsServerName && !KubeconfigSchema.pick({ cluster: true }).safeParse({ cluster: { tlsServerName: localCluster.kubeconfig.cluster.tlsServerName } }).success ? 'Le nom du serveur TLS est obligatoire': undefined"
+        :error-message="localCluster.kubeconfig.cluster.tlsServerName && !KubeconfigSchema.pick({ cluster: true }).safeParse({ cluster: { tlsServerName: localCluster.kubeconfig.cluster.tlsServerName } }).success ? 'Le nom du serveur TLS est obligatoire' : undefined"
         hint="La valeur est extraite du kubeconfig téléversé."
       />
       <DsfrCheckbox
@@ -302,7 +303,7 @@ const isConnectionDetailsShown = ref(true)
       type="text"
       :disabled="!isNewCluster"
       :required="true"
-      :error-message="localCluster.label && !ClusterDetailsSchema.pick({label: true}).safeParse({label: localCluster.label}).success ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux': undefined"
+      :error-message="localCluster.label && !ClusterDetailsSchema.pick({ label: true }).safeParse({ label: localCluster.label }).success ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux' : undefined"
       label="Nom du cluster applicatif"
       label-visible
       hint="Nom du cluster applicatif utilisable lors des déploiements Argocd."
@@ -355,10 +356,10 @@ const isConnectionDetailsShown = ref(true)
         wrapped
         label="Projets associés"
         description="Sélectionnez les projets autorisés à utiliser ce cluster."
-        :options="props.allProjects.map(project => ({ id: project.id, label: `${project.organization?.name} - ${project.name}`}))"
+        :options="props.allProjects.map(project => ({ id: project.id, label: `${project.organization?.name} - ${project.name}` }))"
         :options-selected="props.allProjects
           .filter(project => localCluster.projectIds?.includes(project.id))
-          .map(project => ({id: project.id, label: `${project.organization?.name} - ${project.name}` }))"
+          .map(project => ({ id: project.id, label: `${project.organization?.name} - ${project.name}` }))"
         label-key="label"
         value-key="id"
         :disabled="false"

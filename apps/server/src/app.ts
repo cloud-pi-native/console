@@ -8,8 +8,8 @@ import fastifySwaggerUi from '@fastify/swagger-ui'
 import { initServer } from '@ts-rest/fastify'
 import { generateOpenApi } from '@ts-rest/open-api'
 import { apiPrefix, getContract } from '@cpn-console/shared'
-import { isInt, isDev, isTest } from './utils/env.js'
-import { fastifyConf, swaggerUiConf, swaggerConf } from './utils/fastify.js'
+import { isDev, isInt, isTest } from './utils/env.js'
+import { fastifyConf, swaggerConf, swaggerUiConf } from './utils/fastify.js'
 import { apiRouter } from './resources/index.js'
 import { keycloakConf, sessionConf } from './utils/keycloak.js'
 import { addReqLogs } from './utils/logger.js'
@@ -34,7 +34,7 @@ const app = fastify(fastifyConf)
       opts.logLevel = 'silent'
     }
   })
-  .setErrorHandler(function (error: Error, req: FastifyRequest, reply) {
+  .setErrorHandler((error: Error, req: FastifyRequest, reply) => {
     const statusCode = 500
     // @ts-ignore vérifier l'objet
     const message = error.description || error.message

@@ -2,28 +2,28 @@ import { faker } from '@faker-js/faker'
 import { describe, expect, it } from 'vitest'
 import type { Stage } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
-import { createStage, deleteStage, getStageAssociatedEnvironments, listStages, updateStage } from './business.ts'
 import { BadRequest400, NotFound404 } from '../../utils/errors.ts'
+import { createStage, deleteStage, getStageAssociatedEnvironments, listStages, updateStage } from './business.ts'
 
 const stage: Stage = {
   id: faker.string.uuid(),
   name: faker.company.name(),
 }
-describe('Test stage busines logic', () => {
+describe('test stage busines logic', () => {
   describe('createStage', () => {
-    it('Should create a stage', async () => {
+    it('should create a stage', async () => {
       prisma.stage.findUnique.mockResolvedValue(undefined)
       prisma.stage.create.mockResolvedValue({ id: stage.id })
       await createStage({ name: stage.name, quotaIds: [faker.string.uuid()] })
       expect(prisma.stage.update).toHaveBeenCalledTimes(1)
     })
-    it('Should create a stage without quotaIds', async () => {
+    it('should create a stage without quotaIds', async () => {
       prisma.stage.findUnique.mockResolvedValue(undefined)
       prisma.stage.create.mockResolvedValue({ id: stage.id })
       await createStage({ name: stage.name })
       expect(prisma.stage.update).toHaveBeenCalledTimes(0)
     })
-    it('Should not create a stage, name conflict', async () => {
+    it('should not create a stage, name conflict', async () => {
       prisma.stage.findUnique.mockResolvedValue({ id: stage.id })
       const response = await createStage({ name: stage.name, quotaIds: [faker.string.uuid()] })
       expect(prisma.stage.update).toHaveBeenCalledTimes(0)
@@ -32,7 +32,7 @@ describe('Test stage busines logic', () => {
   })
 
   describe('updateStage', () => {
-    it('Should update a stage', async () => {
+    it('should update a stage', async () => {
       const dbQuotas = [{ id: faker.string.uuid() }]
       const dbClusters = [{ id: faker.string.uuid() }]
       const newQuotas = [faker.string.uuid()]
@@ -45,21 +45,23 @@ describe('Test stage busines logic', () => {
           disconnect: {
             id: dbQuotas[0].id,
           },
-        } } })
+        },
+      } })
       expect(prisma.stage.update).toHaveBeenNthCalledWith(3, { where: expect.any(Object), data: {
         quotas: {
           connect: {
             id: newQuotas[0],
           },
-        } } })
+        },
+      } })
       expect(response.quotaIds).toBe(newQuotas)
     })
-    it('Should do nothing', async () => {
+    it('should do nothing', async () => {
       prisma.stage.findUnique.mockResolvedValue({ ...stage, quotas: [], clusters: [] })
       await updateStage(stage.id, { })
       expect(prisma.stage.update).toHaveBeenCalledTimes(0)
     })
-    it('Should return not found', async () => {
+    it('should return not found', async () => {
       prisma.stage.findUnique.mockResolvedValue(undefined)
       const response = await updateStage(stage.id, { name: stage.name, quotaIds: [faker.string.uuid()] })
       expect(prisma.stage.update).toHaveBeenCalledTimes(0)
@@ -68,13 +70,13 @@ describe('Test stage busines logic', () => {
   })
 
   describe('deleteStage', () => {
-    it('Should delete a stage', async () => {
+    it('should delete a stage', async () => {
       prisma.environment.findFirst.mockResolvedValue(undefined)
       prisma.stage.delete.mockResolvedValue({ id: stage.id })
       await deleteStage(stage.id)
       expect(prisma.stage.delete).toHaveBeenCalledTimes(1)
     })
-    it('Should not delete a stage, environment attached', async () => {
+    it('should not delete a stage, environment attached', async () => {
       prisma.environment.findFirst.mockResolvedValue({ id: faker.string.uuid() })
       const response = await deleteStage(stage.id)
       expect(prisma.stage.delete).toHaveBeenCalledTimes(0)
@@ -85,7 +87,7 @@ describe('Test stage busines logic', () => {
   describe('listStages', () => {
     const quotaAssociated = [{ id: faker.string.uuid() }]
     const clusterAssociated = [{ id: faker.string.uuid() }]
-    it('Should list all stages (admin, no userId provided)', async () => {
+    it('should list all stages (admin, no userId provided)', async () => {
       prisma.stage.findMany.mockResolvedValue([{ quotas: quotaAssociated, clusters: clusterAssociated }])
       const response = await listStages()
       expect(response[0].quotaIds).toStrictEqual([quotaAssociated[0].id])
@@ -95,14 +97,14 @@ describe('Test stage busines logic', () => {
   })
 
   describe('getStageAssociatedEnvironments', () => {
-    it('Should list all environments attached to a stage stages', async () => {
+    it('should list all environments attached to a stage stages', async () => {
       const envName = faker.string.alpha(8)
       const projectName = faker.string.alpha(8)
       const orgName = faker.string.alpha(8)
       const quotaName = faker.string.alpha(8)
       const clusterLabel = faker.string.alpha(8)
       const ownerEmail = faker.internet.email()
-      const envs = [{ name: envName, project: { name: projectName, organization: { name: orgName }, owner: { email: ownerEmail } }, quota: { name: quotaName }, cluster: { label: clusterLabel } }]
+      const envs = [{ name: envName, project: { name: projectName, organization: { name: orgName }, owner: { email: ownerEmail } }, quota: { name: quotaName }, cluster: { label: clusterLabel } }]
       prisma.environment.findMany.mockResolvedValue(envs)
       const response = await getStageAssociatedEnvironments(stage.id)
       expect(response).toStrictEqual([{

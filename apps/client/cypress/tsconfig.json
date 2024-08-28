@@ -2,14 +2,14 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "baseUrl": "./",
-    "noEmit": true,
     "paths": {
       "@/*": ["../src/*"]
     },
     "types": ["cypress", "node"],
+    "noEmit": true
   },
   "include": [
-    "./**/*.ts",
+    "./**/*.ts"
   ],
   "exclude": []
 }

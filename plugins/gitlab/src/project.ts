@@ -2,20 +2,30 @@ import * as fs from 'node:fs/promises'
 import path from 'node:path'
 import { getApi } from './utils.js'
 
-/**
- * @param {string} internalRepoName - nom du dépôt.
- * @param {string} group - nom du projet DSO.
- * @param {string} organization - nom de l'organisation DSO.
- */
-export const provisionMirror = async (repoId: number) => {
-  const api = getApi()
-  await api.Commits.create(repoId, 'main', 'ci: :construction_worker: first mirror', mirrorFirstActions)
-}
-
 const baseDir = path.resolve(import.meta.url, '../../files/').split(':')[1]
 
 const gitlabCiYml = (await fs.readFile(`${baseDir}/.gitlab-ci.yml`)).toString()
 const mirrorSh = (await fs.readFile(`${baseDir}/mirror.sh`)).toString()
+
+const mirrorFirstActions: CommitAction[] = [
+  {
+    action: 'create',
+    filePath: '.gitlab-ci.yml',
+    content: gitlabCiYml,
+    execute_filemode: false,
+  },
+  {
+    action: 'create',
+    filePath: 'mirror.sh',
+    content: mirrorSh,
+    execute_filemode: true,
+  },
+]
+
+export async function provisionMirror(repoId: number) {
+  const api = getApi()
+  await api.Commits.create(repoId, 'main', 'ci: :construction_worker: first mirror', mirrorFirstActions)
+}
 
 interface CommitAction {
   /** The action to perform */
@@ -33,18 +43,3 @@ interface CommitAction {
   /** When true/false enables/disables the execute flag on the file. Only considered for chmod action. */
   execute_filemode?: boolean
 }
-
-const mirrorFirstActions: CommitAction[] = [
-  {
-    action: 'create',
-    filePath: '.gitlab-ci.yml',
-    content: gitlabCiYml,
-    execute_filemode: false,
-  },
-  {
-    action: 'create',
-    filePath: 'mirror.sh',
-    content: mirrorSh,
-    execute_filemode: true,
-  },
-]

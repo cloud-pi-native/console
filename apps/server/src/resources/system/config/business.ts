@@ -1,5 +1,5 @@
-import {
-  type PluginsUpdateBody,
+import type {
+  PluginsUpdateBody,
 } from '@cpn-console/shared'
 import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
 import {
@@ -14,12 +14,14 @@ export type ConfigRecords = {
   value: string
 }[]
 
-export const objToDb = (obj: PluginsUpdateBody): ConfigRecords => Object.entries(obj)
-  .map(([pluginName, values]) => Object.entries(values)
-    .map(([key, value]) => ({ pluginName, key, value })))
-  .flat()
+export function objToDb(obj: PluginsUpdateBody): ConfigRecords {
+  return Object.entries(obj)
+    .map(([pluginName, values]) => Object.entries(values)
+      .map(([key, value]) => ({ pluginName, key, value })))
+    .flat()
+}
 
-export const getPluginsConfig = async () => {
+export async function getPluginsConfig() {
   const globalConfig = await getAdminPlugin()
 
   return Object.values(servicesInfos).map(({ name, title, imgSrc }) => {
@@ -38,7 +40,7 @@ export const getPluginsConfig = async () => {
   }).filter(plugin => plugin.manifest.length > 0)
 }
 
-export const updatePluginConfig = async (data: PluginsUpdateBody) => {
+export async function updatePluginConfig(data: PluginsUpdateBody) {
   const parsedData = editStrippers.global.safeParse(data)
   if (!parsedData.success) return new BadRequest400(parsedData.error.message)
   const records = objToDb(parsedData.data)

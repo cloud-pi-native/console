@@ -1,7 +1,7 @@
 import { z } from 'zod'
+import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../index.js'
 import { AtDatesToStringExtend, ErrorSchema } from '../schemas/utils.js'
-import { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 
 export const adminLogsQuery = z.object({
   offset: z.coerce.number(),

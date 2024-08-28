@@ -12,6 +12,9 @@ const props = defineProps<{
   }
 }>()
 
+const emit = defineEmits<{
+  update: [data: string]
+}>()
 const switchOptions = [
   {
     label: 'Activé',
@@ -34,22 +37,17 @@ const switchOptions = [
 ]
 const switchOptionsDisabled = switchOptions.map(options => ({ ...options, disabled: true }))
 
-const emit = defineEmits<{
-  update: [data: string]
-}>()
-
 const value = ref(props.options.value)
 
-const set = (data: string) => {
+function set(data: string) {
   value.value = data
   emit('update', data)
 }
-
 </script>
 
 <template>
   <div
-    :class="`pr-8 self-center`"
+    class="pr-8 self-center"
   >
     {{ props.options.name }}
   </div>

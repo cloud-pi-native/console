@@ -1,58 +1,47 @@
-import tseslint from 'typescript-eslint'
-import { fixupPluginRules } from '@eslint/compat'
-import nodePlugin from 'eslint-plugin-n'
-import importPlugin from 'eslint-plugin-unused-imports'
-import promisePlugin from 'eslint-plugin-promise'
-import stylistic from '@stylistic/eslint-plugin'
+import antfu from '@antfu/eslint-config'
 
-export default tseslint.config(
-  stylistic.configs['recommended-flat'],
-  ...tseslint.configs.recommended,
-  // ...tseslint.configs.recommendedTypeChecked,
+export default antfu(
   {
-    plugins: {
-      '@stylistic': stylistic,
-      '@typescript-eslint': tseslint.plugin,
-      'node': nodePlugin,
-      'promise': fixupPluginRules(promisePlugin),
-      'unused-imports': fixupPluginRules(importPlugin),
-    },
-    languageOptions: {
-      parser: tseslint.parser,
-      parserOptions: {
-        project: '**/tsconfig.eslint.json',
-        sourceType: 'module',
+    stylistic: {
+      overrides: {
+        'style/comma-dangle': ['error', 'always-multiline'],
+        'style/quote-props': ['error', 'as-needed', { keywords: false, unnecessary: true }],
+        'style/brace-style': ['error', '1tbs', { allowSingleLine: true }],
+        'style/max-statements-per-line': ['error', { max: 2 }],
+        'no-console': 'off',
+        'jsonc/sort-keys': 'off',
+        'node/prefer-global/process': ['error', 'always'],
+        'node/prefer-global/console': ['error', 'always'],
+        'node/prefer-global/buffer': ['error', 'always'],
+        'unused-imports/no-unused-imports': 'error',
+        'unused-imports/no-unused-vars': ['error', { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_', caughtErrors: 'all', caughtErrorsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' }],
+        'vue/no-v-html': 'off',
+        'vue/no-irregular-whitespace': 'off',
+        'vue/script-indent': 'off',
+        'ts/ban-ts-comment': 'off',
+        'antfu/if-newline': 'off',
       },
     },
-    rules: {
-      '@stylistic/comma-dangle': ['error', 'always-multiline'],
-      '@stylistic/quote-props': ['error', 'as-needed', { keywords: false, unnecessary: true }],
-      '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: true }],
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-      'unused-imports/no-unused-imports': 'error',
-      'unused-imports/no-unused-vars': [
-        'warn', 
-        {
-          'vars': 'all',
-          'varsIgnorePattern': '^_',
-          'args': 'after-used',
-          'argsIgnorePattern': '^_',
-        },
-      ],
+    typescript: true,
+    vue: true,
+    yaml: {
+      overrides: {
+        'yaml/quotes': ['error', { prefer: 'double' }],
+        'yaml/indent': ['error', 2, { indentBlockSequences: true, indicatorValueIndent: 2 }],
+      },
     },
-    files: [
-      '**/*.{js,cjs,mjs,ts}',
-    ],
-  },
-  {
     ignores: [
-      '**/node_modules/',
+      '**/node_modules',
+      '**/pnpm-lock.yaml',
+      '**/.turbo',
       '**/dist/',
       '**/types/',
       '**/coverage/',
+      '**/templates/*.{yaml,yml}',
+      '**/Chart.yaml',
       '**/*.d.ts',
+      '**/*.md/*.js',
+      '**/*.md/*.ts',
     ],
   },
 )

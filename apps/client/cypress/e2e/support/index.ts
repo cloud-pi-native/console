@@ -13,7 +13,9 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-import type { Project, Repository, CiForm } from '../../types.js'
+/* eslint-disable ts/method-signature-style */
+
+import type { CiForm, Project, Repository } from '../../types.js'
 import './commands.js'
 
 Cypress.on('window:before:load', (win) => {
@@ -29,7 +31,7 @@ Cypress.on('window:before:load', (win) => {
 })
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+  // eslint-disable-next-line ts/no-namespace
   namespace Cypress {
     interface Chainable {
       /**
@@ -116,9 +118,9 @@ declare global {
       ): Chainable<JQuery<HTMLElement>>
 
       /**
-       * Custom command to create environements
+       * Custom command to create environments
        * @param project
-       * @param environements
+       * @param environments
        * @example cy.addEnvironment({ name: 'projectName' }, ['preprod', 'prod'])
        */
       addEnvironment(
@@ -127,9 +129,9 @@ declare global {
       ): Chainable<JQuery<HTMLElement>>
 
       /**
-       * Custom command to assert environements creation
+       * Custom command to assert environments creation
        * @param project
-       * @param environements
+       * @param environments
        * @example cy.assertAddEnvironment({ name: 'projectName' }, ['preprod', 'prod'])
        */
       assertAddEnvironment(
@@ -141,31 +143,18 @@ declare global {
       /**
        * Custom command to delete an environment
        * @param project
-       * @param environement
+       * @param environment
        * @example cy.deleteEnvironment({ name: 'projectName' }, 'prod')
        */
       deleteEnvironment(
         project: Project,
-        environments: string
-      ): Chainable<JQuery<HTMLElement>>
-
-      /**
-       * Custom command to add a permission
-       * @param project
-       * @param environement
-       * @param userToLicence
-       * @example cy.addPermission({ name: 'projectName' }, 'prod', 'test@test.com')
-       */
-      addPermission(
-        project: Project,
-        environment: string,
-        user: string
+        environment: string
       ): Chainable<JQuery<HTMLElement>>
 
       /**
        * Custom command to assert permission creations
        * @param project
-       * @param environement
+       * @param environment
        * @param permissions
        * @example cy.assertPermission({ name: 'projectName' }, 'prod', [{ email: 'test1@test.com', isOwner: true }, { email: 'test2@test.com', isOwner: false }])
        */
@@ -262,6 +251,8 @@ declare global {
        * Custom command to get an html element by its 'data-testid' with a retry system for flaky tests
        * @param selector
        * @param opt
+       * @param opt.delay
+       * @param opt.retries
        * @example cy.getSettled('testBtn')
        */
       getSettled(

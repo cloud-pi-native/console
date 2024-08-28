@@ -22,7 +22,7 @@ const quickLinks = ref([{
   iconRight: true,
 }])
 
-const getSwaggerUrl = () => window?.location?.origin + `${apiPrefix}/swagger-ui/static/index.html`
+const getSwaggerUrl = () => `${window?.location?.origin}${apiPrefix}/swagger-ui/static/index.html`
 
 onErrorCaptured((error) => {
   if (error instanceof Error) {
@@ -52,7 +52,7 @@ onBeforeMount(() => {
     :quick-links="quickLinks"
   />
   <DsfrNotice
-    v-if="systemStore.systemSettingsByKey['maintenance']?.value === 'on'"
+    v-if="systemStore.systemSettingsByKey.maintenance?.value === 'on'"
     title="Le mode Maintenance est actuellement activé"
     data-testid="maintenance-notice"
   />

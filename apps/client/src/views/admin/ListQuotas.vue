@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
-import type { CreateQuotaBody, Quota, UpdateQuotaBody, QuotaAssociatedEnvironments } from '@cpn-console/shared'
+import type { CreateQuotaBody, Quota, QuotaAssociatedEnvironments, UpdateQuotaBody } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useQuotaStore } from '@/stores/quota.js'
 import { useStageStore } from '@/stores/stage.js'
@@ -18,7 +18,7 @@ const allStages = ref<any[]>([])
 const associatedEnvironments = ref<QuotaAssociatedEnvironments>([])
 const isNewQuotaForm = ref(false)
 
-const setQuotaTiles = (quotas: Quota[]) => {
+function setQuotaTiles(quotas: Quota[]) {
   quotaList.value = sortArrByObjKeyAsc(quotas, 'name')
     ?.map(quota => ({
       id: quota.id,
@@ -27,7 +27,7 @@ const setQuotaTiles = (quotas: Quota[]) => {
     }))
 }
 
-const setSelectedQuota = async (quota: Quota) => {
+async function setSelectedQuota(quota: Quota) {
   if (selectedQuota.value?.name === quota.name) {
     selectedQuota.value = undefined
     return
@@ -37,17 +37,17 @@ const setSelectedQuota = async (quota: Quota) => {
   await getQuotaAssociatedEnvironments(quota.id)
 }
 
-const showNewQuotaForm = () => {
+function showNewQuotaForm() {
   isNewQuotaForm.value = !isNewQuotaForm.value
   selectedQuota.value = undefined
 }
 
-const cancel = () => {
+function cancel() {
   isNewQuotaForm.value = false
   selectedQuota.value = undefined
 }
 
-const addQuota = async (quota: CreateQuotaBody) => {
+async function addQuota(quota: CreateQuotaBody) {
   snackbarStore.isWaitingForResponse = true
   cancel()
   await quotaStore.addQuota(quota)
@@ -55,7 +55,7 @@ const addQuota = async (quota: CreateQuotaBody) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const updateQuota = async (quota: UpdateQuotaType) => {
+async function updateQuota(quota: UpdateQuotaType) {
   snackbarStore.isWaitingForResponse = true
   await quotaStore.updateQuota(quota.id, quota)
   await quotaStore.getAllQuotas()
@@ -63,7 +63,7 @@ const updateQuota = async (quota: UpdateQuotaType) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const deleteQuota = async (quotaId: string) => {
+async function deleteQuota(quotaId: string) {
   snackbarStore.isWaitingForResponse = true
   cancel()
   await quotaStore.deleteQuota(quotaId)
@@ -71,7 +71,7 @@ const deleteQuota = async (quotaId: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const getQuotaAssociatedEnvironments = async (quotaId: string) => {
+async function getQuotaAssociatedEnvironments(quotaId: string) {
   snackbarStore.isWaitingForResponse = true
   associatedEnvironments.value = await quotaStore.getQuotaAssociatedEnvironments(quotaId) ?? []
   snackbarStore.isWaitingForResponse = false
@@ -86,7 +86,6 @@ onMounted(async () => {
 watch(quotas, () => {
   setQuotaTiles(quotas.value)
 })
-
 </script>
 
 <template>
