@@ -143,7 +143,7 @@ export function getProjectInfosOrThrow(id: Project['id']) {
 }
 
 export function getProjectInfosAndRepos(id: Project['id']) {
-  return prisma.project.findUnique({
+  return prisma.project.findUniqueOrThrow({
     where: { id },
     include: {
       ...baseProjectIncludes,

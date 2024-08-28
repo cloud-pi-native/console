@@ -2,6 +2,8 @@ export const adminGroupPath = '/admin'
 
 export const projectIsLockedInfo = 'Le projet est verrouillé, pas d\'action possible'
 
+export const fakeToken = 'fakeToken'
+
 export const levels = [
   'r',
   'rw',

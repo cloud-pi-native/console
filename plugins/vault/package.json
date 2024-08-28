@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/vault-plugin",
   "type": "module",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "private": false,
   "description": "",
   "main": "dist/index.js",

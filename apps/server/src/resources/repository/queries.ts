@@ -11,10 +11,10 @@ export function getProjectRepositories(projectId: Project['id']) {
 }
 
 // CREATE
-type RepositoryCreate = Pick<Repository, 'projectId' | 'internalRepoName' | 'isInfra' | 'isPrivate' | 'externalRepoUrl'> &
-  Partial<Pick<Repository, 'externalUserName'>>
+type RepositoryCreate = Pick<Repository, 'projectId' | 'internalRepoName' | 'isInfra' | 'isPrivate'> &
+  Partial<Pick<Repository, 'externalUserName' | 'externalRepoUrl'>>
 
-export function initializeRepository({ projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName = undefined }: RepositoryCreate) {
+export function initializeRepository({ projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName }: RepositoryCreate) {
   return prisma.repository.create({
     data: {
       projectId,

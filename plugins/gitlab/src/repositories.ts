@@ -47,15 +47,22 @@ async function ensureRepositoryExists(gitlabRepositories: CondensedProjectSchema
   const externalRepoUrn = repository.externalRepoUrl.split(/:\/\/(.*)/s)[1]
   const vaultCredsPath = `${repository.internalRepoName}-mirror`
   const currentVaultSecret = await vaultApi.read(vaultCredsPath, { throwIfNoEntry: false })
+
+  if (!gitlabRepository) {
+    gitlabRepository = repository.externalRepoUrl
+      ? await gitlabApi.createCloneRepository(repository.internalRepoName, externalRepoUrn, repository.newCreds ?? { username: currentVaultSecret?.data.GIT_INPUT_USER, token: currentVaultSecret?.data.GIT_INPUT_PASSWORD })
+      : await gitlabApi.createEmptyRepository(repository.internalRepoName)
+  }
+
+  if (!repository.externalRepoUrl) {
+    return currentVaultSecret && vaultApi.destroy(vaultCredsPath)
+  }
+
   let gitInputUser: string | undefined
   let gitInputPassword: string | undefined
   if (currentVaultSecret?.data) {
     gitInputUser = currentVaultSecret.data.GIT_INPUT_USER
     gitInputPassword = currentVaultSecret.data.GIT_INPUT_PASSWORD
-  }
-
-  if (!gitlabRepository) {
-    gitlabRepository = await gitlabApi.createCloneRepository(repository.internalRepoName, externalRepoUrn, repository.newCreds ?? { username: currentVaultSecret?.data.GIT_INPUT_USER, token: currentVaultSecret?.data.GIT_INPUT_PASSWORD }) // TODO
   }
 
   const internalRepoUrl = await gitlabApi.getRepoUrl(repository.internalRepoName)

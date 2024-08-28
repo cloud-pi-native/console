@@ -166,7 +166,7 @@ const canManageRepos = computed(() => !projectStore.selectedProject?.locked && P
           v-if="selectedRepo?.internalRepoName === repo.id"
         >
           <DsfrNavigation
-            v-if="ProjectAuthorized.ManageRepositories({ projectPermissions: projectStore.selectedProjectPerms })"
+            v-if="ProjectAuthorized.ManageRepositories({ projectPermissions: projectStore.selectedProjectPerms }) && selectedRepo?.externalRepoUrl && selectedRepo?.id"
             class="fr-mb-4w"
             :nav-items="[
               {
@@ -180,7 +180,7 @@ const canManageRepos = computed(() => !projectStore.selectedProject?.locked && P
             ]"
           />
           <div
-            v-if="ProjectAuthorized.ManageRepositories({ projectPermissions: projectStore.selectedProjectPerms })"
+            v-if="ProjectAuthorized.ManageRepositories({ projectPermissions: projectStore.selectedProjectPerms }) && selectedRepo?.externalRepoUrl && selectedRepo?.id"
             :id="syncFormId"
             class="flex flex-col gap-4 fr-mb-4w"
           >
