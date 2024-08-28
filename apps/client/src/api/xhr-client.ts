@@ -19,7 +19,6 @@ export const apiClient = await getApiClient(
 
     // Generate token
     const keycloak = getKeycloak()
-    await keycloak.updateToken(120)
     const token = keycloak.token
     if (token) {
       args.headers.Authorization = `Bearer ${token}`
