@@ -1,4 +1,4 @@
-import { SystemSettings } from '@cpn-console/shared'
+import type { SystemSettings } from '@cpn-console/shared'
 import { getModel } from '../../support/func.js'
 
 describe('Administration system settings', () => {
@@ -49,7 +49,7 @@ describe('Administration system settings', () => {
 
     cy.kcLogin('test')
     cy.getByDataTestid('maintenance-notice')
-    .should('not.exist')
+      .should('not.exist')
     cy.visit('/projects')
     // TODO à creuser : La requête est faite deux fois
     // la première renvoie "off" alors qu'en bdd la valeur est à "on"

@@ -1,8 +1,8 @@
 <script lang="ts" setup>
+import type { Member, Role, RoleBigint } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { Member, RoleBigint, type Role } from '@cpn-console/shared'
 
 const projectMemberStore = useProjectMemberStore()
 const projectStore = useProjectStore()
@@ -32,7 +32,7 @@ const roleList = computed((): RoleItem[] => {
 
 const selectedRole = computed(() => roleList.value.find(({ id }) => id === selectedId.value))
 
-const addRole = async () => {
+async function addRole() {
   if (!projectStore.selectedProject) return
   projectStore.selectedProject.roles = await projectStore.createRole(projectStore.selectedProject.id, {
     name: 'Nouveau rôle',
@@ -42,7 +42,7 @@ const addRole = async () => {
   selectedId.value = projectStore.selectedProject.roles[projectStore.selectedProject.roles.length - 1].id
 }
 
-const deleteRole = async (roleId: Role['id']) => {
+async function deleteRole(roleId: Role['id']) {
   if (!projectStore.selectedProject) return
   await projectStore.deleteRole(projectStore.selectedProject.id, roleId)
   projectStore.selectedProject.roles = projectStore.selectedProject.roles.filter(role => role.id !== roleId)
@@ -50,7 +50,7 @@ const deleteRole = async (roleId: Role['id']) => {
   selectedId.value = undefined
 }
 
-const updateMember = async (checked: boolean, userId: Member['userId']) => {
+async function updateMember(checked: boolean, userId: Member['userId']) {
   if (!projectStore.selectedProject || !selectedRole.value) return
   const matchingMember = projectStore.selectedProject.members.find(member => member.userId === userId)
   if (!matchingMember) return
@@ -63,7 +63,7 @@ const updateMember = async (checked: boolean, userId: Member['userId']) => {
   snackbarStore.setMessage('Rôle mis à jour', 'success')
 }
 
-const saveRole = async (role: Omit<RoleBigint, 'position'>) => {
+async function saveRole(role: Omit<RoleBigint, 'position'>) {
   if (role.id === 'everyone') return saveEveryoneRole(role)
   if (!projectStore.selectedProject || !selectedRole.value) return
   projectStore.selectedProject.roles = await projectStore.patchRoles(projectStore.selectedProject.id, [{
@@ -73,7 +73,7 @@ const saveRole = async (role: Omit<RoleBigint, 'position'>) => {
   }])
 }
 
-const saveEveryoneRole = async (role: { permissions: bigint }) => {
+async function saveEveryoneRole(role: { permissions: bigint }) {
   if (!projectStore.selectedProject) return
   await projectStore.updateProject(projectStore.selectedProject.id, {
     everyonePerms: role.permissions.toString(),
@@ -82,7 +82,6 @@ const saveEveryoneRole = async (role: { permissions: bigint }) => {
 }
 
 const cancel = () => selectedId.value = undefined
-
 </script>
 
 <template>
@@ -102,7 +101,7 @@ const cancel = () => selectedId.value = undefined
           <DsfrButton
             label="Ajouter un rôle"
             data-testid="addRoleBtn"
-            :class="selectedId ? 'w-11/12': ''"
+            :class="selectedId ? 'w-11/12' : ''"
             secondary
             @click="addRole()"
           />
@@ -110,7 +109,7 @@ const cancel = () => selectedId.value = undefined
             v-for="role in roleList"
             :key="role.id"
             :data-testid="`${role.id}-tab`"
-            :class="`text-align-left cursor-pointer mt-3 grid grid-flow-col fr-btn text-wrap truncate ${selectedId ? 'grid-cols-1': 'grid-cols-2'} ${selectedId === role.id ? 'fr-btn--primary w-full': 'fr-btn--tertiary w-11/12'}`"
+            :class="`text-align-left cursor-pointer mt-3 grid grid-flow-col fr-btn text-wrap truncate ${selectedId ? 'grid-cols-1' : 'grid-cols-2'} ${selectedId === role.id ? 'fr-btn--primary w-full' : 'fr-btn--tertiary w-11/12'}`"
             @click="selectedId = selectedId === role.id ? undefined : role.id"
           >
             {{ role.name }}

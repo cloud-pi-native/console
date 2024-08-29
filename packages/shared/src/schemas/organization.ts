@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { AtDatesToStringExtend } from './utils.js'
 import { CoerceBooleanSchema } from '../utils/schemas.js'
+import { AtDatesToStringExtend } from './utils.js'
 
 export const OrganizationSchema = z.object({
   id: z.string()

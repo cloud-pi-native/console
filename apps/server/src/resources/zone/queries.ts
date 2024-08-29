@@ -1,8 +1,8 @@
-import type { Zone, Cluster } from '@prisma/client'
+import type { Cluster, Zone } from '@prisma/client'
 import prisma from '@/prisma.js'
 
-export const linkZoneToClusters = (zoneId: Zone['id'], clusterIds: Cluster['id'][]) =>
-  prisma.zone.update({
+export function linkZoneToClusters(zoneId: Zone['id'], clusterIds: Cluster['id'][]) {
+  return prisma.zone.update({
     where: {
       id: zoneId,
     },
@@ -12,3 +12,4 @@ export const linkZoneToClusters = (zoneId: Zone['id'], clusterIds: Cluster['id']
       },
     },
   })
+}

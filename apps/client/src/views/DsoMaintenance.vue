@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-
-type MailType = {
+interface MailType {
   to: string
   label: string
   address: string
@@ -12,10 +11,9 @@ const mail: MailType = {
   address: 'cloudpinative-relations@interieur.gouv.fr',
 }
 
-const setWindowLocation = (to: string) => {
+function setWindowLocation(to: string) {
   window.location = to as string & Location
 }
-
 </script>
 
 <template>

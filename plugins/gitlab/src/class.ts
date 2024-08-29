@@ -1,31 +1,30 @@
-import { PluginApi, type Project, type RepoCreds, type UniqueRepo } from '@cpn-console/hooks'
-import { getApi, getConfig, getGroupRootId, infraAppsRepoName, internalMirrorRepoName } from './utils.js'
-import { AccessTokenScopes, CommitAction, GroupSchema, GroupStatisticsSchema, MemberSchema, ProjectVariableSchema, VariableSchema } from '@gitbeaker/rest'
-import { getOrganizationId } from './group.js'
-import { AccessLevel, CondensedProjectSchema, Gitlab } from '@gitbeaker/core'
-import { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { createHash } from 'node:crypto'
+import { PluginApi, type Project, type RepoCreds, type UniqueRepo } from '@cpn-console/hooks'
+import type { AccessTokenScopes, CommitAction, GroupSchema, GroupStatisticsSchema, MemberSchema, ProjectVariableSchema, VariableSchema } from '@gitbeaker/rest'
+import type { CondensedProjectSchema, Gitlab } from '@gitbeaker/core'
+import { AccessLevel } from '@gitbeaker/core'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { objectEntries } from '@cpn-console/shared'
-import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
+import type { GitbeakerRequestError } from '@gitbeaker/requester-utils'
+import { getOrganizationId } from './group.js'
+import { getApi, getConfig, getGroupRootId, infraAppsRepoName, internalMirrorRepoName } from './utils.js'
 
 type setVariableResult = 'created' | 'updated' | 'already up-to-date'
 type AccessLevelAllowed = AccessLevel.NO_ACCESS | AccessLevel.MINIMAL_ACCESS | AccessLevel.GUEST | AccessLevel.REPORTER | AccessLevel.DEVELOPER | AccessLevel.MAINTAINER | AccessLevel.OWNER
 const infraGroupName = 'Infra'
 const infraGroupPath = 'infra'
 
-type GitlabMirrorSecret = {
+interface GitlabMirrorSecret {
   MIRROR_USER: string
   MIRROR_TOKEN: string
 }
 
-type RepoSelect = {
+interface RepoSelect {
   mirror?: CondensedProjectSchema
   target?: CondensedProjectSchema
 }
 type PendingCommits = Record<number, {
-  branches: Record<string,
-    { messages: string[], actions: CommitAction[] }
-  >
+  branches: Record<string, { messages: string[], actions: CommitAction[] } >
 }>
 
 export class GitlabProjectApi extends PluginApi {
@@ -122,7 +121,7 @@ export class GitlabProjectApi extends PluginApi {
     const pathProjectName = `${getConfig().projectsRootDir}/${this.project.organization.name}/${this.project.name}/${projectName}`
     const projects = (await this.api.Projects.search(projectName)).filter(p => p.path_with_namespace === pathProjectName)
     if (projects.length !== 1) {
-      throw new Error('Gitlab project "' + pathProjectName + '" not found')
+      throw new Error(`Gitlab project "${pathProjectName}" not found`)
     }
     return projects[0].id
   }
@@ -219,13 +218,6 @@ export class GitlabProjectApi extends PluginApi {
     })
   }
 
-  /**
-   * Fonction pour commit un fichier dans un repo en mode "create or update"
-   * @param repoId
-   * @param content
-   * @param filePath
-   * @param branch
-   */
   public async commitCreateOrUpdate(
     repoId: number,
     fileContent: string,
@@ -312,7 +304,9 @@ export class GitlabProjectApi extends PluginApi {
   }
 
   public async addSpecialRepositories(name: string) {
-    if (!this.specialRepositories.includes(name)) this.specialRepositories.push(name)
+    if (!this.specialRepositories.includes(name)) {
+      this.specialRepositories.push(name)
+    }
   }
 
   // Group members
@@ -336,19 +330,7 @@ export class GitlabProjectApi extends PluginApi {
     const group = await this.getOrCreateProjectGroup()
     const listVars = await this.api.GroupVariables.all(group.id)
     const currentVariable = listVars.find(v => v.key === toSetVariable.key)
-    if (!currentVariable) {
-      await this.api.GroupVariables.create(
-        group.id,
-        toSetVariable.key,
-        toSetVariable.value,
-        {
-          variableType: toSetVariable.variable_type,
-          masked: toSetVariable.masked,
-          protected: toSetVariable.protected,
-
-        })
-      return 'created'
-    } else {
+    if (currentVariable) {
       if (
         currentVariable.masked !== toSetVariable.masked
         || currentVariable.value !== toSetVariable.value
@@ -364,10 +346,24 @@ export class GitlabProjectApi extends PluginApi {
             masked: toSetVariable.masked,
             protected: toSetVariable.protected,
             filter: { environment_scope: '*' },
-          })
+          },
+        )
         return 'updated'
       }
       return 'already up-to-date'
+    } else {
+      await this.api.GroupVariables.create(
+        group.id,
+        toSetVariable.key,
+        toSetVariable.value,
+        {
+          variableType: toSetVariable.variable_type,
+          masked: toSetVariable.masked,
+          protected: toSetVariable.protected,
+
+        },
+      )
+      return 'created'
     }
   }
 
@@ -397,7 +393,8 @@ export class GitlabProjectApi extends PluginApi {
             filter: {
               environment_scope: toSetVariable.environment_scope,
             },
-          })
+          },
+        )
         return 'updated'
       }
       return 'already up-to-date'
@@ -410,14 +407,17 @@ export class GitlabProjectApi extends PluginApi {
           variableType: toSetVariable.variable_type,
           masked: toSetVariable.masked,
           protected: toSetVariable.protected,
-        })
+        },
+      )
       return 'created'
     }
   }
 
   // Mirror
   public async triggerMirror(targetRepo: string, syncAllBranches: boolean, branchName?: string) {
-    if ((await this.getSpecialRepositories()).includes(targetRepo)) throw new Error('User requested for invalid mirroring')
+    if ((await this.getSpecialRepositories()).includes(targetRepo)) {
+      throw new Error('User requested for invalid mirroring')
+    }
     const repos = await this.listRepositories()
     const { mirror, target }: RepoSelect = repos.reduce((acc, repository) => {
       if (repository.name === 'mirror') {

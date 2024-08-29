@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { useStageStore } from '@/stores/stage.js'
+import { computed, onMounted, ref, watch } from 'vue'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import type { CreateStageBody, Stage, StageAssociatedEnvironments, UpdateStageBody } from '@cpn-console/shared'
+import { useStageStore } from '@/stores/stage.js'
 import { useQuotaStore } from '@/stores/quota'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -21,7 +21,7 @@ const stages = computed(() => stageStore.stages)
 const allQuotas = computed(() => quotaStore.quotas)
 const allClusters = computed(() => clusterStore.clusters)
 
-const setStageTiles = (stages: Stage[]) => {
+function setStageTiles(stages: Stage[]) {
   stageList.value = sortArrByObjKeyAsc(stages, 'name')
     ?.map(stage => ({
       id: stage.id,
@@ -30,7 +30,7 @@ const setStageTiles = (stages: Stage[]) => {
     }))
 }
 
-const setSelectedStage = async (stage: Stage) => {
+async function setSelectedStage(stage: Stage) {
   if (selectedStage.value?.name === stage.name) {
     selectedStage.value = undefined
     return
@@ -40,17 +40,17 @@ const setSelectedStage = async (stage: Stage) => {
   await getStageAssociatedEnvironments(stage.id)
 }
 
-const showNewStageForm = () => {
+function showNewStageForm() {
   isNewStageForm.value = !isNewStageForm.value
   selectedStage.value = undefined
 }
 
-const cancel = () => {
+function cancel() {
   isNewStageForm.value = false
   selectedStage.value = undefined
 }
 
-const addStage = async (stage: CreateStageBody) => {
+async function addStage(stage: CreateStageBody) {
   snackbarStore.isWaitingForResponse = true
   cancel()
   await stageStore.addStage(stage)
@@ -62,7 +62,7 @@ export type UpdateStageType = {
   id: Stage['id']
 } & UpdateStageBody
 
-const updateStage = async ({ id, ...stage }: UpdateStageType) => {
+async function updateStage({ id, ...stage }: UpdateStageType) {
   snackbarStore.isWaitingForResponse = true
   await stageStore.updateStage(id, stage)
   await stageStore.getAllStages()
@@ -70,7 +70,7 @@ const updateStage = async ({ id, ...stage }: UpdateStageType) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const deleteStage = async (stageId: string) => {
+async function deleteStage(stageId: string) {
   snackbarStore.isWaitingForResponse = true
   cancel()
   await stageStore.deleteStage(stageId)
@@ -78,7 +78,7 @@ const deleteStage = async (stageId: string) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const getStageAssociatedEnvironments = async (stageId: string) => {
+async function getStageAssociatedEnvironments(stageId: string) {
   snackbarStore.isWaitingForResponse = true
   associatedEnvironments.value = await stageStore.getStageAssociatedEnvironments(stageId) ?? []
   snackbarStore.isWaitingForResponse = false
@@ -94,7 +94,6 @@ onMounted(async () => {
 watch(stages, () => {
   setStageTiles(stages.value)
 })
-
 </script>
 
 <template>

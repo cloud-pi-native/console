@@ -1,14 +1,16 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import {
-  formatDate,
-  OrganizationSchema,
-  sortArrByObjKeyAsc,
+import type {
+  CreateOrganizationBody,
+  Organization,
   SharedZodError,
-  parseZodError,
-  type CreateOrganizationBody,
-  type Organization,
+} from '@cpn-console/shared'
+import {
+  OrganizationSchema,
+  formatDate,
   organizationContract,
+  parseZodError,
+  sortArrByObjKeyAsc,
 } from '@cpn-console/shared'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
@@ -42,69 +44,71 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   return schemaValidation.success ? undefined : schemaValidation.error
 })
 
-const generateRows = () => allOrganizations.value.length
-  ? sortArrByObjKeyAsc(allOrganizations.value, 'name')
-    ?.map(({ label, name, source, active, createdAt, updatedAt }) => ([
-      {
-        component: 'input',
-        value: label,
-        class: 'fr-input fr-text-default--info',
-        'data-testid': `${name}-label-input`,
-        onBlur: (event: Event & { target: { value: string } }) => {
-          const data = event.target?.value
-          if (data !== label) {
-            preUpdateOrganization({ name, key: 'label', data })
-          }
+function generateRows() {
+  return allOrganizations.value.length
+    ? sortArrByObjKeyAsc(allOrganizations.value, 'name')
+      ?.map(({ label, name, source, active, createdAt, updatedAt }) => ([
+        {
+          component: 'input',
+          value: label,
+          class: 'fr-input fr-text-default--info',
+          'data-testid': `${name}-label-input`,
+          onBlur: (event: Event & { target: { value: string } }) => {
+            const data = event.target?.value
+            if (data !== label) {
+              preUpdateOrganization({ name, key: 'label', data })
+            }
+          },
         },
-      },
-      name,
-      source,
-      {
-        component: 'input',
-        type: 'checkbox',
-        checked: active,
-        'data-testid': `${name}-active-cbx`,
-        class: 'fr-checkbox-group--sm',
-        title: active ? `Désactiver l'organisation ${name}` : `Réactiver l'organisation ${name}`,
-        onClick: (event: Event & { target: { checked: boolean } }) => {
-          const data = event.target.checked
-          if (data !== active) {
-            preUpdateOrganization({ name, key: 'active', data })
-          }
+        name,
+        source,
+        {
+          component: 'input',
+          type: 'checkbox',
+          checked: active,
+          'data-testid': `${name}-active-cbx`,
+          class: 'fr-checkbox-group--sm',
+          title: active ? `Désactiver l'organisation ${name}` : `Réactiver l'organisation ${name}`,
+          onClick: (event: Event & { target: { checked: boolean } }) => {
+            const data = event.target.checked
+            if (data !== active) {
+              preUpdateOrganization({ name, key: 'active', data })
+            }
+          },
         },
-      },
-      formatDate(createdAt),
-      formatDate(updatedAt),
-    ]))
-  : [[{
-    text: 'Aucune organisation, veuillez en ajouter une.',
-    cellAttrs: {
-      colspan: headers.length,
-      align: 'center',
-    },
-  }]]
+        formatDate(createdAt),
+        formatDate(updatedAt),
+      ]))
+    : [[{
+        text: 'Aucune organisation, veuillez en ajouter une.',
+        cellAttrs: {
+          colspan: headers.length,
+          align: 'center',
+        },
+      }]]
+}
 
 const rows = ref<ReturnType<typeof generateRows>>([])
 
-const setRows = () => {
+function setRows() {
   rows.value = generateRows()
   tableKey.value = getRandomId('table')
 }
 
-const getAllOrganizations = async () => {
+async function getAllOrganizations() {
   await organizationStore.listOrganizations()
   allOrganizations.value = organizationStore.organizations
   setRows()
 }
 
-const syncOrganizations = async () => {
+async function syncOrganizations() {
   isSyncingOrganizations.value = true
   await organizationStore.syncOrganizations()
   getAllOrganizations()
   isSyncingOrganizations.value = false
 }
 
-const createOrganization = async () => {
+async function createOrganization() {
   if (isOrgAlreadyTaken.value) {
     snackbarStore.setMessage('Une organisation portant ce nom existe déjà.', 'error')
     return
@@ -120,7 +124,7 @@ const createOrganization = async () => {
   newOrg.value = { name: '', label: '', source: '' }
 }
 
-const preUpdateOrganization = ({ name, key, data }: { name: string, key: string, data: unknown }) => {
+function preUpdateOrganization({ name, key, data }: { name: string, key: string, data: unknown }) {
   isUpdatingOrganization.value = {
     name,
     key,
@@ -128,17 +132,17 @@ const preUpdateOrganization = ({ name, key, data }: { name: string, key: string,
   }
 }
 
-const confirmUpdateOrganization = async ({ name, key, data }: { name: string, key: string, data: unknown }) => {
+async function confirmUpdateOrganization({ name, key, data }: { name: string, key: string, data: unknown }) {
   isUpdatingOrganization.value = null
   await updateOrganization({ name, key, data })
 }
 
-const cancelUpdateOrganization = async () => {
+async function cancelUpdateOrganization() {
   isUpdatingOrganization.value = null
   await getAllOrganizations()
 }
 
-const updateOrganization = async ({ name, key, data }: { name: string, key: string, data: unknown }) => {
+async function updateOrganization({ name, key, data }: { name: string, key: string, data: unknown }) {
   const org = {
     name,
     [key]: data,
@@ -227,7 +231,7 @@ onBeforeMount(async () => {
         label="Label de l'organisation"
         label-visible
         placeholder="Ministère de l'économie et des finances"
-        :is-invalid="(!!newOrg.label && !OrganizationSchema.pick({label: true}).safeParse({label: newOrg.label}).success) || isOrgAlreadyTaken"
+        :is-invalid="(!!newOrg.label && !OrganizationSchema.pick({ label: true }).safeParse({ label: newOrg.label }).success) || isOrgAlreadyTaken"
         class="fr-mb-2w"
       />
       <DsfrInput
@@ -238,7 +242,7 @@ onBeforeMount(async () => {
         hint="Ce nom sera utilisé pour construire le namespace du projet. Il doit être en minuscule et ne pas faire plus de 10 caractères ni contenir de caractères spéciaux."
         label-visible
         placeholder="meco"
-        :is-invalid="(!!newOrg.name && !OrganizationSchema.pick({name: true}).safeParse({name: newOrg.name}).success) || isOrgAlreadyTaken"
+        :is-invalid="(!!newOrg.name && !OrganizationSchema.pick({ name: true }).safeParse({ name: newOrg.name }).success) || isOrgAlreadyTaken"
         class="fr-mb-2w"
       />
       <DsfrAlert

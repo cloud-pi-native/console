@@ -1,8 +1,8 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { ClusterPrivacy } from '@cpn-console/shared'
 import { apiClient } from '../api/xhr-client.js'
 import { useClusterStore } from './cluster.js'
-import { ClusterPrivacy } from '@cpn-console/shared'
 
 const apiClientGet = vi.spyOn(apiClient.Clusters, 'getClusterDetails')
 const apiClientGetClusterEnvironments = vi.spyOn(apiClient.Clusters, 'getClusterEnvironments')
@@ -10,7 +10,7 @@ const apiClientPost = vi.spyOn(apiClient.Clusters, 'createCluster')
 const apiClientPut = vi.spyOn(apiClient.Clusters, 'updateCluster')
 const apiClientDelete = vi.spyOn(apiClient.Clusters, 'deleteCluster')
 
-describe('Cluster Store', () => {
+describe('cluster Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -18,7 +18,7 @@ describe('Cluster Store', () => {
     setActivePinia(createPinia())
   })
 
-  it('Should get clusters list by api call', async () => {
+  it('should get clusters list by api call', async () => {
     const data = {
       id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b7',
       label: 'cluster2',
@@ -44,7 +44,7 @@ describe('Cluster Store', () => {
     expect(adminClusterStore.selectedCluster).toEqual(data)
   })
 
-  it('Should get cluster\'s associated environments by api call', async () => {
+  it('should get cluster\'s associated environments by api call', async () => {
     const clusterId = '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6'
     const data = {
       environments: [],
@@ -59,7 +59,7 @@ describe('Cluster Store', () => {
     expect(apiClientGetClusterEnvironments).toHaveBeenCalledTimes(1)
   })
 
-  it('Should add cluster by api call', async () => {
+  it('should add cluster by api call', async () => {
     const data = {
       id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6',
       label: 'cluster1',
@@ -89,7 +89,7 @@ describe('Cluster Store', () => {
     expect(apiClientPost).toHaveBeenCalledTimes(1)
   })
 
-  it('Should update cluster by api call', async () => {
+  it('should update cluster by api call', async () => {
     const data = {
       id: '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6',
       projectIds: [
@@ -116,7 +116,7 @@ describe('Cluster Store', () => {
     expect(apiClientPut).toHaveBeenCalledTimes(1)
   })
 
-  it('Should delete cluster by api call', async () => {
+  it('should delete cluster by api call', async () => {
     const clusterId = '1e4fdb28-f9ea-46d4-ad16-607c7f1aa8b6'
 
     apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204 }))

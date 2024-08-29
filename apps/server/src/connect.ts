@@ -2,16 +2,16 @@ import { setTimeout } from 'node:timers/promises'
 import prisma from './prisma.js'
 import app from './app.js'
 import {
-  isTest,
+  dbUrl,
   isCI,
   isDev,
-  dbUrl,
+  isTest,
 } from './utils/env.js'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false
 
-export const getConnection = async (triesLeft = 5): Promise<void> => {
+export async function getConnection(triesLeft = 5): Promise<void> {
   if (closingConnections || triesLeft <= 0) {
     throw new Error('Unable to connect to Postgres server')
   }
@@ -40,7 +40,7 @@ export const getConnection = async (triesLeft = 5): Promise<void> => {
   }
 }
 
-export const closeConnections = async () => {
+export async function closeConnections() {
   closingConnections = true
   try {
     await prisma.$disconnect()

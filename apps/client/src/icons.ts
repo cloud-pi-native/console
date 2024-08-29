@@ -52,6 +52,7 @@ export {
   RiPencilFill,
   RiRefreshFill,
   RiRefreshLine,
+  RiRestartLine,
   RiSendPlaneLine,
   RiServerLine,
   RiShieldCheckFill,

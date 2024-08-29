@@ -1,7 +1,7 @@
 import type { Cluster, Environment, Kubeconfig, Prisma, Project, Stage } from '@prisma/client'
 import prisma from '@/prisma.js'
 
-export const getClustersAssociatedWithProject = async (projectId: Project['id']) => {
+export async function getClustersAssociatedWithProject(projectId: Project['id']) {
   const [
     clusterIdsHistory,
     clusterIdsEnv,
@@ -43,35 +43,39 @@ export const getClustersAssociatedWithProject = async (projectId: Project['id'])
   })
 }
 
-export const updateProjectClusterHistory = async (projectId: Project['id'], clusterIds: Cluster['id'][]) => prisma.$transaction([
-  prisma.projectClusterHistory.deleteMany({
-    where: {
-      AND: {
-        projectId,
-        clusterId: { notIn: clusterIds },
+export async function updateProjectClusterHistory(projectId: Project['id'], clusterIds: Cluster['id'][]) {
+  return prisma.$transaction([
+    prisma.projectClusterHistory.deleteMany({
+      where: {
+        AND: {
+          projectId,
+          clusterId: { notIn: clusterIds },
+        },
       },
-    },
-  }),
-  prisma.projectClusterHistory.createMany({
-    data: clusterIds.map(clusterId => ({ clusterId, projectId })),
-    skipDuplicates: true,
-  }),
-])
+    }),
+    prisma.projectClusterHistory.createMany({
+      data: clusterIds.map(clusterId => ({ clusterId, projectId })),
+      skipDuplicates: true,
+    }),
+  ])
+}
 
-export const getClusterById = (id: Cluster['id']) =>
-  prisma.cluster.findUnique({
+export function getClusterById(id: Cluster['id']) {
+  return prisma.cluster.findUnique({
     where: { id },
     include: { kubeconfig: true },
   })
+}
 
-export const getClusterByIdOrThrow = (id: Cluster['id']) =>
-  prisma.cluster.findUniqueOrThrow({
+export function getClusterByIdOrThrow(id: Cluster['id']) {
+  return prisma.cluster.findUniqueOrThrow({
     where: { id },
     include: { kubeconfig: true, zone: true },
   })
+}
 
-export const getClusterEnvironments = (clusterId: Cluster['id']) =>
-  prisma.environment.findMany({
+export function getClusterEnvironments(clusterId: Cluster['id']) {
+  return prisma.environment.findMany({
     where: { clusterId },
     select: {
       name: true,
@@ -87,9 +91,10 @@ export const getClusterEnvironments = (clusterId: Cluster['id']) =>
       },
     },
   })
+}
 
-export const getClusterDetails = (id: Cluster['id']) =>
-  prisma.cluster.findUniqueOrThrow({
+export function getClusterDetails(id: Cluster['id']) {
+  return prisma.cluster.findUniqueOrThrow({
     where: { id },
     select: {
       createdAt: true,
@@ -109,26 +114,30 @@ export const getClusterDetails = (id: Cluster['id']) =>
       zoneId: true,
     },
   })
+}
 
-export const getClustersByIds = (clusterIds: Cluster['id'][]) =>
-  prisma.cluster.findMany({
+export function getClustersByIds(clusterIds: Cluster['id'][]) {
+  return prisma.cluster.findMany({
     where: {
       id: { in: clusterIds },
     },
     include: { kubeconfig: true },
   })
+}
 
-export const getPublicClusters = () =>
-  prisma.cluster.findMany({
+export function getPublicClusters() {
+  return prisma.cluster.findMany({
     where: { privacy: 'public' },
     include: { zone: true },
   })
+}
 
-export const getClusterByLabel = (label: Cluster['label']) =>
-  prisma.cluster.findUnique({ where: { label } })
+export function getClusterByLabel(label: Cluster['label']) {
+  return prisma.cluster.findUnique({ where: { label } })
+}
 
-export const getClusterByEnvironmentId = (id: Environment['id']) =>
-  prisma.cluster.findMany({
+export function getClusterByEnvironmentId(id: Environment['id']) {
+  return prisma.cluster.findMany({
     where: {
       environments: {
         some: { id },
@@ -136,9 +145,10 @@ export const getClusterByEnvironmentId = (id: Environment['id']) =>
     },
     include: { kubeconfig: true },
   })
+}
 
-export const getClustersWithProjectIdAndConfig = () =>
-  prisma.cluster.findMany({
+export function getClustersWithProjectIdAndConfig() {
+  return prisma.cluster.findMany({
     select: {
       id: true,
       stages: true,
@@ -164,9 +174,10 @@ export const getClustersWithProjectIdAndConfig = () =>
       zoneId: true,
     },
   })
+}
 
-export const listClusters = (where: Prisma.ClusterWhereInput) =>
-  prisma.cluster.findMany({
+export function listClusters(where: Prisma.ClusterWhereInput) {
+  return prisma.cluster.findMany({
     where,
     select: {
       id: true,
@@ -178,51 +189,50 @@ export const listClusters = (where: Prisma.ClusterWhereInput) =>
       zoneId: true,
     },
   })
+}
 
-export const getProjectsByClusterId = async (id: Cluster['id']) =>
-  (await prisma.cluster.findUniqueOrThrow({
+export async function getProjectsByClusterId(id: Cluster['id']) {
+  return (await prisma.cluster.findUniqueOrThrow({
     where: { id },
     select: { projects: true },
   }))?.projects
+}
 
-export const listStagesByClusterId = async (id: Cluster['id']) =>
-  (await prisma.cluster.findUniqueOrThrow({
+export async function listStagesByClusterId(id: Cluster['id']) {
+  return (await prisma.cluster.findUniqueOrThrow({
     where: { id },
     select: { stages: true },
   }))?.stages
+}
 
-export const createCluster = (
-  data: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName' | 'zoneId'>,
-  kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>,
-  zoneId: string,
-) => prisma.cluster.create({
-  data: {
-    ...data,
-    // @ts-ignore
-    kubeconfig: { create: kubeconfig },
-    zone: {
-      connect: { id: zoneId },
-    },
-  },
-})
-
-export const updateCluster = (
-  id: Cluster['id'],
-  data: Partial<Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId'>>,
-  kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>,
-) => prisma.cluster.update({
-  where: { id },
-  data: {
-    ...data,
-    kubeconfig: {
+export function createCluster(data: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName' | 'zoneId'>, kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>, zoneId: string) {
+  return prisma.cluster.create({
+    data: {
+      ...data,
       // @ts-ignore
-      update: kubeconfig,
+      kubeconfig: { create: kubeconfig },
+      zone: {
+        connect: { id: zoneId },
+      },
     },
-  },
-})
+  })
+}
 
-export const linkClusterToProjects = (id: Cluster['id'], projectIds: Project['id'][]) =>
-  prisma.cluster.update({
+export function updateCluster(id: Cluster['id'], data: Partial<Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId'>>, kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>) {
+  return prisma.cluster.update({
+    where: { id },
+    data: {
+      ...data,
+      kubeconfig: {
+      // @ts-ignore
+        update: kubeconfig,
+      },
+    },
+  })
+}
+
+export function linkClusterToProjects(id: Cluster['id'], projectIds: Project['id'][]) {
+  return prisma.cluster.update({
     where: { id },
     data: {
       projects: {
@@ -230,9 +240,10 @@ export const linkClusterToProjects = (id: Cluster['id'], projectIds: Project['id
       },
     },
   })
+}
 
-export const linkClusterToStages = (id: Cluster['id'], stageIds: Stage['id'][]) =>
-  prisma.cluster.update({
+export function linkClusterToStages(id: Cluster['id'], stageIds: Stage['id'][]) {
+  return prisma.cluster.update({
     where: { id },
     data: {
       stages: {
@@ -240,9 +251,10 @@ export const linkClusterToStages = (id: Cluster['id'], stageIds: Stage['id'][]) 
       },
     },
   })
+}
 
-export const removeClusterFromProject = (id: Cluster['id'], projectId: Project['id']) =>
-  prisma.cluster.update({
+export function removeClusterFromProject(id: Cluster['id'], projectId: Project['id']) {
+  return prisma.cluster.update({
     where: { id },
     data: {
       projects: {
@@ -252,9 +264,10 @@ export const removeClusterFromProject = (id: Cluster['id'], projectId: Project['
       },
     },
   })
+}
 
-export const removeClusterFromStage = (id: Cluster['id'], stageId: Stage['id']) =>
-  prisma.cluster.update({
+export function removeClusterFromStage(id: Cluster['id'], stageId: Stage['id']) {
+  return prisma.cluster.update({
     where: { id },
     data: {
       stages: {
@@ -264,8 +277,10 @@ export const removeClusterFromStage = (id: Cluster['id'], stageId: Stage['id']) 
       },
     },
   })
+}
 
-export const deleteCluster = (id: Cluster['id']) =>
-  prisma.cluster.delete({
+export function deleteCluster(id: Cluster['id']) {
+  return prisma.cluster.delete({
     where: { id },
   })
+}

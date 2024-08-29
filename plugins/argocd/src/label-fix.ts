@@ -1,7 +1,7 @@
 import { PatchUtils } from '@kubernetes/client-node'
 import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi } from './utils.js'
 
-export const fixLabels = async () => {
+export async function fixLabels() {
   const customK8sApi = getCustomK8sApi()
   const allApplications = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, 'app.kubernetes.io/managed-by!=dso-console')
   const allAppProjects = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', undefined, undefined, undefined, undefined, 'app.kubernetes.io/managed-by!=dso-console')
@@ -17,7 +17,7 @@ export const fixLabels = async () => {
   }
 }
 
-type Resource = {
+interface Resource {
   metadata: {
     [x: string]: any
     labels?: Record<string, string>
@@ -28,10 +28,11 @@ type Resource = {
 
 const patchOptions = { headers: { 'Content-type': PatchUtils.PATCH_FORMAT_JSON_MERGE_PATCH } }
 
-const fixResource = async (plural: 'applications' | 'appprojects', resource: Resource) => {
+async function fixResource(plural: 'applications' | 'appprojects', resource: Resource) {
   const customK8sApi = getCustomK8sApi()
   // ajout de la clé metadata
-  if (!resource.metadata.labels) resource.metadata.labels = {}
+  if (!resource.metadata.labels)
+    resource.metadata.labels = {}
 
   switch (plural) {
     case 'applications':
@@ -42,11 +43,10 @@ const fixResource = async (plural: 'applications' | 'appprojects', resource: Res
       break
   }
 
-  await customK8sApi.patchNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, plural, resource.metadata.name,
-    { metadata: { labels: resource.metadata.labels } }, undefined, undefined, undefined, patchOptions)
+  await customK8sApi.patchNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, plural, resource.metadata.name, { metadata: { labels: resource.metadata.labels } }, undefined, undefined, undefined, patchOptions)
 }
 
-const generateApplicationLabels = (name: string, labels: Record<string, string> = {}): Record<string, string> => {
+function generateApplicationLabels(name: string, labels: Record<string, string> = {}): Record<string, string> {
   let isOrphan = true
 
   const keyElements = name.split('-')
@@ -74,7 +74,7 @@ const generateApplicationLabels = (name: string, labels: Record<string, string> 
   return labels
 }
 
-const generateAppProjectLabels = (name: string, labels: Record<string, string> = {}): Record<string, string> => {
+function generateAppProjectLabels(name: string, labels: Record<string, string> = {}): Record<string, string> {
   let isOrphan = true
 
   const keyElements = name.split('-')

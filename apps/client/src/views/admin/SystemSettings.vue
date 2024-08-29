@@ -7,7 +7,7 @@ onBeforeMount(async () => {
   await systemStore.listSystemSettings()
 })
 
-const upsertSystemSetting = async (key: string, value: boolean) => {
+async function upsertSystemSetting(key: string, value: boolean) {
   await systemStore.upsertSystemSetting({ key, value: value ? 'on' : 'off' })
 }
 </script>

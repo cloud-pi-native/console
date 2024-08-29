@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ClientInferResponseBody } from '@ts-rest/core'
+import type { ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../index.js'
 import { ErrorSchema } from '../schemas/utils.js'
 

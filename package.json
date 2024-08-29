@@ -1,8 +1,9 @@
 {
-  "name": "dso-console",
+  "name": "@cpn-console/root",
+  "type": "module",
   "version": "8.10.1",
   "private": true,
-  "type": "module",
+  "packageManager": "pnpm@9.7.1",
   "scripts": {
     "build": "turbo run build --color --no-daemon",
     "build:clean": "turbo run build:clean --no-daemon",
@@ -23,7 +24,6 @@
     "docker:prod": "docker compose -f ./docker/docker-compose.prod.yml up --remove-orphans",
     "docker:prod:build": "export COMPOSE_FILE=./docker/docker-compose.prod.yml && ./ci/kind/run-build.sh $COMPOSE_FILE",
     "docker:prod:delete": "docker compose -f ./docker/docker-compose.prod.yml down -v --remove-orphans",
-    "format": "turbo run format --color --no-daemon",
     "format:style": "turbo run format:style --color --no-daemon",
     "db:generate": "turbo run db:generate --no-daemon",
     "integ": "docker compose -f ./docker/docker-compose.local.yml up -d --remove-orphans postgres pgadmin && echo '\nStart server and client with commands:\n\n  pnpm --filter @cpn-console/server run integ\n  pnpm --filter @cpn-console/client run integ\n\nMake sure you provide env variables in `.env.integ` files.'",
@@ -48,6 +48,9 @@
     "kube:delete": "ci/kind/run.sh -c delete",
     "kube:load:package": "ci/kind/upload-package.sh",
     "lint": "turbo run lint --color --no-daemon",
+    "format": "turbo run format --color --no-daemon",
+    "lint:root": "eslint .",
+    "format:root": "eslint . --fix",
     "lint:style": "turbo run lint:style --color --no-daemon",
     "lint:ts": "turbo run lint:ts --color --no-daemon",
     "prepare": "husky",
@@ -59,13 +62,14 @@
     "test:e2e-ci": "pnpm kube:prod; pnpm kube:e2e-ci"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^2.26.0",
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
+    "@cpn-console/eslint-config": "workspace:^",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.7",
     "turbo": "^2.0.5"
   },
-  "packageManager": "pnpm@9.7.1",
   "pnpm": {
     "patchedDependencies": {
       "fastify-keycloak-adapter@2.1.6": "patches/fastify-keycloak-adapter@2.1.6.patch",

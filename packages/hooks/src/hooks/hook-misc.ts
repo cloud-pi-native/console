@@ -1,5 +1,6 @@
-import { Project, Repository } from './hook-project.js'
-import { Hook, createHook } from './hook.js'
+import type { Project, Repository } from './hook-project.js'
+import type { Hook } from './hook.js'
+import { createHook } from './hook.js'
 
 // misc hooks
 export type EmptyPayload = Record<string, never>

@@ -1,11 +1,11 @@
-import { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
+import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateQuotaSchema,
-  ListQuotasSchema,
-  UpdateQuotaSchema,
   DeleteQuotaSchema,
   ListQuotaEnvironmentsSchema,
+  ListQuotasSchema,
+  UpdateQuotaSchema,
 } from '../schemas/index.js'
 
 export const quotaContract = contractInstance.router({

@@ -1,4 +1,4 @@
-import { type ServiceInfos } from '@cpn-console/hooks'
+import type { ServiceInfos } from '@cpn-console/hooks'
 import { getConfig } from './utils.js'
 
 const extraRepositoriesDesc = 'appproject.spec.sourceRepos supplémentaires, séparés par des virgules (https://a.com/repo.git,https://b.com/'

@@ -27,12 +27,12 @@ on:
         description: Nodejs version used
         required: true
         type: string
-        default: "20.16.0"
+        default: 20.16.0
       PNPM_VERSION:
         description: Pnpm version used
         required: true
         type: string
-        default: "9.7.1"
+        default: 9.7.1
       PUBLISH_APPS:
         description: Publish apps modules
         required: true
@@ -92,7 +92,7 @@ jobs:
   check-update:
     name: Check for package version update
     runs-on: ubuntu-latest
-    needs: 
+    needs:
       - path-filter
     strategy:
       matrix:
@@ -111,8 +111,8 @@ jobs:
       - name: Check changes
         id: check
         run: |
-          PACKAGE_NAME=$(jq -cr --arg p "${{ matrix.packages }}" '[.packages[], .plugins[]][] | select(.path | test($p)?) | .name' < ./ci/matrix-npm.json)
-          PACKAGE_PATH=$(jq -cr --arg p "${{ matrix.packages }}" '[.packages[], .plugins[]][] | select(.path | test($p)?) | .path' < ./ci/matrix-npm.json)
+          PACKAGE_NAME=$(jq -cr --arg p "${{ matrix.packages }}" '[.packages[], .plugins[]][] | select(.name | test($p)?) | .name' < ./ci/matrix-npm.json)
+          PACKAGE_PATH=$(jq -cr --arg p "${{ matrix.packages }}" '[.packages[], .plugins[]][] | select(.name | test($p)?) | .path' < ./ci/matrix-npm.json)
           PACKAGE_VERSION=$(jq -cr '.version' < ${PACKAGE_PATH}/package.json)
           if [ "$(curl -s -o /dev/null -I -w %{http_code} https://registry.npmjs.org/${PACKAGE_NAME})" = 404 ]; then
             REMOTE=false
@@ -134,8 +134,10 @@ jobs:
         with:
           message: |
             🤖 Hey !
-            
+
             The __${{ steps.check.outputs.PACKAGE_NAME }} (v${{ steps.check.outputs.PACKAGE_VERSION }})__ package already exists [on npm](https://www.npmjs.com/package/${{ steps.check.outputs.PACKAGE_NAME }}/v/${{ steps.check.outputs.PACKAGE_VERSION }}) but the source code has changed, you should consider updating the package version.
+
+            *The version update warning should be ignored in the case of modifications that do not affect the code once it has been built, such as code formatting, etc...*
           comment_tag: npm-check-${{ matrix.packages }}
 
   matrix:
@@ -209,7 +211,7 @@ jobs:
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         with:
           node-version: "${{ inputs.NODE_VERSION }}"
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
           always-auth: true
 
       - name: Get pnpm store directory

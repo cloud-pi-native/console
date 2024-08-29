@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { AdminRole, type Role } from '@cpn-console/shared'
+import type { AdminRole, Role } from '@cpn-console/shared'
 import AdminRoleForm from '@/components/AdminRoleForm.vue'
 import { useAdminRoleStore } from '@/stores/admin-role.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -18,21 +18,21 @@ const roleList = computed((): RoleItem[] => adminRoleStore.roles.map(role => ({
 
 const selectedRole = computed(() => roleList.value.find(({ id }) => id === selectedId.value))
 
-const addRole = async () => {
+async function addRole() {
   await adminRoleStore.createRole()
   snackbarStore.setMessage('Rôle ajouté', 'success')
 
   selectedId.value = adminRoleStore.roles[adminRoleStore.roles.length - 1].id
 }
 
-const deleteRole = async (roleId: Role['id']) => {
+async function deleteRole(roleId: Role['id']) {
   await adminRoleStore.deleteRole(roleId)
   await adminRoleStore.listRoles()
   snackbarStore.setMessage('Rôle supprimé', 'success')
   selectedId.value = undefined
 }
 
-const saveRole = async (role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permissions'>) => {
+async function saveRole(role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permissions'>) {
   if (!selectedRole.value) return
   await adminRoleStore.patchRoles(
     [{
@@ -52,7 +52,6 @@ onBeforeMount(async () => {
     await adminRoleStore.listRoles()
   }
 })
-
 </script>
 
 <template>
@@ -69,7 +68,7 @@ onBeforeMount(async () => {
         <DsfrButton
           label="Ajouter un rôle"
           data-testid="addRoleBtn"
-          :class="selectedId ? 'w-11/12': ''"
+          :class="selectedId ? 'w-11/12' : ''"
           secondary
           @click="addRole()"
         />
@@ -77,7 +76,7 @@ onBeforeMount(async () => {
           v-for="role in roleList"
           :key="role.id"
           :data-testid="`${role.id}-tab`"
-          :class="`text-align-left cursor-pointer mt-3 grid grid-flow-col fr-btn text-wrap truncate ${selectedId ? 'grid-cols-1': 'grid-cols-2'} ${selectedId === role.id ? 'fr-btn--primary w-full': 'fr-btn--tertiary w-11/12'}`"
+          :class="`text-align-left cursor-pointer mt-3 grid grid-flow-col fr-btn text-wrap truncate ${selectedId ? 'grid-cols-1' : 'grid-cols-2'} ${selectedId === role.id ? 'fr-btn--primary w-full' : 'fr-btn--tertiary w-11/12'}`"
           @click="selectedId = selectedId === role.id ? undefined : role.id"
         >
           {{ role.name }}
@@ -92,7 +91,7 @@ onBeforeMount(async () => {
               >
                 <span>oidc</span>
                 <v-icon
-                  :class="`ml-4`"
+                  class="ml-4"
                   name="ri-user-shared-2-line"
                 />
               </template>
@@ -101,7 +100,7 @@ onBeforeMount(async () => {
                   {{ (role.memberCounts ?? '-') }}
                 </span>
                 <v-icon
-                  :class="`ml-4`"
+                  class="ml-4"
                   name="ri-team-line"
                 />
               </template>

@@ -1,24 +1,24 @@
-import { User, type Quota } from '@prisma/client'
-import { type CreateQuotaBody, QuotaSchema, type UpdateQuotaBody, type Quota as QuotaDto } from '@cpn-console/shared'
+import type { Quota, User } from '@prisma/client'
+import { type CreateQuotaBody, type Quota as QuotaDto, QuotaSchema, type UpdateQuotaBody } from '@cpn-console/shared'
 import {
-  getQuotaByName,
+  getAllQuotas,
+  listQuotas as listQuotasQuery,
+} from '../queries-index.js'
+import {
   createQuota as createQuotaQuery,
-  linkQuotaToStages,
-  getQuotaById,
   deleteQuota as deleteQuotaQuery,
   getQuotaAssociatedEnvironmentById,
+  getQuotaById,
+  getQuotaByName,
+  linkQuotaToStages,
   unlinkQuotaFromStages,
 } from '@/resources/queries-index.js'
 import { validateSchema } from '@/utils/business.js'
 
-import {
-  listQuotas as listQuotasQuery,
-  getAllQuotas,
-} from '../queries-index.js'
-import { ErrorResType, BadRequest400, NotFound404 } from '@/utils/errors.js'
+import { BadRequest400, ErrorResType, NotFound404 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
-export const getQuotaAssociatedEnvironments = async (quotaId: string) => {
+export async function getQuotaAssociatedEnvironments(quotaId: string) {
   const environments = await getQuotaAssociatedEnvironmentById(quotaId)
   return environments.map(env => ({
     name: env.name,
@@ -29,7 +29,7 @@ export const getQuotaAssociatedEnvironments = async (quotaId: string) => {
   }))
 }
 
-export const createQuota = async (data: CreateQuotaBody): Promise<QuotaDto | ErrorResType> => {
+export async function createQuota(data: CreateQuotaBody): Promise<QuotaDto | ErrorResType> {
   const schemaValidation = QuotaSchema.omit({ id: true }).safeParse(data)
   const validateResult = validateSchema(schemaValidation)
   if (validateResult instanceof ErrorResType) return validateResult
@@ -53,15 +53,13 @@ export const createQuota = async (data: CreateQuotaBody): Promise<QuotaDto | Err
   }
 }
 
-export const updateQuota = async (
-  id: Quota['id'], {
-    cpu,
-    isPrivate,
-    memory,
-    name,
-    stageIds,
-  }: UpdateQuotaBody,
-) => {
+export async function updateQuota(id: Quota['id'], {
+  cpu,
+  isPrivate,
+  memory,
+  name,
+  stageIds,
+}: UpdateQuotaBody) {
   const dbQuota = await getQuotaById(id)
 
   if (!dbQuota) return new NotFound404()
@@ -100,7 +98,7 @@ export const updateQuota = async (
   }
 }
 
-export const deleteQuota = async (quotaId: string) => {
+export async function deleteQuota(quotaId: string) {
   const attachedEnvironment = await prisma.environment.findFirst({ where: { quotaId }, select: { id: true } })
   if (attachedEnvironment) return new BadRequest400('Impossible de supprimer le quota, des environnements en activité y ont souscrit')
 
@@ -108,7 +106,7 @@ export const deleteQuota = async (quotaId: string) => {
   return null
 }
 
-export const listQuotas = async (userId?: User['id']) => {
+export async function listQuotas(userId?: User['id']) {
   const quotas = userId
     ? await listQuotasQuery(userId)
     : await getAllQuotas()

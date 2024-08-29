@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { exitGracefully, handleExit } from './server.js'
 import { closeConnections } from './connect.js'
@@ -25,12 +25,12 @@ vi.mock('./prepare-app.js', () => {
   }
 })
 
-describe('Server', () => {
+describe('server', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('Should call closeConnections without parameter', async () => {
+  it('should call closeConnections without parameter', async () => {
     await exitGracefully()
     const app = await getPreparedApp()
 
@@ -39,8 +39,8 @@ describe('Server', () => {
     expect(app.log.error).toHaveBeenCalledTimes(0)
   })
 
-  it('Should log an error', async () => {
-    await exitGracefully(new Error())
+  it('should log an error', async () => {
+    await exitGracefully(new Error('error'))
 
     const app = await getPreparedApp()
 
@@ -50,7 +50,7 @@ describe('Server', () => {
     expect(app.log.error.mock.calls[0][0]).toBeInstanceOf(Error)
   })
 
-  it('Should call process.on 4 times', () => {
+  it('should call process.on 4 times', () => {
     const processOn = vi.spyOn(process, 'on')
 
     handleExit()

@@ -1,8 +1,9 @@
-import { statusDict, formatDate, sortArrByObjKeyAsc, type Organization, type Project, ProjectV2 } from '@cpn-console/shared'
+import type { Organization, Project, ProjectV2 } from '@cpn-console/shared'
+import { formatDate, sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
 import { getModel, getModelById } from '../../support/func.js'
 import { truncateDescription } from '@/utils/func.js'
 
-const checkTableRowsLength = (length: number) => {
+function checkTableRowsLength(length: number) {
   if (!length) cy.get('tr:last-child>td:first-child').should('have.text', 'Aucun projet trouvé')
   else cy.get('tbody > tr').should('have.length', length)
 }

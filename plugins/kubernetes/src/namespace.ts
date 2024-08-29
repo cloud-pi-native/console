@@ -1,8 +1,8 @@
-import { Namespace } from 'kubernetes-models/v1'
-import { createCoreV1Api } from './api.js'
-import { type StepCall, type Project, type UserObject, parseError } from '@cpn-console/hooks'
 import { createHmac } from 'node:crypto'
-import { V1NamespacePopulated } from './class.js'
+import { Namespace } from 'kubernetes-models/v1'
+import { type Project, type StepCall, type UserObject, parseError } from '@cpn-console/hooks'
+import { createCoreV1Api } from './api.js'
+import type { V1NamespacePopulated } from './class.js'
 
 export type NamespaceProvided = Required<Namespace> & { metadata: Required<Namespace['metadata']> }
 
@@ -84,7 +84,7 @@ export const deleteNamespaces: StepCall<Project> = async (payload) => {
 }
 
 // Utils
-export const getNsObject = (organization: string, project: string, environment: string, owner: UserObject, zone: string): V1NamespacePopulated => {
+export function getNsObject(organization: string, project: string, environment: string, owner: UserObject, zone: string): V1NamespacePopulated {
   const nsObject = new Namespace({
     metadata: {
       name: generateNamespaceName(organization, project, environment),
@@ -104,7 +104,7 @@ export const getNsObject = (organization: string, project: string, environment: 
   return nsObject as V1NamespacePopulated
 }
 
-export const generateNamespaceName = (org: string, proj: string, env: string) => {
+export function generateNamespaceName(org: string, proj: string, env: string) {
   const envHash = createHmac('sha256', '')
     .update(env)
     .digest('hex')

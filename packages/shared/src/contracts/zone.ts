@@ -1,10 +1,10 @@
-import { ClientInferRequest } from '@ts-rest/core'
+import type { ClientInferRequest } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
-  ListZonesSchema,
   CreateZoneSchema,
-  UpdateZoneSchema,
   DeleteZoneSchema,
+  ListZonesSchema,
+  UpdateZoneSchema,
 } from '../schemas/index.js'
 
 export const zoneContract = contractInstance.router({

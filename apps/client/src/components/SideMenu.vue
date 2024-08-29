@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { ProjectAuthorized } from '@cpn-console/shared'
+import router from '../router/index.js'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useServiceStore } from '@/stores/services-monitor.js'
-import router from '../router/index.js'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -91,7 +91,7 @@ onMounted(() => {
         />
         <span
           class="fr-hint-text"
-        >{{ isDarkScheme ? 'Thème clair': 'Thème sombre' }}</span>
+        >{{ isDarkScheme ? 'Thème clair' : 'Thème sombre' }}</span>
       </div>
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
@@ -167,7 +167,7 @@ onMounted(() => {
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
             <DsfrSideMenuListItem
-              v-if="ProjectAuthorized.ManageRoles({ projectPermissions: projectStore.selectedProjectPerms})"
+              v-if="ProjectAuthorized.ManageRoles({ projectPermissions: projectStore.selectedProjectPerms })"
             >
               <DsfrSideMenuLink
                 class="menu-link-icon"
@@ -180,7 +180,7 @@ onMounted(() => {
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
             <DsfrSideMenuListItem
-              v-if="ProjectAuthorized.ListRepositories({ projectPermissions: projectStore.selectedProjectPerms})"
+              v-if="ProjectAuthorized.ListRepositories({ projectPermissions: projectStore.selectedProjectPerms })"
             >
               <DsfrSideMenuLink
                 class="menu-link-icon"
@@ -193,7 +193,7 @@ onMounted(() => {
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
             <DsfrSideMenuListItem
-              v-if="ProjectAuthorized.ListEnvironments({ projectPermissions: projectStore.selectedProjectPerms})"
+              v-if="ProjectAuthorized.ListEnvironments({ projectPermissions: projectStore.selectedProjectPerms })"
             >
               <DsfrSideMenuLink
                 class="menu-link-icon"
@@ -209,7 +209,7 @@ onMounted(() => {
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
 
-      <!-- Onglet Administration-->
+      <!-- Onglet Administration -->
       <DsfrSideMenuListItem
         v-if="userStore.adminPerms"
       >
@@ -266,7 +266,7 @@ onMounted(() => {
               class="menu-link-icon"
               data-testid="menuAdministrationRoles"
               :active="routeName === 'AdminRoles'"
-              :to="`/admin/roles`"
+              to="/admin/roles"
             >
               <v-icon name="ri-admin-line" />
               Rôles

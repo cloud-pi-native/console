@@ -1,4 +1,4 @@
-export const parseError = (error: unknown) => {
+export function parseError(error: unknown) {
   // @ts-ignore
   if (error?.config?.auth?.username) error.config.auth.username = 'MASKED'
   // @ts-ignore

@@ -1,6 +1,6 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
-import { getConfig } from './utils.js'
 import { ENABLED } from '@cpn-console/shared'
+import { getConfig } from './utils.js'
 
 const infos = {
   name: 'gitlab',

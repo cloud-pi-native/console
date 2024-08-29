@@ -1,23 +1,24 @@
 import { Secret } from 'kubernetes-models/v1'
-import { CoreV1Api, V1ObjectMeta } from '@kubernetes/client-node'
+import type { CoreV1Api, V1ObjectMeta } from '@kubernetes/client-node'
 
 export type WithMetaType<CR extends object> = CR & {
   metadata: V1ObjectMeta & Required<Pick<V1ObjectMeta, 'name' | 'namespace'>>
 }
 
 // API
-export const createDockerConfigSecret = async (kc: CoreV1Api, secretObject: WithMetaType<Secret>) => {
+export async function createDockerConfigSecret(kc: CoreV1Api, secretObject: WithMetaType<Secret>) {
   const nsName = secretObject.metadata.namespace
   const secretName = secretObject.metadata.name
   const secret = await kc.listNamespacedSecret(nsName, undefined, undefined, undefined, `metadata.name=${secretName}`)
   // @ts-ignore
-  if (secret.body.items.length) await kc.replaceNamespacedSecret(secretName, nsName, secretObject)
+  if (secret.body.items.length)
+    await kc.replaceNamespacedSecret(secretName, nsName, secretObject)
   // @ts-ignore
   else await kc.createNamespacedSecret(nsName, secretObject)
 }
 
 // Utils
-export const getSecretObject = (nsName: string, { DOCKER_CONFIG }: { DOCKER_CONFIG: string }): WithMetaType<Secret> => {
+export function getSecretObject(nsName: string, { DOCKER_CONFIG }: { DOCKER_CONFIG: string }): WithMetaType<Secret> {
   const b64dockerConfig = Buffer.from(DOCKER_CONFIG).toString('base64')
   const secret = new Secret({
     data: {

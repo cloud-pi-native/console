@@ -1,15 +1,16 @@
-import {
+import type {
   Prisma,
+  Project,
+
   ProjectRole,
-  type Project,
 } from '@prisma/client'
 
 import prisma from '@/prisma.js'
 
 export const listRoles = (projectId: Project['id']) => prisma.projectRole.findMany({ where: { projectId }, orderBy: { position: 'asc' } })
 
-export const createRole = (data: Pick<Prisma.ProjectRoleUncheckedCreateInput, 'permissions' | 'name' | 'position' | 'projectId'>) =>
-  prisma.projectRole.create({
+export function createRole(data: Pick<Prisma.ProjectRoleUncheckedCreateInput, 'permissions' | 'name' | 'position' | 'projectId'>) {
+  return prisma.projectRole.create({
     data: {
       name: data.name,
       permissions: 0n,
@@ -17,14 +18,16 @@ export const createRole = (data: Pick<Prisma.ProjectRoleUncheckedCreateInput, 'p
       projectId: data.projectId,
     },
   })
+}
 
-export const updateRole = (id: ProjectRole['id'], data: Pick<Prisma.ProjectRoleUncheckedUpdateInput, 'permissions' | 'name' | 'position' | 'id'>) =>
-  prisma.projectRole.update({
+export function updateRole(id: ProjectRole['id'], data: Pick<Prisma.ProjectRoleUncheckedUpdateInput, 'permissions' | 'name' | 'position' | 'id'>) {
+  return prisma.projectRole.update({
     where: { id },
     data,
   })
+}
 
-export const deleteRole = async (id: ProjectRole['id']) => {
+export async function deleteRole(id: ProjectRole['id']) {
   const role = await prisma.projectRole.delete({
     where: {
       id,

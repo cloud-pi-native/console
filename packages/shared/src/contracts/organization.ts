@@ -1,8 +1,8 @@
-import { ClientInferRequest } from '@ts-rest/core'
+import type { ClientInferRequest } from '@ts-rest/core'
+import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import { OrganizationSchema } from '../schemas/index.js'
 import { AtDatesToStringExtend, ErrorSchema } from '../schemas/utils.js'
-import { z } from 'zod'
 
 export const organizationContract = contractInstance.router({
   listOrganizations: {

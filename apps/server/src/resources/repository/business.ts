@@ -1,14 +1,11 @@
 import type { Repository, User } from '@prisma/client'
-import type { Project, CreateRepositoryBody, UpdateRepositoryBody } from '@cpn-console/shared'
-import { addLogs, deleteRepository as deleteRepositoryQuery, getRepositoryById as getRepositoryByIdQuery, getProjectInfosAndRepos, initializeRepository, updateRepository as updateRepositoryQuery, getProjectRepositories as getProjectRepositoriesQuery, getProjectInfosOrThrow } from '@/resources/queries-index.js'
+import type { CreateRepositoryBody, Project, UpdateRepositoryBody } from '@cpn-console/shared'
+import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfosAndRepos, getProjectInfosOrThrow, getProjectRepositories as getProjectRepositoriesQuery, getRepositoryById as getRepositoryByIdQuery, initializeRepository, updateRepository as updateRepositoryQuery } from '@/resources/queries-index.js'
 import { checkLocked } from '@/utils/controller.js'
-import { ErrorResType, BadRequest400, NotFound404, Unprocessable422 } from '@/utils/errors.js'
+import { BadRequest400, ErrorResType, NotFound404, Unprocessable422 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
-export const getRepositoryById = async (
-  projectId: Project['id'],
-  repositoryId: Repository['id'],
-) => {
+export async function getRepositoryById(projectId: Project['id'], repositoryId: Repository['id']) {
   const project = await getProjectAndCheckRole(projectId)
   if (project instanceof ErrorResType) return project
 
@@ -17,34 +14,29 @@ export const getRepositoryById = async (
   return repository
 }
 
-export const getProjectRepositories = async (
-  projectId: Project['id'],
-) => {
+export async function getProjectRepositories(projectId: Project['id']) {
   return getProjectRepositoriesQuery(projectId)
 }
 
-export const getProjectAndCheckRole = async (
-  projectId: Project['id'],
-) => {
+export async function getProjectAndCheckRole(projectId: Project['id']) {
   const project = await getProjectInfosAndRepos(projectId)
   if (!project) return new BadRequest400(`Le projet ayant pour id ${projectId} n'existe pas`)
   return project
 }
 
-export const syncRepository = async (
-  {
-    repositoryId,
-    userId,
-    syncAllBranches,
-    branchName,
-    requestId,
-  }: {
-    repositoryId: Repository['id']
-    userId: User['id']
-    syncAllBranches: boolean
-    branchName?: string
-    requestId: string
-  }) => {
+export async function syncRepository({
+  repositoryId,
+  userId,
+  syncAllBranches,
+  branchName,
+  requestId,
+}: {
+  repositoryId: Repository['id']
+  userId: User['id']
+  syncAllBranches: boolean
+  branchName?: string
+  requestId: string
+}) {
   const repository = await getRepositoryByIdQuery(repositoryId)
   const project = await getProjectInfosOrThrow(repository.projectId)
   await checkUpsertRepository(project)
@@ -57,21 +49,20 @@ export const syncRepository = async (
   return null
 }
 
-export const checkUpsertRepository = async ({ locked }: { locked: Project['locked'] }) => {
+export async function checkUpsertRepository({ locked }: { locked: Project['locked'] }) {
   const errorMessage = checkLocked({ locked })
   if (errorMessage) return new BadRequest400(errorMessage)
 }
 
-export const createRepository = async (
-  {
-    data,
-    userId,
-    requestId,
-  }: {
-    data: CreateRepositoryBody
-    userId: User['id']
-    requestId: string
-  }) => {
+export async function createRepository({
+  data,
+  userId,
+  requestId,
+}: {
+  data: CreateRepositoryBody
+  userId: User['id']
+  requestId: string
+}) {
   const project = await getProjectInfosAndRepos(data.projectId)
   if (!project) return new BadRequest400(`Le projet ayant pour id ${data.projectId} n'existe pas`)
   const checkResult = await checkUpsertRepository(project)
@@ -90,8 +81,7 @@ export const createRepository = async (
           username: data.externalUserName ?? '',
         },
       }
-    : undefined,
-  )
+    : undefined)
   await addLogs('Create Repository', results, userId, requestId)
   if (results.failed) {
     return new Unprocessable422('Echec des services lors de la création du dépôt')
@@ -100,18 +90,17 @@ export const createRepository = async (
   return repo
 }
 
-export const updateRepository = async (
-  {
-    repositoryId,
-    data,
-    userId,
-    requestId,
-  }: {
-    repositoryId: Repository['id']
-    data: Partial<UpdateRepositoryBody>
-    userId: User['id']
-    requestId: string
-  }) => {
+export async function updateRepository({
+  repositoryId,
+  data,
+  userId,
+  requestId,
+}: {
+  repositoryId: Repository['id']
+  data: Partial<UpdateRepositoryBody>
+  userId: User['id']
+  requestId: string
+}) {
   const repository = await getRepositoryByIdQuery(repositoryId)
   const project = await getProjectInfosOrThrow(repository.projectId)
   const checkResult = await checkUpsertRepository(project)
@@ -135,7 +124,7 @@ export const updateRepository = async (
   return repo
 }
 
-export const deleteRepository = async ({
+export async function deleteRepository({
   repositoryId,
   userId,
   requestId,
@@ -143,8 +132,7 @@ export const deleteRepository = async ({
   repositoryId: Repository['id']
   userId: User['id']
   requestId: string
-},
-) => {
+}) {
   const repository = await getRepositoryByIdQuery(repositoryId)
   const project = await getProjectInfosOrThrow(repository.projectId)
 

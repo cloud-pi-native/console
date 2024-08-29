@@ -1,17 +1,17 @@
-import { Project, Repository } from '@cpn-console/hooks'
+import type { Project, Repository } from '@cpn-console/hooks'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
+import type { CondensedProjectSchema, ProjectSchema } from '@gitbeaker/rest'
+import { shallowEqual } from '@cpn-console/shared'
 import type { GitlabProjectApi } from './class.js'
 import { provisionMirror } from './project.js'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
-import { CondensedProjectSchema, ProjectSchema } from '@gitbeaker/rest'
 import { infraAppsRepoName, internalMirrorRepoName } from './utils.js'
-import { shallowEqual } from '@cpn-console/shared'
 
-type ProjectMirrorCreds = {
+interface ProjectMirrorCreds {
   botAccount: string
   token: string
 }
 
-export const ensureRepositories = async (gitlabApi: GitlabProjectApi, project: Project, vaultApi: VaultProjectApi, projectMirrorCreds: ProjectMirrorCreds) => {
+export async function ensureRepositories(gitlabApi: GitlabProjectApi, project: Project, vaultApi: VaultProjectApi, projectMirrorCreds: ProjectMirrorCreds) {
   const specialRepos = await gitlabApi.getSpecialRepositories()
   const gitlabRepositories = await gitlabApi.listRepositories()
 
@@ -42,26 +42,27 @@ export const ensureRepositories = async (gitlabApi: GitlabProjectApi, project: P
   await Promise.all(promises)
 }
 
-const ensureRepositoryExists = async (
-  gitlabRepositories: CondensedProjectSchema[],
-  repository: Repository,
-  gitlabApi: GitlabProjectApi,
-  projectMirrorCreds: ProjectMirrorCreds,
-  vaultApi: VaultProjectApi,
-) => {
+async function ensureRepositoryExists(gitlabRepositories: CondensedProjectSchema[], repository: Repository, gitlabApi: GitlabProjectApi, projectMirrorCreds: ProjectMirrorCreds, vaultApi: VaultProjectApi) {
   let gitlabRepository: CondensedProjectSchema | ProjectSchema | void = gitlabRepositories.find(gitlabRepository => gitlabRepository.name === repository.internalRepoName)
   const externalRepoUrn = repository.externalRepoUrl.split(/:\/\/(.*)/s)[1]
   const vaultCredsPath = `${repository.internalRepoName}-mirror`
   const currentVaultSecret = await vaultApi.read(vaultCredsPath, { throwIfNoEntry: false })
+
+  if (!gitlabRepository) {
+    gitlabRepository = repository.externalRepoUrl
+      ? await gitlabApi.createCloneRepository(repository.internalRepoName, externalRepoUrn, repository.newCreds ?? { username: currentVaultSecret?.data.GIT_INPUT_USER, token: currentVaultSecret?.data.GIT_INPUT_PASSWORD })
+      : await gitlabApi.createEmptyRepository(repository.internalRepoName)
+  }
+
+  if (!repository.externalRepoUrl) {
+    return currentVaultSecret && vaultApi.destroy(vaultCredsPath)
+  }
+
   let gitInputUser: string | undefined
   let gitInputPassword: string | undefined
   if (currentVaultSecret?.data) {
     gitInputUser = currentVaultSecret.data.GIT_INPUT_USER
     gitInputPassword = currentVaultSecret.data.GIT_INPUT_PASSWORD
-  }
-
-  if (!gitlabRepository) {
-    gitlabRepository = await gitlabApi.createCloneRepository(repository.internalRepoName, externalRepoUrn, repository.newCreds ?? { username: currentVaultSecret?.data.GIT_INPUT_USER, token: currentVaultSecret?.data.GIT_INPUT_PASSWORD }) // TODO
   }
 
   const internalRepoUrl = await gitlabApi.getRepoUrl(repository.internalRepoName)

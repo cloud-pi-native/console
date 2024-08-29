@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { ProjectAuthorized, type Repo, projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-type RepoTile = {
+interface RepoTile {
   id: string
   title: string
   data: Repo
@@ -24,7 +24,7 @@ const isAllSyncing = ref<boolean>(false)
 const repoFormId = 'repoFormId'
 const syncFormId = 'syncFormId'
 
-const setReposTiles = () => {
+function setReposTiles() {
   repos.value = sortArrByObjKeyAsc(projectRepositoryStore.repositories, 'internalRepoName')
     ?.map(repo => ({
       id: repo.internalRepoName,
@@ -33,7 +33,7 @@ const setReposTiles = () => {
     }) as unknown as RepoTile)
 }
 
-const setSelectedRepo = (repo: Repo) => {
+function setSelectedRepo(repo: Repo) {
   if (selectedRepo.value?.internalRepoName === repo.internalRepoName) {
     selectedRepo.value = undefined
     return
@@ -42,17 +42,17 @@ const setSelectedRepo = (repo: Repo) => {
   isNewRepoForm.value = false
 }
 
-const showNewRepoForm = () => {
+function showNewRepoForm() {
   isNewRepoForm.value = !isNewRepoForm.value
   selectedRepo.value = undefined
 }
 
-const cancel = () => {
+function cancel() {
   isNewRepoForm.value = false
   selectedRepo.value = undefined
 }
 
-const saveRepo = async (repo: Repo) => {
+async function saveRepo(repo: Repo) {
   if (!projectStore.selectedProject) return
   snackbarStore.isWaitingForResponse = true
   if (repo.id) {
@@ -65,7 +65,7 @@ const saveRepo = async (repo: Repo) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const deleteRepo = async (repoId: Repo['id']) => {
+async function deleteRepo(repoId: Repo['id']) {
   if (!projectStore.selectedProject) return
   snackbarStore.isWaitingForResponse = true
   await projectRepositoryStore.deleteRepo(repoId)
@@ -74,7 +74,7 @@ const deleteRepo = async (repoId: Repo['id']) => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const syncRepository = async () => {
+async function syncRepository() {
   if (!selectedRepo.value) return
   if (!isAllSyncing.value && !branchName.value) branchName.value = 'main'
   snackbarStore.isWaitingForResponse = true
@@ -94,7 +94,6 @@ projectRepositoryStore.$subscribe(() => {
 })
 
 const canManageRepos = computed(() => !projectStore.selectedProject?.locked && ProjectAuthorized.ManageRepositories({ projectPermissions: projectStore.selectedProjectPerms }))
-
 </script>
 
 <template>
@@ -137,7 +136,7 @@ const canManageRepos = computed(() => !projectStore.selectedProject?.locked && P
       <RepoForm
         :is-project-locked="projectStore.selectedProject.locked"
         :can-manage="canManageRepos"
-        @save="(repo) => saveRepo({ projectId: projectStore.selectedProject?.id, ...repo})"
+        @save="(repo) => saveRepo({ projectId: projectStore.selectedProject?.id, ...repo })"
         @cancel="cancel()"
       />
     </div>
@@ -167,21 +166,21 @@ const canManageRepos = computed(() => !projectStore.selectedProject?.locked && P
           v-if="selectedRepo?.internalRepoName === repo.id"
         >
           <DsfrNavigation
-            v-if="ProjectAuthorized.ManageRepositories({projectPermissions: projectStore.selectedProjectPerms})"
+            v-if="ProjectAuthorized.ManageRepositories({ projectPermissions: projectStore.selectedProjectPerms }) && selectedRepo?.externalRepoUrl && selectedRepo?.id"
             class="fr-mb-4w"
             :nav-items="[
               {
                 to: `#${syncFormId}`,
-                text: '#Synchroniser le dépôt'
+                text: '#Synchroniser le dépôt',
               },
               {
                 to: `#${repoFormId}`,
-                text: '#Modifier le dépôt'
+                text: '#Modifier le dépôt',
               },
             ]"
           />
           <div
-            v-if="ProjectAuthorized.ManageRepositories({projectPermissions: projectStore.selectedProjectPerms})"
+            v-if="ProjectAuthorized.ManageRepositories({ projectPermissions: projectStore.selectedProjectPerms }) && selectedRepo?.externalRepoUrl && selectedRepo?.id"
             :id="syncFormId"
             class="flex flex-col gap-4 fr-mb-4w"
           >

@@ -1,28 +1,30 @@
 import { apiPrefix } from '@cpn-console/shared'
 import {
-  keycloakProtocol,
-  keycloakDomain,
-  keycloakRealm,
   keycloakClientId,
   keycloakClientSecret,
-  sessionSecret,
+  keycloakDomain,
+  keycloakProtocol,
+  keycloakRealm,
   keycloakRedirectUri,
+  sessionSecret,
 } from './env.js'
 
-type KeycloakPayload = {
+interface KeycloakPayload {
   sub: string
   email: string
   given_name: string
   family_name: string
   groups: string[]
 }
-const userPayloadMapper = (userPayload: KeycloakPayload) => ({
-  id: userPayload.sub,
-  email: userPayload.email,
-  firstName: userPayload.given_name,
-  lastName: userPayload.family_name,
-  groups: userPayload.groups || [],
-})
+function userPayloadMapper(userPayload: KeycloakPayload) {
+  return {
+    id: userPayload.sub,
+    email: userPayload.email,
+    firstName: userPayload.given_name,
+    lastName: userPayload.family_name,
+    groups: userPayload.groups || [],
+  }
+}
 
 export const keycloakConf = {
   appOrigin: keycloakRedirectUri ?? 'http://localhost:8080',

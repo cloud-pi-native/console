@@ -1,7 +1,7 @@
 import { getAxiosInstance } from './tech.js'
 import type { SonarPaging } from './project.js'
 
-export type SonarGroup = {
+export interface SonarGroup {
   id: string
   name: string
   description: string
@@ -9,7 +9,7 @@ export type SonarGroup = {
   default: boolean
 }
 
-export const findGroupByName = async (name: string): Promise<void | SonarGroup> => {
+export async function findGroupByName(name: string): Promise<void | SonarGroup> {
   const axiosInstance = getAxiosInstance()
   const groupsSearch: { paging: SonarPaging, groups: SonarGroup[] } = (await axiosInstance({
     url: 'user_groups/search',
@@ -20,7 +20,7 @@ export const findGroupByName = async (name: string): Promise<void | SonarGroup> 
   return groupsSearch.groups.find(g => g.name === name)
 }
 
-export const ensureGroupExists = async (groupName: string) => {
+export async function ensureGroupExists(groupName: string) {
   const axiosInstance = getAxiosInstance()
   const group = await findGroupByName(groupName)
   if (!group) {

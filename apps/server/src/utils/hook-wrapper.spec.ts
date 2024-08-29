@@ -1,51 +1,7 @@
-import { type KubeCluster, type KubeUser, type Store, type Project as ProjectPayload } from '@cpn-console/hooks'
-import { ProjectInfos, transformToHookProject, type ReposCreds } from './hook-wrapper.ts'
+import type { KubeCluster, KubeUser, Project as ProjectPayload, Store } from '@cpn-console/hooks'
 import { describe, expect, it } from 'vitest'
-
-describe('transformToHookProject', () => {
-  // Mock data
-  const mockStore: Store = {}
-  const mockReposCreds: ReposCreds = {
-    console: {
-      token: 'test',
-      username: 'test',
-    },
-  }
-
-  it('transforme correctement le projet en objet Payload', () => {
-    const result: ProjectPayload = transformToHookProject(project, mockStore, mockReposCreds)
-
-    // Asserts pour vérifier la transformation
-
-    // Assert sur la transformation des utilisateurs
-    expect(result.users).toEqual([project.owner])
-
-    // Assert sur la transformation des rôles
-    expect(result.roles).toEqual([{ userId: project.owner.id, role: 'owner' }])
-
-    // Assert sur la transformation des clusters
-    expect(result.clusters).toEqual([associatedCluster, nonAssociatedCluster].map(({ kubeconfig, ...cluster }) => ({
-      user: kubeconfig.user as unknown as KubeUser,
-      cluster: kubeconfig.cluster as unknown as KubeCluster,
-      ...cluster,
-      privacy: cluster.privacy,
-    })))
-
-    // Assert sur la transformation des environnements
-    expect(result.environments).toEqual(project.environments.map(({ permissions: _, stage, quota, ...environment }) => ({
-      quota,
-      stage: stage.name,
-      permissions: [{ permissions: { rw: true, ro: true }, userId: project.ownerId }],
-      ...environment,
-    })))
-
-    // Assert sur la transformation des repositories
-    expect(result.repositories).toEqual(project.repositories.map(repo => ({ ...repo, newCreds: mockReposCreds[repo.internalRepoName] })))
-
-    // Assert sur le store
-    expect(result.store).toEqual(mockStore)
-  })
-})
+import type { ProjectInfos, ReposCreds } from './hook-wrapper.ts'
+import { transformToHookProject } from './hook-wrapper.ts'
 
 const associatedCluster = {
   id: 'f0e39981-0b6d-4c16-aa96-225062b75767',
@@ -241,3 +197,48 @@ const project: ProjectInfos = {
   },
   roles: [],
 }
+
+describe('transformToHookProject', () => {
+  // Mock data
+  const mockStore: Store = {}
+  const mockReposCreds: ReposCreds = {
+    console: {
+      token: 'test',
+      username: 'test',
+    },
+  }
+
+  it('transforme correctement le projet en objet Payload', () => {
+    const result: ProjectPayload = transformToHookProject(project, mockStore, mockReposCreds)
+
+    // Asserts pour vérifier la transformation
+
+    // Assert sur la transformation des utilisateurs
+    expect(result.users).toEqual([project.owner])
+
+    // Assert sur la transformation des rôles
+    expect(result.roles).toEqual([{ userId: project.owner.id, role: 'owner' }])
+
+    // Assert sur la transformation des clusters
+    expect(result.clusters).toEqual([associatedCluster, nonAssociatedCluster].map(({ kubeconfig, ...cluster }) => ({
+      user: kubeconfig.user as unknown as KubeUser,
+      cluster: kubeconfig.cluster as unknown as KubeCluster,
+      ...cluster,
+      privacy: cluster.privacy,
+    })))
+
+    // Assert sur la transformation des environnements
+    expect(result.environments).toEqual(project.environments.map(({ permissions: _, stage, quota, ...environment }) => ({
+      quota,
+      stage: stage.name,
+      permissions: [{ permissions: { rw: true, ro: true }, userId: project.ownerId }],
+      ...environment,
+    })))
+
+    // Assert sur la transformation des repositories
+    expect(result.repositories).toEqual(project.repositories.map(repo => ({ ...repo, newCreds: mockReposCreds[repo.internalRepoName] })))
+
+    // Assert sur le store
+    expect(result.store).toEqual(mockStore)
+  })
+})

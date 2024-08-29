@@ -11,7 +11,7 @@ export const CleanedClusterSchema = z.object({
   id: z.string()
     .uuid(),
   label: z.string()
-    .regex(/^[a-zA-Z0-9-]+$/)
+    .regex(/^[a-z0-9-]+$/i)
     .max(50),
   infos: z.string()
     .max(200)

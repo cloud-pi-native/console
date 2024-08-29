@@ -35,12 +35,12 @@ services:
       DSFR_THEME_HOME_URL: http://localhost:8080
       DSFR_THEME_SERVICE_TITLE: Console Cloud π Native
       DSFR_THEME_BRAND_TOP: Ministère<br/>de l'Intérieur</br>et des Outre-Mer
-      DSFR_THEME_TOS_URL: 
+      DSFR_THEME_TOS_URL:
       DSFR_THEME_CONTACT_EMAIL: cloudpinative-relations@interieur.gouv.fr
     entrypoint: /opt/bitnami/keycloak/bin/kc.sh
     command: start-dev --import-realm
     healthcheck:
-      test: ["CMD", "curl", "--head","fsS", "http://localhost:8080/health/ready"]
+      test: [CMD, curl, --head, fsS, "http://localhost:8080/health/ready"]
       interval: 5s
       timeout: 5s
       retries: 10

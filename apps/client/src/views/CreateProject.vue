@@ -1,16 +1,19 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref, UnwrapRef, type Ref } from 'vue'
+import type { Ref, UnwrapRef } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import type {
+  projectContract,
+} from '@cpn-console/shared'
+import {
+  ProjectSchemaV2,
+  descriptionMaxLength,
+  instanciateSchema,
+  parseZodError,
+  projectNameMaxLength,
+} from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import { useOrganizationStore } from '@/stores/organization.js'
-import {
-  descriptionMaxLength,
-  parseZodError,
-  instanciateSchema,
-  projectNameMaxLength,
-  ProjectSchemaV2,
-  projectContract,
-} from '@cpn-console/shared'
 import router from '@/router/index.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
@@ -18,6 +21,12 @@ const projectStore = useProjectStore()
 const userStore = useUserStore()
 const organizationStore = useOrganizationStore()
 const snackbarStore = useSnackbarStore()
+
+const project = ref<typeof projectContract.createProject.body._type>({
+  organizationId: '',
+  name: '',
+  description: '',
+})
 
 const remainingCharacters = computed(() => {
   return projectNameMaxLength - project.value?.name.length
@@ -27,13 +36,7 @@ const errorSchema = computed(() => {
   return schemaValidation.success ? undefined : schemaValidation.error
 })
 
-const project = ref<typeof projectContract.createProject.body._type>({
-  organizationId: '',
-  name: '',
-  description: '',
-})
-
-type OrgOption = {
+interface OrgOption {
   text: string
   value: string
   id: string
@@ -43,7 +46,7 @@ const orgOptions = ref<OrgOption[]>([])
 
 const updatedValues: Ref<Record<any, any>> = ref({})
 
-const createProject = async () => {
+async function createProject() {
   snackbarStore.isWaitingForResponse = true
   updatedValues.value = instanciateSchema(ProjectSchemaV2, true)
   if (errorSchema.value) {
@@ -55,7 +58,7 @@ const createProject = async () => {
   snackbarStore.isWaitingForResponse = false
 }
 
-const updateProject = (key: keyof UnwrapRef<typeof project>, value: string) => {
+function updateProject(key: keyof UnwrapRef<typeof project>, value: string) {
   project.value[key] = value
   updatedValues.value[key] = true
 }
@@ -112,7 +115,7 @@ onMounted(async () => {
             data-testid="nameInput"
             type="text"
             :required="true"
-            :error-message="!!updatedValues.name && !ProjectSchemaV2.pick({name: true}).safeParse({name: project.name}).success ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace ni de trait d'union, faire plus de 2 et moins de ${projectNameMaxLength} caractères.`: undefined"
+            :error-message="!!updatedValues.name && !ProjectSchemaV2.pick({ name: true }).safeParse({ name: project.name }).success ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace ni de trait d'union, faire plus de 2 et moins de ${projectNameMaxLength} caractères.` : undefined"
             label="Nom du projet"
             label-visible
             :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules, doit faire plus de 2 et moins de ${projectNameMaxLength} caractères.`"

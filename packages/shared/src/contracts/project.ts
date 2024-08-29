@@ -1,17 +1,17 @@
-import { ClientInferRequest } from '@ts-rest/core'
+import type { ClientInferRequest } from '@ts-rest/core'
+import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
-  CreateProjectSchema,
-  GetProjectsSchema,
-  UpdateProjectSchema,
-  ReplayHooksForProjectSchema,
   ArchiveProjectSchema,
+  CreateProjectSchema,
   GetProjectsDataSchema,
-  ProjectSchemaV2,
+  GetProjectsSchema,
   ProjectParams,
+  ProjectSchemaV2,
+  ReplayHooksForProjectSchema,
+  UpdateProjectSchema,
 } from '../schemas/index.js'
 import { ErrorSchema } from '../schemas/utils.js'
-import { z } from 'zod'
 
 export const projectContract = contractInstance.router({
   createProject: {

@@ -13,14 +13,13 @@ const projectList = computed(() => sortArrByObjKeyAsc(projectStore.projects, 'na
     to: `/projects/${project.id}/dashboard`,
   })))
 
-const setSelectedProject = async (project: Record<any, any>) => {
+async function setSelectedProject(project: Record<any, any>) {
   projectStore.setSelectedProject(project.id)
 }
 
-const goToCreateProject = () => {
+function goToCreateProject() {
   router.push('projects/create-project')
 }
-
 </script>
 
 <template>

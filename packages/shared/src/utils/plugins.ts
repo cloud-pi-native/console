@@ -5,7 +5,7 @@ export enum MonitorStatus {
   UNKNOW = 'Inconnu',
 }
 
-export type MonitorInfos = {
+export interface MonitorInfos {
   lastUpdateTimestamp: number
   interval: number
   message: string
@@ -31,7 +31,8 @@ export class Monitor {
   }
 
   async refresh() {
-    if (this.intervalID) clearInterval(this.intervalID)
+    if (this.intervalID)
+      clearInterval(this.intervalID)
     this.intervalID = setInterval(() => this.monitorFn(this), this.intervalTime)
     return this.monitorFn(this)
   }

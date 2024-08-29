@@ -1,7 +1,7 @@
-import type { Project, Plugin, DefaultArgs } from '@cpn-console/hooks'
+import type { DefaultArgs, Plugin, Project } from '@cpn-console/hooks'
 import infos from './infos.js'
 import { getProjectSecrets } from './misc.js'
-import { deleteNamespaces, createNamespaces } from './namespace.js'
+import { createNamespaces, deleteNamespaces } from './namespace.js'
 import { KubernetesProjectApi } from './class.js'
 
 export const plugin: Plugin = {

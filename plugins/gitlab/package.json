@@ -1,12 +1,17 @@
 {
   "name": "@cpn-console/gitlab-plugin",
-  "description": "",
-  "version": "2.2.1",
-  "private": false,
   "type": "module",
+  "version": "2.2.2",
+  "private": false,
+  "description": "",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "types/index.d.ts",
+  "files": [
+    "dist",
+    "files",
+    "types"
+  ],
   "scripts": {
     "build": "tsc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
@@ -40,10 +45,5 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public",
     "tag": "latest"
-  },
-  "files": [
-    "dist",
-    "types",
-    "files"
-  ]
+  }
 }

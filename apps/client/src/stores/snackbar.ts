@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import { ref, type Ref } from 'vue'
-import { type ErrorTypes } from '@cpn-console/shared'
+import { type Ref, ref } from 'vue'
+import type { ErrorTypes } from '@cpn-console/shared'
 
 export const useSnackbarStore = defineStore('snackbar', () => {
   const defaultTimeout: number = 6000
@@ -9,6 +9,12 @@ export const useSnackbarStore = defineStore('snackbar', () => {
   const type: Ref<ErrorTypes> = ref('info')
   const timeoutId: Ref<ReturnType<typeof setTimeout> | undefined> = ref(undefined)
   const isWaitingForResponse = ref<boolean>(false)
+
+  const hideMessage = () => {
+    isOpen.value = false
+    clearTimeout(timeoutId.value)
+    timeoutId.value = undefined
+  }
 
   const setMessage = (errorMessage: string, errorType: ErrorTypes = 'info', timeout: number = defaultTimeout) => {
     if (timeoutId.value) {
@@ -21,12 +27,6 @@ export const useSnackbarStore = defineStore('snackbar', () => {
     message.value = errorMessage
     isOpen.value = true
     type.value = errorType
-  }
-
-  const hideMessage = () => {
-    isOpen.value = false
-    clearTimeout(timeoutId.value)
-    timeoutId.value = undefined
   }
 
   return {

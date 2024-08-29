@@ -1,7 +1,7 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
-import { apiClient } from '../api/xhr-client.js'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
 import { createRandomDbSetup } from '@cpn-console/test-utils'
+import { apiClient } from '../api/xhr-client.js'
 import { useProjectEnvironmentStore } from './project-environment.js'
 
 const listEnvironments = vi.spyOn(apiClient.Environments, 'listEnvironments')
@@ -15,7 +15,7 @@ vi.mock('./project.js', async () => ({
   }),
 }))
 
-describe('Environment Store', () => {
+describe('environment Store', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     // creates a fresh pinia and make it active so it's automatically picked
@@ -23,7 +23,7 @@ describe('Environment Store', () => {
     setActivePinia(createPinia())
   })
 
-  it('Should add a project environment by api call', async () => {
+  it('should add a project environment by api call', async () => {
     const projectEnvironmentStore = useProjectEnvironmentStore()
 
     apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: {} }))
@@ -34,7 +34,7 @@ describe('Environment Store', () => {
     expect(apiClientPost).toHaveBeenCalledTimes(1)
   })
 
-  it('Should delete a project environment by api call', async () => {
+  it('should delete a project environment by api call', async () => {
     const projectEnvironmentStore = useProjectEnvironmentStore()
 
     apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204, body: {} }))

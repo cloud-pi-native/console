@@ -11,7 +11,7 @@ const message = computed(() => snackbarStore.message)
 const isOpen = computed(() => snackbarStore.isOpen)
 const type = computed(() => snackbarStore.type)
 
-const closeSnackbar = () => {
+function closeSnackbar() {
   snackbarStore.hideMessage()
 }
 

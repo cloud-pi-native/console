@@ -1,6 +1,6 @@
 <script lang="ts" setup generic="T extends Record<string, any>, VALUE extends (Extract<keyof T, string>), LABEL extends (Extract<keyof T, string>)">
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
-import { ref, computed, onBeforeMount } from 'vue'
+import { computed, onBeforeMount, ref } from 'vue'
 
 const props = withDefaults(defineProps<{
   options: T[]
@@ -19,6 +19,9 @@ const props = withDefaults(defineProps<{
   description: '',
 })
 
+const emit = defineEmits<{
+  update: [selected: T[], values: T[VALUE][]]
+}>()
 const isWrapped = ref(props.wrapped)
 const selectedValues = ref<string[]>([])
 const search = ref('')
@@ -32,11 +35,7 @@ const displayed = {
   selected: computed(() => options.selected.value.filter(option => option[props.labelKey].includes(search.value))),
 }
 
-const emit = defineEmits<{
-  update: [selected: T[], values: T[VALUE][]]
-}>()
-
-const switchSelection = (event: string) => {
+function switchSelection(event: string) {
   const eventValue = event
   if (!eventValue) return
 
@@ -49,7 +48,7 @@ const switchSelection = (event: string) => {
 }
 
 type SwitchMultipleParam = 'notSelected' | 'notSelectedDisplayed' | 'selected' | 'selectedDisplayed'
-const switchMultiple = (choice: SwitchMultipleParam) => {
+function switchMultiple(choice: SwitchMultipleParam) {
   if (choice === 'selected') {
     selectedValues.value = selectedValues.value.filter(value => !options.selected.value.find(select => select[props.valueKey] === value))
   } else if (choice === 'selectedDisplayed') {
@@ -65,7 +64,7 @@ onBeforeMount(() => {
   selectedValues.value = props.optionsSelected.map(option => option[props.valueKey])
 })
 
-type Group = {
+interface Group {
   tagClass: string
   title: string
   selectorKey: keyof typeof displayed
@@ -221,7 +220,7 @@ const groups: Group[] = [
         {{ props.label }}
       </h6>
       <v-icon
-        :class="`ml-4`"
+        class="ml-4"
         name="ri-arrow-right-s-line"
       />
     </div>
@@ -256,7 +255,7 @@ const groups: Group[] = [
       <DsfrTag
         class="cursor-pointer"
         :label="`et ${options.selected.value.length - 3} de +`"
-        :title="`${options.selected.value.slice(3,10).map(option => option[props.labelKey]).join('\n')}${options.selected.value.length>10?'\n...':''}`"
+        :title="`${options.selected.value.slice(3, 10).map(option => option[props.labelKey]).join('\n')}${options.selected.value.length > 10 ? '\n...' : ''}`"
       />
     </div>
     <div

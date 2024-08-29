@@ -1,7 +1,7 @@
-import { vi, afterAll, describe, it, expect, beforeEach } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { apiPrefix } from '@cpn-console/shared'
 import app from './app.js'
 import { getRandomRequestor, setRequestor } from './utils/mocks.js'
-import { apiPrefix } from '@cpn-console/shared'
 
 vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin)
 

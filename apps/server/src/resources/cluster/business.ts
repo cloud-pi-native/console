@@ -1,29 +1,30 @@
-import { type Prisma, User } from '@prisma/client'
-import { type ClusterDetails, ClusterDetailsSchema, ClusterPrivacy, Kubeconfig, Project, type Cluster, clusterContract } from '@cpn-console/shared'
+import type { Prisma, User } from '@prisma/client'
+import type { Cluster, ClusterDetails, Kubeconfig, Project, clusterContract } from '@cpn-console/shared'
+import { ClusterDetailsSchema, ClusterPrivacy } from '@cpn-console/shared'
 import {
   addLogs,
   createCluster as createClusterQuery,
   deleteCluster as deleteClusterQuery,
   getClusterById,
   getClusterByLabel,
+  getClusterDetails as getClusterDetailsQuery,
   getClusterEnvironments,
   getProjectsByClusterId,
-  listStagesByClusterId,
   linkClusterToProjects,
   linkZoneToClusters,
+  listClusters as listClustersQuery,
+  listStagesByClusterId,
   removeClusterFromProject,
   removeClusterFromStage,
   updateCluster as updateClusterQuery,
-  getClusterDetails as getClusterDetailsQuery,
-  listClusters as listClustersQuery,
 } from '@/resources/queries-index.js'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
 import { hook } from '@/utils/hook-wrapper.js'
-import { ErrorResType, BadRequest400, NotFound404, Unprocessable422 } from '@/utils/errors.js'
+import { BadRequest400, ErrorResType, NotFound404, Unprocessable422 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
-export const listClusters = async (userId?: User['id']) => {
+export async function listClusters(userId?: User['id']) {
   const where: Prisma.ClusterWhereInput = userId
     ? {
         OR: [
@@ -51,7 +52,7 @@ export const listClusters = async (userId?: User['id']) => {
   }))
 }
 
-export const getClusterAssociatedEnvironments = async (clusterId: string) => {
+export async function getClusterAssociatedEnvironments(clusterId: string) {
   const clusterEnvironments = await getClusterEnvironments(clusterId)
 
   return clusterEnvironments.map((environment) => {
@@ -64,7 +65,7 @@ export const getClusterAssociatedEnvironments = async (clusterId: string) => {
   })
 }
 
-export const getClusterDetails = async (clusterId: string): Promise<ClusterDetails> => {
+export async function getClusterDetails(clusterId: string): Promise<ClusterDetails> {
   const { infos, projects, stages, kubeconfig, ...details } = await getClusterDetailsQuery(clusterId)
 
   return {
@@ -79,7 +80,7 @@ export const getClusterDetails = async (clusterId: string): Promise<ClusterDetai
   }
 }
 
-export const createCluster = async (data: typeof clusterContract.createCluster.body._type, userId: User['id'], requestId: string) => {
+export async function createCluster(data: typeof clusterContract.createCluster.body._type, userId: User['id'], requestId: string) {
   const isLabelTaken = await getClusterByLabel(data.label)
   if (isLabelTaken) return new BadRequest400('Ce label existe déjà pour un autre cluster')
 
@@ -114,7 +115,7 @@ export const createCluster = async (data: typeof clusterContract.createCluster.b
   return getClusterDetails(clusterCreated.id)
 }
 
-export const updateCluster = async (data: typeof clusterContract.updateCluster.body._type, clusterId: Cluster['id'], userId: User['id'], requestId: string): Promise<ClusterDetails | ErrorResType> => {
+export async function updateCluster(data: typeof clusterContract.updateCluster.body._type, clusterId: Cluster['id'], userId: User['id'], requestId: string): Promise<ClusterDetails | ErrorResType> {
   if (data?.privacy === ClusterPrivacy.PUBLIC) delete data.projectIds
 
   const schemaValidation = ClusterDetailsSchema.partial().safeParse({ ...data, id: clusterId })
@@ -132,11 +133,9 @@ export const updateCluster = async (data: typeof clusterContract.updateCluster.b
     ...clusterData
   } = data
 
-  const clusterUpdated = await updateClusterQuery(clusterId,
-    clusterData,
+  const clusterUpdated = await updateClusterQuery(clusterId, clusterData,
     // @ts-ignore
-    kubeconfig,
-  )
+    kubeconfig)
 
   // zone
   if (zoneId) {
@@ -182,7 +181,7 @@ export const updateCluster = async (data: typeof clusterContract.updateCluster.b
   return getClusterDetails(clusterId)
 }
 
-export const deleteCluster = async (clusterId: Cluster['id'], userId: User['id'], requestId: string) => {
+export async function deleteCluster(clusterId: Cluster['id'], userId: User['id'], requestId: string) {
   const environment = await prisma.environment.findFirst({ where: { clusterId } })
   if (environment) return new BadRequest400('Impossible de supprimer le cluster, des environnements en activité y sont déployés')
 

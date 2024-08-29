@@ -1,5 +1,6 @@
-import { Organization } from '@cpn-console/shared'
+import type { Organization } from '@cpn-console/shared'
 import { getModel, getModelById } from './func.js'
+
 const organizations = getModel('organization')
 const orgMi = organizations.find(({ name }) => name === 'mi') as Organization
 
@@ -276,28 +277,6 @@ Cypress.Commands.add('deleteEnvironment', (project, environmentName) => {
   cy.wait('@deleteEnvironment').its('response.statusCode').should('eq', 204)
   cy.wait('@listProjects').its('response.statusCode').should('eq', 200)
   cy.getByDataTestid(`environmentTile-${environmentName}`).should('not.exist')
-})
-
-Cypress.Commands.add('addPermission', (project, environmentName, userToLicence) => {
-  cy.intercept('GET', '/api/v1/environments?projectId=*').as('listEnvironments')
-  cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-  cy.intercept('PUT', `/api/v1/projects/${project.id}/environments/*/permissions`).as('putPermission')
-
-  cy.goToProjects()
-    .getByDataTestid(`projectTile-${project.name}`).click()
-    .getByDataTestid('menuEnvironments').click()
-  cy.wait('@listEnvironments')
-  cy.wait('@getClusters')
-  cy.getByDataTestid(`environmentTile-${environmentName}`)
-    .click()
-
-  cy.getByDataTestid('permissionSuggestionInput')
-    .find('input')
-    .clear()
-    .type(userToLicence)
-
-  cy.wait('@putPermission')
-    .its('response.statusCode').should('eq', 200)
 })
 
 Cypress.Commands.add('assertPermission', (project, environmentName, permissions) => {

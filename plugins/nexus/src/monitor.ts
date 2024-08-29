@@ -1,4 +1,4 @@
-import { type MonitorInfos, MonitorStatus, Monitor } from '@cpn-console/shared'
+import { Monitor, type MonitorInfos, MonitorStatus } from '@cpn-console/shared'
 import axios from 'axios'
 import { getAxiosOptions } from './functions.js'
 
@@ -22,7 +22,7 @@ type NexusRes = Record<string, {
   message: string
 }>
 
-const monitor = async (instance: Monitor): Promise<MonitorInfos> => {
+async function monitor(instance: Monitor): Promise<MonitorInfos> {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
     const status = await axios.get('/status', {

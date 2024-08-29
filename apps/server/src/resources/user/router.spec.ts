@@ -1,10 +1,10 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { userContract } from '@cpn-console/shared'
-import app from '../../app.js'
-import * as business from './business.js'
-import * as utilsController from '../../utils/controller.js'
 import { faker } from '@faker-js/faker'
+import app from '../../app.js'
+import * as utilsController from '../../utils/controller.js'
 import { getUserMockInfos } from '../../utils/mocks.js'
+import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -13,13 +13,13 @@ const businessLogMock = vi.spyOn(business, 'logUser')
 const businessGetUsersMock = vi.spyOn(business, 'getUsers')
 const businessPatchMock = vi.spyOn(business, 'patchUsers')
 
-describe('Test userContract', () => {
+describe('test userContract', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
   describe('getMatchingUsers', () => {
-    it('Should return matching users', async () => {
+    it('should return matching users', async () => {
       const usersMatching = []
       businessGetMatchingMock.mockResolvedValueOnce(usersMatching)
 
@@ -35,7 +35,7 @@ describe('Test userContract', () => {
   })
 
   describe('auth', () => {
-    it('Should return logged user', async () => {
+    it('should return logged user', async () => {
       const user = {
         id: faker.string.uuid(),
         adminRoleIds: [],
@@ -58,7 +58,7 @@ describe('Test userContract', () => {
   })
 
   describe('getAllUsers', () => {
-    it('Should return all users for admin', async () => {
+    it('should return all users for admin', async () => {
       const user = getUserMockInfos(true)
       const users = []
       authUserMock.mockResolvedValueOnce(user)
@@ -74,7 +74,7 @@ describe('Test userContract', () => {
       expect(response.json()).toEqual(users)
       expect(response.statusCode).toEqual(200)
     })
-    it('Should return 403 for non-admin', async () => {
+    it('should return 403 for non-admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -104,7 +104,7 @@ describe('Test userContract', () => {
       lastName: faker.person.lastName(),
     }]
 
-    it('Should patch and return users for admin', async () => {
+    it('should patch and return users for admin', async () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -119,7 +119,7 @@ describe('Test userContract', () => {
       expect(response.json()).toEqual(usersReturn)
       expect(response.statusCode).toEqual(200)
     })
-    it('Should return 403 for non-admin', async () => {
+    it('should return 403 for non-admin', async () => {
       const user = getUserMockInfos(false)
       authUserMock.mockResolvedValueOnce(user)
 

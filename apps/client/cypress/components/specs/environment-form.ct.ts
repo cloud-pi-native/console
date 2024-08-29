@@ -115,7 +115,7 @@ describe('EnvironmentForm.vue', () => {
     cy.getByDataTestid('addEnvironmentBtn').should('be.enabled')
     cy.getByDataTestid('cancelEnvironmentBtn').should('be.enabled')
   })
-    it('Should mount a EnvironmentForm as viewer', () => {
+  it('Should mount a EnvironmentForm as viewer', () => {
     const randomDbSetup = createRandomDbSetup({ envs: [] })
     randomDbSetup.quotas[0].isPrivate = true
     randomDbSetup.quotas[1].isPrivate = true

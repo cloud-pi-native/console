@@ -9,7 +9,7 @@ export const identity = (value: unknown) => value
 
 export const getLongestStringOfArray = (array: Array<string>) => array.reduce((acc, curr) => acc.length < curr.length ? curr : acc, '')
 
-export const calcProjectNameMaxLength = (organizationName: string) => {
+export function calcProjectNameMaxLength(organizationName: string) {
   return organizationName
     ? 61 - longestEnvironmentName - organizationName.length
     : 61 - longestEnvironmentName
@@ -21,7 +21,7 @@ export const isString = (value: any): value is string => typeof value === 'strin
 
 type ObjToSort = Record<string, unknown>
 
-export const sortArrByObjKeyAsc = <T extends ObjToSort[]>(arr: T, key: string): T => {
+export function sortArrByObjKeyAsc<T extends ObjToSort[]>(arr: T, key: string): T {
   return arr.toSorted((a: ObjToSort, b: ObjToSort) => {
     const aValue = a[key]
     const bValue = b[key]
@@ -38,12 +38,14 @@ export const sortArrByObjKeyAsc = <T extends ObjToSort[]>(arr: T, key: string): 
   }) as T
 }
 
-export const removeTrailingSlash = (url: string) => url?.endsWith('/')
-  ? url.slice(0, -1)
-  : url
+export function removeTrailingSlash(url: string) {
+  return url?.endsWith('/')
+    ? url.slice(0, -1)
+    : url
+}
 
 // Exclude keys from an object
-export const exclude = <T>(result: T, keys: string[]): T => {
+export function exclude<T>(result: T, keys: string[]): T {
   // @ts-ignore
   if (Array.isArray(result)) return result.map(item => exclude(item, keys))
   const newObj: Record<string, unknown> = {}
@@ -71,38 +73,42 @@ export const exclude = <T>(result: T, keys: string[]): T => {
 export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
   T extends (...args: any) => Promise<infer R> ? R : any
 
-export const objectEntries = <Obj extends Record<string, unknown>>(obj: Obj): ([keyof Obj, Obj[keyof Obj]])[] => {
+export function objectEntries<Obj extends Record<string, unknown>>(obj: Obj): ([keyof Obj, Obj[keyof Obj]])[] {
   return Object.entries(obj) as ([keyof Obj, Obj[keyof Obj]])[]
 }
-export const objectKeys = <Obj extends Record<string, unknown>>(obj: Obj): (keyof Obj)[] => {
+export function objectKeys<Obj extends Record<string, unknown>>(obj: Obj): (keyof Obj)[] {
   return Object.keys(obj) as (keyof Obj)[]
 }
-export const objectValues = <Obj extends Record<string, unknown>>(obj: Obj): (Obj[keyof Obj])[] => {
+export function objectValues<Obj extends Record<string, unknown>>(obj: Obj): (Obj[keyof Obj])[] {
   return Object.values(obj) as (Obj[keyof Obj])[]
 }
 
-export const requiredEnv = (envName: string): string => {
+export function requiredEnv(envName: string): string {
   const envValue = process.env[envName]
   if (envValue) return envValue
 
-  throw Error(`env: ${envName} is not defined !`)
+  throw new Error(`env: ${envName} is not defined !`)
 }
 
-export const resourceListToDict = <T extends { id: string }>(resList: Array<T>): ResourceById<T> => resList.reduce((acc, curr) => {
-  return {
-    ...acc,
-    [curr.id]: curr,
-  }
-}, {} as ResourceById<T>)
+export function resourceListToDict<T extends { id: string }>(resList: Array<T>): ResourceById<T> {
+  return resList.reduce((acc, curr) => {
+    return {
+      ...acc,
+      [curr.id]: curr,
+    }
+  }, {} as ResourceById<T>)
+}
 
-export const resourceListToDictByKey = <T extends { key: string }>(resList: Array<T>): ResourceByKey<T> => resList.reduce((acc, curr) => {
-  return {
-    ...acc,
-    [curr.key]: curr,
-  }
-}, {} as ResourceByKey<T>)
+export function resourceListToDictByKey<T extends { key: string }>(resList: Array<T>): ResourceByKey<T> {
+  return resList.reduce((acc, curr) => {
+    return {
+      ...acc,
+      [curr.key]: curr,
+    }
+  }, {} as ResourceByKey<T>)
+}
 
-export const shallowEqual = (object1: Record<string, unknown>, object2: Record<string, unknown>) => {
+export function shallowEqual(object1: Record<string, unknown>, object2: Record<string, unknown>) {
   const keys1 = Object.keys(object1)
   const keys2 = Object.keys(object2)
 

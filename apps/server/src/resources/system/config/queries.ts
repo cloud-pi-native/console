@@ -1,10 +1,10 @@
+import type { ConfigRecords } from './business.js'
 import prisma from '@/prisma.js'
-import { ConfigRecords } from './business.js'
 
 // CONFIG
 export const getAdminPlugin = prisma.adminPlugin.findMany
 
-export const savePluginsConfig = async (records: ConfigRecords) => {
+export async function savePluginsConfig(records: ConfigRecords) {
   for (const { pluginName, key, value } of records) {
     await prisma.adminPlugin.upsert({
       create: {
