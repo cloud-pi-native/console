@@ -1,4 +1,4 @@
-import { AdminAuthorized, ProjectAuthorized, repositoryContract } from '@cpn-console/shared'
+import { AdminAuthorized, ProjectAuthorized, fakeToken, repositoryContract } from '@cpn-console/shared'
 import {
   createRepository,
   deleteRepository,
@@ -88,6 +88,10 @@ export function repositoryRouter() {
         'isInfra',
       ]
       const data = filterObjectByKeys(body, keysAllowedForUpdate)
+
+      if (data.externalToken === fakeToken) {
+        delete data.externalToken
+      }
 
       if (data.isPrivate === false) {
         delete data.externalToken

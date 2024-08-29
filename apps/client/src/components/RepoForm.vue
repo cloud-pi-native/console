@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import type { Repo, SharedZodError } from '@cpn-console/shared'
-import { CreateRepoBusinessSchema, RepoBusinessSchema, RepoSchema, instanciateSchema } from '@cpn-console/shared'
+import { CreateRepoBusinessSchema, RepoBusinessSchema, RepoSchema, fakeToken, instanciateSchema } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
@@ -15,10 +15,13 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits(['save', 'delete', 'cancel'])
-const localRepo = ref({ ...props.repo })
+const localRepo = props.repo.id && props.repo.isPrivate
+  ? ref({ ...props.repo, externalToken: fakeToken })
+  : ref({ ...props.repo })
 const updatedValues = ref<Record<keyof Omit<typeof localRepo.value, 'id' | 'projectId'>, boolean>>(instanciateSchema(RepoSchema, false))
 const repoToDelete = ref('')
 const isDeletingRepo = ref(false)
+const isPassword = ref(true)
 
 const errorSchema = computed<SharedZodError | undefined>(() => {
   let schemaValidation
@@ -145,19 +148,28 @@ function cancel() {
               @update:model-value="updateRepo('externalUserName', $event)"
             />
           </div>
-          <div class="fr-mb-2w">
-            <DsfrInputGroup
-              v-model="localRepo.externalToken"
-              data-testid="externalTokenInput"
-              type="text"
-              :required="localRepo.isPrivate"
-              :disabled="props.isProjectLocked || !canManage"
-              label="Token d'accès au dépôt Git source"
-              label-visible
-              hint="Token d'accès permettant le clone du dépôt Git source par la chaîne DevSecOps"
-              placeholder="hoqjC1vXtABzytBIWBXsdyzubmqMYkgA"
-              class="fr-mb-2w"
-              @update:model-value="updateRepo('externalToken', $event)"
+          <div class="fr-mb-2w flex items-end">
+            <div
+              class="w-full"
+            >
+              <DsfrInputGroup
+                v-model="localRepo.externalToken"
+                data-testid="externalTokenInput"
+                :type="isPassword ? 'password' : 'text'"
+                :required="localRepo.isPrivate"
+                :disabled="props.isProjectLocked || !canManage"
+                label="Token d'accès au dépôt Git source"
+                label-visible
+                :hint="localRepo.id ? 'Par sécurité, nous affichons un token par défaut qui ne sera pas pris en compte. Ne modifier que si vous souhaitez ajouter un token ou écraser votre token actuel.' : 'Token d\'accès permettant le clone du dépôt Git source par la chaîne DevSecOps'"
+                placeholder="hoqjC1vXtABzytBIWBXsdyzubmqMYkgA"
+                autocomplete="off"
+                @update:model-value="updateRepo('externalToken', $event)"
+              />
+            </div>
+            <v-icon
+              :name="isPassword ? 'ri-eye-line' : 'ri-eye-off-line'"
+              class="-ml-8 mb-2 z-1"
+              @click="isPassword = !isPassword"
             />
           </div>
         </div>

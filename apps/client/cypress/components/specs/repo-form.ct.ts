@@ -7,6 +7,7 @@ import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
 
+import { fakeToken } from '@cpn-console/shared'
 import RepoForm from '@/components/RepoForm.vue'
 import { useProjectStore } from '@/stores/project.js'
 
@@ -102,20 +103,28 @@ describe('RepoForm.vue', () => {
       .and('be.enabled')
     cy.getByDataTestid('externalUserNameInput').should('have.value', props.repo.externalUserName)
       .and('be.enabled')
-    cy.getByDataTestid('externalTokenInput').should('have.value', '')
+    cy.getByDataTestid('externalTokenInput').should('have.value', fakeToken)
       .and('be.enabled')
     cy.getByDataTestid('input-checkbox-infraRepoCbx').should('not.be.checked')
       .and('be.enabled')
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
-    cy.getByDataTestid('externalTokenInput').type('aaaaaaa').blur()
+    cy.getByDataTestid('updateRepoBtn').should('be.enabled')
+    cy.getByDataTestid('externalTokenInput')
+      .clear()
+      .type('aaaaaaa')
+      .blur()
     cy.getByDataTestid('updateRepoBtn').should('be.enabled')
 
     // Case 1 privacy handling
     cy.getByDataTestid('input-checkbox-privateRepoCbx')
       .uncheck({ force: true })
     cy.getByDataTestid('input-checkbox-privateRepoCbx').check({ force: true })
-    cy.getByDataTestid('externalUserNameInput').should('exist')
-    cy.getByDataTestid('externalTokenInput').should('exist')
+    cy.getByDataTestid('externalUserNameInput')
+      .should('exist')
+      .and('have.value', undefined)
+    cy.getByDataTestid('externalTokenInput')
+      .should('exist')
+      .and('have.value', undefined)
     cy.getByDataTestid('updateRepoBtn').should('be.disabled')
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
     cy.getByDataTestid('externalUserNameInput').type(props.repo.externalUserName)
@@ -124,6 +133,7 @@ describe('RepoForm.vue', () => {
       .blur()
     cy.getByDataTestid('updateRepoBtn').should('be.enabled')
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
+
     // Case 2 : no Git source
     cy.getByDataTestid('externalRepoUrlInput')
       .clear()
@@ -138,19 +148,17 @@ describe('RepoForm.vue', () => {
       .and('be.enabled')
     cy.getByDataTestid('updateRepoBtn').should('be.enabled')
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
+
     // Case 3 : no Git source, infra
     cy.getByDataTestid('input-checkbox-infraRepoCbx').check({ force: true })
     cy.getByDataTestid('updateRepoBtn').should('be.enabled')
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
+
     // Case 4 : Git source
     cy.getByDataTestid('externalRepoUrlInput')
       .type(props.repo.externalRepoUrl)
       .blur()
     cy.getByDataTestid('updateRepoBtn').should('be.enabled')
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
-    // Case 5 : Git source, private
-    cy.getByDataTestid('input-checkbox-privateRepoCbx')
-      .should('exist')
-      .and('be.enabled')
   })
 })
