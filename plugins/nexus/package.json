@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/nexus-plugin",
   "type": "module",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "private": false,
   "description": "",
   "main": "dist/index.js",
