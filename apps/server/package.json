@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/server",
   "type": "module",
-  "version": "8.10.1",
+  "version": "8.11.0",
   "description": "cpn-console server",
   "main": "dist/server.js",
   "module": "dist/server.js",
