@@ -1,5 +1,22 @@
 # Changelog
 
+## [8.11.0](https://github.com/cloud-pi-native/console/compare/v8.10.1...v8.11.0) (2024-08-29)
+
+
+### Features
+
+* :sparkles: standalone repo ([ea9a2ba](https://github.com/cloud-pi-native/console/commit/ea9a2bac3fc9696fde6f1ae56b916e180ae19039))
+
+
+### Bug Fixes
+
+* :ambulance: edit previous migrations ([2a87288](https://github.com/cloud-pi-native/console/commit/2a87288ea99c19df706fe2f68173ba4bea919a17))
+
+
+### Performance Improvements
+
+* :zap: avoid unuseful keycloak call and auto-refresh ([8dcb1c2](https://github.com/cloud-pi-native/console/commit/8dcb1c24e9cce760e278222dcb84c62dff4118a1))
+
 ## [8.10.1](https://github.com/cloud-pi-native/console/compare/v8.10.0...v8.10.1) (2024-08-27)
 
 

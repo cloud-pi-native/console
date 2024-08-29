@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/root",
   "type": "module",
-  "version": "8.10.1",
+  "version": "8.11.0",
   "private": true,
   "packageManager": "pnpm@9.7.1",
   "scripts": {
