@@ -163,7 +163,7 @@ model Repository {
   id               String   @id @default(uuid()) @db.Uuid
   projectId        String   @db.Uuid
   internalRepoName String
-  externalRepoUrl  String
+  externalRepoUrl  String   @default("")
   externalUserName String   @default("")
   isInfra          Boolean  @default(false)
   isPrivate        Boolean  @default(false)

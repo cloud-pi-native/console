@@ -1,4 +1,4 @@
-import type { Repo } from '@cpn-console/shared'
+import { type Repo, fakeToken } from '@cpn-console/shared'
 import { getModelById } from '../support/func.js'
 
 describe('Add repos into project', () => {
@@ -182,7 +182,7 @@ describe('Add repos into project', () => {
       cy.getByDataTestid('externalRepoUrlInput').should('have.value', 'https://github.com/externalUser04/new-repo.git')
       cy.getByDataTestid('input-checkbox-privateRepoCbx').should('be.checked')
       cy.getByDataTestid('externalUserNameInput').should('have.value', 'newUser')
-      cy.getByDataTestid('externalTokenInput').should('have.value', '')
+      cy.getByDataTestid('externalTokenInput').should('have.value', fakeToken)
     })
   })
 

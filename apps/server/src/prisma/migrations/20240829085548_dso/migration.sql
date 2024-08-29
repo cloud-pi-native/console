@@ -8,4 +8,5 @@
 UPDATE "Repository" SET "externalUserName" = '' WHERE "externalUserName" IS NULL;
 
 ALTER TABLE "Repository" ALTER COLUMN "externalUserName" SET NOT NULL,
-ALTER COLUMN "externalUserName" SET DEFAULT '';
+ALTER COLUMN "externalUserName" SET DEFAULT '',
+ALTER COLUMN "externalRepoUrl" SET DEFAULT '';;
