@@ -60,6 +60,22 @@ function saveRepo() {
 function cancel() {
   emit('cancel')
 }
+
+function resetToken() {
+  localRepo.value.externalToken = fakeToken
+  isPassword.value = true
+}
+
+function checkEditToken() {
+  if (localRepo.value.externalToken === fakeToken) {
+    localRepo.value.externalToken = ''
+  }
+}
+
+function toggleTokenInputType() {
+  checkEditToken()
+  isPassword.value = !isPassword.value
+}
 </script>
 
 <template>
@@ -164,12 +180,21 @@ function cancel() {
                 placeholder="hoqjC1vXtABzytBIWBXsdyzubmqMYkgA"
                 autocomplete="off"
                 @update:model-value="updateRepo('externalToken', $event)"
+                @click="checkEditToken"
               />
             </div>
             <v-icon
               :name="isPassword ? 'ri-eye-line' : 'ri-eye-off-line'"
-              class="-ml-8 mb-2 z-1"
-              @click="isPassword = !isPassword"
+              class="-ml-8 mb-2 z-1 cursor-pointer"
+              :title="isPassword ? 'Afficher le token en clair' : 'Masquer le token'"
+              @click="toggleTokenInputType()"
+            />
+            <v-icon
+              v-if="localRepo.externalToken !== fakeToken"
+              name="ri-restart-line"
+              title="Annuler la modification"
+              class="-ml-12 mb-2 z-1 cursor-pointer"
+              @click="resetToken()"
             />
           </div>
         </div>
