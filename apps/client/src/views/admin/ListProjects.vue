@@ -123,15 +123,6 @@ const projectRows = computed(() => {
       })
     })
   }
-  if (!rows.length) {
-    return [[{
-      field: 'string',
-      text: 'Aucun projet trouvé',
-      cellAttrs: {
-        colspan: headers.length,
-      },
-    }]]
-  }
   return rows
 })
 const envRows = computed(() => {
@@ -400,12 +391,27 @@ function untruncateDescription(span: HTMLElement) {
         />
       </div>
       <DsfrTable
+        v-if="projectRows.length"
         :key="tableKey"
         data-testid="tableAdministrationProjects"
         :title="title"
         :headers="headers"
         :rows="projectRows"
       />
+      <DsfrTable
+        v-else
+        data-testid="tableAdministrationProjects"
+        :title="title"
+        :headers="headers"
+      >
+        <tr>
+          <td
+            :colspan="String(headers.length)"
+          >
+            <span>Aucun projet trouvé</span>
+          </td>
+        </tr>
+      </DsfrTable>
     </template>
     <div v-else>
       <DsfrCallout
