@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { configProjectItemDeclaration } from './config.js'
 
-export const pluginSchema = z.object({
+export const PluginSchema = z.object({
   description: z.string()
     .optional(),
   title: z.string(),
@@ -11,9 +11,13 @@ export const pluginSchema = z.object({
   manifest: configProjectItemDeclaration.array(),
 })
 
-export type PluginSchema = Zod.infer<typeof pluginSchema>
+export type Plugin = Zod.infer<typeof PluginSchema>
 
-export const SystemSettingSchema = z.object({
-  key: z.string(),
-  value: z.string(),
-})
+export const SettingsSchema = z.object({
+  maintenance: z.string().default('off'),
+  appName: z.string().default('Console Cloud Pi Native TEST DE FOU'),
+  contactMail: z.string().default('cloudpinative-relations@interieur.gouv.fr'),
+  appSubTitle: z.array(z.string()).default(['Ministère 1', 'de l’intérieur 2', 'et des outre-mer 3']),
+}).strict()
+
+export type Settings = Zod.infer<typeof SettingsSchema>

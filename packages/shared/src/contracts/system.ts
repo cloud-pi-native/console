@@ -102,6 +102,4 @@ export const systemSettingsContract = contractInstance.router({
 
 export type SystemSettings = ClientInferResponseBody<typeof systemSettingsContract.listSystemSettings, 200>
 
-export type SystemSetting = SystemSettings[number]
-
 export type UpsertSystemSettingBody = ClientInferRequest<typeof systemSettingsContract.upsertSystemSetting>['body']

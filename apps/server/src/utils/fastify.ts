@@ -5,6 +5,7 @@ import type { generateOpenApi } from '@ts-rest/open-api'
 import { apiPrefix } from '@cpn-console/shared'
 import { loggerConf } from './logger.js'
 import { NODE_ENV } from './env.js'
+import { config } from './config.js'
 
 export const fastifyConf: FastifyServerOptions = {
   maxParamLength: 5000,
@@ -19,7 +20,8 @@ const externalDocs = {
 
 export const swaggerConf: Parameters<typeof generateOpenApi>[1] = {
   info: {
-    title: 'Console Cloud Pi Native',
+    // title: 'Console Cloud Pi Native',
+    title: config.appName,
     description: 'API de gestion des ressources Cloud Pi Native.',
     version: process.env.APP_VERSION || 'dev',
   },

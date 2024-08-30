@@ -1,5 +1,5 @@
 import { AdminAuthorized, systemSettingsContract } from '@cpn-console/shared'
-import { getSystemSettings, upsertSystemSetting } from './business.js'
+import { getSystemSettings, upsertSystemSettings } from './business.js'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
 import { Forbidden403 } from '@/utils/errors.js'
@@ -9,6 +9,12 @@ export function systemSettingsRouter() {
     listSystemSettings: async ({ query }) => {
       const systemSettings = await getSystemSettings(query.key)
 
+      if (!systemSettings) {
+        return {
+          status: 500,
+          body: { error: 'System settings not found' },
+        }
+      }
       return {
         status: 200,
         body: systemSettings,
@@ -19,7 +25,7 @@ export function systemSettingsRouter() {
       const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
-      const systemSetting = await upsertSystemSetting(data)
+      const systemSetting = await upsertSystemSettings(data)
 
       return {
         status: 201,

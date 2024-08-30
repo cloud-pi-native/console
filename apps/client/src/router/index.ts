@@ -260,7 +260,7 @@ router.beforeEach(async (to, _from, next) => {
     && userStore.isLoggedIn
   ) {
     await systemStore.listSystemSettings('maintenance')
-    if (systemStore.systemSettingsByKey.maintenance?.value === 'on' && userStore.adminPerms === 0n) return next('/maintenance')
+    if (systemStore.systemSettings?.maintenance === 'on' && userStore.adminPerms === 0n) return next('/maintenance')
   }
 
   next()

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { SystemSettings } from '@cpn-console/shared'
 import { apiPrefix } from '@cpn-console/shared'
 import { getKeycloak } from './utils/keycloak/keycloak.js'
 import { useSnackbarStore } from './stores/snackbar.js'
@@ -38,21 +39,26 @@ watch(label, (label: string) => {
   quickLinks.value[0].label = label
 })
 
+const systemSettings = ref<SystemSettings>()
+
 const serviceStore = useServiceStore()
 onBeforeMount(() => {
   serviceStore.startHealthPolling()
   serviceStore.checkServicesHealth()
+
+  systemStore.listSystemSettings()
+  systemSettings.value = systemStore.systemSettings
 })
 </script>
 
 <template>
   <DsfrHeader
-    service-title="Console Cloud π Native"
-    :logo-text="['Ministère', 'de l’intérieur', 'et des outre-mer']"
+    :service-title="systemSettings?.appName ?? 'Console Cloud π Native'"
+    :logo-text="systemSettings?.appSubTitle ?? ['Ministère', 'de l’intérieur', 'et des outre-mer']"
     :quick-links="quickLinks"
   />
   <DsfrNotice
-    v-if="systemStore.systemSettingsByKey.maintenance?.value === 'on'"
+    v-if="systemStore.systemSettings?.maintenance === 'on'"
     title="Le mode Maintenance est actuellement activé"
     data-testid="maintenance-notice"
   />
