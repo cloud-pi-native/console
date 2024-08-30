@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { invalidGitUrl, invalidInternalRepoName, missingCredentials } from '../utils/const.js'
 import { ErrorSchema } from './utils.js'
 
 export const RepoSchema = z.object({
@@ -6,10 +7,10 @@ export const RepoSchema = z.object({
     .uuid(),
   internalRepoName: z.string()
     .min(2, { message: 'Longueur minimum 2 caractères' })
-    .max(20, { message: 'Longueur maximum 2 caractères' })
-    .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/, { message: 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique' }),
+    .max(20, { message: 'Longueur maximum 20 caractères' })
+    .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/, { message: invalidInternalRepoName }),
   externalRepoUrl: z.string()
-    .regex(/^https:\/\/.*\.git$/, { message: 'L\'adresse doit commencer par https et se terminer par .git' })
+    .regex(/^https:\/\/.*\.git$/, { message: invalidGitUrl })
     .url({ message: 'Url invalide' })
     .or(z.literal(''))
     .optional(),
@@ -23,27 +24,43 @@ export const RepoSchema = z.object({
     .uuid(),
 })
 
-export const RepoBusinessSchema = RepoSchema.refine(
-  ({ isPrivate, externalToken, externalUserName }) => {
-    if (isPrivate) {
-      if (!externalToken && !externalUserName) return false
-      return true
-    }
-    return true
-  },
-  { message: 'Si le dépôt est privé, vous devez renseignez au moins le nom d\'utilisateur ou le token' },
-)
+// To only use in frontend form
+export const RepoFormSchema = RepoSchema
+  .extend({ isStandalone: z.boolean() })
 
-export const CreateRepoBusinessSchema = RepoSchema.omit({ id: true, projectId: true }).refine(
-  ({ isPrivate, externalToken, externalUserName }) => {
+export const UpdateRepoFormSchema = RepoFormSchema
+  .refine(
+    ({ isPrivate, externalToken, externalUserName }) => {
+      if (isPrivate) {
+        if (!externalToken && !externalUserName) return false
+        return true
+      }
+      return true
+    },
+    { message: missingCredentials, path: ['credentials'] },
+  )
+  .refine(({ isStandalone, externalRepoUrl }) => {
+    if (!isStandalone && !externalRepoUrl) {
+      return false
+    }
+    return true
+  }, { message: 'Veuillez renseignez l\'url du dépôt externe', path: ['externalRepoUrl'] })
+
+export const CreateRepoFormSchema = RepoFormSchema
+  .omit({ id: true, projectId: true })
+  .refine(({ isPrivate, externalToken, externalUserName }) => {
     if (isPrivate) {
       if (!externalToken && !externalUserName) return false
       return true
     }
     return true
-  },
-  { message: 'Si le dépôt est privé, vous devez renseignez au moins le nom d\'utilisateur ou le token' },
-)
+  }, { message: missingCredentials, path: ['credentials'] })
+  .refine(({ isStandalone, externalRepoUrl }) => {
+    if (!isStandalone && !externalRepoUrl) {
+      return false
+    }
+    return true
+  }, { message: 'Veuillez renseignez l\'url du dépôt externe', path: ['externalRepoUrl'] })
 
 export type Repo = Zod.infer<typeof RepoSchema>
 

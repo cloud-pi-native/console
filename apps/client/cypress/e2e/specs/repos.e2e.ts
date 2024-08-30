@@ -1,4 +1,4 @@
-import { type Repo, fakeToken } from '@cpn-console/shared'
+import { fakeToken, invalidGitUrl, invalidInternalRepoName } from '@cpn-console/shared'
 import { getModelById } from '../support/func.js'
 
 describe('Add repos into project', () => {
@@ -30,14 +30,20 @@ describe('Add repos into project', () => {
     cy.getByDataTestid('addRepoLink').click({ timeout: 30_000 })
     cy.get('h2').should('contain', 'Ajouter un dépôt au projet')
     cy.getByDataTestid('addRepoBtn').should('be.disabled')
+    cy.getByDataTestid('standaloneRepoSwitch')
+      .find('input')
+      .check({ force: true })
     cy.getByDataTestid('internalRepoNameInput').clear().type(repo.internalRepoName)
     cy.getByDataTestid('addRepoBtn').should('be.enabled')
+    cy.getByDataTestid('standaloneRepoSwitch')
+      .find('input')
+      .uncheck({ force: true })
     cy.getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl)
     cy.getByDataTestid('addRepoBtn').should('be.enabled')
     cy.getByDataTestid('internalRepoNameInput').clear().type('$%_>')
       .get('.fr-error-text')
       .should('have.length', 1)
-      .and('contain', 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique')
+      .and('contain', invalidInternalRepoName)
     cy.getByDataTestid('addRepoBtn').should('be.disabled')
     cy.getByDataTestid('internalRepoNameInput').clear().type(repo.internalRepoName)
       .get('.fr-error-text')
@@ -46,17 +52,17 @@ describe('Add repos into project', () => {
     cy.getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl.slice(0, -4))
       .get('.fr-error-text')
       .should('have.length', 1)
-      .and('contain', 'L\'url du dépôt doit commencer par https et se terminer par .git')
+      .and('contain', invalidGitUrl)
     cy.getByDataTestid('addRepoBtn').should('be.disabled')
     cy.getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl.slice(8))
       .get('.fr-error-text')
-      .should('have.length', 1)
-      .and('contain', 'L\'url du dépôt doit commencer par https et se terminer par .git')
+      .should('have.length', 2)
+      .and('contain', invalidGitUrl)
     cy.getByDataTestid('addRepoBtn').should('be.disabled')
     cy.getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl.replace(/s/i, ''))
       .get('.fr-error-text')
       .should('have.length', 1)
-      .and('contain', 'L\'url du dépôt doit commencer par https et se terminer par .git')
+      .and('contain', invalidGitUrl)
     cy.getByDataTestid('addRepoBtn').should('be.disabled')
     cy.getByDataTestid('externalRepoUrlInput').clear().type(repo.externalRepoUrl)
       .get('.fr-error-text')
@@ -92,6 +98,9 @@ describe('Add repos into project', () => {
     cy.getByDataTestid('addRepoLink').click()
       .get('h2').should('contain', 'Ajouter un dépôt au projet')
       .getByDataTestid('internalRepoNameInput').type(repo.internalRepoName)
+    cy.getByDataTestid('standaloneRepoSwitch')
+      .find('input')
+      .check({ force: true })
     cy.getByDataTestid('addRepoBtn').click()
     cy.wait('@postRepo').its('response.statusCode').should('eq', 201)
     cy.getByDataTestid(`repoTile-${repo.internalRepoName}`)
@@ -119,7 +128,7 @@ describe('Add repos into project', () => {
       externalRepoUrl: 'https://github.com/externalUser02/repo02.git',
       isInfra: false,
       isPrivate: true,
-      externalUserName: 'externalUser02',
+      externalUserName: '',
       externalToken: 'hoqjC1vXtABzytBIWBXsdyzubmqMYkgA',
     }]
 
@@ -145,7 +154,7 @@ describe('Add repos into project', () => {
       isInfra: true,
       isPrivate: true,
       externalUserName: 'externalUser+04',
-      externalToken: 'hoqjC1vXtABzytBIWBXsdyzubmqMYkgA',
+      externalToken: '',
     }]
 
     cy.addRepos(project, repos)
@@ -153,107 +162,98 @@ describe('Add repos into project', () => {
   })
 
   it('Should update a repo', () => {
-    let repositories = []
-
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuRepos').click()
       .url().should('contain', '/repositories')
 
-    cy.wait('@listRepositories').its('response').then((response) => {
-      repositories = response.body
-      cy.getByDataTestid(`repoTile-${repositories[1].internalRepoName}`).click()
-        .get('h2').should('contain', 'Modifier le dépôt')
-        .getByDataTestid('internalRepoNameInput').should('be.disabled')
-        .getByDataTestid('externalRepoUrlInput').clear().type('https://github.com/externalUser04/new-repo.git')
+    cy.wait('@listRepositories')
+    cy.getByDataTestid(`repoTile-repo03`).click()
+      .get('h2').should('contain', 'Modifier le dépôt')
+      .getByDataTestid('internalRepoNameInput').should('be.disabled')
+      .getByDataTestid('externalRepoUrlInput').clear().type('https://github.com/externalUser04/new-repo.git')
 
-      cy.getByDataTestid('input-checkbox-privateRepoCbx').check({ force: true })
-        .getByDataTestid('externalUserNameInput').type('newUser')
-        .getByDataTestid('externalTokenInput').clear().type('newToken')
+    cy.getByDataTestid('input-checkbox-privateRepoCbx').check({ force: true })
+      .getByDataTestid('externalUserNameInput').type('newUser')
+      .getByDataTestid('externalTokenInput').clear().type('newToken')
 
-      cy.getByDataTestid('input-checkbox-infraRepoCbx').should('be.enabled')
+    cy.getByDataTestid('input-checkbox-infraRepoCbx').should('be.enabled')
 
-      cy.getByDataTestid('updateRepoBtn').click()
-      cy.wait('@putRepo').its('response.statusCode').should('match', /^20\d$/)
-      cy.wait('@listRepositories').its('response.statusCode').should('match', /^20\d$/)
-      cy.getByDataTestid(`repoTile-${repositories[1].internalRepoName}`).should('exist')
-      cy.reload()
-      cy.getByDataTestid(`repoTile-${repositories[1].internalRepoName}`).click()
-      cy.getByDataTestid('externalRepoUrlInput').should('have.value', 'https://github.com/externalUser04/new-repo.git')
-      cy.getByDataTestid('input-checkbox-privateRepoCbx').should('be.checked')
-      cy.getByDataTestid('externalUserNameInput').should('have.value', 'newUser')
-      cy.getByDataTestid('externalTokenInput').should('have.value', fakeToken)
-    })
+    cy.getByDataTestid('updateRepoBtn').click()
+    cy.wait('@putRepo').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@listRepositories').its('response.statusCode').should('match', /^20\d$/)
+    cy.getByDataTestid(`repoTile-repo03`).should('exist')
+    cy.reload()
+    cy.getByDataTestid(`repoTile-repo03`).click()
+    cy.getByDataTestid('externalRepoUrlInput').should('have.value', 'https://github.com/externalUser04/new-repo.git')
+    cy.getByDataTestid('input-checkbox-privateRepoCbx').should('be.checked')
+    cy.getByDataTestid('externalUserNameInput').should('have.value', 'newUser')
+    cy.getByDataTestid('externalTokenInput').should('have.value', fakeToken)
   })
 
   it('Should synchronise a repo', () => {
-    let repositories: Repo[] = []
-
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.name}`).click()
       .getByDataTestid('menuRepos').click()
       .url().should('contain', '/repositories')
 
-    cy.wait('@listRepositories').its('response').then((response) => {
-      repositories = response.body
+    cy.wait('@listRepositories')
+    cy.getByDataTestid(`repoTile-repo03`)
+      .click()
 
-      cy.getByDataTestid(`repoTile-${repositories[1].internalRepoName}`)
-        .click()
+    cy.get('h2').should('contain', 'Synchroniser le dépôt')
+    cy.getByDataTestid('branchNameInput')
+      .should('have.value', 'main')
+      .and('be.enabled')
 
-      cy.get('h2').should('contain', 'Synchroniser le dépôt')
-      cy.getByDataTestid('branchNameInput')
-        .should('have.value', 'main')
-        .and('be.enabled')
+    cy.getByDataTestid('syncRepoBtn')
+      .should('be.enabled')
 
-      cy.getByDataTestid('syncRepoBtn')
-        .should('be.enabled')
+    cy.getByDataTestid('toggleSyncAllBranches')
+      .find('input')
+      .check({ force: true })
 
-      cy.getByDataTestid('toggleSyncAllBranches')
-        .find('input')
-        .check({ force: true })
+    cy.getByDataTestid('branchNameInput')
+      .should('not.exist')
 
-      cy.getByDataTestid('branchNameInput')
-        .should('not.exist')
+    cy.getByDataTestid('syncRepoBtn')
+      .should('be.enabled')
 
-      cy.getByDataTestid('syncRepoBtn')
-        .should('be.enabled')
+    cy.getByDataTestid('toggleSyncAllBranches')
+      .find('input')
+      .uncheck({ force: true })
 
-      cy.getByDataTestid('toggleSyncAllBranches')
-        .find('input')
-        .uncheck({ force: true })
+    cy.getByDataTestid('branchNameInput')
+      .should('have.value', 'main')
+      .and('be.enabled')
 
-      cy.getByDataTestid('branchNameInput')
-        .should('have.value', 'main')
-        .and('be.enabled')
+    cy.getByDataTestid('syncRepoBtn')
+      .should('be.enabled')
+      .click()
 
-      cy.getByDataTestid('syncRepoBtn')
-        .should('be.enabled')
-        .click()
+    cy.wait('@syncRepo').its('response.statusCode').should('match', /^20\d$/)
 
-      cy.wait('@syncRepo').its('response.statusCode').should('match', /^20\d$/)
+    cy.getByDataTestid('snackbar').within(() => {
+      cy.get('p').should('contain', `Job de synchronisation lancé pour le dépôt repo03`)
+    })
 
-      cy.getByDataTestid('snackbar').within(() => {
-        cy.get('p').should('contain', `Job de synchronisation lancé pour le dépôt ${repositories[1].internalRepoName}`)
-      })
+    cy.getByDataTestid('branchNameInput')
+      .clear()
 
-      cy.getByDataTestid('branchNameInput')
-        .clear()
+    cy.getByDataTestid('syncRepoBtn')
+      .should('be.disabled')
 
-      cy.getByDataTestid('syncRepoBtn')
-        .should('be.disabled')
+    cy.getByDataTestid('branchNameInput')
+      .type('develop')
 
-      cy.getByDataTestid('branchNameInput')
-        .type('develop')
+    cy.getByDataTestid('syncRepoBtn')
+      .should('be.enabled')
+      .click()
 
-      cy.getByDataTestid('syncRepoBtn')
-        .should('be.enabled')
-        .click()
+    cy.wait('@syncRepo').its('response.statusCode').should('match', /^20\d$/)
 
-      cy.wait('@syncRepo').its('response.statusCode').should('match', /^20\d$/)
-
-      cy.getByDataTestid('snackbar').within(() => {
-        cy.get('p').should('contain', `Job de synchronisation lancé pour le dépôt ${repositories[1].internalRepoName}`)
-      })
+    cy.getByDataTestid('snackbar').within(() => {
+      cy.get('p').should('contain', `Job de synchronisation lancé pour le dépôt repo03`)
     })
   })
 
