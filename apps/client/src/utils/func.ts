@@ -1,3 +1,4 @@
+import { maxDescriptionLength } from './const.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 export async function copyContent(content: string): Promise<void> {
@@ -22,14 +23,13 @@ export function toCodeComponent(value: string) {
 
 export const bts = (v: boolean) => v ? 'true' : 'false'
 
-const maxDescriptionLength = 60
 export function truncateDescription(description: string) {
   let innerHTML: string
 
   if (description.length <= maxDescriptionLength) {
     innerHTML = description
   } else {
-    const lastSpaceIndex = description.slice(0, maxDescriptionLength).lastIndexOf(' ')
+    const lastSpaceIndex = description.slice(0, maxDescriptionLength - 4).lastIndexOf(' ')
     innerHTML = `${description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionLength)} ...`
   }
 
