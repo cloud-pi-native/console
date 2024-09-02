@@ -122,6 +122,7 @@ export function repositoryRouter() {
         repositoryId,
         userId: perms.user.id,
         requestId: req.id,
+        projectId: perms.projectId,
       })
       if (body instanceof ErrorResType) return body
 
