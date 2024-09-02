@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { systemSettingsContract } from '@cpn-console/shared'
+import { systemSettingsContract, systemSettingsDefaultSchema } from '@cpn-console/shared'
 import app from '../../../app.js'
 import * as utilsController from '../../../utils/controller.js'
 import { getUserMockInfos } from '../../../utils/mocks.js'
@@ -8,7 +8,7 @@ import * as business from './business.js'
 vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
 const businessGetSystemSettingsMock = vi.spyOn(business, 'getSystemSettings')
-const businessUpsertSystemSettingMock = vi.spyOn(business, 'upsertSystemSetting')
+const businessUpsertSystemSettingMock = vi.spyOn(business, 'upsertSystemSettings')
 
 describe('test systemSettingsContract', () => {
   beforeEach(() => {
@@ -16,9 +16,9 @@ describe('test systemSettingsContract', () => {
   })
 
   describe('listSystemSettings', () => {
-    it('should return plugin configurations for authorized users', async () => {
+    it('should return system settings for authorized users', async () => {
       const user = getUserMockInfos(true)
-      const systemSettings = []
+      const systemSettings = systemSettingsDefaultSchema.parse({})
 
       authUserMock.mockResolvedValueOnce(user)
       businessGetSystemSettingsMock.mockResolvedValueOnce(systemSettings)
@@ -33,20 +33,21 @@ describe('test systemSettingsContract', () => {
     })
   })
 
-  describe('upsertSystemSetting', () => {
-    const newConfig = { key: 'key1', value: 'value1' }
+  describe('upsertSystemSettings', () => {
+    const newConfig = { appName: 'key1' }
     it('should update system setting, authorized users', async () => {
+      const defaultSystemSettings = systemSettingsDefaultSchema.parse({})
       const user = getUserMockInfos(true)
 
       authUserMock.mockResolvedValueOnce(user)
-      businessUpsertSystemSettingMock.mockResolvedValueOnce(newConfig)
-
+      businessUpsertSystemSettingMock.mockResolvedValueOnce({ ...defaultSystemSettings, ...newConfig })
       const response = await app.inject()
-        .post(systemSettingsContract.upsertSystemSetting.path)
+        .post(systemSettingsContract.upsertSystemSettings.path)
         .body(newConfig)
         .end()
 
       expect(businessUpsertSystemSettingMock).toHaveBeenCalledWith(newConfig)
+      expect(response.json()).toEqual({ ...defaultSystemSettings, ...newConfig })
       expect(response.statusCode).toEqual(201)
     })
 
@@ -56,7 +57,7 @@ describe('test systemSettingsContract', () => {
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
-        .post(systemSettingsContract.upsertSystemSetting.path)
+        .post(systemSettingsContract.upsertSystemSettings.path)
         .body(newConfig)
         .end()
 

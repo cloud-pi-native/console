@@ -15,4 +15,16 @@ export function upsertSystemSetting(newSystemSetting: SystemSetting) {
   })
 }
 
-export const getSystemSettings = (where?: Prisma.SystemSettingWhereInput) => prisma.systemSetting.findMany({ where })
+export async function getSystemSettings(where?: Prisma.SystemSettingWhereInput) {
+  const res = await prisma.systemSetting.findMany({ where })
+  if (res === undefined || typeof res != 'object') {
+    return {}
+  } else {
+    return res.reduce((acc, curr) => {
+      return {
+        ...acc,
+        [curr.key]: curr.value,
+      }
+    }, {})
+  }
+}

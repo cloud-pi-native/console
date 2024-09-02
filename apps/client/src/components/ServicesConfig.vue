@@ -30,7 +30,8 @@ function refTheValues(services: ProjectService[]) {
 
 const updated = ref<PluginsUpdateBody>({})
 
-function update(data: { value: string, key: string, plugin: string }) {
+function update(data: { value: string | boolean, key: string, plugin: string }) {
+  if (typeof data.value === 'boolean') return
   if (!updated.value[data.plugin]) updated.value[data.plugin] = {}
   updated.value[data.plugin][data.key] = data.value
 }
@@ -175,11 +176,12 @@ function reload() {
             kind: item.kind,
             description: item.description,
             name: item.title,
+            label: undefined,
             // @ts-ignore Sisi il y a potentiellement un placeholder
             placeholder: item.placeholder || '',
             disabled: !item.permissions[permissionTarget].write,
           }"
-          @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
+          @update="(value: string | boolean) => update({ key: item.key, value, plugin: service.name })"
         />
         <div
           v-if="service.manifest.global?.length && props.displayGlobal"
@@ -195,11 +197,12 @@ function reload() {
             kind: item.kind,
             description: item.description,
             name: item.title,
+            label: undefined,
             // @ts-ignore si si il y a potentiellement un placeholder
             placeholder: item.placeholder || '',
             disabled: !item.permissions[permissionTarget].write,
           }"
-          @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
+          @update="(value: string | boolean) => update({ key: item.key, value, plugin: service.name })"
         />
       </div>
     </div>

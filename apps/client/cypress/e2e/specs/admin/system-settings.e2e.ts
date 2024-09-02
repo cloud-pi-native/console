@@ -1,4 +1,4 @@
-import type { SystemSettings } from '@cpn-console/shared'
+import { type SystemSettings, systemSettingsSchema } from '@cpn-console/shared'
 import { getModel } from '../../support/func.js'
 
 describe('Administration system settings', () => {
@@ -7,7 +7,7 @@ describe('Administration system settings', () => {
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/system/settings?key=maintenance').as('listMaintenanceSetting')
     cy.intercept('GET', 'api/v1/system/settings').as('listSystemSettings')
-    cy.intercept('POST', 'api/v1/system/settings').as('upsertSystemSetting')
+    cy.intercept('POST', 'api/v1/system/settings').as('upsertSystemSettings')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/system-settings')
@@ -29,12 +29,13 @@ describe('Administration system settings', () => {
     cy.getByDataTestid(`toggle-maintenance`)
       .find('input')
       .check({ force: true })
-    cy.wait('@upsertSystemSetting').its('response').then(($response) => {
+
+    cy.getByDataTestid('button-submit')
+      .click()
+
+    cy.wait('@upsertSystemSettings').its('response').then(($response) => {
       expect($response?.statusCode).to.match(/^20\d$/)
-      expect(JSON.stringify($response?.body)).to.equal(JSON.stringify({
-        key: 'maintenance',
-        value: 'on',
-      }))
+      expect(JSON.stringify($response?.body)).to.equal(JSON.stringify(systemSettingsSchema.parse({})))
     })
 
     cy.visit('/projects')
@@ -61,7 +62,7 @@ describe('Administration system settings', () => {
       expect($response?.statusCode).to.match(/^20\d$/)
       expect(JSON.stringify($response?.body)).to.equal(JSON.stringify([{
         key: 'maintenance',
-        value: 'on',
+        value: 'true',
       }]))
     })
     cy.wait('@listRoles')
@@ -83,12 +84,13 @@ describe('Administration system settings', () => {
     cy.getByDataTestid(`toggle-maintenance`)
       .find('input')
       .uncheck({ force: true })
-    cy.wait('@upsertSystemSetting').its('response').then(($response) => {
+
+    cy.getByDataTestid('button-submit')
+      .click()
+
+    cy.wait('@upsertSystemSettings').its('response').then(($response) => {
       expect($response?.statusCode).to.match(/^20\d$/)
-      expect(JSON.stringify($response?.body)).to.equal(JSON.stringify({
-        key: 'maintenance',
-        value: 'off',
-      }))
+      expect(JSON.stringify($response?.body)).to.equal(JSON.stringify(systemSettingsSchema.parse({})))
     })
 
     cy.visit('/projects')
@@ -96,7 +98,7 @@ describe('Administration system settings', () => {
       expect($response?.statusCode).to.match(/^20\d$/)
       expect(JSON.stringify($response?.body)).to.equal(JSON.stringify([{
         key: 'maintenance',
-        value: 'on',
+        value: 'true',
       }]))
     })
     cy.getByDataTestid('maintenance-notice')

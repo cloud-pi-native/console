@@ -53,8 +53,7 @@ const knowMoreBtn: Ref<KnowMoreBtn> = ref({
 })
 
 function setWindowLocation(to: string) {
-  // TODO
-  // @ts-ignore
+  // @ts-expect-error 2322
   window.location = to
 }
 </script>

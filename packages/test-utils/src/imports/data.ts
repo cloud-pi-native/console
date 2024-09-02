@@ -2077,7 +2077,7 @@ export const data = {
   systemSetting: [
     {
       key: 'maintenance',
-      value: 'off',
+      value: 'false',
     },
   ],
   associations: [

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
+import type { Plugin } from '@cpn-console/shared'
 import { ref } from 'vue'
-import type { PluginSchema } from '@cpn-console/shared'
 import { usePluginsConfigStore } from '@/stores/plugins.js'
 import { useSnackbarStore } from '@/stores/snackbar'
 
@@ -9,7 +9,7 @@ const snackbarStore = useSnackbarStore()
 
 const updated = ref<Record<string, Record<string, string>>>({})
 
-function refTheValues(services: PluginSchema[]) {
+function refTheValues(services: Plugin[]) {
   return services.map((service) => {
     return {
       ...service,
@@ -53,7 +53,8 @@ onBeforeMount(() => {
   reload()
 })
 
-function update(data: { value: string, key: string, plugin: string }) {
+function update(data: { value: string | boolean, key: string, plugin: string }) {
+  if (typeof data.value === 'boolean') return
   if (!updated.value[data.plugin]) updated.value[data.plugin] = {}
   updated.value[data.plugin][data.key] = data.value
 }
@@ -124,8 +125,9 @@ function update(data: { value: string, key: string, plugin: string }) {
               // @ts-ignore si si il y a un placeholder
               placeholder: item.placeholder || '',
               disabled: !item.permissions.admin.write,
+              label: undefined,
             }"
-            @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
+            @update="(value: string | boolean) => update({ key: item.key, value, plugin: service.name })"
           />
         </div>
       </div>

@@ -1,3 +1,4 @@
+import type { SystemSettings } from '@cpn-console/shared'
 import { AdminAuthorized, systemSettingsContract } from '@cpn-console/shared'
 import { getSystemSettings, upsertSystemSettings } from './business.js'
 import { serverInstance } from '@/app.js'
@@ -6,8 +7,8 @@ import { Forbidden403 } from '@/utils/errors.js'
 
 export function systemSettingsRouter() {
   return serverInstance.router(systemSettingsContract, {
-    listSystemSettings: async ({ query }) => {
-      const systemSettings = await getSystemSettings(query.key)
+    listSystemSettings: async () => {
+      const systemSettings = await getSystemSettings()
 
       if (!systemSettings) {
         return {
@@ -21,11 +22,11 @@ export function systemSettingsRouter() {
       }
     },
 
-    upsertSystemSetting: async ({ request: req, body: data }) => {
+    upsertSystemSettings: async ({ request: req, body: data }) => {
       const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
-      const systemSetting = await upsertSystemSettings(data)
+      const systemSetting = await upsertSystemSettings(data) as SystemSettings
 
       return {
         status: 201,

@@ -259,8 +259,8 @@ router.beforeEach(async (to, _from, next) => {
     !validPath.includes(to.name)
     && userStore.isLoggedIn
   ) {
-    await systemStore.listSystemSettings('maintenance')
-    if (systemStore.systemSettings?.maintenance === 'on' && userStore.adminPerms === 0n) return next('/maintenance')
+    await systemStore.listSystemSettings()
+    if (systemStore.systemSettings?.maintenance === 'true' && userStore.adminPerms === 0n) return next('/maintenance')
   }
 
   next()

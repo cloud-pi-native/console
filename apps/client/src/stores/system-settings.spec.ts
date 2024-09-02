@@ -4,7 +4,7 @@ import { apiClient } from '../api/xhr-client.js'
 import { useSystemSettingsStore } from './system-settings.js'
 
 const listSystemSettings = vi.spyOn(apiClient.SystemSettings, 'listSystemSettings')
-const upsertSystemSetting = vi.spyOn(apiClient.SystemSettings, 'upsertSystemSetting')
+const upsertSystemSettings = vi.spyOn(apiClient.SystemSettings, 'upsertSystemSettings')
 
 describe('system Settings Store', () => {
   beforeEach(() => {
@@ -15,41 +15,29 @@ describe('system Settings Store', () => {
   })
 
   it('should get system settings list by api call', async () => {
-    const data = [
-      { key: 'maintenace', value: 'on' },
-      { key: 'theme', value: 'dsfr' },
-      { key: 'organisation', value: 'miom' },
-    ]
-    listSystemSettings.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
+    const sytemSettings = { maintenace: 'true', theme: 'dsfr', organisation: 'miom' }
+    // @ts-expect-error TS2345
+    listSystemSettings.mockReturnValueOnce(Promise.resolve({ status: 200, body: sytemSettings }))
     const systemSettingsStore = useSystemSettingsStore()
 
     await systemSettingsStore.listSystemSettings()
 
-    expect(systemSettingsStore.systemSettings).toEqual(data)
+    expect(systemSettingsStore.systemSettings).toEqual(sytemSettings)
     expect(listSystemSettings).toHaveBeenCalledTimes(1)
   })
 
   it('should upsert a system setting by api call', async () => {
-    const data = [
-      { key: 'maintenace', value: 'on' },
-      { key: 'theme', value: 'dsfr' },
-      { key: 'organisation', value: 'miom' },
-    ]
-    const newSystemSetting = { key: 'organisation', value: 'mj' }
-    const newData = [
-      { key: 'maintenace', value: 'on' },
-      { key: 'theme', value: 'dsfr' },
-      { key: 'organisation', value: 'mj' },
-    ]
+    const sytemSettings = { maintenace: 'true', theme: 'dsfr', organisation: 'miom' }
+    const newSystemSettings = { maintenace: 'true', theme: 'dsfr', organisation: 'mj' }
 
-    upsertSystemSetting.mockReturnValueOnce(Promise.resolve({ status: 201, body: newSystemSetting }))
+    // @ts-expect-error TS2345
+    upsertSystemSettings.mockReturnValueOnce(Promise.resolve({ status: 201, body: newSystemSettings }))
     const systemSettingsStore = useSystemSettingsStore()
-    systemSettingsStore.systemSettings = data
+    systemSettingsStore.systemSettings = sytemSettings
 
-    const res = await systemSettingsStore.upsertSystemSetting(data)
+    await systemSettingsStore.upsertSystemSettings(sytemSettings)
 
-    expect(res).toEqual(newSystemSetting)
-    expect(systemSettingsStore.systemSettings).toEqual(newData)
-    expect(upsertSystemSetting).toHaveBeenCalledTimes(1)
+    expect(systemSettingsStore.systemSettings).toEqual(newSystemSettings)
+    expect(upsertSystemSettings).toHaveBeenCalledTimes(1)
   })
 })

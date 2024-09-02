@@ -26,7 +26,7 @@ export default mergeConfig(
       },
       include: ['src/**/*.spec.{ts,js}'],
       exclude: [...configDefaults.exclude, 'e2e/*'],
-      setupFiles: ['./vitest-init.ts'],
+      setupFiles: ['./vitest-init.ts', './src/__mocks__/prisma.ts'],
       root: fileURLToPath(new URL('./', import.meta.url)),
       pool: 'forks',
     },

@@ -15,6 +15,7 @@ vi.mock('./models/user.js', () => getModel('getUserModel'))
 vi.mock('./models/users-projects.js', () => getModel('getRolesModel'))
 vi.mock('./models/organization.js', () => getModel('getOrganizationModel'))
 vi.mock('./models/zone.js', () => getModel('getZoneModel'))
+vi.mock('./models/system-setting.js', () => getModel('getSystemSetting'))
 vi.mock('./prisma.js')
 
 vi.spyOn(app, 'listen')
