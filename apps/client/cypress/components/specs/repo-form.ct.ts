@@ -1,5 +1,6 @@
 import { type Pinia, createPinia, setActivePinia } from 'pinia'
 import { createRandomDbSetup } from '@cpn-console/test-utils'
+import { fakeToken, missingCredentials } from '@cpn-console/shared'
 
 import '@gouvminint/vue-dsfr/styles'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
@@ -7,7 +8,6 @@ import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
 
-import { fakeToken } from '@cpn-console/shared'
 import RepoForm from '@/components/RepoForm.vue'
 import { useProjectStore } from '@/stores/project.js'
 
@@ -37,7 +37,10 @@ describe('RepoForm.vue', () => {
     cy.getByDataTestid('internalRepoNameInput')
       .should('have.value', '')
       .type('candilib')
-    cy.getByDataTestid('externalRepoUrlInput').should('have.value', '')
+    cy.getByDataTestid('standaloneRepoSwitch')
+      .find('input')
+      .check({ force: true })
+    cy.getByDataTestid('externalRepoUrlInput').should('not.exist')
     cy.getByDataTestid('input-checkbox-privateRepoCbx').should('not.exist')
     cy.getByDataTestid('externalUserNameInput').should('not.exist')
     cy.getByDataTestid('externalTokenInput').should('not.exist')
@@ -51,6 +54,9 @@ describe('RepoForm.vue', () => {
     cy.getByDataTestid('addRepoBtn').should('be.enabled')
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
     // Case 3 : Git source
+    cy.getByDataTestid('standaloneRepoSwitch')
+      .find('input')
+      .uncheck({ force: true })
     cy.getByDataTestid('externalRepoUrlInput')
       .type('https://github.com/LAB-MI/candilibV2.git')
       .blur()
@@ -107,6 +113,10 @@ describe('RepoForm.vue', () => {
       .and('be.enabled')
     cy.getByDataTestid('input-checkbox-infraRepoCbx').should('not.be.checked')
       .and('be.enabled')
+    cy.getByDataTestid('standaloneRepoSwitch')
+      .find('input')
+      .should('not.be.checked')
+      .and('be.enabled')
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
     cy.getByDataTestid('updateRepoBtn').should('be.enabled')
     cy.getByDataTestid('externalTokenInput')
@@ -139,6 +149,9 @@ describe('RepoForm.vue', () => {
       .clear()
       .should('have.value', '')
       .blur()
+    cy.getByDataTestid('standaloneRepoSwitch')
+      .find('input')
+      .check({ force: true })
     cy.getByDataTestid('input-checkbox-privateRepoCbx')
       .should('not.exist')
     cy.getByDataTestid('externalUserNameInput').should('not.exist')
@@ -155,10 +168,139 @@ describe('RepoForm.vue', () => {
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
 
     // Case 4 : Git source
+    cy.getByDataTestid('standaloneRepoSwitch')
+      .find('input')
+      .uncheck({ force: true })
     cy.getByDataTestid('externalRepoUrlInput')
       .type(props.repo.externalRepoUrl)
       .blur()
     cy.getByDataTestid('updateRepoBtn').should('be.enabled')
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
+  })
+
+  it('Should handle token behaviors, create', () => {
+    const props = {
+      canManage: true,
+    }
+
+    const randomDbSetup = createRandomDbSetup({})
+    const projectStore = useProjectStore()
+    projectStore.selectedProject = randomDbSetup.project
+
+    cy.mount(RepoForm, { props })
+
+    cy.getByDataTestid('repoFieldset').should('have.length', 1)
+    cy.getByDataTestid('internalRepoNameInput')
+      .should('have.value', '')
+      .type('candilib')
+
+    cy.getByDataTestid('externalRepoUrlInput')
+      .type('https://github.com/LAB-MI/candilibV2.git')
+      .blur()
+    cy.getByDataTestid('addRepoBtn').should('be.enabled')
+
+    cy.getByDataTestid('input-checkbox-privateRepoCbx').check({ force: true })
+    cy.getByDataTestid('addRepoBtn').should('be.disabled')
+    cy.getByDataTestid('externalUserNameInput').should('exist')
+    cy.getByDataTestid('externalTokenInput')
+      .type('aaaaaa')
+      .blur()
+    cy.getByDataTestid('repo-form').should('not.contain', missingCredentials)
+    cy.getByDataTestid('addRepoBtn').should('be.enabled')
+    cy.getByDataTestid('externalTokenInput')
+      .clear()
+      .blur()
+    cy.getByDataTestid('repo-form').should('contain', missingCredentials)
+    cy.getByDataTestid('addRepoBtn').should('be.disabled')
+  })
+
+  it('Should handle token behaviors, update public', () => {
+    const props = {
+      repo: {
+        id: '83833faf-f654-40dd-bcd5-cf2e944fc504',
+        projectId: '83833faf-f654-40dd-bcd5-cf2e944fc500',
+        internalRepoName: 'candilib',
+        externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
+        isPrivate: false,
+        isInfra: false,
+        externalUserName: 'claire+nlet',
+      },
+      canManage: true,
+    }
+
+    const randomDbSetup = createRandomDbSetup({})
+    const projectStore = useProjectStore()
+    projectStore.selectedProject = randomDbSetup.project
+
+    cy.mount(RepoForm, { props })
+
+    cy.getByDataTestid('repoFieldset').should('have.length', 1)
+
+    cy.getByDataTestid('updateRepoBtn').should('be.enabled')
+
+    cy.getByDataTestid('input-checkbox-privateRepoCbx').check({ force: true })
+    cy.getByDataTestid('updateRepoBtn').should('be.disabled')
+    cy.getByDataTestid('externalUserNameInput').should('exist')
+    cy.getByDataTestid('externalTokenInput')
+      .type('aaaaaa')
+      .blur()
+    cy.getByDataTestid('repo-form').should('not.contain', missingCredentials)
+    cy.getByDataTestid('updateRepoBtn').should('be.enabled')
+    cy.getByDataTestid('externalTokenInput')
+      .clear()
+      .blur()
+    cy.getByDataTestid('repo-form').should('contain', missingCredentials)
+    cy.getByDataTestid('updateRepoBtn').should('be.disabled')
+  })
+
+  it('Should handle token behaviors, update private', () => {
+    const props = {
+      repo: {
+        id: '83833faf-f654-40dd-bcd5-cf2e944fc504',
+        projectId: '83833faf-f654-40dd-bcd5-cf2e944fc500',
+        internalRepoName: 'candilib',
+        externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
+        isPrivate: true,
+        isInfra: false,
+        externalUserName: 'claire+nlet',
+      },
+      canManage: true,
+    }
+
+    const randomDbSetup = createRandomDbSetup({})
+    const projectStore = useProjectStore()
+    projectStore.selectedProject = randomDbSetup.project
+
+    cy.mount(RepoForm, { props })
+
+    cy.getByDataTestid('repoFieldset').should('have.length', 1)
+
+    cy.getByDataTestid('updateRepoBtn').should('be.enabled')
+
+    cy.getByDataTestid('input-checkbox-privateRepoCbx').check({ force: true })
+    cy.getByDataTestid('updateRepoBtn').should('be.enabled')
+    cy.getByDataTestid('externalUserNameInput').should('exist')
+    cy.getByDataTestid('externalTokenInput')
+      .type('a')
+      .blur()
+    cy.getByDataTestid('warningSecretChanged')
+      .should('be.visible')
+    cy.getByDataTestid('repo-form').should('not.contain', missingCredentials)
+    cy.getByDataTestid('updateRepoBtn').should('be.enabled')
+    cy.getByDataTestid('resetTokenButton')
+      .click()
+    cy.getByDataTestid('warningSecretChanged')
+      .should('not.exist')
+    cy.getByDataTestid('repo-form').should('not.contain', missingCredentials)
+    cy.getByDataTestid('updateRepoBtn').should('be.enabled')
+    // missing creds
+    cy.getByDataTestid('externalTokenInput')
+      .clear()
+      .blur()
+    cy.getByDataTestid('externalUserNameInput')
+      .clear()
+      .blur()
+    cy.getByDataTestid('repo-form').should('contain', missingCredentials)
+    cy.getByDataTestid('updateRepoBtn').should('be.disabled')
   })
 })

@@ -1,6 +1,9 @@
 export const adminGroupPath = '/admin'
 
 export const projectIsLockedInfo = 'Le projet est verrouillé, pas d\'action possible'
+export const missingCredentials = 'Si le dépôt est privé, vous devez renseigner au moins le nom d\'utilisateur ou le token'
+export const invalidGitUrl = 'L\'adresse doit commencer par https et se terminer par .git'
+export const invalidInternalRepoName = 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique'
 
 export const fakeToken = 'fakeToken'
 
