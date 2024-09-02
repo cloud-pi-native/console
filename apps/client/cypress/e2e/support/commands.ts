@@ -126,8 +126,12 @@ Cypress.Commands.add('addRepos', (project, repos) => {
 
     if (repo.isPrivate) {
       cy.getByDataTestid('input-checkbox-privateRepoCbx').check({ force: true })
-        .getByDataTestid('externalUserNameInput').type(repo.externalUserName)
-        .getByDataTestid('externalTokenInput').clear().type(repo.externalToken)
+      if (repo.externalUserName) {
+        cy.getByDataTestid('externalUserNameInput').type(repo.externalUserName)
+      }
+      if (repo.externalToken) {
+        cy.getByDataTestid('externalTokenInput').clear().type(repo.externalToken)
+      }
     }
 
     if (repo.isInfra) {

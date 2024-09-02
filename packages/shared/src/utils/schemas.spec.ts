@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
 import type { ProjectV2 } from '../index.js'
-import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, ProjectSchemaV2, QuotaSchema, RepoBusinessSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, ProjectSchemaV2, QuotaSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 
 describe('schemas utils', () => {
   it('should not validate an undefined object', () => {
     // @ts-ignore
-    expect(RepoBusinessSchema.safeParse(undefined).error).toBeInstanceOf(ZodError)
+    expect(RepoSchema.safeParse(undefined).error).toBeInstanceOf(ZodError)
   })
 
   it('should validate a correct repository schema', () => {
@@ -22,7 +22,7 @@ describe('schemas utils', () => {
       externalUserName: 'clai+re-nlet_',
     }
 
-    expect(RepoBusinessSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
+    expect(RepoSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
   })
 
   it('should validate a correct environment schema', () => {
@@ -166,7 +166,7 @@ describe('schemas utils', () => {
       isInfra: false,
     }
 
-    expect(RepoBusinessSchema
+    expect(RepoSchema
       .safeParse(toParse))
       .toStrictEqual({ data: toParse, success: true })
   })
@@ -226,7 +226,7 @@ describe('schemas utils', () => {
     }
 
     // @ts-ignore
-    expect(parseZodError(RepoBusinessSchema
+    expect(parseZodError(RepoSchema
       .safeParse(toParse)
       .error))
       .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"')
@@ -234,7 +234,7 @@ describe('schemas utils', () => {
     toParse.internalRepoName = 'candilib-'
 
     // @ts-ignore
-    expect(parseZodError(RepoBusinessSchema
+    expect(parseZodError(RepoSchema
       .safeParse(toParse)
       .error))
       .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"')
@@ -242,13 +242,13 @@ describe('schemas utils', () => {
     toParse.internalRepoName = 'candiLib'
 
     // @ts-ignore
-    expect(parseZodError(RepoBusinessSchema
+    expect(parseZodError(RepoSchema
       .safeParse(toParse)
       .error))
       .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"')
 
     toParse.internalRepoName = 'candi-lib'
-    expect(RepoBusinessSchema
+    expect(RepoSchema
       .safeParse(toParse))
       .toStrictEqual({ data: toParse, success: true })
   })

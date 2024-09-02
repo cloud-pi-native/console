@@ -30,7 +30,7 @@
   "dependencies": {
     "@cpn-console/shared": "workspace:^",
     "@gouvfr/dsfr": "^1.12.1",
-    "@gouvminint/vue-dsfr": "^5.14.2",
+    "@gouvminint/vue-dsfr": "^5.20.1",
     "@iconify-json/ri": "^1.1.21",
     "@ts-rest/core": "^3.45.2",
     "@vue/tsconfig": "^0.5.1",
