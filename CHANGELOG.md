@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.11.1](https://github.com/cloud-pi-native/console/compare/v8.11.0...v8.11.1) (2024-09-02)
+
+
+### Bug Fixes
+
+* :lipstick: better repo ui ([084fc91](https://github.com/cloud-pi-native/console/commit/084fc91332fbdd6052cadbde204df77cd772a07d))
+
 ## [8.11.0](https://github.com/cloud-pi-native/console/compare/v8.10.1...v8.11.0) (2024-08-29)
 
 
