@@ -147,103 +147,104 @@ function toggleStandalone(e: boolean) {
           :border-bottom="true"
           @update:model-value="(e: boolean) => toggleStandalone(e)"
         />
-        <template
-          v-if="!localRepo.isStandalone"
+      </DsfrFieldset>
+      <DsfrFieldset
+        v-if="!localRepo.isStandalone"
+        legend="Source externe"
+      >
+        <div class="fr-mb-2w">
+          <DsfrInputGroup
+            v-model="localRepo.externalRepoUrl"
+            data-testid="externalRepoUrlInput"
+            type="text"
+            :disabled="props.isProjectLocked || !canManage"
+            :required="true"
+            :error-message="!!updatedValues.externalRepoUrl && errorSchema?.flatten().fieldErrors.externalRepoUrl"
+            label="Url du dépôt Git externe"
+            label-visible
+            hint="Url du dépôt Git source pour la synchronisation"
+            placeholder="https://github.com/cloud-pi-native/console.git"
+            class="fr-mb-2w"
+            @update:model-value="updateRepo('externalRepoUrl', $event)"
+          />
+        </div>
+        <DsfrCheckbox
+          id="privateRepoCbx"
+          v-model="localRepo.isPrivate"
+          :disabled="props.isProjectLocked || !canManage"
+          label="Dépôt source privé"
+          hint="Cochez la case si le dépôt Git source est privé"
+          name="isGitSourcePrivate"
+          @update:model-value="updateRepo('isPrivate', $event)"
+        />
+        <div
+          v-if="localRepo.isPrivate"
         >
           <div class="fr-mb-2w">
             <DsfrInputGroup
-              v-model="localRepo.externalRepoUrl"
-              data-testid="externalRepoUrlInput"
-              type="text"
-              :disabled="props.isProjectLocked || !canManage"
-              :required="true"
-              :error-message="!!updatedValues.externalRepoUrl && errorSchema?.flatten().fieldErrors.externalRepoUrl"
-              label="Url du dépôt Git externe"
-              label-visible
-              hint="Url du dépôt Git source pour la synchronisation"
-              placeholder="https://github.com/cloud-pi-native/console.git"
-              class="fr-mb-2w"
-              @update:model-value="updateRepo('externalRepoUrl', $event)"
-            />
-          </div>
-          <DsfrCheckbox
-            id="privateRepoCbx"
-            v-model="localRepo.isPrivate"
-            :disabled="props.isProjectLocked || !canManage"
-            label="Dépôt source privé"
-            hint="Cochez la case si le dépôt Git source est privé"
-            name="isGitSourcePrivate"
-            @update:model-value="updateRepo('isPrivate', $event)"
-          />
-          <div
-            v-if="localRepo.isPrivate"
-          >
-            <div class="fr-mb-2w">
-              <DsfrInputGroup
-                :error-message="(updatedValues.externalUserName || updatedValues.externalToken) && errorSchema?.flatten().fieldErrors.credentials"
-              >
-                <DsfrInput
-                  v-model="localRepo.externalUserName"
-                  data-testid="externalUserNameInput"
-                  type="text"
-                  :required="localRepo.isPrivate"
-                  :disabled="props.isProjectLocked || !canManage"
-                  label="Nom d'utilisateur"
-                  label-visible
-                  hint="Nom de l'utilisateur propriétaire du token"
-                  :error-message="!!updatedValues.externalToken && errorSchema?.flatten().fieldErrors.externalUserName"
-                  placeholder="this-is-tobi"
-                  class="fr-mb-2w"
-                  @update:model-value="updateRepo('externalUserName', $event)"
-                />
-                <div class="fr-mb-2w flex items-end">
-                  <div
-                    class="w-full"
-                  >
-                    <DsfrInput
-                      v-model="localRepo.externalToken"
-                      data-testid="externalTokenInput"
-                      :type="isPassword ? 'password' : 'text'"
-                      :required="localRepo.isPrivate"
-                      :disabled="props.isProjectLocked || !canManage"
-                      label="Token d'accès au dépôt Git source"
-                      label-visible
-                      hint="Token d'accès permettant le clone du dépôt Git source par la chaîne DevSecOps."
-                      :error-message="!!updatedValues.externalToken && errorSchema?.flatten().fieldErrors.externalToken"
-                      placeholder="hoqjC1vXtABzytBIWBXsdyzubmqMYkgA"
-                      autocomplete="off"
-                      @update:model-value="updateRepo('externalToken', $event)"
-                      @click="checkEditToken"
-                    />
-                  </div>
-                  <v-icon
-                    :name="isPassword ? 'ri-eye-line' : 'ri-eye-off-line'"
-                    data-testid="toggleTokenDisplayButton"
-                    class="-ml-8 mb-2 z-1 cursor-pointer"
-                    :title="isPassword ? 'Afficher le token en clair' : 'Masquer le token'"
-                    @click="toggleTokenInputType"
-                  />
-                  <v-icon
-                    v-if="isExistingAndPrivate && localRepo.externalToken !== initialToken"
-                    data-testid="resetTokenButton"
-                    name="ri-restart-line"
-                    title="Annuler la modification"
-                    class="-ml-12 mb-2 z-1 cursor-pointer"
-                    @click="resetToken"
+              :error-message="(updatedValues.externalUserName || updatedValues.externalToken) && errorSchema?.flatten().fieldErrors.credentials"
+            >
+              <DsfrInput
+                v-model="localRepo.externalUserName"
+                data-testid="externalUserNameInput"
+                type="text"
+                :required="localRepo.isPrivate"
+                :disabled="props.isProjectLocked || !canManage"
+                label="Nom d'utilisateur"
+                label-visible
+                hint="Nom de l'utilisateur propriétaire du token"
+                :error-message="!!updatedValues.externalToken && errorSchema?.flatten().fieldErrors.externalUserName"
+                placeholder="this-is-tobi"
+                class="fr-mb-2w"
+                @update:model-value="updateRepo('externalUserName', $event)"
+              />
+              <div class="fr-mb-2w flex items-end">
+                <div
+                  class="w-full"
+                >
+                  <DsfrInput
+                    v-model="localRepo.externalToken"
+                    data-testid="externalTokenInput"
+                    :type="isPassword ? 'password' : 'text'"
+                    :required="localRepo.isPrivate"
+                    :disabled="props.isProjectLocked || !canManage"
+                    label="Token d'accès au dépôt Git source"
+                    label-visible
+                    hint="Token d'accès permettant le clone du dépôt Git source par la chaîne DevSecOps."
+                    :error-message="!!updatedValues.externalToken && errorSchema?.flatten().fieldErrors.externalToken"
+                    placeholder="hoqjC1vXtABzytBIWBXsdyzubmqMYkgA"
+                    autocomplete="off"
+                    @update:model-value="updateRepo('externalToken', $event)"
+                    @click="checkEditToken"
                   />
                 </div>
-              </DsfrInputGroup>
-            </div>
-            <DsfrAlert
-              v-if="isExistingAndPrivate && updatedValues.externalToken"
-              data-testid="warningSecretChanged"
-              description="Le secret actuel sera écrasé."
-              small
-              type="warning"
-              class="w-max"
-            />
+                <v-icon
+                  :name="isPassword ? 'ri-eye-line' : 'ri-eye-off-line'"
+                  data-testid="toggleTokenDisplayButton"
+                  class="-ml-8 mb-2 z-1 cursor-pointer"
+                  :title="isPassword ? 'Afficher le token en clair' : 'Masquer le token'"
+                  @click="toggleTokenInputType"
+                />
+                <v-icon
+                  v-if="isExistingAndPrivate && localRepo.externalToken !== initialToken"
+                  data-testid="resetTokenButton"
+                  name="ri-restart-line"
+                  title="Annuler la modification"
+                  class="-ml-12 mb-2 z-1 cursor-pointer"
+                  @click="resetToken"
+                />
+              </div>
+            </DsfrInputGroup>
           </div>
-        </template>
+          <DsfrAlert
+            v-if="isExistingAndPrivate && updatedValues.externalToken"
+            data-testid="warningSecretChanged"
+            description="Le secret actuel sera écrasé."
+            small
+            type="warning"
+            class="w-max"
+          />
+        </div>
       </DsfrFieldset>
     </DsfrFieldset>
     <div
