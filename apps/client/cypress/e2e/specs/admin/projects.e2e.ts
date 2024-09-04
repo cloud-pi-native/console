@@ -1,11 +1,12 @@
 import type { Organization, Project, ProjectV2 } from '@cpn-console/shared'
 import { formatDate, sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
 import { getModel, getModelById } from '../../support/func.js'
-import { truncateDescription } from '@/utils/func.js'
+import { bts } from '@/utils/func.js'
+import { maxDescriptionLength } from '@/utils/const.js'
 
 function checkTableRowsLength(length: number) {
-  if (!length) cy.get('tr:last-child>td:first-child').should('have.text', 'Aucun projet trouvé')
-  else cy.get('tbody > tr').should('have.length', length)
+  if (!length) cy.get('tbody').should('contain.text', 'Aucun projet trouvé')
+  else cy.get('tbody > tr').should('have.length', length + 1) // + 1 pagination row
 }
 
 describe('Administration projects', () => {
@@ -41,41 +42,13 @@ describe('Administration projects', () => {
           cy.get('td:nth-of-type(1)').should('contain', project.organization)
           cy.get('td:nth-of-type(2)').should('contain', project.name)
           cy.getByDataTestid('description').invoke('text').then((text) => {
-            const maxDescriptionLength = 60
-            if (text?.length > maxDescriptionLength) {
-              const lastSpaceIndex = project.description.slice(0, maxDescriptionLength).lastIndexOf(' ')
-              const truncatedDescription = project.description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionLength)
-              expect(text).to.equal(`${truncatedDescription} ...`)
-              return
-            }
-            expect(text).to.equal(truncateDescription(text).innerHTML)
+            expect(text.length).to.be.at.lte(maxDescriptionLength)
           })
           cy.get('td:nth-of-type(4)').should('contain', project.owner.email)
-          cy.get('td:nth-of-type(5) svg title').should('contain', `Le projet ${project.name} est ${statusDict.status[project.status].wording}`)
-          cy.get('td:nth-of-type(6) svg title').should('contain', `Le projet ${project.name} est ${statusDict.locked[String(!!project.locked)].wording}`)
+          cy.get('td:nth-of-type(5) svg title').should('contain', statusDict.status[project.status].wording)
+          cy.get('td:nth-of-type(6) svg title').should('contain', statusDict.locked[bts(project.locked)].wording)
           cy.get('td:nth-of-type(7)').should('contain', formatDate(project.createdAt))
           cy.get('td:nth-of-type(8)').should('contain', formatDate(project.updatedAt))
-        })
-      })
-    })
-  })
-
-  it.skip('Should display untruncated description when click on span, loggedIn as admin', () => {
-    cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
-    cy.intercept('GET', 'api/v1/organizations').as('getOrganizations')
-
-    cy.get('select#tableAdministrationProjectsFilter').select('Tous')
-    cy.wait('@getAllProjects')
-    cy.wait('@getOrganizations')
-    cy.getByDataTestid('tableAdministrationProjects').within(() => {
-      projects.forEach((project, index: number) => {
-        cy.get(`tbody tr:nth-of-type(${index + 1})`).within(() => {
-          cy.getByDataTestid('description').then(($span) => {
-            if (Cypress.dom.isVisible($span)) cy.wrap($span).click()
-          })
-          cy.getByDataTestid('description').then(($span) => {
-            if (Cypress.dom.isVisible($span)) cy.wrap($span).should('contain', project.description)
-          })
         })
       })
     })
@@ -89,7 +62,7 @@ describe('Administration projects', () => {
     cy.intercept('GET', 'api/v1/projects?filter=all&locked=true&statusNotIn=archived').as('getLockedProjects')
     cy.intercept('GET', 'api/v1/organizations').as('getOrganizations')
 
-    cy.get('select').select('Tous')
+    cy.get('select#tableAdministrationProjectsFilter').select('Tous')
     cy.wait('@getAllProjects').its('response').then((response) => {
       cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length))
     })

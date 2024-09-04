@@ -11,6 +11,7 @@ import { useUserStore } from '@/stores/user.js'
 import { useQuotaStore } from '@/stores/quota.js'
 import { useProjectServiceStore } from '@/stores/project-services.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
+import type { ProjectWithOrganization } from '@/stores/project.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useProjectMemberStore } from '@/stores/project-member.js'
@@ -44,6 +45,7 @@ const projectToArchive = ref('')
 const inputSearchText = ref('')
 const activeFilter = ref('Non archivés')
 const file = ref<FileForDownload | undefined>(undefined)
+const paginationSize = ref(25)
 
 const title = 'Liste des projets'
 const headers = [
@@ -76,64 +78,73 @@ interface DomElement extends Event {
   }
 }
 
+function includesSearch(project: ProjectWithOrganization): boolean {
+  return [ // éléments dans lesquels rechercher
+    project.id,
+    project.organization.label,
+    project.organization.name,
+    project.name,
+    project.owner.email,
+    project.status,
+    project.description,
+    formatDate(project.createdAt),
+    formatDate(project.updatedAt),
+    statusDict.status[project.status].wording,
+    project.organizationId,
+  ].some(text => text.includes(inputSearchText.value))
+}
+
 const projectRows = computed(() => {
-  let rows = sortArrByObjKeyAsc(projectStore.projects, 'name')
-    ?.map(({ id, organization, name, description, status, locked, createdAt, updatedAt, owner }) => (
-      {
-        status,
-        locked,
-        rowAttrs: {
-          onClick: (event: DomElement) => {
-            if (status === 'archived') return snackbarStore.setMessage('Le projet est archivé, pas d\'action possible', 'info')
-            if (event.target.id === 'description' && event.target.getAttribute('open') === 'false') return untruncateDescription(event.target)
-            selectProject(id)
+  const rows: ProjectWithOrganization[] = inputSearchText.value
+    ? projectStore.projects.filter(project => includesSearch(project))
+    : projectStore.projects
+
+  return rows.length
+    ? sortArrByObjKeyAsc(projectStore.projects, 'name')
+      .map(({ id, organization, name, description, status, locked, createdAt, updatedAt, owner }) => (
+        {
+          status,
+          locked,
+          rowAttrs: {
+            onClick: (event: DomElement) => {
+              if (status === 'archived') return snackbarStore.setMessage('Le projet est archivé, pas d\'action possible', 'info')
+              if (event.target.id === 'description' && event.target.getAttribute('open') === 'false') return untruncateDescription(event.target)
+              selectProject(id)
+            },
+            class: 'cursor-pointer',
+            title: `Voir le tableau de bord du projet ${name}`,
           },
-          class: 'cursor-pointer',
-          title: `Voir le tableau de bord du projet ${name}`,
+          rowData: [
+            organization.label,
+            name,
+            truncateDescription(description ?? ''),
+            owner.email,
+            {
+              component: 'v-icon',
+              name: statusDict.status[status].icon,
+              title: statusDict.status[status].wording,
+              fill: statusDict.status[status].color,
+            },
+            {
+              component: 'v-icon',
+              name: statusDict.locked[bts(locked)].icon,
+              title: statusDict.locked[bts(locked)].wording,
+              fill: statusDict.locked[bts(locked)].color,
+            },
+            formatDate(createdAt),
+            formatDate(updatedAt),
+          ],
+        }),
+      )
+    : [[{
+        field: 'string',
+        text: 'Aucun projet trouvé',
+        cellAttrs: {
+          colspan: headers.length,
         },
-        rowData: [
-          organization.label,
-          name,
-          truncateDescription(description ?? ''),
-          owner.email,
-          {
-            component: 'v-icon',
-            name: statusDict.status[status].icon,
-            title: `Le projet ${name} est ${statusDict.status[status].wording}`,
-            fill: statusDict.status[status].color,
-          },
-          {
-            component: 'v-icon',
-            name: statusDict.locked[bts(locked)].icon,
-            title: `Le projet ${name} est ${statusDict.locked[bts(locked)].wording}`,
-            fill: statusDict.locked[bts(locked)].color,
-          },
-          formatDate(createdAt),
-          formatDate(updatedAt),
-        ],
-      }),
-    )
-  if (inputSearchText.value) {
-    rows = rows.filter((row) => {
-      return row.rowData.some((data) => {
-        if (typeof data === 'object') {
-          return data.title?.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
-        }
-        return data.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
-      })
-    })
-  }
-  if (!rows.length) {
-    return [[{
-      field: 'string',
-      text: 'Aucun projet trouvé',
-      cellAttrs: {
-        colspan: headers.length,
-      },
-    }]]
-  }
-  return rows
+      }]]
 })
+
 const envRows = computed(() => {
   if (!selectedProject.value) return []
   if (!selectedProject.value.environments.length) {
@@ -293,6 +304,8 @@ async function generateProjectsDataFile() {
 }
 
 onBeforeMount(async () => {
+  paginationSize.value = Number(localStorage.getItem('AdminProjectsPagination')) || paginationSize.value
+
   organizations.value = await organizationStore.listOrganizations()
   await Promise.all([
     await stageStore.getAllStages(),
@@ -330,6 +343,10 @@ function untruncateDescription(span: HTMLElement) {
   span.innerHTML = span.title
 
   span.setAttribute('open', 'true')
+}
+
+function updateInputSearch() {
+  tableKey.value = getRandomId('table')
 }
 </script>
 
@@ -397,6 +414,7 @@ function untruncateDescription(span: HTMLElement) {
           placeholder="Recherche textuelle"
           label="Recherche"
           class="flex-1 pl-4"
+          @model:update-value="updateInputSearch"
         />
       </div>
       <DsfrTable
@@ -405,6 +423,8 @@ function untruncateDescription(span: HTMLElement) {
         :title="title"
         :headers="headers"
         :rows="projectRows"
+        pagination
+        :results-displayed="paginationSize"
       />
     </template>
     <div v-else>
