@@ -213,7 +213,7 @@ const transferSelectOptions = props.project.members.map(member => ({
           data-testid="addUserBtn"
           label="Ajouter l'utilisateur"
           secondary
-          icon="ri-user-add-line"
+          icon="ri:user-add-line"
           :disabled="project?.locked || !newUserEmail || isUserAlreadyInTeam"
           @click="addUserToProject()"
         />
@@ -228,7 +228,7 @@ const transferSelectOptions = props.project.members.map(member => ({
           data-testid="showTransferProjectBtn"
           label="Transférer le projet"
           primary
-          icon="ri-exchange-line"
+          icon="ri:exchange-line"
           @click="isTransferingProject = true"
         />
         <div
@@ -265,7 +265,7 @@ const transferSelectOptions = props.project.members.map(member => ({
                 label="Transférer le projet"
                 :disabled="!nextOwnerId"
                 secondary
-                icon="ri-exchange-line"
+                icon="ri:exchange-line"
                 @click="transferOwnership()"
               />
               <DsfrButton

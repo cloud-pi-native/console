@@ -31,20 +31,14 @@ const isUpdated = computed(() => {
 })
 const tabListName = 'Liste d’onglet'
 const tabTitles = [
-  { title: 'Général', icon: 'ri-checkbox-circle-line', tabId: 'general' },
-  { title: 'Membres', icon: 'ri-checkbox-circle-line', tabId: 'membres' },
-  { title: 'Fermer', icon: 'ri-checkbox-circle-line', tabId: 'fermer' },
+  { title: 'Général', icon: 'ri:checkbox-circle-line', tabId: 'general' },
+  { title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' },
+  { title: 'Fermer', icon: 'ri:close-line', tabId: 'close' },
 ]
 
 const initialSelectedIndex = 0
 
-const asc = ref(true)
 const selectedTabIndex = ref(initialSelectedIndex)
-
-function selectTab(idx: number) {
-  asc.value = selectedTabIndex.value < idx
-  selectedTabIndex.value = idx
-}
 
 function updateChecked(checked: boolean, value: bigint) {
   if (checked) {
@@ -57,17 +51,14 @@ function updateChecked(checked: boolean, value: bigint) {
 
 <template>
   <DsfrTabs
+    v-model="selectedTabIndex"
     :tab-list-name="tabListName"
     :tab-titles="tabTitles"
-    :initial-selected-index="initialSelectedIndex"
     class="mb-5"
-    @select-tab="selectTab"
   >
     <DsfrTabContent
       panel-id="general"
-      tab-id="tab-0"
-      :selected="selectedTabIndex === 0"
-      :asc="asc"
+      tab-id="general"
     >
       <h6>Nom du rôle</h6>
       <DsfrInput
@@ -117,9 +108,7 @@ function updateChecked(checked: boolean, value: bigint) {
     </DsfrTabContent>
     <DsfrTabContent
       panel-id="members"
-      tab-id="tab-1"
-      :selected="selectedTabIndex === 1"
-      :asc="asc"
+      tab-id="members"
     >
       <template
         v-if="props.isEveryone"
@@ -169,9 +158,7 @@ function updateChecked(checked: boolean, value: bigint) {
     >
       <DsfrTabContent
         panel-id="close"
-        tab-id="tab-2"
-        :selected="selectedTabIndex === 2"
-        :asc="asc"
+        tab-id="close"
         @click="() => $emit('cancel')"
       >
         {{ selectedTabIndex === tabTitles.length - 1 && $emit('cancel') }}

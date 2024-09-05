@@ -34,7 +34,7 @@ onBeforeMount(async () => {
       title="Renouveler l'appel"
       secondary
       icon-only
-      icon="ri-refresh-fill"
+      icon="ri:refresh-fill"
       :disabled="!!isUpdating"
       @click="checkServicesHealth()"
     />

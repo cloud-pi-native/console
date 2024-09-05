@@ -22,15 +22,15 @@ const tabListName: string = 'benefitsTab'
 const tabTitles: Array<TabTitle> = [
   {
     title: 'Qualité',
-    icon: 'ri-award-fill',
+    icon: 'ri:award-fill',
   },
   {
     title: 'Déploiement continu',
-    icon: 'ri-git-merge-fill',
+    icon: 'ri:git-merge-fill',
   },
   {
     title: 'Sécurité',
-    icon: 'ri-shield-check-fill',
+    icon: 'ri:shield-check-fill',
   },
 ]
 const tabContents: Array<string> = [
@@ -108,7 +108,7 @@ function setWindowLocation(to: string) {
           class="w-full justify-center"
           secondary
           :title="ghFormationUrl"
-          icon="ri-github-fill"
+          icon="ri:github-fill"
           @click="setWindowLocation(ghFormationUrl)"
         />
       </div>
@@ -125,7 +125,7 @@ function setWindowLocation(to: string) {
           class="w-full justify-center"
           secondary
           :title="mail.address"
-          icon="ri-mail-line"
+          icon="ri:mail-line"
           @click="setWindowLocation(mail.to)"
         />
       </div>
@@ -142,7 +142,7 @@ function setWindowLocation(to: string) {
           class="w-full justify-center"
           secondary
           :title="mail.address"
-          icon="ri-mail-line"
+          icon="ri:mail-line"
           @click="setWindowLocation(mail.to)"
         />
       </div>

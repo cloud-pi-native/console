@@ -92,7 +92,7 @@ onBeforeMount(async () => {
                 <span>oidc</span>
                 <v-icon
                   class="ml-4"
-                  name="ri-user-shared-2-line"
+                  name="ri:user-shared-2-line"
                 />
               </template>
               <template v-else>
@@ -101,7 +101,7 @@ onBeforeMount(async () => {
                 </span>
                 <v-icon
                   class="ml-4"
-                  name="ri-team-line"
+                  name="ri:team-line"
                 />
               </template>
             </div>

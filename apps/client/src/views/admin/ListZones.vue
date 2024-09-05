@@ -106,7 +106,7 @@ watch(zones, async () => {
       tertiary
       title="Ajouter une zone"
       class="fr-mt-2v <md:mb-2"
-      icon="ri-add-line"
+      icon="ri:add-line"
       @click="showNewZoneForm()"
     />
     <div
@@ -118,7 +118,7 @@ watch(zones, async () => {
         data-testid="goBackBtn"
         secondary
         icon-only
-        icon="ri-arrow-go-back-line"
+        icon="ri:arrow-go-back-line"
         @click="() => cancel()"
       />
     </div>

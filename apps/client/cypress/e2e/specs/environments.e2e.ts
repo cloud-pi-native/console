@@ -86,9 +86,7 @@ describe('Manage project environments', () => {
       .click()
 
     cy.wait('@postEnvironment').its('response.statusCode').should('not.match', /^20\d$/)
-    cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', 'Ce nom d\'environnement est déjà pris.')
-    })
+    cy.getByDataTestid('snackbar').should('contain', 'Ce nom d\'environnement est déjà pris.')
   })
 
   it('Should handle cluster availability', () => {

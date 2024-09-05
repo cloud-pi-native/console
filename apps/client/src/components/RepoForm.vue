@@ -219,7 +219,7 @@ function toggleStandalone(e: boolean) {
                   />
                 </div>
                 <v-icon
-                  :name="isPassword ? 'ri-eye-line' : 'ri-eye-off-line'"
+                  :name="isPassword ? 'ri:eye-line' : 'ri:eye-off-line'"
                   data-testid="toggleTokenDisplayButton"
                   class="-ml-8 mb-2 z-1 cursor-pointer"
                   :title="isPassword ? 'Afficher le token en clair' : 'Masquer le token'"
@@ -228,7 +228,7 @@ function toggleStandalone(e: boolean) {
                 <v-icon
                   v-if="isExistingAndPrivate && localRepo.externalToken !== initialToken"
                   data-testid="resetTokenButton"
-                  name="ri-restart-line"
+                  name="ri:restart-line"
                   title="Annuler la modification"
                   class="-ml-12 mb-2 z-1 cursor-pointer"
                   @click="resetToken"
@@ -256,14 +256,14 @@ function toggleStandalone(e: boolean) {
         :data-testid="localRepo.id ? 'updateRepoBtn' : 'addRepoBtn'"
         :disabled="!isRepoValid"
         primary
-        icon="ri-upload-cloud-line"
+        icon="ri:upload-cloud-line"
         @click="saveRepo()"
       />
       <DsfrButton
         label="Annuler"
         data-testid="cancelRepoBtn"
         secondary
-        icon="ri-close-line"
+        icon="ri:close-line"
         @click="cancel()"
       />
     </div>
@@ -279,7 +279,7 @@ function toggleStandalone(e: boolean) {
           :label="`Retirer le dépôt ${localRepo.internalRepoName} du projet`"
           secondary
           :disabled="props.isProjectLocked"
-          icon="ri-delete-bin-7-line"
+          icon="ri:delete-bin-7-line"
           @click="isDeletingRepo = true"
         />
         <DsfrAlert
@@ -310,7 +310,7 @@ function toggleStandalone(e: boolean) {
             :disabled="repoToDelete !== localRepo.internalRepoName"
             :title="`Supprimer définitivement le dépôt ${localRepo.internalRepoName}`"
             secondary
-            icon="ri-delete-bin-7-line"
+            icon="ri:delete-bin-7-line"
             @click="$emit('delete', localRepo.id)"
           />
           <DsfrButton

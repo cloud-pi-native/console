@@ -121,7 +121,7 @@ const groups: Group[] = [
         {{ props.label }}
       </h6>
       <v-icon
-        name="ri-arrow-right-s-line"
+        name="ri:arrow-right-s-line"
         class="shrink ml-4 rotate-90"
       />
     </div>
@@ -221,7 +221,7 @@ const groups: Group[] = [
       </h6>
       <v-icon
         class="ml-4"
-        name="ri-arrow-right-s-line"
+        name="ri:arrow-right-s-line"
       />
     </div>
     <div

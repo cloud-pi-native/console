@@ -86,7 +86,7 @@ onMounted(() => {
         @click="isDarkScheme = !isDarkScheme"
       >
         <v-icon
-          :name="isDarkScheme ? 'ri-sun-line' : 'ri-moon-clear-line'"
+          :name="isDarkScheme ? 'ri:sun-line' : 'ri:moon-clear-line'"
           :fill="isDarkScheme ? 'var(--yellow-moutarde-sun-348-moon-860)' : 'var(--blue-france-sun-113-625)'"
         />
         <span
@@ -128,7 +128,7 @@ onMounted(() => {
               :active="routeName === 'Projects'"
               to="/projects"
             >
-              <v-icon name="ri-list-check" />
+              <v-icon name="ri:list-check" />
               Mes projets
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -140,7 +140,7 @@ onMounted(() => {
                 :active="routeName === 'Dashboard'"
                 :to="`/projects/${selectedProject?.id}/dashboard`"
               >
-                <v-icon name="ri-dashboard-line" />
+                <v-icon name="ri:dashboard-line" />
                 Tableau de bord
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
@@ -151,7 +151,7 @@ onMounted(() => {
                 :active="routeName === 'Services'"
                 :to="`/projects/${selectedProject?.id}/services`"
               >
-                <v-icon name="ri-flow-chart" />
+                <v-icon name="ri:flow-chart" />
                 Mes services
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
@@ -162,7 +162,7 @@ onMounted(() => {
                 :active="routeName === 'Team'"
                 :to="`/projects/${selectedProject?.id}/team`"
               >
-                <v-icon name="ri-team-line" />
+                <v-icon name="ri:team-line" />
                 Équipe
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
@@ -175,7 +175,7 @@ onMounted(() => {
                 :active="routeName === 'ProjectRoles'"
                 :to="`/projects/${selectedProject?.id}/roles`"
               >
-                <v-icon name="ri-admin-line" />
+                <v-icon name="ri:admin-line" />
                 Rôles
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
@@ -188,7 +188,7 @@ onMounted(() => {
                 :active="routeName === 'Repos'"
                 :to="`/projects/${selectedProject?.id}/repositories`"
               >
-                <v-icon name="ri-git-branch-line" />
+                <v-icon name="ri:git-branch-line" />
                 Dépôts
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
@@ -201,7 +201,7 @@ onMounted(() => {
                 :active="routeName === 'Environments'"
                 :to="`/projects/${selectedProject?.id}/environments`"
               >
-                <v-icon name="ri-microsoft-line" />
+                <v-icon name="ri:microsoft-line" />
                 Environments
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
@@ -235,7 +235,7 @@ onMounted(() => {
               :active="routeName === 'ListUser'"
               to="/admin/users"
             >
-              <v-icon name="ri-folder-user-line" />
+              <v-icon name="ri:folder-user-line" />
               Utilisateurs
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -246,7 +246,7 @@ onMounted(() => {
               :active="routeName === 'ListOrganizations'"
               to="/admin/organizations"
             >
-              <v-icon name="ri-building-line" />
+              <v-icon name="ri:building-line" />
               Organisations
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -257,7 +257,7 @@ onMounted(() => {
               :active="routeName === 'ListProjects'"
               to="/admin/projects"
             >
-              <v-icon name="ri-folders-line" />
+              <v-icon name="ri:folders-line" />
               Projets
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -268,7 +268,7 @@ onMounted(() => {
               :active="routeName === 'AdminRoles'"
               to="/admin/roles"
             >
-              <v-icon name="ri-admin-line" />
+              <v-icon name="ri:admin-line" />
               Rôles
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -279,7 +279,7 @@ onMounted(() => {
               :active="routeName === 'ListLogs'"
               to="/admin/logs"
             >
-              <v-icon name="ri-newspaper-line" />
+              <v-icon name="ri:newspaper-line" />
               Journaux
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -290,7 +290,7 @@ onMounted(() => {
               :active="routeName === 'ListClusters'"
               to="/admin/clusters"
             >
-              <v-icon name="ri-server-line" />
+              <v-icon name="ri:server-line" />
               Clusters
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -301,7 +301,7 @@ onMounted(() => {
               :active="routeName === 'ListQuotas'"
               to="/admin/quotas"
             >
-              <v-icon name="ri-sound-module-line" />
+              <v-icon name="ri:sound-module-line" />
               Quotas
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -312,7 +312,7 @@ onMounted(() => {
               :active="routeName === 'ListStages'"
               to="/admin/stages"
             >
-              <v-icon name="ri-stock-line" />
+              <v-icon name="ri:stock-line" />
               Types d'environnement
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -323,7 +323,7 @@ onMounted(() => {
               :active="routeName === 'ListZones'"
               to="/admin/zones"
             >
-              <v-icon name="ri-focus-3-line" />
+              <v-icon name="ri:focus-3-line" />
               Zones
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -334,7 +334,7 @@ onMounted(() => {
               :active="routeName === 'ListPlugins'"
               to="/admin/plugins"
             >
-              <v-icon name="ri-settings-3-line" />
+              <v-icon name="ri:settings-3-line" />
               Plugins
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -345,7 +345,7 @@ onMounted(() => {
               :active="routeName === 'SystemSettings'"
               to="/admin/system-settings"
             >
-              <v-icon name="ri-tools-fill" />
+              <v-icon name="ri:tools-fill" />
               Réglages console
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
@@ -365,7 +365,7 @@ onMounted(() => {
           </span>
           <v-icon
             :fill="serviceStore.servicesHealth.dotColor"
-            name="ri-checkbox-blank-circle-fill"
+            name="ri:checkbox-blank-circle-fill"
             class="h-3"
           />
         </DsfrSideMenuLink>

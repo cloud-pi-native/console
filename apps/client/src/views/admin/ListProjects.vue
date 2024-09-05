@@ -344,7 +344,7 @@ function untruncateDescription(span: HTMLElement) {
         title="Exporter les données de tous les projets"
         secondary
         icon-only
-        icon="ri-file-download-line"
+        icon="ri:file-download-line"
         :disabled="snackbarStore.isWaitingForResponse"
         @click="generateProjectsDataFile()"
       />
@@ -361,7 +361,7 @@ function untruncateDescription(span: HTMLElement) {
         title="Rafraîchir la liste des projets"
         secondary
         icon-only
-        icon="ri-refresh-fill"
+        icon="ri:refresh-fill"
         :disabled="snackbarStore.isWaitingForResponse"
         @click="async() => {
           await getAllProjects()
@@ -373,7 +373,7 @@ function untruncateDescription(span: HTMLElement) {
         data-testid="goBackBtn"
         secondary
         icon-only
-        icon="ri-arrow-go-back-line"
+        icon="ri:arrow-go-back-line"
         @click="() => selectedProject = undefined"
       />
     </div>
@@ -416,14 +416,14 @@ function untruncateDescription(span: HTMLElement) {
         <DsfrButton
           data-testid="replayHooksBtn"
           label="Reprovisionner le projet"
-          icon="ri-refresh-fill"
+          icon="ri:refresh-fill"
           secondary
           @click="replayHooks(selectedProject.id)"
         />
         <DsfrButton
           data-testid="handleProjectLockingBtn"
           :label="`${selectedProject.locked ? 'Déverrouiller' : 'Verrouiller'} le projet`"
-          :icon="selectedProject.locked ? 'ri-lock-unlock-fill' : 'ri-lock-fill'"
+          :icon="selectedProject.locked ? 'ri:lock-unlock-fill' : 'ri:lock-fill'"
           secondary
           @click="handleProjectLocking(selectedProject.id, !selectedProject.locked)"
         />
@@ -432,7 +432,7 @@ function untruncateDescription(span: HTMLElement) {
           data-testid="showArchiveProjectBtn"
           label="Supprimer le projet"
           secondary
-          icon="ri-delete-bin-7-line"
+          icon="ri:delete-bin-7-line"
           @click="isArchivingProject = true"
         />
       </div>
@@ -456,7 +456,7 @@ function untruncateDescription(span: HTMLElement) {
             :label="`Supprimer définitivement le projet ${selectedProject.name}`"
             :disabled="projectToArchive !== selectedProject.name"
             secondary
-            icon="ri-delete-bin-7-line"
+            icon="ri:delete-bin-7-line"
             @click="archiveProject(selectedProject.id)"
           />
           <DsfrButton
