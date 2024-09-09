@@ -13,7 +13,7 @@ type setVariableResult = 'created' | 'updated' | 'already up-to-date'
 type AccessLevelAllowed = AccessLevel.NO_ACCESS | AccessLevel.MINIMAL_ACCESS | AccessLevel.GUEST | AccessLevel.REPORTER | AccessLevel.DEVELOPER | AccessLevel.MAINTAINER | AccessLevel.OWNER
 const infraGroupName = 'Infra'
 const infraGroupPath = 'infra'
-
+export const pluginManagedTopic = 'plugin-managed'
 interface GitlabMirrorSecret {
   MIRROR_USER: string
   MIRROR_TOKEN: string
@@ -187,7 +187,13 @@ export class GitlabProjectApi extends PluginApi {
 
   public async listRepositories() {
     const group = await this.getOrCreateProjectGroup()
-    return this.api.Groups.allProjects(group.id)
+    const projects = await this.api.Groups.allProjects(group.id, { simple: false }) // to refactor with https://github.com/jdalrymple/gitbeaker/pull/3624
+    return Promise.all(projects.map(async (project) => {
+      if (this.specialRepositories.includes(project.name) && (!project.topics || !project.topics.includes(pluginManagedTopic))) {
+        return this.api.Projects.edit(project.id, { topics: project.topics ? [...project.topics, pluginManagedTopic] : [pluginManagedTopic] })
+      }
+      return project
+    }))
   }
 
   public async createEmptyRepository(repoName: string, description?: string | undefined, groupId?: number | undefined) {
