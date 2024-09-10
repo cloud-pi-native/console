@@ -1,6 +1,5 @@
 import { getPreparedApp } from './prepare-app.js'
 import { closeConnections } from './connect.js'
-
 import { isCI, isDev, isDevSetup, isProd, isTest, port } from './utils/env.js'
 
 const app = await getPreparedApp()

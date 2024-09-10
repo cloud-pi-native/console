@@ -34,8 +34,6 @@ export async function startServer(defaultPort: number = (port ? +port : 8080)) {
     throw error
   }
 
-  initPm()
-
   app.log.info('Reading init database file')
 
   try {
@@ -76,7 +74,7 @@ export async function getPreparedApp() {
     throw error
   }
 
-  initPm()
+  await initPm()
 
   app.log.info('Reading init database file')
 

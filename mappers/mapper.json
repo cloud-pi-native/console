@@ -1,0 +1,6 @@
+{
+  "<1.0.0": "https://cool_leakey/0.0.0.zip",
+  ">=3.0.0 <4.0.0": "https://cool_leakey/3.0.0.zip",
+  ">=2.0.0 <3.0.0": "http://cool_leakey:8000/observability.zip",
+  ">1.0.0": "https://cool_leakey/1.0.0.zip"
+}
