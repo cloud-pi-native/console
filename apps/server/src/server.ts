@@ -1,36 +1,36 @@
 import { getPreparedApp } from './prepare-app.js'
 import { closeConnections } from './connect.js'
-
 import { isCI, isDev, isDevSetup, isProd, isTest, port } from './utils/env.js'
+import { logger } from './app.js'
 
 const app = await getPreparedApp()
 
 try {
   await app.listen({ host: '0.0.0.0', port: +(port ?? 8080) })
 } catch (error) {
-  app.log.error(error)
+  logger.error(error)
   process.exit(1)
 }
 
-app.log.debug({ isDev, isTest, isCI, isDevSetup, isProd })
+logger.debug({ isDev, isTest, isCI, isDevSetup, isProd })
 
 export async function exitGracefully(error?: Error) {
   if (error instanceof Error) {
-    app.log.error(error)
+    logger.fatal(error)
   }
   await app.close()
-  app.log.info('Closing connections...')
+  logger.fatal('Closing connections...')
   await closeConnections()
-  app.log.info('Exiting...')
+  logger.fatal('Exiting...')
   process.exit(error instanceof Error ? 1 : 0)
 }
 
 function logExitCode(code: number) {
-  console.log(`received signal: ${code}`)
+  logger.warn(`received signal: ${code}`)
 }
 
 function logUnhandledRejection(reason: unknown, promise: Promise<unknown>) {
-  console.log('Unhandled Rejection at:', promise, 'reason:', reason)
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason)
 }
 
 export function handleExit() {

@@ -106,7 +106,7 @@ export async function createCluster(data: typeof clusterContract.createCluster.b
     await linkClusterToStages(clusterCreated.id, stageIds)
   }
 
-  const hookReply = await hook.cluster.upsert(clusterCreated.id)
+  const hookReply = await hook.cluster.upsert(requestId, clusterCreated.id)
   await addLogs('Create Cluster', hookReply, userId, requestId)
   if (hookReply.failed) {
     return new Unprocessable422('Echec des services à la création du cluster')
@@ -172,7 +172,7 @@ export async function updateCluster(data: typeof clusterContract.updateCluster.b
     }
   }
 
-  const hookReply = await hook.cluster.upsert(clusterId)
+  const hookReply = await hook.cluster.upsert(requestId, clusterId)
   await addLogs('Update Cluster', hookReply, userId, requestId)
   if (hookReply.failed) {
     return new Unprocessable422('Echec des services à la mise à jour du cluster')
@@ -185,7 +185,7 @@ export async function deleteCluster(clusterId: Cluster['id'], userId: User['id']
   const environment = await prisma.environment.findFirst({ where: { clusterId } })
   if (environment) return new BadRequest400('Impossible de supprimer le cluster, des environnements en activité y sont déployés')
 
-  const hookReply = await hook.cluster.delete(clusterId)
+  const hookReply = await hook.cluster.delete(requestId, clusterId)
   await addLogs('Delete Cluster', hookReply, userId, requestId)
   if (hookReply.failed) {
     return new Unprocessable422('Echec des services à la suppression du cluster')

@@ -32,6 +32,7 @@
     "@types/json-schema": "^7.0.15",
     "@types/node": "^20.14.9",
     "@vitest/coverage-v8": "^1.6.0",
+    "fastify": "^4.28.1",
     "nodemon": "^3.1.4",
     "rimraf": "^5.0.7",
     "ts-algebra": "^2.0.0",

@@ -29,13 +29,13 @@ async function getProjectPayload(projectId: Project['id'], reposCreds?: ReposCre
 }
 
 const project = {
-  upsert: async (projectId: Project['id'], reposCreds?: ReposCreds) => {
+  upsert: async (requestId: string, projectId: Project['id'], reposCreds?: ReposCreds) => {
     const [payload, config] = await Promise.all([
       getProjectPayload(projectId, reposCreds),
       getAdminPlugin(),
     ])
 
-    const results = await hooks.upsertProject.execute(payload, dbToObj(config))
+    const results = await hooks.upsertProject.execute(payload, dbToObj(config), requestId)
 
     const records: ConfigRecords = Object.entries(results.results).reduce((acc, [pluginName, result]) => {
       if (result.store) {
@@ -51,23 +51,23 @@ const project = {
       project: await manageProjectStatus(projectId, results, 'upsert', payload.environments.map(env => env.clusterId)),
     }
   },
-  delete: async (projectId: Project['id']) => {
+  delete: async (requestId: string, projectId: Project['id']) => {
     const [payload, config] = await Promise.all([
       getProjectPayload(projectId),
       getAdminPlugin(),
     ])
-    const results = await hooks.deleteProject.execute(payload, dbToObj(config))
+    const results = await hooks.deleteProject.execute(payload, dbToObj(config), requestId)
     return {
       results,
       project: manageProjectStatus(projectId, results, 'delete', []),
     }
   },
-  getSecrets: async (projectId: Project['id']) => {
+  getSecrets: async (requestId: string, projectId: Project['id']) => {
     const project = await getHookProjectInfos(projectId)
     const store = dbToObj(await getProjectStore(project.id))
     const config = dbToObj(await getAdminPlugin())
 
-    return hooks.getProjectSecrets.execute({ ...project, store }, config)
+    return hooks.getProjectSecrets.execute({ ...project, store }, config, requestId)
   },
 } as const
 
@@ -87,49 +87,49 @@ async function manageProjectStatus(projectId: Project['id'], hookReply: HookResu
 }
 
 const cluster = {
-  upsert: async (clusterId: Cluster['id']) => {
+  upsert: async (requestId: string, clusterId: Cluster['id']) => {
     const cluster = await getClusterByIdOrThrow(clusterId)
     const store = dbToObj(await getAdminPlugin())
     return hooks.upsertCluster.execute({
       ...cluster.kubeconfig as unknown as Pick<ClusterObject, 'cluster' | 'user'>,
       ...cluster,
-    }, store)
+    }, store, requestId)
   },
-  delete: async (clusterId: Cluster['id']) => {
+  delete: async (requestId: string, clusterId: Cluster['id']) => {
     const cluster = await getClusterByIdOrThrow(clusterId)
     const store = dbToObj(await getAdminPlugin())
     return hooks.deleteCluster.execute({
       ...cluster.kubeconfig as unknown as ClusterObject,
       ...cluster,
-    }, store)
+    }, store, requestId)
   },
 } as const
 
 const user = {
-  retrieveUserByEmail: async (email: string) => {
+  retrieveUserByEmail: async (requestId: string, email: string) => {
     const config = dbToObj(await getAdminPlugin())
-    return hooks.retrieveUserByEmail.execute({ email }, config)
+    return hooks.retrieveUserByEmail.execute({ email }, config, requestId)
   },
-  retrieveAdminUsers: async () => {
+  retrieveAdminUsers: async (requestId: string) => {
     const config = dbToObj(await getAdminPlugin())
-    return hooks.retrieveAdminUsers.execute({}, config)
+    return hooks.retrieveAdminUsers.execute({}, config, requestId)
   },
-  updateUserAdminGroupMembership: async (id: string, { isAdmin }: { isAdmin: boolean }) => {
+  updateUserAdminGroupMembership: async (requestId: string, id: string, { isAdmin }: { isAdmin: boolean }) => {
     const config = dbToObj(await getAdminPlugin())
-    return hooks.updateUserAdminGroupMembership.execute({ id, isAdmin }, config)
+    return hooks.updateUserAdminGroupMembership.execute({ id, isAdmin }, config, requestId)
   },
 } as const
 
 const misc = {
-  fetchOrganizations: async () => {
+  fetchOrganizations: async (requestId: string) => {
     const config = dbToObj(await getAdminPlugin())
-    return hooks.fetchOrganizations.execute({}, config)
+    return hooks.fetchOrganizations.execute({}, config, requestId)
   },
-  checkServices: async () => {
+  checkServices: async (requestId: string) => {
     const config = dbToObj(await getAdminPlugin())
-    return hooks.checkServices.execute({}, config)
+    return hooks.checkServices.execute({}, config, requestId)
   },
-  syncRepository: async (repoId: string, { syncAllBranches, branchName }: { syncAllBranches: boolean, branchName?: string }) => {
+  syncRepository: async (requestId: string, repoId: string, { syncAllBranches, branchName }: { syncAllBranches: boolean, branchName?: string }) => {
     const { project, ...repoInfos } = await getHookRepository(repoId)
     const store = dbToObj(await getProjectStore(project.id))
     const payload = {
@@ -138,7 +138,7 @@ const misc = {
       store,
     }
     const config = dbToObj(await getAdminPlugin())
-    return hooks.syncRepository.execute(payload, config)
+    return hooks.syncRepository.execute(payload, config, requestId)
   },
 } as const
 

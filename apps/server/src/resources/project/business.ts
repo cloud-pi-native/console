@@ -27,10 +27,12 @@ import { whereBuilder } from '@/utils/controller.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import type { UserDetails } from '@/types/index.js'
 import prisma from '@/prisma.js'
+import { logger } from '@/app.js'
 
 // Fetch infos
 const projectStatus = ProjectStatusSchema._def.values
-export async function listProjects({ status, statusIn, statusNotIn, filter = 'member', ...query }: typeof projectContract.listProjects.query._type, userId: User['id']) {
+export async function listProjects({ status, statusIn, statusNotIn, filter = 'member', ...query }: typeof projectContract.listProjects.query._type, userId: User['id'], requestId: string) {
+  logger.audit({ requestId, description: 'list projects', userId })
   return listProjectsQuery({
     ...query,
     status: whereBuilder({ enumValues: projectStatus, eqValue: status, inValues: statusIn, notInValues: statusNotIn }),
@@ -45,8 +47,9 @@ export async function listProjects({ status, statusIn, statusNotIn, filter = 'me
     })))
 }
 
-export async function getProjectSecrets(projectId: string) {
-  const hookReply = await hook.project.getSecrets(projectId)
+export async function getProjectSecrets(projectId: string, userId: User['id'], requestId: string) {
+  logger.audit({ requestId, description: 'get projects secrets', userId, projectId })
+  const hookReply = await hook.project.getSecrets(requestId, projectId)
   if (hookReply.failed) {
     return new Unprocessable422('Echec des services à la récupération des secrets du projet')
   }
@@ -61,6 +64,7 @@ export async function getProjectSecrets(projectId: string) {
 }
 
 export async function createProject(dataDto: CreateProjectBody, { groups, ...requestor }: UserDetails, requestId: string) {
+  logger.audit({ requestId, description: 'create project', userId: requestor.id, organizationId: dataDto.organizationId, projectName: dataDto.name })
   // Pré-requis
   const owner = await logUser({ groups, ...requestor })
   const organization = await getOrganizationById(dataDto.organizationId)
@@ -75,7 +79,7 @@ export async function createProject(dataDto: CreateProjectBody, { groups, ...req
   // Actions
   const project = await initializeProject({ ...dataDto, ownerId: owner.id })
 
-  const { results, project: projectInfos } = await hook.project.upsert(project.id)
+  const { results, project: projectInfos } = await hook.project.upsert(requestId, project.id)
   await addLogs('Create Project', results, owner.id, requestId)
   if (results.failed) {
     return new Unprocessable422('Echec des services à la création du projet')
@@ -90,6 +94,7 @@ export async function createProject(dataDto: CreateProjectBody, { groups, ...req
 }
 
 export async function updateProject({ description, ownerId, everyonePerms, locked }: UpdateProjectBody, projectId: Project['id'], requestor: UserDetails, requestId: string) {
+  logger.audit({ requestId, description: 'update project', userId: requestor.id, projectId })
   if (typeof locked === 'string') {
     if (locked === 'true') {
       locked = true
@@ -130,7 +135,7 @@ export async function updateProject({ description, ownerId, everyonePerms, locke
     })
   }
 
-  const { results, project: projectInfos } = await hook.project.upsert(projectId)
+  const { results, project: projectInfos } = await hook.project.upsert(requestId, projectId)
   await addLogs('Update Project', results, requestor.id, requestId)
   if (results.failed) {
     return new Unprocessable422('Echec des services à la mise à jour du projet')
@@ -145,8 +150,9 @@ export async function updateProject({ description, ownerId, everyonePerms, locke
 }
 
 export async function replayHooks(projectId: Project['id'], requestor: UserDetails, requestId: string) {
+  logger.audit({ requestId, description: 'replay hooks', userId: requestor.id, projectId })
   // Actions
-  const { results } = await hook.project.upsert(projectId)
+  const { results } = await hook.project.upsert(requestId, projectId)
   await addLogs('Replay hooks for Project', results, requestor.id, requestId)
   if (results.failed) {
     return new Unprocessable422('Echec des services au reprovisionnement du projet')
@@ -155,6 +161,7 @@ export async function replayHooks(projectId: Project['id'], requestor: UserDetai
 }
 
 export async function archiveProject(projectId: Project['id'], requestor: UserDetails, requestId: string) {
+  logger.audit({ requestId, description: 'archive project', userId: requestor.id, projectId })
   // Actions
   // Empty the project first
   await Promise.all([
@@ -163,14 +170,14 @@ export async function archiveProject(projectId: Project['id'], requestor: UserDe
     deleteAllEnvironmentForProject(projectId),
   ])
 
-  const { results: upsertResults } = await hook.project.upsert(projectId)
+  const { results: upsertResults } = await hook.project.upsert(requestId, projectId)
   await addLogs('Delete all project resources', upsertResults, requestor.id, requestId)
   if (upsertResults.failed) {
     return new Unprocessable422('Echec des services à la suppression des ressources du projet')
   }
 
   // -- début - Suppression projet --
-  const { results } = await hook.project.delete(projectId)
+  const { results } = await hook.project.delete(requestId, projectId)
   await addLogs('Archive Project', results, requestor.id, requestId)
   if (results.failed) {
     return new Unprocessable422('Echec des services à la suppression du projet')
@@ -188,7 +195,8 @@ export async function archiveProject(projectId: Project['id'], requestor: UserDe
   return null
 }
 
-export async function generateProjectsData() {
+export async function generateProjectsData(requestId: string, requestor: UserDetails) {
+  logger.audit({ requestId, description: 'extract projects data', userId: requestor.id })
   const projects = await getAllProjectsDataForExport()
 
   return json2csv(projects, {

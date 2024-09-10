@@ -1,4 +1,5 @@
-import fastify, { type FastifyRequest } from 'fastify'
+import type { FastifyRequest } from 'fastify'
+import fastify from 'fastify'
 import helmet from '@fastify/helmet'
 import keycloak from 'fastify-keycloak-adapter'
 import fastifySession from '@fastify/session'
@@ -12,6 +13,7 @@ import { isDev, isInt, isTest } from './utils/env.js'
 import { fastifyConf, swaggerConf, swaggerUiConf } from './utils/fastify.js'
 import { apiRouter } from './resources/index.js'
 import { keycloakConf, sessionConf } from './utils/keycloak.js'
+import type { CustomLogger } from './utils/logger.js'
 import { addReqLogs } from './utils/logger.js'
 
 export const serverInstance: ReturnType<typeof initServer> = initServer()
@@ -57,4 +59,5 @@ const app = fastify(fastifyConf)
 
 await app.ready()
 
+export const logger = app.log as CustomLogger
 export default app

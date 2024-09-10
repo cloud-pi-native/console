@@ -21,7 +21,7 @@ export async function syncRepository({
   branchName?: string
   requestId: string
 }) {
-  const hookReply = await hook.misc.syncRepository(repositoryId, { syncAllBranches, branchName })
+  const hookReply = await hook.misc.syncRepository(requestId, repositoryId, { syncAllBranches, branchName })
   await addLogs('Sync Repository', hookReply, userId, requestId)
   if (hookReply.failed) {
     return new Unprocessable422('Echec des services à la synchronisation du dépôt')
@@ -45,7 +45,7 @@ export async function createRepository({
   delete dbData.externalToken
 
   const repo = await initializeRepository(dbData)
-  const { results } = await hook.project.upsert(project.id, data.isPrivate
+  const { results } = await hook.project.upsert(requestId, project.id, data.isPrivate
     ? {
         [repo.internalRepoName]: {
           token: data.externalToken ?? '',
@@ -76,7 +76,7 @@ export async function updateRepository({
   delete dbData.externalToken
   const repo = await updateRepositoryQuery(repositoryId, dbData)
 
-  const { results } = await hook.project.upsert(repo.projectId, {
+  const { results } = await hook.project.upsert(requestId, repo.projectId, {
     [repo.internalRepoName]: {
       username: repo.externalUserName ?? '',
       token: data.externalToken ?? '',
@@ -103,7 +103,7 @@ export async function deleteRepository({
 }) {
   await deleteRepositoryQuery(repositoryId)
 
-  const { results } = await hook.project.upsert(projectId)
+  const { results } = await hook.project.upsert(requestId, projectId)
   await addLogs('Delete Repository', results, userId, requestId)
   if (results.failed) {
     return new Unprocessable422('Echec des services à la suppression du dépôt')

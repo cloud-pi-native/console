@@ -5,6 +5,7 @@ import * as hooks from './hooks/index.js'
 import { type ServiceInfos, servicesInfos } from './services.js'
 import type { HookStepsNames, StepCall } from './hooks/hook.js'
 import { addPlugin, editStrippers } from './config.js'
+import { type CustomLogger, setLogger } from './utils/logger.js'
 
 export * from './utils/logger.js'
 
@@ -46,8 +47,9 @@ export interface PluginManagerOptions {
 }
 
 let config: PluginManagerOptions
-function pluginManager(options: PluginManagerOptions): PluginManager {
+function pluginManager(options: PluginManagerOptions, logger: CustomLogger): PluginManager {
   config = options
+  setLogger(logger)
   const register: RegisterFn = (plugin: Plugin) => {
     if (plugin.infos.config) {
       addPlugin(plugin.infos.name, plugin.infos.config, editStrippers)
