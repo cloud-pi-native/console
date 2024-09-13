@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   GetMatchingUsersSchema,
+  UserQuerySchema,
   UserSchema,
 } from '../schemas/index.js'
 import { ErrorSchema } from '../schemas/utils.js'
@@ -38,9 +39,7 @@ export const userContract = contractInstance.router({
     path: `${apiPrefix}/users`,
     summary: 'Get all users',
     description: 'Get all users.',
-    query: z.object({
-      adminRoleId: z.string().uuid().optional(),
-    }),
+    query: UserQuerySchema,
     responses: {
       200: z.lazy(() => UserSchema.array()),
       400: ErrorSchema,

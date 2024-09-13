@@ -34,12 +34,12 @@ export function userRouter() {
       }
     },
 
-    getAllUsers: async ({ request: req, query }) => {
+    getAllUsers: async ({ request: req, query: { relationType, ...query } }) => {
       const perms = await authUser(req)
 
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
-      const body = await getUsers(query)
+      const body = await getUsers(query, relationType)
 
       return {
         status: 200,

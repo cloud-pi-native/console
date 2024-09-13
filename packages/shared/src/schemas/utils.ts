@@ -12,3 +12,11 @@ export const AtDatesToStringExtend = {
   updatedAt: dateToString,
   createdAt: dateToString,
 }
+
+export const UuidOrCsvUuidSchema = z.string()
+  .refine((value) => {
+    return !value
+      .split(',')
+      .some(uuid => !z.string().uuid().safeParse(uuid).success)
+  })
+  .transform(value => value.split(','))

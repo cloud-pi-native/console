@@ -55,15 +55,15 @@ describe('test users business', () => {
       await getUsers({})
 
       expect(getUsersQueryMock).toHaveBeenCalledTimes(1)
-      expect(getUsersQueryMock).toHaveBeenCalledWith({})
+      expect(getUsersQueryMock).toHaveBeenCalledWith({ AND: [] })
     })
     it('should query with filter adminRoleIds', async () => {
       prisma.user.update.mockResolvedValue(null)
 
-      await getUsers({ adminRoleId })
+      await getUsers({ adminRoleIds: [adminRoleId] })
 
       expect(getUsersQueryMock).toHaveBeenCalledTimes(1)
-      expect(getUsersQueryMock).toHaveBeenCalledWith({ adminRoleIds: { has: adminRoleId } })
+      expect(getUsersQueryMock).toHaveBeenCalledWith({ AND: [{ adminRoleIds: { hasSome: [adminRoleId] } }] })
     })
   })
 

@@ -5,12 +5,29 @@ import { getMatchingUsers as getMatchingUsersQuery, getUsers as getUsersQuery } 
 import prisma from '@/prisma.js'
 import type { UserDetails } from '@/types/index.js'
 
-export function getUsers(query: typeof userContract.getAllUsers.query._type) {
-  const where: Prisma.UserWhereInput = {}
-  if (query.adminRoleId) {
-    where.adminRoleIds = { has: query.adminRoleId }
+export async function getUsers(query: typeof userContract.getAllUsers.query._type, relationType: 'OR' | 'AND' = 'AND') {
+  const adminRoleIds = [
+    ...query.adminRoleIds ?? [],
+    ...query.adminRoles
+      ? (await prisma.adminRole.findMany({ where: { name: { in: query.adminRoles } } }))
+          .map(({ id }) => id)
+      : [],
+  ]
+
+  const whereInputs: Prisma.UserWhereInput[] = []
+  if (adminRoleIds.length) {
+    whereInputs.push({ adminRoleIds: { hasSome: adminRoleIds } })
   }
-  return getUsersQuery(where)
+  if (query.memberOfIds) {
+    whereInputs.push({
+      OR: [
+        { projectsOwned: { some: { id: { in: query.memberOfIds } } } },
+        { ProjectMembers: { some: { project: { id: { in: query.memberOfIds } } } } },
+      ],
+    })
+  }
+
+  return getUsersQuery({ [relationType]: whereInputs })
 }
 
 export async function getMatchingUsers(query: typeof userContract.getMatchingUsers.query._type) {
