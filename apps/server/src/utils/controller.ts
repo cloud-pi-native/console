@@ -1,9 +1,11 @@
 import type { Cluster, Prisma, Project, ProjectMembers, ProjectRole } from '@prisma/client'
 import type { XOR } from '@cpn-console/shared'
 import { PROJECT_PERMS as PP, PROJECT_PERMS, projectIsLockedInfo } from '@cpn-console/shared'
+import type { FastifyRequest } from 'fastify'
+import { tokenHeaderName } from './const.js'
 import type { UserDetails } from '@/types/index.js'
 import prisma from '@/prisma.js'
-import { logUser } from '@/resources/user/business.js'
+import { logAdminToken, logUser } from '@/resources/user/business.js'
 
 export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
   Pick<T, Exclude<keyof T, Keys>>
@@ -63,7 +65,7 @@ export function whereBuilder<T extends StringArray>({ enumValues, eqValue, inVal
 }
 
 type ProjectMinimalPerms = Pick<Project, 'everyonePerms' | 'ownerId' | 'id' | 'locked' | 'status'> & { roles: ProjectRole[], members: ProjectMembers[] }
-export interface UserProfile { user: UserDetails, adminPermissions: bigint }
+export interface UserProfile { user?: UserDetails, adminPermissions: bigint, tokenId?: string }
 export interface ProjectPermState { projectPermissions?: bigint, projectId: Project['id'], projectLocked: boolean, projectStatus: Project['status'], projectOwnerId: Project['ownerId'] }
 export type UserProjectProfile = UserProfile & ProjectPermState
 
@@ -74,16 +76,31 @@ type ProjectUniqueFinder = XOR<
 
 const projectPermsSelect = { roles: true, members: true, everyonePerms: true, ownerId: true, id: true, locked: true, status: true } as const satisfies Prisma.ProjectSelect
 
-export async function authUser(user: UserDetails): Promise<UserProfile>
-export async function authUser(user: UserDetails, projectUnique: ProjectUniqueFinder): Promise<UserProjectProfile>
-export async function authUser(user: UserDetails, projectUnique?: ProjectUniqueFinder): Promise<UserProfile | UserProjectProfile> {
-  const { adminPerms: adminPermissions } = await logUser(user, true)
+export async function authUser(req: FastifyRequest): Promise<UserProfile>
+export async function authUser(req: FastifyRequest, projectUnique: ProjectUniqueFinder): Promise<UserProjectProfile>
+export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqueFinder): Promise<UserProfile | UserProjectProfile> {
+  let adminPermissions: bigint = 0n
+  let tokenId: string | undefined
+  const user = req.session?.user
+
+  const tokenHeader = req.headers[tokenHeaderName]
+  if (typeof tokenHeader === 'string') {
+    const token = await logAdminToken(tokenHeader)
+    if (typeof token !== 'string') {
+      adminPermissions = token.adminPerms
+      tokenId = token.id
+    }
+  } else if (req.session.user) {
+    const loginResult = await logUser(req.session.user, true)
+    adminPermissions = loginResult.adminPerms
+  }
 
   const baseReturnInfos = {
-    user,
+    user: req.session.user,
     adminPermissions,
+    tokenId,
   }
-  if (!projectUnique) {
+  if (!projectUnique || !user) {
     return baseReturnInfos
   }
   let project: ProjectMinimalPerms

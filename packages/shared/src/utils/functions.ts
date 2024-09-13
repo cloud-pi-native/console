@@ -124,3 +124,16 @@ export function shallowEqual(object1: Record<string, unknown>, object2: Record<s
 
   return true
 }
+
+export function generateRandomPassword(length = 24, chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@-_#*') {
+  return Array.from(crypto.getRandomValues(new Uint32Array(length)))
+    .map(x => chars[x % chars.length])
+    .join('')
+}
+
+export function isAtLeastTomorrow(actualTime: Date) {
+  const tomorrow = new Date(Date.now())
+  tomorrow.setUTCHours(23, 59, 59, 999)
+
+  return actualTime.getTime() > tomorrow.getTime()
+}

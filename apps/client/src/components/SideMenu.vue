@@ -349,6 +349,17 @@ onMounted(() => {
               Réglages console
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              class="menu-link-icon"
+              data-testid="menuAdministrationToken"
+              :active="routeName === 'AdminTokens'"
+              to="/admin/tokens"
+            >
+              <v-icon name="ri:key-2-line" />
+              Jetons d'API
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
         </DsfrSideMenuList>
       </DsfrSideMenuListItem>
       <DsfrSideMenuListItem>

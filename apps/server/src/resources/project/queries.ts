@@ -24,7 +24,7 @@ type FilterWhere = XOR<{
   userId?: User['id']
   filter: 'all'
 }, {
-    userId: User['id']
+    userId: User['id'] | undefined
     filter: 'owned' | 'member'
   }>
 type ListProjectWhere = Omit<(typeof projectContract.listProjects.query._type), 'status_in' | 'status_not_in' | 'status'> &

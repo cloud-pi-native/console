@@ -10,15 +10,14 @@ import { serverInstance } from '@/app.js'
 
 import { filterObjectByKeys } from '@/utils/queries-tools.js'
 import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, NotFound404 } from '@/utils/errors.js'
+import { ErrorResType, Forbidden403, NotFound404, Unauthorized401 } from '@/utils/errors.js'
 
 export function repositoryRouter() {
   return serverInstance.router(repositoryContract, {
   // Récupérer tous les repositories d'un projet
     listRepositories: async ({ request: req, query }) => {
       const projectId = query.projectId
-      const user = req.session.user
-      const perms = await authUser(user, { id: projectId })
+      const perms = await authUser(req, { id: projectId })
 
       if (!ProjectAuthorized.ListRepositories(perms)) return new Forbidden403()
 
@@ -33,8 +32,8 @@ export function repositoryRouter() {
     // Synchroniser un repository
     syncRepository: async ({ request: req, params, body }) => {
       const { repositoryId } = params
-      const requestor = req.session.user
-      const perms = await authUser(requestor, { repositoryId })
+      const perms = await authUser(req, { repositoryId })
+      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
       if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.ManageRepositories(perms)) return new Forbidden403()
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
@@ -53,9 +52,9 @@ export function repositoryRouter() {
     // Créer un repository
     createRepository: async ({ request: req, body: data }) => {
       const projectId = data.projectId
-      const requestor = req.session.user
-      const perms = await authUser(requestor, { id: projectId })
+      const perms = await authUser(req, { id: projectId })
 
+      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
       if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
       if (!ProjectAuthorized.ManageRepositories(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
@@ -73,8 +72,9 @@ export function repositoryRouter() {
     // Mettre à jour un repository
     updateRepository: async ({ request: req, params, body }) => {
       const repositoryId = params.repositoryId
-      const requestor = req.session.user
-      const perms = await authUser(requestor, { repositoryId })
+      const perms = await authUser(req, { repositoryId })
+
+      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
       if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
       if (!ProjectAuthorized.ManageRepositories(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
@@ -110,9 +110,9 @@ export function repositoryRouter() {
     // Supprimer un repository
     deleteRepository: async ({ request: req, params }) => {
       const repositoryId = params.repositoryId
-      const requestor = req.session.user
-      const perms = await authUser(requestor, { repositoryId })
+      const perms = await authUser(req, { repositoryId })
 
+      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
       if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.ManageRepositories(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')

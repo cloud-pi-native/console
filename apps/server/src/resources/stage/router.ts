@@ -26,8 +26,7 @@ export function stageRouter() {
 
     // Récupérer les environnements associés au stage
     getStageEnvironments: async ({ request: req, params }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const stageId = params.stageId
@@ -42,8 +41,7 @@ export function stageRouter() {
 
     // Créer un stage
     createStage: async ({ request: req, body: data }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const body = await createStage(data)
@@ -57,8 +55,7 @@ export function stageRouter() {
 
     // Modifier une association stage / clusters
     updateStage: async ({ request: req, params, body: data }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const stageId = params.stageId
@@ -74,8 +71,7 @@ export function stageRouter() {
 
     // Supprimer un stage
     deleteStage: async ({ request: req, params }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const stageId = params.stageId

@@ -1,7 +1,7 @@
 export class ErrorResType {
-  status: 400 | 403 | 404 | 422
+  status: 400 | 401 | 403 | 404 | 422
   body: { message: string } = { message: '' }
-  constructor(code: 400 | 403 | 404 | 422) {
+  constructor(code: 400 | 401 | 403 | 404 | 422) {
     this.status = code
   }
 }
@@ -10,6 +10,14 @@ export class BadRequest400 extends ErrorResType {
   constructor(message: string) {
     super(400)
     this.body.message = message ?? 'Bad Request'
+  }
+}
+
+export class Unauthorized401 extends ErrorResType {
+  status = 401 as const
+  constructor(message?: string) {
+    super(401)
+    this.body.message = message ?? 'Unauthorized'
   }
 }
 

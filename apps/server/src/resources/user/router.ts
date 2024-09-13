@@ -8,7 +8,7 @@ import {
 import '@/types/index.js'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
-import { Forbidden403 } from '@/utils/errors.js'
+import { Forbidden403, Unauthorized401 } from '@/utils/errors.js'
 
 export function userRouter() {
   return serverInstance.router(userContract, {
@@ -21,8 +21,11 @@ export function userRouter() {
       }
     },
 
-    auth: async ({ request }) => {
-      const user = request.session.user
+    auth: async ({ request: req }) => {
+      const user = req.session.user
+
+      if (!user) return new Unauthorized401()
+
       const body = await logUser(user)
 
       return {
@@ -32,8 +35,8 @@ export function userRouter() {
     },
 
     getAllUsers: async ({ request: req, query }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
+
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const body = await getUsers(query)
@@ -45,8 +48,7 @@ export function userRouter() {
     },
 
     patchUsers: async ({ request: req, body }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const users = await patchUsers(body)

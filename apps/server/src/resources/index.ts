@@ -17,12 +17,14 @@ import { pluginConfigRouter } from './system/config/router.js'
 import { userRouter } from './user/router.js'
 import { zoneRouter } from './zone/router.js'
 import { systemSettingsRouter } from './system/settings/router.js'
+import { adminTokenRouter } from './admin-token/router.js'
 import { serverInstance } from '@/app.js'
 
 const validateTrue = { responseValidation: true }
 export function apiRouter() {
   return async (app: FastifyInstance) => {
     await app.register(serverInstance.plugin(adminRoleRouter()), validateTrue)
+    await app.register(serverInstance.plugin(adminTokenRouter()), validateTrue)
     await app.register(serverInstance.plugin(clusterRouter()), validateTrue)
     await app.register(serverInstance.plugin(environmentRouter()), validateTrue)
     await app.register(serverInstance.plugin(logRouter()), validateTrue)
