@@ -1,17 +1,17 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch } from 'vue'
-// @ts-ignore '@gouvminint/vue-dsfr' missing types
-import { getRandomId } from '@gouvminint/vue-dsfr'
 import type {
   LettersQuery,
   Member,
   ProjectV2,
   User,
 } from '@cpn-console/shared'
-import pDebounce from 'p-debounce'
 import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { copyContent } from '@/utils/func.js'
+import { computed, onMounted, ref, watch } from 'vue'
+// @ts-ignore '@gouvminint/vue-dsfr' missing types
+import { getRandomId } from '@gouvminint/vue-dsfr'
+import pDebounce from 'p-debounce'
 
 const props = withDefaults(
   defineProps<{

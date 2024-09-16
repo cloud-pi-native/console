@@ -1,10 +1,10 @@
+import type { CreateProjectBody, Organization, projectContract, projectRoleContract, ProjectV2, Role, UpdateProjectBody } from '@cpn-console/shared'
+import { apiClient, extractData } from '@/api/xhr-client.js'
+import { getPermsByUserRoles, PROJECT_PERMS, resourceListToDict } from '@cpn-console/shared'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { CreateProjectBody, Organization, ProjectV2, Role, UpdateProjectBody, projectContract, projectRoleContract } from '@cpn-console/shared'
-import { PROJECT_PERMS, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
-import { useUserStore } from './user.js'
 import { useOrganizationStore } from './organization.js'
-import { apiClient, extractData } from '@/api/xhr-client.js'
+import { useUserStore } from './user.js'
 
 export type ProjectWithOrganization = ProjectV2 & { organization: Organization }
 

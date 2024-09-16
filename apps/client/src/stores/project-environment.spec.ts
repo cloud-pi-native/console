@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
 import { createRandomDbSetup } from '@cpn-console/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiClient } from '../api/xhr-client.js'
 import { useProjectEnvironmentStore } from './project-environment.js'
 

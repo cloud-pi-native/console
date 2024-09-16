@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { AdminTokenSchema, CoerceBooleanSchema, ExposedAdminTokenSchema, apiPrefix, contractInstance } from '../index.js'
+import { AdminTokenSchema, apiPrefix, CoerceBooleanSchema, contractInstance, ExposedAdminTokenSchema } from '../index.js'
 import { ErrorSchema } from '../schemas/utils.js'
 
 export const adminTokenContract = contractInstance.router({

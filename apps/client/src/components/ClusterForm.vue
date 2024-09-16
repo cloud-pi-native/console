@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { computed, onBeforeMount, ref, watch } from 'vue'
 import type {
   ClusterAssociatedEnvironments,
   ClusterDetails,
@@ -7,19 +6,20 @@ import type {
   Stage,
   Zone,
 } from '@cpn-console/shared'
+import type { ProjectWithOrganization } from '../stores/project.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
+import { toCodeComponent } from '@/utils/func.js'
 import {
   ClusterDetailsSchema,
   ClusterPrivacy,
   KubeconfigSchema,
 } from '@cpn-console/shared'
+import { computed, onBeforeMount, ref, watch } from 'vue'
 // @ts-ignore 'js-yaml' missing types
 import { load } from 'js-yaml'
 // @ts-ignore 'vue3-json-viewer' missing types
 import { JsonViewer } from 'vue3-json-viewer'
-import type { ProjectWithOrganization } from '../stores/project.js'
 import ChoiceSelector from './ChoiceSelector.vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { toCodeComponent } from '@/utils/func.js'
 
 const props = withDefaults(defineProps<{
   isNewCluster: boolean

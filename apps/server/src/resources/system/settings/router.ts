@@ -1,8 +1,8 @@
-import { AdminAuthorized, systemSettingsContract } from '@cpn-console/shared'
-import { getSystemSettings, upsertSystemSetting } from './business.js'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
 import { Forbidden403 } from '@/utils/errors.js'
+import { AdminAuthorized, systemSettingsContract } from '@cpn-console/shared'
+import { getSystemSettings, upsertSystemSetting } from './business.js'
 
 export function systemSettingsRouter() {
   return serverInstance.router(systemSettingsContract, {

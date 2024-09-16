@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest'
-import { faker } from '@faker-js/faker'
-import { ZodError } from 'zod'
 import type { ProjectV2 } from '../index.js'
-import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, ProjectSchemaV2, QuotaSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import { faker } from '@faker-js/faker'
+import { describe, expect, it } from 'vitest'
+import { ZodError } from 'zod'
+import { ClusterDetailsSchema, ClusterPrivacy, descriptionMaxLength, EnvironmentSchema, instanciateSchema, OrganizationSchema, parseZodError, ProjectSchemaV2, QuotaSchema, RepoSchema, StageSchema, UserSchema } from '../index.js'
 
 describe('schemas utils', () => {
   it('should not validate an undefined object', () => {

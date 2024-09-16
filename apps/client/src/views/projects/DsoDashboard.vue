@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { onBeforeMount, ref } from 'vue'
-import { type Project, ProjectAuthorized, descriptionMaxLength, projectIsLockedInfo } from '@cpn-console/shared'
+import router from '@/router/index.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import router from '@/router/index.js'
-import { copyContent } from '@/utils/func.js'
 import { useStageStore } from '@/stores/stage.js'
+import { copyContent } from '@/utils/func.js'
+import { descriptionMaxLength, type Project, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
+import { onBeforeMount, ref } from 'vue'
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()

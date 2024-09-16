@@ -1,19 +1,19 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { useClusterStore } from '@/stores/cluster'
+import { useOrganizationStore } from '@/stores/organization.js'
+import { useProjectStore } from '@/stores/project.js'
+import { useStageStore } from '@/stores/stage.js'
+import { useZoneStore } from '@/stores/zone.js'
 import {
   type Cluster,
   type ClusterAssociatedEnvironments,
   type ClusterDetails,
   type CreateClusterBody,
+  sortArrByObjKeyAsc,
   type Stage,
   type UpdateClusterBody,
-  sortArrByObjKeyAsc,
 } from '@cpn-console/shared'
-import { useProjectStore } from '@/stores/project.js'
-import { useOrganizationStore } from '@/stores/organization.js'
-import { useZoneStore } from '@/stores/zone.js'
-import { useStageStore } from '@/stores/stage.js'
-import { useClusterStore } from '@/stores/cluster'
+import { computed, onMounted, ref, watch } from 'vue'
 
 type ClusterList = {
   id: Cluster['id']

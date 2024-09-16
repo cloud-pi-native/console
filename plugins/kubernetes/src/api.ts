@@ -1,5 +1,5 @@
-import { CoreV1Api, KubeConfig } from '@kubernetes/client-node'
 import type { ClusterObject } from '@cpn-console/hooks'
+import { CoreV1Api, KubeConfig } from '@kubernetes/client-node'
 import { AnyObjectsApi } from './customApiClass.js'
 
 export function createCoreV1Api(cluster: ClusterObject) {

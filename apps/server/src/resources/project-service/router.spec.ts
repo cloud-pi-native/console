@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { PROJECT_PERMS, projectServiceContract } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
 import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'

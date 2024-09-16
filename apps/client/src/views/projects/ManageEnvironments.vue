@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue'
-import { ClusterPrivacy, type Environment, ProjectAuthorized, projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
+import { useClusterStore } from '@/stores/cluster.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { useClusterStore } from '@/stores/cluster.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { ClusterPrivacy, type Environment, ProjectAuthorized, projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
+import { computed, onMounted, ref } from 'vue'
 
 interface EnvironmentTile {
   id: string

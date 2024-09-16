@@ -1,11 +1,11 @@
-import type { Project, ProjectRole } from '@prisma/client'
+import type { ErrorResType } from '@/utils/errors.js'
 import type { AdminRole, adminRoleContract } from '@cpn-console/shared'
+import type { Project, ProjectRole } from '@prisma/client'
+import prisma from '@/prisma.js'
 import {
   listAdminRoles,
 } from '@/resources/queries-index.js'
-import type { ErrorResType } from '@/utils/errors.js'
 import { BadRequest400 } from '@/utils/errors.js'
-import prisma from '@/prisma.js'
 
 export async function listRoles() {
   return listAdminRoles()

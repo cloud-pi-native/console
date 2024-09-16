@@ -218,7 +218,8 @@ describe('Administration zones', () => {
         .should('be.enabled')
         .click()
       cy.wait('@updateCluster')
-        .its('response.statusCode').should('match', /^20\d$/)
+        .its('response.statusCode')
+        .should('match', /^20\d$/)
     })
 
     cy.visit('/admin/zones')

@@ -1,7 +1,7 @@
-import type { AxiosInstance } from 'axios'
-import axios from 'axios'
 import type { Project, StepCall } from '@cpn-console/hooks'
+import type { AxiosInstance } from 'axios'
 import { generateRandomPassword, parseError } from '@cpn-console/hooks'
+import axios from 'axios'
 import { getAxiosOptions } from './functions.js'
 
 const getAxiosInstance = () => axios.create(getAxiosOptions())

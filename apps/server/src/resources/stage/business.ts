@@ -1,5 +1,6 @@
-import type { Cluster, Stage } from '@prisma/client'
 import type { CreateStageBody, UpdateStageBody } from '@cpn-console/shared'
+import type { Cluster, Stage } from '@prisma/client'
+import prisma from '@/prisma.js'
 import {
   createStage as createStageQuery,
   deleteStage as deleteStageQuery,
@@ -16,7 +17,6 @@ import {
   updateStageName,
 } from '@/resources/queries-index.js'
 import { BadRequest400, NotFound404 } from '@/utils/errors.js'
-import prisma from '@/prisma.js'
 
 export async function getStageAssociatedEnvironments(stageId: Stage['id']) {
   const environments = await getStageAssociatedEnvironmentById(stageId)

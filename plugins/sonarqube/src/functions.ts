@@ -1,14 +1,14 @@
-import { adminGroupPath } from '@cpn-console/shared'
 import type { Project, StepCall } from '@cpn-console/hooks'
-import { generateProjectKey, parseError } from '@cpn-console/hooks'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
-import { ensureGroupExists, findGroupByName } from './group.js'
-import type { VaultSonarSecret } from './tech.js'
-import { getAxiosInstance } from './tech.js'
-import type { SonarUser } from './user.js'
-import { ensureUserExists } from './user.js'
 import type { SonarPaging } from './project.js'
+import type { VaultSonarSecret } from './tech.js'
+import type { SonarUser } from './user.js'
+import { generateProjectKey, parseError } from '@cpn-console/hooks'
+import { adminGroupPath } from '@cpn-console/shared'
+import { ensureGroupExists, findGroupByName } from './group.js'
 import { createDsoRepository, deleteDsoRepository, ensureRepositoryConfiguration, files, findSonarProjectsForDsoProjects } from './project.js'
+import { getAxiosInstance } from './tech.js'
+import { ensureUserExists } from './user.js'
 
 const globalPermissions = [
   'admin',

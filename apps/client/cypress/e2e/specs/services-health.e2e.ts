@@ -5,9 +5,12 @@ describe('Services health', () => {
     cy.kcLogin('test')
 
     cy.visit('/')
-      .getByDataTestid('menuServicesHealth').click()
-      .url().should('contain', '/services-health')
-      .get('h1').should('contain', 'Status des services de la plateforme DSO')
+      .getByDataTestid('menuServicesHealth')
+      .click()
+      .url()
+      .should('contain', '/services-health')
+      .get('h1')
+      .should('contain', 'Status des services de la plateforme DSO')
     cy.getByDataTestid('box-info').children().should('have.length', 7)
   })
 

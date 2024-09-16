@@ -1,12 +1,12 @@
-import { dirname } from 'node:path'
+import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
 import type { ClusterObject, Environment, Project, Repository, StepCall } from '@cpn-console/hooks'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
+import { dirname } from 'node:path'
 import { parseError } from '@cpn-console/hooks'
 import { dump } from 'js-yaml'
-import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
-import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi } from './utils.js'
-import { getApplicationObject } from './applications.js'
 import { getAppProjectObject } from './app-project.js'
+import { getApplicationObject } from './applications.js'
+import { generateApplicationName, generateAppProjectName, getConfig, getCustomK8sApi } from './utils.js'
 
 export interface ArgoDestination {
   namespace?: string

@@ -1,9 +1,9 @@
 import type { EmptyPayload, Project, StepCall, UserAdmin, UserEmail } from '@cpn-console/hooks'
-import { parseError } from '@cpn-console/hooks'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type { CustomGroup } from './group.js'
-import { consoleGroupName, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateProjectGroup } from './group.js'
+import { parseError } from '@cpn-console/hooks'
 import { getkcClient } from './client.js'
+import { consoleGroupName, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateProjectGroup } from './group.js'
 
 export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: { email } }) => {
   const kcClient = await getkcClient()

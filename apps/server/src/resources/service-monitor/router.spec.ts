@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from 'vitest'
-import { MonitorStatus, serviceContract } from '@cpn-console/shared'
 import type { ServiceStatus } from '@cpn-console/hooks'
+import { MonitorStatus, serviceContract } from '@cpn-console/shared'
+import { describe, expect, it, vi } from 'vitest'
 import app from '../../app.js'
 import * as business from './business.js'
 

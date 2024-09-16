@@ -1,9 +1,9 @@
 import type { DeclareModuleGenerator, Plugin } from '@cpn-console/hooks'
-import infos from './infos.js'
-import monitor from './monitor.js'
-import { deleteProject, upsertProject } from './functions.js'
-import { fixLabels } from './label-fix.js'
 import { deleteCluster, upsertCluster } from './cluster.js'
+import { deleteProject, upsertProject } from './functions.js'
+import infos from './infos.js'
+import { fixLabels } from './label-fix.js'
+import monitor from './monitor.js'
 
 export const plugin: Plugin = {
   infos,

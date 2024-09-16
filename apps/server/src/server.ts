@@ -1,5 +1,5 @@
-import { getPreparedApp } from './prepare-app.js'
 import { closeConnections } from './connect.js'
+import { getPreparedApp } from './prepare-app.js'
 
 import { isCI, isDev, isDevSetup, isProd, isTest, port } from './utils/env.js'
 

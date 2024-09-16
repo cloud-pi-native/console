@@ -1,10 +1,10 @@
-import { faker } from '@faker-js/faker'
 import { PROJECT_PERMS, projectRoleContract } from '@cpn-console/shared'
+import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
-import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
 import { BadRequest400 } from '../../utils/errors.js'
+import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
 import * as business from './business.js'
 
 vi.mock('./business.js')

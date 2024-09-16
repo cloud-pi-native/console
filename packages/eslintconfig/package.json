@@ -6,7 +6,7 @@
   "main": "src/index.js",
   "types": "types/index.d.ts",
   "devDependencies": {
-    "@antfu/eslint-config": "^2.27.3"
+    "@antfu/eslint-config": "^3.6.2"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",

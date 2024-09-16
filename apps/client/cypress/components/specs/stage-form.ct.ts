@@ -1,13 +1,13 @@
 import type { Pinia } from 'pinia'
+import StageForm from '@/components/StageForm.vue'
+import { useSnackbarStore } from '@/stores/snackbar.js'
+import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomStage, repeatFn } from '@cpn-console/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
-import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomStage, repeatFn } from '@cpn-console/test-utils'
-import StageForm from '@/components/StageForm.vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 
 describe('StageForm.vue', () => {
   let pinia: Pinia
@@ -79,9 +79,7 @@ describe('StageForm.vue', () => {
       .should('have.class', 'fr-tag--dismiss')
     cy.getByDataTestid('updateStageBtn').should('be.enabled')
     cy.getByDataTestid('deleteQuotaZone').should('not.exist')
-    cy.getByDataTestid('associatedEnvironmentsTable').should('exist')
-      .find('tbody > tr')
-      .should('have.length', associatedEnvironments.length)
+    cy.getByDataTestid('associatedEnvironmentsTable').should('exist').find('tbody > tr').should('have.length', associatedEnvironments.length)
   })
 
   it('Should mount an update quotaForm without associatedEnvironments', () => {

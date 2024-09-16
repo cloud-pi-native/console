@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue'
 import type { Log } from '@cpn-console/shared'
-import { JsonViewer } from 'vue3-json-viewer'
 import { useLogStore } from '@/stores/log.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { computed, onMounted, ref } from 'vue'
+import { JsonViewer } from 'vue3-json-viewer'
 // @ts-ignore 'vue3-json-viewer' missing types
 
 const adminLogStore = useLogStore()

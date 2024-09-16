@@ -1,9 +1,9 @@
-import { AdminAuthorized, zoneContract } from '@cpn-console/shared'
-import { createZone, deleteZone, listZones, updateZone } from './business.js'
 import { serverInstance } from '@/app.js'
-
 import { authUser } from '@/utils/controller.js'
 import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
+
+import { AdminAuthorized, zoneContract } from '@cpn-console/shared'
+import { createZone, deleteZone, listZones, updateZone } from './business.js'
 
 export function zoneRouter() {
   return serverInstance.router(zoneContract, {

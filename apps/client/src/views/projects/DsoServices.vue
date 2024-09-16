@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import type { PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
-import { computed, ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectServiceStore } from '@/stores/project-services.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { computed, ref } from 'vue'
 
 const projectStore = useProjectStore()
 const projectServiceStore = useProjectServiceStore()

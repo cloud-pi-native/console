@@ -1,4 +1,6 @@
 import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks'
+import { KeycloakProjectApi } from './class.js'
+import { start } from './client.js'
 import {
   deleteProject,
   retrieveKeycloakAdminUsers,
@@ -8,8 +10,6 @@ import {
 } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
-import { start } from './client.js'
-import { KeycloakProjectApi } from './class.js'
 
 export const plugin: Plugin = {
   infos,

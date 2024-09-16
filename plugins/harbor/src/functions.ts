@@ -1,13 +1,13 @@
+import type { VaultRobotSecret } from './robot.js'
+import { parseError, type Project, type ProjectLite, specificallyDisabled, specificallyEnabled, type StepCall } from '@cpn-console/hooks'
+import { DEFAULT, ENABLED } from '@cpn-console/shared'
 // @ts-ignore pas de typage disponible pour le paquet bytes
 import bytes from 'bytes'
-import { type Project, type ProjectLite, type StepCall, parseError, specificallyDisabled, specificallyEnabled } from '@cpn-console/hooks'
-import { DEFAULT, ENABLED } from '@cpn-console/shared'
-import { getApi, getConfig, projectRobotName, roRobotName, rwRobotName } from './utils.js'
-import { createProject, deleteProject } from './project.js'
-import { addProjectGroupMember } from './permission.js'
-import type { VaultRobotSecret } from './robot.js'
-import { deleteRobot, ensureRobot, roAccess, rwAccess } from './robot.js'
 import { getSecretObject } from './kubeSecret.js'
+import { addProjectGroupMember } from './permission.js'
+import { createProject, deleteProject } from './project.js'
+import { deleteRobot, ensureRobot, roAccess, rwAccess } from './robot.js'
+import { getApi, getConfig, projectRobotName, roRobotName, rwRobotName } from './utils.js'
 
 export const createDsoProject: StepCall<Project> = async (payload) => {
   try {

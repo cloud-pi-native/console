@@ -1,7 +1,7 @@
 import type { Prisma, User } from '@prisma/client'
-import { exclude } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 import { dbKeysExcluded } from '@/utils/queries-tools.js'
+import { exclude } from '@cpn-console/shared'
 
 type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>
 

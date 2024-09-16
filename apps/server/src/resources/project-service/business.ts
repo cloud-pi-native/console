@@ -1,11 +1,10 @@
-import type { Project } from '@prisma/client'
 import type {
   PermissionTarget,
   PluginsUpdateBody,
 
   ServiceUrl,
 } from '@cpn-console/shared'
-import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
+import type { Project } from '@prisma/client'
 import {
   getAdminPlugin,
   getProjectInfosByIdOrThrow,
@@ -13,6 +12,7 @@ import {
   getPublicClusters,
   saveProjectStore,
 } from '@/resources/queries-index.js'
+import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
 
 export type ConfigRecords = {
   key: string

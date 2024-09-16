@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { AtDatesToStringExtend, ErrorSchema, UuidOrCsvUuidSchema } from './utils.js'
 import { RoleNameCsvSchema } from './role.js'
+import { AtDatesToStringExtend, ErrorSchema, UuidOrCsvUuidSchema } from './utils.js'
 
 export const UserSchema = z.object({
   id: z.string()

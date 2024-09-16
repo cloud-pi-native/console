@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { onMounted } from 'vue'
 import type { AdminToken } from '@cpn-console/shared'
-import { getAdminPermLabelsByValue } from '@cpn-console/shared'
 import { useAdminTokenStore } from '@/stores/admin-token.js'
+import { getAdminPermLabelsByValue } from '@cpn-console/shared'
+import { onMounted } from 'vue'
 
 const statusWording: Record<AdminToken['status'], string> = {
   active: 'Actif',

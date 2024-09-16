@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { exitGracefully, handleExit } from './server.js'
 import { closeConnections } from './connect.js'
 import { getPreparedApp } from './prepare-app.js'
+import { exitGracefully, handleExit } from './server.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin)
 vi.mock('./init/db/index.js', () => ({ initDb: vi.fn() }))

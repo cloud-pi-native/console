@@ -1,9 +1,5 @@
 import type { Quota, User } from '@prisma/client'
-import { type CreateQuotaBody, type Quota as QuotaDto, QuotaSchema, type UpdateQuotaBody } from '@cpn-console/shared'
-import {
-  getAllQuotas,
-  listQuotas as listQuotasQuery,
-} from '../queries-index.js'
+import prisma from '@/prisma.js'
 import {
   createQuota as createQuotaQuery,
   deleteQuota as deleteQuotaQuery,
@@ -14,9 +10,13 @@ import {
   unlinkQuotaFromStages,
 } from '@/resources/queries-index.js'
 import { validateSchema } from '@/utils/business.js'
-
 import { BadRequest400, ErrorResType, NotFound404 } from '@/utils/errors.js'
-import prisma from '@/prisma.js'
+
+import { type CreateQuotaBody, type Quota as QuotaDto, QuotaSchema, type UpdateQuotaBody } from '@cpn-console/shared'
+import {
+  getAllQuotas,
+  listQuotas as listQuotasQuery,
+} from '../queries-index.js'
 
 export async function getQuotaAssociatedEnvironments(quotaId: string) {
   const environments = await getQuotaAssociatedEnvironmentById(quotaId)

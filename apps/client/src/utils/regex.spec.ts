@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
-import { faker } from '@faker-js/faker'
 import { email, noSpace, uuid } from '@/utils/regex.js'
+import { faker } from '@faker-js/faker'
+import { describe, expect, it } from 'vitest'
 
 describe('regex', () => {
   it('should return false (noSpace)', () => {

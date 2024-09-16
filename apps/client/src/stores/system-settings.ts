@@ -1,11 +1,11 @@
-import { defineStore } from 'pinia'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 import {
+  resourceListToDictByKey,
   type SystemSetting,
   type SystemSettings,
   type UpsertSystemSettingBody,
-  resourceListToDictByKey,
 } from '@cpn-console/shared'
-import { apiClient, extractData } from '@/api/xhr-client.js'
+import { defineStore } from 'pinia'
 
 export const useSystemSettingsStore = defineStore('systemSettings', () => {
   const systemSettings = ref<SystemSettings>([])

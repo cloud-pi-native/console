@@ -1,6 +1,6 @@
 import type { Hook } from './hook.js'
-import { createHook } from './hook.js'
 import type { ClusterObject, ExternalRepoUrl, InternalRepoName, IsInfra, IsPrivate, UserObject } from './index.js'
+import { createHook } from './hook.js'
 
 export interface ResourceQuotaType {
   memory: string

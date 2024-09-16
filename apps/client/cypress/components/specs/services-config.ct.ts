@@ -1,9 +1,9 @@
+import ServicesConfig from '@/components/ServicesConfig.vue'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
-import ServicesConfig from '@/components/ServicesConfig.vue'
 
 const argoto = { to: 'https://argocd.domain.com/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=org-project', name: '' }
 const gitlabto = { to: 'https://gitlab.domain.com/forge-mi/projects/org/project', name: '' }

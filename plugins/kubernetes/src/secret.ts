@@ -1,5 +1,5 @@
-import { Secret } from 'kubernetes-models/v1'
 import type { CoreV1Api, V1ObjectMeta } from '@kubernetes/client-node'
+import { Secret } from 'kubernetes-models/v1'
 
 export type WithMetaType<CR extends object> = CR & {
   metadata: V1ObjectMeta & Required<Pick<V1ObjectMeta, 'name' | 'namespace'>>

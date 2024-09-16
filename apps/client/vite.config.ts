@@ -1,14 +1,14 @@
-import { URL, fileURLToPath } from 'node:url'
-import * as dotenv from 'dotenv'
-import { defineConfig } from 'vite'
-import UnoCSS from 'unocss/vite'
-import vue from '@vitejs/plugin-vue'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
+import { fileURLToPath, URL } from 'node:url'
 import {
   vueDsfrAutoimportPreset,
   vueDsfrComponentResolver,
 } from '@gouvminint/vue-dsfr'
+import vue from '@vitejs/plugin-vue'
+import * as dotenv from 'dotenv'
+import UnoCSS from 'unocss/vite'
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import { defineConfig } from 'vite'
 
 if (process.env.DOCKER !== 'true') {
   dotenv.config({ path: '.env' })

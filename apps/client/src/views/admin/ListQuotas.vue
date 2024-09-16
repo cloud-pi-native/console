@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch } from 'vue'
-import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import type { CreateQuotaBody, Quota, QuotaAssociatedEnvironments, UpdateQuotaBody } from '@cpn-console/shared'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useQuotaStore } from '@/stores/quota.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useStageStore } from '@/stores/stage.js'
+import { sortArrByObjKeyAsc } from '@cpn-console/shared'
+import { computed, onMounted, ref, watch } from 'vue'
 
 type UpdateQuotaType = UpdateQuotaBody & Pick<Quota, 'id'>
 const quotaStore = useQuotaStore()

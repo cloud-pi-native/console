@@ -1,12 +1,12 @@
 import type {
   PluginsUpdateBody,
 } from '@cpn-console/shared'
+import { BadRequest400 } from '@/utils/errors.js'
 import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
 import {
   getAdminPlugin,
   savePluginsConfig,
 } from './queries.js'
-import { BadRequest400 } from '@/utils/errors.js'
 
 export type ConfigRecords = {
   key: string

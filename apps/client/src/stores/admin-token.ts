@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia'
 import type { AdminToken, adminTokenContract } from '@cpn-console/shared'
+import { defineStore } from 'pinia'
 import { apiClient, extractData } from '../api/xhr-client.js'
 
 export const useAdminTokenStore = defineStore('adminToken', () => {

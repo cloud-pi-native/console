@@ -1,5 +1,4 @@
 import type { organizationContract } from '@cpn-console/shared'
-import { OrganizationSchema, getUniqueListBy, objectValues } from '@cpn-console/shared'
 import type { User } from '@prisma/client'
 import prisma from '@/prisma.js'
 import {
@@ -12,6 +11,7 @@ import {
 import { validateSchema } from '@/utils/business.js'
 import { BadRequest400, ErrorResType, NotFound404, Unprocessable422 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
+import { getUniqueListBy, objectValues, OrganizationSchema } from '@cpn-console/shared'
 
 export function listOrganizations(query?: typeof organizationContract.listOrganizations.query._type) {
   return getOrganizations(query)

@@ -12,13 +12,17 @@ describe('Projects view', () => {
     cy.intercept('GET', '/api/v1/stages').as('listStages')
 
     cy.goToProjects()
-      .wait('@listProjects').its('response').then((response) => {
+      .wait('@listProjects')
+      .its('response')
+      .then((response) => {
         cy.log(response?.body.length)
           .get('[data-testid^="projectTile-"]')
           .should('have.length', `${response?.body.length}`)
       })
-      .getByDataTestid(`projectTile-${project.name}`).click()
-      .url().should('contain', `projects/${project.id}/dashboard`)
+      .getByDataTestid(`projectTile-${project.name}`)
+      .click()
+      .url()
+      .should('contain', `projects/${project.id}/dashboard`)
     cy.wait('@listStages')
       .getByDataTestid('currentProjectInfo')
       .should('contain', `Le projet courant est : ${project.name} (${organization.label})`)
@@ -27,7 +31,9 @@ describe('Projects view', () => {
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
     cy.intercept('GET', 'api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
     cy.goToProjects()
-      .wait('@listProjects').its('response').then((_response) => {
+      .wait('@listProjects')
+      .its('response')
+      .then((_response) => {
         cy.get('[data-testid^="projectTile-"]')
           .should('have.length', `${secondUserProjects.length}`)
       })

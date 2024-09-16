@@ -1,8 +1,8 @@
-import { defineStore } from 'pinia'
 import type { CreateRepositoryBody, Repo, RepositoryParams, UpdateRepositoryBody } from '@cpn-console/shared'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 import { useProjectStore } from '@/stores/project.js'
 import { projectMissing } from '@/utils/const.js'
-import { apiClient, extractData } from '@/api/xhr-client.js'
+import { defineStore } from 'pinia'
 
 export const useProjectRepositoryStore = defineStore('project-repository', () => {
   const projectStore = useProjectStore()

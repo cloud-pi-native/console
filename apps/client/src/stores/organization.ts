@@ -1,15 +1,15 @@
-import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
 import type {
   CreateOrganizationBody,
   Organization,
-  UpdateOrganizationBody,
   organizationContract,
+  UpdateOrganizationBody,
 } from '@cpn-console/shared'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 import {
   resourceListToDict,
 } from '@cpn-console/shared'
-import { apiClient, extractData } from '@/api/xhr-client.js'
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
 
 export const useOrganizationStore = defineStore('organization', () => {
   const organizations = ref<Organization[]>([])

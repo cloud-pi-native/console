@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { sortArrByObjKeyAsc } from '@cpn-console/shared'
-import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
+import { useProjectStore } from '@/stores/project.js'
+import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 
 const projectStore = useProjectStore()
 

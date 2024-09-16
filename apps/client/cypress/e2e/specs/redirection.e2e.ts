@@ -65,7 +65,6 @@ describe('Redirection', () => {
     cy.get('input#kc-login').click()
     cy.wait('@postToken')
     cy.url().should('contain', '/')
-    cy.get('h1').contains(' Cloud π Native ')
-      .should('exist')
+    cy.get('h1').contains(' Cloud π Native ').should('exist')
   })
 })

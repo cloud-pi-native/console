@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia'
 import type { projectMemberContract } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
+import { defineStore } from 'pinia'
 
 export const useProjectMemberStore = defineStore('project-member', () => {
   const getMatchingUsers = async (projectId: string, letters: string) =>

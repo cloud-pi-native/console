@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { permissionLevelSchema } from '../utils/permissions.js'
-import { dateToString } from './utils.js'
 import { UserSchema } from './user.js'
+import { dateToString } from './utils.js'
 
 export const TokenSchema = z.object({
   id: z.string().uuid(),

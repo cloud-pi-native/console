@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { onBeforeMount, ref } from 'vue'
-import { type AllUsers, type Role, formatDate, sortArrByObjKeyAsc } from '@cpn-console/shared'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminRoleStore } from '@/stores/admin-role.js'
-import { copyContent } from '@/utils/func.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useUsersStore } from '@/stores/users.js'
+import { copyContent } from '@/utils/func.js'
+import { type AllUsers, formatDate, type Role, sortArrByObjKeyAsc } from '@cpn-console/shared'
+import { onBeforeMount, ref } from 'vue'
 
 const adminRoleStore = useAdminRoleStore()
 const usersStore = useUsersStore()

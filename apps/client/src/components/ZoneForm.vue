@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { computed, onBeforeMount, ref } from 'vue'
 import type { Cluster, CreateZoneBody, Quota, SharedZodError, UpdateZoneBody, Zone } from '@cpn-console/shared'
-import { ZoneSchema } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { ZoneSchema } from '@cpn-console/shared'
+import { computed, onBeforeMount, ref } from 'vue'
 
 const props = withDefaults(defineProps<{
   isNewZone: boolean

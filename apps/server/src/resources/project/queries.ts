@@ -1,14 +1,14 @@
+import type { projectContract, XOR } from '@cpn-console/shared'
 import type {
   Organization,
   Prisma,
   Project,
   User,
 } from '@prisma/client'
+import prisma from '@/prisma.js'
 import {
   ProjectStatus,
 } from '@prisma/client'
-import type { XOR, projectContract } from '@cpn-console/shared'
-import prisma from '@/prisma.js'
 
 type ProjectUpdate = Partial<Pick<Project, 'description' | 'ownerId' | 'everyonePerms' | 'locked'>>
 export function updateProject(id: Project['id'], data: ProjectUpdate) {

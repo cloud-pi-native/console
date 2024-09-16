@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
-import { ProjectAuthorized, type Repo, projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { ProjectAuthorized, projectIsLockedInfo, type Repo, sortArrByObjKeyAsc } from '@cpn-console/shared'
+import { onMounted, ref } from 'vue'
 
 interface RepoTile {
   id: string

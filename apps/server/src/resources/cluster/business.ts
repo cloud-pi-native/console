@@ -1,6 +1,6 @@
+import type { Cluster, clusterContract, ClusterDetails, Kubeconfig, Project } from '@cpn-console/shared'
 import type { Prisma, User } from '@prisma/client'
-import type { Cluster, ClusterDetails, Kubeconfig, Project, clusterContract } from '@cpn-console/shared'
-import { ClusterDetailsSchema, ClusterPrivacy } from '@cpn-console/shared'
+import prisma from '@/prisma.js'
 import {
   addLogs,
   createCluster as createClusterQuery,
@@ -20,9 +20,9 @@ import {
 } from '@/resources/queries-index.js'
 import { linkClusterToStages } from '@/resources/stage/business.js'
 import { validateSchema } from '@/utils/business.js'
-import { hook } from '@/utils/hook-wrapper.js'
 import { BadRequest400, ErrorResType, NotFound404, Unprocessable422 } from '@/utils/errors.js'
-import prisma from '@/prisma.js'
+import { hook } from '@/utils/hook-wrapper.js'
+import { ClusterDetailsSchema, ClusterPrivacy } from '@cpn-console/shared'
 
 export async function listClusters(userId?: User['id']) {
   const where: Prisma.ClusterWhereInput = userId

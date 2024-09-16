@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
 import type { PermissionTarget, PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
+import { computed, ref } from 'vue'
 
 const props = withDefaults(defineProps<{
   services: ProjectService[]

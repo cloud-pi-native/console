@@ -1,3 +1,6 @@
+import { serverInstance } from '@/app.js'
+import { authUser } from '@/utils/controller.js'
+import { ErrorResType, Forbidden403, NotFound404 } from '@/utils/errors.js'
 import { AdminAuthorized, ProjectAuthorized, projectRoleContract } from '@cpn-console/shared'
 import {
   countRolesMembers,
@@ -6,9 +9,6 @@ import {
   listRoles,
   patchRoles,
 } from './business.js'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, NotFound404 } from '@/utils/errors.js'
 
 export function projectRoleRouter() {
   return serverInstance.router(projectRoleContract, {

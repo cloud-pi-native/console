@@ -1,7 +1,7 @@
 import type { Zone } from '@cpn-console/shared'
-import { linkZoneToClusters } from './queries.js'
-import { BadRequest400 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
+import { BadRequest400 } from '@/utils/errors.js'
+import { linkZoneToClusters } from './queries.js'
 
 export const listZones = prisma.zone.findMany
 

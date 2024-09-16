@@ -1,6 +1,6 @@
 import type { Log, Prisma, User } from '@prisma/client'
-import { exclude } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
+import { exclude } from '@cpn-console/shared'
 
 // SELECT
 export function getAllLogsForUser(user: User, offset = 0) {

@@ -1,14 +1,14 @@
-import { type Pinia, createPinia, setActivePinia } from 'pinia'
+import ZoneForm from '@/components/ZoneForm.vue'
 
+import { useSnackbarStore } from '@/stores/snackbar.js'
+import { getRandomCluster, getRandomZone } from '@cpn-console/test-utils'
+import { createPinia, type Pinia, setActivePinia } from 'pinia'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
+
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
-
-import { getRandomCluster, getRandomZone } from '@cpn-console/test-utils'
-import ZoneForm from '@/components/ZoneForm.vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 
 describe('ZoneForm.vue', () => {
   let pinia: Pinia

@@ -1,4 +1,6 @@
+import type { User } from './types.js'
 import { allOrganizations, projectRoles } from '@cpn-console/shared'
+import { repeatFn } from './func-utils.js'
 import {
   getRandomCluster,
   getRandomEnv,
@@ -12,8 +14,6 @@ import {
   getRandomUser,
   getRandomZone,
 } from './random-utils.js'
-import { repeatFn } from './func-utils.js'
-import type { User } from './types.js'
 
 const basicStages = ['dev', 'staging', 'integration', 'prod']
 

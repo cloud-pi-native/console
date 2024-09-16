@@ -1,21 +1,21 @@
 <script lang="ts" setup>
-import { computed, onBeforeMount, ref } from 'vue'
 import type {
   CreateOrganizationBody,
   Organization,
   SharedZodError,
 } from '@cpn-console/shared'
+import { useOrganizationStore } from '@/stores/organization.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import {
-  OrganizationSchema,
   formatDate,
   organizationContract,
+  OrganizationSchema,
   parseZodError,
   sortArrByObjKeyAsc,
 } from '@cpn-console/shared'
+import { computed, onBeforeMount, ref } from 'vue'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import { useOrganizationStore } from '@/stores/organization.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const organizationStore = useOrganizationStore()
 

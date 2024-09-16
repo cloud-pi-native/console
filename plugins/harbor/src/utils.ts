@@ -1,7 +1,7 @@
-import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 import type { RobotCreated } from './api/Api.js'
-import { Api } from './api/Api.js'
 import type { VaultRobotSecret } from './robot.js'
+import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
+import { Api } from './api/Api.js'
 
 const config: {
   url?: string

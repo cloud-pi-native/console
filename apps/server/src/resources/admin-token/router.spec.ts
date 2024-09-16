@@ -1,12 +1,12 @@
+import type { ExposedAdminToken } from '@cpn-console/shared'
+import type { AdminToken } from '@prisma/client'
+import { adminTokenContract } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ExposedAdminToken } from '@cpn-console/shared'
-import { adminTokenContract } from '@cpn-console/shared'
-import type { AdminToken } from '@prisma/client'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
-import { getUserMockInfos } from '../../utils/mocks.js'
 import { BadRequest400 } from '../../utils/errors.js'
+import { getUserMockInfos } from '../../utils/mocks.js'
 import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)

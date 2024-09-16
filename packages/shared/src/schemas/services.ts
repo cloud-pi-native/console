@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { ErrorSchema } from './utils.js'
-import { pluginUpdateBody, pluginsPopulatedManifests } from './config.js'
+import { pluginsPopulatedManifests, pluginUpdateBody } from './config.js'
 import { ProjectParams } from './project.js'
+import { ErrorSchema } from './utils.js'
 
 export const serviceUrl = z.object({
   to: z.string(),

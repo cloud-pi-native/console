@@ -1,5 +1,5 @@
-import KcAdminClient from '@keycloak/keycloak-admin-client'
 import { requiredEnv } from '@cpn-console/shared'
+import KcAdminClient from '@keycloak/keycloak-admin-client'
 
 export const keycloakToken = process.env.KEYCLOAK_ADMIN_PASSWORD
 export const keycloakUser = process.env.KEYCLOAK_ADMIN

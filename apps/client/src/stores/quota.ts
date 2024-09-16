@@ -1,12 +1,12 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 import {
   type CreateQuotaBody,
   type Quota,
-  type UpdateQuotaBody,
   resourceListToDict,
+  type UpdateQuotaBody,
 } from '@cpn-console/shared'
-import { apiClient, extractData } from '@/api/xhr-client.js'
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
 export const useQuotaStore = defineStore('quota', () => {
   const quotas = ref<Quota[]>([])

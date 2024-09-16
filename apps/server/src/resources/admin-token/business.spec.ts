@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
 import type { AdminToken } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
+import { describe, expect, it } from 'vitest'
 import prisma from '../../__mocks__/prisma.js'
 import { createToken, deleteToken, listTokens } from './business.ts'
 

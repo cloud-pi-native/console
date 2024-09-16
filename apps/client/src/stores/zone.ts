@@ -1,12 +1,12 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 import {
   type CreateZoneBody,
+  resourceListToDict,
   type UpdateZoneBody,
   type Zone,
-  resourceListToDict,
 } from '@cpn-console/shared'
-import { apiClient, extractData } from '@/api/xhr-client.js'
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
 export const useZoneStore = defineStore('zone', () => {
   const zones = ref<Zone[]>([])

@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiClient } from '../api/xhr-client.js'
 import { useOrganizationStore } from './organization.js'
 

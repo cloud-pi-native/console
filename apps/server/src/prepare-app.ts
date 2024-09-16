@@ -1,11 +1,11 @@
 import { rm } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { isCI, isDev, isDevSetup, isInt, isProd, isTest, port } from './utils/env.js'
 import app from './app.js'
 import { getConnection } from './connect.js'
 import { initDb } from './init/db/index.js'
 import { initPm } from './plugins.js'
+import { isCI, isDev, isDevSetup, isInt, isProd, isTest, port } from './utils/env.js'
 
 // Workaround because fetch isn't using http_proxy variables
 // See. https://github.com/gajus/global-agent/issues/52#issuecomment-1134525621

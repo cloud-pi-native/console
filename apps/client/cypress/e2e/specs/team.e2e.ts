@@ -10,9 +10,12 @@ describe('Team view', () => {
 
   it('Should display team members', () => {
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project.name}`).click()
-      .getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
+      .getByDataTestid(`projectTile-${project.name}`)
+      .click()
+      .getByDataTestid('menuTeam')
+      .click()
+      .url()
+      .should('contain', `/projects/${project.id}/team`)
       .getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', project.members.length + 1)
@@ -20,9 +23,12 @@ describe('Team view', () => {
 
   it('Should not add a non-existing team member', () => {
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project.name}`).click()
-      .getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
+      .getByDataTestid(`projectTile-${project.name}`)
+      .click()
+      .getByDataTestid('menuTeam')
+      .click()
+      .url()
+      .should('contain', `/projects/${project.id}/team`)
       .getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', project.members.length + 1)
@@ -32,7 +38,8 @@ describe('Team view', () => {
       .clear()
       .type('jenexistepas@criseexistentielle.com')
     cy.getByDataTestid('addUserBtn')
-      .should('be.enabled').click()
+      .should('be.enabled')
+      .click()
 
     cy.getByDataTestid('snackbar').should('contain', 'Utilisateur introuvable')
 
@@ -46,8 +53,7 @@ describe('Team view', () => {
 
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.name}`).click()
-    cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
+    cy.getByDataTestid('menuTeam').click().url().should('contain', `/projects/${project.id}/team`)
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', project.members.length + 1)
@@ -71,7 +77,8 @@ describe('Team view', () => {
     cy.getByDataTestid('userErrorInfo')
       .should('not.exist')
     cy.getByDataTestid('addUserBtn')
-      .should('be.enabled').click()
+      .should('be.enabled')
+      .click()
     cy.wait('@addUser')
       .its('response.statusCode')
       .should('match', /^20\d$/)
@@ -90,8 +97,7 @@ describe('Team view', () => {
 
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.name}`).click()
-    cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
+    cy.getByDataTestid('menuTeam').click().url().should('contain', `/projects/${project.id}/team`)
 
     cy.getByDataTestid('showTransferProjectBtn')
       .should('be.enabled')
@@ -124,8 +130,7 @@ describe('Team view', () => {
 
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.name}`).click()
-    cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
+    cy.getByDataTestid('menuTeam').click().url().should('contain', `/projects/${project.id}/team`)
 
     cy.getByDataTestid('showTransferProjectBtn').click()
     cy.getByDataTestid('transferProjectBtn')
@@ -154,8 +159,7 @@ describe('Team view', () => {
 
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.name}`).click()
-    cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
+    cy.getByDataTestid('menuTeam').click().url().should('contain', `/projects/${project.id}/team`)
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', project.members.length + 1 + 1)

@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { systemSettingsContract } from '@cpn-console/shared'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import app from '../../../app.js'
 import * as utilsController from '../../../utils/controller.js'
 import { getUserMockInfos } from '../../../utils/mocks.js'

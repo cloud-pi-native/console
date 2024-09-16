@@ -1,6 +1,6 @@
+import { serverInstance } from '@/app.js'
 import { serviceContract } from '@cpn-console/shared'
 import { checkServicesHealth } from './business.js'
-import { serverInstance } from '@/app.js'
 
 export function serviceMonitorRouter() {
   return serverInstance.router(serviceContract, {

@@ -1,3 +1,6 @@
+import { serverInstance } from '@/app.js'
+import { authUser } from '@/utils/controller.js'
+import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors.js'
 import { AdminAuthorized, userContract } from '@cpn-console/shared'
 import {
   getMatchingUsers,
@@ -6,9 +9,6 @@ import {
   patchUsers,
 } from './business.js'
 import '@/types/index.js'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors.js'
 
 export function userRouter() {
   return serverInstance.router(userContract, {

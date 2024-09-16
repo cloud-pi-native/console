@@ -1,3 +1,4 @@
+import type { ResourceById } from './types.js'
 /**
  * [FR] ATTENTION ! Ce fichier est la base du système de permissions de l'application.
  * Ces permissions sont basés sur le Bitwise Permissions System. Les modifier à posteriori pourrait être catastrophique niveau sécurité.
@@ -15,7 +16,6 @@
  * https://discord.com/developers/docs/topics/permissions#permissions
  */
 import { z } from 'zod'
-import type { ResourceById } from './types.js'
 
 export function getPermsByUserRoles(userRoles: string[], rolesById: ResourceById<{ id: string, permissions: bigint | string }>, basePerms?: bigint | string) {
   return userRoles.reduce((acc, curr) => {
@@ -76,29 +76,29 @@ export const AdminAuthorized = {
 
 export const ProjectAuthorized = {
   Manage: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
-  || !!(toBigInt(perms.projectPermissions) & PROJECT_PERMS.MANAGE),
+    || !!(toBigInt(perms.projectPermissions) & PROJECT_PERMS.MANAGE),
 
   ListEnvironments: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
-  || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.MANAGE_ENVIRONMENTS | PROJECT_PERMS.MANAGE)),
+    || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.MANAGE_ENVIRONMENTS | PROJECT_PERMS.MANAGE)),
   ListRepositories: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
-  || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.LIST_REPOSITORIES | PROJECT_PERMS.MANAGE_REPOSITORIES | PROJECT_PERMS.MANAGE)),
+    || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.LIST_REPOSITORIES | PROJECT_PERMS.MANAGE_REPOSITORIES | PROJECT_PERMS.MANAGE)),
 
   ManageEnvironments: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
-  || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_ENVIRONMENTS | PROJECT_PERMS.MANAGE)),
+    || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_ENVIRONMENTS | PROJECT_PERMS.MANAGE)),
   ManageRepositories: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
-  || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_REPOSITORIES | PROJECT_PERMS.MANAGE)),
+    || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_REPOSITORIES | PROJECT_PERMS.MANAGE)),
 
   ManageMembers: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
-  || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_MEMBERS | PROJECT_PERMS.MANAGE)),
+    || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_MEMBERS | PROJECT_PERMS.MANAGE)),
 
   ManageRoles: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
-  || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_ROLES | PROJECT_PERMS.MANAGE)),
+    || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_ROLES | PROJECT_PERMS.MANAGE)),
 
   ReplayHooks: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
-  || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.REPLAY_HOOKS | PROJECT_PERMS.MANAGE)),
+    || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.REPLAY_HOOKS | PROJECT_PERMS.MANAGE)),
 
   SeeSecrets: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
-  || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.SEE_SECRETS | PROJECT_PERMS.MANAGE)),
+    || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.SEE_SECRETS | PROJECT_PERMS.MANAGE)),
 } as const
 
 interface ScopePerm<T extends string> {

@@ -1,21 +1,21 @@
 <script lang="ts" setup>
-import type { Ref, UnwrapRef } from 'vue'
-import { computed, onMounted, ref } from 'vue'
 import type {
   projectContract,
 } from '@cpn-console/shared'
+import type { Ref, UnwrapRef } from 'vue'
+import router from '@/router/index.js'
+import { useOrganizationStore } from '@/stores/organization.js'
+import { useProjectStore } from '@/stores/project.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useUserStore } from '@/stores/user.js'
 import {
-  ProjectSchemaV2,
   descriptionMaxLength,
   instanciateSchema,
   parseZodError,
   projectNameMaxLength,
+  ProjectSchemaV2,
 } from '@cpn-console/shared'
-import { useProjectStore } from '@/stores/project.js'
-import { useUserStore } from '@/stores/user.js'
-import { useOrganizationStore } from '@/stores/organization.js'
-import router from '@/router/index.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { computed, onMounted, ref } from 'vue'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()

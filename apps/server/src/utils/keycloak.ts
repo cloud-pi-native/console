@@ -1,5 +1,5 @@
-import { apiPrefix } from '@cpn-console/shared'
 import type { KeycloakOptions } from 'fastify-keycloak-adapter'
+import { apiPrefix } from '@cpn-console/shared'
 import {
   keycloakClientId,
   keycloakClientSecret,

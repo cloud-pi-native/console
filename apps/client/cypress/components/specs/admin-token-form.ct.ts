@@ -1,13 +1,13 @@
-import { type Pinia, createPinia, setActivePinia } from 'pinia'
+import AdminTokenForm from '@/components/AdminTokenForm.vue'
 
+import { useSnackbarStore } from '@/stores/snackbar.js'
+import { createPinia, type Pinia, setActivePinia } from 'pinia'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
+
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
-
-import AdminTokenForm from '@/components/AdminTokenForm.vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 
 describe('AdminTokenForm.vue', () => {
   let pinia: Pinia

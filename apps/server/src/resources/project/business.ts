@@ -1,15 +1,11 @@
-import { json2csv } from 'json-2-csv'
-import { servicesInfos } from '@cpn-console/hooks'
-import type { Project, User } from '@prisma/client'
+import type { UserDetails } from '@/types/index.js'
 import type {
   CreateProjectBody,
-  UpdateProjectBody,
   projectContract,
+  UpdateProjectBody,
 } from '@cpn-console/shared'
-import {
-  ProjectStatusSchema,
-} from '@cpn-console/shared'
-import { logUser } from '../user/business.js'
+import type { Project, User } from '@prisma/client'
+import prisma from '@/prisma.js'
 import {
   addLogs,
   deleteAllEnvironmentForProject,
@@ -22,11 +18,15 @@ import {
   lockProject,
   updateProject as updateProjectQuery,
 } from '@/resources/queries-index.js'
-import { BadRequest400, Unprocessable422 } from '@/utils/errors.js'
 import { whereBuilder } from '@/utils/controller.js'
+import { BadRequest400, Unprocessable422 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
-import type { UserDetails } from '@/types/index.js'
-import prisma from '@/prisma.js'
+import { servicesInfos } from '@cpn-console/hooks'
+import {
+  ProjectStatusSchema,
+} from '@cpn-console/shared'
+import { json2csv } from 'json-2-csv'
+import { logUser } from '../user/business.js'
 
 // Fetch infos
 const projectStatus = ProjectStatusSchema._def.values

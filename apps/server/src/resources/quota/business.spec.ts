@@ -1,6 +1,6 @@
+import type { Quota } from '@prisma/client'
 import { faker } from '@faker-js/faker'
 import { describe, expect, it } from 'vitest'
-import type { Quota } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
 import { BadRequest400, NotFound404 } from '../../utils/errors.ts'
 import { createQuota, deleteQuota, getQuotaAssociatedEnvironments, listQuotas, updateQuota } from './business.ts'

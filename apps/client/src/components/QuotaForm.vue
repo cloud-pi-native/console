@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { computed, onBeforeMount, ref } from 'vue'
-import type { Quota, QuotaAssociatedEnvironments, SharedZodError, Stage, UpdateQuotaBody, quotaContract } from '@cpn-console/shared'
-import { QuotaSchema } from '@cpn-console/shared'
-import { toCodeComponent } from '@/utils/func.js'
+import type { Quota, QuotaAssociatedEnvironments, quotaContract, SharedZodError, Stage, UpdateQuotaBody } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { toCodeComponent } from '@/utils/func.js'
+import { QuotaSchema } from '@cpn-console/shared'
+import { computed, onBeforeMount, ref } from 'vue'
 
 type UpdateQuotaType = UpdateQuotaBody & Pick<Quota, 'id'> & Required<Pick<Quota, 'stageIds' | 'name'>>
 

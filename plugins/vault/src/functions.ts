@@ -1,4 +1,4 @@
-import { type Project, type StepCall, parseError } from '@cpn-console/hooks'
+import { parseError, type Project, type StepCall } from '@cpn-console/hooks'
 
 export const upsertProjectAppRole: StepCall<Project> = async (payload) => {
   try {

@@ -1,6 +1,6 @@
 <script  lang="ts" setup>
-import { type Ref, onBeforeMount, ref } from 'vue'
 import { alertTypeMapper, useServiceStore } from '@/stores/services-monitor.js'
+import { onBeforeMount, type Ref, ref } from 'vue'
 
 const serviceStore = useServiceStore()
 

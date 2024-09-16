@@ -1,9 +1,9 @@
-import { type Project, type ProjectLite, type StepCall, type UniqueRepo, parseError, specificallyDisabled } from '@cpn-console/hooks'
+import type { VaultSecrets } from './utils.js'
+import { parseError, type Project, type ProjectLite, specificallyDisabled, type StepCall, type UniqueRepo } from '@cpn-console/hooks'
 import { deleteGroup } from './group.js'
-import { createUsername, getUser } from './user.js'
 import { ensureMembers } from './members.js'
 import { ensureRepositories } from './repositories.js'
-import type { VaultSecrets } from './utils.js'
+import { createUsername, getUser } from './user.js'
 import { cleanGitlabError, getConfig } from './utils.js'
 
 // Check

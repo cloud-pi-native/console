@@ -1,9 +1,9 @@
 import type { AsyncReturnType } from '@cpn-console/shared'
-import { AdminAuthorized, quotaContract } from '@cpn-console/shared'
-import { createQuota, deleteQuota, getQuotaAssociatedEnvironments, listQuotas, updateQuota } from './business.js'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
 import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
+import { AdminAuthorized, quotaContract } from '@cpn-console/shared'
+import { createQuota, deleteQuota, getQuotaAssociatedEnvironments, listQuotas, updateQuota } from './business.js'
 
 export function quotaRouter() {
   return serverInstance.router(quotaContract, {

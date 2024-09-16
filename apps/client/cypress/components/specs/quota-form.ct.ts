@@ -1,14 +1,14 @@
 import type { Pinia } from 'pinia'
+import QuotaForm from '@/components/QuotaForm.vue'
+import { useQuotaStore } from '@/stores/quota.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
+import { getRandomEnv, getRandomQuota, getRandomStage, repeatFn } from '@cpn-console/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
-import { getRandomEnv, getRandomQuota, getRandomStage, repeatFn } from '@cpn-console/test-utils'
-import QuotaForm from '@/components/QuotaForm.vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useQuotaStore } from '@/stores/quota.js'
 
 describe('QuotaForm.vue', () => {
   let pinia: Pinia
@@ -40,7 +40,8 @@ describe('QuotaForm.vue', () => {
     cy.getByDataTestid('memoryInput')
       .type('5Gi')
     cy.getByDataTestid('cpuInput')
-      .clear().type('3')
+      .clear()
+      .type('3')
     cy.getByDataTestid('input-checkbox-isQuotaPrivateCbx')
       .check({ force: true })
     cy.getByDataTestid('addQuotaBtn').should('be.enabled')
@@ -96,9 +97,7 @@ describe('QuotaForm.vue', () => {
       .click()
     cy.getByDataTestid('updateQuotaBtn').should('be.enabled')
     cy.getByDataTestid('deleteQuotaZone').should('not.exist')
-    cy.getByDataTestid('associatedEnvironmentsTable').should('exist')
-      .find('tbody > tr')
-      .should('have.length', associatedEnvironments.length)
+    cy.getByDataTestid('associatedEnvironmentsTable').should('exist').find('tbody > tr').should('have.length', associatedEnvironments.length)
   })
 
   it('Should mount an update quotaForm without associatedEnvironments', () => {

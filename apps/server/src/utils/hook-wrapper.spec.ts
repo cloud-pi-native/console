@@ -1,6 +1,6 @@
 import type { KubeCluster, KubeUser, Project as ProjectPayload, Store } from '@cpn-console/hooks'
-import { describe, expect, it } from 'vitest'
 import type { ProjectInfos, ReposCreds } from './hook-wrapper.ts'
+import { describe, expect, it } from 'vitest'
 import { transformToHookProject } from './hook-wrapper.ts'
 
 const associatedCluster = {

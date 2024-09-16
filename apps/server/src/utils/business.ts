@@ -1,4 +1,4 @@
-import { type SharedSafeParseReturnType, parseZodError } from '@cpn-console/shared'
+import { parseZodError, type SharedSafeParseReturnType } from '@cpn-console/shared'
 import { BadRequest400 } from './errors.js'
 
 export function validateSchema(schemaValidation: SharedSafeParseReturnType) {

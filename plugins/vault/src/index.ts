@@ -1,8 +1,8 @@
 import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks'
+import { VaultProjectApi } from './class.js'
 import { archiveDsoProject, upsertProjectAppRole } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
-import { VaultProjectApi } from './class.js'
 
 const onlyApi = { api: (project: ProjectLite) => new VaultProjectApi(project) }
 

@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import type { ExposedAdminToken, SharedZodError } from '@cpn-console/shared'
-import { AdminTokenSchema, isAtLeastTomorrow } from '@cpn-console/shared'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminTokenStore } from '@/stores/admin-token.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import { copyContent } from '@/utils/func.js'
+import { AdminTokenSchema, isAtLeastTomorrow } from '@cpn-console/shared'
 
 const emits = defineEmits<{
   create: []

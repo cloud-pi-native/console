@@ -23,20 +23,20 @@
   "dependencies": {
     "@cpn-console/shared": "workspace:^",
     "json-schema": "^0.4.0",
-    "vitest-mock-extended": "^1.3.1",
+    "vitest-mock-extended": "^2.0.2",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
     "@types/json-schema": "^7.0.15",
-    "@types/node": "^20.14.9",
-    "@vitest/coverage-v8": "^1.6.0",
-    "nodemon": "^3.1.4",
-    "rimraf": "^5.0.7",
+    "@types/node": "^22.5.5",
+    "@vitest/coverage-v8": "^2.1.1",
+    "nodemon": "^3.1.5",
+    "rimraf": "^6.0.1",
     "ts-algebra": "^2.0.0",
-    "typescript": "^5.5.2",
-    "undici-types": "^6.19.2"
+    "typescript": "^5.6.2",
+    "undici-types": "^6.19.8"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",

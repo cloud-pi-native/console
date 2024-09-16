@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia'
 import type { PermissionTarget, PluginsUpdateBody, Project, ProjectService } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
+import { defineStore } from 'pinia'
 
 export const useProjectServiceStore = defineStore('serviceProject', () => {
   const services: ProjectService[] = []

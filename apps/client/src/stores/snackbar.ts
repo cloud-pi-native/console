@@ -1,6 +1,6 @@
+import type { ErrorTypes } from '@cpn-console/shared'
 import { defineStore } from 'pinia'
 import { type Ref, ref } from 'vue'
-import type { ErrorTypes } from '@cpn-console/shared'
 
 export const useSnackbarStore = defineStore('snackbar', () => {
   const defaultTimeout: number = 6000

@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { useServiceStore } from '@/stores/services-monitor.js'
 import { apiPrefix } from '@cpn-console/shared'
-import { getKeycloak } from './utils/keycloak/keycloak.js'
 import { useSnackbarStore } from './stores/snackbar.js'
 import { useSystemSettingsStore } from './stores/system-settings.js'
-import { useServiceStore } from '@/stores/services-monitor.js'
+import { getKeycloak } from './utils/keycloak/keycloak.js'
 
 const keycloak = getKeycloak()
 const snackbarStore = useSnackbarStore()

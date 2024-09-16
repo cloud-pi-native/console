@@ -1,5 +1,5 @@
 import type { V1Secret } from '@kubernetes/client-node'
-import { type ClusterObject, type StepCall, parseError } from '@cpn-console/hooks'
+import { type ClusterObject, parseError, type StepCall } from '@cpn-console/hooks'
 import { getConfig, getK8sApi } from './utils.js'
 
 export const upsertCluster: StepCall<ClusterObject> = async (payload) => {

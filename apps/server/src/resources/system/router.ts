@@ -1,5 +1,5 @@
-import { systemContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
+import { systemContract } from '@cpn-console/shared'
 
 export function systemRouter() {
   return serverInstance.router(systemContract, {

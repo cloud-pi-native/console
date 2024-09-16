@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-// @ts-ignore '@gouvminint/vue-dsfr' missing types
-import { getRandomId } from '@gouvminint/vue-dsfr'
-import { ProjectAuthorized } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectMemberStore } from '@/stores/project-member.js'
-import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useUserStore } from '@/stores/user.js'
+import { ProjectAuthorized } from '@cpn-console/shared'
+// @ts-ignore '@gouvminint/vue-dsfr' missing types
+import { getRandomId } from '@gouvminint/vue-dsfr'
 
 const projectStore = useProjectStore()
 const projectMemberStore = useProjectMemberStore()

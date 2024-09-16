@@ -1,20 +1,20 @@
 <script lang="ts" setup>
+import type { Environment, Organization, PluginsUpdateBody, projectContract, ProjectService, ProjectV2, Repo } from '@cpn-console/shared'
+import { useOrganizationStore } from '@/stores/organization.js'
+import { useProjectStore } from '@/stores/project.js'
+import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
+import { useProjectMemberStore } from '@/stores/project-member.js'
+import { useProjectRepositoryStore } from '@/stores/project-repository.js'
+import { useProjectServiceStore } from '@/stores/project-services.js'
+import { useQuotaStore } from '@/stores/quota.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useStageStore } from '@/stores/stage.js'
+import { useUserStore } from '@/stores/user.js'
+import { bts, truncateDescription } from '@/utils/func.js'
+import { formatDate, sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
 import { onBeforeMount, ref } from 'vue'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import type { Environment, Organization, PluginsUpdateBody, ProjectService, ProjectV2, Repo, projectContract } from '@cpn-console/shared'
-import { formatDate, sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useOrganizationStore } from '@/stores/organization.js'
-import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { useUserStore } from '@/stores/user.js'
-import { useQuotaStore } from '@/stores/quota.js'
-import { useProjectServiceStore } from '@/stores/project-services.js'
-import { useProjectRepositoryStore } from '@/stores/project-repository.js'
-import { useProjectStore } from '@/stores/project.js'
-import { useStageStore } from '@/stores/stage.js'
-import { useProjectMemberStore } from '@/stores/project-member.js'
-import { bts, truncateDescription } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const organizationStore = useOrganizationStore()

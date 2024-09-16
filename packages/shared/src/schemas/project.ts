@@ -1,12 +1,12 @@
 import { z } from 'zod'
 import { longestEnvironmentName, projectStatus } from '../utils/const.js'
-import { CoerceBooleanSchema } from '../utils/schemas.js'
 import { permissionLevelSchema } from '../utils/permissions.js'
-import { AtDatesToStringExtend, ErrorSchema } from './utils.js'
-import { RepoSchema } from './repository.js'
-import { MemberSchema, UserSchema } from './user.js'
+import { CoerceBooleanSchema } from '../utils/schemas.js'
 import { OrganizationSchema } from './organization.js'
+import { RepoSchema } from './repository.js'
 import { RoleSchema } from './role.js'
+import { MemberSchema, UserSchema } from './user.js'
+import { AtDatesToStringExtend, ErrorSchema } from './utils.js'
 
 export const descriptionMaxLength = 280
 export const projectNameMaxLength = 20
@@ -119,7 +119,8 @@ export const GetProjectsSchema = {
       filter: z.enum(['owned', 'member', 'all']),
       organizationName: z.string(),
     })
-    .partial().strict(),
+    .partial()
+    .strict(),
   responses: {
     200: ProjectSchema
       .omit({

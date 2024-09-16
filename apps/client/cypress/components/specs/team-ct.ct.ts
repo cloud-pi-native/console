@@ -1,16 +1,16 @@
+import type { ProjectV2 } from '@cpn-console/shared'
 import type { Pinia } from 'pinia'
+import TeamCt from '@/components/TeamCt.vue'
+import { useProjectStore } from '@/stores/project.js'
+import { useUsersStore } from '@/stores/users.js'
+import { createRandomDbSetup, getRandomUser } from '@cpn-console/test-utils'
+import { faker } from '@faker-js/faker'
 import { createPinia, setActivePinia } from 'pinia'
 import '@gouvminint/vue-dsfr/styles'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
-import { createRandomDbSetup, getRandomUser } from '@cpn-console/test-utils'
-import type { ProjectV2 } from '@cpn-console/shared'
-import { faker } from '@faker-js/faker'
-import TeamCt from '@/components/TeamCt.vue'
-import { useProjectStore } from '@/stores/project.js'
-import { useUsersStore } from '@/stores/users.js'
 
 const ownerId = faker.string.uuid()
 const props: {
@@ -50,15 +50,14 @@ describe('TeamCt.vue', () => {
 
     cy.mount(TeamCt, { props })
 
-    cy.getByDataTestid('teamTable').should('be.visible')
-      .within(() => {
-        cy.get('caption')
-          .should('contain', 'Membres du projet')
-        cy.get('tbody > tr')
-          .should('have.length', props.project.members.length + 1) // +1 cause owner is not a member
-        cy.get('thead > tr > th')
-          .should('have.length', 4)
-      })
+    cy.getByDataTestid('teamTable').should('be.visible').within(() => {
+      cy.get('caption')
+        .should('contain', 'Membres du projet')
+      cy.get('tbody > tr')
+        .should('have.length', props.project.members.length + 1) // +1 cause owner is not a member
+      cy.get('thead > tr > th')
+        .should('have.length', 4)
+    })
     cy.getByDataTestid('showTransferProjectBtn')
       .should('be.enabled')
       .should('be.visible')
@@ -70,15 +69,14 @@ describe('TeamCt.vue', () => {
     useProjectStore()
     cy.mount(TeamCt, { props: { ...props, canTransfer: false } })
 
-    cy.getByDataTestid('teamTable').should('be.visible')
-      .within(() => {
-        cy.get('caption')
-          .should('contain', 'Membres du projet')
-        cy.get('tbody > tr')
-          .should('have.length', props.project.members.length + 1) // +1 cause owner is not a member
-        cy.get('thead > tr > th')
-          .should('have.length', 4)
-      })
+    cy.getByDataTestid('teamTable').should('be.visible').within(() => {
+      cy.get('caption')
+        .should('contain', 'Membres du projet')
+      cy.get('tbody > tr')
+        .should('have.length', props.project.members.length + 1) // +1 cause owner is not a member
+      cy.get('thead > tr > th')
+        .should('have.length', 4)
+    })
     cy.getByDataTestid('showTransferProjectBtn')
       .should('not.exist')
     cy.getByDataTestid('addUserSuggestionInput')
@@ -94,15 +92,14 @@ describe('TeamCt.vue', () => {
 
     cy.mount(TeamCt, { props: { ...props, canTransfer: false, canManage: false } })
 
-    cy.getByDataTestid('teamTable').should('be.visible')
-      .within(() => {
-        cy.get('caption')
-          .should('contain', 'Membres du projet')
-        cy.get('tbody > tr')
-          .should('have.length', props.project.members.length + 1) // +1 cause owner is not a member
-        cy.get('thead > tr > th')
-          .should('have.length', 3)
-      })
+    cy.getByDataTestid('teamTable').should('be.visible').within(() => {
+      cy.get('caption')
+        .should('contain', 'Membres du projet')
+      cy.get('tbody > tr')
+        .should('have.length', props.project.members.length + 1) // +1 cause owner is not a member
+      cy.get('thead > tr > th')
+        .should('have.length', 3)
+    })
     cy.getByDataTestid('showTransferProjectBtn')
       .should('not.exist')
     cy.getByDataTestid('addUserSuggestionInput')

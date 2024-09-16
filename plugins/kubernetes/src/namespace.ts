@@ -1,8 +1,8 @@
-import { createHmac } from 'node:crypto'
-import { Namespace } from 'kubernetes-models/v1'
-import { type Project, type StepCall, type UserObject, parseError } from '@cpn-console/hooks'
-import { createCoreV1Api } from './api.js'
 import type { V1NamespacePopulated } from './class.js'
+import { createHmac } from 'node:crypto'
+import { parseError, type Project, type StepCall, type UserObject } from '@cpn-console/hooks'
+import { Namespace } from 'kubernetes-models/v1'
+import { createCoreV1Api } from './api.js'
 
 export type NamespaceProvided = Required<Namespace> & { metadata: Required<Namespace['metadata']> }
 

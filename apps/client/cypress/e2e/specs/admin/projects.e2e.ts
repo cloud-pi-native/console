@@ -1,7 +1,7 @@
 import type { Organization, Project, ProjectV2 } from '@cpn-console/shared'
+import { truncateDescription } from '@/utils/func.js'
 import { formatDate, sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
 import { getModel, getModelById } from '../../support/func.js'
-import { truncateDescription } from '@/utils/func.js'
 
 function checkTableRowsLength(length: number) {
   if (!length) cy.get('tr:last-child>td:first-child').should('have.text', 'Aucun projet trouvé')
@@ -120,8 +120,7 @@ describe('Administration projects', () => {
     cy.intercept('PUT', `/api/v1/projects/${project.id}/hooks`).as('replayHooks')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
-      cy.get('tr').contains(project.name)
-        .click()
+      cy.get('tr').contains(project.name).click()
     })
     cy.get('.fr-callout__title')
       .should('contain', project.name)
@@ -139,8 +138,7 @@ describe('Administration projects', () => {
     cy.intercept('PUT', `/api/v1/projects/${project.id}`).as('handleProjectLocking')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
-      cy.get('tr').contains(project.name)
-        .click()
+      cy.get('tr').contains(project.name).click()
     })
     cy.get('.fr-callout__title')
       .should('contain', project.name)
@@ -172,21 +170,12 @@ describe('Administration projects', () => {
     cy.wait('@getAllProjects')
     cy.get('select#tableAdministrationProjectsFilter').select('Tous')
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
-      cy.get('tr').contains(projectName)
-        .click()
+      cy.get('tr').contains(projectName).click()
     })
     cy.wait('@listQuotas')
     cy.get('.fr-callout__title')
       .should('contain', projectName)
-    cy.getByDataTestid('archiveProjectInput').should('not.exist')
-      .getByDataTestid('showArchiveProjectBtn').click()
-      .getByDataTestid('archiveProjectBtn')
-      .should('be.disabled')
-      .getByDataTestid('archiveProjectInput').should('be.visible')
-      .type(projectName)
-      .getByDataTestid('archiveProjectBtn')
-      .should('be.enabled')
-      .click()
+    cy.getByDataTestid('archiveProjectInput').should('not.exist').getByDataTestid('showArchiveProjectBtn').click().getByDataTestid('archiveProjectBtn').should('be.disabled').getByDataTestid('archiveProjectInput').should('be.visible').type(projectName).getByDataTestid('archiveProjectBtn').should('be.enabled').click()
     cy.wait('@archiveProject')
       .its('response.statusCode')
       .should('match', /^20\d$/)
@@ -228,8 +217,7 @@ describe('Administration projects', () => {
     })
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
-      cy.get('tr').contains(project.name)
-        .click()
+      cy.get('tr').contains(project.name).click()
     })
 
     cy.wait('@getProjectEnvironments', { timeout: 10_000 }).its('response').then((response) => {
@@ -273,8 +261,7 @@ describe('Administration projects', () => {
       })
 
       cy.getByDataTestid('tableAdministrationProjects').within(() => {
-        cy.get('tr').contains(project.name)
-          .click()
+        cy.get('tr').contains(project.name).click()
       })
       cy.wait('@listQuotas')
       cy.get('.fr-callout__title')
@@ -294,8 +281,7 @@ describe('Administration projects', () => {
         .and('be.enabled')
       cy.reload()
       cy.getByDataTestid('tableAdministrationProjects').within(() => {
-        cy.get('tr').contains(project.name)
-          .click()
+        cy.get('tr').contains(project.name).click()
       })
       cy.wait('@listQuotas')
       cy.get('select#quota-select:first')
@@ -316,8 +302,7 @@ describe('Administration projects', () => {
     cy.intercept('POST', `api/v1/projects/${project.id}/members`).as('addUser')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
-      cy.get('tr').contains(project.name)
-        .click()
+      cy.get('tr').contains(project.name).click()
     })
     cy.get('.fr-callout__title')
       .should('contain', project.name)
@@ -353,8 +338,7 @@ describe('Administration projects', () => {
     cy.intercept('PUT', `/api/v1/projects/${project.id}`).as('transferOwnership')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
-      cy.get('tr').contains(project.name)
-        .click()
+      cy.get('tr').contains(project.name).click()
     })
 
     cy.wait('@getServices')
@@ -381,11 +365,7 @@ describe('Administration projects', () => {
       .its('response.statusCode')
       .should('match', /^20\d$/)
 
-    cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire')
-      .should('have.length', 1)
-      .parent()
-      .parent()
-      .should('contain', userToTransfer.email)
+    cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire').should('have.length', 1).parent().parent().should('contain', userToTransfer.email)
 
     cy.getByDataTestid('showTransferProjectBtn').click()
     cy.getByDataTestid('transferProjectBtn')
@@ -399,11 +379,7 @@ describe('Administration projects', () => {
       .its('response.statusCode')
       .should('match', /^20\d$/)
 
-    cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire')
-      .should('have.length', 1)
-      .parent()
-      .parent()
-      .should('contain', owner.email)
+    cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire').should('have.length', 1).parent().parent().should('contain', owner.email)
   })
 
   it('Should access project services, loggedIn as admin', () => {
@@ -412,8 +388,7 @@ describe('Administration projects', () => {
     cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
-      cy.get('tr').contains(project.name)
-        .click()
+      cy.get('tr').contains(project.name).click()
     })
     cy.get('.fr-callout__title')
       .should('contain', project.name)
@@ -432,11 +407,9 @@ describe('Administration projects', () => {
     cy.get('.fr-link--download').should('not.exist')
     cy.getByDataTestid('download-btn')
       .click()
-    cy.get('.fr-link--download').should('exist')
-      .click()
-      .find('span').should(($span) => {
-        const text = $span.text()
-        expect(text).to.match(/CSV – \d* bytes/)
-      })
+    cy.get('.fr-link--download').should('exist').click().find('span').should(($span) => {
+      const text = $span.text()
+      expect(text).to.match(/CSV – \d* bytes/)
+    })
   })
 })

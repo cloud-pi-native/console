@@ -1,9 +1,9 @@
-import { createHash } from 'node:crypto'
-import type { Prisma, User } from '@prisma/client'
-import type { userContract } from '@cpn-console/shared'
-import { getMatchingUsers as getMatchingUsersQuery, getUsers as getUsersQuery } from '@/resources/queries-index.js'
-import prisma from '@/prisma.js'
 import type { UserDetails } from '@/types/index.js'
+import type { userContract } from '@cpn-console/shared'
+import type { Prisma, User } from '@prisma/client'
+import { createHash } from 'node:crypto'
+import prisma from '@/prisma.js'
+import { getMatchingUsers as getMatchingUsersQuery, getUsers as getUsersQuery } from '@/resources/queries-index.js'
 import { BadRequest400 } from '@/utils/errors.js'
 
 export async function getUsers(query: typeof userContract.getAllUsers.query._type, relationType: 'OR' | 'AND' = 'AND') {

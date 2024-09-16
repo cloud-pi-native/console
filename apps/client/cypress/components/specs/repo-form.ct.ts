@@ -1,15 +1,15 @@
-import { type Pinia, createPinia, setActivePinia } from 'pinia'
-import { createRandomDbSetup } from '@cpn-console/test-utils'
+import RepoForm from '@/components/RepoForm.vue'
+import { useProjectStore } from '@/stores/project.js'
 import { fakeToken, missingCredentials } from '@cpn-console/shared'
 
+import { createRandomDbSetup } from '@cpn-console/test-utils'
+import { createPinia, type Pinia, setActivePinia } from 'pinia'
 import '@gouvminint/vue-dsfr/styles'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
+
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
-
-import RepoForm from '@/components/RepoForm.vue'
-import { useProjectStore } from '@/stores/project.js'
 
 describe('RepoForm.vue', () => {
   let pinia: Pinia
@@ -101,18 +101,12 @@ describe('RepoForm.vue', () => {
 
     cy.get('h2').should('contain', 'Modifier le dépôt')
     cy.getByDataTestid('repoFieldset').should('have.length', 1)
-    cy.getByDataTestid('internalRepoNameInput').should('have.value', props.repo.internalRepoName)
-      .and('be.disabled')
-    cy.getByDataTestid('externalRepoUrlInput').should('have.value', props.repo.externalRepoUrl)
-      .and('be.enabled')
-    cy.getByDataTestid('input-checkbox-privateRepoCbx').should('be.checked')
-      .and('be.enabled')
-    cy.getByDataTestid('externalUserNameInput').should('have.value', props.repo.externalUserName)
-      .and('be.enabled')
-    cy.getByDataTestid('externalTokenInput').should('have.value', fakeToken)
-      .and('be.enabled')
-    cy.getByDataTestid('input-checkbox-infraRepoCbx').should('not.be.checked')
-      .and('be.enabled')
+    cy.getByDataTestid('internalRepoNameInput').should('have.value', props.repo.internalRepoName).and('be.disabled')
+    cy.getByDataTestid('externalRepoUrlInput').should('have.value', props.repo.externalRepoUrl).and('be.enabled')
+    cy.getByDataTestid('input-checkbox-privateRepoCbx').should('be.checked').and('be.enabled')
+    cy.getByDataTestid('externalUserNameInput').should('have.value', props.repo.externalUserName).and('be.enabled')
+    cy.getByDataTestid('externalTokenInput').should('have.value', fakeToken).and('be.enabled')
+    cy.getByDataTestid('input-checkbox-infraRepoCbx').should('not.be.checked').and('be.enabled')
     cy.getByDataTestid('standaloneRepoSwitch')
       .find('input')
       .should('not.be.checked')

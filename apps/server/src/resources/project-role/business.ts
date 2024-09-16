@@ -1,5 +1,6 @@
 import type { projectRoleContract } from '@cpn-console/shared'
 import type { Project, ProjectRole } from '@prisma/client'
+import prisma from '@/prisma.js'
 import {
   deleteRole as deleteRoleQuery,
   listMembers,
@@ -7,7 +8,6 @@ import {
   updateRole,
 } from '@/resources/queries-index.js'
 import { BadRequest400 } from '@/utils/errors.js'
-import prisma from '@/prisma.js'
 
 export async function listRoles(projectId: Project['id']) {
   return listRolesQuery(projectId)

@@ -1,6 +1,6 @@
+import { MonitorStatus, type ServiceBody } from '@cpn-console/shared'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { MonitorStatus, type ServiceBody } from '@cpn-console/shared'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import type { DsfrAlertType } from '@gouvminint/vue-dsfr'
 import { apiClient, extractData } from '@/api/xhr-client.js'

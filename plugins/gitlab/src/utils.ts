@@ -1,7 +1,7 @@
-import { Gitlab } from '@gitbeaker/rest'
 import type { Gitlab as IGitlab } from '@gitbeaker/core'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
+import { Gitlab } from '@gitbeaker/rest'
 
 let api: IGitlab | undefined
 

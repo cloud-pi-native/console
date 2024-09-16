@@ -1,5 +1,5 @@
 import { PatchUtils } from '@kubernetes/client-node'
-import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi } from './utils.js'
+import { generateApplicationName, generateAppProjectName, getConfig, getCustomK8sApi } from './utils.js'
 
 export async function fixLabels() {
   const customK8sApi = getCustomK8sApi()

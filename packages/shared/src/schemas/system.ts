@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { ErrorSchema } from './utils.js'
 import { configProjectItemDeclaration, pluginUpdateBody } from './config.js'
+import { ErrorSchema } from './utils.js'
 
 export const pluginSchema = z.object({
   description: z.string()
@@ -59,7 +59,8 @@ export const UpdateSystemPluginSchema = {
 
 export const ListSystemSettingsSchema = {
   query: SystemSettingSchema.pick({ key: true })
-    .partial().strict(),
+    .partial()
+    .strict(),
   responses: {
     200: SystemSettingSchema.array(),
     500: ErrorSchema,

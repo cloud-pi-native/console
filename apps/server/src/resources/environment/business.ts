@@ -1,5 +1,10 @@
-import type { Cluster, Environment, Project, Quota, Stage, User } from '@prisma/client'
+import type { UserDetails } from '@/types/index.js'
+import type {
+  ErrorResType,
+} from '@/utils/errors.js'
 import type { XOR } from '@cpn-console/shared'
+import type { Cluster, Environment, Project, Quota, Stage, User } from '@prisma/client'
+import prisma from '@/prisma.js'
 import {
   addLogs,
   deleteEnvironment as deleteEnvironmentQuery,
@@ -9,17 +14,12 @@ import {
   initializeEnvironment,
   updateEnvironment as updateEnvironmentQuery,
 } from '@/resources/queries-index.js'
-import type { UserDetails } from '@/types/index.js'
-import type {
-  ErrorResType,
-} from '@/utils/errors.js'
 import {
   BadRequest400,
   NotFound404,
   Unprocessable422,
 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
-import prisma from '@/prisma.js'
 
 // Fetch infos
 export async function getEnvironmentInfosAndClusters(environmentId: string) {

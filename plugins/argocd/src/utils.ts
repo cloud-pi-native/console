@@ -1,6 +1,6 @@
 import { createHmac } from 'node:crypto'
-import { CoreV1Api, CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
+import { CoreV1Api, CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
 
 export function generateAppProjectName(org: string, proj: string, env: string) {
   const envHash = createHmac('sha256', '')

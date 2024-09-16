@@ -1,18 +1,18 @@
-import { type Pinia, createPinia, setActivePinia } from 'pinia'
+import EnvironmentForm from '@/components/EnvironmentForm.vue'
+import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
+
+import { useQuotaStore } from '@/stores/quota.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useStageStore } from '@/stores/stage.js'
+import { useZoneStore } from '@/stores/zone.js'
 import { createRandomDbSetup } from '@cpn-console/test-utils'
 
+import { createPinia, type Pinia, setActivePinia } from 'pinia'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
-
-import EnvironmentForm from '@/components/EnvironmentForm.vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
-import { useQuotaStore } from '@/stores/quota.js'
-import { useStageStore } from '@/stores/stage.js'
-import { useZoneStore } from '@/stores/zone.js'
 
 process.env.NODE_ENV = 'test'
 process.env.CT = 'true'
@@ -91,7 +91,8 @@ describe('EnvironmentForm.vue', () => {
     cy.getByDataTestid('cancelEnvironmentBtn').should('be.enabled')
 
     cy.getByDataTestid('environmentNameInput')
-      .clear().type('prod0')
+      .clear()
+      .type('prod0')
     cy.get('select#zone-select > option')
       .should('have.length', zoneStore.zones.length + 1)
 

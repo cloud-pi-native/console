@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
 import type { Member, Project, RoleBigint } from '@cpn-console/shared'
 import { PROJECT_PERMS, projectPermsDetails, shallowEqual } from '@cpn-console/shared'
+import { computed, ref } from 'vue'
 
 const props = defineProps<{
   id: string

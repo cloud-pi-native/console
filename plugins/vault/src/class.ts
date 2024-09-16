@@ -1,8 +1,8 @@
-import type { AxiosInstance } from 'axios'
-import axios from 'axios'
 import type { ProjectLite } from '@cpn-console/hooks'
+import type { AxiosInstance } from 'axios'
 import { PluginApi } from '@cpn-console/hooks'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
+import axios from 'axios'
 
 interface readOptions {
   throwIfNoEntry: boolean
@@ -45,7 +45,9 @@ export class VaultProjectApi extends PluginApi {
   private async getToken() {
     return this.token
       || (await this.axios.post('/v1/auth/token/create'))
-        .data.auth.client_token
+        .data
+        .auth
+        .client_token
   }
 
   public async list(path: string = '/'): Promise<string[]> {
