@@ -112,7 +112,7 @@ const canManageRepos = computed(() => !projectStore.selectedProject?.locked && P
         :disabled="projectStore.selectedProject.locked || !canManageRepos"
         :title="projectStore.selectedProject.locked ? projectIsLockedInfo : 'Ajouter un dépôt'"
         class="fr-mt-2v <md:mb-2"
-        icon="ri-add-line"
+        icon="ri:add-line"
         @click="showNewRepoForm()"
       />
       <div
@@ -124,7 +124,7 @@ const canManageRepos = computed(() => !projectStore.selectedProject?.locked && P
           data-testid="goBackBtn"
           secondary
           icon-only
-          icon="ri-arrow-go-back-line"
+          icon="ri:arrow-go-back-line"
           @click="() => cancel()"
         />
       </div>

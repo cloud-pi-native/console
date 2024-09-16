@@ -124,7 +124,7 @@ watch(clusters, () => {
       tertiary
       title="Ajouter un cluster"
       class="fr-mt-2v <md:mb-2"
-      icon="ri-add-line"
+      icon="ri:add-line"
       @click="showNewClusterForm()"
     />
     <div
@@ -136,7 +136,7 @@ watch(clusters, () => {
         data-testid="goBackBtn"
         secondary
         icon-only
-        icon="ri-arrow-go-back-line"
+        icon="ri:arrow-go-back-line"
         @click="() => cancel()"
       />
     </div>

@@ -147,9 +147,7 @@ describe('Administration stages', () => {
     cy.wait('@createStage').its('response').then(($response) => {
       expect($response?.statusCode).to.not.match(/^20\d$/)
     })
-    cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', 'Un type d\'environnement portant ce nom existe déjà')
-    })
+    cy.getByDataTestid('snackbar').should('contain', 'Un type d\'environnement portant ce nom existe déjà')
   })
 
   it('Should update a stage', () => {

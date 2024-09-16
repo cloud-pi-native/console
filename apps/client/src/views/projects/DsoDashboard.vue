@@ -115,7 +115,7 @@ onBeforeMount(async () => {
         </p>
         <DsfrButton
           class="fr-mt-0"
-          icon="ri-pencil-fill"
+          icon="ri:pencil-fill"
           data-testid="setDescriptionBtn"
           :title="getDynamicTitle(projectStore.selectedProject.locked, projectStore.selectedProject.description)"
           :disabled="projectStore.selectedProject.locked || !ProjectAuthorized.Manage({ projectPermissions: projectStore.selectedProjectPerms })"
@@ -144,7 +144,7 @@ onBeforeMount(async () => {
             data-testid="saveDescriptionBtn"
             label="Enregistrer la description"
             secondary
-            icon="ri-send-plane-line"
+            icon="ri:send-plane-line"
             @click="updateProject(projectStore.selectedProject.id)"
           />
           <DsfrButton
@@ -161,7 +161,7 @@ onBeforeMount(async () => {
       >
         <v-icon
           scale="2"
-          name="ri-heart-pulse-line"
+          name="ri:heart-pulse-line"
           fill="var(--info-425-625)"
         />
         <h3>Monitoring</h3>
@@ -194,7 +194,7 @@ onBeforeMount(async () => {
       <DsfrButton
         data-testid="replayHooksBtn"
         label="Reprovisionner le projet"
-        :icon="{ name: 'ri-refresh-fill', animation: isReprovisionning ? 'spin' : '' }"
+        :icon="{ name: 'ri:refresh-fill', animation: isReprovisionning ? 'spin' : '' }"
         secondary
         @click="replayHooks(projectStore.selectedProject.id ?? '')"
       />
@@ -208,8 +208,8 @@ onBeforeMount(async () => {
         :label="`${isSecretShown ? 'Cacher' : 'Afficher'} les secrets des services`"
         secondary
         :icon="isSearchingSecret
-          ? { name: 'ri-refresh-fill', animation: 'spin' }
-          : isSecretShown ? 'ri-eye-off-line' : 'ri-eye-line'"
+          ? { name: 'ri:refresh-fill', animation: 'spin' }
+          : isSecretShown ? 'ri:eye-off-line' : 'ri:eye-line'"
         @click="handleSecretDisplay()"
       />
       <div
@@ -250,7 +250,7 @@ onBeforeMount(async () => {
           data-testid="showArchiveProjectBtn"
           :label="`Supprimer le projet ${projectStore.selectedProject.name}`"
           primary
-          icon="ri-delete-bin-7-line"
+          icon="ri:delete-bin-7-line"
           @click="isArchivingProject = true"
         />
         <DsfrAlert
@@ -286,7 +286,7 @@ onBeforeMount(async () => {
             :label="`Supprimer définitivement le projet ${projectStore.selectedProject.name}`"
             :disabled="projectToArchive !== projectStore.selectedProject.name"
             secondary
-            icon="ri-delete-bin-7-line"
+            icon="ri:delete-bin-7-line"
             @click="archiveProject(projectStore.selectedProject ? projectStore.selectedProject.id : '')"
           />
           <DsfrButton

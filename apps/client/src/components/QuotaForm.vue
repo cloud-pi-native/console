@@ -153,7 +153,7 @@ onBeforeMount(() => {
         data-testid="addQuotaBtn"
         :disabled="!isQuotaValid"
         primary
-        icon="ri-upload-cloud-line"
+        icon="ri:upload-cloud-line"
         @click="addQuota()"
       />
       <DsfrButton
@@ -162,14 +162,14 @@ onBeforeMount(() => {
         data-testid="updateQuotaBtn"
         :disabled="!isQuotaValid"
         primary
-        icon="ri-upload-cloud-line"
+        icon="ri:upload-cloud-line"
         @click="updateQuota()"
       />
       <DsfrButton
         label="Annuler"
         data-testid="cancelQuotaBtn"
         secondary
-        icon="ri-close-line"
+        icon="ri:close-line"
         @click="cancel()"
       />
     </div>
@@ -204,7 +204,7 @@ onBeforeMount(() => {
           data-testid="showDeleteQuotaBtn"
           :label="`Supprimer le quota ${localQuota.name}`"
           secondary
-          icon="ri-delete-bin-7-line"
+          icon="ri:delete-bin-7-line"
           @click="isDeletingQuota = true"
         />
         <DsfrAlert
@@ -235,7 +235,7 @@ onBeforeMount(() => {
             :disabled="quotaToDelete !== localQuota.name"
             :title="`Supprimer définitivement le quota ${localQuota.name}`"
             secondary
-            icon="ri-delete-bin-7-line"
+            icon="ri:delete-bin-7-line"
             @click="$emit('delete', localQuota.id)"
           />
           <DsfrButton

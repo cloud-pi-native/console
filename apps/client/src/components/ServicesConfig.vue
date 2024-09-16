@@ -103,7 +103,7 @@ function reload() {
           <v-icon
             v-if="service.wrapable"
             :class="`shrink ml-4 ${servicesUnwrapped[service.name] ? 'rotate-90' : ''}`"
-            name="ri-arrow-right-s-line"
+            name="ri:arrow-right-s-line"
           />
         </button>
       </div>
@@ -117,7 +117,7 @@ function reload() {
         <DsfrButton
           :label="url.name"
           :title="url.to"
-          :icon="url.name ? '' : 'ri-external-link-line'"
+          :icon="url.name ? '' : 'ri:external-link-line'"
           :icon-only="!url.name"
         />
       </a>
@@ -148,7 +148,7 @@ function reload() {
           <DsfrButton
             :title="url.to"
             :label="url.name"
-            :icon="url.name ? '' : 'ri-external-link-line'"
+            :icon="url.name ? '' : 'ri:external-link-line'"
             :icon-only="!url.name"
           />
         </a>

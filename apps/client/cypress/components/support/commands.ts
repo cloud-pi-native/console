@@ -1,8 +1,6 @@
 import { mount } from '@cypress/vue'
 import VueDsfr from '@gouvminint/vue-dsfr'
 
-import * as icons from '@/icons.js'
-
 import 'virtual:uno.css'
 import 'uno.css'
 import 'virtual:unocss-devtools'
@@ -17,7 +15,7 @@ Cypress.Commands.add('mount', (component, options = {}) => {
 
   options.global.plugins.push({
     install(app) {
-      app.use(VueDsfr, { icons: Object.values(icons) })
+      app.use(VueDsfr)
     },
   })
 

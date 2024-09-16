@@ -56,9 +56,7 @@ describe('Project roles', () => {
         .click()
       cy.wait('@createRole')
         .its('response.statusCode').should('match', /^20\d$/)
-      cy.getByDataTestid('snackbar').within(() => {
-        cy.get('p').should('contain', 'Rôle ajouté')
-      })
+      cy.getByDataTestid('snackbar').should('contain', 'Rôle ajouté')
       cy.getByDataTestid('saveBtn').should('be.disabled')
       cy.getByDataTestid('roleNameInput')
         .should('have.value', 'Nouveau rôle')
@@ -67,7 +65,7 @@ describe('Project roles', () => {
       cy.getByDataTestid('saveBtn')
         .should('be.enabled')
         .click()
-      cy.getByDataTestid('test-membres').click()
+      cy.getByDataTestid('test-members').click()
       cy.getByDataTestid(`input-checkbox-${user.id}-cbx`).check({ force: true })
     })
 

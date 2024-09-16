@@ -135,7 +135,7 @@ onBeforeMount(() => {
         data-testid="addStageBtn"
         :disabled="!isStageValid"
         primary
-        icon="ri-upload-cloud-line"
+        icon="ri:upload-cloud-line"
         @click="addStage()"
       />
       <DsfrButton
@@ -144,14 +144,14 @@ onBeforeMount(() => {
         data-testid="updateStageBtn"
         :disabled="!isStageValid"
         primary
-        icon="ri-upload-cloud-line"
+        icon="ri:upload-cloud-line"
         @click="updateStage()"
       />
       <DsfrButton
         label="Annuler"
         data-testid="cancelStageBtn"
         secondary
-        icon="ri-close-line"
+        icon="ri:close-line"
         @click="cancel()"
       />
     </div>
@@ -186,7 +186,7 @@ onBeforeMount(() => {
           data-testid="showDeleteStageBtn"
           :label="`Supprimer le type d'environnement ${localStage.name}`"
           secondary
-          icon="ri-delete-bin-7-line"
+          icon="ri:delete-bin-7-line"
           @click="isDeletingStage = true"
         />
         <DsfrAlert
@@ -217,7 +217,7 @@ onBeforeMount(() => {
             :disabled="stageToDelete !== localStage.name"
             :title="`Supprimer définitivement le type d'environnement ${localStage.name}`"
             secondary
-            icon="ri-delete-bin-7-line"
+            icon="ri:delete-bin-7-line"
             @click="$emit('delete', localStage.id)"
           />
           <DsfrButton

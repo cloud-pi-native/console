@@ -17,7 +17,7 @@ withDefaults(defineProps<{
   >
     <div>
       <v-icon
-        name="ri-loader-4-line"
+        name="ri:loader-4-line"
         fill="var(--info-425-625)"
         animation="spin"
       />

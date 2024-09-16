@@ -26,15 +26,17 @@ const currentStart = computed(() => Math.floor(props.page * props.step))
     <div
       class="flex gap-2"
     >
-      <button
-        class="i-ri-arrow-left-double-fill icon-btn fr-btn"
+      <DsfrButton
+        icon="ri:arrow-left-double-fill"
+        :icon-only="true"
         title="Voir la première page"
         :disabled="props.isUpdating || props.page <= 0"
         data-testid="seeFirstPageBtn"
         @click="emit('setPage', 0)"
       />
-      <button
-        class="i-ri-arrow-drop-left-line icon-btn fr-btn"
+      <DsfrButton
+        icon="ri:arrow-drop-left-line"
+        :icon-only="true"
         title="Voir la page précédente"
         :disabled="props.isUpdating || props.page <= 0"
         data-testid="seePreviousPageBtn"
@@ -50,15 +52,17 @@ const currentStart = computed(() => Math.floor(props.page * props.step))
     <div
       class="flex gap-2"
     >
-      <button
-        class="i-ri-arrow-drop-right-line icon-btn fr-btn"
+      <DsfrButton
+        icon="ri:arrow-drop-right-line"
+        :icon-only="true"
         title="Voir la page suivante"
         :disabled="props.isUpdating || props.page >= maxPage"
         data-testid="seeNextPageBtn"
         @click="emit('setPage', Math.min(maxPage, page + 1))"
       />
-      <button
-        class="i-ri-arrow-right-double-line icon-btn fr-btn"
+      <DsfrButton
+        icon="ri:arrow-right-double-line"
+        :icon-only="true"
         title="Voir la dernière page"
         :disabled="props.isUpdating || props.page >= maxPage"
         data-testid="seeLastPageBtn"

@@ -232,12 +232,12 @@ const isConnectionDetailsShown = ref(true)
       </h4>
       <v-icon
         v-if="isConnectionDetailsShown"
-        name="ri-arrow-right-s-line"
+        name="ri:arrow-right-s-line"
         class="shrink ml-4 rotate-90"
       />
       <v-icon
         v-else
-        name="ri-arrow-right-s-line"
+        name="ri:arrow-right-s-line"
         class="shrink ml-4"
       />
     </div>
@@ -391,7 +391,7 @@ const isConnectionDetailsShown = ref(true)
         data-testid="addClusterBtn"
         :disabled="!isClusterValid"
         primary
-        icon="ri-upload-cloud-line"
+        icon="ri:upload-cloud-line"
         @click="addCluster()"
       />
       <DsfrButton
@@ -400,14 +400,14 @@ const isConnectionDetailsShown = ref(true)
         data-testid="updateClusterBtn"
         :disabled="!isClusterValid"
         primary
-        icon="ri-upload-cloud-line"
+        icon="ri:upload-cloud-line"
         @click="updateCluster()"
       />
       <DsfrButton
         label="Annuler"
         data-testid="cancelClusterBtn"
         secondary
-        icon="ri-close-line"
+        icon="ri:close-line"
         @click="cancel()"
       />
     </div>
@@ -442,7 +442,7 @@ const isConnectionDetailsShown = ref(true)
           data-testid="showDeleteClusterBtn"
           :label="`Supprimer le cluster ${localCluster.label}`"
           secondary
-          icon="ri-delete-bin-7-line"
+          icon="ri:delete-bin-7-line"
           @click="isDeletingCluster = true"
         />
         <DsfrAlert
@@ -473,7 +473,7 @@ const isConnectionDetailsShown = ref(true)
             :disabled="clusterToDelete !== localCluster.label"
             :title="`Supprimer définitivement le cluster ${localCluster.label}`"
             secondary
-            icon="ri-delete-bin-7-line"
+            icon="ri:delete-bin-7-line"
             @click="$emit('delete', localCluster.id)"
           />
           <DsfrButton

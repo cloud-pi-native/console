@@ -25,7 +25,7 @@ describe('Create Project', () => {
       .getByDataTestid('createProjectLink').click()
       .get('h1').should('contain', 'Commander un espace projet')
       .get('[data-testid^="repoFieldset-"]').should('not.exist')
-      .get('p.fr-alert__description').should('contain', owner.email)
+    cy.getByDataTestid('ownerInfo').should('contain', owner.email)
       .get('select#organizationId-select').select(project.orgId)
       .getByDataTestid('nameInput').type(`${project.name} ErrorSpace`)
       .getByDataTestid('nameInput').should('have.class', 'fr-input--error')
@@ -52,8 +52,6 @@ describe('Create Project', () => {
       .getByDataTestid('nameInput').type(`${project.name}`)
     cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
     cy.wait('@postProject').its('response.statusCode').should('not.match', /^20\d$/)
-    cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', `Le projet "${project.name}" existe déjà`)
-    })
+    cy.getByDataTestid('snackbar').should('contain', `Le projet "${project.name}" existe déjà`)
   })
 })

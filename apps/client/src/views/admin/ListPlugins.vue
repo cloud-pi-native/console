@@ -93,7 +93,7 @@ function update(data: { value: string, key: string, plugin: string }) {
           >
           <v-icon
             :class="`shrink ml-4 ${servicesUnwrapped[service.name] ? 'rotate-90' : ''}`"
-            name="ri-arrow-right-s-line"
+            name="ri:arrow-right-s-line"
           />
           <h2
             class="inline mb-0 ml-4"
