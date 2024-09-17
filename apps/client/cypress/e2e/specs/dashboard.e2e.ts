@@ -74,9 +74,7 @@ describe('Dashboard', () => {
       .getByDataTestid('showSecretsBtn').click()
 
     cy.wait('@getProjectSecrets').its('response.statusCode').should('match', /^20\d$/)
-    cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', 'Secrets récupérés')
-    })
+    cy.getByDataTestid('snackbar').should('contain', 'Secrets récupérés')
 
     cy.getByDataTestid('projectSecretsZone').should('exist')
     cy.getByDataTestid('noProjectSecretsP').should('contain', 'Aucun secret à afficher')
@@ -96,9 +94,7 @@ describe('Dashboard', () => {
     cy.getByDataTestid('replayHooksBtn').click()
 
     cy.wait('@replayHooks').its('response.statusCode').should('match', /^20\d$/)
-    cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', 'Le projet a été reprovisionné avec succès')
-    })
+    cy.getByDataTestid('snackbar').should('contain', 'Le projet a été reprovisionné avec succès')
   })
 
   it('Should not be able to access project secrets if not owner', () => {

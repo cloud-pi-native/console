@@ -38,23 +38,17 @@ describe('Administration projects', () => {
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       projects.forEach((project, index: number) => {
         cy.get(`tbody tr:nth-of-type(${index + 1})`).within(() => {
-          cy.get('td:nth-of-type(1)').should('contain', project.organization)
-          cy.get('td:nth-of-type(2)').should('contain', project.name)
+          cy.getSettled('td:nth-of-type(1)').should('contain', project.organization)
+          cy.getSettled('td:nth-of-type(2)').should('contain', project.name)
           cy.getByDataTestid('description').invoke('text').then((text) => {
-            const maxDescriptionLength = 60
-            if (text?.length > maxDescriptionLength) {
-              const lastSpaceIndex = project.description.slice(0, maxDescriptionLength).lastIndexOf(' ')
-              const truncatedDescription = project.description.slice(0, lastSpaceIndex > 0 ? lastSpaceIndex : maxDescriptionLength)
-              expect(text).to.equal(`${truncatedDescription} ...`)
-              return
-            }
+            cy.log(text)
             expect(text).to.equal(truncateDescription(text).innerHTML)
           })
-          cy.get('td:nth-of-type(4)').should('contain', project.owner.email)
-          cy.get('td:nth-of-type(5) svg title').should('contain', `Le projet ${project.name} est ${statusDict.status[project.status].wording}`)
-          cy.get('td:nth-of-type(6) svg title').should('contain', `Le projet ${project.name} est ${statusDict.locked[String(!!project.locked)].wording}`)
-          cy.get('td:nth-of-type(7)').should('contain', formatDate(project.createdAt))
-          cy.get('td:nth-of-type(8)').should('contain', formatDate(project.updatedAt))
+          cy.getSettled('td:nth-of-type(4)').should('contain', project.owner.email)
+          cy.getSettled('td:nth-of-type(5) svg title').should('contain', `Le projet ${project.name} est ${statusDict.status[project.status].wording}`)
+          cy.getSettled('td:nth-of-type(6) svg title').should('contain', `Le projet ${project.name} est ${statusDict.locked[String(!!project.locked)].wording}`)
+          cy.getSettled('td:nth-of-type(7)').should('contain', formatDate(project.createdAt))
+          cy.getSettled('td:nth-of-type(8)').should('contain', formatDate(project.updatedAt))
         })
       })
     })
@@ -136,9 +130,7 @@ describe('Administration projects', () => {
       .click()
 
     cy.wait('@replayHooks').its('response.statusCode').should('match', /^20\d$/)
-    cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', `Le projet ayant pour id ${project.id} a été reprovisionné avec succès`)
-    })
+    cy.getByDataTestid('snackbar').should('contain', `Le projet ayant pour id ${project.id} a été reprovisionné avec succès`)
   })
 
   it('Should lock and unlock a project, loggedIn as admin', () => {

@@ -2,14 +2,13 @@ import { AdminAuthorized, ProjectAuthorized, environmentContract } from '@cpn-co
 import { checkEnvironmentInput, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.js'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, NotFound404 } from '@/utils/errors.js'
+import { ErrorResType, Forbidden403, NotFound404, Unauthorized401 } from '@/utils/errors.js'
 
 export function environmentRouter() {
   return serverInstance.router(environmentContract, {
     listEnvironments: async ({ request: req, query }) => {
       const projectId = query.projectId
-      const user = req.session.user
-      const perms = await authUser(user, { id: projectId })
+      const perms = await authUser(req, { id: projectId })
       if (!ProjectAuthorized.ListEnvironments(perms)) return new NotFound404()
 
       const environments = await getProjectEnvironments(projectId)
@@ -22,8 +21,9 @@ export function environmentRouter() {
 
     createEnvironment: async ({ request: req, body: data }) => {
       const projectId = data.projectId
-      const requestor = req.session.user
-      const perms = await authUser(requestor, { id: projectId })
+      const perms = await authUser(req, { id: projectId })
+
+      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
       if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
@@ -53,8 +53,8 @@ export function environmentRouter() {
 
     updateEnvironment: async ({ request: req, body: data, params }) => {
       const { environmentId } = params
-      const user = req.session.user
-      const perms = await authUser(user, { environmentId })
+      const perms = await authUser(req, { environmentId })
+      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
       if (!ProjectAuthorized.ListEnvironments(perms)) return new NotFound404()
       if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
@@ -80,9 +80,9 @@ export function environmentRouter() {
     },
 
     deleteEnvironment: async ({ request: req, params }) => {
-      const user = req.session.user
       const { environmentId } = params
-      const perms = await authUser(user, { environmentId })
+      const perms = await authUser(req, { environmentId })
+      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
       if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')

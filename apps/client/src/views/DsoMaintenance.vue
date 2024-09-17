@@ -20,14 +20,14 @@ function setWindowLocation(to: string) {
   <DsfrCallout
     title="Maintenance"
     content="La console Cloud π Native est actuellement en maintenance. À très vite !"
-    icon="ri-tools-fill"
+    icon="ri:tools-fill"
   />
 
   <DsfrButton
     data-testid="contact-us"
     label="Contactez-nous"
     secondary
-    icon="ri-mail-line"
+    icon="ri:mail-line"
     :title="mail.address"
     @click="setWindowLocation(mail.to)"
   />

@@ -55,7 +55,6 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <DsoSelectedProject />
   <div
     class="flex flex-row"
   >
@@ -70,7 +69,7 @@ onBeforeMount(async () => {
           data-testid="addRoleBtn"
           :class="selectedId ? 'w-11/12' : ''"
           secondary
-          @click="addRole()"
+          @click="addRole"
         />
         <button
           v-for="role in roleList"
@@ -92,7 +91,7 @@ onBeforeMount(async () => {
                 <span>oidc</span>
                 <v-icon
                   class="ml-4"
-                  name="ri-user-shared-2-line"
+                  name="ri:user-shared-2-line"
                 />
               </template>
               <template v-else>
@@ -101,7 +100,7 @@ onBeforeMount(async () => {
                 </span>
                 <v-icon
                   class="ml-4"
-                  name="ri-team-line"
+                  name="ri:team-line"
                 />
               </template>
             </div>

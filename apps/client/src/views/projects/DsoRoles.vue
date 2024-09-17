@@ -120,7 +120,7 @@ const cancel = () => selectedId.value = undefined
               <span>{{ role.memberCounts }}</span>
               <v-icon
                 class="ml-4"
-                name="ri-team-line"
+                name="ri:team-line"
               />
             </div>
           </button>

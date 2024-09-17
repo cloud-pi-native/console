@@ -8,6 +8,6 @@ export type UserDetails = {
 
 declare module 'fastify' {
   interface Session {
-    user: UserDetails
+    user?: UserDetails
   }
 }

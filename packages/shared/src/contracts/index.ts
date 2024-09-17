@@ -1,3 +1,4 @@
+export * from './admin-token.js'
 export * from './admin-role.js'
 export * from './cluster.js'
 export * from './environment.js'

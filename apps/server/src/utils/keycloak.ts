@@ -1,4 +1,5 @@
 import { apiPrefix } from '@cpn-console/shared'
+import type { KeycloakOptions } from 'fastify-keycloak-adapter'
 import {
   keycloakClientId,
   keycloakClientSecret,
@@ -8,36 +9,22 @@ import {
   keycloakRedirectUri,
   sessionSecret,
 } from './env.js'
-
-interface KeycloakPayload {
-  sub: string
-  email: string
-  given_name: string
-  family_name: string
-  groups: string[]
-}
-function userPayloadMapper(userPayload: KeycloakPayload) {
-  return {
-    id: userPayload.sub,
-    email: userPayload.email,
-    firstName: userPayload.given_name,
-    lastName: userPayload.family_name,
-    groups: userPayload.groups || [],
-  }
-}
+import { bypassFn, userPayloadMapper } from './keycloak-utils.js'
 
 export const keycloakConf = {
   appOrigin: keycloakRedirectUri ?? 'http://localhost:8080',
   keycloakSubdomain: `${keycloakDomain}/realms/${keycloakRealm}`,
-  clientId: keycloakClientId,
-  clientSecret: keycloakClientSecret,
+  clientId: keycloakClientId ?? '',
+  clientSecret: keycloakClientSecret ?? '',
   useHttps: keycloakProtocol === 'https',
   disableCookiePlugin: true,
   disableSessionPlugin: true,
+  // @ts-ignore
   userPayloadMapper,
   retries: 5,
   excludedPatterns: [`${apiPrefix}/version`, `${apiPrefix}/healthz`, `${apiPrefix}/swagger-ui/**`, `${apiPrefix}/services`],
-}
+  bypassFn,
+} as const satisfies KeycloakOptions
 
 export const sessionConf = {
   cookieName: 'sessionId',
@@ -46,5 +33,5 @@ export const sessionConf = {
     httpOnly: true,
     secure: true,
   },
-  expires: 1800000,
+  expires: 1_800_000,
 }

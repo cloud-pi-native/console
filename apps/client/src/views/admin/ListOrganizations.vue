@@ -257,7 +257,7 @@ onBeforeMount(async () => {
         data-testid="addOrgBtn"
         label="Ajouter l'organisation"
         secondary
-        icon="ri-user-add-line"
+        icon="ri:user-add-line"
         :disabled="!!errorSchema || isOrgAlreadyTaken"
         @click="createOrganization()"
       />
@@ -272,7 +272,7 @@ onBeforeMount(async () => {
         data-testid="syncOrgsBtn"
         label="Synchroniser les organisations"
         primary
-        icon="ri-exchange-line"
+        icon="ri:exchange-line"
         :disabled="isSyncingOrganizations"
         @click="syncOrganizations()"
       />

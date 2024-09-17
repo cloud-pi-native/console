@@ -17,8 +17,7 @@ export function zoneRouter() {
     },
 
     createZone: async ({ request: req, body: data }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const body = await createZone(data)
@@ -31,8 +30,7 @@ export function zoneRouter() {
     },
 
     updateZone: async ({ request: req, params, body: data }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const zoneId = params.zoneId
@@ -47,8 +45,7 @@ export function zoneRouter() {
     },
 
     deleteZone: async ({ request: req, params }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
       const zoneId = params.zoneId
 

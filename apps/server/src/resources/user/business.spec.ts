@@ -1,9 +1,8 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { AdminRole, User } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
 import type { UserDetails } from '../../types/index.ts'
-import { getMatchingUsers, getUsers, logUser, patchUsers } from './business.ts'
+import { TokenSearchResult, getMatchingUsers, getUsers, logAdminToken, logUser, patchUsers } from './business.ts'
 import * as queries from './queries.js'
 
 const getUsersQueryMock = vi.spyOn(queries, 'getUsers')
@@ -14,7 +13,7 @@ describe('test users business', () => {
     vi.resetAllMocks()
   })
 
-  const user: User = {
+  const user = {
     adminRoleIds: [],
     createdAt: new Date(),
     email: faker.internet.email(),
@@ -56,15 +55,15 @@ describe('test users business', () => {
       await getUsers({})
 
       expect(getUsersQueryMock).toHaveBeenCalledTimes(1)
-      expect(getUsersQueryMock).toHaveBeenCalledWith({})
+      expect(getUsersQueryMock).toHaveBeenCalledWith({ AND: [] })
     })
     it('should query with filter adminRoleIds', async () => {
       prisma.user.update.mockResolvedValue(null)
 
-      await getUsers({ adminRoleId })
+      await getUsers({ adminRoleIds: [adminRoleId] })
 
       expect(getUsersQueryMock).toHaveBeenCalledTimes(1)
-      expect(getUsersQueryMock).toHaveBeenCalledWith({ adminRoleIds: { has: adminRoleId } })
+      expect(getUsersQueryMock).toHaveBeenCalledWith({ AND: [{ adminRoleIds: { hasSome: [adminRoleId] } }] })
     })
   })
 
@@ -124,7 +123,7 @@ describe('test users business', () => {
   })
   describe('logUser', () => {
     // ça ne teste pas tout mais c'est déjà bien hein
-    const adminRoles: AdminRole[] = [{
+    const adminRoles = [{
       id: faker.string.uuid(),
       name: faker.company.name(),
       oidcGroup: '',
@@ -169,5 +168,51 @@ describe('test users business', () => {
       const response = await logUser(userToLog, false)
       expect(response.adminPerms).toBeUndefined()
     })
+  })
+})
+
+describe('logAdminToken', () => {
+  const nextYear = new Date()
+  const lastYear = new Date()
+  nextYear.setFullYear((new Date()).getFullYear() + 1)
+  lastYear.setFullYear((new Date()).getFullYear() - 1)
+  const baseToken = {
+    createdAt: new Date(),
+    hash: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+    id: faker.string.uuid(),
+    lastUse: null,
+    permissions: 2n,
+    userId: null,
+    status: 'active',
+  } as const
+
+  it('should return identity', async () => {
+    prisma.adminToken.findFirst.mockResolvedValueOnce({ ...baseToken })
+    const identity = await logAdminToken('test')
+    expect(identity.adminPerms).toBe(2n)
+  })
+
+  it('should return identity, with expirationDate', async () => {
+    prisma.adminToken.findFirst.mockResolvedValueOnce({ ...baseToken, expirationDate: nextYear })
+    const identity = await logAdminToken('test')
+    expect(identity.adminPerms).toBe(2n)
+  })
+
+  it('should return cause revoked', async () => {
+    prisma.adminToken.findFirst.mockResolvedValueOnce({ ...baseToken, status: 'revoked' })
+    const identity = await logAdminToken('test')
+    expect(identity).toBe(TokenSearchResult.INACTIVE)
+  })
+
+  it('should return cause expired', async () => {
+    prisma.adminToken.findFirst.mockResolvedValueOnce({ ...baseToken, expirationDate: lastYear })
+    const identity = await logAdminToken('test')
+    expect(identity).toBe(TokenSearchResult.EXPIRED)
+  })
+
+  it('should return cause not found', async () => {
+    prisma.adminToken.findFirst.mockResolvedValueOnce(undefined)
+    const identity = await logAdminToken('test')
+    expect(identity).toBe(TokenSearchResult.NOT_FOUND)
   })
 })

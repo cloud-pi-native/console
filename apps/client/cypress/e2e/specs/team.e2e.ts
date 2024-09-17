@@ -34,9 +34,7 @@ describe('Team view', () => {
     cy.getByDataTestid('addUserBtn')
       .should('be.enabled').click()
 
-    cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', 'Utilisateur introuvable')
-    })
+    cy.getByDataTestid('snackbar').should('contain', 'Utilisateur introuvable')
 
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')

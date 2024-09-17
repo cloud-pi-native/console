@@ -2,7 +2,7 @@ import type { Project, Repository } from '@cpn-console/hooks'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import type { CondensedProjectSchema, ProjectSchema } from '@gitbeaker/rest'
 import { shallowEqual } from '@cpn-console/shared'
-import type { GitlabProjectApi } from './class.js'
+import { type GitlabProjectApi, pluginManagedTopic } from './class.js'
 import { provisionMirror } from './project.js'
 import { infraAppsRepoName, internalMirrorRepoName } from './utils.js'
 
@@ -20,6 +20,7 @@ export async function ensureRepositories(gitlabApi: GitlabProjectApi, project: P
     ...gitlabRepositories
       .filter(gitlabRepository => (
         !specialRepos.includes(gitlabRepository.name)
+        && !gitlabRepository.topics?.includes(pluginManagedTopic)
         && !project.repositories.find(repo => repo.internalRepoName === gitlabRepository.name,
         )))
       .map(gitlabRepository => gitlabApi.deleteRepository(gitlabRepository.id)),

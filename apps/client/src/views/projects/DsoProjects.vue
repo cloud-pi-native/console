@@ -32,7 +32,7 @@ function goToCreateProject() {
       data-testid="createProjectLink"
       tertiary
       class="fr-mt-2v <md:mb-2"
-      icon="ri-add-line"
+      icon="ri:add-line"
       @click="goToCreateProject()"
     />
   </div>

@@ -3,7 +3,7 @@ import { userContract } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
-import { getUserMockInfos } from '../../utils/mocks.js'
+import { getUserMockInfos, setRequestor } from '../../utils/mocks.js'
 import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
@@ -45,6 +45,7 @@ describe('test userContract', () => {
         firstName: faker.person.firstName(),
         lastName: faker.person.lastName(),
       }
+      setRequestor(user)
       businessLogMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()

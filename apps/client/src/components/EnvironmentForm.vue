@@ -273,14 +273,14 @@ watch(localEnvironment.value, () => {
             :disabled="props.isProjectLocked || !!errorSchema"
             :title="props.isProjectLocked ? projectIsLockedInfo : 'Enregistrer les changements'"
             primary
-            icon="ri-upload-cloud-line"
+            icon="ri:upload-cloud-line"
             @click="putEnvironment()"
           />
           <DsfrButton
             label="Annuler"
             data-testid="cancelEnvironmentBtn"
             secondary
-            icon="ri-close-line"
+            icon="ri:close-line"
             @click="cancel()"
           />
         </div>
@@ -299,7 +299,7 @@ watch(localEnvironment.value, () => {
             :label="`Supprimer l'environnement ${localEnvironment.name}`"
             secondary
             :disabled="props.isProjectLocked"
-            icon="ri-delete-bin-7-line"
+            icon="ri:delete-bin-7-line"
             @click="isDeletingEnvironment = true"
           />
           <DsfrAlert
@@ -330,7 +330,7 @@ watch(localEnvironment.value, () => {
               :disabled="environmentToDelete !== localEnvironment.name"
               :title="`Supprimer définitivement l'environnement ${localEnvironment.name}`"
               secondary
-              icon="ri-delete-bin-7-line"
+              icon="ri:delete-bin-7-line"
               @click="emit('deleteEnvironment', localEnvironment.id)"
             />
             <DsfrButton
@@ -352,14 +352,14 @@ watch(localEnvironment.value, () => {
         :disabled="props.isProjectLocked || !!errorSchema"
         :title="props.isProjectLocked ? projectIsLockedInfo : 'Ajouter l\'environnement'"
         primary
-        icon="ri-upload-cloud-line"
+        icon="ri:upload-cloud-line"
         @click="addEnvironment()"
       />
       <DsfrButton
         label="Annuler"
         data-testid="cancelEnvironmentBtn"
         secondary
-        icon="ri-close-line"
+        icon="ri:close-line"
         @click="cancel()"
       />
     </div>

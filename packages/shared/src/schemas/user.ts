@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { AtDatesToStringExtend, ErrorSchema } from './utils.js'
+import { AtDatesToStringExtend, ErrorSchema, UuidOrCsvUuidSchema } from './utils.js'
+import { RoleNameCsvSchema } from './role.js'
 
 export const UserSchema = z.object({
   id: z.string()
@@ -108,3 +109,14 @@ export const UpdateUserAdminRoleSchema = {
     500: ErrorSchema,
   },
 }
+
+export const UserQuerySchema = z.object({
+  adminRoles: RoleNameCsvSchema
+    .optional(),
+  adminRoleIds: UuidOrCsvUuidSchema
+    .optional(),
+  memberOfIds: UuidOrCsvUuidSchema
+    .optional(),
+  relationType: z.enum(['OR', 'AND'])
+    .optional(),
+})

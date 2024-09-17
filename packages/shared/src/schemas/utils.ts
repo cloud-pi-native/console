@@ -7,8 +7,16 @@ export const ErrorSchema = z.object({
   stack: z.unknown().optional(),
 })
 
-const dateToString = z.string().or(z.date().transform(date => date.toISOString()))
+export const dateToString = z.string().or(z.date().transform(date => date.toISOString()))
 export const AtDatesToStringExtend = {
   updatedAt: dateToString,
   createdAt: dateToString,
 }
+
+export const UuidOrCsvUuidSchema = z.string()
+  .refine((value) => {
+    return !value
+      .split(',')
+      .some(uuid => !z.string().uuid().safeParse(uuid).success)
+  })
+  .transform(value => value.split(','))

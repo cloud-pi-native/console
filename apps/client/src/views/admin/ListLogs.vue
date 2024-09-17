@@ -81,7 +81,7 @@ onMounted(async () => {
         :title="hideLogDetails ? 'Afficher les logs en entier' : 'Masquer les clés non essentielles des logs'"
         secondary
         icon-only
-        :icon="hideLogDetails ? 'ri-filter-off-fill' : 'ri-filter-fill'"
+        :icon="hideLogDetails ? 'ri:filter-off-fill' : 'ri:filter-fill'"
         @click="hideLogDetails = !hideLogDetails"
       />
       <DsfrButton
@@ -89,7 +89,7 @@ onMounted(async () => {
         :title="hideLogs ? 'Afficher les logs' : 'Masquer les logs'"
         secondary
         icon-only
-        :icon="hideLogs ? 'ri-eye-off-fill' : 'ri-eye-fill'"
+        :icon="hideLogs ? 'ri:eye-off-fill' : 'ri:eye-fill'"
         @click="hideLogs = !hideLogs"
       />
       <DsfrButton
@@ -97,7 +97,7 @@ onMounted(async () => {
         title="Renouveler l'appel"
         secondary
         icon-only
-        icon="ri-refresh-fill"
+        icon="ri:refresh-fill"
         :disabled="isUpdating"
         @click="showLogs(page)"
       />

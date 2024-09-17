@@ -61,9 +61,7 @@ describe('Administration organizations', () => {
       .should('be.enabled')
       .click()
 
-    cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', `Organisation ${newOrg.name} créée`)
-    })
+    cy.getByDataTestid('snackbar').should('contain', `Organisation ${newOrg.name} créée`)
 
     cy.getByDataTestid('tableAdministrationOrganizations').within(() => {
       cy.getByDataTestid(`${newOrg.name}-label-input`)
@@ -132,9 +130,7 @@ describe('Administration organizations', () => {
     cy.wait('@putOrganization')
     cy.wait('@getAllOrganizations')
 
-    cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', `Organisation ${newOrg.name} mise à jour`)
-    })
+    cy.getByDataTestid('snackbar').should('contain', `Organisation ${newOrg.name} mise à jour`)
 
     cy.visit('/projects/create-project')
       .get(`select#organizationId-select > option[value="${organizations[0].id}"]`)
@@ -163,9 +159,7 @@ describe('Administration organizations', () => {
       cy.getByDataTestid('confirmUpdateBtn')
         .click()
     })
-    cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', `Organisation ${organization.name} mise à jour`)
-    })
+    cy.getByDataTestid('snackbar').should('contain', `Organisation ${organization.name} mise à jour`)
 
     cy.visit('/projects')
       .wait('@listProjects')
@@ -198,9 +192,7 @@ describe('Administration organizations', () => {
       cy.getByDataTestid('confirmUpdateBtn')
         .click()
     })
-    cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', `Organisation ${organization.name} mise à jour`)
-    })
+    cy.getByDataTestid('snackbar').should('contain', `Organisation ${organization.name} mise à jour`)
 
     cy.visit('/projects')
     cy.getByDataTestid(`projectTile-${projectFailed.name}`)

@@ -89,6 +89,7 @@ onMounted(async () => {
     >
       <DsfrAlert
         type="info"
+        data-testid="ownerInfo"
         :description="`L'adresse e-mail du souscripteur associé au projet sera : ${userStore.userProfile?.email}`"
         small
         class="fr-mb-2w"
@@ -148,7 +149,7 @@ onMounted(async () => {
       primary
       class="fr-mt-2w"
       :disabled="!project.organizationId || !!errorSchema"
-      icon="ri-send-plane-line"
+      icon="ri:send-plane-line"
       @click="createProject()"
     />
     <LoadingCt

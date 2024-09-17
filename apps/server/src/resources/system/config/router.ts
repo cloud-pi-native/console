@@ -8,8 +8,7 @@ export function pluginConfigRouter() {
   return serverInstance.router(systemPluginContract, {
   // Récupérer les configurations plugins
     getPluginsConfig: async ({ request: req }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const services = await getPluginsConfig()
@@ -22,8 +21,7 @@ export function pluginConfigRouter() {
     },
     // Mettre à jour les configurations plugins
     updatePluginsConfig: async ({ request: req, body }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const resBody = await updatePluginConfig(body)

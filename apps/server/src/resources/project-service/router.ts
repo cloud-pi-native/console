@@ -8,8 +8,7 @@ export function projectServiceRouter() {
   return serverInstance.router(projectServiceContract, {
   // Récupérer les services d'un projet
     getServices: async ({ request: req, params: { projectId }, query }) => {
-      const user = req.session.user
-      const perms = await authUser(user, { id: projectId })
+      const perms = await authUser(req, { id: projectId })
       if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
       if (!AdminAuthorized.isAdmin(perms.adminPermissions) && query.permissionTarget === 'admin') return new Forbidden403('Vous ne pouvez pas demander les paramètres admin')
 
@@ -22,8 +21,7 @@ export function projectServiceRouter() {
     },
 
     updateProjectServices: async ({ request: req, params: { projectId }, body }) => {
-      const user = req.session.user
-      const perms = await authUser(user, { id: projectId })
+      const perms = await authUser(req, { id: projectId })
       if (!ProjectAuthorized.Manage(perms)) return new NotFound404()
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')

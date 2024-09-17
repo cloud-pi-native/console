@@ -6,7 +6,6 @@ import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import {
-  ohVueIconAutoimportPreset,
   vueDsfrAutoimportPreset,
   vueDsfrComponentResolver,
 } from '@gouvminint/vue-dsfr'
@@ -57,8 +56,6 @@ export default defineConfig({
         'pinia',
         // @ts-ignore
         vueDsfrAutoimportPreset,
-        // @ts-ignore
-        ohVueIconAutoimportPreset,
       ],
       vueTemplate: true,
       dts: './src/auto-imports.d.ts',
@@ -87,7 +84,7 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
-    dedupe: ['vue', 'oh-vue-icons'],
+    dedupe: ['vue'],
   },
   build: {
     target: 'ESNext',
@@ -97,7 +94,6 @@ export default defineConfig({
       './cypress/components/specs/environment-form.ct.ts',
     ],
     include: [
-      'oh-vue-icons',
       'jszip',
     ],
   },

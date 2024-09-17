@@ -1,0 +1,12 @@
+diff --git a/dist/keycloak.d.ts b/dist/keycloak.d.ts
+index 96573b66aa5b6047a772496af1c0447913f1a5ee..0310ebaac2b4b1f47cbe6d67ea7189785d2f865e 100644
+--- a/dist/keycloak.d.ts
++++ b/dist/keycloak.d.ts
+@@ -4,7 +4,6 @@ import * as t from 'io-ts';
+ declare module '@fastify/session' {
+     interface FastifySessionObject {
+         grant: GrantSession;
+-        user: unknown;
+     }
+ }
+ export type DefaultToken = {

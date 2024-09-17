@@ -131,7 +131,7 @@ onBeforeMount(() => {
         data-testid="addZoneBtn"
         :disabled="!isZoneValid"
         primary
-        icon="ri-upload-cloud-line"
+        icon="ri:upload-cloud-line"
         @click="addZone()"
       />
       <DsfrButton
@@ -140,14 +140,14 @@ onBeforeMount(() => {
         data-testid="updateZoneBtn"
         :disabled="!isZoneValid"
         primary
-        icon="ri-upload-cloud-line"
+        icon="ri:upload-cloud-line"
         @click="updateZone()"
       />
       <DsfrButton
         label="Annuler"
         data-testid="cancelZoneBtn"
         secondary
-        icon="ri-close-line"
+        icon="ri:close-line"
         @click="cancel()"
       />
     </div>
@@ -169,7 +169,7 @@ onBeforeMount(() => {
           data-testid="showDeleteZoneBtn"
           :label="`Supprimer la zone ${localZone.slug}`"
           secondary
-          icon="ri-delete-bin-7-line"
+          icon="ri:delete-bin-7-line"
           @click="isDeletingZone = true"
         />
         <DsfrAlert
@@ -200,7 +200,7 @@ onBeforeMount(() => {
             :disabled="zoneToDelete !== localZone.slug"
             :title="`Supprimer définitivement la zone ${localZone.slug}`"
             secondary
-            icon="ri-delete-bin-7-line"
+            icon="ri:delete-bin-7-line"
             @click="$emit('delete', localZone.id)"
           />
           <DsfrButton

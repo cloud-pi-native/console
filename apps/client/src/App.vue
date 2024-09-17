@@ -18,7 +18,7 @@ const appVersion: string = process.env.APP_VERSION ? `v${process.env.APP_VERSION
 const quickLinks = ref([{
   label,
   to,
-  icon: 'ri-account-circle-line',
+  icon: 'ri:account-circle-line',
   iconRight: true,
 }])
 

@@ -3,7 +3,7 @@ import type { userContract } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useUsersStore = defineStore('users', () => {
-  const listUsers = async (query: typeof userContract.getAllUsers.query._type) =>
+  const listUsers = async (query: typeof userContract.getAllUsers.query._input) =>
     apiClient.Users.getAllUsers({ query })
       .then(res => extractData(res, 200))
 

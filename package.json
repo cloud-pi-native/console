@@ -3,7 +3,7 @@
   "type": "module",
   "version": "8.11.1",
   "private": true,
-  "packageManager": "pnpm@9.7.1",
+  "packageManager": "pnpm@9.10.0",
   "scripts": {
     "build": "turbo run build --color --no-daemon",
     "build:clean": "turbo run build:clean --no-daemon",
@@ -72,13 +72,11 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "fastify-keycloak-adapter@2.1.6": "patches/fastify-keycloak-adapter@2.1.6.patch",
-      "fastify-keycloak-adapter@2.1.9": "patches/fastify-keycloak-adapter@2.1.9.patch",
-      "fastify-keycloak-adapter@2.1.10": "patches/fastify-keycloak-adapter@2.1.10.patch"
+      "fastify-keycloak-adapter@2.2.0": "patches/fastify-keycloak-adapter@2.2.0.patch"
     },
     "allowNonAppliedPatches": true
   },
   "volta": {
-    "node": "20.16.0"
+    "node": "20.17.0"
   }
 }

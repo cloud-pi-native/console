@@ -188,9 +188,7 @@ describe('Administration zones', () => {
       .click()
 
     cy.wait('@createZone').its('response.statusCode').should('match', /^40\d$/)
-    cy.getByDataTestid('snackbar').within(() => {
-      cy.get('p').should('contain', `Une zone portant le nom ${newZone.slug} existe déjà.`)
-    })
+    cy.getByDataTestid('snackbar').should('contain', `Une zone portant le nom ${newZone.slug} existe déjà.`)
   })
 
   it('Should not delete a zone if associated clusters', () => {

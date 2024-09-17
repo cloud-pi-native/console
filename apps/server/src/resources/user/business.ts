@@ -1,15 +1,33 @@
+import { createHash } from 'node:crypto'
 import type { Prisma, User } from '@prisma/client'
 import type { userContract } from '@cpn-console/shared'
 import { getMatchingUsers as getMatchingUsersQuery, getUsers as getUsersQuery } from '@/resources/queries-index.js'
 import prisma from '@/prisma.js'
 import type { UserDetails } from '@/types/index.js'
 
-export function getUsers(query: typeof userContract.getAllUsers.query._type) {
-  const where: Prisma.UserWhereInput = {}
-  if (query.adminRoleId) {
-    where.adminRoleIds = { has: query.adminRoleId }
+export async function getUsers(query: typeof userContract.getAllUsers.query._type, relationType: 'OR' | 'AND' = 'AND') {
+  const adminRoleIds = [
+    ...query.adminRoleIds ?? [],
+    ...query.adminRoles
+      ? (await prisma.adminRole.findMany({ where: { name: { in: query.adminRoles } } }))
+          .map(({ id }) => id)
+      : [],
+  ]
+
+  const whereInputs: Prisma.UserWhereInput[] = []
+  if (adminRoleIds.length) {
+    whereInputs.push({ adminRoleIds: { hasSome: adminRoleIds } })
   }
-  return getUsersQuery(where)
+  if (query.memberOfIds) {
+    whereInputs.push({
+      OR: [
+        { projectsOwned: { some: { id: { in: query.memberOfIds } } } },
+        { ProjectMembers: { some: { project: { id: { in: query.memberOfIds } } } } },
+      ],
+    })
+  }
+
+  return getUsersQuery({ [relationType]: whereInputs })
 }
 
 export async function getMatchingUsers(query: typeof userContract.getMatchingUsers.query._type) {
@@ -93,4 +111,32 @@ export async function logUser({ id, email, groups, ...user }: UserDetails, withw
     }
   }
   return updatedUser // mais on lui retourne tous ceux auxquels il est aussi attaché par oidc
+}
+
+export enum TokenSearchResult {
+  NOT_FOUND = 'Not Found',
+  INACTIVE = 'Not active',
+  EXPIRED = 'Expired',
+}
+
+export async function logAdminToken(token: string): Promise<{ adminPerms: bigint, id: string } | TokenSearchResult> {
+  const calculatedHash = createHash('sha256').update(token).digest('hex')
+  const tokenRecord = await prisma.adminToken.findFirst({ where: { hash: calculatedHash } })
+
+  if (!tokenRecord) {
+    return TokenSearchResult.NOT_FOUND
+  }
+  if (tokenRecord.status !== 'active') {
+    return TokenSearchResult.INACTIVE
+  }
+  const currentDate = new Date()
+  if (tokenRecord.expirationDate && currentDate.getTime() > tokenRecord.expirationDate?.getTime()) {
+    return TokenSearchResult.EXPIRED
+  }
+
+  await prisma.adminToken.update({ where: { id: tokenRecord.id }, data: { lastUse: new Date() } })
+  return {
+    adminPerms: tokenRecord.permissions,
+    id: tokenRecord.id,
+  }
 }

@@ -113,7 +113,7 @@ const canManageEnvs = computed(() => !projectStore.selectedProject?.locked && Pr
         :disabled="!canManageEnvs"
         :title="projectStore.selectedProject.locked ? projectIsLockedInfo : 'Ajouter un nouvel environnement'"
         class="fr-mt-2v <md:mb-2"
-        icon="ri-add-line"
+        icon="ri:add-line"
         @click="showNewEnvironmentForm()"
       />
       <div
@@ -125,7 +125,7 @@ const canManageEnvs = computed(() => !projectStore.selectedProject?.locked && Pr
           data-testid="goBackBtn"
           secondary
           icon-only
-          icon="ri-arrow-go-back-line"
+          icon="ri:arrow-go-back-line"
           @click="() => cancel()"
         />
       </div>
