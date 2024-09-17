@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.12.1](https://github.com/cloud-pi-native/console/compare/v8.12.0...v8.12.1) (2024-09-17)
+
+
+### Bug Fixes
+
+* :bug: fix behaviour of complex querying on user list ([b63bd9a](https://github.com/cloud-pi-native/console/commit/b63bd9a56c118fe52ab38589a28c90777c5a557e))
+
 ## [8.12.0](https://github.com/cloud-pi-native/console/compare/v8.11.1...v8.12.0) (2024-09-17)
 
 
