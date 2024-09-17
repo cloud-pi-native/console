@@ -105,7 +105,7 @@ async function switchUserMembership(checked: boolean, user: User, fromSuggestion
   }
 }
 onBeforeMount(async () => {
-  users.value = await usersStore.listUsers({ adminRoleId: role.value.id })
+  users.value = await usersStore.listUsers({ adminRoleIds: role.value.id })
 })
 </script>
 

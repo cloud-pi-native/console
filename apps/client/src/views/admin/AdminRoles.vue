@@ -55,7 +55,6 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <DsoSelectedProject />
   <div
     class="flex flex-row"
   >
@@ -70,7 +69,7 @@ onBeforeMount(async () => {
           data-testid="addRoleBtn"
           :class="selectedId ? 'w-11/12' : ''"
           secondary
-          @click="addRole()"
+          @click="addRole"
         />
         <button
           v-for="role in roleList"
