@@ -8,7 +8,7 @@ import {
 import { serverInstance } from '@/app.js'
 
 import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
+import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors.js'
 
 export function organizationRouter() {
   return serverInstance.router(organizationContract, {
@@ -23,8 +23,7 @@ export function organizationRouter() {
 
     // Créer une organisation
     createOrganization: async ({ request: req, body: data }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
       const body = await createOrganization(data)
 
@@ -38,9 +37,9 @@ export function organizationRouter() {
 
     // Synchroniser les organisations via les plugins externes
     syncOrganizations: async ({ request: req }) => {
-      const requestor = req.session.user
-      const { adminPermissions, user } = await authUser(requestor)
+      const { adminPermissions, user } = await authUser(req)
       if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+      if (!user) return new Unauthorized401('Require to be requested from user not api key')
 
       const body = await fetchOrganizations(user.id, req.id)
 
@@ -54,8 +53,7 @@ export function organizationRouter() {
 
     // Mettre à jour une organisation
     updateOrganization: async ({ request: req, body: data, params }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
       const name = params.organizationName
 

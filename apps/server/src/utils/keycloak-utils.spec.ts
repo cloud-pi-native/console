@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { keycloakConf } from './keycloak.js'
+import { userPayloadMapper } from './keycloak-utils.js'
 
 describe('keycloak', () => {
   it('should map keycloak user object to DSO user object without groups', () => {
@@ -14,9 +14,10 @@ describe('keycloak', () => {
       email: 'test@test.com',
       firstName: 'Jean',
       lastName: 'DUPOND',
+      groups: [],
     }
 
-    const transformed = keycloakConf.userPayloadMapper(payload)
+    const transformed = userPayloadMapper(payload)
 
     expect(transformed).toMatchObject(desired)
   })
@@ -37,7 +38,7 @@ describe('keycloak', () => {
       groups: ['group1'],
     }
 
-    const transformed = keycloakConf.userPayloadMapper(payload)
+    const transformed = userPayloadMapper(payload)
 
     expect(transformed).toMatchObject(desired)
   })

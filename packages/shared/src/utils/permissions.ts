@@ -168,3 +168,21 @@ export const adminPermsDetails: PermDetails<AdminPermsKeys> = [{
     hint: 'Administration globale de toute la console et de ses ressources',
   }],
 }] as const
+
+export function getAdminPermLabelsByValue(value: bigint | string) {
+  value = typeof value === 'bigint' ? value : BigInt(value)
+  return adminPermsDetails
+    .map(section => section.perms)
+    .flat()
+    .filter(permDetail => ADMIN_PERMS[permDetail.key] & value)
+    .map(permDetail => permDetail.label)
+}
+
+export function getProjectPermLabelsByValue(value: bigint | string) {
+  value = typeof value === 'bigint' ? value : BigInt(value)
+  return projectPermsDetails
+    .map(section => section.perms)
+    .flat()
+    .filter(permDetail => PROJECT_PERMS[permDetail.key] & value)
+    .map(permDetail => permDetail.label)
+}

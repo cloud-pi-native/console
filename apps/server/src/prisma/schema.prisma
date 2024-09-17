@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["omitApi"]
 }
 
 datasource db {
@@ -21,6 +22,19 @@ model AdminRole {
   permissions BigInt
   position    Int    @db.SmallInt
   oidcGroup   String @default("")
+}
+
+model AdminToken {
+  id             String      @id @unique @default(uuid()) @db.Uuid
+  name           String
+  permissions    BigInt
+  userId         String?     @db.Uuid
+  createdBy      User?       @relation(fields: [userId], references: [id])
+  expirationDate DateTime?
+  lastUse        DateTime?
+  createdAt      DateTime    @default(now())
+  status         TokenStatus @default(active)
+  hash           String
 }
 
 model Cluster {
@@ -191,6 +205,7 @@ model User {
   projectsOwned  Project[]
   ProjectMembers ProjectMembers[]
   adminRoleIds   String[]
+  AdminToken     AdminToken[]
 }
 
 model Zone {
@@ -218,4 +233,9 @@ enum ProjectStatus {
   created
   failed
   archived
+}
+
+enum TokenStatus {
+  active
+  revoked
 }

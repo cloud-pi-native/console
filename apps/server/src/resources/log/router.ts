@@ -10,8 +10,7 @@ export function logRouter() {
   return serverInstance.router(logContract, {
   // Récupérer des logs
     getLogs: async ({ request: req, query }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const [total, logs] = await getLogs(query) as [number, unknown[]] as [number, Array<LogModel & { data: Log['data'] }>]

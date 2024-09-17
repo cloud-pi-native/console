@@ -1,3 +1,4 @@
+import type { AsyncReturnType } from '@cpn-console/shared'
 import { AdminAuthorized, ProjectAuthorized, projectContract } from '@cpn-console/shared'
 import {
   archiveProject,
@@ -10,22 +11,26 @@ import {
 } from './business.js'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
-import { BadRequest400, ErrorResType, Forbidden403, NotFound404 } from '@/utils/errors.js'
+import { BadRequest400, ErrorResType, Forbidden403, NotFound404, Unauthorized401 } from '@/utils/errors.js'
 
 export function projectRouter() {
   return serverInstance.router(projectContract, {
 
     // Récupérer des projets
     listProjects: async ({ request: req, query }) => {
-      const requestor = req.session.user
-      const { adminPermissions, user } = await authUser(requestor)
+      const { adminPermissions, user } = await authUser(req)
+      let body: AsyncReturnType<typeof listProjects> = []
+
+      if (adminPermissions && !user) { // c'est donc un compte de service
+        query.filter = 'all'
+      }
       if (query.filter === 'all' && !AdminAuthorized.isAdmin(adminPermissions)) {
         return new BadRequest400('Seuls les admins avec les droits de visionnage des projets peuvent utiliser le filtre \'all\'')
       }
 
-      const body = await listProjects(
+      body = await listProjects(
         query,
-        user.id,
+        user?.id,
       )
 
       return {
@@ -37,8 +42,7 @@ export function projectRouter() {
     // Récupérer les secrets d'un projet
     getProjectSecrets: async ({ request: req, params }) => {
       const projectId = params.projectId
-      const requestor = req.session.user
-      const perms = await authUser(requestor, { id: projectId })
+      const perms = await authUser(req, { id: projectId })
       if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.SeeSecrets(perms)) return new Forbidden403()
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
@@ -55,8 +59,9 @@ export function projectRouter() {
 
     // Créer un projet
     createProject: async ({ request: req, body: data }) => {
-      const user = req.session.user
-      const body = await createProject(data, user, req.id)
+      const perms = await authUser(req)
+      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
+      const body = await createProject(data, perms.user, req.id)
 
       if (body instanceof ErrorResType) return body
 
@@ -69,9 +74,9 @@ export function projectRouter() {
     // Mettre à jour un projet
     updateProject: async ({ request: req, params, body: data }) => {
       const projectId = params.projectId
-      const requestor = req.session.user
-      const perms = await authUser(requestor, { id: projectId })
+      const perms = await authUser(req, { id: projectId })
 
+      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
       const isAdmin = AdminAuthorized.isAdmin(perms.adminPermissions)
       const isOwner = perms.projectOwnerId === perms.user.id
 
@@ -102,16 +107,16 @@ export function projectRouter() {
     // Reprovisionner un projet
     replayHooksForProject: async ({ request: req, params }) => {
       const projectId = params.projectId
-      const user = req.session.user
-      const perms = await authUser(user, { id: projectId })
+      const perms = await authUser(req, { id: projectId })
       const isAdmin = AdminAuthorized.isAdmin(perms.adminPermissions)
 
+      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
       if (!perms.projectPermissions && !isAdmin) return new NotFound404()
       if (!ProjectAuthorized.ReplayHooks(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-      const body = await replayHooks(projectId, user, req.id)
+      const body = await replayHooks(projectId, perms.user, req.id)
 
       if (body instanceof ErrorResType) return body
 
@@ -124,16 +129,16 @@ export function projectRouter() {
     // Archiver un projet
     archiveProject: async ({ request: req, params }) => {
       const projectId = params.projectId
-      const user = req.session.user
-      const perms = await authUser(user, { id: projectId })
+      const perms = await authUser(req, { id: projectId })
       const isAdmin = AdminAuthorized.isAdmin(perms.adminPermissions)
 
+      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
       if (!perms.projectPermissions && !isAdmin) return new NotFound404()
       if (!ProjectAuthorized.Manage(perms)) return new Forbidden403()
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
 
-      const body = await archiveProject(projectId, user, req.id)
+      const body = await archiveProject(projectId, perms.user, req.id)
       if (body instanceof ErrorResType) return body
 
       return {
@@ -143,8 +148,7 @@ export function projectRouter() {
     },
     // Récupérer les données de tous les projets pour export
     getProjectsData: async ({ request: req }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
       const body = await generateProjectsData()
 

@@ -8,6 +8,7 @@ export const apiPrefix: string = '/api/v1'
 export async function getContract() {
   return contractInstance.router(
     {
+      AdminTokens: (await import('./contracts/index.js')).adminTokenContract,
       AdminRoles: (await import('./contracts/index.js')).adminRoleContract,
       Clusters: (await import('./contracts/index.js')).clusterContract,
       Environments: (await import('./contracts/index.js')).environmentContract,

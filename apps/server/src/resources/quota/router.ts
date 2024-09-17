@@ -1,3 +1,4 @@
+import type { AsyncReturnType } from '@cpn-console/shared'
 import { AdminAuthorized, quotaContract } from '@cpn-console/shared'
 import { createQuota, deleteQuota, getQuotaAssociatedEnvironments, listQuotas, updateQuota } from './business.js'
 import { serverInstance } from '@/app.js'
@@ -8,22 +9,26 @@ export function quotaRouter() {
   return serverInstance.router(quotaContract, {
   // Récupérer les quotas disponibles
     listQuotas: async ({ request: req }) => {
-      const requestor = req.session.user
-      const { user, adminPermissions } = await authUser(requestor)
-      const quotas = AdminAuthorized.isAdmin(adminPermissions)
-        ? await listQuotas()
-        : await listQuotas(user.id)
+      const { user, adminPermissions } = await authUser(req)
+
+      let body: AsyncReturnType<typeof listQuotas>
+      if (AdminAuthorized.isAdmin(adminPermissions)) {
+        body = await listQuotas()
+      } else if (user) {
+        body = await listQuotas(user.id)
+      } else {
+        body = [] as AsyncReturnType<typeof listQuotas>
+      }
 
       return {
         status: 200,
-        body: quotas,
+        body,
       }
     },
 
     // Récupérer les environnements associés au quota
     listQuotaEnvironments: async ({ request: req, params }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const quotaId = params.quotaId
@@ -39,8 +44,7 @@ export function quotaRouter() {
 
     // Créer un quota
     createQuota: async ({ request: req, body: data }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const body = await createQuota(data)
@@ -55,8 +59,7 @@ export function quotaRouter() {
 
     // Modifier la confidentialité d'un quota
     updateQuota: async ({ request: req, params, body: data }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const quotaId = params.quotaId
@@ -71,8 +74,7 @@ export function quotaRouter() {
 
     // Supprimer un quota
     deleteQuota: async ({ request: req, params }) => {
-      const requestor = req.session.user
-      const perms = await authUser(requestor)
+      const perms = await authUser(req)
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const quotaId = params.quotaId

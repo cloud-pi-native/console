@@ -7,14 +7,13 @@ import {
 } from './business.js'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, NotFound404 } from '@/utils/errors.js'
+import { ErrorResType, Forbidden403, NotFound404, Unauthorized401 } from '@/utils/errors.js'
 
 export function projectMemberRouter() {
   return serverInstance.router(projectMemberContract, {
     listMembers: async ({ request: req, params }) => {
       const { projectId } = params
-      const user = req.session.user
-      const perms = await authUser(user, { id: projectId })
+      const perms = await authUser(req, { id: projectId })
       if (!perms.projectPermissions) return new NotFound404()
 
       const body = await listMembers(projectId)
@@ -27,8 +26,9 @@ export function projectMemberRouter() {
 
     addMember: async ({ request: req, params, body }) => {
       const { projectId } = params
-      const user = req.session.user
-      const perms = await authUser(user, { id: projectId })
+      const perms = await authUser(req, { id: projectId })
+
+      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
       if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
       if (!ProjectAuthorized.ManageMembers(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
@@ -45,8 +45,7 @@ export function projectMemberRouter() {
 
     patchMembers: async ({ request: req, params, body }) => {
       const { projectId } = params
-      const user = req.session.user
-      const perms = await authUser(user, { id: projectId })
+      const perms = await authUser(req, { id: projectId })
 
       if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.ManageMembers(perms)) return new Forbidden403()
@@ -63,8 +62,8 @@ export function projectMemberRouter() {
 
     removeMember: async ({ request: req, params }) => {
       const { projectId } = params
-      const user = req.session.user
-      const perms = await authUser(user, { id: projectId })
+      const perms = await authUser(req, { id: projectId })
+
       if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
       if (!ProjectAuthorized.ManageMembers(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')

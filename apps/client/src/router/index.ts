@@ -34,6 +34,7 @@ const ListZones = () => import('@/views/admin/ListZones.vue')
 const ListPlugins = () => import('@/views/admin/ListPlugins.vue')
 const SystemSettings = () => import('@/views/admin/SystemSettings.vue')
 const Maintenance = () => import('@/views/DsoMaintenance.vue')
+const AdminTokens = () => import('@/views/admin/AdminTokens.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
@@ -202,6 +203,11 @@ const routes: Readonly<RouteRecordRaw[]> = [
         path: 'roles',
         name: 'AdminRoles',
         component: AdminRoles,
+      },
+      {
+        path: 'tokens',
+        name: 'AdminTokens',
+        component: AdminTokens,
       },
     ],
   },

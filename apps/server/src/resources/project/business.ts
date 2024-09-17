@@ -30,7 +30,7 @@ import prisma from '@/prisma.js'
 
 // Fetch infos
 const projectStatus = ProjectStatusSchema._def.values
-export async function listProjects({ status, statusIn, statusNotIn, filter = 'member', ...query }: typeof projectContract.listProjects.query._type, userId: User['id']) {
+export async function listProjects({ status, statusIn, statusNotIn, filter = 'member', ...query }: typeof projectContract.listProjects.query._type, userId: User['id'] | undefined) {
   return listProjectsQuery({
     ...query,
     status: whereBuilder({ enumValues: projectStatus, eqValue: status, inValues: statusIn, notInValues: statusNotIn }),
