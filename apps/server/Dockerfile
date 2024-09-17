@@ -1,8 +1,8 @@
 # Base stage
-FROM docker.io/node:20.16.0-bullseye-slim AS dev
+FROM docker.io/node:20.17.0-bullseye-slim AS dev
 
 WORKDIR /app
-RUN npm install --ignore-scripts --location=global pnpm@9.7.1
+RUN npm install --ignore-scripts --location=global pnpm@9.10.0
 
 COPY --chown=node:root package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc turbo.json ./
 COPY --chown=node:root patches ./patches
@@ -42,7 +42,7 @@ RUN pnpm --filter @cpn-console/server --prod deploy build
 
 
 # Prod stage
-FROM docker.io/node:20.16.0-bullseye-slim AS prod
+FROM docker.io/node:20.17.0-bullseye-slim AS prod
 
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
