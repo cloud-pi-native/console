@@ -63,7 +63,7 @@ describe('test users business', () => {
       await getUsers({ adminRoleIds: [adminRoleId] })
 
       expect(getUsersQueryMock).toHaveBeenCalledTimes(1)
-      expect(getUsersQueryMock).toHaveBeenCalledWith({ AND: [{ adminRoleIds: { hasSome: [adminRoleId] } }] })
+      expect(getUsersQueryMock).toHaveBeenCalledWith({ AND: [{ adminRoleIds: { hasEvery: [adminRoleId] } }] })
     })
   })
 

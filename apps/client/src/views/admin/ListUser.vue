@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
 import { type AllUsers, type Role, formatDate, sortArrByObjKeyAsc } from '@cpn-console/shared'
-import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminRoleStore } from '@/stores/admin-role.js'
 import { copyContent } from '@/utils/func.js'
+import { useUsersStore } from '@/stores/users.js'
 
 const adminRoleStore = useAdminRoleStore()
-const projectMemberStore = useProjectMemberStore()
+const usersStore = useUsersStore()
 const snackbarStore = useSnackbarStore()
 const adminRoles = ref<Role[]>([])
 const allUsers = ref<AllUsers>([])
@@ -77,7 +77,7 @@ onBeforeMount(async () => {
   if (!adminRoleStore.roles.length) {
     adminRoles.value = await adminRoleStore.listRoles()
   }
-  allUsers.value = await projectMemberStore.getAllUsers()
+  allUsers.value = await usersStore.listUsers({})
   snackbarStore.isWaitingForResponse = false
 })
 </script>
