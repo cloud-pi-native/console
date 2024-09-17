@@ -3,7 +3,7 @@
   "type": "module",
   "version": "8.11.1",
   "private": true,
-  "packageManager": "pnpm@9.7.1",
+  "packageManager": "pnpm@9.10.0",
   "scripts": {
     "build": "turbo run build --color --no-daemon",
     "build:clean": "turbo run build:clean --no-daemon",
@@ -77,6 +77,6 @@
     "allowNonAppliedPatches": true
   },
   "volta": {
-    "node": "20.16.0"
+    "node": "20.17.0"
   }
 }
