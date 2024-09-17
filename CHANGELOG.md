@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.12.0](https://github.com/cloud-pi-native/console/compare/v8.11.1...v8.12.0) (2024-09-17)
+
+
+### Features
+
+* :sparkles: add admins api tokens ([e141642](https://github.com/cloud-pi-native/console/commit/e141642eb2b717c29cf91f482e91761e7ce4bfa8))
+* :sparkles: add users search filter (admin) ([cc1ab56](https://github.com/cloud-pi-native/console/commit/cc1ab56b2ac496ffd01196ee4d97362ab7a08e03))
+
 ## [8.11.1](https://github.com/cloud-pi-native/console/compare/v8.11.0...v8.11.1) (2024-09-02)
 
 
