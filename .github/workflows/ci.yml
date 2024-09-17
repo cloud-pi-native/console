@@ -71,6 +71,8 @@ jobs:
       PUBLISH_PACKAGES: false
       PUBLISH_PLUGINS: false
       CHECK_CHANGES: true
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   lint:
     uses: ./.github/workflows/lint.yml

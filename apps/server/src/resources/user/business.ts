@@ -4,26 +4,32 @@ import type { userContract } from '@cpn-console/shared'
 import { getMatchingUsers as getMatchingUsersQuery, getUsers as getUsersQuery } from '@/resources/queries-index.js'
 import prisma from '@/prisma.js'
 import type { UserDetails } from '@/types/index.js'
+import { BadRequest400 } from '@/utils/errors.js'
 
 export async function getUsers(query: typeof userContract.getAllUsers.query._type, relationType: 'OR' | 'AND' = 'AND') {
-  const adminRoleIds = [
-    ...query.adminRoleIds ?? [],
-    ...query.adminRoles
-      ? (await prisma.adminRole.findMany({ where: { name: { in: query.adminRoles } } }))
-          .map(({ id }) => id)
-      : [],
-  ]
-
   const whereInputs: Prisma.UserWhereInput[] = []
-  if (adminRoleIds.length) {
-    whereInputs.push({ adminRoleIds: { hasSome: adminRoleIds } })
+  if (query.adminRoleIds?.length) {
+    whereInputs.push({ adminRoleIds: { hasEvery: query.adminRoleIds } })
+  }
+  if (query.adminRoles?.length) {
+    const roles = query.adminRoles
+      ? await prisma.adminRole.findMany({ where: { name: { in: query.adminRoles } } })
+      : []
+
+    const adminRoleNameNotFound = query.adminRoles?.find(nameQueried => !roles.find(({ name }) => name === nameQueried))
+    if (adminRoleNameNotFound) {
+      return new BadRequest400(`Unable to find adminRole ${adminRoleNameNotFound}`)
+    }
+    whereInputs.push({ adminRoleIds: { hasEvery: roles.map(({ id }) => id) } })
   }
   if (query.memberOfIds) {
     whereInputs.push({
-      OR: [
-        { projectsOwned: { some: { id: { in: query.memberOfIds } } } },
-        { ProjectMembers: { some: { project: { id: { in: query.memberOfIds } } } } },
-      ],
+      AND: query.memberOfIds.map(id => ({
+        OR: [
+          { projectsOwned: { some: { id } } },
+          { ProjectMembers: { some: { project: { id } } } },
+        ],
+      })),
     })
   }
 

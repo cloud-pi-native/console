@@ -21,6 +21,9 @@ on:
       CHECK_CHANGES:
         required: true
         type: boolean
+    secrets:
+      NPM_TOKEN:
+        required: true
   workflow_dispatch:
     inputs:
       NODE_VERSION:

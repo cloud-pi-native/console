@@ -3,10 +3,6 @@ import type { projectMemberContract } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useProjectMemberStore = defineStore('project-member', () => {
-  const getAllUsers = () =>
-    apiClient.Users.getAllUsers()
-      .then(response => extractData(response, 200))
-
   const getMatchingUsers = async (projectId: string, letters: string) =>
     apiClient.Users.getMatchingUsers({ query: { letters, notInProjectId: projectId } })
       .then(response => extractData(response, 200))
@@ -24,7 +20,6 @@ export const useProjectMemberStore = defineStore('project-member', () => {
       .then(response => extractData(response, 200))
 
   return {
-    getAllUsers,
     getMatchingUsers,
     addMember,
     removeMember,
