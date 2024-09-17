@@ -8,7 +8,7 @@ import {
 import '@/types/index.js'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
-import { Forbidden403, Unauthorized401 } from '@/utils/errors.js'
+import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors.js'
 
 export function userRouter() {
   return serverInstance.router(userContract, {
@@ -40,6 +40,7 @@ export function userRouter() {
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
       const body = await getUsers(query, relationType)
+      if (body instanceof ErrorResType) return body
 
       return {
         status: 200,
