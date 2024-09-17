@@ -61,3 +61,16 @@ jobs:
       CHECK_CHANGES: false
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  update-chart:
+    runs-on: ubuntu-latest
+    needs:
+      - expose-vars
+      - release
+      - build
+    steps:
+      - name: Trigger helm-charts update
+        env:
+          GH_TOKEN: ${{ secrets.HELM_CHART_TOKEN }}
+        run: |
+          gh workflow --repo cloud-pi-native/helm-charts run update-chart.yaml -f APP_VERSION=${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }} -f CHART_NAME=dso-console
