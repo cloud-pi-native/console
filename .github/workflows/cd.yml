@@ -59,3 +59,5 @@ jobs:
       PUBLISH_PACKAGES: true
       PUBLISH_PLUGINS: true
       CHECK_CHANGES: false
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
