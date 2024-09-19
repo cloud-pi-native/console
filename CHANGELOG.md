@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.12.2](https://github.com/cloud-pi-native/console/compare/v8.12.1...v8.12.2) (2024-09-19)
+
+
+### Bug Fixes
+
+* :ambulance: cbx not checked cause vuedsfr breaking change ([c7e607f](https://github.com/cloud-pi-native/console/commit/c7e607fa6a373866489d7e72e7234107d76a3b7e))
+
 ## [8.12.1](https://github.com/cloud-pi-native/console/compare/v8.12.0...v8.12.1) (2024-09-17)
 
 
