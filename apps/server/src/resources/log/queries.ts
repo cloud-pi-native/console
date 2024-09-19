@@ -25,7 +25,13 @@ export function getAllLogs({ skip = 0, take = 5 }: Prisma.LogFindManyArgs) {
 }
 
 // CREATE
-export function addLogs(action: Log['action'], data: Record<string, any>, userId: User['id'], requestId: string = '') {
+interface AddLogsArgs {
+  action: Log['action']
+  data: Record<string, any>
+  userId?: User['id'] | null
+  requestId: string
+}
+export function addLogs({ action, data, requestId, userId = null }: AddLogsArgs) {
   return prisma.log.create({
     data: {
       action,

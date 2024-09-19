@@ -28,7 +28,7 @@ export const logContract = contractInstance.router({
             totalExecutionTime: z.number().optional(),
           }),
           action: z.string(),
-          userId: z.string(),
+          userId: z.string().nullable(),
           requestId: z.string().nullable(),
         }).extend(AtDatesToStringExtend)),
       }),

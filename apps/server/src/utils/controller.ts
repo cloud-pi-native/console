@@ -81,7 +81,7 @@ export async function authUser(req: FastifyRequest, projectUnique: ProjectUnique
 export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqueFinder): Promise<UserProfile | UserProjectProfile> {
   let adminPermissions: bigint = 0n
   let tokenId: string | undefined
-  const user = req.session?.user
+  let user = req.session?.user
 
   const tokenHeader = req.headers[tokenHeaderName]
   if (typeof tokenHeader === 'string') {
@@ -89,6 +89,9 @@ export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqu
     if (typeof token !== 'string') {
       adminPermissions = token.adminPerms
       tokenId = token.id
+      if (!user && token.user) {
+        user = { ...token.user, groups: [] }
+      }
     }
   } else if (req.session.user) {
     const loginResult = await logUser(req.session.user, true)

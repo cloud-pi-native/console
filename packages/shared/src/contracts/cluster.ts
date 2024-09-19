@@ -1,4 +1,5 @@
 import type { ClientInferResponseBody } from '@ts-rest/core'
+import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CreateClusterSchema,
@@ -8,6 +9,9 @@ import {
   GetClustersSchema,
   UpdateClusterSchema,
 } from '../schemas/index.js'
+import {
+  CoerceBooleanSchema,
+} from '../utils/schemas.js'
 
 export const clusterContract = contractInstance.router({
   listClusters: {
@@ -61,6 +65,7 @@ export const clusterContract = contractInstance.router({
     path: `${apiPrefix}/clusters/:clusterId`,
     summary: 'Delete cluster',
     description: 'Delete a cluster by its ID.',
+    query: z.object({ force: CoerceBooleanSchema.optional() }),
     pathParams: DeleteClusterSchema.params,
     body: null,
     responses: DeleteClusterSchema.responses,

@@ -19,7 +19,6 @@ export function clusterRouter() {
       const { adminPermissions, user } = await authUser(req)
 
       let body: AsyncReturnType<typeof listClusters> = []
-      if (!user) return new Unauthorized401()
       if (AdminAuthorized.isAdmin(adminPermissions)) {
         body = await listClusters()
       } else if (user) {
@@ -88,13 +87,18 @@ export function clusterRouter() {
       }
     },
 
-    deleteCluster: async ({ request: req, params }) => {
-      const { user, adminPermissions } = await authUser(req)
+    deleteCluster: async ({ request: req, params, query: { force } }) => {
+      const { user, adminPermissions, tokenId } = await authUser(req)
       if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
-      if (!user) return new Unauthorized401('Require to be requested from user not api key')
+      if (!user?.id && !tokenId) return new Unauthorized401('Your identity has not been found')
 
       const clusterId = params.clusterId
-      const body = await deleteCluster(clusterId, user.id, req.id)
+      const body = await deleteCluster({
+        clusterId,
+        userId: user?.id,
+        requestId: req.id,
+        force,
+      })
 
       if (body instanceof ErrorResType) return body
 

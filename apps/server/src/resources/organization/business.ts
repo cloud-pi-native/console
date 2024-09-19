@@ -50,7 +50,7 @@ export async function fetchOrganizations(userId: User['id'], requestId: string) 
   interface PluginOrganization { name: string, label: string, source: string }
 
   const hookReply = await hook.misc.fetchOrganizations()
-  await addLogs('Fetch organizations', hookReply, userId, requestId)
+  await addLogs({ action: 'Fetch organizations', data: hookReply, userId, requestId })
   if (hookReply.failed) {
     return new Unprocessable422('Echec des services à la synchronisation des organisations')
   }

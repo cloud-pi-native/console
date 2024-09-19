@@ -69,6 +69,13 @@ function sort() {
 }
 
 sort()
+
+// special case to study
+const logUserCase = moveBefore(ModelsOrder, 'User', 'Log')
+if (logUserCase) {
+  ModelsOrder = logUserCase
+}
+
 export const models: Record<string, any[]> = {}
 export const associations: Record<string, any[]> = []
 export const modelKeys = ModelsOrder.map(model => model.slice(0, 1).toLocaleLowerCase() + model.slice(1))
