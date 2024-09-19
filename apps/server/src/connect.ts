@@ -1,6 +1,6 @@
 import { setTimeout } from 'node:timers/promises'
 import prisma from './prisma.js'
-import app from './app.js'
+import { logger } from './app.js'
 import {
   dbUrl,
   isCI,
@@ -19,22 +19,22 @@ export async function getConnection(triesLeft = 5): Promise<void> {
 
   try {
     if (isDev || isTest || isCI) {
-      app.log.info(`Trying to connect to Postgres with: ${dbUrl}`)
+      logger.info(`Trying to connect to Postgres with: ${dbUrl}`)
     }
     await prisma.$connect()
 
-    app.log.info('Connected to Postgres!')
+    logger.info('Connected to Postgres!')
   } catch (error) {
     if (triesLeft > 0) {
-      app.log.error(error)
-      app.log.info(`Could not connect to Postgres: ${error.message}`)
-      app.log.info(`Retrying (${triesLeft} tries left)`)
+      logger.error(error)
+      logger.info(`Could not connect to Postgres: ${error.message}`)
+      logger.info(`Retrying (${triesLeft} tries left)`)
       await setTimeout(DELAY_BEFORE_RETRY)
       return getConnection(triesLeft)
     }
 
-    app.log.info(`Could not connect to Postgres: ${error.message}`)
-    app.log.info('Out of retries')
+    logger.info(`Could not connect to Postgres: ${error.message}`)
+    logger.info('Out of retries')
     error.message = `Out of retries, last error: ${error.message}`
     throw error
   }
@@ -45,7 +45,7 @@ export async function closeConnections() {
   try {
     await prisma.$disconnect()
   } catch (error) {
-    app.log.error(error)
+    logger.error(error)
   } finally {
     closingConnections = false
   }

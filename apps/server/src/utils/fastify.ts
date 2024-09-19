@@ -1,16 +1,15 @@
-// import { randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 import type { FastifyServerOptions } from 'fastify'
 import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui/types'
-import { nanoid } from 'nanoid'
-import { apiPrefix } from '@cpn-console/shared'
 import type { generateOpenApi } from '@ts-rest/open-api'
+import { apiPrefix } from '@cpn-console/shared'
 import { loggerConf } from './logger.js'
 import { NODE_ENV } from './env.js'
 
 export const fastifyConf: FastifyServerOptions = {
   maxParamLength: 5000,
-  logger: loggerConf[NODE_ENV] ?? true,
-  genReqId: () => nanoid(), // randomUUID(),
+  logger: loggerConf[NODE_ENV] ?? loggerConf.production,
+  genReqId: () => randomUUID(),
 }
 
 const externalDocs = {
