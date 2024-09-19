@@ -82,7 +82,7 @@ function updateChecked(checked: boolean, value: bigint) {
           v-for="perm in scope.perms"
           :id="`${perm.key}-cbx`"
           :key="perm.key"
-          :model-value="PROJECT_PERMS[perm.key] & role.permissions"
+          :model-value="!!(PROJECT_PERMS[perm.key] & role.permissions)"
           :label="perm?.label"
           :hint="perm?.hint"
           :name="perm.key"

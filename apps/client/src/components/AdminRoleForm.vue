@@ -145,7 +145,7 @@ onBeforeMount(async () => {
         <DsfrCheckbox
           v-for="perm in scope.perms"
           :key="perm.key"
-          :model-value="ADMIN_PERMS[perm.key] & role.permissions"
+          :model-value="!!(ADMIN_PERMS[perm.key] & role.permissions)"
           :data-testid="`${perm.key}-cbx`"
           :label="perm.label"
           :hint="perm?.hint"
