@@ -20,7 +20,9 @@ import { systemSettingsRouter } from './system/settings/router.js'
 import { adminTokenRouter } from './admin-token/router.js'
 import { serverInstance } from '@/app.js'
 
-const validateTrue = { responseValidation: true }
+// relax validation schema if NO_VALIDATION env var is set to true.
+// /!\ It can lead to security leaks !!!!
+const validateTrue = { responseValidation: process.env.NO_VALIDATION !== 'true' }
 export function apiRouter() {
   return async (app: FastifyInstance) => {
     await app.register(serverInstance.plugin(adminRoleRouter()), validateTrue)
