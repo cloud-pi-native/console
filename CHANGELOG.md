@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.12.3](https://github.com/cloud-pi-native/console/compare/v8.12.2...v8.12.3) (2024-09-19)
+
+
+### Bug Fixes
+
+* :passport_control: allow more actions to admin token ([81fa606](https://github.com/cloud-pi-native/console/commit/81fa60653e2bfbcb37251bda448ea3d2f9805eb3))
+
 ## [8.12.2](https://github.com/cloud-pi-native/console/compare/v8.12.1...v8.12.2) (2024-09-19)
 
 
