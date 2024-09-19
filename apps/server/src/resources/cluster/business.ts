@@ -107,7 +107,7 @@ export async function createCluster(data: typeof clusterContract.createCluster.b
   }
 
   const hookReply = await hook.cluster.upsert(clusterCreated.id)
-  await addLogs('Create Cluster', hookReply, userId, requestId)
+  await addLogs({ action: 'Create Cluster', data: hookReply, userId, requestId })
   if (hookReply.failed) {
     return new Unprocessable422('Echec des services à la création du cluster')
   }
@@ -173,7 +173,7 @@ export async function updateCluster(data: typeof clusterContract.updateCluster.b
   }
 
   const hookReply = await hook.cluster.upsert(clusterId)
-  await addLogs('Update Cluster', hookReply, userId, requestId)
+  await addLogs({ action: 'Update Cluster', data: hookReply, userId, requestId })
   if (hookReply.failed) {
     return new Unprocessable422('Echec des services à la mise à jour du cluster')
   }
@@ -181,16 +181,30 @@ export async function updateCluster(data: typeof clusterContract.updateCluster.b
   return getClusterDetails(clusterId)
 }
 
-export async function deleteCluster(clusterId: Cluster['id'], userId: User['id'], requestId: string) {
-  const environment = await prisma.environment.findFirst({ where: { clusterId } })
-  if (environment) return new BadRequest400('Impossible de supprimer le cluster, des environnements en activité y sont déployés')
+interface DeleteClusterArgs {
+  clusterId: Cluster['id']
+  userId?: User['id']
+  requestId: string
+  force?: boolean
+}
+export async function deleteCluster({ clusterId, requestId, force, userId }: DeleteClusterArgs) {
+  let message: string | null = null
+  if (force) {
+    const envs = await prisma.environment.deleteMany({
+      where: { clusterId },
+    })
+    message = `${envs.count} environnements supprimés de force, n'oubliez pas de reprovisionner les projets concernés`
+  } else {
+    const environment = await prisma.environment.findFirst({ where: { clusterId } })
+    if (environment) return new BadRequest400('Impossible de supprimer le cluster, des environnements en activité y sont déployés')
+  }
 
   const hookReply = await hook.cluster.delete(clusterId)
-  await addLogs('Delete Cluster', hookReply, userId, requestId)
+  await addLogs({ action: 'Delete Cluster', data: hookReply, userId, requestId })
   if (hookReply.failed) {
     return new Unprocessable422('Echec des services à la suppression du cluster')
   }
 
   await deleteClusterQuery(clusterId)
-  return null
+  return message
 }

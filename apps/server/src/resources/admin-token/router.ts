@@ -19,7 +19,6 @@ export function adminTokenRouter() {
 
     createAdminToken: async ({ request: req, body: data }) => {
       const perms = await authUser(req)
-      console.log(perms)
 
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
       const body = await createToken(data, perms.user?.id, perms.tokenId)

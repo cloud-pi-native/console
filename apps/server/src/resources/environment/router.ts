@@ -82,14 +82,13 @@ export function environmentRouter() {
     deleteEnvironment: async ({ request: req, params }) => {
       const { environmentId } = params
       const perms = await authUser(req, { environmentId })
-      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
       if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
       const body = await deleteEnvironment({
-        userId: perms.user.id,
+        userId: perms.user?.id,
         environmentId,
         requestId: req.id,
         projectId: perms.projectId,

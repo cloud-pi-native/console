@@ -28,7 +28,7 @@ export async function addMember(projectId: Project['id'], user: XOR<{ userId: st
     if (userInDb.id === projectOwnerId) return new BadRequest400('Le owner ne peut pas être ajouté à cette liste')
   } else if (user.email) {
     const hookReply = await hook.user.retrieveUserByEmail(user.email)
-    await addLogs('Retrieve User By Email', hookReply, requestorId, requestId)
+    await addLogs({ action: 'Retrieve User By Email', data: hookReply, userId: requestorId, requestId })
     if (hookReply.failed) {
       throw new BadRequest400('Echec de la recherche auprès des services externes')
     }

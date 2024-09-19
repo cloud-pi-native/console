@@ -142,7 +142,8 @@ export type UpdateClusterBody = Zod.infer<typeof UpdateClusterSchema.body>
 export const DeleteClusterSchema = {
   params: ClusterParams,
   responses: {
-    204: null,
+    204: z.string()
+      .nullable(),
     400: ErrorSchema,
     401: ErrorSchema,
     404: ErrorSchema,

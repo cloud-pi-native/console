@@ -125,9 +125,9 @@ export enum TokenSearchResult {
   EXPIRED = 'Expired',
 }
 
-export async function logAdminToken(token: string): Promise<{ adminPerms: bigint, id: string } | TokenSearchResult> {
+export async function logAdminToken(token: string): Promise<{ adminPerms: bigint, id: string, user: User | null } | TokenSearchResult> {
   const calculatedHash = createHash('sha256').update(token).digest('hex')
-  const tokenRecord = await prisma.adminToken.findFirst({ where: { hash: calculatedHash } })
+  const tokenRecord = await prisma.adminToken.findFirst({ where: { hash: calculatedHash }, include: { createdBy: true } })
 
   if (!tokenRecord) {
     return TokenSearchResult.NOT_FOUND
@@ -144,5 +144,6 @@ export async function logAdminToken(token: string): Promise<{ adminPerms: bigint
   return {
     adminPerms: tokenRecord.permissions,
     id: tokenRecord.id,
+    user: tokenRecord.createdBy,
   }
 }

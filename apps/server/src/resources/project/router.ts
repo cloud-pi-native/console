@@ -110,13 +110,16 @@ export function projectRouter() {
       const perms = await authUser(req, { id: projectId })
       const isAdmin = AdminAuthorized.isAdmin(perms.adminPermissions)
 
-      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
       if (!perms.projectPermissions && !isAdmin) return new NotFound404()
       if (!ProjectAuthorized.ReplayHooks(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-      const body = await replayHooks(projectId, perms.user, req.id)
+      const body = await replayHooks({
+        projectId,
+        userId: perms.user?.id,
+        requestId: req.id,
+      })
 
       if (body instanceof ErrorResType) return body
 
