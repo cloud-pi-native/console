@@ -59,7 +59,7 @@ export async function createEnvironment({
   const environment = await initializeEnvironment({ projectId, name, clusterId, quotaId, stageId })
 
   const { results } = await hook.project.upsert(projectId)
-  await addLogs('Create Environment', results, userId, requestId)
+  await addLogs({ action: 'Create Environment', data: results, userId, requestId })
   if (results.failed) {
     return new Unprocessable422('Echec des services à la création de l\'environnement')
   }
@@ -88,7 +88,7 @@ export async function updateEnvironment({
   const env = await updateEnvironmentQuery({ id: environmentId, quotaId })
   if (quotaId) {
     const { results } = await hook.project.upsert(env.projectId)
-    await addLogs('Update Environment Quotas', results, user.id, requestId)
+    await addLogs({ action: 'Update Environment Quotas', data: results, userId: user.id, requestId })
     if (results.failed) {
       return new Unprocessable422('Echec des services à la mise à jour des quotas pour l\'environnement')
     }
@@ -98,7 +98,7 @@ export async function updateEnvironment({
 }
 
 interface DeleteEnvironmentParam {
-  userId: User['id']
+  userId?: User['id']
   environmentId: Environment['id']
   projectId: Project['id']
   requestId: string
@@ -113,7 +113,7 @@ export async function deleteEnvironment({
   await deleteEnvironmentQuery(environmentId)
 
   const { results } = await hook.project.upsert(projectId)
-  await addLogs('Delete Environment', results, userId, requestId)
+  await addLogs({ action: 'Delete Environment', data: results, userId, requestId })
   if (results.failed) {
     return new Unprocessable422('Echec des services à la suppression de l\'environnement')
   }

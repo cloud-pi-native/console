@@ -76,7 +76,7 @@ export async function createProject(dataDto: CreateProjectBody, { groups, ...req
   const project = await initializeProject({ ...dataDto, ownerId: owner.id })
 
   const { results, project: projectInfos } = await hook.project.upsert(project.id)
-  await addLogs('Create Project', results, owner.id, requestId)
+  await addLogs({ action: 'Create Project', data: results, userId: owner.id, requestId })
   if (results.failed) {
     return new Unprocessable422('Echec des services à la création du projet')
   }
@@ -131,7 +131,7 @@ export async function updateProject({ description, ownerId, everyonePerms, locke
   }
 
   const { results, project: projectInfos } = await hook.project.upsert(projectId)
-  await addLogs('Update Project', results, requestor.id, requestId)
+  await addLogs({ action: 'Update Project', data: results, userId: requestor.id, requestId })
   if (results.failed) {
     return new Unprocessable422('Echec des services à la mise à jour du projet')
   }
@@ -144,10 +144,15 @@ export async function updateProject({ description, ownerId, everyonePerms, locke
   }
 }
 
-export async function replayHooks(projectId: Project['id'], requestor: UserDetails, requestId: string) {
+interface ReplayHooksArgs {
+  projectId: Project['id']
+  userId?: User['id']
+  requestId: string
+}
+export async function replayHooks({ projectId, userId, requestId }: ReplayHooksArgs) {
   // Actions
   const { results } = await hook.project.upsert(projectId)
-  await addLogs('Replay hooks for Project', results, requestor.id, requestId)
+  await addLogs({ action: 'Replay hooks for Project', data: results, userId, requestId })
   if (results.failed) {
     return new Unprocessable422('Echec des services au reprovisionnement du projet')
   }
@@ -164,14 +169,14 @@ export async function archiveProject(projectId: Project['id'], requestor: UserDe
   ])
 
   const { results: upsertResults } = await hook.project.upsert(projectId)
-  await addLogs('Delete all project resources', upsertResults, requestor.id, requestId)
+  await addLogs({ action: 'Delete all project resources', data: upsertResults, userId: requestor.id, requestId })
   if (upsertResults.failed) {
     return new Unprocessable422('Echec des services à la suppression des ressources du projet')
   }
 
   // -- début - Suppression projet --
   const { results } = await hook.project.delete(projectId)
-  await addLogs('Archive Project', results, requestor.id, requestId)
+  await addLogs({ action: 'Archive Project', data: results, userId: requestor.id, requestId })
   if (results.failed) {
     return new Unprocessable422('Echec des services à la suppression du projet')
   }
