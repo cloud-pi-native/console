@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/eslint-config",
   "type": "module",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "ISC",
   "main": "src/index.js",
   "types": "types/index.d.ts",

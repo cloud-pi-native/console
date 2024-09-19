@@ -1,6 +1,6 @@
 services:
   postgres:
-    restart: always
+    restart: unless-stopped
     image: docker.io/postgres:15.3
     container_name: dso-console_postgres
     environment:
@@ -16,7 +16,7 @@ services:
     attach: false
 
   pgadmin:
-    restart: always
+    restart: unless-stopped
     image: docker.io/dpage/pgadmin4:latest
     container_name: dso-console_pgadmin
     depends_on:
@@ -35,7 +35,7 @@ services:
     attach: false
 
   server:
-    restart: always
+    restart: unless-stopped
     build:
       context: ..
       dockerfile: apps/server/Dockerfile
@@ -87,7 +87,7 @@ services:
     attach: true
 
   client:
-    restart: always
+    restart: unless-stopped
     build:
       context: ..
       dockerfile: apps/client/Dockerfile

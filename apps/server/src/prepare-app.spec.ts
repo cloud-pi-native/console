@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getPreparedApp } from './prepare-app.js'
 import { getConnection } from './connect.js'
 import { initDb } from './init/db/index.js'
-import app from './app.js'
+import app, { logger } from './app.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin)
 vi.mock('./connect.js')
@@ -11,10 +11,10 @@ vi.mock('./utils/logger.js')
 vi.mock('./init/db/index.js', () => ({ initDb: vi.fn() }))
 
 vi.spyOn(app, 'listen')
-vi.spyOn(app.log, 'info')
-vi.spyOn(app.log, 'warn')
-vi.spyOn(app.log, 'error')
-vi.spyOn(app.log, 'debug')
+vi.spyOn(logger, 'info')
+vi.spyOn(logger, 'warn')
+vi.spyOn(logger, 'error')
+vi.spyOn(logger, 'debug')
 
 describe('server', () => {
   beforeEach(() => {
@@ -49,7 +49,7 @@ describe('server', () => {
     await getPreparedApp()
 
     expect(initDb.mock.calls).toHaveLength(1)
-    expect(app.log.info.mock.calls).toHaveLength(3)
+    expect(logger.info.mock.calls).toHaveLength(3)
   })
 
   it('should throw an error on initDb import', async () => {
@@ -64,7 +64,7 @@ describe('server', () => {
     }
 
     expect(initDb.mock.calls).toHaveLength(1)
-    expect(app.log.info.mock.calls).toHaveLength(2)
+    expect(logger.info.mock.calls).toHaveLength(2)
     expect(response).toMatchObject(error)
   })
 })

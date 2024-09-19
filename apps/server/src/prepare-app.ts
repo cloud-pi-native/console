@@ -2,7 +2,7 @@ import { rm } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { isCI, isDev, isDevSetup, isInt, isProd, isTest, port } from './utils/env.js'
-import app from './app.js'
+import app, { logger } from './app.js'
 import { getConnection } from './connect.js'
 import { initDb } from './init/db/index.js'
 import { initPm } from './plugins.js'
@@ -19,10 +19,10 @@ if (process.env.HTTP_PROXY) {
 }
 
 async function initializeDB(path: string) {
-  app.log.info('Starting init DB...')
+  logger.info('Starting init DB...')
   const { data } = await import(path)
   await initDb(data)
-  app.log.info('initDb invoked successfully')
+  logger.info('initDb invoked successfully')
 }
 
 export async function startServer(defaultPort: number = (port ? +port : 8080)) {
@@ -30,13 +30,13 @@ export async function startServer(defaultPort: number = (port ? +port : 8080)) {
     await getConnection()
   } catch (error) {
     if (!(error instanceof Error)) return
-    app.log.error(error.message)
+    logger.error(error.message)
     throw error
   }
 
   initPm()
 
-  app.log.info('Reading init database file')
+  logger.info('Reading init database file')
 
   try {
     const dataPath = (isProd || isInt)
@@ -44,17 +44,17 @@ export async function startServer(defaultPort: number = (port ? +port : 8080)) {
       : '@cpn-console/test-utils/src/imports/data.ts'
     await initializeDB(dataPath)
     if (isProd && !isDevSetup) {
-      app.log.info('Cleaning up imported data file...')
+      logger.info('Cleaning up imported data file...')
       const __filename = fileURLToPath(import.meta.url)
       const __dirname = dirname(__filename)
       await rm(resolve(__dirname, dataPath))
-      app.log.info(`Successfully deleted '${dataPath}'`)
+      logger.info(`Successfully deleted '${dataPath}'`)
     }
   } catch (error) {
     if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.includes('Failed to load') || error.message.includes('Cannot find module')) {
-      app.log.info('No initDb file, skipping')
+      logger.info('No initDb file, skipping')
     } else {
-      app.log.warn(error.message)
+      logger.warn(error.message)
       throw error
     }
   }
@@ -62,23 +62,23 @@ export async function startServer(defaultPort: number = (port ? +port : 8080)) {
   try {
     await app.listen({ host: '0.0.0.0', port: defaultPort ?? 8080 })
   } catch (error) {
-    app.log.error(error)
+    logger.error(error)
     process.exit(1)
   }
-  app.log.debug({ isDev, isTest, isCI, isDevSetup, isProd })
+  logger.debug({ isDev, isTest, isCI, isDevSetup, isProd })
 }
 
 export async function getPreparedApp() {
   try {
     await getConnection()
   } catch (error) {
-    app.log.error(error.message)
+    logger.error(error.message)
     throw error
   }
 
   initPm()
 
-  app.log.info('Reading init database file')
+  logger.info('Reading init database file')
 
   try {
     const dataPath = (isProd || isInt)
@@ -86,21 +86,21 @@ export async function getPreparedApp() {
       : '@cpn-console/test-utils/src/imports/data.ts'
     await initializeDB(dataPath)
     if (isProd && !isDevSetup) {
-      app.log.info('Cleaning up imported data file...')
+      logger.info('Cleaning up imported data file...')
       const __filename = fileURLToPath(import.meta.url)
       const __dirname = dirname(__filename)
       await rm(resolve(__dirname, dataPath))
-      app.log.info(`Successfully deleted '${dataPath}'`)
+      logger.info(`Successfully deleted '${dataPath}'`)
     }
   } catch (error) {
     if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.includes('Failed to load') || error.message.includes('Cannot find module')) {
-      app.log.info('No initDb file, skipping')
+      logger.info('No initDb file, skipping')
     } else {
-      app.log.warn(error.message)
+      logger.warn(error.message)
       throw error
     }
   }
 
-  app.log.debug({ isDev, isTest, isCI, isDevSetup, isProd })
+  logger.debug({ isDev, isTest, isCI, isDevSetup, isProd })
   return app
 }
