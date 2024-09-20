@@ -37,6 +37,7 @@ export async function getClustersAssociatedWithProject(projectId: Project['id'])
         select: {
           id: true,
           slug: true,
+          argocdUrl: true,
         },
       },
     },

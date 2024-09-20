@@ -60,9 +60,9 @@ async function createZone(zone: CreateZoneBody) {
   snackbarStore.isWaitingForResponse = false
 }
 
-async function updateZone({ zoneId, label, description }: UpdateZoneBody & { zoneId: Zone['id'] }) {
+async function updateZone({ zoneId, label, argocdUrl, description }: UpdateZoneBody & { zoneId: Zone['id'] }) {
   snackbarStore.isWaitingForResponse = true
-  await zoneStore.updateZone(zoneId, { label, description })
+  await zoneStore.updateZone(zoneId, { label, argocdUrl, description })
   await Promise.all([
     zoneStore.getAllZones(),
     clusterStore.getClusters(),
@@ -129,6 +129,7 @@ watch(zones, async () => {
   >
     <ZoneForm
       :all-clusters="allClusters"
+      :associated-clusters="[]"
       class="w-full"
       :is-new-zone="true"
       @add="(zone) => createZone(zone)"

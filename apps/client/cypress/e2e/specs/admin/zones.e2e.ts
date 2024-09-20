@@ -7,6 +7,7 @@ describe('Administration zones', () => {
   const newZone = {
     slug: 'zad',
     label: 'Zone à Défendre',
+    argocdUrl: 'https://vousetesici.fr',
     description: 'Il faut défendre cette zone.',
     // Ne font pas partie de la réponse d'API
     clusters,
@@ -40,6 +41,9 @@ describe('Administration zones', () => {
       cy.getByDataTestid('labelInput')
         .should('have.value', zone.label)
         .and('be.enabled')
+      cy.getByDataTestid('argocdUrlInput')
+        .should('have.value', zone.argocdUrl)
+        .and('be.enabled')
       cy.getByDataTestid('descriptionInput')
         .should('have.value', zone.description)
         .and('be.enabled')
@@ -56,6 +60,7 @@ describe('Administration zones', () => {
     const zone = zones.find(({ slug }) => slug === 'pr')
     const updatedZone = {
       label: 'Zone Mise à Jour',
+      argocdUrl: 'https://vousnetesplusici.fr',
       description: 'Cette zone a été mise à jour.',
     }
     cy.getByDataTestid(`zoneTile-${zone.label}`)
@@ -67,6 +72,9 @@ describe('Administration zones', () => {
     cy.getByDataTestid('labelInput')
       .clear()
       .type(updatedZone.label)
+    cy.getByDataTestid('argocdUrlInput')
+      .clear()
+      .type(updatedZone.argocdUrl)
     cy.getByDataTestid('descriptionInput')
       .clear()
       .type(updatedZone.description)
@@ -85,6 +93,9 @@ describe('Administration zones', () => {
     cy.getByDataTestid('labelInput')
       .should('have.value', updatedZone.label)
       .and('be.enabled')
+    cy.getByDataTestid('argocdUrlInput')
+      .should('have.value', updatedZone.argocdUrl)
+      .and('be.enabled')
     cy.getByDataTestid('descriptionInput')
       .should('have.value', updatedZone.description)
       .and('be.enabled')
@@ -101,6 +112,9 @@ describe('Administration zones', () => {
     cy.getByDataTestid('labelInput')
       .clear()
       .type(zone.label)
+    cy.getByDataTestid('argocdUrlInput')
+      .clear()
+      .type(zone.argocdUrl)
     cy.getByDataTestid('descriptionInput')
       .clear()
       .type(zone.description)
@@ -121,6 +135,9 @@ describe('Administration zones', () => {
     cy.getByDataTestid('labelInput')
       .clear()
       .type(newZone.label)
+    cy.getByDataTestid('argocdUrlInput')
+      .clear()
+      .type(newZone.argocdUrl)
     cy.getByDataTestid('descriptionInput')
       .clear()
       .type(newZone.description)
@@ -145,6 +162,9 @@ describe('Administration zones', () => {
       .and('be.disabled')
     cy.getByDataTestid('labelInput')
       .should('have.value', newZone.label)
+      .and('be.enabled')
+    cy.getByDataTestid('argocdUrlInput')
+      .should('have.value', newZone.argocdUrl)
       .and('be.enabled')
     cy.getByDataTestid('descriptionInput')
       .should('have.value', newZone.description)
@@ -176,6 +196,9 @@ describe('Administration zones', () => {
     cy.getByDataTestid('labelInput')
       .clear()
       .type(newZone.label)
+    cy.getByDataTestid('argocdUrlInput')
+      .clear()
+      .type(newZone.argocdUrl)
     cy.getByDataTestid('descriptionInput')
       .clear()
       .type(newZone.description)
