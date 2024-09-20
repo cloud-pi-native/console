@@ -4,7 +4,7 @@ import { hooks } from '@cpn-console/hooks'
 import type { AsyncReturnType } from '@cpn-console/shared'
 import { ProjectAuthorized, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
 import { genericProxy } from './proxy.js'
-import { archiveProject, getAdminPlugin, getClusterByIdOrThrow, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed } from '@/resources/queries-index.js'
+import { archiveProject, getAdminPlugin, getClusterByIdOrThrow, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed } from '@/resources/queries-index.js'
 import type { ConfigRecords } from '@/resources/project-service/business.js'
 import { dbToObj } from '@/resources/project-service/business.js'
 
@@ -120,6 +120,19 @@ const user = {
   },
 } as const
 
+const zone = {
+  upsert: async (zoneId: Zone['id']) => {
+    const zone = await getZoneByIdOrThrow(zoneId)
+    const store = dbToObj(await getAdminPlugin())
+    return hooks.upsertZone.execute(zone, store)
+  },
+  delete: async (zoneId: Zone['id']) => {
+    const zone = await getZoneByIdOrThrow(zoneId)
+    const store = dbToObj(await getAdminPlugin())
+    return hooks.deleteZone.execute(zone, store)
+  },
+} as const
+
 const misc = {
   fetchOrganizations: async () => {
     const config = dbToObj(await getAdminPlugin())
@@ -150,11 +163,13 @@ export const hook = {
   // @ts-ignore TODO voir comment opti la signature de la fonction
   cluster: genericProxy(cluster, { delete: ['upsert'], upsert: ['delete'] }),
   // @ts-ignore TODO voir comment opti la signature de la fonction
+  zone: genericProxy(zone, { delete: ['upsert'], upsert: ['delete'] }),
+  // @ts-ignore TODO voir comment opti la signature de la fonction
   user: genericProxy(user, {}),
 }
 
 function formatClusterInfos({ kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt' | 'createdAt' | 'zoneId' | 'kubeConfigId'>
-  & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug'> }) {
+  & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug' | 'argocdUrl'> }) {
   return {
     user: kubeconfig.user as unknown as KubeUser,
     cluster: kubeconfig.cluster as unknown as KubeCluster,

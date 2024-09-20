@@ -1,25 +1,24 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import type { Cluster, CreateZoneBody, Quota, SharedZodError, UpdateZoneBody, Zone } from '@cpn-console/shared'
+import type { Cluster, CreateZoneBody, SharedZodError, UpdateZoneBody, Zone } from '@cpn-console/shared'
 import { ZoneSchema } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
   isNewZone: boolean
-  zone: Zone & { clusterIds: Cluster['id'][] }
-  allQuotas: Quota[]
+  zone?: Zone & { clusterIds: Cluster['id'][] }
   allClusters: Cluster[]
-  associatedClusters: unknown[]
+  associatedClusters: Cluster[]
 }>(), {
   isNewZone: false,
   zone: () => ({
     id: '',
     label: '',
     slug: '',
+    argocdUrl: '',
     description: '',
     clusterIds: [],
   }),
-  allQuotas: () => [],
   allClusters: () => [],
   associatedClusters: () => [],
 })
@@ -57,6 +56,7 @@ function updateZone() {
   const updatedZone = {
     zoneId: localZone.value.id,
     label: localZone.value.label,
+    argocdUrl: localZone.value.argocdUrl,
     description: localZone.value.description,
     clusterIds: localZone.value.clusterIds,
   }
@@ -96,6 +96,16 @@ onBeforeMount(() => {
       :required="true"
       data-testid="labelInput"
       placeholder="Zone Publique"
+    />
+    <DsfrInputGroup
+      v-model="localZone.argocdUrl"
+      data-testid="argocdUrlInput"
+      :error-message="errorSchema?.flatten().fieldErrors.argocdUrl"
+      type="text"
+      :required="true"
+      label="URL de l'instance ArgoCD dédiée aux déploiements de cette zone."
+      label-visible
+      hint="Cette URL est notamment utilisée pour configurer l'OIDC Keycloak. Elle peut être mise à jour ultérieurement."
     />
     <DsfrInputGroup
       v-model="localZone.description"
