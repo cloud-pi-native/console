@@ -1,17 +1,18 @@
 import { z } from 'zod'
-import { AdminTokenSchema, CoerceBooleanSchema, ExposedAdminTokenSchema, apiPrefix, contractInstance } from '../index.js'
-import { ErrorSchema } from '../schemas/utils.js'
+import { AdminTokenSchema, ExposedAdminTokenSchema, apiPrefix, contractInstance } from '../index.js'
+import { CoerceBooleanSchema } from '../schemas/_utils.js'
+import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const adminTokenContract = contractInstance.router({
   listAdminTokens: {
     method: 'GET',
     path: `${apiPrefix}/admin/tokens`,
     query: z.object({
-      withRevoked: z.lazy(() => CoerceBooleanSchema)
+      withRevoked: CoerceBooleanSchema
         .optional(),
     }),
     responses: {
-      200: z.lazy(() => AdminTokenSchema.array()),
+      200: AdminTokenSchema.array(),
       400: ErrorSchema,
       401: ErrorSchema,
       403: ErrorSchema,
@@ -22,9 +23,9 @@ export const adminTokenContract = contractInstance.router({
   createAdminToken: {
     method: 'POST',
     path: `${apiPrefix}/admin/tokens`,
-    body: z.lazy(() => AdminTokenSchema.pick({ name: true, permissions: true, expirationDate: true }).required()),
+    body: AdminTokenSchema.pick({ name: true, permissions: true, expirationDate: true }).required(),
     responses: {
-      201: z.lazy(() => ExposedAdminTokenSchema),
+      201: ExposedAdminTokenSchema,
       400: ErrorSchema,
       401: ErrorSchema,
       403: ErrorSchema,
@@ -45,4 +46,6 @@ export const adminTokenContract = contractInstance.router({
       404: ErrorSchema,
     },
   },
+}, {
+  baseHeaders,
 })

@@ -1,12 +1,8 @@
 import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
+import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
-import {
-  CreateStageSchema,
-  DeleteStageSchema,
-  GetStageEnvironmentsSchema,
-  ListStagesSchema,
-  UpdateStageSchema,
-} from '../schemas/index.js'
+import { StageSchema } from '../schemas/index.js'
+import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const stageContract = contractInstance.router({
   listStages: {
@@ -14,7 +10,10 @@ export const stageContract = contractInstance.router({
     path: `${apiPrefix}/stages`,
     summary: 'Get stages',
     description: 'Retrieved all stages.',
-    responses: ListStagesSchema.responses,
+    responses: {
+      200: StageSchema.array(),
+      500: ErrorSchema,
+    },
   },
 
   createStage: {
@@ -23,17 +22,35 @@ export const stageContract = contractInstance.router({
     contentType: 'application/json',
     summary: 'Create stage',
     description: 'Create new stage.',
-    body: CreateStageSchema.body,
-    responses: CreateStageSchema.responses,
+    body: StageSchema.omit({ id: true }).partial({ clusterIds: true, quotaIds: true }),
+    responses: {
+      201: StageSchema,
+      400: ErrorSchema,
+      401: ErrorSchema,
+      500: ErrorSchema,
+    },
   },
 
   getStageEnvironments: {
     method: 'GET',
     path: `${apiPrefix}/stages/:stageId/environments`,
-    pathParams: GetStageEnvironmentsSchema.params,
     summary: 'Get stages',
     description: 'Retrieved all stages.',
-    responses: GetStageEnvironmentsSchema.responses,
+    pathParams: z.object({
+      stageId: z.string()
+        .uuid(),
+    }),
+    responses: {
+      200: z.array(z.object({
+        organization: z.string(),
+        project: z.string(),
+        name: z.string(),
+        quota: z.string(),
+        cluster: z.string(),
+        owner: z.string().optional(),
+      })),
+      500: ErrorSchema,
+    },
   },
 
   updateStage: {
@@ -41,9 +58,15 @@ export const stageContract = contractInstance.router({
     path: `${apiPrefix}/stages/:stageId`,
     summary: 'Update stage',
     description: 'Update a stage by its ID.',
-    pathParams: UpdateStageSchema.params,
-    body: UpdateStageSchema.body,
-    responses: UpdateStageSchema.responses,
+    pathParams: z.object({
+      stageId: z.string()
+        .uuid(),
+    }),
+    body: StageSchema.pick({ clusterIds: true, name: true, quotaIds: true }).partial(),
+    responses: {
+      200: StageSchema,
+      500: ErrorSchema,
+    },
   },
 
   deleteStage: {
@@ -51,10 +74,18 @@ export const stageContract = contractInstance.router({
     path: `${apiPrefix}/stages/:stageId`,
     summary: 'Delete stage',
     description: 'Delete a stage by its ID.',
-    pathParams: DeleteStageSchema.params,
     body: null,
-    responses: DeleteStageSchema.responses,
+    pathParams: z.object({
+      stageId: z.string()
+        .uuid(),
+    }),
+    responses: {
+      204: null,
+      500: ErrorSchema,
+    },
   },
+}, {
+  baseHeaders,
 })
 
 export type CreateStageBody = ClientInferRequest<typeof stageContract.createStage>['body']

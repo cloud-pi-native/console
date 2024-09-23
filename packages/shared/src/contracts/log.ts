@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../index.js'
-import { AtDatesToStringExtend, ErrorSchema } from '../schemas/utils.js'
+import { AtDatesToStringExtend } from '../schemas/_utils.js'
+import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const adminLogsQuery = z.object({
   offset: z.coerce.number(),
@@ -37,6 +38,8 @@ export const logContract = contractInstance.router({
       500: ErrorSchema,
     },
   },
+}, {
+  baseHeaders,
 })
 
 export type GetLogsQuery = ClientInferRequest<typeof logContract.getLogs>['query']

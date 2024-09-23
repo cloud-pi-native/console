@@ -1,5 +1,5 @@
-import type { Repository, User } from '@prisma/client'
-import type { CreateRepositoryBody, Project, UpdateRepositoryBody } from '@cpn-console/shared'
+import type { Project, Repository, User } from '@prisma/client'
+import type { CreateRepositoryBody, UpdateRepositoryBody } from '@cpn-console/shared'
 import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfosAndRepos, getProjectRepositories as getProjectRepositoriesQuery, initializeRepository, updateRepository as updateRepositoryQuery } from '@/resources/queries-index.js'
 import { BadRequest400, Unprocessable422 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
