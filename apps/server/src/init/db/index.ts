@@ -1,5 +1,5 @@
-import app from '../../app.js'
 import { modelKeys } from './utils.js'
+import { logger } from '@/app.js'
 import prisma from '@/prisma.js'
 
 type ExtractKeysWithFields<T> = {
@@ -24,17 +24,17 @@ export async function initDb(data: Imports) {
     }
     return value
   })
-  app.log.info('Drop tables')
+  logger.info('Drop tables')
   for (const modelKey of modelKeys.toReversed()) {
     // @ts-ignore
     await prisma[modelKey].deleteMany()
   }
-  app.log.info('Import models')
+  logger.info('Import models')
   for (const modelKey of modelKeys) {
     // @ts-ignore
     await prisma[modelKey].createMany({ data: dataParsed[modelKey] })
   }
-  app.log.info('Import associations')
+  logger.info('Import associations')
   for (const [modelKey, rows] of dataParsed.associations) {
     for (const row of rows) {
       const idKey = 'id'
@@ -47,5 +47,5 @@ export async function initDb(data: Imports) {
       await prisma[modelKey].update({ where: { id: row.id }, data: dataConnects })
     }
   }
-  app.log.info('End import')
+  logger.info('End import')
 }

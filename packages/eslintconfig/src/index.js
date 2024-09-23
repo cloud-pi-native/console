@@ -32,6 +32,7 @@ export default antfu(
     },
     ignores: [
       '**/node_modules',
+      '**/prisma/migrations',
       '**/pnpm-lock.yaml',
       '**/.turbo',
       '**/dist/',

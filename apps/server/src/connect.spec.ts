@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { PrismaClientInitializationError } from '@prisma/client/runtime/library.js'
 import prisma from './__mocks__/prisma.js'
-import app from './app.js'
+import app, { logger } from './app.js'
 import { getConnection } from './connect.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin)
@@ -18,10 +18,10 @@ vi.mock('./models/zone.js', () => getModel('getZoneModel'))
 vi.mock('./prisma.js')
 
 vi.spyOn(app, 'listen')
-vi.spyOn(app.log, 'info')
-vi.spyOn(app.log, 'warn')
-vi.spyOn(app.log, 'error')
-vi.spyOn(app.log, 'debug')
+vi.spyOn(logger, 'info')
+vi.spyOn(logger, 'warn')
+vi.spyOn(logger, 'error')
+vi.spyOn(logger, 'debug')
 
 function getModel(modelName) {
   return {
@@ -42,9 +42,9 @@ describe('connect', () => {
   it('should connect to postgres', async () => {
     await getConnection()
 
-    expect(app.log.info.mock.calls).toHaveLength(2)
-    expect(app.log.info.mock.calls).toContainEqual([`Trying to connect to Postgres with: ${process.env.DB_URL}`])
-    expect(app.log.info.mock.calls).toContainEqual(['Connected to Postgres!'])
+    expect(logger.info.mock.calls).toHaveLength(2)
+    expect(logger.info.mock.calls).toContainEqual([`Trying to connect to Postgres with: ${process.env.DB_URL}`])
+    expect(logger.info.mock.calls).toContainEqual(['Connected to Postgres!'])
   })
 
   it('should fail to connect once, then connect to postgres', async () => {
@@ -53,10 +53,10 @@ describe('connect', () => {
     prisma.$connect.mockRejectedValueOnce(errorToCatch)
     await getConnection()
 
-    expect(app.log.info.mock.calls).toHaveLength(5)
-    expect(app.log.info.mock.calls).toContainEqual([`Trying to connect to Postgres with: ${process.env.DB_URL}`])
-    expect(app.log.info.mock.calls).toContainEqual(['Could not connect to Postgres: Failed to connect'])
-    expect(app.log.info.mock.calls).toContainEqual(['Retrying (4 tries left)'])
-    expect(app.log.info.mock.calls).toContainEqual(['Connected to Postgres!'])
+    expect(logger.info.mock.calls).toHaveLength(5)
+    expect(logger.info.mock.calls).toContainEqual([`Trying to connect to Postgres with: ${process.env.DB_URL}`])
+    expect(logger.info.mock.calls).toContainEqual(['Could not connect to Postgres: Failed to connect'])
+    expect(logger.info.mock.calls).toContainEqual(['Retrying (4 tries left)'])
+    expect(logger.info.mock.calls).toContainEqual(['Connected to Postgres!'])
   })
 })
