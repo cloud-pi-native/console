@@ -1,7 +1,6 @@
 import { z } from 'zod'
-import { permissionLevelSchema } from '../utils/permissions.js'
-import { dateToString } from './utils.js'
 import { UserSchema } from './user.js'
+import { dateToString, permissionLevelSchema } from './_utils.js'
 
 export const TokenSchema = z.object({
   id: z.string().uuid(),
@@ -12,16 +11,15 @@ export const TokenSchema = z.object({
   lastUse: dateToString.nullable(),
   expirationDate: dateToString.nullable(),
   createdAt: dateToString,
-  createdBy: z.lazy(() => UserSchema
-    .pick({ email: true, firstName: true, lastName: true, id: true }),
-  )
+  createdBy: UserSchema
+    .pick({ email: true, firstName: true, lastName: true, id: true })
     .optional()
     .nullable(),
   status: z.enum(['active', 'revoked']),
 })
 
 export const AdminTokenSchema = TokenSchema.extend({
-  permissions: z.lazy(() => permissionLevelSchema),
+  permissions: permissionLevelSchema,
 })
 
 export const ExposedAdminTokenSchema = AdminTokenSchema.extend({

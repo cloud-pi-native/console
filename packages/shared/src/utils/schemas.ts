@@ -1,5 +1,5 @@
 // import Joi from 'joi'
-import { type SafeParseReturnType, type ZodError, type ZodObject, z } from 'zod'
+import type { SafeParseReturnType, ZodError, ZodObject } from 'zod'
 import { fromZodError } from 'zod-validation-error'
 
 export type SharedZodError = ZodError
@@ -18,7 +18,3 @@ export function instanciateSchema<T extends ZodObject<any>, V extends boolean>(s
   // @ts-ignore
   return {}
 }
-
-export const CoerceBooleanSchema = z.boolean()
-  .or(z.enum(['true', 'false'])
-    .transform(value => value === 'true'))

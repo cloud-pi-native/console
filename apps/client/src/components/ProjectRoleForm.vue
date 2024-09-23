@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import type { Member, Project, RoleBigint } from '@cpn-console/shared'
+import type { Member, ProjectV2, RoleBigint } from '@cpn-console/shared'
 import { PROJECT_PERMS, projectPermsDetails, shallowEqual } from '@cpn-console/shared'
 
 const props = defineProps<{
@@ -8,7 +8,7 @@ const props = defineProps<{
   permissions: bigint
   name: string
   allMembers: Member[]
-  projectId: Project['id']
+  projectId: ProjectV2['id']
   isEveryone: boolean
 }>()
 
