@@ -57,10 +57,6 @@ jobs:
       - name: Checks-out repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker buildx
-        if: ${{ matrix.images.build != false }}
-        uses: docker/setup-buildx-action@v3
-
       - name: Run Trivy vulnerability scanner on images
         uses: aquasecurity/trivy-action@master
         with:
@@ -70,6 +66,7 @@ jobs:
           vuln-type: "os,library"
           ignore-unfixed: true
           output: trivy-results.sarif
+          github-pat: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Upload Trivy scan results to GitHub Security tab
@@ -96,6 +93,7 @@ jobs:
           skip-dirs: "**/node_modules,ci"
           ignore-unfixed: true
           output: trivy-results.sarif
+          github-pat: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Upload Trivy scan results to GitHub Security tab
