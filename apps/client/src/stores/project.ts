@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { CreateProjectBody, Organization, ProjectV2, Role, UpdateProjectBody, projectContract, projectRoleContract } from '@cpn-console/shared'
+import type { CreateProjectBody, Organization, ProjectV2, Role, projectContract, projectRoleContract } from '@cpn-console/shared'
 import { PROJECT_PERMS, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
 import { useUserStore } from './user.js'
 import { useOrganizationStore } from './organization.js'
@@ -37,7 +37,7 @@ export const useProjectStore = defineStore('project', () => {
     }
   }
 
-  const updateProject = async (projectId: string, data: UpdateProjectBody) => {
+  const updateProject = async (projectId: string, data: typeof projectContract.updateProject.body._type) => {
     const project = await apiClient.Projects.updateProject({ body: data, params: { projectId } })
       .then(response => extractData(response, 200))
     await listProjects()

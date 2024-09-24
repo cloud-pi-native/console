@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
-import { type Project, ProjectAuthorized, descriptionMaxLength, projectIsLockedInfo } from '@cpn-console/shared'
+import type { ProjectV2 } from '@cpn-console/shared'
+import { ProjectAuthorized, descriptionMaxLength, projectIsLockedInfo } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import router from '@/router/index.js'
@@ -21,7 +22,7 @@ const allStages = ref<Array<any>>([])
 
 const isReprovisionning = ref(false)
 
-async function updateProject(projectId?: Project['id']) {
+async function updateProject(projectId?: ProjectV2['id']) {
   if (!projectId) return
   snackbarStore.isWaitingForResponse = true
   isReprovisionning.value = true
@@ -30,7 +31,7 @@ async function updateProject(projectId?: Project['id']) {
   snackbarStore.isWaitingForResponse = false
 }
 
-async function replayHooks(projectId: Project['id']) {
+async function replayHooks(projectId: ProjectV2['id']) {
   if (isReprovisionning.value) return
   isReprovisionning.value = true
   await useProjectStore().replayHooksForProject(projectId)
@@ -38,14 +39,14 @@ async function replayHooks(projectId: Project['id']) {
   isReprovisionning.value = false
 }
 
-async function archiveProject(projectId: Project['id']) {
+async function archiveProject(projectId: ProjectV2['id']) {
   snackbarStore.isWaitingForResponse = true
   await projectStore.archiveProject(projectId)
   router.push('/projects')
   snackbarStore.isWaitingForResponse = false
 }
 
-function getDynamicTitle(locked?: Project['locked'], description?: Project['description']) {
+function getDynamicTitle(locked?: ProjectV2['locked'], description?: ProjectV2['description']) {
   if (locked) return projectIsLockedInfo
   if (description) return 'Editer la description'
   return 'Ajouter une description'

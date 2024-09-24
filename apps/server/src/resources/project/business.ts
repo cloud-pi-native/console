@@ -1,14 +1,8 @@
 import { json2csv } from 'json-2-csv'
 import { servicesInfos } from '@cpn-console/hooks'
 import type { Project, User } from '@prisma/client'
-import type {
-  CreateProjectBody,
-  UpdateProjectBody,
-  projectContract,
-} from '@cpn-console/shared'
-import {
-  ProjectStatusSchema,
-} from '@cpn-console/shared'
+import type { projectContract } from '@cpn-console/shared'
+import { ProjectStatusSchema } from '@cpn-console/shared'
 import { logUser } from '../user/business.js'
 import {
   addLogs,
@@ -60,7 +54,7 @@ export async function getProjectSecrets(projectId: string) {
   )
 }
 
-export async function createProject(dataDto: CreateProjectBody, { groups, ...requestor }: UserDetails, requestId: string) {
+export async function createProject(dataDto: typeof projectContract.createProject.body._type, { groups, ...requestor }: UserDetails, requestId: string) {
   // Pré-requis
   const owner = await logUser({ groups, ...requestor })
   const organization = await getOrganizationById(dataDto.organizationId)
@@ -89,7 +83,12 @@ export async function createProject(dataDto: CreateProjectBody, { groups, ...req
   }
 }
 
-export async function updateProject({ description, ownerId, everyonePerms, locked }: UpdateProjectBody, projectId: Project['id'], requestor: UserDetails, requestId: string) {
+export async function updateProject(
+  { description, ownerId, everyonePerms, locked }: typeof projectContract.updateProject.body._type,
+  projectId: Project['id'],
+  requestor: UserDetails,
+  requestId: string,
+) {
   if (typeof locked === 'string') {
     if (locked === 'true') {
       locked = true

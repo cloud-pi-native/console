@@ -6,6 +6,7 @@ export const invalidGitUrl = 'L\'adresse doit commencer par https et se terminer
 export const invalidInternalRepoName = 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique'
 
 export const fakeToken = 'fakeToken'
+export const tokenHeaderName = 'x-dso-token'
 
 export const levels = [
   'r',

@@ -2,7 +2,8 @@ import type { ClientInferRequest } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import { OrganizationSchema } from '../schemas/index.js'
-import { AtDatesToStringExtend, ErrorSchema } from '../schemas/utils.js'
+import { AtDatesToStringExtend } from '../schemas/_utils.js'
+import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const organizationContract = contractInstance.router({
   listOrganizations: {
@@ -70,6 +71,8 @@ export const organizationContract = contractInstance.router({
       500: ErrorSchema,
     },
   },
+}, {
+  baseHeaders,
 })
 
 export type CreateOrganizationBody = ClientInferRequest<typeof organizationContract.createOrganization>['body']
