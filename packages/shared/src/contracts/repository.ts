@@ -1,13 +1,13 @@
 import type { ClientInferRequest } from '@ts-rest/core'
 import { z } from 'zod'
-import { apiPrefix, contractInstance } from '../api-client.js'
-import { RepoSchema } from '../index.js'
+import { contractInstance } from '../api-client.js'
+import { RepoSchema, apiPrefix } from '../index.js'
 import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const repositoryContract = contractInstance.router({
   createRepository: {
     method: 'POST',
-    path: `${apiPrefix}/repositories`,
+    path: '',
     contentType: 'application/json',
     summary: 'Create repo',
     description: 'Create new repo.',
@@ -23,7 +23,7 @@ export const repositoryContract = contractInstance.router({
 
   listRepositories: {
     method: 'GET',
-    path: `${apiPrefix}/repositories`,
+    path: '',
     summary: 'Get repos',
     description: 'Retrieved all repos.',
     query: z.object({
@@ -38,7 +38,7 @@ export const repositoryContract = contractInstance.router({
 
   syncRepository: {
     method: 'POST',
-    path: `${apiPrefix}/repositories/:repositoryId/sync`,
+    path: `/:repositoryId/sync`,
     summary: 'application/json',
     description: 'Trigger a gitlab synchronization for a repository',
     pathParams: z.object({
@@ -60,7 +60,7 @@ export const repositoryContract = contractInstance.router({
 
   updateRepository: {
     method: 'PUT',
-    path: `${apiPrefix}/repositories/:repositoryId`,
+    path: `/:repositoryId`,
     summary: 'Update repo',
     description: 'Update a repo by its ID.',
     pathParams: z.object({
@@ -76,7 +76,7 @@ export const repositoryContract = contractInstance.router({
 
   deleteRepository: {
     method: 'DELETE',
-    path: `${apiPrefix}/repositories/:repositoryId`,
+    path: `/:repositoryId`,
     summary: 'Delete repo',
     description: 'Delete a repo by its ID.',
     body: null,
@@ -91,6 +91,7 @@ export const repositoryContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/repositories`,
 })
 
 export type CreateRepositoryBody = ClientInferRequest<typeof repositoryContract.createRepository>['body']

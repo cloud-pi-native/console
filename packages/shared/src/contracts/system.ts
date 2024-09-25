@@ -11,7 +11,7 @@ import { ErrorSchema, baseHeaders } from './_utils.js'
 export const systemContract = contractInstance.router({
   getVersion: {
     method: 'GET',
-    path: `${apiPrefix}/version`,
+    path: `/version`,
     summary: 'Get version',
     description: 'Retrieve api version.',
     responses: {
@@ -24,7 +24,7 @@ export const systemContract = contractInstance.router({
 
   getHealth: {
     method: 'GET',
-    path: `${apiPrefix}/healthz`,
+    path: `/healthz`,
     summary: 'Get health',
     description: 'Retrieve api health infos.',
     responses: {
@@ -34,12 +34,14 @@ export const systemContract = contractInstance.router({
       500: ErrorSchema,
     },
   },
+}, {
+  pathPrefix: `${apiPrefix}`,
 })
 
 export const systemPluginContract = contractInstance.router({
   getPluginsConfig: {
     method: 'GET',
-    path: `${apiPrefix}/system/plugins`,
+    path: '',
     summary: 'Get plugins configuration',
     description: 'Get plugins configuration',
     responses: {
@@ -52,7 +54,7 @@ export const systemPluginContract = contractInstance.router({
 
   updatePluginsConfig: {
     method: 'POST',
-    path: `${apiPrefix}/system/plugins`,
+    path: '',
     summary: 'Update project service configuration',
     description: 'Update project service configuration',
     body: pluginUpdateBody,
@@ -66,12 +68,13 @@ export const systemPluginContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/system/plugins`,
 })
 
 export const systemSettingsContract = contractInstance.router({
   listSystemSettings: {
     method: 'GET',
-    path: `${apiPrefix}/system/settings`,
+    path: '',
     summary: 'Get System Settings state',
     description: 'Get System Settings state',
     query: SystemSettingSchema.pick({ key: true })
@@ -84,7 +87,7 @@ export const systemSettingsContract = contractInstance.router({
 
   upsertSystemSetting: {
     method: 'POST',
-    path: `${apiPrefix}/system/settings`,
+    path: '',
     contentType: 'application/json',
     summary: 'Update System Settings state',
     description: 'Update System Settings state',
@@ -98,6 +101,7 @@ export const systemSettingsContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/system/settings`,
 })
 
 export type SystemSettings = ClientInferResponseBody<typeof systemSettingsContract.listSystemSettings, 200>

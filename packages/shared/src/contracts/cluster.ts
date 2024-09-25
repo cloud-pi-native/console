@@ -18,7 +18,7 @@ export const ClusterParams = z.object({
 export const clusterContract = contractInstance.router({
   listClusters: {
     method: 'GET',
-    path: `${apiPrefix}/clusters`,
+    path: '',
     summary: 'Get clusters',
     description: 'Retrieve clusters authorized for user',
     responses: {
@@ -30,7 +30,7 @@ export const clusterContract = contractInstance.router({
 
   createCluster: {
     method: 'POST',
-    path: `${apiPrefix}/clusters`,
+    path: '',
     contentType: 'application/json',
     summary: 'Create cluster',
     description: 'Create new cluster.',
@@ -45,7 +45,7 @@ export const clusterContract = contractInstance.router({
 
   getClusterDetails: {
     method: 'GET',
-    path: `${apiPrefix}/clusters/:clusterId`,
+    path: `/:clusterId`,
     summary: 'Get cluster details',
     description: 'Retrieved details of a cluster.',
     pathParams: ClusterParams,
@@ -59,7 +59,7 @@ export const clusterContract = contractInstance.router({
 
   getClusterEnvironments: {
     method: 'GET',
-    path: `${apiPrefix}/clusters/:clusterId/environments`,
+    path: `/:clusterId/environments`,
     summary: 'Get cluster envs',
     description: 'Retrieved environments linked to a cluster.',
     pathParams: ClusterParams,
@@ -79,7 +79,7 @@ export const clusterContract = contractInstance.router({
 
   updateCluster: {
     method: 'PUT',
-    path: `${apiPrefix}/clusters/:clusterId`,
+    path: `/:clusterId`,
     summary: 'Update cluster',
     description: 'Update a cluster by its ID.',
     pathParams: ClusterParams,
@@ -95,7 +95,7 @@ export const clusterContract = contractInstance.router({
 
   deleteCluster: {
     method: 'DELETE',
-    path: `${apiPrefix}/clusters/:clusterId`,
+    path: `/:clusterId`,
     summary: 'Delete cluster',
     description: 'Delete a cluster by its ID.',
     query: z.object({ force: CoerceBooleanSchema.optional() }),
@@ -112,6 +112,7 @@ export const clusterContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/clusters`,
 })
 
 export type ClusterAssociatedEnvironments = ClientInferResponseBody<typeof clusterContract.getClusterEnvironments, 200>

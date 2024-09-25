@@ -9,7 +9,7 @@ import { ErrorSchema, baseHeaders } from './_utils.js'
 export const environmentContract = contractInstance.router({
   createEnvironment: {
     method: 'POST',
-    path: `${apiPrefix}/environments`,
+    path: '',
     contentType: 'application/json',
     summary: 'Create environment',
     description: 'Create new environment.',
@@ -24,7 +24,7 @@ export const environmentContract = contractInstance.router({
 
   listEnvironments: {
     method: 'GET',
-    path: `${apiPrefix}/environments`,
+    path: '',
     summary: 'Get environments',
     description: 'Retrieved project environments.',
     query: z.object({
@@ -43,7 +43,7 @@ export const environmentContract = contractInstance.router({
 
   updateEnvironment: {
     method: 'PUT',
-    path: `${apiPrefix}/environments/:environmentId`,
+    path: `/:environmentId`,
     summary: 'Update environment',
     description: 'Update a environment by its ID.',
     pathParams: z.object({
@@ -63,7 +63,7 @@ export const environmentContract = contractInstance.router({
 
   deleteEnvironment: {
     method: 'DELETE',
-    path: `${apiPrefix}/environments/:environmentId`,
+    path: `/:environmentId`,
     summary: 'Delete environment',
     description: 'Delete a environment by its ID.',
     body: null,
@@ -82,6 +82,7 @@ export const environmentContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/environments`,
 })
 
 export type CreateEnvironmentBody = ClientInferRequest<typeof environmentContract.createEnvironment>['body']

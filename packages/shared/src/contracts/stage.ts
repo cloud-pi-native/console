@@ -7,7 +7,7 @@ import { ErrorSchema, baseHeaders } from './_utils.js'
 export const stageContract = contractInstance.router({
   listStages: {
     method: 'GET',
-    path: `${apiPrefix}/stages`,
+    path: '',
     summary: 'Get stages',
     description: 'Retrieved all stages.',
     responses: {
@@ -18,7 +18,7 @@ export const stageContract = contractInstance.router({
 
   createStage: {
     method: 'POST',
-    path: `${apiPrefix}/stages`,
+    path: '',
     contentType: 'application/json',
     summary: 'Create stage',
     description: 'Create new stage.',
@@ -33,7 +33,7 @@ export const stageContract = contractInstance.router({
 
   getStageEnvironments: {
     method: 'GET',
-    path: `${apiPrefix}/stages/:stageId/environments`,
+    path: `/:stageId/environments`,
     summary: 'Get stages',
     description: 'Retrieved all stages.',
     pathParams: z.object({
@@ -55,7 +55,7 @@ export const stageContract = contractInstance.router({
 
   updateStage: {
     method: 'PUT',
-    path: `${apiPrefix}/stages/:stageId`,
+    path: `/:stageId`,
     summary: 'Update stage',
     description: 'Update a stage by its ID.',
     pathParams: z.object({
@@ -71,7 +71,7 @@ export const stageContract = contractInstance.router({
 
   deleteStage: {
     method: 'DELETE',
-    path: `${apiPrefix}/stages/:stageId`,
+    path: `/:stageId`,
     summary: 'Delete stage',
     description: 'Delete a stage by its ID.',
     body: null,
@@ -86,6 +86,7 @@ export const stageContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/stages`,
 })
 
 export type CreateStageBody = ClientInferRequest<typeof stageContract.createStage>['body']

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { apiPrefix } from '@cpn-console/shared'
+import { swaggerUiPath } from '@cpn-console/shared'
 import { getKeycloak } from './utils/keycloak/keycloak.js'
 import { useSnackbarStore } from './stores/snackbar.js'
 import { useSystemSettingsStore } from './stores/system-settings.js'
@@ -10,19 +10,15 @@ const snackbarStore = useSnackbarStore()
 const systemStore = useSystemSettingsStore()
 
 const isLoggedIn = ref<boolean | undefined>(keycloak.authenticated)
-const label = ref(isLoggedIn.value ? 'Se déconnecter' : 'Se connecter')
-const to = ref(isLoggedIn.value ? '/logout' : '/login')
 
 const appVersion: string = process.env.APP_VERSION ? `v${process.env.APP_VERSION}` : 'vpr-dev'
 
-const quickLinks = ref([{
-  label,
-  to,
+const quickLinks = computed(() => [{
+  label: isLoggedIn.value ? 'Se déconnecter' : 'Se connecter',
+  to: isLoggedIn.value ? '/logout' : '/login',
   icon: 'ri:account-circle-line',
   iconRight: true,
 }])
-
-const getSwaggerUrl = () => `${window?.location?.origin}${apiPrefix}/swagger-ui/static/index.html`
 
 onErrorCaptured((error) => {
   if (error instanceof Error) {
@@ -32,10 +28,6 @@ onErrorCaptured((error) => {
   }
   snackbarStore.isWaitingForResponse = false
   return false
-})
-
-watch(label, (label: string) => {
-  quickLinks.value[0].label = label
 })
 
 const serviceStore = useServiceStore()
@@ -78,7 +70,7 @@ onBeforeMount(() => {
       >
         <a
           data-testid="swaggerUrl"
-          :href="getSwaggerUrl()"
+          :href="swaggerUiPath"
           title="accéder au swagger"
         >
           swagger

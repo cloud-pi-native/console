@@ -7,7 +7,7 @@ import { ErrorSchema, baseHeaders } from './_utils.js'
 export const quotaContract = contractInstance.router({
   listQuotas: {
     method: 'GET',
-    path: `${apiPrefix}/quotas`,
+    path: '',
     summary: 'Get quotas',
     description: 'Retrieve all quotas.',
     responses: {
@@ -18,7 +18,7 @@ export const quotaContract = contractInstance.router({
 
   createQuota: {
     method: 'POST',
-    path: `${apiPrefix}/quotas`,
+    path: '',
     contentType: 'application/json',
     summary: 'Create quota',
     description: 'Create new quota.',
@@ -34,7 +34,7 @@ export const quotaContract = contractInstance.router({
 
   listQuotaEnvironments: {
     method: 'GET',
-    path: `${apiPrefix}/quotas/:quotaId/environments`,
+    path: `/:quotaId/environments`,
     summary: 'Get a quota\'s environment',
     description: 'Retrieved environments associated to a quota.',
     pathParams: z.object({
@@ -57,7 +57,7 @@ export const quotaContract = contractInstance.router({
 
   updateQuota: {
     method: 'PUT',
-    path: `${apiPrefix}/quotas/:quotaId`,
+    path: `/:quotaId`,
     summary: 'Update a quota privacy',
     description: 'Update a quota privacy.',
     pathParams: z.object({
@@ -80,7 +80,7 @@ export const quotaContract = contractInstance.router({
 
   deleteQuota: {
     method: 'DELETE',
-    path: `${apiPrefix}/quotas/:quotaId`,
+    path: `/:quotaId`,
     summary: 'Delete quota',
     description: 'Delete a quota by its ID.',
     body: null,
@@ -96,6 +96,7 @@ export const quotaContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/quotas`,
 })
 
 export type CreateQuotaBody = ClientInferRequest<typeof quotaContract.createQuota>['body']

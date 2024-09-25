@@ -5,7 +5,7 @@ import { ErrorSchema, baseHeaders } from './_utils.js'
 export const projectMemberContract = contractInstance.router({
   listMembers: {
     method: 'GET',
-    path: `${apiPrefix}/projects/:projectId/members`,
+    path: '',
     pathParams: z.object({ projectId: z.string().uuid() }),
     responses: {
       200: MemberSchema.array(),
@@ -17,7 +17,7 @@ export const projectMemberContract = contractInstance.router({
   },
   addMember: {
     method: 'POST',
-    path: `${apiPrefix}/projects/:projectId/members`,
+    path: '',
     body: z.object({ email: z.string() }).or(z.object({ userId: z.string() })),
     pathParams: z.object({ projectId: z.string().uuid() }),
     responses: {
@@ -30,7 +30,7 @@ export const projectMemberContract = contractInstance.router({
   },
   patchMembers: {
     method: 'PATCH',
-    path: `${apiPrefix}/projects/:projectId/members`,
+    path: '',
     body: z.object({
       userId: z.string().uuid(),
       roles: z.string().uuid().array(),
@@ -46,7 +46,7 @@ export const projectMemberContract = contractInstance.router({
   },
   removeMember: {
     method: 'DELETE',
-    path: `${apiPrefix}/projects/:projectId/members/:userId`,
+    path: `/:userId`,
     pathParams: z.object({
       projectId: z.string().uuid(),
       userId: z.string().uuid(),
@@ -62,4 +62,5 @@ export const projectMemberContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/projects/:projectId/members`,
 })
