@@ -9,7 +9,7 @@ import { ErrorSchema, baseHeaders } from './_utils.js'
 export const zoneContract = contractInstance.router({
   listZones: {
     method: 'GET',
-    path: `${apiPrefix}/zones`,
+    path: '',
     summary: 'Get zones',
     description: 'Get all zones.',
     responses: {
@@ -23,7 +23,7 @@ export const zoneContract = contractInstance.router({
 
   createZone: {
     method: 'POST',
-    path: `${apiPrefix}/zones`,
+    path: '',
     contentType: 'application/json',
     summary: 'Create zone',
     description: 'Create new zone.',
@@ -41,7 +41,7 @@ export const zoneContract = contractInstance.router({
 
   updateZone: {
     method: 'PUT',
-    path: `${apiPrefix}/zones/:zoneId`,
+    path: `/:zoneId`,
     summary: 'Update zone',
     description: 'Update a zone by its ID.',
     pathParams: z.object({
@@ -60,7 +60,7 @@ export const zoneContract = contractInstance.router({
 
   deleteZone: {
     method: 'DELETE',
-    path: `${apiPrefix}/zones/:zoneId`,
+    path: `/:zoneId`,
     summary: 'Delete zone',
     description: 'Delete a zone by its ID.',
     body: null,
@@ -75,6 +75,7 @@ export const zoneContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/zones`,
 })
 
 export type CreateZoneBody = ClientInferRequest<typeof zoneContract.createZone>['body']

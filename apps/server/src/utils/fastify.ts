@@ -2,9 +2,9 @@ import { randomUUID } from 'node:crypto'
 import type { FastifyServerOptions } from 'fastify'
 import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui/types'
 import type { generateOpenApi } from '@ts-rest/open-api'
-import { apiPrefix } from '@cpn-console/shared'
+import { swaggerUiPath } from '@cpn-console/shared'
 import { loggerConf } from './logger.js'
-import { NODE_ENV } from './env.js'
+import { NODE_ENV, keycloakRedirectUri } from './env.js'
 
 export const fastifyConf: FastifyServerOptions = {
   maxParamLength: 5000,
@@ -26,14 +26,16 @@ export const swaggerConf: Parameters<typeof generateOpenApi>[1] = {
 
   externalDocs,
   servers: [
-    // { url: keycloakRedirectUri?.includes('://') ? keycloakRedirectUri.split('://')[1] : 'localhost' }, // TODO: replace with app url
+    {
+      url: keycloakRedirectUri,
+    },
   ],
 }
 
 export const swaggerUiConf: FastifySwaggerUiOptions = {
-  routePrefix: `${apiPrefix}/swagger-ui`,
+  routePrefix: swaggerUiPath,
   uiConfig: {
     docExpansion: 'list',
-    deepLinking: true,
+    deepLinking: false,
   },
 }

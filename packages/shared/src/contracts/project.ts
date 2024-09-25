@@ -1,8 +1,9 @@
 import type { ClientInferRequest } from '@ts-rest/core'
 import { z } from 'zod'
-import { apiPrefix, contractInstance } from '../api-client.js'
+import { contractInstance } from '../api-client.js'
 import {
   ProjectSchemaV2,
+  apiPrefix,
 } from '../index.js'
 import { ErrorSchema, baseHeaders } from './_utils.js'
 
@@ -14,7 +15,7 @@ export const ProjectParams = z.object({
 export const projectContract = contractInstance.router({
   createProject: {
     method: 'POST',
-    path: `${apiPrefix}/projects`,
+    path: '',
     contentType: 'application/json',
     summary: 'Create project',
     description: 'Create a new project.',
@@ -29,7 +30,7 @@ export const projectContract = contractInstance.router({
 
   listProjects: {
     method: 'GET',
-    path: `${apiPrefix}/projects`,
+    path: '',
     query: ProjectSchemaV2
       .pick({
         id: true,
@@ -57,7 +58,7 @@ export const projectContract = contractInstance.router({
 
   getProjectSecrets: {
     method: 'GET',
-    path: `${apiPrefix}/projects/:projectId/secrets`,
+    path: `/:projectId/secrets`,
     summary: 'Get project secrets',
     description: 'Retrieved a project secrets.',
     pathParams: ProjectParams,
@@ -72,7 +73,7 @@ export const projectContract = contractInstance.router({
 
   updateProject: {
     method: 'PUT',
-    path: `${apiPrefix}/projects/:projectId`,
+    path: `/:projectId`,
     summary: 'Update project',
     description: 'Update a project.',
     pathParams: ProjectParams,
@@ -93,7 +94,7 @@ export const projectContract = contractInstance.router({
 
   replayHooksForProject: {
     method: 'PUT',
-    path: `${apiPrefix}/projects/:projectId/hooks`,
+    path: `/:projectId/hooks`,
     summary: 'Replay hooks for project',
     description: 'Replay hooks for a project.',
     body: null,
@@ -106,7 +107,7 @@ export const projectContract = contractInstance.router({
 
   archiveProject: {
     method: 'DELETE',
-    path: `${apiPrefix}/projects/:projectId`,
+    path: `/:projectId`,
     summary: 'Delete project',
     description: 'Delete a project.',
     pathParams: ProjectParams,
@@ -119,7 +120,7 @@ export const projectContract = contractInstance.router({
 
   getProjectsData: {
     method: 'GET',
-    path: `${apiPrefix}/projects/data`,
+    path: `/data`,
     summary: 'Download projects csv report',
     description: 'Retrieve all projects data for download as CSV file.',
     responses: {
@@ -130,6 +131,7 @@ export const projectContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/projects`,
 })
 
 export type CreateProjectBody = ClientInferRequest<typeof projectContract.createProject>['body']

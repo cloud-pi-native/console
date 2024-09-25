@@ -1,12 +1,12 @@
 import { z } from 'zod'
-import { apiPrefix, contractInstance } from '../api-client.js'
-import { ProjectParams, ServiceSchema, permissionTarget, pluginUpdateBody } from '../index.js'
+import { contractInstance } from '../api-client.js'
+import { ProjectParams, ServiceSchema, apiPrefix, permissionTarget, pluginUpdateBody } from '../index.js'
 import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const projectServiceContract = contractInstance.router({
   getServices: {
     method: 'GET',
-    path: `${apiPrefix}/project/:projectId/services`,
+    path: '',
     summary: 'Get Project\'s services',
     description: 'Get all informations about services related to a project.',
     query: z.object({ permissionTarget }),
@@ -21,7 +21,7 @@ export const projectServiceContract = contractInstance.router({
 
   updateProjectServices: {
     method: 'POST',
-    path: `${apiPrefix}/project/:projectId/services`,
+    path: '',
     summary: 'Update project service configuration',
     description: 'Update project service configuration',
     pathParams: ProjectParams,
@@ -35,4 +35,5 @@ export const projectServiceContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/projects/:projectId/services`,
 })

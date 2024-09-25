@@ -6,7 +6,7 @@ import { ErrorSchema, baseHeaders } from './_utils.js'
 export const adminTokenContract = contractInstance.router({
   listAdminTokens: {
     method: 'GET',
-    path: `${apiPrefix}/admin/tokens`,
+    path: '',
     query: z.object({
       withRevoked: CoerceBooleanSchema
         .optional(),
@@ -22,7 +22,7 @@ export const adminTokenContract = contractInstance.router({
 
   createAdminToken: {
     method: 'POST',
-    path: `${apiPrefix}/admin/tokens`,
+    path: '',
     body: AdminTokenSchema.pick({ name: true, permissions: true, expirationDate: true }).required(),
     responses: {
       201: ExposedAdminTokenSchema,
@@ -35,7 +35,7 @@ export const adminTokenContract = contractInstance.router({
 
   deleteAdminToken: {
     method: 'DELETE',
-    path: `${apiPrefix}/admin/tokens/:tokenId`,
+    path: `/:tokenId`,
     pathParams: z.object({ tokenId: z.string().uuid() }),
     body: null,
     responses: {
@@ -48,4 +48,5 @@ export const adminTokenContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/admin/tokens`,
 })

@@ -6,7 +6,7 @@ import { ErrorSchema, baseHeaders } from './_utils.js'
 export const serviceContract = contractInstance.router({
   getServiceHealth: {
     method: 'GET',
-    path: `${apiPrefix}/services`,
+    path: '',
     summary: 'Get services health',
     description: 'Retrieved services health.',
     responses: {
@@ -22,6 +22,7 @@ export const serviceContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/services`,
 })
 
 export type ServiceBody = ClientInferResponseBody<typeof serviceContract.getServiceHealth, 200>
