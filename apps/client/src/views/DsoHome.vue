@@ -18,6 +18,10 @@ interface KnowMoreBtn {
   onClick: any
 }
 
+const initialSelectedIndex = 0
+
+const selectedTabIndex = ref(initialSelectedIndex)
+
 const tabListName: string = 'benefitsTab'
 const tabTitles: Array<TabTitle> = [
   {
@@ -75,11 +79,21 @@ function setWindowLocation(to: string) {
       content="L'offre à visée interministérielle Cloud π Native s'appuie sur l'écosystème de ressources Cloud π du Ministère de l'Intérieur et des Outre-mer. Elle propose en outre une usine logicielle et un orchestrateur DevSecOps permettant de produire et opérer des services numériques de qualité au service des usagers (y compris celles et ceux qui produisent le numérique public)."
     />
     <DsfrTabs
+      v-model="selectedTabIndex"
       :tab-list-name="tabListName"
       :tab-titles="tabTitles"
       :tab-contents="tabContents"
       class="md:(h-full mt-0 pt-0)"
-    />
+    >
+      <DsfrTabContent
+        v-for="i in tabContents.length"
+        :key="i"
+        panel-id="general"
+        tab-id="general"
+      >
+        {{ tabContents[i] }}
+      </DsfrTabContent>
+    </DsfrTabs>
   </section>
 
   <hr class="section-separator">
