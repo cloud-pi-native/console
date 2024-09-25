@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { apiPrefix } from '@cpn-console/shared'
+import { systemContract } from '@cpn-console/shared'
 import app from '../../app.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
@@ -7,7 +7,7 @@ vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockS
 describe('system - router', () => {
   it('should send application version', async () => {
     const response = await app.inject()
-      .get(`${apiPrefix}/version`)
+      .get(systemContract.getVersion.path)
       .end()
 
     expect(response.statusCode).toBe(200)
@@ -16,7 +16,7 @@ describe('system - router', () => {
 
   it('should send application health with status OK', async () => {
     const response = await app.inject()
-      .get(`${apiPrefix}/healthz`)
+      .get(systemContract.getHealth.path)
       .end()
 
     expect(response.statusCode).toBe(200)

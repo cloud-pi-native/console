@@ -5,7 +5,7 @@ import { ErrorSchema, baseHeaders } from './_utils.js'
 export const projectRoleContract = contractInstance.router({
   listProjectRoles: {
     method: 'GET',
-    path: `${apiPrefix}/projects/:projectId/roles`,
+    path: '',
     pathParams: z.object({ projectId: z.string().uuid() }),
     responses: {
       200: RoleSchema.array(),
@@ -17,7 +17,7 @@ export const projectRoleContract = contractInstance.router({
   },
   createProjectRole: {
     method: 'POST',
-    path: `${apiPrefix}/projects/:projectId/roles`,
+    path: '',
     body: RoleSchema.omit({ position: true, id: true }),
     pathParams: z.object({ projectId: z.string().uuid() }),
     responses: {
@@ -31,7 +31,7 @@ export const projectRoleContract = contractInstance.router({
   },
   patchProjectRoles: {
     method: 'PATCH',
-    path: `${apiPrefix}/projects/:projectId/roles`,
+    path: '',
     pathParams: z.object({ projectId: z.string().uuid() }),
     // body: z.any(),
     body: RoleSchema.partial({ name: true, permissions: true, position: true }).array(),
@@ -46,7 +46,7 @@ export const projectRoleContract = contractInstance.router({
   },
   projectRoleMemberCounts: {
     method: 'GET',
-    path: `${apiPrefix}/projects/:projectId/roles/member-counts`,
+    path: `/member-counts`,
     pathParams: z.object({ projectId: z.string().uuid() }),
     responses: {
       200: z.record(z.number().min(0)), // Record<role uuid, number of member>
@@ -58,7 +58,7 @@ export const projectRoleContract = contractInstance.router({
   },
   deleteProjectRole: {
     method: 'DELETE',
-    path: `${apiPrefix}/projects/:projectId/roles/:roleId`,
+    path: `/:roleId`,
     pathParams: z.object({
       projectId: z.string().uuid(),
       roleId: z.string().uuid(),
@@ -74,4 +74,5 @@ export const projectRoleContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/projects/:projectId/roles`,
 })

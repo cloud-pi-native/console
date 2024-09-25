@@ -13,7 +13,7 @@ export type AdminLogsQuery = Zod.infer<typeof adminLogsQuery>
 export const logContract = contractInstance.router({
   getLogs: {
     method: 'GET',
-    path: `${apiPrefix}/logs`,
+    path: '',
     query: adminLogsQuery,
     summary: 'Get logs',
     description: 'Retrieved all logs.',
@@ -40,6 +40,7 @@ export const logContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/logs`,
 })
 
 export type GetLogsQuery = ClientInferRequest<typeof logContract.getLogs>['query']

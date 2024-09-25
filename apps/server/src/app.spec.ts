@@ -13,17 +13,6 @@ describe('app', () => {
     await app.close()
   })
 
-  it('should respond with the version', async () => {
-    const response = await app.inject()
-      .get(`${apiPrefix}/version`)
-    expect(JSON.parse(response.body).version).toBe('dev')
-  })
-
-  it('should respond with the healthz', async () => {
-    const response = await app.inject()
-      .get(`${apiPrefix}/healthz`)
-    expect(JSON.parse(response.body).status).toBe('OK')
-  })
   it('should respond 404 on unknown route', async () => {
     const response = await app.inject()
       .get(`${apiPrefix}/miss`)

@@ -1,9 +1,9 @@
 import type { ApiFetcher } from '@ts-rest/core'
 import { initClient, initContract } from '@ts-rest/core'
 
-export const contractInstance: ReturnType<typeof initContract> = initContract()
-
 export const apiPrefix: string = '/api/v1'
+
+export const contractInstance: ReturnType<typeof initContract> = initContract()
 
 export async function getContract() {
   return contractInstance.router(

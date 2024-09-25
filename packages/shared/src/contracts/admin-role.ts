@@ -5,7 +5,7 @@ import { ErrorSchema, baseHeaders } from './_utils.js'
 export const adminRoleContract = contractInstance.router({
   listAdminRoles: {
     method: 'GET',
-    path: `${apiPrefix}/admin/roles`,
+    path: '',
     responses: {
       200: AdminRoleSchema.array(),
       400: ErrorSchema,
@@ -17,7 +17,7 @@ export const adminRoleContract = contractInstance.router({
 
   createAdminRole: {
     method: 'POST',
-    path: `${apiPrefix}/admin/roles`,
+    path: '',
     body: AdminRoleSchema.pick({ name: true }),
     responses: {
       200: AdminRoleSchema,
@@ -30,7 +30,7 @@ export const adminRoleContract = contractInstance.router({
 
   patchAdminRoles: {
     method: 'PATCH',
-    path: `${apiPrefix}/admin/roles`,
+    path: '',
     body: AdminRoleSchema.partial({ name: true, permissions: true, position: true, oidcGroup: true }).array(),
     responses: {
       200: AdminRoleSchema.array(),
@@ -43,7 +43,7 @@ export const adminRoleContract = contractInstance.router({
 
   adminRoleMemberCounts: {
     method: 'GET',
-    path: `${apiPrefix}/admin/roles/member-counts`,
+    path: `/member-counts`,
     responses: {
       200: z.record(z.number().min(0)), // Record<role uuid, number of member>
       400: ErrorSchema,
@@ -55,7 +55,7 @@ export const adminRoleContract = contractInstance.router({
 
   deleteAdminRole: {
     method: 'DELETE',
-    path: `${apiPrefix}/admin/roles/:roleId`,
+    path: `/:roleId`,
     pathParams: z.object({
       roleId: z.string().uuid(),
     }),
@@ -70,4 +70,5 @@ export const adminRoleContract = contractInstance.router({
   },
 }, {
   baseHeaders,
+  pathPrefix: `${apiPrefix}/admin/roles`,
 })
