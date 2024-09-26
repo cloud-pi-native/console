@@ -79,7 +79,6 @@ function pluginManager(options: PluginManagerOptions): PluginManager {
           continue
         }
         if (functions?.api) {
-          // @ts-ignore
           hooks[hook].apis[name] = functions.api
         }
         for (const [step, fn] of objectEntries(functions?.steps ?? {})) {
@@ -97,7 +96,7 @@ function pluginManager(options: PluginManagerOptions): PluginManager {
             continue
           }
           // @ts-ignore
-          hooks[hook][step][name] = fn
+          hooks[hook].steps[step][name] = fn
           message.push(`${hook}:${step}`)
         }
       }
@@ -111,11 +110,12 @@ function pluginManager(options: PluginManagerOptions): PluginManager {
     delete servicesInfos[name]
 
     Object.values(hooks).forEach((hook) => {
-      delete hook.check[name]
-      delete hook.pre[name]
-      delete hook.main[name]
-      delete hook.post[name]
-      delete hook.revert[name]
+      delete hook.steps.check[name]
+      delete hook.steps.pre[name]
+      delete hook.steps.main[name]
+      delete hook.steps.post[name]
+      delete hook.steps.revert[name]
+      delete hook.apis[name]
     })
   }
 

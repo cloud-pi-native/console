@@ -18,7 +18,10 @@
     "format": "eslint ./ --fix",
     "kube:e2e-ci": "echo 'check cache'",
     "lint": "eslint ./",
-    "test:e2e-ci": "echo 'check cache'"
+    "test": "vitest run",
+    "test:cov": "vitest run --coverage",
+    "test:e2e-ci": "echo 'check cache'",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@cpn-console/shared": "workspace:^",
@@ -31,12 +34,13 @@
     "@cpn-console/ts-config": "workspace:^",
     "@types/json-schema": "^7.0.15",
     "@types/node": "^20.14.9",
-    "@vitest/coverage-v8": "^1.6.0",
+    "@vitest/coverage-v8": "^2.1.1",
     "nodemon": "^3.1.4",
     "rimraf": "^5.0.7",
     "ts-algebra": "^2.0.0",
     "typescript": "^5.5.2",
-    "undici-types": "^6.19.2"
+    "undici-types": "^6.19.2",
+    "vitest": "^2.1.1"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
