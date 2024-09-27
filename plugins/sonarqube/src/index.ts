@@ -1,4 +1,4 @@
-import type { Plugin } from '@cpn-console/hooks'
+import type { HookStepsNames, Plugin } from '@cpn-console/hooks'
 import { getStatus } from './check.js'
 import { deleteProject, initSonar, setVariables, upsertProject } from './functions.js'
 import infos from './infos.js'
@@ -28,4 +28,10 @@ export const plugin: Plugin = {
   },
   start,
   monitor,
+}
+
+declare module '@cpn-console/hooks' {
+  interface PluginResult {
+    errors?: Partial<Record<HookStepsNames, unknown>>
+  }
 }

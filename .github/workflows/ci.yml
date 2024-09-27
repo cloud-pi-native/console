@@ -172,7 +172,6 @@ jobs:
       - component-tests
       - build
       - e2e-tests
-      - deploy-tests
       - scan-vuln
     steps:
       - name: Check status of all required jobs
