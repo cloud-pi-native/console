@@ -5,7 +5,6 @@ const object = { test1: 1, test2: 2, 3: 'test3' }
 
 it('should return object keys', () => {
   const keys = objectKeys(object)
-  console.log(typeof keys[2])
 
   // cannot gaurantee order in keys
   expect(keys[0]).contain('3')

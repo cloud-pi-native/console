@@ -25,8 +25,12 @@ export const logContract = contractInstance.router({
           data: z.object({
             args: z.any(),
             failed: z.boolean().or(z.array(z.string())).optional(),
+            warning: z.string().array().optional(),
             results: z.any(),
             totalExecutionTime: z.number().optional(),
+          }).passthrough().transform((data) => {
+            delete data.config
+            return data
           }),
           action: z.string(),
           userId: z.string().nullable(),

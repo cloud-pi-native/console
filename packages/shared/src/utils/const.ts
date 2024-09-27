@@ -1,5 +1,3 @@
-import { apiPrefix } from '../index.js'
-
 export const adminGroupPath = '/admin'
 
 export const projectIsLockedInfo = 'Le projet est verrouillé, pas d\'action possible'
@@ -9,7 +7,7 @@ export const invalidInternalRepoName = 'Le nom du dépôt ne doit contenir ni ma
 
 export const fakeToken = 'fakeToken'
 export const tokenHeaderName = 'x-dso-token'
-export const swaggerUiPath = `${apiPrefix}/swagger-ui`
+export const swaggerUiPath = '/api/v1/swagger-ui'
 
 export const levels = [
   'r',

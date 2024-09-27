@@ -3,7 +3,7 @@ import type * as hooks from './index.js'
 
 export type DefaultArgs = Record<any, any>
 export interface PluginResult {
-  status: { result: 'OK', message?: string } | { result: 'KO', message: string }
+  status: { result: 'OK', message?: string } | { result: 'KO' | 'WARNING', message: string }
   store?: Record<string, string | number>
   [key: string]: any
 }
@@ -25,6 +25,7 @@ export interface Config {
 export interface HookPayload<Args extends DefaultArgs> {
   args: Args
   failed: boolean | string[]
+  warning: string[]
   results: HookPayloadResults
   apis: HookPayloadApis<Args>
   config: Config
@@ -65,6 +66,8 @@ export async function executeStep<Args extends DefaultArgs>(step: HookStep, payl
       payload.failed = Array.isArray(payload.failed)
         ? [...payload.failed, name]
         : [name]
+    } else if (results[index].status.result === 'WARNING' && !payload.warning.includes(name)) {
+      payload.warning.push(name)
     }
     payload.results[name] = { ...results[index], executionTime: payload.results[name].executionTime }
   })
@@ -93,6 +96,7 @@ export function createHook<E extends DefaultArgs, V extends DefaultArgs>(unique 
       results: {},
       apis: payloadApis,
       config,
+      warning: [],
     }
 
     const executeSteps = ['pre', 'main', 'post'] as const
@@ -107,6 +111,7 @@ export function createHook<E extends DefaultArgs, V extends DefaultArgs>(unique 
       args: payload.args,
       results: payload.results,
       failed: payload.failed,
+      warning: payload.warning,
       totalExecutionTime: Date.now() - startTime,
       config,
     }
@@ -124,6 +129,7 @@ export function createHook<E extends DefaultArgs, V extends DefaultArgs>(unique 
       results: {},
       apis: payloadApis,
       config,
+      warning: [],
     }
 
     const result = await executeStep(steps.check, payload, 'validate')
@@ -133,6 +139,7 @@ export function createHook<E extends DefaultArgs, V extends DefaultArgs>(unique 
       failed: result.failed,
       totalExecutionTime: Date.now() - startTime,
       config,
+      warning: payload.warning,
     }
   }
   const hook: Hook<E, V> = {

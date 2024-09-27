@@ -4,6 +4,7 @@ import { createHook, executeStep } from './hook.ts'
 
 const okStatus = { status: { result: 'OK' } } as const
 const koStatus = { status: { result: 'KO', message: 'Failed' } } as const
+const warningStatus = { status: { result: 'WARNING', message: 'Failed' } } as const
 
 async function simpleOkHookCall() {
   return okStatus
@@ -11,18 +12,22 @@ async function simpleOkHookCall() {
 async function simpleFailedHookCall() {
   return koStatus
 }
+async function simpleWarningHookCall() {
+  return warningStatus
+}
 
 describe('test executeStep mechanism', () => {
   it('test payload results, everything ok', async () => {
     const results = await executeStep({
       plugin1: simpleOkHookCall,
       plugin2: simpleOkHookCall,
-    }, { apis: {}, args: {}, config: {}, failed: false, results: {} }, 'main')
+    }, { apis: {}, args: {}, config: {}, failed: false, results: {}, warning: [] }, 'main')
 
     expect(results.apis).toEqual({})
     expect(results.args).toEqual({})
     expect(results.config).toEqual({})
     expect(results.failed).toBe(false)
+    expect(results.warning).toEqual([])
     expect(results.results).toEqual({
       plugin1: { ...okStatus, executionTime: { main: expect.any(Number) } },
       plugin2: { ...okStatus, executionTime: { main: expect.any(Number) } },
@@ -33,11 +38,12 @@ describe('test executeStep mechanism', () => {
     const results = await executeStep({
       plugin1: simpleFailedHookCall,
       plugin2: simpleFailedHookCall,
-    }, { apis: {}, args: {}, config: {}, failed: false, results: {} }, 'main')
+    }, { apis: {}, args: {}, config: {}, failed: false, results: {}, warning: [] }, 'main')
 
     expect(results.apis).toEqual({})
     expect(results.args).toEqual({})
     expect(results.config).toEqual({})
+    expect(results.warning).toEqual([])
     expect(results.failed).contain('plugin1')
     expect(results.failed).contain('plugin2')
     expect(results.results).toEqual({
@@ -50,16 +56,34 @@ describe('test executeStep mechanism', () => {
     const results = await executeStep({
       plugin1: simpleOkHookCall,
       plugin2: simpleFailedHookCall,
-    }, { apis: {}, args: {}, config: {}, failed: false, results: {} }, 'main')
+    }, { apis: {}, args: {}, config: {}, failed: false, results: {}, warning: [] }, 'main')
 
     expect(results.apis).toEqual({})
     expect(results.args).toEqual({})
     expect(results.config).toEqual({})
+    expect(results.warning).toEqual([])
     expect(results.failed).not.contain('plugin1')
     expect(results.failed).contain('plugin2')
     expect(results.results).toEqual({
       plugin1: { ...okStatus, executionTime: { main: expect.any(Number) } },
       plugin2: { ...koStatus, executionTime: { main: expect.any(Number) } },
+    })
+  })
+
+  it('test payload results, partial warning', async () => {
+    const results = await executeStep({
+      plugin1: simpleOkHookCall,
+      plugin2: simpleWarningHookCall,
+    }, { apis: {}, args: {}, config: {}, failed: false, results: {}, warning: [] }, 'main')
+
+    expect(results.apis).toEqual({})
+    expect(results.args).toEqual({})
+    expect(results.config).toEqual({})
+    expect(results.warning).toEqual(['plugin2'])
+    expect(results.failed).toEqual(false)
+    expect(results.results).toEqual({
+      plugin1: { ...okStatus, executionTime: { main: expect.any(Number) } },
+      plugin2: { ...warningStatus, executionTime: { main: expect.any(Number) } },
     })
   })
 })
@@ -112,11 +136,42 @@ describe('createHook', () => {
     expect(hookResult.config).toEqual({})
     expect(hookResult.totalExecutionTime).toEqual(expect.any(Number))
     expect(hookResult.failed).toEqual(false)
+    expect(hookResult.warning).toEqual([])
     expect(hookResult.results).toEqual({ plugin1: { ...okStatus, executionTime: {
       pre: expect.any(Number),
       main: expect.any(Number),
       post: expect.any(Number),
     } } })
+  })
+
+  it('test payload results, multistep with warning', async () => {
+    const hook = createHook(false)
+    hook.steps.pre.plugin1 = simpleWarningHookCall
+    hook.steps.main.plugin2 = simpleOkHookCall
+    hook.steps.post.plugin2 = simpleOkHookCall
+
+    const hookResult = await hook.execute({}, {})
+
+    expect(hookResult.args).toEqual({})
+    expect(hookResult.config).toEqual({})
+    expect(hookResult.totalExecutionTime).toEqual(expect.any(Number))
+    expect(hookResult.failed).toEqual(false)
+    expect(hookResult.warning).toEqual(['plugin1'])
+    expect(hookResult.results).toEqual({
+      plugin1: {
+        ...warningStatus,
+        executionTime: {
+          pre: expect.any(Number),
+        },
+      },
+      plugin2: {
+        ...okStatus,
+        executionTime: {
+          main: expect.any(Number),
+          post: expect.any(Number),
+        },
+      },
+    })
   })
 
   it('test payload results, main fails', async () => {
