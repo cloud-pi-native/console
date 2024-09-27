@@ -1,77 +1,107 @@
 import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
+import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
-  GetHealthzSchema,
-  GetSystemPluginSchema,
-  GetVersionSchema,
-  ListSystemSettingsSchema,
-  UpdateSystemPluginSchema,
-  UpsertSystemSettingsSchema,
+  SystemSettingSchema,
+  pluginSchema,
+  pluginUpdateBody,
 } from '../schemas/index.js'
+import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const systemContract = contractInstance.router({
   getVersion: {
     method: 'GET',
-    path: `${apiPrefix}/version`,
+    path: `/version`,
     summary: 'Get version',
     description: 'Retrieve api version.',
     responses: {
-      200: GetVersionSchema.responses['200'],
-      500: GetVersionSchema.responses['500'],
+      200: z.object({
+        version: z.string(),
+      }),
+      500: ErrorSchema,
     },
   },
 
   getHealth: {
     method: 'GET',
-    path: `${apiPrefix}/healthz`,
+    path: `/healthz`,
     summary: 'Get health',
     description: 'Retrieve api health infos.',
     responses: {
-      200: GetHealthzSchema.responses['200'],
-      500: GetHealthzSchema.responses['500'],
+      200: z.object({
+        status: z.enum(['OK', 'KO']),
+      }),
+      500: ErrorSchema,
     },
   },
+}, {
+  pathPrefix: `${apiPrefix}`,
 })
 
 export const systemPluginContract = contractInstance.router({
   getPluginsConfig: {
     method: 'GET',
-    path: `${apiPrefix}/system/plugins`,
+    path: '',
     summary: 'Get plugins configuration',
     description: 'Get plugins configuration',
-    responses: GetSystemPluginSchema.responses,
+    responses: {
+      200: pluginSchema.array(),
+      400: ErrorSchema,
+      401: ErrorSchema,
+      500: ErrorSchema,
+    },
   },
 
   updatePluginsConfig: {
     method: 'POST',
-    path: `${apiPrefix}/system/plugins`,
+    path: '',
     summary: 'Update project service configuration',
     description: 'Update project service configuration',
-    body: UpdateSystemPluginSchema.body,
-    responses: UpdateSystemPluginSchema.responses,
+    body: pluginUpdateBody,
+    responses: {
+      204: null,
+      400: ErrorSchema,
+      401: ErrorSchema,
+      403: ErrorSchema,
+      500: ErrorSchema,
+    },
   },
-
+}, {
+  baseHeaders,
+  pathPrefix: `${apiPrefix}/system/plugins`,
 })
 
 export const systemSettingsContract = contractInstance.router({
   listSystemSettings: {
     method: 'GET',
-    path: `${apiPrefix}/system/settings`,
-    query: ListSystemSettingsSchema.query,
+    path: '',
     summary: 'Get System Settings state',
     description: 'Get System Settings state',
-    responses: ListSystemSettingsSchema.responses,
+    query: SystemSettingSchema.pick({ key: true })
+      .partial(),
+    responses: {
+      200: SystemSettingSchema.array(),
+      500: ErrorSchema,
+    },
   },
 
   upsertSystemSetting: {
     method: 'POST',
-    path: `${apiPrefix}/system/settings`,
+    path: '',
     contentType: 'application/json',
     summary: 'Update System Settings state',
     description: 'Update System Settings state',
-    body: UpsertSystemSettingsSchema.body,
-    responses: UpsertSystemSettingsSchema.responses,
+    body: SystemSettingSchema,
+    responses: {
+      201: SystemSettingSchema,
+      400: ErrorSchema,
+      401: ErrorSchema,
+      500: ErrorSchema,
+    },
   },
+}, {
+  baseHeaders,
+  pathPrefix: `${apiPrefix}/system/settings`,
 })
 
 export type SystemSettings = ClientInferResponseBody<typeof systemSettingsContract.listSystemSettings, 200>

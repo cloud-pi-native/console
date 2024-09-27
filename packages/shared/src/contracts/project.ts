@@ -1,33 +1,52 @@
 import type { ClientInferRequest } from '@ts-rest/core'
 import { z } from 'zod'
-import { apiPrefix, contractInstance } from '../api-client.js'
+import { contractInstance } from '../api-client.js'
 import {
-  ArchiveProjectSchema,
-  CreateProjectSchema,
-  GetProjectsDataSchema,
-  GetProjectsSchema,
-  ProjectParams,
   ProjectSchemaV2,
-  ReplayHooksForProjectSchema,
-  UpdateProjectSchema,
-} from '../schemas/index.js'
-import { ErrorSchema } from '../schemas/utils.js'
+  apiPrefix,
+} from '../index.js'
+import { ErrorSchema, baseHeaders } from './_utils.js'
+
+export const ProjectParams = z.object({
+  projectId: z.string()
+    .uuid(),
+})
 
 export const projectContract = contractInstance.router({
   createProject: {
     method: 'POST',
-    path: `${apiPrefix}/projects`,
+    path: '',
     contentType: 'application/json',
     summary: 'Create project',
     description: 'Create a new project.',
-    body: CreateProjectSchema.body,
-    responses: CreateProjectSchema.responses,
+    body: ProjectSchemaV2.pick({ name: true, organizationId: true, description: true }),
+    responses: {
+      201: ProjectSchemaV2.omit({ name: true }).extend({ name: z.string() }),
+      400: ErrorSchema,
+      403: ErrorSchema,
+      500: ErrorSchema,
+    },
   },
 
   listProjects: {
     method: 'GET',
-    path: `${apiPrefix}/projects`,
-    query: GetProjectsSchema.query,
+    path: '',
+    query: ProjectSchemaV2
+      .pick({
+        id: true,
+        name: true,
+        status: true,
+        locked: true,
+        organizationId: true,
+        description: true,
+      })
+      .extend({
+        statusIn: z.string(),
+        statusNotIn: z.string(),
+        filter: z.enum(['owned', 'member', 'all']),
+        organizationName: z.string(),
+      })
+      .partial(),
     summary: 'Get projects',
     description: 'Get projects with filters',
     responses: {
@@ -39,7 +58,7 @@ export const projectContract = contractInstance.router({
 
   getProjectSecrets: {
     method: 'GET',
-    path: `${apiPrefix}/projects/:projectId/secrets`,
+    path: `/:projectId/secrets`,
     summary: 'Get project secrets',
     description: 'Retrieved a project secrets.',
     pathParams: ProjectParams,
@@ -54,43 +73,65 @@ export const projectContract = contractInstance.router({
 
   updateProject: {
     method: 'PUT',
-    path: `${apiPrefix}/projects/:projectId`,
+    path: `/:projectId`,
     summary: 'Update project',
     description: 'Update a project.',
     pathParams: ProjectParams,
-    body: UpdateProjectSchema.body,
-    responses: UpdateProjectSchema.responses,
+    body: ProjectSchemaV2
+      .pick({
+        description: true,
+        everyonePerms: true,
+        locked: true,
+        ownerId: true,
+        status: true,
+      })
+      .partial(),
+    responses: {
+      200: ProjectSchemaV2.omit({ name: true }).extend({ name: z.string() }),
+      500: ErrorSchema,
+    },
   },
 
   replayHooksForProject: {
     method: 'PUT',
-    path: `${apiPrefix}/projects/:projectId/hooks`,
+    path: `/:projectId/hooks`,
     summary: 'Replay hooks for project',
     description: 'Replay hooks for a project.',
     body: null,
     pathParams: ProjectParams,
-    responses: ReplayHooksForProjectSchema.responses,
+    responses: {
+      204: null,
+      500: ErrorSchema,
+    },
   },
 
   archiveProject: {
     method: 'DELETE',
-    path: `${apiPrefix}/projects/:projectId`,
+    path: `/:projectId`,
     summary: 'Delete project',
     description: 'Delete a project.',
     pathParams: ProjectParams,
     body: null,
-    responses: ArchiveProjectSchema.responses,
+    responses: {
+      204: null,
+      500: ErrorSchema,
+    },
   },
 
   getProjectsData: {
     method: 'GET',
-    path: `${apiPrefix}/projects/data`,
+    path: `/data`,
     summary: 'Download projects csv report',
     description: 'Retrieve all projects data for download as CSV file.',
-    responses: GetProjectsDataSchema.responses,
+    responses: {
+      200: z.string(),
+      403: ErrorSchema,
+      500: ErrorSchema,
+    },
   },
+}, {
+  baseHeaders,
+  pathPrefix: `${apiPrefix}/projects`,
 })
 
 export type CreateProjectBody = ClientInferRequest<typeof projectContract.createProject>['body']
-
-export type UpdateProjectBody = ClientInferRequest<typeof projectContract.updateProject>['body']

@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../index.js'
-import { AtDatesToStringExtend, ErrorSchema } from '../schemas/utils.js'
+import { AtDatesToStringExtend } from '../schemas/_utils.js'
+import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const adminLogsQuery = z.object({
   offset: z.coerce.number(),
@@ -12,7 +13,7 @@ export type AdminLogsQuery = Zod.infer<typeof adminLogsQuery>
 export const logContract = contractInstance.router({
   getLogs: {
     method: 'GET',
-    path: `${apiPrefix}/logs`,
+    path: '',
     query: adminLogsQuery,
     summary: 'Get logs',
     description: 'Retrieved all logs.',
@@ -24,8 +25,12 @@ export const logContract = contractInstance.router({
           data: z.object({
             args: z.any(),
             failed: z.boolean().or(z.array(z.string())).optional(),
+            warning: z.string().array().optional(),
             results: z.any(),
             totalExecutionTime: z.number().optional(),
+          }).passthrough().transform((data) => {
+            delete data.config
+            return data
           }),
           action: z.string(),
           userId: z.string().nullable(),
@@ -37,6 +42,9 @@ export const logContract = contractInstance.router({
       500: ErrorSchema,
     },
   },
+}, {
+  baseHeaders,
+  pathPrefix: `${apiPrefix}/logs`,
 })
 
 export type GetLogsQuery = ClientInferRequest<typeof logContract.getLogs>['query']

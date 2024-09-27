@@ -88,7 +88,7 @@ model Log {
   userId    String?  @db.Uuid
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  requestId String?  @db.VarChar(21)
+  requestId String?  @db.VarChar(36)
   projectId String?  @db.Uuid
   project   Project? @relation(fields: [projectId], references: [id])
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)

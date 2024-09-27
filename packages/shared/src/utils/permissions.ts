@@ -14,7 +14,6 @@
  * https://discordapi.com/permissions.html#32
  * https://discord.com/developers/docs/topics/permissions#permissions
  */
-import { z } from 'zod'
 import type { ResourceById } from './types.js'
 
 export function getPermsByUserRoles(userRoles: string[], rolesById: ResourceById<{ id: string, permissions: bigint | string }>, basePerms?: bigint | string) {
@@ -36,8 +35,6 @@ function permissionsParser(a: Record<string, bigint>) {
     valuesRegistered.push(v)
   }
 }
-
-export const permissionLevelSchema = z.coerce.string()
 
 const bit = (position: bigint) => 1n << position
 

@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { invalidGitUrl, invalidInternalRepoName, missingCredentials } from '../utils/const.js'
-import { ErrorSchema } from './utils.js'
 
 export const RepoSchema = z.object({
   id: z.string()
@@ -63,79 +62,3 @@ export const CreateRepoFormSchema = RepoFormSchema
   }, { message: 'Veuillez renseignez l\'url du dépôt externe', path: ['externalRepoUrl'] })
 
 export type Repo = Zod.infer<typeof RepoSchema>
-
-export const CreateRepoSchema = {
-  body: RepoSchema.omit({ id: true }),
-  responses: {
-    201: RepoSchema,
-    400: ErrorSchema,
-    401: ErrorSchema,
-    403: ErrorSchema,
-    500: ErrorSchema,
-  },
-}
-
-export const GetReposSchema = {
-  query: z.object({
-    projectId: z.string()
-      .uuid(),
-  }),
-  responses: {
-    200: z.array(RepoSchema),
-    500: ErrorSchema,
-  },
-}
-
-export const GetRepoByIdSchema = {
-  params: z.object({
-    repositoryId: z.string()
-      .uuid(),
-  }),
-  responses: {
-    200: RepoSchema,
-    401: ErrorSchema,
-    404: ErrorSchema,
-    500: ErrorSchema,
-  },
-}
-
-export const UpdateRepoSchema = {
-  params: z.object({
-    repositoryId: z.string()
-      .uuid(),
-  }),
-  body: RepoSchema.partial(),
-  responses: {
-    200: RepoSchema,
-    500: ErrorSchema,
-  },
-}
-
-export const SyncRepoSchema = {
-  params: z.object({
-    repositoryId: z.string()
-      .uuid(),
-  }),
-  body: z.object({
-    syncAllBranches: z.boolean(),
-    branchName: z.string().optional(),
-  }),
-  responses: {
-    204: null,
-    400: ErrorSchema,
-    401: ErrorSchema,
-    403: ErrorSchema,
-    500: ErrorSchema,
-  },
-}
-
-export const DeleteRepoSchema = {
-  params: z.object({
-    repositoryId: z.string()
-      .uuid(),
-  }),
-  responses: {
-    204: null,
-    500: ErrorSchema,
-  },
-}

@@ -11,7 +11,7 @@ services:
     attach: false
 
   keycloak:
-    restart: always
+    restart: unless-stopped
     image: docker.io/bitnami/keycloak:23.0.7
     container_name: dso-console_keycloak
     depends_on:
@@ -49,7 +49,7 @@ services:
     attach: false
 
   postgres:
-    restart: always
+    restart: unless-stopped
     image: docker.io/postgres:15.3
     container_name: dso-console_postgres
     environment:
@@ -65,7 +65,7 @@ services:
     attach: false
 
   pgadmin:
-    restart: always
+    restart: unless-stopped
     image: docker.io/dpage/pgadmin4:latest
     container_name: dso-console_pgadmin
     depends_on:

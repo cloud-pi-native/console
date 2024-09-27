@@ -1,12 +1,12 @@
 import { z } from 'zod'
 import type { ClientInferResponseBody } from '@ts-rest/core'
 import { apiPrefix, contractInstance } from '../index.js'
-import { ErrorSchema } from '../schemas/utils.js'
+import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const serviceContract = contractInstance.router({
   getServiceHealth: {
     method: 'GET',
-    path: `${apiPrefix}/services`,
+    path: '',
     summary: 'Get services health',
     description: 'Retrieved services health.',
     responses: {
@@ -20,6 +20,9 @@ export const serviceContract = contractInstance.router({
       500: ErrorSchema,
     },
   },
+}, {
+  baseHeaders,
+  pathPrefix: `${apiPrefix}/services`,
 })
 
 export type ServiceBody = ClientInferResponseBody<typeof serviceContract.getServiceHealth, 200>

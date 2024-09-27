@@ -2,12 +2,13 @@ import type { ClientInferRequest } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import { OrganizationSchema } from '../schemas/index.js'
-import { AtDatesToStringExtend, ErrorSchema } from '../schemas/utils.js'
+import { AtDatesToStringExtend } from '../schemas/_utils.js'
+import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const organizationContract = contractInstance.router({
   listOrganizations: {
     method: 'GET',
-    path: `${apiPrefix}/organizations`,
+    path: '',
     summary: 'Get organizations',
     description: 'List organizations.',
     query: OrganizationSchema
@@ -23,7 +24,7 @@ export const organizationContract = contractInstance.router({
 
   createOrganization: {
     method: 'POST',
-    path: `${apiPrefix}/organizations`,
+    path: '',
     contentType: 'application/json',
     summary: 'Create organization',
     description: 'Create new organization.',
@@ -39,7 +40,7 @@ export const organizationContract = contractInstance.router({
 
   updateOrganization: {
     method: 'PUT',
-    path: `${apiPrefix}/organizations/:organizationName`,
+    path: `/:organizationName`,
     summary: 'Update organization',
     description: 'Update an organization by its name.',
     pathParams: z.object({
@@ -58,7 +59,7 @@ export const organizationContract = contractInstance.router({
 
   syncOrganizations: {
     method: 'GET',
-    path: `${apiPrefix}/organizations/sync`,
+    path: `/sync`,
     summary: 'Sync organizations',
     description: 'Synchronize organizations from external datasource using plugins.',
     responses: {
@@ -70,6 +71,9 @@ export const organizationContract = contractInstance.router({
       500: ErrorSchema,
     },
   },
+}, {
+  baseHeaders,
+  pathPrefix: `${apiPrefix}/organizations`,
 })
 
 export type CreateOrganizationBody = ClientInferRequest<typeof organizationContract.createOrganization>['body']

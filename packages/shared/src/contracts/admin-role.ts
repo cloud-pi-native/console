@@ -1,13 +1,13 @@
 import { z } from 'zod'
 import { AdminRoleSchema, apiPrefix, contractInstance } from '../index.js'
-import { ErrorSchema } from '../schemas/utils.js'
+import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const adminRoleContract = contractInstance.router({
   listAdminRoles: {
     method: 'GET',
-    path: `${apiPrefix}/admin/roles`,
+    path: '',
     responses: {
-      200: z.lazy(() => AdminRoleSchema.array()),
+      200: AdminRoleSchema.array(),
       400: ErrorSchema,
       401: ErrorSchema,
       403: ErrorSchema,
@@ -17,31 +17,33 @@ export const adminRoleContract = contractInstance.router({
 
   createAdminRole: {
     method: 'POST',
-    path: `${apiPrefix}/admin/roles`,
-    body: z.lazy(() => AdminRoleSchema.pick({ name: true })),
+    path: '',
+    body: AdminRoleSchema.pick({ name: true }),
     responses: {
-      200: z.lazy(() => AdminRoleSchema),
+      200: AdminRoleSchema,
       400: ErrorSchema,
       401: ErrorSchema,
       403: ErrorSchema,
       404: ErrorSchema,
     },
   },
+
   patchAdminRoles: {
     method: 'PATCH',
-    path: `${apiPrefix}/admin/roles`,
-    body: z.lazy(() => AdminRoleSchema.partial({ name: true, permissions: true, position: true, oidcGroup: true }).array()),
+    path: '',
+    body: AdminRoleSchema.partial({ name: true, permissions: true, position: true, oidcGroup: true }).array(),
     responses: {
-      200: z.lazy(() => AdminRoleSchema.array()),
+      200: AdminRoleSchema.array(),
       400: ErrorSchema,
       401: ErrorSchema,
       403: ErrorSchema,
       404: ErrorSchema,
     },
   },
+
   adminRoleMemberCounts: {
     method: 'GET',
-    path: `${apiPrefix}/admin/roles/member-counts`,
+    path: `/member-counts`,
     responses: {
       200: z.record(z.number().min(0)), // Record<role uuid, number of member>
       400: ErrorSchema,
@@ -50,9 +52,10 @@ export const adminRoleContract = contractInstance.router({
       404: ErrorSchema,
     },
   },
+
   deleteAdminRole: {
     method: 'DELETE',
-    path: `${apiPrefix}/admin/roles/:roleId`,
+    path: `/:roleId`,
     pathParams: z.object({
       roleId: z.string().uuid(),
     }),
@@ -65,4 +68,7 @@ export const adminRoleContract = contractInstance.router({
       404: ErrorSchema,
     },
   },
+}, {
+  baseHeaders,
+  pathPrefix: `${apiPrefix}/admin/roles`,
 })

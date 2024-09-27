@@ -347,7 +347,7 @@ describe('Administration projects', () => {
     const userToTransfer = project.members[0]
 
     cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
-    cy.intercept('GET', `api/v1/project/${project.id}/services?permissionTarget=admin`).as('getServices')
+    cy.intercept('GET', `api/v1/projects/${project.id}/services?permissionTarget=admin`).as('getServices')
     cy.intercept('GET', 'api/v1/repositories?projectId=*').as('listRepositories')
     cy.intercept('GET', 'api/v1/environments?projectId=*').as('listEnvironments')
     cy.intercept('PUT', `/api/v1/projects/${project.id}`).as('transferOwnership')

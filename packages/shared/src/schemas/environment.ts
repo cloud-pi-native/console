@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { longestEnvironmentName } from '../utils/const.js'
-import { ErrorSchema } from './utils.js'
 
 export const EnvironmentSchema = z.object({
   id: z.string()
@@ -18,71 +17,3 @@ export const EnvironmentSchema = z.object({
 })
 
 export type Environment = Zod.infer<typeof EnvironmentSchema>
-
-export const CreateEnvironmentSchema = {
-  body: EnvironmentSchema.omit({ id: true }),
-  responses: {
-    201: EnvironmentSchema,
-    400: ErrorSchema,
-    401: ErrorSchema,
-    500: ErrorSchema,
-  },
-}
-
-export const GetEnvironmentsSchema = {
-  query: z.object({
-    projectId: z.string()
-      .uuid(),
-  }),
-  responses: {
-    200: z.array(EnvironmentSchema),
-    404: ErrorSchema,
-    500: ErrorSchema,
-  },
-}
-
-export const GetEnvironmentByIdSchema = {
-  params: z.object({
-    environmentId: z.string()
-      .uuid(),
-  }),
-  responses: {
-    200: EnvironmentSchema,
-    400: ErrorSchema,
-    401: ErrorSchema,
-    403: ErrorSchema,
-    404: ErrorSchema,
-    500: ErrorSchema,
-  },
-}
-
-export const UpdateEnvironmentSchema = {
-  params: z.object({
-    environmentId: z.string()
-      .uuid(),
-  }),
-  body: EnvironmentSchema.pick({ quotaId: true }),
-  responses: {
-    200: EnvironmentSchema,
-    400: ErrorSchema,
-    401: ErrorSchema,
-    403: ErrorSchema,
-    404: ErrorSchema,
-    500: ErrorSchema,
-  },
-}
-
-export const DeleteEnvironmentSchema = {
-  params: z.object({
-    environmentId: z.string()
-      .uuid(),
-  }),
-  responses: {
-    204: null,
-    400: ErrorSchema,
-    401: ErrorSchema,
-    403: ErrorSchema,
-    404: ErrorSchema,
-    500: ErrorSchema,
-  },
-}

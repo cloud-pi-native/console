@@ -13,11 +13,11 @@
   "scripts": {
     "build": "tspc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
-    "db:deploy": "prisma migrate deploy --schema ./src/prisma/schema.prisma",
-    "db:diff": "prisma migrate diff --schema ./src/prisma/schema.prisma",
-    "db:generate": "prisma generate --schema ./src/prisma/schema.prisma",
-    "db:migrate": "prisma migrate dev --schema ./src/prisma/schema.prisma --name dso",
-    "db:reset": "prisma migrate reset --schema ./src/prisma/schema.prisma",
+    "db:deploy": "prisma migrate deploy",
+    "db:diff": "prisma migrate diff",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev --name dso",
+    "db:reset": "prisma migrate reset",
     "db:wrapper": "sh ./migrate-db.sh",
     "dev": "pnpm run db:migrate && nodemon --exec 'vite-node src/server.ts'",
     "debug": "pnpm run db:migrate && nodemon --exec 'NODE_OPTIONS=\"--inspect-brk=0.0.0.0\" vite-node src/server.ts'",
@@ -63,7 +63,6 @@
     "fastify-keycloak-adapter": "^2.2.0",
     "json-2-csv": "^5.5.1",
     "mustache": "^4.2.0",
-    "nanoid": "5.0.7",
     "node-vault-client": "^1.0.1",
     "prisma": "^5.19.1",
     "undici": "^6.19.2",
@@ -91,5 +90,8 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public",
     "tag": "latest"
+  },
+  "prisma": {
+    "schema": "src/prisma/schema.prisma"
   }
 }

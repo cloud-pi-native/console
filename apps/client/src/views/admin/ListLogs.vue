@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
 import type { Log } from '@cpn-console/shared'
+// @ts-ignore 'vue3-json-viewer' missing types
 import { JsonViewer } from 'vue3-json-viewer'
 import { useLogStore } from '@/stores/log.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-// @ts-ignore 'vue3-json-viewer' missing types
 
 const adminLogStore = useLogStore()
 const snackbarStore = useSnackbarStore()
@@ -16,7 +16,7 @@ const hideLogs = ref(false)
 const hideLogDetails = ref(true)
 
 const logs = computed(() => adminLogStore.logs)
-const logsLength = computed(() => adminLogStore.count)
+const logsLength = computed(() => adminLogStore.count ?? 0)
 
 async function showLogs(index: number) {
   page.value = index
@@ -113,7 +113,7 @@ onMounted(async () => {
   <div
     v-for="log in logs"
     :key="log.id"
-    :class="`my-5 border-solid ${log.data?.failed ? 'border-red-100' : 'border-zinc-100'}`"
+    :class="`my-5 border-solid ${log.data?.warning?.length ? 'border-amber-200' : log.data?.failed ? 'border-red-100' : 'border-zinc-100'}`"
   >
     <div
       class="flex flex-wrap justify-between"

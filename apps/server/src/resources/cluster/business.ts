@@ -1,5 +1,5 @@
-import type { Prisma, User } from '@prisma/client'
-import type { Cluster, ClusterDetails, Kubeconfig, Project, clusterContract } from '@cpn-console/shared'
+import type { Prisma, Project, User } from '@prisma/client'
+import type { Cluster, ClusterDetails, Kubeconfig, clusterContract } from '@cpn-console/shared'
 import { ClusterDetailsSchema, ClusterPrivacy } from '@cpn-console/shared'
 import {
   addLogs,

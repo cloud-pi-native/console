@@ -140,12 +140,13 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         result: 'OK',
       },
     }
-  } catch (_error) {
+  } catch (error) {
     return {
       status: {
-        result: 'KO',
+        result: 'WARNING',
         message: 'Failed to reconcile',
       },
+      error: parseError(error),
     }
   }
 }
@@ -203,14 +204,29 @@ export const setVariables: StepCall<Project> = async (payload) => {
       }),
     ])
 
-    return { status: { result: 'OK' } }
+    if (payload.results.sonarqube.status.result === 'WARNING') {
+      return {
+        status: {
+          result: 'WARNING',
+          message: `main message: ${payload.results.sonarqube.status.message}, post message: OK`,
+        },
+      }
+    }
+    return {
+      status: {
+        result: 'OK',
+      },
+    }
   } catch (error) {
     return {
-      error: parseError(error),
       status: {
-        result: 'KO',
-        message: 'Failed to reconcile',
+        result: 'WARNING',
+        message: `main message: ${payload.results.sonarqube.status.message}, post message: Failed to reconcile`,
       },
+      ...payload.results.sonarqube.error && { errors: {
+        main: payload.results.sonarqube.error,
+        post: parseError(error),
+      } },
     }
   }
 }

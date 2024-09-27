@@ -3,7 +3,7 @@ import type * as hooks from './index.js'
 
 export type DefaultArgs = Record<any, any>
 export interface PluginResult {
-  status: { result: 'OK', message?: string } | { result: 'KO', message: string }
+  status: { result: 'OK', message?: string } | { result: 'KO' | 'WARNING', message: string }
   store?: Record<string, string | number>
   [key: string]: any
 }
@@ -25,6 +25,7 @@ export interface Config {
 export interface HookPayload<Args extends DefaultArgs> {
   args: Args
   failed: boolean | string[]
+  warning: string[]
   results: HookPayloadResults
   apis: HookPayloadApis<Args>
   config: Config
@@ -35,15 +36,16 @@ export type HookResult<Args extends DefaultArgs> = Omit<HookPayload<Args>, 'apis
 export type StepCall<Args extends DefaultArgs> = (payload: HookPayload<Args>) => Promise<PluginResult>
 type HookStep = Record<string, StepCall<DefaultArgs>>
 export type HookStepsNames = 'check' | 'pre' | 'main' | 'post' | 'revert'
-export type Hook<E extends DefaultArgs, V extends DefaultArgs> = {
+export interface Hook<E extends DefaultArgs, V extends DefaultArgs> {
   uniquePlugin?: string // if plugin register on it no other one can register on it
   execute: (args: E, store: Config) => Promise<HookResult<E>>
   validate: (args: V, store: Config) => Promise<HookResult<V>>
   apis: Record<string, (args: E | V) => PluginApi>
-} & Record<HookStepsNames, HookStep>
+  steps: Record<HookStepsNames, HookStep>
+}
 export type HookList<E extends DefaultArgs, V extends DefaultArgs> = Record<keyof typeof hooks, Hook<E, V>>
 
-async function executeStep<Args extends DefaultArgs>(step: HookStep, payload: HookPayload<Args>, stepName: string) {
+export async function executeStep<Args extends DefaultArgs>(step: HookStep, payload: HookPayload<Args>, stepName: string) {
   const names = Object.keys(step)
   const fns = names.map(async (name) => {
     if (payload.results[name]?.executionTime) {
@@ -64,6 +66,8 @@ async function executeStep<Args extends DefaultArgs>(step: HookStep, payload: Ho
       payload.failed = Array.isArray(payload.failed)
         ? [...payload.failed, name]
         : [name]
+    } else if (results[index].status.result === 'WARNING' && !payload.warning.includes(name)) {
+      payload.warning.push(name)
     }
     payload.results[name] = { ...results[index], executionTime: payload.results[name].executionTime }
   })
@@ -71,11 +75,13 @@ async function executeStep<Args extends DefaultArgs>(step: HookStep, payload: Ho
 }
 
 export function createHook<E extends DefaultArgs, V extends DefaultArgs>(unique = false) {
-  const check: HookStep = {}
-  const pre: HookStep = {}
-  const main: HookStep = {}
-  const post: HookStep = {}
-  const revert: HookStep = {}
+  const steps: Record<HookStepsNames, HookStep> = {
+    check: {},
+    pre: {},
+    main: {},
+    post: {},
+    revert: {},
+  }
   const apis: Record<string, (args: E | V) => PluginApi> = {
   }
   const execute = async (args: E, config: Config): Promise<HookResult<E>> => {
@@ -90,13 +96,14 @@ export function createHook<E extends DefaultArgs, V extends DefaultArgs>(unique 
       results: {},
       apis: payloadApis,
       config,
+      warning: [],
     }
 
-    const steps = [pre, main, post]
-    for (const [key, step] of Object.entries(steps)) {
-      payload = await executeStep(step, payload, key)
+    const executeSteps = ['pre', 'main', 'post'] as const
+    for (const step of executeSteps) {
+      payload = await executeStep(steps[step], payload, step)
       if (payload.failed) {
-        payload = await executeStep(revert, payload, 'revert')
+        payload = await executeStep(steps.revert, payload, 'revert')
         break
       }
     }
@@ -104,6 +111,7 @@ export function createHook<E extends DefaultArgs, V extends DefaultArgs>(unique 
       args: payload.args,
       results: payload.results,
       failed: payload.failed,
+      warning: payload.warning,
       totalExecutionTime: Date.now() - startTime,
       config,
     }
@@ -121,24 +129,22 @@ export function createHook<E extends DefaultArgs, V extends DefaultArgs>(unique 
       results: {},
       apis: payloadApis,
       config,
+      warning: [],
     }
 
-    const result = await executeStep(check, payload, 'validate')
+    const result = await executeStep(steps.check, payload, 'validate')
     return {
       args: result.args,
       results: result.results,
       failed: result.failed,
       totalExecutionTime: Date.now() - startTime,
       config,
+      warning: payload.warning,
     }
   }
   const hook: Hook<E, V> = {
     apis,
-    check,
-    pre,
-    main,
-    post,
-    revert,
+    steps,
     execute,
     validate,
   }
