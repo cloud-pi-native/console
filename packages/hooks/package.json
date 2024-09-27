@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/hooks",
   "type": "module",
-  "version": "2.3.2",
+  "version": "2.4.0",
   "private": false,
   "description": "",
   "main": "dist/index.js",

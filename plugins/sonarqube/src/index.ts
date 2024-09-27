@@ -5,8 +5,10 @@ import infos from './infos.js'
 import monitor from './monitor.js'
 
 function start(_options: unknown) {
-  initSonar()
-  getStatus()
+  try {
+    initSonar()
+    getStatus()
+  } catch (_error) {}
 }
 
 export const plugin: Plugin = {
