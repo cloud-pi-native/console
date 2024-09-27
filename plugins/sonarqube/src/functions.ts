@@ -146,12 +146,15 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         result: 'WARNING',
         message: 'Failed to reconcile',
       },
-      error: parseError(error),
+      errors: {
+        main: parseError(error),
+      },
     }
   }
 }
 
 export const setVariables: StepCall<Project> = async (payload) => {
+  const returnResponse = payload.results.sonarqube
   try {
     const project = payload.args
     const {
@@ -205,29 +208,17 @@ export const setVariables: StepCall<Project> = async (payload) => {
     ])
 
     if (payload.results.sonarqube.status.result === 'WARNING') {
-      return {
-        status: {
-          result: 'WARNING',
-          message: `main message: ${payload.results.sonarqube.status.message}, post message: OK`,
-        },
-      }
+      returnResponse.status.message = `main message: ${payload.results.sonarqube.status.message}, post message: OK`
     }
-    return {
-      status: {
-        result: 'OK',
-      },
-    }
+    return returnResponse
   } catch (error) {
-    return {
-      status: {
-        result: 'WARNING',
-        message: `main message: ${payload.results.sonarqube.status.message}, post message: Failed to reconcile`,
-      },
-      ...payload.results.sonarqube.error && { errors: {
-        main: payload.results.sonarqube.error,
-        post: parseError(error),
-      } },
+    returnResponse.status.result = 'WARNING'
+    returnResponse.status.message = `main message: ${payload.results.sonarqube.status.message}, post message: Failed to reconcile`
+    returnResponse.errors = {
+      ...returnResponse.errors,
+      post: parseError(error),
     }
+    return returnResponse
   }
 }
 
