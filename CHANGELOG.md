@@ -1,5 +1,19 @@
 # Changelog
 
+## [8.13.0](https://github.com/cloud-pi-native/console/compare/v8.12.3...v8.13.0) (2024-09-27)
+
+
+### Features
+
+* :loud_sound: add logger object ([02c6715](https://github.com/cloud-pi-native/console/commit/02c67150d738ae200f8937adb88bf32001ff2b8c))
+* :sparkles: plugins can return warning to not interupt hook ([3e132c3](https://github.com/cloud-pi-native/console/commit/3e132c3238cc98d1d75ec956ce55efebe2c5304a))
+
+
+### Bug Fixes
+
+* :bug: change imports exports to not use z.lazy, fix swagger-ui ([64a60fe](https://github.com/cloud-pi-native/console/commit/64a60fe6bc84ea9de51519049252957726963afa))
+* :bug: dsfr tabs require rewrite DsoHome.vue ([ea03623](https://github.com/cloud-pi-native/console/commit/ea0362303757ac239e5b753af6777514cb714b03))
+
 ## [8.12.3](https://github.com/cloud-pi-native/console/compare/v8.12.2...v8.12.3) (2024-09-19)
 
 
