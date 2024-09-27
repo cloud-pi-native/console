@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.13.1](https://github.com/cloud-pi-native/console/compare/v8.13.0...v8.13.1) (2024-09-27)
+
+
+### Bug Fixes
+
+* :loud_sound: change log logic in sonarqube plugin ([5006562](https://github.com/cloud-pi-native/console/commit/500656244f12d0d1edeb995e30be8cfa95ca8a4f))
+
 ## [8.13.0](https://github.com/cloud-pi-native/console/compare/v8.12.3...v8.13.0) (2024-09-27)
 
 
