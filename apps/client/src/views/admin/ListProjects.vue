@@ -2,7 +2,7 @@
 import { onBeforeMount, ref } from 'vue'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import type { Environment, Organization, PluginsUpdateBody, ProjectService, ProjectV2, Repo, projectContract } from '@cpn-console/shared'
+import type { Organization, PluginsUpdateBody, ProjectService, projectContract } from '@cpn-console/shared'
 import { formatDate, sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useOrganizationStore } from '@/stores/organization.js'
@@ -11,6 +11,7 @@ import { useUserStore } from '@/stores/user.js'
 import { useQuotaStore } from '@/stores/quota.js'
 import { useProjectServiceStore } from '@/stores/project-services.js'
 import { useProjectRepositoryStore } from '@/stores/project-repository.js'
+import type { ProjectWithOrganization } from '@/stores/project.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useProjectMemberStore } from '@/stores/project-member.js'
@@ -33,9 +34,12 @@ type FileForDownload = File & {
   title?: string
 }
 
+const selectedProjectId = ref<string>()
 const organizations = ref<Organization[]>([])
 const tableKey = ref(getRandomId('table'))
-const selectedProject = ref<ProjectV2 & { repositories: Repo[], environments: Environment[] }>()
+const selectedProject = computed<ProjectWithOrganization | undefined>(() => {
+  return (selectedProjectId.value && projectStore.projectsById[selectedProjectId.value]) || undefined
+})
 const teamCtKey = ref(getRandomId('team'))
 const environmentsCtKey = ref(getRandomId('environment'))
 const repositoriesCtKey = ref(getRandomId('repository'))
@@ -77,7 +81,7 @@ interface DomElement extends Event {
 }
 
 const projectRows = computed(() => {
-  let rows = sortArrByObjKeyAsc(projectStore.projects, 'name')
+  let rows = projectStore.projects
     ?.map(({ id, organization, name, description, status, locked, createdAt, updatedAt, owner }) => (
       {
         status,
@@ -136,7 +140,7 @@ const projectRows = computed(() => {
 })
 const envRows = computed(() => {
   if (!selectedProject.value) return []
-  if (!selectedProject.value.environments.length) {
+  if (!selectedProject.value.environments?.length) {
     return [[{
       text: 'Aucun environnement existant',
       cellAttrs: {
@@ -145,7 +149,7 @@ const envRows = computed(() => {
     }]]
   }
   return sortArrByObjKeyAsc(selectedProject.value.environments, 'name')
-    ?.map(({ id, name, quotaId, stageId }) => (
+    .map(({ id, name, quotaId, stageId }) => (
       [
         name,
         stageStore.stages.find(stage => stage.id === stageId)?.name,
@@ -166,7 +170,7 @@ const envRows = computed(() => {
 
 const repoRows = computed(() => {
   if (!selectedProject.value) return []
-  if (!selectedProject.value.repositories.length) {
+  if (!selectedProject.value.repositories?.length) {
     return [[{
       text: 'Aucun dépôt existant',
       cellAttrs: {
@@ -195,86 +199,129 @@ async function getAllProjects() {
 }
 
 async function selectProject(projectId: string) {
-  const project = projectStore.projects.find(project => project.id === projectId)
-  if (!project) return
+  selectedProjectId.value = projectId
+  if (!projectStore.projectsById[selectedProjectId.value]) return
   await Promise.all([
     projectRepositoryStore.getProjectRepositories(projectId),
     projectEnvironmentStore.getProjectEnvironments(projectId),
     reloadProjectServices(projectId),
   ])
-  selectedProject.value = {
-    ...project,
-    environments: projectEnvironmentStore.environments,
-    repositories: projectRepositoryStore.repositories,
-  }
+  projectStore.projectsById[selectedProjectId.value].environments = projectEnvironmentStore.environments
+  projectStore.projectsById[selectedProjectId.value].repositories = projectRepositoryStore.repositories
+
   environmentsCtKey.value = getRandomId('environment')
   repositoriesCtKey.value = getRandomId('repository')
 }
 
+function unSelectProject() {
+  selectedProjectId.value = undefined
+}
+
 async function updateEnvironmentQuota({ environmentId, quotaId }: { environmentId: string, quotaId: string }) {
-  snackbarStore.isWaitingForResponse = true
+  if (!selectedProject.value) {
+    return
+  }
+  const callback = selectedProject.value.addOperation('envManagement')
   const environment = projectEnvironmentStore.environments.find(environment => environment.id === environmentId)
   if (!environment) return
   environment.quotaId = quotaId
-  await projectEnvironmentStore.updateEnvironment(environment.id, environment)
+  try {
+    await projectEnvironmentStore.updateEnvironment(environment.id, environment)
+  } catch (error) {
+    snackbarStore.setMessage(error?.message, 'error')
+  }
   await getAllProjects()
-  snackbarStore.isWaitingForResponse = false
+
+  callback.fn(callback.args)
 }
 
 async function handleProjectLocking(projectId: string, lock: boolean) {
-  snackbarStore.isWaitingForResponse = true
-  await projectStore.handleProjectLocking(projectId, lock)
+  if (!selectedProject.value) {
+    return
+  }
+  const callback = selectedProject.value.addOperation('lockHandling')
+  try {
+    await projectStore.handleProjectLocking(projectId, lock)
+  } catch (error) {
+    snackbarStore.setMessage(error?.message, 'error')
+  }
   await getAllProjects()
-  snackbarStore.isWaitingForResponse = false
+
+  callback.fn(callback.args)
 }
 
-async function replayHooks(projectId: string) {
-  snackbarStore.isWaitingForResponse = true
-  await projectStore.replayHooksForProject(projectId)
-  await getAllProjects()
-  snackbarStore.setMessage(`Le projet ayant pour id ${projectId} a été reprovisionné avec succès`, 'success')
-  snackbarStore.isWaitingForResponse = false
+async function replayHooks() {
+  if (!selectedProject.value) {
+    return
+  }
+  const callback = selectedProject.value.addOperation('replay')
+  try {
+    await projectStore.replayHooksForProject(selectedProject.value.id)
+    snackbarStore.setMessage(`Le projet ${selectedProject.value.name} a été reprovisionné avec succès`, 'success')
+    await getAllProjects()
+  } catch (error) {
+    console.trace(error)
+    snackbarStore.setMessage(error?.message, 'error')
+  }
+  callback.fn(callback.args)
 }
 
 async function archiveProject(projectId: string) {
   if (!selectedProject.value) return
-  snackbarStore.isWaitingForResponse = true
-  await projectStore.archiveProject(projectId)
-  selectedProject.value = undefined
+  const callback = selectedProject.value.addOperation('delete')
+  try {
+    await projectStore.archiveProject(projectId)
+    selectedProjectId.value = undefined
+  } catch (error) {
+    snackbarStore.setMessage(error?.message, 'error')
+  }
   await getAllProjects()
-  snackbarStore.isWaitingForResponse = false
+
+  callback.fn(callback.args)
 }
 
 async function addUserToProject(email: string) {
   if (!selectedProject.value) return
-  snackbarStore.isWaitingForResponse = true
-  selectedProject.value.members = await projectMemberStore.addMember(selectedProject.value.id, email)
+  const callback = selectedProject.value.addOperation('teamManagement')
+  try {
+    await projectMemberStore.addMember(selectedProject.value.id, email)
+  } catch (error) {
+    snackbarStore.setMessage(error?.message, 'error')
+  }
   await getAllProjects()
+
   teamCtKey.value = getRandomId('team')
-  snackbarStore.isWaitingForResponse = false
+  callback.fn(callback.args)
 }
 
 async function removeUserFromProject(userId: string) {
   if (!selectedProject.value) return
-  snackbarStore.isWaitingForResponse = true
-  if (selectedProject.value.id) {
-    await projectMemberStore.removeMember(selectedProject.value.id, userId)
-    selectedProject.value.members = selectedProject.value.members.filter(user => user.userId !== userId)
+  const callback = selectedProject.value.addOperation('teamManagement')
+  try {
+    if (selectedProject.value.id) {
+      await projectMemberStore.removeMember(selectedProject.value.id, userId)
+    }
+  } catch (error) {
+    snackbarStore.setMessage(error?.message, 'error')
   }
+  await getAllProjects()
+
   teamCtKey.value = getRandomId('team')
-  snackbarStore.isWaitingForResponse = false
+  callback.fn(callback.args)
 }
 
 async function transferOwnerShip(nextOwnerId: string) {
   if (!selectedProject.value) return
-  snackbarStore.isWaitingForResponse = true
-  const updatedProject = await projectStore.updateProject(selectedProject.value.id, { ownerId: nextOwnerId })
-  selectedProject.value = {
-    ...selectedProject.value,
-    ...updatedProject,
+  const callback = selectedProject.value.addOperation('teamManagement')
+  try {
+    await projectStore.updateProject(selectedProject.value.id, { ownerId: nextOwnerId })
+  } catch (error) {
+    snackbarStore.setMessage(error?.message, 'error')
   }
+  await getAllProjects()
+
   teamCtKey.value = getRandomId('team')
-  snackbarStore.isWaitingForResponse = false
+  callback.fn(callback.args)
 }
 
 async function generateProjectsDataFile() {
@@ -302,8 +349,11 @@ onBeforeMount(async () => {
 })
 
 const projectServices = ref<ProjectService[]>([])
-async function reloadProjectServices(projectId: ProjectV2['id']) {
-  const resServices = await projectServiceStore.getProjectServices(projectId, 'admin')
+async function reloadProjectServices() {
+  if (!selectedProjectId.value) {
+    return
+  }
+  const resServices = await projectServiceStore.getProjectServices(selectedProjectId.value, 'admin')
   projectServices.value = []
   await nextTick()
   const filteredServices = resServices
@@ -311,19 +361,18 @@ async function reloadProjectServices(projectId: ProjectV2['id']) {
 }
 
 async function saveProjectServices(data: PluginsUpdateBody) {
-  if (!selectedProject.value) return
-
-  snackbarStore.isWaitingForResponse = true
+  if (!selectedProject.value) {
+    return
+  }
+  const callback = selectedProject.value.addOperation('saveServices')
   try {
     await projectServiceStore.updateProjectServices(data, selectedProject.value.id)
     snackbarStore.setMessage('Paramètres sauvegardés', 'success')
-  } catch (error) {
-    console.log(error)
-
+  } catch (_error) {
     snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
   }
-  await reloadProjectServices(selectedProject.value.id)
-  snackbarStore.isWaitingForResponse = false
+  await reloadProjectServices()
+  callback.fn(callback.args)
 }
 
 function untruncateDescription(span: HTMLElement) {
@@ -374,7 +423,7 @@ function untruncateDescription(span: HTMLElement) {
         secondary
         icon-only
         icon="ri:arrow-go-back-line"
-        @click="() => selectedProject = undefined"
+        @click="unSelectProject"
       />
     </div>
     <template
@@ -412,18 +461,41 @@ function untruncateDescription(span: HTMLElement) {
         :title="selectedProject.name"
         :content="selectedProject.description"
       />
+      <div
+        class="w-full flex place-content-evenly fr-mb-2w"
+      >
+        <DsoBadge
+          :resource="{
+            ...selectedProject,
+            locked: bts(selectedProject.locked),
+            resourceKey: 'locked',
+            wording: '',
+          }"
+        />
+        <DsoBadge
+          :resource="{
+            ...selectedProject,
+            resourceKey: 'status',
+            wording: '',
+          }"
+        />
+      </div>
       <div class="w-full flex gap-4 fr-mb-2w">
         <DsfrButton
           data-testid="replayHooksBtn"
           label="Reprovisionner le projet"
-          icon="ri:refresh-fill"
+          :icon="{ name: 'ri:refresh-fill', animation: selectedProject.operationsInProgress.has('replay') ? 'spin' : '' }"
+          :disabled="selectedProject.operationsInProgress.has('replay') || selectedProject.locked"
           secondary
-          @click="replayHooks(selectedProject.id)"
+          @click="replayHooks()"
         />
         <DsfrButton
           data-testid="handleProjectLockingBtn"
           :label="`${selectedProject.locked ? 'Déverrouiller' : 'Verrouiller'} le projet`"
-          :icon="selectedProject.locked ? 'ri:lock-unlock-fill' : 'ri:lock-fill'"
+          :icon="selectedProject.operationsInProgress.has('lockHandling')
+            ? { name: 'ri:refresh-fill', animation: 'spin' }
+            : selectedProject.locked ? 'ri:lock-unlock-fill' : 'ri:lock-fill'"
+          :disabled="selectedProject.operationsInProgress.has('lockHandling')"
           secondary
           @click="handleProjectLocking(selectedProject.id, !selectedProject.locked)"
         />
@@ -432,7 +504,10 @@ function untruncateDescription(span: HTMLElement) {
           data-testid="showArchiveProjectBtn"
           label="Supprimer le projet"
           secondary
-          icon="ri:delete-bin-7-line"
+          :disabled="selectedProject.operationsInProgress.has('delete')"
+          :icon="selectedProject.operationsInProgress.has('delete')
+            ? { name: 'ri:refresh-fill', animation: 'spin' }
+            : 'ri:delete-bin-7-line'"
           @click="isArchivingProject = true"
         />
       </div>
@@ -454,9 +529,11 @@ function untruncateDescription(span: HTMLElement) {
           <DsfrButton
             data-testid="archiveProjectBtn"
             :label="`Supprimer définitivement le projet ${selectedProject.name}`"
-            :disabled="projectToArchive !== selectedProject.name"
             secondary
-            icon="ri:delete-bin-7-line"
+            :disabled="selectedProject.operationsInProgress.has('delete') || projectToArchive !== selectedProject.name"
+            :icon="selectedProject.operationsInProgress.has('delete')
+              ? { name: 'ri:refresh-fill', animation: 'spin' }
+              : 'ri:delete-bin-7-line'"
             @click="archiveProject(selectedProject.id)"
           />
           <DsfrButton
@@ -528,15 +605,21 @@ function untruncateDescription(span: HTMLElement) {
             permission-target="admin"
             :display-global="false"
             @update="(data: PluginsUpdateBody) => saveProjectServices(data)"
-            @reload="() => reloadProjectServices(selectedProject?.id ?? '')"
+            @reload="() => reloadProjectServices(selectedProject.id ?? '')"
           />
         </div>
       </div>
     </div>
-    <LoadingCt
-      v-if="snackbarStore.isWaitingForResponse"
-      description="Opérations en cours"
-    />
+    <div
+      v-if="selectedProject?.operationsInProgress.size"
+      class="fixed bottom-5 right-5 z-999 shadow-lg background-default-grey opacity-100"
+    >
+      <DsfrAlert
+        title="Opération en cours..."
+        :description="selectedProject.operationsInProgress.size === 2 ? 'Une ou plusieurs tâches en attente' : ''"
+        type="info"
+      />
+    </div>
   </div>
 </template>
 @/stores/project-member.js

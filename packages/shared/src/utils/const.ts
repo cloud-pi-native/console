@@ -52,6 +52,7 @@ export const projectStatus = [
   'created',
   'failed',
   'archived',
+  'warning',
 ] as const
 
 export const achievedStatus = [
@@ -132,6 +133,14 @@ export const statusDict = {
       wording: 'archivé',
       animation: '',
       color: 'var(--text-mention-grey)',
+    },
+    warning: {
+      testId: 'warning-badge',
+      type: 'warning',
+      icon: 'ri:alert-fill',
+      wording: 'partiellement dégradé',
+      animation: '',
+      color: 'var(--warning-425-625)',
     },
   },
 } as const

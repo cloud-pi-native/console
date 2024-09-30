@@ -34,6 +34,7 @@ async function transferOwnerShip(nextOwnerId: string) {
   if (!projectStore.selectedProject) return
   snackbarStore.isWaitingForResponse = true
   await projectStore.updateProject(projectStore.selectedProject.id, { ownerId: nextOwnerId })
+  await projectStore.listProjects()
   teamKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
 }

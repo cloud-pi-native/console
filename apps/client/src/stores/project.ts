@@ -1,16 +1,38 @@
+// @ts-ignore '@gouvminint/vue-dsfr' missing types
+import { getRandomId } from '@gouvminint/vue-dsfr'
 import { defineStore } from 'pinia'
+import type { Ref } from 'vue'
 import { ref } from 'vue'
-import type { CreateProjectBody, Organization, ProjectV2, Role, projectContract, projectRoleContract } from '@cpn-console/shared'
-import { PROJECT_PERMS, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
+import type { CreateProjectBody, Environment, Organization, ProjectV2, Repo, Role, projectContract, projectRoleContract } from '@cpn-console/shared'
+import { PROJECT_PERMS, getPermsByUserRoles, resourceListToDict, sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useUserStore } from './user.js'
 import { useOrganizationStore } from './organization.js'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
-export type ProjectWithOrganization = ProjectV2 & { organization: Organization }
+export type ProjectOperations = 'create'
+  | 'delete'
+  | 'envManagement'
+  | 'repoManagement'
+  | 'teamManagement'
+  | 'searchSecret'
+  | 'replay'
+  | 'update'
+  | 'lockHandling'
+  | 'saveServices'
+
+export type ProjectWithOrganization = ProjectV2 & {
+  organization: Organization
+  operationsInProgress: Ref<Set<ProjectOperations>>
+  repositories?: Repo[]
+  environments?: Environment[]
+  addOperation: (name: ProjectOperations) => { fn: (name: ProjectOperations) => boolean, args: ProjectOperations }
+  removeOperation: (name: ProjectOperations) => boolean
+}
 
 export const useProjectStore = defineStore('project', () => {
   const selectedProject = ref<ProjectWithOrganization>()
-  const projects = ref<ProjectWithOrganization[]>([])
+  const projectsById = ref<Record<string, ProjectWithOrganization>>({})
+  const projects = computed(() => sortArrByObjKeyAsc(Object.values(projectsById.value), 'name'))
   const userStore = useUserStore()
   const organizationStore = useOrganizationStore()
   const selectedProjectPerms = computed(() => {
@@ -31,36 +53,74 @@ export const useProjectStore = defineStore('project', () => {
     const res = await apiClient.Projects.listProjects({ query })
       .then(response => extractData(response, 200))
     await organizationStore.listOrganizations()
-    projects.value = res.map(project => ({ ...project, organization: organizationStore.organizationsById[project.organizationId] as Organization }))
+    // remove old projects not in response
+    for (const project of projects.value) {
+      if (!res.find(({ id }) => id === project.id)) {
+        delete projectsById.value[project.id]
+      }
+    }
+    for (const project of res) {
+      if (projectsById.value[project.id]) {
+        projectsById.value[project.id] = {
+          ...projectsById.value[project.id],
+          ...project,
+        }
+      } else {
+        const operationsInProgress = projectsById.value[project.id]
+          ? projectsById.value[project.id].operationsInProgress
+          : ref(new Set<ProjectOperations>())
+
+        function removeOperation(operationName: ProjectOperations) {
+          return operationsInProgress.value.delete(operationName)
+        }
+
+        function addOperation(operationName: ProjectOperations) {
+          if (operationsInProgress.value.has(operationName)) {
+            operationName += getRandomId()
+          }
+          if (operationsInProgress.value.size <= 1) {
+            operationsInProgress.value.add(operationName)
+          } else {
+            return { fn: (_: string) => false, args: operationName }
+          }
+
+          return { fn: removeOperation, args: operationName }
+        }
+        projectsById.value[project.id] = {
+          ...project,
+          operationsInProgress,
+          addOperation,
+          removeOperation,
+          organization: organizationStore.organizationsById[project.organizationId] as Organization,
+        }
+      }
+    }
     if (selectedProject.value) {
       setSelectedProject(selectedProject.value.id)
     }
   }
 
   const updateProject = async (projectId: string, data: typeof projectContract.updateProject.body._type) => {
-    const project = await apiClient.Projects.updateProject({ body: data, params: { projectId } })
+    return apiClient.Projects.updateProject({ body: data, params: { projectId } })
       .then(response => extractData(response, 200))
-    await listProjects()
-    return project
   }
 
   const createProject = async (body: CreateProjectBody) => {
-    await apiClient.Projects.createProject({ body })
+    const res = await apiClient.Projects.createProject({ body })
       .then(response => extractData(response, 201))
     await listProjects()
+    return res
   }
 
   const replayHooksForProject = async (projectId: string) => {
     await apiClient.Projects.replayHooksForProject({ params: { projectId } })
       .then(response => extractData(response, 204))
-    await listProjects()
   }
 
   const archiveProject = async (projectId: string) => {
     await apiClient.Projects.archiveProject({ params: { projectId } })
       .then(response => extractData(response, 204))
     selectedProject.value = undefined
-    await listProjects()
   }
 
   const getProjectSecrets = (projectId: string) => apiClient.Projects.getProjectSecrets({ params: { projectId } })
@@ -91,6 +151,7 @@ export const useProjectStore = defineStore('project', () => {
     generateProjectsData,
     selectedProject,
     projects,
+    projectsById,
     selectedProjectPerms,
     setSelectedProject,
     listProjects,

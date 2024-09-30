@@ -297,6 +297,14 @@ export function updateProjectFailed(id: Project['id']) {
   })
 }
 
+export function updateProjectWarning(id: Project['id']) {
+  return prisma.project.update({
+    where: { id },
+    data: { status: ProjectStatus.warning },
+    include: baseProjectIncludes,
+  })
+}
+
 export function addUserToProject({ project, user }: { project: Project, user: User }) {
   return prisma.projectMembers.create({
     data: {

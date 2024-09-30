@@ -21,6 +21,9 @@ const projectStore = useProjectStore()
 const userStore = useUserStore()
 const organizationStore = useOrganizationStore()
 const snackbarStore = useSnackbarStore()
+const buttonState = ref({
+  isCreating: false,
+})
 
 const project = ref<typeof projectContract.createProject.body._type>({
   organizationId: '',
@@ -47,15 +50,20 @@ const orgOptions = ref<OrgOption[]>([])
 const updatedValues: Ref<Record<any, any>> = ref({})
 
 async function createProject() {
-  snackbarStore.isWaitingForResponse = true
+  buttonState.value.isCreating = true
   updatedValues.value = instanciateSchema(ProjectSchemaV2, true)
   if (errorSchema.value) {
     snackbarStore.setMessage(parseZodError(errorSchema.value))
   } else if (project.value) {
-    await projectStore.createProject(project.value)
-    router.push('/projects')
+    try {
+      const newProject = await projectStore.createProject(project.value)
+      router.push(`/projects/${newProject.id}/dashboard`)
+    } catch (error) {
+      snackbarStore.setMessage(error?.message, 'error')
+    } finally {
+      buttonState.value.isCreating = false
+    }
   }
-  snackbarStore.isWaitingForResponse = false
 }
 
 function updateProject(key: keyof UnwrapRef<typeof project>, value: string) {
@@ -148,13 +156,11 @@ onMounted(async () => {
       data-testid="createProjectBtn"
       primary
       class="fr-mt-2w"
-      :disabled="!project.organizationId || !!errorSchema"
-      icon="ri:send-plane-line"
+      :disabled="!project.organizationId || !!errorSchema || buttonState.isCreating"
+      :icon="buttonState.isCreating
+        ? { name: 'ri:refresh-fill', animation: 'spin' }
+        : 'ri:send-plane-line'"
       @click="createProject()"
-    />
-    <LoadingCt
-      v-if="snackbarStore.isWaitingForResponse"
-      description="Projet en cours de création"
     />
   </div>
 </template>

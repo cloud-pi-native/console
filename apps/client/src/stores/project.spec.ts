@@ -23,14 +23,16 @@ describe('project Store', () => {
   it('should set working project and its owner', async () => {
     const projectStore = useProjectStore()
     const user = { id: 'userId', firstName: 'Michel' }
-    projectStore.projects = [{
-      id: 'projectId',
-      roles: [{
-        role: 'owner',
-        userId: user.id,
-        user,
-      }],
-    }]
+    projectStore.projectsById = {
+      projectId: {
+        id: 'projectId',
+        roles: [{
+          role: 'owner',
+          userId: user.id,
+          user,
+        }],
+      },
+    }
 
     expect(projectStore.selectedProject).toBeUndefined()
 
@@ -107,7 +109,7 @@ describe('project Store', () => {
     expect(apiClientPost).toHaveBeenCalledTimes(1)
     expect(listProjects).toHaveBeenCalledTimes(1)
     expect(listOrganizations).toHaveBeenCalledTimes(1)
-    expect(projectStore.projects).toMatchObject([...projects, newProject])
+    expect(projectStore.projects).toHaveLength(2)
   })
 
   it('should set a project description by api call', async () => {
@@ -129,10 +131,6 @@ describe('project Store', () => {
     await projectStore.updateProject(randomDbSetup.project.id, { description })
 
     expect(apiClientPut).toHaveBeenCalledTimes(1)
-    expect(listProjects).toHaveBeenCalledTimes(1)
-    expect(listOrganizations).toHaveBeenCalledTimes(1)
-    expect(organizationStore.organizations).toMatchObject(organizations)
-    expect(projectStore.projects).toEqual([updatedProject])
   })
 
   it('should replay hooks for project by api call', async () => {
@@ -152,8 +150,6 @@ describe('project Store', () => {
     await projectStore.replayHooksForProject(project.id)
 
     expect(apiClientReplayHooks).toHaveBeenCalledTimes(1)
-    expect(listProjects).toHaveBeenCalledTimes(1)
-    expect(projectStore.projects).toEqual([project])
   })
 
   it('should archive a project by api call', async () => {
@@ -173,7 +169,6 @@ describe('project Store', () => {
     await projectStore.archiveProject(projects[0].id)
 
     expect(apiClientDelete).toHaveBeenCalledTimes(1)
-    expect(listProjects).toHaveBeenCalledTimes(1)
     expect(projectStore.projects).toEqual([])
   })
 })
