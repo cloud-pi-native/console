@@ -36,7 +36,7 @@ describe('test zoneContract', () => {
   })
 
   describe('createZone', () => {
-    const zone = { id: faker.string.uuid(), label: faker.string.alpha({ length: 5 }), slug: faker.string.alpha({ length: 5, casing: 'lower' }), description: '' }
+    const zone = { id: faker.string.uuid(), label: faker.string.alpha({ length: 5 }), argocdUrl: faker.internet.url(), slug: faker.string.alpha({ length: 5, casing: 'lower' }), description: '' }
 
     it('should create and return zone for admin', async () => {
       const user = getUserMockInfos(true)
@@ -80,7 +80,7 @@ describe('test zoneContract', () => {
 
   describe('updateZone', () => {
     const zoneId = faker.string.uuid()
-    const zone: Omit<Zone, 'id'> = { label: faker.string.alpha({ length: 5 }), slug: faker.string.alpha({ length: 5, casing: 'lower' }), description: '' }
+    const zone: Omit<Zone, 'id'> = { label: faker.string.alpha({ length: 5 }), slug: faker.string.alpha({ length: 5, casing: 'lower' }), argocdUrl: faker.internet.url(), description: '' }
 
     it('should update and return zone for admin', async () => {
       const user = getUserMockInfos(true)

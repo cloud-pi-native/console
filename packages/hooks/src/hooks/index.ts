@@ -2,6 +2,7 @@ export * from './hook-cluster.js'
 export * from './hook-misc.js'
 export * from './hook-project.js'
 export * from './hook-user.js'
+export * from './hook-zone.js'
 
 export type Organization = string
 export interface PartialEnvironment { environment: string, stage: string, clusterLabel: string }
@@ -44,6 +45,7 @@ export interface KubeCluster {
 export interface ZoneObject {
   id: string
   slug: string
+  argocdUrl: string
 }
 
 export interface ClusterObject {
