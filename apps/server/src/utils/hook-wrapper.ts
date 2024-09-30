@@ -4,7 +4,7 @@ import { hooks } from '@cpn-console/hooks'
 import type { AsyncReturnType } from '@cpn-console/shared'
 import { ProjectAuthorized, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
 import { genericProxy } from './proxy.js'
-import { archiveProject, getAdminPlugin, getClusterByIdOrThrow, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed } from '@/resources/queries-index.js'
+import { archiveProject, getAdminPlugin, getClusterByIdOrThrow, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '@/resources/queries-index.js'
 import type { ConfigRecords } from '@/resources/project-service/business.js'
 import { dbToObj } from '@/resources/project-service/business.js'
 
@@ -78,6 +78,8 @@ async function manageProjectStatus(projectId: Project['id'], hookReply: HookResu
   }
   if (hookReply.failed) {
     return updateProjectFailed(projectId)
+  } else if (hookReply.warning.length) {
+    return updateProjectWarning(projectId)
   } else if (action === 'upsert') {
     return updateProjectCreated(projectId)
   } else if (action === 'delete') {

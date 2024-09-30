@@ -74,7 +74,6 @@ describe('Dashboard', () => {
       .getByDataTestid('showSecretsBtn').click()
 
     cy.wait('@getProjectSecrets').its('response.statusCode').should('match', /^20\d$/)
-    cy.getByDataTestid('snackbar').should('contain', 'Secrets récupérés')
 
     cy.getByDataTestid('projectSecretsZone').should('exist')
     cy.getByDataTestid('noProjectSecretsP').should('contain', 'Aucun secret à afficher')

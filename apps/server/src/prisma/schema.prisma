@@ -234,6 +234,7 @@ enum ProjectStatus {
   created
   failed
   archived
+  warning
 }
 
 enum TokenStatus {

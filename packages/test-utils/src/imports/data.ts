@@ -1725,6 +1725,18 @@ export const data = {
       ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
     },
     {
+      id: '8bd21636-e8ce-4098-8ed8-16cbd60af340',
+      name: 'projet dégradé',
+      organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
+      description: 'Projet testé en état dégradé',
+      status: 'warning',
+      locked: true,
+      createdAt: '2023-07-03T14:46:56.799Z',
+      updatedAt: '2023-07-03T14:46:56.806Z',
+      everyonePerms: '896n',
+      ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
+    },
+    {
       id: '554d9150-9a07-42c1-8207-1163f2f0addd',
       name: 'pissenlit',
       organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',

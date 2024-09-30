@@ -68,6 +68,10 @@ body,
   background-color: var(--background-alt-grey);
 }
 
+.fr-alert {
+  background-color: var(--background-alt-grey);
+}
+
 .danger-zone-btns {
   @apply flex justify-between items-center gap-4 <md:flex-col;
 }
