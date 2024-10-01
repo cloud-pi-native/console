@@ -5,12 +5,10 @@ const props = withDefaults(defineProps<{
   length: number
   step: number
   page: number
-  isUpdating: boolean
 }>(), {
   length: 0,
   step: 10,
   page: 0,
-  isUpdating: false,
 })
 
 const emit = defineEmits(['setPage'])
@@ -30,7 +28,7 @@ const currentStart = computed(() => Math.floor(props.page * props.step))
         icon="ri:arrow-left-double-fill"
         :icon-only="true"
         title="Voir la première page"
-        :disabled="props.isUpdating || props.page <= 0"
+        :disabled="page <= 0"
         data-testid="seeFirstPageBtn"
         @click="emit('setPage', 0)"
       />
@@ -38,17 +36,17 @@ const currentStart = computed(() => Math.floor(props.page * props.step))
         icon="ri:arrow-drop-left-line"
         :icon-only="true"
         title="Voir la page précédente"
-        :disabled="props.isUpdating || props.page <= 0"
+        :disabled="page <= 0"
         data-testid="seePreviousPageBtn"
         @click="emit('setPage', Math.max(props.page - 1, 0))"
       />
     </div>
-    <p
+    <span
       class="flex items-center"
       data-testid="positionInfo"
     >
-      {{ `${currentStart + 1} - ${Math.min(currentStart + props.step, props.length)} sur ${props.length}` }}
-    </p>
+      {{ length ? `${currentStart + 1} - ${Math.min(currentStart + props.step, props.length)} sur ${props.length}` : `0 - 0 sur 0` }}
+    </span>
     <div
       class="flex gap-2"
     >
@@ -56,7 +54,7 @@ const currentStart = computed(() => Math.floor(props.page * props.step))
         icon="ri:arrow-drop-right-line"
         :icon-only="true"
         title="Voir la page suivante"
-        :disabled="props.isUpdating || props.page >= maxPage"
+        :disabled="(page * step + step) >= length"
         data-testid="seeNextPageBtn"
         @click="emit('setPage', Math.min(maxPage, page + 1))"
       />
@@ -64,7 +62,7 @@ const currentStart = computed(() => Math.floor(props.page * props.step))
         icon="ri:arrow-right-double-line"
         :icon-only="true"
         title="Voir la dernière page"
-        :disabled="props.isUpdating || props.page >= maxPage"
+        :disabled="(page * step + step) >= length"
         data-testid="seeLastPageBtn"
         @click="emit('setPage', maxPage)"
       />
