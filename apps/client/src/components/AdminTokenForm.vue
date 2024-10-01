@@ -110,10 +110,6 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
     legend="Créer un jeton"
     class="max-w-160 w-full"
   >
-    <LoadingCt
-      v-if="isCreatingToken"
-      description="Création en cours"
-    />
     <DsfrInputGroup
       :error-message="newToken.name && errorSchema?.flatten().fieldErrors.name"
     >
@@ -146,7 +142,10 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
         data-testid="saveBtn"
         label="Enregistrer"
         secondary
-        :disabled="errorSchema ?? invalidExpirationDate"
+        :icon="isCreatingToken
+          ? { name: 'ri:refresh-fill', animation: 'spin' }
+          : 'ri:send-plane-line'"
+        :disabled="(!!errorSchema ?? invalidExpirationDate) || isCreatingToken"
         class="mr-5"
         @click="createToken"
       />
