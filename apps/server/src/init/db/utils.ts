@@ -75,6 +75,14 @@ const logUserCase = moveBefore(ModelsOrder, 'User', 'Log')
 if (logUserCase) {
   ModelsOrder = logUserCase
 }
+const logProjectCase = moveBefore(ModelsOrder, 'Project', 'Log')
+if (logProjectCase) {
+  ModelsOrder = logProjectCase
+}
+const OrgProjectCase = moveBefore(ModelsOrder, 'Organization', 'Project')
+if (OrgProjectCase) {
+  ModelsOrder = OrgProjectCase
+}
 
 export const models: Record<string, any[]> = {}
 export const associations: Record<string, any[]> = []
