@@ -269,12 +269,12 @@ export const data = {
           rwGroup: '/mi-int-2/staging/RW',
         },
       },
-      action: 'create Project',
+      action: 'Create Project',
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
       createdAt: '2023-07-03T14:46:56.809Z',
       updatedAt: '2023-07-03T14:46:56.809Z',
       requestId: null,
-      projectId: null,
+      projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
     },
     {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1221',
@@ -393,7 +393,7 @@ export const data = {
       createdAt: '2023-07-03T14:46:56.819Z',
       updatedAt: '2023-07-03T14:46:56.819Z',
       requestId: null,
-      projectId: null,
+      projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
     },
     {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae1223',

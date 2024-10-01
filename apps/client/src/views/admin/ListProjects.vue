@@ -2,7 +2,7 @@
 import { onBeforeMount, ref } from 'vue'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import type { Organization, PluginsUpdateBody, ProjectService, projectContract } from '@cpn-console/shared'
+import type { Log, Organization, PluginsUpdateBody, ProjectService, projectContract } from '@cpn-console/shared'
 import { formatDate, sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useOrganizationStore } from '@/stores/organization.js'
@@ -16,6 +16,7 @@ import { useProjectStore } from '@/stores/project.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useProjectMemberStore } from '@/stores/project-member.js'
 import { bts, truncateDescription } from '@/utils/func.js'
+import { useLogStore } from '@/stores/log.js'
 
 const projectStore = useProjectStore()
 const organizationStore = useOrganizationStore()
@@ -64,6 +65,7 @@ const membersId = 'membersTable'
 const repositoriesId = 'repositoriesTable'
 const environmentsId = 'environmentsTable'
 const servicesId = 'servicesTable'
+const logsId = 'logsView'
 
 type FilterMethods = Record<string, typeof projectContract.listProjects.query._type>
 const filterMethods: FilterMethods = {
@@ -204,7 +206,8 @@ async function selectProject(projectId: string) {
   await Promise.all([
     projectRepositoryStore.getProjectRepositories(projectId),
     projectEnvironmentStore.getProjectEnvironments(projectId),
-    reloadProjectServices(projectId),
+    reloadProjectServices(),
+    showLogs(0),
   ])
   projectStore.projectsById[selectedProjectId.value].environments = projectEnvironmentStore.environments
   projectStore.projectsById[selectedProjectId.value].repositories = projectRepositoryStore.repositories
@@ -233,6 +236,7 @@ async function updateEnvironmentQuota({ environmentId, quotaId }: { environmentI
   await getAllProjects()
 
   callback.fn(callback.args)
+  await showLogs()
 }
 
 async function handleProjectLocking(projectId: string, lock: boolean) {
@@ -248,6 +252,7 @@ async function handleProjectLocking(projectId: string, lock: boolean) {
   await getAllProjects()
 
   callback.fn(callback.args)
+  await showLogs()
 }
 
 async function replayHooks() {
@@ -264,6 +269,7 @@ async function replayHooks() {
     snackbarStore.setMessage(error?.message, 'error')
   }
   callback.fn(callback.args)
+  await showLogs()
 }
 
 async function archiveProject(projectId: string) {
@@ -292,6 +298,7 @@ async function addUserToProject(email: string) {
 
   teamCtKey.value = getRandomId('team')
   callback.fn(callback.args)
+  await showLogs()
 }
 
 async function removeUserFromProject(userId: string) {
@@ -308,6 +315,7 @@ async function removeUserFromProject(userId: string) {
 
   teamCtKey.value = getRandomId('team')
   callback.fn(callback.args)
+  await showLogs()
 }
 
 async function transferOwnerShip(nextOwnerId: string) {
@@ -322,6 +330,7 @@ async function transferOwnerShip(nextOwnerId: string) {
 
   teamCtKey.value = getRandomId('team')
   callback.fn(callback.args)
+  await showLogs()
 }
 
 async function generateProjectsDataFile() {
@@ -375,6 +384,33 @@ async function saveProjectServices(data: PluginsUpdateBody) {
   callback.fn(callback.args)
 }
 
+// LOGS Rendering functions
+const logStore = useLogStore()
+
+const step = 10
+const isUpdating = ref(false)
+const page = ref(0)
+
+const logs = ref<Log[]>([])
+const totalLength = ref(0)
+
+async function showLogs(index?: number) {
+  page.value = index ?? page.value
+  getProjectLogs({ offset: page.value * step, limit: step })
+}
+
+async function getProjectLogs({ offset, limit }: { offset: number, limit: number }) {
+  if (!selectedProjectId.value) {
+    return
+  }
+  isUpdating.value = true
+  const res = await logStore.listLogs({ offset, limit, projectId: selectedProjectId.value, clean: false })
+  logs.value = res.logs as Log[]
+  totalLength.value = res.total
+  isUpdating.value = false
+}
+
+// Utils Functions
 function untruncateDescription(span: HTMLElement) {
   span.innerHTML = span.title
 
@@ -608,11 +644,27 @@ function untruncateDescription(span: HTMLElement) {
             @reload="() => reloadProjectServices(selectedProject.id ?? '')"
           />
         </div>
+        <div>
+          <h4
+            :id="logsId"
+            class="mb-0"
+          >
+            Journaux du projet
+          </h4>
+          <LogsViewer
+            :logs="logs"
+            :total-length="totalLength"
+            :is-updating="isUpdating"
+            :page="page"
+            :step="step"
+            @move-page="showLogs"
+          />
+        </div>
       </div>
     </div>
     <div
       v-if="selectedProject?.operationsInProgress.size"
-      class="fixed bottom-5 right-5 z-999 shadow-lg background-default-grey opacity-100"
+      class="fixed bottom-5 right-5 z-999 shadow-lg background-default-grey"
     >
       <DsfrAlert
         title="Opération en cours..."

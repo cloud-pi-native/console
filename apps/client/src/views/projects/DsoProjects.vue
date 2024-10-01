@@ -2,8 +2,10 @@
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
+import { useLogStore } from '@/stores/log.js'
 
 const projectStore = useProjectStore()
+const logStore = useLogStore()
 
 const projectList = computed(() => sortArrByObjKeyAsc(projectStore.projects, 'name')
   ?.map(project => ({
@@ -20,6 +22,10 @@ async function setSelectedProject(project: Record<any, any>) {
 function goToCreateProject() {
   router.push('projects/create-project')
 }
+
+onBeforeMount(() => {
+  logStore.displayProjectLogs = false
+})
 </script>
 
 <template>

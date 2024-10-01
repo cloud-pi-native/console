@@ -72,6 +72,26 @@ body,
   background-color: var(--background-alt-grey);
 }
 
+.log-panel, .log-btn {
+  background-color: var(--background-default-grey);
+}
+
+.log-panel {
+  box-shadow: inset 0 0 0 1px var(--border-action-high-blue-france);
+}
+
+.log-box--success{
+  border-color: var(--background-contrast-success);
+}
+
+.log-box--warning{
+  border-color: var(--background-contrast-warning);
+}
+
+.log-box--error{
+  border-color: var(--background-contrast-error);
+}
+
 .danger-zone-btns {
   @apply flex justify-between items-center gap-4 <md:flex-col;
 }

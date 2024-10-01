@@ -7,6 +7,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import router from '@/router/index.js'
 import { copyContent } from '@/utils/func.js'
 import { useStageStore } from '@/stores/stage.js'
+import { useLogStore } from '@/stores/log.js'
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
@@ -19,6 +20,7 @@ const projectToArchive = ref('')
 const isSecretShown = ref(false)
 const projectSecrets = ref<Record<string, any>>({})
 const allStages = ref<Array<any>>([])
+const logStore = useLogStore()
 
 async function updateProject() {
   if (!projectStore.selectedProject) return
@@ -27,6 +29,7 @@ async function updateProject() {
   await projectStore.listProjects()
   isEditingDescription.value = false
   callback.fn(callback.args)
+  logStore.needRefresh = true
 }
 
 async function replayHooks() {
@@ -36,6 +39,7 @@ async function replayHooks() {
   await useProjectStore().listProjects()
   snackbarStore.setMessage('Le projet a été reprovisionné avec succès', 'success')
   callback.fn(callback.args)
+  logStore.needRefresh = true
 }
 
 async function archiveProject(projectId: ProjectV2['id']) {
@@ -218,7 +222,7 @@ onBeforeMount(async () => {
           ? { name: 'ri:refresh-fill', animation: 'spin' }
           : isSecretShown ? 'ri:eye-off-line' : 'ri:eye-line'"
         :disabled="projectStore.selectedProject.operationsInProgress.has('searchSecret')"
-        @click="handleSecretDisplay()"
+        @click="handleSecretDisplay"
       />
       <div
         v-if="isSecretShown"
