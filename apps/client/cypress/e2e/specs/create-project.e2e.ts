@@ -37,6 +37,8 @@ describe('Create Project', () => {
     cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
 
     cy.wait('@postProject').its('response.statusCode').should('match', /^20\d$/)
+    cy.url().should('match', /projects\/.*\/dashboard/)
+
     cy.wait('@listProjects').its('response.statusCode').should('match', /^20\d$/)
 
     cy.assertCreateProjects([project.name])

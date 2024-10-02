@@ -22,7 +22,10 @@ describe('schemas utils', () => {
       externalUserName: 'clai+re-nlet_',
     }
 
-    expect(RepoSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
+    expect(RepoSchema
+      .omit({ createdAt: true, updatedAt: true })
+      .safeParse(toParse))
+      .toStrictEqual({ data: toParse, success: true })
   })
 
   it('should validate a correct environment schema', () => {
@@ -35,7 +38,10 @@ describe('schemas utils', () => {
       stageId: faker.string.uuid(),
     }
 
-    expect(EnvironmentSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
+    expect(EnvironmentSchema
+      .omit({ createdAt: true, updatedAt: true })
+      .safeParse(toParse))
+      .toStrictEqual({ data: toParse, success: true })
   })
 
   it('should validate a correct organization schema', () => {
@@ -167,6 +173,7 @@ describe('schemas utils', () => {
     }
 
     expect(RepoSchema
+      .omit({ createdAt: true, updatedAt: true })
       .safeParse(toParse))
       .toStrictEqual({ data: toParse, success: true })
   })
@@ -243,12 +250,14 @@ describe('schemas utils', () => {
 
     // @ts-ignore
     expect(parseZodError(RepoSchema
+      .omit({ createdAt: true, updatedAt: true })
       .safeParse(toParse)
       .error))
       .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"')
 
     toParse.internalRepoName = 'candi-lib'
     expect(RepoSchema
+      .omit({ createdAt: true, updatedAt: true })
       .safeParse(toParse))
       .toStrictEqual({ data: toParse, success: true })
   })
@@ -324,6 +333,7 @@ describe('schemas utils', () => {
     const toParse = { internalRepoName: 'candi lib' }
 
     expect(RepoSchema
+      .omit({ createdAt: true, updatedAt: true })
       .pick({ internalRepoName: true })
       .safeParse(toParse)
       // @ts-ignore
@@ -331,7 +341,7 @@ describe('schemas utils', () => {
   })
 
   it('should return truthy schema', () => {
-    expect(instanciateSchema(RepoSchema.omit({ id: true }), true)).toStrictEqual({
+    expect(instanciateSchema(RepoSchema.omit({ id: true }), true)).toMatchObject({
       internalRepoName: true,
       externalRepoUrl: true,
       externalToken: true,
@@ -343,7 +353,7 @@ describe('schemas utils', () => {
   })
 
   it('should return true schema', () => {
-    expect(instanciateSchema(RepoSchema.omit({ id: true }), true)).toStrictEqual({
+    expect(instanciateSchema(RepoSchema.omit({ id: true }), true)).toMatchObject({
       internalRepoName: true,
       externalRepoUrl: true,
       externalToken: true,

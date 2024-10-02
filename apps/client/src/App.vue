@@ -3,11 +3,15 @@ import { swaggerUiPath } from '@cpn-console/shared'
 import { getKeycloak } from './utils/keycloak/keycloak.js'
 import { useSnackbarStore } from './stores/snackbar.js'
 import { useSystemSettingsStore } from './stores/system-settings.js'
+import { useProjectStore } from './stores/project.js'
+import { useUserStore } from './stores/user.js'
 import { useServiceStore } from '@/stores/services-monitor.js'
 
 const keycloak = getKeycloak()
 const snackbarStore = useSnackbarStore()
 const systemStore = useSystemSettingsStore()
+const projectStore = useProjectStore()
+const userStore = useUserStore()
 
 const isLoggedIn = ref<boolean | undefined>(keycloak.authenticated)
 
@@ -35,6 +39,9 @@ const serviceStore = useServiceStore()
 onBeforeMount(() => {
   serviceStore.startHealthPolling()
   serviceStore.checkServicesHealth()
+  if (userStore.isLoggedIn) {
+    projectStore.getMyProjects()
+  }
 })
 </script>
 
@@ -57,12 +64,12 @@ onBeforeMount(() => {
       <router-view />
     </div>
     <DsoSnackbar />
+    <SelectProject />
   </div>
 
   <DsfrFooter
     class="dso-footer"
     a11y-compliance="partiellement conforme"
-    :logo-text="['Ministère', 'de l’Intérieur', 'et des Outre-Mer']"
     :mandatory-links="[]"
   >
     <template #description>
@@ -91,5 +98,9 @@ onBeforeMount(() => {
 <style>
 .fr-container {
   max-width: 100%;
+}
+
+.fr-header__logo {
+  display: none;
 }
 </style>

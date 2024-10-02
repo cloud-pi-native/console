@@ -72,6 +72,7 @@ describe('Administration organizations', () => {
 
     cy.visit('/projects/create-project')
     cy.wait('@getAllOrganizations').its('response').then((response) => {
+      cy.log(organizations)
       cy.get('select#organizationId-select')
         .select((response.body.find(org => org.name === newOrg.name)).id)
         .should('have.value', (response.body.find(org => org.label === newOrg.label)).id)

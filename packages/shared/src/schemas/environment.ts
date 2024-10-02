@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { longestEnvironmentName } from '../utils/const.js'
+import { AtDatesToStringExtend } from './_utils.js'
 
 export const EnvironmentSchema = z.object({
   id: z.string()
@@ -14,6 +15,6 @@ export const EnvironmentSchema = z.object({
   quotaId: z.string().uuid(),
   clusterId: z.string()
     .uuid(),
-})
+}).extend(AtDatesToStringExtend)
 
 export type Environment = Zod.infer<typeof EnvironmentSchema>

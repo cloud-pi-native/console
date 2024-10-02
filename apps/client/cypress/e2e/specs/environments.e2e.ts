@@ -139,9 +139,9 @@ describe('Manage project environments', () => {
     cy.get('#zone-select')
       .select(publicZone?.id)
     cy.get('#cluster-select')
-      .should('not.exist')
-    cy.getByDataTestid('noClusterOptionAlert')
       .should('exist')
+    cy.getByDataTestid('noClusterOptionAlert')
+      .should('not.exist')
 
     cy.get('#stage-select')
       .select(devStage?.id)

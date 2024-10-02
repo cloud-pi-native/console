@@ -6,6 +6,7 @@ import { useProjectStore } from '@/stores/project.js'
 import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useUserStore } from '@/stores/user.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import router from '@/router/index.js'
 
 const projectStore = useProjectStore()
 const projectMemberStore = useProjectMemberStore()
@@ -26,15 +27,19 @@ async function removeUserFromProject(userId: string) {
   if (!projectStore.selectedProject) return
   snackbarStore.isWaitingForResponse = true
   projectStore.selectedProject.members = await projectMemberStore.removeMember(projectStore.selectedProject.id, userId)
+  await projectStore.getMyProjects()
   teamKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
+  if (userId === userStore.userProfile?.id) {
+    router.push('/projects')
+  }
 }
 
 async function transferOwnerShip(nextOwnerId: string) {
   if (!projectStore.selectedProject) return
   snackbarStore.isWaitingForResponse = true
   await projectStore.updateProject(projectStore.selectedProject.id, { ownerId: nextOwnerId })
-  await projectStore.listProjects()
+  await projectStore.getMyProjects()
   teamKey.value = getRandomId('team')
   snackbarStore.isWaitingForResponse = false
 }

@@ -11,7 +11,6 @@ const projectStore = useProjectStore()
 const serviceStore = useServiceStore()
 
 const routeName = computed(() => route.name)
-const routePath = computed(() => route.path)
 const isLoggedIn = computed(() => userStore.isLoggedIn)
 const selectedProject = computed(() => projectStore.selectedProject)
 
@@ -28,17 +27,21 @@ const isExpanded = ref({
   administration: false,
 })
 
+const isDisplayed = computed(() => ({
+  project: !!projectStore.selectedProject,
+}))
+
 function toggleExpand(key: keyof typeof isExpanded.value) {
   isExpanded.value[key] = !isExpanded.value[key]
 }
 
-watch(routePath, (routePath) => {
-  if (/^\/projects*/.test(routePath)) {
+watch(router.currentRoute, (route) => {
+  if (route.matched.some(match => match.name === 'Project')) {
     isExpanded.value.projects = true
     isExpanded.value.administration = false
     return
   }
-  if (/admin*/.test(routePath)) {
+  if (route.matched.some(match => match.name === 'ParentAdmin')) {
     isExpanded.value.projects = false
     isExpanded.value.administration = true
     return
@@ -103,8 +106,19 @@ onMounted(() => {
         </DsfrSideMenuLink>
       </DsfrSideMenuListItem>
       <!-- Onglet Projet -->
+      <DsfrSideMenuListItem>
+        <DsfrSideMenuLink
+          v-if="isLoggedIn"
+          data-testid="menuMyProjects"
+          :active="routeName === 'Projects'"
+          to="/projects"
+        >
+          Mes projets
+        </DsfrSideMenuLink>
+      </DsfrSideMenuListItem>
       <DsfrSideMenuListItem
         v-if="isLoggedIn"
+        :class="`transition-all ${isDisplayed.project ? '' : 'hidden'}`"
       >
         <DsfrSideMenuButton
           data-testid="menuProjectsBtn"
@@ -113,7 +127,7 @@ onMounted(() => {
           control-id="projectsList"
           @toggle-expand="toggleExpand('projects')"
         >
-          Projets
+          Projet {{ projectStore.selectedProject?.name }}
         </DsfrSideMenuButton>
         <DsfrSideMenuList
           id="projectsList"
@@ -121,18 +135,7 @@ onMounted(() => {
           :expanded="isExpanded.projects"
           :collapsable="true"
         >
-          <DsfrSideMenuListItem>
-            <DsfrSideMenuLink
-              class="menu-link-icon"
-              data-testid="menuMyProjects"
-              :active="routeName === 'Projects'"
-              to="/projects"
-            >
-              <v-icon name="ri:list-check" />
-              Mes projets
-            </DsfrSideMenuLink>
-          </DsfrSideMenuListItem>
-          <div v-if="selectedProject">
+          <div>
             <DsfrSideMenuListItem>
               <DsfrSideMenuLink
                 class="menu-link-icon"
@@ -152,7 +155,7 @@ onMounted(() => {
                 :to="`/projects/${selectedProject?.id}/services`"
               >
                 <v-icon name="ri:flow-chart" />
-                Mes services
+                Services externes
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
             <DsfrSideMenuListItem>
@@ -202,7 +205,7 @@ onMounted(() => {
                 :to="`/projects/${selectedProject?.id}/environments`"
               >
                 <v-icon name="ri:microsoft-line" />
-                Environments
+                Environnements
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
           </div>

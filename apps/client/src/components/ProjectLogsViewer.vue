@@ -48,7 +48,9 @@ watch(projectStore, () => {
   if (!projectStore.selectedProject) {
     logStore.needRefresh = false
     logStore.displayProjectLogs = true
+    return
   }
+  logStore.needRefresh = true
 })
 </script>
 
@@ -87,7 +89,7 @@ watch(projectStore, () => {
           :page="page"
           :step="step"
           header-class="grid-col-2 shrink"
-          body-class="grid-col-span-2 mt-1"
+          body-class="grid-col-span-2 mt-1 w-full"
           mode="hide"
           hide-total-events
           pagination-position="top"

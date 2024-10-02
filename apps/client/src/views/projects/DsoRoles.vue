@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Member, Role, RoleBigint } from '@cpn-console/shared'
+import { type Member, ProjectAuthorized, type Role, type RoleBigint } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -78,7 +78,7 @@ async function saveEveryoneRole(role: { permissions: bigint }) {
   await projectStore.updateProject(projectStore.selectedProject.id, {
     everyonePerms: role.permissions.toString(),
   })
-  await projectStore.listProjects()
+  await projectStore.getMyProjects()
 }
 
 const cancel = () => selectedId.value = undefined
@@ -87,63 +87,73 @@ const cancel = () => selectedId.value = undefined
 <template>
   <DsoSelectedProject />
   <template
-    v-if="projectStore.selectedProject"
+    v-if="ProjectAuthorized.ManageRoles({ projectPermissions: projectStore.selectedProject.myPerms })"
   >
-    <div
-      class="flex flex-row"
+    <template
+      v-if="projectStore.selectedProject"
     >
       <div
-        :class="`flex flex-col ${selectedId ? 'w-2/8 max-sm:hidden' : 'w-full'}`"
+        class="flex flex-row"
       >
         <div
-          class="flex flex-col"
+          :class="`flex flex-col ${selectedId ? 'w-2/8 max-sm:hidden' : 'w-full'}`"
         >
-          <DsfrButton
-            label="Ajouter un rôle"
-            data-testid="addRoleBtn"
-            :class="selectedId ? 'w-11/12' : ''"
-            secondary
-            @click="addRole()"
-          />
-          <button
-            v-for="role in roleList"
-            :key="role.id"
-            :data-testid="`${role.id}-tab`"
-            :class="`text-align-left cursor-pointer mt-3 grid grid-flow-col fr-btn text-wrap truncate  w-full ${selectedId ? 'grid-cols-1' : 'grid-cols-2'} ${selectedId === role.id ? 'fr-btn--primary' : 'fr-btn--tertiary'}`"
-            @click="selectedId = selectedId === role.id ? undefined : role.id"
+          <div
+            class="flex flex-col"
           >
-            {{ role.name }}
-            <div
-              v-if="!selectedId"
-              class="text-wrap truncate text-right grow-0"
+            <DsfrButton
+              label="Ajouter un rôle"
+              data-testid="addRoleBtn"
+              :class="selectedId ? 'w-11/12' : ''"
+              secondary
+              @click="addRole()"
+            />
+            <button
+              v-for="role in roleList"
+              :key="role.id"
+              :data-testid="`${role.id}-tab`"
+              :class="`text-align-left cursor-pointer mt-3 grid grid-flow-col fr-btn text-wrap truncate  w-full ${selectedId ? 'grid-cols-1' : 'grid-cols-2'} ${selectedId === role.id ? 'fr-btn--primary' : 'fr-btn--tertiary'}`"
+              @click="selectedId = selectedId === role.id ? undefined : role.id"
             >
-              <span>{{ role.memberCounts }}</span>
-              <v-icon
-                class="ml-4"
-                name="ri:team-line"
-              />
-            </div>
-          </button>
+              {{ role.name }}
+              <div
+                v-if="!selectedId"
+                class="text-wrap truncate text-right grow-0"
+              >
+                <span>{{ role.memberCounts }}</span>
+                <v-icon
+                  class="ml-4"
+                  name="ri:team-line"
+                />
+              </div>
+            </button>
+          </div>
         </div>
+        <ProjectRoleForm
+          v-if="selectedRole"
+          :id="selectedRole.id"
+          :key="selectedRole.id"
+          class="md:w-6/8 w-full"
+          :name="selectedRole.name"
+          :permissions="BigInt(selectedRole.permissions)"
+          :project-id="projectStore.selectedProject.id"
+          :is-everyone="selectedRole.isEveryone"
+          :all-members="projectStore.selectedProject.members"
+          @delete="deleteRole(selectedRole.id)"
+          @update-member-roles="(checked: boolean, userId: Member['userId']) => updateMember(checked, userId)"
+          @save="(role: Omit<RoleBigint, 'position'>) => saveRole(role)"
+          @cancel="() => cancel()"
+        />
       </div>
-      <ProjectRoleForm
-        v-if="selectedRole"
-        :id="selectedRole.id"
-        :key="selectedRole.id"
-        class="md:w-6/8 w-full"
-        :name="selectedRole.name"
-        :permissions="BigInt(selectedRole.permissions)"
-        :project-id="projectStore.selectedProject.id"
-        :is-everyone="selectedRole.isEveryone"
-        :all-members="projectStore.selectedProject.members"
-        @delete="deleteRole(selectedRole.id)"
-        @update-member-roles="(checked: boolean, userId: Member['userId']) => updateMember(checked, userId)"
-        @save="(role: Omit<RoleBigint, 'position'>) => saveRole(role)"
-        @cancel="() => cancel()"
-      />
-    </div>
+    </template>
+    <ErrorGoBackToProjects
+      v-else
+    />
   </template>
-  <ErrorGoBackToProjects
+
+  <p
     v-else
-  />
+  >
+    Vous n'avez pas les permissions pour afficher ces ressources
+  </p>
 </template>
