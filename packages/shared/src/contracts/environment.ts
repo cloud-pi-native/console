@@ -32,7 +32,8 @@ export const environmentContract = contractInstance.router({
         .uuid(),
     }),
     responses: {
-      200: EnvironmentSchema.array(),
+      200: EnvironmentSchema.omit({ name: true })
+        .extend({ name: z.string() }).array(),
       400: ErrorSchema,
       401: ErrorSchema,
       403: ErrorSchema,
