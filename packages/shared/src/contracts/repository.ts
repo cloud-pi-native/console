@@ -31,7 +31,10 @@ export const repositoryContract = contractInstance.router({
         .uuid(),
     }),
     responses: {
-      200: z.array(RepoSchema),
+      200: z.array(RepoSchema
+        .omit({ internalRepoName: true })
+        .extend({ internalRepoName: z.string() }),
+      ),
       500: ErrorSchema,
     },
   },
