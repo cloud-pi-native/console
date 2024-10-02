@@ -1,35 +1,34 @@
 import { defineStore } from 'pinia'
-import type { CreateEnvironmentBody, Environment, UpdateEnvironmentBody } from '@cpn-console/shared'
-import { useProjectStore } from '@/stores/project.js'
-import { projectMissing } from '@/utils/const.js'
+import type { CreateEnvironmentBody, Environment, ProjectV2, UpdateEnvironmentBody } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useProjectEnvironmentStore = defineStore('project-environment', () => {
-  const projectStore = useProjectStore()
   const environments = ref<Environment[]>([])
 
   const getProjectEnvironments = async (projectId: string) => {
     environments.value = await apiClient.Environments.listEnvironments({ query: { projectId } })
       .then(response => extractData(response, 200))
+    return environments.value
   }
-  const addEnvironmentToProject = async (body: CreateEnvironmentBody) => {
-    if (!projectStore.selectedProject) throw new Error(projectMissing)
+  const addEnvironmentToProject = async (projectId: ProjectV2['id'], body: CreateEnvironmentBody) => {
     await apiClient.Environments.createEnvironment({ body })
       .then(response => extractData(response, 201))
-    await getProjectEnvironments(projectStore.selectedProject.id)
+    await getProjectEnvironments(projectId)
+    return environments.value
   }
 
-  const updateEnvironment = async (id: Environment['id'], environment: UpdateEnvironmentBody) => {
+  const updateEnvironment = async (projectId: ProjectV2['id'], id: Environment['id'], environment: UpdateEnvironmentBody) => {
     await apiClient.Environments.updateEnvironment({ body: environment, params: { environmentId: id } })
       .then(response => extractData(response, 200))
-    if (projectStore.selectedProject) await getProjectEnvironments(projectStore.selectedProject.id)
+    await getProjectEnvironments(projectId)
+    return environments.value
   }
 
-  const deleteEnvironment = async (environmentId: Environment['id']) => {
-    if (!projectStore.selectedProject) throw new Error(projectMissing)
+  const deleteEnvironment = async (projectId: ProjectV2['id'], environmentId: Environment['id']) => {
     await apiClient.Environments.deleteEnvironment({ params: { environmentId } })
       .then(response => extractData(response, 204))
-    await getProjectEnvironments(projectStore.selectedProject.id)
+    await getProjectEnvironments(projectId)
+    return environments.value
   }
 
   return {

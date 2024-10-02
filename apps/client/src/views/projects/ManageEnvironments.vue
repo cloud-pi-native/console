@@ -1,10 +1,13 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
 import { ClusterPrivacy, type Environment, ProjectAuthorized, projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
+import type { ProjectComplete } from '@/stores/project.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+
+const props = defineProps<{ projectId: ProjectComplete['id'] }>()
 
 interface EnvironmentTile {
   id: string
@@ -16,6 +19,7 @@ const projectStore = useProjectStore()
 const projectEnvironmentStore = useProjectEnvironmentStore()
 const clusterStore = useClusterStore()
 const snackbarStore = useSnackbarStore()
+const project = computed(() => projectStore.myProjectsById[props.projectId])
 
 const environmentsTiles = ref<EnvironmentTile[]>([])
 
@@ -27,7 +31,7 @@ const isNewEnvironmentForm = ref(false)
 
 const projectClustersIds = computed(() => ([
   ...clusterStore.clusters.filter(cluster => cluster.privacy === ClusterPrivacy.PUBLIC).map(({ id }) => id),
-  ...projectStore.selectedProject?.clusterIds ?? [],
+  ...project.value.clusterIds ?? [],
 ]))
 
 async function setEnvironmentsTiles() {
@@ -60,8 +64,9 @@ function cancel() {
 
 async function addEnvironment(environment: Omit<Environment, 'id' | 'projectId'>) {
   snackbarStore.isWaitingForResponse = true
-  if (projectStore.selectedProject && !projectStore.selectedProject.locked) {
-    await projectEnvironmentStore.addEnvironmentToProject({ ...environment, projectId: projectStore.selectedProject.id })
+  if (!project.value.locked) {
+    const envs = await projectEnvironmentStore.addEnvironmentToProject(project.value.id, { ...environment, projectId: project.value.id })
+    projectStore.myProjectsById[project.value.id].environments = envs
   }
   cancel()
   snackbarStore.isWaitingForResponse = false
@@ -69,8 +74,9 @@ async function addEnvironment(environment: Omit<Environment, 'id' | 'projectId'>
 
 async function putEnvironment(environment: Pick<Environment, 'quotaId' | 'id'>) {
   snackbarStore.isWaitingForResponse = true
-  if (projectStore.selectedProject && !projectStore.selectedProject.locked) {
-    await projectEnvironmentStore.updateEnvironment(environment.id, environment)
+  if (!project.value.locked) {
+    const envs = await projectEnvironmentStore.updateEnvironment(project.value.id, environment.id, environment)
+    projectStore.myProjectsById[project.value.id].environments = envs
   }
   cancel()
   snackbarStore.isWaitingForResponse = false
@@ -78,15 +84,15 @@ async function putEnvironment(environment: Pick<Environment, 'quotaId' | 'id'>) 
 
 async function deleteEnvironment(environmentId: Environment['id']) {
   snackbarStore.isWaitingForResponse = true
-  await projectEnvironmentStore.deleteEnvironment(environmentId)
+  const envs = await projectEnvironmentStore.deleteEnvironment(project.value.id, environmentId)
+  projectStore.myProjectsById[project.value.id].environments = envs
   setSelectedEnvironment()
   snackbarStore.isWaitingForResponse = false
 }
 
 onMounted(async () => {
-  if (!projectStore.selectedProject) return
   await clusterStore.getClusters()
-  await projectEnvironmentStore.getProjectEnvironments(projectStore.selectedProject?.id)
+  await projectEnvironmentStore.getProjectEnvironments(project.value?.id)
   setEnvironmentsTiles()
 })
 
@@ -94,14 +100,22 @@ projectEnvironmentStore.$subscribe(() => {
   setEnvironmentsTiles()
 })
 
-const canManageEnvs = computed(() => !projectStore.selectedProject?.locked && ProjectAuthorized.ManageEnvironments({ projectPermissions: projectStore.selectedProjectPerms }))
+projectStore.$subscribe(async () => {
+  await clusterStore.getClusters()
+  await projectEnvironmentStore.getProjectEnvironments(project.value?.id)
+  setEnvironmentsTiles()
+})
+
+const canManageEnvs = computed(() => !project.value?.locked && ProjectAuthorized.ManageEnvironments({ projectPermissions: project.value.myPerms }))
 </script>
 
 <template>
+  <DsoSelectedProject
+    :project-id="projectId"
+  />
   <template
-    v-if="projectStore.selectedProject"
+    v-if="ProjectAuthorized.ListRepositories({ projectPermissions: project.myPerms })"
   >
-    <DsoSelectedProject />
     <div
       class="flex <md:flex-col-reverse items-center justify-between pb-5"
     >
@@ -111,7 +125,7 @@ const canManageEnvs = computed(() => !projectStore.selectedProject?.locked && Pr
         data-testid="addEnvironmentLink"
         tertiary
         :disabled="!canManageEnvs"
-        :title="projectStore.selectedProject.locked ? projectIsLockedInfo : 'Ajouter un nouvel environnement'"
+        :title="project.locked ? projectIsLockedInfo : 'Ajouter un nouvel environnement'"
         class="fr-mt-2v <md:mb-2"
         icon="ri:add-line"
         @click="showNewEnvironmentForm()"
@@ -136,7 +150,7 @@ const canManageEnvs = computed(() => !projectStore.selectedProject?.locked && Pr
     >
       <EnvironmentForm
         :environment-names="environmentNames"
-        :is-project-locked="projectStore.selectedProject.locked"
+        :is-project-locked="project.locked"
         :project-clusters-ids="projectClustersIds"
         :all-clusters="clusterStore.clusters"
         :can-manage="canManageEnvs"
@@ -171,7 +185,7 @@ const canManageEnvs = computed(() => !projectStore.selectedProject?.locked && Pr
           :environment="selectedEnvironment"
           :project-clusters-ids="[selectedEnvironment.clusterId]"
           :is-editable="false"
-          :is-project-locked="projectStore.selectedProject.locked"
+          :is-project-locked="project.locked"
           :can-manage="canManageEnvs"
           :all-clusters="allClusters"
           @put-environment="(environmentUpdate: Pick<Environment, 'quotaId'>) => putEnvironment({ ...environmentUpdate, id: environment.id })"
@@ -186,8 +200,9 @@ const canManageEnvs = computed(() => !projectStore.selectedProject?.locked && Pr
       </div>
     </div>
   </template>
-  <!-- N'est jamais sensé s'afficher -->
-  <ErrorGoBackToProjects
+  <p
     v-else
-  />
+  >
+    Vous n'avez pas les permissions pour afficher ces ressources
+  </p>
 </template>

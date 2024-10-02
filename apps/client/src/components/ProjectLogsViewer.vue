@@ -3,14 +3,12 @@ import type { CleanLog, ProjectV2 } from '@cpn-console/shared'
 import { ref, watch } from 'vue'
 import { useLogStore } from '../stores/log.js'
 import { useProjectStore } from '@/stores/project.js'
+import { selectedProjectId } from '@/router/index.js';
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   projectId: ProjectV2['id']
-}>(), {
-})
-
+}>()
 const logStore = useLogStore()
-const projectStore = useProjectStore()
 
 const step = 5
 const isUpdating = ref(false)
@@ -44,11 +42,13 @@ watch(logStore, () => {
   }
 })
 
-watch(projectStore, () => {
-  if (!projectStore.selectedProject) {
+watch(selectedProjectId, () => {
+  if (!selectedProjectId.value) {
     logStore.needRefresh = false
     logStore.displayProjectLogs = true
+    return
   }
+  logStore.needRefresh = true
 })
 </script>
 
@@ -87,7 +87,7 @@ watch(projectStore, () => {
           :page="page"
           :step="step"
           header-class="grid-col-2 shrink"
-          body-class="grid-col-span-2 mt-1"
+          body-class="grid-col-span-2 mt-1 w-full"
           mode="hide"
           hide-total-events
           pagination-position="top"

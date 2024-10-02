@@ -1,28 +1,27 @@
 <script lang="ts" setup>
 import type { PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
 import { computed, ref } from 'vue'
+import type { ProjectComplete } from '@/stores/project.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useProjectServiceStore } from '@/stores/project-services.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
+const props = defineProps<{ projectId: ProjectComplete['id'] }>()
+
 const projectStore = useProjectStore()
 const projectServiceStore = useProjectServiceStore()
-const project = computed(() => projectStore.selectedProject)
 const snackbarStore = useSnackbarStore()
+const project = computed(() => projectStore.myProjectsById[props.projectId])
 
 const services = ref<ProjectService[]>([])
 async function reload() {
-  if (!project.value) return
   const resServices = await projectServiceStore.getProjectServices(project.value.id)
   services.value = []
   await nextTick()
-  const filteredServices = resServices
-  services.value = filteredServices
+  services.value = resServices
 }
 
 async function save(data: PluginsUpdateBody) {
-  if (!project.value) return
-
   snackbarStore.isWaitingForResponse = true
   try {
     await projectServiceStore.updateProjectServices(data, project.value.id)
@@ -34,13 +33,20 @@ async function save(data: PluginsUpdateBody) {
   snackbarStore.isWaitingForResponse = false
 }
 
-onBeforeMount(() => {
+watch(project, async () => {
+  reload()
+})
+
+projectStore.$subscribe(async () => {
+  if (!projectStore.selectedProject) return
   reload()
 })
 </script>
 
 <template>
-  <DsoSelectedProject />
+  <DsoSelectedProject
+    :project-id="projectId"
+  />
   <ServicesConfig
     :services="services"
     permission-target="user"

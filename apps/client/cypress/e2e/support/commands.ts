@@ -30,7 +30,6 @@ Cypress.Commands.add('goToProjects', () => {
   cy.intercept('GET', 'api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
   cy.visit('/')
-    .getByDataTestid('menuProjectsBtn').click()
   cy.getByDataTestid('menuMyProjects').click()
   cy.wait('@listProjects')
   cy.url().should('contain', '/projects')

@@ -1,16 +1,20 @@
 <script lang="ts" setup>
+import type { ProjectComplete } from '@/stores/project.js'
 import { useProjectStore } from '@/stores/project.js'
 
+const props = defineProps<{ projectId: ProjectComplete['id'] }>()
+
 const projectStore = useProjectStore()
+const project = computed(() => projectStore.myProjectsById[props.projectId])
 </script>
 
 <template>
   <DsfrAlert
-    v-if="projectStore.selectedProject"
-    :type="projectStore.selectedProject.locked ? 'warning' : 'info'"
-    :description="projectStore.selectedProject.locked ? `Le projet ${projectStore.selectedProject?.name} est verrouillé. Veuillez contacter un administrateur` : `Le projet courant est : ${projectStore.selectedProject?.name} (${projectStore.selectedProject?.organization?.label})`"
+    v-show="project"
+    :type="project.locked ? 'warning' : 'info'"
+    :description="`Le projet ${project.name} est verrouillé. Veuillez contacter un administrateur`"
     data-testid="currentProjectInfo"
     small
-    class="w-max fr-mb-2w"
+    class="w-max fr-mb-2w lg:hidden"
   />
 </template>
