@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.13.2](https://github.com/cloud-pi-native/console/compare/v8.13.1...v8.13.2) (2024-10-02)
+
+
+### Bug Fixes
+
+* :ambulance: no check on api response ([cfc56db](https://github.com/cloud-pi-native/console/commit/cfc56db5b4cdab03b3515d2cae1477e7546dfef8))
+
 ## [8.13.1](https://github.com/cloud-pi-native/console/compare/v8.13.0...v8.13.1) (2024-09-27)
 
 
