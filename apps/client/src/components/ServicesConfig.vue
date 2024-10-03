@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import type { PermissionTarget, PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
+import type { PermissionTarget, PluginConfigItem, PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
 
 const props = withDefaults(defineProps<{
   services: ProjectService[]
@@ -61,6 +61,10 @@ function save() {
 }
 function reload() {
   emit('reload')
+}
+
+function getItemsToShowLength(items: PluginConfigItem[] | undefined, scope: PermissionTarget): number | undefined {
+  return items?.filter(item => item.permissions[scope].read || item.permissions[scope].write).length
 }
 </script>
 
@@ -159,48 +163,48 @@ function reload() {
         {{ service.description }}
       </p>
       <div
-        class="w-full grid gap-2"
+        :class="getItemsToShowLength(service.manifest.project, permissionTarget) && (props.displayGlobal && getItemsToShowLength(service.manifest.global, permissionTarget)) ? '2xl:grid 2xl:grid-cols-2 2xl:gap-10' : ''"
       >
-        <div
-          v-if="service.manifest.project?.length"
-          class="border-b-solid border-stone-600 text-xl col-span-2"
+        <DsfrCallout
+          v-if="getItemsToShowLength(service.manifest.project, permissionTarget)"
+          title="Configuration projet"
+          class="flex flex-col gap-2"
         >
-          Configuration projet
-        </div>
-        <ConfigParam
-          v-for="item in service.manifest.project"
-          :key="item.key"
-          :options="{
-            value: item.value,
-            kind: item.kind,
-            description: item.description,
-            name: item.title,
-            // @ts-ignore Sisi il y a potentiellement un placeholder
-            placeholder: item.placeholder || '',
-            disabled: !item.permissions[permissionTarget].write,
-          }"
-          @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
-        />
-        <div
+          <ConfigParam
+            v-for="item in service.manifest.project"
+            :key="item.key"
+            :options="{
+              value: item.value,
+              kind: item.kind,
+              description: item.description,
+              name: item.title,
+              // @ts-ignore Sisi il y a potentiellement un placeholder
+              placeholder: item.placeholder || '',
+              disabled: !item.permissions[permissionTarget].write,
+            }"
+            @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
+          />
+        </DsfrCallout>
+        <DsfrCallout
           v-if="service.manifest.global?.length && props.displayGlobal"
-          class="border-b-solid border-stone-600 text-xl col-span-2"
+          title="Configuration globale"
+          class="flex flex-col gap-2"
         >
-          Configuration global
-        </div>
-        <ConfigParam
-          v-for="item in props.displayGlobal ? service.manifest.global : []"
-          :key="item.key"
-          :options="{
-            value: ref(item.value),
-            kind: item.kind,
-            description: item.description,
-            name: item.title,
-            // @ts-ignore si si il y a potentiellement un placeholder
-            placeholder: item.placeholder || '',
-            disabled: !item.permissions[permissionTarget].write,
-          }"
-          @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
-        />
+          <ConfigParam
+            v-for="item in props.displayGlobal ? service.manifest.global : []"
+            :key="item.key"
+            :options="{
+              value: ref(item.value),
+              kind: item.kind,
+              description: item.description,
+              name: item.title,
+              // @ts-ignore si si il y a potentiellement un placeholder
+              placeholder: item.placeholder || '',
+              disabled: !item.permissions[permissionTarget].write,
+            }"
+            @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
+          />
+        </DsfrCallout>
       </div>
     </div>
   </div>
