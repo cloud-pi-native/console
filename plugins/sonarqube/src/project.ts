@@ -71,6 +71,38 @@ export async function ensureRepositoryConfiguration(projectKey: string, login: s
   }
 }
 
+export async function createQualityGate(projectKey: string) {
+  return getAxiosInstance()({
+    url: 'qualitygates/create',
+    method: 'post',
+    params: {
+      name: projectKey,
+    },
+  })
+}
+
+export async function addGroupToQualityGate(projectKey: string, groupName: string) {
+  return getAxiosInstance()({
+    url: 'qualitygates/add_group',
+    method: 'post',
+    params: {
+      gateName: projectKey,
+      groupName: groupName
+    },
+  })
+}
+
+export async function addProjectToQualityGate(projectKey: string) {
+  return getAxiosInstance()({
+    url: 'qualitygates/select',
+    method: 'post',
+    params: {
+      gateName: projectKey,
+      projectKey	: projectKey
+    },
+  })
+}
+
 export async function createProject(projectKey: string, projectName: string) {
   return getAxiosInstance()({
     url: 'projects/create',
