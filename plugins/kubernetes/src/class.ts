@@ -1,9 +1,9 @@
 import type { ClusterObject, Environment, Project, ResourceQuotaType, UserObject } from '@cpn-console/hooks'
 import { PluginApi } from '@cpn-console/hooks'
-import type { CoreV1Api, V1Namespace, V1ObjectMeta } from '@kubernetes/client-node'
+import type { ApisApi, CoreV1Api, V1Namespace, V1ObjectMeta } from '@kubernetes/client-node'
 import { objectValues, shallowMatch } from '@cpn-console/shared'
 import { getNsObject } from './namespace.js'
-import { createCoreV1Api, createCustomObjectApi } from './api.js'
+import { createApisApi, createCoreV1Api, createCustomObjectApi } from './api.js'
 import { getQuotaObject } from './quota.js'
 import type { AnyObjectsApi } from './customApiClass.js'
 import { patchOptions } from './misc.js'
@@ -38,9 +38,11 @@ class KubernetesNamespace {
   nsObject: V1NamespacePopulated
   coreV1Api: CoreV1Api | undefined
   anyObjectApi: AnyObjectsApi | undefined
+  apisApi: ApisApi | undefined
 
   constructor(organizationName: string, projectName: string, environmentName: string, owner: UserObject, cluster: ClusterObject, projectId: string) {
     this.coreV1Api = createCoreV1Api(cluster)
+    this.apisApi = createApisApi(cluster)
     this.anyObjectApi = createCustomObjectApi(cluster)
     this.nsObjectExpected = getNsObject(organizationName, projectName, environmentName, owner, cluster.zone.slug, projectId)
     this.nsObject = getNsObject(organizationName, projectName, environmentName, owner, cluster.zone.slug, projectId)

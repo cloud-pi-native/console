@@ -1,11 +1,11 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
-
-export const vaultUrl = process.env.VAULT_URL
+import getConfig from './config.js'
 
 const infos: ServiceInfos = {
   name: 'vault',
-  // TODO wait for vault to be connected to oidc
-  // to: ({ project, organization }) => `${vaultUrl}/ui/vault/secrets/forge-dso/list/${projectRootDir}/${organization}/${project}`,
+  to: ({ project, organization }) => getConfig().hideProjectService
+    ? undefined
+    : `${getConfig().publicUrl}/ui/vault/secrets/${organization}-${project}`,
   title: 'Vault',
   imgSrc: '/img/vault.svg',
   description: 'Vault s\'intègre profondément avec les identités de confiance pour automatiser l\'accès aux secrets, aux données et aux systèmes',
