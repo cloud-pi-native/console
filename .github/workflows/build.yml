@@ -199,3 +199,21 @@ jobs:
       - name: Inspect image
         run: |
           docker buildx imagetools inspect ${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }}:${{ steps.meta.outputs.version }}
+
+  preview:
+    name: Redeploy preview app
+    if: contains(github.event.pull_request.labels.*.name, 'preview')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Replace template fields
+        id: feed-template
+        run: |
+          echo "ARGOCD_SYNC_PAYLOAD=$(echo "${{ vars.ARGOCD_SYNC_PAYLOAD_TEMPLATE }}" | sed 's|<pr_number>|${{ github.event.number }}|g')" >> $GITHUB_OUTPUT
+
+      - name: Deploy new image
+        run: |
+          curl -X POST ${{ vars.ARGOCD_URL }}/api/v1/applications/cloud-pi-native-docs/sync \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.ARGOCD_TOKEN }}" \
+            -d '${{ steps.feed-template.outputs.ARGOCD_SYNC_PAYLOAD }}'
+        continue-on-error: true
