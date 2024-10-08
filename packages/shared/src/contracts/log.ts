@@ -1,12 +1,14 @@
 import { z } from 'zod'
-import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
-import { apiPrefix, contractInstance } from '../index.js'
-import { AtDatesToStringExtend } from '../schemas/_utils.js'
+import type { ClientInferRequest } from '@ts-rest/core'
+import { CleanLogSchema, LogSchema, apiPrefix, contractInstance } from '../index.js'
+import { CoerceBooleanSchema } from '../schemas/_utils.js'
 import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const adminLogsQuery = z.object({
   offset: z.coerce.number(),
   limit: z.coerce.number(),
+  projectId: z.string().optional(),
+  clean: CoerceBooleanSchema.default(true),
 })
 export type AdminLogsQuery = Zod.infer<typeof adminLogsQuery>
 
@@ -20,25 +22,11 @@ export const logContract = contractInstance.router({
     responses: {
       200: z.object({
         total: z.number(),
-        logs: z.array(z.object({
-          id: z.string(),
-          data: z.object({
-            args: z.any(),
-            failed: z.boolean().or(z.array(z.string())).optional(),
-            warning: z.string().array().optional(),
-            results: z.any(),
-            totalExecutionTime: z.number().optional(),
-          }).passthrough().transform((data) => {
-            delete data.config
-            return data
-          }),
-          action: z.string(),
-          userId: z.string().nullable(),
-          requestId: z.string().nullable(),
-        }).extend(AtDatesToStringExtend)),
+        logs: LogSchema.array().or(CleanLogSchema.array()),
       }),
       401: ErrorSchema,
       403: ErrorSchema,
+      404: ErrorSchema,
       500: ErrorSchema,
     },
   },
@@ -49,4 +37,5 @@ export const logContract = contractInstance.router({
 
 export type GetLogsQuery = ClientInferRequest<typeof logContract.getLogs>['query']
 
-export type Log = ClientInferResponseBody<typeof logContract.getLogs, 200>['logs'][number]
+export type Log = Zod.infer<typeof LogSchema>
+export type CleanLog = Zod.infer<typeof CleanLogSchema>

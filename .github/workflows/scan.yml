@@ -73,6 +73,12 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-results.sarif
+        continue-on-error: true
+
+      - name: Warn about error
+        if: failure()
+        run: |
+          echo ":warning: The Trivy scan report for image `${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }}:${{ inputs.TAG }}` was not successfully completed and could not be uploaded to the Github Security Panel." >> $GITHUB_STEP_SUMMARY
 
   config-scan:
     name: Scan config files vulnerabilities
@@ -101,6 +107,11 @@ jobs:
         with:
           sarif_file: trivy-results.sarif
         continue-on-error: true
+
+      - name: Warn about error
+        if: failure()
+        run: |
+          echo ":warning: The Trivy scan report for configuration was not successfully completed and could not be uploaded to the Github Security Panel." >> $GITHUB_STEP_SUMMARY
 
   scan-notif:
     name: Notify users

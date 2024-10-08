@@ -218,6 +218,7 @@ const clusterInfosSelect = {
     select: {
       id: true,
       slug: true,
+      argocdUrl: true,
     },
   },
 }
@@ -292,6 +293,14 @@ export function updateProjectFailed(id: Project['id']) {
   return prisma.project.update({
     where: { id },
     data: { status: ProjectStatus.failed },
+    include: baseProjectIncludes,
+  })
+}
+
+export function updateProjectWarning(id: Project['id']) {
+  return prisma.project.update({
+    where: { id },
+    data: { status: ProjectStatus.warning },
     include: baseProjectIncludes,
   })
 }

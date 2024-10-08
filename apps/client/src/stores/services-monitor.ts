@@ -8,10 +8,8 @@ import { apiClient, extractData } from '@/api/xhr-client.js'
 export type ServicesHealth = {
   message: string
   status: DsfrAlertType | ''
-  dotColor: 'gray' | 'red' | 'green' | 'orange'
+  dotColor: 'gray' | 'red' | 'green' | 'orange' | 'blue'
 } | Record<string, never>
-
-const statusPriorities = [MonitorStatus.OK, MonitorStatus.WARNING, MonitorStatus.ERROR, MonitorStatus.UNKNOW]
 
 interface ServiceHealthOption { message: string, status: DsfrAlertType | '', serviceStatus: MonitorStatus, dotColor: ServicesHealth['dotColor'] }
 
@@ -21,62 +19,74 @@ export const alertTypeMapper: Record<MonitorStatus, DsfrAlertType | ''> = {
   [MonitorStatus.ERROR]: 'error',
   [MonitorStatus.UNKNOW]: '',
 }
-const serviceHealthOptions: ServiceHealthOption[] = [
-  {
+
+const serviceHealthOptions = {
+  fetching: {
+    message: 'Vérification de l\'état des services...',
+    status: 'info',
+    serviceStatus: MonitorStatus.UNKNOW,
+    dotColor: 'blue',
+  },
+  fetchError: {
     message: 'Échec lors de la dernière vérification',
     status: alertTypeMapper[MonitorStatus.UNKNOW],
     serviceStatus: MonitorStatus.UNKNOW,
     dotColor: 'gray',
   },
-  {
+  error: {
     message: 'Un ou plusieurs services dysfonctionnent',
     status: alertTypeMapper[MonitorStatus.ERROR],
     serviceStatus: MonitorStatus.ERROR,
     dotColor: 'red',
   },
-  {
+  warn: {
     message: 'Un ou plusieurs services sont partiellement dégradés',
     status: alertTypeMapper[MonitorStatus.WARNING],
     serviceStatus: MonitorStatus.WARNING,
     dotColor: 'orange',
   },
-  {
+  ok: {
     message: 'Tous les services fonctionnent normalement',
     status: alertTypeMapper[MonitorStatus.OK],
     serviceStatus: MonitorStatus.OK,
     dotColor: 'green',
   },
-]
+} as const satisfies Record<string, ServiceHealthOption>
 
 export const useServiceStore = defineStore('serviceMonitor', () => {
-  const servicesHealth = ref<ServicesHealth>({})
+  const callStastus = ref<'ok' | 'fetching' | 'error'>('fetching')
+
   const services = ref<ServiceBody>([])
+
+  const serviceHealthIndex = computed<keyof typeof serviceHealthOptions>(() => {
+    if (callStastus.value === 'fetching') {
+      return 'fetching'
+    }
+    if (services.value.some(({ status }) => status === 'Dégradé')) {
+      return 'warn'
+    }
+    if (services.value.some(({ status }) => status === 'En échec')) {
+      return 'error'
+    }
+    if (services.value.some(({ status }) => status === 'Inconnu')) {
+      return 'fetchError'
+    }
+    return 'ok'
+  })
+
+  const servicesHealth = computed<ServicesHealth>(() => serviceHealthOptions[serviceHealthIndex.value])
   let interval: NodeJS.Timeout
 
   const clear = () => interval && clearInterval(interval)
 
   const checkServicesHealth = async () => {
-    servicesHealth.value = {
-      message: 'Vérification de l\'état des services...',
-      status: 'info',
-      dotColor: servicesHealth.value.dotColor,
-    }
-    const res = await apiClient.Services.getServiceHealth()
-    if (res.status === 200) {
-      const body = extractData(res, 200)
-      services.value = body
-      servicesHealth.value = serviceHealthOptions[
-        services.value.reduce((worstStatusIdx: number, service) => {
-          const serviceStatusIdx = serviceHealthOptions.findIndex(status => status.serviceStatus === service.status)
-          return serviceStatusIdx < worstStatusIdx ? serviceStatusIdx : worstStatusIdx
-        }, statusPriorities.length - 1)
-      ]
-      return
-    }
-    servicesHealth.value = {
-      message: 'Échec lors de la dernière vérification',
-      status: alertTypeMapper[MonitorStatus.UNKNOW],
-      dotColor: 'gray',
+    callStastus.value = 'fetching'
+    try {
+      services.value = await apiClient.Services.getServiceHealth()
+        .then(res => extractData(res, 200))
+      callStastus.value = 'ok'
+    } catch (_error) {
+      callStastus.value = 'error'
     }
   }
 

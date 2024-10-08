@@ -1,10 +1,10 @@
 import type { Cluster, Kubeconfig, Project, ProjectRole, Zone } from '@prisma/client'
-import type { ClusterObject, Config, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository } from '@cpn-console/hooks'
+import type { ClusterObject, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository, Store } from '@cpn-console/hooks'
 import { hooks } from '@cpn-console/hooks'
 import type { AsyncReturnType } from '@cpn-console/shared'
 import { ProjectAuthorized, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
 import { genericProxy } from './proxy.js'
-import { archiveProject, getAdminPlugin, getClusterByIdOrThrow, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed } from '@/resources/queries-index.js'
+import { archiveProject, getAdminPlugin, getClusterByIdOrThrow, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '@/resources/queries-index.js'
 import type { ConfigRecords } from '@/resources/project-service/business.js'
 import { dbToObj } from '@/resources/project-service/business.js'
 
@@ -78,6 +78,8 @@ async function manageProjectStatus(projectId: Project['id'], hookReply: HookResu
   }
   if (hookReply.failed) {
     return updateProjectFailed(projectId)
+  } else if (hookReply.warning.length) {
+    return updateProjectWarning(projectId)
   } else if (action === 'upsert') {
     return updateProjectCreated(projectId)
   } else if (action === 'delete') {
@@ -110,13 +112,18 @@ const user = {
     const config = dbToObj(await getAdminPlugin())
     return hooks.retrieveUserByEmail.execute({ email }, config)
   },
-  retrieveAdminUsers: async () => {
-    const config = dbToObj(await getAdminPlugin())
-    return hooks.retrieveAdminUsers.execute({}, config)
+} as const
+
+const zone = {
+  upsert: async (zoneId: Zone['id']) => {
+    const zone = await getZoneByIdOrThrow(zoneId)
+    const store = dbToObj(await getAdminPlugin())
+    return hooks.upsertZone.execute(zone, store)
   },
-  updateUserAdminGroupMembership: async (id: string, { isAdmin }: { isAdmin: boolean }) => {
-    const config = dbToObj(await getAdminPlugin())
-    return hooks.updateUserAdminGroupMembership.execute({ id, isAdmin }, config)
+  delete: async (zoneId: Zone['id']) => {
+    const zone = await getZoneByIdOrThrow(zoneId)
+    const store = dbToObj(await getAdminPlugin())
+    return hooks.deleteZone.execute(zone, store)
   },
 } as const
 
@@ -150,11 +157,13 @@ export const hook = {
   // @ts-ignore TODO voir comment opti la signature de la fonction
   cluster: genericProxy(cluster, { delete: ['upsert'], upsert: ['delete'] }),
   // @ts-ignore TODO voir comment opti la signature de la fonction
+  zone: genericProxy(zone, { delete: ['upsert'], upsert: ['delete'] }),
+  // @ts-ignore TODO voir comment opti la signature de la fonction
   user: genericProxy(user, {}),
 }
 
 function formatClusterInfos({ kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt' | 'createdAt' | 'zoneId' | 'kubeConfigId'>
-  & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug'> }) {
+  & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug' | 'argocdUrl'> }) {
   return {
     user: kubeconfig.user as unknown as KubeUser,
     cluster: kubeconfig.cluster as unknown as KubeCluster,
@@ -164,7 +173,7 @@ function formatClusterInfos({ kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt
 }
 export type RolesById = Record<ProjectRole['id'], ProjectRole['permissions']>
 
-export function transformToHookProject(project: ProjectInfos, store: Config, reposCreds: ReposCreds = {}): ProjectPayload {
+export function transformToHookProject(project: ProjectInfos, store: Store, reposCreds: ReposCreds = {}): ProjectPayload {
   const clusters = project.clusters.map(cluster => formatClusterInfos(cluster))
   const rolesById = resourceListToDict(project.roles)
 

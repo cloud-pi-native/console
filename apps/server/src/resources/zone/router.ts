@@ -3,7 +3,7 @@ import { createZone, deleteZone, listZones, updateZone } from './business.js'
 import { serverInstance } from '@/app.js'
 
 import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
+import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors.js'
 
 export function zoneRouter() {
   return serverInstance.router(zoneContract, {
@@ -17,10 +17,11 @@ export function zoneRouter() {
     },
 
     createZone: async ({ request: req, body: data }) => {
-      const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      const { user, adminPermissions } = await authUser(req)
+      if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+      if (!user) return new Unauthorized401('Require to be requested from user not api key')
 
-      const body = await createZone(data)
+      const body = await createZone(data, user.id, req.id)
       if (body instanceof ErrorResType) return body
 
       return {
@@ -30,12 +31,13 @@ export function zoneRouter() {
     },
 
     updateZone: async ({ request: req, params, body: data }) => {
-      const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      const { user, adminPermissions } = await authUser(req)
+      if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+      if (!user) return new Unauthorized401('Require to be requested from user not api key')
 
       const zoneId = params.zoneId
 
-      const body = await updateZone(zoneId, data)
+      const body = await updateZone(zoneId, data, user.id, req.id)
       if (body instanceof ErrorResType) return body
 
       return {
@@ -45,11 +47,12 @@ export function zoneRouter() {
     },
 
     deleteZone: async ({ request: req, params }) => {
-      const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      const { user, adminPermissions } = await authUser(req)
+      if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+      if (!user) return new Unauthorized401('Require to be requested from user not api key')
       const zoneId = params.zoneId
 
-      const body = await deleteZone(zoneId)
+      const body = await deleteZone(zoneId, user.id, req.id)
       if (body instanceof ErrorResType) return body
 
       return {

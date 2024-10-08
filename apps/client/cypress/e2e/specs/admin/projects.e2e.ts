@@ -130,7 +130,7 @@ describe('Administration projects', () => {
       .click()
 
     cy.wait('@replayHooks').its('response.statusCode').should('match', /^20\d$/)
-    cy.getByDataTestid('snackbar').should('contain', `Le projet ayant pour id ${project.id} a été reprovisionné avec succès`)
+    cy.getByDataTestid('snackbar').should('contain', `Le projet ${project.name} a été reprovisionné avec succès`)
   })
 
   it('Should lock and unlock a project, loggedIn as admin', () => {

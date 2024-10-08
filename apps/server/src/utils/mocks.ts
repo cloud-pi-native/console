@@ -108,8 +108,6 @@ export async function mockHooksPackage() {
       deleteCluster: hookTemplate,
       // user
       retrieveUserByEmail: hookTemplate,
-      retrieveAdminUsers: hookTemplate,
-      updateUserAdminGroupMembership: hookTemplate,
       // organizations
       fetchOrganizations: {
         execute: () => ({

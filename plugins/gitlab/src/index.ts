@@ -57,4 +57,7 @@ declare module '@cpn-console/hooks' {
   }
   interface ProjectStore extends DeclareModuleGenerator<typeof infos, 'project'> {}
   interface Config extends DeclareModuleGenerator<typeof infos, 'global'> {}
+  interface PluginResult {
+    warnReasons?: string[]
+  }
 }

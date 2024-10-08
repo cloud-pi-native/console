@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { logContract } from '@cpn-console/shared'
+import { faker } from '@faker-js/faker'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
-import { getUserMockInfos } from '../../utils/mocks.js'
+import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
 import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
@@ -34,7 +35,7 @@ describe('test logContract', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('should return 403 for non-admin', async () => {
+    it('should return 403 for non-admin, no projectId', async () => {
       const user = getUserMockInfos(false)
 
       authUserMock.mockResolvedValueOnce(user)
@@ -46,6 +47,46 @@ describe('test logContract', () => {
 
       expect(authUserMock).toHaveBeenCalledTimes(1)
       expect(businessGetLogsMock).toHaveBeenCalledTimes(0)
+      expect(response.statusCode).toEqual(403)
+    })
+
+    it('should return logs for non-admin, with projectId', async () => {
+      const projectPerms = getProjectMockInfos({ projectPermissions: 2n })
+      const user = getUserMockInfos(false, undefined, projectPerms)
+      const projectId = faker.string.uuid()
+
+      const logs = []
+      const total = 1
+
+      businessGetLogsMock.mockResolvedValueOnce([total, logs])
+      authUserMock.mockResolvedValueOnce(user)
+
+      const response = await app.inject()
+        .get(logContract.getLogs.path)
+        .query({ limit: 10, offset: 0, projectId, clean: false })
+        .end()
+
+      expect(authUserMock).toHaveBeenCalledTimes(1)
+      expect(businessGetLogsMock).toHaveBeenCalledWith({ clean: true, limit: 10, offset: 0, projectId })
+      expect(response.statusCode).toEqual(200)
+    })
+
+    it('should not return logs for non-admin, with projectId', async () => {
+      const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
+      const user = getUserMockInfos(false, undefined, projectPerms)
+      const projectId = faker.string.uuid()
+
+      const logs = []
+      const total = 1
+
+      businessGetLogsMock.mockResolvedValueOnce([total, logs])
+      authUserMock.mockResolvedValueOnce(user)
+
+      const response = await app.inject()
+        .get(logContract.getLogs.path)
+        .query({ limit: 10, offset: 0, projectId, clean: false })
+        .end()
+
       expect(response.statusCode).toEqual(403)
     })
   })

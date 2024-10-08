@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { defaultOrNullish, disabledOrDefault, enabledOrDefaultOrNullish, objectEntries, objectKeys, objectValues, specificallyDisabled, specificallyEnabled } from './utils.ts'
+import { defaultOrNullish, disabledOrDefaultOrNullish, enabledOrDefaultOrNullish, objectEntries, objectKeys, objectValues, specificallyDisabled, specificallyEnabled } from './utils.ts'
 
 const object = { test1: 1, test2: 2, 3: 'test3' }
 
@@ -66,10 +66,10 @@ describe('test config parsing', () => {
     expect(defaultOrNullish(values[4])).toBeFalsy()
   })
   it('disabledOrDefault', () => {
-    expect(disabledOrDefault(values[0])).toBeFalsy()
-    expect(disabledOrDefault(values[1])).toBeFalsy()
-    expect(disabledOrDefault(values[2])).toBeFalsy()
-    expect(disabledOrDefault(values[3])).toBeTruthy()
-    expect(disabledOrDefault(values[4])).toBeTruthy()
+    expect(disabledOrDefaultOrNullish(values[0])).toBeTruthy()
+    expect(disabledOrDefaultOrNullish(values[1])).toBeFalsy()
+    expect(disabledOrDefaultOrNullish(values[2])).toBeFalsy()
+    expect(disabledOrDefaultOrNullish(values[3])).toBeTruthy()
+    expect(disabledOrDefaultOrNullish(values[4])).toBeTruthy()
   })
 })

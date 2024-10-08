@@ -5,6 +5,16 @@ export function parseError(error: unknown) {
   if (error?.config?.auth?.password) error.config.auth.password = 'MASKED'
   // @ts-ignore
   if (error?.config?.headers) error.config.headers = 'MASKED'
+  // @ts-ignore
+  if (error?.response?.data) {
+    Object.defineProperty(error, 'response', {
+      enumerable: true,
+    })
+    // @ts-ignore
+    Object.defineProperty(error.response, 'data', {
+      enumerable: true,
+    })
+  }
   if (error instanceof Error) {
     Object.defineProperty(error, 'stack', {
       enumerable: true,

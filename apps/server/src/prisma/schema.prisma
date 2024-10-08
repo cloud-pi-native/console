@@ -212,6 +212,7 @@ model Zone {
   id          String    @id @unique @default(uuid()) @db.Uuid
   slug        String    @unique @db.VarChar(10)
   label       String    @db.VarChar(50)
+  argocdUrl   String    @default("https://example.com")
   description String?   @db.VarChar(200)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -233,6 +234,7 @@ enum ProjectStatus {
   created
   failed
   archived
+  warning
 }
 
 enum TokenStatus {

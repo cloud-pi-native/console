@@ -1,4 +1,4 @@
-import type { Log, Prisma, User } from '@prisma/client'
+import type { Log, Prisma, Project, User } from '@prisma/client'
 import { exclude } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 
@@ -11,15 +11,16 @@ export function getAllLogsForUser(user: User, offset = 0) {
   })
 }
 
-export function getAllLogs({ skip = 0, take = 5 }: Prisma.LogFindManyArgs) {
+export function getAllLogs({ skip = 0, take = 5, where }: Prisma.LogFindManyArgs) {
   return prisma.$transaction([
-    prisma.log.count(),
+    prisma.log.count({ where }),
     prisma.log.findMany({
       orderBy: {
         createdAt: 'desc',
       },
       skip,
       take,
+      where,
     }),
   ])
 }
@@ -30,14 +31,16 @@ interface AddLogsArgs {
   data: Record<string, any>
   userId?: User['id'] | null
   requestId: string
+  projectId?: Project['id']
 }
-export function addLogs({ action, data, requestId, userId = null }: AddLogsArgs) {
+export function addLogs({ action, data, requestId, userId = null, projectId }: AddLogsArgs) {
   return prisma.log.create({
     data: {
       action,
       userId,
       data: exclude(data, ['cluster', 'user', 'newCreds']),
       requestId,
+      projectId,
     },
   })
 }

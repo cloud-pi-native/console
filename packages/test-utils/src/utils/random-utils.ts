@@ -42,6 +42,7 @@ export function getRandomZone(): Zone {
     id: faker.string.uuid(),
     slug: faker.lorem.word({ length: { min: 1, max: 10 } }),
     label: faker.lorem.word({ length: { min: 1, max: 50 } }),
+    argocdUrl: faker.internet.url(),
     description: faker.lorem.sentence(8),
   }
 }

@@ -1,10 +1,10 @@
 import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks'
 import {
   deleteProject,
-  retrieveKeycloakAdminUsers,
+  deleteZone,
   retrieveKeycloakUserByEmail,
-  updateUserAdminKcGroupMembership,
   upsertProject,
+  upsertZone,
 } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
@@ -22,9 +22,13 @@ export const plugin: Plugin = {
       api: project => new KeycloakProjectApi(project.organization.name, project.name),
       steps: { main: upsertProject },
     },
+    upsertZone: {
+      steps: { main: upsertZone },
+    },
+    deleteZone: {
+      steps: { post: deleteZone },
+    },
     retrieveUserByEmail: { steps: { main: retrieveKeycloakUserByEmail } },
-    retrieveAdminUsers: { steps: { main: retrieveKeycloakAdminUsers } },
-    updateUserAdminGroupMembership: { steps: { main: updateUserAdminKcGroupMembership } },
   },
   monitor,
   start,

@@ -136,7 +136,7 @@ function update(data: { value: string, key: string, plugin: string }) {
   >
     <DsfrButton
       v-if="Object.values(updated).keys() && Object.values(updated).map(v => Object.keys(v)).flat().length"
-      label="Enregister"
+      label="Enregistrer"
       @click="save()"
     />
     <DsfrButton

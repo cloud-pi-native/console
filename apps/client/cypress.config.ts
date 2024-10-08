@@ -34,7 +34,7 @@ export default defineConfig({
     supportFile: 'cypress/e2e/support/index.ts',
     video: false,
     screenshotsFolder: 'cypress/e2e/screenshots',
-    numTestsKeptInMemory: 1,
+    numTestsKeptInMemory: 2,
     chromeWebSecurity: false,
     experimentalModifyObstructiveThirdPartyCode: false,
     experimentalWebKitSupport: false,

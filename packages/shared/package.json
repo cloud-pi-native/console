@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/shared",
   "type": "module",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "private": false,
   "description": "",
   "main": "dist/index.js",
