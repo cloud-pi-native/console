@@ -30,6 +30,9 @@ on:
       PR_NUMBER:
         required: false
         type: number
+    secrets:
+      ARGOCD_TOKEN:
+        required: false
   workflow_dispatch:
     inputs:
       REGISTRY:

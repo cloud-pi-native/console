@@ -118,6 +118,8 @@ jobs:
       MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH == 'true' }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
       PR_NUMBER: ${{ github.event.pull_request.number || github.event.number }}
+    secrets:
+      ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
 
   build-label:
     uses: ./.github/workflows/label.yml
