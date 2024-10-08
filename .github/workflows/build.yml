@@ -222,7 +222,7 @@ jobs:
 
       - name: Deploy new image
         run: |
-          curl -X POST ${{ vars.ARGOCD_URL }}/api/v1/applications/${{ steps.feed-template.outputs.ARGOCD_APP_NAME }} }}/sync \
+          curl -X POST ${{ vars.ARGOCD_URL }}/api/v1/applications/${{ steps.feed-template.outputs.ARGOCD_APP_NAME }}/sync \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.ARGOCD_TOKEN }}" \
             -d '${{ steps.feed-template.outputs.ARGOCD_SYNC_PAYLOAD }}'
