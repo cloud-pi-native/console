@@ -1,4 +1,4 @@
-import type { EmptyPayload, Project, StepCall, UserAdmin, UserEmail, ZoneObject } from '@cpn-console/hooks'
+import type { Project, StepCall, UserEmail, ZoneObject } from '@cpn-console/hooks'
 import { generateRandomPassword, parseError } from '@cpn-console/hooks'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation.js'
@@ -14,60 +14,6 @@ export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: {
     return {
       status: { result: 'OK' },
       user,
-    }
-  } catch (error) {
-    return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        // @ts-ignore prévoir une fonction générique
-        message: error.message,
-      },
-    }
-  }
-}
-
-export const retrieveKeycloakAdminUsers: StepCall<EmptyPayload> = async () => {
-  const kcClient = await getkcClient()
-  try {
-    const adminGroup = await getGroupByName(kcClient, 'admin')
-    if (!adminGroup?.id) throw new Error('Admin group not found')
-    const adminIds = (await kcClient.groups.listMembers({ id: adminGroup.id })).map(admin => admin.id)
-
-    return {
-      status: { result: 'OK' },
-      adminIds,
-    }
-  } catch (error) {
-    return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        // @ts-ignore prévoir une fonction générique
-        message: error.message,
-      },
-    }
-  }
-}
-
-export const updateUserAdminKcGroupMembership: StepCall<UserAdmin> = async ({ args: { id, isAdmin } }) => {
-  const kcClient = await getkcClient()
-  try {
-    const [adminGroup, user] = await Promise.all([
-      getGroupByName(kcClient, 'admin'),
-      kcClient.users.findOne({ id }),
-    ])
-    if (!adminGroup?.id) throw new Error('Admin group not found')
-    if (!user?.id) throw new Error('User to update not found')
-
-    if (isAdmin) await kcClient.users.addToGroup({ id, groupId: adminGroup.id })
-    else await kcClient.users.delFromGroup({ id, groupId: adminGroup.id })
-
-    return {
-      status: {
-        result: 'OK',
-        message: `${user.email ?? user.id} was ${isAdmin ? 'promoted to' : 'demoted from'} /admin group`,
-      },
     }
   } catch (error) {
     return {

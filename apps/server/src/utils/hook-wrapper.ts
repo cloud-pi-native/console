@@ -1,5 +1,5 @@
 import type { Cluster, Kubeconfig, Project, ProjectRole, Zone } from '@prisma/client'
-import type { ClusterObject, Config, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository } from '@cpn-console/hooks'
+import type { ClusterObject, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository, Store } from '@cpn-console/hooks'
 import { hooks } from '@cpn-console/hooks'
 import type { AsyncReturnType } from '@cpn-console/shared'
 import { ProjectAuthorized, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
@@ -112,14 +112,6 @@ const user = {
     const config = dbToObj(await getAdminPlugin())
     return hooks.retrieveUserByEmail.execute({ email }, config)
   },
-  retrieveAdminUsers: async () => {
-    const config = dbToObj(await getAdminPlugin())
-    return hooks.retrieveAdminUsers.execute({}, config)
-  },
-  updateUserAdminGroupMembership: async (id: string, { isAdmin }: { isAdmin: boolean }) => {
-    const config = dbToObj(await getAdminPlugin())
-    return hooks.updateUserAdminGroupMembership.execute({ id, isAdmin }, config)
-  },
 } as const
 
 const zone = {
@@ -181,7 +173,7 @@ function formatClusterInfos({ kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt
 }
 export type RolesById = Record<ProjectRole['id'], ProjectRole['permissions']>
 
-export function transformToHookProject(project: ProjectInfos, store: Config, reposCreds: ReposCreds = {}): ProjectPayload {
+export function transformToHookProject(project: ProjectInfos, store: Store, reposCreds: ReposCreds = {}): ProjectPayload {
   const clusters = project.clusters.map(cluster => formatClusterInfos(cluster))
   const rolesById = resourceListToDict(project.roles)
 
