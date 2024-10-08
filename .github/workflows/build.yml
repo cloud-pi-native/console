@@ -27,6 +27,9 @@ on:
       USE_QEMU:
         required: true
         type: boolean
+      PR_NUMBER:
+        required: false
+        type: number
   workflow_dispatch:
     inputs:
       REGISTRY:
@@ -49,6 +52,10 @@ on:
         required: true
         type: boolean
         default: false
+      PR_NUMBER:
+        description: ID number of the pull request to use for deploy preview app
+        required: false
+        type: number
 
 jobs:
   matrix:
@@ -201,20 +208,21 @@ jobs:
           docker buildx imagetools inspect ${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }}:${{ steps.meta.outputs.version }}
 
   preview:
+    name: Redeploy preview app
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'preview') && inputs.PR_NUMBER != '' }}
+    runs-on: ubuntu-latest
     needs:
       - merge
-    name: Redeploy preview app
-    if: contains(github.event.pull_request.labels.*.name, 'preview')
-    runs-on: ubuntu-latest
     steps:
       - name: Replace template fields
         id: feed-template
         run: |
-          echo "ARGOCD_SYNC_PAYLOAD=$(echo "${{ vars.ARGOCD_SYNC_PAYLOAD_TEMPLATE }}" | sed 's|<pr_number>|${{ github.event.number }}|g')" >> $GITHUB_OUTPUT
+          echo "ARGOCD_APP_NAME=$(echo '${{ vars.ARGOCD_APP_NAME_TEMPLATE }}' | sed 's|<pr_number>|${{ inputs.PR_NUMBER }}|g')" >> $GITHUB_OUTPUT
+          echo "ARGOCD_SYNC_PAYLOAD=$(echo '${{ vars.ARGOCD_SYNC_PAYLOAD_TEMPLATE }}' | sed 's|<pr_number>|${{ inputs.PR_NUMBER }}|g')" >> $GITHUB_OUTPUT
 
       - name: Deploy new image
         run: |
-          curl -X POST ${{ vars.ARGOCD_URL }}/api/v1/applications/cloud-pi-native-docs/sync \
+          curl -X POST ${{ vars.ARGOCD_URL }}/api/v1/applications/${{ steps.feed-template.outputs.ARGOCD_APP_NAME }} }}/sync \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.ARGOCD_TOKEN }}" \
             -d '${{ steps.feed-template.outputs.ARGOCD_SYNC_PAYLOAD }}'
