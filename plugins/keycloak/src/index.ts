@@ -2,9 +2,7 @@ import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hoo
 import {
   deleteProject,
   deleteZone,
-  retrieveKeycloakAdminUsers,
   retrieveKeycloakUserByEmail,
-  updateUserAdminKcGroupMembership,
   upsertProject,
   upsertZone,
 } from './functions.js'
@@ -31,8 +29,6 @@ export const plugin: Plugin = {
       steps: { post: deleteZone },
     },
     retrieveUserByEmail: { steps: { main: retrieveKeycloakUserByEmail } },
-    retrieveAdminUsers: { steps: { main: retrieveKeycloakAdminUsers } },
-    updateUserAdminGroupMembership: { steps: { main: updateUserAdminKcGroupMembership } },
   },
   monitor,
   start,

@@ -19,9 +19,7 @@ export const hook = {
     getSecrets: vi.fn(),
   },
   user: {
-    retrieveAdminUsers: vi.fn(),
     retrieveUserByEmail: vi.fn(),
-    updateUserAdminGroupMembership: vi.fn(),
   },
   zone: {
     delete: vi.fn(),
