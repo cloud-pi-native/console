@@ -201,6 +201,8 @@ jobs:
           docker buildx imagetools inspect ${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }}:${{ steps.meta.outputs.version }}
 
   preview:
+    needs:
+      - merge
     name: Redeploy preview app
     if: contains(github.event.pull_request.labels.*.name, 'preview')
     runs-on: ubuntu-latest
