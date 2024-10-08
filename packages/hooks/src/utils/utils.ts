@@ -21,8 +21,8 @@ export type DeclareModuleGenerator<Infos extends ServiceInfos & Pick<Required<Se
   }
 }
 
-export const enabledOrDefaultOrNullish = (value?: string) => !value || [ENABLED, DEFAULT].includes(value)
-export const specificallyDisabled = (value?: string) => value === DISABLED
-export const specificallyEnabled = (value?: string) => value === ENABLED
-export const defaultOrNullish = (value?: string) => !value || DEFAULT === value
-export const disabledOrDefault = (value?: string) => value && [DISABLED, DEFAULT].includes(value)
+export const enabledOrDefaultOrNullish = (value?: string): boolean | undefined => value ? [ENABLED, DEFAULT].includes(value) : true
+export const disabledOrDefaultOrNullish = (value?: string): boolean | undefined => value ? [DISABLED, DEFAULT].includes(value) : true
+export const specificallyDisabled = (value?: string): boolean | undefined => value ? value === DISABLED : undefined
+export const specificallyEnabled = (value?: string): boolean | undefined => value ? value === ENABLED : undefined
+export const defaultOrNullish = (value?: string): boolean | undefined => value ? DEFAULT === value : true
