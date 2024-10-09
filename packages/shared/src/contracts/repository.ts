@@ -11,7 +11,7 @@ export const repositoryContract = contractInstance.router({
     contentType: 'application/json',
     summary: 'Create repo',
     description: 'Create new repo.',
-    body: RepoSchema.omit({ id: true }),
+    body: RepoSchema.omit({ id: true, createdAt: true, updatedAt: true }),
     responses: {
       201: RepoSchema,
       400: ErrorSchema,
@@ -70,7 +70,7 @@ export const repositoryContract = contractInstance.router({
       repositoryId: z.string()
         .uuid(),
     }),
-    body: RepoSchema.partial(),
+    body: RepoSchema.omit({ createdAt: true, updatedAt: true }).partial(),
     responses: {
       200: RepoSchema,
       500: ErrorSchema,

@@ -26,7 +26,7 @@ async function updateProject() {
   if (!projectStore.selectedProject) return
   const callback = projectStore.selectedProject.addOperation('update')
   await projectStore.updateProject(projectStore.selectedProject.id, { description: description.value })
-  await projectStore.listProjects()
+  await projectStore.getMyProjects()
   isEditingDescription.value = false
   callback.fn(callback.args)
   logStore.needRefresh = true
@@ -35,8 +35,8 @@ async function updateProject() {
 async function replayHooks() {
   if (!projectStore.selectedProject) return
   const callback = projectStore.selectedProject.addOperation('replay')
-  await useProjectStore().replayHooksForProject(projectStore.selectedProject.id)
-  await useProjectStore().listProjects()
+  await projectStore.replayHooksForProject(projectStore.selectedProject.id)
+  await projectStore.getMyProjects()
   snackbarStore.setMessage('Le projet a été reprovisionné avec succès', 'success')
   callback.fn(callback.args)
   logStore.needRefresh = true
@@ -47,12 +47,13 @@ async function archiveProject(projectId: ProjectV2['id']) {
   const callback = projectStore.selectedProject.addOperation('delete')
   try {
     await projectStore.archiveProject(projectId)
-    await projectStore.listProjects()
+    await projectStore.getMyProjects()
   } catch (_error) {
-    await projectStore.listProjects()
+    await projectStore.getMyProjects()
     throw _error
   }
   router.push('/projects')
+  projectStore.setSelectedProject(projectStore.myProjects[0]?.id ?? '')
   callback.fn(callback.args)
 }
 
@@ -86,6 +87,10 @@ function getRows(service: string) {
 
 onBeforeMount(async () => {
   allStages.value = await stageStore.getAllStages()
+  logStore.needRefresh = true
+})
+onMounted(() => {
+  logStore.needRefresh = true
 })
 </script>
 
@@ -93,10 +98,11 @@ onBeforeMount(async () => {
   <DsoSelectedProject />
   <div
     v-if="projectStore.selectedProject"
+    :key="projectStore.selectedProject.id"
     class="relative"
   >
     <div
-      class="fr-callout fr-my-8w"
+      class="fr-callout"
     >
       <h1
         class="fr-callout__title fr-mb-3w"
@@ -178,23 +184,30 @@ onBeforeMount(async () => {
       </div>
     </div>
     <div
-      v-if="projectStore.selectedProject"
-      class="flex flex-col gap-4"
+      class="flex flex-row justify-between "
     >
-      <DsoBadge
-        :resource="{
-          ...projectStore.selectedProject,
-          locked: projectStore.selectedProject.locked ? 'true' : 'false',
-          resourceKey: 'locked',
-          wording: `Projet ${projectStore.selectedProject.name}`,
-        }"
-      />
-      <DsoBadge
-        :resource="{
-          ...projectStore.selectedProject,
-          resourceKey: 'status',
-          wording: `Projet ${projectStore.selectedProject.name}`,
-        }"
+      <div
+        class="flex flex-col gap-4"
+      >
+        <DsoBadge
+          :resource="{
+            ...projectStore.selectedProject,
+            locked: projectStore.selectedProject.locked ? 'true' : 'false',
+            resourceKey: 'locked',
+            wording: `Projet ${projectStore.selectedProject.name}`,
+          }"
+        />
+        <DsoBadge
+          :resource="{
+            ...projectStore.selectedProject,
+            resourceKey: 'status',
+            wording: `Projet ${projectStore.selectedProject.name}`,
+          }"
+        />
+      </div>
+      <ConsumptionPanel
+        v-if="ProjectAuthorized.ListEnvironments({ projectPermissions: projectStore.selectedProject.myPerms })"
+        :ids="[projectStore.selectedProjectId]"
       />
     </div>
     <div
@@ -206,7 +219,7 @@ onBeforeMount(async () => {
         label="Reprovisionner le projet"
         :icon="{ name: 'ri:refresh-fill', animation: projectStore.selectedProject.operationsInProgress.has('replay') ? 'spin' : '' }"
         secondary
-        :disabled="projectStore.selectedProject.operationsInProgress.has('replay')"
+        :disabled="projectStore.selectedProject.locked || projectStore.selectedProject.operationsInProgress.has('replay')"
         @click="replayHooks"
       />
     </div>
@@ -312,8 +325,4 @@ onBeforeMount(async () => {
       </div>
     </div>
   </div>
-  <!-- N'est jamais sensé s'afficher -->
-  <ErrorGoBackToProjects
-    v-else
-  />
 </template>

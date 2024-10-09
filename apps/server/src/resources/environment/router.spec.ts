@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { PROJECT_PERMS, environmentContract } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
-import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
+import { atDates, getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
 import { BadRequest400 } from '../../utils/errors.js'
 import * as business from './business.js'
 
@@ -63,14 +63,14 @@ describe('environmentRouter tests', () => {
       authUserMock.mockResolvedValueOnce(user)
 
       businessCheckEnvironmentInputMock.mockResolvedValueOnce(null)
-      businessCreateEnvironmentMock.mockResolvedValueOnce({ id: environmentId, ...environmentData })
+      businessCreateEnvironmentMock.mockResolvedValueOnce({ id: environmentId, ...environmentData, ...atDates })
 
       const response = await app.inject()
         .post(environmentContract.createEnvironment.path)
         .body(environmentData)
         .end()
 
-      expect(response.json()).toEqual({ id: environmentId, ...environmentData })
+      expect(response.json()).toMatchObject({ id: environmentId, ...environmentData })
       expect(response.statusCode).toEqual(201)
     })
 
@@ -163,14 +163,14 @@ describe('environmentRouter tests', () => {
       authUserMock.mockResolvedValueOnce(user)
 
       businessCheckEnvironmentInputMock.mockResolvedValueOnce(null)
-      businessUpdateEnvironmentMock.mockResolvedValueOnce({ id: environmentId, ...environmentData })
+      businessUpdateEnvironmentMock.mockResolvedValueOnce({ id: environmentId, ...environmentData, ...atDates })
 
       const response = await app.inject()
         .put(environmentContract.updateEnvironment.path.replace(':environmentId', environmentId))
         .body(updateData)
         .end()
 
-      expect(response.json()).toEqual({ id: environmentId, ...environmentData })
+      expect(response.json()).toMatchObject({ id: environmentId, ...environmentData })
       expect(response.statusCode).toEqual(200)
     })
 

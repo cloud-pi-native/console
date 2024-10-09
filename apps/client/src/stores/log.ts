@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { GetLogsQuery, Log } from '@cpn-console/shared'
+import pDebounce from 'p-debounce'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useLogStore = defineStore('log', () => {
@@ -16,10 +17,10 @@ export const useLogStore = defineStore('log', () => {
     logs.value = res.logs as Log[]
   }
 
-  const listLogs = async ({ offset, limit, clean, projectId }: GetLogsQuery = { offset: 0, limit: 10 }) => {
+  const listLogs = pDebounce(async ({ offset, limit, clean, projectId }: GetLogsQuery = { offset: 0, limit: 10 }) => {
     return apiClient.Logs.getLogs({ query: { offset, limit, clean, projectId } })
       .then(response => extractData(response, 200))
-  }
+  }, 300, { before: true })
 
   return {
     logs,

@@ -49,7 +49,7 @@ export async function getProjectServices(projectId: Project['id'], permissionTar
   const publicClusters = await getPublicClusters()
   project.clusters = project.clusters.concat(publicClusters)
 
-  return Object.values(servicesInfos).map(({ name, title, to, imgSrc }) => {
+  return Object.values(servicesInfos).map(({ name, title, to, imgSrc, description }) => {
     let urls: ServiceUrl[] = []
     const toResponse = to
       ? to({
@@ -79,7 +79,7 @@ export async function getProjectServices(projectId: Project['id'], permissionTar
         project: true,
       },
     })
-    return { imgSrc, title, name, urls, manifest }
+    return { imgSrc, title, name, urls, manifest, description }
   }).filter(s => s.urls.length || s.manifest.global?.length || s.manifest.project?.length)
 }
 

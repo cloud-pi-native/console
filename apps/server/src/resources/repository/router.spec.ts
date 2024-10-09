@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { PROJECT_PERMS, repositoryContract } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
-import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
+import { atDates, getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
 import { BadRequest400 } from '../../utils/errors.js'
 import * as business from './business.js'
 
@@ -142,14 +142,14 @@ describe('repositoryRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCreateMock.mockResolvedValueOnce({ id: repositoryId, ...repositoryData })
+      businessCreateMock.mockResolvedValueOnce({ id: repositoryId, ...repositoryData, ...atDates })
       const response = await app.inject()
         .post(repositoryContract.createRepository.path)
         .body(repositoryData)
         .end()
 
       expect(response.statusCode).toEqual(201)
-      expect(response.json()).toEqual({ id: repositoryId, ...repositoryData })
+      expect(response.json()).toMatchObject({ id: repositoryId, ...repositoryData })
     })
 
     it('should return 403 if project is locked', async () => {
@@ -226,14 +226,14 @@ describe('repositoryRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessUpdateMock.mockResolvedValueOnce({ id: repositoryId, ...repositoryData, ...repoUpdateData })
+      businessUpdateMock.mockResolvedValueOnce({ id: repositoryId, ...repositoryData, ...repoUpdateData, ...atDates })
       const response = await app.inject()
         .put(repositoryContract.updateRepository.path.replace(':repositoryId', repositoryId))
         .body(repoUpdateData)
         .end()
 
       expect(response.statusCode).toEqual(200)
-      expect(response.json()).toEqual({ id: repositoryId, ...repositoryData, ...repoUpdateData })
+      expect(response.json()).toMatchObject({ id: repositoryId, ...repositoryData, ...repoUpdateData })
     })
 
     it('should update repository and drop creds if is not private', async () => {
@@ -242,15 +242,15 @@ describe('repositoryRouter tests', () => {
       authUserMock.mockResolvedValueOnce(user)
 
       const repoUpdateData = { isPrivate: false, externalUserName: 'test' }
-      businessUpdateMock.mockResolvedValueOnce({ id: repositoryId, ...repositoryData, ...repoUpdateData })
+      businessUpdateMock.mockResolvedValueOnce({ id: repositoryId, ...repositoryData, ...repoUpdateData, ...atDates })
       const response = await app.inject()
         .put(repositoryContract.updateRepository.path.replace(':repositoryId', repositoryId))
         .body(repoUpdateData)
         .end()
 
       expect(businessUpdateMock).toHaveBeenCalledWith({ data: { isPrivate: false }, repositoryId, requestId: expect.any(String), userId: user.user.id })
+      expect(response.json()).toMatchObject({ id: repositoryId, ...repositoryData, ...repoUpdateData })
       expect(response.statusCode).toEqual(200)
-      expect(response.json()).toEqual({ id: repositoryId, ...repositoryData, ...repoUpdateData })
     })
 
     it('should return 403 if project is locked', async () => {

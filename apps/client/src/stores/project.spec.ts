@@ -6,7 +6,10 @@ import { useProjectStore } from './project.js'
 import { useOrganizationStore } from './organization.js'
 
 const listOrganizations = vi.spyOn(apiClient.Organizations, 'listOrganizations')
+const getProject = vi.spyOn(apiClient.Projects, 'getProject')
 const listProjects = vi.spyOn(apiClient.Projects, 'listProjects')
+const listEnvironments = vi.spyOn(apiClient.Environments, 'listEnvironments')
+const listRepositories = vi.spyOn(apiClient.Repositories, 'listRepositories')
 const apiClientPost = vi.spyOn(apiClient.Projects, 'createProject')
 const apiClientPut = vi.spyOn(apiClient.Projects, 'updateProject')
 const apiClientReplayHooks = vi.spyOn(apiClient.Projects, 'replayHooksForProject')
@@ -23,7 +26,7 @@ describe('project Store', () => {
   it('should set working project and its owner', async () => {
     const projectStore = useProjectStore()
     const user = { id: 'userId', firstName: 'Michel' }
-    projectStore.projectsById = {
+    projectStore.myProjectsById = {
       projectId: {
         id: 'projectId',
         roles: [{
@@ -38,7 +41,7 @@ describe('project Store', () => {
 
     projectStore.setSelectedProject('projectId')
 
-    expect(projectStore.selectedProject).toMatchObject(projectStore.projects[0])
+    expect(projectStore.selectedProject).toMatchObject(projectStore.myProjects[0])
   })
 
   it('should retrieve user\'s projects by api call', async () => {
@@ -73,17 +76,18 @@ describe('project Store', () => {
 
     const projects = [randomDbSetup.project]
     const organizations = [randomDbSetup.organization]
-    projectStore.selectedProject = randomDbSetup.project
 
     listOrganizations.mockReturnValueOnce(Promise.resolve({ status: 200, body: organizations, headers: {} }))
     listProjects.mockReturnValueOnce(Promise.resolve({ status: 200, body: projects, headers: {} }))
+    listEnvironments.mockReturnValue(Promise.resolve({ status: 200, body: randomDbSetup.project.environments, headers: {} }))
+    listRepositories.mockReturnValue(Promise.resolve({ status: 200, body: randomDbSetup.project.repositories, headers: {} }))
 
-    await projectStore.listProjects({ filter: 'member' })
+    await projectStore.getMyProjects()
+    projectStore.setSelectedProject(randomDbSetup.project.id)
 
     expect(listOrganizations).toHaveBeenCalledTimes(1)
     expect(listProjects).toHaveBeenCalledTimes(1)
-    expect(projectStore.projects).toMatchObject(projects)
-    expect(projectStore.selectedProject).toMatchObject(projects[0])
+    expect(projectStore.selectedProject.id).toMatchObject(projects[0].id)
     expect(organizationStore.organizations).toMatchObject(organizations)
   })
 
@@ -107,9 +111,7 @@ describe('project Store', () => {
     await projectStore.createProject(newProject)
 
     expect(apiClientPost).toHaveBeenCalledTimes(1)
-    expect(listProjects).toHaveBeenCalledTimes(1)
-    expect(listOrganizations).toHaveBeenCalledTimes(1)
-    expect(projectStore.projects).toHaveLength(2)
+    expect(projectStore.myProjects).toHaveLength(1)
   })
 
   it('should set a project description by api call', async () => {
@@ -145,10 +147,11 @@ describe('project Store', () => {
 
     apiClientReplayHooks.mockReturnValueOnce(Promise.resolve({ status: 204, body: project, headers: {} }))
     listOrganizations.mockReturnValueOnce(Promise.resolve({ status: 200, body: [randomDbSetup.organization], headers: {} }))
-    listProjects.mockReturnValueOnce(Promise.resolve({ status: 200, body: [project], headers: {} }))
+    getProject.mockReturnValue(Promise.resolve({ status: 200, body: project, headers: {} }))
 
     await projectStore.replayHooksForProject(project.id)
 
+    expect(getProject).toHaveBeenCalledTimes(1)
     expect(apiClientReplayHooks).toHaveBeenCalledTimes(1)
   })
 

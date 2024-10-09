@@ -37,6 +37,11 @@ async function save(data: PluginsUpdateBody) {
 onBeforeMount(() => {
   reload()
 })
+
+projectStore.$subscribe(async () => {
+  if (!projectStore.selectedProject) return
+  reload()
+})
 </script>
 
 <template>

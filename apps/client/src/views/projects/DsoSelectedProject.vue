@@ -11,6 +11,6 @@ const projectStore = useProjectStore()
     :description="projectStore.selectedProject.locked ? `Le projet ${projectStore.selectedProject?.name} est verrouillé. Veuillez contacter un administrateur` : `Le projet courant est : ${projectStore.selectedProject?.name} (${projectStore.selectedProject?.organization?.label})`"
     data-testid="currentProjectInfo"
     small
-    class="w-max fr-mb-2w"
+    class="w-max fr-mb-2w lg:hidden"
   />
 </template>

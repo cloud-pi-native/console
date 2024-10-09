@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { ProjectAuthorized } from '@cpn-console/shared'
 import { useProjectStore } from '../../stores/project.js'
+import { isInProject } from '../../router/index.js'
 
 const projectStore = useProjectStore()
 </script>
@@ -11,7 +11,7 @@ const projectStore = useProjectStore()
   >
     <router-view />
     <ProjectLogsViewer
-      v-if="projectStore.selectedProject && ProjectAuthorized.Manage({ projectPermissions: projectStore.selectedProjectPerms })"
+      v-if="projectStore.selectedProject && projectStore.selectedProjectPerms && isInProject"
       :project-id="projectStore.selectedProject.id"
     />
   </div>

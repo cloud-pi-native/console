@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { invalidGitUrl, invalidInternalRepoName, missingCredentials } from '../utils/const.js'
+import { AtDatesToStringExtend } from './_utils.js'
 
 export const RepoSchema = z.object({
   id: z.string()
@@ -21,10 +22,11 @@ export const RepoSchema = z.object({
     .optional(),
   projectId: z.string()
     .uuid(),
-})
+}).extend(AtDatesToStringExtend)
 
 // To only use in frontend form
 export const RepoFormSchema = RepoSchema
+  .omit({ createdAt: true, updatedAt: true })
   .extend({ isStandalone: z.boolean() })
 
 export const UpdateRepoFormSchema = RepoFormSchema

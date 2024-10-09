@@ -11,6 +11,7 @@ export const useProjectRepositoryStore = defineStore('project-repository', () =>
   const getProjectRepositories = async (projectId: string) => {
     repositories.value = await apiClient.Repositories.listRepositories({ query: { projectId } })
       .then(response => extractData(response, 200))
+    return repositories.value
   }
 
   const syncRepository = async (repositoryId: string, { branchName, syncAllBranches = false }: { branchName?: string, syncAllBranches?: boolean }) => {

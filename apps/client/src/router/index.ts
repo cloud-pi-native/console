@@ -25,6 +25,7 @@ const DsoRepos = () => import('@/views/projects/DsoRepos.vue')
 const DsoAdmin = () => import('@/views/admin/DsoAdmin.vue')
 const ListUser = () => import('@/views/admin/ListUser.vue')
 const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
+const AdminProject = () => import('@/views/admin/AdminProject.vue')
 const ListProjects = () => import('@/views/admin/ListProjects.vue')
 const ListLogs = () => import('@/views/admin/ListLogs.vue')
 const AdminRoles = () => import('@/views/admin/AdminRoles.vue')
@@ -39,7 +40,7 @@ const AdminTokens = () => import('@/views/admin/AdminTokens.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
-const routes: Readonly<RouteRecordRaw[]> = [
+export const routes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/login',
     name: 'Login',
@@ -138,7 +139,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
       },
     ],
     async beforeEnter() {
-      await useProjectStore().listProjects()
+      await useProjectStore().getMyProjects()
     },
   },
   {
@@ -162,9 +163,18 @@ const routes: Readonly<RouteRecordRaw[]> = [
         component: ListOrganizations,
       },
       {
+        path: 'projects/:id',
+        name: 'AdminProject',
+        component: AdminProject,
+        props(to) {
+          return { projectId: to.params.id }
+        },
+      },
+      {
         path: 'projects',
         name: 'ListProjects',
         component: ListProjects,
+        strict: false,
       },
       {
         path: 'logs',
@@ -267,5 +277,7 @@ router.beforeEach(async (to, _from, next) => {
 
   next()
 })
+
+export const isInProject = computed(() => router.currentRoute.value.fullPath.match(/^\/projects\/.+/))
 
 export default router

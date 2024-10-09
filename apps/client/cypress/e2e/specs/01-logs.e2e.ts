@@ -4,7 +4,7 @@ import { getModel } from '../support/func.js'
 const projects = getModel('project')
 const betaapp = projects.find(({ name }) => name === 'betaapp') as ProjectV2
 
-describe('Create Project', () => {
+describe('Project Logs', () => {
   beforeEach(() => {
   })
 
@@ -26,6 +26,7 @@ describe('Create Project', () => {
       })
     cy.getByDataTestid('replayHooksBtn')
       .click()
+    cy.wait('@listLogs')
     cy.getByDataTestid('displayLogsPanel')
       .should('be.visible')
       .within(() => {
@@ -35,7 +36,7 @@ describe('Create Project', () => {
     cy.getByDataTestid('menuMyProjects').click()
       .url().should('contain', '/projects')
     cy.getByDataTestid('displayLogsPanel')
-      .should('not.be.visible')
+      .should('not.exist')
   })
 
   it('Should handle display project logs as manager or memebr of project', () => {
@@ -45,6 +46,7 @@ describe('Create Project', () => {
     // as owner
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${betaapp.name}`).click()
+    cy.wait('@listLogs')
     cy.getByDataTestid('displayLogsPanel')
       .should('not.be.visible')
     cy.getByDataTestid('displayLogsBtn')
@@ -63,17 +65,24 @@ describe('Create Project', () => {
       })
 
     // as member
-    cy.getByDataTestid('menuMyProjects').click()
-      .url().should('contain', '/projects')
-
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-candilib`).click()
+    cy.wait('@listLogs')
     cy.getByDataTestid('displayLogsPanel')
-      .should('not.exist')
+      .should('not.be.visible')
     cy.getByDataTestid('displayLogsBtn')
-      .should('not.exist')
+      .should('be.visible')
+      .click()
+    cy.getByDataTestid('displayLogsPanel')
+      .should('be.visible')
+      .within(() => {
+        cy.get('span').should('contain', '0 - 0 sur 0')
+      })
     cy.getByDataTestid('menuRepos').click()
-    cy.getByDataTestid('displayLogsBtn')
-      .should('not.exist')
+    cy.getByDataTestid('displayLogsPanel')
+      .should('be.visible')
+      .within(() => {
+        cy.get('span').should('contain', '0 - 0 sur 0')
+      })
   })
 })
