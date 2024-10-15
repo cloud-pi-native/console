@@ -1,5 +1,5 @@
 import type { Monitor, MonitorInfos, PluginConfig, PluginsUpdateBody } from '@cpn-console/shared'
-import type { ClusterObject, EnvironmentObject } from './hooks/index.js'
+import type { ClusterObject, EnvironmentObject, ZoneObject } from './hooks/index.js'
 
 interface ToUrlObject { to: string, title?: string, description?: string, imgSrc?: string }
 export interface ToUrlFnParamaters {
@@ -7,13 +7,14 @@ export interface ToUrlFnParamaters {
   organization: string
   store: PluginsUpdateBody
   clusters: Omit<ClusterObject, 'secretName' | 'kubeConfigId' | 'createdAt' | 'updatedAt' | 'user' | 'cluster'>[]
+  zones: ZoneObject[]
   environments: EnvironmentObject[]
 }
 type ToUrlFnResponse = ToUrlObject | ToUrlObject[] | string | void
 
 export interface ServiceInfos {
   name: string
-  to?: ({ project, organization, store, clusters, environments }: ToUrlFnParamaters) => ToUrlFnResponse
+  to?: ({ project, organization, store, clusters, zones, environments }: ToUrlFnParamaters) => ToUrlFnResponse
   monitor?: Monitor
   title: string
   imgSrc?: string
