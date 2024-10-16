@@ -16,7 +16,7 @@ export const upsertProjectAppRole: StepCall<Project> = async (payload) => {
       error: parseError(error),
       status: {
         result: 'KO',
-        message: error instanceof Error ? error.message : 'An unexpected error has occurred',
+        message: 'An unexpected error occured',
       },
     }
   }
@@ -44,7 +44,7 @@ export const archiveDsoProject: StepCall<Project> = async (payload) => {
       error: parseError(error),
       status: {
         result: 'KO',
-        message: error instanceof Error ? error.message : 'An unexpected error has occurred',
+        message: 'An unexpected error occured',
       },
     }
   }
