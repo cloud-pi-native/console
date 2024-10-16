@@ -28,6 +28,19 @@ export const projectContract = contractInstance.router({
     },
   },
 
+  getProject: {
+    method: 'GET',
+    path: '/:projectId',
+    pathParams: ProjectParams,
+    summary: 'Get a project',
+    description: 'Get a project',
+    responses: {
+      200: ProjectSchemaV2.omit({ name: true }).extend({ name: z.string() }),
+      401: ErrorSchema,
+      500: ErrorSchema,
+    },
+  },
+
   listProjects: {
     method: 'GET',
     path: '',

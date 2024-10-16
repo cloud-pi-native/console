@@ -221,3 +221,8 @@ export function getProjectMockInfos({ projectId, projectLocked, projectOwnerId, 
     projectPermissions: projectPermissions ?? PROJECT_PERMS.MANAGE,
   }
 }
+
+export const atDates = {
+  createdAt: new Date(),
+  updatedAt: new Date(),
+}

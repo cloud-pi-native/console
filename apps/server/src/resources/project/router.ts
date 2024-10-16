@@ -4,6 +4,7 @@ import {
   archiveProject,
   createProject,
   generateProjectsData,
+  getProject,
   getProjectSecrets,
   listProjects,
   replayHooks,
@@ -67,6 +68,22 @@ export function projectRouter() {
 
       return {
         status: 201,
+        body,
+      }
+    },
+
+    // Récuperer un seul projet
+    getProject: async ({ request: req, params }) => {
+      const projectId = params.projectId
+      const perms = await authUser(req, { id: projectId })
+      const isAdmin = AdminAuthorized.isAdmin(perms.adminPermissions)
+
+      if (!perms.projectPermissions && !isAdmin) return new NotFound404()
+
+      const body = await getProject(projectId)
+
+      return {
+        status: 200,
         body,
       }
     },
