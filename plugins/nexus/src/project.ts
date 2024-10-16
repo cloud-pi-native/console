@@ -54,21 +54,30 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
     const owner = payload.args.owner
     const res: any = {}
 
+    const failedProvisionning: Partial<Record<keyof typeof techUsed, { error: Error | unknown, message: string }>> = {}
     const techUsed = getTechUsed(payload)
     const privilegesToAccess = [] as string[]
 
-    if (techUsed.maven) {
-      const names = await createMavenRepo(axiosInstance, projectName)
-      privilegesToAccess.push(names.group.privilege, ...names.hosted.map(({ privilege }) => privilege))
-    } else {
-      await Promise.all(deleteMavenRepo(axiosInstance, projectName))
+    try {
+      if (techUsed.maven) {
+        const names = await createMavenRepo(axiosInstance, projectName)
+        privilegesToAccess.push(names.group.privilege, ...names.hosted.map(({ privilege }) => privilege))
+      } else {
+        await Promise.all(deleteMavenRepo(axiosInstance, projectName))
+      }
+    } catch (error) {
+      failedProvisionning.maven = { error, message: `Maven failed to ${techUsed.maven ? 'provision' : 'delete'} repositories please try again in few minutes` }
     }
 
-    if (techUsed.npm) {
-      const names = await createNpmRepo(axiosInstance, projectName)
-      privilegesToAccess.push(names.group.privilege, ...names.hosted.map(({ privilege }) => privilege))
-    } else {
-      await Promise.all(deleteNpmRepo(axiosInstance, projectName))
+    try {
+      if (techUsed.npm) {
+        const names = await createNpmRepo(axiosInstance, projectName)
+        privilegesToAccess.push(names.group.privilege, ...names.hosted.map(({ privilege }) => privilege))
+      } else {
+        await Promise.all(deleteNpmRepo(axiosInstance, projectName))
+      }
+    } catch (error) {
+      failedProvisionning.npm = { error, message: `Npm failed to ${techUsed.npm ? 'provision' : 'delete'} repositories please try again in few minutes` }
     }
 
     const roleId = `${projectName}-ID`
@@ -147,6 +156,16 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
       }, 'NEXUS')
     }
 
+    if (Object.keys(failedProvisionning).length) {
+      const failed = Object.values(failedProvisionning)
+      return {
+        status: {
+          result: 'WARNING',
+          message: failed.map(({ message }) => message).join('; '),
+        },
+        errors: failed.map(({ error }) => parseError(error)),
+      }
+    }
     return {
       status: { result: 'OK', message: 'Up-to-date' },
     }

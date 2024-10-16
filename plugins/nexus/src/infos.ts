@@ -17,7 +17,7 @@ const infos = {
         },
         title: 'Créer un dépôt NPM privé',
         value: 'disabled',
-        description: 'Default: utilise le paramétrage globale de la console',
+        description: 'Default: utilise le paramétrage globale de la console. Attention: Nexus met un certain temps pour activer/désactiver les dépôts, un reprovisonnage après plusieurs minutes peut être nécessaire',
       },
       {
         key: 'activateMavenRepo',
@@ -29,7 +29,7 @@ const infos = {
         },
         title: 'Créer un dépôt MAVEN privé',
         value: 'disabled',
-        description: 'Default: utilise le paramétrage globale de la console',
+        description: 'Default: utilise le paramétrage globale de la console. Attention: Nexus met un certain temps pour activer/désactiver les dépôts, un reprovisonnage après plusieurs minutes peut être nécessaire',
       },
     ],
     global: [
