@@ -136,8 +136,18 @@ async function showLogs(index: number) {
           />
         </div>
       </div>
+      <template
+        v-if="hideLogs"
+      >
+        <pre
+          v-if="log.data.messageResume"
+          :data-testid="`${log.id}-json`"
+          copyable
+          style="white-space: pre-wrap; "
+        >{{ log.data.messageResume.trim() }}</pre>
+      </template>
       <JsonViewer
-        v-if="!hideLogs"
+        v-else
         :data-testid="`${log.id}-json`"
         :value="hideLogDetails ? sliceLog(log) : log"
         class="json-box !my-0"

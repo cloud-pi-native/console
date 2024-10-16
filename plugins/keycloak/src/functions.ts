@@ -21,7 +21,7 @@ export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: {
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
-        message: error.message,
+        message: 'An unexpected error occured',
       },
     }
   }
@@ -53,7 +53,7 @@ export const deleteProject: StepCall<Project> = async ({ args: project }) => {
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
-        message: error.message,
+        message: 'An unexpected error occured',
       },
     }
   }
@@ -203,7 +203,7 @@ export const deleteZone: StepCall<ZoneObject> = async ({ args: zone }) => {
       error: parseError(error),
       status: {
         result: 'KO',
-        message: error.message,
+        message: 'An unexpected error occured',
       },
     }
   }

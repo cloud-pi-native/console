@@ -37,7 +37,7 @@ export const deleteNexusProject: StepCall<Project> = async ({ args: project }) =
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
-        message: error.message,
+        message: 'An unexpected error occured',
       },
     }
   }

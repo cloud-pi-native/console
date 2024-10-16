@@ -35,7 +35,7 @@ export const checkApi: StepCall<Project> = async (payload) => {
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
-        message: error.message,
+        message: 'An unexpected error occured',
       },
     }
   }

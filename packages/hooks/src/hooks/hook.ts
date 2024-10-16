@@ -31,7 +31,7 @@ export interface HookPayload<Args extends DefaultArgs> {
   config: Config
 }
 
-export type HookResult<Args extends DefaultArgs> = Omit<HookPayload<Args>, 'apis'> & { totalExecutionTime: number }
+export type HookResult<Args extends DefaultArgs> = Omit<HookPayload<Args>, 'apis'> & { totalExecutionTime: number, messageResume?: string }
 
 export type StepCall<Args extends DefaultArgs> = (payload: HookPayload<Args>) => Promise<PluginResult>
 type HookStep = Record<string, StepCall<DefaultArgs>>
@@ -45,6 +45,22 @@ export interface Hook<E extends DefaultArgs, V extends DefaultArgs> {
 }
 export type HookList<E extends DefaultArgs, V extends DefaultArgs> = Record<keyof typeof hooks, Hook<E, V>>
 
+function generateMessageResume<Args extends DefaultArgs>(payload: HookPayload<Args>): string | undefined {
+  let messageResume = ''
+  if (Array.isArray(payload.failed)) {
+    for (const pluginName of payload.failed) {
+      messageResume += 'Errors:'
+      messageResume += `\n${pluginName}: ${payload.results[pluginName].status.message};`
+    }
+  }
+  if (payload.warning.length) {
+    for (const pluginName of payload.warning) {
+      messageResume += 'Warnings:'
+      messageResume += `\n${pluginName}: ${payload.results[pluginName].status.message};`
+    }
+  }
+  return messageResume || undefined
+}
 export async function executeStep<Args extends DefaultArgs>(step: HookStep, payload: HookPayload<Args>, stepName: string) {
   const names = Object.keys(step)
   const fns = names.map(async (name) => {
@@ -114,6 +130,7 @@ export function createHook<E extends DefaultArgs, V extends DefaultArgs>(unique 
       warning: payload.warning,
       totalExecutionTime: Date.now() - startTime,
       config,
+      messageResume: generateMessageResume(payload),
     }
   }
 
@@ -140,6 +157,7 @@ export function createHook<E extends DefaultArgs, V extends DefaultArgs>(unique 
       totalExecutionTime: Date.now() - startTime,
       config,
       warning: payload.warning,
+      messageResume: generateMessageResume(result),
     }
   }
   const hook: Hook<E, V> = {
