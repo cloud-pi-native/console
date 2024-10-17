@@ -22,6 +22,7 @@ const quickLinks = computed(() => [{
 
 onErrorCaptured((error) => {
   if (error instanceof Error) {
+    console.trace(error)
     snackbarStore.setMessage(error?.message, 'error')
   } else {
     snackbarStore.setMessage('Une erreur inconnue est survenue.', 'error')

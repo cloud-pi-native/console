@@ -278,9 +278,5 @@ const transferSelectOptions = props.project.members.map(member => ({
         </div>
       </div>
     </div>
-    <LoadingCt
-      v-if="snackbarStore.isWaitingForResponse"
-      description="Mise à jour de l'équipe projet"
-    />
   </div>
 </template>

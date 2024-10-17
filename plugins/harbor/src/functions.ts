@@ -63,7 +63,7 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
-        message: error.message,
+        message: 'An unexpected error occured',
       },
     }
   }
@@ -88,7 +88,7 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
-        message: error.message,
+        message: 'An unexpected error occured',
       },
     }
   }

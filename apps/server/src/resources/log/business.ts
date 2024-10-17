@@ -1,4 +1,13 @@
 import type { logContract } from '@cpn-console/shared'
+import { CleanLogSchema } from '@cpn-console/shared'
 import { getAllLogs } from '@/resources/queries-index.js'
 
-export const getLogs = async ({ offset, limit }: typeof logContract.getLogs.query._type) => getAllLogs({ skip: offset, take: limit })
+export async function getLogs({ offset, limit, projectId, clean }: typeof logContract.getLogs.query._type) {
+  const [total, logs] = await getAllLogs({ skip: offset, take: limit, where: { projectId } })
+  return [
+    total,
+    clean
+      ? logs.map(log => CleanLogSchema.parse(log))
+      : logs,
+  ]
+}

@@ -1,98 +1,116 @@
-import type { AxiosInstance } from 'axios'
 import axios from 'axios'
-import type { Project, StepCall } from '@cpn-console/hooks'
+import type { Project, ProjectLite, StepCall } from '@cpn-console/hooks'
 import { generateRandomPassword, parseError } from '@cpn-console/hooks'
 import { getAxiosOptions } from './functions.js'
+import { createMavenRepo, deleteMavenRepo, getMavenUrls } from './maven.js'
+import { createNpmRepo, deleteNpmRepo, getNpmUrls } from './npm.js'
+import { deleteIfExists, getTechUsed } from './utils.js'
 
 const getAxiosInstance = () => axios.create(getAxiosOptions())
 
-export const createNexusProject: StepCall<Project> = async (payload) => {
+export const deleteNexusProject: StepCall<Project> = async ({ args: project }) => {
   const axiosInstance = getAxiosInstance()
+  const projectName = `${project.organization.name}-${project.name}`
   try {
+    await Promise.all([
+      ...deleteMavenRepo(axiosInstance, projectName),
+      ...deleteNpmRepo(axiosInstance, projectName),
+      // delete role
+      deleteIfExists(`/security/roles/${projectName}-ID`, axiosInstance),
+      // delete user
+      axiosInstance({
+        method: 'delete',
+        url: `/security/users/${projectName}`,
+        validateStatus: code => code === 404 || code < 300,
+      }),
+    ])
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Project deleted from Nexus',
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(error),
+      status: {
+        result: 'KO',
+        // @ts-ignore prévoir une fonction générique
+        message: 'An unexpected error occured',
+      },
+    }
+  }
+}
+
+export const createNexusProject: StepCall<Project> = async (payload) => {
+  try {
+    if (!payload.apis.vault) throw new Error('no Vault available')
+
+    const axiosInstance = getAxiosInstance()
     const organization = payload.args.organization.name
     const project = payload.args.name
-    const owner = payload.args.owner
     const projectName = `${organization}-${project}`
+    const owner = payload.args.owner
     const res: any = {}
 
-    // @ts-ignore to delete when in own plugin
-    if (!payload.apis.vault) throw new Error('no Vault available')
-    // create local repo maven
-    for (const repVersion of ['release', 'snapshot']) {
-      await axiosInstance({
-        method: 'post',
-        url: '/repositories/maven/hosted',
-        data: {
-          name: `${projectName}-repository-${repVersion}`,
-          online: true,
-          storage: {
-            blobStoreName: 'default',
-            strictContentTypeValidation: true,
-            writePolicy: 'allow_once',
-          },
-          cleanup: { policyNames: ['string'] },
-          component: { proprietaryComponents: true },
-          maven: {
-            versionPolicy: 'MIXED',
-            layoutPolicy: 'STRICT',
-            contentDisposition: 'ATTACHMENT',
-          },
-        },
-        validateStatus: code => [201, 400].includes(code),
-      })
+    const failedProvisionning: Partial<Record<keyof typeof techUsed, { error: Error | unknown, message: string }>> = {}
+    const techUsed = getTechUsed(payload)
+    const privilegesToAccess = [] as string[]
+
+    try {
+      if (techUsed.maven) {
+        const names = await createMavenRepo(axiosInstance, projectName)
+        privilegesToAccess.push(names.group.privilege, ...names.hosted.map(({ privilege }) => privilege))
+      } else {
+        await Promise.all(deleteMavenRepo(axiosInstance, projectName))
+      }
+    } catch (error) {
+      failedProvisionning.maven = { error, message: `Maven failed to ${techUsed.maven ? 'provision' : 'delete'} repositories please try again in few minutes` }
     }
-    // create maven group
-    await axiosInstance({
-      method: 'post',
-      url: '/repositories/maven/group',
-      data: {
-        name: `${projectName}-repository-group`,
-        online: true,
-        storage: {
-          blobStoreName: 'default',
-          strictContentTypeValidation: true,
-        },
-        group: {
-          memberNames: [
-            `${projectName}-repository-snapshot`,
-            `${projectName}-repository-release`,
-            'maven-public',
-          ],
-        },
-      },
-      validateStatus: code => [201, 400].includes(code),
-    })
-    // create privileges
-    for (const privilege of ['snapshot', 'release', 'group']) {
-      await axiosInstance({
-        method: 'post',
-        url: '/security/privileges/repository-view',
-        data: {
-          name: `${projectName}-privilege-${privilege}`,
-          description: `Privilege for organization ${projectName} for repo ${privilege}`,
-          actions: ['all'],
-          format: 'maven2',
-          repository: `${projectName}-repository-${privilege}`,
-        },
-        validateStatus: code => [201, 400].includes(code),
-      })
+
+    try {
+      if (techUsed.npm) {
+        const names = await createNpmRepo(axiosInstance, projectName)
+        privilegesToAccess.push(names.group.privilege, ...names.hosted.map(({ privilege }) => privilege))
+      } else {
+        await Promise.all(deleteNpmRepo(axiosInstance, projectName))
+      }
+    } catch (error) {
+      failedProvisionning.npm = { error, message: `Npm failed to ${techUsed.npm ? 'provision' : 'delete'} repositories please try again in few minutes` }
     }
+
+    const roleId = `${projectName}-ID`
     // create role
-    await axiosInstance({
-      method: 'post',
-      url: '/security/roles',
-      data: {
-        id: `${projectName}-ID`,
-        name: `${projectName}-role`,
-        description: 'desc',
-        privileges: [
-          `${projectName}-privilege-snapshot`,
-          `${projectName}-privilege-release`,
-          `${projectName}-privilege-group`,
-        ],
-      },
-      validateStatus: code => [200, 400].includes(code),
+    const role = await axiosInstance({
+      method: 'GET',
+      url: `security/roles/${roleId}`,
+      validateStatus: code => [200, 404].includes(code),
     })
+    if (role.status === 404) {
+      await axiosInstance({
+        method: 'post',
+        url: '/security/roles',
+        data: {
+          id: `${projectName}-ID`,
+          name: `${projectName}-role`,
+          description: 'desc',
+          privileges: privilegesToAccess,
+        },
+        validateStatus: code => [200].includes(code),
+      })
+    } else if (role.status === 200) {
+      await axiosInstance({
+        method: 'PUT',
+        url: `security/roles/${roleId}`,
+        data: {
+          id: `${projectName}-ID`,
+          name: `${projectName}-role`,
+          privileges: privilegesToAccess,
+        },
+        validateStatus: code => [204].includes(code),
+      })
+    }
 
     const vaultNexusSecret = await payload.apis.vault.read('NEXUS', { throwIfNoEntry: false })
     let currentPwd: string = vaultNexusSecret?.NEXUS_PASSWORD
@@ -137,21 +155,17 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
         NEXUS_USERNAME: projectName,
       }, 'NEXUS')
     }
-    // await payload.apis.gitlab.setGitlabGroupVariable({
-    //   key: 'NEXUS_USERNAME',
-    //   masked: false,
-    //   protected: false,
-    //   variable_type: 'env_var',
-    //   value: projectName,
-    // })
-    // await payload.apis.gitlab.setGitlabGroupVariable({
-    //   key: 'NEXUS_PASSWORD',
-    //   masked: true,
-    //   protected: false,
-    //   variable_type: 'env_var',
-    //   value: currentPwd,
-    // })
 
+    if (Object.keys(failedProvisionning).length) {
+      const failed = Object.values(failedProvisionning)
+      return {
+        status: {
+          result: 'WARNING',
+          message: failed.map(({ message }) => message).join('; '),
+        },
+        errors: failed.map(({ error }) => parseError(error)),
+      }
+    }
     return {
       status: { result: 'OK', message: 'Up-to-date' },
     }
@@ -166,59 +180,17 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
   }
 }
 
-export const deleteNexusProject: StepCall<Project> = async ({ args: project }) => {
-  const axiosInstance = getAxiosInstance()
-  const projectName = `${project.organization.name}-${project.name}`
-  try {
-    await Promise.all([
-      // delete local repo maven snapshot
-      await deleteIfExists(`/repositories/${projectName}-repository-release`, axiosInstance),
-      await deleteIfExists(`/repositories/${projectName}-repository-snapshot`, axiosInstance),
-      await deleteIfExists(`/repositories/${projectName}-repository-group`, axiosInstance),
-      // delete privileges
-      await deleteIfExists(`/security/privileges/${projectName}-privilege-snapshot`, axiosInstance),
-      await deleteIfExists(`/security/privileges/${projectName}-privilege-release`, axiosInstance),
-      await deleteIfExists(`/security/privileges/${projectName}-privilege-group`, axiosInstance),
-      // delete role
-      await deleteIfExists(`/security/roles/${projectName}-ID`, axiosInstance),
-      // delete user
-      await axiosInstance({
-        method: 'delete',
-        url: `/security/users/${projectName}`,
-        validateStatus: code => code === 404 || code < 300,
-      }),
-    ])
+export const getSecrets: StepCall<ProjectLite> = async (payload) => {
+  const projectName = `${payload.args.organization.name}-${payload.args.name}`
+  const techUsed = getTechUsed(payload)
 
-    return {
-      status: {
-        result: 'OK',
-        message: 'User deleted',
-      },
-    }
-  } catch (error) {
-    return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        // @ts-ignore prévoir une fonction générique
-        message: error.message,
-      },
-    }
-  }
-}
-
-async function deleteIfExists(url: string, axiosInstance: AxiosInstance) {
-  const res = await axiosInstance({
-    method: 'get',
-    url,
-    validateStatus: code => code === 404 || code < 300,
-  })
-  if (res.status === 404) {
-    // delete maven group
-    await axiosInstance({
-      method: 'delete',
-      url,
-      validateStatus: code => code === 404 || code < 300,
-    })
+  return {
+    status: {
+      result: 'OK',
+    },
+    secrets: {
+      ...techUsed.maven && getMavenUrls(projectName),
+      ...techUsed.npm && getNpmUrls(projectName),
+    },
   }
 }

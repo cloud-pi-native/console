@@ -1,6 +1,7 @@
-import type { EmptyPayload, Project, StepCall, UserAdmin, UserEmail } from '@cpn-console/hooks'
-import { parseError } from '@cpn-console/hooks'
+import type { Project, StepCall, UserEmail, ZoneObject } from '@cpn-console/hooks'
+import { generateRandomPassword, parseError } from '@cpn-console/hooks'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
+import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation.js'
 import type { CustomGroup } from './group.js'
 import { consoleGroupName, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateProjectGroup } from './group.js'
 import { getkcClient } from './client.js'
@@ -20,61 +21,7 @@ export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: {
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
-        message: error.message,
-      },
-    }
-  }
-}
-
-export const retrieveKeycloakAdminUsers: StepCall<EmptyPayload> = async () => {
-  const kcClient = await getkcClient()
-  try {
-    const adminGroup = await getGroupByName(kcClient, 'admin')
-    if (!adminGroup?.id) throw new Error('Admin group not found')
-    const adminIds = (await kcClient.groups.listMembers({ id: adminGroup.id })).map(admin => admin.id)
-
-    return {
-      status: { result: 'OK' },
-      adminIds,
-    }
-  } catch (error) {
-    return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        // @ts-ignore prévoir une fonction générique
-        message: error.message,
-      },
-    }
-  }
-}
-
-export const updateUserAdminKcGroupMembership: StepCall<UserAdmin> = async ({ args: { id, isAdmin } }) => {
-  const kcClient = await getkcClient()
-  try {
-    const [adminGroup, user] = await Promise.all([
-      getGroupByName(kcClient, 'admin'),
-      kcClient.users.findOne({ id }),
-    ])
-    if (!adminGroup?.id) throw new Error('Admin group not found')
-    if (!user?.id) throw new Error('User to update not found')
-
-    if (isAdmin) await kcClient.users.addToGroup({ id, groupId: adminGroup.id })
-    else await kcClient.users.delFromGroup({ id, groupId: adminGroup.id })
-
-    return {
-      status: {
-        result: 'OK',
-        message: `${user.email ?? user.id} was ${isAdmin ? 'promoted to' : 'demoted from'} /admin group`,
-      },
-    }
-  } catch (error) {
-    return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        // @ts-ignore prévoir une fonction générique
-        message: error.message,
+        message: 'An unexpected error occured',
       },
     }
   }
@@ -106,7 +53,7 @@ export const deleteProject: StepCall<Project> = async ({ args: project }) => {
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
-        message: error.message,
+        message: 'An unexpected error occured',
       },
     }
   }
@@ -186,4 +133,82 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
       },
     }
   }
+}
+
+export const upsertZone: StepCall<ZoneObject> = async ({ args: zone }) => {
+  try {
+    const kcClient = await getkcClient()
+    const argocdUrl = zone.argocdUrl
+    const clientId = getClientZoneId(zone)
+    const client: ClientRepresentation = {
+      clientId,
+      clientAuthenticatorType: 'client-secret',
+      protocol: 'openid-connect',
+      publicClient: false,
+      redirectUris: [`${argocdUrl}/auth/callback`],
+      webOrigins: [argocdUrl],
+      rootUrl: argocdUrl,
+      adminUrl: argocdUrl,
+      baseUrl: '/applications',
+    }
+    const result = await kcClient.clients.find({ clientId, max: 1 })
+    if (result.length > 0 && result[0].id) {
+      await kcClient.clients.update({ id: result[0].id }, client)
+    } else {
+      const password = generateRandomPassword(30) // TODO Store in Vault
+      await kcClient.clients.create({
+        secret: password,
+        ...client,
+      })
+    }
+    return {
+      status: {
+        result: 'OK',
+        message: 'Up-to-date',
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(error),
+      status: {
+        result: 'KO',
+        message: 'Failed',
+      },
+    }
+  }
+}
+
+export const deleteZone: StepCall<ZoneObject> = async ({ args: zone }) => {
+  try {
+    const kcClient = await getkcClient()
+    const clientId = getClientZoneId(zone)
+    const result = await kcClient.clients.find({ clientId, max: 1 })
+    if (result.length > 0 && result[0].id) {
+      await kcClient.clients.del({ id: result[0].id })
+      return {
+        status: {
+          result: 'OK',
+          message: 'Deleted',
+        },
+      }
+    }
+    return {
+      status: {
+        result: 'OK',
+        message: 'Already Missing',
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(error),
+      status: {
+        result: 'KO',
+        message: 'An unexpected error occured',
+      },
+    }
+  }
+}
+
+function getClientZoneId(zone: ZoneObject): string {
+  return `argocd-${zone.slug}-zone`
 }

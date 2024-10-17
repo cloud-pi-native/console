@@ -209,7 +209,7 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
       namespace: getConfig().namespace,
       project: appProjectName,
       envChartVersion: process.env.DSO_ENV_CHART_VERSION || 'dso-env-1.4.0',
-      nsChartVersion: process.env.DSO_NS_CHART_VERSION || 'dso-ns-1.1.0',
+      nsChartVersion: process.env.DSO_NS_CHART_VERSION || 'dso-ns-1.1.1',
     },
     environment: {
       valueFileRepository: infraProject.http_url_to_repo,

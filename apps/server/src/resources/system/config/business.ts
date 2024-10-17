@@ -24,7 +24,7 @@ export function objToDb(obj: PluginsUpdateBody): ConfigRecords {
 export async function getPluginsConfig() {
   const globalConfig = await getAdminPlugin()
 
-  return Object.values(servicesInfos).map(({ name, title, imgSrc }) => {
+  return Object.values(servicesInfos).map(({ name, title, imgSrc, description }) => {
     const manifest = populatePluginManifests({
       data: {
         global: globalConfig,
@@ -36,7 +36,7 @@ export async function getPluginsConfig() {
         project: false,
       },
     })
-    return { imgSrc, title, name, manifest: manifest.global ?? [] }
+    return { imgSrc, title, name, manifest: manifest.global ?? [], description }
   }).filter(plugin => plugin.manifest.length > 0)
 }
 

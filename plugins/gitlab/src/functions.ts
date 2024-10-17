@@ -1,4 +1,6 @@
-import { type Project, type ProjectLite, type StepCall, type UniqueRepo, parseError, specificallyDisabled } from '@cpn-console/hooks'
+import { parseError, specificallyDisabled } from '@cpn-console/hooks'
+import type { PluginResult, Project, ProjectLite, StepCall, UniqueRepo } from '@cpn-console/hooks'
+import { insert } from '@cpn-console/shared'
 import { deleteGroup } from './group.js'
 import { createUsername, getUser } from './user.js'
 import { ensureMembers } from './members.js'
@@ -33,7 +35,7 @@ export const checkApi: StepCall<Project> = async (payload) => {
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
-        message: error.message,
+        message: 'An unexpected error occured',
       },
     }
   }
@@ -86,6 +88,11 @@ export const getDsoProjectSecrets: StepCall<ProjectLite> = async (payload) => {
 }
 
 export const upsertDsoProject: StepCall<Project> = async (payload) => {
+  const returnResult: PluginResult = {
+    status: {
+      result: 'OK',
+    },
+  }
   try {
     const project = payload.args
     const { gitlab: gitlabApi, vault: vaultApi } = payload.apis
@@ -93,7 +100,11 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
     await gitlabApi.getOrCreateProjectGroup()
     await gitlabApi.getOrCreateInfraGroup()
 
-    await ensureMembers(gitlabApi, project)
+    const { failedInUpsertUsers } = await ensureMembers(gitlabApi, project)
+    if (failedInUpsertUsers) {
+      returnResult.status.result = 'WARNING'
+      returnResult.warnReasons = insert(returnResult.warnReasons, 'Failed to create or upsert users in Gitlab')
+    }
 
     const projectMirrorCreds = await gitlabApi.getProjectMirrorCreds(vaultApi)
     await ensureRepositories(gitlabApi, project, vaultApi, {
@@ -121,19 +132,12 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
 
     await vaultApi.write(gitlabSecret, 'GITLAB')
 
-    return {
-      status: {
-        result: 'OK',
-      },
-    }
+    return returnResult
   } catch (error) {
-    return {
-      error: parseError(cleanGitlabError(error)),
-      status: {
-        result: 'KO',
-        message: 'Can\'t reconcile please inspect logs',
-      },
-    }
+    returnResult.error = parseError(cleanGitlabError(error))
+    returnResult.status.result = 'KO'
+    returnResult.status.message = 'Can\'t reconcile please inspect logs'
+    return returnResult
   }
 }
 
@@ -182,21 +186,16 @@ export const syncRepository: StepCall<UniqueRepo> = async (payload) => {
 }
 
 export const commitFiles: StepCall<UniqueRepo | Project> = async (payload) => {
+  const returnResult = payload.results.gitlab
   try {
     const filesUpdated = await payload.apis.gitlab.commitFiles()
-    return {
-      status: {
-        result: 'OK',
-        message: `${filesUpdated} file${filesUpdated > 1 ? 's' : ''} updated`,
-      },
-    }
+
+    returnResult.status.message = `${filesUpdated} file${filesUpdated > 1 ? 's' : ''} updated`
+    return returnResult
   } catch (error) {
-    return {
-      error: parseError(cleanGitlabError(error)),
-      status: {
-        result: 'KO',
-        message: 'Failed to commit files',
-      },
-    }
+    returnResult.error = parseError(cleanGitlabError(error))
+    returnResult.status.result = 'KO'
+    returnResult.status.message = 'Failed to commit files'
+    return returnResult
   }
 }

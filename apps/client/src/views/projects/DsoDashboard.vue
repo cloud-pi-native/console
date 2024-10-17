@@ -7,6 +7,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import router from '@/router/index.js'
 import { copyContent } from '@/utils/func.js'
 import { useStageStore } from '@/stores/stage.js'
+import { useLogStore } from '@/stores/log.js'
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
@@ -19,31 +20,40 @@ const projectToArchive = ref('')
 const isSecretShown = ref(false)
 const projectSecrets = ref<Record<string, any>>({})
 const allStages = ref<Array<any>>([])
+const logStore = useLogStore()
 
-const isReprovisionning = ref(false)
-
-async function updateProject(projectId?: ProjectV2['id']) {
-  if (!projectId) return
-  snackbarStore.isWaitingForResponse = true
-  isReprovisionning.value = true
-  await projectStore.updateProject(projectId, { description: description.value })
+async function updateProject() {
+  if (!projectStore.selectedProject) return
+  const callback = projectStore.selectedProject.addOperation('update')
+  await projectStore.updateProject(projectStore.selectedProject.id, { description: description.value })
+  await projectStore.listProjects()
   isEditingDescription.value = false
-  snackbarStore.isWaitingForResponse = false
+  callback.fn(callback.args)
+  logStore.needRefresh = true
 }
 
-async function replayHooks(projectId: ProjectV2['id']) {
-  if (isReprovisionning.value) return
-  isReprovisionning.value = true
-  await useProjectStore().replayHooksForProject(projectId)
+async function replayHooks() {
+  if (!projectStore.selectedProject) return
+  const callback = projectStore.selectedProject.addOperation('replay')
+  await useProjectStore().replayHooksForProject(projectStore.selectedProject.id)
+  await useProjectStore().listProjects()
   snackbarStore.setMessage('Le projet a été reprovisionné avec succès', 'success')
-  isReprovisionning.value = false
+  callback.fn(callback.args)
+  logStore.needRefresh = true
 }
 
 async function archiveProject(projectId: ProjectV2['id']) {
-  snackbarStore.isWaitingForResponse = true
-  await projectStore.archiveProject(projectId)
+  if (!projectStore.selectedProject) return
+  const callback = projectStore.selectedProject.addOperation('delete')
+  try {
+    await projectStore.archiveProject(projectId)
+    await projectStore.listProjects()
+  } catch (_error) {
+    await projectStore.listProjects()
+    throw _error
+  }
   router.push('/projects')
-  snackbarStore.isWaitingForResponse = false
+  callback.fn(callback.args)
 }
 
 function getDynamicTitle(locked?: ProjectV2['locked'], description?: ProjectV2['description']) {
@@ -52,18 +62,14 @@ function getDynamicTitle(locked?: ProjectV2['locked'], description?: ProjectV2['
   return 'Ajouter une description'
 }
 
-const isSearchingSecret = ref(false)
 async function handleSecretDisplay() {
-  if (isSecretShown.value) snackbarStore.hideMessage()
-  if (isSearchingSecret.value || !projectStore.selectedProject) return
-
-  isSearchingSecret.value = true
+  if (!projectStore.selectedProject) return
+  const callback = projectStore.selectedProject.addOperation('lockHandling')
   isSecretShown.value = !isSecretShown.value
   if (isSecretShown.value && !Object.keys(projectSecrets.value).length) {
     projectSecrets.value = await projectStore.getProjectSecrets(projectStore.selectedProject.id) ?? {}
-    snackbarStore.setMessage('Secrets récupérés')
   }
-  isSearchingSecret.value = false
+  callback.fn(callback.args)
 }
 
 function getRows(service: string) {
@@ -145,8 +151,11 @@ onBeforeMount(async () => {
             data-testid="saveDescriptionBtn"
             label="Enregistrer la description"
             secondary
-            icon="ri:send-plane-line"
-            @click="updateProject(projectStore.selectedProject.id)"
+            :icon="projectStore.selectedProject.operationsInProgress.has('update')
+              ? { name: 'ri:refresh-fill', animation: 'spin' }
+              : 'ri:send-plane-line'"
+            :disabled="projectStore.selectedProject.operationsInProgress.has('update')"
+            @click="updateProject()"
           />
           <DsfrButton
             label="Annuler"
@@ -195,9 +204,10 @@ onBeforeMount(async () => {
       <DsfrButton
         data-testid="replayHooksBtn"
         label="Reprovisionner le projet"
-        :icon="{ name: 'ri:refresh-fill', animation: isReprovisionning ? 'spin' : '' }"
+        :icon="{ name: 'ri:refresh-fill', animation: projectStore.selectedProject.operationsInProgress.has('replay') ? 'spin' : '' }"
         secondary
-        @click="replayHooks(projectStore.selectedProject.id ?? '')"
+        :disabled="projectStore.selectedProject.operationsInProgress.has('replay')"
+        @click="replayHooks"
       />
     </div>
     <div
@@ -208,10 +218,11 @@ onBeforeMount(async () => {
         data-testid="showSecretsBtn"
         :label="`${isSecretShown ? 'Cacher' : 'Afficher'} les secrets des services`"
         secondary
-        :icon="isSearchingSecret
+        :icon="projectStore.selectedProject.operationsInProgress.has('searchSecret')
           ? { name: 'ri:refresh-fill', animation: 'spin' }
           : isSecretShown ? 'ri:eye-off-line' : 'ri:eye-line'"
-        @click="handleSecretDisplay()"
+        :disabled="projectStore.selectedProject.operationsInProgress.has('searchSecret')"
+        @click="handleSecretDisplay"
       />
       <div
         v-if="isSecretShown"
@@ -285,9 +296,11 @@ onBeforeMount(async () => {
           <DsfrButton
             data-testid="archiveProjectBtn"
             :label="`Supprimer définitivement le projet ${projectStore.selectedProject.name}`"
-            :disabled="projectToArchive !== projectStore.selectedProject.name"
+            :disabled="projectToArchive !== projectStore.selectedProject.name || projectStore.selectedProject.operationsInProgress.has('delete')"
             secondary
-            icon="ri:delete-bin-7-line"
+            :icon="projectStore.selectedProject.operationsInProgress.has('delete')
+              ? { name: 'ri:refresh-fill', animation: 'spin' }
+              : 'ri:delete-bin-7-line'"
             @click="archiveProject(projectStore.selectedProject ? projectStore.selectedProject.id : '')"
           />
           <DsfrButton
@@ -298,10 +311,6 @@ onBeforeMount(async () => {
         </div>
       </div>
     </div>
-    <LoadingCt
-      v-if="snackbarStore.isWaitingForResponse"
-      description="Opérations en cours"
-    />
   </div>
   <!-- N'est jamais sensé s'afficher -->
   <ErrorGoBackToProjects

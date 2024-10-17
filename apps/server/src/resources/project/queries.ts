@@ -71,6 +71,18 @@ export async function listProjects({
   })
 }
 
+export function getProjectOrThrow(id: Project['id']) {
+  return prisma.project.findUniqueOrThrow({
+    where: { id },
+    include: {
+      clusters: { select: { id: true } },
+      members: { include: { user: true } },
+      roles: true,
+      owner: true,
+    },
+  })
+}
+
 export function getProjectInfosByIdOrThrow(projectId: Project['id']) {
   return prisma.project.findUniqueOrThrow({
     where: {
@@ -218,6 +230,7 @@ const clusterInfosSelect = {
     select: {
       id: true,
       slug: true,
+      argocdUrl: true,
     },
   },
 }
@@ -292,6 +305,14 @@ export function updateProjectFailed(id: Project['id']) {
   return prisma.project.update({
     where: { id },
     data: { status: ProjectStatus.failed },
+    include: baseProjectIncludes,
+  })
+}
+
+export function updateProjectWarning(id: Project['id']) {
+  return prisma.project.update({
+    where: { id },
+    data: { status: ProjectStatus.warning },
     include: baseProjectIncludes,
   })
 }

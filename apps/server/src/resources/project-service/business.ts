@@ -2,10 +2,10 @@ import type { Project } from '@prisma/client'
 import type {
   PermissionTarget,
   PluginsUpdateBody,
-
   ServiceUrl,
 } from '@cpn-console/shared'
 import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
+import type { ZoneObject } from '@cpn-console/hooks'
 import {
   getAdminPlugin,
   getProjectInfosByIdOrThrow,
@@ -48,13 +48,16 @@ export async function getProjectServices(projectId: Project['id'], permissionTar
 
   const publicClusters = await getPublicClusters()
   project.clusters = project.clusters.concat(publicClusters)
+  const zones: Map<string, ZoneObject> = new Map() // Pour dédoublonnage des zones
+  project.clusters.map(c => zones.set(c.zone.id, c.zone))
 
-  return Object.values(servicesInfos).map(({ name, title, to, imgSrc }) => {
+  return Object.values(servicesInfos).map(({ name, title, to, imgSrc, description }) => {
     let urls: ServiceUrl[] = []
     const toResponse = to
       ? to({
         organization: project?.organization.name,
         clusters: project.clusters,
+        zones: Array.from(zones.values()),
         environments: project.environments,
         project: project.name,
         store,
@@ -79,7 +82,7 @@ export async function getProjectServices(projectId: Project['id'], permissionTar
         project: true,
       },
     })
-    return { imgSrc, title, name, urls, manifest }
+    return { imgSrc, title, name, urls, manifest, description }
   }).filter(s => s.urls.length || s.manifest.global?.length || s.manifest.project?.length)
 }
 

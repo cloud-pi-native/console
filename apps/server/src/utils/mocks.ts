@@ -108,8 +108,6 @@ export async function mockHooksPackage() {
       deleteCluster: hookTemplate,
       // user
       retrieveUserByEmail: hookTemplate,
-      retrieveAdminUsers: hookTemplate,
-      updateUserAdminGroupMembership: hookTemplate,
       // organizations
       fetchOrganizations: {
         execute: () => ({
@@ -222,4 +220,9 @@ export function getProjectMockInfos({ projectId, projectLocked, projectOwnerId, 
     projectStatus: projectStatus ?? 'created',
     projectPermissions: projectPermissions ?? PROJECT_PERMS.MANAGE,
   }
+}
+
+export const atDates = {
+  createdAt: new Date(),
+  updatedAt: new Date(),
 }

@@ -16,6 +16,7 @@ const CreateProject = () => import('@/views/CreateProject.vue')
 const UserProfile = () => import('@/views/UserProfile.vue')
 const ManageEnvironments = () => import('@/views/projects/ManageEnvironments.vue')
 const DsoProjects = () => import('@/views/projects/DsoProjects.vue')
+const DsoProjectWrapper = () => import('@/views/projects/DsoProjectWrapper.vue')
 const DsoDashboard = () => import('@/views/projects/DsoDashboard.vue')
 const DsoRoles = () => import('@/views/projects/DsoRoles.vue')
 const DsoServices = () => import('@/views/projects/DsoServices.vue')
@@ -85,6 +86,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
   {
     name: 'ParentProjects',
     path: '/projects',
+    component: DsoProjectWrapper,
     children: [
       {
         path: '',

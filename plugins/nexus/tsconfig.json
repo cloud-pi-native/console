@@ -8,6 +8,7 @@
     "paths": {
       "@/*": ["src/*"]
     },
+    "useUnknownInCatchVariables": true,
     "declarationDir": "./types",
     "outDir": "./dist"
   },

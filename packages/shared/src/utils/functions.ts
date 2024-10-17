@@ -137,3 +137,13 @@ export function isAtLeastTomorrow(actualTime: Date) {
 
   return actualTime.getTime() > tomorrow.getTime()
 }
+
+export function insert<T>(pseudoArray: T[] | undefined, element: T): T[] {
+  if (!pseudoArray) {
+    return [element]
+  } else if (Array.isArray(pseudoArray)) {
+    return [...pseudoArray, element]
+  } else {
+    throw new TypeError('item is not an ArrayLike')
+  }
+}

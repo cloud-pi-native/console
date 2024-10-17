@@ -61,7 +61,7 @@ describe('ConfigParamComponent.vue', () => {
 
     // Vérifie que la valeur a été modifiée
     cy.get('[data-testid="switch"]').within(() => {
-      cy.get('.fr-fieldset__element').eq(1).click() // Sélectionne le bouton de commutation "Défaut"
+      cy.get('.fr-segmented__element').eq(1).click() // Sélectionne le bouton de commutation "Défaut"
       cy.get('input').eq(1).should('be.checked')
     })
   })

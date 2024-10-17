@@ -37,7 +37,7 @@ export async function check(): Promise<PluginResult> {
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
-        message: error.message,
+        message: 'An unexpected error occured',
       },
       updatedAt: Date.now(),
     }
