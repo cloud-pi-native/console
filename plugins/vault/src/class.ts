@@ -9,7 +9,7 @@ interface readOptions {
 }
 interface AppRoleCredentials {
   url: string
-  kvName: string
+  coreKvName: string
   roleId: string
   secretId: string
 }
@@ -17,7 +17,10 @@ interface AppRoleCredentials {
 export class VaultProjectApi extends PluginApi {
   private token: string | undefined = undefined
   private axios: AxiosInstance
-  private kvName: string = 'forge-dso'
+  private coreKvName: string = 'forge-dso'
+  private projectKvName: string
+  private groupName: string
+  private policyName: string
   private basePath: string
   private roleName: string
   private projectRootDir: string | undefined
@@ -27,6 +30,9 @@ export class VaultProjectApi extends PluginApi {
     super()
     this.basePath = `${project.organization.name}/${project.name}`
     this.roleName = `${project.organization.name}-${project.name}`
+    this.projectKvName = `${project.organization.name}-${project.name}`
+    this.groupName = `${project.organization.name}-${project.name}`
+    this.policyName = `${project.organization.name}-${project.name}`
     this.projectRootDir = removeTrailingSlash(requiredEnv('PROJECTS_ROOT_DIR'))
     this.axios = axios.create({
       baseURL: requiredEnv('VAULT_URL'),
@@ -36,7 +42,7 @@ export class VaultProjectApi extends PluginApi {
     })
     this.defaultAppRoleCredentials = {
       url: removeTrailingSlash(requiredEnv('VAULT_URL')),
-      kvName: this.kvName,
+      coreKvName: this.coreKvName,
       roleId: 'none',
       secretId: 'none',
     }
@@ -54,7 +60,7 @@ export class VaultProjectApi extends PluginApi {
 
     const listSecretPath: string[] = []
     const response = await this.axios({
-      url: `/v1/${this.kvName}/metadata/${this.projectRootDir}/${this.basePath}${path}/`,
+      url: `/v1/${this.coreKvName}/metadata/${this.projectRootDir}/${this.basePath}${path}/`,
       headers: {
         'X-Vault-Token': await this.getToken(),
       },
@@ -80,7 +86,7 @@ export class VaultProjectApi extends PluginApi {
     if (path.startsWith('/'))
       path = path.slice(1)
     const response = await this.axios.get(
-      `/v1/${this.kvName}/data/${this.projectRootDir}/${this.basePath}/${path}`,
+      `/v1/${this.coreKvName}/data/${this.projectRootDir}/${this.basePath}/${path}`,
       {
         headers: { 'X-Vault-Token': await this.getToken() },
         validateStatus: status => (options.throwIfNoEntry ? [200] : [200, 404]).includes(status),
@@ -93,7 +99,7 @@ export class VaultProjectApi extends PluginApi {
     if (path.startsWith('/'))
       path = path.slice(1)
     const response = await this.axios.post(
-      `/v1/${this.kvName}/data/${this.projectRootDir}/${this.basePath}/${path}`,
+      `/v1/${this.coreKvName}/data/${this.projectRootDir}/${this.basePath}/${path}`,
       {
         headers: { 'X-Vault-Token': await this.getToken() },
         data: body,
@@ -102,10 +108,10 @@ export class VaultProjectApi extends PluginApi {
     return await response.data
   }
 
-  async upsertPolicy() {
+  async upsertPolicy(policyName: string, policy: string) {
     await this.axios.put(
-      `/v1/sys/policies/acl/${this.roleName}`,
-      { policy: `path "${this.kvName}/data/${this.projectRootDir}/${this.basePath}/*" { capabilities = ["create", "read", "update", "delete", "list"] }` },
+      `/v1/sys/policies/acl/${policyName}`,
+      { policy },
       {
         headers: {
           'X-Vault-Token': await this.getToken(),
@@ -115,20 +121,28 @@ export class VaultProjectApi extends PluginApi {
     )
   }
 
-  async isAppRoleEnabled() {
+  async getAuthMethod() {
     const response = await this.axios.get(
       '/v1/sys/auth',
       {
         headers: { 'X-Vault-Token': await this.getToken() },
       },
     )
-    return Object.keys(response.data).includes('approle/')
+    return response.data
+  }
+
+  async isAppRoleEnabled() {
+    const methods = await this.getAuthMethod()
+    return Object.keys(methods).includes('approle/')
   }
 
   public async upsertRole() {
     const appRoleEnabled = await this.isAppRoleEnabled()
     if (!appRoleEnabled) return
-    this.upsertPolicy()
+    this.upsertPolicy(
+      this.roleName,
+      `path "${this.coreKvName}/data/${this.projectRootDir}/${this.basePath}/*" { capabilities = ["create", "read", "update", "delete", "list"] }`,
+    )
     this.axios.post(
       `/v1/auth/approle/role/${this.roleName}`,
       {
@@ -173,7 +187,7 @@ export class VaultProjectApi extends PluginApi {
     if (path.startsWith('/'))
       path = path.slice(1)
     return this.axios.delete(
-      `/v1/${this.kvName}/metadata/${this.projectRootDir}/${this.basePath}/${path}`,
+      `/v1/${this.coreKvName}/metadata/${this.projectRootDir}/${this.basePath}/${path}`,
       {
         headers: { 'X-Vault-Token': await this.getToken() },
       },
@@ -193,5 +207,63 @@ export class VaultProjectApi extends PluginApi {
         headers: { 'X-Vault-Token': await this.getToken() },
       },
     )
+  }
+
+  public async upsertKv() {
+    const appRoleEnabled = await this.isAppRoleEnabled()
+    if (!appRoleEnabled) return
+    this.createKv(this.projectKvName)
+    this.upsertPolicy(
+      this.policyName,
+      `path "${this.projectKvName}/*" { capabilities = ["create", "read", "update", "delete", "list"] }\n\npath "/v1/sys/policies/acl/${this.policyName}/*" { capabilities = ["create", "read", "update", "list"] }`,
+    )
+    const group = await this.createGroup(this.groupName, this.policyName)
+    this.createGroupAlias(this.groupName, group.id)
+  }
+
+  public async createKv(kvName: string) {
+    await this.axios.post(
+      `/v1/sys/mounts/${kvName}`,
+      {
+        headers: { 'X-Vault-Token': await this.getToken() },
+        data: {
+          type: 'kv',
+          options: {
+            version: 2,
+          },
+        },
+      },
+    )
+  }
+
+  public async createGroup(group: string, policyName: string) {
+    const response = await this.axios.post(
+      `/v1/identity/group/${group}`,
+      {
+        headers: { 'X-Vault-Token': await this.getToken() },
+        data: {
+          name: group,
+          type: 'external',
+          policies: [policyName],
+        },
+      },
+    )
+    return response.data
+  }
+
+  public async createGroupAlias(groupAlias: string, groupId: string) {
+    const methods = await this.getAuthMethod()
+    const response = await this.axios.post(
+      `/v1/identity/group/${groupAlias}`,
+      {
+        headers: { 'X-Vault-Token': await this.getToken() },
+        data: {
+          name: groupAlias,
+          mount_accessor: methods['oidc/'].accessor,
+          canonical_id: groupId,
+        },
+      },
+    )
+    return response.data
   }
 }
