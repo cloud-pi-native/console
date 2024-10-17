@@ -13,7 +13,7 @@ export const environmentContract = contractInstance.router({
     contentType: 'application/json',
     summary: 'Create environment',
     description: 'Create new environment.',
-    body: EnvironmentSchema.omit({ id: true }),
+    body: EnvironmentSchema.omit({ id: true, createdAt: true, updatedAt: true }),
     responses: {
       201: EnvironmentSchema,
       400: ErrorSchema,

@@ -11,6 +11,7 @@ import {
   getAllProjectsDataForExport,
   getOrganizationById,
   getProjectByNames,
+  getProjectOrThrow,
   initializeProject,
   listProjects as listProjectsQuery,
   lockProject,
@@ -82,6 +83,14 @@ export async function createProject(dataDto: typeof projectContract.createProjec
   }
 }
 
+export async function getProject(projectId: Project['id']) {
+  return getProjectOrThrow(projectId).then(({ clusters, ...project }) => ({
+    ...project,
+    clusterIds: clusters.map(({ id }) => id),
+    roles: project.roles.map(role => ({ ...role, permissions: role.permissions.toString() })),
+    everyonePerms: project.everyonePerms.toString(),
+  }))
+}
 export async function updateProject(
   { description, ownerId, everyonePerms, locked }: typeof projectContract.updateProject.body._type,
   projectId: Project['id'],

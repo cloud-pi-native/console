@@ -71,6 +71,18 @@ export async function listProjects({
   })
 }
 
+export function getProjectOrThrow(id: Project['id']) {
+  return prisma.project.findUniqueOrThrow({
+    where: { id },
+    include: {
+      clusters: { select: { id: true } },
+      members: { include: { user: true } },
+      roles: true,
+      owner: true,
+    },
+  })
+}
+
 export function getProjectInfosByIdOrThrow(projectId: Project['id']) {
   return prisma.project.findUniqueOrThrow({
     where: {

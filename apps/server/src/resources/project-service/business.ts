@@ -51,7 +51,7 @@ export async function getProjectServices(projectId: Project['id'], permissionTar
   const zones: Map<string, ZoneObject> = new Map() // Pour dédoublonnage des zones
   project.clusters.map(c => zones.set(c.zone.id, c.zone))
 
-  return Object.values(servicesInfos).map(({ name, title, to, imgSrc }) => {
+  return Object.values(servicesInfos).map(({ name, title, to, imgSrc, description }) => {
     let urls: ServiceUrl[] = []
     const toResponse = to
       ? to({
@@ -82,7 +82,7 @@ export async function getProjectServices(projectId: Project['id'], permissionTar
         project: true,
       },
     })
-    return { imgSrc, title, name, urls, manifest }
+    return { imgSrc, title, name, urls, manifest, description }
   }).filter(s => s.urls.length || s.manifest.global?.length || s.manifest.project?.length)
 }
 
