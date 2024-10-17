@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.14.0](https://github.com/cloud-pi-native/console/compare/v8.13.2...v8.14.0) (2024-10-17)
+
+
+### Features
+
+* :lipstick: add argocd urls for each zone ([cf467ae](https://github.com/cloud-pi-native/console/commit/cf467aeaf82c44099f8b964dd4ef2e00a5323a90))
+* :sparkles: add npm support in npm ([60b7752](https://github.com/cloud-pi-native/console/commit/60b7752fd31ca36860e64df9b320d8468163d0d4))
+* :sparkles: introduce warn status on project ([9d69357](https://github.com/cloud-pi-native/console/commit/9d69357fde2014c1fe134803f8361680bac1d3fc))
+* :sparkles: keycloak client management for configuring sso oidc of each argocd zone ([44b3b06](https://github.com/cloud-pi-native/console/commit/44b3b06e3882fe2a60691a8bd29572e023b32146))
+* :sparkles: return warns and errors message from plugins to user ([be4443f](https://github.com/cloud-pi-native/console/commit/be4443fc10db5669578279fbcbac2b4d67adcb52))
+* :sparkles: show short logs about project to users ([4888e64](https://github.com/cloud-pi-native/console/commit/4888e64527d2627fc2e320300a39745e2571b73c))
+
 ## [8.13.2](https://github.com/cloud-pi-native/console/compare/v8.13.1...v8.13.2) (2024-10-02)
 
 
