@@ -12,6 +12,7 @@ import pDebounce from 'p-debounce'
 import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { copyContent } from '@/utils/func.js'
+import { useUserStore } from '@/stores/user.js'
 
 const props = withDefaults(
   defineProps<{
@@ -34,19 +35,15 @@ const emit = defineEmits<{
 }>()
 
 const projectMemberStore = useProjectMemberStore()
-const headers = props.canManage
-  ? [
-      'Identifiant',
-      'E-mail',
-      'Rôles',
-      'Retirer du projet',
-    ]
-  : [
-      'Identifiant',
-      'E-mail',
-      'Rôles',
-    ]
+const headers = [
+  'Identifiant',
+  'E-mail',
+  'Rôles',
+  'Retirer du projet',
+]
+
 const snackbarStore = useSnackbarStore()
+const userStore = useUserStore()
 const newUserInputKey = ref(getRandomId('input'))
 const newUserEmail = ref<string>('')
 const usersToAdd = ref<User[]>([])
@@ -57,13 +54,6 @@ const tableKey = ref(getRandomId('table'))
 const isUserAlreadyInTeam = computed(() => {
   return !!(newUserEmail.value && (props.project.owner.email === newUserEmail.value || props.project.members.find(member => member.email === newUserEmail.value)))
 })
-
-function removeUserHint(member: Member) {
-  if (props.canManage) {
-    return `retirer ${member.email} du projet`
-  }
-  return 'vous n\'avez pas les droits suffisants pour retirer un membre du projet'
-}
 
 const usersToSuggest = computed(() => usersToAdd.value.map(userToAdd => ({
   value: userToAdd.email,
@@ -83,31 +73,33 @@ function getCopyIdComponent(id: string) {
 }
 
 function createMemberRow(member: Member) {
-  return props.canManage
-    ? [
-        getCopyIdComponent(member.userId),
-        member.email,
-        props.project.ownerId === member.userId ? 'Propriétaire' : getRolesNames(member.roleIds),
-        props.project.ownerId !== member.userId
-          ? {
-              cellAttrs: {
-                class: 'fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning',
-                title: removeUserHint(member),
-                onClick: () => removeUserFromProject(member.userId),
-              },
-            }
-          : {
-              cellAttrs: {
-                class: 'fr-fi-close-line !flex justify-center cursor-not-allowed',
-                title: removeUserHint(member),
-              },
-            },
-      ]
-    : [
-        getCopyIdComponent(member.userId),
-        member.email,
-        props.project.ownerId === member.userId ? 'Propriétaire' : getRolesNames(member.roleIds),
-      ]
+  const row: Array<any> = [
+    getCopyIdComponent(member.userId),
+    member.email,
+    props.project.ownerId === member.userId ? 'Propriétaire' : getRolesNames(member.roleIds),
+  ]
+  if (props.project.ownerId === member.userId) {
+    row.push('')
+  } else if (member.userId === userStore.userProfile?.id) {
+    row.push({
+      cellAttrs: {
+        class: 'fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning',
+        title: 'Quitter le projet',
+        onClick: () => removeUserFromProject(member.userId),
+      },
+    })
+  } else if (props.canManage) {
+    row.push({
+      cellAttrs: {
+        class: 'fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning',
+        title: `Retirer ${member.email} du projet`,
+        onClick: () => removeUserFromProject(member.userId),
+      },
+    })
+  } else {
+    row.push('')
+  }
+  return row
 }
 
 function setRows() {

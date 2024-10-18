@@ -1,7 +1,6 @@
 import type { Organization, Project, ProjectV2 } from '@cpn-console/shared'
 import { formatDate, sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
 import { getModel, getModelById } from '../../support/func.js'
-import { truncateDescription } from '@/utils/func.js'
 
 function checkTableRowsLength(length: number) {
   if (!length) cy.get('tr:last-child>td:first-child').should('have.text', 'Aucun projet trouvé')
@@ -40,15 +39,11 @@ describe('Administration projects', () => {
         cy.get(`tbody tr:nth-of-type(${index + 1})`).within(() => {
           cy.getSettled('td:nth-of-type(1)').should('contain', project.organization)
           cy.getSettled('td:nth-of-type(2)').should('contain', project.name)
-          cy.getByDataTestid('description').invoke('text').then((text) => {
-            cy.log(text)
-            expect(text).to.equal(truncateDescription(text).innerHTML)
-          })
-          cy.getSettled('td:nth-of-type(4)').should('contain', project.owner.email)
-          cy.getSettled('td:nth-of-type(5) svg title').should('contain', `Le projet ${project.name} est ${statusDict.status[project.status].wording}`)
-          cy.getSettled('td:nth-of-type(6) svg title').should('contain', `Le projet ${project.name} est ${statusDict.locked[String(!!project.locked)].wording}`)
-          cy.getSettled('td:nth-of-type(7)').should('contain', formatDate(project.createdAt))
-          cy.getSettled('td:nth-of-type(8)').should('contain', formatDate(project.updatedAt))
+          cy.getSettled('td:nth-of-type(3)').should('contain', project.owner.email)
+          cy.getSettled('td:nth-of-type(4) svg title').should('contain', `Le projet ${project.name} est ${statusDict.status[project.status].wording}`)
+          cy.getSettled('td:nth-of-type(5) svg title').should('contain', `Le projet ${project.name} est ${statusDict.locked[String(!!project.locked)].wording}`)
+          cy.getSettled('td:nth-of-type(6)').should('contain', formatDate(project.createdAt))
+          cy.getSettled('td:nth-of-type(7)').should('contain', formatDate(project.updatedAt))
         })
       })
     })
@@ -321,12 +316,12 @@ describe('Administration projects', () => {
     })
     cy.get('.fr-callout__title')
       .should('contain', project.name)
-    cy.get(`td[title="retirer ${member.email} du projet"]`)
+    cy.get(`td[title="Retirer ${member.email} du projet"]`)
       .click()
     cy.wait('@removeUser')
       .its('response.statusCode')
       .should('match', /^20\d$/)
-    cy.get(`td[title="retirer ${member.email} du projet"]`)
+    cy.get(`td[title="Retirer ${member.email} du projet"]`)
       .should('not.exist')
     cy.getByDataTestid('addUserSuggestionInput')
       .find('input')
@@ -337,7 +332,7 @@ describe('Administration projects', () => {
     cy.wait('@addUser')
       .its('response.statusCode')
       .should('match', /^20\d$/)
-    cy.get(`td[title="retirer ${member.email} du projet"]`)
+    cy.get(`td[title="Retirer ${member.email} du projet"]`)
       .should('exist')
   })
 
@@ -418,12 +413,12 @@ describe('Administration projects', () => {
     cy.get('.fr-callout__title')
       .should('contain', project.name)
     cy.get('#servicesTable').should('exist')
-    cy.getByDataTestid('service-argocd').within(() => {
-      cy.get('a:first')
-        .should('have.attr', 'href', 'https://theuselessweb.com/')
-      cy.get('img:first')
-        .should('have.attr', 'src', '/img/argocd.svg')
-    })
+    cy.getByDataTestid('service-config-argocd')
+      .click()
+      .within(() => {
+        cy.get('input')
+          .should('have.length', 1)
+      })
   })
 
   it('Should download projects informations, loggedIn as admin', () => {

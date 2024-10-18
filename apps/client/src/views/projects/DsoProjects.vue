@@ -1,35 +1,42 @@
 <script lang="ts" setup>
+import type { ProjectV2 } from '@cpn-console/shared'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
 import { useLogStore } from '@/stores/log.js'
+import { useQuotaStore } from '@/stores/quota.js'
 
 const projectStore = useProjectStore()
+const quotaStore = useQuotaStore()
 const logStore = useLogStore()
 
-const projectList = computed(() => sortArrByObjKeyAsc(projectStore.projects, 'name')
-  ?.map(project => ({
+const projectList = computed(() => sortArrByObjKeyAsc(projectStore.myProjects, 'name')
+  .map(project => ({
     id: project.id,
     title: project.name,
     description: project.organization.label,
     to: `/projects/${project.id}/dashboard`,
   })))
 
-async function setSelectedProject(project: Record<any, any>) {
-  projectStore.setSelectedProject(project.id)
+async function setSelectedProject(id: ProjectV2['id']) {
+  router.push({
+    name: 'Dashboard',
+    params: { id },
+  })
 }
 
 function goToCreateProject() {
-  router.push('projects/create-project')
+  router.push('/projects/create-project')
 }
 
-onBeforeMount(() => {
+onBeforeMount(async () => {
   logStore.displayProjectLogs = false
+  await projectStore.getMyProjects()
+  await quotaStore.getAllQuotas()
 })
 </script>
 
 <template>
-  <DsoSelectedProject />
   <div
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
@@ -41,14 +48,17 @@ onBeforeMount(() => {
       icon="ri:add-line"
       @click="goToCreateProject()"
     />
+    <ConsumptionPanel
+      :ids="projectStore.myProjects.map(({ id }) => id)"
+    />
   </div>
   <div
-    class="md:grid md:grid-cols-3 md:gap-3 items-center justify-between"
+    class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full"
   >
     <div
       v-for="project in projectList"
       :key="project.id"
-      class="w-11/12 pb-5"
+      class="flex-basis-60 flex-stretch max-w-90"
     >
       <DsfrTile
         :title="project.title"
@@ -56,15 +66,18 @@ onBeforeMount(() => {
         :to="project.to"
         :description="project.description"
         :horizontal="false"
-        @click="setSelectedProject(project)"
+        @click="setSelectedProject(project.id)"
       />
     </div>
   </div>
 </template>
 
 <style>
-/* TODO : wip vue-dsfr fix position flêche */
-.fr-tile__title a::after {
+.fr-tile__title [target="_blank"]::after {
+  display: none;
+}
+
+a.fr-tile__link::after {
   display: none;
 }
 </style>
