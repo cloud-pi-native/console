@@ -37,6 +37,7 @@ export const projectContract = contractInstance.router({
     responses: {
       200: ProjectSchemaV2.omit({ name: true }).extend({ name: z.string() }),
       401: ErrorSchema,
+      404: ErrorSchema,
       500: ErrorSchema,
     },
   },

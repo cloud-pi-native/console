@@ -136,44 +136,36 @@ watch(zones, async () => {
       @cancel="cancel()"
     />
   </div>
+  <ZoneForm
+    v-else-if="selectedZone"
+    :all-clusters="allClusters"
+    :zone="selectedZone"
+    :associated-clusters="associatedClusters"
+    :is-new-zone="false"
+    class="w-full"
+    @cancel="cancel()"
+    @update="(zone) => updateZone(zone)"
+    @delete="(zoneId) => deleteZone(zoneId)"
+  />
   <div
-    v-else
-    :class="{
-      'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedZone?.id,
-    }"
+    v-else-if="zoneList.length"
+    class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full"
   >
     <div
       v-for="zone in zoneList"
       :key="zone.data.slug"
-      class="fr-mt-2v fr-mb-4w w-full"
+      class="flex-basis-60 flex-stretch max-w-90"
     >
-      <div
-        v-show="!selectedZone"
-      >
-        <DsfrTile
-          :title="zone.title"
-          :data-testid="`zoneTile-${zone.title}`"
-          :horizontal="!!selectedZone?.id"
-          class="fr-mb-2w w-11/12"
-          @click="setSelectedZone(zone.data)"
-        />
-      </div>
-      <ZoneForm
-        v-if="selectedZone && selectedZone.id === zone.id"
-        :all-clusters="allClusters"
-        :zone="selectedZone"
-        :associated-clusters="associatedClusters"
-        :is-new-zone="false"
-        class="w-full"
-        @cancel="cancel()"
-        @update="(zone) => updateZone(zone)"
-        @delete="(zoneId) => deleteZone(zoneId)"
+      <DsfrTile
+        :title="zone.title"
+        :data-testid="`zoneTile-${zone.title}`"
+        @click="setSelectedZone(zone.data)"
       />
     </div>
-    <div
-      v-if="!zoneList.length && !isNewZoneForm"
-    >
-      <p>Aucune zone enregistrée</p>
-    </div>
+  </div>
+  <div
+    v-else
+  >
+    <p>Aucune zone enregistrée</p>
   </div>
 </template>

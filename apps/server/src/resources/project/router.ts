@@ -78,7 +78,15 @@ export function projectRouter() {
       const perms = await authUser(req, { id: projectId })
       const isAdmin = AdminAuthorized.isAdmin(perms.adminPermissions)
 
-      if (!perms.projectPermissions && !isAdmin) return new NotFound404()
+      if (!perms.projectId) return new NotFound404()
+      if (!isAdmin) {
+        if (!perms.projectPermissions) {
+          return new NotFound404()
+        }
+        if (perms.projectStatus === 'archived') {
+          return new NotFound404()
+        }
+      }
 
       const body = await getProject(projectId)
 

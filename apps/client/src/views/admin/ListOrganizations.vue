@@ -47,7 +47,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
 function generateRows() {
   return allOrganizations.value.length
     ? sortArrByObjKeyAsc(allOrganizations.value, 'name')
-      ?.map(({ label, name, source, active, createdAt, updatedAt }) => ([
+      .map(({ label, name, source, active, createdAt, updatedAt }) => ([
         {
           component: 'input',
           value: label,
@@ -104,7 +104,7 @@ async function getAllOrganizations() {
 async function syncOrganizations() {
   isSyncingOrganizations.value = true
   await organizationStore.syncOrganizations()
-  getAllOrganizations()
+  await getAllOrganizations()
   isSyncingOrganizations.value = false
 }
 

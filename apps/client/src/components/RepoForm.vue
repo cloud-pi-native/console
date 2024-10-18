@@ -10,7 +10,13 @@ const props = withDefaults(defineProps<{
   canManage: boolean
   isProjectLocked: boolean
 }>(), {
-  repo: () => ({ isInfra: false, isPrivate: false, internalRepoName: '', externalRepoUrl: '', isStandalone: false }),
+  repo: () => ({
+    isInfra: false,
+    isPrivate: false,
+    internalRepoName: '',
+    externalRepoUrl: '',
+    isStandalone: false,
+  }),
   canManage: false,
   isProjectLocked: false,
 })
@@ -24,7 +30,7 @@ const localRepo = ref<RepoForm>({
   ...isExistingAndPrivate && { externalToken: fakeToken },
   isStandalone: !!(props.repo.id && !props.repo.externalRepoUrl), // key present only in frontend for form
 })
-const updatedValues = ref<Record<keyof Omit<typeof localRepo.value, 'id' | 'projectId'>, boolean>>(instanciateSchema(RepoFormSchema, false))
+const updatedValues = ref<Record<keyof Omit<typeof localRepo.value, 'id' | 'projectId'>, boolean>>(instanciateSchema(RepoFormSchema, true))
 
 const repoToDelete = ref('')
 const isDeletingRepo = ref(false)

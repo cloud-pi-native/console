@@ -105,20 +105,20 @@ export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqu
   if (!projectUnique || !user) {
     return baseReturnInfos
   }
-  let project: ProjectMinimalPerms
+  let project: ProjectMinimalPerms | null | undefined
 
   if (projectUnique.repositoryId) {
-    project = (await prisma.repository.findUniqueOrThrow({
+    project = (await prisma.repository.findUnique({
       where: { id: projectUnique.repositoryId },
       select: { project: { select: projectPermsSelect } },
-    })).project
+    }))?.project
   } else if (projectUnique.environmentId) {
-    project = (await prisma.environment.findUniqueOrThrow({
+    project = (await prisma.environment.findUnique({
       where: { id: projectUnique.environmentId },
       select: { project: { select: projectPermsSelect } },
-    })).project
+    }))?.project
   } else if (projectUnique.id) {
-    project = await prisma.project.findUniqueOrThrow({
+    project = await prisma.project.findUnique({
       where: { id: projectUnique.id },
       select: projectPermsSelect,
     })
@@ -127,7 +127,8 @@ export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqu
       where: { name: projectUnique.name, organization: { name: projectUnique.organizationName } },
       select: projectPermsSelect,
     })
-  } else {
+  }
+  if (!project) {
     return baseReturnInfos
   }
 

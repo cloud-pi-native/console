@@ -6,11 +6,11 @@ import { useProjectStore } from './project.js'
 import { useOrganizationStore } from './organization.js'
 
 const listOrganizations = vi.spyOn(apiClient.Organizations, 'listOrganizations')
+const getProject = vi.spyOn(apiClient.Projects, 'getProject')
 const listProjects = vi.spyOn(apiClient.Projects, 'listProjects')
+const listEnvironments = vi.spyOn(apiClient.Environments, 'listEnvironments')
+const listRepositories = vi.spyOn(apiClient.Repositories, 'listRepositories')
 const apiClientPost = vi.spyOn(apiClient.Projects, 'createProject')
-const apiClientPut = vi.spyOn(apiClient.Projects, 'updateProject')
-const apiClientReplayHooks = vi.spyOn(apiClient.Projects, 'replayHooksForProject')
-const apiClientDelete = vi.spyOn(apiClient.Projects, 'archiveProject')
 
 describe('project Store', () => {
   beforeEach(() => {
@@ -20,28 +20,7 @@ describe('project Store', () => {
     setActivePinia(createPinia())
   })
 
-  it('should set working project and its owner', async () => {
-    const projectStore = useProjectStore()
-    const user = { id: 'userId', firstName: 'Michel' }
-    projectStore.projectsById = {
-      projectId: {
-        id: 'projectId',
-        roles: [{
-          role: 'owner',
-          userId: user.id,
-          user,
-        }],
-      },
-    }
-
-    expect(projectStore.selectedProject).toBeUndefined()
-
-    projectStore.setSelectedProject('projectId')
-
-    expect(projectStore.selectedProject).toMatchObject(projectStore.projects[0])
-  })
-
-  it('should retrieve user\'s projects by api call', async () => {
+  it('should retrieve projects by api call', async () => {
     const projectStore = useProjectStore()
     const organizationStore = useOrganizationStore()
     const randomDbSetup = createRandomDbSetup({})
@@ -49,6 +28,9 @@ describe('project Store', () => {
     expect(organizationStore.organizations).toEqual([])
     expect(projectStore.projects).toEqual([])
 
+    delete randomDbSetup.project.environments
+    delete randomDbSetup.project.repositories
+    delete randomDbSetup.project.clusters
     const projects = [randomDbSetup.project]
     const organizations = [randomDbSetup.organization]
 
@@ -63,7 +45,7 @@ describe('project Store', () => {
     expect(organizationStore.organizations).toMatchObject(organizations)
   })
 
-  it('should retrieve user\'s projects by api call (with actual working projet)', async () => {
+  it('should retrieve user\'s projects by api call', async () => {
     const projectStore = useProjectStore()
     const organizationStore = useOrganizationStore()
     const randomDbSetup = createRandomDbSetup({})
@@ -71,19 +53,43 @@ describe('project Store', () => {
     expect(organizationStore.organizations).toEqual([])
     expect(projectStore.projects).toEqual([])
 
+    delete randomDbSetup.project.clusters
     const projects = [randomDbSetup.project]
     const organizations = [randomDbSetup.organization]
-    projectStore.selectedProject = randomDbSetup.project
 
     listOrganizations.mockReturnValueOnce(Promise.resolve({ status: 200, body: organizations, headers: {} }))
     listProjects.mockReturnValueOnce(Promise.resolve({ status: 200, body: projects, headers: {} }))
+    listEnvironments.mockReturnValue(Promise.resolve({ status: 200, body: randomDbSetup.project.environments, headers: {} }))
+    listRepositories.mockReturnValue(Promise.resolve({ status: 200, body: randomDbSetup.project.repositories, headers: {} }))
 
-    await projectStore.listProjects({ filter: 'member' })
+    await projectStore.listMyProjects()
 
     expect(listOrganizations).toHaveBeenCalledTimes(1)
     expect(listProjects).toHaveBeenCalledTimes(1)
-    expect(projectStore.projects).toMatchObject(projects)
-    expect(projectStore.selectedProject).toMatchObject(projects[0])
+    expect(organizationStore.organizations).toMatchObject(organizations)
+  })
+
+  it('should retrieve one project by api call', async () => {
+    const projectStore = useProjectStore()
+    const organizationStore = useOrganizationStore()
+    const randomDbSetup = createRandomDbSetup({})
+
+    expect(organizationStore.organizations).toEqual([])
+    expect(projectStore.projects).toEqual([])
+
+    delete randomDbSetup.project.clusters
+    const project = randomDbSetup.project
+    const organizations = [randomDbSetup.organization]
+
+    listOrganizations.mockReturnValueOnce(Promise.resolve({ status: 200, body: organizations, headers: {} }))
+    getProject.mockReturnValueOnce(Promise.resolve({ status: 200, body: project, headers: {} }))
+    listEnvironments.mockReturnValue(Promise.resolve({ status: 200, body: randomDbSetup.project.environments, headers: {} }))
+    listRepositories.mockReturnValue(Promise.resolve({ status: 200, body: randomDbSetup.project.repositories, headers: {} }))
+
+    await projectStore.getProject('foo')
+
+    expect(listOrganizations).toHaveBeenCalledTimes(1)
+    expect(getProject).toHaveBeenCalledTimes(1)
     expect(organizationStore.organizations).toMatchObject(organizations)
   })
 
@@ -107,68 +113,6 @@ describe('project Store', () => {
     await projectStore.createProject(newProject)
 
     expect(apiClientPost).toHaveBeenCalledTimes(1)
-    expect(listProjects).toHaveBeenCalledTimes(1)
-    expect(listOrganizations).toHaveBeenCalledTimes(1)
-    expect(projectStore.projects).toHaveLength(2)
-  })
-
-  it('should set a project description by api call', async () => {
-    const projectStore = useProjectStore()
-    const organizationStore = useOrganizationStore()
-    const randomDbSetup = createRandomDbSetup({})
-    const description = 'Application de prise de rendez-vous en préfécture.'
-
-    expect(organizationStore.organizations).toEqual([])
-    expect(projectStore.projects).toEqual([])
-
-    const organizations = [randomDbSetup.organization]
-    const updatedProject = { ...randomDbSetup.project, organization: organizations[0], description }
-
-    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: updatedProject, headers: {} }))
-    listOrganizations.mockReturnValueOnce(Promise.resolve({ status: 200, body: organizations, headers: {} }))
-    listProjects.mockReturnValueOnce(Promise.resolve({ status: 200, body: [updatedProject], headers: {} }))
-
-    await projectStore.updateProject(randomDbSetup.project.id, { description })
-
-    expect(apiClientPut).toHaveBeenCalledTimes(1)
-  })
-
-  it('should replay hooks for project by api call', async () => {
-    const projectStore = useProjectStore()
-    const organizationStore = useOrganizationStore()
-    const randomDbSetup = createRandomDbSetup({})
-
-    expect(organizationStore.organizations).toEqual([])
-    expect(projectStore.projects).toEqual([])
-
-    const project = { ...randomDbSetup.project, organization: randomDbSetup.organization }
-
-    apiClientReplayHooks.mockReturnValueOnce(Promise.resolve({ status: 204, body: project, headers: {} }))
-    listOrganizations.mockReturnValueOnce(Promise.resolve({ status: 200, body: [randomDbSetup.organization], headers: {} }))
-    listProjects.mockReturnValueOnce(Promise.resolve({ status: 200, body: [project], headers: {} }))
-
-    await projectStore.replayHooksForProject(project.id)
-
-    expect(apiClientReplayHooks).toHaveBeenCalledTimes(1)
-  })
-
-  it('should archive a project by api call', async () => {
-    const projectStore = useProjectStore()
-    const organizationStore = useOrganizationStore()
-    const randomDbSetup = createRandomDbSetup({})
-
-    expect(organizationStore.organizations).toEqual([])
-    expect(projectStore.projects).toEqual([])
-
-    const projects = [randomDbSetup.project]
-
-    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204 }))
-    listOrganizations.mockReturnValueOnce(Promise.resolve({ status: 200, body: [randomDbSetup.organization], headers: {} }))
-    listProjects.mockReturnValueOnce(Promise.resolve({ status: 200, body: [] }))
-
-    await projectStore.archiveProject(projects[0].id)
-
-    expect(apiClientDelete).toHaveBeenCalledTimes(1)
-    expect(projectStore.projects).toEqual([])
+    expect(projectStore.myProjects).toHaveLength(1)
   })
 })

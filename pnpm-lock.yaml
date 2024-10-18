@@ -44,8 +44,8 @@ importers:
         specifier: ^1.12.1
         version: 1.12.1(browser-sync@2.29.3)
       '@gouvminint/vue-dsfr':
-        specifier: ^7.0.0
-        version: 7.0.0(@iconify/vue@4.1.2(vue@3.5.6(typescript@5.5.3)))(browser-sync@2.29.3)(vue-router@4.4.5(vue@3.5.6(typescript@5.5.3)))(vue@3.5.6(typescript@5.5.3))
+        specifier: ^7.0.2
+        version: 7.0.2(@iconify/vue@4.1.2(vue@3.5.6(typescript@5.5.3)))(browser-sync@2.29.3)(vue-router@4.4.5(vue@3.5.6(typescript@5.5.3)))(vue@3.5.6(typescript@5.5.3))
       '@iconify/vue':
         specifier: ^4.1.2
         version: 4.1.2(vue@3.5.6(typescript@5.5.3))
@@ -61,6 +61,9 @@ importers:
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
+      javascript-time-ago:
+        specifier: ^2.5.11
+        version: 2.5.11
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
@@ -88,6 +91,9 @@ importers:
       vue3-json-viewer:
         specifier: ^2.2.2
         version: 2.2.2(vue@3.5.6(typescript@5.5.3))
+      xbytes:
+        specifier: ^1.9.1
+        version: 1.9.1
     optionalDependencies:
       '@cypress/vue':
         specifier: ^6.0.1
@@ -1787,8 +1793,8 @@ packages:
     peerDependencies:
       browser-sync: ^2.27.10
 
-  '@gouvminint/vue-dsfr@7.0.0':
-    resolution: {integrity: sha512-Bi2yLXfCtVHhFhflP3Vmd1/fkrH7adcM/9DvS6ay3N2AzybR1VFn24kXe3CPKuUjz1HpaTuOi+TYw9fhyK6Wkw==}
+  '@gouvminint/vue-dsfr@7.0.2':
+    resolution: {integrity: sha512-5OJGMdp8JQ+s5UOfR3oiELYfC/7Q+56gxAItE9jRWErLUfgcq/V+Xrieuem+qP+aZWaxGXZClXFp9ygfYNicMg==}
     engines: {node: '>=20.x.x', npm: '>=10.x.x'}
     peerDependencies:
       '@iconify/vue': ^4.1.2
@@ -4563,6 +4569,9 @@ packages:
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
 
+  javascript-time-ago@2.5.11:
+    resolution: {integrity: sha512-Zeyf5R7oM1fSMW9zsU3YgAYwE0bimEeF54Udn2ixGd8PUwu+z1Yc5t4Y8YScJDMHD6uCx6giLt3VJR5K4CMwbg==}
+
   jiti@1.21.6:
     resolution: {integrity: sha512-2yTgeWTWzMWkHu6Jp9NKgePDaYHbntiwvYuuJLbbN9vl7DC9DvXKOB2BC3ZZ92D3cvV/aflH0osDfwpHepQ53w==}
     hasBin: true
@@ -5617,6 +5626,9 @@ packages:
   regjsparser@0.10.0:
     resolution: {integrity: sha512-qx+xQGZVsy55CH0a1hiVwHmqjLryfh7wQyF5HO07XJ9f7dQMY/gPQHhlyDkIzJKC+x2fUCpCcUODUUUFrm7SHA==}
     hasBin: true
+
+  relative-time-format@1.1.6:
+    resolution: {integrity: sha512-aCv3juQw4hT1/P/OrVltKWLlp15eW1GRcwP1XdxHrPdZE9MtgqFpegjnTjLhi2m2WI9MT/hQQtE+tjEWG1hgkQ==}
 
   request-compose@2.1.6:
     resolution: {integrity: sha512-S07L+2VbJB32WddD/o/PnYGKym63zLVbymygVWXvt8L79VAngcjAxhHaGuFOICLxEV90EasEPzqPKKHPspXP8w==}
@@ -6809,6 +6821,10 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
+
+  xbytes@1.9.1:
+    resolution: {integrity: sha512-29E0ygMFWrM5JW2W1ypmezjyR2FOS5aCszdLe620ymSJBoZzL0/RCLJKCoUFu3DfQGhZ/FWykEBp5dfEy6+hjA==}
+    engines: {node: '>=1'}
 
   xcase@2.0.1:
     resolution: {integrity: sha512-UmFXIPU+9Eg3E9m/728Bii0lAIuoc+6nbrNUKaRPJOFp91ih44qqGlWtxMB6kXFrRD6po+86ksHM5XHCfk6iPw==}
@@ -8137,7 +8153,7 @@ snapshots:
     dependencies:
       browser-sync: 2.29.3
 
-  '@gouvminint/vue-dsfr@7.0.0(@iconify/vue@4.1.2(vue@3.5.6(typescript@5.5.3)))(browser-sync@2.29.3)(vue-router@4.4.5(vue@3.5.6(typescript@5.5.3)))(vue@3.5.6(typescript@5.5.3))':
+  '@gouvminint/vue-dsfr@7.0.2(@iconify/vue@4.1.2(vue@3.5.6(typescript@5.5.3)))(browser-sync@2.29.3)(vue-router@4.4.5(vue@3.5.6(typescript@5.5.3)))(vue@3.5.6(typescript@5.5.3))':
     dependencies:
       '@gouvfr/dsfr': 1.12.1(browser-sync@2.29.3)
       '@iconify/vue': 4.1.2(vue@3.5.6(typescript@5.5.3))
@@ -11544,6 +11560,10 @@ snapshots:
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
 
+  javascript-time-ago@2.5.11:
+    dependencies:
+      relative-time-format: 1.1.6
+
   jiti@1.21.6: {}
 
   jiti@2.0.0-beta.3: {}
@@ -12643,6 +12663,8 @@ snapshots:
   regjsparser@0.10.0:
     dependencies:
       jsesc: 0.5.0
+
+  relative-time-format@1.1.6: {}
 
   request-compose@2.1.6: {}
 
@@ -13999,6 +14021,8 @@ snapshots:
   ws@8.17.1: {}
 
   ws@8.18.0: {}
+
+  xbytes@1.9.1: {}
 
   xcase@2.0.1: {}
 

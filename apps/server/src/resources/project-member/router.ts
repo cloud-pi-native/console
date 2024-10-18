@@ -61,14 +61,15 @@ export function projectMemberRouter() {
     },
 
     removeMember: async ({ request: req, params }) => {
-      const { projectId } = params
+      const { projectId, userId } = params
       const perms = await authUser(req, { id: projectId })
 
-      if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
-      if (!ProjectAuthorized.ManageMembers(perms)) return new Forbidden403()
-      if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
-      if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
-
+      if (typeof perms.projectPermissions !== 'undefined' && userId !== perms.user?.id) {
+        if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
+        if (!ProjectAuthorized.ManageMembers(perms)) return new Forbidden403()
+        if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
+        if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
+      }
       const resBody = await removeMember(projectId, params.userId)
 
       return {
