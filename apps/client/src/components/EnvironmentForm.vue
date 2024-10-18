@@ -4,8 +4,8 @@ import { computed, onBeforeMount, ref } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import type {
   CleanedCluster,
+  CreateEnvironmentBody,
   Environment,
-  SharedZodError,
 } from '@cpn-console/shared'
 import {
   EnvironmentSchema,
@@ -24,14 +24,13 @@ interface OptionType {
 }
 
 const props = withDefaults(defineProps<{
-  environment?: Omit<Environment, 'projectId'>
-  isEditable: boolean
+  environment?: Partial<Omit<Environment, 'projectId' | 'updatedAt' | 'createdAt'>>
+  isEditable?: boolean
   canManage: boolean
-  isProjectLocked: boolean
+  isProjectLocked?: boolean
   projectClustersIds: CleanedCluster['id'][]
   allClusters: CleanedCluster[]
 }>(), {
-  // @ts-expect-error TS2322
   environment: () => ({
     id: '',
     name: '',
@@ -40,12 +39,11 @@ const props = withDefaults(defineProps<{
     clusterId: undefined,
   }),
   isEditable: true,
-  canManage: false,
   isProjectLocked: false,
 })
 
 const emit = defineEmits<{
-  addEnvironment: [environment: Omit<Environment, 'id' | 'projectId'>]
+  addEnvironment: [environment: Omit<CreateEnvironmentBody, 'projectId'>]
   putEnvironment: [environment: Pick<Environment, 'quotaId'>]
   deleteEnvironment: [environmentId: Environment['id']]
   cancel: []
@@ -68,13 +66,13 @@ const clusterOptions = ref<OptionType[]>([])
 
 const chosenZoneDescription = computed(() => zoneStore.zonesById[zoneId.value ?? '']?.description ?? '')
 
-const errorSchema = computed<SharedZodError | undefined>(() => {
+const schema = computed(() => {
   if (localEnvironment.value?.id) {
     const schemaValidation = EnvironmentSchema.pick({ id: true, quotaId: true }).safeParse(localEnvironment.value)
-    return schemaValidation.success ? undefined : schemaValidation.error
+    return schemaValidation
   } else {
     const schemaValidation = EnvironmentSchema.pick({ clusterId: true, name: true, quotaId: true, stageId: true }).safeParse(localEnvironment.value)
-    return schemaValidation.success ? undefined : schemaValidation.error
+    return schemaValidation
   }
 })
 
@@ -87,14 +85,24 @@ const availableClusters: ComputedRef<CleanedCluster[]> = computed(() => props.al
 const clusterInfos = computed(() => availableClusters.value.find(cluster => cluster.id === localEnvironment.value.clusterId)?.infos)
 
 function setEnvironmentOptions() {
-  stageOptions.value = stageStore.stages.map(stage => ({
-    text: stage.name,
-    value: stage.id,
-  }))
   zoneOptions.value = zoneStore.zones.map(zone => ({
     text: zone.label,
     value: zone.id,
   }))
+  stageOptions.value = stageStore.stages.map(stage => ({
+    text: stage.name,
+    value: stage.id,
+  }))
+  quotaOptions.value
+    = quotaStore.quotas
+      .filter(quota =>
+        (quota.stageIds.includes(localEnvironment.value.stageId ?? '') // quotas disponibles pour ce type d'environnement
+        && !quota.isPrivate) // et ne pas afficher les quotas privés
+        || quota.id === localEnvironment.value.quotaId) // ou quota actuellement associé (au cas où l'association ne soit plus disponible)
+      .map(quota => ({
+        text: `${quota.name} (${quota.cpu}CPU, ${quota.memory})`,
+        value: quota.id,
+      }))
   clusterOptions.value = props.allClusters
     .filter(cluster =>
       (props.projectClustersIds.includes(cluster.id) // clusters possibles pour ce projet
@@ -106,36 +114,21 @@ function setEnvironmentOptions() {
       text: cluster.label,
       value: cluster.id,
     }))
-  quotaOptions.value
-    = quotaStore.quotas
-      .filter(quota =>
-        (quota.stageIds.includes(localEnvironment.value.stageId ?? '') // quotas disponibles pour ce type d'environnement
-        && !quota.isPrivate) // et ne pas afficher les quotas privés
-        || quota.id === localEnvironment.value.quotaId) // ou quota actuellement associé (au cas où l'association ne soit plus disponible)
-      .map(quota => ({
-        text: `${quota.name} (${quota.cpu}CPU, ${quota.memory})`,
-        value: quota.id,
-      }))
 }
 
 function resetCluster() {
-  // @ts-expect-error TS2322
-  localEnvironment.value.clusterId = undefined
+  localEnvironment.value.clusterId = ''
 }
 
-function addEnvironment() {
-  if (!errorSchema.value) {
-    emit('addEnvironment', localEnvironment.value)
+function save() {
+  if (schema.value.success) {
+    if ('id' in schema.value.data) {
+      emit('putEnvironment', schema.value.data)
+    } else {
+      emit('addEnvironment', schema.value.data)
+    }
   } else {
-    snackbarStore.setMessage(parseZodError(errorSchema.value))
-  }
-}
-
-function putEnvironment() {
-  if (!errorSchema.value) {
-    emit('putEnvironment', localEnvironment.value)
-  } else {
-    snackbarStore.setMessage(parseZodError(errorSchema.value))
+    snackbarStore.setMessage(parseZodError(schema.value.error))
   }
 }
 
@@ -254,6 +247,7 @@ watch(localEnvironment.value, () => {
           label="Cluster"
           :description="`Choix du cluster cible pour le déploiement de l\'environnement ${localEnvironment.name ? localEnvironment.name : 'en cours de création'}.`"
           required
+          default-unselected-text="Choisissez un cluster de destination"
           :disabled="!props.isEditable || !props.canManage"
           :options="clusterOptions"
         />
@@ -270,11 +264,11 @@ watch(localEnvironment.value, () => {
           <DsfrButton
             label="Enregistrer"
             data-testid="putEnvironmentBtn"
-            :disabled="props.isProjectLocked || !!errorSchema"
+            :disabled="props.isProjectLocked || !schema.success"
             :title="props.isProjectLocked ? projectIsLockedInfo : 'Enregistrer les changements'"
             primary
             icon="ri:upload-cloud-line"
-            @click="putEnvironment()"
+            @click="save"
           />
           <DsfrButton
             label="Annuler"
@@ -349,11 +343,11 @@ watch(localEnvironment.value, () => {
       <DsfrButton
         label="Ajouter l'environnement"
         data-testid="addEnvironmentBtn"
-        :disabled="props.isProjectLocked || !!errorSchema"
+        :disabled="props.isProjectLocked || !schema.success"
         :title="props.isProjectLocked ? projectIsLockedInfo : 'Ajouter l\'environnement'"
         primary
         icon="ri:upload-cloud-line"
-        @click="addEnvironment()"
+        @click="save"
       />
       <DsfrButton
         label="Annuler"

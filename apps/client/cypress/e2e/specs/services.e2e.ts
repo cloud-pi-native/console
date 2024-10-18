@@ -11,11 +11,11 @@ describe('Services view', () => {
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.name}`).click()
     cy.getByDataTestid('menuServices').click()
-    cy.getByDataTestid('service-argocd').within(() => {
-      cy.get('a:first')
-        .should('have.attr', 'href', 'https://theuselessweb.com/')
-      cy.get('img:first')
-        .should('have.attr', 'src', '/img/argocd.svg')
-    })
+    cy.getByDataTestid('service-config-argocd')
+      .click()
+      .within(() => {
+        cy.get('input')
+          .should('have.length', 1)
+      })
   })
 })

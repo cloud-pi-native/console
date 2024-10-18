@@ -20,7 +20,7 @@ const isNewQuotaForm = ref(false)
 
 function setQuotaTiles(quotas: Quota[]) {
   quotaList.value = sortArrByObjKeyAsc(quotas, 'name')
-    ?.map(quota => ({
+    .map(quota => ({
       id: quota.id,
       title: quota.name,
       data: quota,
@@ -51,6 +51,7 @@ async function addQuota(quota: CreateQuotaBody) {
   snackbarStore.isWaitingForResponse = true
   cancel()
   await quotaStore.addQuota(quota)
+  await stageStore.getAllStages()
   await quotaStore.getAllQuotas()
   snackbarStore.isWaitingForResponse = false
 }
@@ -58,6 +59,7 @@ async function addQuota(quota: CreateQuotaBody) {
 async function updateQuota(quota: UpdateQuotaType) {
   snackbarStore.isWaitingForResponse = true
   await quotaStore.updateQuota(quota.id, quota)
+  await stageStore.getAllStages()
   await quotaStore.getAllQuotas()
   cancel()
   snackbarStore.isWaitingForResponse = false
@@ -67,6 +69,7 @@ async function deleteQuota(quotaId: string) {
   snackbarStore.isWaitingForResponse = true
   cancel()
   await quotaStore.deleteQuota(quotaId)
+  await stageStore.getAllStages()
   await quotaStore.getAllQuotas()
   snackbarStore.isWaitingForResponse = false
 }
@@ -78,6 +81,7 @@ async function getQuotaAssociatedEnvironments(quotaId: string) {
 }
 
 onMounted(async () => {
+  await stageStore.getAllStages()
   await quotaStore.getAllQuotas()
   setQuotaTiles(quotas.value)
   allStages.value = await stageStore.getAllStages()
@@ -129,37 +133,32 @@ watch(quotas, () => {
     />
   </div>
   <div
-    v-else
-    :class="{
-      'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedQuota?.name,
-    }"
+    v-else-if="selectedQuota"
+  >
+    <QuotaForm
+      :all-stages="allStages"
+      :quota="selectedQuota"
+      class="w-full"
+      :is-new-quota="false"
+      :associated-environments="associatedEnvironments"
+      @cancel="cancel()"
+      @update="(quota: UpdateQuotaType) => updateQuota(quota)"
+      @delete="(quotaId: string) => deleteQuota(quotaId)"
+    />
+  </div>
+  <div
+    v-else-if="quotaList.length"
+    class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full"
   >
     <div
       v-for="quota in quotaList"
       :key="quota.id"
-      class="fr-mt-2v fr-mb-4w w-full"
+      class="flex-basis-60 flex-stretch max-w-90"
     >
-      <div
-        v-show="!selectedQuota"
-      >
-        <DsfrTile
-          :title="quota.title"
-          :data-testid="`quotaTile-${quota.title}`"
-          :horizontal="!!selectedQuota?.name"
-          class="fr-mb-2w w-11/12"
-          @click="setSelectedQuota(quota.data)"
-        />
-      </div>
-      <QuotaForm
-        v-if="selectedQuota && selectedQuota.id === quota.id"
-        :all-stages="allStages"
-        :quota="selectedQuota"
-        class="w-full"
-        :is-new-quota="false"
-        :associated-environments="associatedEnvironments"
-        @cancel="cancel()"
-        @update="(quota: UpdateQuotaType) => updateQuota(quota)"
-        @delete="(quotaId: string) => deleteQuota(quotaId)"
+      <DsfrTile
+        :title="quota.title"
+        :data-testid="`quotaTile-${quota.title}`"
+        @click="setSelectedQuota(quota.data)"
       />
     </div>
     <div

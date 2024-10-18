@@ -76,7 +76,7 @@ describe('Project roles', () => {
 
       cy.getByDataTestid('menuTeam').should('be.visible').click()
       cy.url().should('contain', `/projects/${project.id}/team`)
-      cy.getByDataTestid('teamTable').get('th').contains('Retirer du projet').should('not.exist')
+      cy.getByDataTestid('teamTable').get('th').contains('Retirer du projet').should('be.visible')
       cy.getByDataTestid('addUserSuggestionInput').should('not.exist')
       cy.getByDataTestid('showTransferProjectBtn').should('not.exist')
 
@@ -118,7 +118,7 @@ describe('Project roles', () => {
 
       cy.getByDataTestid('menuTeam').should('be.visible').click()
       cy.url().should('contain', `/projects/${project.id}/team`)
-      cy.getByDataTestid('teamTable').get('th').contains('Retirer du projet').should('not.exist')
+      cy.getByDataTestid('teamTable').get('th').contains('Retirer du projet').should('be.visible')
       cy.getByDataTestid('addUserSuggestionInput').should('not.exist')
       cy.getByDataTestid('showTransferProjectBtn').should('not.exist')
 

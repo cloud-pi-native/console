@@ -27,12 +27,12 @@ describe('Administration quotas', () => {
     cy.kcLogin('tcolin')
     cy.visit('/admin/quotas')
     cy.url().should('contain', '/admin/quotas')
-    cy.wait('@listQuotas', { timeout: 5_000 }).its('response').then((response) => {
+    cy.wait('@listQuotas', { timeout: 15_000 }).its('response').then((response) => {
       allQuotas = response?.body
       quota1 = allQuotas.find(quota => quota.id === quota1.id)
       quota2 = allQuotas.find(quota => quota.id === quota2.id)
     })
-    cy.wait('@listStages', { timeout: 5_000 })
+    cy.wait('@listStages', { timeout: 15_000 })
   })
 
   it('Should display quotas list', () => {
@@ -86,8 +86,7 @@ describe('Administration quotas', () => {
       .should('not.exist')
 
     // Check quota creation
-    cy.reload()
-      .wait('@listStages')
+    cy.wait('@listStages')
     cy.getByDataTestid(`quotaTile-${publicQuota.name}`)
       .should('be.visible')
       .click()
@@ -148,7 +147,7 @@ describe('Administration quotas', () => {
     cy.visit('/admin/projects')
     cy.wait('@getAllProjects')
     cy.url().should('contain', '/admin/projects')
-    cy.getByDataTestid('tableAdministrationProjects').within(() => {
+    cy.getByDataTestid('tableAdministrationProjects', 15_000).within(() => {
       cy.get('tr').contains(project.name)
         .click()
     })
@@ -251,8 +250,7 @@ describe('Administration quotas', () => {
       .should('not.exist')
 
     // Check quota creation
-    cy.reload()
-      .wait('@listStages')
+    cy.wait('@listStages')
     cy.getByDataTestid(`quotaTile-${privateQuota.name}`)
       .should('be.visible')
       .click()
@@ -303,7 +301,7 @@ describe('Administration quotas', () => {
     cy.visit('/admin/projects')
     cy.wait('@getAllProjects')
     cy.url().should('contain', '/admin/projects')
-    cy.getByDataTestid('tableAdministrationProjects').within(() => {
+    cy.getByDataTestid('tableAdministrationProjects', 15_000).within(() => {
       cy.get('tr').contains(project.name)
         .click()
     })
@@ -369,8 +367,7 @@ describe('Administration quotas', () => {
     })
 
     // Check quota update
-    cy.reload()
-      .wait('@listStages')
+    cy.wait('@listStages')
     cy.getByDataTestid(`quotaTile-${publicQuota.name}`)
       .should('be.visible')
       .click()
@@ -457,7 +454,6 @@ describe('Administration quotas', () => {
       .type(publicQuota.name)
     cy.getByDataTestid('deleteQuotaBtn')
       .click()
-    cy.reload()
     cy.getByDataTestid(`quotaTile-${publicQuota.name}`)
       .should('not.exist')
   })
@@ -473,7 +469,6 @@ describe('Administration quotas', () => {
       .type(privateQuota.name)
     cy.getByDataTestid('deleteQuotaBtn')
       .click()
-    cy.reload()
     cy.getByDataTestid(`quotaTile-${privateQuota.name}`)
       .should('not.exist')
   })

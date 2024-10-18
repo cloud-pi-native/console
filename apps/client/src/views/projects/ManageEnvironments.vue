@@ -1,25 +1,29 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue'
-import { ClusterPrivacy, type Environment, ProjectAuthorized, projectIsLockedInfo, sortArrByObjKeyAsc } from '@cpn-console/shared'
+import { computed, ref } from 'vue'
+import type {
+  CreateEnvironmentBody,
+  Environment,
+  ProjectV2,
+  UpdateEnvironmentBody,
+} from '@cpn-console/shared'
+import {
+  ClusterPrivacy,
+  ProjectAuthorized,
+  projectIsLockedInfo,
+} from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
-import { useProjectEnvironmentStore } from '@/stores/project-environment.js'
 import { useClusterStore } from '@/stores/cluster.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useQuotaStore } from '@/stores/quota.js'
+import { useStageStore } from '@/stores/stage.js'
 
-interface EnvironmentTile {
-  id: string
-  title: string
-  data: Environment
-}
+const props = defineProps<{ projectId: ProjectV2['id'] }>()
 
 const projectStore = useProjectStore()
-const projectEnvironmentStore = useProjectEnvironmentStore()
 const clusterStore = useClusterStore()
-const snackbarStore = useSnackbarStore()
+const project = computed(() => projectStore.projectsById[props.projectId])
 
-const environmentsTiles = ref<EnvironmentTile[]>([])
-
-const environmentNames = computed(() => environmentsTiles.value.map(env => env.title))
+const environments = ref<Environment[]>([])
+const environmentNames = computed(() => project.value.environments?.map(env => env.name) ?? [])
 const allClusters = computed(() => clusterStore.clusters)
 
 const selectedEnvironment = ref<Environment>()
@@ -27,26 +31,8 @@ const isNewEnvironmentForm = ref(false)
 
 const projectClustersIds = computed(() => ([
   ...clusterStore.clusters.filter(cluster => cluster.privacy === ClusterPrivacy.PUBLIC).map(({ id }) => id),
-  ...projectStore.selectedProject?.clusterIds ?? [],
+  ...project.value.clusterIds ?? [],
 ]))
-
-async function setEnvironmentsTiles() {
-  environmentsTiles.value = sortArrByObjKeyAsc(projectEnvironmentStore.environments, 'name')
-    .map(environment => ({
-      id: environment.id,
-      title: environment.name,
-      data: environment,
-    }) as unknown as EnvironmentTile)
-}
-
-function setSelectedEnvironment(environment?: Environment) {
-  if (selectedEnvironment.value?.id === environment?.id) {
-    selectedEnvironment.value = undefined
-    return
-  }
-  selectedEnvironment.value = environment
-  isNewEnvironmentForm.value = false
-}
 
 function showNewEnvironmentForm() {
   isNewEnvironmentForm.value = !isNewEnvironmentForm.value
@@ -58,66 +44,53 @@ function cancel() {
   selectedEnvironment.value = undefined
 }
 
-async function addEnvironment(environment: Omit<Environment, 'id' | 'projectId'>) {
-  snackbarStore.isWaitingForResponse = true
-  if (projectStore.selectedProject && !projectStore.selectedProject.locked) {
-    await projectEnvironmentStore.addEnvironmentToProject({ ...environment, projectId: projectStore.selectedProject.id })
+async function addEnvironment(environment: Omit<CreateEnvironmentBody, 'id' | 'projectId'>) {
+  if (!project.value.locked) {
+    await project.value.Environments.create(environment)
   }
-  cancel()
-  snackbarStore.isWaitingForResponse = false
+  reload()
 }
 
-async function putEnvironment(environment: Pick<Environment, 'quotaId' | 'id'>) {
-  snackbarStore.isWaitingForResponse = true
-  if (projectStore.selectedProject && !projectStore.selectedProject.locked) {
-    await projectEnvironmentStore.updateEnvironment(environment.id, environment)
+async function putEnvironment(environment: UpdateEnvironmentBody) {
+  if (!project.value.locked && selectedEnvironment.value?.id) {
+    await project.value.Environments.update(selectedEnvironment.value.id, environment)
   }
-  cancel()
-  snackbarStore.isWaitingForResponse = false
+  reload()
 }
 
 async function deleteEnvironment(environmentId: Environment['id']) {
-  snackbarStore.isWaitingForResponse = true
-  await projectEnvironmentStore.deleteEnvironment(environmentId)
-  setSelectedEnvironment()
-  snackbarStore.isWaitingForResponse = false
+  if (!project.value.locked) {
+    await project.value.Environments.delete(environmentId)
+  }
+  reload()
 }
 
-onMounted(async () => {
-  if (!projectStore.selectedProject) return
-  await clusterStore.getClusters()
-  await projectEnvironmentStore.getProjectEnvironments(projectStore.selectedProject?.id)
-  setEnvironmentsTiles()
-})
+const canManageEnvs = ref<boolean>(false)
+async function reload() {
+  const [envs, _] = await Promise.all([
+    project.value.Environments.list(),
+    clusterStore.getClusters(),
+    useQuotaStore().getAllQuotas(),
+    useStageStore().getAllStages(),
+  ])
+  environments.value = envs ?? []
+  canManageEnvs.value = !project.value.locked && ProjectAuthorized.ManageRepositories({ projectPermissions: project.value.myPerms })
 
-projectEnvironmentStore.$subscribe(() => {
-  setEnvironmentsTiles()
-})
+  cancel()
+}
 
-const canManageEnvs = computed(() => !projectStore.selectedProject?.locked && ProjectAuthorized.ManageEnvironments({ projectPermissions: projectStore.selectedProjectPerms }))
+watch(project, reload, { immediate: true })
 </script>
 
 <template>
-  <template
-    v-if="projectStore.selectedProject"
+  <DsoSelectedProject
+    :project-id="projectId"
   >
-    <DsoSelectedProject />
     <div
       class="flex <md:flex-col-reverse items-center justify-between pb-5"
     >
-      <DsfrButton
-        v-if="!selectedEnvironment && !isNewEnvironmentForm && canManageEnvs"
-        label="Ajouter un nouvel environnement"
-        data-testid="addEnvironmentLink"
-        tertiary
-        :disabled="!canManageEnvs"
-        :title="projectStore.selectedProject.locked ? projectIsLockedInfo : 'Ajouter un nouvel environnement'"
-        class="fr-mt-2v <md:mb-2"
-        icon="ri:add-line"
-        @click="showNewEnvironmentForm()"
-      />
       <div
-        v-else
+        v-if="selectedEnvironment || isNewEnvironmentForm"
         class="w-full flex justify-end"
       >
         <DsfrButton
@@ -126,68 +99,84 @@ const canManageEnvs = computed(() => !projectStore.selectedProject?.locked && Pr
           secondary
           icon-only
           icon="ri:arrow-go-back-line"
-          @click="() => cancel()"
+          @click="cancel"
         />
       </div>
     </div>
+  </DsoSelectedProject>
+  <template
+    v-if="ProjectAuthorized.ListEnvironments({ projectPermissions: project.myPerms })"
+  >
+    <DsfrButton
+      v-if="!selectedEnvironment && !isNewEnvironmentForm && canManageEnvs"
+      label="Ajouter un nouvel environnement"
+      data-testid="addEnvironmentLink"
+      tertiary
+      :disabled="!canManageEnvs"
+      :title="project.locked ? projectIsLockedInfo : 'Ajouter un nouvel environnement'"
+      class="fr-mt-2v mb-5"
+      icon="ri:add-line"
+      @click="showNewEnvironmentForm()"
+    />
     <div
-      v-if="isNewEnvironmentForm"
-      class="my-5 pb-10 border-grey-900 border-y-1"
-    >
-      <EnvironmentForm
-        :environment-names="environmentNames"
-        :is-project-locked="projectStore.selectedProject.locked"
-        :project-clusters-ids="projectClustersIds"
-        :all-clusters="clusterStore.clusters"
-        :can-manage="canManageEnvs"
-        @add-environment="(environment: Omit<Environment, 'id' | 'projectId'>) => addEnvironment(environment)"
-        @cancel="cancel()"
-      />
-    </div>
-    <div
-      v-else
-      :class="{
-        'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedEnvironment?.id,
-      }"
+      class="w-full"
     >
       <div
-        v-for="environment in environmentsTiles"
-        :key="environment.id"
-        class="fr-mt-2v fr-mb-4w"
+        v-if="isNewEnvironmentForm"
+        class="my-5 pb-10 border-grey-900 border-y-1"
       >
-        <div
-          v-show="!selectedEnvironment"
-        >
-          <DsfrTile
-            :title="environment.title"
-            :data-testid="`environmentTile-${environment.title}`"
-            :horizontal="!!selectedEnvironment?.id"
-            class="fr-mb-2w w-11/12"
-            @click="setSelectedEnvironment(environment.data)"
-          />
-        </div>
         <EnvironmentForm
-          v-if="!!selectedEnvironment && selectedEnvironment.id === environment.id"
+          :environment-names="environmentNames"
+          :is-project-locked="project.locked"
+          :project-clusters-ids="projectClustersIds"
+          :all-clusters="clusterStore.clusters"
+          :can-manage="canManageEnvs"
+          is-editable
+          @add-environment="(environment: Omit<CreateEnvironmentBody, 'id' | 'projectId'>) => addEnvironment(environment)"
+          @cancel="cancel()"
+        />
+      </div>
+      <div
+        v-else-if="selectedEnvironment"
+      >
+        <EnvironmentForm
           :environment="selectedEnvironment"
           :project-clusters-ids="[selectedEnvironment.clusterId]"
           :is-editable="false"
-          :is-project-locked="projectStore.selectedProject.locked"
+          :is-project-locked="project.locked"
           :can-manage="canManageEnvs"
           :all-clusters="allClusters"
-          @put-environment="(environmentUpdate: Pick<Environment, 'quotaId'>) => putEnvironment({ ...environmentUpdate, id: environment.id })"
+          @put-environment="(environmentUpdate: UpdateEnvironmentBody) => putEnvironment({ ...environmentUpdate })"
           @delete-environment="(environmentId: Environment['id']) => deleteEnvironment(environmentId)"
           @cancel="cancel()"
         />
       </div>
       <div
-        v-if="!environmentsTiles.length && !isNewEnvironmentForm"
+        v-else-if="environments.length"
+        class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full"
+      >
+        <div
+          v-for="environment in environments"
+          :key="environment.id"
+          class="flex-basis-60 flex-stretch max-w-90"
+        >
+          <DsfrTile
+            :title="environment.name"
+            :data-testid="`environmentTile-${environment.name}`"
+            @click="selectedEnvironment = environment"
+          />
+        </div>
+      </div>
+      <div
+        v-else
       >
         <p>Aucun environnement déployé</p>
       </div>
     </div>
   </template>
-  <!-- N'est jamais sensé s'afficher -->
-  <ErrorGoBackToProjects
+  <p
     v-else
-  />
+  >
+    Vous n'avez pas les permissions pour afficher ces ressources
+  </p>
 </template>

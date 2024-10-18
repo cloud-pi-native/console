@@ -57,7 +57,11 @@ async function createProject() {
   } else if (project.value) {
     try {
       const newProject = await projectStore.createProject(project.value)
-      router.push(`/projects/${newProject.id}/dashboard`)
+      await nextTick()
+      await router.push({
+        name: 'Dashboard',
+        params: { id: newProject.id },
+      })
     } catch (error) {
       snackbarStore.setMessage(error?.message, 'error')
     } finally {
@@ -110,7 +114,7 @@ onMounted(async () => {
         label-visible
         :options="orgOptions"
         :default-unselected-text="orgOptions.length ? 'Choisissez une organisation' : 'Aucune organisation disponible, veuillez contacter un administrateur'"
-        :disabled="!organizationStore.organizations.length"
+        :disabled="!organizationStore.organizations.length || buttonState.isCreating"
         @update:model-value="updateProject('organizationId', $event)"
       />
       <div
@@ -129,6 +133,7 @@ onMounted(async () => {
             label-visible
             :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules, doit faire plus de 2 et moins de ${projectNameMaxLength} caractères.`"
             placeholder="candilib"
+            :disabled="buttonState.isCreating"
             @update:model-value="updateProject('name', $event)"
           />
         </div>
@@ -148,6 +153,7 @@ onMounted(async () => {
         label-visible
         :hint="`Courte description expliquant la finalité du projet (${descriptionMaxLength} caractères maximum).`"
         placeholder="Application de réservation de places à l'examen du permis B."
+        :disabled="buttonState.isCreating"
         @update:model-value="updateProject('description', $event)"
       />
     </DsfrFieldset>

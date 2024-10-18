@@ -159,7 +159,7 @@ describe('Team view', () => {
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', project.members.length + 1 + 1)
-      .get(`td[title="retirer ${newMember.email} du projet"]`)
+      .get(`td[title="Retirer ${newMember.email} du projet"]`)
       .click()
     cy.wait('@removeUser')
       .its('response.statusCode')

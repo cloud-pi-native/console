@@ -120,7 +120,7 @@ watch(stages, () => {
         secondary
         icon-only
         icon="ri:arrow-go-back-line"
-        @click="() => cancel()"
+        @click="cancel"
       />
     </div>
   </div>
@@ -137,45 +137,39 @@ watch(stages, () => {
       @cancel="cancel()"
     />
   </div>
+  <div v-else-if="selectedStage">
+    <StageForm
+      v-if="selectedStage"
+      :all-quotas="allQuotas"
+      :all-clusters="allClusters"
+      :stage="selectedStage"
+      class="w-full"
+      :is-new-stage="false"
+      :associated-environments="associatedEnvironments"
+      @cancel="cancel()"
+      @update="(stage: UpdateStageType) => updateStage(stage)"
+      @delete="(stageId: string) => deleteStage(stageId)"
+    />
+  </div>
   <div
-    v-else
-    :class="{
-      'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !selectedStage?.name,
-    }"
+    v-else-if="stageList.length"
+    class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full"
   >
     <div
       v-for="stage in stageList"
       :key="stage.id"
-      class="fr-mt-2v fr-mb-4w w-full"
+      class="flex-basis-60 flex-stretch max-w-90"
     >
-      <div
-        v-show="!selectedStage"
-      >
-        <DsfrTile
-          :title="stage.title"
-          :data-testid="`stageTile-${stage.title}`"
-          :horizontal="!!selectedStage?.name"
-          class="fr-mb-2w w-11/12"
-          @click="setSelectedStage(stage.data)"
-        />
-      </div>
-      <StageForm
-        v-if="selectedStage && selectedStage.id === stage.id"
-        :all-quotas="allQuotas"
-        :all-clusters="allClusters"
-        :stage="selectedStage"
-        class="w-full"
-        :is-new-stage="false"
-        :associated-environments="associatedEnvironments"
-        @cancel="cancel()"
-        @update="(stage: UpdateStageType) => updateStage(stage)"
-        @delete="(stageId: string) => deleteStage(stageId)"
+      <DsfrTile
+        :title="stage.title"
+        :data-testid="`stageTile-${stage.title}`"
+        @click="setSelectedStage(stage.data)"
       />
     </div>
-    <div
-      v-if="!stageList.length && !isNewStageForm"
-    >
-      <p>Aucun type d'environnement enregistré</p>
-    </div>
+  </div>
+  <div
+    v-else
+  >
+    <p>Aucun type d'environnement enregistré</p>
   </div>
 </template>

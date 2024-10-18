@@ -30,12 +30,13 @@
   "dependencies": {
     "@cpn-console/shared": "workspace:^",
     "@gouvfr/dsfr": "^1.12.1",
-    "@gouvminint/vue-dsfr": "^7.0.0",
+    "@gouvminint/vue-dsfr": "^7.0.2",
     "@iconify/vue": "^4.1.2",
     "@ts-rest/core": "^3.45.2",
     "@vue/tsconfig": "^0.5.1",
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
+    "javascript-time-ago": "^2.5.11",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
     "keycloak-js": "^25.0.5",
@@ -44,7 +45,8 @@
     "pinia": "^2.1.7",
     "vue": "^3.4.38",
     "vue-router": "^4.4.5",
-    "vue3-json-viewer": "^2.2.2"
+    "vue3-json-viewer": "^2.2.2",
+    "xbytes": "^1.9.1"
   },
   "optionalDependencies": {
     "@cypress/vue": "^6.0.1",
