@@ -22,7 +22,7 @@ export const projectRoleContract = contractInstance.router({
     pathParams: z.object({ projectId: z.string().uuid() }),
     responses: {
       // 200: z.any(),
-      200: RoleSchema,
+      201: RoleSchema.array(),
       400: ErrorSchema,
       401: ErrorSchema,
       403: ErrorSchema,

@@ -82,7 +82,7 @@ export function projectRoleRouter() {
       const resBody = await deleteRole(roleId)
 
       return {
-        status: 200,
+        status: 204,
         body: resBody,
       }
     },

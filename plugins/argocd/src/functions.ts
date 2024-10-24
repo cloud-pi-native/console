@@ -202,7 +202,6 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
     common: {
       'dso/organization': project.organization.name,
       'dso/project': project.name,
-      'dso/project.id': project.id,
       'dso/environment': environment.name,
     },
     argocd: {

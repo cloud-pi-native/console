@@ -1,61 +1,51 @@
 <script lang="ts" setup>
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
+import type { ProjectV2 } from '@cpn-console/shared'
 import { ProjectAuthorized } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
-import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useUserStore } from '@/stores/user.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import router from '@/router/index.js'
+
+const props = defineProps<{ projectId: ProjectV2['id'] }>()
 
 const projectStore = useProjectStore()
-const projectMemberStore = useProjectMemberStore()
 const userStore = useUserStore()
-const snackbarStore = useSnackbarStore()
+const project = computed(() => projectStore.projectsById[props.projectId])
 
 const teamKey = ref('team')
 
 async function addUserToProject(userEmail: string) {
-  if (!projectStore.selectedProject) return
-  snackbarStore.isWaitingForResponse = true
-  projectStore.selectedProject.members = await projectMemberStore.addMember(projectStore.selectedProject.id, userEmail)
+  await project.value.Members.create(userEmail)
   teamKey.value = getRandomId('team')
-  snackbarStore.isWaitingForResponse = false
 }
 
 async function removeUserFromProject(userId: string) {
-  if (!projectStore.selectedProject) return
-  snackbarStore.isWaitingForResponse = true
-  projectStore.selectedProject.members = await projectMemberStore.removeMember(projectStore.selectedProject.id, userId)
+  await project.value.Members.delete(userId)
   teamKey.value = getRandomId('team')
-  snackbarStore.isWaitingForResponse = false
+  if (userId === userStore.userProfile?.id) {
+    router.push({ name: 'Projects' })
+    projectStore.lastSelectedProjectId = undefined
+  }
 }
 
 async function transferOwnerShip(nextOwnerId: string) {
-  if (!projectStore.selectedProject) return
-  snackbarStore.isWaitingForResponse = true
-  await projectStore.updateProject(projectStore.selectedProject.id, { ownerId: nextOwnerId })
-  await projectStore.listProjects()
+  await project.value.update({ ownerId: nextOwnerId })
   teamKey.value = getRandomId('team')
-  snackbarStore.isWaitingForResponse = false
 }
 </script>
 
 <template>
-  <DsoSelectedProject />
+  <DsoSelectedProject
+    :project-id="projectId"
+  />
   <TeamCt
-    v-if="projectStore.selectedProject"
     :key="teamKey"
-    :user-profile="userStore.userProfile"
-    :project="projectStore.selectedProject"
-    :members="projectStore.selectedProject.members ?? []"
-    :can-manage="ProjectAuthorized.ManageMembers({ projectPermissions: projectStore.selectedProjectPerms })"
-    :can-transfer="projectStore.selectedProject.ownerId === userStore.userProfile?.id"
+    :project="project"
+    :can-manage="ProjectAuthorized.ManageMembers({ projectPermissions: project.myPerms })"
+    :can-transfer="project.ownerId === userStore.userProfile?.id"
     @add-member="(userEmail: string) => addUserToProject(userEmail)"
     @remove-member="(userId: string) => removeUserFromProject(userId)"
     @transfer-ownership="(nextOwnerId: string) => transferOwnerShip(nextOwnerId)"
   />
-  <ErrorGoBackToProjects
-    v-else
-  />
 </template>
-@/stores/project-member.js

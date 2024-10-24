@@ -80,9 +80,14 @@ async function addCluster(cluster: CreateClusterBody) {
   isUpdatingCluster.value = false
 }
 
-async function updateCluster(cluster: UpdateClusterBody & { id: Cluster['id'] }) {
+async function updateCluster(cluster: UpdateClusterBody) {
   isUpdatingCluster.value = true
-  await clusterStore.updateCluster(cluster)
+  if (clusterStore.selectedCluster?.id) {
+    await clusterStore.updateCluster({
+      ...cluster,
+      id: clusterStore.selectedCluster.id,
+    })
+  }
   await clusterStore.getClusters()
   cancel()
   isUpdatingCluster.value = false
@@ -156,43 +161,35 @@ watch(clusters, () => {
     />
   </div>
   <div
-    v-else
-    :class="{
-      'md:grid md:grid-cols-3 md:gap-3 items-center justify-between': !clusterStore.selectedCluster?.label,
-    }"
+    v-if="clusterStore.selectedCluster"
+  >
+    <ClusterForm
+      :cluster="clusterStore.selectedCluster"
+      :all-zones="allZones"
+      :all-projects="projectStore.projects"
+      :all-stages="allStages"
+      :associated-environments="associatedEnvironments"
+      is-updating-cluster="isUpdatingCluster"
+      class="w-full"
+      :is-new-cluster="false"
+      @update="(clusterUpdate: Partial<ClusterDetails>) => updateCluster(clusterUpdate)"
+      @delete="(clusterId: string) => deleteCluster(clusterId)"
+      @cancel="cancel()"
+    />
+  </div>
+  <div
+    v-else-if="clusterList.length"
+    class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full"
   >
     <div
       v-for="cluster in clusterList"
       :key="cluster.id"
-      class="fr-mt-2v fr-mb-4w w-full"
+      class="flex-basis-60 flex-stretch max-w-90"
     >
-      <div
-        v-show="!clusterStore.selectedCluster"
-      >
-        <DsfrTile
-          :title="cluster.title"
-          :data-testid="`clusterTile-${cluster.title}`"
-          :horizontal="!!clusterStore.selectedCluster?.label"
-          class="fr-mb-2w w-11/12"
-          @click="setSelectedCluster(cluster.id)"
-        />
-      </div>
-      <ClusterForm
-        v-if="clusterStore.selectedCluster && clusterStore.selectedCluster.id === cluster.id"
-        :cluster="clusterStore.selectedCluster"
-        :all-zones="allZones"
-        :all-projects="projectStore.projects"
-        :all-stages="allStages"
-        :associated-environments="associatedEnvironments"
-        is-updating-cluster="isUpdatingCluster"
-        class="w-full"
-        :is-new-cluster="false"
-        @update="(clusterUpdate: Partial<ClusterDetails>) => updateCluster({
-          ...clusterUpdate,
-          id: cluster.id,
-        })"
-        @delete="(clusterId: string) => deleteCluster(clusterId)"
-        @cancel="cancel()"
+      <DsfrTile
+        :title="cluster.title"
+        :data-testid="`clusterTile-${cluster.title}`"
+        @click="setSelectedCluster(cluster.id)"
       />
     </div>
     <div
