@@ -1,31 +1,27 @@
 <script lang="ts" setup>
-import type { PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
+import { type PluginsUpdateBody, ProjectAuthorized, type ProjectService, type ProjectV2 } from '@cpn-console/shared'
 import { computed, ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
-import { useProjectServiceStore } from '@/stores/project-services.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
+const props = defineProps<{ projectId: ProjectV2['id'] }>()
+
 const projectStore = useProjectStore()
-const projectServiceStore = useProjectServiceStore()
-const project = computed(() => projectStore.selectedProject)
 const snackbarStore = useSnackbarStore()
+const project = computed(() => projectStore.projectsById[props.projectId])
 
 const services = ref<ProjectService[]>([])
 async function reload() {
-  if (!project.value) return
-  const resServices = await projectServiceStore.getProjectServices(project.value.id)
+  const resServices = await project.value.Services.list()
   services.value = []
   await nextTick()
-  const filteredServices = resServices
-  services.value = filteredServices
+  services.value = resServices
 }
 
 async function save(data: PluginsUpdateBody) {
-  if (!project.value) return
-
   snackbarStore.isWaitingForResponse = true
   try {
-    await projectServiceStore.updateProjectServices(data, project.value.id)
+    await project.value.Services.update(data)
     snackbarStore.setMessage('Paramètres sauvegardés', 'success')
   } catch (_error) {
     snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
@@ -34,17 +30,18 @@ async function save(data: PluginsUpdateBody) {
   snackbarStore.isWaitingForResponse = false
 }
 
-onBeforeMount(() => {
-  reload()
-})
+watch(project, reload, { immediate: true })
 </script>
 
 <template>
-  <DsoSelectedProject />
+  <DsoSelectedProject
+    :project-id="projectId"
+  />
   <ServicesConfig
     :services="services"
     permission-target="user"
     display-global
+    :disabled="project.locked || !ProjectAuthorized.Manage({ projectPermissions: project.myPerms })"
     @update="(data: PluginsUpdateBody) => save(data)"
     @reload="() => reload()"
   />

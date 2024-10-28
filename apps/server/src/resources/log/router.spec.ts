@@ -51,7 +51,7 @@ describe('test logContract', () => {
     })
 
     it('should return logs for non-admin, with projectId', async () => {
-      const projectPerms = getProjectMockInfos({ projectPermissions: 2n })
+      const projectPerms = getProjectMockInfos({ projectPermissions: 1n })
       const user = getUserMockInfos(false, undefined, projectPerms)
       const projectId = faker.string.uuid()
 

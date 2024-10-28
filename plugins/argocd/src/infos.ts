@@ -7,7 +7,7 @@ const infos = {
   name: 'argocd',
   to: ({ organization, zones, project }) => zones.map(z => ({
     to: `${z.argocdUrl}/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=${organization}-${project}`,
-    title: `ArgoCD ${z.slug}`,
+    title: `ArgoCD Zone: ${z.slug}`,
   })).concat({
     to: `${getConfig().url}/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=${organization}-${project}`,
     title: 'ArgoCD DSO',

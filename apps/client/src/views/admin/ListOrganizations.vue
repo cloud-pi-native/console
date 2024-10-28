@@ -47,7 +47,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
 function generateRows() {
   return allOrganizations.value.length
     ? sortArrByObjKeyAsc(allOrganizations.value, 'name')
-      ?.map(({ label, name, source, active, createdAt, updatedAt }) => ([
+      .map(({ label, name, source, active, createdAt, updatedAt }) => ([
         {
           component: 'input',
           value: label,
@@ -104,7 +104,7 @@ async function getAllOrganizations() {
 async function syncOrganizations() {
   isSyncingOrganizations.value = true
   await organizationStore.syncOrganizations()
-  getAllOrganizations()
+  await getAllOrganizations()
   isSyncingOrganizations.value = false
 }
 
@@ -188,7 +188,7 @@ onBeforeMount(async () => {
       v-if="isUpdatingOrganization.key === 'active'
         && isUpdatingOrganization.data === false"
       data-testid="lockOrganizationAlert"
-      description="Les projets associés à cette organisation seront vérrouillés, jusqu'à la réactivation de l'organisation."
+      description="Les projets associés à cette organisation seront verrouillés, jusqu'à la réactivation de l'organisation."
       type="warning"
       small
     />

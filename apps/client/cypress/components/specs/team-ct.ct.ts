@@ -5,12 +5,12 @@ import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
-import { createRandomDbSetup, getRandomUser } from '@cpn-console/test-utils'
 import type { ProjectV2 } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import TeamCt from '@/components/TeamCt.vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useUsersStore } from '@/stores/users.js'
+import { useUserStore } from '@/stores/user.js'
 
 const ownerId = faker.string.uuid()
 const props: {
@@ -87,10 +87,9 @@ describe('TeamCt.vue', () => {
   })
   it('Should mount a TeamCt for user', () => {
     useProjectStore()
-    const { project } = createRandomDbSetup({ nbUsers: 4 })
-    const newUser = getRandomUser()
-
-    cy.intercept('GET', `api/v1/projects/${project.id}/users/match?letters=*`, { body: [newUser] })
+    const userStore = useUserStore()
+    // devrait tester que l'on peut toujours quitter un projet
+    userStore.userProfile = { id: props.project.members[0].id }
 
     cy.mount(TeamCt, { props: { ...props, canTransfer: false, canManage: false } })
 
@@ -101,7 +100,7 @@ describe('TeamCt.vue', () => {
         cy.get('tbody > tr')
           .should('have.length', props.project.members.length + 1) // +1 cause owner is not a member
         cy.get('thead > tr > th')
-          .should('have.length', 3)
+          .should('have.length', 4)
       })
     cy.getByDataTestid('showTransferProjectBtn')
       .should('not.exist')

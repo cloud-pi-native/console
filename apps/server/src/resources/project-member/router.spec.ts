@@ -226,6 +226,21 @@ describe('projectMemberRouter tests', () => {
       expect(response.statusCode).toEqual(200)
     })
 
+    it('should be able leave a project', async () => {
+      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_MEMBERS })
+      const user = getUserMockInfos(false, undefined, projectPerms)
+      authUserMock.mockResolvedValueOnce(user)
+
+      businessRemoveMemberMock.mockResolvedValueOnce([])
+
+      const response = await app.inject()
+        .delete(projectMemberContract.removeMember.path.replace(':projectId', projectId).replace(':userId', userId))
+        .end()
+
+      expect(response.json()).toEqual([])
+      expect(response.statusCode).toEqual(200)
+    })
+
     it('should return 404 for unauthorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
       const user = getUserMockInfos(false, undefined, projectPerms)

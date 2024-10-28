@@ -5,10 +5,12 @@ import type { PermissionTarget, PluginConfigItem, PluginsUpdateBody, ProjectServ
 const props = withDefaults(defineProps<{
   services: ProjectService[]
   permissionTarget: PermissionTarget
+  disabled: boolean
   displayGlobal: boolean
 }>(), {
   services: undefined,
   displayGlobal: true,
+  disabled: false,
 })
 
 const emit = defineEmits<{
@@ -35,17 +37,14 @@ function update(data: { value: string, key: string, plugin: string }) {
   updated.value[data.plugin][data.key] = data.value
 }
 
-const servicesUnwrapped = ref<Record<string, boolean>>({})
-
-function swapWrap(serviceName: string) {
-  if (servicesUnwrapped.value[serviceName]) delete servicesUnwrapped.value[serviceName]
-  else servicesUnwrapped.value[serviceName] = true
+function getItemsToShowLength(items: PluginConfigItem[] | (PluginConfigItem & { value: any })[] | undefined, scope: PermissionTarget): number | undefined {
+  return items?.filter(item => item.permissions[scope].read || item.permissions[scope].write).length
 }
 
 const services = computed(() => refTheValues(props.services)
   .map(service => ({
     ...service,
-    wrapable: !!(service.urls.length > 2 || service.manifest.global?.length || service.manifest.project?.length),
+    wrapable: !!((props.displayGlobal && getItemsToShowLength(service.manifest.global, props.permissionTarget)) || getItemsToShowLength(service.manifest.project, props.permissionTarget)),
   }))
   .sort((a, b) => {
     if (a.urls.length && b.urls.length) { // si les deux services ont des urls les trier par titre
@@ -55,6 +54,8 @@ const services = computed(() => refTheValues(props.services)
     return b.urls.length - a.urls.length
   }))
 
+const servicesWrapableLength = computed(() => services.value.filter(({ wrapable }) => wrapable).length)
+
 function save() {
   emit('update', updated.value)
   updated.value = {}
@@ -63,171 +64,140 @@ function reload() {
   emit('reload')
 }
 
-function getItemsToShowLength(items: PluginConfigItem[] | undefined, scope: PermissionTarget): number | undefined {
-  return items?.filter(item => item.permissions[scope].read || item.permissions[scope].write).length
-}
+const activeAccordion = ref<number>()
 </script>
 
 <template>
   <div
     v-if="!services.length"
+    id="servicesTable"
     class="p-10 flex justify-center italic"
   >
     Aucun service disponible
   </div>
-  <div
-    v-for="service in services"
-    :key="service.title"
-    class="mb-5"
-    :data-testid="`service-${service.name}`"
+  <h3
+    v-else
+    id="servicesTable"
   >
-    <div
-      class="flex flex-row"
+    Services externes
+  </h3>
+
+  <div
+    data-testid="services-urls"
+    class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full mb-10"
+  >
+    <template
+      v-for="service in services"
+      :key="service.name"
     >
-      <div
-        class="flex-grow flex  border-solid border-0 border-b-2 border-blue-900"
+      <DsfrTile
+        v-for="url in service.urls"
+        :key="url.name"
+        class="flex-basis-60 flex-grow max-w-50"
+        :title=" url.name || service.title || service.name"
+        :img-src="service.imgSrc"
+        :description="service.description"
+        :icon="false"
+        :to="url.to"
+        shadow
+      />
+    </template>
+  </div>
+  <template
+    v-if="servicesWrapableLength"
+  >
+    <h3>Configuration des plugins</h3>
+    <DsfrAccordionsGroup
+      v-model="activeAccordion"
+      class="mb-10"
+    >
+      <template
+        v-for="service in services"
+        :key="service.name"
       >
-        <button
-          class="shrink flex grid-flow-col align-items items-center p-1 w-full"
-          data-testid="dropdown-button"
-          @click="swapWrap(service.name)"
+        <template
+          v-if="service.wrapable"
         >
-          <img
-            v-if="service.imgSrc"
-            :src="service.imgSrc"
-            class="inline x-4 shrink"
-            width="48"
-            height="48"
+          <DsfrAccordion
+            :id="service.name"
+            :data-testid="`service-config-${service.name}`"
+            :title="service.title || service.name"
           >
-          <h2
-            class="inline mb-0 ml-4"
-          >
-            {{ service.title }}
-          </h2>
-          <v-icon
-            v-if="service.wrapable"
-            :class="`shrink ml-4 ${servicesUnwrapped[service.name] ? 'rotate-90' : ''}`"
-            name="ri:arrow-right-s-line"
-          />
-        </button>
-      </div>
-      <a
-        v-for="url in service.urls.slice(0, 2)"
-        :key="url.to"
-        :href="url.to"
-        target="_blank"
-        class="inline m-0 self-stretch flex"
-      >
-        <DsfrButton
-          :label="url.name"
-          :title="url.to"
-          :icon="url.name ? '' : 'ri:external-link-line'"
-          :icon-only="!url.name"
-        />
-      </a>
+            <div
+              :class="getItemsToShowLength(service.manifest.project, permissionTarget) && (props.displayGlobal && getItemsToShowLength(service.manifest.global, permissionTarget)) ? '2xl:grid 2xl:grid-cols-2 2xl:gap-10' : ''"
+            >
+              <DsfrCallout
+                v-if="getItemsToShowLength(service.manifest.project, permissionTarget)"
+                title="Configuration projet"
+                class="flex flex-col gap-2"
+                :data-testid="`service-project-config-${service.name}`"
+              >
+                <ConfigParam
+                  v-for="item in service.manifest.project"
+                  :key="item.key"
+                  :options="{
+                    value: item.value,
+                    kind: item.kind,
+                    description: item.description,
+                    name: item.title,
+                    // @ts-ignore Sisi il y a potentiellement un placeholder
+                    placeholder: item.placeholder || '',
+                    disabled: !item.permissions[permissionTarget].write || props.disabled,
+                  }"
+                  @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
+                />
+              </DsfrCallout>
+              <DsfrCallout
+                v-if="service.manifest.global?.length && props.displayGlobal"
+                title="Configuration globale"
+                class="flex flex-col gap-2"
+                :data-testid="`service-global-config-${service.name}`"
+              >
+                <ConfigParam
+                  v-for="item in props.displayGlobal ? service.manifest.global : []"
+                  :key="item.key"
+                  :options="{
+                    value: ref(item.value),
+                    kind: item.kind,
+                    description: item.description,
+                    name: item.title,
+                    // @ts-ignore si si il y a potentiellement un placeholder
+                    placeholder: item.placeholder || '',
+                    disabled: !item.permissions[permissionTarget].write,
+                  }"
+                  @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
+                />
+              </DsfrCallout>
+            </div>
+          </DsfrAccordion>
+        </template>
+      </template>
+    </DsfrAccordionsGroup>
+    <div
+      class="flex justify-end gap-10"
+    >
       <DsfrButton
-        v-if="service.urls.length > 2"
-        label="+"
-        primary
-        class="inline m-0 self-stretch hidden"
-        @click="swapWrap(service.name)"
+        v-if="Object.values(updated).keys() && Object.values(updated).map(v => Object.keys(v)).flat().length"
+        label="Enregistrer"
+        data-testid="saveBtn"
+        @click="save()"
+      />
+      <DsfrButton
+        label="Recharger"
+        secondary
+        data-testid="reloadBtn"
+        @click="reload()"
       />
     </div>
-    <div
-      v-if="service.wrapable"
-      :class="`p-5 ${servicesUnwrapped[service.name] ? 'block' : 'hidden'}`"
-      data-testid="additional-config"
-    >
-      <div
-        v-if="service.urls.length > 2"
-        class="flex flex-row flex-wrap gap-0.5 mb-2"
-      >
-        <a
-          v-for="url in service.urls"
-          :key="url.to"
-          :href="url.to"
-          target="_blank"
-          class="inline m-0 self-stretch flex"
-        >
-          <DsfrButton
-            :title="url.to"
-            :label="url.name"
-            :icon="url.name ? '' : 'ri:external-link-line'"
-            :icon-only="!url.name"
-          />
-        </a>
-      </div>
-      <p
-        v-if="service.description"
-      >
-        {{ service.description }}
-      </p>
-      <div
-        :class="getItemsToShowLength(service.manifest.project, permissionTarget) && (props.displayGlobal && getItemsToShowLength(service.manifest.global, permissionTarget)) ? '2xl:grid 2xl:grid-cols-2 2xl:gap-10' : ''"
-      >
-        <DsfrCallout
-          v-if="getItemsToShowLength(service.manifest.project, permissionTarget)"
-          title="Configuration projet"
-          class="flex flex-col gap-2"
-        >
-          <ConfigParam
-            v-for="item in service.manifest.project"
-            :key="item.key"
-            :options="{
-              value: item.value,
-              kind: item.kind,
-              description: item.description,
-              name: item.title,
-              // @ts-ignore Sisi il y a potentiellement un placeholder
-              placeholder: item.placeholder || '',
-              disabled: !item.permissions[permissionTarget].write,
-            }"
-            @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
-          />
-        </DsfrCallout>
-        <DsfrCallout
-          v-if="service.manifest.global?.length && props.displayGlobal"
-          title="Configuration globale"
-          class="flex flex-col gap-2"
-        >
-          <ConfigParam
-            v-for="item in props.displayGlobal ? service.manifest.global : []"
-            :key="item.key"
-            :options="{
-              value: ref(item.value),
-              kind: item.kind,
-              description: item.description,
-              name: item.title,
-              // @ts-ignore si si il y a potentiellement un placeholder
-              placeholder: item.placeholder || '',
-              disabled: !item.permissions[permissionTarget].write,
-            }"
-            @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
-          />
-        </DsfrCallout>
-      </div>
-    </div>
-  </div>
-  <div
-    class="flex justify-end gap-10"
-  >
-    <DsfrButton
-      v-if="Object.values(updated).keys() && Object.values(updated).map(v => Object.keys(v)).flat().length"
-      label="Enregistrer"
-      data-testid="saveBtn"
-      @click="save()"
-    />
-    <DsfrButton
-      label="Recharger"
-      secondary
-      data-testid="reloadBtn"
-      @click="reload()"
-    />
-  </div>
+  </template>
 </template>
 
-<style scoped>
-a[target="_blank"]::after {
+<style>
+.fr-tile__title [target="_blank"]::after {
   display: none;
+}
+
+.fr-grid-row .fr-tile {
+  height: inherit
 }
 </style>

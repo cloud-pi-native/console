@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import { ProjectAuthorized } from '@cpn-console/shared'
-import router from '../router/index.js'
+import router, { isInProject } from '../router/index.js'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useServiceStore } from '@/stores/services-monitor.js'
+import type { Project } from '@/utils/project-utils.js'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -11,9 +12,14 @@ const projectStore = useProjectStore()
 const serviceStore = useServiceStore()
 
 const routeName = computed(() => route.name)
-const routePath = computed(() => route.path)
 const isLoggedIn = computed(() => userStore.isLoggedIn)
-const selectedProject = computed(() => projectStore.selectedProject)
+const selectedProjectId = computed<string | undefined>(() => {
+  if (router.currentRoute.value.matched.some(route => route.name === 'Project')) {
+    return router.currentRoute.value.params.id as string
+  }
+  return undefined
+})
+const project = computed<Project | undefined>(() => projectStore.projectsById[selectedProjectId.value ?? ''])
 
 const isDarkScheme = ref<boolean>()
 const selectedScheme = computed<string | undefined>(() =>
@@ -32,13 +38,13 @@ function toggleExpand(key: keyof typeof isExpanded.value) {
   isExpanded.value[key] = !isExpanded.value[key]
 }
 
-watch(routePath, (routePath) => {
-  if (/^\/projects*/.test(routePath)) {
+watch(route, (currentRoute) => {
+  if (isInProject.value) {
     isExpanded.value.projects = true
     isExpanded.value.administration = false
     return
   }
-  if (/admin*/.test(routePath)) {
+  if (currentRoute.matched.some(match => match.name === 'ParentAdmin')) {
     isExpanded.value.projects = false
     isExpanded.value.administration = true
     return
@@ -103,42 +109,42 @@ onMounted(() => {
         </DsfrSideMenuLink>
       </DsfrSideMenuListItem>
       <!-- Onglet Projet -->
+      <DsfrSideMenuListItem>
+        <DsfrSideMenuLink
+          v-if="isLoggedIn"
+          data-testid="menuMyProjects"
+          :active="routeName === 'Projects'"
+          to="/projects"
+        >
+          Mes projets
+        </DsfrSideMenuLink>
+      </DsfrSideMenuListItem>
       <DsfrSideMenuListItem
         v-if="isLoggedIn"
+        :class="`transition-all ${project ? '' : 'hidden'}`"
       >
         <DsfrSideMenuButton
-          data-testid="menuProjectsBtn"
+          data-testid="menuProjectBtn"
           :expanded="isExpanded.projects"
           button-label="Mes projets"
-          control-id="projectsList"
+          control-id="projectList"
           @toggle-expand="toggleExpand('projects')"
         >
-          Projets
+          Projet {{ project?.name }}
         </DsfrSideMenuButton>
         <DsfrSideMenuList
-          id="projectsList"
-          data-testid="menuProjectsList"
+          id="projectList"
+          data-testid="menuProjectList"
           :expanded="isExpanded.projects"
           :collapsable="true"
         >
-          <DsfrSideMenuListItem>
-            <DsfrSideMenuLink
-              class="menu-link-icon"
-              data-testid="menuMyProjects"
-              :active="routeName === 'Projects'"
-              to="/projects"
-            >
-              <v-icon name="ri:list-check" />
-              Mes projets
-            </DsfrSideMenuLink>
-          </DsfrSideMenuListItem>
-          <div v-if="selectedProject">
+          <div>
             <DsfrSideMenuListItem>
               <DsfrSideMenuLink
                 class="menu-link-icon"
                 data-testid="menuDashboard"
                 :active="routeName === 'Dashboard'"
-                :to="`/projects/${selectedProject?.id}/dashboard`"
+                :to="`/projects/${project?.id}/dashboard`"
               >
                 <v-icon name="ri:dashboard-line" />
                 Tableau de bord
@@ -149,10 +155,10 @@ onMounted(() => {
                 class="menu-link-icon"
                 data-testid="menuServices"
                 :active="routeName === 'Services'"
-                :to="`/projects/${selectedProject?.id}/services`"
+                :to="`/projects/${project?.id}/services`"
               >
                 <v-icon name="ri:flow-chart" />
-                Mes services
+                Services externes
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
             <DsfrSideMenuListItem>
@@ -160,49 +166,49 @@ onMounted(() => {
                 class="menu-link-icon"
                 data-testid="menuTeam"
                 :active="routeName === 'Team'"
-                :to="`/projects/${selectedProject?.id}/team`"
+                :to="`/projects/${project?.id}/team`"
               >
                 <v-icon name="ri:team-line" />
                 Équipe
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
             <DsfrSideMenuListItem
-              v-if="ProjectAuthorized.ManageRoles({ projectPermissions: projectStore.selectedProjectPerms })"
+              v-if="ProjectAuthorized.ManageRoles({ projectPermissions: project?.myPerms })"
             >
               <DsfrSideMenuLink
                 class="menu-link-icon"
                 data-testid="menuProjectRole"
                 :active="routeName === 'ProjectRoles'"
-                :to="`/projects/${selectedProject?.id}/roles`"
+                :to="`/projects/${project?.id}/roles`"
               >
                 <v-icon name="ri:admin-line" />
                 Rôles
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
             <DsfrSideMenuListItem
-              v-if="ProjectAuthorized.ListRepositories({ projectPermissions: projectStore.selectedProjectPerms })"
+              v-if="ProjectAuthorized.ListRepositories({ projectPermissions: project?.myPerms })"
             >
               <DsfrSideMenuLink
                 class="menu-link-icon"
                 data-testid="menuRepos"
                 :active="routeName === 'Repos'"
-                :to="`/projects/${selectedProject?.id}/repositories`"
+                :to="`/projects/${project?.id}/repositories`"
               >
                 <v-icon name="ri:git-branch-line" />
                 Dépôts
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
             <DsfrSideMenuListItem
-              v-if="ProjectAuthorized.ListEnvironments({ projectPermissions: projectStore.selectedProjectPerms })"
+              v-if="ProjectAuthorized.ListEnvironments({ projectPermissions: project?.myPerms })"
             >
               <DsfrSideMenuLink
                 class="menu-link-icon"
                 data-testid="menuEnvironments"
                 :active="routeName === 'Environments'"
-                :to="`/projects/${selectedProject?.id}/environments`"
+                :to="`/projects/${project?.id}/environments`"
               >
                 <v-icon name="ri:microsoft-line" />
-                Environments
+                Environnements
               </DsfrSideMenuLink>
             </DsfrSideMenuListItem>
           </div>

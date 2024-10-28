@@ -38,8 +38,11 @@ describe('Administration organizations', () => {
 
   it('Should create an organization loggedIn as admin', () => {
     cy.getByDataTestid('orgLabelInput')
+      .should('have.value', '')
       .clear()
+    cy.getByDataTestid('orgLabelInput')
       .type(newOrg.label)
+      .blur()
     cy.getByDataTestid('addOrgBtn')
       .should('be.disabled')
     cy.getByDataTestid('orgNameInput')
@@ -68,13 +71,6 @@ describe('Administration organizations', () => {
         .should('have.value', newOrg.label)
       cy.getByDataTestid(`${newOrg.name}-active-cbx`)
         .should('be.checked')
-    })
-
-    cy.visit('/projects/create-project')
-    cy.wait('@getAllOrganizations').its('response').then((response) => {
-      cy.get('select#organizationId-select')
-        .select((response.body.find(org => org.name === newOrg.name)).id)
-        .should('have.value', (response.body.find(org => org.label === newOrg.label)).id)
     })
   })
 
@@ -155,28 +151,30 @@ describe('Administration organizations', () => {
       cy.getByDataTestid('updatedDataSummary')
         .should('contain', `Les données suivantes seront mises à jour pour l'organisation ${organization.name} : active : false`)
       cy.getByDataTestid('lockOrganizationAlert')
-        .should('contain', 'Les projets associés à cette organisation seront vérrouillés, jusqu\'à la réactivation de l\'organisation.')
+        .should('contain', 'Les projets associés à cette organisation seront verrouillés, jusqu\'à la réactivation de l\'organisation.')
       cy.getByDataTestid('confirmUpdateBtn')
         .click()
     })
     cy.getByDataTestid('snackbar').should('contain', `Organisation ${organization.name} mise à jour`)
 
-    cy.visit('/projects')
+    cy.getByDataTestid('menuMyProjects').click()
       .wait('@listProjects')
     cy.getByDataTestid(`projectTile-${projectFailed.name}`)
       .click()
     cy.getByDataTestid(`${projectFailed.id}-locked-badge`)
       .should('exist')
 
-    cy.visit('/projects')
+    cy.getByDataTestid('menuMyProjects').click()
       .wait('@listProjects')
     cy.getByDataTestid(`projectTile-${projectSucceed.name}`)
       .click()
     cy.getByDataTestid(`${projectSucceed.id}-locked-badge`)
       .should('exist')
 
-    cy.visit('/admin/organizations')
-      .wait('@getAllOrganizations')
+    cy.getByDataTestid('menuAdministrationBtn').click()
+      .getByDataTestid('menuAdministrationOrganizations').click()
+
+    cy.wait('@getAllOrganizations')
     cy.getByDataTestid('tableAdministrationOrganizations').within(() => {
       cy.getByDataTestid(`${organization.name}-active-cbx`)
         .should('not.be.checked')
@@ -194,13 +192,13 @@ describe('Administration organizations', () => {
     })
     cy.getByDataTestid('snackbar').should('contain', `Organisation ${organization.name} mise à jour`)
 
-    cy.visit('/projects')
+    cy.getByDataTestid('menuMyProjects').click()
     cy.getByDataTestid(`projectTile-${projectFailed.name}`)
       .click()
     cy.getByDataTestid(`${projectFailed.id}-locked-badge`)
       .should('not.exist')
 
-    cy.visit('/projects')
+    cy.getByDataTestid('menuMyProjects').click()
     cy.getByDataTestid(`projectTile-${projectSucceed.name}`)
       .click()
     cy.getByDataTestid(`${projectSucceed.id}-locked-badge`)
