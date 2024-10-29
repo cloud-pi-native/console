@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.15.0](https://github.com/cloud-pi-native/console/compare/v8.14.0...v8.15.0) (2024-10-29)
+
+
+### Features
+
+* :lipstick: adding the project id in namespace labels ([eace611](https://github.com/cloud-pi-native/console/commit/eace611838cd2a5ce0e457971914c9d3bf29e6d0))
+* 🚸 rework project selection ([1641fc9](https://github.com/cloud-pi-native/console/commit/1641fc974f455734bedeb0cf2fdaf7356c9b850b))
+
 ## [8.14.0](https://github.com/cloud-pi-native/console/compare/v8.13.2...v8.14.0) (2024-10-17)
 
 
