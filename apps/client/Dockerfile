@@ -1,5 +1,5 @@
 # Dev stage
-FROM docker.io/node:20.17.0-bullseye-slim AS dev
+FROM docker.io/node:22.10.0-bullseye-slim AS dev
 
 WORKDIR /app
 RUN npm install --ignore-scripts --location=global pnpm@9.10.0

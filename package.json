@@ -77,6 +77,6 @@
     "allowNonAppliedPatches": true
   },
   "volta": {
-    "node": "20.17.0"
+    "node": "22.10.0"
   }
 }

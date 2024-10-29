@@ -73,7 +73,7 @@
     "@cpn-console/test-utils": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
     "@faker-js/faker": "^8.4.1",
-    "@types/node": "^20.14.9",
+    "@types/node": "^22.8.2",
     "@vitest/coverage-v8": "^1.6.0",
     "fastify-plugin": "^4.5.1",
     "nodemon": "^3.1.4",
