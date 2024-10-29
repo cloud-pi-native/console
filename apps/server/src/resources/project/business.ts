@@ -169,11 +169,16 @@ export async function replayHooks({ projectId, userId, requestId }: ReplayHooksA
 export async function archiveProject(projectId: Project['id'], requestor: UserDetails, requestId: string) {
   // Actions
   // Empty the project first
-  await Promise.all([
-    lockProject(projectId),
+  const [projectDb, ..._] = await Promise.all([
+    // get initial project state
+    prisma.project.findUniqueOrThrow({ where: { id: projectId } }),
     deleteAllRepositoryForProject(projectId),
     deleteAllEnvironmentForProject(projectId),
   ])
+
+  if (projectDb.locked) {
+    await lockProject(projectId)
+  }
 
   const { results: upsertResults } = await hook.project.upsert(projectId)
   await addLogs({ action: 'Delete all project resources', data: upsertResults, userId: requestor.id, requestId, projectId })
@@ -182,8 +187,11 @@ export async function archiveProject(projectId: Project['id'], requestor: UserDe
   }
 
   // -- début - Suppression projet --
-  const { results } = await hook.project.delete(projectId)
+  const { results, project } = await hook.project.delete(projectId)
   await addLogs({ action: 'Archive Project', data: results, userId: requestor.id, requestId, projectId })
+  if ((await project).status === 'archived' && !projectDb.locked) {
+    await prisma.project.update({ where: { id: projectId }, data: { locked: false } })
+  }
   if (results.failed) {
     return new Unprocessable422('Echec des services à la suppression du projet')
   }

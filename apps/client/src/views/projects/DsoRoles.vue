@@ -1,93 +1,105 @@
 <script lang="ts" setup>
-import type { Member, Role, RoleBigint } from '@cpn-console/shared'
+import { type Member, ProjectAuthorized, type ProjectV2, type Role, type RoleBigint } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
-import { useProjectMemberStore } from '@/stores/project-member.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-const projectMemberStore = useProjectMemberStore()
+const props = defineProps<{ projectId: ProjectV2['id'] }>()
+
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
 const selectedId = ref<string>()
+const project = computed(() => projectStore.projectsById[props.projectId])
 
 type RoleItem = Omit<Role, 'permissions'> & { permissions: bigint, memberCounts: number, isEveryone: boolean }
 
-const roleList = computed((): RoleItem[] => {
-  if (!projectStore.selectedProject) return []
-  const roles = projectStore.selectedProject.roles.map(role => ({
-    ...role,
-    memberCounts: projectStore.selectedProject?.members.filter(member => member.roleIds.includes(role.id)).length ?? 0,
-    isEveryone: false,
-    permissions: BigInt(role.permissions),
-  }))
-  roles.push({
-    id: 'everyone',
-    memberCounts: projectStore.selectedProject.members.length ?? 0,
-    name: 'Tout le monde',
-    permissions: BigInt(projectStore.selectedProject.everyonePerms),
-    position: 1000,
-    isEveryone: true,
-  })
-  return roles
-})
+const roleList = ref<RoleItem[]>([])
 
 const selectedRole = computed(() => roleList.value.find(({ id }) => id === selectedId.value))
 
 async function addRole() {
-  if (!projectStore.selectedProject) return
-  projectStore.selectedProject.roles = await projectStore.createRole(projectStore.selectedProject.id, {
+  const newRoles = await project.value.Roles.create({
     name: 'Nouveau rôle',
     permissions: 0n.toString(),
   })
+  reload()
   snackbarStore.setMessage('Rôle ajouté', 'success')
-  selectedId.value = projectStore.selectedProject.roles[projectStore.selectedProject.roles.length - 1].id
+  selectedId.value = newRoles[newRoles.length - 1].id
 }
 
 async function deleteRole(roleId: Role['id']) {
-  if (!projectStore.selectedProject) return
-  await projectStore.deleteRole(projectStore.selectedProject.id, roleId)
-  projectStore.selectedProject.roles = projectStore.selectedProject.roles.filter(role => role.id !== roleId)
+  await project.value.Roles.delete(roleId)
+  reload()
   snackbarStore.setMessage('Rôle supprimé', 'success')
   selectedId.value = undefined
 }
 
 async function updateMember(checked: boolean, userId: Member['userId']) {
-  if (!projectStore.selectedProject || !selectedRole.value) return
-  const matchingMember = projectStore.selectedProject.members.find(member => member.userId === userId)
+  if (!selectedRole.value) return
+  const matchingMember = project.value.members.find(member => member.userId === userId)
   if (!matchingMember) return
 
   const newRoleList = checked
     ? matchingMember.roleIds.concat(selectedRole.value.id)
     : matchingMember.roleIds.filter(id => id !== selectedRole.value?.id)
 
-  projectStore.selectedProject.members = await projectMemberStore.patchMembers(projectStore.selectedProject.id, [{ userId, roles: newRoleList }])
+  await project.value.Members.patch([{ userId, roles: newRoleList }])
+  reload()
+  snackbarStore.setMessage('Rôle mis à jour', 'success')
+}
+
+async function saveEveryoneRole(role: { permissions: bigint }) {
+  await project.value.update({
+    everyonePerms: role.permissions.toString(),
+  })
+  reload()
   snackbarStore.setMessage('Rôle mis à jour', 'success')
 }
 
 async function saveRole(role: Omit<RoleBigint, 'position'>) {
-  if (role.id === 'everyone') return saveEveryoneRole(role)
-  if (!projectStore.selectedProject || !selectedRole.value) return
-  projectStore.selectedProject.roles = await projectStore.patchRoles(projectStore.selectedProject.id, [{
+  if (role.id === 'everyone') {
+    await saveEveryoneRole(role)
+    snackbarStore.setMessage('Rôle mis à jour', 'success')
+    return
+  }
+  if (!selectedRole.value) return
+  await project.value.Roles.patch([{
     id: selectedRole.value.id,
     permissions: role.permissions.toString(),
     name: role.name,
   }])
+  reload()
+  snackbarStore.setMessage('Rôle mis à jour', 'success')
 }
 
-async function saveEveryoneRole(role: { permissions: bigint }) {
-  if (!projectStore.selectedProject) return
-  await projectStore.updateProject(projectStore.selectedProject.id, {
-    everyonePerms: role.permissions.toString(),
+function reload() {
+  const roles = project.value.roles.map(role => ({
+    ...role,
+    memberCounts: project.value.members.filter(member => member.roleIds.includes(role.id)).length ?? 0,
+    isEveryone: false,
+    permissions: BigInt(role.permissions),
+  }))
+  roles.push({
+    id: 'everyone',
+    memberCounts: project.value.members.length ?? 0,
+    name: 'Tout le monde',
+    permissions: BigInt(project.value.everyonePerms),
+    position: 1000,
+    isEveryone: true,
   })
-  await projectStore.listProjects()
+  roleList.value = roles
 }
 
 const cancel = () => selectedId.value = undefined
+
+watch(project, reload, { immediate: true })
 </script>
 
 <template>
-  <DsoSelectedProject />
+  <DsoSelectedProject
+    :project-id="projectId"
+  />
   <template
-    v-if="projectStore.selectedProject"
+    v-if="ProjectAuthorized.ManageRoles({ projectPermissions: project.myPerms })"
   >
     <div
       class="flex flex-row"
@@ -103,7 +115,7 @@ const cancel = () => selectedId.value = undefined
             data-testid="addRoleBtn"
             :class="selectedId ? 'w-11/12' : ''"
             secondary
-            @click="addRole()"
+            @click="addRole"
           />
           <button
             v-for="role in roleList"
@@ -133,17 +145,19 @@ const cancel = () => selectedId.value = undefined
         class="md:w-6/8 w-full"
         :name="selectedRole.name"
         :permissions="BigInt(selectedRole.permissions)"
-        :project-id="projectStore.selectedProject.id"
+        :project-id="project.id"
         :is-everyone="selectedRole.isEveryone"
-        :all-members="projectStore.selectedProject.members"
+        :all-members="project.members"
         @delete="deleteRole(selectedRole.id)"
         @update-member-roles="(checked: boolean, userId: Member['userId']) => updateMember(checked, userId)"
         @save="(role: Omit<RoleBigint, 'position'>) => saveRole(role)"
-        @cancel="() => cancel()"
+        @cancel="cancel"
       />
     </div>
   </template>
-  <ErrorGoBackToProjects
+  <p
     v-else
-  />
+  >
+    Vous n'avez pas les permissions pour afficher ces ressources
+  </p>
 </template>

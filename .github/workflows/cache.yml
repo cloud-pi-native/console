@@ -17,7 +17,7 @@ on:
 
 jobs:
   cleanup-cache:
-    name: Delete gituhb cache
+    name: Delete github cache
     runs-on: ubuntu-latest
     steps:
       - name: Check out code

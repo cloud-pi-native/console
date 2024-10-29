@@ -9,13 +9,14 @@ const props = withDefaults(defineProps<{
   logs: XOR<CleanLog, Log>[]
   isUpdating: boolean
   page: number
-  step: number
-  mode: 'full' | 'hide' | 'hideDetails'
-  paginationPosition: 'top' | 'bottom' | 'both'
-  hideTotalEvents: boolean
-  headerClass: string
-  bodyClass: string
+  step?: number
+  mode?: 'full' | 'hide' | 'hideDetails'
+  paginationPosition?: 'top' | 'bottom' | 'both'
+  hideTotalEvents?: boolean
+  headerClass?: string
+  bodyClass?: string
 }>(), {
+  step: 10,
   totalLength: 0,
   paginationPosition: 'both',
   hideTotalEvents: false,
@@ -111,6 +112,12 @@ async function showLogs(index: number) {
       @set-page="showLogs($event)"
     />
     <div
+      v-if="!logs.length"
+      class="text-center mt-2 w-full"
+    >
+      Aucun événement à afficher
+    </div>
+    <div
       v-for="log in logs"
       :key="log.id"
       :class="`log-box my-5 border-solid ${log.data?.warning?.length ? 'log-box--warning' : log.data?.failed ? 'log-box--error' : 'log-box--success'}`"
@@ -126,7 +133,7 @@ async function showLogs(index: number) {
           class="flex gap-2"
         >
           <DsfrBadge
-            v-if="log?.data?.totalExecutionTime"
+            v-if="typeof log?.data?.totalExecutionTime !== 'undefined'"
             :label="`${log.data.totalExecutionTime} ms`"
             no-icon
           />

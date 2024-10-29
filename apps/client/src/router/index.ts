@@ -1,7 +1,10 @@
 import {
-  type RouteRecordRaw,
   createRouter,
   createWebHistory,
+} from 'vue-router'
+import type {
+  RouteLocationNormalizedGeneric,
+  RouteRecordRaw,
 } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
@@ -25,6 +28,7 @@ const DsoRepos = () => import('@/views/projects/DsoRepos.vue')
 const DsoAdmin = () => import('@/views/admin/DsoAdmin.vue')
 const ListUser = () => import('@/views/admin/ListUser.vue')
 const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
+const AdminProject = () => import('@/views/admin/AdminProject.vue')
 const ListProjects = () => import('@/views/admin/ListProjects.vue')
 const ListLogs = () => import('@/views/admin/ListLogs.vue')
 const AdminRoles = () => import('@/views/admin/AdminRoles.vue')
@@ -39,7 +43,12 @@ const AdminTokens = () => import('@/views/admin/AdminTokens.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
-const routes: Readonly<RouteRecordRaw[]> = [
+function propTheProjectParam(to: RouteLocationNormalizedGeneric) {
+  return {
+    projectId: Array.isArray(to.params.id) ? to.params.id[0] : to.params.id,
+  }
+}
+export const routes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/login',
     name: 'Login',
@@ -87,6 +96,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
     name: 'ParentProjects',
     path: '/projects',
     component: DsoProjectWrapper,
+    props: propTheProjectParam,
     children: [
       {
         path: '',
@@ -100,7 +110,13 @@ const routes: Readonly<RouteRecordRaw[]> = [
           if (typeof to.params.id !== 'string' || !uuid.exec(to.params.id)) {
             return next('/projects')
           }
-          useProjectStore().setSelectedProject(to.params.id)
+          if (!useProjectStore().myProjects.some(project => project.id === to.params.id)) {
+            await useProjectStore().getProject(to.params.id).catch(async () => {
+              console.log(`Unable to find project information, redirect to /projects`)
+              return next('/projects')
+            })
+          }
+          useProjectStore().lastSelectedProjectId = to.params.id
           return next()
         },
         children: [
@@ -108,38 +124,41 @@ const routes: Readonly<RouteRecordRaw[]> = [
             path: 'dashboard',
             name: 'Dashboard',
             component: DsoDashboard,
+            props: propTheProjectParam,
           },
           {
             path: 'services',
             name: 'Services',
             component: DsoServices,
+            props: propTheProjectParam,
           },
           {
             path: 'roles',
             name: 'ProjectRoles',
             component: DsoRoles,
+            props: propTheProjectParam,
           },
           {
             path: 'team',
             name: 'Team',
             component: DsoTeam,
+            props: propTheProjectParam,
           },
           {
             path: 'repositories',
             name: 'Repos',
             component: DsoRepos,
+            props: propTheProjectParam,
           },
           {
             path: 'environments',
             name: 'Environments',
             component: ManageEnvironments,
+            props: propTheProjectParam,
           },
         ],
       },
     ],
-    async beforeEnter() {
-      await useProjectStore().listProjects()
-    },
   },
   {
     path: '/projects/create-project',
@@ -162,9 +181,25 @@ const routes: Readonly<RouteRecordRaw[]> = [
         component: ListOrganizations,
       },
       {
+        path: 'projects/:id',
+        name: 'AdminProject',
+        component: AdminProject,
+        async beforeEnter(to, _from, next) {
+          if (typeof to.params.id !== 'string' || !uuid.exec(to.params.id)) {
+            return next('/projects')
+          }
+          await useProjectStore().getProject(to.params.id)
+          return next()
+        },
+        props(to) {
+          return { projectId: to.params.id }
+        },
+      },
+      {
         path: 'projects',
         name: 'ListProjects',
         component: ListProjects,
+        strict: false,
       },
       {
         path: 'logs',
@@ -268,4 +303,11 @@ router.beforeEach(async (to, _from, next) => {
   next()
 })
 
+export const isInProject = computed(() => router.currentRoute.value.matched.some(route => route.name === 'Project'))
+export const selectedProjectId = computed<string | undefined>(() => {
+  if (router.currentRoute.value.matched.some(route => route.name === 'Project')) {
+    return router.currentRoute.value.params.id as string
+  }
+  return undefined
+})
 export default router

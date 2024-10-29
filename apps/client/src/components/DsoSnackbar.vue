@@ -24,14 +24,19 @@ watch(routePath, () => {
   <div class="w-full flex justify-center">
     <DsfrAlert
       data-testid="snackbar"
-      :description="message"
       :type="type"
       :closed="!isOpen"
-      class="dso-snackbar"
+      class="dso-snackbar max-w-300"
       small
       closeable
       @close="closeSnackbar()"
-    />
+    >
+      <span
+        style="white-space: pre-wrap;"
+      >
+        {{ message }}
+      </span>
+    </DsfrAlert>
   </div>
 </template>
 

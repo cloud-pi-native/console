@@ -9,11 +9,14 @@ import { copyContent } from '@/utils/func.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useLogStore } from '@/stores/log.js'
 
+const props = defineProps<{ projectId: ProjectV2['id'] }>()
+
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
 const stageStore = useStageStore()
+const project = computed(() => projectStore.projectsById[props.projectId])
 
-const description = ref<string | undefined>(projectStore.selectedProject?.description ?? undefined)
+const description = ref(project.value.description)
 const isEditingDescription = ref(false)
 const isArchivingProject = ref(false)
 const projectToArchive = ref('')
@@ -23,37 +26,32 @@ const allStages = ref<Array<any>>([])
 const logStore = useLogStore()
 
 async function updateProject() {
-  if (!projectStore.selectedProject) return
-  const callback = projectStore.selectedProject.addOperation('update')
-  await projectStore.updateProject(projectStore.selectedProject.id, { description: description.value })
-  await projectStore.listProjects()
+  project.value.update({ description: description.value })
   isEditingDescription.value = false
-  callback.fn(callback.args)
-  logStore.needRefresh = true
 }
 
 async function replayHooks() {
-  if (!projectStore.selectedProject) return
-  const callback = projectStore.selectedProject.addOperation('replay')
-  await useProjectStore().replayHooksForProject(projectStore.selectedProject.id)
-  await useProjectStore().listProjects()
-  snackbarStore.setMessage('Le projet a été reprovisionné avec succès', 'success')
-  callback.fn(callback.args)
-  logStore.needRefresh = true
+  await project.value.replay()
+  switch (project.value.status) {
+    case 'created':
+      snackbarStore.setMessage('Le projet a été reprovisionné avec succès.', 'success')
+      break
+    case 'failed':
+      snackbarStore.setMessage('Le projet a été reprovisionné mais a rencontré une erreur bloquante.\nVeuillez consulter les journaux puis réessayer dans quelques instants.\nSi le problème persiste, vous pouvez contacter un administrateur.', 'error')
+      break
+    case 'warning':
+      snackbarStore.setMessage('Le projet a été reprovisionné et a rencontré une erreur non bloquante.\nVeuillez consulter les journaux puis réessayer dans quelques instants.\nSi le problème persiste, vous pouvez contacter un administrateur.', 'warning', 20_000)
+      break
+    default:
+      snackbarStore.setMessage('Le projet a été reprovisionné mais se trouve dans un état inconnu.', 'info')
+      break
+  }
 }
 
-async function archiveProject(projectId: ProjectV2['id']) {
-  if (!projectStore.selectedProject) return
-  const callback = projectStore.selectedProject.addOperation('delete')
-  try {
-    await projectStore.archiveProject(projectId)
-    await projectStore.listProjects()
-  } catch (_error) {
-    await projectStore.listProjects()
-    throw _error
-  }
+async function archiveProject() {
+  await project.value.delete()
+  projectStore.lastSelectedProjectId = undefined
   router.push('/projects')
-  callback.fn(callback.args)
 }
 
 function getDynamicTitle(locked?: ProjectV2['locked'], description?: ProjectV2['description']) {
@@ -63,13 +61,10 @@ function getDynamicTitle(locked?: ProjectV2['locked'], description?: ProjectV2['
 }
 
 async function handleSecretDisplay() {
-  if (!projectStore.selectedProject) return
-  const callback = projectStore.selectedProject.addOperation('lockHandling')
   isSecretShown.value = !isSecretShown.value
   if (isSecretShown.value && !Object.keys(projectSecrets.value).length) {
-    projectSecrets.value = await projectStore.getProjectSecrets(projectStore.selectedProject.id) ?? {}
+    projectSecrets.value = await project.value.Services.getSecrets()
   }
-  callback.fn(callback.args)
 }
 
 function getRows(service: string) {
@@ -86,32 +81,37 @@ function getRows(service: string) {
 
 onBeforeMount(async () => {
   allStages.value = await stageStore.getAllStages()
+  logStore.needRefresh = true
+})
+onMounted(() => {
+  logStore.needRefresh = true
 })
 </script>
 
 <template>
-  <DsoSelectedProject />
   <div
-    v-if="projectStore.selectedProject"
+    :key="project.id"
     class="relative"
   >
     <div
-      class="fr-callout fr-my-8w"
+      class="fr-callout"
     >
       <h1
         class="fr-callout__title fr-mb-3w"
       >
-        {{ projectStore.selectedProject.name }}
+        {{ project.name }}<h2 class="fr-callout__title fr-mb-3w italic inline opacity-70">
+          ({{ project.organization.label }})
+        </h2>
       </h1>
       <div
         v-if="!isEditingDescription"
         class="flex gap-4 items-center"
       >
         <p
-          v-if="projectStore.selectedProject.description"
+          v-if="project.description"
           data-testid="descriptionP"
         >
-          {{ projectStore.selectedProject.description }}
+          {{ project.description }}
         </p>
         <p
           v-else
@@ -124,8 +124,8 @@ onBeforeMount(async () => {
           class="fr-mt-0"
           icon="ri:pencil-fill"
           data-testid="setDescriptionBtn"
-          :title="getDynamicTitle(projectStore.selectedProject.locked, projectStore.selectedProject.description)"
-          :disabled="projectStore.selectedProject.locked || !ProjectAuthorized.Manage({ projectPermissions: projectStore.selectedProjectPerms })"
+          :title="getDynamicTitle(project.locked, project.description)"
+          :disabled="project.locked || !ProjectAuthorized.Manage({ projectPermissions: project.myPerms })"
           icon-only
           secondary
           @click="isEditingDescription = true"
@@ -151,10 +151,10 @@ onBeforeMount(async () => {
             data-testid="saveDescriptionBtn"
             label="Enregistrer la description"
             secondary
-            :icon="projectStore.selectedProject.operationsInProgress.has('update')
+            :icon="project.operationsInProgress.has('update')
               ? { name: 'ri:refresh-fill', animation: 'spin' }
               : 'ri:send-plane-line'"
-            :disabled="projectStore.selectedProject.operationsInProgress.has('update')"
+            :disabled="project.operationsInProgress.has('update')"
             @click="updateProject()"
           />
           <DsfrButton
@@ -178,35 +178,38 @@ onBeforeMount(async () => {
       </div>
     </div>
     <div
-      v-if="projectStore.selectedProject"
-      class="flex flex-col gap-4"
+      class="flex flex-row justify-between "
     >
-      <DsoBadge
-        :resource="{
-          ...projectStore.selectedProject,
-          locked: projectStore.selectedProject.locked ? 'true' : 'false',
-          resourceKey: 'locked',
-          wording: `Projet ${projectStore.selectedProject.name}`,
-        }"
-      />
-      <DsoBadge
-        :resource="{
-          ...projectStore.selectedProject,
-          resourceKey: 'status',
-          wording: `Projet ${projectStore.selectedProject.name}`,
-        }"
-      />
+      <div
+        class="flex flex-col gap-4"
+      >
+        <DsoBadge
+          :resource="{
+            ...project,
+            locked: project.locked ? 'true' : 'false',
+            resourceKey: 'locked',
+            wording: `Projet ${project.name}`,
+          }"
+        />
+        <DsoBadge
+          :resource="{
+            ...project,
+            resourceKey: 'status',
+            wording: `Projet ${project.name}`,
+          }"
+        />
+      </div>
     </div>
     <div
-      v-if="ProjectAuthorized.ReplayHooks({ projectPermissions: projectStore.selectedProjectPerms })"
+      v-if="ProjectAuthorized.ReplayHooks({ projectPermissions: project.myPerms })"
       class="fr-mt-2w"
     >
       <DsfrButton
         data-testid="replayHooksBtn"
         label="Reprovisionner le projet"
-        :icon="{ name: 'ri:refresh-fill', animation: projectStore.selectedProject.operationsInProgress.has('replay') ? 'spin' : '' }"
+        :icon="{ name: 'ri:refresh-fill', animation: project.operationsInProgress.has('replay') ? 'spin' : '' }"
         secondary
-        :disabled="projectStore.selectedProject.operationsInProgress.has('replay')"
+        :disabled="project.locked || project.operationsInProgress.has('replay')"
         @click="replayHooks"
       />
     </div>
@@ -214,14 +217,14 @@ onBeforeMount(async () => {
       class="fr-mt-2w"
     >
       <DsfrButton
-        v-if="ProjectAuthorized.SeeSecrets({ projectPermissions: projectStore.selectedProjectPerms })"
+        v-if="ProjectAuthorized.SeeSecrets({ projectPermissions: project.myPerms })"
         data-testid="showSecretsBtn"
         :label="`${isSecretShown ? 'Cacher' : 'Afficher'} les secrets des services`"
         secondary
-        :icon="projectStore.selectedProject.operationsInProgress.has('searchSecret')
+        :icon="project.operationsInProgress.has('searchSecret')
           ? { name: 'ri:refresh-fill', animation: 'spin' }
           : isSecretShown ? 'ri:eye-off-line' : 'ri:eye-line'"
-        :disabled="projectStore.selectedProject.operationsInProgress.has('searchSecret')"
+        :disabled="project.operationsInProgress.has('searchSecret')"
         @click="handleSecretDisplay"
       />
       <div
@@ -252,7 +255,7 @@ onBeforeMount(async () => {
       </div>
     </div>
     <div
-      v-if="ProjectAuthorized.Manage({ projectPermissions: projectStore.selectedProjectPerms })"
+      v-if="ProjectAuthorized.Manage({ projectPermissions: project.myPerms })"
       data-testid="archiveProjectZone"
       class="danger-zone"
     >
@@ -260,7 +263,7 @@ onBeforeMount(async () => {
         <DsfrButton
           v-show="!isArchivingProject"
           data-testid="showArchiveProjectBtn"
-          :label="`Supprimer le projet ${projectStore.selectedProject.name}`"
+          :label="`Supprimer le projet ${project.name}`"
           primary
           icon="ri:delete-bin-7-line"
           @click="isArchivingProject = true"
@@ -285,9 +288,9 @@ onBeforeMount(async () => {
         <DsfrInput
           v-model="projectToArchive"
           data-testid="archiveProjectInput"
-          :label="`Veuillez taper '${projectStore.selectedProject.name}' pour confirmer la suppression du projet`"
+          :label="`Veuillez taper '${project.name}' pour confirmer la suppression du projet`"
           label-visible
-          :placeholder="projectStore.selectedProject.name"
+          :placeholder="project.name"
           class="fr-mb-2w"
         />
         <div
@@ -295,13 +298,13 @@ onBeforeMount(async () => {
         >
           <DsfrButton
             data-testid="archiveProjectBtn"
-            :label="`Supprimer définitivement le projet ${projectStore.selectedProject.name}`"
-            :disabled="projectToArchive !== projectStore.selectedProject.name || projectStore.selectedProject.operationsInProgress.has('delete')"
+            :label="`Supprimer définitivement le projet ${project.name}`"
+            :disabled="projectToArchive !== project.name || project.operationsInProgress.has('delete')"
             secondary
-            :icon="projectStore.selectedProject.operationsInProgress.has('delete')
+            :icon="project.operationsInProgress.has('delete')
               ? { name: 'ri:refresh-fill', animation: 'spin' }
               : 'ri:delete-bin-7-line'"
-            @click="archiveProject(projectStore.selectedProject ? projectStore.selectedProject.id : '')"
+            @click="archiveProject"
           />
           <DsfrButton
             label="Annuler"
@@ -312,8 +315,4 @@ onBeforeMount(async () => {
       </div>
     </div>
   </div>
-  <!-- N'est jamais sensé s'afficher -->
-  <ErrorGoBackToProjects
-    v-else
-  />
 </template>

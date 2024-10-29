@@ -252,8 +252,7 @@ describe('tests projectRoleContract', () => {
         .delete(projectRoleContract.deleteProjectRole.path.replace(':projectId', projectId).replace(':roleId', roleId))
         .end()
 
-      expect(response.json()).toEqual(null)
-      expect(response.statusCode).toEqual(200)
+      expect(response.statusCode).toEqual(204)
     })
 
     it('should return 403 for locked project', async () => {
