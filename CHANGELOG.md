@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.15.1](https://github.com/cloud-pi-native/console/compare/v8.15.0...v8.15.1) (2024-10-29)
+
+
+### Bug Fixes
+
+* :bug: update depracated import assertion type syntax ([d8f2072](https://github.com/cloud-pi-native/console/commit/d8f20728a0d96c6799e5bba7e821ed12356d6393))
+
 ## [8.15.0](https://github.com/cloud-pi-native/console/compare/v8.14.0...v8.15.0) (2024-10-29)
 
 
