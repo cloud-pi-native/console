@@ -27,7 +27,7 @@
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
-    "@types/node": "^20.14.9",
+    "@types/node": "^22.8.2",
     "@vitest/coverage-v8": "^1.6.0",
     "nodemon": "^3.1.4",
     "rimraf": "^5.0.7",
