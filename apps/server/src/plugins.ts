@@ -31,7 +31,7 @@ export async function initPm() {
     const moduleAbsPath = `${pluginsDir}/${dirName}`
     try {
       statSync(`${moduleAbsPath}/package.json`)
-      const pkg = await import(`${moduleAbsPath}/package.json`, { assert: { type: 'json' } })
+      const pkg = await import(`${moduleAbsPath}/package.json`, { with: { type: 'json' } })
       const entrypoint = pkg.default.module || pkg.default.main
       if (!entrypoint) throw new Error(`No entrypoint found in package.json : ${pkg.default.name}`)
       const { plugin } = await import(`${moduleAbsPath}/${entrypoint}`) as { plugin: Plugin }
