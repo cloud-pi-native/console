@@ -44,10 +44,6 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
 })
 const isZoneValid = computed(() => !errorSchema.value)
 
-function updateClusters(value: string[]) {
-  localZone.value.clusterIds = value
-}
-
 function addZone() {
   if (isZoneValid.value) emit('add', localZone.value)
 }
@@ -117,21 +113,28 @@ onBeforeMount(() => {
       hint="Facultatif. Attention, ces informations seront visibles par les utilisateurs de la console."
     />
     <div
-      v-if="props.isNewZone"
+      v-if="!props.isNewZone"
       class="fr-mb-2w"
     >
       <ChoiceSelector
         id="clusters-select"
         :wrapped="false"
+        :disabled="true"
         label="Clusters associés"
-        :description="!props.isNewZone ? 'Veuillez procéder aux associations dans le formulaire des clusters concernés.' : 'Sélectionnez les clusters autorisés à utiliser cette zone.'"
+        description="Veuillez procéder aux associations dans le formulaire des clusters concernés."
         :options="props.allClusters"
-        :options-selected="props.allClusters.filter(({ id }) => localZone.clusterIds?.includes(id))"
+        :options-selected="props.associatedClusters"
         label-key="label"
         value-key="id"
-        @update="(_c: Cluster[], clusterIds: Cluster['id'][]) => updateClusters(clusterIds)"
       />
     </div>
+    <DsfrAlert
+      v-if="props.associatedClusters.length"
+      class="mt-5"
+      data-testid="associatedClustersAlert"
+      description="La zone ne peut être supprimée, car des clusters y sont associés."
+      small
+    />
     <div
       class="flex space-x-10 mt-5"
     >
@@ -161,13 +164,6 @@ onBeforeMount(() => {
         @click="cancel()"
       />
     </div>
-    <DsfrAlert
-      v-if="props.associatedClusters.length"
-      class="mt-5"
-      data-testid="associatedClustersAlert"
-      description="La zone ne peut être supprimée, car des clusters y sont associés."
-      small
-    />
     <div
       v-if="localZone.id && !props.associatedClusters.length"
       data-testid="deleteZoneZone"
