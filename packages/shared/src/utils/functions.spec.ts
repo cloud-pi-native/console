@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcProjectNameMaxLength, exclude, identity, removeTrailingSlash } from './functions.js'
+import { calcProjectNameMaxLength, exclude, identity, removeTrailingSlash, shallowMatch } from './functions.js'
 
 describe('function utils: identity', () => {
   it('should return identity', () => {
@@ -56,5 +56,17 @@ describe('function utils: removeTrailingSlash', () => {
   it('should return string without ending slash', () => {
     expect(removeTrailingSlash('mtest')).toStrictEqual('mtest')
     expect(removeTrailingSlash('mtest/')).toStrictEqual('mtest')
+  })
+})
+
+describe('function utils: shallowMatch', () => {
+  it('should return false if key is not equal', () => {
+    expect(shallowMatch({ a: 1 }, { a: 2 })).toEqual(false)
+  })
+  it('should return false if missing key', () => {
+    expect(shallowMatch({ a: 1, b: 2 }, { a: 1 })).toEqual(false)
+  })
+  it('should return true if is equal', () => {
+    expect(shallowMatch({ a: 1 }, { a: 1 })).toEqual(true)
   })
 })

@@ -125,6 +125,38 @@ export function shallowEqual(object1: Record<string, unknown>, object2: Record<s
   return true
 }
 
+/**
+ * Check if all the keys / values in first parameter is present in the the second parameter, the second one can have additional property
+ *
+ * @example
+ * ```ts
+ * shallowMatch({ a: 'a' }, { a: 'c' })         // false, invalid value
+ * shallowMatch({ a: 'a' }, { })                // fals, missing property
+ * shallowMatch({ a: 'a' }, { a: 'a', b: 'b' }) // true, everything is retrieved and equivalent in the second argument
+ * ```
+ *
+ */
+export function shallowMatch(objectController: Record<string, unknown> | undefined, objectToCheck: Record<string, unknown> | undefined) {
+  if (!objectController || !objectToCheck) {
+    return false
+  }
+
+  const keys1 = Object.keys(objectController)
+  const keys2 = Object.keys(objectToCheck)
+
+  if (keys1.length > keys2.length) {
+    return false
+  }
+
+  for (const key of keys1) {
+    if (objectController[key] !== objectToCheck[key]) {
+      return false
+    }
+  }
+
+  return true
+}
+
 export function generateRandomPassword(length = 24, chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@-_#*') {
   return Array.from(crypto.getRandomValues(new Uint32Array(length)))
     .map(x => chars[x % chars.length])

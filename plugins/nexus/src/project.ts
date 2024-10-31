@@ -122,12 +122,15 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
     const user = getUser.data.find(user => user.userId === projectName)
     if (user) {
       res.user = getUser.data[0]
-      res.status = { result: 'OK', message: 'User already exist' }
+      res.status = { result: 'OK', message: 'User already exists' }
       if (!vaultNexusSecret) {
         await axiosInstance({
           method: 'put',
           url: `/security/users/${projectName}/change-password`,
           data: newPwd,
+          headers: {
+            'Content-Type': 'text/plain',
+          },
         })
         currentPwd = newPwd
       }

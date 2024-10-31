@@ -119,11 +119,12 @@ export class GitlabProjectApi extends PluginApi {
 
   public async getProjectId(projectName: string) {
     const pathProjectName = `${getConfig().projectsRootDir}/${this.project.organization.name}/${this.project.name}/${projectName}`
-    const projects = (await this.api.Projects.search(projectName)).filter(p => p.path_with_namespace === pathProjectName)
-    if (projects.length !== 1) {
+    const project = (await this.api.Projects.search(projectName)).find(p => p.path_with_namespace === pathProjectName)
+
+    if (!project) {
       throw new Error(`Gitlab project "${pathProjectName}" not found`)
     }
-    return projects[0].id
+    return project.id
   }
 
   public async getProjectById(projectId: number) {

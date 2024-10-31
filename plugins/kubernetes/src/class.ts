@@ -1,11 +1,12 @@
 import type { ClusterObject, Environment, Project, ResourceQuotaType, UserObject } from '@cpn-console/hooks'
 import { PluginApi } from '@cpn-console/hooks'
 import type { CoreV1Api, V1Namespace, V1ObjectMeta } from '@kubernetes/client-node'
-import { objectValues } from '@cpn-console/shared'
+import { objectValues, shallowMatch } from '@cpn-console/shared'
 import { getNsObject } from './namespace.js'
 import { createCoreV1Api, createCustomObjectApi } from './api.js'
 import { getQuotaObject } from './quota.js'
 import type { AnyObjectsApi } from './customApiClass.js'
+import { patchOptions } from './misc.js'
 
 type V1ObjectMetaPopulated = V1ObjectMeta & {
   name: string
@@ -33,6 +34,7 @@ interface ResourceParams {
 }
 
 class KubernetesNamespace {
+  private readonly nsObjectExpected: V1NamespacePopulated
   nsObject: V1NamespacePopulated
   coreV1Api: CoreV1Api | undefined
   anyObjectApi: AnyObjectsApi | undefined
@@ -40,6 +42,7 @@ class KubernetesNamespace {
   constructor(organizationName: string, projectName: string, environmentName: string, owner: UserObject, cluster: ClusterObject, projectId: string) {
     this.coreV1Api = createCoreV1Api(cluster)
     this.anyObjectApi = createCustomObjectApi(cluster)
+    this.nsObjectExpected = getNsObject(organizationName, projectName, environmentName, owner, cluster.zone.slug, projectId)
     this.nsObject = getNsObject(organizationName, projectName, environmentName, owner, cluster.zone.slug, projectId)
   }
 
@@ -48,6 +51,16 @@ class KubernetesNamespace {
     const ns = await this.coreV1Api.createNamespace(this.nsObject) as { body: V1NamespacePopulated }
     this.nsObject = ns.body
     return this.nsObject
+  }
+
+  public async ensure(currNs: V1NamespacePopulated): Promise<V1NamespacePopulated> {
+    if (!this.coreV1Api) return currNs
+
+    if (!shallowMatch(this.nsObjectExpected.metadata.labels, currNs.metadata.labels)) {
+      const newNs = await this.coreV1Api.patchNamespace(this.nsObject.metadata.name, this.nsObjectExpected, undefined, undefined, undefined, undefined, undefined, patchOptions) as { body: V1NamespacePopulated }
+      return newNs.body
+    }
+    return currNs
   }
 
   public async delete() {
@@ -68,7 +81,7 @@ class KubernetesNamespace {
 
   public async getFromClusterOrCreate() {
     const ns = await this.getFromCluster()
-    return ns ?? this.create()
+    return ns ? this.ensure(ns) : this.create()
   }
 
   public async createOrPatchRessource(r: ResourceParams) {
