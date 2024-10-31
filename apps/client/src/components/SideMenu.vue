@@ -13,13 +13,13 @@ const serviceStore = useServiceStore()
 
 const routeName = computed(() => route.name)
 const isLoggedIn = computed(() => userStore.isLoggedIn)
-const selectedProjectId = computed<string | undefined>(() => {
+const selectedProjectSlug = computed<string | undefined>(() => {
   if (router.currentRoute.value.matched.some(route => route.name === 'Project')) {
-    return router.currentRoute.value.params.id as string
+    return router.currentRoute.value.params.slug as string
   }
   return undefined
 })
-const project = computed<Project | undefined>(() => projectStore.projectsById[selectedProjectId.value ?? ''])
+const project = computed<Project | undefined>(() => projectStore.projectsBySlug[selectedProjectSlug.value ?? ''])
 
 const isDarkScheme = ref<boolean>()
 const selectedScheme = computed<string | undefined>(() =>
@@ -144,7 +144,7 @@ onMounted(() => {
                 class="menu-link-icon"
                 data-testid="menuDashboard"
                 :active="routeName === 'Dashboard'"
-                :to="`/projects/${project?.id}/dashboard`"
+                :to="`/projects/${project?.slug}/dashboard`"
               >
                 <v-icon name="ri:dashboard-line" />
                 Tableau de bord
@@ -155,7 +155,7 @@ onMounted(() => {
                 class="menu-link-icon"
                 data-testid="menuServices"
                 :active="routeName === 'Services'"
-                :to="`/projects/${project?.id}/services`"
+                :to="`/projects/${project?.slug}/services`"
               >
                 <v-icon name="ri:flow-chart" />
                 Services externes
@@ -166,7 +166,7 @@ onMounted(() => {
                 class="menu-link-icon"
                 data-testid="menuTeam"
                 :active="routeName === 'Team'"
-                :to="`/projects/${project?.id}/team`"
+                :to="`/projects/${project?.slug}/team`"
               >
                 <v-icon name="ri:team-line" />
                 Équipe
@@ -179,7 +179,7 @@ onMounted(() => {
                 class="menu-link-icon"
                 data-testid="menuProjectRole"
                 :active="routeName === 'ProjectRoles'"
-                :to="`/projects/${project?.id}/roles`"
+                :to="`/projects/${project?.slug}/roles`"
               >
                 <v-icon name="ri:admin-line" />
                 Rôles
@@ -192,7 +192,7 @@ onMounted(() => {
                 class="menu-link-icon"
                 data-testid="menuRepos"
                 :active="routeName === 'Repos'"
-                :to="`/projects/${project?.id}/repositories`"
+                :to="`/projects/${project?.slug}/repositories`"
               >
                 <v-icon name="ri:git-branch-line" />
                 Dépôts
@@ -205,7 +205,7 @@ onMounted(() => {
                 class="menu-link-icon"
                 data-testid="menuEnvironments"
                 :active="routeName === 'Environments'"
-                :to="`/projects/${project?.id}/environments`"
+                :to="`/projects/${project?.slug}/environments`"
               >
                 <v-icon name="ri:microsoft-line" />
                 Environnements

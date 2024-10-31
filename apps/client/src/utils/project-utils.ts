@@ -59,6 +59,7 @@ export class Project implements ProjectV2 {
   description: string | undefined
   everyonePerms: string
   name: string
+  slug: string
   locked: boolean
   owner: Omit<User, 'adminRoleIds'>
   ownerId: string
@@ -69,7 +70,7 @@ export class Project implements ProjectV2 {
   createdAt: string
   updatedAt: string
   status: ProjectV2['status']
-  operationsInProgress = new Set<ProjectOperations>()
+  operationsInProgress: Set<ProjectOperations>
   myPerms: bigint
   repositories: Repo[] | undefined = undefined
   environments: Environment[] | undefined = undefined
@@ -81,6 +82,7 @@ export class Project implements ProjectV2 {
     this.description = project.description
     this.everyonePerms = project.everyonePerms
     this.name = project.name
+    this.slug = project.slug
     this.locked = project.locked
     this.owner = project.owner
     this.ownerId = project.ownerId
@@ -91,6 +93,7 @@ export class Project implements ProjectV2 {
     this.createdAt = project.createdAt
     this.updatedAt = project.updatedAt
     this.status = project.status
+    this.operationsInProgress = new Set<ProjectOperations>()
     this.myPerms = calculateProjectPerms(this, useUserStore().userProfile?.id)
   }
 

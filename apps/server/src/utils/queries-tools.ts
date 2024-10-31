@@ -7,3 +7,5 @@ export function filterObjectByKeys(obj, keys) {
     Object.entries(obj)?.filter(([key, _value]) => keys.includes(key)),
   )
 }
+
+export const uuid: RegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i

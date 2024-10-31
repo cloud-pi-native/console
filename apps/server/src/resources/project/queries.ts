@@ -9,6 +9,8 @@ import {
 } from '@prisma/client'
 import type { XOR, projectContract } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
+import { appVersion } from '@/utils/env.js'
+import { uuid } from '@/utils/queries-tools.js'
 
 type ProjectUpdate = Partial<Pick<Project, 'description' | 'ownerId' | 'everyonePerms' | 'locked'>>
 export function updateProject(id: Project['id'], data: ProjectUpdate) {
@@ -72,8 +74,10 @@ export async function listProjects({
 }
 
 export function getProjectOrThrow(id: Project['id']) {
-  return prisma.project.findUniqueOrThrow({
-    where: { id },
+  return prisma.project.findFirstOrThrow({
+    where: uuid.test(id)
+      ? { id }
+      : { slug: id },
     include: {
       clusters: { select: { id: true } },
       members: { include: { user: true } },
@@ -90,6 +94,7 @@ export function getProjectInfosByIdOrThrow(projectId: Project['id']) {
     },
     select: {
       name: true,
+      slug: true,
       members: { include: { user: true } },
       organization: {
         select: { name: true },
@@ -164,16 +169,10 @@ export function getProjectInfosAndRepos(id: Project['id']) {
   })
 }
 
-interface GetProjectByNameParams {
-  name: Project['name']
-  organizationName: Organization['name']
-}
-
-export function getProjectByNames({ name, organizationName }: GetProjectByNameParams) {
-  return prisma.project.findFirst({
+export function getSlugs(slugPrefix: string) {
+  return prisma.project.findMany({
     where: {
-      name,
-      organization: { name: organizationName },
+      slug: { startsWith: slugPrefix },
     },
   })
 }
@@ -270,11 +269,13 @@ interface CreateProjectParams {
   organizationId: Organization['id']
   description?: Project['description']
   ownerId: User['id']
+  slug: Project['slug']
 }
 
-export function initializeProject({ name, organizationId, description = '', ownerId }: CreateProjectParams) {
+export function initializeProject({ slug, name, organizationId, description = '', ownerId }: CreateProjectParams) {
   return prisma.project.create({
     data: {
+      slug,
       name,
       organizationId,
       description,
@@ -298,6 +299,7 @@ export function updateProjectCreated(id: Project['id']) {
     where: { id },
     data: {
       status: ProjectStatus.created,
+      lastSuccessProvisionningVersion: appVersion,
     },
     include: baseProjectIncludes,
   })
@@ -342,12 +344,13 @@ export function removeUserFromProject({ projectId, userId }: { projectId: Projec
 export async function archiveProject(id: Project['id']) {
   const project = await prisma.project.findUnique({
     where: { id },
-    select: { name: true },
+    select: { name: true, slug: true },
   })
   return prisma.project.update({
     where: { id },
     data: {
       name: `${project?.name}_${Date.now()}_archived`,
+      slug: `${project?.slug}_${Date.now()}_archived`,
       status: ProjectStatus.archived,
       locked: true,
     },

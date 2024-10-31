@@ -30,7 +30,7 @@ export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: {
 export const deleteProject: StepCall<Project> = async ({ args: project }) => {
   try {
     const kcClient = await getkcClient()
-    const projectName = `${project.organization.name}-${project.name}`
+    const projectName = project.slug
     const group = await getGroupByName(kcClient, projectName)
     if (group?.id) {
       await kcClient.groups.del({ id: group.id })
@@ -62,7 +62,7 @@ export const deleteProject: StepCall<Project> = async ({ args: project }) => {
 export const upsertProject: StepCall<Project> = async ({ args: project }) => {
   try {
     const kcClient = await getkcClient()
-    const projectName = `${project.organization.name}-${project.name}`
+    const projectName = project.slug
     const projectGroup = await getOrCreateProjectGroup(kcClient, projectName)
     const groupMembers = await kcClient.groups.listMembers({ id: projectGroup.id })
 

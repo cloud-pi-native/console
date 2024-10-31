@@ -87,14 +87,14 @@ const projectRows = computed(() => {
   }
   let rows = projectStore.projects
     .filter(project => filterMethods[activeFilter.value].filterFn(project))
-    .map(({ id, organization, name, status, locked, createdAt, owner }) => (
+    .map(({ organization, name, status, locked, createdAt, owner, slug }) => (
       {
         status,
         locked,
         rowAttrs: {
           onClick: () => {
             if (status === 'archived') return snackbarStore.setMessage('Le projet est archivé, pas d\'action possible', 'info')
-            selectProject(id)
+            selectProject(slug)
           },
           class: 'cursor-pointer',
           title: `Voir le tableau de bord du projet ${name}`,
@@ -157,10 +157,10 @@ async function getAllProjects() {
   console.log(res)
 }
 
-async function selectProject(projectId: string) {
+async function selectProject(projectSlug: string) {
   router.push({
     name: 'AdminProject',
-    params: { id: projectId },
+    params: { slug: projectSlug },
   })
 }
 

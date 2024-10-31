@@ -9,7 +9,7 @@ import {
   BadRequest400,
   Unprocessable422,
 } from '../../utils/errors.js'
-import { archiveProject, createProject, generateProjectsData, getProjectSecrets, listProjects, replayHooks, updateProject } from './business.ts'
+import { archiveProject, createProject, generateProjectsData, generateSlug, getProjectSecrets, listProjects, replayHooks, updateProject } from './business.ts'
 
 vi.mock('../../utils/hook-wrapper.ts', async () => ({
   hook,
@@ -119,6 +119,7 @@ describe('test project business logic', () => {
       prisma.organization.findUnique.mockResolvedValue({ id: project.organizationId, active: true })
       prisma.project.create.mockResolvedValue({ ...project, status: 'initializing' })
       prisma.project.findFirst.mockResolvedValue(undefined)
+      prisma.project.findMany.mockResolvedValue([])
       hook.project.upsert.mockResolvedValue({ results: {}, project: { ...project } })
 
       await createProject(project, user, reqId)
@@ -169,6 +170,7 @@ describe('test project business logic', () => {
       prisma.organization.findUnique.mockResolvedValue({ id: project.organizationId, active: true })
       prisma.project.create.mockResolvedValue({ ...project, status: 'initializing' })
       prisma.project.findFirst.mockResolvedValue(undefined)
+      prisma.project.findMany.mockResolvedValue([])
       hook.project.upsert.mockResolvedValue({ results: { failed: true }, project: { ...project } })
 
       const response = await createProject(project, user, reqId)
@@ -289,5 +291,38 @@ describe('test project business logic', () => {
       const response = await generateProjectsData()
       expect(response).toBeTypeOf('string')
     })
+  })
+})
+
+describe('generateSlug', () => {
+  it('should return prefix, no array', () => {
+    const prefix = faker.string.alphanumeric(5)
+    const generated = generateSlug(prefix)
+    expect(generated).toEqual(prefix)
+  })
+  it('should return prefix, empty array', () => {
+    const prefix = faker.string.alphanumeric(5)
+    const generated = generateSlug(prefix, [])
+    expect(generated).toEqual(prefix)
+  })
+  it('should return prefix, no match', () => {
+    const prefix = faker.string.alphanumeric(5)
+    const generated = generateSlug(prefix, [faker.string.alphanumeric(5), faker.string.alphanumeric(5)])
+    expect(generated).toEqual(prefix)
+  })
+  it('should return generated slug at 1 or 0, all matchs', () => {
+    const prefix = faker.string.alphanumeric(5)
+    const generated = generateSlug(prefix, [prefix])
+    expect(generated).match(/-[01]$/)
+  })
+  it('should return generated slug at 4, all matchs', () => {
+    const prefix = faker.string.alphanumeric(5)
+    const generated = generateSlug(prefix, [prefix, `${prefix}-0`, `${prefix}-1`, `${prefix}-2`, `${prefix}-3`])
+    expect(generated).match(/-4$/)
+  })
+  it('should fill empty space', () => {
+    const prefix = faker.string.alphanumeric(5)
+    const generated = generateSlug(prefix, [prefix, `${prefix}-0`, `${prefix}-1`, `${prefix}-3`])
+    expect(generated).match(/-2$/)
   })
 })

@@ -16,7 +16,7 @@ import router from '@/router/index.js'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useZoneStore } from '@/stores/zone.js'
 
-const props = defineProps<{ projectId: ProjectV2['id'] }>()
+const props = defineProps<{ projectSlug: ProjectV2['slug'] }>()
 
 const projectStore = useProjectStore()
 const zoneStore = useZoneStore()
@@ -40,8 +40,8 @@ const environmentsId = 'environmentsTable'
 const servicesId = 'servicesTable'
 const logsId = 'logsView'
 
-const project = computed(() => projectStore.projectsById[props.projectId])
 const environments = ref<(Environment & { cluster?: CleanedCluster & { zone?: Zone } })[]>()
+const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
 const repositories = ref<Repo[]>()
 // Add locale-specific relative date/time formatting rules.
 TimeAgo.addLocale(fr)
@@ -154,7 +154,7 @@ async function showLogs(index?: number) {
 
 async function getProjectLogs({ offset, limit }: { offset: number, limit: number }) {
   isUpdating.value = true
-  const res = await logStore.listLogs({ offset, limit, projectId: props.projectId, clean: false })
+  const res = await logStore.listLogs({ offset, limit, projectId: props.projectSlug, clean: false })
   logs.value = res.logs as Log[]
   totalLength.value = res.total
   isUpdating.value = false

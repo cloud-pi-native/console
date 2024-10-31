@@ -2,7 +2,7 @@
 import type { CleanLog, ProjectV2 } from '@cpn-console/shared'
 import { ref, watch } from 'vue'
 import { useLogStore } from '../stores/log.js'
-import { selectedProjectId } from '@/router/index.js'
+import { selectedProjectSlug } from '@/router/index.js'
 
 const props = defineProps<{
   projectId: ProjectV2['id']
@@ -41,8 +41,8 @@ watch(logStore, () => {
   }
 })
 
-watch(selectedProjectId, () => {
-  if (!selectedProjectId.value) {
+watch(selectedProjectSlug, () => {
+  if (!selectedProjectSlug.value) {
     logStore.needRefresh = false
     logStore.displayProjectLogs = true
     return
