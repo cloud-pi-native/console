@@ -1,5 +1,4 @@
-import type { Environment, Project } from '@cpn-console/hooks'
-import type { BaseResources } from './utils.js'
+import type { BaseResources, Environment, Project } from '@cpn-console/hooks'
 import { getConfig } from './utils.js'
 
 export interface ArgoDestination {
@@ -27,7 +26,8 @@ export function getMinimalAppProjectPatch(destination: ArgoDestination, name: st
         'dso/project': project.name,
         'dso/project.id': project.id,
         'dso/environment': environment.name,
-        'dso/organization': project.organization.name,
+        'dso/environment.id': environment.id,
+        'dso/project.slug': project.slug,
       },
     },
     spec: {

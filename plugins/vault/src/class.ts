@@ -289,7 +289,8 @@ export class VaultProjectApi extends VaultApi {
 
   Group = {
     upsert: async () => {
-      const existingGroup = await this.axios({
+      // TODO check api responses for POST and GET maybe duplicates
+      await this.axios({
         method: 'post',
         url: `/v1/identity/group/name/${this.groupName}`,
         headers: { 'X-Vault-Token': await this.getToken() },
@@ -299,7 +300,6 @@ export class VaultProjectApi extends VaultApi {
           policies: [this.policyName.appFull],
         },
       })
-      console.log(existingGroup.data)
 
       const response = await this.axios({
         method: 'get',

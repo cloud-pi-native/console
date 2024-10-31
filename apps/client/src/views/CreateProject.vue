@@ -60,7 +60,7 @@ async function createProject() {
       await nextTick()
       await router.push({
         name: 'Dashboard',
-        params: { id: newProject.id },
+        params: { slug: newProject.slug },
       })
     } catch (error) {
       snackbarStore.setMessage(error?.message, 'error')

@@ -66,6 +66,7 @@ describe('schemas utils', () => {
     const toParse: ProjectV2 = {
       id: faker.string.uuid(),
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
+      slug: faker.lorem.word({ length: { min: 2, max: 10 } }),
       description: '',
       organizationId: faker.string.uuid(),
       status: 'created',

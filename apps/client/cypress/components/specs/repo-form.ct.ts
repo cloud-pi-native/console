@@ -27,8 +27,8 @@ describe('RepoForm.vue', () => {
 
     const randomDbSetup = createRandomDbSetup({})
     const projectStore = useProjectStore()
-    projectStore.myProjectsById = {
-      [randomDbSetup.project.id]: randomDbSetup.project.id,
+    projectStore.myProjectsBySlug = {
+      [randomDbSetup.project.slug]: randomDbSetup.project,
     }
 
     cy.mount(RepoForm, { props })
@@ -97,8 +97,8 @@ describe('RepoForm.vue', () => {
 
     const randomDbSetup = createRandomDbSetup({})
     const projectStore = useProjectStore()
-    projectStore.myProjectsById = {
-      [randomDbSetup.project.id]: randomDbSetup.project.id,
+    projectStore.myProjectsBySlug = {
+      [randomDbSetup.project.slug]: randomDbSetup.project,
     }
 
     cy.mount(RepoForm, { props })
@@ -189,8 +189,8 @@ describe('RepoForm.vue', () => {
 
     const randomDbSetup = createRandomDbSetup({})
     const projectStore = useProjectStore()
-    projectStore.myProjectsById = {
-      [randomDbSetup.project.id]: randomDbSetup.project.id,
+    projectStore.myProjectsBySlug = {
+      [randomDbSetup.project.slug]: randomDbSetup.project,
     }
 
     cy.mount(RepoForm, { props })
@@ -236,8 +236,8 @@ describe('RepoForm.vue', () => {
 
     const randomDbSetup = createRandomDbSetup({})
     const projectStore = useProjectStore()
-    projectStore.myProjectsById = {
-      [randomDbSetup.project.id]: randomDbSetup.project.id,
+    projectStore.myProjectsBySlug = {
+      [randomDbSetup.project.slug]: randomDbSetup.project,
     }
 
     cy.mount(RepoForm, { props })
@@ -277,8 +277,8 @@ describe('RepoForm.vue', () => {
 
     const randomDbSetup = createRandomDbSetup({})
     const projectStore = useProjectStore()
-    projectStore.myProjectsById = {
-      [randomDbSetup.project.id]: randomDbSetup.project.id,
+    projectStore.myProjectsBySlug = {
+      [randomDbSetup.project.slug]: randomDbSetup.project,
     }
 
     cy.mount(RepoForm, { props })

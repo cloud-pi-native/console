@@ -9,7 +9,7 @@ export const checkServices: Hook<EmptyPayload, EmptyPayload> = createHook()
 export const fetchOrganizations: Hook<EmptyPayload, EmptyPayload> = createHook(true)
 
 // misc project related hooks
-export type ProjectLite = Pick<Project, 'id' | 'name' | 'organization' | 'store'>
+export type ProjectLite = Pick<Project, 'id' | 'name' | 'organization' | 'store' | 'slug'>
 
 export const getProjectSecrets: Hook<ProjectLite, ProjectLite> = createHook()
 

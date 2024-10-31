@@ -16,7 +16,7 @@ import { useClusterStore } from '@/stores/cluster.js'
 import { useZoneStore } from '@/stores/zone.js'
 import OperationPanel from '@/components/OperationPanel.vue'
 
-const props = defineProps<{ projectId: ProjectV2['id'] }>()
+const props = defineProps<{ projectSlug: ProjectV2['slug'] }>()
 
 const projectStore = useProjectStore()
 const zoneStore = useZoneStore()
@@ -41,7 +41,7 @@ const environmentsId = 'environmentsTable'
 const servicesId = 'servicesTable'
 const logsId = 'logsView'
 
-const project = computed(() => projectStore.projectsById[props.projectId])
+const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
 const environments = ref<(Environment & { cluster?: CleanedCluster & { zone?: Zone } })[]>()
 const repositories = ref<Repo[]>()
 // Add locale-specific relative date/time formatting rules.
@@ -165,7 +165,7 @@ async function showLogs(index?: number) {
 
 async function getProjectLogs({ offset, limit }: { offset: number, limit: number }) {
   isUpdating.value = true
-  const res = await logStore.listLogs({ offset, limit, projectId: props.projectId, clean: false })
+  const res = await logStore.listLogs({ offset, limit, projectId: project.value.id, clean: false })
   logs.value = res.logs as Log[]
   totalLength.value = res.total
   isUpdating.value = false

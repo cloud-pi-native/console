@@ -28,3 +28,61 @@ export const specificallyEnabled = (value?: string): boolean | undefined => valu
 export const defaultOrNullish = (value?: string): boolean | undefined => value ? DEFAULT === value : true
 
 export const okStatus = { status: { result: 'OK' } } as const
+
+/**
+ * Take a list of list of kubernetes resources and ditch duplicates by name
+ *
+ * @remarks Kind is ignored. You can pass as many arguments as you want
+ *
+ * @example
+ * ```ts
+ * const foo = [{ metadata: { name: 'One' }}, { metadata: { name: 'Two' }}]
+ * const bar = [{ metadata: { name: 'One' }}, { metadata: { name: 'Three' }}]
+ * const xyz = [{ metadata: { name: 'Four' }}, { metadata: { name: 'Two' }}]
+ * uniqueResource(foo, bar, xyz)
+ * // [
+ * //   { metadata: { name: 'One' }},
+ * //   { metadata: { name: 'Two' }},
+ * //   { metadata: { name: 'Three' }},
+ * //   { metadata: { name: 'Four' }}
+ * // ]
+ * ```
+ *
+ */
+export function uniqueResource<T extends { metadata?: { name?: string } }>(...lists: T[][]): T[] {
+  return lists
+    .flat()
+    .reduce((acc, cur) => (acc.some(item => item.metadata?.name === cur.metadata?.name)
+      ? acc
+      : [...acc, cur]
+    ), [] as T[])
+}
+
+export interface BaseResources {
+  kind?: string
+  apiVersion?: string
+  metadata: {
+    name?: string
+    namespace?: string
+    labels: {
+      [x: string]: string
+    }
+    [x: string]: any
+  }
+  [x: string]: any
+}
+
+export interface BareMinimumResource {
+  metadata: {
+    name: string
+    labels: {
+      [x: string]: string
+    }
+  }
+}
+
+export interface ListMinimumResources {
+  body: {
+    items: BareMinimumResource[]
+  }
+}

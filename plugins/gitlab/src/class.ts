@@ -254,7 +254,7 @@ export class GitlabProjectApi extends GitlabApi {
 
   // Tokens
   public async getProjectMirrorCreds(vaultApi: VaultProjectApi): Promise<GitlabMirrorSecret> {
-    const tokenName = `${this.project.organization.name}-${this.project.name}-bot`
+    const tokenName = `${this.project.slug}-bot`
     const currentToken = await this.getProjectToken(tokenName)
     const creds: GitlabMirrorSecret = {
       MIRROR_USER: '',

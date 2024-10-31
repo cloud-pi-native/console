@@ -1,6 +1,6 @@
 // @ts-ignore pas de typage disponible pour le paquet bytes
 import bytes from 'bytes'
-import { type Project, type ProjectLite, type StepCall, parseError, specificallyDisabled, specificallyEnabled } from '@cpn-console/hooks'
+import { type PluginResult, type Project, type ProjectLite, type StepCall, parseError, specificallyDisabled, specificallyEnabled } from '@cpn-console/hooks'
 import { DEFAULT, ENABLED } from '@cpn-console/shared'
 import { getApi, getConfig, projectRobotName, roRobotName, rwRobotName } from './utils.js'
 import { createProject, deleteProject } from './project.js'
@@ -10,9 +10,15 @@ import { deleteRobot, ensureRobot, roAccess, rwAccess } from './robot.js'
 import { getSecretObject } from './kubeSecret.js'
 
 export const createDsoProject: StepCall<Project> = async (payload) => {
+  const returnResult: PluginResult = {
+    status: {
+      result: 'OK',
+    },
+  }
+  const warnReasons: string[] = []
   try {
     const project = payload.args
-    const projectName = `${project.organization.name}-${project.name}`
+    const projectName = project.slug
     const { vault: vaultApi, keycloak: keycloakApi } = payload.apis
 
     const publishRoRobotProject = project.store.registry?.publishProjectRobot
@@ -39,24 +45,31 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
         : deleteRobot(projectName, projectRobotName, vaultApi, api),
     ])
 
-    await payload.apis.kubernetes.applyResourcesInAllEnvNamespaces({
-      group: '',
-      name: 'registry-pull-secret',
-      plural: 'secrets',
-      version: 'v1',
-      body: getSecretObject({ DOCKER_CONFIG: creds.DOCKER_CONFIG }),
-    })
+    await Promise.all(project.environments.map(async (env) => {
+      try {
+        await env.apis.kubernetes?.createOrPatchRessource({
+          group: '',
+          name: 'registry-pull-secret',
+          plural: 'secrets',
+          version: 'v1',
+          body: getSecretObject({ DOCKER_CONFIG: creds.DOCKER_CONFIG }),
+        })
+      } catch (error) {
+        console.log(error)
+        warnReasons.push(`Can't create / update registry-pull-secret in ${await env.apis.kubernetes?.getNsName()} for env ${env.name}`)
+      }
+    }))
 
     if (!projectCreated.project_id) throw new Error('Unable to retrieve project_id')
-    return {
-      status: {
-        result: 'OK',
-        message: `Created${createProjectRobot ? ' , with project robot' : ''}`,
-      },
-      store: {
-        projectId: projectCreated.project_id,
-      },
+    returnResult.status.message = `Created${createProjectRobot ? ' , with project robot' : ''}`
+    returnResult.store = {
+      projectId: projectCreated.project_id,
     }
+    if (warnReasons.length) {
+      returnResult.status.result = 'WARNING'
+      returnResult.status.message = warnReasons.join(', ')
+    }
+    return returnResult
   } catch (error) {
     return {
       error: parseError(error),
@@ -72,7 +85,7 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
 export const deleteDsoProject: StepCall<Project> = async (payload) => {
   try {
     const project = payload.args
-    const projectName = `${project.organization.name}-${project.name}`
+    const projectName = project.slug
 
     await deleteProject(projectName)
 

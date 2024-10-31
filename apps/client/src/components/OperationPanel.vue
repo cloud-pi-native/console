@@ -3,11 +3,11 @@ import { useProjectStore } from '@/stores/project.js'
 import type { Project } from '@/utils/project-utils.js'
 
 const props = defineProps<{
-  projectId: Project['id'] | undefined
+  projectSlug: Project['slug'] | undefined
 }>()
 
 const projectStore = useProjectStore()
-const project = computed<Project | undefined>(() => projectStore.projectsById[props.projectId ?? ''])
+const project = computed<Project | undefined>(() => projectStore.projectsBySlug[props.projectSlug ?? ''])
 </script>
 
 <template>

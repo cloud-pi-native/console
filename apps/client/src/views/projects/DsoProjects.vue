@@ -8,18 +8,12 @@ const projectStore = useProjectStore()
 const logStore = useLogStore()
 
 const projectList = computed(() => projectStore.myProjects
-  .map(project => ({
-    id: project.id,
-    title: project.name,
-    description: project.organization.label,
-    to: `/projects/${project.id}/dashboard`,
-  }))
-  .sort((p1, p2) => p1.title.localeCompare(p2.title)))
+  .toSorted((p1, p2) => p1.slug.localeCompare(p2.slug)))
 
-async function setSelectedProject(id: ProjectV2['id']) {
+async function setSelectedProject(slug: ProjectV2['slug']) {
   router.push({
     name: 'Dashboard',
-    params: { id },
+    params: { slug },
   })
 }
 
@@ -55,14 +49,21 @@ onBeforeMount(async () => {
       class="flex-basis-60 flex-stretch max-w-90"
     >
       <DsfrTile
-        :title="project.title"
-        :data-testid="`projectTile-${project.title}`"
-        :to="project.to"
-        :description="project.description"
+        :title="project.name"
+        :data-testid="`projectTile-${project.slug}`"
+        :to="`/projects/${project.slug}/dashboard`"
+        :description="project.slug"
         :horizontal="false"
-        @click="setSelectedProject(project.id)"
+        @click="setSelectedProject(project.slug)"
       />
     </div>
+    <template
+      v-if="!projectList.length"
+    >
+      <div>
+        Vous ne faites parti d'aucun projet pour l'instant
+      </div>
+    </template>
   </div>
 </template>
 

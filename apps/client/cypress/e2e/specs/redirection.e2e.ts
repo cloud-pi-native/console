@@ -19,12 +19,12 @@ describe('Redirection', () => {
     cy.wait('@listProjects').its('response').then((response) => {
       cy.get('[data-testid^="projectTile-"]')
       cy.should('have.length', `${response?.body.length}`)
-      cy.getByDataTestid(`projectTile-${project.name}`).click()
-      cy.url().should('contain', `/projects/${project.id}/dashboard`)
+      cy.getByDataTestid(`projectTile-${project.slug}`).click()
+      cy.url().should('contain', `/projects/${project.slug}/dashboard`)
     })
     cy.reload()
     cy.wait('@postToken')
-    cy.url().should('contain', `/projects/${project.id}/dashboard`)
+    cy.url().should('contain', `/projects/${project.slug}/dashboard`)
     cy.wait('@listProjects').its('response').then((_response) => {
       cy.getByDataTestid('descriptionP')
       cy.should('contain', project.description)
@@ -36,13 +36,13 @@ describe('Redirection', () => {
     cy.intercept('POST', '/realms/cloud-pi-native/protocol/openid-connect/token').as('postToken')
     cy.intercept('GET', '/realms/cloud-pi-native/account').as('getAccount')
 
-    cy.visit(`/projects/${project.id}/dashboard`)
-    cy.url().should('not.contain', `/projects/${project.id}/dashboard`)
+    cy.visit(`/projects/${project.slug}/dashboard`)
+    cy.url().should('not.contain', `/projects/${project.slug}/dashboard`)
     cy.get('input#username').type('test')
     cy.get('input#password').type('test')
     cy.get('input#kc-login').click()
     cy.wait('@postToken')
-    cy.url().should('contain', `/projects/${project.id}/dashboard`)
+    cy.url().should('contain', `/projects/${project.slug}/dashboard`)
     cy.wait('@listProjects', { timeout: 5_000 }).its('response').then((_response) => {
       cy.getByDataTestid('descriptionP')
       cy.should('contain', project.description)

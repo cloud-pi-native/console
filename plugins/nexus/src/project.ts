@@ -11,7 +11,7 @@ const getAxiosInstance = () => axios.create(getAxiosOptions())
 
 export const deleteNexusProject: StepCall<Project> = async ({ args: project }) => {
   const axiosInstance = getAxiosInstance()
-  const projectName = `${project.organization.name}-${project.name}`
+  const projectName = project.slug
   try {
     await Promise.all([
       ...deleteMavenRepo(axiosInstance, projectName),
@@ -61,9 +61,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
     if (!payload.apis.vault) throw new Error('no Vault available')
 
     const axiosInstance = getAxiosInstance()
-    const organization = payload.args.organization.name
-    const project = payload.args.name
-    const projectName = `${organization}-${project}`
+    const projectName = payload.args.slug
     const owner = payload.args.owner
     const res: any = {}
     const options = parseProjectOptions(payload.args.store.nexus)
@@ -222,7 +220,7 @@ export const getSecrets: StepCall<ProjectLite> = async (payload) => {
       },
     }
   }
-  const projectName = `${payload.args.organization.name}-${payload.args.name}`
+  const projectName = payload.args.slug
   const techUsed = getTechUsed(payload)
 
   return {

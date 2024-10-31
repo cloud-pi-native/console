@@ -2,10 +2,10 @@
 import type { ProjectV2 } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 
-const props = defineProps<{ projectId: ProjectV2['id'] }>()
+const props = defineProps<{ projectSlug: ProjectV2['id'] }>()
 
 const projectStore = useProjectStore()
-const project = computed(() => projectStore.projectsById[props.projectId])
+const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
 </script>
 
 <template>
@@ -18,7 +18,7 @@ const project = computed(() => projectStore.projectsById[props.projectId])
       <DsfrAlert
         v-if="project"
         :type="project.locked ? 'warning' : 'info'"
-        :description="project.locked ? `Le projet ${project?.name} est verrouillé. Veuillez contacter un administrateur` : `Le projet courant est : ${project?.name} (${project?.organization?.label})`"
+        :description="project.locked ? `Le projet ${project?.name} (${project?.slug}) est verrouillé. Veuillez contacter un administrateur` : `Le projet courant est : ${project?.name} (${project?.slug})`"
         data-testid="currentProjectInfo"
         small
         class="w-max fr-mb-2w"

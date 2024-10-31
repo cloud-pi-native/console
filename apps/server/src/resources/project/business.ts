@@ -9,8 +9,8 @@ import {
   deleteAllRepositoryForProject,
   getAllProjectsDataForExport,
   getOrganizationById,
-  getProjectByNames,
   getProjectOrThrow,
+  getSlugs,
   initializeProject,
   listProjects as listProjectsQuery,
   lockProject,
@@ -23,6 +23,19 @@ import { hook } from '@/utils/hook-wrapper.js'
 import type { UserDetails } from '@/types/index.js'
 import prisma from '@/prisma.js'
 import { parallelBulkLimit } from '@/utils/env.js'
+
+export function generateSlug(prefix: string, existingSlugs?: string[]) {
+  if (!existingSlugs?.includes(prefix)) {
+    return prefix
+  }
+  let idx = 1
+  let generated = `${prefix}-${idx}`
+  while (existingSlugs.includes(generated)) {
+    idx++
+    generated = `${prefix}-${idx}`
+  }
+  return generated
+}
 
 const projectStatus = ProjectStatusSchema._def.values
 export async function listProjects({ status, statusIn, statusNotIn, filter = 'member', ...query }: typeof projectContract.listProjects.query._type, userId: User['id'] | undefined) {
@@ -61,13 +74,12 @@ export async function createProject(dataDto: typeof projectContract.createProjec
   if (!organization) return new BadRequest400('Organisation introuvable')
   if (!organization.active) return new BadRequest400('Organisation inactive')
 
-  const projectSearch = await getProjectByNames({ name: dataDto.name, organizationName: organization.name })
-  if (projectSearch) {
-    return new BadRequest400(`Le projet "${dataDto.name}" existe déjà`)
-  }
+  let slug = `${organization.name}-${dataDto.name}`
+  const projectsWithSamePrefix = await getSlugs(slug)
+  slug = generateSlug(slug, projectsWithSamePrefix?.map(project => project.slug))
 
   // Actions
-  const project = await initializeProject({ ...dataDto, ownerId: requestor.id })
+  const project = await initializeProject({ ...dataDto, slug, ownerId: requestor.id })
 
   const { results, project: projectInfos } = await hook.project.upsert(project.id)
   await addLogs({ action: 'Create Project', data: results, userId: requestor.id, requestId, projectId: project.id })
