@@ -23,7 +23,7 @@ describe('Add repos into project', () => {
     }
 
     cy.goToProjects()
-    cy.getByDataTestid(`projectTile-${project.name}`).click()
+    cy.getByDataTestid(`projectTile-${project.slug}`).click()
     cy.getByDataTestid('menuRepos').click()
     cy.url().should('contain', '/repositories')
 
@@ -91,7 +91,7 @@ describe('Add repos into project', () => {
     }
 
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project.name}`).click()
+      .getByDataTestid(`projectTile-${project.slug}`).click()
       .getByDataTestid('menuRepos').click()
       .url().should('contain', '/repositories')
 
@@ -163,7 +163,7 @@ describe('Add repos into project', () => {
 
   it('Should update a repo', () => {
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project.name}`).click()
+      .getByDataTestid(`projectTile-${project.slug}`).click()
       .getByDataTestid('menuRepos').click()
       .url().should('contain', '/repositories')
 
@@ -193,7 +193,7 @@ describe('Add repos into project', () => {
 
   it('Should synchronise a repo', () => {
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project.name}`).click()
+      .getByDataTestid(`projectTile-${project.slug}`).click()
       .getByDataTestid('menuRepos').click()
       .url().should('contain', '/repositories')
 
@@ -286,7 +286,7 @@ describe('Add repos into project', () => {
 
   it('Should not be able to delete a repository if project locked', () => {
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${projectFailed.name}`).click()
+      .getByDataTestid(`projectTile-${projectFailed.slug}`).click()
       .getByDataTestid('menuRepos').click()
 
     cy.get('[data-testid^="repoTile-"]:first').click()

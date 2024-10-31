@@ -5,12 +5,12 @@ import type { Project } from '@/utils/project-utils.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps<{
-  projectId: Project['id']
+  projectSlug: Project['slug']
 }>()
 
 const snackbarStore = useSnackbarStore()
 const projectStore = useProjectStore()
-const project = computed(() => projectStore.projectsById[props.projectId])
+const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
 const operationsInProgress = computed(() => project.value.operationsInProgress)
 
 async function replayHooks() {
@@ -40,7 +40,7 @@ async function replayHooks() {
     <DsfrButton
       data-testid="replayHooksBtn"
       label="Reprovisionner le projet"
-      :icon="{ name: 'ri:refresh-fill', animation: operationsInProgress.includes('replay') ? 'spin' : '' }"
+      :icon="{ name: 'ri:refresh-fill', animation: operationsInProgress.includes('replay') ? 'spin' : undefined }"
       secondary
       :disabled="project.locked || operationsInProgress.includes('replay')"
       @click="replayHooks"

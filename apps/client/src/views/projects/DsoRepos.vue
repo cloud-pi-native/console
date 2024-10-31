@@ -5,11 +5,11 @@ import { ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-const props = defineProps<{ projectId: ProjectV2['id'] }>()
+const props = defineProps<{ projectSlug: ProjectV2['slug'] }>()
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
-const project = computed(() => projectStore.projectsById[props.projectId])
+const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
 
 const selectedRepo = ref<Repo>()
 const isNewRepoForm = ref(false)
@@ -75,7 +75,7 @@ watch(project, reload, { immediate: true })
 
 <template>
   <DsoSelectedProject
-    :project-id="projectId"
+    :project-slug="projectSlug"
   >
     <div
       v-if="selectedRepo || isNewRepoForm"
