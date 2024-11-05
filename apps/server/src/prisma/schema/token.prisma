@@ -1,0 +1,18 @@
+model AdminToken {
+  id             String      @id @unique @default(uuid()) @db.Uuid
+  name           String
+  permissions    BigInt
+  userId         String?     @db.Uuid
+  expirationDate DateTime?
+  lastUse        DateTime?
+  createdAt      DateTime    @default(now())
+  status         TokenStatus @default(active)
+  hash           String
+  createdBy      User?       @relation(fields: [userId], references: [id])
+}
+
+enum TokenStatus {
+  active
+  revoked
+  inactive
+}

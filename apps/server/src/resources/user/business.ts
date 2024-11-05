@@ -53,6 +53,7 @@ export async function getMatchingUsers(query: typeof userContract.getMatchingUse
         lastName: filter,
       }],
     })
+    AND.push({ type: 'human' })
   }
 
   return getMatchingUsersQuery({
@@ -79,9 +80,10 @@ export async function patchUsers(users: typeof userContract.patchUsers.body._typ
   })
 }
 
-export async function logUser({ id, email, groups, ...user }: UserDetails): Promise<User>
-export async function logUser({ id, email, groups, ...user }: UserDetails, withAdminPerms: boolean): Promise<{ user: User, adminPerms: bigint }>
-export async function logUser({ id, email, groups, ...user }: UserDetails, withwithAdminPerms?: boolean): Promise<User | { user: User, adminPerms: bigint }> {
+type UserTrial = Omit<UserDetails, 'type'>
+export async function logUser({ id, email, groups, ...user }: UserTrial): Promise<User>
+export async function logUser({ id, email, groups, ...user }: UserTrial, withAdminPerms: boolean): Promise<{ user: User, adminPerms: bigint }>
+export async function logUser({ id, email, groups, ...user }: UserTrial, withAdminPerms?: boolean): Promise<User | { user: User, adminPerms: bigint }> {
   const userDb = await prisma.user.findUnique({
     where: { id },
   })
@@ -94,14 +96,14 @@ export async function logUser({ id, email, groups, ...user }: UserDetails, withw
     .map(({ id }) => id)
 
   if (!userDb) {
-    const createdUser = await prisma.user.create({ data: { email, id, ...user, adminRoleIds: [] } })
-    if (withwithAdminPerms) {
+    const createdUser = await prisma.user.create({ data: { email, id, ...user, adminRoleIds: [], type: 'human' } })
+    if (withAdminPerms) {
       return {
         user: createdUser,
         adminPerms: matchingAdminRoles.reduce((acc, curr) => acc | curr.permissions, 0n),
       }
     }
-    return prisma.user.create({ data: { email, id, ...user, adminRoleIds: [] } })
+    return createdUser
   }
 
   const nonOidcRoleIds = matchingAdminRoles
@@ -110,7 +112,7 @@ export async function logUser({ id, email, groups, ...user }: UserDetails, withw
 
   const updatedUser = await prisma.user.update({ where: { id }, data: { ...user, adminRoleIds: nonOidcRoleIds } }) // on enregistre en bdd uniquement les roles de l'utilisateurs qui ne viennent pas de keycloak
     .then(user => ({ ...user, adminRoleIds: [...user.adminRoleIds, ...oidcRoleIds] }))
-  if (withwithAdminPerms) {
+  if (withAdminPerms) {
     return {
       user: updatedUser,
       adminPerms: matchingAdminRoles.reduce((acc, curr) => acc | curr.permissions, 0n),

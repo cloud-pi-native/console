@@ -1,58 +1,55 @@
+import type { User } from '@cpn-console/shared'
 import { getModel } from '../../support/func.js'
 
-describe('Administration users', () => {
-  const users = getModel('user').map(({ id, firstName, lastName, email }) => ({
-    id,
-    firstName,
-    lastName,
-    email,
-  }))
+const users = getModel('user') as User[]
+const anonUser = users.find(user => user.email === 'anon@user') as User
 
+describe('Administration users', () => {
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/users').as('getAllUsers')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/users')
 
-    cy.wait('@getAllUsers').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@getAllUsers', { timeout: 10_000 }).its('response.statusCode').should('match', /^20\d$/)
   })
 
   it('Should display admin users, loggedIn as admin', () => {
-    cy.getByDataTestid('tableAdministrationUsers').find('tbody').within(() => {
-      users.forEach((user) => {
-        cy.get('tr > td')
-          .contains(user.id)
-          .click()
-        cy.assertClipboard(user.id)
-        cy.get('tr > td')
-          .contains(user.firstName)
-        cy.get('tr > td')
-          .contains(user.lastName)
-        cy.get('tr > td')
-          .contains(user.email)
-      })
-      cy.getByDataTestid('cb8e5b4b-7b7b-40f5-935f-594f48ae6566-roles')
-        .should('contain', 'Admin Locaux')
+    users.forEach((user) => {
+      cy.getByDataTestid(`user-${user.id}`)
+        .should('contain.text', user.email)
+        .should('contain.text', '2023')
+        .should('contain.text', user.lastName)
+        .should('contain.text', user.firstName)
+        .should('not.contain.text', user.id)
     })
-  })
+    cy.getByDataTestid('input-checkbox-tableAdministrationUsersDisplayId')
+      .should('exist')
+      .click({ force: true })
+    users.forEach((user) => {
+      cy.getByDataTestid(`user-${user.id}`)
+        .should('contain.text', user.id)
+    })
 
-  it('Should filter admin users, loggedIn as admin', () => {
-    cy.getByDataTestid('tableAdministrationUsers').find('tbody').within(() => {
-      cy.get('tr')
-        .should('have.length', users.length)
-    })
+    cy.getByDataTestid(`user-${anonUser.id}`).should('exist')
+    cy.getByDataTestid('input-checkbox-tableAdministrationUsersHideBots')
+      .should('exist')
+      .click({ force: true })
+    cy.getByDataTestid(`user-${anonUser.id}`).should('not.exist')
+    cy.getByDataTestid('input-checkbox-tableAdministrationUsersHideBots')
+      .should('exist')
+      .click({ force: true })
+
+    cy.getByDataTestid('tableAdministrationUsers')
+      .find('tbody')
+      .find('tr')
+      .should('have.length', users.length)
     cy.getByDataTestid('tableAdministrationUsersSearch')
       .clear()
-      .type(users[1].email)
-    cy.getByDataTestid('tableAdministrationUsers').find('tbody').within(() => {
-      cy.get('tr')
-        .should('have.length', 1)
-      cy.get('tr > td')
-        .contains(users[1].firstName)
-      cy.get('tr > td')
-        .contains(users[1].lastName)
-      cy.get('tr > td')
-        .contains(users[1].email)
-    })
+      .type(anonUser.email)
+    cy.getByDataTestid('tableAdministrationUsers')
+      .find('tbody')
+      .find('tr')
+      .should('have.length', 1)
   })
 })
