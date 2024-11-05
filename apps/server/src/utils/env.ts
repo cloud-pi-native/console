@@ -22,6 +22,9 @@ export const isDevSetup = process.env.DEV_SETUP === 'true'
 
 // app
 export const port = process.env.SERVER_PORT
+export const appVersion = isProd
+  ? (process.env.APP_VERSION ?? 'unknown')
+  : 'dev'
 
 // db
 export const dbUrl = process.env.DB_URL

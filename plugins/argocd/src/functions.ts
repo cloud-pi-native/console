@@ -4,14 +4,32 @@ import { parseError } from '@cpn-console/hooks'
 import { dump } from 'js-yaml'
 import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
-import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi } from './utils.js'
-import { getApplicationObject } from './applications.js'
-import { getAppProjectObject } from './app-project.js'
+import { PatchUtils } from '@kubernetes/client-node'
+import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi, uniqueResource } from './utils.js'
+import { getApplicationObject, getMinimalApplicationObject } from './applications.js'
+import { getAppProjectObject, getMinimalAppProjectPatch } from './app-project.js'
+
+export const patchOptions = { headers: { 'Content-type': PatchUtils.PATCH_FORMAT_JSON_MERGE_PATCH } }
 
 export interface ArgoDestination {
   namespace?: string
   name?: string
   server?: string
+}
+
+interface BareMinimumResource {
+  metadata: {
+    name: string
+    labels: {
+      [x: string]: string
+    }
+  }
+}
+
+interface ListMinimumResources {
+  body: {
+    items: BareMinimumResource[]
+  }
 }
 
 function splitExtraRepositories(repos?: string): string[] {
@@ -37,10 +55,12 @@ export const upsertProject: StepCall<Project> = async (payload) => {
     ]
 
     // first create or patch resources
-    const applications = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelector)
+    const applicationsList = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelector) as ListMinimumResources
 
-    const appProjects = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', undefined, undefined, undefined, undefined, projectSelector)
+    const appProjectsList = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', undefined, undefined, undefined, undefined, projectSelector) as ListMinimumResources
 
+    const applications = uniqueResource(applicationsList.body.items)
+    const appProjects = uniqueResource(appProjectsList.body.items)
     for (const environment of project.environments) {
       const cluster = getCluster(project, environment)
       const infraProject = await gitlabApi.getOrCreateInfraProject(cluster.zone.slug)
@@ -72,18 +92,18 @@ export const upsertProject: StepCall<Project> = async (payload) => {
       }
 
       // @ts-ignore
-      const appProject = findAppProject(appProjects.body.items, environment.name)
+      const appProject = findAppProject(appProjects, environment.name)
       if (appProject) {
-        const { spec } = getMinimalAppProjectPatch(
+        const minimalAppProject = getMinimalAppProjectPatch(
           destination,
           appProjectName,
           sourceRepos,
           roGroup,
           rwGroup,
+          project,
+          environment,
         )
-        appProject.spec = spec
-
-        await customK8sApi.replaceNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProjectName, appProject)
+        await customK8sApi.patchNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProjectName, minimalAppProject, undefined, undefined, undefined, patchOptions)
       } else {
         const appProjectObject = getAppProjectObject({
           name: appProjectName,
@@ -91,37 +111,39 @@ export const upsertProject: StepCall<Project> = async (payload) => {
           destination,
           roGroup,
           rwGroup,
+          environment,
+          project,
         })
-        appProjectObject.metadata.labels['dso/organization'] = project.organization.name
-        appProjectObject.metadata.labels['dso/project'] = project.name
-        appProjectObject.metadata.labels['dso/environment'] = environment.name
         await customK8sApi.createNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProjectObject)
       }
 
       // manage every infra repositories
       for (const repository of infraRepositories) {
-        // @ts-ignore
-        const application = findApplication(applications.body.items, repository.internalRepoName, environment.name)
+        const application = findApplication(applications, repository.internalRepoName, environment.name)
+        const applicationName = generateApplicationName(project.organization.name, project.name, environment.name, repository.internalRepoName)
         const repoURL = await gitlabApi.getRepoUrl(repository.internalRepoName)
-        if (application) {
-          application.spec.destination = destination
-          application.spec.project = appProjectName
-          application.spec.source.repoURL = repoURL
 
-          await customK8sApi.replaceNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', application.metadata.name, application)
+        if (application) {
+          const minimalPatch = getMinimalApplicationObject({
+            name: applicationName,
+            destination,
+            repoURL,
+            appProjectName,
+            project,
+            repository,
+            environment,
+          })
+          await customK8sApi.patchNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', application.metadata.name, minimalPatch, undefined, undefined, undefined, patchOptions)
         } else {
-          const applicationName = generateApplicationName(project.organization.name, project.name, environment.name, repository.internalRepoName)
           const applicationObject = getApplicationObject({
             name: applicationName,
             destination,
             repoURL,
             appProjectName,
+            project,
+            repository,
+            environment,
           })
-          applicationObject.metadata.labels['dso/organization'] = project.organization.name
-          applicationObject.metadata.labels['dso/project'] = project.name
-          applicationObject.metadata.labels['dso/environment'] = environment.name
-          applicationObject.metadata.labels['dso/repository'] = repository.internalRepoName
-
           await customK8sApi.createNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', applicationObject)
         }
       }
@@ -130,7 +152,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 
     // then destroy what should not exist
     // @ts-ignore
-    for (const application of applications.body.items) {
+    for (const application of applications) {
       const appEnv = application.metadata.labels['dso/environment']
       const appRepo = application.metadata.labels['dso/repository']
       const env = project.environments.find(env => env.name === appEnv)
@@ -142,7 +164,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
     }
 
     // @ts-ignore
-    for (const appProject of appProjects.body.items) {
+    for (const appProject of appProjects) {
       const projectEnv = appProject.metadata.labels['dso/environment']
       const env = project.environments.find(env => env.name === projectEnv)
       if (!env) {
@@ -209,8 +231,8 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
       cluster: 'in-cluster',
       namespace: getConfig().namespace,
       project: appProjectName,
-      envChartVersion: process.env.DSO_ENV_CHART_VERSION || 'dso-env-1.4.0',
-      nsChartVersion: process.env.DSO_NS_CHART_VERSION || 'dso-ns-1.1.1',
+      envChartVersion: process.env.DSO_ENV_CHART_VERSION ?? 'dso-env-1.4.0',
+      nsChartVersion: process.env.DSO_NS_CHART_VERSION ?? 'dso-ns-1.1.1',
     },
     environment: {
       valueFileRepository: infraProject.http_url_to_repo,
@@ -284,7 +306,7 @@ async function removeInfraEnvValues(project: Project, gitlabApi: GitlabProjectAp
 
 function getDistinctZones(project: Project) {
   const zones: Set<string> = new Set()
-  project.clusters.map(c => zones.add(c.zone.slug))
+  project.clusters.forEach(c => zones.add(c.zone.slug))
   return zones
 }
 
@@ -295,16 +317,14 @@ export const deleteProject: StepCall<Project> = async (payload) => {
     const customK8sApi = getCustomK8sApi()
     const projectSelector = `dso/organization=${project.organization.name},dso/projet=${project.name},app.kubernetes.io/managed-by=dso-console`
 
-    const applications = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelector)
+    const applications = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelector) as ListMinimumResources
 
-    // @ts-ignore
     for (const application of applications.body.items) {
       await customK8sApi.deleteNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', application.metadata.name)
     }
 
-    const appProjects = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelector)
+    const appProjects = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelector) as ListMinimumResources
 
-    // @ts-ignore
     for (const appProject of appProjects.body.items) {
       await customK8sApi.deleteNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProject.metadata.name)
     }
@@ -330,42 +350,5 @@ export const deleteProject: StepCall<Project> = async (payload) => {
         message: 'Failed',
       },
     }
-  }
-}
-
-function getMinimalAppProjectPatch(destination: ArgoDestination, appProjectName: string, sourceRepos: string[], roGroup: string, rwGroup: string) {
-  return {
-    spec: {
-      destinations: [destination],
-      namespaceResourceWhitelist: [{
-        group: '*',
-        kind: '*',
-      }],
-      namespaceResourceBlacklist: [
-        {
-          group: 'v1',
-          kind: 'ResourceQuota',
-        },
-      ],
-      roles: [
-        {
-          description: 'read-only group',
-          groups: [roGroup],
-          name: 'ro-group',
-          policies: [`p, proj:${appProjectName}:ro-group, applications, get, ${appProjectName}/*, allow`],
-        },
-        {
-          description: 'read-write group',
-          groups: [rwGroup],
-          name: 'rw-group',
-          policies: [
-            `p, proj:${appProjectName}:rw-group, applications, *, ${appProjectName}/*, allow`,
-            `p, proj:${appProjectName}:rw-group, applications, delete, ${appProjectName}/*, allow`,
-            `p, proj:${appProjectName}:rw-group, applications, create, ${appProjectName}/*, deny`,
-          ],
-        },
-      ],
-      sourceRepos,
-    },
   }
 }

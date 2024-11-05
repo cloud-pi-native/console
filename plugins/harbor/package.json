@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/harbor-plugin",
   "type": "module",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "private": false,
   "description": "",
   "main": "dist/index.js",

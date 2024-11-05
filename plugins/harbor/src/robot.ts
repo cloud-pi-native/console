@@ -20,11 +20,14 @@ export async function ensureRobot(projectName: string, robotName: string, vaultA
   const robot = await getRobot(projectName, robotName, api)
   const VaultRobotSecret = await vaultApi.read(vaultPath, { throwIfNoEntry: false }) as { data: VaultRobotSecret } | undefined
 
-  const creds: VaultRobotSecret = !VaultRobotSecret?.data
-    ? robot
-      ? toVaultSecret(await createRobot(projectName, robotName, access, api) as Required<RobotCreated>)
-      : toVaultSecret(await regenerateRobot(projectName, robotName, access, api) as Required<RobotCreated>)
-    : VaultRobotSecret.data
+  let creds: VaultRobotSecret
+  if (VaultRobotSecret?.data) {
+    creds = VaultRobotSecret.data
+  } else if (robot) {
+    creds = toVaultSecret(await regenerateRobot(projectName, robotName, access, api) as Required<RobotCreated>)
+  } else {
+    creds = toVaultSecret(await createRobot(projectName, robotName, access, api) as Required<RobotCreated>)
+  }
   await vaultApi.write(creds, vaultPath)
   return creds
 }
