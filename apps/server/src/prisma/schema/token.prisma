@@ -2,13 +2,25 @@ model AdminToken {
   id             String      @id @unique @default(uuid()) @db.Uuid
   name           String
   permissions    BigInt
-  userId         String?     @db.Uuid
+  userId         String     @db.Uuid
   expirationDate DateTime?
   lastUse        DateTime?
   createdAt      DateTime    @default(now())
   status         TokenStatus @default(active)
   hash           String
-  createdBy      User?       @relation(fields: [userId], references: [id])
+  owner          User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model PersonalAccessToken {
+  id             String      @id @unique @default(uuid()) @db.Uuid
+  name           String
+  userId         String      @db.Uuid
+  expirationDate DateTime
+  lastUse        DateTime?
+  createdAt      DateTime    @default(now())
+  status         TokenStatus @default(active)
+  hash           String
+  owner          User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 enum TokenStatus {

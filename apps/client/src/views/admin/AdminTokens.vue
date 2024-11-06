@@ -7,6 +7,7 @@ import { useAdminTokenStore } from '@/stores/admin-token.js'
 const statusWording: Record<AdminToken['status'], string> = {
   active: 'Actif',
   revoked: 'Révoqué',
+  inactive: 'Inactif',
 }
 const headers = [
   'Nom',
@@ -32,7 +33,7 @@ const rows = computed(() => tokens.value.length
   ? tokens.value.map(token => ([
     token.name,
     getAdminPermLabelsByValue(token.permissions).join(', '),
-    token.createdBy?.email ?? '-',
+    token.owner?.email ?? '-',
     (new Date(token.createdAt)).toLocaleString(),
     token.expirationDate ? (new Date(token.expirationDate)).toLocaleString() : 'Jamais',
     token.lastUse ? (new Date(token.lastUse)).toLocaleString() : 'Jamais',

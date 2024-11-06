@@ -61,7 +61,7 @@ export function projectRouter() {
     // Créer un projet
     createProject: async ({ request: req, body: data }) => {
       const perms = await authUser(req)
-      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
+      if (perms.user?.type !== 'human') return new Unauthorized401('Require to be requested from user not api key')
       const body = await createProject(data, perms.user, req.id)
 
       if (body instanceof ErrorResType) return body

@@ -1,7 +1,7 @@
 import type { Project, User } from '@prisma/client'
 import type { XOR, projectMemberContract } from '@cpn-console/shared'
 import { UserSchema } from '@cpn-console/shared'
-import { logUser } from '../user/business.js'
+import { logViaSession } from '../user/business.js'
 import {
   addLogs,
   deleteMember,
@@ -37,7 +37,8 @@ export async function addMember(projectId: Project['id'], user: XOR<{ userId: st
     if (!retrievedUser) return new BadRequest400('Utilisateur introuvable')
     const userValidated = UserSchema.pick({ email: true, firstName: true, lastName: true, id: true }).safeParse(retrievedUser)
     if (!userValidated.success) return new BadRequest400('L\'utilisateur trouvé ne remplit pas les conditions de vérification')
-    userInDb = await logUser({ ...userValidated.data, groups: [] })
+    const logResults = await logViaSession({ ...userValidated.data, groups: [] })
+    userInDb = logResults.user
   } else {
     return new NotFound404()
   }

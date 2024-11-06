@@ -63,7 +63,7 @@ describe('Administration tokens', () => {
       cy.get(`tbody tr:nth-of-type(2)`).within(() => {
         cy.get('td:nth-of-type(1)').should('contain', 'test2')
         cy.get('td:nth-of-type(2)').should('contain', 'Administration globale')
-        cy.get('td:nth-of-type(3)').should('contain', 'thibault.colin')
+        cy.get('td:nth-of-type(3)').should('contain.text', '@bot.io')
         cy.get('td:nth-of-type(4)').should('exist')
         cy.get('td:nth-of-type(5)').should('contain', 'Jamais')
         cy.get('td:nth-of-type(6)').should('contain', 'Jamais')

@@ -21,7 +21,7 @@ export function adminTokenRouter() {
       const perms = await authUser(req)
 
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
-      const body = await createToken(data, perms.user?.id, perms.tokenId)
+      const body = await createToken(data)
       if (body instanceof ErrorResType) return body
 
       return {

@@ -11,8 +11,8 @@ export const TokenSchema = z.object({
   lastUse: dateToString.nullable(),
   expirationDate: dateToString.nullable(),
   createdAt: dateToString,
-  createdBy: UserSchema
-    .pick({ email: true, firstName: true, lastName: true, id: true })
+  owner: UserSchema
+    .pick({ email: true, firstName: true, lastName: true, id: true, type: true })
     .optional()
     .nullable(),
   status: z.enum(['active', 'revoked', 'inactive']),

@@ -3,7 +3,6 @@ import { servicesInfos } from '@cpn-console/hooks'
 import type { Project, User } from '@prisma/client'
 import type { projectContract } from '@cpn-console/shared'
 import { ProjectStatusSchema } from '@cpn-console/shared'
-import { logUser } from '../user/business.js'
 import {
   addLogs,
   deleteAllEnvironmentForProject,
@@ -54,9 +53,8 @@ export async function getProjectSecrets(projectId: string) {
   )
 }
 
-export async function createProject(dataDto: typeof projectContract.createProject.body._type, { groups, ...requestor }: UserDetails, requestId: string) {
-  // Pré-requis
-  const owner = await logUser({ groups, ...requestor })
+export async function createProject(dataDto: typeof projectContract.createProject.body._type, requestor: UserDetails, requestId: string) {
+  if (requestor.type !== 'human') return new BadRequest400('Seuls les comptes humains peuvent créer des projets')
   const organization = await getOrganizationById(dataDto.organizationId)
   if (!organization) return new BadRequest400('Organisation introuvable')
   if (!organization.active) return new BadRequest400('Organisation inactive')
@@ -67,10 +65,10 @@ export async function createProject(dataDto: typeof projectContract.createProjec
   }
 
   // Actions
-  const project = await initializeProject({ ...dataDto, ownerId: owner.id })
+  const project = await initializeProject({ ...dataDto, ownerId: requestor.id })
 
   const { results, project: projectInfos } = await hook.project.upsert(project.id)
-  await addLogs({ action: 'Create Project', data: results, userId: owner.id, requestId, projectId: project.id })
+  await addLogs({ action: 'Create Project', data: results, userId: requestor.id, requestId, projectId: project.id })
   if (results.failed) {
     return new Unprocessable422('Echec des services à la création du projet')
   }
@@ -92,7 +90,7 @@ export async function getProject(projectId: Project['id']) {
   }))
 }
 export async function updateProject(
-  { description, ownerId, everyonePerms, locked }: typeof projectContract.updateProject.body._type,
+  { description, ownerId: ownerIdCandidate, everyonePerms, locked }: typeof projectContract.updateProject.body._type,
   projectId: Project['id'],
   requestor: UserDetails,
   requestId: string,
@@ -109,13 +107,15 @@ export async function updateProject(
   // Actions
   const project = await prisma.project.findUniqueOrThrow({
     where: { id: projectId },
-    include: { members: true },
+    include: { members: { include: { user: true } } },
   })
 
-  if (ownerId && ownerId !== project.ownerId) {
-    if (!project.members.find(member => member.userId === ownerId)) {
+  if (ownerIdCandidate && ownerIdCandidate !== project.ownerId) {
+    const memberCandidate = project.members.find(member => member.userId === ownerIdCandidate)
+    if (!memberCandidate) {
       return new BadRequest400('Le nouveau propriétaire doit faire partie des membres actuels du projet')
     }
+    if (memberCandidate.user.type !== 'human') return new BadRequest400('Seuls les comptes humains peuvent être propriétaire de projets')
     if (!project.members.find(member => member.userId === project.ownerId)) {
       await prisma.projectMembers.create({
         data: { userId: project.ownerId, projectId },
@@ -123,9 +123,9 @@ export async function updateProject(
     }
     await prisma.$transaction([
       prisma.projectMembers.delete({
-        where: { projectId_userId: { userId: ownerId, projectId } },
+        where: { projectId_userId: { userId: ownerIdCandidate, projectId } },
       }),
-      prisma.project.update({ where: { id: projectId }, data: { ownerId } }),
+      prisma.project.update({ where: { id: projectId }, data: { ownerId: ownerIdCandidate } }),
     ])
   }
 
