@@ -91,6 +91,9 @@ describe('test users business', () => {
           },
         ],
       },
+      {
+        type: 'human',
+      },
     ]
     it('should query only with letters ', async () => {
       prisma.user.update.mockResolvedValue(null)

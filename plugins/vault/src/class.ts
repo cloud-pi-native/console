@@ -4,7 +4,7 @@ import type { ProjectLite } from '@cpn-console/hooks'
 import { PluginApi } from '@cpn-console/hooks'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 
-interface readOptions {
+interface ReadOptions {
   throwIfNoEntry: boolean
 }
 interface AppRoleCredentials {
@@ -16,12 +16,12 @@ interface AppRoleCredentials {
 
 export class VaultProjectApi extends PluginApi {
   private token: string | undefined = undefined
-  private axios: AxiosInstance
-  private kvName: string = 'forge-dso'
-  private basePath: string
-  private roleName: string
-  private projectRootDir: string | undefined
-  private defaultAppRoleCredentials: AppRoleCredentials
+  private readonly axios: AxiosInstance
+  private readonly kvName: string = 'forge-dso'
+  private readonly basePath: string
+  private readonly roleName: string
+  private readonly projectRootDir: string | undefined
+  private readonly defaultAppRoleCredentials: AppRoleCredentials
 
   constructor(project: ProjectLite) {
     super()
@@ -43,9 +43,11 @@ export class VaultProjectApi extends PluginApi {
   }
 
   private async getToken() {
+    if (!this.token) {
+      this.token = (await this.axios.post('/v1/auth/token/create'))
+        .data.auth.client_token as string
+    }
     return this.token
-      || (await this.axios.post('/v1/auth/token/create'))
-        .data.auth.client_token
   }
 
   public async list(path: string = '/'): Promise<string[]> {
@@ -76,7 +78,7 @@ export class VaultProjectApi extends PluginApi {
     return listSecretPath.flat()
   }
 
-  public async read(path: string = '/', options: readOptions = { throwIfNoEntry: true }) {
+  public async read(path: string = '/', options: ReadOptions = { throwIfNoEntry: true }) {
     if (path.startsWith('/'))
       path = path.slice(1)
     const response = await this.axios.get(

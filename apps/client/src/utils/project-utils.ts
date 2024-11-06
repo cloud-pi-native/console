@@ -60,7 +60,7 @@ export class Project implements ProjectV2 {
   everyonePerms: string
   name: string
   locked: boolean
-  owner: { id: string, updatedAt: string, createdAt: string, firstName: string, lastName: string, email: string }
+  owner: Omit<User, 'adminRoleIds'>
   ownerId: string
   roles: { id: string, name: string, permissions: string, position: number }[]
   organizationId: string

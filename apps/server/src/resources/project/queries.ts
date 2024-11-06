@@ -296,7 +296,9 @@ export function lockProject(id: Project['id']) {
 export function updateProjectCreated(id: Project['id']) {
   return prisma.project.update({
     where: { id },
-    data: { status: ProjectStatus.created },
+    data: {
+      status: ProjectStatus.created,
+    },
     include: baseProjectIncludes,
   })
 }

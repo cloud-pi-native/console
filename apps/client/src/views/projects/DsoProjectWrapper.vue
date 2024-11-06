@@ -11,7 +11,7 @@ const project = computed(() => projectStore.projectsById[props.projectId])
 
 <template>
   <div
-    class="fr-col-12 pr-5 overflow-x-hidden"
+    class="fr-col-12 pr-5 pl-2 overflow-x-hidden"
   >
     <router-view />
     <ProjectLogsViewer

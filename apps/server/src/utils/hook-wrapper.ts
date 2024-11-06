@@ -28,38 +28,51 @@ async function getProjectPayload(projectId: Project['id'], reposCreds?: ReposCre
   }, dbToObj(store), reposCreds)
 }
 
+async function upsertProject(projectId: Project['id'], reposCreds?: ReposCreds) {
+  const [payload, config] = await Promise.all([
+    getProjectPayload(projectId, reposCreds),
+    getAdminPlugin(),
+  ])
+
+  const results = await hooks.upsertProject.execute(payload, dbToObj(config))
+
+  const records: ConfigRecords = Object.entries(results.results).reduce((acc, [pluginName, result]) => {
+    if (result.store) {
+      return [...acc, ...Object.entries(result.store).map(([key, value]) => ({ pluginName, key, value: String(value) }))]
+    }
+    return acc
+  }, [] as ConfigRecords)
+
+  await saveProjectStore(records, projectId)
+  const project = await manageProjectStatus(projectId, results, 'upsert', payload.environments.map(env => env.clusterId))
+  return {
+    results,
+    project,
+  }
+}
 const project = {
   upsert: async (projectId: Project['id'], reposCreds?: ReposCreds) => {
-    const [payload, config] = await Promise.all([
-      getProjectPayload(projectId, reposCreds),
-      getAdminPlugin(),
-    ])
-
-    const results = await hooks.upsertProject.execute(payload, dbToObj(config))
-
-    const records: ConfigRecords = Object.entries(results.results).reduce((acc, [pluginName, result]) => {
-      if (result.store) {
-        return [...acc, ...Object.entries(result.store).map(([key, value]) => ({ pluginName, key, value: String(value) }))]
-      }
-      return acc
-    }, [] as ConfigRecords)
-
-    await saveProjectStore(records, projectId)
-
-    return {
-      results,
-      project: await manageProjectStatus(projectId, results, 'upsert', payload.environments.map(env => env.clusterId)),
-    }
+    const results = await upsertProject(projectId, reposCreds)
+    // automatically retry one time if it fails
+    return results.results.failed ? upsertProject(projectId, reposCreds) : results
   },
   delete: async (projectId: Project['id']) => {
     const [payload, config] = await Promise.all([
       getProjectPayload(projectId),
       getAdminPlugin(),
     ])
+    const resultsUpsert = await project.upsert(projectId)
+    if (resultsUpsert.results.failed) {
+      return {
+        ...resultsUpsert,
+        stage: 'upsert' as const,
+      }
+    }
     const results = await hooks.deleteProject.execute(payload, dbToObj(config))
     return {
       results,
-      project: manageProjectStatus(projectId, results, 'delete', []),
+      project: await manageProjectStatus(projectId, results, 'delete', []),
+      stage: 'delete' as const,
     }
   },
   getSecrets: async (projectId: Project['id']) => {
@@ -153,9 +166,9 @@ export const hook = {
   // @ts-ignore TODO voir comment opti la signature de la fonction
   misc: genericProxy(misc),
   // @ts-ignore TODO voir comment opti la signature de la fonction
-  project: genericProxy(project, { upsert: ['delete'], delete: ['upsert'], getSecrets: ['delete'] }),
+  project: genericProxy(project, { upsert: ['delete'], delete: ['upsert', 'delete'], getSecrets: ['delete'] }),
   // @ts-ignore TODO voir comment opti la signature de la fonction
-  cluster: genericProxy(cluster, { delete: ['upsert'], upsert: ['delete'] }),
+  cluster: genericProxy(cluster, { delete: ['upsert', 'delete'], upsert: ['delete'] }),
   // @ts-ignore TODO voir comment opti la signature de la fonction
   zone: genericProxy(zone, { delete: ['upsert'], upsert: ['delete'] }),
   // @ts-ignore TODO voir comment opti la signature de la fonction

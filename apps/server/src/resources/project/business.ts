@@ -48,7 +48,7 @@ export async function getProjectSecrets(projectId: string) {
   return Object.fromEntries(
     Object.entries(hookReply.results)
       // @ts-ignore
-      .filter(([_key, value]) => value.secrets)
+      .filter(([_key, value]) => Object.keys(value.secrets).length)
       // @ts-ignore
       .map(([key, value]) => [servicesInfos[key]?.title, value.secrets]),
   )
@@ -180,16 +180,13 @@ export async function archiveProject(projectId: Project['id'], requestor: UserDe
     await lockProject(projectId)
   }
 
-  const { results: upsertResults } = await hook.project.upsert(projectId)
-  await addLogs({ action: 'Delete all project resources', data: upsertResults, userId: requestor.id, requestId, projectId })
-  if (upsertResults.failed) {
-    return new Unprocessable422('Echec des services à la suppression des ressources du projet')
-  }
-
   // -- début - Suppression projet --
-  const { results, project } = await hook.project.delete(projectId)
-  await addLogs({ action: 'Archive Project', data: results, userId: requestor.id, requestId, projectId })
-  if ((await project).status === 'archived' && !projectDb.locked) {
+  const { results, project, stage } = await hook.project.delete(projectId)
+  const action: string = stage === 'upsert'
+    ? 'Delete all project resources'
+    : 'Archive Project'
+  await addLogs({ action, data: results, userId: requestor.id, requestId, projectId })
+  if (project.status !== 'archived' && !projectDb.locked) {
     await prisma.project.update({ where: { id: projectId }, data: { locked: false } })
   }
   if (results.failed) {

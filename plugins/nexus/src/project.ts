@@ -4,7 +4,7 @@ import { generateRandomPassword, parseError } from '@cpn-console/hooks'
 import { getAxiosOptions } from './functions.js'
 import { createMavenRepo, deleteMavenRepo, getMavenUrls } from './maven.js'
 import { createNpmRepo, deleteNpmRepo, getNpmUrls } from './npm.js'
-import { deleteIfExists, getTechUsed } from './utils.js'
+import { deleteIfExists, getTechUsed, parseWritePolicy } from './utils.js'
 
 const getAxiosInstance = () => axios.create(getAxiosOptions())
 
@@ -56,11 +56,31 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
 
     const failedProvisionning: Partial<Record<keyof typeof techUsed, { error: Error | unknown, message: string }>> = {}
     const techUsed = getTechUsed(payload)
+    const mavenWritePolicy = parseWritePolicy(payload.args.store.nexus?.mavenWritePolicy)
+    const npmWritePolicy = parseWritePolicy(payload.args.store.nexus?.npmWritePolicy)
+    if (mavenWritePolicy === 'ERROR') {
+      return {
+        status: {
+          result: 'WARNING',
+          message: 'mavenWritePolicy is invalid, provisionning canceled, fix it and try again',
+        },
+        warnReasons: ['mavenWritePolicy is invalid'],
+      }
+    }
+    if (npmWritePolicy === 'ERROR') {
+      return {
+        status: {
+          result: 'WARNING',
+          message: 'npmWritePolicy is invalid, provisionning canceled, fix it and try again',
+        },
+        warnReasons: ['npmWritePolicy is invalid'],
+      }
+    }
     const privilegesToAccess = [] as string[]
 
     try {
       if (techUsed.maven) {
-        const names = await createMavenRepo(axiosInstance, projectName)
+        const names = await createMavenRepo(axiosInstance, projectName, mavenWritePolicy)
         privilegesToAccess.push(names.group.privilege, ...names.hosted.map(({ privilege }) => privilege))
       } else {
         await Promise.all(deleteMavenRepo(axiosInstance, projectName))
@@ -71,7 +91,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
 
     try {
       if (techUsed.npm) {
-        const names = await createNpmRepo(axiosInstance, projectName)
+        const names = await createNpmRepo(axiosInstance, projectName, npmWritePolicy)
         privilegesToAccess.push(names.group.privilege, ...names.hosted.map(({ privilege }) => privilege))
       } else {
         await Promise.all(deleteNpmRepo(axiosInstance, projectName))
@@ -122,12 +142,15 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
     const user = getUser.data.find(user => user.userId === projectName)
     if (user) {
       res.user = getUser.data[0]
-      res.status = { result: 'OK', message: 'User already exist' }
+      res.status = { result: 'OK', message: 'User already exists' }
       if (!vaultNexusSecret) {
         await axiosInstance({
           method: 'put',
           url: `/security/users/${projectName}/change-password`,
           data: newPwd,
+          headers: {
+            'Content-Type': 'text/plain',
+          },
         })
         currentPwd = newPwd
       }

@@ -38,3 +38,11 @@ export function getTechUsed(payload: HookPayload<Project | ProjectLite>) {
   }
   return techUsed
 }
+
+export const writePolicyEnum = ['ALLOW', 'ALLOW_ONCE', 'DENY', 'REPLICATION_ONLY'] as const
+export type WritePolicy = typeof writePolicyEnum[number]
+
+export function parseWritePolicy(inputTrial?: string): WritePolicy | 'ERROR' {
+  const input = inputTrial?.toUpperCase() ?? 'ALLOW'
+  return writePolicyEnum.find(policy => policy === input) ?? 'ERROR'
+}

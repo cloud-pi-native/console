@@ -465,8 +465,18 @@ Cypress.Commands.add('getSettled', (selector, opts = {}) => {
 })
 
 Cypress.Commands.add('goToAdminListUsers', () => {
-  cy.visit('/')
-    .getByDataTestid('menuAdministrationBtn').click()
-    .getByDataTestid('menuAdministrationUsers').click()
-    .url().should('contain', '/admin/users')
+  cy.get('body').then(($body) => {
+    if ($body.find('a').length === 0) {
+      // Si l'élément n'est pas trouvé, on considère qu'on est dans les limbes
+      cy.visit('/admin/users')
+    }
+  })
+  try {
+    cy.getByDataTestid('menuAdministrationUsers', 100).click()
+    cy.url().should('contain', '/admin/users')
+  } catch (_) {
+    cy.getByDataTestid('menuAdministrationBtn').click()
+      .getByDataTestid('menuAdministrationUsers').click()
+    cy.url().should('contain', '/admin/users')
+  }
 })

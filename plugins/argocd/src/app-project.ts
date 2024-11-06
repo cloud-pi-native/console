@@ -1,3 +1,5 @@
+import type { Environment, Project } from '@cpn-console/hooks'
+import type { BaseResources } from './utils.js'
 import { getConfig } from './utils.js'
 
 export interface ArgoDestination {
@@ -6,17 +8,27 @@ export interface ArgoDestination {
   server?: string
 }
 
-export function getAppProjectObject({ name, sourceRepos, roGroup, rwGroup, destination }:
-{ name: string, sourceRepos: string[], roGroup: string, rwGroup: string, destination: ArgoDestination }) {
+export function getAppProjectObject({ name, sourceRepos, roGroup, rwGroup, destination, project, environment }:
+{ name: string, sourceRepos: string[], roGroup: string, rwGroup: string, destination: ArgoDestination, project: Project, environment: Environment }) {
+  const minimalAppProject = getMinimalAppProjectPatch(destination, name, sourceRepos, roGroup, rwGroup, project, environment)
+  minimalAppProject.apiVersion = 'argoproj.io/v1alpha1'
+  minimalAppProject.metadata.namespace = getConfig().namespace
+  return minimalAppProject
+}
+
+export function getMinimalAppProjectPatch(destination: ArgoDestination, name: string, sourceRepos: string[], roGroup: string, rwGroup: string, project: Project, environment: Environment) {
   return {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'AppProject',
     metadata: {
       name,
-      namespace: getConfig().namespace,
       labels: {
         'app.kubernetes.io/managed-by': 'dso-console',
-      } as Record<string, string>,
+        'dso/project': project.name,
+        'dso/project.id': project.id,
+        'dso/environment': environment.name,
+        'dso/organization': project.organization.name,
+      },
     },
     spec: {
       destinations: [destination],
@@ -50,5 +62,5 @@ export function getAppProjectObject({ name, sourceRepos, roGroup, rwGroup, desti
       ],
       sourceRepos,
     },
-  }
+  } as BaseResources
 }

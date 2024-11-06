@@ -8,6 +8,7 @@ export const UserSchema = z.object({
   lastName: z.string(),
   email: z.string(),
   adminRoleIds: z.string().uuid().array(),
+  type: z.enum(['human', 'ghost', 'bot']),
 })
   .extend(AtDatesToStringExtend)
 
