@@ -1,4 +1,5 @@
 import type { AxiosInstance } from 'axios'
+import type { WritePolicy } from './utils.js'
 import { deleteIfExists } from './utils.js'
 import { getConfig } from './functions.js'
 
@@ -22,32 +23,61 @@ function getRepoNames(projectName: string) { // Unique function per language cau
   }
 }
 
-export async function createMavenRepo(axiosInstance: AxiosInstance, projectName: string) {
+export async function createMavenRepo(axiosInstance: AxiosInstance, projectName: string, writePolicy: WritePolicy) {
   const names = getRepoNames(projectName)
 
   // create local repo maven
   for (const repVersion of names.hosted) {
-    await axiosInstance({
-      method: 'post',
-      url: '/repositories/maven/hosted',
-      data: {
-        name: repVersion.repo,
-        online: true,
-        storage: {
-          blobStoreName: 'default',
-          strictContentTypeValidation: true,
-          writePolicy: 'allow_once',
-        },
-        cleanup: { policyNames: ['string'] },
-        component: { proprietaryComponents: true },
-        maven: {
-          versionPolicy: 'MIXED',
-          layoutPolicy: 'STRICT',
-          contentDisposition: 'ATTACHMENT',
-        },
-      },
-      validateStatus: code => [201, 400].includes(code),
+    const repo = await axiosInstance({
+      method: 'GET',
+      url: `/repositories/maven/hosted/${repVersion.repo}`,
+      validateStatus: code => [200, 404].includes(code),
     })
+    if (repo.status === 404) {
+      await axiosInstance({
+        method: 'post',
+        url: '/repositories/maven/hosted',
+        data: {
+          name: repVersion.repo,
+          online: true,
+          storage: {
+            blobStoreName: 'default',
+            strictContentTypeValidation: true,
+            writePolicy,
+          },
+          cleanup: { policyNames: ['string'] },
+          component: { proprietaryComponents: true },
+          maven: {
+            versionPolicy: 'MIXED',
+            layoutPolicy: 'STRICT',
+            contentDisposition: 'ATTACHMENT',
+          },
+        },
+        validateStatus: code => [201].includes(code),
+      })
+    } else {
+      await axiosInstance({
+        method: 'put',
+        url: `/repositories/maven/hosted/${repVersion.repo}`,
+        data: {
+          name: repVersion.repo,
+          online: true,
+          storage: {
+            blobStoreName: 'default',
+            strictContentTypeValidation: true,
+            writePolicy,
+          },
+          cleanup: { policyNames: ['string'] },
+          component: { proprietaryComponents: true },
+          maven: {
+            versionPolicy: 'MIXED',
+            layoutPolicy: 'STRICT',
+            contentDisposition: 'ATTACHMENT',
+          },
+        },
+        validateStatus: code => [204].includes(code),
+      })
+    }
   }
 
   // create maven group

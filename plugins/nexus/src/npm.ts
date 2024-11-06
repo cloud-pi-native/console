@@ -1,4 +1,5 @@
 import type { AxiosInstance } from 'axios'
+import type { WritePolicy } from './utils.js'
 import { deleteIfExists } from './utils.js'
 import { getConfig } from './functions.js'
 
@@ -16,7 +17,7 @@ function getRepoNames(projectName: string) { // Unique function per language cau
     },
   }
 }
-export async function createNpmRepo(axiosInstance: AxiosInstance, projectName: string) {
+export async function createNpmRepo(axiosInstance: AxiosInstance, projectName: string, writePolicy: WritePolicy) {
   const names = getRepoNames(projectName)
   // create local repo maven
   for (const repVersion of names.hosted) {
@@ -35,7 +36,7 @@ export async function createNpmRepo(axiosInstance: AxiosInstance, projectName: s
           storage: {
             blobStoreName: 'default',
             strictContentTypeValidation: true,
-            writePolicy: 'allow_once',
+            writePolicy,
           },
           cleanup: { policyNames: ['string'] },
           component: { proprietaryComponents: true },
@@ -52,7 +53,7 @@ export async function createNpmRepo(axiosInstance: AxiosInstance, projectName: s
           storage: {
             blobStoreName: 'default',
             strictContentTypeValidation: true,
-            writePolicy: 'allow_once',
+            writePolicy,
           },
           cleanup: { policyNames: ['string'] },
           component: { proprietaryComponents: true },

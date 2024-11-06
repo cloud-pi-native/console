@@ -20,6 +20,17 @@ const infos = {
         description: 'Default: utilise le paramétrage globale de la console. Attention: Nexus met un certain temps pour activer/désactiver les dépôts, un reprovisonnage après plusieurs minutes peut être nécessaire',
       },
       {
+        key: 'npmWritePolicy',
+        kind: 'text',
+        permissions: {
+          admin: { read: true, write: true },
+          user: { read: true, write: true },
+        },
+        title: 'Politique d\'écriture NPM',
+        value: 'allow',
+        description: 'Politique d\'écriture des dépôts NPM, valeurs possibles: allow / allow_once, deny, replication_only, allow par défaut. Documentation: https://help.sonatype.com/en/configurable-repository-fields.html',
+      },
+      {
         key: 'activateMavenRepo',
         kind: 'switch',
         initialValue: 'disabled',
@@ -30,6 +41,17 @@ const infos = {
         title: 'Créer un dépôt MAVEN privé',
         value: 'disabled',
         description: 'Default: utilise le paramétrage globale de la console. Attention: Nexus met un certain temps pour activer/désactiver les dépôts, un reprovisonnage après plusieurs minutes peut être nécessaire',
+      },
+      {
+        key: 'mavenWritePolicy',
+        kind: 'text',
+        permissions: {
+          admin: { read: true, write: true },
+          user: { read: true, write: true },
+        },
+        title: 'Politique d\'écriture Maven',
+        value: 'allow',
+        description: 'Politique d\'écriture des dépôts maven, valeurs possibles: allow / allow_once / deny / replication_only, allow par défaut. Documentation: https://help.sonatype.com/en/configurable-repository-fields.html',
       },
     ],
     global: [
