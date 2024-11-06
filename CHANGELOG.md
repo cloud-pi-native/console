@@ -1,5 +1,19 @@
 # Changelog
 
+## [8.16.0](https://github.com/cloud-pi-native/console/compare/v8.15.1...v8.16.0) (2024-11-06)
+
+
+### Features
+
+* :lipstick: disable cluster selection when creating a zone ([a8bb19c](https://github.com/cloud-pi-native/console/commit/a8bb19cb4ff50b69b892547e05b1541e322b0ecd))
+* :lipstick: user list rework ([5c13b9d](https://github.com/cloud-pi-native/console/commit/5c13b9d756c549a2f12d99e7f7384690f3166553))
+* :sparkles: nexus customizable write policy ([78a004b](https://github.com/cloud-pi-native/console/commit/78a004bc72e97b3a98c963560e8c11db45b34b67))
+
+
+### Bug Fixes
+
+* :bug: minors plugins fix and front ([22937c8](https://github.com/cloud-pi-native/console/commit/22937c875480dc0b6bf67f0784311f98300df04d))
+
 ## [8.15.1](https://github.com/cloud-pi-native/console/compare/v8.15.0...v8.15.1) (2024-10-29)
 
 
