@@ -15,7 +15,7 @@ export const TokenSchema = z.object({
     .pick({ email: true, firstName: true, lastName: true, id: true })
     .optional()
     .nullable(),
-  status: z.enum(['active', 'revoked']),
+  status: z.enum(['active', 'revoked', 'inactive']),
 })
 
 export const AdminTokenSchema = TokenSchema.extend({

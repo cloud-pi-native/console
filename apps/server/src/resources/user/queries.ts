@@ -40,10 +40,10 @@ export function getUserByEmail(email: User['email']) {
 }
 
 // CREATE
-export async function createUser({ id, email, firstName, lastName }: UserCreate) {
+export async function createUser({ id, email, firstName, lastName, type }: UserCreate) {
   const user = await getUserByEmail(email)
   if (user) throw new Error('Un utilisateur avec cette adresse e-mail existe déjà')
-  return prisma.user.create({ data: { id, email, firstName, lastName } })
+  return prisma.user.create({ data: { id, email, firstName, lastName, type } })
 }
 
 // UPDATE

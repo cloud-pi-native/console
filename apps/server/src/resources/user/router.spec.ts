@@ -43,6 +43,7 @@ describe('test userContract', () => {
         updatedAt: (new Date()).toISOString(),
         email: faker.internet.email(),
         firstName: faker.person.firstName(),
+        type: 'human',
         lastName: faker.person.lastName(),
       }
       setRequestor(user)
@@ -103,6 +104,7 @@ describe('test userContract', () => {
       email: faker.internet.email(),
       firstName: faker.person.firstName(),
       lastName: faker.person.lastName(),
+      type: 'human',
     }]
 
     it('should patch and return users for admin', async () => {

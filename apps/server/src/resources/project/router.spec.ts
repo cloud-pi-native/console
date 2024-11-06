@@ -29,6 +29,7 @@ describe('test projectContract', () => {
     createdAt: (new Date()).toISOString(),
     updatedAt: (new Date()).toISOString(),
     id: faker.string.uuid(),
+    type: 'human',
   }
   const projectId = faker.string.uuid()
   const project: Omit<ProjectV2, 'id'> = {

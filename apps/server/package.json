@@ -92,6 +92,6 @@
     "tag": "latest"
   },
   "prisma": {
-    "schema": "src/prisma/schema.prisma"
+    "schema": "src/prisma/schema/"
   }
 }

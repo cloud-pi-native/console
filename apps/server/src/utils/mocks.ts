@@ -198,6 +198,7 @@ export function getRandomRequestor(user?: Requestor): Partial<UserDetails> {
     email: user?.email ?? faker.internet.email(),
     firstName: user?.firstName ?? faker.person.firstName(),
     lastName: user?.lastName ?? faker.person.lastName(),
+    type: 'human',
     ...user?.groups !== null && { groups: user?.groups ?? [] },
   }
 }

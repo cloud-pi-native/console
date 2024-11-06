@@ -165,6 +165,7 @@ export const data = {
       createdAt: '2023-07-03T14:46:56.771Z',
       updatedAt: '2023-07-03T14:46:56.771Z',
       adminRoleIds: [],
+      type: 'human',
     },
     {
       id: '89e5d1ca-3194-4b0a-b226-75a5f4fe6a34',
@@ -174,6 +175,7 @@ export const data = {
       createdAt: '2023-07-03T18:01:52.884Z',
       updatedAt: '2023-07-06T12:53:39.183Z',
       adminRoleIds: [],
+      type: 'human',
     },
     {
       id: '04ac168a-2c4f-4816-9cce-af6c612e5912',
@@ -183,6 +185,7 @@ export const data = {
       createdAt: '2023-07-03T14:46:56.770Z',
       updatedAt: '2023-07-03T14:46:56.770Z',
       adminRoleIds: [],
+      type: 'ghost',
     },
     {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569',
@@ -192,6 +195,7 @@ export const data = {
       createdAt: '2023-07-03T14:46:56.773Z',
       updatedAt: '2023-07-03T14:46:56.773Z',
       adminRoleIds: [],
+      type: 'human',
     },
     {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
@@ -201,6 +205,7 @@ export const data = {
       createdAt: '2023-07-03T14:46:56.770Z',
       updatedAt: '2023-07-03T14:46:56.770Z',
       adminRoleIds: [],
+      type: 'human',
     },
     {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566',
@@ -209,6 +214,7 @@ export const data = {
       email: 'thibault.colin@test.com',
       createdAt: '2023-07-03T14:46:56.772Z',
       updatedAt: '2024-07-25T16:18:11.372Z',
+      type: 'human',
       adminRoleIds: [
         'eadf604f-5f54-4744-bdfb-4793d2271e9b',
       ],
