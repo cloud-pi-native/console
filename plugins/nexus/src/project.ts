@@ -4,7 +4,8 @@ import { generateRandomPassword, parseError } from '@cpn-console/hooks'
 import { getAxiosOptions } from './functions.js'
 import { createMavenRepo, deleteMavenRepo, getMavenUrls } from './maven.js'
 import { createNpmRepo, deleteNpmRepo, getNpmUrls } from './npm.js'
-import { deleteIfExists, getTechUsed, parseWritePolicy } from './utils.js'
+import type { WritePolicy } from './utils.js'
+import { deleteIfExists, getTechUsed, parseProjectOptions, updateStore } from './utils.js'
 
 const getAxiosInstance = () => axios.create(getAxiosOptions())
 
@@ -53,34 +54,27 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
     const projectName = `${organization}-${project}`
     const owner = payload.args.owner
     const res: any = {}
-
+    const options = parseProjectOptions(payload.args.store.nexus)
     const failedProvisionning: Partial<Record<keyof typeof techUsed, { error: Error | unknown, message: string }>> = {}
     const techUsed = getTechUsed(payload)
-    const mavenWritePolicy = parseWritePolicy(payload.args.store.nexus?.mavenWritePolicy)
-    const npmWritePolicy = parseWritePolicy(payload.args.store.nexus?.npmWritePolicy)
-    if (mavenWritePolicy === 'ERROR') {
+
+    if (options.keysInError.length) {
       return {
         status: {
           result: 'WARNING',
-          message: 'mavenWritePolicy is invalid, provisionning canceled, fix it and try again',
+          message: `${options.keysInError.join(', ')} ${options.keysInError.length > 1 ? 'are' : 'is'} invalid, provisionning canceled, fix it and try again`,
         },
-        warnReasons: ['mavenWritePolicy is invalid'],
-      }
-    }
-    if (npmWritePolicy === 'ERROR') {
-      return {
-        status: {
-          result: 'WARNING',
-          message: 'npmWritePolicy is invalid, provisionning canceled, fix it and try again',
-        },
-        warnReasons: ['npmWritePolicy is invalid'],
+        warnReasons: [`invalid key(s): ${options.keysInError.join(', ')}`],
       }
     }
     const privilegesToAccess = [] as string[]
 
     try {
       if (techUsed.maven) {
-        const names = await createMavenRepo(axiosInstance, projectName, mavenWritePolicy)
+        const names = await createMavenRepo(axiosInstance, projectName, {
+          releaseWritePolicy: options.mavenReleaseWritePolicy as WritePolicy,
+          snapshotWritePolicy: options.mavenSnapshotWritePolicy as WritePolicy,
+        })
         privilegesToAccess.push(names.group.privilege, ...names.hosted.map(({ privilege }) => privilege))
       } else {
         await Promise.all(deleteMavenRepo(axiosInstance, projectName))
@@ -91,7 +85,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
 
     try {
       if (techUsed.npm) {
-        const names = await createNpmRepo(axiosInstance, projectName, npmWritePolicy)
+        const names = await createNpmRepo(axiosInstance, projectName, options.npmWritePolicy as WritePolicy)
         privilegesToAccess.push(names.group.privilege, ...names.hosted.map(({ privilege }) => privilege))
       } else {
         await Promise.all(deleteNpmRepo(axiosInstance, projectName))
@@ -189,8 +183,13 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
         errors: failed.map(({ error }) => parseError(error)),
       }
     }
+
     return {
-      status: { result: 'OK', message: 'Up-to-date' },
+      status: {
+        result: 'OK',
+        message: 'Up-to-date',
+      },
+      store: updateStore(payload.args.store.nexus),
     }
   } catch (error) {
     return {

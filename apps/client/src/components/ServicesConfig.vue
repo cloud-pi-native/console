@@ -18,6 +18,27 @@ const emit = defineEmits<{
   reload: []
 }>()
 
+interface ManifestGrouped {
+  length: number
+  sectionNumber: number
+  items: {
+    default: PluginConfigItem[]
+    [x: string]: PluginConfigItem[]
+  }
+}
+function groupManifest(configItems: PluginConfigItem[] = []) {
+  return configItems.reduce((acc, curr) => {
+    if (!curr.section) curr.section = 'default'
+    if (curr.section in acc.items) {
+      acc.items[curr.section].push(curr)
+    } else {
+      acc.items[curr.section] = [curr]
+      acc.sectionNumber++
+    }
+    return acc
+  }, { length: configItems.length, items: { default: [] }, sectionNumber: 1 } as ManifestGrouped)
+}
+
 function refTheValues(services: ProjectService[]) {
   return services.map((service) => {
     return {
@@ -129,44 +150,73 @@ const activeAccordion = ref<number>()
               <DsfrCallout
                 v-if="getItemsToShowLength(service.manifest.project, permissionTarget)"
                 title="Configuration projet"
-                class="flex flex-col gap-2"
+                class="flex flex-col gap-2 h-min"
                 :data-testid="`service-project-config-${service.name}`"
               >
-                <ConfigParam
-                  v-for="item in service.manifest.project"
-                  :key="item.key"
-                  :options="{
-                    value: item.value,
-                    kind: item.kind,
-                    description: item.description,
-                    name: item.title,
-                    // @ts-ignore Sisi il y a potentiellement un placeholder
-                    placeholder: item.placeholder || '',
-                    disabled: !item.permissions[permissionTarget].write || props.disabled,
-                  }"
-                  @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
-                />
+                <template
+                  v-for="[title, items] in Object.entries(groupManifest(service.manifest.project).items)"
+                  :key="title"
+                >
+                  <template v-if="items.length">
+                    <div
+                      :class="title === 'default' ? 'flex-end' : ''"
+                    >
+                      <h6 v-if="title !== 'default'">
+                        {{ title }}
+                      </h6>
+                      <ConfigParam
+                        v-for="item in items"
+                        :key="item.key"
+                        :options="{
+                          value: ref(item.value),
+                          kind: item.kind,
+                          description: item.description,
+                          name: item.title,
+                          // @ts-ignore Sisi il y a potentiellement un placeholder
+                          placeholder: item.placeholder || '',
+                          disabled: !item.permissions[permissionTarget].write || props.disabled,
+                        }"
+                        @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
+                      />
+                    </div>
+                  </template>
+                </template>
               </DsfrCallout>
               <DsfrCallout
                 v-if="service.manifest.global?.length && props.displayGlobal"
                 title="Configuration globale"
-                class="flex flex-col gap-2"
+                class="flex flex-col gap-2 h-min"
                 :data-testid="`service-global-config-${service.name}`"
               >
-                <ConfigParam
-                  v-for="item in props.displayGlobal ? service.manifest.global : []"
-                  :key="item.key"
-                  :options="{
-                    value: ref(item.value),
-                    kind: item.kind,
-                    description: item.description,
-                    name: item.title,
-                    // @ts-ignore si si il y a potentiellement un placeholder
-                    placeholder: item.placeholder || '',
-                    disabled: !item.permissions[permissionTarget].write,
-                  }"
-                  @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
-                />
+                <template
+                  v-for="[title, items] in Object.entries(groupManifest(service.manifest.global).items)"
+                  :key="title"
+                >
+                  <template v-if="items.length">
+                    <div
+                      :class="`flex flex-col gap-2 ${title === 'default' ? 'order-first' : ''}`"
+                    >
+                      <h6 v-if="title !== 'default'">
+                        {{ title }}
+                      </h6>
+                      <hr v-else>
+                      <ConfigParam
+                        v-for="item in items"
+                        :key="item.key"
+                        :options="{
+                          value: ref(item.value),
+                          kind: item.kind,
+                          description: item.description,
+                          name: item.title,
+                          // @ts-ignore si si il y a potentiellement un placeholder
+                          placeholder: item.placeholder || '',
+                          disabled: !item.permissions[permissionTarget].write,
+                        }"
+                        @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
+                      />
+                    </div>
+                  </template>
+                </template>
               </DsfrCallout>
             </div>
           </DsfrAccordion>

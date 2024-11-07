@@ -4,6 +4,7 @@ const configItemBase = z.object({
   key: z.string().min(2).regex(/[a-z-]/),
   description: z.string().optional(),
   title: z.string(),
+  section: z.string().optional(),
 })
 
 const projectVisibilty = z.object({
