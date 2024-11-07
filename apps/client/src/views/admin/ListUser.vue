@@ -169,6 +169,11 @@ onBeforeMount(async () => {
             >
               Date de création
             </th>
+            <th
+              scope="col"
+            >
+              Dernière connexion
+            </th>
           </tr>
         </template>
         <tr
@@ -221,8 +226,15 @@ onBeforeMount(async () => {
               :label="user.type"
             />
           </td>
-          <td>
+          <td
+            :title="(new Date(user.createdAt)).toLocaleString()"
+          >
             {{ formatDate(user.createdAt) }}
+          </td>
+          <td
+            :title="user.lastLogin ? (new Date(user.createdAt)).toLocaleString() : ''"
+          >
+            {{ user.lastLogin ? formatDate(user.lastLogin) : 'Jamais' }}
           </td>
         </tr>
         <tr
