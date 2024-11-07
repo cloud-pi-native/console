@@ -10,6 +10,7 @@ let groupRootId: number | void
 const config: {
   token?: string
   url?: string
+  internaUrl?: string
   projectsRootDir?: string
 } = {
   token: undefined,
@@ -31,7 +32,7 @@ export async function getGroupRootId(): Promise<number> {
 
 export function getApi(): IGitlab {
   if (!api) {
-    const gitlabUrl = removeTrailingSlash(requiredEnv('GITLAB_URL'))
+    const gitlabUrl = getConfig().internalUrl
     const gitlabToken = requiredEnv('GITLAB_TOKEN')
     // @ts-ignore
     api = new Gitlab({ token: gitlabToken, host: gitlabUrl })
@@ -43,11 +44,13 @@ export function getApi(): IGitlab {
 export function getConfig(): {
   token: string
   url: string
+  internalUrl?: string
   projectsRootDir: string
 } {
-  if (!config.projectsRootDir || !config.token || !config.url) {
+  if (!config.projectsRootDir || !config.token || !config.url || !config.internaUrl) {
     config.token = requiredEnv('GITLAB_TOKEN')
     config.url = removeTrailingSlash(requiredEnv('GITLAB_URL'))
+    config.internaUrl = process.env.GITLAB_INTERNAL_URL ? removeTrailingSlash(process.env.GITLAB_INTERNAL_URL) : config.url
     config.projectsRootDir = requiredEnv('PROJECTS_ROOT_DIR')
   }
   // @ts-ignore trouver un meilleur softboot
