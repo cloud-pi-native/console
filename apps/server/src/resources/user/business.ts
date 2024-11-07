@@ -110,7 +110,7 @@ export async function logUser({ id, email, groups, ...user }: UserTrial, withAdm
     .filter(({ oidcGroup, id }) => !oidcGroup && userDb.adminRoleIds.includes(id))
     .map(({ id }) => id)
 
-  const updatedUser = await prisma.user.update({ where: { id }, data: { ...user, adminRoleIds: nonOidcRoleIds } }) // on enregistre en bdd uniquement les roles de l'utilisateurs qui ne viennent pas de keycloak
+  const updatedUser = await prisma.user.update({ where: { id }, data: { ...user, adminRoleIds: nonOidcRoleIds, lastLogin: (new Date()).toISOString() } }) // on enregistre en bdd uniquement les roles de l'utilisateurs qui ne viennent pas de keycloak
     .then(user => ({ ...user, adminRoleIds: [...user.adminRoleIds, ...oidcRoleIds] }))
   if (withAdminPerms) {
     return {
