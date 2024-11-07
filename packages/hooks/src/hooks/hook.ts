@@ -4,7 +4,7 @@ import type * as hooks from './index.js'
 export type DefaultArgs = Record<any, any>
 export interface PluginResult {
   status: { result: 'OK', message?: string } | { result: 'KO' | 'WARNING', message: string }
-  store?: Record<string, string | number>
+  store?: Record<string, string | number | null>
   [key: string]: any
 }
 

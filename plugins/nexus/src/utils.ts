@@ -46,3 +46,35 @@ export function parseWritePolicy(inputTrial?: string): WritePolicy | 'ERROR' {
   const input = inputTrial?.toUpperCase() ?? 'ALLOW'
   return writePolicyEnum.find(policy => policy === input) ?? 'ERROR'
 }
+
+export function parseProjectOptions(options: ProjectLite['store']['nexus']) {
+  // @ts-expect-error
+  const mavenReleaseWritePolicy = parseWritePolicy(options?.mavenReleaseWritePolicy ?? options?.mavenWritePolicy)
+  // @ts-expect-error
+  const mavenSnapshotWritePolicy = parseWritePolicy(options?.mavenSnapshotWritePolicy ?? options?.mavenWritePolicy)
+  const npmWritePolicy = parseWritePolicy(options?.npmWritePolicy)
+  const keysInError: (keyof NonNullable<Required<typeof options>>)[] = []
+  if (mavenReleaseWritePolicy === 'ERROR') keysInError.push('mavenReleaseWritePolicy')
+  if (mavenSnapshotWritePolicy === 'ERROR') keysInError.push('mavenSnapshotWritePolicy')
+  if (npmWritePolicy === 'ERROR') keysInError.push('npmWritePolicy')
+  return {
+    keysInError,
+    mavenReleaseWritePolicy,
+    mavenSnapshotWritePolicy,
+    npmWritePolicy,
+  }
+}
+
+export function updateStore(store?: ProjectLite['store']['nexus']) {
+  if (!store) return {}
+  // @ts-expect-error
+  if (store.mavenWritePolicy) {
+  // @ts-expect-error
+    store.mavenReleaseWritePolicy = store.mavenReleaseWritePolicy ?? store.mavenWritePolicy
+    // @ts-expect-error
+    store.mavenSnapshotWritePolicy = store.mavenSnapshotWritePolicy ?? store.mavenWritePolicy
+    // @ts-expect-error
+    store.mavenWritePolicy = ''
+  }
+  return store
+}

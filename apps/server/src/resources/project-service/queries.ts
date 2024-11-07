@@ -18,25 +18,37 @@ export const getAdminPlugin = prisma.adminPlugin.findMany
 
 export async function saveProjectStore(records: ConfigRecords, projectId: Project['id']) {
   for (const { pluginName, key, value } of records) {
-    await prisma.projectPlugin.upsert({
-      create: {
-        pluginName,
-        projectId,
-        key,
-        value: String(value),
-      },
-      update: {
-        key,
-        value: String(value),
-        pluginName,
-      },
-      where: {
-        projectId_pluginName_key: {
-          projectId,
-          pluginName,
-          key,
+    if (value === null) {
+      await prisma.projectPlugin.delete({
+        where: {
+          projectId_pluginName_key: {
+            projectId,
+            pluginName,
+            key,
+          },
         },
-      },
-    })
+      })
+    } else {
+      await prisma.projectPlugin.upsert({
+        create: {
+          pluginName,
+          projectId,
+          key,
+          value: value.toString(),
+        },
+        update: {
+          key,
+          value: value.toString(),
+          pluginName,
+        },
+        where: {
+          projectId_pluginName_key: {
+            projectId,
+            pluginName,
+            key,
+          },
+        },
+      })
+    }
   }
 }
