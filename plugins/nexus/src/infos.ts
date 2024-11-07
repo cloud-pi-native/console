@@ -9,36 +9,39 @@ const infos = {
     project: [
       {
         key: 'activateNpmRepo',
+        section: 'NPM',
         kind: 'switch',
         initialValue: 'disabled',
         permissions: {
           admin: { read: true, write: true },
           user: { read: true, write: true },
         },
-        title: 'Créer un dépôt NPM privé',
+        title: 'Activer le dépôt',
         value: 'disabled',
         description: 'Default: utilise le paramétrage globale de la console. Attention: Nexus met un certain temps pour activer/désactiver les dépôts, un reprovisonnage après plusieurs minutes peut être nécessaire',
       },
       {
         key: 'npmWritePolicy',
+        section: 'NPM',
         kind: 'text',
         permissions: {
           admin: { read: true, write: true },
           user: { read: true, write: true },
         },
-        title: 'Politique d\'écriture NPM',
+        title: 'Politique d\'écriture',
         value: 'allow',
         description: 'Politique d\'écriture des dépôts NPM, valeurs possibles: allow / allow_once, deny, replication_only, allow par défaut. Documentation: https://help.sonatype.com/en/configurable-repository-fields.html',
       },
       {
         key: 'activateMavenRepo',
+        section: 'Maven',
         kind: 'switch',
         initialValue: 'disabled',
         permissions: {
           admin: { read: true, write: true },
           user: { read: true, write: true },
         },
-        title: 'Créer un dépôt MAVEN privé',
+        title: 'Activer le dépôt',
         value: 'disabled',
         description: 'Default: utilise le paramétrage globale de la console. Attention: Nexus met un certain temps pour activer/désactiver les dépôts, un reprovisonnage après plusieurs minutes peut être nécessaire',
       },
@@ -49,7 +52,8 @@ const infos = {
           admin: { read: true, write: true },
           user: { read: true, write: true },
         },
-        title: 'Politique d\'écriture Maven',
+        section: 'Maven',
+        title: 'Politique d\'écriture du dépôt Release',
         value: 'allow',
         description: 'Politique d\'écriture des dépôts maven, valeurs possibles: allow / allow_once / deny / replication_only, allow par défaut. Documentation: https://help.sonatype.com/en/configurable-repository-fields.html',
       },
@@ -57,6 +61,7 @@ const infos = {
     global: [
       {
         key: 'activateNpmRepoDefaultValue',
+        section: 'NPM',
         kind: 'switch',
         initialValue: 'disabled',
         permissions: {
@@ -69,6 +74,7 @@ const infos = {
       },
       {
         key: 'activateMavenRepoDefaultValue',
+        section: 'Maven',
         kind: 'switch',
         initialValue: 'disabled',
         permissions: {
