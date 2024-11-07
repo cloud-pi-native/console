@@ -1,5 +1,16 @@
 # Changelog
 
+## [8.17.0](https://github.com/cloud-pi-native/console/compare/v8.16.0...v8.17.0) (2024-11-07)
+
+
+### Features
+
+* :sparkles: config items section ([7c41eea](https://github.com/cloud-pi-native/console/commit/7c41eeaec2855355c0fa683d4b7ec81210eae6af))
+* :sparkles: hooks returned store accept null ([1255a32](https://github.com/cloud-pi-native/console/commit/1255a32237a6775e465fc0efe4dfe10bc9463816))
+* :sparkles: nexus fine write policy ([14897e6](https://github.com/cloud-pi-native/console/commit/14897e685ff6665da35464d93571a972e2c8dae9))
+* :sparkles: record and display last time a user logged ([1e8323b](https://github.com/cloud-pi-native/console/commit/1e8323bbfcd611891fe741434d4cb5f780f45dec))
+* gitlab optional internal url ([c1643a1](https://github.com/cloud-pi-native/console/commit/c1643a1eaae350220c4ecf114c7fa16bfb1983a1))
+
 ## [8.16.0](https://github.com/cloud-pi-native/console/compare/v8.15.1...v8.16.0) (2024-11-06)
 
 
