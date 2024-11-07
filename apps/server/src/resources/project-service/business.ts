@@ -1,4 +1,4 @@
-import type { Project } from '@prisma/client'
+import type { Project, ProjectPlugin } from '@prisma/client'
 import type {
   PermissionTarget,
   PluginsUpdateBody,
@@ -17,10 +17,10 @@ import {
 export type ConfigRecords = {
   key: string
   pluginName: string
-  value: string
+  value: string | number | null
 }[]
 
-export function dbToObj(records: ConfigRecords): PluginsUpdateBody {
+export function dbToObj(records: Omit<ProjectPlugin, 'projectId'>[]): PluginsUpdateBody {
   const obj: PluginsUpdateBody = {}
   for (const record of records) {
     if (!obj[record.pluginName]) obj[record.pluginName] = {}
