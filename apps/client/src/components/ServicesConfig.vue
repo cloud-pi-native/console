@@ -27,7 +27,7 @@ interface ManifestGrouped {
   }
 }
 function groupManifest(configItems: PluginConfigItem[] = []) {
-  const details = configItems.reduce((acc, curr) => {
+  return configItems.reduce((acc, curr) => {
     if (!curr.section) curr.section = 'default'
     if (curr.section in acc.items) {
       acc.items[curr.section].push(curr)
@@ -37,8 +37,6 @@ function groupManifest(configItems: PluginConfigItem[] = []) {
     }
     return acc
   }, { length: configItems.length, items: { default: [] }, sectionNumber: 1 } as ManifestGrouped)
-  console.log(details)
-  return details
 }
 
 function refTheValues(services: ProjectService[]) {
