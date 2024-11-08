@@ -2,8 +2,7 @@
 import { onBeforeMount, ref } from 'vue'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import type { Environment, Log, PluginsUpdateBody, ProjectService, ProjectV2 } from '@cpn-console/shared'
-import { sortArrByObjKeyAsc } from '@cpn-console/shared'
+import type { Environment, Log, PluginsUpdateBody, ProjectService, ProjectV2, Repo } from '@cpn-console/shared'
 import fr from 'javascript-time-ago/locale/fr'
 import TimeAgo from 'javascript-time-ago'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -39,37 +38,38 @@ const logsId = 'logsView'
 
 const project = computed(() => projectStore.projectsById[props.projectId])
 const environments = ref<Environment[]>()
+const repositories = ref<Repo[]>()
 // Add locale-specific relative date/time formatting rules.
 TimeAgo.addLocale(fr)
 
 // Create relative date/time formatter.
 const timeAgo = new TimeAgo('fr-FR')
 
-const repoRows = computed(() => {
-  if (!project.value.repositories?.length) {
-    return [[{
-      text: 'Aucun dépôt existant',
-      cellAttrs: {
-        colspan: headerRepos.length,
-      },
-    }]]
-  }
-  return sortArrByObjKeyAsc(project.value.repositories, 'internalRepoName')
-    .map(({ internalRepoName, isInfra, externalRepoUrl, isPrivate, createdAt }) => (
-      [
-        internalRepoName,
-        isInfra ? 'Infra' : 'Applicatif',
-        isPrivate ? 'oui' : 'non',
-        externalRepoUrl || '-',
-        {
-          text: timeAgo.format(new Date(createdAt)),
-          title: (new Date(createdAt)).toLocaleString(),
-          component: 'span',
-        },
-      ]
-    ),
-    )
-})
+// const repoRows = computed(() => {
+//   if (!project.value.repositories?.length) {
+//     return [[{
+//       text: 'Aucun dépôt existant',
+//       cellAttrs: {
+//         colspan: headerRepos.length,
+//       },
+//     }]]
+//   }
+//   return sortArrByObjKeyAsc(project.value.repositories, 'internalRepoName')
+//     .map(({ internalRepoName, isInfra, externalRepoUrl, isPrivate, createdAt }) => (
+//       [
+//         internalRepoName,
+//         isInfra ? 'Infra' : 'Applicatif',
+//         isPrivate ? 'oui' : 'non',
+//         externalRepoUrl || '-',
+//         {
+//           text: timeAgo.format(new Date(createdAt)),
+//           title: (new Date(createdAt)).toLocaleString(),
+//           component: 'span',
+//         },
+//       ]
+//     ),
+//     )
+// })
 
 function unSelectProject() {
   router.push({ name: 'ListProjects' })
@@ -109,12 +109,13 @@ async function transferOwnerShip(nextOwnerId: string) {
 
 async function getProjectDetails() {
   try {
-    const [envs] = await Promise.all([
+    const [projectDetails] = await Promise.all([
       project.value.refresh(),
       reloadProjectServices(),
       showLogs(0),
     ])
-    environments.value = envs.environments
+    environments.value = projectDetails.environments
+    repositories.value = projectDetails.repositories
   } catch (error) {
     console.trace(error)
   }
@@ -314,49 +315,49 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
             :key="environmentsCtKey"
             title="Environnements"
           >
-            <thead>
-              <td
-                v-for="header in headerEnvs"
-                :key="header"
-              >
-                {{ header }}
+            <template #header>
+              <tr>
+                <td
+                  v-for="header in headerEnvs"
+                  :key="header"
+                >
+                  {{ header }}
+                </td>
+              </tr>
+            </template>
+            <tr
+              v-for="env in environments?.sort((e1, e2) => Number(e1.createdAt) - Number(e2.createdAt))"
+              :key="env.id"
+            >
+              <td>{{ env.name }}</td>
+              <td>{{ stageStore.stages.find(stage => stage.id === env.stageId)?.name ?? 'Type inconnu...' }}</td>
+              <td>
+                <DsfrSelect
+                  v-model="env.quotaId"
+                  label=""
+                  :options="quotaStore.quotas.filter(quota => quota.stageIds.includes(env.stageId)).map(quota => ({
+                    text: `${quota.name} (${quota.cpu}CPU, ${quota.memory})`,
+                    value: quota.id,
+                  }))"
+                  select-id="quota-select"
+                  @update:model-value="(event: string) => updateEnvironmentQuota({ environmentId: env.id, quotaId: event })"
+                />
               </td>
-            </thead>
-            <tbody>
-              <tr
-                v-for="env in environments?.sort((e1, e2) => Number(e1.createdAt) - Number(e2.createdAt))"
-                :key="env.id"
+              <td
+                :title="(new Date(env.createdAt)).toLocaleString()"
               >
-                <td>{{ env.name }}</td>
-                <td>{{ stageStore.stages.find(stage => stage.id === env.stageId)?.name ?? 'Type inconnu...' }}</td>
-                <td>
-                  <DsfrSelect
-                    v-model="env.quotaId"
-                    label=""
-                    :options="quotaStore.quotas.filter(quota => quota.stageIds.includes(env.stageId)).map(quota => ({
-                      text: `${quota.name} (${quota.cpu}CPU, ${quota.memory})`,
-                      value: quota.id,
-                    }))"
-                    select-id="quota-select"
-                    @update:model-value="(event: string) => updateEnvironmentQuota({ environmentId: env.id, quotaId: event })"
-                  />
-                </td>
-                <td
-                  :title="(new Date(env.createdAt)).toLocaleString()"
-                >
-                  <span>{{ timeAgo.format(new Date(env.createdAt)) }}</span>
-                </td>
-              </tr>
-              <tr
-                v-if="!project.environments?.length"
+                <span>{{ timeAgo.format(new Date(env.createdAt)) }}</span>
+              </td>
+            </tr>
+            <tr
+              v-if="!project.environments?.length"
+            >
+              <td
+                :colspan="headerEnvs.length"
               >
-                <td
-                  :colspan="headerEnvs.length"
-                >
-                  Aucun environnement existant
-                </td>
-              </tr>
-            </tbody>
+                Aucun environnement existant
+              </td>
+            </tr>
           </DsfrTable>
 
           <hr>
@@ -364,9 +365,41 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
             :id="repositoriesId"
             :key="repositoriesCtKey"
             title="Dépôts"
-            :headers="headerRepos"
-            :rows="repoRows"
-          />
+          >
+            <template #header>
+              <tr>
+                <td
+                  v-for="header in headerRepos"
+                  :key="header"
+                >
+                  {{ header }}
+                </td>
+              </tr>
+            </template>
+            <tr
+              v-for="repo in repositories"
+              :key="repo.id"
+            >
+              <td>{{ repo.internalRepoName }}</td>
+              <td>{{ repo.isInfra ? 'Infra' : 'Applicatif' }}</td>
+              <td>{{ repo.isPrivate ? 'oui' : 'non' }}</td>
+              <td>{{ repo.externalRepoUrl || '-' }}</td>
+              <td
+                :title="(new Date(repo.createdAt)).toLocaleString()"
+              >
+                {{ timeAgo.format(new Date(repo.createdAt)) }}
+              </td>
+            </tr>
+            <tr
+              v-if="!repositories?.length"
+            >
+              <td
+                :colspan="headerEnvs.length"
+              >
+                Aucun dépôt existant
+              </td>
+            </tr>
+          </DsfrTable>
           <hr>
           <TeamCt
             :id="membersId"
@@ -388,6 +421,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
               :services="projectServices"
               permission-target="admin"
               :display-global="false"
+              :disabled="false"
               @update="(data: PluginsUpdateBody) => saveProjectServices(data)"
               @reload="() => reloadProjectServices()"
             />
