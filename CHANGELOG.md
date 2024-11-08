@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.17.1](https://github.com/cloud-pi-native/console/compare/v8.17.0...v8.17.1) (2024-11-08)
+
+
+### Bug Fixes
+
+* :ambulance: fix not displayed repositories in admin view ([48c0a92](https://github.com/cloud-pi-native/console/commit/48c0a92339db999c598fe24cdc9302b28cffa14d))
+* :ambulance: internal gitlab url ([16f195e](https://github.com/cloud-pi-native/console/commit/16f195e55222de023046aaabefa9b6d7f79062ee))
+
 ## [8.17.0](https://github.com/cloud-pi-native/console/compare/v8.16.0...v8.17.0) (2024-11-07)
 
 
