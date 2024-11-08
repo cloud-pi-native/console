@@ -15,7 +15,10 @@ import { GitlabProjectApi } from './class.js'
 const onlyApi = { api: (project: Project | UniqueRepo) => new GitlabProjectApi(project) }
 
 function start() {
-  getGroupRootId()
+  getGroupRootId().catch((error) => {
+    console.log(error)
+    throw new Error('Error at gitlab plugin start')
+  })
 }
 
 export const plugin: Plugin = {

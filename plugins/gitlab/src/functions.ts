@@ -6,7 +6,8 @@ import { createUsername, getUser } from './user.js'
 import { ensureMembers } from './members.js'
 import { ensureRepositories } from './repositories.js'
 import type { VaultSecrets } from './utils.js'
-import { cleanGitlabError, getConfig } from './utils.js'
+import { cleanGitlabError } from './utils.js'
+import config from './config.js'
 
 // Check
 export const checkApi: StepCall<Project> = async (payload) => {
@@ -53,7 +54,7 @@ export const getDsoProjectSecrets: StepCall<ProjectLite> = async (payload) => {
         '-F ref=main',
         '-F variables[GIT_BRANCH_DEPLOY]=\${BRANCH_TO_SYNC}',
         '-F variables[PROJECT_NAME]=\${REPOSITORY_NAME}',
-        `"${getConfig().url}/api/v4/projects/${gitlab.GIT_MIRROR_PROJECT_ID}/trigger/pipeline"`,
+        `"${config().publicUrl}/api/v4/projects/${gitlab.GIT_MIRROR_PROJECT_ID}/trigger/pipeline"`,
       ]
       /* eslint-enable */
       const secrets: Record<string, string> = {

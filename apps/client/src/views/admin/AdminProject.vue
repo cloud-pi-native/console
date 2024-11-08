@@ -45,32 +45,6 @@ TimeAgo.addLocale(fr)
 // Create relative date/time formatter.
 const timeAgo = new TimeAgo('fr-FR')
 
-// const repoRows = computed(() => {
-//   if (!project.value.repositories?.length) {
-//     return [[{
-//       text: 'Aucun dépôt existant',
-//       cellAttrs: {
-//         colspan: headerRepos.length,
-//       },
-//     }]]
-//   }
-//   return sortArrByObjKeyAsc(project.value.repositories, 'internalRepoName')
-//     .map(({ internalRepoName, isInfra, externalRepoUrl, isPrivate, createdAt }) => (
-//       [
-//         internalRepoName,
-//         isInfra ? 'Infra' : 'Applicatif',
-//         isPrivate ? 'oui' : 'non',
-//         externalRepoUrl || '-',
-//         {
-//           text: timeAgo.format(new Date(createdAt)),
-//           title: (new Date(createdAt)).toLocaleString(),
-//           component: 'span',
-//         },
-//       ]
-//     ),
-//     )
-// })
-
 function unSelectProject() {
   router.push({ name: 'ListProjects' })
 }
