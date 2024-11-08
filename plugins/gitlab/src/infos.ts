@@ -1,10 +1,10 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
 import { ENABLED } from '@cpn-console/shared'
-import { getConfig } from './utils.js'
+import config from './config.js'
 
 const infos = {
   name: 'gitlab',
-  to: ({ project, organization }) => `${getConfig().url}/${getConfig().projectsRootDir}/${organization}/${project}`,
+  to: ({ project, organization }) => `${config().publicUrl}/${config().projectsRootDir}/${organization}/${project}`,
   title: 'Gitlab',
   imgSrc: '/img/gitlab.svg',
   description: 'GitLab est un service d\'hébergement de code source et de pipeline CI/CD',

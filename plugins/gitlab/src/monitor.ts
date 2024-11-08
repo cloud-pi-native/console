@@ -1,6 +1,6 @@
 import { Monitor, type MonitorInfos, MonitorStatus } from '@cpn-console/shared'
 import axios from 'axios'
-import { getConfig } from './utils.js'
+import config from './config.js'
 
 enum HealthStatus {
   failed = 'failed',
@@ -12,7 +12,7 @@ const coreComponents = ['gitaly_check', 'master_check', 'db_check', 'sessions_ch
 async function monitor(instance: Monitor): Promise<MonitorInfos> {
   instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
   try {
-    const res = await axios.get(`${getConfig().internalUrl}/-/readiness?all=1`, {
+    const res = await axios.get(`${config().publicUrl}/-/readiness?all=1`, {
       validateStatus: res => res === 200,
     })
     if (res.status === 200) { // 200 only means api responds

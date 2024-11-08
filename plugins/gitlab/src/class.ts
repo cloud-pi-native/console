@@ -7,7 +7,8 @@ import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { objectEntries } from '@cpn-console/shared'
 import type { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { getOrganizationId } from './group.js'
-import { getApi, getConfig, getGroupRootId, infraAppsRepoName, internalMirrorRepoName } from './utils.js'
+import { getApi, getGroupRootId, infraAppsRepoName, internalMirrorRepoName } from './utils.js'
+import config from './config.js'
 
 type setVariableResult = 'created' | 'updated' | 'already up-to-date'
 type AccessLevelAllowed = AccessLevel.NO_ACCESS | AccessLevel.MINIMAL_ACCESS | AccessLevel.GUEST | AccessLevel.REPORTER | AccessLevel.DEVELOPER | AccessLevel.MAINTAINER | AccessLevel.OWNER
@@ -118,7 +119,7 @@ export class GitlabProjectApi extends PluginApi {
   }
 
   public async getProjectId(projectName: string) {
-    const pathProjectName = `${getConfig().projectsRootDir}/${this.project.organization.name}/${this.project.name}/${projectName}`
+    const pathProjectName = `${config().projectsRootDir}/${this.project.organization.name}/${this.project.name}/${projectName}`
     const project = (await this.api.Projects.search(projectName)).find(p => p.path_with_namespace === pathProjectName)
 
     if (!project) {
@@ -183,7 +184,7 @@ export class GitlabProjectApi extends PluginApi {
 
   // Repositories
   public async getRepoUrl(repoName: string) {
-    return `${getConfig().url}/${getConfig().projectsRootDir}/${this.project.organization.name}/${this.project.name}/${repoName}.git`
+    return `${config().publicUrl}/${config().projectsRootDir}/${this.project.organization.name}/${this.project.name}/${repoName}.git`
   }
 
   public async listRepositories() {
