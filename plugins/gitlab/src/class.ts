@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { PluginApi, type Project, type RepoCreds, type UniqueRepo } from '@cpn-console/hooks'
 import type { AccessTokenScopes, CommitAction, GroupSchema, GroupStatisticsSchema, MemberSchema, ProjectVariableSchema, VariableSchema } from '@gitbeaker/rest'
-import type { CondensedProjectSchema, Gitlab } from '@gitbeaker/core'
+import type { AllRepositoryTreesOptions, CondensedProjectSchema, Gitlab, PaginationRequestOptions, RepositoryFileExpandedSchema, RepositoryTreeSchema } from '@gitbeaker/core'
 import { AccessLevel } from '@gitbeaker/core'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { objectEntries } from '@cpn-console/shared'
@@ -237,17 +237,18 @@ export class GitlabProjectApi extends PluginApi {
 
     const branches = await this.api.Branches.all(repoId)
     if (branches.some(b => b.name === branch)) {
-      const filesTree = await this.listFiles(repoId, '/', branch)
-      if (filesTree.find(f => f.path === filePath)) {
-        const actualFile = await this.api.RepositoryFiles.show(repoId, filePath, branch)
+      let actualFile: RepositoryFileExpandedSchema | undefined
+      try {
+        actualFile = await this.api.RepositoryFiles.show(repoId, filePath, branch)
+      } catch (_) {}
+      if (actualFile) {
         const newContentDigest = createHash('sha256').update(fileContent).digest('hex')
-        if (!actualFile || actualFile.content_sha256 !== newContentDigest) {
-          // Update needed
-          action = 'update'
-        } else {
+        if (actualFile.content_sha256 === newContentDigest) {
           // Already up-to-date
           return false
         }
+        // Update needed
+        action = 'update'
       }
     }
 
@@ -287,9 +288,23 @@ export class GitlabProjectApi extends PluginApi {
     return false
   }
 
-  public async listFiles(repoId: number, path: string = '/', branch: string = 'main') {
+  public async listFiles(repoId: number, options: AllRepositoryTreesOptions & PaginationRequestOptions<'keyset'> = {}) {
+    options.path = options?.path ?? '/'
+    options.ref = options?.ref ?? 'main'
+    options.recursive = options?.recursive ?? false
     try {
-      const files = await this.api.Repositories.allRepositoryTrees(repoId, { path, ref: branch, recursive: true, perPage: 1000 })
+      const files: RepositoryTreeSchema[] = await this.api.Repositories.allRepositoryTrees(repoId, options)
+      // if (depth >= 0) {
+      //   for (const file of files) {
+      //     if (file.type !== 'tree') {
+      //       return []
+      //     }
+      //     const childrenFiles = await this.listFiles(repoId, { depth: depth - 1, ...options, path: file.path })
+      //     console.trace({ file, childrenFiles })
+
+      //     files.push(...childrenFiles)
+      //   }
+      // }
       return files
     } catch (error) {
       const { cause } = error as GitbeakerRequestError
