@@ -1,32 +1,27 @@
 import KcAdminClient from '@keycloak/keycloak-admin-client'
-import { requiredEnv } from '@cpn-console/shared'
-
-export const keycloakToken = process.env.KEYCLOAK_ADMIN_PASSWORD
-export const keycloakUser = process.env.KEYCLOAK_ADMIN
-
-let keycloakDomain: string | undefined
-let keycloakProtocol: string | undefined
-let keycloakRealm: string | undefined
+import getConfig from './config.js'
 
 export async function getkcClient() {
-  keycloakDomain = keycloakDomain ?? requiredEnv('KEYCLOAK_DOMAIN')
-  keycloakProtocol = keycloakProtocol ?? requiredEnv('KEYCLOAK_PROTOCOL')
-  keycloakRealm = keycloakRealm ?? requiredEnv('KEYCLOAK_REALM')
-
   const kcClient = new KcAdminClient({
-    baseUrl: `${keycloakProtocol}://${keycloakDomain}`,
+    baseUrl: getConfig().url,
   })
 
   await kcClient.auth({
     clientId: 'admin-cli',
     grantType: 'password',
-    username: keycloakUser,
-    password: keycloakToken,
+    username: process.env.KEYCLOAK_ADMIN,
+    password: process.env.KEYCLOAK_ADMIN_PASSWORD,
   })
-  kcClient.setConfig({ realmName: keycloakRealm })
+  kcClient.setConfig({ realmName: getConfig().realm })
   return kcClient
 }
 
 export function start() {
-  getkcClient()
+  getkcClient().catch((error) => {
+    console.log(error)
+    if (process.env.IGNORE_PLUGINS_START_FAIL?.includes('keycloak')) {
+      return
+    }
+    throw new Error('failed to start keycloak plugin')
+  })
 }
