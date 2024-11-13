@@ -29,10 +29,10 @@ type PendingCommits = Record<number, {
 }>
 
 export class GitlabProjectApi extends PluginApi {
-  private api: Gitlab<false>
-  private project: Project | UniqueRepo
+  private readonly api: Gitlab<false>
+  private readonly project: Project | UniqueRepo
   private gitlabGroup: GroupSchema & { statistics: GroupStatisticsSchema } | undefined
-  private specialRepositories: string[] = [infraAppsRepoName, internalMirrorRepoName]
+  private readonly specialRepositories: string[] = [infraAppsRepoName, internalMirrorRepoName]
   private pendingCommits: PendingCommits = {}
   // private organizationGroup: GroupSchema & { statistics: GroupStatisticsSchema } | undefined
 
@@ -100,7 +100,7 @@ export class GitlabProjectApi extends PluginApi {
 
   // Tokens
   public async getProjectMirrorCreds(vaultApi: VaultProjectApi): Promise<GitlabMirrorSecret> {
-    const tokenName = `${this.project.organization.name}-${this.project.name}-bot`
+    const tokenName = `${this.project.slug}-bot`
     const currentToken = await this.getProjectToken(tokenName)
     const creds: GitlabMirrorSecret = {
       MIRROR_USER: '',

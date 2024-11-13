@@ -1673,6 +1673,7 @@ export const data = {
     {
       id: '22e7044f-8414-435d-9c4a-2df42a65034b',
       name: 'betaapp',
+      slug: 'dinum-betaapp',
       organizationId: '2368a61e-f243-42f6-b471-a85b056ee131',
       description: '',
       status: 'created',
@@ -1685,6 +1686,7 @@ export const data = {
     {
       id: '9dabf3f9-6c86-4358-8598-65007d78df65',
       name: 'projecttoarchive',
+      slug: 'dinum-projecttoarchive',
       organizationId: '2368a61e-f243-42f6-b471-a85b056ee131',
       description: '',
       status: 'created',
@@ -1697,6 +1699,7 @@ export const data = {
     {
       id: '011e7860-04d7-461f-912d-334c622d38b3',
       name: 'candilib',
+      slug: 'mi-candilib',
       organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
       description: 'Application de réservation de places à l\'examen du permis B.',
       status: 'created',
@@ -1709,6 +1712,7 @@ export const data = {
     {
       id: '011e7860-04d7-461f-912d-334c622d38c5',
       name: 'basegun',
+      slug: 'mi-basegun',
       organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
       description: 'Application d\'aide à la catégorisation d\'armes à feu.',
       status: 'created',
@@ -1721,6 +1725,7 @@ export const data = {
     {
       id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
       name: 'psijfailed',
+      slug: 'mi-psijfailed',
       organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
       description: 'Application de transmission d\'informations entre agents de la PS et de l\'IJ.',
       status: 'failed',
@@ -1733,6 +1738,7 @@ export const data = {
     {
       id: '8bd21636-e8ce-4098-8ed8-16cbd60af340',
       name: 'projet dégradé',
+      slug: 'mi-projet dégradé',
       organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
       description: 'Projet testé en état dégradé',
       status: 'warning',
@@ -1745,6 +1751,7 @@ export const data = {
     {
       id: '554d9150-9a07-42c1-8207-1163f2f0addd',
       name: 'pissenlit',
+      slug: 'mi-pissenlit',
       organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
       description: '',
       status: 'created',
@@ -1757,6 +1764,7 @@ export const data = {
     {
       id: '94c860ab-023f-4e6e-8a4e-ff41456e249b',
       name: 'rolistes',
+      slug: 'mi-rolistes',
       organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
       description: '',
       status: 'created',

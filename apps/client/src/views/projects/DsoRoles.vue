@@ -3,12 +3,12 @@ import { type Member, ProjectAuthorized, type ProjectV2, type Role, type RoleBig
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-const props = defineProps<{ projectId: ProjectV2['id'] }>()
+const props = defineProps<{ projectSlug: ProjectV2['slug'] }>()
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
 const selectedId = ref<string>()
-const project = computed(() => projectStore.projectsById[props.projectId])
+const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
 
 type RoleItem = Omit<Role, 'permissions'> & { permissions: bigint, memberCounts: number, isEveryone: boolean }
 
@@ -96,7 +96,7 @@ watch(project, reload, { immediate: true })
 
 <template>
   <DsoSelectedProject
-    :project-id="projectId"
+    :project-slug="projectSlug"
   />
   <template
     v-if="ProjectAuthorized.ManageRoles({ projectPermissions: project.myPerms })"

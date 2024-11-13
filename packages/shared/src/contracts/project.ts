@@ -8,8 +8,7 @@ import {
 import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const ProjectParams = z.object({
-  projectId: z.string()
-    .uuid(),
+  projectId: z.string().regex(/[a-z0-9-]*/), // uuid or slug like
 })
 
 export const projectContract = contractInstance.router({
@@ -97,7 +96,6 @@ export const projectContract = contractInstance.router({
         everyonePerms: true,
         locked: true,
         ownerId: true,
-        status: true,
       })
       .partial(),
     responses: {

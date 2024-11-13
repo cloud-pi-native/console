@@ -10,25 +10,23 @@ interface KeycloakEnv {
 }
 
 export class KeycloakProjectApi extends PluginApi {
-  private organizationName: string
-  private projectName: string
+  private readonly projectSlug: string
 
-  constructor(organizationName: string, projectName: string) {
+  constructor(projectSlug: string) {
     super()
-    this.organizationName = organizationName
-    this.projectName = projectName
+    this.projectSlug = projectSlug
   }
 
   public async getProjectGroupPath(): Promise<string> {
-    return `/${this.organizationName}-${this.projectName}`
+    return `/${this.projectSlug}`
   }
 
   public async getEnvGroup(environment: string): Promise<KeycloakEnv> {
     return {
-      path: `/${this.organizationName}-${this.projectName}/${consoleGroupName}/${environment}`,
+      path: `/${this.projectSlug}/${consoleGroupName}/${environment}`,
       subgroups: {
-        RO: `/${this.organizationName}-${this.projectName}/${consoleGroupName}/${environment}/RO`,
-        RW: `/${this.organizationName}-${this.projectName}/${consoleGroupName}/${environment}/RW`,
+        RO: `/${this.projectSlug}/${consoleGroupName}/${environment}/RO`,
+        RW: `/${this.projectSlug}/${consoleGroupName}/${environment}/RW`,
       },
     }
   }

@@ -16,11 +16,12 @@ import { useClusterStore } from '@/stores/cluster.js'
 import { useQuotaStore } from '@/stores/quota.js'
 import { useStageStore } from '@/stores/stage.js'
 
-const props = defineProps<{ projectId: ProjectV2['id'] }>()
+const props = defineProps<{ projectSlug: ProjectV2['id'] }>()
 
 const projectStore = useProjectStore()
 const clusterStore = useClusterStore()
-const project = computed(() => projectStore.projectsById[props.projectId])
+const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
+const operationsInProgress = computed(() => project.value.operationsInProgress)
 
 const environments = ref<Environment[]>([])
 const environmentNames = computed(() => project.value.environments?.map(env => env.name) ?? [])
@@ -67,7 +68,7 @@ async function deleteEnvironment(environmentId: Environment['id']) {
 
 const canManageEnvs = ref<boolean>(false)
 async function reload() {
-  const [envs, _] = await Promise.all([
+  const [envs] = await Promise.all([
     project.value.Environments.list(),
     clusterStore.getClusters(),
     useQuotaStore().getAllQuotas(),
@@ -84,7 +85,7 @@ watch(project, reload, { immediate: true })
 
 <template>
   <DsoSelectedProject
-    :project-id="projectId"
+    :project-slug="projectSlug"
   >
     <div
       class="flex <md:flex-col-reverse items-center justify-between pb-5"
@@ -131,6 +132,7 @@ watch(project, reload, { immediate: true })
           :project-clusters-ids="projectClustersIds"
           :all-clusters="clusterStore.clusters"
           :can-manage="canManageEnvs"
+          :lock-operation="operationsInProgress.has('envManagement')"
           is-editable
           @add-environment="(environment: Omit<CreateEnvironmentBody, 'id' | 'projectId'>) => addEnvironment(environment)"
           @cancel="cancel()"
@@ -145,6 +147,7 @@ watch(project, reload, { immediate: true })
           :is-editable="false"
           :is-project-locked="project.locked"
           :can-manage="canManageEnvs"
+          :lock-operation="operationsInProgress.has('envManagement')"
           :all-clusters="allClusters"
           @put-environment="(environmentUpdate: UpdateEnvironmentBody) => putEnvironment({ ...environmentUpdate })"
           @delete-environment="(environmentId: Environment['id']) => deleteEnvironment(environmentId)"

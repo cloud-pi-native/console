@@ -38,6 +38,8 @@ export default defineConfig({
     chromeWebSecurity: false,
     experimentalModifyObstructiveThirdPartyCode: false,
     experimentalWebKitSupport: false,
+    viewportWidth: 1050,
+    viewportHeight: 1050,
     env: {
       argocdUrl,
       gitlabUrl,

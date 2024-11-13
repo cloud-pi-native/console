@@ -26,7 +26,7 @@ export class VaultProjectApi extends PluginApi {
   constructor(project: ProjectLite) {
     super()
     this.basePath = `${project.organization.name}/${project.name}`
-    this.roleName = `${project.organization.name}-${project.name}`
+    this.roleName = project.slug
     this.projectRootDir = removeTrailingSlash(requiredEnv('PROJECTS_ROOT_DIR'))
     this.axios = axios.create({
       baseURL: requiredEnv('VAULT_URL'),

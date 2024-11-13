@@ -59,6 +59,7 @@ watch(userStore, async () => {
     service-title="Console Cloud π Native"
     :logo-text="['Ministère', 'de l’intérieur', 'et des outre-mer']"
     :quick-links="quickLinks"
+    data-testid="header"
   />
   <DsfrNotice
     v-if="systemStore.systemSettingsByKey.maintenance?.value === 'on'"

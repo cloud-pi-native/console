@@ -14,7 +14,7 @@ describe('Project Logs', () => {
     cy.intercept('PUT', `/api/v1/projects/${betaapp.id}/hooks`).as('replayHooks')
 
     cy.goToProjects()
-    cy.getByDataTestid(`projectTile-${betaapp.name}`).click()
+    cy.getByDataTestid(`projectTile-${betaapp.slug}`).click()
     cy.getByDataTestid('displayLogsPanel')
       .should('not.be.visible')
     cy.getByDataTestid('displayLogsBtn')
@@ -47,7 +47,7 @@ describe('Project Logs', () => {
 
     // as owner
     cy.goToProjects()
-    cy.getByDataTestid(`projectTile-${betaapp.name}`).click()
+    cy.getByDataTestid(`projectTile-${betaapp.slug}`).click()
     cy.wait('@listLogs')
     cy.getByDataTestid('displayLogsPanel')
       .should('not.be.visible')
@@ -68,7 +68,7 @@ describe('Project Logs', () => {
 
     // as member
     cy.goToProjects()
-    cy.getByDataTestid(`projectTile-candilib`).click()
+    cy.getByDataTestid(`projectTile-mi-candilib`).click()
     cy.wait('@listLogs')
     cy.getByDataTestid('displayLogsPanel')
       .should('not.be.visible')
