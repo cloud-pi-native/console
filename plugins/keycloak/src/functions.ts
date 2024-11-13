@@ -66,24 +66,27 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
     const projectGroup = await getOrCreateProjectGroup(kcClient, projectName)
     const groupMembers = await kcClient.groups.listMembers({ id: projectGroup.id })
 
-    // Ensure project membership exists
-    for (const member of groupMembers) {
-      if (!project.users.some(({ id }) => id === member.id)) {
-        await kcClient.users.delFromGroup({
+    await Promise.all([
+      ...groupMembers.map((member) => {
+        if (!project.users.some(({ id }) => id === member.id)) {
+          return kcClient.users.delFromGroup({
           // @ts-ignore id is present on user, bad typing in lib
-          id: member.id,
-          groupId: projectGroup.id,
-        })
-      }
-    }
-    for (const user of project.users) {
-      if (!groupMembers.some(({ id }) => id === user.id)) {
-        await kcClient.users.addToGroup({
-          id: user.id,
-          groupId: projectGroup.id,
-        })
-      }
-    }
+            id: member.id,
+            groupId: projectGroup.id,
+          })
+        }
+        return undefined
+      }),
+      ...project.users.map((user) => {
+        if (!groupMembers.some(({ id }) => id === user.id)) {
+          return kcClient.users.addToGroup({
+            id: user.id,
+            groupId: projectGroup.id,
+          })
+        }
+        return undefined
+      }),
+    ])
 
     // Ensure envs subgroups exists
     const projectGroups = await getAllSubgroups(kcClient, projectGroup.id, 0)
@@ -93,30 +96,39 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
 
     const envGroups = await getAllSubgroups(kcClient, consoleGroup.id, 0) as CustomGroup[]
 
+    const promises: Promise<any>[] = []
     for (const environment of project.environments) {
       const envGroup: Required<CustomGroup> = envGroups.find(group => group.name === environment.name) as Required<CustomGroup>
         ?? await getOrCreateChildGroup(kcClient, consoleGroup.id, environment.name)
 
-      const roGroup = await getOrCreateChildGroup(kcClient, envGroup.id, 'RO')
-      const rwGroup = await getOrCreateChildGroup(kcClient, envGroup.id, 'RW')
+      const [roGroup, rwGroup] = await Promise.all([
+        getOrCreateChildGroup(kcClient, envGroup.id, 'RO'),
+        getOrCreateChildGroup(kcClient, envGroup.id, 'RW'),
+      ])
 
       // Ensure envs permissions membership exists
       for (const permission of environment.permissions) {
         if (permission.permissions.ro) {
-          await kcClient.users.addToGroup({ id: permission.userId, groupId: roGroup.id })
+          promises.push(kcClient.users.addToGroup({ id: permission.userId, groupId: roGroup.id }))
         } else {
-          await kcClient.users.delFromGroup({ id: permission.userId, groupId: roGroup.id })
+          promises.push(kcClient.users.delFromGroup({ id: permission.userId, groupId: roGroup.id }))
         }
         if (permission.permissions.rw) {
-          await kcClient.users.addToGroup({ id: permission.userId, groupId: rwGroup.id })
-        } else { await kcClient.users.delFromGroup({ id: permission.userId, groupId: rwGroup.id }) }
+          promises.push(kcClient.users.addToGroup({ id: permission.userId, groupId: rwGroup.id }))
+        } else {
+          promises.push(kcClient.users.delFromGroup({ id: permission.userId, groupId: rwGroup.id }))
+        }
       }
     }
-    for (const subGroup of envGroups) {
+
+    await Promise.all(promises)
+
+    await Promise.all(envGroups.map((subGroup) => {
       if (!project.environments.some(({ name }) => name === subGroup.name)) {
-        kcClient.groups.del({ id: subGroup.id })
+        return kcClient.groups.del({ id: subGroup.id })
       }
-    }
+      return undefined
+    }))
 
     return {
       status: {
