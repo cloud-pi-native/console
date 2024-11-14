@@ -2,7 +2,7 @@
 import { onBeforeMount, ref } from 'vue'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import type { Environment, Log, PluginsUpdateBody, ProjectService, ProjectV2, Repo } from '@cpn-console/shared'
+import type { CleanedCluster, Environment, Log, PluginsUpdateBody, ProjectService, ProjectV2, Repo, Zone } from '@cpn-console/shared'
 import fr from 'javascript-time-ago/locale/fr'
 import TimeAgo from 'javascript-time-ago'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -13,10 +13,14 @@ import { useStageStore } from '@/stores/stage.js'
 import { bts } from '@/utils/func.js'
 import { useLogStore } from '@/stores/log.js'
 import router from '@/router/index.js'
+import { useClusterStore } from '@/stores/cluster.js'
+import { useZoneStore } from '@/stores/zone.js'
 
 const props = defineProps<{ projectId: ProjectV2['id'] }>()
 
 const projectStore = useProjectStore()
+const zoneStore = useZoneStore()
+const clusterStore = useClusterStore()
 const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
 const quotaStore = useQuotaStore()
@@ -28,7 +32,7 @@ const repositoriesCtKey = ref(getRandomId('repository'))
 const isArchivingProject = ref(false)
 const projectToArchive = ref('')
 
-const headerEnvs = ['Nom', 'Type d\'environnement', 'Quota', 'Date']
+const headerEnvs = ['Nom', 'Type', 'Quota', 'Localisation', 'Date']
 const headerRepos = ['Nom', 'Type', 'Privé ?', 'url', 'Date']
 const membersId = 'membersTable'
 const repositoriesId = 'repositoriesTable'
@@ -37,7 +41,7 @@ const servicesId = 'servicesTable'
 const logsId = 'logsView'
 
 const project = computed(() => projectStore.projectsById[props.projectId])
-const environments = ref<Environment[]>()
+const environments = ref<(Environment & { cluster?: CleanedCluster & { zone?: Zone } })[]>()
 const repositories = ref<Repo[]>()
 // Add locale-specific relative date/time formatting rules.
 TimeAgo.addLocale(fr)
@@ -87,8 +91,20 @@ async function getProjectDetails() {
       project.value.refresh(),
       reloadProjectServices(),
       showLogs(0),
+      clusterStore.getClusters(),
+      zoneStore.getAllZones(),
     ])
-    environments.value = projectDetails.environments
+    environments.value = projectDetails.environments?.map((environment) => {
+      const cluster = clusterStore.clusters.find(cluster => cluster.id === environment.clusterId) as CleanedCluster
+      const zone = zoneStore.zones.find(zone => zone.id === cluster.zoneId) as Zone
+      return {
+        ...environment,
+        cluster: {
+          ...cluster,
+          zone,
+        },
+      }
+    })
     repositories.value = projectDetails.repositories
   } catch (error) {
     console.trace(error)
@@ -278,6 +294,10 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
               to: `#${servicesId}`,
               text: '#Services',
             },
+            {
+              to: `#${logsId}`,
+              text: '#Journaux',
+            },
           ]"
         />
         <hr>
@@ -316,6 +336,9 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
                   select-id="quota-select"
                   @update:model-value="(event: string) => updateEnvironmentQuota({ environmentId: env.id, quotaId: event })"
                 />
+              </td>
+              <td>
+                {{ env.cluster?.label ?? 'Cluster inconnu' }} - {{ env.cluster?.zone?.label ?? 'Zone inconnue' }}
               </td>
               <td
                 :title="(new Date(env.createdAt)).toLocaleString()"
