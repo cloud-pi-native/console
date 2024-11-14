@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.17.2](https://github.com/cloud-pi-native/console/compare/v8.17.1...v8.17.2) (2024-11-14)
+
+
+### Bug Fixes
+
+* :zap: disallow recursive list to avoid big latency ([1fed78c](https://github.com/cloud-pi-native/console/commit/1fed78c1742b70918c9bab1ff616f0cf681d66fa))
+
 ## [8.17.1](https://github.com/cloud-pi-native/console/compare/v8.17.0...v8.17.1) (2024-11-08)
 
 
