@@ -1,8 +1,7 @@
 <script lang="ts" setup>
 import { onMounted } from 'vue'
-import type { AdminToken } from '@cpn-console/shared'
-import { getAdminPermLabelsByValue } from '@cpn-console/shared'
-import { useAdminTokenStore } from '@/stores/admin-token.js'
+import type { AdminToken, PersonalAccessToken } from '@cpn-console/shared'
+import { useTokenStore } from '@/stores/token.js'
 import type { SimpleToken } from '@/components/TokenForm.vue'
 
 const statusWording: Record<AdminToken['status'], string> = {
@@ -12,24 +11,21 @@ const statusWording: Record<AdminToken['status'], string> = {
 }
 const headers = [
   'Nom',
-  'Permissions',
-  'Créateur',
   'Date de création',
   'Date d\'expiration',
   'Dernière utilisation',
   'État',
   'Révoquer',
 ]
-const adminTokenStore = useAdminTokenStore()
+const tokenStore = useTokenStore()
 
-const tokens = ref<AdminToken[]>([])
-const displayRevoked = ref(false)
+const tokens = ref<PersonalAccessToken[]>([])
 const displayNewTokenForm = ref(false)
 const deleteTokenId = ref('')
 const deleteModalOpened = ref(false)
 
 async function deleteToken() {
-  await adminTokenStore.deleteToken(deleteTokenId.value)
+  await tokenStore.deletePersonalAccessToken(deleteTokenId.value)
   deleteTokenId.value = ''
   deleteModalOpened.value = false
   await getAllTokens()
@@ -38,8 +34,6 @@ async function deleteToken() {
 const rows = computed(() => tokens.value.length
   ? tokens.value.map(token => ([
     token.name,
-    getAdminPermLabelsByValue(token.permissions).join(', '),
-    token.owner?.email ?? '-',
     (new Date(token.createdAt)).toLocaleString(),
     token.expirationDate ? (new Date(token.expirationDate)).toLocaleString() : 'Jamais',
     token.lastUse ? (new Date(token.lastUse)).toLocaleString() : 'Jamais',
@@ -62,26 +56,18 @@ const rows = computed(() => tokens.value.length
 )
 
 async function getAllTokens() {
-  tokens.value = await adminTokenStore.listTokens({ withRevoked: displayRevoked.value })
+  tokens.value = await tokenStore.listPersonalAccessTokens()
 }
 
 const formProps = ref<{ exposedToken?: string }>({ exposedToken: undefined })
 async function createToken(token: SimpleToken) {
-  const exposedToken = await adminTokenStore.createToken({
-    permissions: '2',
-    ...token,
-  })
+  const exposedToken = await tokenStore.createPersonalAccessToken(token)
   formProps.value.exposedToken = exposedToken.password
   getAllTokens()
 }
 
 async function resetForm() {
   formProps.value.exposedToken = undefined
-}
-
-function switchDisplayRevoked() {
-  displayRevoked.value = !displayRevoked.value
-  getAllTokens()
 }
 
 onMounted(async () => {
@@ -105,7 +91,7 @@ onMounted(async () => {
     />
     <TokenForm
       v-else
-      :mandatory-expiration="false"
+      mandatory-expiration
       :exposed-token="formProps.exposedToken"
       @create="(token: SimpleToken) => createToken(token)"
       @reset="resetForm"
@@ -118,12 +104,6 @@ onMounted(async () => {
       :rows="rows"
     />
   </div>
-  <DsfrButton
-    :label="displayRevoked ? 'Masquer les jetons révoqués' : 'Voir les jetons révoqués'"
-    class="mt-5"
-    secondary
-    @click="switchDisplayRevoked"
-  />
   <DsfrModal
     v-model:opened="deleteModalOpened"
     title="Confirmer la suppression du token"

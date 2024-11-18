@@ -32,6 +32,7 @@ const isExpanded = ref({
   mainMenu: false,
   projects: false,
   administration: false,
+  profile: false,
 })
 
 function toggleExpand(key: keyof typeof isExpanded.value) {
@@ -39,18 +40,9 @@ function toggleExpand(key: keyof typeof isExpanded.value) {
 }
 
 watch(route, (currentRoute) => {
-  if (isInProject.value) {
-    isExpanded.value.projects = true
-    isExpanded.value.administration = false
-    return
-  }
-  if (currentRoute.matched.some(match => match.name === 'ParentAdmin')) {
-    isExpanded.value.projects = false
-    isExpanded.value.administration = true
-    return
-  }
-  isExpanded.value.projects = false
-  isExpanded.value.administration = false
+  isExpanded.value.projects = isInProject.value
+  isExpanded.value.profile = currentRoute.matched.some(match => match.name === 'Profile')
+  isExpanded.value.administration = currentRoute.matched.some(match => match.name === 'ParentAdmin')
 })
 
 onMounted(() => {
@@ -75,18 +67,6 @@ onMounted(() => {
       id="menuList"
       :expanded="isExpanded.mainMenu"
     >
-      <p
-        v-if="isLoggedIn"
-        data-testid="whoami-hint"
-        class="fr-hint-text fr-mb-2w cursor-pointer"
-        @click="router.push('/profile')"
-      >
-        <span
-          class="fr-icon-account-line"
-          aria-hidden="true"
-        />
-        {{ userStore.userProfile?.firstName }} {{ userStore.userProfile?.lastName }}
-      </p>
       <div
         class="my-2 flex flex-row gap-2 items-center cursor-pointer"
         @click="isDarkScheme = !isDarkScheme"
@@ -108,6 +88,52 @@ onMounted(() => {
           Accueil
         </DsfrSideMenuLink>
       </DsfrSideMenuListItem>
+
+      <!-- Onglet Profile -->
+      <DsfrSideMenuListItem
+        v-if="isLoggedIn"
+      >
+        <DsfrSideMenuButton
+          data-testid="menuUserList"
+          :expanded="isExpanded.profile"
+          button-label="Mon profil"
+          control-id="projectList"
+          @toggle-expand="toggleExpand('profile')"
+        >
+          {{ userStore.userProfile?.firstName }} {{ userStore.userProfile?.lastName }}
+        </DsfrSideMenuButton>
+        <DsfrSideMenuList
+          id="profileList"
+          :expanded="isExpanded.profile"
+          :collapsable="true"
+        >
+          <div>
+            <DsfrSideMenuListItem>
+              <DsfrSideMenuLink
+                class="menu-link-icon"
+                data-testid="menuUserInfo"
+                :active="routeName === 'UserInfo'"
+                to="/profile/info"
+              >
+                <v-icon name="ri:dashboard-line" />
+                Mon profil
+              </DsfrSideMenuLink>
+            </DsfrSideMenuListItem>
+            <DsfrSideMenuListItem>
+              <DsfrSideMenuLink
+                class="menu-link-icon"
+                data-testid="menuUserTokens"
+                :active="routeName === 'PersonalAccessTokens'"
+                to="/profile/tokens"
+              >
+                <v-icon name="ri:key-2-line" />
+                Jetons personnels
+              </DsfrSideMenuLink>
+            </DsfrSideMenuListItem>
+          </div>
+        </DsfrSideMenuList>
+      </DsfrSideMenuListItem>
+
       <!-- Onglet Projet -->
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink

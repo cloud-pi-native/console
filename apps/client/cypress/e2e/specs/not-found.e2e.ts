@@ -6,14 +6,14 @@ describe('Redirect to 404 if page not found', () => {
   it('should redirect loggedout user to 404 if page not found', () => {
     cy.visit('/nowhere')
     cy.url().should('contain', '/404')
-    cy.getByDataTestid('whoami-hint')
+    cy.getByDataTestid('menuUserList')
       .should('not.exist')
   })
   it('should redirect loggedin user to 404 if page not found', () => {
     cy.kcLogin('test')
     cy.visit('/nowhere')
     cy.url().should('contain', '/404')
-    cy.getByDataTestid('whoami-hint')
+    cy.getByDataTestid('menuUserList')
       .should('contain', `${user.firstName} ${user.lastName}`)
   })
 })
