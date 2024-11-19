@@ -2,9 +2,10 @@ import type { Cluster, Prisma, Project, ProjectMembers, ProjectRole } from '@pri
 import type { XOR } from '@cpn-console/shared'
 import { PROJECT_PERMS as PP, PROJECT_PERMS, projectIsLockedInfo, tokenHeaderName } from '@cpn-console/shared'
 import type { FastifyRequest } from 'fastify'
+import { Unauthorized401 } from './errors.js'
 import type { UserDetails } from '@/types/index.js'
 import prisma from '@/prisma.js'
-import { logAdminToken, logUser } from '@/resources/user/business.js'
+import { logViaSession, logViaToken } from '@/resources/user/business.js'
 
 export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
   Pick<T, Exclude<keyof T, Keys>>
@@ -80,25 +81,32 @@ export async function authUser(req: FastifyRequest, projectUnique: ProjectUnique
 export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqueFinder): Promise<UserProfile | UserProjectProfile> {
   let adminPermissions: bigint = 0n
   let tokenId: string | undefined
-  let user = req.session?.user
+  let user: UserDetails | undefined
 
-  const tokenHeader = req.headers[tokenHeaderName]
-  if (typeof tokenHeader === 'string') {
-    const token = await logAdminToken(tokenHeader)
-    if (typeof token !== 'string') {
-      adminPermissions = token.adminPerms
-      tokenId = token.id
-      if (!user && token.user) {
-        user = { ...token.user, groups: [] }
+  if (req.session.user) {
+    const loginResult = await logViaSession(req.session.user)
+    user = {
+      ...loginResult.user,
+      groups: req.session.user.groups,
+    }
+    adminPermissions = loginResult.adminPerms
+  } else {
+    const tokenHeader = req.headers[tokenHeaderName]
+    if (typeof tokenHeader === 'string') {
+      const resultToken = await logViaToken(tokenHeader)
+      if (typeof resultToken === 'string') {
+        throw new Unauthorized401(resultToken)
+      }
+      adminPermissions = resultToken.adminPerms ?? 0n
+      tokenId = resultToken.user.tokenId
+      if (!user && resultToken.user) {
+        user = { ...resultToken.user, groups: [] }
       }
     }
-  } else if (req.session.user) {
-    const loginResult = await logUser(req.session.user, true)
-    adminPermissions = loginResult.adminPerms
   }
 
   const baseReturnInfos = {
-    user: req.session.user,
+    user,
     adminPermissions,
     tokenId,
   }

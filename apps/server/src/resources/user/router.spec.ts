@@ -9,7 +9,7 @@ import * as business from './business.js'
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
 const businessGetMatchingMock = vi.spyOn(business, 'getMatchingUsers')
-const businessLogMock = vi.spyOn(business, 'logUser')
+const businessLogViaSessionMock = vi.spyOn(business, 'logViaSession')
 const businessGetUsersMock = vi.spyOn(business, 'getUsers')
 const businessPatchMock = vi.spyOn(business, 'patchUsers')
 
@@ -47,13 +47,13 @@ describe('test userContract', () => {
         lastName: faker.person.lastName(),
       }
       setRequestor(user)
-      businessLogMock.mockResolvedValueOnce(user)
+      businessLogViaSessionMock.mockResolvedValueOnce({ user, adminPerms: 0n })
 
       const response = await app.inject()
         .get(userContract.auth.path)
         .end()
 
-      expect(businessLogMock).toHaveBeenCalledTimes(1)
+      expect(businessLogViaSessionMock).toHaveBeenCalledTimes(1)
       expect(response.json()).toEqual(user)
       expect(response.statusCode).toEqual(200)
     })

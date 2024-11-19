@@ -239,7 +239,7 @@ export function getHookProjectInfos(id: Project['id']) {
     where: { id },
     include: {
       organization: true,
-      members: { include: { user: true } },
+      members: { include: { user: true }, where: { user: { type: 'human' } } },
       clusters: { select: clusterInfosSelect },
       environments: {
         include: {

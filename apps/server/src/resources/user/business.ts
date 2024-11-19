@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
-import type { Prisma, User } from '@prisma/client'
-import type { userContract } from '@cpn-console/shared'
+import type { AdminRole, AdminToken, PersonalAccessToken, Prisma, User } from '@prisma/client'
+import type { XOR, userContract } from '@cpn-console/shared'
 import { getMatchingUsers as getMatchingUsersQuery, getUsers as getUsersQuery } from '@/resources/queries-index.js'
 import prisma from '@/prisma.js'
 import type { UserDetails } from '@/types/index.js'
@@ -39,7 +39,7 @@ export async function getUsers(query: typeof userContract.getAllUsers.query._typ
 export async function getMatchingUsers(query: typeof userContract.getMatchingUsers.query._type) {
   const AND: Prisma.UserWhereInput[] = []
   if (query.notInProjectId) {
-    AND.push({ ProjectMembers: { none: { projectId: query.notInProjectId } } })
+    AND.push({ projectMembers: { none: { projectId: query.notInProjectId } } })
     AND.push({ projectsOwned: { none: { id: query.notInProjectId } } })
   }
   const filter = { contains: query.letters, mode: 'insensitive' } as const // Default value: default
@@ -80,10 +80,14 @@ export async function patchUsers(users: typeof userContract.patchUsers.body._typ
   })
 }
 
+export enum TokenInvalidReason {
+  INACTIVE = 'Not active',
+  EXPIRED = 'Expired',
+  NOT_FOUND = 'Not authenticated',
+}
+
 type UserTrial = Omit<UserDetails, 'type'>
-export async function logUser({ id, email, groups, ...user }: UserTrial): Promise<User>
-export async function logUser({ id, email, groups, ...user }: UserTrial, withAdminPerms: boolean): Promise<{ user: User, adminPerms: bigint }>
-export async function logUser({ id, email, groups, ...user }: UserTrial, withAdminPerms?: boolean): Promise<User | { user: User, adminPerms: bigint }> {
+export async function logViaSession({ id, email, groups, ...user }: UserTrial): Promise<{ user: User, adminPerms: bigint }> {
   const userDb = await prisma.user.findUnique({
     where: { id },
   })
@@ -97,13 +101,10 @@ export async function logUser({ id, email, groups, ...user }: UserTrial, withAdm
 
   if (!userDb) {
     const createdUser = await prisma.user.create({ data: { email, id, ...user, adminRoleIds: [], type: 'human' } })
-    if (withAdminPerms) {
-      return {
-        user: createdUser,
-        adminPerms: matchingAdminRoles.reduce((acc, curr) => acc | curr.permissions, 0n),
-      }
+    return {
+      user: createdUser,
+      adminPerms: sumAdminPerms(matchingAdminRoles),
     }
-    return createdUser
   }
 
   const nonOidcRoleIds = matchingAdminRoles
@@ -112,40 +113,90 @@ export async function logUser({ id, email, groups, ...user }: UserTrial, withAdm
 
   const updatedUser = await prisma.user.update({ where: { id }, data: { ...user, adminRoleIds: nonOidcRoleIds, lastLogin: (new Date()).toISOString() } }) // on enregistre en bdd uniquement les roles de l'utilisateurs qui ne viennent pas de keycloak
     .then(user => ({ ...user, adminRoleIds: [...user.adminRoleIds, ...oidcRoleIds] }))
-  if (withAdminPerms) {
-    return {
-      user: updatedUser,
-      adminPerms: matchingAdminRoles.reduce((acc, curr) => acc | curr.permissions, 0n),
+  return {
+    user: updatedUser,
+    adminPerms: matchingAdminRoles.reduce((acc, curr) => acc | curr.permissions, 0n),
+  }
+}
+
+type UserWithTokenId = Omit<User, 'adminRoleIds'> & { tokenId: string }
+export async function logViaToken(pass: string): Promise<({ user: UserWithTokenId, adminPerms: bigint }) | TokenInvalidReason> {
+  const passHash = createHash('sha256').update(pass).digest('hex')
+
+  let token: (XOR<AdminToken, PersonalAccessToken> & { owner: User }) | TokenInvalidReason | undefined
+  const tokenLoginMethods = [findPersonalAccessToken, findAdminToken]
+  for (const tokenLoginMethod of tokenLoginMethods) {
+    token = await tokenLoginMethod(passHash)
+    if (token) {
+      break
     }
   }
-  return updatedUser // mais on lui retourne tous ceux auxquels il est aussi attaché par oidc
-}
 
-export enum TokenSearchResult {
-  NOT_FOUND = 'Not Found',
-  INACTIVE = 'Not active',
-  EXPIRED = 'Expired',
-}
-
-export async function logAdminToken(token: string): Promise<{ adminPerms: bigint, id: string, user: User | null } | TokenSearchResult> {
-  const calculatedHash = createHash('sha256').update(token).digest('hex')
-  const tokenRecord = await prisma.adminToken.findFirst({ where: { hash: calculatedHash }, include: { createdBy: true } })
-
-  if (!tokenRecord) {
-    return TokenSearchResult.NOT_FOUND
+  if (typeof token === 'string') {
+    return token
   }
-  if (tokenRecord.status !== 'active') {
-    return TokenSearchResult.INACTIVE
+  if (!token) {
+    return TokenInvalidReason.NOT_FOUND
+  }
+
+  return {
+    user: {
+      ...token.owner,
+      tokenId: token.id,
+    },
+    adminPerms: token?.permissions ?? await getAdminRolesAndSum(token.owner.adminRoleIds),
+  }
+}
+
+function isTokenInvalid(token: AdminToken | PersonalAccessToken): TokenInvalidReason | undefined {
+  if (token.status !== 'active') {
+    return TokenInvalidReason.INACTIVE
   }
   const currentDate = new Date()
-  if (tokenRecord.expirationDate && currentDate.getTime() > tokenRecord.expirationDate?.getTime()) {
-    return TokenSearchResult.EXPIRED
+  if (token.expirationDate && currentDate.getTime() > token.expirationDate?.getTime()) {
+    return TokenInvalidReason.EXPIRED
   }
+}
 
-  await prisma.adminToken.update({ where: { id: tokenRecord.id }, data: { lastUse: new Date() } })
-  return {
-    adminPerms: tokenRecord.permissions,
-    id: tokenRecord.id,
-    user: tokenRecord.createdBy,
+function sumAdminPerms(roles: AdminRole[]): bigint {
+  if (!roles.length) {
+    return 0n
   }
+  return roles.reduce((acc, curr) => acc | curr.permissions, 0n)
+}
+
+async function getAdminRolesAndSum(roles: AdminRole['id'][] | null): Promise<bigint> {
+  if (!roles?.length) {
+    return 0n
+  }
+  return sumAdminPerms(await prisma.adminRole.findMany({
+    where: { id: { in: roles } },
+  }))
+}
+
+// List all token tpe authentication
+async function findPersonalAccessToken(digest: string): Promise<(PersonalAccessToken & { owner: User }) | undefined | TokenInvalidReason> {
+  const token = await prisma.personalAccessToken.findFirst({ where: { hash: digest }, include: { owner: true } })
+  if (!token)
+    return undefined
+  const invalidReason = isTokenInvalid(token)
+  if (invalidReason) {
+    return invalidReason
+  }
+  await prisma.personalAccessToken.update({ where: { id: token.id }, data: { lastUse: (new Date()).toISOString() } })
+  await prisma.user.update({ where: { id: token.owner.id }, data: { lastLogin: (new Date()).toISOString() } })
+  return token
+}
+
+async function findAdminToken(digest: string): Promise<(AdminToken & { owner: User }) | undefined | TokenInvalidReason> {
+  const token = await prisma.adminToken.findFirst({ where: { hash: digest }, include: { owner: true } })
+  if (!token)
+    return undefined
+  const invalidReason = isTokenInvalid(token)
+  if (invalidReason) {
+    return invalidReason
+  }
+  await prisma.adminToken.update({ where: { id: token.id }, data: { lastUse: (new Date()).toISOString() } })
+  await prisma.user.update({ where: { id: token.id }, data: { lastLogin: (new Date()).toISOString() } })
+  return token
 }

@@ -86,7 +86,7 @@ describe('test adminTokenContract', () => {
         .body(tokenData)
         .end()
 
-      expect(businessCreateTokenMock).toHaveBeenCalledWith(tokenData, user.user.id, undefined)
+      expect(businessCreateTokenMock).toHaveBeenCalledWith(tokenData)
       expect(response.json()).toEqual(newToken)
       expect(response.statusCode).toEqual(201)
     })

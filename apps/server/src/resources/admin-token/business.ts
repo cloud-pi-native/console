@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { type adminTokenContract, generateRandomPassword, isAtLeastTomorrow } from '@cpn-console/shared'
 import type { $Enums, AdminToken, Prisma } from '@prisma/client'
 import prisma from '../../prisma.js'
@@ -15,7 +15,7 @@ export async function listTokens(query: typeof adminTokenContract.listAdminToken
 
   return prisma.adminToken.findMany({
     omit: { hash: true },
-    include: { createdBy: true },
+    include: { owner: true },
     orderBy: [{ status: 'asc' }, { createdAt: 'asc' }],
     where,
   }).then(tokens =>
@@ -23,25 +23,32 @@ export async function listTokens(query: typeof adminTokenContract.listAdminToken
   )
 }
 
-export async function createToken(data: typeof adminTokenContract.createAdminToken.body._type, userId: string | null | undefined, tokenId: string | undefined) {
-  if (!userId) {
-    const originalToken = await prisma.adminToken.findUniqueOrThrow({ where: { id: tokenId } })
-    userId = originalToken.userId
-  }
+export async function createToken(data: typeof adminTokenContract.createAdminToken.body._type) {
   if (data.expirationDate && !isAtLeastTomorrow(new Date(data.expirationDate))) {
     return new BadRequest400('Date d\'expiration trop courte')
   }
   const password = generateRandomPassword(48, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-')
   const hash = createHash('sha256').update(password).digest('hex')
+  const botUserId = randomUUID()
+  await prisma.user.create({
+    data: {
+      firstName: 'Bot Admin',
+      lastName: data.name,
+      type: 'bot',
+      id: botUserId,
+      email: `${botUserId}@bot.io`,
+    },
+  })
   const token = await prisma.adminToken.create({
     data: {
       ...data,
       hash,
       permissions: BigInt(data.permissions),
-      expirationDate: data.expirationDate ? new Date(data.expirationDate) : null,
-      userId,
+      expirationDate: data.expirationDate ? new Date(data.expirationDate) : undefined,
+      userId: botUserId,
     },
     omit: { hash: true },
+    include: { owner: true },
   })
   return {
     ...token,

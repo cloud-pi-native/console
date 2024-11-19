@@ -1,16 +1,19 @@
 export const data = {
+  personalAccessToken: [],
   adminToken: [
     {
       id: 'e66a5ce2-440d-4a60-ac0d-d439bbaba040',
       name: 'test',
       hash: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', // test
       permissions: '2n',
+      userId: 'c7712841-c0fd-40ff-abbb-9d914bcc907d',
     },
     {
       id: 'e66a5ce2-440d-4a60-ac0d-d439bbaba041',
       name: 'test',
       hash: '4bb47f186df233e48b09d241ee4defb821add0c35ac8311469fe1522c6813dd5', // revoked
       permissions: '2n',
+      userId: 'c7712841-c0fd-40ff-abbb-9d914bcc907d',
       status: 'revoked',
     },
   ],
@@ -157,6 +160,17 @@ export const data = {
     },
   ],
   user: [
+    {
+      id: 'c7712841-c0fd-40ff-abbb-9d914bcc907d',
+      firstName: 'Bot Admin',
+      lastName: 'test',
+      email: 'c7712841-c0fd-40ff-abbb-9d914bcc907d@bot.io',
+      createdAt: '2023-11-16T15:30:01.140Z',
+      updatedAt: '2023-11-16T15:30:01.140Z',
+      adminRoleIds: [],
+      type: 'bot',
+      lastLogin: null,
+    },
     {
       id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567',
       firstName: 'Claire',
