@@ -869,6 +869,9 @@ importers:
       '@cpn-console/eslint-config':
         specifier: workspace:^
         version: link:../../packages/eslintconfig
+      '@cpn-console/kubernetes-plugin':
+        specifier: workspace:^
+        version: link:../kubernetes
       '@cpn-console/ts-config':
         specifier: workspace:^
         version: link:../../packages/tsconfig
