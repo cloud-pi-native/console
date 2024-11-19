@@ -1,7 +1,7 @@
 import type { AxiosInstance } from 'axios'
 import type { WritePolicy } from './utils.js'
 import { deleteIfExists } from './utils.js'
-import { getConfig } from './functions.js'
+import getConfig from './config.js'
 
 // Retro-compatibilty, maven is a special case with bad name formats
 function getRepoNames(projectName: string) { // Unique function per language cause names are unique per repo
@@ -186,7 +186,7 @@ export function deleteMavenRepo(axiosInstance: AxiosInstance, projectName: strin
 }
 
 export function getMavenUrls(projectName: string) {
-  const nexusUrl = getConfig().url
+  const nexusUrl = getConfig().secretExposedUrl
   const names = getRepoNames(projectName)
   return {
     MAVEN_REPO_RELEASE: `${nexusUrl}/${names.hosted[0].repo}`,
