@@ -1,7 +1,7 @@
 import type { AxiosInstance } from 'axios'
 import type { WritePolicy } from './utils.js'
 import { deleteIfExists } from './utils.js'
-import { getConfig } from './functions.js'
+import getConfig from './config.js'
 
 function getRepoNames(projectName: string) { // Unique function per language cause names are unique per repo
   return {
@@ -159,7 +159,7 @@ export function deleteNpmRepo(axiosInstance: AxiosInstance, projectName: string)
 }
 
 export function getNpmUrls(projectName: string) {
-  const nexusUrl = getConfig().url
+  const nexusUrl = getConfig().secretExposedUrl
   const names = getRepoNames(projectName)
   return {
     NPM_REPO: `${nexusUrl}/${names.hosted[0].repo}`,
