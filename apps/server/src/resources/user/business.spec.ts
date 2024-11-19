@@ -181,7 +181,7 @@ describe('logViaToken', () => {
 
   it('should return identity', async () => {
     prisma.adminToken.findFirst.mockResolvedValueOnce({ ...baseToken })
-    const identity = await logViaToken('test', true)
+    const identity = await logViaToken('test')
     expect(identity.adminPerms).toBe(2n)
   })
 
@@ -190,13 +190,13 @@ describe('logViaToken', () => {
     delete pat.permissions
     pat.owner = { adminRoleIds: null }
     prisma.personalAccessToken.findFirst.mockResolvedValueOnce(pat)
-    const identity = await logViaToken('test', true)
+    const identity = await logViaToken('test')
     expect(identity.adminPerms).toBe(0n)
   })
 
   it('should return identity, with expirationDate', async () => {
     prisma.adminToken.findFirst.mockResolvedValueOnce({ ...baseToken, expirationDate: nextYear })
-    const identity = await logViaToken('test', true)
+    const identity = await logViaToken('test')
     expect(identity.adminPerms).toBe(2n)
   })
 

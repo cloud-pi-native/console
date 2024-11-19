@@ -14,7 +14,7 @@ describe('Administration tokens', () => {
   })
 
   it('Should display tokens list, loggedIn as admin', () => {
-    cy.getByDataTestid('adminTokenTable').within(() => {
+    cy.getByDataTestid('tokenTable').within(() => {
       tokens.forEach((token) => {
         cy.get(`tbody tr:nth-of-type(1)`).within(() => {
           cy.get('td:nth-of-type(1)').should('contain', token.name)
@@ -49,7 +49,7 @@ describe('Administration tokens', () => {
       .click()
     cy.getByDataTestid('newTokenPassword').should('not.exist')
 
-    cy.getByDataTestid('adminTokenTable').within(() => {
+    cy.getByDataTestid('tokenTable').within(() => {
       cy.get(`tbody tr:nth-of-type(1)`).within(() => {
         cy.get('td:nth-of-type(1)').should('contain', 'test')
         cy.get('td:nth-of-type(2)').should('contain', 'Administration globale')
@@ -72,8 +72,10 @@ describe('Administration tokens', () => {
           .click()
       })
     })
+    cy.getByDataTestid('confirmDeletionBtn')
+      .click()
     cy.wait('@deleteToken')
-    cy.getByDataTestid('adminTokenTable').within(() => {
+    cy.getByDataTestid('tokenTable').within(() => {
       cy.get(`tbody tr`)
         .should('have.length', 1)
     })

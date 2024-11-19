@@ -16,7 +16,9 @@ import NotFound from '@/views/NotFound.vue'
 
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
-const UserProfile = () => import('@/views/UserProfile.vue')
+const ProfileWrapper = () => import('@/views/profile/ProfileWrapper.vue')
+const UserInfo = () => import('@/views/profile/UserInfo.vue')
+const PersonalAccessTokens = () => import('@/views/profile/PersonalAccessTokens.vue')
 const ManageEnvironments = () => import('@/views/projects/ManageEnvironments.vue')
 const DsoProjects = () => import('@/views/projects/DsoProjects.vue')
 const DsoProjectWrapper = () => import('@/views/projects/DsoProjectWrapper.vue')
@@ -74,8 +76,20 @@ export const routes: Readonly<RouteRecordRaw[]> = [
   },
   {
     path: '/profile',
-    name: 'UserProfile',
-    component: UserProfile,
+    name: 'Profile',
+    component: ProfileWrapper,
+    children: [
+      {
+        path: 'info',
+        name: 'UserInfo',
+        component: UserInfo,
+      },
+      {
+        path: 'tokens',
+        name: 'PersonalAccessTokens',
+        component: PersonalAccessTokens,
+      },
+    ],
   },
   {
     path: '/404',
