@@ -16,7 +16,9 @@ import NotFound from '@/views/NotFound.vue'
 
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
-const UserProfile = () => import('@/views/UserProfile.vue')
+const ProfileWrapper = () => import('@/views/profile/ProfileWrapper.vue')
+const UserInfo = () => import('@/views/profile/UserInfo.vue')
+const PersonalAccessTokens = () => import('@/views/profile/PersonalAccessTokens.vue')
 const ManageEnvironments = () => import('@/views/projects/ManageEnvironments.vue')
 const DsoProjects = () => import('@/views/projects/DsoProjects.vue')
 const DsoProjectWrapper = () => import('@/views/projects/DsoProjectWrapper.vue')
@@ -74,13 +76,20 @@ export const routes: Readonly<RouteRecordRaw[]> = [
   },
   {
     path: '/profile',
-    name: 'UserProfile',
-    component: UserProfile,
-  },
-  {
-    path: '/404',
-    name: 'NotFound',
-    component: NotFound,
+    name: 'Profile',
+    component: ProfileWrapper,
+    children: [
+      {
+        path: 'info',
+        name: 'UserInfo',
+        component: UserInfo,
+      },
+      {
+        path: 'tokens',
+        name: 'PersonalAccessTokens',
+        component: PersonalAccessTokens,
+      },
+    ],
   },
   {
     path: '/maintenance',
@@ -248,6 +257,11 @@ export const routes: Readonly<RouteRecordRaw[]> = [
       },
     ],
   },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFound,
+  },
 ]
 
 const router = createRouter({
@@ -273,14 +287,9 @@ router.beforeEach(async (to, _from, next) => {
   const systemStore = useSystemSettingsStore()
   await userStore.setIsLoggedIn()
 
-  // Redirige vers une 404 si la page n'existe pas
-  if (to.name === undefined || typeof to.name === 'symbol') {
-    return next('/404')
-  }
-
   // Redirige sur la page login si le path le requiert et l'utilisateur n'est pas connecté
   if (
-    !validPath.includes(to.name)
+    !validPath.includes(to.name?.toString() ?? '')
     && !userStore.isLoggedIn
   ) {
     return next('/login')
@@ -293,7 +302,7 @@ router.beforeEach(async (to, _from, next) => {
 
   // Redirige vers la page maintenance si la maintenance est activée
   if (
-    !validPath.includes(to.name)
+    !validPath.includes(to.name?.toString() ?? '')
     && userStore.isLoggedIn
   ) {
     await systemStore.listSystemSettings('maintenance')

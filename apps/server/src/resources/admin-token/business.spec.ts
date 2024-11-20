@@ -36,10 +36,13 @@ describe('test admin-token business', () => {
           name: 'test',
           hash: expect.any(String),
           permissions: 2n,
-          userId,
-          expirationDate: null,
+          userId: expect.any(String),
+          expirationDate: undefined,
         },
         omit: expect.any(Object),
+        include: {
+          owner: true,
+        },
       })
     })
   })

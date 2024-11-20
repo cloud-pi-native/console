@@ -2,7 +2,7 @@ import { AdminAuthorized, userContract } from '@cpn-console/shared'
 import {
   getMatchingUsers,
   getUsers,
-  logUser,
+  logViaSession,
   patchUsers,
 } from './business.js'
 import '@/types/index.js'
@@ -26,7 +26,7 @@ export function userRouter() {
 
       if (!user) return new Unauthorized401()
 
-      const body = await logUser(user)
+      const { user: body } = await logViaSession(user)
 
       return {
         status: 200,

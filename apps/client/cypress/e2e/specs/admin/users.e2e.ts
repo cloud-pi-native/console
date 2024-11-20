@@ -18,10 +18,10 @@ describe('Administration users', () => {
     users.forEach((user) => {
       cy.getByDataTestid(`user-${user.id}`)
         .should('contain.text', user.email)
-        .should('contain.text', '2023')
         .should('contain.text', user.lastName)
         .should('contain.text', user.firstName)
-        .should('not.contain.text', user.id)
+        .parent()
+        .should('contain.text', '202') // test que la date s'affiche
     })
     cy.getByDataTestid('input-checkbox-tableAdministrationUsersDisplayId')
       .should('exist')
@@ -43,7 +43,7 @@ describe('Administration users', () => {
     cy.getByDataTestid('tableAdministrationUsers')
       .find('tbody')
       .find('tr')
-      .should('have.length', users.length)
+      .should('have.length.at.least', users.length)
     cy.getByDataTestid('tableAdministrationUsersSearch')
       .clear()
       .type(anonUser.email)

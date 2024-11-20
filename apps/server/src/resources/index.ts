@@ -18,6 +18,7 @@ import { userRouter } from './user/router.js'
 import { zoneRouter } from './zone/router.js'
 import { systemSettingsRouter } from './system/settings/router.js'
 import { adminTokenRouter } from './admin-token/router.js'
+import { personalAccessTokenRouter } from './user/tokens/router.js'
 import { serverInstance } from '@/app.js'
 
 // relax validation schema if NO_VALIDATION env var is set to true.
@@ -31,6 +32,7 @@ export function apiRouter() {
     await app.register(serverInstance.plugin(environmentRouter()), validateTrue)
     await app.register(serverInstance.plugin(logRouter()), validateTrue)
     await app.register(serverInstance.plugin(organizationRouter()), validateTrue)
+    await app.register(serverInstance.plugin(personalAccessTokenRouter()), validateTrue)
     await app.register(serverInstance.plugin(projectRouter()), validateTrue)
     await app.register(serverInstance.plugin(projectMemberRouter()), validateTrue)
     await app.register(serverInstance.plugin(projectRoleRouter()), validateTrue)

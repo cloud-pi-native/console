@@ -1,27 +1,28 @@
 <script lang="ts" setup>
-import type { ExposedAdminToken, SharedZodError } from '@cpn-console/shared'
-import { AdminTokenSchema, isAtLeastTomorrow } from '@cpn-console/shared'
+import { TokenSchema, isAtLeastTomorrow } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useAdminTokenStore } from '@/stores/admin-token.js'
 import { copyContent } from '@/utils/func.js'
 
+export interface SimpleToken { name: string, expirationDate: string }
+const props = defineProps<{
+  exposedToken?: string
+  mandatoryExpiration: boolean
+}>()
+
 const emits = defineEmits<{
-  create: []
+  create: [SimpleToken]
+  reset: []
 }>()
 
 const snackbarStore = useSnackbarStore()
-const adminTokenStore = useAdminTokenStore()
 
-const exposedToken = ref<ExposedAdminToken>()
-const showNewTokenPassword = ref(true)
+const showNewTokenPassword = ref(false)
 const isCreatingToken = ref(false)
 const newToken = ref<{
   name: string
-  permissions: bigint
   expirationDate: string
 }>({
   name: '',
-  permissions: 2n,
   expirationDate: '',
 })
 const showNewTokenForm = ref<boolean>(false)
@@ -29,21 +30,26 @@ const showNewTokenForm = ref<boolean>(false)
 async function createToken() {
   try {
     snackbarStore.hideMessage()
+    if (!newToken.value.name) {
+      return
+    }
     isCreatingToken.value = true
-    exposedToken.value = await adminTokenStore.createToken({
-      name: newToken.value.name,
-      permissions: newToken.value.permissions.toString(),
-      expirationDate: newToken.value.expirationDate ?? null,
-    })
-    showNewTokenForm.value = false
+    emits('create', newToken.value)
     newToken.value.name = ''
-    emits('create')
+    newToken.value.expirationDate = ''
+    showNewTokenForm.value = false
   } catch (error) {
     if (error instanceof Error) {
       snackbarStore.setMessage(error.message, 'error')
     }
   }
   isCreatingToken.value = false
+}
+
+function reset() {
+  showNewTokenForm.value = true
+  showNewTokenPassword.value = false
+  emits('reset')
 }
 
 const invalidExpirationDate = computed<string | undefined>(() => {
@@ -56,23 +62,21 @@ const invalidExpirationDate = computed<string | undefined>(() => {
     : 'La durée de vie du token est trop courte'
 })
 
-const errorSchema = computed<SharedZodError | undefined>(() => {
-  const schemaValidation = AdminTokenSchema.partial().safeParse(newToken.value)
-
-  return schemaValidation.success ? undefined : schemaValidation.error
+const schema = computed(() => {
+  return TokenSchema.partial().safeParse(newToken.value)
 })
 </script>
 
 <template>
   <div
-    v-if="exposedToken"
+    v-if="props.exposedToken"
     class="flex flex-row items-end gap-1 mb-5 max-w-160"
   >
     <div
       class="grow max-w-130"
     >
       <DsfrInput
-        v-model="exposedToken.password"
+        v-model="(props.exposedToken as string)"
         label="Jeton d'authentification"
         data-testid="newTokenPassword"
         disabled
@@ -95,23 +99,23 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
       icon-only
       secondary
       icon="ri:clipboard-line"
-      @click="copyContent(exposedToken.password)"
+      @click="() => copyContent(props.exposedToken as string)"
     />
   </div>
   <DsfrButton
-    v-if="!showNewTokenForm"
-    :label=" exposedToken ? 'Créer un nouveau jeton' : 'Créer un jeton'"
+    v-if="exposedToken"
+    label="Créer un nouveau jeton"
     data-testid="showNewTokenFormBtn"
     secondary
-    @click="() => { showNewTokenForm = true; showNewTokenPassword = false; exposedToken = undefined }"
+    @click="reset"
   />
   <DsfrFieldset
-    v-if="showNewTokenForm"
+    v-else
     legend="Créer un jeton"
     class="max-w-160 w-full"
   >
     <DsfrInputGroup
-      :error-message="newToken.name && errorSchema?.flatten().fieldErrors.name"
+      :error-message="newToken.name && schema?.error?.flatten().fieldErrors.name"
     >
       <DsfrInput
         v-model="newToken.name"
@@ -133,6 +137,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
         label="Date d'expiration"
         label-visible
         class="mr-5 w-min"
+        :required="mandatoryExpiration"
       />
     </DsfrInputGroup>
     <div
@@ -145,7 +150,7 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
         :icon="isCreatingToken
           ? { name: 'ri:refresh-fill', animation: 'spin' }
           : 'ri:send-plane-line'"
-        :disabled="(!!errorSchema ?? invalidExpirationDate) || isCreatingToken"
+        :disabled="!schema.success || !!invalidExpirationDate || isCreatingToken || (mandatoryExpiration && !newToken.expirationDate)"
         class="mr-5"
         @click="createToken"
       />

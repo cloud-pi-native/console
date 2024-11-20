@@ -15,6 +15,7 @@ import { useLogStore } from '@/stores/log.js'
 import router from '@/router/index.js'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useZoneStore } from '@/stores/zone.js'
+import OperationPanel from '@/components/OperationPanel.vue'
 
 const props = defineProps<{ projectId: ProjectV2['id'] }>()
 
@@ -58,15 +59,15 @@ async function updateEnvironmentQuota({ environmentId, quotaId }: { environmentI
 }
 
 async function handleProjectLocking() {
-  await project.value.update({ locked: !project.value.locked })
+  await project.value.Commands.update({ locked: !project.value.locked })
 }
 
 async function replayHooks() {
-  await project.value.replay()
+  await project.value.Commands.replay()
 }
 
 async function archiveProject() {
-  await project.value.delete()
+  await project.value.Commands.delete()
   unSelectProject()
 }
 
@@ -81,20 +82,20 @@ async function removeUserFromProject(userId: string) {
 }
 
 async function transferOwnerShip(nextOwnerId: string) {
-  await project.value.update({ ownerId: nextOwnerId })
+  await project.value.Commands.update({ ownerId: nextOwnerId })
   teamCtKey.value = getRandomId('team')
 }
 
 async function getProjectDetails() {
   try {
-    const [projectDetails] = await Promise.all([
-      project.value.refresh(),
+    await Promise.all([
+      project.value.Commands.refresh(),
       reloadProjectServices(),
       showLogs(0),
       clusterStore.getClusters(),
       zoneStore.getAllZones(),
     ])
-    environments.value = projectDetails.environments?.map((environment) => {
+    environments.value = project.value.environments.map((environment) => {
       const cluster = clusterStore.clusters.find(cluster => cluster.id === environment.clusterId) as CleanedCluster
       const zone = zoneStore.zones.find(zone => zone.id === cluster.zoneId) as Zone
       return {
@@ -105,7 +106,7 @@ async function getProjectDetails() {
         },
       }
     })
-    repositories.value = projectDetails.repositories
+    repositories.value = project.value.repositories
   } catch (error) {
     console.trace(error)
   }
@@ -216,18 +217,18 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
           <DsfrButton
             data-testid="replayHooksBtn"
             label="Reprovisionner le projet"
-            :icon="{ name: 'ri:refresh-fill', animation: project.operationsInProgress.has('replay') ? 'spin' : '' }"
-            :disabled="project.operationsInProgress.has('replay') || project.locked"
+            :icon="{ name: 'ri:refresh-fill', animation: project.operationsInProgress.includes('replay') ? 'spin' : '' }"
+            :disabled="project.operationsInProgress.includes('replay') || project.locked"
             secondary
             @click="replayHooks()"
           />
           <DsfrButton
             data-testid="handleProjectLockingBtn"
             :label="`${project.locked ? 'Déverrouiller' : 'Verrouiller'} le projet`"
-            :icon="project.operationsInProgress.has('lockHandling')
+            :icon="project.operationsInProgress.includes('lockHandling')
               ? { name: 'ri:refresh-fill', animation: 'spin' }
               : project.locked ? 'ri:lock-unlock-fill' : 'ri:lock-fill'"
-            :disabled="project.operationsInProgress.has('lockHandling')"
+            :disabled="project.operationsInProgress.includes('lockHandling')"
             secondary
             @click="handleProjectLocking"
           />
@@ -236,8 +237,8 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
             data-testid="showArchiveProjectBtn"
             label="Supprimer le projet"
             secondary
-            :disabled="project.operationsInProgress.has('delete')"
-            :icon="project.operationsInProgress.has('delete')
+            :disabled="project.operationsInProgress.includes('delete')"
+            :icon="project.operationsInProgress.includes('delete')
               ? { name: 'ri:refresh-fill', animation: 'spin' }
               : 'ri:delete-bin-7-line'"
             @click="isArchivingProject = true"
@@ -262,8 +263,8 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
               data-testid="archiveProjectBtn"
               :label="`Supprimer définitivement le projet ${project.name}`"
               secondary
-              :disabled="project.operationsInProgress.has('delete') || projectToArchive !== project.name"
-              :icon="project.operationsInProgress.has('delete')
+              :disabled="project.operationsInProgress.includes('delete') || projectToArchive !== project.name"
+              :icon="project.operationsInProgress.includes('delete')
                 ? { name: 'ri:refresh-fill', animation: 'spin' }
                 : 'ri:delete-bin-7-line'"
               @click="archiveProject"
@@ -441,17 +442,9 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
           </div>
         </div>
       </div>
-      <div
-        v-if="project.operationsInProgress.size"
-        class="fixed bottom-5 right-5 z-999 shadow-lg background-default-grey"
-      >
-        <DsfrAlert
-          data-testid="operationInProgressAlert"
-          title="Opération en cours..."
-          :description="project.operationsInProgress.size === 2 ? 'Une ou plusieurs tâches en attente' : ''"
-          type="info"
-        />
-      </div>
+      <OperationPanel
+        :project-id="project.id"
+      />
     </template>
   </div>
 </template>

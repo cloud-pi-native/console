@@ -15,15 +15,21 @@ import { useProjectStore } from '@/stores/project.js'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useQuotaStore } from '@/stores/quota.js'
 import { useStageStore } from '@/stores/stage.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps<{ projectId: ProjectV2['id'] }>()
 
+const snackbarStore = useSnackbarStore()
 const projectStore = useProjectStore()
 const clusterStore = useClusterStore()
 const project = computed(() => projectStore.projectsById[props.projectId])
 
-const environments = ref<Environment[]>([])
-const environmentNames = computed(() => project.value.environments?.map(env => env.name) ?? [])
+const environments = computed(() =>
+// @ts-ignore
+  project.value.environments as Environment[],
+)
+
+const environmentNames = computed(() => environments.value?.map(env => env.name) ?? [])
 const allClusters = computed(() => clusterStore.clusters)
 
 const selectedEnvironment = ref<Environment>()
@@ -46,36 +52,38 @@ function cancel() {
 
 async function addEnvironment(environment: Omit<CreateEnvironmentBody, 'id' | 'projectId'>) {
   if (!project.value.locked) {
-    await project.value.Environments.create(environment)
+    project.value.Environments.create(environment)
+      .catch(reason => snackbarStore.setMessage(reason, 'error'))
   }
   reload()
 }
 
 async function putEnvironment(environment: UpdateEnvironmentBody) {
   if (!project.value.locked && selectedEnvironment.value?.id) {
-    await project.value.Environments.update(selectedEnvironment.value.id, environment)
+    project.value.Environments.update(selectedEnvironment.value.id, environment)
+      .catch(reason => snackbarStore.setMessage(reason, 'error'))
   }
   reload()
 }
 
 async function deleteEnvironment(environmentId: Environment['id']) {
   if (!project.value.locked) {
-    await project.value.Environments.delete(environmentId)
+    project.value.Environments.delete(environmentId)
+      .catch(reason => snackbarStore.setMessage(reason, 'error'))
   }
   reload()
 }
 
 const canManageEnvs = ref<boolean>(false)
 async function reload() {
-  const [envs, _] = await Promise.all([
+  await Promise.all([
     project.value.Environments.list(),
     clusterStore.getClusters(),
     useQuotaStore().getAllQuotas(),
     useStageStore().getAllStages(),
   ])
-  environments.value = envs ?? []
-  canManageEnvs.value = !project.value.locked && ProjectAuthorized.ManageRepositories({ projectPermissions: project.value.myPerms })
 
+  canManageEnvs.value = !project.value.locked && ProjectAuthorized.ManageEnvironments({ projectPermissions: project.value.myPerms })
   cancel()
 }
 
@@ -116,7 +124,7 @@ watch(project, reload, { immediate: true })
       :title="project.locked ? projectIsLockedInfo : 'Ajouter un nouvel environnement'"
       class="fr-mt-2v mb-5"
       icon="ri:add-line"
-      @click="showNewEnvironmentForm()"
+      @click="showNewEnvironmentForm"
     />
     <div
       class="w-full"
@@ -152,7 +160,7 @@ watch(project, reload, { immediate: true })
         />
       </div>
       <div
-        v-else-if="environments.length"
+        v-else-if="environments?.length"
         class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full"
       >
         <div

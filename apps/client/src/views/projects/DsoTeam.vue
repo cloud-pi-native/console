@@ -30,7 +30,7 @@ async function removeUserFromProject(userId: string) {
 }
 
 async function transferOwnerShip(nextOwnerId: string) {
-  await project.value.update({ ownerId: nextOwnerId })
+  await project.value.Commands.update({ ownerId: nextOwnerId })
   teamKey.value = getRandomId('team')
 }
 </script>

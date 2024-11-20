@@ -1,3 +1,4 @@
+import type { Ref } from 'vue'
 import {
   PROJECT_PERMS,
   getPermsByUserRoles,
@@ -69,10 +70,10 @@ export class Project implements ProjectV2 {
   createdAt: string
   updatedAt: string
   status: ProjectV2['status']
-  operationsInProgress = new Set<ProjectOperations>()
+  operationsInProgress: Ref<ProjectOperations[]>
   myPerms: bigint
-  repositories: Repo[] | undefined = undefined
-  environments: Environment[] | undefined = undefined
+  repositories: Ref<Repo[]>
+  environments: Ref<Environment[]>
   services: ProjectService[] = []
 
   constructor(project: ProjectV2, organization: Organization) {
@@ -92,21 +93,25 @@ export class Project implements ProjectV2 {
     this.updatedAt = project.updatedAt
     this.status = project.status
     this.myPerms = calculateProjectPerms(this, useUserStore().userProfile?.id)
+    this.operationsInProgress = ref([])
+    this.environments = ref([])
+    this.repositories = ref([])
   }
 
   private removeOperation(operationName: ProjectOperations) {
     setTimeout(() => {
       useLogStore().needRefresh = true
     }, 100)
-    return this.operationsInProgress.delete(operationName)
+    this.operationsInProgress.value = this.operationsInProgress.value.filter(op => op !== operationName)
+    return this.operationsInProgress.value
   }
 
   private addOperation(operationName: ProjectOperations): () => void {
-    if (this.operationsInProgress.has(operationName)) {
+    if (this.operationsInProgress.value.includes(operationName)) {
       operationName += getRandomId()
     }
-    if (this.operationsInProgress.size <= 1) {
-      this.operationsInProgress.add(operationName)
+    if (this.operationsInProgress.value.length <= 1) {
+      this.operationsInProgress.value.push(operationName)
     } else {
       return () => {}
     }
@@ -117,60 +122,58 @@ export class Project implements ProjectV2 {
     this.myPerms = calculateProjectPerms(this, useUserStore().userProfile?.id)
   }
 
-  updateData(project: Partial<ProjectV2 & { organization: Organization }>) {
-    for (const key of objectKeys(project)) {
-      // @ts-ignore
-      this[key] = project[key]
-    }
-    this.computePerms()
-    return this
-  }
-
-  async update(data: typeof projectContract.updateProject.body._type) {
-    const callback = this.addOperation('update')
-    try {
-      const project = await apiClient.Projects.updateProject({ body: data, params: { projectId: this.id } })
+  Commands = {
+    update: async (data: typeof projectContract.updateProject.body._type) => {
+      const callback = this.addOperation('update')
+      try {
+        const project = await apiClient.Projects.updateProject({ body: data, params: { projectId: this.id } })
+          .then(response => extractData(response, 200))
+          .finally(() => callback())
+        return this.Commands.updateData(project)
+      } finally {
+        callback()
+      }
+    },
+    updateData: (project: Partial<ProjectV2 & { organization: Organization }>) => {
+      for (const key of objectKeys(project)) {
+        // @ts-ignore
+        this[key] = project[key]
+      }
+      this.computePerms()
+      return undefined
+    },
+    refresh: async () => {
+      const project = await apiClient.Projects.getProject({ params: { projectId: this.id } })
         .then(response => extractData(response, 200))
-        .finally(() => callback())
-      return this.updateData(project)
-    } finally {
-      callback()
-    }
-  }
-
-  async refresh() {
-    const project = await apiClient.Projects.getProject({ params: { projectId: this.id } })
-      .then(response => extractData(response, 200))
-    this.updateData(project)
-    await Promise.all([
-      this.Repositories.list(),
-      this.Environments.list(),
-    ])
-    return this
-  }
-
-  async delete() {
-    const callback = this.addOperation('delete')
-    try {
-      await apiClient.Projects.archiveProject({ params: { projectId: this.id } })
-        .then(response => extractData(response, 204))
-      this.status = 'archived'
-    } catch {
-      await this.refresh()
-    } finally {
-      callback()
-    }
-  }
-
-  async replay() {
-    const callback = this.addOperation('update')
-    try {
-      await apiClient.Projects.replayHooksForProject({ params: { projectId: this.id } })
-        .then(response => extractData(response, 204))
-      return this.refresh()
-    } finally {
-      callback()
-    }
+      this.Commands.updateData(project)
+      await Promise.all([
+        this.Repositories.list(),
+        this.Environments.list(),
+      ])
+      return undefined
+    },
+    replay: async () => {
+      const callback = this.addOperation('update')
+      try {
+        await apiClient.Projects.replayHooksForProject({ params: { projectId: this.id } })
+          .then(response => extractData(response, 204))
+        return this.Commands.refresh()
+      } finally {
+        callback()
+      }
+    },
+    delete: async () => {
+      const callback = this.addOperation('delete')
+      try {
+        await apiClient.Projects.archiveProject({ params: { projectId: this.id } })
+          .then(response => extractData(response, 204))
+        this.status = 'archived'
+      } catch {
+        await this.Commands.refresh()
+      } finally {
+        callback()
+      }
+    },
   }
 
   Members = {
@@ -211,17 +214,17 @@ export class Project implements ProjectV2 {
 
   Environments = {
     list: async () => {
-      this.environments = await apiClient.Environments.listEnvironments({ query: { projectId: this.id } })
+      this.environments.value = await apiClient.Environments.listEnvironments({ query: { projectId: this.id } })
         .then(response => extractData(response, 200))
-      return this.environments
+      return this.environments.value
     },
     create: async (envData: Omit<CreateEnvironmentBody, 'projectId'>) => {
       const callback = this.addOperation('envManagement')
       try {
         const env = await apiClient.Environments.createEnvironment({ body: { ...envData, projectId: this.id } })
           .then(response => extractData(response, 201))
-        this.environments = this.environments ? this.environments.concat([env]) : [env]
-        return this.environments
+        this.environments.value.push(env)
+        return this.environments.value
       } finally { callback() }
     },
     update: async (id: Environment['id'], environment: UpdateEnvironmentBody) => {
@@ -246,9 +249,9 @@ export class Project implements ProjectV2 {
 
   Repositories = {
     list: async () => {
-      this.repositories = await apiClient.Repositories.listRepositories({ query: { projectId: this.id } })
+      this.repositories.value = await apiClient.Repositories.listRepositories({ query: { projectId: this.id } })
         .then(response => extractData(response, 200))
-      return this.repositories
+      return this.repositories.value
     },
     sync: async (repositoryId: Repo['id'], { branchName, syncAllBranches = false }: { branchName?: string, syncAllBranches?: boolean }) => {
       const callback = this.addOperation('repoManagement')
@@ -265,8 +268,8 @@ export class Project implements ProjectV2 {
       try {
         const repo = await apiClient.Repositories.createRepository({ body: { ...repoData, projectId: this.id } })
           .then(response => extractData(response, 201))
-        this.repositories = this.repositories ? this.repositories.concat([repo]) : [repo]
-        return this.repositories
+        this.repositories.value = this.repositories.value ? this.repositories.value.concat([repo]) : [repo]
+        return this.repositories.value
       } finally { callback() }
     },
     update: async (id: RepositoryParams['repositoryId'], repoData: Omit<UpdateRepositoryBody, 'projectId'>) => {

@@ -3,7 +3,6 @@ import { onBeforeMount, ref } from 'vue'
 import type { ProjectV2 } from '@cpn-console/shared'
 import { ProjectAuthorized, descriptionMaxLength, projectIsLockedInfo } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import router from '@/router/index.js'
 import { copyContent } from '@/utils/func.js'
 import { useStageStore } from '@/stores/stage.js'
@@ -12,7 +11,6 @@ import { useLogStore } from '@/stores/log.js'
 const props = defineProps<{ projectId: ProjectV2['id'] }>()
 
 const projectStore = useProjectStore()
-const snackbarStore = useSnackbarStore()
 const stageStore = useStageStore()
 const project = computed(() => projectStore.projectsById[props.projectId])
 
@@ -26,32 +24,15 @@ const allStages = ref<Array<any>>([])
 const logStore = useLogStore()
 
 async function updateProject() {
-  project.value.update({ description: description.value })
+  project.value.Commands.update({ description: description.value })
   isEditingDescription.value = false
 }
 
-async function replayHooks() {
-  await project.value.replay()
-  switch (project.value.status) {
-    case 'created':
-      snackbarStore.setMessage('Le projet a été reprovisionné avec succès.', 'success')
-      break
-    case 'failed':
-      snackbarStore.setMessage('Le projet a été reprovisionné mais a rencontré une erreur bloquante.\nVeuillez consulter les journaux puis réessayer dans quelques instants.\nSi le problème persiste, vous pouvez contacter un administrateur.', 'error')
-      break
-    case 'warning':
-      snackbarStore.setMessage('Le projet a été reprovisionné et a rencontré une erreur non bloquante.\nVeuillez consulter les journaux puis réessayer dans quelques instants.\nSi le problème persiste, vous pouvez contacter un administrateur.', 'warning', 20_000)
-      break
-    default:
-      snackbarStore.setMessage('Le projet a été reprovisionné mais se trouve dans un état inconnu.', 'info')
-      break
-  }
-}
-
 async function archiveProject() {
-  await project.value.delete()
+  await project.value.Commands.delete()
   projectStore.lastSelectedProjectId = undefined
   router.push('/projects')
+  delete projectStore.projectsById[project.value.id]
 }
 
 function getDynamicTitle(locked?: ProjectV2['locked'], description?: ProjectV2['description']) {
@@ -151,10 +132,10 @@ onMounted(() => {
             data-testid="saveDescriptionBtn"
             label="Enregistrer la description"
             secondary
-            :icon="project.operationsInProgress.has('update')
+            :icon="project.operationsInProgress.includes('update')
               ? { name: 'ri:refresh-fill', animation: 'spin' }
               : 'ri:send-plane-line'"
-            :disabled="project.operationsInProgress.has('update')"
+            :disabled="project.operationsInProgress.includes('update')"
             @click="updateProject()"
           />
           <DsfrButton
@@ -200,19 +181,9 @@ onMounted(() => {
         />
       </div>
     </div>
-    <div
-      v-if="ProjectAuthorized.ReplayHooks({ projectPermissions: project.myPerms })"
-      class="fr-mt-2w"
-    >
-      <DsfrButton
-        data-testid="replayHooksBtn"
-        label="Reprovisionner le projet"
-        :icon="{ name: 'ri:refresh-fill', animation: project.operationsInProgress.has('replay') ? 'spin' : '' }"
-        secondary
-        :disabled="project.locked || project.operationsInProgress.has('replay')"
-        @click="replayHooks"
-      />
-    </div>
+    <ReplayButton
+      :project-id="project.id"
+    />
     <div
       class="fr-mt-2w"
     >
@@ -221,10 +192,10 @@ onMounted(() => {
         data-testid="showSecretsBtn"
         :label="`${isSecretShown ? 'Cacher' : 'Afficher'} les secrets des services`"
         secondary
-        :icon="project.operationsInProgress.has('searchSecret')
+        :icon="project.operationsInProgress.includes('searchSecret')
           ? { name: 'ri:refresh-fill', animation: 'spin' }
           : isSecretShown ? 'ri:eye-off-line' : 'ri:eye-line'"
-        :disabled="project.operationsInProgress.has('searchSecret')"
+        :disabled="project.operationsInProgress.includes('searchSecret')"
         @click="handleSecretDisplay"
       />
       <div
@@ -299,9 +270,9 @@ onMounted(() => {
           <DsfrButton
             data-testid="archiveProjectBtn"
             :label="`Supprimer définitivement le projet ${project.name}`"
-            :disabled="projectToArchive !== project.name || project.operationsInProgress.has('delete')"
+            :disabled="projectToArchive !== project.name || project.operationsInProgress.includes('delete')"
             secondary
-            :icon="project.operationsInProgress.has('delete')
+            :icon="project.operationsInProgress.includes('delete')
               ? { name: 'ri:refresh-fill', animation: 'spin' }
               : 'ri:delete-bin-7-line'"
             @click="archiveProject"

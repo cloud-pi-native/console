@@ -14,7 +14,7 @@ describe('Header', () => {
   it('Should display name once logged', () => {
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
       .visit('/')
-      .getByDataTestid('whoami-hint')
+      .getByDataTestid('menuUserList')
       .should('contain', `${user.firstName} ${user.lastName}`)
   })
 

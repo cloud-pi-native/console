@@ -15,7 +15,7 @@ vi.mock('../../utils/hook-wrapper.ts', async () => ({
   hook,
 }))
 
-const logUserMock = vi.spyOn(userBusiness, 'logUser')
+const logViaSessionMock = vi.spyOn(userBusiness, 'logViaSession')
 
 const projectId = faker.string.uuid()
 
@@ -27,6 +27,8 @@ const user: User = {
   firstName: faker.person.firstName(),
   lastName: faker.person.lastName(),
   adminRoleIds: [],
+  type: 'human',
+  lastLogin: null,
 }
 const project: Project & {
   clusters: Pick<Cluster, 'id'>[]
@@ -114,22 +116,23 @@ describe('test project business logic', () => {
 
   describe('createProject', () => {
     it('should create project', async () => {
-      logUserMock.mockResolvedValue({ user })
+      logViaSessionMock.mockResolvedValue({ user })
 
       prisma.organization.findUnique.mockResolvedValue({ id: project.organizationId, active: true })
       prisma.project.create.mockResolvedValue({ ...project, status: 'initializing' })
       prisma.project.findFirst.mockResolvedValue(undefined)
       hook.project.upsert.mockResolvedValue({ results: {}, project: { ...project } })
 
-      await createProject(project, user, reqId)
+      const projectRes = await createProject(project, user, reqId)
 
+      expect(projectRes.name).toEqual(project.name)
       expect(prisma.project.create).toHaveBeenCalledTimes(1)
       expect(prisma.log.create).toHaveBeenCalledTimes(1)
       expect(hook.project.upsert).toHaveBeenCalledTimes(1)
     })
 
     it('should not create project, cause missing organization', async () => {
-      logUserMock.mockResolvedValue({ user })
+      logViaSessionMock.mockResolvedValue({ user })
 
       prisma.organization.findUnique.mockResolvedValue(undefined)
 
@@ -140,7 +143,7 @@ describe('test project business logic', () => {
     })
 
     it('should not create project, cause inactive organization', async () => {
-      logUserMock.mockResolvedValue({ user })
+      logViaSessionMock.mockResolvedValue({ user })
 
       prisma.organization.findUnique.mockResolvedValue({ id: project.organizationId, active: false })
 
@@ -151,7 +154,7 @@ describe('test project business logic', () => {
     })
 
     it('should not create project, cause confilct', async () => {
-      logUserMock.mockResolvedValue({ user })
+      logViaSessionMock.mockResolvedValue({ user })
 
       prisma.organization.findUnique.mockResolvedValue({ id: project.organizationId })
       prisma.project.create.mockResolvedValue({ ...project, status: 'initializing' })
@@ -164,7 +167,7 @@ describe('test project business logic', () => {
     })
 
     it('should return plugins failed', async () => {
-      logUserMock.mockResolvedValue({ user })
+      logViaSessionMock.mockResolvedValue({ user })
 
       prisma.organization.findUnique.mockResolvedValue({ id: project.organizationId, active: true })
       prisma.project.create.mockResolvedValue({ ...project, status: 'initializing' })
@@ -185,7 +188,7 @@ describe('test project business logic', () => {
       everyonePerms: '5',
     }
     const reqId = faker.string.uuid()
-    const members: ProjectMembers[] = [{ userId: faker.string.uuid(), projectId: project.id, roleIds: [] }]
+    const members: ProjectMembers[] = [{ userId: faker.string.uuid(), projectId: project.id, roleIds: [], user: { type: 'human' } }]
     it('should update project', async () => {
       prisma.project.findUniqueOrThrow.mockResolvedValue({ id: projectId, members })
       prisma.project.update.mockResolvedValue(project)
@@ -212,7 +215,7 @@ describe('test project business logic', () => {
 
     it('should not update project, cause missing member', async () => {
       hook.project.upsert.mockResolvedValue({ results: {}, project: { ...project } })
-      logUserMock.mockResolvedValue({ user })
+      logViaSessionMock.mockResolvedValue({ user })
 
       prisma.project.findUniqueOrThrow.mockResolvedValue({ id: projectId, members: [] })
 
@@ -225,7 +228,7 @@ describe('test project business logic', () => {
     })
 
     it('should return plugins failed', async () => {
-      logUserMock.mockResolvedValue({ user })
+      logViaSessionMock.mockResolvedValue({ user })
 
       prisma.organization.findUnique.mockResolvedValue({ id: project.organizationId })
       hook.project.upsert.mockResolvedValue({ results: { failed: true }, project: { ...project } })

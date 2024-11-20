@@ -1,4 +1,3 @@
-// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { CreateProjectBody, ProjectV2, projectContract } from '@cpn-console/shared'
@@ -34,7 +33,7 @@ export const useProjectStore = defineStore('project', () => {
     }
     return projectsRecieved.map((project) => {
       if (project.id in projectsById.value) {
-        return projectsById.value[project.id].updateData(project)
+        return projectsById.value[project.id].Commands.updateData(project)
       }
       const newProject = new Project(project, organizationStore.organizationsById[project.organizationId])
       projectsById.value[project.id] = newProject
