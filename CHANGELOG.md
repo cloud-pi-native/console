@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.18.2](https://github.com/cloud-pi-native/console/compare/v8.18.1...v8.18.2) (2024-11-20)
+
+
+### Bug Fixes
+
+* :bug: fix vault detect api hashicorp ([57b9d3a](https://github.com/cloud-pi-native/console/commit/57b9d3a04a09d51883c873738bad2d90c24bd0ff))
+
 ## [8.18.1](https://github.com/cloud-pi-native/console/compare/v8.18.0...v8.18.1) (2024-11-20)
 
 
