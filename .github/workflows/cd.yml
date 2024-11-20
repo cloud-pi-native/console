@@ -43,8 +43,8 @@ jobs:
       MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
       MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
       PATCH_TAG: ${{ needs.release.outputs.patch-tag }}
-      MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH == 'true' }}
-      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+      MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH == 'false' }}
+      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'false' }}
 
   npm-publish:
     uses: ./.github/workflows/npm.yml
@@ -67,10 +67,26 @@ jobs:
     needs:
       - expose-vars
       - release
-      - build
     steps:
       - name: Trigger helm-charts update
         env:
           GH_TOKEN: ${{ secrets.HELM_CHART_TOKEN }}
         run: |
           gh workflow --repo cloud-pi-native/helm-charts run update-chart.yaml -f APP_VERSION=${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }} -f CHART_NAME=dso-console
+
+  build-arm:
+    uses: ./.github/workflows/build.yml
+    if: ${{ needs.release.outputs.release-created == 'true' }}
+    needs:
+      - expose-vars
+      - release
+      - build
+    with:
+      REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
+      NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
+      TAG: ${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }}
+      MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
+      MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
+      PATCH_TAG: ${{ needs.release.outputs.patch-tag }}
+      MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH == 'true' }}
+      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
