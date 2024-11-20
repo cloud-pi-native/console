@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.18.1](https://github.com/cloud-pi-native/console/compare/v8.18.0...v8.18.1) (2024-11-20)
+
+
+### Bug Fixes
+
+* :ambulance: fix pat migration ([df3f699](https://github.com/cloud-pi-native/console/commit/df3f699ddc972a2b2001a20d5e31dd5ba9ad7482))
+
 ## [8.18.0](https://github.com/cloud-pi-native/console/compare/v8.17.2...v8.18.0) (2024-11-20)
 
 
