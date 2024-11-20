@@ -26,3 +26,5 @@ export const disabledOrDefaultOrNullish = (value?: string): boolean | undefined 
 export const specificallyDisabled = (value?: string): boolean | undefined => value ? value === DISABLED : undefined
 export const specificallyEnabled = (value?: string): boolean | undefined => value ? value === ENABLED : undefined
 export const defaultOrNullish = (value?: string): boolean | undefined => value ? DEFAULT === value : true
+
+export const okStatus = { status: { result: 'OK' } } as const
