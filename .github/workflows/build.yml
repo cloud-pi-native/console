@@ -9,7 +9,10 @@ on:
       NAMESPACE:
         required: true
         type: string
-      MULTI_ARCH:
+      BUILD_AMD64:
+        required: true
+        type: boolean
+      BUILD_ARM64:
         required: true
         type: boolean
       TAG:
@@ -45,11 +48,16 @@ on:
         required: true
         type: string
         default: cloud-pi-native/console
-      MULTI_ARCH:
-        description: Build for both amd64 and arm64
+      BUILD_AMD64:
+        description: Build for amd64
         required: true
         type: boolean
-        default: false
+        default: true
+      BUILD_ARM64:
+        description: Build for arm64
+        required: true
+        type: boolean
+        default: true
       USE_QEMU:
         description: Use QEMU emulator for arm64
         required: true
@@ -88,7 +96,7 @@ jobs:
       - matrix
     strategy:
       matrix:
-        runners: ${{ inputs.MULTI_ARCH && !inputs.USE_QEMU && fromJson('["ubuntu-latest", "ARM64"]') || fromJson('["ubuntu-latest"]') }}
+        runners: ${{ (inputs.BUILD_AMD64 && inputs.BUILD_ARM64 && !inputs.USE_QEMU && fromJson('["ubuntu-latest", "ARM64"]')) || (inputs.BUILD_ARM64 && !inputs.USE_QEMU && fromJson('["ARM64"]')) || fromJson('["ubuntu-latest"]') }}
         images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
     steps:
       - name: Checks-out repository
@@ -129,7 +137,7 @@ jobs:
           context: ${{ matrix.images.build.context }}
           file: ${{ matrix.images.build.dockerfile }}
           provenance: false
-          platforms: ${{ inputs.MULTI_ARCH && inputs.USE_QEMU && 'linux/amd64,linux/arm64' || (contains(runner.arch, 'ARM') && 'linux/arm64' || 'linux/amd64') }}
+          platforms: ${{ (inputs.BUILD_AMD64 && inputs.BUILD_ARM64 && inputs.USE_QEMU && 'linux/amd64,linux/arm64') || (inputs.BUILD_ARM64 && 'linux/arm64') || (inputs.BUILD_AMD64 && 'linux/amd64') }}
           outputs: type=image,name=${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }},push-by-digest=true,name-canonical=true,push=true
           build-args: |
             APP_VERSION=${{ inputs.TAG || steps.short-sha.outputs.SHORT_SHA }}
@@ -155,7 +163,7 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ matrix.images.name }}-${{ inputs.MULTI_ARCH && inputs.USE_QEMU && 'multiarch' || (contains(runner.arch, 'ARM') && 'arm64' || 'amd64') }}
+          name: digests-${{ matrix.images.name }}-${{ (inputs.BUILD_AMD64 && inputs.BUILD_ARM64 && inputs.USE_QEMU && 'multiarch') || (inputs.BUILD_ARM64 && 'arm64') || (inputs.BUILD_AMD64 && 'amd64') }}
           path: /tmp/digests/${{ matrix.images.name }}/*
           if-no-files-found: error
           retention-days: 1

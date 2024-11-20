@@ -8,7 +8,8 @@ on:
 env:
   REGISTRY: ghcr.io
   NAMESPACE: "${{ github.repository }}"
-  MULTI_ARCH: true
+  BUILD_AMD64: true
+  BUILD_ARM64: true
   USE_QEMU: false
   NODE_VERSION: 22.10.0
   PNPM_VERSION: 9.10.0
@@ -19,7 +20,8 @@ jobs:
     outputs:
       REGISTRY: ${{ env.REGISTRY }}
       NAMESPACE: ${{ env.NAMESPACE }}
-      MULTI_ARCH: ${{ env.MULTI_ARCH }}
+      BUILD_AMD64: ${{ env.BUILD_AMD64 }}
+      BUILD_ARM64: ${{ env.BUILD_ARM64 }}
       USE_QEMU: ${{ env.USE_QEMU }}
       NODE_VERSION: ${{ env.NODE_VERSION }}
       PNPM_VERSION: ${{ env.PNPM_VERSION }}
@@ -30,7 +32,7 @@ jobs:
   release:
     uses: ./.github/workflows/release.yml
 
-  build:
+  build-amd64:
     uses: ./.github/workflows/build.yml
     if: ${{ needs.release.outputs.release-created == 'true' }}
     needs:
@@ -43,8 +45,26 @@ jobs:
       MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
       MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
       PATCH_TAG: ${{ needs.release.outputs.patch-tag }}
-      MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH == 'false' }}
-      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'false' }}
+      BUILD_AMD64: ${{ needs.expose-vars.outputs.BUILD_AMD64 == 'true' }}
+      BUILD_ARM64: false
+      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+
+  build-arm64:
+    uses: ./.github/workflows/build.yml
+    if: ${{ needs.release.outputs.release-created == 'true' }}
+    needs:
+      - expose-vars
+      - release
+    with:
+      REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
+      NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
+      TAG: ${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }}
+      MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
+      MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
+      PATCH_TAG: ${{ needs.release.outputs.patch-tag }}
+      BUILD_AMD64: false
+      BUILD_ARM64: ${{ needs.expose-vars.outputs.BUILD_ARM64 == 'true' }}
+      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
 
   npm-publish:
     uses: ./.github/workflows/npm.yml
@@ -67,26 +87,10 @@ jobs:
     needs:
       - expose-vars
       - release
+      - build-amd64
     steps:
       - name: Trigger helm-charts update
         env:
           GH_TOKEN: ${{ secrets.HELM_CHART_TOKEN }}
         run: |
           gh workflow --repo cloud-pi-native/helm-charts run update-chart.yaml -f APP_VERSION=${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }} -f CHART_NAME=dso-console
-
-  build-arm:
-    uses: ./.github/workflows/build.yml
-    if: ${{ needs.release.outputs.release-created == 'true' }}
-    needs:
-      - expose-vars
-      - release
-      - build
-    with:
-      REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
-      NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
-      TAG: ${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }}
-      MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
-      MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
-      PATCH_TAG: ${{ needs.release.outputs.patch-tag }}
-      MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH == 'true' }}
-      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
