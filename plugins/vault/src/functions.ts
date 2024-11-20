@@ -33,8 +33,11 @@ export const deployAuth: StepCall<Project> = async (payload) => {
 
     // loop on each env to verify if vault CRDs are installed on the cluster
     for (const ns of Object.values(kubeApi.namespaces)) {
+      const apiVersions = await ns.apisApi?.getAPIVersions()
+      const apiHashicorp = apiVersions?.body.groups.find(group => group.name === 'secrets.hashicorp.com')
+
       // verify if vault CRDs are installed on the cluster
-      if ((await ns.apisApi?.getAPIVersions())?.body.groups.filter(group => group.name === 'secrets.hashicorp.com')) {
+      if (apiHashicorp) {
         const vaultConnectionObject = generateVsoVaultConnection(appRoleCreds)
         await ns.createOrPatchRessource({
           body: vaultConnectionObject,
