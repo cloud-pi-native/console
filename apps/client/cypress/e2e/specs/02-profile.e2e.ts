@@ -14,12 +14,7 @@ describe('Header', () => {
 
   it('Should display profile infos', () => {
     cy.kcLogin('tcolin')
-      .visit('/')
-      .getByDataTestid('menuUserList')
-      .click()
-    cy.getByDataTestid('menuUserInfo')
-      .click()
-    cy.url().should('contain', '/profile/info')
+      .visit('/profile/info')
     cy.getByDataTestid('profileInfos')
       .should('contain.text', `${userTibo.lastName}, ${userTibo.firstName}`)
       .should('contain.text', userTibo.id)

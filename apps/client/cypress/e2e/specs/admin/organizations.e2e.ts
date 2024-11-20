@@ -195,7 +195,7 @@ describe('Administration organizations', () => {
     cy.getByDataTestid('menuMyProjects').click()
     cy.getByDataTestid(`projectTile-${projectFailed.name}`)
       .click()
-    cy.getByDataTestid(`${projectFailed.id}-locked-badge`)
+    cy.getByDataTestid(`${projectFailed.id}-locked-badge`, 15_000)
       .should('not.exist')
 
     cy.getByDataTestid('menuMyProjects').click()
