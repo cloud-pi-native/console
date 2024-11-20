@@ -19,7 +19,7 @@ const isAllSyncing = ref<boolean>(false)
 const repoFormId = 'repoFormId'
 const syncFormId = 'syncFormId'
 
-const repositories = ref<Repo[]>([])
+const repositories = computed<Repo[] | undefined>(() => project.value.repositories)
 function setSelectedRepo(repo: Repo) {
   if (selectedRepo.value?.internalRepoName === repo.internalRepoName) {
     selectedRepo.value = undefined
@@ -41,15 +41,17 @@ function cancel() {
 
 async function saveRepo(repo: Repo) {
   if (repo.id) {
-    await project.value.Repositories.update(repo.id, repo)
+    project.value.Repositories.update(repo.id, repo)
+      .catch(reason => snackbarStore.setMessage(reason, 'error'))
   } else {
-    await project.value.Repositories.create(repo)
+    project.value.Repositories.create(repo)
+      .catch(reason => snackbarStore.setMessage(reason, 'error'))
   }
   reload()
 }
 
 async function deleteRepo(repoId: Repo['id']) {
-  await project.value.Repositories.delete(repoId)
+  project.value.Repositories.delete(repoId)
   reload()
 }
 
@@ -64,7 +66,7 @@ async function syncRepository() {
 
 const canManageRepos = ref<boolean>(false)
 async function reload() {
-  repositories.value = await project.value.Repositories.list() ?? []
+  await project.value.Repositories.list()
   canManageRepos.value = !project.value.locked && ProjectAuthorized.ManageRepositories({ projectPermissions: project.value.myPerms })
   cancel()
 }

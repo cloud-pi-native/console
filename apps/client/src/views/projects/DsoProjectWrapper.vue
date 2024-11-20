@@ -1,12 +1,19 @@
 <script lang="ts" setup>
 import type { ProjectV2 } from '@cpn-console/shared'
 import { useProjectStore } from '../../stores/project.js'
-import { isInProject } from '../../router/index.js'
+import type { Project } from '@/utils/project-utils.js'
 
 const props = defineProps<{ projectId: ProjectV2['id'] }>()
 
 const projectStore = useProjectStore()
-const project = computed(() => projectStore.projectsById[props.projectId])
+
+const project = ref<Project | undefined>(undefined)
+
+watch(projectStore.projectsById, (store) => {
+  console.log({ store })
+
+  project.value = store[props.projectId]
+}, { immediate: true })
 </script>
 
 <template>
@@ -15,19 +22,11 @@ const project = computed(() => projectStore.projectsById[props.projectId])
   >
     <router-view />
     <ProjectLogsViewer
-      v-if="isInProject"
-      :project-id="project.id"
+      :key="projectId"
+      :project-id="projectId"
     />
-    <div
-      v-if="project?.operationsInProgress.size"
-      class="fixed bottom-5 right-5 z-999 shadow-lg background-default-grey"
-    >
-      <DsfrAlert
-        data-testid="operationInProgressAlert"
-        title="Opération en cours..."
-        :description="project.operationsInProgress.size === 2 ? 'Une ou plusieurs tâches en attente' : ''"
-        type="info"
-      />
-    </div>
+    <OperationPanel
+      :project-id="projectId"
+    />
   </div>
 </template>

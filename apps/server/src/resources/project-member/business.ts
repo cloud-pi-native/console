@@ -18,9 +18,9 @@ export async function addMember(projectId: Project['id'], user: XOR<{ userId: st
   let userInDb: User | undefined | null
 
   if (user.userId) {
-    userInDb = await prisma.user.findUnique({ where: { id: user.userId } })
+    userInDb = await prisma.user.findUnique({ where: { id: user.userId, type: 'human' } })
   } else if (user.email) {
-    userInDb = await prisma.user.findUnique({ where: { email: user.email } })
+    userInDb = await prisma.user.findUnique({ where: { email: user.email, type: 'human' } })
   } else {
     return new BadRequest400('Veuillez spécifiez au moins un userId ou un email')
   }

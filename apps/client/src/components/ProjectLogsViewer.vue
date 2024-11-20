@@ -2,10 +2,9 @@
 import type { CleanLog, ProjectV2 } from '@cpn-console/shared'
 import { ref, watch } from 'vue'
 import { useLogStore } from '../stores/log.js'
-import { selectedProjectId } from '@/router/index.js'
 
 const props = defineProps<{
-  projectId: ProjectV2['id']
+  projectId?: ProjectV2['id']
 }>()
 const logStore = useLogStore()
 
@@ -22,6 +21,9 @@ async function showLogs(index?: number) {
 }
 
 async function getProjectLogs({ offset, limit }: { offset: number, limit: number }) {
+  if (!props.projectId) {
+    return
+  }
   isUpdating.value = true
   const res = await logStore.listLogs({ offset, limit, projectId: props.projectId, clean: true })
   logs.value = res.logs as CleanLog[]
@@ -41,18 +43,18 @@ watch(logStore, () => {
   }
 })
 
-watch(selectedProjectId, () => {
-  if (!selectedProjectId.value) {
-    logStore.needRefresh = false
-    logStore.displayProjectLogs = true
-    return
+watch(props, (p) => {
+  console.log({ p })
+
+  if (p.projectId) {
+    logStore.needRefresh = true
   }
-  logStore.needRefresh = true
 })
 </script>
 
 <template>
   <div
+    v-if="projectId"
     :class="`fixed bottom-0 right-0 z-1000 top-40 shadow-lg flex fr-btn--secondary h-130 transition-all ${logStore.displayProjectLogs ? '' : 'translate-x-90'}`"
   >
     <div
