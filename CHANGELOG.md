@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.18.0](https://github.com/cloud-pi-native/console/compare/v8.17.2...v8.18.0) (2024-11-20)
+
+
+### Features
+
+* :sparkles: build project kv with config for projects ([f1c687f](https://github.com/cloud-pi-native/console/commit/f1c687f55ee4c8b8c2f342e431fb3f0982ffd72c))
+* ✨ add PAT ([2c35cd7](https://github.com/cloud-pi-native/console/commit/2c35cd72a1d0fb14f8c1a633b86e7ef00da80bab))
+
+
+### Bug Fixes
+
+* :bug: fix weird front behviours ([e06cf11](https://github.com/cloud-pi-native/console/commit/e06cf117c0fef4f49749d80a7ac5b8de813c6ed7))
+
 ## [8.17.2](https://github.com/cloud-pi-native/console/compare/v8.17.1...v8.17.2) (2024-11-14)
 
 
