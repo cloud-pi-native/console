@@ -97,6 +97,18 @@ const infos = {
         value: 'disabled',
         description: 'Défaut au niveau global signifie: Désactivé',
       },
+      {
+        key: 'enablePlugin',
+        kind: 'switch',
+        initialValue: 'enabled',
+        permissions: {
+          admin: { read: true, write: true },
+          user: { read: true, write: false },
+        },
+        title: 'Activer/Désactiver entièrement le plugin Nexus',
+        value: 'enabled',
+        description: 'Défaut: Activé',
+      },
     ],
   },
 } as const satisfies ServiceInfos
