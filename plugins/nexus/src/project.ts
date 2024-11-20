@@ -1,6 +1,6 @@
 import axios from 'axios'
 import type { Project, ProjectLite, StepCall } from '@cpn-console/hooks'
-import { generateRandomPassword, parseError } from '@cpn-console/hooks'
+import { generateRandomPassword, parseError, specificallyDisabled } from '@cpn-console/hooks'
 import { getAxiosOptions } from './functions.js'
 import { createMavenRepo, deleteMavenRepo, getMavenUrls } from './maven.js'
 import { createNpmRepo, deleteNpmRepo, getNpmUrls } from './npm.js'
@@ -46,6 +46,14 @@ export const deleteNexusProject: StepCall<Project> = async ({ args: project }) =
 
 export const createNexusProject: StepCall<Project> = async (payload) => {
   try {
+    if (specificallyDisabled(payload.config.nexus?.enablePlugin)) {
+      return {
+        status: {
+          result: 'OK',
+          message: 'Nexus plugin is disabled',
+        },
+      }
+    }
     if (!payload.apis.vault) throw new Error('no Vault available')
 
     const axiosInstance = getAxiosInstance()
@@ -203,6 +211,13 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
 }
 
 export const getSecrets: StepCall<ProjectLite> = async (payload) => {
+  if (specificallyDisabled(payload.config.nexus?.enablePlugin)) {
+    return {
+      status: {
+        result: 'OK',
+      },
+    }
+  }
   const projectName = `${payload.args.organization.name}-${payload.args.name}`
   const techUsed = getTechUsed(payload)
 
