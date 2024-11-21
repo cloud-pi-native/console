@@ -1,30 +1,47 @@
 import { createHash } from 'node:crypto'
 import type { AdminRole, AdminToken, PersonalAccessToken, Prisma, User } from '@prisma/client'
 import type { XOR, userContract } from '@cpn-console/shared'
-import { getMatchingUsers as getMatchingUsersQuery, getUsers as getUsersQuery } from '@/resources/queries-index.js'
+import { getMatchingUsers as getMatchingUsersQuery, listUsers as listUsersQuery } from '@/resources/queries-index.js'
 import prisma from '@/prisma.js'
 import type { UserDetails } from '@/types/index.js'
-import { BadRequest400 } from '@/utils/errors.js'
+import type { ErrorResType } from '@/utils/errors.js'
+import { BadRequest400, NotFound404 } from '@/utils/errors.js'
 
-export async function getUsers(query: typeof userContract.getAllUsers.query._type, relationType: 'OR' | 'AND' = 'AND') {
+export async function listUsers(query: typeof userContract.listUsers.query._type): Promise<typeof userContract.listUsers.responses['200']['_input'] | ErrorResType> {
+  const {
+    adminRoleIds,
+    adminRoles,
+    email,
+    firstName,
+    lastName,
+    memberOfIds,
+    order = 'asc',
+    orderBy = 'lastLogin',
+    relationType = 'AND',
+    search,
+    type,
+    page = 0,
+    perPage = 20,
+  } = query
   const whereInputs: Prisma.UserWhereInput[] = []
-  if (query.adminRoleIds?.length) {
-    whereInputs.push({ adminRoleIds: { hasEvery: query.adminRoleIds } })
-  }
-  if (query.adminRoles?.length) {
-    const roles = query.adminRoles
-      ? await prisma.adminRole.findMany({ where: { name: { in: query.adminRoles } } })
+  const orderInputs: Prisma.UserOrderByWithRelationInput[] = [{ [orderBy]: order }, { id: 'asc' }]
+
+  if (adminRoleIds?.length) whereInputs.push({ adminRoleIds: { hasEvery: adminRoleIds } })
+
+  if (adminRoles?.length) {
+    const roles = adminRoles
+      ? await prisma.adminRole.findMany({ where: { name: { in: adminRoles } } })
       : []
 
-    const adminRoleNameNotFound = query.adminRoles?.find(nameQueried => !roles.find(({ name }) => name === nameQueried))
+    const adminRoleNameNotFound = adminRoles?.find(nameQueried => !roles.find(({ name }) => name === nameQueried))
     if (adminRoleNameNotFound) {
       return new BadRequest400(`Unable to find adminRole ${adminRoleNameNotFound}`)
     }
     whereInputs.push({ adminRoleIds: { hasEvery: roles.map(({ id }) => id) } })
   }
-  if (query.memberOfIds) {
+  if (memberOfIds) {
     whereInputs.push({
-      AND: query.memberOfIds.map(id => ({
+      AND: memberOfIds.map(id => ({
         OR: [
           { projectsOwned: { some: { id } } },
           { ProjectMembers: { some: { project: { id } } } },
@@ -33,7 +50,28 @@ export async function getUsers(query: typeof userContract.getAllUsers.query._typ
     })
   }
 
-  return getUsersQuery({ [relationType]: whereInputs })
+  if (email) whereInputs.push({ email: { contains: email, mode: 'insensitive' } })
+  if (firstName) whereInputs.push({ firstName: { contains: firstName, mode: 'insensitive' } })
+  if (lastName) whereInputs.push({ lastName: { contains: lastName, mode: 'insensitive' } })
+  if (type) whereInputs.push({ type })
+
+  if (search) {
+    whereInputs.push({ OR: [
+      { email: { contains: search, mode: 'insensitive' } },
+      { lastName: { contains: search, mode: 'insensitive' } },
+      { firstName: { contains: search, mode: 'insensitive' } },
+    ] })
+  }
+
+  const offset = page * perPage
+  const users = await listUsersQuery({
+    [relationType]: whereInputs,
+  }, orderInputs, offset, perPage)
+
+  return {
+    ...users,
+    offset,
+  }
 }
 
 export async function getMatchingUsers(query: typeof userContract.getMatchingUsers.query._type) {
@@ -59,6 +97,12 @@ export async function getMatchingUsers(query: typeof userContract.getMatchingUse
   return getMatchingUsersQuery({
     AND,
   })
+}
+
+export async function getUser(userId: User['id']) {
+  const user = await prisma.user.findUnique(({ where: { id: userId }, include: { projectMembers: true, projectsOwned: true } }))
+  if (!user) return new NotFound404()
+  return user
 }
 
 export async function patchUsers(users: typeof userContract.patchUsers.body._type) {

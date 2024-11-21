@@ -407,6 +407,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
             :members="project.members"
             :can-manage="true"
             :can-transfer="true"
+            class="mb-10"
             @add-member="(email: string) => addUserToProject(email)"
             @remove-member="(userId: string) => removeUserFromProject(userId)"
             @transfer-ownership="(nextOwnerId: string) => transferOwnerShip(nextOwnerId)"

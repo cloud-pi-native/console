@@ -7,7 +7,7 @@ import { useUserStore } from './user.js'
 
 export const useAdminRoleStore = defineStore('adminRole', () => {
   const userStore = useUserStore()
-  const roles = ref<AdminRole []>([])
+  const roles = ref<AdminRole[]>([])
   const memberCounts = ref<Record<string, number>>({})
 
   const countMembersRoles = async () => {

@@ -1,7 +1,8 @@
 import { AdminAuthorized, userContract } from '@cpn-console/shared'
 import {
   getMatchingUsers,
-  getUsers,
+  getUser,
+  listUsers,
   logViaSession,
   patchUsers,
 } from './business.js'
@@ -34,12 +35,26 @@ export function userRouter() {
       }
     },
 
-    getAllUsers: async ({ request: req, query: { relationType, ...query } }) => {
+    getUser: async ({ request: req, params }) => {
       const perms = await authUser(req)
 
       if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
-      const body = await getUsers(query, relationType)
+      const body = await getUser(params.id)
+      if (body instanceof ErrorResType) return body
+
+      return {
+        status: 200,
+        body,
+      }
+    },
+
+    listUsers: async ({ request: req, query }) => {
+      const perms = await authUser(req)
+
+      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
+      const body = await listUsers(query)
       if (body instanceof ErrorResType) return body
 
       return {

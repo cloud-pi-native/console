@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { AtDatesToStringExtend, dateToString } from './_utils.js'
 
+export const UserTypeSchema = z.enum(['human', 'ghost', 'bot'])
 export const UserSchema = z.object({
   id: z.string()
     .uuid(),
@@ -8,7 +9,7 @@ export const UserSchema = z.object({
   lastName: z.string(),
   email: z.string(),
   adminRoleIds: z.string().uuid().array(),
-  type: z.enum(['human', 'ghost', 'bot']),
+  type: UserTypeSchema,
   lastLogin: dateToString.optional().nullable(),
 })
   .extend(AtDatesToStringExtend)

@@ -5,15 +5,18 @@ const props = withDefaults(defineProps<{
   length: number
   step: number
   page: number
+  displayPageSelect?: boolean
 }>(), {
   length: 0,
   step: 10,
   page: 0,
+  displayPageSelect: false,
 })
 
-const emit = defineEmits(['setPage'])
+const emit = defineEmits<{
+  setPage: [number]
+}>()
 const maxPage = computed(() => Math.floor(props.length / props.step))
-const currentStart = computed(() => Math.floor(props.page * props.step))
 </script>
 
 <template>
@@ -41,12 +44,39 @@ const currentStart = computed(() => Math.floor(props.page * props.step))
         @click="emit('setPage', Math.max(props.page - 1, 0))"
       />
     </div>
-    <span
-      class="flex items-center"
-      data-testid="positionInfo"
-    >
-      {{ length ? `${currentStart + 1} - ${Math.min(currentStart + props.step, props.length)} sur ${props.length}` : `0 - 0 sur 0` }}
-    </span>
+    <div class="flex flex-row justify-center">
+      <span class="flex items-center">page&nbsp;</span>
+      <select
+        v-if="displayPageSelect"
+        id="page" name="page"
+        @change="(e: any) => {
+          console.log(Number(e.target!.value));
+          emit('setPage', Number(e.target!.value) - 1)
+        }"
+      >
+        <option
+          v-for="targetPage in Math.ceil(props.length / props.step)"
+          :key="targetPage"
+          :value="targetPage"
+          :selected="targetPage === page + 1"
+        >
+          {{ targetPage }}
+        </option>
+      </select>
+      <span
+        v-else
+        class="flex items-center"
+        data-testid="positionInfo"
+      >
+        {{ page + 1 }}&nbsp;
+      </span>
+      <span
+        class="flex items-center"
+        data-testid="positionInfo"
+      >
+        {{ `sur ${Math.ceil(props.length / props.step)}` }}
+      </span>
+    </div>
     <div
       class="flex gap-2"
     >

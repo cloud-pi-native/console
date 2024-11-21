@@ -78,6 +78,7 @@ export const projectContract = contractInstance.router({
         filter: z.enum(['owned', 'member', 'all']),
         organizationName: z.string(),
         search: z.string(),
+        withUser: z.string().uuid(),
       })
       .partial(),
     summary: 'Get projects',

@@ -29,6 +29,7 @@ const DsoTeam = () => import('@/views/projects/DsoTeam.vue')
 const DsoRepos = () => import('@/views/projects/DsoRepos.vue')
 const DsoAdmin = () => import('@/views/admin/DsoAdmin.vue')
 const ListUser = () => import('@/views/admin/ListUser.vue')
+const AdminUser = () => import('@/views/admin/AdminUser.vue')
 const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
 const AdminProject = () => import('@/views/admin/AdminProject.vue')
 const ListProjects = () => import('@/views/admin/ListProjects.vue')
@@ -202,6 +203,14 @@ export const routes: Readonly<RouteRecordRaw[]> = [
         },
         props(to) {
           return { projectId: to.params.id }
+        },
+      },
+      {
+        path: 'users/:id',
+        name: 'AdminUser',
+        component: AdminUser,
+        props(to) {
+          return { userId: to.params.id }
         },
       },
       {

@@ -6,12 +6,12 @@ const anonUser = users.find(user => user.email === 'anon@user') as User
 
 describe('Administration users', () => {
   beforeEach(() => {
-    cy.intercept('GET', 'api/v1/users').as('getAllUsers')
+    cy.intercept('GET', 'api/v1/users').as('listUsers')
 
     cy.kcLogin('tcolin')
     cy.visit('/admin/users')
 
-    cy.wait('@getAllUsers', { timeout: 10_000 }).its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@listUsers', { timeout: 10_000 }).its('response.statusCode').should('match', /^20\d$/)
   })
 
   it('Should display admin users, loggedIn as admin', () => {

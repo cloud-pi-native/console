@@ -6,7 +6,12 @@ import { dbKeysExcluded } from '@/utils/queries-tools.js'
 type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>
 
 // SELECT
-export const getUsers = (where?: Prisma.UserWhereInput) => prisma.user.findMany({ where })
+export async function listUsers(where?: Prisma.UserWhereInput, orderBy?: Prisma.UserOrderByWithRelationInput[], skip?: number, take?: number) {
+  return {
+    data: await prisma.user.findMany({ where, orderBy, skip, take }),
+    total: await prisma.user.count({ where }),
+  }
+}
 
 export async function getUserInfos(id: User['id']) {
   const usr = await prisma.user.findMany({

@@ -2,10 +2,10 @@ import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import prisma from '../../__mocks__/prisma.js'
 import type { UserDetails } from '../../types/index.ts'
-import { TokenInvalidReason, getMatchingUsers, getUsers, logViaSession, logViaToken, patchUsers } from './business.ts'
+import { TokenInvalidReason, getMatchingUsers, listUsers, logViaSession, logViaToken, patchUsers } from './business.ts'
 import * as queries from './queries.js'
 
-const getUsersQueryMock = vi.spyOn(queries, 'getUsers')
+const listUsersQueryMock = vi.spyOn(queries, 'listUsers')
 const getMatchingUsersQueryMock = vi.spyOn(queries, 'getMatchingUsers')
 
 describe('test users business', () => {
@@ -48,22 +48,22 @@ describe('test users business', () => {
       expect(prisma.user.update).toHaveBeenCalledTimes(3)
     })
   })
-  describe('getUsers', () => {
+  describe('listUsers', () => {
     it('should query without where', async () => {
       prisma.user.update.mockResolvedValue(null)
 
-      await getUsers({})
+      await listUsers({})
 
-      expect(getUsersQueryMock).toHaveBeenCalledTimes(1)
-      expect(getUsersQueryMock).toHaveBeenCalledWith({ AND: [] })
+      expect(listUsersQueryMock).toHaveBeenCalledTimes(1)
+      expect(listUsersQueryMock).toHaveBeenCalledWith({ AND: [] })
     })
     it('should query with filter adminRoleIds', async () => {
       prisma.user.update.mockResolvedValue(null)
 
-      await getUsers({ adminRoleIds: [adminRoleId] })
+      await listUsers({ adminRoleIds: [adminRoleId] })
 
-      expect(getUsersQueryMock).toHaveBeenCalledTimes(1)
-      expect(getUsersQueryMock).toHaveBeenCalledWith({ AND: [{ adminRoleIds: { hasEvery: [adminRoleId] } }] })
+      expect(listUsersQueryMock).toHaveBeenCalledTimes(1)
+      expect(listUsersQueryMock).toHaveBeenCalledWith({ AND: [{ adminRoleIds: { hasEvery: [adminRoleId] } }] })
     })
   })
 

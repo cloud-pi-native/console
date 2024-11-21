@@ -64,3 +64,8 @@ export function listQuotasToConsumption(quotas: Quota[]): Consumption {
     memory: 0,
   })
 }
+
+export function textToHSL(text: string): string {
+  const hue = (text.charCodeAt(Math.min(text.length - 1, 2)) * text.charCodeAt(Math.min(text.length - 1)) * text.charCodeAt(Math.min(text.length - 1, 5))) % 255
+  return `hsl(${hue} 80% 40%)`
+}

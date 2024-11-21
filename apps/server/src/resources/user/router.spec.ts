@@ -10,7 +10,7 @@ vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockS
 const authUserMock = vi.spyOn(utilsController, 'authUser')
 const businessGetMatchingMock = vi.spyOn(business, 'getMatchingUsers')
 const businessLogViaSessionMock = vi.spyOn(business, 'logViaSession')
-const businessGetUsersMock = vi.spyOn(business, 'getUsers')
+const businessListUsersMock = vi.spyOn(business, 'listUsers')
 const businessPatchMock = vi.spyOn(business, 'patchUsers')
 
 describe('test userContract', () => {
@@ -59,21 +59,21 @@ describe('test userContract', () => {
     })
   })
 
-  describe('getAllUsers', () => {
+  describe('listUsers', () => {
     it('should return all users for admin', async () => {
       const user = getUserMockInfos(true)
       const users = []
       authUserMock.mockResolvedValueOnce(user)
-      businessGetUsersMock.mockResolvedValueOnce(users)
+      businessListUsersMock.mockResolvedValueOnce({ data: users, total: 0, offset: 0 })
 
       const response = await app.inject()
-        .get(userContract.getAllUsers.path)
+        .get(userContract.listUsers.path)
         .query({ role: 'admin' })
         .end()
 
       expect(authUserMock).toHaveBeenCalledTimes(1)
-      expect(businessGetUsersMock).toHaveBeenCalledTimes(1)
-      expect(response.json()).toEqual(users)
+      expect(businessListUsersMock).toHaveBeenCalledTimes(1)
+      expect(response.json()).toEqual({ data: users, total: 0, offset: 0 })
       expect(response.statusCode).toEqual(200)
     })
     it('should return 403 for non-admin', async () => {
@@ -81,12 +81,12 @@ describe('test userContract', () => {
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
-        .get(userContract.getAllUsers.path)
+        .get(userContract.listUsers.path)
         .query({ role: 'admin' })
         .end()
 
       expect(authUserMock).toHaveBeenCalledTimes(1)
-      expect(businessGetUsersMock).toHaveBeenCalledTimes(0)
+      expect(businessListUsersMock).toHaveBeenCalledTimes(0)
       expect(response.statusCode).toEqual(403)
     })
   })

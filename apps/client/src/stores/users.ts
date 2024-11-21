@@ -1,10 +1,14 @@
 import { defineStore } from 'pinia'
-import type { userContract } from '@cpn-console/shared'
+import type { User, userContract } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useUsersStore = defineStore('users', () => {
-  const listUsers = async (query: typeof userContract.getAllUsers.query._input) =>
-    apiClient.Users.getAllUsers({ query })
+  const listUsers = async (query: typeof userContract.listUsers.query._input) =>
+    apiClient.Users.listUsers({ query })
+      .then(res => extractData(res, 200))
+
+  const getUser = async (id: User['id']) =>
+    apiClient.Users.getUser({ params: { id } })
       .then(res => extractData(res, 200))
 
   const listMatchingUsers = async (query: typeof userContract.getMatchingUsers.query._type) =>
@@ -16,6 +20,7 @@ export const useUsersStore = defineStore('users', () => {
       .then(res => extractData(res, 200))
 
   return {
+    getUser,
     listUsers,
     listMatchingUsers,
     patchUsers,

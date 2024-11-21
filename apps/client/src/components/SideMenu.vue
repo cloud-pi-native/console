@@ -91,7 +91,7 @@ onMounted(() => {
 
       <!-- Onglet Profile -->
       <DsfrSideMenuListItem
-        v-if="isLoggedIn"
+        v-if="isLoggedIn && userStore.userProfile"
       >
         <DsfrSideMenuButton
           data-testid="menuUserList"
@@ -100,7 +100,7 @@ onMounted(() => {
           control-id="projectList"
           @toggle-expand="toggleExpand('profile')"
         >
-          {{ userStore.userProfile?.firstName }} {{ userStore.userProfile?.lastName }}
+          {{ userStore.userProfile.firstName }} {{ userStore.userProfile.lastName }}
         </DsfrSideMenuButton>
         <DsfrSideMenuList
           id="profileList"

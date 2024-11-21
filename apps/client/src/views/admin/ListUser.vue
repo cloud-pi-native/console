@@ -1,254 +1,265 @@
 <script lang="ts" setup>
-import { onBeforeMount, ref } from 'vue'
-import { type AllUsers, type Role, formatDate } from '@cpn-console/shared'
+import { computed, onBeforeMount, ref } from 'vue'
+import type { Role, User } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminRoleStore } from '@/stores/admin-role.js'
-import { copyContent } from '@/utils/func.js'
 import { useUsersStore } from '@/stores/users.js'
+import { copyContent } from '@/utils/func.js'
+import router from '@/router/index.js'
 
 const adminRoleStore = useAdminRoleStore()
 const usersStore = useUsersStore()
 const snackbarStore = useSnackbarStore()
 const adminRoles = ref<Role[]>([])
-const allUsers = ref<AllUsers>([])
+const users = ref<User[]>([])
+const page = ref(0)
+const perPage = ref(20)
+const total = ref(0)
+const displayLongTime = ref(false)
 
-const inputSearchText = ref('')
+const searchSearch = ref<string>()
 
+type SortableKey = keyof Pick<User, 'createdAt' | 'lastLogin' | 'email' | 'firstName' | 'lastName'>
+const sort = ref<SortableKey>('createdAt')
+const sortDesc = ref(false)
+const hideBots = ref(true)
 const displayId = ref(false)
-const hideBots = ref(false)
 
-const sort = ref<{ method: string, desc: boolean }>({
-  method: 'createdAt',
-  desc: true,
-})
-
-const sortOptions: { text: string, value: string, selected?: true }[] = [{
-  text: 'Date de création \u2B06\uFE0F',
-  value: 'createdAt',
-}, {
-  text: 'Date de création \u2B07\uFE0F',
-  value: 'createdAt:D',
+const sortOptions: { text: string, value: SortableKey, selected?: true }[] = [{
+  text: 'Dernière connexion',
+  value: 'lastLogin',
   selected: true,
 }, {
-  text: 'Prénom, alphabétique \u2B06\uFE0F',
+  text: 'Date de création',
+  value: 'createdAt',
+}, {
+  text: 'Prénom',
   value: 'firstName',
 }, {
-  text: 'Prénom, alphabétique \u2B07\uFE0F',
-  value: 'firstName:D',
-}, {
-  text: 'Nom, alphabétique \u2B06\uFE0F',
+  text: 'Nom',
   value: 'lastName',
 }, {
-  text: 'Nom, alphabétique \u2B07\uFE0F',
-  value: 'lastName:D',
-}, {
-  text: 'Email, alphabétique \u2B06\uFE0F',
+  text: 'Email',
   value: 'email',
-}, {
-  text: 'Email, alphabétique \u2B07\uFE0F',
-  value: 'email:D',
 }]
 
-const sortKey = computed<'email' | 'lastName' | 'firstName'>(() => sort.value.method.split(':')[0] as 'email' | 'lastName' | 'firstName')
-function selectSort(value: string) {
-  sort.value = {
-    desc: value.endsWith(':D'),
-    method: value,
-  }
-}
-
-const userRows = computed(() => {
-  let users = allUsers.value
-  if (sort.value.desc) {
-    users = users.toReversed()
-  }
-  if (hideBots.value) {
-    users = users.filter(user => user.type === 'human')
-  }
-  let userRows = users
+const usersRows = computed(() => {
+  return users.value
     .map((user) => {
-      const fullName = `${user.firstName} ${user.lastName}`
       return {
         ...user,
-        fullName,
         roleNames: adminRoleStore.roles.filter(({ id }) => user.adminRoleIds.includes(id)).map(({ name }) => name),
-        bgColor: textToHSL(fullName),
       }
     })
-
-  if (!inputSearchText.value) return userRows
-  const input = inputSearchText.value.toLowerCase()
-  userRows = userRows.filter((row) => {
-    if (displayId.value && row.id.toLowerCase().includes(input)) return true
-    if (row.email.toLowerCase().includes(input)) return true
-    if (row.firstName.toLowerCase().includes(input)) return true
-    if (row.lastName.toLowerCase().includes(input)) return true
-    if (row.fullName.toLowerCase().includes(input)) return true
-    if (row.type.toLowerCase().includes(input)) return true
-    if (row.roleNames.join(' ').toLowerCase().includes(input)) return true
-    return false
-  })
-  return userRows
 })
 
-function textToHSL(text: string): string {
-  const hue = (text.charCodeAt(Math.min(text.length - 1, 2)) * text.charCodeAt(Math.min(text.length - 1)) * text.charCodeAt(Math.min(text.length - 1, 5))) % 255
-  return `hsl(${hue} 80% 40%)`
-}
-
 onBeforeMount(async () => {
-  snackbarStore.isWaitingForResponse = true
   if (!adminRoleStore.roles.length) {
     adminRoles.value = await adminRoleStore.listRoles()
   }
-  allUsers.value = await usersStore.listUsers({})
-  snackbarStore.isWaitingForResponse = false
+  await getUsers()
 })
+
+const dateLocaleOptions = {
+  year: '2-digit',
+  month: 'numeric',
+  day: 'numeric',
+} as const
+
+async function getUsers() {
+  snackbarStore.isWaitingForResponse = true
+  try {
+    const data = await usersStore.listUsers({
+      search: searchSearch.value || undefined,
+      type: hideBots.value ? 'human' : undefined,
+      orderBy: sort.value,
+      order: sortDesc.value ? 'desc' : 'asc',
+      page: page.value.toString(),
+      perPage: perPage.value.toString(),
+    })
+    users.value = data.data
+    page.value = Math.floor(data.offset / perPage.value)
+    total.value = data.total
+  } finally {
+    snackbarStore.isWaitingForResponse = false
+  }
+}
 </script>
 
 <template>
   <div class="relative">
-    <h2>Liste des utilisateurs</h2>
     <div
-      class="flex <xl:flex-col flex-row gap-2 w-full gap-5"
+      class="flex flex-col gap-2 w-full gap-5"
     >
-      <DsfrCallout
-        class="h-min w-auto"
-      >
-        <DsfrSelect
-          v-model="sort"
-          data-testid="tableAdministrationUsersSort"
-          label="Tri"
-          :options="sortOptions"
-          @update:model-value="(value: string) => selectSort(value)"
-        />
-        <DsfrInputGroup
-          v-model="inputSearchText"
-          data-testid="tableAdministrationUsersSearch"
-          label="Rechercher"
-          label-visible
-          placeholder="Recherche..."
-        />
+      <div class="flex flex-auto-row gap-10">
+        <div class="flex flex-row items-end">
+          <input
+            v-model="searchSearch"
+            class="fr-input"
+            data-testid="tableAdministrationUsersSearch"
+            label="Rechercher"
+            :label-visible="false"
+            placeholder="Recherche..."
+            @keyup.enter="getUsers"
+          >
+          <DsfrButton
+            label="Rechercher"
+            icon-only
+            icon="ri-search-line"
+            data-testid="usersSearchBtn"
+            primary
+            @click="() => getUsers()"
+          />
+        </div>
+        <div class="flex flex-row items-end">
+          <DsfrSelect
+            v-model="sort"
+            data-testid="tableAdministrationUsersSort"
+            :label-visible="false"
+            :options="sortOptions"
+            class="mb-0 mt-0"
+            @keyup.enter="getUsers"
+            @update:model-value="(value: SortableKey) => { sort = value; getUsers() }"
+          />
+          <DsfrButton
+            no-label
+            icon-only
+            :icon="sortDesc ? 'ri-sort-desc' : 'ri-sort-asc'"
+            @click="() => { sortDesc = !sortDesc; getUsers() }"
+          />
+        </div>
+      </div>
+      <div class="flex flex-row">
         <DsfrCheckbox
-          id="tableAdministrationUsersDisplayId"
-          v-model="displayId"
-          label="Afficher les identifiants"
-          small
-          @update:model-value="(value: boolean) => displayId = value"
-        />
-        <DsfrCheckbox
-          id="tableAdministrationUsersHideBots"
+          id="hideBots"
           v-model="hideBots"
           label="Masquer les comptes techniques"
+          value="hideBots"
+          name="hideBots"
+          legend=""
           small
-          @update:model-value="(value: boolean) => hideBots = value"
+          inline
+          @update:model-value="(event: boolean) => { hideBots = event; getUsers() }"
         />
-      </DsfrCallout>
-      <DsfrTable
-        data-testid="tableAdministrationUsers"
-        class="w-max my-0"
-        no-caption
-        title=""
+        <DsfrCheckbox
+          id="displayId"
+          v-model="displayId"
+          label="Afficher les identifiants"
+          value="displayId"
+          name="displayId"
+          legend=""
+          small
+          inline
+          @update:model-value="(event: boolean) => { displayId = event }"
+        />
+      </div>
+      <div
+        class="flex flex-col gap-3 h-min w-min"
       >
-        <template #header>
-          <tr>
-            <th
-              scope="col"
-              colspan="2"
+        <PaginationCt
+          :length="total"
+          :page="page"
+          :step="perPage"
+          @set-page="(targetPage: number) => { page = targetPage ; getUsers() }"
+        />
+        <DsfrTable
+          title="Liste des utilisateurs"
+          class="border-spacing-x-0 w-max"
+          no-caption
+        >
+          <template #header>
+            <tr
+              class=" w-full"
             >
-              Identité
-            </th>
-            <th scope="col">
-              Rôles
-            </th>
-            <th scope="col">
-              Type
-            </th>
-            <th
-              scope="col"
-            >
-              Date de création
-            </th>
-            <th
-              scope="col"
-            >
-              Dernière connexion
-            </th>
+              <td />
+              <td>Utilisateur</td>
+              <td>Rôles</td>
+              <td>Crée le</td>
+              <td>Dernière co</td>
+            </tr>
+          </template>
+          <tr v-if="snackbarStore.isWaitingForResponse">
+            <td colspan="5">
+              Chargment...
+            </td>
           </tr>
-        </template>
-        <tr
-          v-for="user in userRows.toSorted((a, b) => a[sortKey].toLowerCase().localeCompare(b[sortKey].toLowerCase()) * (sort.desc ? -1 : 1))"
-          :key="user.id"
-          :data-testid="`user-${user.id}`"
-        >
-          <td>
-            <div
-              class="rounded-full h-10 w-10 text-center content-center font-extrabold text-lg text-slate-100 self-start"
-              :style="`background-color: ${user.bgColor};`"
-            >
-              {{ user.firstName[0].toUpperCase() + user.lastName[0].toUpperCase() }}
-            </div>
-          </td>
-          <td
-            class="grid w-max gap-3"
+          <tr v-if="!usersRows.length">
+            <td colspan="5">
+              Aucun utilisateur trouvé
+            </td>
+          </tr>
+          <UserCt
+            v-for="user in usersRows"
+            v-else
+            :key="user.id"
+            :user="user"
+            mode="full"
+            recursive-slots
+            :selectable="false"
+            as-table-row
+            class=" w-full"
+            @click="router.push({ name: 'AdminUser', params: { id: user.id } })"
           >
-            <div>
-              <span class="text-xl">{{ user.fullName }}</span>
-            </div>
-            <code
-              title="Copier l'email"
-              class="fr-text-default--info text-xs cursor-pointer"
-              :onClick="() => copyContent(user.email)"
-            >
-              {{ user.email }}
-            </code><br>
-            <code
-              v-if="displayId"
-              title="Copier l'id"
-              class="fr-text-default--info text-xs cursor-pointer"
-              :onClick="() => copyContent(user.id)"
-            >
-              {{ user.id }}
-            </code>
-          </td>
-          <td
-            :data-testid="`${user.id}-roles`"
-          >
-            <DsfrTag
-              v-for="role in user.roleNames"
-              :key="role"
-              :label="role"
-            />
-          </td>
-          <td>
-            <DsfrTag
-              v-if="user.type !== 'human'"
-              :label="user.type"
-            />
-          </td>
-          <td
-            :title="(new Date(user.createdAt)).toLocaleString()"
-          >
-            {{ formatDate(user.createdAt) }}
-          </td>
-          <td
-            :title="user.lastLogin ? (new Date(user.createdAt)).toLocaleString() : ''"
-          >
-            {{ user.lastLogin ? formatDate(user.lastLogin) : 'Jamais' }}
-          </td>
-        </tr>
-        <tr
-          v-if="userRows.length === 0"
-        >
-          <td colspan="10">
-            Aucun utilisateur ne correspond à votre recherche
-          </td>
-        </tr>
-      </DsfrTable>
+            <template #extra>
+              <td
+                class="p-2"
+              >
+                <div
+                  class="flex justify-self-end self-start gap-1"
+                >
+                  <DsfrTag
+                    v-for="role in user.roleNames"
+                    :key="role"
+                    class="shadow shrink"
+                    :label="role"
+                    :small="displayId"
+                  />
+                </div>
+                <div
+                  v-if="displayId"
+                  class="grow"
+                >
+                  <span>id: </span><code
+                    title="Copier l'id"
+                    class="fr-text-default--info text-xs cursor-pointer"
+                    :onClick="() => copyContent(user.id)"
+                  >
+                    {{ user.id }}
+                  </code>
+                </div>
+              </td>
+
+              <td
+                class="p-2 min-w-20"
+                :title="(new Date(user.createdAt)).toLocaleString(undefined, dateLocaleOptions)"
+                @click="displayLongTime = !displayLongTime"
+              >
+                {{ (new Date(user.createdAt)).toLocaleString(undefined, displayLongTime ? undefined : dateLocaleOptions) }}
+              </td>
+              <td
+                class="p-2 min-w-20"
+                :title="user.lastLogin ? (new Date(user.lastLogin)).toLocaleString() : 'Jamais'"
+              >
+                {{ user.lastLogin ? (new Date(user.lastLogin)).toLocaleString(undefined, displayLongTime ? undefined : dateLocaleOptions) : 'Jamais' }}
+              </td>
+            </template>
+          </UserCt>
+        </DsfrTable>
+      </div>
     </div>
-    <LoadingCt
-      v-if="snackbarStore.isWaitingForResponse"
-      description="Récupération des utilisateurs"
-    />
   </div>
 </template>
+
+<style scoped>
+.fr-select-group {
+  margin-bottom: 0 !important;
+}
+
+.fr-checkbox-group {
+  margin-bottom: 0 !important;
+}
+
+.fr-fieldset__element {
+  margin-bottom: 0 !important;
+}
+</style>
