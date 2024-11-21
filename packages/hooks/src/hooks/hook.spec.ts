@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { PluginApi } from '../utils/utils.ts'
+import { PluginApi, okStatus } from '../utils/utils.ts'
 import { createHook, executeStep } from './hook.ts'
 
-const okStatus = { status: { result: 'OK' } } as const
 const koStatus = { status: { result: 'KO', message: 'Failed' } } as const
 const warningStatus = { status: { result: 'WARNING', message: 'Failed' } } as const
 
