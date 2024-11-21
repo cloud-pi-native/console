@@ -5,6 +5,7 @@ import { dump } from 'js-yaml'
 import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { PatchUtils } from '@kubernetes/client-node'
+import { inClusterLabel } from '@cpn-console/shared'
 import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi, uniqueResource } from './utils.js'
 import { getApplicationObject, getMinimalApplicationObject } from './applications.js'
 import { getAppProjectObject, getMinimalAppProjectPatch } from './app-project.js'
@@ -232,7 +233,7 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
       'dso/environment': environment.name,
     },
     argocd: {
-      cluster: 'in-cluster',
+      cluster: inClusterLabel,
       namespace: getConfig().namespace,
       project: appProjectName,
       envChartVersion: process.env.DSO_ENV_CHART_VERSION ?? 'dso-env-1.4.0',

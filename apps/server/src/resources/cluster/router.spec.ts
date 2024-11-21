@@ -56,7 +56,19 @@ describe('test clusterContract', () => {
 
   describe('getClusterDetails', () => {
     it('should return cluster details', async () => {
-      const cluster: ClusterDetails = { id: faker.string.uuid(), clusterResources: true, infos: '', label: faker.string.alpha(), privacy: 'public', stageIds: [], zoneId: faker.string.uuid(), kubeconfig: { cluster: { tlsServerName: faker.string.alpha() }, user: {} } }
+      const cluster: ClusterDetails = {
+        id: faker.string.uuid(),
+        clusterResources: true,
+        infos: '',
+        label: faker.string.alpha(),
+        privacy: 'public',
+        stageIds: [],
+        zoneId: faker.string.uuid(),
+        kubeconfig: {
+          cluster: { tlsServerName: faker.string.alpha() },
+          user: {},
+        },
+      }
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
@@ -111,7 +123,19 @@ describe('test clusterContract', () => {
   })
 
   describe('createCluster', () => {
-    const cluster: ClusterDetails = { id: faker.string.uuid(), clusterResources: true, infos: '', label: faker.string.alpha(), privacy: 'public', stageIds: [], zoneId: faker.string.uuid(), kubeconfig: { cluster: { tlsServerName: faker.string.alpha() }, user: {} } }
+    const cluster: ClusterDetails = {
+      id: faker.string.uuid(),
+      clusterResources: true,
+      infos: '',
+      label: faker.string.alpha(),
+      privacy: 'public',
+      stageIds: [],
+      zoneId: faker.string.uuid(),
+      kubeconfig: {
+        cluster: { tlsServerName: faker.string.alpha() },
+        user: {},
+      },
+    }
 
     it('should return created cluster', async () => {
       const user = getUserMockInfos(true)
@@ -153,7 +177,18 @@ describe('test clusterContract', () => {
 
   describe('updateCluster', () => {
     const clusterId = faker.string.uuid()
-    const cluster: Omit<ClusterDetails, 'id'> = { clusterResources: true, infos: '', label: faker.string.alpha(), privacy: 'public', stageIds: [], zoneId: faker.string.uuid(), kubeconfig: { cluster: { tlsServerName: faker.string.alpha() }, user: {} } }
+    const cluster: Omit<ClusterDetails, 'id'> = {
+      clusterResources: true,
+      infos: '',
+      label: faker.string.alpha(),
+      privacy: 'public',
+      stageIds: [],
+      zoneId: faker.string.uuid(),
+      kubeconfig: {
+        cluster: { tlsServerName: faker.string.alpha() },
+        user: {},
+      },
+    }
 
     it('should return created cluster', async () => {
       const user = getUserMockInfos(true)

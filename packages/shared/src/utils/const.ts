@@ -1,5 +1,6 @@
 export const adminGroupPath = '/admin'
 
+export const inClusterLabel = 'in-cluster' as const
 export const projectIsLockedInfo = 'Le projet est verrouillé, pas d\'action possible'
 export const missingCredentials = 'Si le dépôt est privé, vous devez renseigner au moins le nom d\'utilisateur ou le token'
 export const invalidGitUrl = 'L\'adresse doit commencer par https et se terminer par .git'
