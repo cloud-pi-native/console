@@ -1,5 +1,19 @@
 # Changelog
 
+## [8.19.0](https://github.com/cloud-pi-native/console/compare/v8.18.2...v8.19.0) (2024-11-22)
+
+
+### Features
+
+* :art: use upsert zone hook to manage infra repo ([6fe47d1](https://github.com/cloud-pi-native/console/commit/6fe47d1922359c4934b5364fa3d87dd86cec129b))
+* :sparkles: easy in-cluster config ([01435e2](https://github.com/cloud-pi-native/console/commit/01435e2595383b4be00bdafb45970161765da6b9))
+* :sparkles: enable pwa on frontend ([c6c03f3](https://github.com/cloud-pi-native/console/commit/c6c03f3dadf9e954353ad11c29c19d50538d1e2a))
+
+
+### Bug Fixes
+
+* :bug: vault forgot to set kv to v2 ([90dca64](https://github.com/cloud-pi-native/console/commit/90dca64aca9d64b8491b332d0151f1be68dcbccc))
+
 ## [8.18.2](https://github.com/cloud-pi-native/console/compare/v8.18.1...v8.18.2) (2024-11-20)
 
 
