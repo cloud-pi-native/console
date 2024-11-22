@@ -42,7 +42,7 @@ watch(routePath, () => {
 
 <style scoped>
 .dso-snackbar {
-  @apply fixed bottom-4 z-1 mx-4;
+  @apply fixed bottom-4 z-1000 mx-4;
 
   background-color: var(--background-default-grey);
 }

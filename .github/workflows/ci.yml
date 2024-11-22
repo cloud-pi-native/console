@@ -16,7 +16,8 @@ env:
   PNPM_VERSION: 9.10.0
   REGISTRY: ghcr.io
   NAMESPACE: "${{ github.repository }}"
-  MULTI_ARCH: false
+  BUILD_AMD64: true
+  BUILD_ARM64: false
   USE_QEMU: false
 
 jobs:
@@ -52,7 +53,8 @@ jobs:
       PNPM_VERSION: ${{ env.PNPM_VERSION }}
       REGISTRY: ${{ env.REGISTRY }}
       NAMESPACE: ${{ env.NAMESPACE }}
-      MULTI_ARCH: ${{ env.MULTI_ARCH }}
+      BUILD_AMD64: ${{ env.BUILD_AMD64 }}
+      BUILD_ARM64: ${{ env.BUILD_ARM64 }}
       USE_QEMU: ${{ env.USE_QEMU }}
     steps:
       - name: Exposing env vars
@@ -115,7 +117,8 @@ jobs:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
       TAG: pr-${{ github.event.pull_request.number || github.event.number }}
-      MULTI_ARCH: ${{ needs.expose-vars.outputs.MULTI_ARCH == 'true' }}
+      BUILD_AMD64: ${{ needs.expose-vars.outputs.BUILD_AMD64 == 'true' }}
+      BUILD_ARM64: ${{ needs.expose-vars.outputs.BUILD_ARM64 == 'true' }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
       PR_NUMBER: ${{ github.event.pull_request.number || github.event.number }}
     secrets:

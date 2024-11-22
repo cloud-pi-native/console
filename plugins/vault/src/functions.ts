@@ -1,6 +1,7 @@
-import { parseError } from '@cpn-console/hooks'
+import { okStatus, parseError } from '@cpn-console/hooks'
 import type { Project, ProjectLite, StepCall } from '@cpn-console/hooks'
 import { generateVaultAuth, generateVsoSecret, generateVsoVaultConnection } from './vso.js'
+import getConfig from './config.js'
 
 export const upsertProject: StepCall<Project> = async (payload) => {
   try {
@@ -30,7 +31,9 @@ export const deployAuth: StepCall<Project> = async (payload) => {
       throw new Error('no Vault available')
     }
     const appRoleCreds = await payload.apis.vault.Role.getCredentials()
-
+    if (getConfig().disableVaultSecrets) {
+      return okStatus
+    }
     // loop on each env to verify if vault CRDs are installed on the cluster
     for (const ns of Object.values(kubeApi.namespaces)) {
       const apiVersions = await ns.apisApi?.getAPIVersions()
@@ -66,11 +69,7 @@ export const deployAuth: StepCall<Project> = async (payload) => {
         })
       }
     }
-    return {
-      status: {
-        result: 'OK',
-      },
-    }
+    return okStatus
   } catch (error) {
     return {
       error: parseError(error),

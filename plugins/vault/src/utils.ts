@@ -13,3 +13,14 @@ export async function isAppRoleEnabled(axiosInstance: AxiosInstance, token: stri
   const methods = await getAuthMethod(axiosInstance, token)
   return Object.keys(methods).includes('approle/')
 }
+
+export const minimumConfig = {
+  type: 'kv',
+  options: {
+    version: 2,
+  },
+}
+export function generateKVConfigUpdate(config: Record<string, any>): typeof minimumConfig | void {
+  if (config?.type !== minimumConfig.type) return minimumConfig
+  if (config?.options?.version !== minimumConfig.options.version) return minimumConfig
+}

@@ -3,7 +3,6 @@ import { computed, onBeforeMount, ref, watch } from 'vue'
 import type {
   ClusterAssociatedEnvironments,
   ClusterDetails,
-  SharedZodError,
   Stage,
   Zone,
 } from '@cpn-console/shared'
@@ -11,12 +10,13 @@ import {
   ClusterDetailsSchema,
   ClusterPrivacy,
   KubeconfigSchema,
+  inClusterLabel,
 } from '@cpn-console/shared'
 // @ts-ignore 'js-yaml' missing types
 import { load } from 'js-yaml'
 // @ts-ignore 'vue3-json-viewer' missing types
 import { JsonViewer } from 'vue3-json-viewer'
-import type { ProjectWithOrganization } from '../stores/project.js'
+import type { Project } from '../utils/project-utils.js'
 import ChoiceSelector from './ChoiceSelector.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { toCodeComponent } from '@/utils/func.js'
@@ -24,7 +24,7 @@ import { toCodeComponent } from '@/utils/func.js'
 const props = withDefaults(defineProps<{
   isNewCluster: boolean
   cluster: ClusterDetails
-  allProjects: ProjectWithOrganization[]
+  allProjects: Project[]
   allStages: Stage[]
   allZones: Zone[]
   associatedEnvironments: ClusterAssociatedEnvironments
@@ -75,16 +75,16 @@ if (!localCluster.value.zoneId && props.allZones.length) {
   localCluster.value.zoneId = props.allZones[0].id
 }
 
-const errorSchema = computed<SharedZodError | undefined>(() => {
+const schema = computed(() => {
   let schemaValidation
   if (localCluster.value.id) {
     schemaValidation = ClusterDetailsSchema.safeParse(localCluster.value)
   } else {
     schemaValidation = ClusterDetailsSchema.omit({ id: true }).partial().safeParse(localCluster.value)
   }
-  return schemaValidation.success ? undefined : schemaValidation.error
+  return schemaValidation
 })
-const isClusterValid = computed(() => !errorSchema.value)
+const isClusterValid = computed(() => schema.value.success)
 const chosenZoneDescription = computed(() => props.allZones.find(zone => zone.id === localCluster.value.zoneId)?.description)
 
 function updateKubeconfig(files: FileList) {
@@ -251,6 +251,7 @@ const isConnectionDetailsShown = ref(true)
         :error="kConfigError"
         hint="Uploadez le Kubeconfig du cluster."
         class="fr-mb-2w"
+        :disabled="localCluster.label === inClusterLabel"
         @change="updateKubeconfig($event)"
       />
       <DsfrSelect
@@ -259,6 +260,7 @@ const isConnectionDetailsShown = ref(true)
         select-id="selectedContextSelect"
         label="Context"
         description="Nous n'avons pas trouvé de current-context dans votre kubeconfig. Veuillez choisir un contexte."
+        :disabled="localCluster.label === inClusterLabel"
         :options="contexts"
       />
       <JsonViewer
@@ -283,6 +285,7 @@ const isConnectionDetailsShown = ref(true)
         :required="true"
         :error-message="localCluster.kubeconfig.cluster.tlsServerName && !KubeconfigSchema.pick({ cluster: true }).safeParse({ cluster: { tlsServerName: localCluster.kubeconfig.cluster.tlsServerName } }).success ? 'Le nom du serveur TLS est obligatoire' : undefined"
         hint="La valeur est extraite du kubeconfig téléversé."
+        :disabled="localCluster.label === inClusterLabel"
       />
       <DsfrCheckbox
         id="clusterSkipTLSVerifyCbx"
@@ -290,6 +293,7 @@ const isConnectionDetailsShown = ref(true)
         label="Ignorer le certificat TLS du server (risques potentiels de sécurité !)"
         hint="Ignorer le certificat TLS présenté pour contacter l'API server Kubernetes"
         name="isClusterSkipTlsVerify"
+        :disabled="localCluster.label === inClusterLabel"
       />
     </template>
     <h4

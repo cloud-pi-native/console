@@ -5,6 +5,7 @@ import { dump } from 'js-yaml'
 import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { PatchUtils } from '@kubernetes/client-node'
+import { inClusterLabel } from '@cpn-console/shared'
 import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi, uniqueResource } from './utils.js'
 import { getApplicationObject, getMinimalApplicationObject } from './applications.js'
 import { getAppProjectObject, getMinimalAppProjectPatch } from './app-project.js'
@@ -232,7 +233,7 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
       'dso/environment': environment.name,
     },
     argocd: {
-      cluster: 'in-cluster',
+      cluster: inClusterLabel,
       namespace: getConfig().namespace,
       project: appProjectName,
       envChartVersion: process.env.DSO_ENV_CHART_VERSION ?? 'dso-env-1.4.0',
@@ -264,19 +265,23 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
 
 async function getArgoRepoSource(repoName: string, env: string, gitlabApi: GitlabProjectApi): Promise<ArgoRepoSource> {
   const targetRevision = 'HEAD'
-  const repoId = await gitlabApi.getProjectId(repoName)
-  const repoURL = await gitlabApi.getRepoUrl(repoName)
-  const files = await gitlabApi.listFiles(repoId, { path: '/', ref: 'HEAD', recursive: false })
   const valueFiles = [] // Empty means not a Helm repository
   let path = '.'
-  const result = files.find(f => f.name === 'values.yaml')
-  if (result) {
-    valueFiles.push('values.yaml')
-    path = dirname(result.path)
-    const valuesEnv = `values-${env}.yaml`
-    if (files.find(f => (path === '.' && f.path === valuesEnv) || f.path === `${path}/${valuesEnv}`)) {
-      valueFiles.push(valuesEnv)
+  const repoId = await gitlabApi.getProjectId(repoName)
+  const repoURL = await gitlabApi.getRepoUrl(repoName)
+  try {
+    const files = await gitlabApi.listFiles(repoId, { path: '/', ref: 'HEAD', recursive: false })
+    const result = files.find(f => f.name === 'values.yaml')
+    if (result) {
+      valueFiles.push('values.yaml')
+      path = dirname(result.path)
+      const valuesEnv = `values-${env}.yaml`
+      if (files.find(f => (path === '.' && f.path === valuesEnv) || f.path === `${path}/${valuesEnv}`)) {
+        valueFiles.push(valuesEnv)
+      }
     }
+  } catch (error) {
+    console.log(`Error ignored when trying to list files of repository ${repoName}: ${error.message}`)
   }
   return {
     repoURL,

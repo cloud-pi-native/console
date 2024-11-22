@@ -13,15 +13,20 @@
     // Base
     "baseUrl": "./",
     "rootDir": "./src",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
     "paths": {
       "@/*": [
         "src/*"
       ]
     },
     "resolveJsonModule": true,
-    "types": ["vitest", "vite/client"],
+    "types": [
+      "vitest",
+      "vite/client",
+      "vite-plugin-pwa/vue",
+      "vite-plugin-pwa/client"
+    ],
     "allowImportingTsExtensions": false,
     "allowJs": true,
     "strict": true,
@@ -48,7 +53,8 @@
   "include": [
     "./src/**/*.ts",
     "./src/**/*.js",
-    "./src/**/*.vue"
+    "./src/**/*.vue",
+    "./src/**/*.d.ts"
   ],
   "exclude": [
     "./src/**/*.spec.ts",

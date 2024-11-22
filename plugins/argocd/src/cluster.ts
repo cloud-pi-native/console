@@ -1,11 +1,16 @@
 import type { V1Secret } from '@kubernetes/client-node'
 import { type ClusterObject, type StepCall, parseError } from '@cpn-console/hooks'
+import { inClusterLabel } from '@cpn-console/shared'
 import { getConfig, getK8sApi } from './utils.js'
 
 export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
   try {
     const cluster = payload.args
-    await createClusterSecret(cluster)
+    if (cluster.label === inClusterLabel) {
+      await deleteClusterSecret(cluster.secretName)
+    } else {
+      await createClusterSecret(cluster)
+    }
     return {
       status: {
         result: 'OK',

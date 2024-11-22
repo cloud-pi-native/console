@@ -3,7 +3,7 @@ import axios from 'axios'
 import type { ProjectLite } from '@cpn-console/hooks'
 import { PluginApi } from '@cpn-console/hooks'
 import getConfig from './config.js'
-import { getAuthMethod, isAppRoleEnabled } from './utils.js'
+import { generateKVConfigUpdate, getAuthMethod, isAppRoleEnabled } from './utils.js'
 
 interface ReadOptions {
   throwIfNoEntry: boolean
@@ -131,14 +131,14 @@ export class VaultProjectApi extends PluginApi {
   Project = {
     upsert: async () => {
       const token = await this.getToken()
-      let kvRes = await this.axios({
+      const kvRes = await this.axios({
         method: 'get',
-        url: `/v1/sys/mounts/${this.projectKvName}`,
+        url: `/v1/sys/mounts/${this.projectKvName}/tune`,
         headers: { 'X-Vault-Token': token },
         validateStatus: code => [400, 200].includes(code),
       })
       if (kvRes.status === 400) {
-        kvRes = await this.axios({
+        await this.axios({
           method: 'post',
           url: `/v1/sys/mounts/${this.projectKvName}`,
           headers: {
@@ -149,10 +149,24 @@ export class VaultProjectApi extends PluginApi {
             config: {
               force_no_cache: true,
             },
+            options: {
+              version: 2,
+            },
           },
         })
+      } else { // means 200 status
+        const configUpdate = generateKVConfigUpdate(kvRes.data)
+        if (configUpdate) {
+          await this.axios({
+            method: 'put',
+            url: `/v1/sys/mounts/${this.projectKvName}/tune`,
+            headers: {
+              'X-Vault-Token': token,
+            },
+            data: configUpdate,
+          })
+        }
       }
-      // TODO faire une vérif des paramétrages sur 200
 
       await this.Policy.ensureAll()
       await this.Group.upsert()
@@ -249,12 +263,11 @@ export class VaultProjectApi extends PluginApi {
       })
     },
     delete: async () => {
-      const existingGroup = await this.axios({
+      await this.axios({
         method: 'delete',
         url: `/v1/identity/group/name/${this.groupName}`,
         headers: { 'X-Vault-Token': await this.getToken() },
       })
-      console.log({ existingGroup })
     },
   }
 

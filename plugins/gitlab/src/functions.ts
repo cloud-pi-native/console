@@ -1,5 +1,5 @@
-import { parseError, specificallyDisabled } from '@cpn-console/hooks'
-import type { PluginResult, Project, ProjectLite, StepCall, UniqueRepo } from '@cpn-console/hooks'
+import { okStatus, parseError, specificallyDisabled } from '@cpn-console/hooks'
+import type { PluginResult, Project, ProjectLite, StepCall, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
 import { insert } from '@cpn-console/shared'
 import { deleteGroup } from './group.js'
 import { createUsername, getUser } from './user.js'
@@ -99,7 +99,6 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
     const { gitlab: gitlabApi, vault: vaultApi } = payload.apis
 
     await gitlabApi.getOrCreateProjectGroup()
-    await gitlabApi.getOrCreateInfraGroup()
 
     const { failedInUpsertUsers } = await ensureMembers(gitlabApi, project)
     if (failedInUpsertUsers) {
@@ -186,7 +185,41 @@ export const syncRepository: StepCall<UniqueRepo> = async (payload) => {
   }
 }
 
-export const commitFiles: StepCall<UniqueRepo | Project> = async (payload) => {
+export const upsertZone: StepCall<ZoneObject> = async (payload) => {
+  const returnResult: PluginResult = okStatus
+  try {
+    const gitlabApi = payload.apis.gitlab
+    await gitlabApi.getOrCreateInfraProject(payload.args.slug)
+    return returnResult
+  } catch (error) {
+    returnResult.error = parseError(cleanGitlabError(error))
+    returnResult.status.result = 'KO'
+    returnResult.status.message = 'Can\'t reconcile please inspect logs'
+    return returnResult
+  }
+}
+
+export const deleteZone: StepCall<ZoneObject> = async (payload) => {
+  const returnResult: PluginResult = {
+    status: {
+      result: 'OK',
+      message: 'Deleted',
+    },
+  }
+  try {
+    const gitlabApi = payload.apis.gitlab
+    const zoneRepo = await gitlabApi.getOrCreateInfraProject(payload.args.slug)
+    await gitlabApi.deleteRepository(zoneRepo.id)
+    return returnResult
+  } catch (error) {
+    returnResult.error = parseError(cleanGitlabError(error))
+    returnResult.status.result = 'KO'
+    returnResult.status.message = 'Can\'t reconcile please inspect logs'
+    return returnResult
+  }
+}
+
+export const commitFiles: StepCall<UniqueRepo | Project | ZoneObject> = async (payload) => {
   const returnResult = payload.results.gitlab
   try {
     const filesUpdated = await payload.apis.gitlab.commitFiles()

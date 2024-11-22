@@ -38,8 +38,7 @@ export const KubeconfigSchema = z.object({
   cluster: z.object({
     server: z.string()
       .optional(),
-    tlsServerName: z.string()
-      .min(1),
+    tlsServerName: z.string(),
     skipTLSVerify: z.boolean()
       .optional(),
     caData: z.string()
