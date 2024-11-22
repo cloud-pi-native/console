@@ -5,6 +5,7 @@ import UnoCSS from 'unocss/vite'
 import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
+import { VitePWA } from 'vite-plugin-pwa'
 import {
   vueDsfrAutoimportPreset,
   vueDsfrComponentResolver,
@@ -78,6 +79,32 @@ export default defineConfig({
       ],
     }),
     UnoCSS(),
+    VitePWA({
+      registerType: 'prompt', // autoUpdate
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5_000_000,
+        cleanupOutdatedCaches: true,
+      },
+      devOptions: {
+        enabled: false,
+      },
+      manifest: {
+        name: 'Console Cloud Pi Native',
+        short_name: 'CPiN',
+        description: 'Une console web pour les controller tous',
+        start_url: '/',
+        display: 'standalone',
+        background_color: '#ffffff',
+        theme_color: '#42b883',
+        icons: [
+          {
+            src: '/favicon.ico',
+            sizes: '16x16',
+            type: 'image/png',
+          },
+        ],
+      },
+    }),
   ],
   base: '/',
   resolve: {

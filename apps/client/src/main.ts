@@ -8,10 +8,10 @@ import 'vue3-json-viewer/dist/index.css'
 import JsonViewer from 'vue3-json-viewer'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { DsfrSelect, DsfrTag, VIcon } from '@gouvminint/vue-dsfr'
-import { keycloakInit } from './utils/keycloak/keycloak'
+import { keycloakInit } from './utils/keycloak/keycloak.js'
 
 import App from './App.vue'
-import router from './router/index'
+import router from './router/index.js'
 
 import 'virtual:uno.css'
 import 'virtual:unocss-devtools'

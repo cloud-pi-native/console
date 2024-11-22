@@ -6,6 +6,7 @@ import { useSystemSettingsStore } from './stores/system-settings.js'
 import { useProjectStore } from './stores/project.js'
 import { useUserStore } from './stores/user.js'
 import { useAdminRoleStore } from './stores/admin-role.js'
+import ReloadPrompt from './components/ReloadPrompt.vue'
 import { useServiceStore } from '@/stores/services-monitor.js'
 
 const keycloak = getKeycloak()
@@ -102,6 +103,7 @@ watch(userStore, async () => {
       </div>
     </template>
   </DsfrFooter>
+  <ReloadPrompt />
 </template>
 
 <style>
