@@ -30,12 +30,12 @@ export async function ensureRepositories(gitlabApi: GitlabProjectApi, project: P
 
   if (!gitlabRepositories.find(repo => repo.name === infraAppsRepoName)) {
     promises.push(
-      gitlabApi.createEmptyRepository(infraAppsRepoName),
+      gitlabApi.createEmptyProjectRepository(infraAppsRepoName),
     )
   }
   if (!gitlabRepositories.find(repo => repo.name === internalMirrorRepoName)) {
     promises.push(
-      gitlabApi.createEmptyRepository(internalMirrorRepoName)
+      gitlabApi.createEmptyProjectRepository(internalMirrorRepoName)
         .then(mirrorRepo => provisionMirror(mirrorRepo.id)),
     )
   }
@@ -52,7 +52,7 @@ async function ensureRepositoryExists(gitlabRepositories: CondensedProjectSchema
   if (!gitlabRepository) {
     gitlabRepository = repository.externalRepoUrl
       ? await gitlabApi.createCloneRepository(repository.internalRepoName, externalRepoUrn, repository.newCreds ?? { username: currentVaultSecret?.data.GIT_INPUT_USER, token: currentVaultSecret?.data.GIT_INPUT_PASSWORD })
-      : await gitlabApi.createEmptyRepository(repository.internalRepoName)
+      : await gitlabApi.createEmptyProjectRepository(repository.internalRepoName)
   }
 
   if (!repository.externalRepoUrl) {

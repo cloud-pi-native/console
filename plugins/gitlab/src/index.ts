@@ -1,16 +1,18 @@
-import type { DeclareModuleGenerator, DefaultArgs, Plugin, Project, UniqueRepo } from '@cpn-console/hooks'
+import type { DeclareModuleGenerator, DefaultArgs, Plugin, Project, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
 import {
   checkApi,
   commitFiles,
   deleteDsoProject,
+  deleteZone,
   getDsoProjectSecrets,
   syncRepository,
   upsertDsoProject,
+  upsertZone,
 } from './functions.js'
 import { getGroupRootId } from './utils.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
-import { GitlabProjectApi } from './class.js'
+import { GitlabProjectApi, GitlabZoneApi } from './class.js'
 
 const onlyApi = { api: (project: Project | UniqueRepo) => new GitlabProjectApi(project) }
 
@@ -47,6 +49,19 @@ export const plugin: Plugin = {
         post: commitFiles,
       },
     },
+    upsertZone: {
+      api: () => new GitlabZoneApi(),
+      steps: {
+        main: upsertZone,
+        post: commitFiles,
+      },
+    },
+    deleteZone: {
+      api: () => new GitlabZoneApi(),
+      steps: {
+        main: deleteZone,
+      },
+    },
   },
   monitor,
   start,
@@ -56,7 +71,9 @@ declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
     gitlab: Args extends Project | UniqueRepo
       ? GitlabProjectApi
-      : undefined
+      : Args extends ZoneObject
+        ? GitlabZoneApi
+        : undefined
   }
   interface ProjectStore extends DeclareModuleGenerator<typeof infos, 'project'> {}
   interface Config extends DeclareModuleGenerator<typeof infos, 'global'> {}

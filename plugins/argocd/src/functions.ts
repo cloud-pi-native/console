@@ -265,19 +265,23 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
 
 async function getArgoRepoSource(repoName: string, env: string, gitlabApi: GitlabProjectApi): Promise<ArgoRepoSource> {
   const targetRevision = 'HEAD'
-  const repoId = await gitlabApi.getProjectId(repoName)
-  const repoURL = await gitlabApi.getRepoUrl(repoName)
-  const files = await gitlabApi.listFiles(repoId, { path: '/', ref: 'HEAD', recursive: false })
   const valueFiles = [] // Empty means not a Helm repository
   let path = '.'
-  const result = files.find(f => f.name === 'values.yaml')
-  if (result) {
-    valueFiles.push('values.yaml')
-    path = dirname(result.path)
-    const valuesEnv = `values-${env}.yaml`
-    if (files.find(f => (path === '.' && f.path === valuesEnv) || f.path === `${path}/${valuesEnv}`)) {
-      valueFiles.push(valuesEnv)
+  const repoId = await gitlabApi.getProjectId(repoName)
+  const repoURL = await gitlabApi.getRepoUrl(repoName)
+  try {
+    const files = await gitlabApi.listFiles(repoId, { path: '/', ref: 'HEAD', recursive: false })
+    const result = files.find(f => f.name === 'values.yaml')
+    if (result) {
+      valueFiles.push('values.yaml')
+      path = dirname(result.path)
+      const valuesEnv = `values-${env}.yaml`
+      if (files.find(f => (path === '.' && f.path === valuesEnv) || f.path === `${path}/${valuesEnv}`)) {
+        valueFiles.push(valuesEnv)
+      }
     }
+  } catch (error) {
+    console.log(`Error ignored when trying to list files of repository ${repoName}: ${error.message}`)
   }
   return {
     repoURL,

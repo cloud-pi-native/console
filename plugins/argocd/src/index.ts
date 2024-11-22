@@ -10,7 +10,7 @@ export const plugin: Plugin = {
   subscribedHooks: {
     upsertProject: {
       steps: {
-        post: upsertProject,
+        main: upsertProject,
       },
     },
     deleteProject: {
