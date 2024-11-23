@@ -197,6 +197,6 @@ async function findAdminToken(digest: string): Promise<(AdminToken & { owner: Us
     return invalidReason
   }
   await prisma.adminToken.update({ where: { id: token.id }, data: { lastUse: (new Date()).toISOString() } })
-  await prisma.user.update({ where: { id: token.id }, data: { lastLogin: (new Date()).toISOString() } })
+  await prisma.user.update({ where: { id: token.userId }, data: { lastLogin: (new Date()).toISOString() } })
   return token
 }

@@ -40,7 +40,19 @@ describe('Administration tokens', () => {
       .type('test2')
     cy.getByDataTestid('saveBtn')
       .click()
-    cy.wait('@createToken')
+    cy.wait('@createToken').its('response').then((response) => {
+      const password = response.body.password
+      cy.request({
+        url: '/api/v1/admin/tokens',
+        followRedirect: false,
+        headers: {
+          'X-DSO-TOKEN': password,
+        },
+        method: 'GET',
+      }).then((resp) => {
+        expect(resp.status).to.eq(200)
+      })
+    })
     cy.getByDataTestid('newTokenPassword')
       .should('be.visible')
 
