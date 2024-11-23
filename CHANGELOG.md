@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.19.1](https://github.com/cloud-pi-native/console/compare/v8.19.0...v8.19.1) (2024-11-23)
+
+
+### Bug Fixes
+
+* :ambulance: broken admin token ([a1eff7f](https://github.com/cloud-pi-native/console/commit/a1eff7f96c6793338019eea0676b8f6dea4c0056))
+
 ## [8.19.0](https://github.com/cloud-pi-native/console/compare/v8.18.2...v8.19.0) (2024-11-22)
 
 
