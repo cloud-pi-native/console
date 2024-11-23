@@ -22,8 +22,6 @@ export function toCodeComponent(value: string) {
   }
 }
 
-export const bts = (v: boolean) => v ? 'true' : 'false'
-
 const maxDescriptionLength = 60
 export function truncateDescription(description: string) {
   let innerHTML: string

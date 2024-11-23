@@ -179,3 +179,13 @@ export function insert<T>(pseudoArray: T[] | undefined, element: T): T[] {
     throw new TypeError('item is not an ArrayLike')
   }
 }
+
+export type ArrayElement<ArrayType extends readonly unknown[]> =
+  ArrayType extends readonly (infer ElementType)[] ? ElementType : never
+
+export const bts = (v: boolean) => v ? 'true' : 'false'
+export function stb(v?: string | undefined) {
+  return v === 'true'
+    ? true
+    : v === 'false' ? false : undefined
+}

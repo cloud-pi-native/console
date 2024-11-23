@@ -7,9 +7,10 @@ import { dbToObj } from '../project-service/business.ts'
 import * as userBusiness from '../user/business.js'
 import {
   BadRequest400,
+  ErrorResType,
   Unprocessable422,
 } from '../../utils/errors.js'
-import { archiveProject, createProject, generateProjectsData, getProjectSecrets, listProjects, replayHooks, updateProject } from './business.ts'
+import { archiveProject, chunk, createProject, generateProjectsData, getProjectSecrets, listProjects, replayHooks, updateProject } from './business.ts'
 
 vi.mock('../../utils/hook-wrapper.ts', async () => ({
   hook,
@@ -110,7 +111,7 @@ describe('test project business logic', () => {
       prisma.project.findMany.mockResolvedValue({ id: projectId })
       const response = await getProjectSecrets(projectId)
       // according to src/utils/mocks.ts
-      expect(response).instanceOf(Unprocessable422)
+      expect(response).toBeInstanceOf(Unprocessable422)
     })
   })
 
@@ -179,7 +180,7 @@ describe('test project business logic', () => {
       expect(prisma.project.create).toHaveBeenCalledTimes(1)
       expect(prisma.log.create).toHaveBeenCalledTimes(1)
       expect(hook.project.upsert).toHaveBeenCalledTimes(1)
-      expect(response).instanceOf(Unprocessable422)
+      expect(response).toBeInstanceOf(Unprocessable422)
     })
   })
   describe('updateProject', () => {
@@ -213,6 +214,19 @@ describe('test project business logic', () => {
       expect(hook.project.upsert).toHaveBeenCalledTimes(1)
     })
 
+    it('should not update if project archived', async () => {
+      prisma.project.findUniqueOrThrow.mockResolvedValue({ id: projectId, status: 'archived' })
+      prisma.project.update.mockResolvedValue(project)
+      hook.project.upsert.mockResolvedValue({ results: {}, project: { ...project } })
+
+      const response = await updateProject({ }, project.id, user, reqId)
+
+      expect(response).toBeInstanceOf(ErrorResType)
+      expect(prisma.project.update).toHaveBeenCalledTimes(0)
+      expect(prisma.log.create).toHaveBeenCalledTimes(0)
+      expect(hook.project.upsert).toHaveBeenCalledTimes(0)
+    })
+
     it('should not update project, cause missing member', async () => {
       hook.project.upsert.mockResolvedValue({ results: {}, project: { ...project } })
       logViaSessionMock.mockResolvedValue({ user })
@@ -222,7 +236,7 @@ describe('test project business logic', () => {
       const response = await updateProject({ ownerId: members[0].userId }, project.id, user, reqId)
 
       expect(prisma.project.findUniqueOrThrow).toHaveBeenCalledTimes(1)
-      expect(response).instanceOf(BadRequest400)
+      expect(response).toBeInstanceOf(BadRequest400)
       expect(hook.project.upsert).toHaveBeenCalledTimes(0)
       expect(prisma.log.update).toHaveBeenCalledTimes(0)
     })
@@ -231,19 +245,21 @@ describe('test project business logic', () => {
       logViaSessionMock.mockResolvedValue({ user })
 
       prisma.organization.findUnique.mockResolvedValue({ id: project.organizationId })
+      prisma.project.findUniqueOrThrow.mockResolvedValue({ status: 'created' })
       hook.project.upsert.mockResolvedValue({ results: { failed: true }, project: { ...project } })
 
       const response = await updateProject(updatedProjet, project.id, user, reqId)
 
       expect(prisma.project.update).toHaveBeenCalledTimes(1)
       expect(hook.project.upsert).toHaveBeenCalledTimes(1)
-      expect(response).instanceOf(Unprocessable422)
+      expect(response).toBeInstanceOf(Unprocessable422)
     })
   })
   describe('replayHooks', () => {
     const reqId = faker.string.uuid()
 
     it('should replay hooks', async () => {
+      prisma.project.findUniqueOrThrow.mockResolvedValue({ locked: false, status: 'created' })
       hook.project.upsert.mockResolvedValue({ results: { failed: false } })
 
       await replayHooks(project.id, user, reqId)
@@ -252,14 +268,37 @@ describe('test project business logic', () => {
       expect(hook.project.upsert).toHaveBeenCalledTimes(1)
     })
 
+    it('should not replay hooks on archived project', async () => {
+      prisma.project.findUniqueOrThrow.mockResolvedValue({ locked: false, status: 'archived' })
+      hook.project.upsert.mockResolvedValue({ results: { failed: false } })
+
+      const response = await replayHooks(project.id, user, reqId)
+
+      expect(response).toBeInstanceOf(ErrorResType)
+      expect(prisma.log.create).toHaveBeenCalledTimes(0)
+      expect(hook.project.upsert).toHaveBeenCalledTimes(0)
+    })
+
+    it('should not replay hooks on locked project', async () => {
+      prisma.project.findUniqueOrThrow.mockResolvedValue({ locked: true, status: 'created' })
+      hook.project.upsert.mockResolvedValue({ results: { failed: false } })
+
+      const response = await replayHooks(project.id, user, reqId)
+
+      expect(response).toBeInstanceOf(ErrorResType)
+      expect(prisma.log.create).toHaveBeenCalledTimes(0)
+      expect(hook.project.upsert).toHaveBeenCalledTimes(0)
+    })
+
     it('should update nothing and return error', async () => {
+      prisma.project.findUniqueOrThrow.mockResolvedValue({ locked: false, status: 'created' })
       hook.project.upsert.mockResolvedValue({ results: { failed: true } })
 
       const response = await replayHooks(project.id, user, reqId)
 
       expect(prisma.log.create).toHaveBeenCalledTimes(1)
       expect(hook.project.upsert).toHaveBeenCalledTimes(1)
-      expect(response).instanceOf(Unprocessable422)
+      expect(response).toBeInstanceOf(Unprocessable422)
     })
   })
 
@@ -278,11 +317,29 @@ describe('test project business logic', () => {
       })
     })
 
+    it('should not archive a project already archived', async () => {
+      prisma.project.findUniqueOrThrow.mockResolvedValue({ id: projectId, locked: false, status: 'archived' })
+      hook.project.upsert.mockResolvedValue({ results: { failed: false } })
+      hook.project.delete.mockResolvedValue({ results: { failed: false }, project: Promise.resolve({ status: 'archived' }) })
+      const response = await archiveProject(project.id, user, reqId)
+      expect(response).toBeInstanceOf(ErrorResType)
+      expect(prisma.project.update).toHaveBeenCalledTimes(0)
+    })
+
+    it('should not archive a project locked', async () => {
+      prisma.project.findUniqueOrThrow.mockResolvedValue({ id: projectId, locked: true, status: 'created' })
+      hook.project.upsert.mockResolvedValue({ results: { failed: false } })
+      hook.project.delete.mockResolvedValue({ results: { failed: false }, project: Promise.resolve({ status: 'archived' }) })
+      const response = await archiveProject(project.id, user, reqId)
+      expect(response).toBeInstanceOf(ErrorResType)
+      expect(prisma.project.update).toHaveBeenCalledTimes(0)
+    })
+
     it('should return hook fail', async () => {
       prisma.project.findUniqueOrThrow.mockResolvedValue({ id: projectId, locked: false })
       hook.project.delete.mockResolvedValue({ results: { failed: true }, project: Promise.resolve({ status: 'failed' }) })
       const response = await archiveProject(project.id, user, reqId)
-      expect(response).instanceOf(Unprocessable422)
+      expect(response).toBeInstanceOf(Unprocessable422)
     })
   })
 
@@ -292,5 +349,20 @@ describe('test project business logic', () => {
       const response = await generateProjectsData()
       expect(response).toBeTypeOf('string')
     })
+  })
+})
+
+describe('chunk function', () => {
+  it('should return 5 elements', () => {
+    const letters = ['A', 'B', 'C', 'D', 'E']
+    expect(chunk(letters, 5)).toEqual([letters])
+  })
+  it('should return 3,2 elements', () => {
+    const letters = ['A', 'B', 'C', 'D', 'E']
+    expect(chunk(letters, 3)).toEqual([['A', 'B', 'C'], ['D', 'E']])
+  })
+  it('should return 4 elements', () => {
+    const letters = ['A', 'B', 'C', 'D']
+    expect(chunk(letters, 5)).toEqual([letters])
   })
 })

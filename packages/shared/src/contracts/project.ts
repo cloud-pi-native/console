@@ -28,6 +28,24 @@ export const projectContract = contractInstance.router({
     },
   },
 
+  bulkActionProject: {
+    method: 'POST',
+    path: '-bulk',
+    contentType: 'application/json',
+    summary: 'Perform bulk action on projects',
+    description: 'Perform bulk action on projects.',
+    body: z.object({
+      action: z.enum(['archive', 'lock', 'unlock', 'replay']),
+      projectIds: z.string().uuid().array().or(z.literal('all')),
+    }),
+    responses: {
+      202: null,
+      400: ErrorSchema,
+      403: ErrorSchema,
+      500: ErrorSchema,
+    },
+  },
+
   getProject: {
     method: 'GET',
     path: '/:projectId',
@@ -59,6 +77,7 @@ export const projectContract = contractInstance.router({
         statusNotIn: z.string(),
         filter: z.enum(['owned', 'member', 'all']),
         organizationName: z.string(),
+        search: z.string(),
       })
       .partial(),
     summary: 'Get projects',

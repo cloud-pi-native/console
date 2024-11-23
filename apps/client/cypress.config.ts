@@ -28,6 +28,8 @@ export default defineConfig({
         }),
       )
     },
+    viewportHeight: 1024,
+    viewportWidth: 1280,
     baseUrl: `http://${clientHost}:${clientPort}`,
     fixturesFolder: 'cypress/e2e/fixtures',
     specPattern: 'cypress/e2e/specs/**/*.{cy,e2e}.{j,t}s',
