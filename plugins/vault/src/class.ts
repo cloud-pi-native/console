@@ -15,9 +15,136 @@ export interface AppRoleCredentials {
   secretId: string
 }
 
-export class VaultProjectApi extends PluginApi {
+export class VaultApi extends PluginApi {
+  protected readonly axios: AxiosInstance
   private token: string | undefined = undefined
-  private readonly axios: AxiosInstance
+
+  constructor() {
+    super()
+    this.axios = axios.create({
+      baseURL: getConfig().internalUrl,
+      headers: {
+        'X-Vault-Token': getConfig().token,
+      },
+    })
+  }
+
+  protected async getToken() {
+    if (!this.token) {
+      this.token = (await this.axios.post('/v1/auth/token/create'))
+        .data.auth.client_token as string
+    }
+    return this.token
+  }
+
+  Kv = {
+    upsert: async (kvName: string) => {
+      const token = await this.getToken()
+      const kvRes = await this.axios({
+        method: 'get',
+        url: `/v1/sys/mounts/${kvName}/tune`,
+        headers: { 'X-Vault-Token': token },
+        validateStatus: code => [400, 200].includes(code),
+      })
+      if (kvRes.status === 400) {
+        await this.axios({
+          method: 'post',
+          url: `/v1/sys/mounts/${kvName}`,
+          headers: {
+            'X-Vault-Token': token,
+          },
+          data: {
+            type: 'kv',
+            config: {
+              force_no_cache: true,
+            },
+            options: {
+              version: 2,
+            },
+          },
+        })
+      } else { // means 200 status
+        const configUpdate = generateKVConfigUpdate(kvRes.data)
+        if (configUpdate) {
+          await this.axios({
+            method: 'put',
+            url: `/v1/sys/mounts/${kvName}/tune`,
+            headers: {
+              'X-Vault-Token': token,
+            },
+            data: configUpdate,
+          })
+        }
+      }
+    },
+    delete: async (kvName: string) => {
+      const token = await this.getToken()
+      return await this.axios({
+        method: 'delete',
+        url: `/v1/sys/mounts/${kvName}`,
+        headers: { 'X-Vault-Token': token },
+        validateStatus: code => [400, 200, 204].includes(code),
+      })
+    },
+  }
+
+  Policy = {
+    upsert: async (policyName: string, policy: string) => {
+      await this.axios({
+        method: 'put',
+        url: `/v1/sys/policies/acl/${policyName}`,
+        data: { policy },
+        headers: {
+          'X-Vault-Token': await this.getToken(),
+          'Content-Type': 'application/json',
+        },
+      })
+    },
+    delete: async (policyName: string) => {
+      await this.axios({
+        method: 'delete',
+        url: `/v1/sys/policies/acl/${policyName}`,
+        headers: {
+          'X-Vault-Token': await this.getToken(),
+          'Content-Type': 'application/json',
+        },
+      })
+    },
+  }
+
+  Role = {
+    upsert: async (roleName: string, policies: string[]) => {
+      const appRoleEnabled = await isAppRoleEnabled(this.axios, await this.getToken())
+      if (!appRoleEnabled) return
+
+      await this.axios({
+        method: 'post',
+        url: `/v1/auth/approle/role/${roleName}`,
+        data: {
+          secret_id_num_uses: '0',
+          secret_id_ttl: '0',
+          token_max_ttl: '0',
+          token_num_uses: '0',
+          token_ttl: '0',
+          token_type: 'batch',
+          token_policies: policies,
+        },
+        headers: { 'X-Vault-Token': await this.getToken() },
+      })
+    },
+
+    delete: async (roleName: string) => {
+      await this.axios.delete(
+        `/v1/auth/approle/role/${roleName}`,
+        {
+          headers: { 'X-Vault-Token': await this.getToken() },
+        },
+      )
+    },
+  }
+}
+
+export class VaultProjectApi extends VaultApi {
   private readonly basePath: string
   private readonly roleName: string
   private readonly projectRootDir: string
@@ -41,26 +168,12 @@ export class VaultProjectApi extends PluginApi {
       techRO: `tech--${project.organization.name}-${project.name}--ro`,
       appFull: `app--${project.organization.name}-${project.name}--admin`,
     }
-    this.axios = axios.create({
-      baseURL: getConfig().internalUrl,
-      headers: {
-        'X-Vault-Token': getConfig().token,
-      },
-    })
     this.defaultAppRoleCredentials = {
       url: getConfig().publicUrl,
       coreKvName: this.coreKvName,
       roleId: 'none',
       secretId: 'none',
     }
-  }
-
-  private async getToken() {
-    if (!this.token) {
-      this.token = (await this.axios.post('/v1/auth/token/create'))
-        .data.auth.client_token as string
-    }
-    return this.token
   }
 
   public async list(path: string = '/'): Promise<string[]> {
@@ -128,87 +241,32 @@ export class VaultProjectApi extends PluginApi {
     })
   }
 
-  Project = {
-    upsert: async () => {
-      const token = await this.getToken()
-      const kvRes = await this.axios({
-        method: 'get',
-        url: `/v1/sys/mounts/${this.projectKvName}/tune`,
-        headers: { 'X-Vault-Token': token },
-        validateStatus: code => [400, 200].includes(code),
-      })
-      if (kvRes.status === 400) {
-        await this.axios({
-          method: 'post',
-          url: `/v1/sys/mounts/${this.projectKvName}`,
-          headers: {
-            'X-Vault-Token': token,
-          },
-          data: {
-            type: 'kv',
-            config: {
-              force_no_cache: true,
-            },
-            options: {
-              version: 2,
-            },
-          },
-        })
-      } else { // means 200 status
-        const configUpdate = generateKVConfigUpdate(kvRes.data)
-        if (configUpdate) {
-          await this.axios({
-            method: 'put',
-            url: `/v1/sys/mounts/${this.projectKvName}/tune`,
-            headers: {
-              'X-Vault-Token': token,
-            },
-            data: configUpdate,
-          })
-        }
-      }
-
-      await this.Policy.ensureAll()
-      await this.Group.upsert()
-      await this.Role.upsert()
-    },
-    delete: async () => {
-      const token = await this.getToken()
-      await this.axios({
-        method: 'delete',
-        url: `/v1/sys/mounts/${this.projectKvName}`,
-        headers: { 'X-Vault-Token': token },
-        validateStatus: code => [400, 200, 204].includes(code),
-      })
-      await this.Policy.deleteAll()
-      await this.Group.delete()
-      await this.Role.delete()
-    },
+  public async getCredentials(): Promise<AppRoleCredentials> {
+    const appRoleEnabled = await isAppRoleEnabled(this.axios, await this.getToken())
+    if (!appRoleEnabled) return this.defaultAppRoleCredentials
+    const { data: dataRole } = await this.axios.get(
+      `/v1/auth/approle/role/${this.roleName}/role-id`,
+      {
+        headers: { 'X-Vault-Token': await this.getToken() },
+      },
+    )
+    const { data: dataSecret } = await this.axios.put(
+      `/v1/auth/approle/role/${this.roleName}/secret-id`,
+      'null', // Force empty data
+      {
+        headers: { 'X-Vault-Token': await this.getToken() },
+      },
+    )
+    return {
+      ...this.defaultAppRoleCredentials,
+      roleId: dataRole.data?.role_id,
+      secretId: dataSecret.data?.secret_id,
+    }
   }
 
-  Policy = {
-    upsert: async (policyName: string, policy: string) => {
-      await this.axios({
-        method: 'put',
-        url: `/v1/sys/policies/acl/${policyName}`,
-        data: { policy },
-        headers: {
-          'X-Vault-Token': await this.getToken(),
-          'Content-Type': 'application/json',
-        },
-      })
-    },
-    delete: async (policyName: string) => {
-      await this.axios({
-        method: 'delete',
-        url: `/v1/sys/policies/acl/${policyName}`,
-        headers: {
-          'X-Vault-Token': await this.getToken(),
-          'Content-Type': 'application/json',
-        },
-      })
-    },
-    ensureAll: async () => {
+  Project = {
+    upsert: async () => {
+      await this.Kv.upsert(this.projectKvName)
       await this.Policy.upsert(
         this.policyName.appFull,
         `path "${this.projectKvName}/*" { capabilities = ["create", "read", "update", "delete", "list"] }`,
@@ -217,10 +275,15 @@ export class VaultProjectApi extends PluginApi {
         this.policyName.techRO,
         `path "${this.coreKvName}/data/${this.projectRootDir}/${this.basePath}/REGISTRY/ro-robot" { capabilities = ["read"] }`,
       )
+      await this.Group.upsert()
+      await this.Role.upsert(this.roleName, [this.policyName.techRO, this.policyName.appFull])
     },
-    deleteAll: async () => {
+    delete: async () => {
+      await this.Kv.delete(this.projectKvName)
       await this.Policy.delete(this.policyName.appFull)
       await this.Policy.delete(this.policyName.techRO)
+      await this.Group.delete()
+      await this.Role.delete(this.roleName)
     },
   }
 
@@ -270,57 +333,41 @@ export class VaultProjectApi extends PluginApi {
       })
     },
   }
+}
 
-  Role = {
-    upsert: async () => {
-      const appRoleEnabled = await isAppRoleEnabled(this.axios, await this.getToken())
-      if (!appRoleEnabled) return
+export class VaultZoneApi extends VaultApi {
+  private readonly kvName: string
+  private readonly policyName: string
+  private readonly roleName: string
+  constructor(name: string) {
+    super()
+    this.kvName = `zone-${name}`
+    this.policyName = `tech--${this.kvName}--ro`
+    this.roleName = `zone-${name}`
+  }
 
-      await this.axios({
-        method: 'post',
-        url: `/v1/auth/approle/role/${this.roleName}`,
-        data: {
-          secret_id_num_uses: '0',
-          secret_id_ttl: '0',
-          token_max_ttl: '0',
-          token_num_uses: '0',
-          token_ttl: '0',
-          token_type: 'batch',
-          token_policies: [this.policyName.techRO, this.policyName.appFull],
-        },
+  public async upsert() {
+    await this.Kv.upsert(this.kvName)
+    await this.Policy.upsert(this.policyName, `path "${this.kvName}/*" { capabilities = ["read"] }`)
+    await this.Role.upsert(this.roleName, [this.policyName])
+  }
+
+  public async delete() {
+    await this.Kv.delete(this.kvName)
+    await this.Policy.delete(this.policyName)
+    await this.Role.delete(this.roleName)
+  }
+
+  public async write(body: object, path: string = '/') {
+    if (path.startsWith('/'))
+      path = path.slice(1)
+    const response = await this.axios.post(
+      `/v1/${this.kvName}/data/${path}`,
+      {
         headers: { 'X-Vault-Token': await this.getToken() },
-      })
-    },
-
-    getCredentials: async (): Promise<AppRoleCredentials> => {
-      const appRoleEnabled = await isAppRoleEnabled(this.axios, await this.getToken())
-      if (!appRoleEnabled) return this.defaultAppRoleCredentials
-      const { data: dataRole } = await this.axios.get(
-        `/v1/auth/approle/role/${this.roleName}/role-id`,
-        {
-          headers: { 'X-Vault-Token': await this.getToken() },
-        },
-      )
-      const { data: dataSecret } = await this.axios.put(
-        `/v1/auth/approle/role/${this.roleName}/secret-id`,
-        'null', // Force empty data
-        {
-          headers: { 'X-Vault-Token': await this.getToken() },
-        },
-      )
-      return {
-        ...this.defaultAppRoleCredentials,
-        roleId: dataRole.data?.role_id,
-        secretId: dataSecret.data?.secret_id,
-      }
-    },
-    delete: async () => {
-      await this.axios.delete(
-        `/v1/auth/approle/role/${this.roleName}`,
-        {
-          headers: { 'X-Vault-Token': await this.getToken() },
-        },
-      )
-    },
+        data: body,
+      },
+    )
+    return await response.data
   }
 }
