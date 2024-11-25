@@ -48,7 +48,7 @@ async function updateMember(checked: boolean, userId: Member['userId']) {
 }
 
 async function saveEveryoneRole(role: { permissions: bigint }) {
-  await project.value.update({
+  await project.value.Commands.update({
     everyonePerms: role.permissions.toString(),
   })
   reload()

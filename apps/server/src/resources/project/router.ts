@@ -2,6 +2,7 @@ import type { AsyncReturnType } from '@cpn-console/shared'
 import { AdminAuthorized, ProjectAuthorized, projectContract } from '@cpn-console/shared'
 import {
   archiveProject,
+  bulkActionProject,
   createProject,
   generateProjectsData,
   getProject,
@@ -61,7 +62,7 @@ export function projectRouter() {
     // Créer un projet
     createProject: async ({ request: req, body: data }) => {
       const perms = await authUser(req)
-      if (perms.user?.type !== 'human') return new Unauthorized401('Require to be requested from user not api key')
+      if (perms.user?.type !== 'human') return new Unauthorized401('Cannot find requestor in database')
       const body = await createProject(data, perms.user, req.id)
 
       if (body instanceof ErrorResType) return body
@@ -101,7 +102,7 @@ export function projectRouter() {
       const projectId = params.projectId
       const perms = await authUser(req, { id: projectId })
 
-      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
+      if (!perms.user) return new Unauthorized401('Cannot find requestor in database')
       const isAdmin = AdminAuthorized.isAdmin(perms.adminPermissions)
       const isOwner = perms.projectOwnerId === perms.user.id
 
@@ -118,7 +119,6 @@ export function projectRouter() {
       }
 
       if (!ProjectAuthorized.Manage(perms)) return new Forbidden403()
-      if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
       const body = await updateProject(data, projectId, perms.user, req.id)
 
@@ -137,8 +137,6 @@ export function projectRouter() {
 
       if (!perms.projectPermissions && !isAdmin) return new NotFound404()
       if (!ProjectAuthorized.ReplayHooks(perms)) return new Forbidden403()
-      if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
-      if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
       const body = await replayHooks({
         projectId,
@@ -160,11 +158,9 @@ export function projectRouter() {
       const perms = await authUser(req, { id: projectId })
       const isAdmin = AdminAuthorized.isAdmin(perms.adminPermissions)
 
-      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
+      if (!perms.user) return new Unauthorized401('Cannot find requestor in database')
       if (!perms.projectPermissions && !isAdmin) return new NotFound404()
       if (!ProjectAuthorized.Manage(perms)) return new Forbidden403()
-      if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
-      if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
 
       const body = await archiveProject(projectId, perms.user, req.id)
       if (body instanceof ErrorResType) return body
@@ -183,6 +179,20 @@ export function projectRouter() {
       return {
         status: 200,
         body,
+      }
+    },
+
+    bulkActionProject: async ({ request: req, body }) => {
+      const perms = await authUser(req)
+
+      if (!perms.user) return new Unauthorized401('Cannot find requestor in database')
+      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
+      await bulkActionProject(body, perms.user, req.id)
+
+      return {
+        status: 202,
+        body: null,
       }
     },
   })
