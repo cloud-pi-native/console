@@ -56,54 +56,56 @@ watch(userStore, async () => {
 </script>
 
 <template>
-  <DsfrHeader
-    service-title="Console Cloud π Native"
-    :logo-text="['Ministère', 'de l’intérieur', 'et des outre-mer']"
-    :quick-links="quickLinks"
-  />
-  <DsfrNotice
-    v-if="systemStore.systemSettingsByKey.maintenance?.value === 'on'"
-    title="Le mode Maintenance est actuellement activé"
-    data-testid="maintenance-notice"
-  />
-  <div class="fr-container fr-grid-row fr-mb-8w">
-    <div class="fr-col-12 fr-col-md-3">
-      <SideMenu />
-    </div>
-    <div class="fr-col-12 fr-col-md-9 fr-py-6v">
-      <router-view />
-    </div>
-    <DsoSnackbar />
-    <SelectProject />
-  </div>
-
-  <DsfrFooter
-    class="dso-footer"
-    a11y-compliance="partiellement conforme"
-    :mandatory-links="[]"
+  <div
+    class="min-h-screen min-w-screen flex flex-col"
   >
-    <template #description>
-      <div
-        class="flex gap-2 justify-end"
-      >
-        <a
-          data-testid="swaggerUrl"
-          :href="swaggerUiPath"
-          title="accéder au swagger"
-        >
-          swagger
-        </a>
-        <a
-          data-testid="appVersionUrl"
-          :href="`https://github.com/cloud-pi-native/console/releases/tag/${appVersion}`"
-          title="accéder au code source"
-        >
-          {{ appVersion }}
-        </a>
+    <DsfrHeader
+      service-title="Console Cloud π Native"
+      :logo-text="['Ministère', 'de l’intérieur', 'et des outre-mer']"
+      :quick-links="quickLinks"
+    />
+    <DsfrNotice
+      v-if="systemStore.systemSettingsByKey.maintenance?.value === 'on'"
+      title="Le mode Maintenance est actuellement activé"
+      data-testid="maintenance-notice"
+    />
+    <div class="fr-container flex flex-col md:flex-row fr-mb-2w grow">
+      <SideMenu class="w-max min-w-80" />
+      <div class="grow fr-py-6v">
+        <router-view />
       </div>
-    </template>
-  </DsfrFooter>
-  <ReloadPrompt />
+      <DsoSnackbar class="w-full fixed flex justify-center" />
+      <SelectProject class="hidden <thousand:block" />
+    </div>
+
+    <DsfrFooter
+      class="dso-footer"
+      a11y-compliance="partiellement conforme"
+      :mandatory-links="[]"
+    >
+      <template #description>
+        <div
+          class="flex gap-2 justify-end"
+        >
+          <a
+            data-testid="swaggerUrl"
+            :href="swaggerUiPath"
+            title="accéder au swagger"
+          >
+            swagger
+          </a>
+          <a
+            data-testid="appVersionUrl"
+            :href="`https://github.com/cloud-pi-native/console/releases/tag/${appVersion}`"
+            title="accéder au code source"
+          >
+            {{ appVersion }}
+          </a>
+        </div>
+      </template>
+    </DsfrFooter>
+    <ReloadPrompt />
+  </div>
 </template>
 
 <style>
