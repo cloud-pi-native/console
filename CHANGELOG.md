@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.20.0](https://github.com/cloud-pi-native/console/compare/v8.19.1...v8.20.0) (2024-11-25)
+
+
+### Features
+
+* :sparkles: bulk actions on projects ([951fc15](https://github.com/cloud-pi-native/console/commit/951fc152016e00e3bac6cb1d9920998e3cfb4a80))
+
 ## [8.19.1](https://github.com/cloud-pi-native/console/compare/v8.19.0...v8.19.1) (2024-11-23)
 
 
