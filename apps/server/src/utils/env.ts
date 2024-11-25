@@ -50,3 +50,6 @@ export const NODE_ENV = process.env.NODE_ENV === 'test'
   : process.env.NODE_ENV === 'development'
     ? 'development'
     : 'production'
+
+// server tuning
+export const parallelBulkLimit = process.env.PARALLEL_BULK_LIMIT ? Number(process.env.PARALLEL_BULK_LIMIT) : 5

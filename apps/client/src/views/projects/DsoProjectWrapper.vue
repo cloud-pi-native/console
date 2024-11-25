@@ -10,8 +10,6 @@ const projectStore = useProjectStore()
 const project = ref<Project | undefined>(undefined)
 
 watch(projectStore.projectsById, (store) => {
-  console.log({ store })
-
   project.value = store[props.projectId]
 }, { immediate: true })
 </script>

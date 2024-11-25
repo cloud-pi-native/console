@@ -16,11 +16,13 @@ import {
   lockProject,
   updateProject as updateProjectQuery,
 } from '@/resources/queries-index.js'
-import { BadRequest400, Unprocessable422 } from '@/utils/errors.js'
+import type { ErrorResType } from '@/utils/errors.js'
+import { BadRequest400, Forbidden403, Unprocessable422 } from '@/utils/errors.js'
 import { whereBuilder } from '@/utils/controller.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import type { UserDetails } from '@/types/index.js'
 import prisma from '@/prisma.js'
+import { parallelBulkLimit } from '@/utils/env.js'
 
 const projectStatus = ProjectStatusSchema._def.values
 export async function listProjects({ status, statusIn, statusNotIn, filter = 'member', ...query }: typeof projectContract.listProjects.query._type, userId: User['id'] | undefined) {
@@ -89,36 +91,30 @@ export async function getProject(projectId: Project['id']) {
     everyonePerms: project.everyonePerms.toString(),
   }))
 }
+
 export async function updateProject(
   { description, ownerId: ownerIdCandidate, everyonePerms, locked }: typeof projectContract.updateProject.body._type,
   projectId: Project['id'],
   requestor: UserDetails,
   requestId: string,
 ) {
-  if (typeof locked === 'string') {
-    if (locked === 'true') {
-      locked = true
-    } else if (locked === 'false') {
-      locked = false
-    } else {
-      locked = undefined
-    }
-  }
   // Actions
-  const project = await prisma.project.findUniqueOrThrow({
+  const projectDb = await prisma.project.findUniqueOrThrow({
     where: { id: projectId },
     include: { members: { include: { user: true } } },
   })
 
-  if (ownerIdCandidate && ownerIdCandidate !== project.ownerId) {
-    const memberCandidate = project.members.find(member => member.userId === ownerIdCandidate)
+  if (projectDb.status === 'archived') return new Forbidden403('Le projet est archivé')
+
+  if (ownerIdCandidate && ownerIdCandidate !== projectDb.ownerId) {
+    const memberCandidate = projectDb.members.find(member => member.userId === ownerIdCandidate)
     if (!memberCandidate) {
       return new BadRequest400('Le nouveau propriétaire doit faire partie des membres actuels du projet')
     }
     if (memberCandidate.user.type !== 'human') return new BadRequest400('Seuls les comptes humains peuvent être propriétaire de projets')
-    if (!project.members.find(member => member.userId === project.ownerId)) {
+    if (!projectDb.members.find(member => member.userId === projectDb.ownerId)) {
       await prisma.projectMembers.create({
-        data: { userId: project.ownerId, projectId },
+        data: { userId: projectDb.ownerId, projectId },
       })
     }
     await prisma.$transaction([
@@ -156,7 +152,13 @@ interface ReplayHooksArgs {
   userId?: User['id']
   requestId: string
 }
-export async function replayHooks({ projectId, userId, requestId }: ReplayHooksArgs) {
+export async function replayHooks({ projectId, userId, requestId }: ReplayHooksArgs): Promise<ErrorResType | null> {
+  const projectDb = await prisma.project.findUniqueOrThrow({
+    where: { id: projectId },
+    include: { members: { include: { user: true } } },
+  })
+  if (projectDb.locked) return new Forbidden403('Le projet est verrouillé')
+  if (projectDb.status === 'archived') return new Forbidden403('Le projet est archivé')
   // Actions
   const { results } = await hook.project.upsert(projectId)
   await addLogs({ action: 'Replay hooks for Project', data: results, userId, requestId, projectId })
@@ -166,7 +168,7 @@ export async function replayHooks({ projectId, userId, requestId }: ReplayHooksA
   return null
 }
 
-export async function archiveProject(projectId: Project['id'], requestor: UserDetails, requestId: string) {
+export async function archiveProject(projectId: Project['id'], requestor: UserDetails, requestId: string): Promise<ErrorResType | null> {
   // Actions
   // Empty the project first
   const [projectDb, ..._] = await Promise.all([
@@ -176,6 +178,8 @@ export async function archiveProject(projectId: Project['id'], requestor: UserDe
     deleteAllEnvironmentForProject(projectId),
   ])
 
+  if (projectDb.locked) return new Forbidden403('Le projet est verrouillé')
+  if (projectDb.status === 'archived') return new BadRequest400('Le projet est archivé')
   if (projectDb.locked) {
     await lockProject(projectId)
   }
@@ -211,4 +215,42 @@ export async function generateProjectsData() {
   return json2csv(projects, {
     emptyFieldValue: '',
   })
+}
+
+export async function bulkActionProject(data: typeof projectContract.bulkActionProject.body._type, requestor: UserDetails, requestId: string) {
+  if (data.projectIds === 'all') {
+    data.projectIds = (await prisma.project.findMany({
+      select: { id: true },
+      where: { status: { not: 'archived' } },
+    })).map(({ id }) => id)
+  }
+  bulkExector(data.projectIds
+    .map((projectId) => {
+      if (data.action === 'archive') {
+        return () => archiveProject(projectId, requestor, requestId)
+      }
+      if (data.action === 'lock') {
+        return () => updateProject({ locked: true }, projectId, requestor, requestId)
+      }
+      if (data.action === 'unlock') {
+        return () => updateProject({ locked: false }, projectId, requestor, requestId)
+      }
+      if (data.action === 'replay') {
+        return () => replayHooks({ projectId, userId: requestor.id, requestId })
+      }
+      // should never been called
+      return async () => {}
+    }))
+}
+
+export function chunk<T>(arr: T[], size: number): T[][] {
+  return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+    arr.slice(i * size, i * size + size))
+}
+
+async function bulkExector(toExecute: Array<() => Promise<any>>) {
+  const toExecuteChunked = chunk(toExecute, parallelBulkLimit)
+  for (const chunkToExecute of toExecuteChunked) {
+    await Promise.allSettled(chunkToExecute.map(fn => fn()))
+  }
 }

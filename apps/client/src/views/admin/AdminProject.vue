@@ -3,6 +3,7 @@ import { onBeforeMount, ref } from 'vue'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import type { CleanedCluster, Environment, Log, PluginsUpdateBody, ProjectService, ProjectV2, Repo, Zone } from '@cpn-console/shared'
+import { bts } from '@cpn-console/shared'
 import fr from 'javascript-time-ago/locale/fr'
 import TimeAgo from 'javascript-time-ago'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -10,7 +11,6 @@ import { useUserStore } from '@/stores/user.js'
 import { useQuotaStore } from '@/stores/quota.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useStageStore } from '@/stores/stage.js'
-import { bts } from '@/utils/func.js'
 import { useLogStore } from '@/stores/log.js'
 import router from '@/router/index.js'
 import { useClusterStore } from '@/stores/cluster.js'
@@ -192,7 +192,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
       <div>
         <DsfrCallout
           :title="`${project.name} (${project.organization.name})`"
-          :content="project.description"
+          :content="project.description ?? ''"
         />
         <div
           class="w-full flex place-content-evenly fr-mb-2w"
@@ -217,7 +217,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
           <DsfrButton
             data-testid="replayHooksBtn"
             label="Reprovisionner le projet"
-            :icon="{ name: 'ri:refresh-fill', animation: project.operationsInProgress.includes('replay') ? 'spin' : '' }"
+            :icon="{ name: 'ri:refresh-fill', animation: project.operationsInProgress.includes('replay') ? 'spin' : undefined }"
             :disabled="project.operationsInProgress.includes('replay') || project.locked"
             secondary
             @click="replayHooks()"
@@ -228,7 +228,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
             :icon="project.operationsInProgress.includes('lockHandling')
               ? { name: 'ri:refresh-fill', animation: 'spin' }
               : project.locked ? 'ri:lock-unlock-fill' : 'ri:lock-fill'"
-            :disabled="project.operationsInProgress.includes('lockHandling')"
+            :disabled="project.operationsInProgress.includes('lockHandling') || project.status === 'archived'"
             secondary
             @click="handleProjectLocking"
           />
@@ -237,7 +237,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
             data-testid="showArchiveProjectBtn"
             label="Supprimer le projet"
             secondary
-            :disabled="project.operationsInProgress.includes('delete')"
+            :disabled="project.operationsInProgress.includes('delete') || project.locked"
             :icon="project.operationsInProgress.includes('delete')
               ? { name: 'ri:refresh-fill', animation: 'spin' }
               : 'ri:delete-bin-7-line'"
@@ -335,7 +335,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
                     value: quota.id,
                   }))"
                   select-id="quota-select"
-                  @update:model-value="(event: string) => updateEnvironmentQuota({ environmentId: env.id, quotaId: event })"
+                  @update:model-value="(event: string | number) => updateEnvironmentQuota({ environmentId: env.id, quotaId: event.toString() })"
                 />
               </td>
               <td>

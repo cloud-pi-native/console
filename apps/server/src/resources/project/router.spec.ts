@@ -15,6 +15,7 @@ const businessCreateMock = vi.spyOn(business, 'createProject')
 const businessUpdateMock = vi.spyOn(business, 'updateProject')
 const businessDeleteMock = vi.spyOn(business, 'archiveProject')
 const businessSyncMock = vi.spyOn(business, 'replayHooks')
+const bulkActionProjectMock = vi.spyOn(business, 'bulkActionProject')
 const businessGetSecretsMock = vi.spyOn(business, 'getProjectSecrets')
 const businessGenerateDataMock = vi.spyOn(business, 'generateProjectsData')
 
@@ -122,151 +123,6 @@ describe('test projectContract', () => {
       expect(businessDeleteMock).toHaveBeenCalledTimes(0)
       expect(response.statusCode).toEqual(404)
       expect(response.json()).toEqual({ message: 'Not Found' })
-    })
-  })
-  describe('check locked project behaviour', () => {
-    // UPDATE
-    it('on Update as manager', async () => {
-      const projectPerms = getProjectMockInfos({ projectLocked: true })
-      const user = getUserMockInfos(false, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
-
-      const response = await app.inject()
-        .put(projectContract.updateProject.path.replace(':projectId', projectId))
-        .body(project)
-        .end()
-
-      expect(businessUpdateMock).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toEqual(403)
-    })
-    it('on Update as admin and locked to false', async () => {
-      const projectPerms = getProjectMockInfos({ projectLocked: true, projectPermissions: 0n })
-      const user = getUserMockInfos(true, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
-
-      businessUpdateMock.mockResolvedValueOnce({ id: projectId, ...project })
-      const response = await app.inject()
-        .put(projectContract.updateProject.path.replace(':projectId', projectId))
-        .body({ description: project.description, locked: false })
-        .end()
-
-      expect(businessUpdateMock).toHaveBeenCalledTimes(1)
-      expect(response.statusCode).toEqual(200)
-    })
-    it('on Update as admin and locked unset', async () => {
-      const projectPerms = getProjectMockInfos({ projectLocked: true, projectPermissions: 0n })
-      const user = getUserMockInfos(true, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
-
-      businessUpdateMock.mockResolvedValueOnce({ id: projectId, ...project })
-      const response = await app.inject()
-        .put(projectContract.updateProject.path.replace(':projectId', projectId))
-        .body({ description: project.description })
-        .end()
-
-      expect(businessUpdateMock).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toEqual(403)
-    })
-
-    // REPLAY
-    it('on replay as manager', async () => {
-      const projectPerms = getProjectMockInfos({ projectLocked: true })
-      const user = getUserMockInfos(false, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
-
-      const response = await app.inject()
-        .put(projectContract.replayHooksForProject.path.replace(':projectId', projectId))
-        .end()
-
-      expect(businessSyncMock).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toEqual(403)
-    })
-
-    // ARCHIVE
-    it('on archive as manager', async () => {
-      const projectPerms = getProjectMockInfos({ projectLocked: true, projectPermissions: PROJECT_PERMS.MANAGE })
-      const user = getUserMockInfos(false, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
-
-      const response = await app.inject()
-        .delete(projectContract.archiveProject.path.replace(':projectId', projectId))
-        .end()
-
-      expect(businessDeleteMock).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toEqual(403)
-      expect(response.json()).toEqual({ message: 'Le projet est verrouillé' })
-    })
-  })
-  describe('check archived project behaviour', () => {
-    // UPDATE
-    it('on Update as manager', async () => {
-      const projectPerms = getProjectMockInfos({ projectStatus: 'archived' })
-      const user = getUserMockInfos(false, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
-
-      const response = await app.inject()
-        .put(projectContract.updateProject.path.replace(':projectId', projectId))
-        .body(project)
-        .end()
-
-      expect(businessUpdateMock).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toEqual(403)
-    })
-    it('on Update as admin', async () => {
-      const projectPerms = getProjectMockInfos({ projectStatus: 'archived', projectPermissions: 0n })
-      const user = getUserMockInfos(true, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
-
-      businessUpdateMock.mockResolvedValueOnce({ id: projectId, ...project })
-      const response = await app.inject()
-        .put(projectContract.updateProject.path.replace(':projectId', projectId))
-        .body({ description: project.description })
-        .end()
-
-      expect(businessUpdateMock).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toEqual(403)
-    })
-
-    // REPLAY
-    it('on replay as manager', async () => {
-      const projectPerms = getProjectMockInfos({ projectStatus: 'archived' })
-      const user = getUserMockInfos(false, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
-
-      const response = await app.inject()
-        .put(projectContract.replayHooksForProject.path.replace(':projectId', projectId))
-        .end()
-
-      expect(businessSyncMock).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toEqual(403)
-    })
-
-    it('on see secrets as manager and admin', async () => {
-      const projectPerms = getProjectMockInfos({ projectStatus: 'archived', projectPermissions: PROJECT_PERMS.MANAGE })
-      const user = getUserMockInfos(true, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
-
-      const response = await app.inject()
-        .get(projectContract.getProjectSecrets.path.replace(':projectId', projectId))
-        .end()
-
-      expect(businessGetSecretsMock).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toEqual(403)
-    })
-
-    // ARCHIVE
-    it('on archive as manager', async () => {
-      const projectPerms = getProjectMockInfos({ projectStatus: 'archived', projectPermissions: PROJECT_PERMS.MANAGE })
-      const user = getUserMockInfos(false, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
-
-      const response = await app.inject()
-        .delete(projectContract.archiveProject.path.replace(':projectId', projectId))
-        .end()
-
-      expect(businessDeleteMock).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toEqual(403)
-      expect(response.json()).toEqual({ message: 'Le projet est archivé' })
     })
   })
   describe('listProjects', () => {
@@ -537,6 +393,36 @@ describe('test projectContract', () => {
 
       const response = await app.inject()
         .get(projectContract.getProjectsData.path)
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+    })
+  })
+
+  describe('bulkActionProject', () => {
+    it('should executebulk for authorized user', async () => {
+      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE })
+      const user = getUserMockInfos(true, undefined, projectPerms)
+      authUserMock.mockResolvedValueOnce(user)
+
+      businessSyncMock.mockResolvedValueOnce(null)
+      const response = await app.inject()
+        .post(projectContract.bulkActionProject.path)
+        .body({ action: 'lock', projectIds: [projectId] })
+        .end()
+
+      expect(response.json()).toBeNull()
+      expect(bulkActionProjectMock).toHaveBeenCalledTimes(1)
+      expect(response.statusCode).toEqual(202)
+    })
+
+    it('should return 403 for unauthorized access to bulk update', async () => {
+      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.LIST_ENVIRONMENTS })
+      const user = getUserMockInfos(false, undefined, projectPerms)
+      authUserMock.mockResolvedValueOnce(user)
+      const response = await app.inject()
+        .post(projectContract.bulkActionProject.path)
+        .body({ action: 'lock', projectIds: [projectId] })
         .end()
 
       expect(response.statusCode).toEqual(403)

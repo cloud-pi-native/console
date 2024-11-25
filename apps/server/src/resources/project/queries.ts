@@ -40,28 +40,40 @@ export async function listProjects({
   id,
   filter,
   userId,
+  search,
 }: ListProjectWhere) {
-  const where: Prisma.ProjectWhereInput = {
-    id,
-    organizationId,
-    locked,
-    name,
-    status,
-    ...description && { description: { contains: description } },
-    ...organizationName && { organization: { name: organizationName } },
+  const whereAnd: Prisma.ProjectWhereInput[] = []
+  if (id) whereAnd.push({ id })
+  if (organizationId) whereAnd.push({ organizationId })
+  if (locked) whereAnd.push({ locked })
+  if (name) whereAnd.push({ name })
+  if (status) whereAnd.push({ status })
+  if (description) whereAnd.push({ description: { contains: description } })
+  if (organizationName) whereAnd.push({ organization: { name: organizationName } })
+  if (search) {
+    whereAnd.push({ OR: [{
+      organization: { label: { contains: search } },
+    }, {
+      organization: { name: { contains: search } },
+    }, {
+      name: { contains: search },
+    }, {
+      owner: { email: { contains: search } },
+    }] })
   }
+
   if (filter === 'owned') {
-    where.ownerId = userId
+    whereAnd.push({ ownerId: userId })
   } else if (filter === 'member') {
-    where.OR = [{
+    whereAnd.push({ OR: [{
       members: { some: { userId } },
     }, {
       ownerId: userId,
-    }]
+    }] })
   }
 
   return prisma.project.findMany({
-    where,
+    where: { AND: whereAnd },
     include: {
       clusters: { select: { id: true } },
       members: { include: { user: true } },

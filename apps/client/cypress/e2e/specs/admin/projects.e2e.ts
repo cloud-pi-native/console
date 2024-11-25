@@ -1,11 +1,7 @@
-import type { Organization, Project, ProjectV2 } from '@cpn-console/shared'
+import type { Organization, ProjectV2 } from '@cpn-console/shared'
 import { sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
 import { getModel, getModelById } from '../../support/func.js'
-
-function checkTableRowsLength(length: number) {
-  if (!length) cy.get('tr:last-child>td:first-child').should('have.text', 'Aucun projet trouvé')
-  else cy.get('tbody > tr').should('have.length', length)
-}
+import type { Project } from '@/utils/project-utils.js'
 
 describe('Administration projects', () => {
   const admin = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
@@ -35,57 +31,158 @@ describe('Administration projects', () => {
   it('Should display projects table, loggedIn as admin', () => {
     cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
     cy.wait('@getAllProjects')
-    cy.get('select#tableAdministrationProjectsFilter').select('Tous')
-    cy.wait('@getAllProjects')
-    cy.getByDataTestid('tableAdministrationProjects')
-      .get('tbody tr')
-      .should('have.length.at.least', 2)
-    cy.getByDataTestid('tableAdministrationProjects')
-      .within(() => {
-        projects.forEach((project, index: number) => {
-          cy.get(`tbody tr:nth-of-type(${index + 1})`).within(() => {
-            cy.getSettled('td:nth-of-type(1)').should('contain', project.organization)
-            cy.getSettled('td:nth-of-type(2)').should('contain', project.name)
-            cy.getSettled('td:nth-of-type(3)').should('contain', project.owner.email)
-            cy.getSettled('td:nth-of-type(4) svg title').should('contain', `Le projet ${project.name} est ${statusDict.status[project.status].wording}`)
-            cy.getSettled('td:nth-of-type(5) svg title').should('contain', `Le projet ${project.name} est ${statusDict.locked[String(!!project.locked)].wording}`)
-            cy.getSettled('td:nth-of-type(6)').should('contain', 'il y a 1 an') // ça va être rigolo quand ce code sera outdated
+    cy.get('select#projectSearchFilter').select('Tous')
+    cy.getByDataTestid('projectsSearchBtn')
+      .click()
+    cy.wait('@getAllProjects').its('response').then((response) => {
+      const projects = response.body
+      cy.getByDataTestid('tableAdministrationProjects')
+        .get('tbody tr')
+        .should('have.length.at.least', 2)
+      projects.forEach((project: Project) => {
+        cy.getByDataTestid(`tr-${project.id}`)
+          .within(() => {
+            cy.get('td:nth-of-type(2)').should('contain', getModelById('organization', project.organizationId).label)
+            cy.get('td:nth-of-type(3)').should('contain', project.name)
+            cy.get('td:nth-of-type(4)').should('contain', project.owner.email)
+            cy.get('td:nth-of-type(5)').invoke('attr', 'title').should('contain', statusDict.status[project.status].wording)
+            cy.get('td:nth-of-type(5)').invoke('attr', 'title').should('contain', statusDict.locked[String(!!project.locked)].wording)
+            cy.get('td:nth-of-type(6)').should('contain.text', 'il y a')
           })
-        })
       })
+    })
+  })
+
+  it('Should display handle multi-select and bulk actions, loggedIn as admin', () => {
+    cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
+    cy.wait('@getAllProjects')
+
+    // attente que les lignes soient bien rendus
+    cy.getByDataTestid('tableAdministrationProjects')
+      .get('tbody > tr')
+      .should('not.have.text', 'Chargement...')
+
+    cy.getByDataTestid('tableAdministrationProjects')
+      .get('tbody > tr')
+      .should('not.have.attr', 'selected')
+    cy.getByDataTestid('select-all-cbx')
+      .check()
+    cy.getByDataTestid('tableAdministrationProjects')
+      .get('tbody > tr')
+      .should('have.attr', 'selected')
+    cy.getByDataTestid('select-all-cbx')
+      .check()
+    cy.getByDataTestid(`tr-${projects[1].id}`)
+      .click()
+      .should('not.have.attr', 'selected')
+    cy.getByDataTestid('select-all-cbx')
+      .should('not.be.checked')
+    cy.getByDataTestid(`tr-${projects[1].id}`)
+      .click()
+      .should('have.attr', 'selected')
+    cy.getByDataTestid('select-all-cbx')
+      .should('be.checked')
+
+    // count must appear
+    cy.getByDataTestid('projectSelectedCount')
+      .should('contain.text', 'projets')
+    // filter by partial name
+    cy.getByDataTestid('projectsSearchInput')
+      .clear()
+      .type('li')
+    cy.getByDataTestid('projectsSearchBtn')
+      .click()
+    // count must equal only displayed element
+    cy.getByDataTestid('projectSelectedCount')
+      .should('contain.text', '3 projets')
+    // verrouillage des projets
+    cy.getByDataTestid('selectBulkAction')
+      .select('lock')
+    cy.getByDataTestid('validateBulkAction')
+      .click()
+    cy.getByDataTestid('snackbar').should('contain', `Traitement en cours`)
+    cy.getByDataTestid('projectsSearchBtn')
+      .click()
+    cy.getByDataTestid('tableAdministrationProjects')
+      .get('tbody > tr')
+      .should('not.have.attr', 'selected')
+    cy.getByDataTestid('tableAdministrationProjects')
+      .get('tbody > tr > td:nth-of-type(5)')
+      .invoke('attr', 'title')
+      .should('contain', statusDict.locked.true.wording)
+    // annulation de la modification
+    cy.getByDataTestid('select-all-cbx')
+      .check()
+    cy.getByDataTestid('projectSelectedCount')
+      .should('contain.text', '3 projets')
+    cy.getByDataTestid('selectBulkAction')
+      .select('unlock')
+    cy.getByDataTestid('validateBulkAction')
+      .click()
+    cy.getByDataTestid('snackbar').should('contain', `Traitement en cours`)
+    cy.getByDataTestid('projectsSearchBtn')
+      .click()
+    cy.getByDataTestid('tableAdministrationProjects')
+      .get('tbody > tr')
+      .should('not.have.attr', 'selected')
+    cy.getByDataTestid('tableAdministrationProjects')
+      .get('tbody > tr > td:nth-of-type(5)')
+      .invoke('attr', 'title')
+      .should('contain', statusDict.locked.false.wording)
   })
 
   it('Should display filtered projects, loggedIn as admin', () => {
     cy.intercept('GET', /api\/v1\/projects\?filter=all$/).as('getAllProjects')
+    cy.intercept('GET', /api\/v1\/projects\?filter=all&search=pr$/).as('searchInputProjects')
     cy.intercept('GET', 'api/v1/projects?filter=all&statusNotIn=archived').as('getActiveProjects')
     cy.intercept('GET', 'api/v1/projects?filter=all&statusIn=archived').as('getArchivedProjects')
     cy.intercept('GET', 'api/v1/projects?filter=all&statusIn=failed').as('getFailedProjects')
     cy.intercept('GET', 'api/v1/projects?filter=all&locked=true&statusNotIn=archived').as('getLockedProjects')
     cy.intercept('GET', 'api/v1/organizations').as('getOrganizations')
 
-    cy.get('select#tableAdministrationProjectsFilter').select('Tous')
+    cy.get('select#projectSearchFilter').select('Tous')
+    cy.getByDataTestid('projectsSearchBtn')
+      .click()
     cy.wait('@getAllProjects').its('response').then((response) => {
-      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length))
+      cy.checkTableBody('tableAdministrationProjects', response.body.length, 'Aucun projet trouvé')
     })
 
-    cy.get('select#tableAdministrationProjectsFilter').select('Archivés')
+    cy.get('select#projectSearchFilter').select('Archivés')
+    cy.getByDataTestid('projectsSearchBtn')
+      .click()
     cy.wait('@getArchivedProjects').its('response').then((response) => {
-      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length))
+      cy.checkTableBody('tableAdministrationProjects', response.body.length, 'Aucun projet trouvé')
     })
 
-    cy.get('select#tableAdministrationProjectsFilter').select('Non archivés')
+    cy.get('select#projectSearchFilter').select('Non archivés')
+    cy.getByDataTestid('projectsSearchBtn')
+      .click()
     cy.wait('@getActiveProjects').its('response').then((response) => {
-      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length))
+      cy.checkTableBody('tableAdministrationProjects', response.body.length, 'Aucun projet trouvé')
     })
 
-    cy.get('select#tableAdministrationProjectsFilter').select('Échoués')
+    cy.get('select#projectSearchFilter').select('Échoués')
+    cy.getByDataTestid('projectsSearchBtn')
+      .click()
     cy.wait('@getFailedProjects').its('response').then((response) => {
-      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length))
+      cy.checkTableBody('tableAdministrationProjects', response.body.length, 'Aucun projet trouvé')
     })
 
-    cy.get('select#tableAdministrationProjectsFilter').select('Verrouillés')
+    cy.get('select#projectSearchFilter').select('Verrouillés')
+    cy.getByDataTestid('projectsSearchBtn')
+      .click()
     cy.wait('@getLockedProjects').its('response').then((response) => {
-      cy.getByDataTestid('tableAdministrationProjects').within(() => checkTableRowsLength(response.body.length))
+      cy.checkTableBody('tableAdministrationProjects', response.body.length, 'Aucun projet trouvé')
+    })
+
+    cy.get('select#projectSearchFilter').select('Tous')
+    cy.getByDataTestid('projectsSearchInput')
+      .clear()
+      .type('pr')
+    cy.getByDataTestid('projectsSearchBtn')
+      .click()
+    cy.wait('@searchInputProjects').its('response').then((response) => {
+      cy.checkTableBody('tableAdministrationProjects', response.body.length, 'Aucun projet trouvé')
     })
   })
 
@@ -144,7 +241,7 @@ describe('Administration projects', () => {
     cy.visit('/admin/projects')
     cy.url().should('contain', '/admin/projects')
     cy.wait('@getAllProjects')
-    cy.get('select#tableAdministrationProjectsFilter').select('Tous')
+    cy.get('select#projectSearchFilter').select('Tous')
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       cy.get('tr').contains(projectName)
         .click()

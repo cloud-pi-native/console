@@ -2,14 +2,14 @@
 import { onBeforeMount, ref } from 'vue'
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import type { ProjectV2, projectContract } from '@cpn-console/shared'
-import { statusDict } from '@cpn-console/shared'
+import type { ArrayElement, Organization, ProjectV2, projectContract } from '@cpn-console/shared'
+import { bts, statusDict } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectStore } from '@/stores/project.js'
-import { bts } from '@/utils/func.js'
 import router from '@/router/index.js'
+import { apiClient, extractData } from '@/api/xhr-client.js'
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
@@ -25,6 +25,7 @@ const inputSearchText = ref('')
 const isLoading = ref(true)
 const activeFilter = ref<keyof FilterMethods>('Non archivés')
 const file = ref<FileForDownload | undefined>(undefined)
+const queryChanged = ref(false)
 // Add locale-specific relative date/time formatting rules.
 TimeAgo.addLocale(fr)
 
@@ -32,132 +33,67 @@ TimeAgo.addLocale(fr)
 const timeAgo = new TimeAgo('fr-FR')
 
 const title = 'Liste des projets'
-const headers = [
-  'Organisation',
-  'Nom',
-  'Souscripteur',
-  'Status',
-  'Verrouillage',
-  'Date de création',
-]
 
-type FilterMethods = Record<string, { filterFn: (project: ProjectV2) => boolean, query: typeof projectContract.listProjects.query._type }>
+const bulkActions: Array<{
+  text: string
+  value: typeof projectContract.bulkActionProject.body._type.action
+}> = [
+  { text: 'Reprovisionner', value: 'replay' },
+  { text: 'Vérrouiller', value: 'lock' },
+  { text: 'Dévérouiller', value: 'unlock' },
+  { text: 'Archiver', value: 'archive' },
+] as const
+type BulkActions = (typeof bulkActions)[number]['value']
+const selectedAction = ref<BulkActions>('replay')
+
+type FilterMethods = Record<string, typeof projectContract.listProjects.query._type>
 const filterMethods: FilterMethods = {
-  Tous: {
-    query: { filter: 'all' },
-    filterFn(_project) {
-      return true
-    },
-  },
-  'Non archivés': {
-    query: { filter: 'all', statusNotIn: 'archived' },
-    filterFn(project) {
-      return project.status !== 'archived'
-    },
-  },
-  Archivés: {
-    query: { filter: 'all', statusIn: 'archived' },
-    filterFn(project) {
-      return project.status === 'archived'
-    },
-  },
-  Échoués: {
-    query: { filter: 'all', statusIn: 'failed' },
-    filterFn(project) {
-      return project.status === 'failed'
-    },
-  },
-  Verrouillés: {
-    query: { filter: 'all', locked: true, statusNotIn: 'archived' },
-    filterFn(project) {
-      return project.locked && project.status !== 'archived'
-    },
-  },
+  Tous: { filter: 'all' },
+  'Non archivés': { filter: 'all', statusNotIn: 'archived' },
+  Archivés: { filter: 'all', statusIn: 'archived' },
+  Échoués: { filter: 'all', statusIn: 'failed' },
+  Verrouillés: { filter: 'all', locked: true, statusNotIn: 'archived' },
 }
 
-const projectRows = computed(() => {
-  if (isLoading.value) {
-    return [[{
-      field: 'string',
-      text: 'Chargement...',
-      cellAttrs: {
-        colspan: headers.length,
-      },
-    }]]
-  }
-  let rows = projectStore.projects
-    .filter(project => filterMethods[activeFilter.value].filterFn(project))
-    .map(({ id, organization, name, status, locked, createdAt, owner }) => (
-      {
-        status,
-        locked,
-        rowAttrs: {
-          onClick: () => {
-            if (status === 'archived') return snackbarStore.setMessage('Le projet est archivé, pas d\'action possible', 'info')
-            selectProject(id)
-          },
-          class: 'cursor-pointer',
-          title: `Voir le tableau de bord du projet ${name}`,
-        },
-        rowData: [
-          organization.label,
-          name,
-          owner.email,
-          {
-            component: 'v-icon',
-            name: statusDict.status[status].icon,
-            title: `Le projet ${name} est ${statusDict.status[status].wording}`,
-            fill: statusDict.status[status].color,
-          },
-          {
-            component: 'v-icon',
-            name: statusDict.locked[bts(locked)].icon,
-            title: `Le projet ${name} est ${statusDict.locked[bts(locked)].wording}`,
-            fill: statusDict.locked[bts(locked)].color,
-          },
-          {
-            text: timeAgo.format(new Date(createdAt)),
-            title: (new Date(createdAt)).toLocaleString(),
-            component: 'span',
-          },
-        ],
-      }),
-    )
-  if (inputSearchText.value) {
-    rows = rows.filter((row) => {
-      return row.rowData.some((data) => {
-        if (typeof data === 'object') {
-          return data.title?.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase()) || data.text?.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
-        }
-        return data.toString().toLowerCase().includes(inputSearchText.value.toLocaleLowerCase())
-      })
-    })
-  }
-  if (!rows.length) {
-    return [[{
-      field: 'string',
-      text: 'Aucun projet trouvé',
-      cellAttrs: {
-        colspan: headers.length,
-      },
-    }]]
-  }
-  return rows
+const selectedProjectIds = ref<ProjectV2['id'][]>([])
+const projects = ref<(ProjectV2 & { organization: Organization })[]>([])
+const projectWithSelection = computed(() => projects.value.map(project => ({ ...project, selected: selectedProjectIds.value.includes(project.id) })))
+const selectedProjects = computed(() => projectWithSelection.value.filter(project => project.selected))
+
+const isAllSelected = computed<boolean>(() => {
+  return selectedProjects.value.length === projects.value.length
 })
 
-async function getAllProjects() {
-  isLoading.value = true
-  const res = await projectStore.listProjects(filterMethods[activeFilter.value].query)
-
-    .finally(() => {
-      isLoading.value = false
-      tableKey.value = getRandomId('table')
-    },
-    )
-  console.log(res)
+function selectAll() {
+  if (isAllSelected.value) {
+    selectedProjectIds.value = []
+  } else {
+    selectedProjectIds.value = projects.value.map(({ id }) => id)
+  }
 }
 
-async function selectProject(projectId: string) {
+function switchSelection(checked: boolean, id: ProjectV2['id']) {
+  selectedProjectIds.value = selectedProjectIds.value.filter(projectId => projectId !== id)
+  if (checked) {
+    selectedProjectIds.value.push(id)
+  }
+}
+
+async function getProjects() {
+  queryChanged.value = false
+  isLoading.value = true
+  try {
+    projects.value = await projectStore.listProjects({
+      ...filterMethods[activeFilter.value],
+      ...inputSearchText.value && { search: inputSearchText.value.toLowerCase() },
+    })
+  } finally {
+    isLoading.value = false
+    tableKey.value = getRandomId('table')
+  }
+}
+
+async function goToProject(projectId: string) {
   router.push({
     name: 'AdminProject',
     params: { id: projectId },
@@ -180,8 +116,29 @@ async function generateProjectsDataFile() {
 }
 
 onBeforeMount(async () => {
-  await getAllProjects()
+  await getProjects()
 })
+
+async function validateBulkAction() {
+  await apiClient.Projects.bulkActionProject({
+    body: {
+      action: selectedAction.value,
+      projectIds: selectedProjects.value.map(({ id }) => id),
+    },
+  }).then(res => extractData(res, 202))
+  selectedProjectIds.value = []
+  snackbarStore.setMessage('Traitement en cours, en fonction du nombre de projets cela peut prendre plusieurs minutes, veuillez rafraichir dans quelques instants')
+}
+
+function clickProject(project: ArrayElement<typeof projectWithSelection.value>) {
+  if (project.selected)
+    return switchSelection(false, project.id)
+  if (selectedProjects.value.length)
+    return switchSelection(true, project.id)
+  if (project.status === 'archived')
+    return snackbarStore.setMessage('Le projet est archivé, pas d\'action possible', 'info')
+  return goToProject(project.id)
+}
 </script>
 
 <template>
@@ -189,62 +146,175 @@ onBeforeMount(async () => {
     class="relative"
   >
     <div
-      class="w-full flex gap-4 justify-end fr-mb-1w"
+      class="flex justify-between gap-5 w-full items-end mb-5"
     >
-      <DsfrButton
-        data-testid="download-btn"
-        title="Exporter les données de tous les projets"
-        secondary
-        icon-only
-        icon="ri:file-download-line"
-        :disabled="snackbarStore.isWaitingForResponse"
-        @click="generateProjectsDataFile()"
-      />
-      <DsfrFileDownload
-        v-if="file"
-        :format="file.format"
-        :size="`${file.size} bytes`"
-        :href="file.href"
-        :title="file.title"
-        :download="file.title"
-      />
-      <DsfrButton
-        data-testid="refresh-btn"
-        title="Rafraîchir la liste des projets"
-        secondary
-        icon-only
-        icon="ri:refresh-fill"
-        :disabled="snackbarStore.isWaitingForResponse"
-        @click="async() => {
-          await getAllProjects()
-        }"
-      />
-    </div>
-    <div
-      class="flex"
-    >
-      <DsfrSelect
-        v-model="activeFilter"
-        select-id="tableAdministrationProjectsFilter"
-        label="Filtre rapide"
-        :options="Object.keys(filterMethods)"
-        @update:model-value="getAllProjects()"
-      />
-      <DsfrInputGroup
-        v-model="inputSearchText"
-        data-testid="tableAdministrationProjectsSearch"
-        label-visible
-        placeholder="Recherche textuelle"
-        label="Recherche"
-        class="flex-1 pl-4"
-      />
+      <div
+        class="flex gap-5 w-max items-end"
+      >
+        <DsfrSelect
+          v-model="activeFilter"
+          select-id="projectSearchFilter"
+          label="Filtre rapide"
+          class="mb-0"
+          :options="Object.keys(filterMethods)"
+          @update:model-value="queryChanged = true"
+        />
+        <DsfrInputGroup
+          v-model="inputSearchText"
+          data-testid="projectsSearchInput"
+          label-visible
+          placeholder="Recherche textuelle"
+          label="Recherche"
+          class="mb-0"
+          @update:model-value="queryChanged = true"
+          @keyup.enter="getProjects"
+        />
+        <DsfrButton
+          label="Rechercher"
+          data-testid="projectsSearchBtn"
+          v-bind="{ tertiary: !queryChanged, secondary: queryChanged }"
+          @click="getProjects"
+        />
+      </div>
+      <div
+        class="w-auto flex gap-4 justify-end"
+      >
+        <DsfrButton
+          data-testid="download-btn"
+          title="Exporter les données de tous les projets"
+          secondary
+          icon-only
+          icon="ri:file-download-line"
+          :disabled="snackbarStore.isWaitingForResponse"
+          @click="generateProjectsDataFile()"
+        />
+        <DsfrFileDownload
+          v-if="file"
+          :format="file.format"
+          :size="`${file.size} bytes`"
+          :href="file.href"
+          :title="file.title"
+          :download="file.title"
+        />
+      </div>
     </div>
     <DsfrTable
       :key="tableKey"
       data-testid="tableAdministrationProjects"
       :title="title"
-      :headers="headers"
-      :rows="projectRows"
-    />
+    >
+      <template #header>
+        <tr>
+          <td>
+            <input
+              type="checkbox"
+              data-testid="select-all-cbx"
+              :checked="isAllSelected"
+              @click="selectAll"
+            >
+          </td>
+          <td>Organisation</td>
+          <td>Nom</td>
+          <td>Souscripteur</td>
+          <td>Status</td>
+          <td>Date de création</td>
+        </tr>
+      </template>
+      <tr
+        v-if="isLoading || !projects.length"
+      >
+        <td colspan="7">
+          {{ isLoading ? 'Chargement...' : 'Aucun projet trouvé' }}
+        </td>
+      </tr>
+      <tr
+        v-for="project in projectWithSelection.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))"
+        v-else
+        :key="project.id"
+        :data-testid="`tr-${project.id}`"
+        :selected="project.selected ? '' : null"
+        class="cursor-pointer relative"
+        :title="`Voir le tableau de bord du projet ${project.name}`"
+        @click.stop="() => clickProject(project)"
+      >
+        <td
+          @click.stop
+        >
+          <input
+            type="checkbox"
+            :data-testid="`select-${project.id}-cbx`"
+            :checked="project.selected"
+            @click="(event: any) => switchSelection(event.target.checked, project.id)"
+          >
+        </td>
+        <td>
+          {{ project.organization.label }}
+        </td>
+        <td>{{ project.name }}</td>
+        <td>{{ project.owner.email }}</td>
+        <td
+          :title="`${statusDict.status[project.status].wording}\n${statusDict.locked[bts(project.locked)].wording}`"
+        >
+          <div
+            class="grid md:grid-cols-2 gap-2"
+          >
+            <v-icon
+              :name="statusDict.status[project.status].icon"
+              :fill="statusDict.status[project.status].color"
+            />
+            <v-icon
+              :name="statusDict.locked[bts(project.locked)].icon"
+              :fill="statusDict.locked[bts(project.locked)].color"
+            />
+          </div>
+        </td>
+        <td
+          :title="(new Date(project.createdAt)).toLocaleString()"
+        >
+          {{ timeAgo.format(new Date(project.createdAt)) }}
+        </td>
+      </tr>
+    </DsfrTable>
+    <div
+      class="w-max flex gap-5 items-end"
+    >
+      <DsfrSelect
+        v-model="selectedAction"
+        data-testid="selectBulkAction"
+        label="Traitement en masse"
+        :options="bulkActions"
+        class="mb-0 m-0"
+        :attrs="{ class: 'mb-0' }"
+      />
+      <DsfrButton
+        type="buttonType"
+        data-testid="validateBulkAction"
+        label="Valider"
+        secondary
+        class="mb-0"
+        :disabled="!selectedProjects.length"
+        @click="validateBulkAction"
+      />
+      <DsfrBadge
+        v-if="selectedProjects.length"
+        data-testid="projectSelectedCount"
+        class="mb-2"
+        :label="`${selectedProjects.length} projets sélectionnés`"
+      />
+    </div>
   </div>
 </template>
+
+<style scoped>
+.fr-select-group, .fr-input-group {
+  margin-bottom: 0 !important;
+}
+
+tr[selected]{
+  background-color: var(--background-action-low-blue-france-active) !important;
+}
+
+tr:nth-child(2n)[selected]{
+  background-color: var(--background-alt-blue-france-active) !important;
+}
+</style>

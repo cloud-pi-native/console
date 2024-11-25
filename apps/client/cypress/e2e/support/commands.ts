@@ -480,3 +480,15 @@ Cypress.Commands.add('goToAdminListUsers', () => {
     cy.url().should('contain', '/admin/users')
   }
 })
+
+Cypress.Commands.add('checkTableBody', (tableDataTestId: string, rowLength: number, noResultText?: string) => {
+  if (rowLength) {
+    cy.getByDataTestid(tableDataTestId)
+      .get('tbody > tr')
+      .should('not.have.text', noResultText)
+      .should('have.length', rowLength)
+  } else {
+    cy.get('tr:last-child>td:first-child')
+      .should('have.text', noResultText)
+  }
+})
