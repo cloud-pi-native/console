@@ -110,7 +110,7 @@ onBeforeMount(async () => {
   <div class="relative">
     <h2>Liste des utilisateurs</h2>
     <div
-      class="flex <xl:flex-col flex-row gap-2 w-full gap-5"
+      class="flex flex-col gap-2 w-full gap-5"
     >
       <DsfrCallout
         class="h-min w-auto"
