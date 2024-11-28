@@ -233,8 +233,18 @@ jobs:
 
       - name: Deploy new image
         run: |
-          curl -X POST ${{ vars.ARGOCD_URL }}/api/v1/applications/${{ steps.feed-template.outputs.ARGOCD_APP_NAME }}/sync \
+          set -e
+
+          RESPONSE_CODE=$(curl -s -w "%{http_code}" -o >(RESPONSE_BODY=$(cat)) -X POST ${{ vars.ARGOCD_URL }}/api/v1/applications/${{ steps.feed-template.outputs.ARGOCD_APP_NAME }}/sync \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.ARGOCD_TOKEN }}" \
-            -d '${{ steps.feed-template.outputs.ARGOCD_SYNC_PAYLOAD }}'
+            -d '${{ steps.feed-template.outputs.ARGOCD_SYNC_PAYLOAD }}')
+
+          echo "HTTP response code: $RESPONSE_CODE"
+
+          if [ "$RESPONSE_CODE" -ne 200 ]; then
+            echo "Error: Non-200 HTTP response detected."
+            echo "Response body: $RESPONSE_BODY"
+            exit 1
+          fi
         continue-on-error: true
