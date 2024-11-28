@@ -1,5 +1,5 @@
 import { okStatus, parseError } from '@cpn-console/hooks'
-import type { Project, ProjectLite, StepCall } from '@cpn-console/hooks'
+import type { Project, ProjectLite, StepCall, ZoneObject } from '@cpn-console/hooks'
 import { generateVaultAuth, generateVsoSecret, generateVsoVaultConnection } from './vso.js'
 import getConfig from './config.js'
 
@@ -30,7 +30,7 @@ export const deployAuth: StepCall<Project> = async (payload) => {
     if (!payload.apis.vault) {
       throw new Error('no Vault available')
     }
-    const appRoleCreds = await payload.apis.vault.Role.getCredentials()
+    const appRoleCreds = await payload.apis.vault.getCredentials()
     if (getConfig().disableVaultSecrets) {
       return okStatus
     }
@@ -118,5 +118,39 @@ export const getSecrets: StepCall<ProjectLite> = async (payload) => {
       '.spec.mount': `${payload.args.organization.name}-${payload.args.name}`,
       '.spec.vaultAuthRef': 'vault-auth',
     },
+  }
+}
+export const upsertZone: StepCall<ZoneObject> = async (payload) => {
+  try {
+    if (!payload.apis.vault) {
+      throw new Error('no Vault available')
+    }
+    await payload.apis.vault.upsert()
+    return okStatus
+  } catch (error) {
+    return {
+      error: parseError(error),
+      status: {
+        result: 'KO',
+        message: 'An unexpected error occured',
+      },
+    }
+  }
+}
+export const deleteZone: StepCall<ZoneObject> = async (payload) => {
+  try {
+    if (!payload.apis.vault) {
+      throw new Error('no Vault available')
+    }
+    await payload.apis.vault.delete()
+    return okStatus
+  } catch (error) {
+    return {
+      error: parseError(error),
+      status: {
+        result: 'KO',
+        message: 'An unexpected error occured',
+      },
+    }
   }
 }
