@@ -185,9 +185,9 @@ export class Project implements ProjectV2 {
     create: async (email: string) => {
       const callback = this.addOperation('teamManagement')
       try {
-        this.members = await apiClient.ProjectsMembers.addMember({ params: { projectId: this.id }, body: { email } })
+        await apiClient.ProjectsMembers.addMember({ params: { projectId: this.id }, body: { email } })
           .then(response => extractData(response, 201))
-        return this.members
+        return this.Members.list()
       } finally { callback() }
     },
     delete: async (userId: User['id']) => {
@@ -201,9 +201,9 @@ export class Project implements ProjectV2 {
     patch: async (body: typeof projectMemberContract.patchMembers.body._type) => {
       const callback = this.addOperation('teamManagement')
       try {
-        this.members = await apiClient.ProjectsMembers.patchMembers({ params: { projectId: this.id }, body })
+        await apiClient.ProjectsMembers.patchMembers({ params: { projectId: this.id }, body })
           .then(response => extractData(response, 200))
-        return this.members
+        return this.Members.list()
       } finally { callback() }
     },
     getCandidateUsers: async (letters: string) => {
@@ -221,10 +221,9 @@ export class Project implements ProjectV2 {
     create: async (envData: Omit<CreateEnvironmentBody, 'projectId'>) => {
       const callback = this.addOperation('envManagement')
       try {
-        const env = await apiClient.Environments.createEnvironment({ body: { ...envData, projectId: this.id } })
+        await apiClient.Environments.createEnvironment({ body: { ...envData, projectId: this.id } })
           .then(response => extractData(response, 201))
-        this.environments.value.push(env)
-        return this.environments.value
+        return this.Environments.list()
       } finally { callback() }
     },
     update: async (id: Environment['id'], environment: UpdateEnvironmentBody) => {
@@ -266,10 +265,9 @@ export class Project implements ProjectV2 {
     create: async (repoData: Omit<CreateRepositoryBody, 'projectId'>) => {
       const callback = this.addOperation('repoManagement')
       try {
-        const repo = await apiClient.Repositories.createRepository({ body: { ...repoData, projectId: this.id } })
+        await apiClient.Repositories.createRepository({ body: { ...repoData, projectId: this.id } })
           .then(response => extractData(response, 201))
-        this.repositories.value = this.repositories.value ? this.repositories.value.concat([repo]) : [repo]
-        return this.repositories.value
+        return this.Repositories.list()
       } finally { callback() }
     },
     update: async (id: RepositoryParams['repositoryId'], repoData: Omit<UpdateRepositoryBody, 'projectId'>) => {

@@ -1,8 +1,8 @@
-import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks'
-import { archiveDsoProject, deployAuth, getSecrets, upsertProject } from './functions.js'
+import type { DefaultArgs, Plugin, Project, ProjectLite, ZoneObject } from '@cpn-console/hooks'
+import { archiveDsoProject, deleteZone, deployAuth, getSecrets, upsertProject, upsertZone } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
-import { VaultProjectApi } from './class.js'
+import { VaultProjectApi, VaultZoneApi } from './class.js'
 
 const onlyApi = { api: (project: ProjectLite) => new VaultProjectApi(project) }
 
@@ -26,6 +26,18 @@ export const plugin: Plugin = {
       ...onlyApi,
       steps: { post: archiveDsoProject }, // Destroy all secrets for project
     },
+    upsertZone: {
+      api: (zone: ZoneObject) => new VaultZoneApi(zone.slug),
+      steps: {
+        pre: upsertZone,
+      },
+    },
+    deleteZone: {
+      api: (zone: ZoneObject) => new VaultZoneApi(zone.slug),
+      steps: {
+        main: deleteZone,
+      },
+    },
   },
   monitor,
 }
@@ -34,6 +46,8 @@ declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
     vault: Args extends (ProjectLite | Project)
       ? VaultProjectApi
-      : undefined
+      : Args extends (ZoneObject)
+        ? VaultZoneApi
+        : never
   }
 }

@@ -78,7 +78,17 @@ export default defineConfig({
         vueDsfrComponentResolver,
       ],
     }),
-    UnoCSS(),
+    UnoCSS({
+      extendTheme: (theme) => {
+        return {
+          ...theme,
+          breakpoints: {
+            ...theme.breakpoints,
+            thousand: '1000px',
+          },
+        }
+      },
+    }),
     VitePWA({
       registerType: 'prompt', // autoUpdate
       workbox: {
