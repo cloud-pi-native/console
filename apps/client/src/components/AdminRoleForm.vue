@@ -105,7 +105,16 @@ async function switchUserMembership(checked: boolean, user: User, fromSuggestion
   }
 }
 onBeforeMount(async () => {
-  users.value = await usersStore.listUsers({ adminRoleIds: role.value.id })
+  let page = 0
+  const perPage = 2
+  let total = 0
+
+  do {
+    const res = await usersStore.listUsers({ adminRoleIds: role.value.id, perPage: perPage.toString(), page: page.toString() })
+    page++
+    total = res.total
+    users.value.push(...res.data)
+  } while (page * perPage < total)
 })
 </script>
 
@@ -166,7 +175,7 @@ onBeforeMount(async () => {
         data-testid="saveBtn"
         label="Enregistrer"
         secondary
-        :disabled="!isUpdated || errorSchema"
+        :disabled="!isUpdated || !!errorSchema"
         class="mr-5"
         @click="$emit('save', { ...role, permissions: role.permissions.toString() })"
       />
@@ -200,7 +209,7 @@ onBeforeMount(async () => {
           title="Aucun utilisateur ne dispose actuellement de ce rôle."
         />
         <div
-          class="w-max"
+          class="w-max flex flex-row items-end"
         >
           <SuggestionInput
             :key="newUserInputKey"
@@ -212,24 +221,25 @@ onBeforeMount(async () => {
             placeholder="prenom.nom@interieur.gouv.fr"
             :suggestions="usersToSuggest"
             @update:model-value="(value: string) => retrieveUsersToAdd(value)"
-          />
-          <DsfrAlert
-            v-if="isUserAlreadyInTeam"
-            data-testid="userErrorInfo"
-            description="L'utilisateur est déjà détenteur de ce rôle."
-            small
-            type="error"
-            class="w-max fr-mb-2w"
+            @validate="() => newUser && switchUserMembership(true, newUser, true)"
           />
           <DsfrButton
             data-testid="addUserBtn"
-            label="Ajouter l'utilisateur"
+            icon-only
             secondary
             icon="ri:user-add-line"
             :disabled="!newUserInput || isUserAlreadyInTeam || !newUser"
             @click="() => newUser && switchUserMembership(true, newUser, true)"
           />
         </div>
+        <DsfrAlert
+          v-if="isUserAlreadyInTeam"
+          data-testid="userErrorInfo"
+          description="L'utilisateur est déjà détenteur de ce rôle."
+          small
+          type="error"
+          class="w-max fr-mb-2w"
+        />
       </template>
       <template
         v-else

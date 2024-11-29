@@ -41,6 +41,7 @@ export async function listProjects({
   filter,
   userId,
   search,
+  withUser,
 }: ListProjectWhere) {
   const whereAnd: Prisma.ProjectWhereInput[] = []
   if (id) whereAnd.push({ id })
@@ -69,6 +70,13 @@ export async function listProjects({
       members: { some: { userId } },
     }, {
       ownerId: userId,
+    }] })
+  }
+  if (withUser) {
+    whereAnd.push({ OR: [{
+      members: { some: { userId: withUser } },
+    }, {
+      ownerId: withUser,
     }] })
   }
 

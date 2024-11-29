@@ -72,7 +72,7 @@ body,
   background-color: var(--background-alt-grey);
 }
 
-.log-panel, .log-btn {
+.log-panel, .log-btn, .tooltip {
   background-color: var(--background-default-grey);
 }
 
@@ -186,4 +186,8 @@ div.fr-tile__img {
 
 .horizontal-table tr {
   @apply flex flex-col;
+}
+
+.fr-select-group, .fr-input-group {
+  margin-bottom: 0 !important;
 }

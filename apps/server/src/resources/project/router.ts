@@ -26,6 +26,7 @@ export function projectRouter() {
       if (adminPermissions && !user) { // c'est donc un compte de service
         query.filter = 'all'
       }
+      if (query.withUser && query.withUser === user?.id && !AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403('Vous ne pouvez demander les projets d\'un autre utilisateur')
       if (query.filter === 'all' && !AdminAuthorized.isAdmin(adminPermissions)) {
         return new BadRequest400('Seuls les admins avec les droits de visionnage des projets peuvent utiliser le filtre \'all\'')
       }

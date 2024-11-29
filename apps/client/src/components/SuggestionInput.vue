@@ -17,6 +17,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: string]
   selectSuggestion: [value: string]
+  validate: []
 }>()
 
 const localValue = ref(props.modelValue)
@@ -37,6 +38,7 @@ function updateValue() {
       :value="props.modelValue"
       list="suggestionList"
       @update:model-value="updateValue()"
+      @keyup.enter="emit('validate')"
     />
     <datalist
       id="suggestionList"

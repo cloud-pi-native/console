@@ -4,9 +4,10 @@ import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   RoleNameCsvSchema,
   UserSchema,
+  UserTypeSchema,
 } from '../schemas/index.js'
 import { UuidOrCsvUuidSchema } from '../schemas/_utils.js'
-import { ErrorSchema, baseHeaders } from './_utils.js'
+import { ErrorSchema, baseHeaders, paginateQueries, paginatedData } from './_utils.js'
 
 export const userContract = contractInstance.router({
   getMatchingUsers: {
@@ -38,23 +39,40 @@ export const userContract = contractInstance.router({
     },
   },
 
-  getAllUsers: {
+  getUser: {
+    method: 'GET',
+    path: `${apiPrefix}/users/:id`,
+    summary: 'Get user\'s info',
+    description: 'Get additionnals infos about a user',
+    responses: {
+      200: UserSchema,
+      400: ErrorSchema,
+      403: ErrorSchema,
+      500: ErrorSchema,
+    },
+  },
+
+  listUsers: {
     method: 'GET',
     path: `${apiPrefix}/users`,
-    summary: 'Get all users',
-    description: 'Get all users.',
+    summary: 'List users',
+    description: 'List users.',
     query: z.object({
-      adminRoles: RoleNameCsvSchema
-        .optional(),
-      adminRoleIds: UuidOrCsvUuidSchema
-        .optional(),
-      memberOfIds: UuidOrCsvUuidSchema
-        .optional(),
-      relationType: z.enum(['OR', 'AND'])
-        .optional(),
-    }),
+      adminRoles: RoleNameCsvSchema,
+      adminRoleIds: UuidOrCsvUuidSchema,
+      memberOfIds: UuidOrCsvUuidSchema,
+      relationType: z.enum(['OR', 'AND']),
+      search: z.string(),
+      firstName: z.string(),
+      lastName: z.string(),
+      email: z.string(),
+      type: UserTypeSchema,
+      orderBy: z.enum(['firstName', 'lastName', 'email', 'createdAt', 'lastLogin']),
+      order: z.enum(['asc', 'desc']),
+      ...paginateQueries,
+    }).partial(),
     responses: {
-      200: UserSchema.array(),
+      200: paginatedData(UserSchema.array()),
       400: ErrorSchema,
       403: ErrorSchema,
       500: ErrorSchema,
@@ -80,4 +98,4 @@ export const userContract = contractInstance.router({
 
 export type LettersQuery = ClientInferRequest<typeof userContract.getMatchingUsers>['query']
 
-export type AllUsers = ClientInferResponseBody<typeof userContract.getAllUsers, 200>
+export type AllUsers = ClientInferResponseBody<typeof userContract.listUsers, 200>

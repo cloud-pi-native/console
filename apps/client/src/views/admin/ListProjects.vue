@@ -306,10 +306,6 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
 </template>
 
 <style scoped>
-.fr-select-group, .fr-input-group {
-  margin-bottom: 0 !important;
-}
-
 tr[selected]{
   background-color: var(--background-action-low-blue-france-active) !important;
 }

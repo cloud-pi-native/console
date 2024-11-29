@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { onMounted } from 'vue'
-import type { AdminToken } from '@cpn-console/shared'
-import { getAdminPermLabelsByValue } from '@cpn-console/shared'
+import { type AdminToken, getAdminPermLabelsByValue } from '@cpn-console/shared'
 import { useAdminTokenStore } from '@/stores/admin-token.js'
 import type { SimpleToken } from '@/components/TokenForm.vue'
 
@@ -34,32 +33,6 @@ async function deleteToken() {
   deleteModalOpened.value = false
   await getAllTokens()
 }
-
-const rows = computed(() => tokens.value.length
-  ? tokens.value.map(token => ([
-    token.name,
-    getAdminPermLabelsByValue(token.permissions).join(', '),
-    token.owner?.email ?? '-',
-    (new Date(token.createdAt)).toLocaleString(),
-    token.expirationDate ? (new Date(token.expirationDate)).toLocaleString() : 'Jamais',
-    token.lastUse ? (new Date(token.lastUse)).toLocaleString() : 'Jamais',
-    statusWording[token.status],
-    {
-      cellAttrs: {
-        class: `fr-fi-close-line justify-center ${token.status === 'active' ? 'cursor-pointer fr-text-default--warning' : 'cursor-not-allowed'}`,
-        title: 'Supprimer',
-        onClick: () => { deleteModalOpened.value = true; deleteTokenId.value = token.id },
-      },
-    },
-  ]))
-  : [[{
-      field: 'string',
-      text: 'Aucune clé d\'api existante',
-      cellAttrs: {
-        colspan: headers.length,
-      },
-    }]],
-)
 
 async function getAllTokens() {
   tokens.value = await adminTokenStore.listTokens({ withRevoked: displayRevoked.value })
@@ -113,10 +86,43 @@ onMounted(async () => {
   </div>
   <div>
     <DsfrTable
+      no-caption
+      title=""
       data-testid="tokenTable"
       :headers="headers"
-      :rows="rows"
-    />
+    >
+      <tr
+        v-for="token in tokens"
+        :key="token.id"
+      >
+        <td>{{ token.name }}</td>
+        <td>{{ getAdminPermLabelsByValue(token.permissions).join(', ') }}</td>
+        <td>
+          <UserCt
+            v-if="token.owner"
+            :user="token.owner"
+            size="sm"
+            mode="short"
+          />
+        </td>
+        <td>{{ (new Date(token.createdAt)).toLocaleString() }}</td>
+        <td>{{ token.expirationDate ? (new Date(token.expirationDate)).toLocaleString() : 'Jamais' }}</td>
+        <td>{{ token.lastUse ? (new Date(token.lastUse)).toLocaleString() : 'Jamais' }}</td>
+        <td>{{ statusWording[token.status] }}</td>
+        <td
+          title="Supprimer"
+          :class="`fr-fi-close-line justify-center ${token.status === 'active' ? 'cursor-pointer fr-text-default--warning' : 'cursor-not-allowed'}`"
+          @click="() => { deleteModalOpened = true; deleteTokenId = token.id }"
+        >
+          <v-icon />
+        </td>
+      </tr>
+      <tr
+        v-if="!tokens.length"
+      >
+        Aucune clé d\'api existante
+      </tr>
+    </DsfrTable>
   </div>
   <DsfrButton
     :label="displayRevoked ? 'Masquer les jetons révoqués' : 'Voir les jetons révoqués'"
