@@ -1,10 +1,10 @@
 import type { Cluster, Kubeconfig, Project, ProjectRole, Zone } from '@prisma/client'
-import type { ClusterObject, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository, Store } from '@cpn-console/hooks'
+import type { ClusterObject, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository, Store, ZoneObject } from '@cpn-console/hooks'
 import { hooks } from '@cpn-console/hooks'
 import type { AsyncReturnType } from '@cpn-console/shared'
 import { ProjectAuthorized, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
 import { genericProxy } from './proxy.js'
-import { archiveProject, getAdminPlugin, getClusterByIdOrThrow, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '@/resources/queries-index.js'
+import { archiveProject, getAdminPlugin, getClusterByIdOrThrow, getClusterNamesByZoneId, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '@/resources/queries-index.js'
 import type { ConfigRecords } from '@/resources/project-service/business.js'
 import { dbToObj } from '@/resources/project-service/business.js'
 
@@ -121,7 +121,8 @@ const user = {
 
 const zone = {
   upsert: async (zoneId: Zone['id']) => {
-    const zone = await getZoneByIdOrThrow(zoneId)
+    const zone: ZoneObject = await getZoneByIdOrThrow(zoneId)
+    zone.clusterNames = await getClusterNamesByZoneId(zoneId)
     const store = dbToObj(await getAdminPlugin())
     return hooks.upsertZone.execute(zone, store)
   },
