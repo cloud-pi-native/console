@@ -11,6 +11,9 @@ export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
     } else {
       await createClusterSecret(cluster)
     }
+    const clusterSecret = convertClusterToSecret(cluster)
+    const vaultApi = payload.apis.vault
+    vaultApi.write(clusterSecret, `clusters/cluster-${cluster.label}/argocd-cluster-secret`)
     return {
       status: {
         result: 'OK',
