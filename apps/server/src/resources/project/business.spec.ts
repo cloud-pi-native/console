@@ -305,7 +305,6 @@ describe('test project business logic', () => {
   describe('archiveProject', () => {
     it('should archive project', async () => {
       prisma.project.findUniqueOrThrow.mockResolvedValue({ id: projectId, locked: false })
-      hook.project.upsert.mockResolvedValue({ results: { failed: false } })
       hook.project.delete.mockResolvedValue({ results: { failed: false }, project: Promise.resolve({ status: 'archived' }) })
       const response = await archiveProject(project.id, user, reqId)
       expect(response).toBeNull()
@@ -319,7 +318,6 @@ describe('test project business logic', () => {
 
     it('should not archive a project already archived', async () => {
       prisma.project.findUniqueOrThrow.mockResolvedValue({ id: projectId, locked: false, status: 'archived' })
-      hook.project.upsert.mockResolvedValue({ results: { failed: false } })
       hook.project.delete.mockResolvedValue({ results: { failed: false }, project: Promise.resolve({ status: 'archived' }) })
       const response = await archiveProject(project.id, user, reqId)
       expect(response).toBeInstanceOf(ErrorResType)
@@ -328,7 +326,6 @@ describe('test project business logic', () => {
 
     it('should not archive a project locked', async () => {
       prisma.project.findUniqueOrThrow.mockResolvedValue({ id: projectId, locked: true, status: 'created' })
-      hook.project.upsert.mockResolvedValue({ results: { failed: false } })
       hook.project.delete.mockResolvedValue({ results: { failed: false }, project: Promise.resolve({ status: 'archived' }) })
       const response = await archiveProject(project.id, user, reqId)
       expect(response).toBeInstanceOf(ErrorResType)
