@@ -61,18 +61,10 @@ const project = {
       getProjectPayload(projectId),
       getAdminPlugin(),
     ])
-    const resultsUpsert = await project.upsert(projectId)
-    if (resultsUpsert.results.failed) {
-      return {
-        ...resultsUpsert,
-        stage: 'upsert' as const,
-      }
-    }
     const results = await hooks.deleteProject.execute(payload, dbToObj(config))
     return {
       results,
       project: await manageProjectStatus(projectId, results, 'delete', []),
-      stage: 'delete' as const,
     }
   },
   getSecrets: async (projectId: Project['id']) => {
