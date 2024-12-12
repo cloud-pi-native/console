@@ -258,11 +258,6 @@ export const routes: Readonly<RouteRecordRaw[]> = [
     ],
   },
   {
-    path: '/api',
-    // no component, swagger plugin
-    components: {},
-  },
-  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: NotFound,
@@ -287,7 +282,7 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
  * Redirect unlogged user to login view
  */
 router.beforeEach(async (to, _from, next) => {
-  const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout']
+  const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout', 'Swagger']
   const userStore = useUserStore()
   const systemStore = useSystemSettingsStore()
   await userStore.setIsLoggedIn()

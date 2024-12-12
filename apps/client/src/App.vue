@@ -7,6 +7,7 @@ import { useProjectStore } from './stores/project.js'
 import { useUserStore } from './stores/user.js'
 import { useAdminRoleStore } from './stores/admin-role.js'
 import ReloadPrompt from './components/ReloadPrompt.vue'
+import router from './router/index.js'
 import { useServiceStore } from '@/stores/services-monitor.js'
 
 const keycloak = getKeycloak()
@@ -56,7 +57,11 @@ watch(userStore, async () => {
 </script>
 
 <template>
+  <router-view
+    v-if="router.currentRoute.value.name === 'Swagger'"
+  />
   <div
+    v-else
     class="min-h-screen min-w-screen flex flex-col"
   >
     <DsfrHeader
@@ -90,6 +95,7 @@ watch(userStore, async () => {
           <a
             data-testid="swaggerUrl"
             :href="swaggerUiPath"
+            target="_blank"
             title="accéder au swagger"
           >
             swagger
