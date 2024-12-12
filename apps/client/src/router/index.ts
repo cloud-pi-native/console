@@ -42,6 +42,7 @@ const ListPlugins = () => import('@/views/admin/ListPlugins.vue')
 const SystemSettings = () => import('@/views/admin/SystemSettings.vue')
 const Maintenance = () => import('@/views/DsoMaintenance.vue')
 const AdminTokens = () => import('@/views/admin/AdminTokens.vue')
+const Swagger = () => import('@/views/Swagger.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
@@ -258,12 +259,12 @@ export const routes: Readonly<RouteRecordRaw[]> = [
     ],
   },
   {
-    path: '/api',
-    // no component, swagger plugin
-    components: {},
+    path: '/swagger',
+    name: 'Swagger',
+    component: Swagger,
   },
   {
-    path: '/:pathMatch(.*)*',
+    path: '/:pathMatch(.*)+',
     name: 'NotFound',
     component: NotFound,
   },
@@ -287,7 +288,7 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
  * Redirect unlogged user to login view
  */
 router.beforeEach(async (to, _from, next) => {
-  const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout']
+  const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout', 'Swagger']
   const userStore = useUserStore()
   const systemStore = useSystemSettingsStore()
   await userStore.setIsLoggedIn()
