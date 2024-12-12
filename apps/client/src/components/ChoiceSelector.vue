@@ -178,7 +178,7 @@ const groups: Group[] = [
             <div
               v-for="option in displayed[group.selectorKey].value"
               :key="option[props.valueKey]"
-              class="inline-block mr-1 ml-1"
+              class="inline-block m-1"
             >
               <DsfrTag
                 :class="`cursor-pointer ${group.tagClass}`"
@@ -227,7 +227,7 @@ const groups: Group[] = [
     <div
       v-for="option in options.selected.value.slice(0, 3)"
       :key="option[props.valueKey]"
-      class="inline-block mr-1 ml-1"
+      class="inline-block m-1"
     >
       <DsfrTag
         class="cursor-pointer"

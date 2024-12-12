@@ -147,7 +147,7 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
   }
 }
 
-export const upsertZone: StepCall<ZoneObject> = async ({ args: zone }) => {
+export const upsertZone: StepCall<ZoneObject> = async ({ args: zone, apis }) => {
   try {
     const kcClient = await getkcClient()
     const argocdUrl = zone.argocdUrl
@@ -167,7 +167,8 @@ export const upsertZone: StepCall<ZoneObject> = async ({ args: zone }) => {
     if (result.length > 0 && result[0].id) {
       await kcClient.clients.update({ id: result[0].id }, client)
     } else {
-      const password = generateRandomPassword(30) // TODO Store in Vault
+      const password = generateRandomPassword(30)
+      await apis.vault.write({ clientSecret: password }, 'keycloak')
       await kcClient.clients.create({
         secret: password,
         ...client,

@@ -185,11 +185,8 @@ export async function archiveProject(projectId: Project['id'], requestor: UserDe
   }
 
   // -- début - Suppression projet --
-  const { results, project, stage } = await hook.project.delete(projectId)
-  const action: string = stage === 'upsert'
-    ? 'Delete all project resources'
-    : 'Archive Project'
-  await addLogs({ action, data: results, userId: requestor.id, requestId, projectId })
+  const { results, project } = await hook.project.delete(projectId)
+  await addLogs({ action: 'Delete all project resources', data: results, userId: requestor.id, requestId, projectId })
   if (project.status !== 'archived' && !projectDb.locked) {
     await prisma.project.update({ where: { id: projectId }, data: { locked: false } })
   }

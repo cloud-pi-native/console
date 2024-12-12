@@ -688,6 +688,9 @@ importers:
       '@cpn-console/ts-config':
         specifier: workspace:^
         version: link:../../packages/tsconfig
+      '@cpn-console/vault-plugin':
+        specifier: workspace:^
+        version: link:../vault
       '@types/node':
         specifier: ^22.8.2
         version: 22.8.2

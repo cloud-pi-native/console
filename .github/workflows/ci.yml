@@ -62,7 +62,7 @@ jobs:
 
   npm-check:
     uses: ./.github/workflows/npm.yml
-    if: ${{ needs.path-filter.outputs.packages == 'true' }}
+    if: ${{ github.base_ref == 'main' && needs.path-filter.outputs.packages == 'true' }}
     needs:
       - path-filter
       - expose-vars

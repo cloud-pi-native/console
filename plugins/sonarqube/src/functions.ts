@@ -117,8 +117,8 @@ export const upsertProject: StepCall<Project> = async (payload) => {
     const sonarRepositories = await findSonarProjectsForDsoProjects(organizationName, projectName)
 
     await Promise.all([
-      await ensureUserAndVault(vaultApi, username, projectName, organizationName),
-      await ensureGroupExists(keycloakGroupPath),
+      ensureUserAndVault(vaultApi, username, projectName, organizationName),
+      ensureGroupExists(keycloakGroupPath),
 
       // Remove excess repositories
       ...sonarRepositories
@@ -277,7 +277,7 @@ export const deleteProject: StepCall<Project> = async (payload) => {
 }
 
 async function deleteRepo(projectKey: string) {
-  return await getAxiosInstance()({
+  return getAxiosInstance()({
     url: 'projects/delete',
     params: {
       project: projectKey,
