@@ -25,6 +25,8 @@
     "docker:prod:build": "export COMPOSE_FILE=./docker/docker-compose.prod.yml && ./ci/kind/run-build.sh $COMPOSE_FILE",
     "docker:prod:delete": "docker compose -f ./docker/docker-compose.prod.yml down -v --remove-orphans",
     "format:style": "turbo run format:style --color --no-daemon",
+    "fullclean": "sh ./ci/scripts/cleanup.sh",
+    "fullsetup": "sh ./ci/scripts/setup.sh",
     "db:generate": "turbo run db:generate --no-daemon",
     "integ": "docker compose -f ./docker/docker-compose.local.yml up -d --remove-orphans postgres pgadmin && echo '\nStart server and client with commands:\n\n  pnpm --filter @cpn-console/server run integ\n  pnpm --filter @cpn-console/client run integ\n\nMake sure you provide env variables in `.env.integ` files.'",
     "integ:clean": "docker compose -f ./docker/docker-compose.local.yml down --remove-orphans",
@@ -72,7 +74,8 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "fastify-keycloak-adapter@2.2.0": "patches/fastify-keycloak-adapter@2.2.0.patch"
+      "fastify-keycloak-adapter@2.2.0": "patches/fastify-keycloak-adapter@2.2.0.patch",
+      "fastify-keycloak-adapter@2.3.2": "patches/fastify-keycloak-adapter@2.3.2.patch"
     },
     "allowNonAppliedPatches": true
   },

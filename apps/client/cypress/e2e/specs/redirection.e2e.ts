@@ -72,8 +72,10 @@ describe('Redirection', () => {
       .should('exist')
 
     cy.getByDataTestid('swaggerUrl')
+      .should('have.attr', 'target', '_blank')
+      .invoke('attr', 'target', '_self')
       .click()
-    cy.url().should('have.text', swaggerUiPath)
+    cy.url().should('contain', swaggerUiPath)
     cy.get('div.description')
       .should('contain', 'API de gestion des ressources Cloud Pi Native.')
   })

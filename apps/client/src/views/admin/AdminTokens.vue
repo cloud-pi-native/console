@@ -37,21 +37,21 @@ async function deleteToken() {
 
 const rows = computed(() => tokens.value.length
   ? tokens.value.map(token => ([
-    token.name,
-    getAdminPermLabelsByValue(token.permissions).join(', '),
-    token.owner?.email ?? '-',
-    (new Date(token.createdAt)).toLocaleString(),
-    token.expirationDate ? (new Date(token.expirationDate)).toLocaleString() : 'Jamais',
-    token.lastUse ? (new Date(token.lastUse)).toLocaleString() : 'Jamais',
-    statusWording[token.status],
-    {
-      cellAttrs: {
-        class: `fr-fi-close-line justify-center ${token.status === 'active' ? 'cursor-pointer fr-text-default--warning' : 'cursor-not-allowed'}`,
-        title: 'Supprimer',
-        onClick: () => { deleteModalOpened.value = true; deleteTokenId.value = token.id },
+      token.name,
+      getAdminPermLabelsByValue(token.permissions).join(', '),
+      token.owner?.email ?? '-',
+      (new Date(token.createdAt)).toLocaleString(),
+      token.expirationDate ? (new Date(token.expirationDate)).toLocaleString() : 'Jamais',
+      token.lastUse ? (new Date(token.lastUse)).toLocaleString() : 'Jamais',
+      statusWording[token.status],
+      {
+        cellAttrs: {
+          class: `fr-fi-close-line justify-center ${token.status === 'active' ? 'cursor-pointer fr-text-default--warning' : 'cursor-not-allowed'}`,
+          title: 'Supprimer',
+          onClick: () => { deleteModalOpened.value = true; deleteTokenId.value = token.id },
+        },
       },
-    },
-  ]))
+    ]))
   : [[{
       field: 'string',
       text: 'Aucune clé d\'api existante',

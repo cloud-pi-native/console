@@ -260,6 +260,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
   },
   {
     path: swaggerUiPath,
+    name: 'Swagger',
     // no component, swagger plugin
     components: {},
     strict: false,

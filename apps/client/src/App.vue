@@ -1,14 +1,14 @@
 <script setup lang="ts">
+import { useServiceStore } from '@/stores/services-monitor.js'
 import { swaggerUiPath } from '@cpn-console/shared'
-import { getKeycloak } from './utils/keycloak/keycloak.js'
+import ReloadPrompt from './components/ReloadPrompt.vue'
+import { useAdminRoleStore } from './stores/admin-role.js'
+
+import { useProjectStore } from './stores/project.js'
 import { useSnackbarStore } from './stores/snackbar.js'
 import { useSystemSettingsStore } from './stores/system-settings.js'
-import { useProjectStore } from './stores/project.js'
 import { useUserStore } from './stores/user.js'
-import { useAdminRoleStore } from './stores/admin-role.js'
-import ReloadPrompt from './components/ReloadPrompt.vue'
-import router from './router/index.js'
-import { useServiceStore } from '@/stores/services-monitor.js'
+import { getKeycloak } from './utils/keycloak/keycloak.js'
 
 const keycloak = getKeycloak()
 const snackbarStore = useSnackbarStore()
@@ -57,11 +57,7 @@ watch(userStore, async () => {
 </script>
 
 <template>
-  <router-view
-    v-if="router.currentRoute.value.name === 'Swagger'"
-  />
   <div
-    v-else
     class="min-h-screen min-w-screen flex flex-col"
   >
     <DsfrHeader

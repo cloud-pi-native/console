@@ -4,7 +4,7 @@ import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui/types'
 import type { generateOpenApi } from '@ts-rest/open-api'
 import { swaggerUiPath } from '@cpn-console/shared'
 import { loggerConf } from './logger.js'
-import { NODE_ENV, appVersion, keycloakRedirectUri } from './env.js'
+import { NODE_ENV, appVersion, keycloakClientId, keycloakClientSecret, keycloakRealm, keycloakRedirectUri } from './env.js'
 
 export const fastifyConf: FastifyServerOptions = {
   maxParamLength: 5000,
@@ -37,5 +37,12 @@ export const swaggerUiConf: FastifySwaggerUiOptions = {
   uiConfig: {
     docExpansion: 'list',
     deepLinking: false,
+  },
+  initOAuth: {
+    clientId: keycloakClientId,
+    clientSecret: keycloakClientSecret,
+    realm: keycloakRealm,
+    appName: 'Cloud Pi Native',
+    scopes: 'openid generic',
   },
 }

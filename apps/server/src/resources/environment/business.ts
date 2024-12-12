@@ -146,20 +146,20 @@ export async function checkEnvironmentInput(input: CheckEnvironmentInput): Promi
       : undefined,
     input.clusterId
       ? prisma.cluster.findFirst({
-        where: {
-          OR: [{ // un cluster public
-            id: input.clusterId,
-            privacy: 'public',
-          }, {
-            id: input.clusterId, // un cluster dédié rattaché au projet
-            privacy: 'dedicated',
-            projects: { some: { id: input.projectId } },
-          }, {
-            id: input.clusterId, // le cluster actuel de l'environment
-            environments: { some: { id: input.environmentId } },
-          }],
-        },
-      })
+          where: {
+            OR: [{ // un cluster public
+              id: input.clusterId,
+              privacy: 'public',
+            }, {
+              id: input.clusterId, // un cluster dédié rattaché au projet
+              privacy: 'dedicated',
+              projects: { some: { id: input.projectId } },
+            }, {
+              id: input.clusterId, // le cluster actuel de l'environment
+              environments: { some: { id: input.environmentId } },
+            }],
+          },
+        })
       : undefined,
   ])
   const quotaError = new BadRequest400('Quota invalide.')
