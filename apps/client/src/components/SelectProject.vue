@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import router, { isInProject, selectedProjectId } from '../router/index.js'
+import router, { isInProject, selectedProjectSlug } from '../router/index.js'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
-import { useOrganizationStore } from '@/stores/organization.js'
 
-const organizationStore = useOrganizationStore()
 const projectStore = useProjectStore()
 const userStore = useUserStore()
 
@@ -19,26 +17,21 @@ const myProjects = {
   text: 'Mes projets',
 }
 const projectOptions = computed(() => {
-  return organizationStore.organizations.map((org) => {
-    return {
-      org,
-      projects: projectStore.myProjects.filter(project => project.organizationId === org.id),
-    }
-  }).filter(org => org.projects.length)
+  return projectStore.myProjects
 })
 
-function selectProject(id: string) {
-  if (id === myProjects.value) {
+function selectProject(slug: string) {
+  if (slug === myProjects.value) {
     return router.push('/projects')
   }
-  if (selectedProjectId.value) {
+  if (selectedProjectSlug.value) {
     return router.push({
-      params: { id },
+      params: { slug },
     })
   }
   return router.push({
     name: 'Dashboard',
-    params: { id },
+    params: { slug },
   })
 }
 </script>
@@ -46,7 +39,7 @@ function selectProject(id: string) {
 <template>
   <div
     v-if="userStore.isLoggedIn"
-    class="select-project flex flex-row max-lg:hidden"
+    class="select-project flex flex-row <lg:hidden"
   >
     <select
       v-if="projectStore.myProjects.length"
@@ -61,25 +54,16 @@ function selectProject(id: string) {
         {{ myProjects.text }}
       </option>
       <hr>
-      <template
-        v-for="(group, i) in projectOptions"
-        :key="group.org.id"
+
+      <option
+        v-for="project in projectOptions"
+        :key="project.slug"
+        :class="project.slug === selectedProjectSlug ? 'bg-slate-500' : ''"
+        :value="project.slug"
+        :selected="project.slug === selectedProjectSlug"
       >
-        <optgroup
-          :label="group.org.label"
-        >
-          <option
-            v-for="project in group.projects"
-            :key="project.id"
-            :class="project.id === selectedProjectId ? 'bg-slate-500' : ''"
-            :value="project.id"
-            :selected="project.id === selectedProjectId"
-          >
-            {{ project.name }}
-          </option>
-        </optgroup>
-        <hr v-if="i !== projectOptions.length - 1">
-      </template>
+        {{ project.name }} ({{ project.slug }})
+      </option>
     </select>
     <DsfrButton
       :class="`create-project ${projectStore.myProjects.length ? 'w-15' : ''}`"

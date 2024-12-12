@@ -17,12 +17,12 @@ import { useQuotaStore } from '@/stores/quota.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-const props = defineProps<{ projectId: ProjectV2['id'] }>()
+const props = defineProps<{ projectSlug: ProjectV2['id'] }>()
 
 const snackbarStore = useSnackbarStore()
 const projectStore = useProjectStore()
 const clusterStore = useClusterStore()
-const project = computed(() => projectStore.projectsById[props.projectId])
+const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
 
 const environments = computed(() =>
 // @ts-ignore
@@ -92,7 +92,7 @@ watch(project, reload, { immediate: true })
 
 <template>
   <DsoSelectedProject
-    :project-id="projectId"
+    :project-slug="projectSlug"
   >
     <div
       class="flex <md:flex-col-reverse items-center justify-between pb-5"

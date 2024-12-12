@@ -4,7 +4,7 @@ import config from './config.js'
 
 const infos = {
   name: 'gitlab',
-  to: ({ project, organization }) => `${config().publicUrl}/${config().projectsRootDir}/${organization}/${project}`,
+  to: ({ projectSlug }) => `${config().publicUrl}/${config().projectsRootDir}/${projectSlug}`,
   title: 'Gitlab',
   imgSrc: '/img/gitlab.svg',
   description: 'GitLab est un service d\'hébergement de code source et de pipeline CI/CD',

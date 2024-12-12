@@ -3,18 +3,21 @@ import type { ClusterObject, EnvironmentObject, ZoneObject } from './hooks/index
 
 interface ToUrlObject { to: string, title?: string, description?: string, imgSrc?: string }
 export interface ToUrlFnParamaters {
+  /** @deprecated project will be removed in next release you should use slug to track object */
   project: string
+  /** @deprecated organization will be removed in next release you should use slug to track object */
   organization: string
   store: PluginsUpdateBody
   clusters: Omit<ClusterObject, 'secretName' | 'kubeConfigId' | 'createdAt' | 'updatedAt' | 'user' | 'cluster'>[]
   zones: ZoneObject[]
   environments: EnvironmentObject[]
+  projectSlug: string
 }
 type ToUrlFnResponse = ToUrlObject | ToUrlObject[] | string | void
 
 export interface ServiceInfos {
   name: string
-  to?: ({ project, organization, store, clusters, zones, environments }: ToUrlFnParamaters) => ToUrlFnResponse
+  to?: ({ project, organization, store, clusters, zones, environments, projectSlug }: ToUrlFnParamaters) => ToUrlFnResponse
   monitor?: Monitor
   title: string
   imgSrc?: string

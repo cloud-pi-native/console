@@ -55,6 +55,7 @@ export const ProjectSchemaV2 = z.object({
     .min(2)
     .max(projectNameMaxLength)
     .regex(/^[a-z0-9]+$/),
+  slug: z.string(),
   description: z.string()
     .max(descriptionMaxLength)
     .optional(),

@@ -2,10 +2,16 @@
 import type { CleanLog, ProjectV2 } from '@cpn-console/shared'
 import { ref, watch } from 'vue'
 import { useLogStore } from '../stores/log.js'
+import { selectedProjectSlug } from '@/router/index.js'
+import { useProjectStore } from '@/stores/project.js'
 
 const props = defineProps<{
-  projectId?: ProjectV2['id']
+  projectSlug?: ProjectV2['slug']
 }>()
+
+const projectStore = useProjectStore()
+
+const project = computed(() => props.projectSlug ? projectStore.projectsBySlug[props.projectSlug] : undefined)
 const logStore = useLogStore()
 
 const step = 5
@@ -17,15 +23,15 @@ const totalLength = ref(0)
 
 async function showLogs(index?: number) {
   page.value = index ?? page.value
-  getProjectLogs({ offset: page.value * step, limit: step })
+  await getProjectLogs({ offset: page.value * step, limit: step })
 }
 
 async function getProjectLogs({ offset, limit }: { offset: number, limit: number }) {
-  if (!props.projectId) {
+  if (!project.value) {
     return
   }
   isUpdating.value = true
-  const res = await logStore.listLogs({ offset, limit, projectId: props.projectId, clean: true })
+  const res = await logStore.listLogs({ offset, limit, projectId: project.value.id, clean: true })
   logs.value = res.logs as CleanLog[]
   totalLength.value = res.total
   isUpdating.value = false
@@ -36,25 +42,26 @@ function toggleDisplayLogs() {
   showLogs()
 }
 
-watch(logStore, () => {
+watch(logStore, async () => {
   if (logStore.needRefresh) {
-    showLogs()
+    await showLogs()
     logStore.needRefresh = false
   }
 })
 
-watch(props, (p) => {
-  console.log({ p })
-
-  if (p.projectId) {
-    logStore.needRefresh = true
+watch(selectedProjectSlug, () => {
+  if (!selectedProjectSlug.value) {
+    logStore.needRefresh = false
+    logStore.displayProjectLogs = true
+    return undefined
   }
+  logStore.needRefresh = true
 })
 </script>
 
 <template>
   <div
-    v-if="projectId"
+    v-if="projectSlug"
     :class="`fixed bottom-0 right-0 z-1000 top-40 shadow-lg flex fr-btn--secondary h-130 transition-all ${logStore.displayProjectLogs ? '' : 'translate-x-90'}`"
   >
     <div

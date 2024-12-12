@@ -93,10 +93,10 @@ async function getProjects() {
   }
 }
 
-async function goToProject(projectId: string) {
+async function goToProject(projectSlug: string) {
   router.push({
     name: 'AdminProject',
-    params: { id: projectId },
+    params: { slug: projectSlug },
   })
 }
 
@@ -137,7 +137,7 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
     return switchSelection(true, project.id)
   if (project.status === 'archived')
     return snackbarStore.setMessage('Le projet est archivé, pas d\'action possible', 'info')
-  return goToProject(project.id)
+  return goToProject(project.slug)
 }
 </script>
 
@@ -209,7 +209,7 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
             <input
               type="checkbox"
               data-testid="select-all-cbx"
-              :checked="isAllSelected"
+              :checked="!!projectWithSelection.length && isAllSelected"
               @click="selectAll"
             >
           </td>
