@@ -62,4 +62,24 @@ describe('Redirection', () => {
     cy.get('h1').contains(' Cloud π Native ')
       .should('exist')
   })
+
+  it('Should redirect to swagger ui', () => {
+    cy.intercept('POST', '/realms/cloud-pi-native/protocol/openid-connect/token').as('postToken')
+
+    cy.visit('/login')
+    cy.url().should('not.contain', '/login')
+    cy.get('input#username').type('test')
+    cy.get('input#password').type('test')
+    cy.get('input#kc-login').click()
+    cy.wait('@postToken')
+    cy.url().should('contain', '/')
+    cy.get('h1').contains(' Cloud π Native ')
+      .should('exist')
+
+    cy.getByDataTestid('swaggerUrl')
+      .click()
+    cy.url().should('contain', 'swagger-ui')
+    cy.get('div.description')
+      .should('contain', 'API de gestion des ressources Cloud Pi Native.')
+  })
 })

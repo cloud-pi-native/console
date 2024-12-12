@@ -258,6 +258,11 @@ export const routes: Readonly<RouteRecordRaw[]> = [
     ],
   },
   {
+    path: '/api',
+    // no component, swagger plugin
+    components: {},
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: NotFound,
