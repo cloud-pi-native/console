@@ -12,7 +12,7 @@ import { getSecretObject } from './kubeSecret.js'
 export const createDsoProject: StepCall<Project> = async (payload) => {
   try {
     const project = payload.args
-    const projectName = `${project.organization.name}-${project.name}`
+    const projectName = project.slug
     const { vault: vaultApi, keycloak: keycloakApi } = payload.apis
 
     const publishRoRobotProject = project.store.registry?.publishProjectRobot
@@ -72,7 +72,7 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
 export const deleteDsoProject: StepCall<Project> = async (payload) => {
   try {
     const project = payload.args
-    const projectName = `${project.organization.name}-${project.name}`
+    const projectName = project.slug
 
     await deleteProject(projectName)
 

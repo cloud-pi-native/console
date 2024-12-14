@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
-import type { ProjectV2 } from '@cpn-console/shared'
+import type { ProjectV2, Stage } from '@cpn-console/shared'
 import { ProjectAuthorized, descriptionMaxLength, projectIsLockedInfo } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
@@ -8,11 +8,12 @@ import { copyContent } from '@/utils/func.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useLogStore } from '@/stores/log.js'
 
-const props = defineProps<{ projectId: ProjectV2['id'] }>()
+const props = defineProps<{ projectSlug: ProjectV2['slug'] }>()
 
 const projectStore = useProjectStore()
 const stageStore = useStageStore()
-const project = computed(() => projectStore.projectsById[props.projectId])
+const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
+const operationsInProgress = computed(() => project.value.operationsInProgress)
 
 const description = ref(project.value.description)
 const isEditingDescription = ref(false)
@@ -20,19 +21,19 @@ const isArchivingProject = ref(false)
 const projectToArchive = ref('')
 const isSecretShown = ref(false)
 const projectSecrets = ref<Record<string, any>>({})
-const allStages = ref<Array<any>>([])
+const allStages = ref<Array<Stage>>([])
 const logStore = useLogStore()
 
 async function updateProject() {
-  project.value.Commands.update({ description: description.value })
+  await project.value.Commands.update({ description: description.value })
   isEditingDescription.value = false
 }
 
 async function archiveProject() {
   await project.value.Commands.delete()
-  projectStore.lastSelectedProjectId = undefined
+  projectStore.lastSelectedProjectSlug = undefined
   router.push('/projects')
-  delete projectStore.projectsById[project.value.id]
+  delete projectStore.projectsBySlug[project.value.slug]
 }
 
 function getDynamicTitle(locked?: ProjectV2['locked'], description?: ProjectV2['description']) {
@@ -77,13 +78,23 @@ onMounted(() => {
     <div
       class="fr-callout"
     >
-      <h1
-        class="fr-callout__title fr-mb-3w"
+      <div
+        class="lg:flex w-full"
       >
-        {{ project.name }}<h2 class="fr-callout__title fr-mb-3w italic inline opacity-70">
-          ({{ project.organization.label }})
-        </h2>
-      </h1>
+        <h1
+          class="fr-callout__title fr-mb-3w grow"
+        >
+          {{ project.name }}
+        </h1>
+        <div
+          class="text-s"
+          @click="() => copyContent(project.slug)"
+        >
+          Id: <span
+            class="fr-text-default--info cursor-pointer"
+          >{{ project.slug }}</span>
+        </div>
+      </div>
       <div
         v-if="!isEditingDescription"
         class="flex gap-4 items-center"
@@ -132,10 +143,10 @@ onMounted(() => {
             data-testid="saveDescriptionBtn"
             label="Enregistrer la description"
             secondary
-            :icon="project.operationsInProgress.includes('update')
+            :icon="operationsInProgress.includes('update')
               ? { name: 'ri:refresh-fill', animation: 'spin' }
               : 'ri:send-plane-line'"
-            :disabled="project.operationsInProgress.includes('update')"
+            :disabled="operationsInProgress.includes('update')"
             @click="updateProject()"
           />
           <DsfrButton
@@ -182,7 +193,7 @@ onMounted(() => {
       </div>
     </div>
     <ReplayButton
-      :project-id="project.id"
+      :project-slug="project.slug"
     />
     <div
       class="fr-mt-2w"
@@ -192,10 +203,10 @@ onMounted(() => {
         data-testid="showSecretsBtn"
         :label="`${isSecretShown ? 'Cacher' : 'Afficher'} les secrets des services`"
         secondary
-        :icon="project.operationsInProgress.includes('searchSecret')
+        :icon="operationsInProgress.includes('searchSecret')
           ? { name: 'ri:refresh-fill', animation: 'spin' }
           : isSecretShown ? 'ri:eye-off-line' : 'ri:eye-line'"
-        :disabled="project.operationsInProgress.includes('searchSecret')"
+        :disabled="operationsInProgress.includes('searchSecret')"
         @click="handleSecretDisplay"
       />
       <div
@@ -270,9 +281,9 @@ onMounted(() => {
           <DsfrButton
             data-testid="archiveProjectBtn"
             :label="`Supprimer définitivement le projet ${project.name}`"
-            :disabled="projectToArchive !== project.name || project.operationsInProgress.includes('delete')"
+            :disabled="projectToArchive !== project.name || operationsInProgress.includes('delete')"
             secondary
-            :icon="project.operationsInProgress.includes('delete')
+            :icon="operationsInProgress.includes('delete')
               ? { name: 'ri:refresh-fill', animation: 'spin' }
               : 'ri:delete-bin-7-line'"
             @click="archiveProject"

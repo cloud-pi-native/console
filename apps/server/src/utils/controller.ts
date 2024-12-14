@@ -3,6 +3,7 @@ import type { XOR } from '@cpn-console/shared'
 import { PROJECT_PERMS as PP, PROJECT_PERMS, projectIsLockedInfo, tokenHeaderName } from '@cpn-console/shared'
 import type { FastifyRequest } from 'fastify'
 import { Unauthorized401 } from './errors.js'
+import { uuid } from './queries-tools.js'
 import type { UserDetails } from '@/types/index.js'
 import prisma from '@/prisma.js'
 import { logViaSession, logViaToken } from '@/resources/user/business.js'
@@ -126,10 +127,15 @@ export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqu
       select: { project: { select: projectPermsSelect } },
     }))?.project
   } else if (projectUnique.id) {
-    project = await prisma.project.findUnique({
-      where: { id: projectUnique.id },
-      select: projectPermsSelect,
-    })
+    project = uuid.test(projectUnique.id)
+      ? await prisma.project.findUnique({
+        where: { id: projectUnique.id },
+        select: projectPermsSelect,
+      })
+      : await prisma.project.findUnique({
+        where: { slug: projectUnique.id },
+        select: projectPermsSelect,
+      })
   } else if (projectUnique.organizationName) {
     project = await prisma.project.findFirstOrThrow({
       where: { name: projectUnique.name, organization: { name: projectUnique.organizationName } },

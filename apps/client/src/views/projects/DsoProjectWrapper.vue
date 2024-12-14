@@ -3,14 +3,14 @@ import type { ProjectV2 } from '@cpn-console/shared'
 import { useProjectStore } from '../../stores/project.js'
 import type { Project } from '@/utils/project-utils.js'
 
-const props = defineProps<{ projectId: ProjectV2['id'] }>()
+const props = defineProps<{ projectSlug: ProjectV2['slug'] }>()
 
 const projectStore = useProjectStore()
 
 const project = ref<Project | undefined>(undefined)
 
-watch(projectStore.projectsById, (store) => {
-  project.value = store[props.projectId]
+watch(projectStore.projectsBySlug, (store) => {
+  project.value = store[props.projectSlug]
 }, { immediate: true })
 </script>
 
@@ -20,11 +20,11 @@ watch(projectStore.projectsById, (store) => {
   >
     <router-view />
     <ProjectLogsViewer
-      :key="projectId"
-      :project-id="projectId"
+      :key="project?.id"
+      :project-slug="projectSlug"
     />
     <OperationPanel
-      :project-id="projectId"
+      :project-slug="projectSlug"
     />
   </div>
 </template>

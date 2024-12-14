@@ -96,7 +96,7 @@ async function showLogs(index: number) {
         secondary
         icon-only
         :disabled="isUpdating"
-        :icon="{ name: 'ri:refresh-fill', animation: isUpdating ? 'spin' : '' }"
+        :icon="{ name: 'ri:refresh-fill', animation: isUpdating ? 'spin' : undefined }"
         @click="showLogs(page)"
       />
     </div>

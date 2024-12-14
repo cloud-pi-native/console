@@ -15,11 +15,11 @@ export const plugin: Plugin = {
   infos,
   subscribedHooks: {
     deleteProject: {
-      api: project => new KeycloakProjectApi(project.organization.name, project.name),
+      api: project => new KeycloakProjectApi(project.slug),
       steps: { post: deleteProject },
     },
     upsertProject: {
-      api: project => new KeycloakProjectApi(project.organization.name, project.name),
+      api: project => new KeycloakProjectApi(project.slug),
       steps: { main: upsertProject },
     },
     upsertZone: {

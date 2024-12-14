@@ -35,6 +35,7 @@ describe('test projectContract', () => {
   const projectId = faker.string.uuid()
   const project: Omit<ProjectV2, 'id'> = {
     name: faker.string.alpha({ length: 10, casing: 'lower' }),
+    slug: faker.string.alpha({ length: 5, casing: 'lower' }),
     description: faker.string.alpha({ length: 5 }),
     clusterIds: [],
     createdAt: (new Date()).toISOString(),

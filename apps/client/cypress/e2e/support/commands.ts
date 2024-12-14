@@ -29,10 +29,16 @@ Cypress.Commands.add('kcLogin', (name, password = 'test') => {
 Cypress.Commands.add('goToProjects', () => {
   cy.intercept('GET', 'api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
-  cy.visit('/')
+  cy.get('body').then(($body) => {
+    // Vérifie si un élément est présent
+    if ($body.find('a').length === 0) {
+      // Si l'élément n'est pas trouvé, on considère qu'on est dans les limbes
+      cy.visit('/')
+    }
+  })
   cy.getByDataTestid('menuMyProjects').click()
-  cy.wait('@listProjects')
-  cy.url().should('contain', '/projects')
+  cy.wait('@listProjects', { timeout: 10_000 })
+  cy.url({ timeout: 10_000 }).should('contain', '/projects')
 })
 
 Cypress.Commands.add('createProject', (project, ownerEmail = defaultOwner.email) => {
@@ -59,12 +65,12 @@ Cypress.Commands.add('createProject', (project, ownerEmail = defaultOwner.email)
   cy.wait('@listProjects').its('response.statusCode').should('eq', 200)
 })
 
-Cypress.Commands.add('assertCreateProjects', (names) => {
+Cypress.Commands.add('assertCreateProjects', (slugs) => {
   cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
   cy.goToProjects()
     .url().should('match', /\/projects$/)
     .wait('@listProjects').its('response.statusCode').should('eq', 200)
-  names.forEach(name => cy.getByDataTestid(`projectTile-${name}`).should('exist'))
+  slugs.forEach(slug => cy.getByDataTestid(`projectTile-${slug}`).should('exist'))
 })
 
 Cypress.Commands.add('archiveProject', (project) => {
@@ -72,7 +78,7 @@ Cypress.Commands.add('archiveProject', (project) => {
   cy.intercept('GET', '/api/v1/stages').as('getAllStages')
 
   cy.goToProjects()
-    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid(`projectTile-${project.slug}`).click()
     .getByDataTestid('menuDashboard').click()
 
   cy.url().should('contain', 'dashboard')
@@ -90,7 +96,7 @@ Cypress.Commands.add('archiveProject', (project) => {
 
   cy.url().should('match', /\/projects$/)
   cy.wait('@listProjects').its('response.statusCode').should('eq', 200)
-  cy.getByDataTestid(`projectTile-${project.name}`)
+  cy.getByDataTestid(`projectTile-${project.slug}`)
     .should('not.exist')
   cy.getByDataTestid('archiveProjectZone')
     .should('not.exist')
@@ -113,7 +119,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
   const newRepos = repos.map(newRepo)
 
   cy.goToProjects()
-    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid(`projectTile-${project.slug}`).click()
     .getByDataTestid('menuRepos').click()
     .url().should('contain', '/repositories')
 
@@ -148,7 +154,7 @@ Cypress.Commands.add('addRepos', (project, repos) => {
 
 Cypress.Commands.add('assertAddRepo', (project, repos) => {
   cy.goToProjects()
-    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid(`projectTile-${project.slug}`).click()
     .getByDataTestid('menuRepos').click()
 
   repos.forEach((repo) => {
@@ -158,7 +164,7 @@ Cypress.Commands.add('assertAddRepo', (project, repos) => {
 
 Cypress.Commands.add('deleteRepo', (project, repo) => {
   cy.goToProjects()
-    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid(`projectTile-${project.slug}`).click()
     .getByDataTestid('menuRepos').click()
 
   cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).click()
@@ -188,7 +194,7 @@ Cypress.Commands.add('addEnvironment', (project, environments) => {
 
   environments.forEach((environment) => {
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project?.name}`)
+      .getByDataTestid(`projectTile-${project?.slug}`)
       .click()
     cy.getByDataTestid('menuEnvironments')
       .click()
@@ -223,7 +229,7 @@ Cypress.Commands.add('assertAddEnvironment', (project, environments, isDeepCheck
   cy.intercept('GET', 'api/v1/stages').as('listStages')
   cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
   cy.goToProjects()
-    .getByDataTestid(`projectTile-${project.name}`)
+    .getByDataTestid(`projectTile-${project.slug}`)
     .click()
   cy.getByDataTestid('menuEnvironments')
     .click()
@@ -261,7 +267,7 @@ Cypress.Commands.add('deleteEnvironment', (project, environmentName) => {
   cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
   cy.goToProjects()
-  cy.getByDataTestid(`projectTile-${project.name}`).click()
+  cy.getByDataTestid(`projectTile-${project.slug}`).click()
   cy.getByDataTestid('menuEnvironments').click()
   cy.wait('@listEnvironments')
   cy.wait('@getClusters')
@@ -287,7 +293,7 @@ Cypress.Commands.add('assertPermission', (project, environmentName, permissions)
   cy.intercept('GET', 'api/v1/clusters').as('getClusters')
 
   cy.goToProjects()
-    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid(`projectTile-${project.slug}`).click()
     .getByDataTestid('menuEnvironments').click()
   cy.wait('@listEnvironments')
   cy.wait('@getClusters')
@@ -312,7 +318,7 @@ Cypress.Commands.add('addProjectMember', (project, userEmail) => {
   cy.intercept('POST', /\/api\/v1\/projects\/[\w-]{36}\/users$/).as('postUser')
 
   cy.goToProjects()
-    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid(`projectTile-${project.slug}`).click()
     .getByDataTestid('menuTeam').click()
     .url().should('match', /\/team$/)
     .getByDataTestid('teamTable')
@@ -335,7 +341,7 @@ Cypress.Commands.add('addProjectMember', (project, userEmail) => {
 
 Cypress.Commands.add('assertUsers', (project, emails) => {
   cy.goToProjects()
-    .getByDataTestid(`projectTile-${project.name}`).click()
+    .getByDataTestid(`projectTile-${project.slug}`).click()
     .getByDataTestid('menuTeam').click()
 
   emails.forEach((email) => {
