@@ -96,8 +96,8 @@ export default defineConfig({
     }),
     VitePWA({
       registerType: 'prompt', // autoUpdate
-      disable: false,
-      selfDestroying: false,
+      // disable: true,
+      // selfDestroying: true,
       workbox: {
         maximumFileSizeToCacheInBytes: 5_000_000,
         cleanupOutdatedCaches: true,

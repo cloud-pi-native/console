@@ -11,8 +11,8 @@ env:
   BUILD_AMD64: true
   BUILD_ARM64: true
   USE_QEMU: false
-  NODE_VERSION: 22.10.0
-  PNPM_VERSION: 9.10.0
+  NODE_VERSION: 22.11.0
+  PNPM_VERSION: 9.15.0
 
 jobs:
   expose-vars:

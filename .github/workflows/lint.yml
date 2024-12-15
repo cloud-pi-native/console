@@ -15,12 +15,12 @@ on:
         description: Nodejs version used to run tests
         required: true
         type: string
-        default: 22.10.0
+        default: 22.11.0
       PNPM_VERSION:
         description: Pnpm version used to run tests
         required: true
         type: string
-        default: 9.10.0
+        default: 9.15.0
 
 jobs:
   lint:

@@ -31,15 +31,8 @@ export default defineConfig({
           launchOptions.args.push('--disable-extensions')
           launchOptions.args.push('--disable-sync')
         }
-
         if (browser.family === 'firefox') {
           launchOptions.preferences['network.proxy.testing_localhost_is_secure_when_hijacked'] = true
-          // launchOptions.preferences['network.proxy.allow_hijacking_localhost'] = true
-          // launchOptions.preferences['network.cookie.sameSite.laxByDefault'] = false
-          // launchOptions.preferences['network.cookie.sameSite.noneRequiresSecure'] = false
-          // launchOptions.preferences['security.csp.enable'] = false
-          // launchOptions.preferences['dom.security.https_only_mode'] = false
-          // launchOptions.preferences['javascript.options.strict'] = false
           launchOptions.preferences['dom.serviceWorkers.enabled'] = false
         }
         return launchOptions
