@@ -19,14 +19,25 @@ if (viteConfig.server) {
 
 export default defineConfig({
   e2e: {
-    setupNodeEvents(on) {
-      on(
-        'file:preprocessor',
-        vitePreprocessor({
-          configFile: path.resolve('./vite.config.ts'),
-          mode: 'development',
-        }),
-      )
+    setupNodeEvents(on, config) {
+      on('file:preprocessor', vitePreprocessor({
+        configFile: path.resolve('./vite.config.ts'),
+        mode: 'development',
+      }))
+      on('before:browser:launch', (browser, launchOptions) => {
+        if (browser.family === 'chromium') {
+          launchOptions.args.push('--disable-background-networking')
+          launchOptions.args.push('--disable-service-worker')
+          launchOptions.args.push('--disable-extensions')
+          launchOptions.args.push('--disable-sync')
+        }
+        if (browser.family === 'firefox') {
+          launchOptions.preferences['network.proxy.testing_localhost_is_secure_when_hijacked'] = true
+          launchOptions.preferences['dom.serviceWorkers.enabled'] = false
+        }
+        return launchOptions
+      })
+      return config
     },
     viewportHeight: 1024,
     viewportWidth: 1280,
@@ -38,7 +49,8 @@ export default defineConfig({
     screenshotsFolder: 'cypress/e2e/screenshots',
     numTestsKeptInMemory: 2,
     chromeWebSecurity: false,
-    experimentalModifyObstructiveThirdPartyCode: false,
+    experimentalModifyObstructiveThirdPartyCode: true,
+    experimentalCspAllowList: true,
     experimentalWebKitSupport: false,
     env: {
       argocdUrl,

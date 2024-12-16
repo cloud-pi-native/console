@@ -16,7 +16,7 @@ export const useUserStore = defineStore('user', () => {
   const adminPerms = computed(() => {
     return apiAuthInfos.value
       ? myAdminRoles.value
-        .reduce((acc, curr) => acc | BigInt(curr.permissions), 0n)
+          .reduce((acc, curr) => acc | BigInt(curr.permissions), 0n)
       : null
   })
 

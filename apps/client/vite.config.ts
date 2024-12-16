@@ -42,6 +42,11 @@ export default defineConfig({
         changeOrigin: true,
         ws: true,
       },
+      '^/swagger-ui': {
+        target: `http://${serverHost}:${serverPort}`,
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
   define,
@@ -78,12 +83,28 @@ export default defineConfig({
         vueDsfrComponentResolver,
       ],
     }),
-    UnoCSS(),
+    UnoCSS({
+      extendTheme: (theme) => {
+        return {
+          ...theme,
+          breakpoints: {
+            ...theme.breakpoints,
+            thousand: '1000px',
+          },
+        }
+      },
+    }),
     VitePWA({
       registerType: 'prompt', // autoUpdate
+      // disable: true,
+      // selfDestroying: true,
       workbox: {
         maximumFileSizeToCacheInBytes: 5_000_000,
         cleanupOutdatedCaches: true,
+        navigateFallbackDenylist: [
+          /^\/api/,
+          /^\/swagger-ui/,
+        ],
       },
       devOptions: {
         enabled: false,
@@ -91,7 +112,7 @@ export default defineConfig({
       manifest: {
         name: 'Console Cloud Pi Native',
         short_name: 'CPiN',
-        description: 'Une console web pour les controller tous',
+        description: 'Une console web pour les controler tous',
         start_url: '/',
         display: 'standalone',
         background_color: '#ffffff',

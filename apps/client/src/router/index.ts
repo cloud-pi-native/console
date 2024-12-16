@@ -13,6 +13,7 @@ import { uuid } from '@/utils/regex.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
+import { swaggerUiPath } from '@cpn-console/shared'
 
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
@@ -258,6 +259,13 @@ export const routes: Readonly<RouteRecordRaw[]> = [
     ],
   },
   {
+    path: swaggerUiPath,
+    name: 'Swagger',
+    // no component, swagger plugin
+    components: {},
+    strict: false,
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: NotFound,
@@ -282,7 +290,7 @@ router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des trans
  * Redirect unlogged user to login view
  */
 router.beforeEach(async (to, _from, next) => {
-  const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout']
+  const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout', 'Swagger']
   const userStore = useUserStore()
   const systemStore = useSystemSettingsStore()
   await userStore.setIsLoggedIn()

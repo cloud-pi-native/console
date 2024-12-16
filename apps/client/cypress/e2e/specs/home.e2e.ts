@@ -1,3 +1,4 @@
+import { swaggerUiPath } from '@cpn-console/shared'
 import { getModelById } from '../support/func.js'
 
 const user = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567')
@@ -21,7 +22,7 @@ describe('Header', () => {
   it('Should display app version and swagger', () => {
     cy.visit('/')
     cy.getByDataTestid('swaggerUrl')
-      .should('have.attr', 'href', '/api/v1/swagger-ui')
+      .should('have.attr', 'href', swaggerUiPath)
     cy.getByDataTestid('appVersionUrl')
       .contains('vpr-')
       .invoke('attr', 'href')

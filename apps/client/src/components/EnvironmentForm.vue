@@ -97,8 +97,8 @@ function setEnvironmentOptions() {
     = quotaStore.quotas
       .filter(quota =>
         (quota.stageIds.includes(localEnvironment.value.stageId ?? '') // quotas disponibles pour ce type d'environnement
-        && !quota.isPrivate) // et ne pas afficher les quotas privés
-        || quota.id === localEnvironment.value.quotaId) // ou quota actuellement associé (au cas où l'association ne soit plus disponible)
+          && !quota.isPrivate) // et ne pas afficher les quotas privés
+          || quota.id === localEnvironment.value.quotaId) // ou quota actuellement associé (au cas où l'association ne soit plus disponible)
       .map(quota => ({
         text: `${quota.name} (${quota.cpu}CPU, ${quota.memory})`,
         value: quota.id,
@@ -106,9 +106,9 @@ function setEnvironmentOptions() {
   clusterOptions.value = props.allClusters
     .filter(cluster =>
       (props.projectClustersIds.includes(cluster.id) // clusters possibles pour ce projet
-      && cluster.stageIds.includes(localEnvironment.value.stageId ?? '') // correspondant à ce stage
-      && cluster.zoneId === zoneId.value) // dont la zone d'attachement est celle choisie
-      || cluster.id === localEnvironment.value.clusterId, // ou alors celui associé à l'environnment en cours de modification
+        && cluster.stageIds.includes(localEnvironment.value.stageId ?? '') // correspondant à ce stage
+        && cluster.zoneId === zoneId.value) // dont la zone d'attachement est celle choisie
+        || cluster.id === localEnvironment.value.clusterId, // ou alors celui associé à l'environnment en cours de modification
     )
     .map(cluster => ({
       text: cluster.label,
