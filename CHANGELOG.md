@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.21.0](https://github.com/cloud-pi-native/console/compare/v8.20.0...v8.21.0) (2024-12-16)
+
+
+### Features
+
+* :construction: zone kv store management ([628a6e5](https://github.com/cloud-pi-native/console/commit/628a6e57cb439c8b899acdb8bf1995eedbe0a184))
+
+
+### Bug Fixes
+
+* :bug: fix not displaying swagger ([6f708a1](https://github.com/cloud-pi-native/console/commit/6f708a150402835c4ef044bdb8e69f20dfe3ee32))
+* :bug: retry delete project is failed ([c5856fa](https://github.com/cloud-pi-native/console/commit/c5856fadc49acd238ee61d289cf8441a5b3a2e18))
+
 ## [8.20.0](https://github.com/cloud-pi-native/console/compare/v8.19.1...v8.20.0) (2024-11-25)
 
 
