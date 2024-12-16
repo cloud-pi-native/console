@@ -12,8 +12,8 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: 22.10.0
-  PNPM_VERSION: 9.10.0
+  NODE_VERSION: 22.11.0
+  PNPM_VERSION: 9.15.0
   REGISTRY: ghcr.io
   NAMESPACE: "${{ github.repository }}"
   BUILD_AMD64: true

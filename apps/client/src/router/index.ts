@@ -13,6 +13,7 @@ import { uuid } from '@/utils/regex.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
+import { swaggerUiPath } from '@cpn-console/shared'
 
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
@@ -256,6 +257,13 @@ export const routes: Readonly<RouteRecordRaw[]> = [
         component: AdminTokens,
       },
     ],
+  },
+  {
+    path: swaggerUiPath,
+    name: 'Swagger',
+    // no component, swagger plugin
+    components: {},
+    strict: false,
   },
   {
     path: '/:pathMatch(.*)*',

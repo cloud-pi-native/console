@@ -48,7 +48,7 @@ Trois niveaux de permissions différents,
 
 ## Points d'API
 
-voir swagger : <http://localhost:8080/api/v1/swagger-ui/static/index.html>
+voir swagger : <http://localhost:8080/swagger-ui>
 
 ---
 

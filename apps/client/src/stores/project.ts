@@ -14,7 +14,7 @@ export const useProjectStore = defineStore('project', () => {
 
   const amIPartOf = (project: ProjectV2) => project.status !== 'archived'
     && (project.ownerId === userStore.userProfile?.id
-    || project.members.some(member => member.userId === userStore.userProfile?.id))
+      || project.members.some(member => member.userId === userStore.userProfile?.id))
 
   // mostly for admin views
   const projectsById = ref<Record<string, Project>>({})

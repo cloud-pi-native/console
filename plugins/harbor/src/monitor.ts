@@ -22,11 +22,11 @@ async function monitor(instance: Monitor): Promise<MonitorInfos> {
       }
       const failedCoreComponents = data.components
         ? data.components
-          .filter(component =>
-            component.status === HealthStatus.unhealthy
-            && component.name
-            && coreComponents.includes(component.name),
-          )
+            .filter(component =>
+              component.status === HealthStatus.unhealthy
+              && component.name
+              && coreComponents.includes(component.name),
+            )
         : []
 
       if (failedCoreComponents.length > 0) {

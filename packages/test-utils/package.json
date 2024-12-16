@@ -21,14 +21,14 @@
   },
   "dependencies": {
     "@cpn-console/shared": "workspace:^",
-    "@faker-js/faker": "^8.4.1"
+    "@faker-js/faker": "^9.3.0"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
-    "@types/node": "^22.8.2",
-    "rimraf": "^5.0.7",
-    "typescript": "^5.5.2"
+    "@types/node": "^22.10.2",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.2"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
