@@ -52,7 +52,7 @@ export const plugin: Plugin = {
     upsertZone: {
       api: () => new GitlabZoneApi(),
       steps: {
-        main: upsertZone,
+        pre: upsertZone,
         post: commitFiles,
       },
     },

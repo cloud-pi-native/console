@@ -6,11 +6,19 @@ import { getConfig, getK8sApi } from './utils.js'
 export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
   try {
     const cluster = payload.args
+    const { vault } = payload.apis
     if (cluster.label === inClusterLabel) {
       await deleteClusterSecret(cluster.secretName)
     } else {
       await createClusterSecret(cluster)
     }
+    const clusterData = {
+      name: cluster.label,
+      clusterResources: cluster.clusterResources.toString(),
+      server: cluster.cluster.server,
+      config: JSON.stringify(convertConfig(cluster)),
+    }
+    await vault.write(clusterData, `clusters/cluster-${cluster.label}/argocd-cluster-secret`)
     return {
       status: {
         result: 'OK',
@@ -32,6 +40,7 @@ export const deleteCluster: StepCall<ClusterObject> = async (payload) => {
   try {
     const secretName = payload.args.secretName
     await deleteClusterSecret(secretName)
+    await payload.apis.vault.destroy(`clusters/cluster-${payload.args.label}/argocd-cluster-secret`)
     return {
       status: {
         result: 'OK',

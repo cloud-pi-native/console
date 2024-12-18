@@ -46,6 +46,7 @@ export interface ZoneObject {
   id: string
   slug: string
   argocdUrl: string
+  clusterNames?: string[]
 }
 
 export interface ClusterObject {
