@@ -1,36 +1,14 @@
-import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 import type { RobotCreated } from './api/Api.js'
 import { Api } from './api/Api.js'
 import type { VaultRobotSecret } from './robot.js'
+import getConfig from './config.js'
 
-const config: {
-  url?: string
-  host?: string
-} = {}
+let api: Api<ReturnType<typeof getConfig>['apiConfig']> | undefined
 
-export function getConfig(): Required<typeof config> {
-  config.url = config.url ?? removeTrailingSlash(requiredEnv('HARBOR_URL'))
-  config.host = config.host ?? config?.url?.split('://')[1]
-  // @ts-ignore
-  return config
-}
-
-function getApiConfig() {
-  return {
-    auth: {
-      username: requiredEnv('HARBOR_ADMIN'),
-      password: requiredEnv('HARBOR_ADMIN_PASSWORD'),
-    },
-    baseURL: `${getConfig().url}/api/v2.0/`,
-  }
-}
-
-let api: Api<ReturnType<typeof getApiConfig>> | undefined
-
-export type HarborApi = Api<ReturnType<typeof getApiConfig>>
+export type HarborApi = Api<ReturnType<typeof getConfig>['apiConfig']>
 export function getApi(): HarborApi {
   if (!api) {
-    api = new Api(getApiConfig())
+    api = new Api(getConfig().apiConfig)
   }
   return api
 }

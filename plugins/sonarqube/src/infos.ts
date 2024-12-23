@@ -1,9 +1,9 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
-import { getConfig } from './tech.js'
+import getConfig from './config.js'
 
 const infos: ServiceInfos = {
   name: 'sonarqube',
-  to: () => `${getConfig().url}/projects`,
+  to: () => `${getConfig().publicUrl}/projects`,
   title: 'SonarQube',
   imgSrc: '/img/sonarqube.svg',
   description: 'SonarQube permet à tous les développeurs d\'écrire un code plus propre et plus sûr',

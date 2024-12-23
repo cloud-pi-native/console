@@ -1,6 +1,6 @@
 import { Monitor, type MonitorInfos, MonitorStatus } from '@cpn-console/shared'
 import axios from 'axios'
-import { getAxiosOptions } from './tech.js'
+import getConfig from './config.js'
 
 const statusMap = {
   GREEN: MonitorStatus.OK,
@@ -22,7 +22,7 @@ async function monitor(instance: Monitor): Promise<MonitorInfos> {
   try {
     const res = await axios.get('/system/health', {
       validateStatus: res => res === 200,
-      ...getAxiosOptions(),
+      ...getConfig().axiosOptions,
     })
     const data = res.data as SonarRes
 
