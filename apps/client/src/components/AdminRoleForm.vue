@@ -3,7 +3,6 @@ import { computed, onBeforeMount, ref } from 'vue'
 import type { AdminPermsKeys, LettersQuery, SharedZodError, User } from '@cpn-console/shared'
 import { ADMIN_PERMS, RoleSchema, adminPermsDetails, shallowEqual } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
-// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import SuggestionInput from './SuggestionInput.vue'
 import { useUsersStore } from '@/stores/users.js'

@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import type { ProjectV2 } from '@cpn-console/shared'
 import { ProjectAuthorized } from '@cpn-console/shared'

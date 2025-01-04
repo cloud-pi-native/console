@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
-// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import type { ArrayElement, Organization, ProjectV2, projectContract } from '@cpn-console/shared'
 import { bts, statusDict } from '@cpn-console/shared'

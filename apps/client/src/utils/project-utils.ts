@@ -25,7 +25,6 @@ import type {
   projectRoleContract,
 } from '@cpn-console/shared'
 
-// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import {
   apiClient,

@@ -14,6 +14,7 @@ RUN pnpm install --ignore-scripts # --no-optional
 COPY --chown=node:root packages/ ./packages/
 RUN pnpm --filter @cpn-console/shared run build
 COPY --chown=node:root apps/client/ ./apps/client/
+RUN pnpm --filter client run icons
 ENTRYPOINT [ "pnpm", "--filter", "client", "run", "dev" ]
 
 
