@@ -377,7 +377,7 @@ onMounted(() => {
               :active="routeName === 'SystemSettings'"
               to="/admin/system-settings"
             >
-              <v-icon name="ri:tools-fill" />
+              <v-icon name="ri:tools-line" />
               Réglages console
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>

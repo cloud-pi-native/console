@@ -64,7 +64,7 @@ function saveDescription() {
           label="Enregistrer la description"
           secondary
           :icon="project.operationsInProgress.includes('update')
-            ? { name: 'ri:refresh-fill', animation: 'spin' }
+            ? { name: 'ri:refresh-line', animation: 'spin' }
             : 'ri:send-plane-line'"
           :disabled="project.operationsInProgress.includes('update')"
           @click="saveDescription"
@@ -96,7 +96,7 @@ function saveDescription() {
       <DsfrButton
         v-if="canEditDescription"
         class="fr-mt-0"
-        icon="ri:pencil-fill"
+        icon="ri:pencil-line"
         data-testid="setDescriptionBtn"
         :title="getDynamicTitle(project.locked, project.description)"
         icon-only

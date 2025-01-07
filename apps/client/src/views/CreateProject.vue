@@ -164,7 +164,7 @@ onMounted(async () => {
       class="fr-mt-2w"
       :disabled="!project.organizationId || !!errorSchema || buttonState.isCreating"
       :icon="buttonState.isCreating
-        ? { name: 'ri:refresh-fill', animation: 'spin' }
+        ? { name: 'ri:refresh-line', animation: 'spin' }
         : 'ri:send-plane-line'"
       @click="createProject()"
     />

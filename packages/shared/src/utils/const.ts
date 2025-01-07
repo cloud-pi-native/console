@@ -88,7 +88,7 @@ export const statusDict = {
     false: {
       testId: 'unlocked-badge',
       type: 'success',
-      icon: 'ri:lock-unlock-fill',
+      icon: 'ri:lock-unlock-line',
       wording: 'déverrouillé',
       animation: '',
       color: 'var(--success-425-625)',
@@ -96,7 +96,7 @@ export const statusDict = {
     true: {
       testId: 'locked-badge',
       type: 'warning',
-      icon: 'ri:lock-fill',
+      icon: 'ri:lock-line',
       wording: 'verrouillé',
       animation: '',
       color: 'var(--warning-425-625)',
@@ -106,7 +106,7 @@ export const statusDict = {
     created: {
       testId: 'created-badge',
       type: 'success',
-      icon: 'ri:check-fill',
+      icon: 'ri:check-line',
       wording: 'opérations réussies',
       animation: '',
       color: 'var(--success-425-625)',
@@ -130,7 +130,7 @@ export const statusDict = {
     archived: {
       testId: 'archived-badge',
       type: 'info',
-      icon: 'ri:archive-fill',
+      icon: 'ri:archive-line',
       wording: 'archivé',
       animation: '',
       color: 'var(--text-mention-grey)',
@@ -138,7 +138,7 @@ export const statusDict = {
     warning: {
       testId: 'warning-badge',
       type: 'warning',
-      icon: 'ri:alert-fill',
+      icon: 'ri:alert-line',
       wording: 'partiellement dégradé',
       animation: '',
       color: 'var(--warning-425-625)',

@@ -148,7 +148,7 @@ const schema = computed(() => {
         label="Enregistrer"
         secondary
         :icon="isCreatingToken
-          ? { name: 'ri:refresh-fill', animation: 'spin' }
+          ? { name: 'ri:refresh-line', animation: 'spin' }
           : 'ri:send-plane-line'"
         :disabled="!schema.success || !!invalidExpirationDate || isCreatingToken || (mandatoryExpiration && !newToken.expirationDate)"
         class="mr-5"

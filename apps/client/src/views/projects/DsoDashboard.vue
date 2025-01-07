@@ -120,7 +120,7 @@ onMounted(() => {
         :label="`${isSecretShown ? 'Cacher' : 'Afficher'} les secrets des services`"
         secondary
         :icon="project.operationsInProgress.includes('searchSecret')
-          ? { name: 'ri:refresh-fill', animation: 'spin' }
+          ? { name: 'ri:refresh-line', animation: 'spin' }
           : isSecretShown ? 'ri:eye-off-line' : 'ri:eye-line'"
         :disabled="project.operationsInProgress.includes('searchSecret')"
         @click="handleSecretDisplay"
@@ -200,7 +200,7 @@ onMounted(() => {
             :disabled="projectToArchive !== project.name || project.operationsInProgress.includes('delete')"
             secondary
             :icon="project.operationsInProgress.includes('delete')
-              ? { name: 'ri:refresh-fill', animation: 'spin' }
+              ? { name: 'ri:refresh-line', animation: 'spin' }
               : 'ri:delete-bin-7-line'"
             @click="archiveProject"
           />
