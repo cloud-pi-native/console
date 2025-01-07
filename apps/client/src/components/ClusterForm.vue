@@ -295,6 +295,14 @@ const isConnectionDetailsShown = ref(true)
         name="isClusterSkipTlsVerify"
         :disabled="localCluster.label === inClusterLabel"
       />
+
+      <DsfrCheckbox
+        id="externalClusterCbx"
+        v-model="localCluster.external"
+        label="Cluster externe"
+        hint="La console DSO n'essaiera pas de joindre l'API de ce cluster, le ArgoCD de la zone de chargera de configurer celui-ci."
+        name="isExternalCluster"
+      />
     </template>
     <h4
       class="mb-1 inline-block"

@@ -234,6 +234,7 @@ const clusterInfosSelect = {
   id: true,
   infos: true,
   label: true,
+  external: true,
   privacy: true,
   secretName: true,
   kubeconfig: true,

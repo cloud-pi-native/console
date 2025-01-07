@@ -184,6 +184,7 @@ describe('schemas utils', () => {
     const toParse = {
       id: faker.string.uuid(),
       label: 'cluster',
+      external: false,
       clusterResources: true,
       infos: 'Infos du cluster',
       privacy: ClusterPrivacy.DEDICATED,
@@ -207,6 +208,7 @@ describe('schemas utils', () => {
     const toParse = {
       id: faker.string.uuid(),
       label: 'cluster',
+      external: true,
       clusterResources: true,
       privacy: ClusterPrivacy.PUBLIC,
       zoneId: faker.string.uuid(),
