@@ -53,6 +53,7 @@ export interface ClusterObject {
   id: string
   label: string
   privacy: 'public' | 'dedicated'
+  external: boolean
   secretName: string
   clusterResources: boolean
   infos: string | null

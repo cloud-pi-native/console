@@ -36,6 +36,7 @@ const props = withDefaults(defineProps<{
     clusterResources: false,
     privacy: ClusterPrivacy.DEDICATED,
     infos: '',
+    external: false,
     id: '',
     kubeconfig: {
       cluster: {
@@ -288,6 +289,14 @@ const isConnectionDetailsShown = ref(true)
         hint="Ignorer le certificat TLS présenté pour contacter l'API server Kubernetes"
         name="isClusterSkipTlsVerify"
         :disabled="localCluster.label === inClusterLabel"
+      />
+
+      <DsfrCheckbox
+        id="externalClusterCbx"
+        v-model="localCluster.external"
+        label="Cluster externe"
+        hint="La console DSO n'essaiera pas de joindre l'API de ce cluster, le ArgoCD de la zone de chargera de configurer celui-ci."
+        name="isExternalCluster"
       />
     </template>
     <h4
