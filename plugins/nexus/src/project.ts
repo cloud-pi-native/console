@@ -31,6 +31,10 @@ export const deleteNexusProject: StepCall<Project> = async ({ args: project }) =
         result: 'OK',
         message: 'Project deleted from Nexus',
       },
+      store: {
+        activateNpmRepo: 'disabled',
+        activateMavenRepo: 'disabled',
+      },
     }
   } catch (error) {
     return {
