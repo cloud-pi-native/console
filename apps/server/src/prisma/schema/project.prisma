@@ -65,25 +65,27 @@ model ProjectRole {
 }
 
 model Project {
-  id                              String           @id @unique @default(uuid()) @db.Uuid
-  name                            String
-  organizationId                  String           @db.Uuid
-  description                     String           @default("")
-  status                          ProjectStatus    @default(initializing)
-  locked                          Boolean          @default(false)
-  createdAt                       DateTime         @default(now())
-  updatedAt                       DateTime         @updatedAt
-  everyonePerms                   BigInt           @default(896)
-  ownerId                         String           @db.Uuid
-  environments                    Environment[]
-  logs                            Log[]
-  organization                    Organization     @relation(fields: [organizationId], references: [id])
-  owner                           User             @relation(fields: [ownerId], references: [id])
-  members                         ProjectMembers[]
-  plugins                         ProjectPlugin[]
-  roles                           ProjectRole[]
-  repositories                    Repository[]
-  clusters                        Cluster[]        @relation("ClusterToProject")
+  id             String           @id @unique @default(uuid()) @db.Uuid
+  name           String
+  organizationId String           @db.Uuid
+  description    String           @default("")
+  status         ProjectStatus    @default(initializing)
+  locked         Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  everyonePerms  BigInt           @default(896)
+  ownerId        String           @db.Uuid
+  environments   Environment[]
+  logs           Log[]
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  owner          User             @relation(fields: [ownerId], references: [id])
+  members        ProjectMembers[]
+  plugins        ProjectPlugin[]
+  roles          ProjectRole[]
+  repositories   Repository[]
+  clusters       Cluster[]        @relation("ClusterToProject")
+
+  lastSuccessProvisionningVersion String?
 }
 
 enum ProjectStatus {

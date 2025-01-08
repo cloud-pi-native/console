@@ -1,6 +1,6 @@
 import { createHmac } from 'node:crypto'
 import { Namespace } from 'kubernetes-models/v1'
-import type { Project, ProjectLite, StepCall, UserObject } from '@cpn-console/hooks'
+import type { Environment, Project, ProjectLite, StepCall, UserObject } from '@cpn-console/hooks'
 import { parseError } from '@cpn-console/hooks'
 import type { CoreV1Api, V1NamespaceList } from '@kubernetes/client-node'
 import { createCoreV1Api } from './api.js'
@@ -83,19 +83,19 @@ export const deleteNamespaces: StepCall<Project> = async (payload) => {
 }
 
 // Utils
-export function getNsObject(organization: string, project: string, environment: string, owner: UserObject, zone: string, projectId: string): V1NamespacePopulated {
+export function getNsObject(organization: string, project: string, environment: Environment, owner: UserObject, zone: string, projectId: string): V1NamespacePopulated {
   const nsObject = new Namespace({
     metadata: {
-      name: generateNamespaceName(organization, project, environment),
+      name: generateNamespaceName(organization, project, environment.name),
       labels: {
         'dso/organization': organization,
-        'dso/projet': project,
         'dso/project': project,
-        'dso/environment': environment,
+        'dso/environment': environment.name,
         'dso/owner.id': owner.id,
         'app.kubernetes.io/managed-by': 'dso-console',
         'dso/zone': zone,
         'dso/project.id': projectId,
+        'dso/environment.id': environment.id,
       },
     },
   })

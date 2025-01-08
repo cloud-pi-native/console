@@ -233,6 +233,7 @@ describe('transformToHookProject', () => {
       stage: stage.name,
       permissions: [{ permissions: { rw: true, ro: true }, userId: project.ownerId }],
       ...environment,
+      apis: {},
     })))
 
     // Assert sur la transformation des repositories
