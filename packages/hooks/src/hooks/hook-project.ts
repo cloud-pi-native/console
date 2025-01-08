@@ -1,3 +1,4 @@
+import type { PluginApi } from '@/utils/utils.js'
 import type { Hook } from './hook.js'
 import { createHook } from './hook.js'
 import type { ClusterObject, ExternalRepoUrl, InternalRepoName, IsInfra, IsPrivate, UserObject } from './index.js'
@@ -17,6 +18,9 @@ export interface Role {
   role: 'owner' | 'user'
 }
 
+export interface EnvironmentApis {
+  [x: string]: PluginApi
+}
 export interface Environment {
   id: string
   name: string
@@ -30,6 +34,7 @@ export interface Environment {
       rw: boolean
     }
   }[]
+  apis: EnvironmentApis
 }
 
 export interface Repository {

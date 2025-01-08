@@ -38,7 +38,7 @@ export function addLogs({ action, data, requestId, userId = null, projectId }: A
     data: {
       action,
       userId,
-      data: exclude(data, ['cluster', 'user', 'newCreds']),
+      data: exclude(data, ['cluster', 'user', 'newCreds', 'apis']),
       requestId,
       projectId,
     },

@@ -200,6 +200,7 @@ export function transformToHookProject(project: ProjectInfos, store: Store, repo
         })),
       ],
       ...environment,
+      apis: {},
     })),
     repositories: project.repositories.map(repo => ({ ...repo, newCreds: reposCreds[repo.internalRepoName] })),
     store,
