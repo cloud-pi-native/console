@@ -125,7 +125,7 @@ export async function updateProject(
     ])
   }
 
-  if (description || everyonePerms || typeof locked !== 'undefined') {
+  if (typeof description !== 'undefined' || typeof everyonePerms !== 'undefined' || typeof locked !== 'undefined') {
     await updateProjectQuery(projectId, {
       description,
       locked,

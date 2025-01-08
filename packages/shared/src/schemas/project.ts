@@ -74,6 +74,8 @@ export const ProjectSchemaV2 = z.object({
   roles: RoleSchema
     .array(),
   everyonePerms: permissionLevelSchema,
+  lastSuccessProvisionningVersion: z.string()
+    .nullable(),
 })
   .extend(AtDatesToStringExtend)
 
