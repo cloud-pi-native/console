@@ -1,5 +1,19 @@
 # Changelog
 
+## [8.22.0](https://github.com/cloud-pi-native/console/compare/v8.21.0...v8.22.0) (2025-01-08)
+
+
+### Features
+
+* :sparkles: store cluster secret in Vault ([3935ca6](https://github.com/cloud-pi-native/console/commit/3935ca68cb0927bf150e15c3b205baebafa5cb98))
+* track project version provisioning ([227baf6](https://github.com/cloud-pi-native/console/commit/227baf6802687c9555d3931071a7e049d2756db1))
+
+
+### Bug Fixes
+
+* :bug: downgrade gitlab lib to avoid upsert user warning ([90faeff](https://github.com/cloud-pi-native/console/commit/90faeff2978e0ee2db7624b895550db278aa9c17))
+* :bug: nexus auto disable repo config on delete ([1295ece](https://github.com/cloud-pi-native/console/commit/1295ece0312a6c7b319c379e88be1ee570d75499))
+
 ## [8.21.0](https://github.com/cloud-pi-native/console/compare/v8.20.0...v8.21.0) (2024-12-16)
 
 
