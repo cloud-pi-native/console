@@ -133,16 +133,6 @@ export function getPublicClusters() {
   })
 }
 
-export async function getClusterNamesByZoneId(zoneId: string) {
-  const clusterNames = await prisma.cluster.findMany({
-    where: { zoneId },
-    select: {
-      label: true,
-    },
-  })
-  return clusterNames.map(({ label }) => label)
-}
-
 export function getClusterByLabel(label: Cluster['label']) {
   return prisma.cluster.findUnique({ where: { label } })
 }

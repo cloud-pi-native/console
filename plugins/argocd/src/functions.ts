@@ -220,7 +220,7 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
   const cluster = getCluster(project, environment)
   const infraProject = await gitlabApi.getProjectById(repoId)
   const valueFilePath = getValueFilePath(project, cluster, environment)
-  const vaultCredentials = await vaultApi.Project.getCredentials()
+  const vaultCredentials = await vaultApi.getCredentials()
   const repositories: ArgoRepoSource[] = await Promise.all([
     getArgoRepoSource('infra-apps', environment.name, gitlabApi),
     ...sourceRepos.map(repo => getArgoRepoSource(repo.internalRepoName, environment.name, gitlabApi)),

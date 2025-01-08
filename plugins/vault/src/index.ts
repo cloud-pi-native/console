@@ -1,4 +1,4 @@
-import type { ClusterObject, DefaultArgs, Plugin, Project, ProjectLite, ZoneObject } from '@cpn-console/hooks'
+import type { DefaultArgs, Plugin, Project, ProjectLite, ZoneObject } from '@cpn-console/hooks'
 import { archiveDsoProject, deleteZone, deployAuth, getSecrets, upsertProject, upsertZone } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
@@ -38,12 +38,6 @@ export const plugin: Plugin = {
         main: deleteZone,
       },
     },
-    upsertCluster: {
-      api: (c: ClusterObject) => new VaultZoneApi(c.zone.slug),
-    },
-    deleteCluster: {
-      api: (c: ClusterObject) => new VaultZoneApi(c.zone.slug),
-    },
   },
   monitor,
 }
@@ -52,7 +46,7 @@ declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
     vault: Args extends (ProjectLite | Project)
       ? VaultProjectApi
-      : Args extends (ZoneObject | ClusterObject)
+      : Args extends (ZoneObject)
         ? VaultZoneApi
         : never
   }

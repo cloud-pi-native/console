@@ -30,7 +30,7 @@ export const deployAuth: StepCall<Project> = async (payload) => {
     if (!payload.apis.vault) {
       throw new Error('no Vault available')
     }
-    const appRoleCreds = await payload.apis.vault.Project.getCredentials()
+    const appRoleCreds = await payload.apis.vault.getCredentials()
     if (getConfig().disableVaultSecrets) {
       return okStatus
     }
