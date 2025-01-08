@@ -253,11 +253,11 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       '@gitbeaker/core':
-        specifier: ^41.3.0
-        version: 41.3.0
+        specifier: ~40.6.0
+        version: 40.6.0
       '@gitbeaker/rest':
-        specifier: ^41.3.0
-        version: 41.3.0
+        specifier: ~40.6.0
+        version: 40.6.0
       '@kubernetes-models/argo-cd':
         specifier: ^2.6.2
         version: 2.6.2
@@ -578,14 +578,14 @@ importers:
         specifier: workspace:^
         version: link:../vault
       '@gitbeaker/core':
-        specifier: ^41.3.0
-        version: 41.3.0
+        specifier: ~40.6.0
+        version: 40.6.0
       '@gitbeaker/requester-utils':
-        specifier: ^41.3.0
-        version: 41.3.0
+        specifier: ~40.6.0
+        version: 40.6.0
       '@gitbeaker/rest':
-        specifier: ^41.3.0
-        version: 41.3.0
+        specifier: ~40.6.0
+        version: 40.6.0
       axios:
         specifier: ^1.7.9
         version: 1.7.9
@@ -2312,16 +2312,16 @@ packages:
   '@fastify/swagger@8.15.0':
     resolution: {integrity: sha512-zy+HEEKFqPMS2sFUsQU5X0MHplhKJvWeohBwTCkBAJA/GDYGLGUWQaETEhptiqxK7Hs0fQB9B4MDb3pbwIiCwA==}
 
-  '@gitbeaker/core@41.3.0':
-    resolution: {integrity: sha512-ZPy0v71WTSKdELLhG5FkMCxIWCJwRpA7QkvnULiE36sIynQE0WwBNux+GPjjEh6xQ6PfBAB4E/1Uu2YZXiJlNg==}
+  '@gitbeaker/core@40.6.0':
+    resolution: {integrity: sha512-tVVm8ZPrS9YCHEcuPV8vD1IcEf9POpdygWo+kPvkK7LcC36EERVcXagb8snEaGgGLfUaVQh8qP4iDZgPnP3YBQ==}
     engines: {node: '>=18.20.0'}
 
-  '@gitbeaker/requester-utils@41.3.0':
-    resolution: {integrity: sha512-sNVlp32uaieQ+Giovlu1GJ8hY9jMhY//f3WMHct2GV0U74PkSsixQgQv9XuRKgZalk2uI12iJrBY7gnAA5N8/w==}
+  '@gitbeaker/requester-utils@40.6.0':
+    resolution: {integrity: sha512-DQu2l3iXtB+8e1Ye2ekeUHABt4mGMRTLtuVWtFqf74sqJnerHNOxVOjPn19qu/nKdvKR3ZLwSRTtPzEsxgcShg==}
     engines: {node: '>=18.20.0'}
 
-  '@gitbeaker/rest@41.3.0':
-    resolution: {integrity: sha512-l1jEloxQ4/SCdOjv9ryfbZEvvF90GFllLxULbHiLPI72rAHCjxWtjAdeQXddkvfw/LYCw7CFyu+M9Okt/IjsgA==}
+  '@gitbeaker/rest@40.6.0':
+    resolution: {integrity: sha512-sAwYJclU3NlB/gdxqhH6Hnmy5LWzvW7D3W33eShQEnxMhM0VjnFHPHcgJLQCIux3hMiub1uGtTw1hBJTxDc2mQ==}
     engines: {node: '>=18.20.0'}
 
   '@gouvfr/dsfr@1.12.1':
@@ -9595,23 +9595,23 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@gitbeaker/core@41.3.0':
+  '@gitbeaker/core@40.6.0':
     dependencies:
-      '@gitbeaker/requester-utils': 41.3.0
+      '@gitbeaker/requester-utils': 40.6.0
       qs: 6.13.1
       xcase: 2.0.1
 
-  '@gitbeaker/requester-utils@41.3.0':
+  '@gitbeaker/requester-utils@40.6.0':
     dependencies:
       picomatch-browser: 2.2.6
       qs: 6.13.1
       rate-limiter-flexible: 4.0.1
       xcase: 2.0.1
 
-  '@gitbeaker/rest@41.3.0':
+  '@gitbeaker/rest@40.6.0':
     dependencies:
-      '@gitbeaker/core': 41.3.0
-      '@gitbeaker/requester-utils': 41.3.0
+      '@gitbeaker/core': 40.6.0
+      '@gitbeaker/requester-utils': 40.6.0
 
   '@gouvfr/dsfr@1.12.1(browser-sync@2.29.3)':
     dependencies:
