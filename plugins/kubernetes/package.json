@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/kubernetes-plugin",
   "type": "module",
-  "version": "2.0.7",
+  "version": "2.1.0",
   "private": false,
   "description": "",
   "main": "dist/index.js",

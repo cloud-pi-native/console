@@ -40,12 +40,12 @@ class KubernetesNamespace {
   anyObjectApi: AnyObjectsApi | undefined
   apisApi: ApisApi | undefined
 
-  constructor(organizationName: string, projectName: string, environmentName: string, owner: UserObject, cluster: ClusterObject, projectId: string) {
+  constructor(organizationName: string, projectName: string, environment: Environment, owner: UserObject, cluster: ClusterObject, projectId: string) {
     this.coreV1Api = createCoreV1Api(cluster)
     this.apisApi = createApisApi(cluster)
     this.anyObjectApi = createCustomObjectApi(cluster)
-    this.nsObjectExpected = getNsObject(organizationName, projectName, environmentName, owner, cluster.zone.slug, projectId)
-    this.nsObject = getNsObject(organizationName, projectName, environmentName, owner, cluster.zone.slug, projectId)
+    this.nsObjectExpected = getNsObject(organizationName, projectName, environment, owner, cluster.zone.slug, projectId)
+    this.nsObject = getNsObject(organizationName, projectName, environment, owner, cluster.zone.slug, projectId)
   }
 
   public async create() {
@@ -131,7 +131,7 @@ export class KubernetesProjectApi<GProject extends Project> extends PluginApi {
     const owner = project.owner
     this.namespaces = project.environments.reduce((acc, env) => {
       const cluster = project.clusters.find(cluster => cluster.id === env.clusterId) as ClusterObject
-      acc[env.name] = new KubernetesNamespace(project.organization.name, project.name, env.name, owner, cluster, project.id)
+      acc[env.name] = new KubernetesNamespace(project.organization.name, project.name, env, owner, cluster, project.id)
       return acc
     }, {} as Record<Environment['name'], KubernetesNamespace>)
   }
