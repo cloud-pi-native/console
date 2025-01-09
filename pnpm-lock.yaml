@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
+  '@gouvminint/vue-dsfr':
+    hash: wpzbt66kmy4h5fa4tvf5scqz7i
+    path: patches/@gouvminint__vue-dsfr.patch
   fastify-keycloak-adapter@2.2.0:
     hash: xrwvceuzbb4ryn3joqx6ssmryy
     path: patches/fastify-keycloak-adapter@2.2.0.patch
@@ -48,7 +51,7 @@ importers:
         version: 1.13.0
       '@gouvminint/vue-dsfr':
         specifier: ^8.0.0
-        version: 8.0.0(@iconify/vue@4.2.0(vue@3.5.13(typescript@5.7.2)))(browser-sync@2.29.3)(vue-router@4.5.0(vue@3.5.13(typescript@5.7.2)))(vue@3.5.13(typescript@5.7.2))
+        version: 8.0.0(patch_hash=wpzbt66kmy4h5fa4tvf5scqz7i)(@iconify/vue@4.2.0(vue@3.5.13(typescript@5.7.2)))(browser-sync@2.29.3)(vue-router@4.5.0(vue@3.5.13(typescript@5.7.2)))(vue@3.5.13(typescript@5.7.2))
       '@iconify-json/ri':
         specifier: ^1.2.2
         version: 1.2.5
@@ -9626,7 +9629,7 @@ snapshots:
 
   '@gouvfr/dsfr@1.13.0': {}
 
-  '@gouvminint/vue-dsfr@8.0.0(@iconify/vue@4.2.0(vue@3.5.13(typescript@5.7.2)))(browser-sync@2.29.3)(vue-router@4.5.0(vue@3.5.13(typescript@5.7.2)))(vue@3.5.13(typescript@5.7.2))':
+  '@gouvminint/vue-dsfr@8.0.0(patch_hash=wpzbt66kmy4h5fa4tvf5scqz7i)(@iconify/vue@4.2.0(vue@3.5.13(typescript@5.7.2)))(browser-sync@2.29.3)(vue-router@4.5.0(vue@3.5.13(typescript@5.7.2)))(vue@3.5.13(typescript@5.7.2))':
     dependencies:
       '@gouvfr/dsfr': 1.12.1(browser-sync@2.29.3)
       '@iconify/vue': 4.2.0(vue@3.5.13(typescript@5.7.2))

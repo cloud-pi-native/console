@@ -1,0 +1,13 @@
+diff --git a/dist/vue-dsfr.js b/dist/vue-dsfr.js
+index c2edd7208cf11e99a8bc33f0abc41d6ef9b6a5c2..42810cd9a7090efb1dad5f3bd49261e4f500e0b9 100644
+--- a/dist/vue-dsfr.js
++++ b/dist/vue-dsfr.js
+@@ -22,7 +22,7 @@ const st = Symbol("accordions"), rt = Symbol("header"), He = Symbol("tabs"), he
+     adjust: s,
+     onTransitionEnd: (r) => {
+       var c, u;
+-      e.value = !1, (u = (c = o.value) == null ? void 0 : c.querySelector("a")) == null || u.focus(), o.value && r === !1 && o.value.style.removeProperty("--collapse-max-height");
++      e.value = !1, (u = (c = o.value) == null ? void 0 : c.querySelector("a")) == null, o.value && r === !1 && o.value.style.removeProperty("--collapse-max-height");
+     }
+   };
+ }, ma = "(prefers-color-scheme: dark)", ga = "vue-dsfr-scheme";
