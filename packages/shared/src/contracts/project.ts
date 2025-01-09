@@ -71,6 +71,7 @@ export const projectContract = contractInstance.router({
         locked: true,
         organizationId: true,
         description: true,
+        lastSuccessProvisionningVersion: true,
       })
       .extend({
         statusIn: z.string(),

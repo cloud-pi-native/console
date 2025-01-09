@@ -53,6 +53,7 @@ const filterMethods: FilterMethods = {
   Archivés: { filter: 'all', statusIn: 'archived' },
   Échoués: { filter: 'all', statusIn: 'failed' },
   Verrouillés: { filter: 'all', locked: true, statusNotIn: 'archived' },
+  'Non à jour': { filter: 'all', statusNotIn: 'archived', lastSuccessProvisionningVersion: 'outdated' },
 }
 
 const selectedProjectIds = ref<ProjectV2['id'][]>([])
@@ -217,6 +218,7 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
           <td>Nom</td>
           <td>Souscripteur</td>
           <td>Status</td>
+          <td>Version</td>
           <td>Date de création</td>
         </tr>
       </template>
@@ -268,6 +270,7 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
             />
           </div>
         </td>
+        <td>{{ project.lastSuccessProvisionningVersion ?? '-' }}</td>
         <td
           :title="(new Date(project.createdAt)).toLocaleString()"
         >

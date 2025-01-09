@@ -9,6 +9,7 @@ import {
 } from '@prisma/client'
 import type { XOR, projectContract } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
+import { appVersion } from '@/utils/env.js'
 
 type ProjectUpdate = Partial<Pick<Project, 'description' | 'ownerId' | 'everyonePerms' | 'locked'>>
 export function updateProject(id: Project['id'], data: ProjectUpdate) {
@@ -41,6 +42,7 @@ export async function listProjects({
   filter,
   userId,
   search,
+  lastSuccessProvisionningVersion,
 }: ListProjectWhere) {
   const whereAnd: Prisma.ProjectWhereInput[] = []
   if (id) whereAnd.push({ id })
@@ -50,6 +52,11 @@ export async function listProjects({
   if (status) whereAnd.push({ status })
   if (description) whereAnd.push({ description: { contains: description } })
   if (organizationName) whereAnd.push({ organization: { name: organizationName } })
+  if (lastSuccessProvisionningVersion) {
+    if (lastSuccessProvisionningVersion === 'outdated') whereAnd.push({ lastSuccessProvisionningVersion: { not: appVersion } })
+    else if (lastSuccessProvisionningVersion === 'last') whereAnd.push({ lastSuccessProvisionningVersion: { equals: appVersion } })
+    else whereAnd.push({ lastSuccessProvisionningVersion })
+  }
   if (search) {
     whereAnd.push({ OR: [{
       organization: { label: { contains: search } },
@@ -310,6 +317,7 @@ export function updateProjectCreated(id: Project['id']) {
     where: { id },
     data: {
       status: ProjectStatus.created,
+      lastSuccessProvisionningVersion: appVersion,
     },
     include: baseProjectIncludes,
   })

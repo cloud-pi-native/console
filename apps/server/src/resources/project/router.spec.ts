@@ -47,6 +47,7 @@ describe('test projectContract', () => {
     owner: projectOwner,
     ownerId: projectOwner.id,
     roles: [],
+    lastSuccessProvisionningVersion: null,
   }
   describe('check unauthorized user on project behaviour', () => {
     // UPDATE

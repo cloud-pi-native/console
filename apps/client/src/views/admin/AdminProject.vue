@@ -27,6 +27,7 @@ const snackbarStore = useSnackbarStore()
 const quotaStore = useQuotaStore()
 const stageStore = useStageStore()
 
+const bannerKey = ref(getRandomId('banner'))
 const teamCtKey = ref(getRandomId('team'))
 const environmentsCtKey = ref(getRandomId('environment'))
 const repositoriesCtKey = ref(getRandomId('repository'))
@@ -50,40 +51,49 @@ TimeAgo.addLocale(fr)
 // Create relative date/time formatter.
 const timeAgo = new TimeAgo('fr-FR')
 
+function refreshComponents() {
+  bannerKey.value = getRandomId('banner')
+  teamCtKey.value = getRandomId('team')
+}
+
 function unSelectProject() {
   router.push({ name: 'ListProjects' })
 }
 
 async function updateEnvironmentQuota({ environmentId, quotaId }: { environmentId: string, quotaId: string }) {
   await project.value.Environments.update(environmentId, { quotaId })
+  refreshComponents()
 }
 
 async function handleProjectLocking() {
   await project.value.Commands.update({ locked: !project.value.locked })
+  refreshComponents()
 }
 
 async function replayHooks() {
   await project.value.Commands.replay()
+  refreshComponents()
 }
 
 async function archiveProject() {
   await project.value.Commands.delete()
+  refreshComponents()
   unSelectProject()
 }
 
 async function addUserToProject(email: string) {
   await project.value.Members.create(email)
-  teamCtKey.value = getRandomId('team')
+  refreshComponents()
 }
 
 async function removeUserFromProject(userId: string) {
   await project.value.Members.delete(userId)
-  teamCtKey.value = getRandomId('team')
+  refreshComponents()
 }
 
 async function transferOwnerShip(nextOwnerId: string) {
   await project.value.Commands.update({ ownerId: nextOwnerId })
-  teamCtKey.value = getRandomId('team')
+  refreshComponents()
 }
 
 async function getProjectDetails() {
@@ -95,6 +105,7 @@ async function getProjectDetails() {
       clusterStore.getClusters(),
       zoneStore.getAllZones(),
     ])
+    refreshComponents()
     environments.value = project.value.environments.map((environment) => {
       const cluster = clusterStore.clusters.find(cluster => cluster.id === environment.clusterId) as CleanedCluster
       const zone = zoneStore.zones.find(zone => zone.id === cluster.zoneId) as Zone
@@ -190,9 +201,10 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
     </div>
     <template v-if="project">
       <div>
-        <DsfrCallout
-          :title="`${project.name} (${project.organization.name})`"
-          :content="project.description ?? ''"
+        <ProjectBanner
+          :key="bannerKey"
+          :project="project"
+          :can-update-description="false"
         />
         <div
           class="w-full flex place-content-evenly fr-mb-2w"

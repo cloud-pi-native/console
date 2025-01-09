@@ -90,6 +90,7 @@ describe('schemas utils', () => {
       everyonePerms: '1',
       ownerId: faker.string.uuid(),
       roles: [],
+      lastSuccessProvisionningVersion: null,
     }
     const parsed = structuredClone(toParse)
     // @ts-ignore la date doit être transformé en string
