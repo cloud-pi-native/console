@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.22.1](https://github.com/cloud-pi-native/console/compare/v8.22.0...v8.22.1) (2025-01-09)
+
+
+### Bug Fixes
+
+* :zap: package icons in client ([73fa90d](https://github.com/cloud-pi-native/console/commit/73fa90dd8aa0fe9c7fa8075ada31eea39af808e5))
+* patch vue-dsfr ([02079aa](https://github.com/cloud-pi-native/console/commit/02079aaf569b80f1a6a245504757524826a7ab3c))
+
 ## [8.22.0](https://github.com/cloud-pi-native/console/compare/v8.21.0...v8.22.0) (2025-01-08)
 
 
