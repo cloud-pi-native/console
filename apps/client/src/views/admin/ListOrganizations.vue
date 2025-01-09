@@ -12,7 +12,6 @@ import {
   parseZodError,
   sortArrByObjKeyAsc,
 } from '@cpn-console/shared'
-// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import { useOrganizationStore } from '@/stores/organization.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'

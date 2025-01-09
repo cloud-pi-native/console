@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
-// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import type { CleanedCluster, Environment, Log, PluginsUpdateBody, ProjectService, ProjectV2, Repo, Zone } from '@cpn-console/shared'
 import { bts } from '@cpn-console/shared'

@@ -1,0 +1,76 @@
+// @ts-check
+import { icons as riCollection } from '@iconify-json/ri'
+
+/**
+ * @type {string[]}
+ */
+const riIconNames = [
+  'account-circle-line',
+  'add-fill',
+  'add-line',
+  'admin-line',
+  'alert-fill',
+  'archive-fill',
+  'arrow-drop-left-line',
+  'arrow-drop-right-line',
+  'arrow-go-back-line',
+  'arrow-left-double-fill',
+  'arrow-right-double-fill',
+  'arrow-right-double-line',
+  'arrow-right-s-line',
+  'arrow-up-s-line',
+  'award-line',
+  'building-line',
+  'check-fill',
+  'checkbox-blank-circle-fill',
+  'checkbox-circle-line',
+  'clipboard-line',
+  'close-line',
+  'dashboard-line',
+  'delete-bin-7-line',
+  'exchange-line',
+  'eye-fill',
+  'eye-line',
+  'eye-off-fill',
+  'eye-off-line',
+  'filter-fill',
+  'file-download-line',
+  'filter-off-fill',
+  'flow-chart',
+  'focus-3-line',
+  'folder-user-line',
+  'folders-line',
+  'git-branch-line',
+  'github-fill',
+  'heart-pulse-line',
+  'key-2-line',
+  'key-2-line',
+  'loader-4-line',
+  'lock-fill',
+  'lock-unlock-fill',
+  'mail-line',
+  'microsoft-line',
+  'moon-clear-line',
+  'newspaper-line',
+  'pencil-fill',
+  'refresh-fill',
+  'restart-line',
+  'send-plane-line',
+  'server-line',
+  'settings-3-line',
+  'sound-module-line',
+  'stock-line',
+  'sun-line',
+  'team-line',
+  'tools-fill',
+  'upload-cloud-line',
+  'user-add-line',
+  'user-shared-2-line',
+]
+
+/**
+ * @type {[import('@iconify/vue').IconifyJSON, string[]][]}
+ */
+export const collectionsToFilter = [
+  [riCollection, riIconNames],
+]

@@ -75,7 +75,8 @@
   "pnpm": {
     "patchedDependencies": {
       "fastify-keycloak-adapter@2.2.0": "patches/fastify-keycloak-adapter@2.2.0.patch",
-      "fastify-keycloak-adapter@2.3.2": "patches/fastify-keycloak-adapter@2.3.2.patch"
+      "fastify-keycloak-adapter@2.3.2": "patches/fastify-keycloak-adapter@2.3.2.patch",
+      "@gouvminint/vue-dsfr": "patches/@gouvminint__vue-dsfr.patch"
     },
     "allowNonAppliedPatches": true
   },
