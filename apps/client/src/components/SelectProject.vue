@@ -85,7 +85,7 @@ function selectProject(id: string) {
       :class="`create-project ${projectStore.myProjects.length ? 'w-15' : ''}`"
       type="buttonType"
       secondary
-      icon="ri:add-fill"
+      icon="ri:add-line"
       :icon-only="!!projectStore.myProjects.length"
       :label="!projectStore.myProjects.length ? 'Créer un nouveau projet' : ''"
       small

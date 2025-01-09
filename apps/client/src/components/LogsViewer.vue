@@ -77,7 +77,7 @@ async function showLogs(index: number) {
         :title="hideLogDetails ? 'Afficher les logs en entier' : 'Masquer les clés non essentielles des logs'"
         secondary
         icon-only
-        :icon="hideLogDetails ? 'ri:filter-off-fill' : 'ri:filter-fill'"
+        :icon="hideLogDetails ? 'ri:filter-off-line' : 'ri:filter-line'"
         @click="hideLogDetails = !hideLogDetails"
       />
       <DsfrButton
@@ -86,7 +86,7 @@ async function showLogs(index: number) {
         :title="hideLogs ? 'Afficher les logs' : 'Masquer les logs'"
         secondary
         icon-only
-        :icon="hideLogs ? 'ri:eye-off-fill' : 'ri:eye-fill'"
+        :icon="hideLogs ? 'ri:eye-off-line' : 'ri:eye-line'"
         @click="hideLogs = !hideLogs"
       />
       <DsfrButton
@@ -96,7 +96,7 @@ async function showLogs(index: number) {
         secondary
         icon-only
         :disabled="isUpdating"
-        :icon="{ name: 'ri:refresh-fill', animation: isUpdating ? 'spin' : '' }"
+        :icon="{ name: 'ri:refresh-line', animation: isUpdating ? 'spin' : '' }"
         @click="showLogs(page)"
       />
     </div>

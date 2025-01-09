@@ -40,7 +40,7 @@ async function replayHooks() {
     <DsfrButton
       data-testid="replayHooksBtn"
       label="Reprovisionner le projet"
-      :icon="{ name: 'ri:refresh-fill', animation: operationsInProgress.includes('replay') ? 'spin' : '' }"
+      :icon="{ name: 'ri:refresh-line', animation: operationsInProgress.includes('replay') ? 'spin' : '' }"
       secondary
       :disabled="project.locked || operationsInProgress.includes('replay')"
       @click="replayHooks"

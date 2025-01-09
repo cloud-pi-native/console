@@ -182,7 +182,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
         title="Rafraîchir la liste des projets"
         secondary
         icon-only
-        icon="ri:refresh-fill"
+        icon="ri:refresh-line"
         :disabled="snackbarStore.isWaitingForResponse"
         @click="async() => {
           await getProjectDetails()
@@ -228,7 +228,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
           <DsfrButton
             data-testid="replayHooksBtn"
             label="Reprovisionner le projet"
-            :icon="{ name: 'ri:refresh-fill', animation: project.operationsInProgress.includes('replay') ? 'spin' : undefined }"
+            :icon="{ name: 'ri:refresh-line', animation: project.operationsInProgress.includes('replay') ? 'spin' : undefined }"
             :disabled="project.operationsInProgress.includes('replay') || project.locked"
             secondary
             @click="replayHooks()"
@@ -237,8 +237,8 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
             data-testid="handleProjectLockingBtn"
             :label="`${project.locked ? 'Déverrouiller' : 'Verrouiller'} le projet`"
             :icon="project.operationsInProgress.includes('lockHandling')
-              ? { name: 'ri:refresh-fill', animation: 'spin' }
-              : project.locked ? 'ri:lock-unlock-fill' : 'ri:lock-fill'"
+              ? { name: 'ri:refresh-line', animation: 'spin' }
+              : project.locked ? 'ri:lock-unlock-line' : 'ri:lock-line'"
             :disabled="project.operationsInProgress.includes('lockHandling') || project.status === 'archived'"
             secondary
             @click="handleProjectLocking"
@@ -250,7 +250,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
             secondary
             :disabled="project.operationsInProgress.includes('delete') || project.locked"
             :icon="project.operationsInProgress.includes('delete')
-              ? { name: 'ri:refresh-fill', animation: 'spin' }
+              ? { name: 'ri:refresh-line', animation: 'spin' }
               : 'ri:delete-bin-7-line'"
             @click="isArchivingProject = true"
           />
@@ -276,7 +276,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
               secondary
               :disabled="project.operationsInProgress.includes('delete') || projectToArchive !== project.name"
               :icon="project.operationsInProgress.includes('delete')
-                ? { name: 'ri:refresh-fill', animation: 'spin' }
+                ? { name: 'ri:refresh-line', animation: 'spin' }
                 : 'ri:delete-bin-7-line'"
               @click="archiveProject"
             />
