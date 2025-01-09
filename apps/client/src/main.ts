@@ -1,8 +1,10 @@
+import { addCollection } from '@iconify/vue'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import 'vue3-json-viewer/dist/index.css'
+import collections from './icon-collections.js'
 
 // @ts-ignore 'vue3-json-viewer' missing types
 import JsonViewer from 'vue3-json-viewer'
@@ -27,3 +29,7 @@ createApp(App)
   .component('VIcon', VIcon)
   .use(JsonViewer)
   .mount('#app')
+
+for (const collection of collections) {
+  addCollection(collection)
+}

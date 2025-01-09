@@ -25,7 +25,6 @@ import type {
   projectRoleContract,
 } from '@cpn-console/shared'
 
-// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import {
   apiClient,
@@ -75,6 +74,7 @@ export class Project implements ProjectV2 {
   repositories: Ref<Repo[]>
   environments: Ref<Environment[]>
   services: ProjectService[] = []
+  lastSuccessProvisionningVersion: string | null
 
   constructor(project: ProjectV2, organization: Organization) {
     this.id = project.id
@@ -91,6 +91,7 @@ export class Project implements ProjectV2 {
     this.members = project.members
     this.createdAt = project.createdAt
     this.updatedAt = project.updatedAt
+    this.lastSuccessProvisionningVersion = project.lastSuccessProvisionningVersion
     this.status = project.status
     this.myPerms = calculateProjectPerms(this, useUserStore().userProfile?.id)
     this.operationsInProgress = ref([])

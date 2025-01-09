@@ -20,7 +20,7 @@ function setWindowLocation(to: string) {
   <DsfrCallout
     title="Maintenance"
     content="La console Cloud π Native est actuellement en maintenance. À très vite !"
-    icon="ri:tools-fill"
+    icon="ri:tools-line"
   />
 
   <DsfrButton

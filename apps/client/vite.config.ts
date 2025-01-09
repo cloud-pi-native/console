@@ -9,7 +9,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import {
   vueDsfrAutoimportPreset,
   vueDsfrComponentResolver,
-} from '@gouvminint/vue-dsfr'
+} from '@gouvminint/vue-dsfr/meta'
 
 if (process.env.DOCKER !== 'true') {
   dotenv.config({ path: '.env' })

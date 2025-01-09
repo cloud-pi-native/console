@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import type {
   CleanedCluster,

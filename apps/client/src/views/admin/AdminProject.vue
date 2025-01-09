@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
-// @ts-ignore '@gouvminint/vue-dsfr' missing types
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import type { CleanedCluster, Environment, Log, PluginsUpdateBody, ProjectService, ProjectV2, Repo, Zone } from '@cpn-console/shared'
 import { bts } from '@cpn-console/shared'
@@ -27,6 +26,7 @@ const snackbarStore = useSnackbarStore()
 const quotaStore = useQuotaStore()
 const stageStore = useStageStore()
 
+const bannerKey = ref(getRandomId('banner'))
 const teamCtKey = ref(getRandomId('team'))
 const environmentsCtKey = ref(getRandomId('environment'))
 const repositoriesCtKey = ref(getRandomId('repository'))
@@ -50,40 +50,49 @@ TimeAgo.addLocale(fr)
 // Create relative date/time formatter.
 const timeAgo = new TimeAgo('fr-FR')
 
+function refreshComponents() {
+  bannerKey.value = getRandomId('banner')
+  teamCtKey.value = getRandomId('team')
+}
+
 function unSelectProject() {
   router.push({ name: 'ListProjects' })
 }
 
 async function updateEnvironmentQuota({ environmentId, quotaId }: { environmentId: string, quotaId: string }) {
   await project.value.Environments.update(environmentId, { quotaId })
+  refreshComponents()
 }
 
 async function handleProjectLocking() {
   await project.value.Commands.update({ locked: !project.value.locked })
+  refreshComponents()
 }
 
 async function replayHooks() {
   await project.value.Commands.replay()
+  refreshComponents()
 }
 
 async function archiveProject() {
   await project.value.Commands.delete()
+  refreshComponents()
   unSelectProject()
 }
 
 async function addUserToProject(email: string) {
   await project.value.Members.create(email)
-  teamCtKey.value = getRandomId('team')
+  refreshComponents()
 }
 
 async function removeUserFromProject(userId: string) {
   await project.value.Members.delete(userId)
-  teamCtKey.value = getRandomId('team')
+  refreshComponents()
 }
 
 async function transferOwnerShip(nextOwnerId: string) {
   await project.value.Commands.update({ ownerId: nextOwnerId })
-  teamCtKey.value = getRandomId('team')
+  refreshComponents()
 }
 
 async function getProjectDetails() {
@@ -95,6 +104,7 @@ async function getProjectDetails() {
       clusterStore.getClusters(),
       zoneStore.getAllZones(),
     ])
+    refreshComponents()
     environments.value = project.value.environments.map((environment) => {
       const cluster = clusterStore.clusters.find(cluster => cluster.id === environment.clusterId) as CleanedCluster
       const zone = zoneStore.zones.find(zone => zone.id === cluster.zoneId) as Zone
@@ -172,7 +182,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
         title="Rafraîchir la liste des projets"
         secondary
         icon-only
-        icon="ri:refresh-fill"
+        icon="ri:refresh-line"
         :disabled="snackbarStore.isWaitingForResponse"
         @click="async() => {
           await getProjectDetails()
@@ -190,9 +200,10 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
     </div>
     <template v-if="project">
       <div>
-        <DsfrCallout
-          :title="`${project.name} (${project.organization.name})`"
-          :content="project.description ?? ''"
+        <ProjectBanner
+          :key="bannerKey"
+          :project="project"
+          :can-update-description="false"
         />
         <div
           class="w-full flex place-content-evenly fr-mb-2w"
@@ -217,7 +228,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
           <DsfrButton
             data-testid="replayHooksBtn"
             label="Reprovisionner le projet"
-            :icon="{ name: 'ri:refresh-fill', animation: project.operationsInProgress.includes('replay') ? 'spin' : undefined }"
+            :icon="{ name: 'ri:refresh-line', animation: project.operationsInProgress.includes('replay') ? 'spin' : undefined }"
             :disabled="project.operationsInProgress.includes('replay') || project.locked"
             secondary
             @click="replayHooks()"
@@ -226,8 +237,8 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
             data-testid="handleProjectLockingBtn"
             :label="`${project.locked ? 'Déverrouiller' : 'Verrouiller'} le projet`"
             :icon="project.operationsInProgress.includes('lockHandling')
-              ? { name: 'ri:refresh-fill', animation: 'spin' }
-              : project.locked ? 'ri:lock-unlock-fill' : 'ri:lock-fill'"
+              ? { name: 'ri:refresh-line', animation: 'spin' }
+              : project.locked ? 'ri:lock-unlock-line' : 'ri:lock-line'"
             :disabled="project.operationsInProgress.includes('lockHandling') || project.status === 'archived'"
             secondary
             @click="handleProjectLocking"
@@ -239,7 +250,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
             secondary
             :disabled="project.operationsInProgress.includes('delete') || project.locked"
             :icon="project.operationsInProgress.includes('delete')
-              ? { name: 'ri:refresh-fill', animation: 'spin' }
+              ? { name: 'ri:refresh-line', animation: 'spin' }
               : 'ri:delete-bin-7-line'"
             @click="isArchivingProject = true"
           />
@@ -265,7 +276,7 @@ async function getProjectLogs({ offset, limit }: { offset: number, limit: number
               secondary
               :disabled="project.operationsInProgress.includes('delete') || projectToArchive !== project.name"
               :icon="project.operationsInProgress.includes('delete')
-                ? { name: 'ri:refresh-fill', animation: 'spin' }
+                ? { name: 'ri:refresh-line', animation: 'spin' }
                 : 'ri:delete-bin-7-line'"
               @click="archiveProject"
             />

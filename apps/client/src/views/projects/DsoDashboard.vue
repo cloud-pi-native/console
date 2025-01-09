@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
 import type { ProjectV2 } from '@cpn-console/shared'
-import { ProjectAuthorized, descriptionMaxLength, projectIsLockedInfo } from '@cpn-console/shared'
+import { ProjectAuthorized } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
 import { copyContent } from '@/utils/func.js'
@@ -14,7 +14,6 @@ const projectStore = useProjectStore()
 const stageStore = useStageStore()
 const project = computed(() => projectStore.projectsById[props.projectId])
 
-const description = ref(project.value.description)
 const isEditingDescription = ref(false)
 const isArchivingProject = ref(false)
 const projectToArchive = ref('')
@@ -23,8 +22,8 @@ const projectSecrets = ref<Record<string, any>>({})
 const allStages = ref<Array<any>>([])
 const logStore = useLogStore()
 
-async function updateProject() {
-  project.value.Commands.update({ description: description.value })
+function updateProject() {
+  project.value.Commands.update({ description: project.value.description })
   isEditingDescription.value = false
 }
 
@@ -33,12 +32,6 @@ async function archiveProject() {
   projectStore.lastSelectedProjectId = undefined
   router.push('/projects')
   delete projectStore.projectsById[project.value.id]
-}
-
-function getDynamicTitle(locked?: ProjectV2['locked'], description?: ProjectV2['description']) {
-  if (locked) return projectIsLockedInfo
-  if (description) return 'Editer la description'
-  return 'Ajouter une description'
 }
 
 async function handleSecretDisplay() {
@@ -74,78 +67,12 @@ onMounted(() => {
     :key="project.id"
     class="relative"
   >
-    <div
-      class="fr-callout"
-    >
-      <h1
-        class="fr-callout__title fr-mb-3w"
-      >
-        {{ project.name }}<h2 class="fr-callout__title fr-mb-3w italic inline opacity-70">
-          ({{ project.organization.label }})
-        </h2>
-      </h1>
-      <div
-        v-if="!isEditingDescription"
-        class="flex gap-4 items-center"
-      >
-        <p
-          v-if="project.description"
-          data-testid="descriptionP"
-        >
-          {{ project.description }}
-        </p>
-        <p
-          v-else
-          data-testid="descriptionP"
-          class="disabled"
-        >
-          Aucune description pour le moment...
-        </p>
-        <DsfrButton
-          class="fr-mt-0"
-          icon="ri:pencil-fill"
-          data-testid="setDescriptionBtn"
-          :title="getDynamicTitle(project.locked, project.description)"
-          :disabled="project.locked || !ProjectAuthorized.Manage({ projectPermissions: project.myPerms })"
-          icon-only
-          secondary
-          @click="isEditingDescription = true"
-        />
-      </div>
-      <div
-        v-if="isEditingDescription"
-      >
-        <DsfrInput
-          v-model="description"
-          data-testid="descriptionInput"
-          :is-textarea="true"
-          :maxlength="descriptionMaxLength"
-          label="Description du projet"
-          label-visible
-          :hint="`Courte description expliquant la finalité du projet (${descriptionMaxLength} caractères maximum).`"
-          placeholder="Application de réservation de places à l'examen du permis B."
-        />
-        <div
-          class="flex justify-between"
-        >
-          <DsfrButton
-            data-testid="saveDescriptionBtn"
-            label="Enregistrer la description"
-            secondary
-            :icon="project.operationsInProgress.includes('update')
-              ? { name: 'ri:refresh-fill', animation: 'spin' }
-              : 'ri:send-plane-line'"
-            :disabled="project.operationsInProgress.includes('update')"
-            @click="updateProject()"
-          />
-          <DsfrButton
-            label="Annuler"
-            primary
-            @click="isEditingDescription = false"
-          />
-        </div>
-      </div>
-    </div>
+    <ProjectBanner
+      v-model="project.description"
+      :project="project"
+      :can-edit-description="!project.locked && ProjectAuthorized.Manage({ projectPermissions: project.myPerms })"
+      @save-description="updateProject"
+    />
     <div>
       <div
         class="flex gap-2"
@@ -193,7 +120,7 @@ onMounted(() => {
         :label="`${isSecretShown ? 'Cacher' : 'Afficher'} les secrets des services`"
         secondary
         :icon="project.operationsInProgress.includes('searchSecret')
-          ? { name: 'ri:refresh-fill', animation: 'spin' }
+          ? { name: 'ri:refresh-line', animation: 'spin' }
           : isSecretShown ? 'ri:eye-off-line' : 'ri:eye-line'"
         :disabled="project.operationsInProgress.includes('searchSecret')"
         @click="handleSecretDisplay"
@@ -273,7 +200,7 @@ onMounted(() => {
             :disabled="projectToArchive !== project.name || project.operationsInProgress.includes('delete')"
             secondary
             :icon="project.operationsInProgress.includes('delete')
-              ? { name: 'ri:refresh-fill', animation: 'spin' }
+              ? { name: 'ri:refresh-line', animation: 'spin' }
               : 'ri:delete-bin-7-line'"
             @click="archiveProject"
           />

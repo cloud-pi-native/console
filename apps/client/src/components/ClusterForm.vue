@@ -231,14 +231,8 @@ const isConnectionDetailsShown = ref(true)
         Informations de connexion (kubeconfig)
       </h4>
       <v-icon
-        v-if="isConnectionDetailsShown"
         name="ri:arrow-right-s-line"
-        class="shrink ml-4 rotate-90"
-      />
-      <v-icon
-        v-else
-        name="ri:arrow-right-s-line"
-        class="shrink ml-4"
+        :class="`shrink ml-4 ${isConnectionDetailsShown ? 'rotate-90' : ''}`"
       />
     </div>
     <template

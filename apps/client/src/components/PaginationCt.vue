@@ -25,7 +25,7 @@ const currentStart = computed(() => Math.floor(props.page * props.step))
       class="flex gap-2"
     >
       <DsfrButton
-        icon="ri:arrow-left-double-fill"
+        icon="ri:arrow-left-double-line"
         :icon-only="true"
         title="Voir la première page"
         :disabled="page <= 0"
