@@ -58,8 +58,7 @@ describe('EnvironmentForm.vue', () => {
       environment: {
         projectId: randomDbSetup.project.id,
       },
-      projectClustersIds: project.clusters.map(({ id }) => id),
-      allClusters: project.clusters,
+      availableClusters: project.clusters,
       canManage: true,
     }
 
@@ -106,7 +105,7 @@ describe('EnvironmentForm.vue', () => {
     cy.get('select#quota-select')
       .select(1)
     cy.get('select#cluster-select > option')
-      .should('have.length', props.projectClustersIds.length + 1)
+      .should('have.length', props.availableClusters.length + 1)
 
     cy.get('select#cluster-select')
       .select(1)
@@ -152,8 +151,7 @@ describe('EnvironmentForm.vue', () => {
         quotaId: randomDbSetup.quotas[0].id,
         zoneId: randomDbSetup.zones[0].id,
       },
-      projectClustersIds: project.clusters.map(({ id }) => id),
-      allClusters: project.clusters,
+      availableClusters: project.clusters,
       canManage: false,
       isEditable: true,
     }

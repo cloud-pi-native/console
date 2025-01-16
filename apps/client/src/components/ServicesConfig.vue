@@ -1,22 +1,21 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import type { PermissionTarget, PluginConfigItem, PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
+import type { Project } from '@/utils/project-utils.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
-  services: ProjectService[]
+  project: Project
   permissionTarget: PermissionTarget
   disabled: boolean
   displayGlobal: boolean
 }>(), {
-  services: undefined,
   displayGlobal: true,
   disabled: false,
 })
 
-const emit = defineEmits<{
-  update: [value: PluginsUpdateBody]
-  reload: []
-}>()
+const snackbarStore = useSnackbarStore()
+const services = ref<ProjectService[]>([])
 
 interface ManifestGrouped {
   length: number
@@ -62,7 +61,7 @@ function getItemsToShowLength(items: PluginConfigItem[] | (PluginConfigItem & { 
   return items?.filter(item => item.permissions[scope].read || item.permissions[scope].write).length
 }
 
-const services = computed(() => refTheValues(props.services)
+const servicesWithRef = computed(() => refTheValues(services.value)
   .map(service => ({
     ...service,
     wrapable: !!((props.displayGlobal && getItemsToShowLength(service.manifest.global, props.permissionTarget)) || getItemsToShowLength(service.manifest.project, props.permissionTarget)),
@@ -75,23 +74,33 @@ const services = computed(() => refTheValues(props.services)
     return b.urls.length - a.urls.length
   }))
 
-const servicesWrapableLength = computed(() => services.value.filter(({ wrapable }) => wrapable).length)
+const servicesWrapableLength = computed(() => servicesWithRef.value.filter(({ wrapable }) => wrapable).length)
 
-function save() {
-  emit('update', updated.value)
+async function save() {
+  try {
+    await props.project.Services.update(updated.value)
+    snackbarStore.setMessage('Paramètres sauvegardés', 'success')
+  } catch (_error) {
+    snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
+  }
+  await reload()
   updated.value = {}
 }
-function reload() {
-  emit('reload')
+async function reload() {
+  const resServices = await props.project.Services.list(props.permissionTarget)
+  services.value = []
+  await nextTick()
+  services.value = resServices
 }
 
+onMounted(async () => await reload())
 const activeAccordion = ref<number>()
 </script>
 
 <template>
   <div class="flex flex-col">
     <div
-      v-if="!services.length"
+      v-if="!servicesWithRef.length"
       id="servicesTable"
       class="p-10 flex justify-center italic"
     >
@@ -109,7 +118,7 @@ const activeAccordion = ref<number>()
       class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full mb-10"
     >
       <template
-        v-for="service in services"
+        v-for="service in servicesWithRef"
         :key="service.name"
       >
         <DsfrTile
@@ -134,7 +143,7 @@ const activeAccordion = ref<number>()
         class="mb-10"
       >
         <template
-          v-for="service in services"
+          v-for="service in servicesWithRef"
           :key="service.name"
         >
           <template

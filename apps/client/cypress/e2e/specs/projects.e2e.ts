@@ -17,7 +17,7 @@ describe('Projects view', () => {
           .should('have.length', `${response?.body.length}`)
       })
       .getByDataTestid(`projectTile-${project.slug}`).click()
-      .url().should('contain', `projects/${project.slug}/dashboard`)
+      .url().should('contain', `projects/${project.slug}`)
     cy.wait('@listStages')
     cy.getByDataTestid('descriptionP')
     cy.should('contain', project.description)

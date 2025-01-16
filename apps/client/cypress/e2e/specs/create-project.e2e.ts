@@ -28,7 +28,7 @@ describe('Create Project', () => {
     cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
 
     cy.wait('@postProject').its('response.statusCode').should('match', /^20\d$/)
-    cy.url().should('match', /projects\/.*\/dashboard/)
+    cy.url().should('contain', `/projects/${project.slug}`)
 
     cy.wait('@listProjects').its('response.statusCode').should('match', /^20\d$/)
 
@@ -44,6 +44,6 @@ describe('Create Project', () => {
       .getByDataTestid('nameInput').type(project.name)
     cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
     cy.wait('@postProject').its('response.statusCode').should('match', /^20\d$/)
-    cy.url().should('contain', `/projects/${project.slug}-1/dashboard`)
+    cy.url().should('contain', `/projects/${project.slug}-1`)
   })
 })

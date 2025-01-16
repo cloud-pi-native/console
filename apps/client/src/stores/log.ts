@@ -7,7 +7,6 @@ export const useLogStore = defineStore('log', () => {
   const logs = ref<Log[]>([])
   const count = ref<number | undefined>(undefined)
   const needRefresh = ref(false)
-  const displayProjectLogs = ref(false)
 
   const getAllLogs = async ({ offset, limit }: GetLogsQuery = { offset: 0, limit: 100 }) => {
     const res = await apiClient.Logs.getLogs({ query: { offset, limit, clean: false } })
@@ -25,7 +24,6 @@ export const useLogStore = defineStore('log', () => {
     logs,
     count,
     needRefresh,
-    displayProjectLogs,
     getAllLogs,
     listLogs,
   }

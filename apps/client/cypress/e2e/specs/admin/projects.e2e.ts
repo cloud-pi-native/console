@@ -1,5 +1,5 @@
 import type { ProjectV2 } from '@cpn-console/shared'
-import { sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
+import { deleteValidationInput, sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
 import { getModelById } from '../../support/func.js'
 import type { Project } from '@/utils/project-utils.js'
 
@@ -245,11 +245,11 @@ describe('Administration projects', () => {
       .should('contain', projectName)
     cy.getByDataTestid('archiveProjectInput').should('not.exist')
       .getByDataTestid('showArchiveProjectBtn').click()
-      .getByDataTestid('archiveProjectBtn')
+      .getByDataTestid('confirmDeletionBtn')
       .should('be.disabled')
       .getByDataTestid('archiveProjectInput').should('be.visible')
-      .type(projectName)
-      .getByDataTestid('archiveProjectBtn')
+      .type(deleteValidationInput)
+      .getByDataTestid('confirmDeletionBtn')
       .should('be.enabled')
       .click()
     cy.wait('@archiveProject')
@@ -258,28 +258,43 @@ describe('Administration projects', () => {
   })
 
   it('Should update an environment quota, loggedIn as admin', () => {
+    cy.intercept('GET', '/api/v1/environments?projectId=*').as('listEnvironments')
     cy.intercept('GET', 'api/v1/projects?filter=all&statusNotIn=archived').as('getAllProjects')
     cy.intercept('GET', 'api/v1/environments?projectId=*').as('getProjectEnvironments')
     cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
     cy.intercept('GET', 'api/v1/stages').as('listStages')
     cy.intercept('POST', '/api/v1/quotas').as('createQuota')
-    cy.intercept('PUT', 'api/v1/environments/*').as('updateEnvironment')
+    cy.intercept('PUT', '/api/v1/environments/*').as('putEnvironment')
 
     cy.getByDataTestid('tableAdministrationProjects').within(() => {
       cy.get('tr').contains('betaapp')
         .click()
     })
 
-    cy.get('select#quota-select:first')
+    cy.url().should('contain', 'betaapp')
+    cy.wait('@listEnvironments').its('response.statusCode').should('match', /^20\d$/)
+    cy.getByDataTestid('environmentTr-staging').click()
+    cy.getByDataTestid('quota-select')
       .should('be.enabled')
       .should('have.value', '5a57b62f-2465-4fb6-a853-5a751d099199')
-      .select(2)
-    cy.getByDataTestid('refresh-btn')
-    cy.get('select#quota-select:first')
+      .select('08770663-3b76-4af6-8978-9f75eda4faa7')
+    cy.getByDataTestid('putEnvironmentBtn').click()
+    cy.wait('@putEnvironment').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@listEnvironments').its('response.statusCode').should('match', /^20\d$/)
+
+    cy.wait(500)
+    cy.getByDataTestid('environmentTr-staging').click()
+    cy.getByDataTestid('quota-select')
       .should('be.enabled')
       .should('have.value', '08770663-3b76-4af6-8978-9f75eda4faa7')
-      .select(1)
-    cy.get('select#quota-select:first')
+      .select('5a57b62f-2465-4fb6-a853-5a751d099199')
+    cy.getByDataTestid('putEnvironmentBtn').click()
+    cy.wait('@putEnvironment').its('response.statusCode').should('match', /^20\d$/)
+    cy.wait('@listEnvironments').its('response.statusCode').should('match', /^20\d$/)
+
+    cy.wait(500)
+    cy.getByDataTestid('environmentTr-staging').click()
+    cy.getByDataTestid('quota-select')
       .should('be.enabled')
       .should('have.value', '5a57b62f-2465-4fb6-a853-5a751d099199')
   })
@@ -296,6 +311,7 @@ describe('Administration projects', () => {
       cy.get('tr').contains(project.name)
         .click()
     })
+    cy.getByDataTestid('test-tab-team').click()
     cy.get('.fr-callout__title')
       .should('contain', project.name)
     cy.get(`td[title="Quitter le projet"]`)
@@ -336,6 +352,7 @@ describe('Administration projects', () => {
       cy.get('tr').contains(project.name)
         .click()
     })
+    cy.getByDataTestid('test-tab-team').click()
 
     cy.wait('@getServices')
     cy.wait('@listRepositories')
@@ -392,6 +409,7 @@ describe('Administration projects', () => {
       cy.get('tr').contains(project.name)
         .click()
     })
+    cy.getByDataTestid('test-tab-services').click()
     cy.get('.fr-callout__title')
       .should('contain', project.name)
     cy.get('#servicesTable').should('exist')

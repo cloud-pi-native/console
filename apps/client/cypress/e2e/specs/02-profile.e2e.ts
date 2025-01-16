@@ -1,4 +1,4 @@
-import type { User } from '@cpn-console/shared'
+import type { PersonalAccessToken, User } from '@cpn-console/shared'
 import { getModelById } from '../support/func.js'
 
 const userClaire = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567') as User
@@ -23,16 +23,13 @@ describe('Header', () => {
   })
 
   it('Should create pat', () => {
+    let createdToken: PersonalAccessToken
     cy.intercept('GET', 'api/v1/user/tokens*').as('listTokens')
     cy.intercept('POST', 'api/v1/user/tokens').as('createToken')
     cy.intercept('DELETE', 'api/v1/user/tokens/*').as('deleteToken')
 
     cy.kcLogin('tcolin')
-      .visit('/')
-      .getByDataTestid('menuUserList')
-      .click()
-    cy.getByDataTestid('menuUserTokens')
-      .click()
+      .visit('/profile/tokens')
     cy.wait('@listTokens', { timeout: 15_000 })
     cy.url().should('contain', '/profile/tokens')
     cy.getByDataTestid('showNewTokenFormBtn')
@@ -48,17 +45,20 @@ describe('Header', () => {
       .type('2100-11-22')
     cy.getByDataTestid('saveBtn')
       .click()
-    cy.wait('@createToken')
-    cy.getByDataTestid('newTokenPassword')
-      .should('be.visible')
+    cy.wait('@createToken').its('response').then((response) => {
+      console.log(response)
 
-    // Réinitialiser le formulaire
-    cy.getByDataTestid('showNewTokenFormBtn')
-      .click()
-    cy.getByDataTestid('newTokenPassword').should('not.exist')
+      createdToken = response.body
+      cy.getByDataTestid('newTokenPassword')
+        .should('be.visible')
 
-    cy.getByDataTestid('tokenTable').within(() => {
-      cy.get(`tbody tr:nth-of-type(1)`).within(() => {
+      // Réinitialiser le formulaire
+      cy.getByDataTestid('showNewTokenFormBtn')
+        .click()
+      cy.getByDataTestid('newTokenPassword').should('not.exist')
+      cy.wait('@listTokens', { timeout: 15_000 })
+
+      cy.getByDataTestid(`token-${createdToken?.id}`).within(() => {
         cy.get('td:nth-of-type(1)').should('contain', 'test2')
         cy.get('td:nth-of-type(2)').should('contain', (new Date()).getFullYear())
         cy.get('td:nth-of-type(3)').should('contain', 2100)
@@ -67,14 +67,14 @@ describe('Header', () => {
         cy.get('td:nth-of-type(6)')
           .click()
       })
-    })
 
-    cy.getByDataTestid('confirmDeletionBtn')
-      .click()
-    cy.wait('@deleteToken')
-    cy.getByDataTestid('tokenTable').within(() => {
-      cy.get(`tbody tr`)
-        .should('have.length', 1)
+      cy.getByDataTestid('confirmDeletionBtn')
+        .click()
+      cy.wait('@deleteToken')
+      cy.getByDataTestid('tokenTable').within(() => {
+        cy.get(`tbody tr`)
+          .should('have.length', 1)
+      })
     })
   })
 })
