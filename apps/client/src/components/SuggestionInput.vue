@@ -51,3 +51,9 @@ function updateValue() {
     </datalist>
   </div>
 </template>
+
+<style scoped>
+.fr-select-group, .fr-input-group {
+  margin-bottom: 0 !important;
+}
+</style>

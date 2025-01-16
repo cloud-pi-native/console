@@ -48,7 +48,7 @@ async function createProject() {
       const newProject = await projectStore.createProject(project.value)
       await nextTick()
       await router.push({
-        name: 'Dashboard',
+        name: 'Project',
         params: { slug: newProject.slug },
       })
     } catch (error) {

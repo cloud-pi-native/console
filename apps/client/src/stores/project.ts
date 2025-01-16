@@ -20,8 +20,7 @@ export const useProjectStore = defineStore('project', () => {
     .sort((p1, p2) => p1.slug.localeCompare(p2.slug)),
   )
 
-  const myProjects = computed(() => projects.value.filter(project => project.status !== 'archived' && amIPartOf(project)),
-  )
+  const myProjects = computed(() => Object.values(projectsBySlug.value).filter(project => project.status !== 'archived' && amIPartOf(project)))
 
   const updateStore = async (projectsRecieved: ProjectV2[]) => {
     return projectsRecieved.map((project) => {
@@ -55,6 +54,11 @@ export const useProjectStore = defineStore('project', () => {
   const listMyProjects = pDebounce(async () => {
     const res = await apiClient.Projects.listProjects({ query: { filter: 'member', statusNotIn: 'archived' } })
       .then(response => extractData(response, 200))
+    for (const storedProject of myProjects.value) {
+      if (!res.find(responseProject => responseProject.id === storedProject.id)) {
+        delete projectsBySlug.value[storedProject.slug]
+      }
+    }
     await updateStore(res)
     return selectFromStore(res.map(project => project.slug))
   }, 200)

@@ -4,7 +4,6 @@ import { getRandomId } from '@gouvminint/vue-dsfr'
 import type {
   LettersQuery,
   Member,
-  ProjectV2,
   User,
 } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
@@ -12,10 +11,11 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { copyContent } from '@/utils/func.js'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
+import type { Project } from '@/utils/project-utils.js'
 
 const props = withDefaults(
   defineProps<{
-    project: ProjectV2
+    project: Project
     canManage: boolean
     canTransfer: boolean
   }>(),
@@ -24,13 +24,12 @@ const props = withDefaults(
     canTransfer: true,
   },
 )
+
 const emit = defineEmits<{
-  addMember: [value: string]
-  updateRole: [value: string]
-  cancel: []
-  removeMember: [value: string]
-  transferOwnership: [value: string]
+  refresh: []
+  leave: []
 }>()
+
 const projectStore = useProjectStore()
 const headers = [
   'Identifiant',
@@ -124,11 +123,26 @@ const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) =>
   }
 }, 300)
 
+onMounted(() => {
+  setRows()
+})
+
+watch(() => props.project.members, setRows, { immediate: true })
+
+const isTransferingProject = ref(false)
+const nextOwnerId = ref<string | undefined>(undefined)
+
+const transferSelectOptions = props.project.members.map(member => ({
+  text: `${member.lastName} ${member.firstName} (${member.email})`,
+  value: member.userId,
+}))
+
 async function addUserToProject() {
   if (!newUserEmail.value) return
   if (isUserAlreadyInTeam.value) return snackbarStore.setMessage('L\'utilisateur semble déjà faire partie du projet')
 
-  emit('addMember', newUserEmail.value.trim())
+  await props.project.Members.create(newUserEmail.value)
+    .finally(() => emit('refresh'))
 
   newUserEmail.value = ''
   usersToAdd.value = []
@@ -136,133 +150,127 @@ async function addUserToProject() {
 }
 
 async function removeUserFromProject(userId: string) {
-  emit('removeMember', userId)
+  await props.project.Members.delete(userId)
+    .finally(() => {
+      emit('refresh')
+      if (userStore.userProfile?.id === userId) {
+        emit('leave')
+      }
+    })
 }
 
-onMounted(() => {
-  setRows()
-})
-
-watch(() => props.project.members, setRows)
-
-const isTransferingProject = ref(false)
-const nextOwnerId = ref<string | undefined>(undefined)
-
-function transferOwnership() {
+async function transferOwnerShip() {
   if (nextOwnerId.value && props.project.members.find(member => member.userId === nextOwnerId.value)) {
-    emit('transferOwnership', nextOwnerId.value)
+    await props.project.Commands.update({ ownerId: nextOwnerId.value })
+      .finally(() => emit('refresh'))
   }
 }
-const transferSelectOptions = props.project.members.map(member => ({
-  text: `${member.lastName} ${member.firstName} (${member.email})`,
-  value: member.userId,
-}))
 </script>
 
 <template>
   <div
-    class="relative"
+    class="flex flex-col w-max"
   >
+    <DsfrTable
+      id="team-table"
+      :key="tableKey"
+      title="Membres du projet"
+      data-testid="teamTable"
+      :headers="headers"
+      :rows="rows"
+    />
+
     <div
-      class="w-max"
+      class="flex w-full items-end"
     >
-      <DsfrTable
-        id="team-table"
-        :key="tableKey"
-        title="Membres du projet"
-        data-testid="teamTable"
-        :headers="headers"
-        :rows="rows"
+      <SuggestionInput
+        v-if="props.canManage"
+        :key="newUserInputKey"
+        v-model="newUserEmail"
+        data-testid="addUserSuggestionInput"
+        :disabled="project?.locked"
+        label="Ajouter un utilisateur"
+        label-visible
+        hint="Nom, prénom ou adresse mail de l'utilisateur à rechercher"
+        placeholder="prenom.nom@interieur.gouv.fr"
+        :suggestions="usersToSuggest"
+        class="grow"
+        @select-suggestion="(value: string) => newUserEmail = value"
+        @update:model-value="(value: string) => retrieveUsersToAdd(value)"
       />
-      <div>
-        <SuggestionInput
-          v-if="props.canManage"
-          :key="newUserInputKey"
-          v-model="newUserEmail"
-          data-testid="addUserSuggestionInput"
-          :disabled="project?.locked"
-          label="Ajouter un utilisateur"
-          label-visible
-          hint="Nom, prénom ou adresse mail de l'utilisateur à rechercher"
-          placeholder="prenom.nom@interieur.gouv.fr"
-          :suggestions="usersToSuggest"
-          @select-suggestion="(value: string) => newUserEmail = value"
-          @update:model-value="(value: string) => retrieveUsersToAdd(value)"
-        />
-        <DsfrAlert
-          v-if="isUserAlreadyInTeam"
-          data-testid="userErrorInfo"
-          description="L'utilisateur associé à cette adresse e-mail fait déjà partie du projet."
-          small
-          type="error"
-          class="w-max fr-mb-2w"
-        />
-        <DsfrButton
-          v-if="props.canManage"
-          data-testid="addUserBtn"
-          label="Ajouter l'utilisateur"
-          secondary
-          icon="ri:user-add-line"
-          :disabled="project?.locked || !newUserEmail || isUserAlreadyInTeam"
-          @click="addUserToProject()"
-        />
-      </div>
+      <DsfrButton
+        v-if="props.canManage"
+        data-testid="addUserBtn"
+        label="Ajouter"
+        secondary
+        icon="ri:user-add-line"
+        :disabled="project?.locked || !newUserEmail || isUserAlreadyInTeam"
+        @click="addUserToProject"
+      />
+    </div>
+    <DsfrAlert
+      v-if="isUserAlreadyInTeam"
+      data-testid="userErrorInfo"
+      description="L'utilisateur associé à cette adresse e-mail fait déjà partie du projet."
+      small
+      type="error"
+      class="w-max fr-mb-2w"
+    />
+    <div
+      v-if="canTransfer"
+      data-testid="transferProjectZone"
+      class="danger-zone"
+    >
+      <DsfrButton
+        v-show="!isTransferingProject"
+        data-testid="showTransferProjectBtn"
+        label="Transférer le projet"
+        primary
+        icon="ri:exchange-line"
+        @click="isTransferingProject = true"
+      />
       <div
-        v-if="canTransfer"
-        data-testid="transferProjectZone"
-        class="danger-zone"
+        v-if="isTransferingProject"
       >
-        <DsfrButton
-          v-show="!isTransferingProject"
-          data-testid="showTransferProjectBtn"
-          label="Transférer le projet"
-          primary
-          icon="ri:exchange-line"
-          @click="isTransferingProject = true"
+        <DsfrAlert
+          v-if="!transferSelectOptions.length"
+          description="Pour pouvoir transférer la propriété du projet, vous devez ajouter au moins un membre à l'équipe."
+          small
+          type="warning"
+          class="fr-mb-4w w-40em"
         />
         <div
-          v-if="isTransferingProject"
+          v-else
         >
           <DsfrAlert
-            v-if="!transferSelectOptions.length"
-            description="Pour pouvoir transférer la propriété du projet, vous devez ajouter au moins un membre à l'équipe."
+            description="Attention, en transférant la propriété du projet vous perdrez vos droits sur le projet  et deviendrez un membre de l'équipe."
             small
             type="warning"
             class="fr-mb-4w w-40em"
           />
+          <DsfrSelect
+            v-model="nextOwnerId"
+            label="Choisir le futur propriétaire du projet"
+            select-id="nextOwnerSelect"
+            default-unselected-text="Veuillez choisir un utilisateur"
+            :options="transferSelectOptions"
+          />
           <div
-            v-else
+            class="flex justify-between"
           >
-            <DsfrAlert
-              description="Attention, en transférant la propriété du projet vous perdrez vos droits sur le projet  et deviendrez un membre de l'équipe."
-              small
-              type="warning"
-              class="fr-mb-4w w-40em"
+            <DsfrButton
+              data-testid="transferProjectBtn"
+              label="Transférer le projet"
+              :disabled="!nextOwnerId"
+              secondary
+              icon="ri:exchange-line"
+              @click="transferOwnerShip"
             />
-            <DsfrSelect
-              v-model="nextOwnerId"
-              label="Choisir le futur propriétaire du projet"
-              select-id="nextOwnerSelect"
-              default-unselected-text="Veuillez choisir un utilisateur"
-              :options="transferSelectOptions"
+            <DsfrButton
+              label="Annuler"
+              primary
+              @click="isTransferingProject = false"
             />
-            <div
-              class="flex justify-between"
-            >
-              <DsfrButton
-                data-testid="transferProjectBtn"
-                label="Transférer le projet"
-                :disabled="!nextOwnerId"
-                secondary
-                icon="ri:exchange-line"
-                @click="transferOwnership()"
-              />
-              <DsfrButton
-                label="Annuler"
-                primary
-                @click="isTransferingProject = false"
-              />
-            </div>
           </div>
         </div>
       </div>

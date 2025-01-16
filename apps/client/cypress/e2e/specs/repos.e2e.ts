@@ -24,8 +24,6 @@ describe('Add repos into project', () => {
 
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.slug}`).click()
-    cy.getByDataTestid('menuRepos').click()
-    cy.url().should('contain', '/repositories')
 
     cy.getByDataTestid('addRepoLink').click({ timeout: 30_000 })
     cy.get('h2').should('contain', 'Ajouter un dépôt au projet')
@@ -92,8 +90,6 @@ describe('Add repos into project', () => {
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.slug}`).click()
-      .getByDataTestid('menuRepos').click()
-      .url().should('contain', '/repositories')
 
     cy.getByDataTestid('addRepoLink').click()
       .get('h2').should('contain', 'Ajouter un dépôt au projet')
@@ -103,7 +99,7 @@ describe('Add repos into project', () => {
       .check({ force: true })
     cy.getByDataTestid('addRepoBtn').click()
     cy.wait('@postRepo').its('response.statusCode').should('eq', 201)
-    cy.getByDataTestid(`repoTile-${repo.internalRepoName}`)
+    cy.getByDataTestid(`repoTr-${repo.internalRepoName}`)
       .should('exist')
       .click()
     cy.get('h2')
@@ -164,11 +160,9 @@ describe('Add repos into project', () => {
   it('Should update a repo', () => {
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.slug}`).click()
-      .getByDataTestid('menuRepos').click()
-      .url().should('contain', '/repositories')
 
     cy.wait('@listRepositories')
-    cy.getByDataTestid(`repoTile-repo03`).click()
+    cy.getByDataTestid(`repoTr-repo03`).click()
       .get('h2').should('contain', 'Modifier le dépôt')
       .getByDataTestid('internalRepoNameInput').should('be.disabled')
       .getByDataTestid('externalRepoUrlInput').clear().type('https://github.com/externalUser04/new-repo.git')
@@ -182,9 +176,9 @@ describe('Add repos into project', () => {
     cy.getByDataTestid('updateRepoBtn').click()
     cy.wait('@putRepo').its('response.statusCode').should('match', /^20\d$/)
     cy.wait('@listRepositories').its('response.statusCode').should('match', /^20\d$/)
-    cy.getByDataTestid(`repoTile-repo03`).should('exist')
+    cy.getByDataTestid(`repoTr-repo03`).should('exist')
     cy.reload()
-    cy.getByDataTestid(`repoTile-repo03`).click()
+    cy.getByDataTestid(`repoTr-repo03`).click()
     cy.getByDataTestid('externalRepoUrlInput').should('have.value', 'https://github.com/externalUser04/new-repo.git')
     cy.getByDataTestid('input-checkbox-privateRepoCbx').should('be.checked')
     cy.getByDataTestid('externalUserNameInput').should('have.value', 'newUser')
@@ -194,11 +188,9 @@ describe('Add repos into project', () => {
   it('Should synchronise a repo', () => {
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.slug}`).click()
-      .getByDataTestid('menuRepos').click()
-      .url().should('contain', '/repositories')
 
     cy.wait('@listRepositories')
-    cy.getByDataTestid(`repoTile-repo03`)
+    cy.getByDataTestid(`repoTr-repo03`)
       .click()
 
     cy.get('h2').should('contain', 'Synchroniser le dépôt')
@@ -277,9 +269,8 @@ describe('Add repos into project', () => {
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
     cy.goToProjects()
     cy.get('[data-testid^="projectTile-"]:first').click()
-      .getByDataTestid('menuRepos').click()
 
-    cy.get('[data-testid^="repoTile-"]:first').click()
+    cy.get('[data-testid^="repoTr-"]:first').click()
       .getByDataTestid('repo-form').should('exist')
       .getByDataTestid('deleteRepoZone').should('not.exist')
   })
@@ -287,9 +278,8 @@ describe('Add repos into project', () => {
   it('Should not be able to delete a repository if project locked', () => {
     cy.goToProjects()
       .getByDataTestid(`projectTile-${projectFailed.slug}`).click()
-      .getByDataTestid('menuRepos').click()
 
-    cy.get('[data-testid^="repoTile-"]:first').click()
+    cy.get('[data-testid^="repoTr-"]:first').click()
       .getByDataTestid('repo-form').should('exist')
 
     cy.getByDataTestid('showDeleteRepoBtn').should('not.exist')

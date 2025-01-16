@@ -50,7 +50,7 @@ describe('repositoryRouter tests', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('should return 403 for unauthorized user', async () => {
+    it('should return empty for unauthorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.REPLAY_HOOKS })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -60,7 +60,8 @@ describe('repositoryRouter tests', () => {
         .query({ projectId })
         .end()
 
-      expect(response.statusCode).toEqual(403)
+      expect(businessGetProjectRepositoriesMock).toHaveBeenCalledTimes(0)
+      expect(response.json()).toEqual([])
     })
   })
 
