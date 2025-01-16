@@ -96,7 +96,7 @@ async function showLogs(index: number) {
         secondary
         icon-only
         :disabled="isUpdating"
-        :icon="{ name: 'ri:refresh-line', animation: isUpdating ? 'spin' : '' }"
+        :icon="{ name: 'ri:refresh-line', animation: isUpdating ? 'spin' : undefined }"
         @click="showLogs(page)"
       />
     </div>
@@ -111,83 +111,92 @@ async function showLogs(index: number) {
       :step="step"
       @set-page="showLogs($event)"
     />
+    <Loader
+      v-if="isUpdating"
+      class="p-15"
+    />
     <div
-      v-if="!logs.length"
-      class="text-center mt-2 w-full"
+      v-else-if="!logs.length"
+      class="text-center mt-2"
     >
       Aucun événement à afficher
     </div>
     <div
-      v-for="log in logs"
-      :key="log.id"
-      :class="`log-box my-5 border-solid ${log.data?.warning?.length ? 'log-box--warning' : log.data?.failed ? 'log-box--error' : 'log-box--success'}`"
+      v-else
+      class="flex flex-col gap-5 mt-5"
     >
       <div
-        class="flex flex-wrap justify-between"
+        v-for="log in logs"
+        :key="log.id"
+        :class="`log-box border-solid ${log.data?.warning?.length ? 'log-box--warning' : log.data?.failed ? 'log-box--error' : 'log-box--success'}`"
       >
-        <DsfrBadge
-          :label="log.action"
-          :type="log.data?.failed ? 'error' : log.data?.warning?.length ? 'warning' : 'success'"
-        />
         <div
-          class="flex gap-2"
+          class="flex flex-wrap justify-between"
         >
           <DsfrBadge
-            v-if="typeof log?.data?.totalExecutionTime !== 'undefined'"
-            :label="`${log.data.totalExecutionTime} ms`"
+            :label="log.action"
+            :type="log.data?.failed ? 'error' : log.data?.warning?.length ? 'warning' : 'success'"
+          />
+          <div
+            class="flex gap-2"
+          >
+            <DsfrBadge
+              v-if="typeof log?.data?.totalExecutionTime !== 'undefined'"
+              :label="`${log.data.totalExecutionTime} ms`"
+              no-icon
+            />
+            <DsfrBadge
+              :label="(new Date(log.createdAt)).toLocaleString()"
+              no-icon
+            />
+          </div>
+        </div>
+        <template
+          v-if="hideLogs"
+        >
+          <pre
+            v-if="log.data.messageResume"
+            :data-testid="`${log.id}-json`"
+            copyable
+            style="white-space: pre-wrap; "
+          >{{ log.data.messageResume.trim() }}</pre>
+        </template>
+        <JsonViewer
+          v-else
+          :data-testid="`${log.id}-json`"
+          :value="hideLogDetails ? sliceLog(log) : log"
+          class="json-box !my-0"
+          copyable
+        />
+        <div
+          style="display: none;"
+          class="flex flex-wrap justify-between"
+        >
+          <DsfrBadge
+            :label="`Log ID: ${log.id}`"
+            type="new"
             no-icon
           />
           <DsfrBadge
-            :label="(new Date(log.createdAt)).toLocaleString()"
+            :label="`user ID: ${log.userId}`"
+            type="new"
+            no-icon
+          />
+          <DsfrBadge
+            v-if="log.requestId"
+            :label="`Request ID: ${log.requestId}`"
+            type="new"
             no-icon
           />
         </div>
       </div>
-      <template
-        v-if="hideLogs"
-      >
-        <pre
-          v-if="log.data.messageResume"
-          :data-testid="`${log.id}-json`"
-          copyable
-          style="white-space: pre-wrap; "
-        >{{ log.data.messageResume.trim() }}</pre>
-      </template>
-      <JsonViewer
-        v-else
-        :data-testid="`${log.id}-json`"
-        :value="hideLogDetails ? sliceLog(log) : log"
-        class="json-box !my-0"
-        copyable
+      <PaginationCt
+        v-if="['bottom', 'both'].includes(paginationPosition)"
+        :length="totalLength"
+        :page="page"
+        :step="step"
+        @set-page="showLogs($event)"
       />
-      <div
-        style="display: none;"
-        class="flex flex-wrap justify-between"
-      >
-        <DsfrBadge
-          :label="`Log ID: ${log.id}`"
-          type="new"
-          no-icon
-        />
-        <DsfrBadge
-          :label="`user ID: ${log.userId}`"
-          type="new"
-          no-icon
-        />
-        <DsfrBadge
-          v-if="log.requestId"
-          :label="`Request ID: ${log.requestId}`"
-          type="new"
-          no-icon
-        />
-      </div>
     </div>
-    <PaginationCt
-      v-if="['bottom', 'both'].includes(paginationPosition)"
-      :length="totalLength"
-      :page="page"
-      :step="step"
-      @set-page="showLogs($event)"
-    />
   </div>
 </template>

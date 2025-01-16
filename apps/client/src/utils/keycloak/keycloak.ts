@@ -62,11 +62,16 @@ export function getUserProfile(): UserProfile {
 }
 
 export async function keycloakInit() {
-  keycloakInitOptions.redirectUri = keycloakInitOptions.redirectUri?.concat(location.pathname)
+  const currentUrl = new URL(window.location.href)
+  const redirectUri = `${window.location.origin}${currentUrl.pathname}${currentUrl.search}`
   try {
-    const { onLoad, redirectUri, flow } = keycloakInitOptions
+    const { onLoad, flow } = keycloakInitOptions
     const keycloak = getKeycloak()
-    await keycloak.init({ onLoad, flow, redirectUri })
+    await keycloak.init({
+      onLoad,
+      flow,
+      redirectUri,
+    })
   } catch (error) {
     if (error instanceof Error) throw new Error(error.message)
     throw new Error('échec d\'initialisation du keycloak')
@@ -76,7 +81,9 @@ export async function keycloakInit() {
 export async function keycloakLogin() {
   try {
     const keycloak = getKeycloak()
-    await keycloak.login()
+    const currentUrl = new URL(window.location.href)
+    const redirectUri = `${window.location.origin}${currentUrl.pathname}${currentUrl.search}`
+    await keycloak.login({ redirectUri })
   } catch (error) {
     if (error instanceof Error) throw new Error(error.message)
     throw new Error('échec de connexion au keycloak')

@@ -11,8 +11,7 @@ describe('Team view', () => {
   it('Should display team members', () => {
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.slug}`).click()
-      .getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.slug}/team`)
+      .getByDataTestid('test-tab-team').click()
       .getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', project.members.length + 1)
@@ -21,8 +20,7 @@ describe('Team view', () => {
   it('Should not add a non-existing team member', () => {
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project.slug}`).click()
-      .getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.slug}/team`)
+      .getByDataTestid('test-tab-team').click()
       .getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', project.members.length + 1)
@@ -46,8 +44,7 @@ describe('Team view', () => {
 
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.slug}`).click()
-    cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.slug}/team`)
+    cy.getByDataTestid('test-tab-team').click()
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', project.members.length + 1)
@@ -90,8 +87,7 @@ describe('Team view', () => {
 
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.slug}`).click()
-    cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.slug}/team`)
+    cy.getByDataTestid('test-tab-team').click()
 
     cy.getByDataTestid('showTransferProjectBtn')
       .should('be.enabled')
@@ -124,8 +120,7 @@ describe('Team view', () => {
 
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.slug}`).click()
-    cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.slug}/team`)
+    cy.getByDataTestid('test-tab-team').click()
 
     cy.getByDataTestid('showTransferProjectBtn').click()
     cy.getByDataTestid('transferProjectBtn')
@@ -154,8 +149,7 @@ describe('Team view', () => {
 
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.slug}`).click()
-    cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.slug}/team`)
+    cy.getByDataTestid('test-tab-team').click()
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', project.members.length + 1 + 1)

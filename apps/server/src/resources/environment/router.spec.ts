@@ -42,7 +42,7 @@ describe('environmentRouter tests', () => {
       expect(response.json()).toEqual([])
     })
 
-    it('should return 404 for non member of projectId query ', async () => {
+    it('should return empty for non member of projectId query ', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
@@ -52,7 +52,8 @@ describe('environmentRouter tests', () => {
         .query({ projectId })
         .end()
 
-      expect(response.statusCode).toEqual(404)
+      expect(businessGetProjectEnvironmentsMock).toHaveBeenCalledTimes(0)
+      expect(response.json()).toEqual([])
     })
   })
 

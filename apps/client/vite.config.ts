@@ -89,7 +89,7 @@ export default defineConfig({
           ...theme,
           breakpoints: {
             ...theme.breakpoints,
-            thousand: '1000px',
+            dsfrmenu: '992px',
           },
         }
       },

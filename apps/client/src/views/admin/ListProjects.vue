@@ -61,7 +61,7 @@ const projectWithSelection = computed(() => projects.value.map(project => ({ ...
 const selectedProjects = computed(() => projectWithSelection.value.filter(project => project.selected))
 
 const isAllSelected = computed<boolean>(() => {
-  return selectedProjects.value.length === projects.value.length
+  return !!selectedProjects.value.length && selectedProjects.value.length === projects.value.length
 })
 
 function selectAll() {

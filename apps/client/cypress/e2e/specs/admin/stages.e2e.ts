@@ -1,3 +1,4 @@
+import { deleteValidationInput } from '@cpn-console/shared'
 import { getModel, getModelById } from '../../support/func.js'
 
 describe('Administration stages', () => {
@@ -106,8 +107,6 @@ describe('Administration stages', () => {
     cy.goToProjects()
       .wait('@listProjects')
       .getByDataTestid(`projectTile-${project?.slug}`).click()
-      .getByDataTestid('menuEnvironments').click()
-      .url().should('contain', '/environments')
     cy.wait('@getClusters')
     cy.getByDataTestid('addEnvironmentLink').click()
     cy.wait('@listStages')
@@ -217,8 +216,6 @@ describe('Administration stages', () => {
     cy.goToProjects()
       .wait('@listProjects')
       .getByDataTestid(`projectTile-${project?.slug}`).click()
-      .getByDataTestid('menuEnvironments').click()
-      .url().should('contain', '/environments')
     cy.wait('@getClusters')
     cy.getByDataTestid('addEnvironmentLink').click()
     cy.wait('@listStages')
@@ -271,7 +268,7 @@ describe('Administration stages', () => {
     cy.getByDataTestid('showDeleteStageBtn').click()
     cy.getByDataTestid('deleteStageInput')
       .clear()
-      .type(stage.name)
+      .type(deleteValidationInput)
     cy.getByDataTestid('deleteStageBtn')
       .click()
     cy.reload()

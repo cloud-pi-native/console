@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { CleanedCluster, Cluster, ClusterDetails, CreateClusterBody, UpdateClusterBody } from '@cpn-console/shared'
+import { resourceListToDict, type CleanedCluster, type Cluster, type CreateClusterBody, type UpdateClusterBody } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useClusterStore = defineStore('cluster', () => {
   const clusters = ref<Array<CleanedCluster>>([])
+  const clustersById = computed(() => resourceListToDict(clusters.value))
 
   const getClusters = async () => {
     clusters.value = await apiClient.Clusters.listClusters()
@@ -12,13 +13,9 @@ export const useClusterStore = defineStore('cluster', () => {
     return clusters.value
   }
 
-  const selectedCluster = ref<ClusterDetails>()
-
-  const getClusterDetails = async (clusterId: Cluster['id']) => {
-    selectedCluster.value = await apiClient.Clusters.getClusterDetails({ params: { clusterId } })
+  const getClusterDetails = async (clusterId: Cluster['id']) =>
+    apiClient.Clusters.getClusterDetails({ params: { clusterId } })
       .then(response => extractData(response, 200))
-    return selectedCluster.value
-  }
 
   const getClusterAssociatedEnvironments = (clusterId: Cluster['id']) =>
     apiClient.Clusters.getClusterEnvironments({ params: { clusterId } })
@@ -38,7 +35,7 @@ export const useClusterStore = defineStore('cluster', () => {
 
   return {
     clusters,
-    selectedCluster,
+    clustersById,
     getClusterAssociatedEnvironments,
     addCluster,
     updateCluster,
