@@ -67,12 +67,12 @@ export type AdminPermsKeys = keyof typeof ADMIN_PERMS
 permissionsParser(ADMIN_PERMS)
 permissionsParser(PROJECT_PERMS)
 
-interface ProjectAuthorizedParams { adminPermissions?: bigint | string, projectPermissions?: bigint | string }
+interface ProjectAuthorizedParams { adminPermissions?: bigint | string | null, projectPermissions?: bigint | string }
 
-export const toBigInt = (value?: bigint | number | string | undefined) => value ? BigInt(value) : 0n
+export const toBigInt = (value?: bigint | number | string | undefined | null) => value ? BigInt(value) : 0n
 
 export const AdminAuthorized = {
-  isAdmin: (perms?: bigint | string) => !!(toBigInt(perms) & ADMIN_PERMS.MANAGE),
+  isAdmin: (perms?: bigint | string | null) => !!(toBigInt(perms) & ADMIN_PERMS.MANAGE),
 } as const
 
 export const ProjectAuthorized = {

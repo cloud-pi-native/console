@@ -3,7 +3,6 @@ import {
   createWebHistory,
 } from 'vue-router'
 import type {
-  RouteLocationNormalizedGeneric,
   RouteRecordRaw,
 } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
@@ -19,18 +18,11 @@ const CreateProject = () => import('@/views/CreateProject.vue')
 const ProfileWrapper = () => import('@/views/profile/ProfileWrapper.vue')
 const UserInfo = () => import('@/views/profile/UserInfo.vue')
 const PersonalAccessTokens = () => import('@/views/profile/PersonalAccessTokens.vue')
-const ManageEnvironments = () => import('@/views/projects/ManageEnvironments.vue')
 const DsoProjects = () => import('@/views/projects/DsoProjects.vue')
-const DsoProjectWrapper = () => import('@/views/projects/DsoProjectWrapper.vue')
-const DsoDashboard = () => import('@/views/projects/DsoDashboard.vue')
-const DsoRoles = () => import('@/views/projects/DsoRoles.vue')
-const DsoServices = () => import('@/views/projects/DsoServices.vue')
-const DsoTeam = () => import('@/views/projects/DsoTeam.vue')
-const DsoRepos = () => import('@/views/projects/DsoRepos.vue')
 const DsoAdmin = () => import('@/views/admin/DsoAdmin.vue')
 const ListUser = () => import('@/views/admin/ListUser.vue')
 const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
-const AdminProject = () => import('@/views/admin/AdminProject.vue')
+const ProjectDashboard = () => import('@/views/ProjectDashboard.vue')
 const ListProjects = () => import('@/views/admin/ListProjects.vue')
 const ListLogs = () => import('@/views/admin/ListLogs.vue')
 const AdminRoles = () => import('@/views/admin/AdminRoles.vue')
@@ -45,11 +37,6 @@ const AdminTokens = () => import('@/views/admin/AdminTokens.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 
-function propTheProjectParam(to: RouteLocationNormalizedGeneric) {
-  return {
-    projectSlug: Array.isArray(to.params.slug) ? to.params.slug[0] : to.params.slug,
-  }
-}
 export const routes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/login',
@@ -67,7 +54,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
       const userStore = useUserStore()
       await userStore.logout()
     },
-    component: DsoProjects,
+    component: DsoHome,
   },
   {
     path: '/',
@@ -101,11 +88,9 @@ export const routes: Readonly<RouteRecordRaw[]> = [
     name: 'ServicesHealth',
     component: ServicesHealth,
   },
+
   {
-    name: 'ParentProjects',
     path: '/projects',
-    component: DsoProjectWrapper,
-    props: propTheProjectParam,
     children: [
       {
         path: '',
@@ -115,6 +100,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
       {
         path: ':slug',
         name: 'Project',
+        component: ProjectDashboard,
         async beforeEnter(to, _from, next) {
           if (typeof to.params.slug !== 'string') {
             return next({ name: 'Projects' })
@@ -128,49 +114,18 @@ export const routes: Readonly<RouteRecordRaw[]> = [
           useProjectStore().lastSelectedProjectSlug = to.params.slug
           return next()
         },
-        children: [
-          {
-            path: 'dashboard',
-            name: 'Dashboard',
-            component: DsoDashboard,
-            props: propTheProjectParam,
-          },
-          {
-            path: 'services',
-            name: 'Services',
-            component: DsoServices,
-            props: propTheProjectParam,
-          },
-          {
-            path: 'roles',
-            name: 'ProjectRoles',
-            component: DsoRoles,
-            props: propTheProjectParam,
-          },
-          {
-            path: 'team',
-            name: 'Team',
-            component: DsoTeam,
-            props: propTheProjectParam,
-          },
-          {
-            path: 'repositories',
-            name: 'Repos',
-            component: DsoRepos,
-            props: propTheProjectParam,
-          },
-          {
-            path: 'environments',
-            name: 'Environments',
-            component: ManageEnvironments,
-            props: propTheProjectParam,
-          },
-        ],
+        props(to) {
+          return {
+            projectSlug: to.params.slug,
+            parentRoute: 'Projects',
+            asProfile: 'user',
+          }
+        },
       },
     ],
   },
   {
-    path: '/projects/create-project',
+    path: '/create-project',
     name: 'CreateProject',
     component: CreateProject,
   },
@@ -190,25 +145,33 @@ export const routes: Readonly<RouteRecordRaw[]> = [
         component: ListOrganizations,
       },
       {
-        path: 'projects/:slug',
-        name: 'AdminProject',
-        component: AdminProject,
-        async beforeEnter(to, _from, next) {
-          if (typeof to.params.slug !== 'string') {
-            return next('/admin/projects')
-          }
-          await useProjectStore().getProject(to.params.slug)
-          return next()
-        },
-        props(to) {
-          return { projectSlug: to.params.slug }
-        },
-      },
-      {
         path: 'projects',
-        name: 'ListProjects',
-        component: ListProjects,
-        strict: false,
+        children: [
+          {
+            path: '',
+            name: 'ListProjects',
+            component: ListProjects,
+          },
+          {
+            path: ':slug',
+            name: 'AdminProject',
+            component: ProjectDashboard,
+            async beforeEnter(to, _from, next) {
+              if (typeof to.params.slug !== 'string') {
+                return next('/admin/projects')
+              }
+              await useProjectStore().getProject(to.params.slug)
+              return next()
+            },
+            props(to) {
+              return {
+                projectSlug: to.params.slug,
+                parentRoute: 'ListProjects',
+                asProfile: 'admin',
+              }
+            },
+          },
+        ],
       },
       {
         path: 'logs',

@@ -56,6 +56,7 @@ const riIconNames = [
   'send-plane-line',
   'server-line',
   'settings-3-line',
+  'shapes-line',
   'shield-check-line',
   'sound-module-line',
   'stock-line',

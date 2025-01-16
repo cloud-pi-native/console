@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import type { Repo, SharedZodError } from '@cpn-console/shared'
-import { CreateRepoFormSchema, RepoFormSchema, UpdateRepoFormSchema, fakeToken, instanciateSchema } from '@cpn-console/shared'
+import { CreateRepoFormSchema, RepoFormSchema, UpdateRepoFormSchema, deleteValidationInput, fakeToken, instanciateSchema } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 type RepoForm = Partial<Repo> & { isStandalone?: boolean }
@@ -252,27 +252,27 @@ function toggleStandalone(e: boolean) {
           />
         </div>
       </DsfrFieldset>
+      <div
+        v-if="!props.isProjectLocked && canManage"
+        class="flex space-x-10 mt-5"
+      >
+        <DsfrButton
+          :label="localRepo.id ? 'Enregistrer' : 'Ajouter le dépôt'"
+          :data-testid="localRepo.id ? 'updateRepoBtn' : 'addRepoBtn'"
+          :disabled="!isRepoValid"
+          primary
+          icon="ri:upload-cloud-line"
+          @click="saveRepo()"
+        />
+        <DsfrButton
+          label="Annuler"
+          data-testid="cancelRepoBtn"
+          secondary
+          icon="ri:close-line"
+          @click="cancel()"
+        />
+      </div>
     </DsfrFieldset>
-    <div
-      v-if="!props.isProjectLocked && canManage"
-      class="flex space-x-10 mt-5"
-    >
-      <DsfrButton
-        :label="localRepo.id ? 'Enregistrer' : 'Ajouter le dépôt'"
-        :data-testid="localRepo.id ? 'updateRepoBtn' : 'addRepoBtn'"
-        :disabled="!isRepoValid"
-        primary
-        icon="ri:upload-cloud-line"
-        @click="saveRepo()"
-      />
-      <DsfrButton
-        label="Annuler"
-        data-testid="cancelRepoBtn"
-        secondary
-        icon="ri:close-line"
-        @click="cancel()"
-      />
-    </div>
     <div
       v-if="canManage && localRepo.id"
       data-testid="deleteRepoZone"
@@ -302,9 +302,9 @@ function toggleStandalone(e: boolean) {
         <DsfrInput
           v-model="repoToDelete"
           data-testid="deleteRepoInput"
-          :label="`Veuillez taper '${localRepo.internalRepoName}' pour confirmer la suppression du dépôt`"
+          :label="`Veuillez taper '${deleteValidationInput}' pour confirmer la suppression du dépôt`"
           label-visible
-          :placeholder="localRepo.internalRepoName"
+          :placeholder="deleteValidationInput"
           class="fr-mb-2w"
         />
         <div
@@ -313,7 +313,7 @@ function toggleStandalone(e: boolean) {
           <DsfrButton
             data-testid="deleteRepoBtn"
             :label="`Supprimer définitivement le dépôt ${localRepo.internalRepoName}`"
-            :disabled="repoToDelete !== localRepo.internalRepoName"
+            :disabled="repoToDelete !== deleteValidationInput"
             :title="`Supprimer définitivement le dépôt ${localRepo.internalRepoName}`"
             secondary
             icon="ri:delete-bin-7-line"

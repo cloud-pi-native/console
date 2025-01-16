@@ -128,7 +128,7 @@ describe('Administration organizations', () => {
 
     cy.getByDataTestid('snackbar').should('contain', `Organisation ${newOrg.name} mise à jour`)
 
-    cy.visit('/projects/create-project')
+    cy.visit('/create-project')
       .get(`select#organizationId-select > option[value="${organizations[0].id}"]`)
       .should('not.exist')
       .get(`select#organizationId-select > option[value="${newOrg.name}"]`)

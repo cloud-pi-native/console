@@ -63,8 +63,8 @@ body,
 
 .danger-zone {
   border-bottom: solid var(--border-plain-warning);
-  margin: 2rem 0;
-  padding: 4rem 2rem;
+  margin-top: 2rem;
+  padding: 2rem;
   background-color: var(--background-alt-grey);
 }
 

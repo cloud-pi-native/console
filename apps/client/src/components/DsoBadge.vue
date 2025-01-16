@@ -41,16 +41,12 @@ const global = computed(() => {
   <div
     class="flex gap-2"
     :data-testid="`${resource?.id}-${global?.testId}`"
+    :title="global?.wording"
   >
     <v-icon
       :name="global?.icon"
       :fill="global?.color"
       :animation="global?.animation"
     />
-    <span
-      :class="`uppercase font-bold fr-text-default--${global?.type}`"
-    >
-      {{ resource?.wording }} : {{ global?.wording }}
-    </span>
   </div>
 </template>
