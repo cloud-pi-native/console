@@ -2,7 +2,7 @@ import { createHmac } from 'node:crypto'
 import { Namespace } from 'kubernetes-models/v1'
 import type { Environment, Project, ProjectLite, StepCall, UserObject } from '@cpn-console/hooks'
 import { parseError } from '@cpn-console/hooks'
-import type { CoreV1Api, V1NamespaceList } from '@kubernetes/client-node'
+import type { CoreV1Api, V1NamespaceList, V1ObjectMeta } from '@kubernetes/client-node'
 import { createCoreV1Api } from './api.js'
 import type { V1NamespacePopulated } from './class.js'
 
@@ -22,6 +22,7 @@ export const createNamespaces: StepCall<Project> = async (payload) => {
 
     for (const cluster of project.clusters) {
       const kubeClient = createCoreV1Api(cluster)
+      if (!kubeClient) continue
       const namespaces = await getProjectNamespaces(project, kubeClient)
       for (const namespace of namespaces) {
         const { 'dso/environment': environmentName } = namespace.metadata?.labels as { 'dso/organization': string, 'dso/projet': string, environment: string, 'dso/environment': string }
@@ -58,6 +59,7 @@ export const deleteNamespaces: StepCall<Project> = async (payload) => {
 
     for (const cluster of project.clusters) {
       const kubeClient = createCoreV1Api(cluster)
+      if (!kubeClient) continue
       const namespaces = await getProjectNamespaces(project, kubeClient)
       for (const namespace of namespaces) {
         const nsName = namespace.metadata?.name as string
@@ -109,17 +111,18 @@ export function generateNamespaceName(org: string, proj: string, env: string) {
     .slice(0, 4)
   return `${org}-${proj}-${env}-${envHash}`
 }
-export function uniqueResource<T extends { metadata: { name: string } }>(...lists: T[][]): T[] {
+
+export function uniqueResource<T extends { metadata?: V1ObjectMeta }>(...lists: T[][]): T[] {
   return lists
     .flat()
-    .reduce((acc, cur) => (acc.some(item => item.metadata.name === cur.metadata.name)
+    .reduce((acc, cur) => (acc.some(item => item.metadata?.name === cur.metadata?.name)
       ? acc
       : [...acc, cur]
     ), [] as T[])
 }
-async function getProjectNamespaces(project: ProjectLite, kubeClient?: CoreV1Api): Promise<V1NamespaceList['items']> {
-  const projectNamespaces = await kubeClient?.listNamespace(undefined, undefined, undefined, undefined, getNamespaceSelectors(project))
-  const projectNamespaces2 = await kubeClient?.listNamespace(undefined, undefined, undefined, undefined, getNamespaceSelectors2(project))
-  // @ts-ignore
-  return uniqueResource(projectNamespaces?.body.items, projectNamespaces2?.body.items)
+
+async function getProjectNamespaces(project: ProjectLite, kubeClient: CoreV1Api): Promise<V1NamespaceList['items']> {
+  const projectNamespaces = await kubeClient.listNamespace(undefined, undefined, undefined, undefined, getNamespaceSelectors(project))
+  const projectNamespaces2 = await kubeClient.listNamespace(undefined, undefined, undefined, undefined, getNamespaceSelectors2(project))
+  return uniqueResource(projectNamespaces.body.items, projectNamespaces2.body.items)
 }
