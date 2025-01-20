@@ -1,5 +1,6 @@
 import type { Organization } from '@cpn-console/shared'
 import { getModel, getModelById } from './func.js'
+import { keycloakDomain } from '@/utils/env.js'
 
 const organizations = getModel('organization')
 const orgMi = organizations.find(({ name }) => name === 'mi') as Organization
@@ -14,10 +15,12 @@ Cypress.Commands.add('kcLogin', (name, password = 'test') => {
   cy.session(name, () => {
     cy.visit('/')
       .get('a.fr-btn').should('contain', 'Se connecter').click()
-      .get('input#username').type(name)
-      .get('input#password').type(password)
-      .get('input#kc-login').click()
-      .url().should('contain', `${Cypress.env('clientHost')}`)
+    cy.origin(`http://${keycloakDomain}`, { args: { name, password } }, ({ name, password }) => {
+      cy.get('input#username').type(name)
+        .get('input#password').type(password)
+        .get('input#kc-login').click()
+    })
+    cy.url().should('contain', `${Cypress.env('clientHost')}`)
   }, {
     validate() {
       cy.visit('/')
