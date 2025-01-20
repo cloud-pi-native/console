@@ -1,5 +1,6 @@
 import { swaggerUiPath } from '@cpn-console/shared'
 import { getModelById } from '../support/func.js'
+import { keycloakDomain } from '@/utils/env.js'
 
 const project = getModelById('project', '011e7860-04d7-461f-912d-334c622d38b3')
 
@@ -38,9 +39,11 @@ describe('Redirection', () => {
 
     cy.visit(`/projects/${project.slug}/dashboard`)
     cy.url().should('not.contain', `/projects/${project.slug}/dashboard`)
-    cy.get('input#username').type('test')
-    cy.get('input#password').type('test')
-    cy.get('input#kc-login').click()
+    cy.origin(`http://${keycloakDomain}`, () => {
+      cy.get('input#username').type('test')
+        .get('input#password').type('test')
+        .get('input#kc-login').click()
+    })
     cy.wait('@postToken')
     cy.url().should('contain', `/projects/${project.slug}/dashboard`)
     cy.wait('@listProjects', { timeout: 5_000 }).its('response').then((_response) => {
@@ -55,9 +58,11 @@ describe('Redirection', () => {
 
     cy.visit('/login')
     cy.url().should('not.contain', '/login')
-    cy.get('input#username').type('test')
-    cy.get('input#password').type('test')
-    cy.get('input#kc-login').click()
+    cy.origin(`http://${keycloakDomain}`, () => {
+      cy.get('input#username').type('test')
+        .get('input#password').type('test')
+        .get('input#kc-login').click()
+    })
     cy.wait('@postToken')
     cy.url().should('contain', '/')
     cy.get('h1').contains(' Cloud π Native ')
