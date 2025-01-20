@@ -3,7 +3,7 @@
   "type": "module",
   "version": "8.23.1",
   "private": true,
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "build": "turbo run build --color --no-daemon",
     "build:clean": "turbo run build:clean --no-daemon",
