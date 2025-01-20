@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.23.1](https://github.com/cloud-pi-native/console/compare/v8.23.0...v8.23.1) (2025-01-20)
+
+
+### Bug Fixes
+
+* :ambulance: bad gitlab url fn ([2ec5332](https://github.com/cloud-pi-native/console/commit/2ec5332ce320e40da131ff537974c169716e3ac5))
+
 ## [8.23.0](https://github.com/cloud-pi-native/console/compare/v8.22.1...v8.23.0) (2025-01-20)
 
 
