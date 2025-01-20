@@ -2,6 +2,7 @@ import { okStatus, parseError } from '@cpn-console/hooks'
 import type { Project, ProjectLite, StepCall, ZoneObject } from '@cpn-console/hooks'
 import { generateVaultAuth, generateVsoSecret, generateVsoVaultConnection } from './vso.js'
 import getConfig from './config.js'
+import type { KubernetesNamespace } from '@cpn-console/kubernetes-plugin/types/class.js'
 
 export const upsertProject: StepCall<Project> = async (payload) => {
   try {
@@ -26,23 +27,23 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 }
 export const deployAuth: StepCall<Project> = async (payload) => {
   try {
-    const kubeApi = payload.apis.kubernetes
     if (!payload.apis.vault) {
       throw new Error('no Vault available')
     }
-    const appRoleCreds = await payload.apis.vault.getCredentials()
+    const appRoleCreds = await payload.apis.vault.Project.getCredentials()
     if (getConfig().disableVaultSecrets) {
       return okStatus
     }
     // loop on each env to verify if vault CRDs are installed on the cluster
-    for (const ns of Object.values(kubeApi.namespaces)) {
-      const apiVersions = await ns.apisApi?.getAPIVersions()
+    for (const env of payload.args.environments) {
+      const nsKubeApi = env.apis.kubernetes as KubernetesNamespace
+      const apiVersions = await nsKubeApi.apisApi?.getAPIVersions()
       const apiHashicorp = apiVersions?.body.groups.find(group => group.name === 'secrets.hashicorp.com')
 
       // verify if vault CRDs are installed on the cluster
       if (apiHashicorp) {
         const vaultConnectionObject = generateVsoVaultConnection(appRoleCreds)
-        await ns.createOrPatchRessource({
+        await nsKubeApi.createOrPatchRessource({
           body: vaultConnectionObject,
           name: vaultConnectionObject.metadata.name,
           plural: 'vaultconnections',
@@ -51,7 +52,7 @@ export const deployAuth: StepCall<Project> = async (payload) => {
         })
 
         const vaultSecretObject = generateVsoSecret(appRoleCreds)
-        await ns.createOrPatchRessource({
+        await nsKubeApi.createOrPatchRessource({
           body: vaultSecretObject,
           name: vaultSecretObject.metadata.name,
           plural: 'secrets',
@@ -60,7 +61,7 @@ export const deployAuth: StepCall<Project> = async (payload) => {
         })
 
         const vaultAuthObject = generateVaultAuth(appRoleCreds)
-        await ns.createOrPatchRessource({
+        await nsKubeApi.createOrPatchRessource({
           body: vaultAuthObject,
           name: vaultAuthObject.metadata.name,
           plural: 'vaultauths',

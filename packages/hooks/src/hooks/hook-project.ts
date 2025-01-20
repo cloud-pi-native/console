@@ -56,11 +56,13 @@ export interface Project {
   name: string
   status: string
   clusters: ClusterObject[]
+  /** @deprecated organization will be removed in next release you should use slug to track object */
   organization: {
     id: string
     name: string
     label: string
   }
+  slug: string
   environments: Environment[]
   repositories: Repository[]
   users: UserObject[]

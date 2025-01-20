@@ -6,11 +6,11 @@ import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import router from '@/router/index.js'
 
-const props = defineProps<{ projectId: ProjectV2['id'] }>()
+const props = defineProps<{ projectSlug: ProjectV2['slug'] }>()
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
-const project = computed(() => projectStore.projectsById[props.projectId])
+const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
 
 const teamKey = ref('team')
 
@@ -24,7 +24,7 @@ async function removeUserFromProject(userId: string) {
   teamKey.value = getRandomId('team')
   if (userId === userStore.userProfile?.id) {
     router.push({ name: 'Projects' })
-    projectStore.lastSelectedProjectId = undefined
+    projectStore.lastSelectedProjectSlug = undefined
   }
 }
 
@@ -36,7 +36,7 @@ async function transferOwnerShip(nextOwnerId: string) {
 
 <template>
   <DsoSelectedProject
-    :project-id="projectId"
+    :project-slug="projectSlug"
   />
   <TeamCt
     :key="teamKey"

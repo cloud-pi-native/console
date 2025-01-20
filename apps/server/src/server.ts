@@ -30,7 +30,7 @@ function logExitCode(code: number) {
 }
 
 function logUnhandledRejection(reason: unknown, promise: Promise<unknown>) {
-  logger.error('Unhandled Rejection at:', promise, 'reason:', reason)
+  logger.error({ message: 'Unhandled Rejection', promise, reason })
 }
 
 export function handleExit() {

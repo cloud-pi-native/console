@@ -2,20 +2,20 @@ import { createHmac } from 'node:crypto'
 import { CoreV1Api, CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 
-export function generateAppProjectName(org: string, proj: string, env: string) {
+export function generateAppProjectName(projectSlug: string, env: string) {
   const envHash = createHmac('sha256', '')
     .update(env)
     .digest('hex')
     .slice(0, 4)
-  return `${org}-${proj}-${env}-${envHash}`
+  return `${projectSlug}-${env}-${envHash}`
 }
 
-export function generateApplicationName(org: string, proj: string, env: string, repo: string) {
+export function generateApplicationName(projectSlug: string, env: string, repo: string) {
   const envHash = createHmac('sha256', '')
     .update(env)
     .digest('hex')
     .slice(0, 4)
-  return `${org}-${proj}-${env}-${repo}-${envHash}`
+  return `${projectSlug}-${env}-${repo}-${envHash}`
 }
 
 const config: {
@@ -58,47 +58,4 @@ export function getK8sApi(): CoreV1Api {
 export function getCustomK8sApi(): CustomObjectsApi {
   customK8sApi = customK8sApi ?? getClient().makeApiClient(CustomObjectsApi)
   return customK8sApi
-}
-
-/**
- * Take a list of list of kubernetes resources and and ditch duplicates by name
- *
- * @remarks Kind is ignored. You can pass as many arguments as you want
- *
- * @example
- * ```ts
- * const foo = [{ metadata: { name: 'One' }}, { metadata: { name: 'Two' }}]
- * const bar = [{ metadata: { name: 'One' }}, { metadata: { name: 'Three' }}]
- * const xyz = [{ metadata: { name: 'Four' }}, { metadata: { name: 'Two' }}]
- * uniqueResource(foo, bar, xyz)
- * // [
- * //   { metadata: { name: 'One' }},
- * //   { metadata: { name: 'Two' }},
- * //   { metadata: { name: 'Three' }},
- * //   { metadata: { name: 'Four' }}
- * // ]
- * ```
- *
- */
-export function uniqueResource<T extends { metadata: { name: string } }>(...lists: T[][]): T[] {
-  return lists
-    .flat()
-    .reduce((acc, cur) => (acc.some(item => item.metadata.name === cur.metadata.name)
-      ? acc
-      : [...acc, cur]
-    ), [] as T[])
-}
-
-export interface BaseResources {
-  kind?: string
-  apiVersion?: string
-  metadata: {
-    name?: string
-    namespace?: string
-    labels: {
-      [x: string]: string
-    }
-    [x: string]: any
-  }
-  [x: string]: any
 }

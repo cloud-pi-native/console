@@ -5,12 +5,12 @@ import type { Project } from '@/utils/project-utils.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps<{
-  projectId: Project['id']
+  projectSlug: Project['slug']
 }>()
 
 const snackbarStore = useSnackbarStore()
 const projectStore = useProjectStore()
-const project = computed(() => projectStore.projectsById[props.projectId])
+const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
 const operationsInProgress = computed(() => project.value.operationsInProgress)
 
 async function replayHooks() {

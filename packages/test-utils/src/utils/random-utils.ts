@@ -25,10 +25,12 @@ export function getRandomOrganization(name = 'mi', label = 'Ministère de l\'Int
 }
 
 export function getRandomProject(organizationId = faker.string.uuid()): Project & { status: AchievedStatus, members?: Member[] } {
+  const name = getRandomProjectName()
   return {
     id: faker.string.uuid(),
-    name: getRandomProjectName(),
     organizationId,
+    name,
+    slug: `${organizationId.slice(0, 3)}-${name}`,
     description: faker.lorem.sentence(8),
     status: faker.helpers.arrayElement(achievedStatus),
     locked: false,

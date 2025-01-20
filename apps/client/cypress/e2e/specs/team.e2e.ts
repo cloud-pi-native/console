@@ -10,9 +10,9 @@ describe('Team view', () => {
 
   it('Should display team members', () => {
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project.name}`).click()
+      .getByDataTestid(`projectTile-${project.slug}`).click()
       .getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
+      .url().should('contain', `/projects/${project.slug}/team`)
       .getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', project.members.length + 1)
@@ -20,9 +20,9 @@ describe('Team view', () => {
 
   it('Should not add a non-existing team member', () => {
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${project.name}`).click()
+      .getByDataTestid(`projectTile-${project.slug}`).click()
       .getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
+      .url().should('contain', `/projects/${project.slug}/team`)
       .getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', project.members.length + 1)
@@ -45,9 +45,9 @@ describe('Team view', () => {
     cy.intercept('POST', `api/v1/projects/${project.id}/members`).as('addUser')
 
     cy.goToProjects()
-    cy.getByDataTestid(`projectTile-${project.name}`).click()
+    cy.getByDataTestid(`projectTile-${project.slug}`).click()
     cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
+      .url().should('contain', `/projects/${project.slug}/team`)
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', project.members.length + 1)
@@ -89,9 +89,9 @@ describe('Team view', () => {
     cy.intercept('GET', `/api/v1/projects?filter=member&statusNotIn=archived`).as('getProjectMembers')
 
     cy.goToProjects()
-    cy.getByDataTestid(`projectTile-${project.name}`).click()
+    cy.getByDataTestid(`projectTile-${project.slug}`).click()
     cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
+      .url().should('contain', `/projects/${project.slug}/team`)
 
     cy.getByDataTestid('showTransferProjectBtn')
       .should('be.enabled')
@@ -123,9 +123,9 @@ describe('Team view', () => {
     cy.kcLogin((userToTransfer.firstName.slice(0, 1) + userToTransfer.lastName).toLowerCase())
 
     cy.goToProjects()
-    cy.getByDataTestid(`projectTile-${project.name}`).click()
+    cy.getByDataTestid(`projectTile-${project.slug}`).click()
     cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
+      .url().should('contain', `/projects/${project.slug}/team`)
 
     cy.getByDataTestid('showTransferProjectBtn').click()
     cy.getByDataTestid('transferProjectBtn')
@@ -153,9 +153,9 @@ describe('Team view', () => {
     cy.intercept('DELETE', `api/v1/projects/${project.id}/members/*`).as('removeUser')
 
     cy.goToProjects()
-    cy.getByDataTestid(`projectTile-${project.name}`).click()
+    cy.getByDataTestid(`projectTile-${project.slug}`).click()
     cy.getByDataTestid('menuTeam').click()
-      .url().should('contain', `/projects/${project.id}/team`)
+      .url().should('contain', `/projects/${project.slug}/team`)
     cy.getByDataTestid('teamTable')
       .find('tbody > tr')
       .should('have.length', project.members.length + 1 + 1)

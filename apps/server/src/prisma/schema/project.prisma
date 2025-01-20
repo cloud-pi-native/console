@@ -84,6 +84,7 @@ model Project {
   roles          ProjectRole[]
   repositories   Repository[]
   clusters       Cluster[]        @relation("ClusterToProject")
+  slug           String           @unique
 
   lastSuccessProvisionningVersion String?
 }

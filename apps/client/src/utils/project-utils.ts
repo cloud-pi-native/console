@@ -59,6 +59,7 @@ export class Project implements ProjectV2 {
   description: string | undefined
   everyonePerms: string
   name: string
+  slug: string
   locked: boolean
   owner: Omit<User, 'adminRoleIds'>
   ownerId: string
@@ -82,6 +83,7 @@ export class Project implements ProjectV2 {
     this.description = project.description
     this.everyonePerms = project.everyonePerms
     this.name = project.name
+    this.slug = project.slug
     this.locked = project.locked
     this.owner = project.owner
     this.ownerId = project.ownerId

@@ -7,7 +7,9 @@ const orgMi = organizations.find(({ name }) => name === 'mi') as Organization
 describe('Create Project', () => {
   const project = {
     orgId: orgMi.id,
+    orgName: orgMi.name,
     name: 'project01',
+    slug: 'mi-project01',
     description: 'Application de prise de rendez-vous en préfécture.',
   }
 
@@ -37,23 +39,23 @@ describe('Create Project', () => {
     cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
 
     cy.wait('@postProject').its('response.statusCode').should('match', /^20\d$/)
-    cy.url().should('match', /projects\/.*\/dashboard/)
+    cy.url().should('contain', `/projects/${project.slug}/dashboard`)
 
     cy.wait('@listProjects').its('response.statusCode').should('match', /^20\d$/)
 
-    cy.assertCreateProjects([project.name])
+    cy.assertCreateProjects([project.slug])
   })
 
-  it('Should not create a project if name is already taken', () => {
+  it('Should create a project even if name is already taken', () => {
     cy.intercept('POST', '/api/v1/projects').as('postProject')
     cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
     cy.goToProjects()
       .getByDataTestid('createProjectLink').click()
       .get('select#organizationId-select').select(project.orgId)
-      .getByDataTestid('nameInput').type(`${project.name}`)
+      .getByDataTestid('nameInput').type(project.name)
     cy.getByDataTestid('createProjectBtn').should('be.enabled').click()
-    cy.wait('@postProject').its('response.statusCode').should('not.match', /^20\d$/)
-    cy.getByDataTestid('snackbar').should('contain', `Le projet "${project.name}" existe déjà`)
+    cy.wait('@postProject').its('response.statusCode').should('match', /^20\d$/)
+    cy.url().should('contain', `/projects/${project.orgName}-${project.name}-1/dashboard`)
   })
 })

@@ -41,7 +41,7 @@ export interface VaultSecrets {
 export function cleanGitlabError<T>(error: T): T {
   if (error instanceof GitbeakerRequestError && error.cause?.description) {
     // eslint-disable-next-line regexp/no-super-linear-backtracking
-    error.cause.description = error.cause.description.replaceAll(/\/\/(.*):(.*)@/g, '//MASKED:MASKED@')
+    error.cause.description = String(error.cause.description).replaceAll(/\/\/(.*):(.*)@/g, '//MASKED:MASKED@')
   }
   return error
 }

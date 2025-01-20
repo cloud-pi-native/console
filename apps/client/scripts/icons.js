@@ -42,6 +42,7 @@ const riIconNames = [
   'heart-pulse-line',
   'key-2-line',
   'key-2-line',
+  'question-line',
   'loader-4-line',
   'lock-line',
   'lock-unlock-line',

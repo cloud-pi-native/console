@@ -117,7 +117,7 @@ const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) =>
   if (letters.length < 3) return
   // Ne pas relancer de requête à chaque lettre ajoutée si aucun user ne correspond aux premières lettres données
   if (lettersNotMatching.value && letters.includes(lettersNotMatching.value) && !usersToAdd.value?.length) return
-  usersToAdd.value = await projectStore.projectsById[props.project.id].Members.getCandidateUsers(letters)
+  usersToAdd.value = await projectStore.projectsBySlug[props.project.slug].Members.getCandidateUsers(letters)
   // Stockage des lettres qui ne renvoient aucun résultat
   if (!usersToAdd.value?.length) {
     lettersNotMatching.value = letters

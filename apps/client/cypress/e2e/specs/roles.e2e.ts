@@ -21,7 +21,7 @@ function assignPerms() {
   const perms: ProjectPermsKeys[] = this as ProjectPermsKeys[]
   cy.kcLogin('test')
   cy.goToProjects()
-  cy.getByDataTestid(`projectTile-${project.name}`).click()
+  cy.getByDataTestid(`projectTile-${project.slug}`).click()
   cy.getByDataTestid('menuProjectRole').click()
   cy.get('[data-testid$="-tab"]').contains(testRole.name)
     .should('be.visible')
@@ -44,7 +44,7 @@ describe('Project roles', () => {
     it('Should create role without perms', () => {
       cy.kcLogin('test')
       cy.goToProjects()
-      cy.getByDataTestid(`projectTile-${project.name}`).click()
+      cy.getByDataTestid(`projectTile-${project.slug}`).click()
       cy.getByDataTestid('menuProjectRole').click()
       projectRoles.forEach((role) => {
         cy.getByDataTestid(`${role.id}-tab`)
@@ -72,16 +72,16 @@ describe('Project roles', () => {
     it('Should not grant perms', () => {
       cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
       cy.goToProjects()
-      cy.getByDataTestid(`projectTile-${project.name}`).click()
+      cy.getByDataTestid(`projectTile-${project.slug}`).click()
 
       cy.getByDataTestid('menuTeam').should('be.visible').click()
-      cy.url().should('contain', `/projects/${project.id}/team`)
+      cy.url().should('contain', `/projects/${project.slug}/team`)
       cy.getByDataTestid('teamTable').get('th').contains('Retirer du projet').should('be.visible')
       cy.getByDataTestid('addUserSuggestionInput').should('not.exist')
       cy.getByDataTestid('showTransferProjectBtn').should('not.exist')
 
       cy.getByDataTestid('menuDashboard').should('be.visible').click()
-      cy.url().should('contain', `/projects/${project.id}/dashboard`)
+      cy.url().should('contain', `/projects/${project.slug}/dashboard`)
       cy.getByDataTestid('replayHooksBtn').should('not.exist')
       cy.getByDataTestid('showSecretsBtn').should('not.exist')
 
@@ -99,10 +99,10 @@ describe('Project roles', () => {
     it('Should grant view perms', () => {
       cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
       cy.goToProjects()
-      cy.getByDataTestid(`projectTile-${project.name}`).click()
+      cy.getByDataTestid(`projectTile-${project.slug}`).click()
 
       cy.getByDataTestid('menuRepos').should('be.visible').click()
-      cy.url().should('contain', `/projects/${project.id}/repositories`)
+      cy.url().should('contain', `/projects/${project.slug}/repositories`)
       cy.getByDataTestid('addRepoLink').should('be.disabled')
       cy.getByDataTestid(`repoTile-${projectRepos[0].internalRepoName}`).click()
       cy.getByDataTestid('syncRepoBtn').should('not.exist')
@@ -110,20 +110,20 @@ describe('Project roles', () => {
       cy.getByDataTestid('showDeleteRepoBtn').should('not.exist')
 
       cy.getByDataTestid('menuEnvironments').should('be.visible').click()
-      cy.url().should('contain', `/projects/${project.id}/environments`)
+      cy.url().should('contain', `/projects/${project.slug}/environments`)
       cy.getByDataTestid('addEnvironmentLink').should('not.exist')
       cy.getByDataTestid(`environmentTile-${projectEnvs[0].name}`).click()
       cy.getByDataTestid('putEnvironmentBtn').should('not.exist')
       cy.getByDataTestid('showDeleteEnvironmentBtn').should('not.exist')
 
       cy.getByDataTestid('menuTeam').should('be.visible').click()
-      cy.url().should('contain', `/projects/${project.id}/team`)
+      cy.url().should('contain', `/projects/${project.slug}/team`)
       cy.getByDataTestid('teamTable').get('th').contains('Retirer du projet').should('be.visible')
       cy.getByDataTestid('addUserSuggestionInput').should('not.exist')
       cy.getByDataTestid('showTransferProjectBtn').should('not.exist')
 
       cy.getByDataTestid('menuDashboard').should('be.visible').click()
-      cy.url().should('contain', `/projects/${project.id}/dashboard`)
+      cy.url().should('contain', `/projects/${project.slug}/dashboard`)
       cy.getByDataTestid('replayHooksBtn').should('not.exist')
       cy.getByDataTestid('showSecretsBtn').should('not.exist')
 
@@ -143,10 +143,10 @@ describe('Project roles', () => {
       it(`Should grant full access perms (${idx + 1})`, () => {
         cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
         cy.goToProjects()
-        cy.getByDataTestid(`projectTile-${project.name}`).click()
+        cy.getByDataTestid(`projectTile-${project.slug}`).click()
 
         cy.getByDataTestid('menuRepos').should('be.visible').click()
-        cy.url().should('contain', `/projects/${project.id}/repositories`)
+        cy.url().should('contain', `/projects/${project.slug}/repositories`)
         cy.getByDataTestid('addRepoLink').should('be.enabled')
         cy.getByDataTestid(`repoTile-${projectRepos[0].internalRepoName}`).click()
         cy.getByDataTestid('syncRepoBtn').should('be.enabled')
@@ -154,20 +154,20 @@ describe('Project roles', () => {
         cy.getByDataTestid('showDeleteRepoBtn').should('be.enabled')
 
         cy.getByDataTestid('menuEnvironments').should('be.visible').click()
-        cy.url().should('contain', `/projects/${project.id}/environments`)
+        cy.url().should('contain', `/projects/${project.slug}/environments`)
         cy.getByDataTestid('addEnvironmentLink').should('be.enabled')
         cy.getByDataTestid(`environmentTile-${projectEnvs[0].name}`).click()
         cy.getByDataTestid('putEnvironmentBtn').should('be.enabled')
         cy.getByDataTestid('showDeleteEnvironmentBtn').should('be.enabled')
 
         cy.getByDataTestid('menuTeam').should('be.visible').click()
-        cy.url().should('contain', `/projects/${project.id}/team`)
+        cy.url().should('contain', `/projects/${project.slug}/team`)
         cy.getByDataTestid('teamTable').get('th').contains('Retirer du projet').should('be.visible')
         cy.getByDataTestid('addUserSuggestionInput').should('be.visible')
         cy.getByDataTestid('showTransferProjectBtn').should('not.exist')
 
         cy.getByDataTestid('menuDashboard').should('be.visible').click()
-        cy.url().should('contain', `/projects/${project.id}/dashboard`)
+        cy.url().should('contain', `/projects/${project.slug}/dashboard`)
         cy.getByDataTestid('replayHooksBtn').should('be.enabled')
         cy.getByDataTestid('showSecretsBtn').should('be.enabled')
 
