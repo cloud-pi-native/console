@@ -61,6 +61,7 @@ export class KubernetesNamespace extends PluginApi {
     if (this.nsName) {
       return this.nsName
     }
+    if (!this.coreV1Api) return this.nsObjectExpected.metadata.name
     const currNs = await this.getFromCluster()
 
     if (currNs?.metadata?.name) {
