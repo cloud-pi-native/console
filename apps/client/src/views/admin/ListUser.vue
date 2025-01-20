@@ -1,19 +1,17 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
 import { type AllUsers, type Role, formatDate } from '@cpn-console/shared'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useAdminRoleStore } from '@/stores/admin-role.js'
 import { copyContent } from '@/utils/func.js'
 import { useUsersStore } from '@/stores/users.js'
 
 const adminRoleStore = useAdminRoleStore()
 const usersStore = useUsersStore()
-const snackbarStore = useSnackbarStore()
 const adminRoles = ref<Role[]>([])
 const allUsers = ref<AllUsers>([])
 
 const inputSearchText = ref('')
-
+const isLoading = ref(true)
 const displayId = ref(false)
 const hideBots = ref(false)
 
@@ -97,12 +95,11 @@ function textToHSL(text: string): string {
 }
 
 onBeforeMount(async () => {
-  snackbarStore.isWaitingForResponse = true
   if (!adminRoleStore.roles.length) {
     adminRoles.value = await adminRoleStore.listRoles()
   }
   allUsers.value = await usersStore.listUsers({})
-  snackbarStore.isWaitingForResponse = false
+  isLoading.value = false
 })
 </script>
 
@@ -144,111 +141,115 @@ onBeforeMount(async () => {
           @update:model-value="(value: boolean) => hideBots = value"
         />
       </DsfrCallout>
-      <DsfrTable
-        data-testid="tableAdministrationUsers"
-        class="w-max my-0"
-        no-caption
-        title=""
+      <div
+        class="relative"
       >
-        <template #header>
-          <tr>
-            <th
-              scope="col"
-              colspan="2"
+        <DsfrTable
+          data-testid="tableAdministrationUsers"
+          class="w-max my-0"
+          no-caption
+          title=""
+        >
+          <template #header>
+            <tr>
+              <th
+                scope="col"
+                colspan="2"
+              >
+                Identité
+              </th>
+              <th scope="col">
+                Rôles
+              </th>
+              <th scope="col">
+                Type
+              </th>
+              <th
+                scope="col"
+              >
+                Date de création
+              </th>
+              <th
+                scope="col"
+              >
+                Dernière connexion
+              </th>
+            </tr>
+          </template>
+          <tr
+            v-for="user in userRows.toSorted((a, b) => a[sortKey].toLowerCase().localeCompare(b[sortKey].toLowerCase()) * (sort.desc ? -1 : 1))"
+            :key="user.id"
+            :data-testid="`user-${user.id}`"
+          >
+            <td>
+              <div
+                class="rounded-full h-10 w-10 text-center content-center font-extrabold text-lg text-slate-100 self-start"
+                :style="`background-color: ${user.bgColor};`"
+              >
+                {{ user.firstName[0].toUpperCase() + user.lastName[0].toUpperCase() }}
+              </div>
+            </td>
+            <td
+              class="grid w-max gap-3"
             >
-              Identité
-            </th>
-            <th scope="col">
-              Rôles
-            </th>
-            <th scope="col">
-              Type
-            </th>
-            <th
-              scope="col"
+              <div>
+                <span class="text-xl">{{ user.fullName }}</span>
+              </div>
+              <code
+                title="Copier l'email"
+                class="fr-text-default--info text-xs cursor-pointer"
+                :onClick="() => copyContent(user.email)"
+              >
+                {{ user.email }}
+              </code><br>
+              <code
+                v-if="displayId"
+                title="Copier l'id"
+                class="fr-text-default--info text-xs cursor-pointer"
+                :onClick="() => copyContent(user.id)"
+              >
+                {{ user.id }}
+              </code>
+            </td>
+            <td
+              :data-testid="`${user.id}-roles`"
             >
-              Date de création
-            </th>
-            <th
-              scope="col"
+              <DsfrTag
+                v-for="role in user.roleNames"
+                :key="role"
+                :label="role"
+              />
+            </td>
+            <td>
+              <DsfrTag
+                v-if="user.type !== 'human'"
+                :label="user.type"
+              />
+            </td>
+            <td
+              :title="(new Date(user.createdAt)).toLocaleString()"
             >
-              Dernière connexion
-            </th>
+              {{ formatDate(user.createdAt) }}
+            </td>
+            <td
+              :title="user.lastLogin ? (new Date(user.createdAt)).toLocaleString() : ''"
+            >
+              {{ user.lastLogin ? formatDate(user.lastLogin) : 'Jamais' }}
+            </td>
           </tr>
-        </template>
-        <tr
-          v-for="user in userRows.toSorted((a, b) => a[sortKey].toLowerCase().localeCompare(b[sortKey].toLowerCase()) * (sort.desc ? -1 : 1))"
-          :key="user.id"
-          :data-testid="`user-${user.id}`"
-        >
-          <td>
-            <div
-              class="rounded-full h-10 w-10 text-center content-center font-extrabold text-lg text-slate-100 self-start"
-              :style="`background-color: ${user.bgColor};`"
-            >
-              {{ user.firstName[0].toUpperCase() + user.lastName[0].toUpperCase() }}
-            </div>
-          </td>
-          <td
-            class="grid w-max gap-3"
+          <tr
+            v-if="userRows.length === 0"
           >
-            <div>
-              <span class="text-xl">{{ user.fullName }}</span>
-            </div>
-            <code
-              title="Copier l'email"
-              class="fr-text-default--info text-xs cursor-pointer"
-              :onClick="() => copyContent(user.email)"
-            >
-              {{ user.email }}
-            </code><br>
-            <code
-              v-if="displayId"
-              title="Copier l'id"
-              class="fr-text-default--info text-xs cursor-pointer"
-              :onClick="() => copyContent(user.id)"
-            >
-              {{ user.id }}
-            </code>
-          </td>
-          <td
-            :data-testid="`${user.id}-roles`"
-          >
-            <DsfrTag
-              v-for="role in user.roleNames"
-              :key="role"
-              :label="role"
-            />
-          </td>
-          <td>
-            <DsfrTag
-              v-if="user.type !== 'human'"
-              :label="user.type"
-            />
-          </td>
-          <td
-            :title="(new Date(user.createdAt)).toLocaleString()"
-          >
-            {{ formatDate(user.createdAt) }}
-          </td>
-          <td
-            :title="user.lastLogin ? (new Date(user.createdAt)).toLocaleString() : ''"
-          >
-            {{ user.lastLogin ? formatDate(user.lastLogin) : 'Jamais' }}
-          </td>
-        </tr>
-        <tr
-          v-if="userRows.length === 0"
-        >
-          <td colspan="10">
-            Aucun utilisateur ne correspond à votre recherche
-          </td>
-        </tr>
-      </DsfrTable>
+            <td colspan="10">
+              Aucun utilisateur ne correspond à votre recherche
+            </td>
+          </tr>
+        </DsfrTable>
+        <Loader
+          v-if="isLoading"
+          cover
+        />
+      </div>
     </div>
-    <LoadingCt
-      v-if="snackbarStore.isWaitingForResponse"
-      description="Récupération des utilisateurs"
-    />
   </div>
 </template>

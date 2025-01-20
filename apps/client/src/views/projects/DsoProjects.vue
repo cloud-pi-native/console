@@ -12,13 +12,13 @@ const projectList = computed(() => projectStore.myProjects
 
 async function setSelectedProject(slug: ProjectV2['slug']) {
   router.push({
-    name: 'Dashboard',
+    name: 'Project',
     params: { slug },
   })
 }
 
 function goToCreateProject() {
-  router.push('/projects/create-project')
+  router.push({ name: 'CreateProject' })
 }
 
 onBeforeMount(async () => {
@@ -51,7 +51,7 @@ onBeforeMount(async () => {
       <DsfrTile
         :title="project.name"
         :data-testid="`projectTile-${project.slug}`"
-        :to="`/projects/${project.slug}/dashboard`"
+        :to="`/projects/${project.slug}`"
         :description="project.slug"
         :horizontal="false"
         @click="setSelectedProject(project.slug)"

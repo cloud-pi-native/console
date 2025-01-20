@@ -10,6 +10,7 @@ import {
   ClusterDetailsSchema,
   ClusterPrivacy,
   KubeconfigSchema,
+  deleteValidationInput,
   inClusterLabel,
 } from '@cpn-console/shared'
 // @ts-ignore 'js-yaml' missing types
@@ -457,9 +458,9 @@ const isConnectionDetailsShown = ref(true)
         <DsfrInput
           v-model="clusterToDelete"
           data-testid="deleteClusterInput"
-          :label="`Veuillez taper '${localCluster.label}' pour confirmer la suppression du cluster`"
+          :label="`Veuillez taper '${deleteValidationInput}' pour confirmer la suppression du cluster`"
           label-visible
-          :placeholder="localCluster.label"
+          :placeholder="deleteValidationInput"
           class="fr-mb-2w"
         />
         <div
@@ -468,7 +469,7 @@ const isConnectionDetailsShown = ref(true)
           <DsfrButton
             data-testid="deleteClusterBtn"
             :label="`Supprimer définitivement le cluster ${localCluster.label}`"
-            :disabled="clusterToDelete !== localCluster.label"
+            :disabled="clusterToDelete !== deleteValidationInput"
             :title="`Supprimer définitivement le cluster ${localCluster.label}`"
             secondary
             icon="ri:delete-bin-7-line"

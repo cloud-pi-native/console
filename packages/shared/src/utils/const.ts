@@ -1,4 +1,5 @@
 export const adminGroupPath = '/admin'
+export const deleteValidationInput = 'DELETE'
 
 export const inClusterLabel = 'in-cluster' as const
 export const projectIsLockedInfo = 'Le projet est verrouillé, pas d\'action possible'
@@ -107,7 +108,7 @@ export const statusDict = {
       testId: 'created-badge',
       type: 'success',
       icon: 'ri:check-line',
-      wording: 'opérations réussies',
+      wording: 'succès',
       animation: '',
       color: 'var(--success-425-625)',
     },

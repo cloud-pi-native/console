@@ -61,6 +61,11 @@ export const useProjectStore = defineStore('project', () => {
   const listMyProjects = pDebounce(async () => {
     const res = await apiClient.Projects.listProjects({ query: { filter: 'member', statusNotIn: 'archived' } })
       .then(response => extractData(response, 200))
+    for (const storedProject of myProjects.value) {
+      if (!res.find(responseProject => responseProject.id === storedProject.id)) {
+        delete projectsById.value[storedProject.id]
+      }
+    }
     await updateStore(res)
     return selectFromStore(res.map(project => project.slug))
   }, 200)
