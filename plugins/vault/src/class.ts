@@ -37,6 +37,16 @@ export class VaultApi extends PluginApi {
     return this.token
   }
 
+  protected async destroy(path: string, kvName: string) {
+    if (path.startsWith('/'))
+      path = path.slice(1)
+    return await this.axios({
+      method: 'delete',
+      url: `/v1/${kvName}/metadata/${path}`,
+      headers: { 'X-Vault-Token': await this.getToken() },
+    })
+  }
+
   Kv = {
     upsert: async (kvName: string) => {
       const token = await this.getToken()
@@ -132,7 +142,6 @@ export class VaultApi extends PluginApi {
         headers: { 'X-Vault-Token': await this.getToken() },
       })
     },
-
     delete: async (roleName: string) => {
       await this.axios.delete(
         `/v1/auth/approle/role/${roleName}`,
@@ -140,6 +149,25 @@ export class VaultApi extends PluginApi {
           headers: { 'X-Vault-Token': await this.getToken() },
         },
       )
+    },
+    getCredentials: async (roleName: string) => {
+      const { data: dataRole } = await this.axios.get(
+        `/v1/auth/approle/role/${roleName}/role-id`,
+        {
+          headers: { 'X-Vault-Token': await this.getToken() },
+        },
+      )
+      const { data: dataSecret } = await this.axios.put(
+        `/v1/auth/approle/role/${roleName}/secret-id`,
+        'null', // Force empty data
+        {
+          headers: { 'X-Vault-Token': await this.getToken() },
+        },
+      )
+      return {
+        roleId: dataRole.data?.role_id,
+        secretId: dataSecret.data?.secret_id,
+      }
     },
   }
 }
@@ -233,35 +261,7 @@ export class VaultProjectApi extends VaultApi {
   public async destroy(path: string = '/') {
     if (path.startsWith('/'))
       path = path.slice(1)
-    return this.axios({
-      method: 'delete',
-      url: `/v1/${this.coreKvName}/metadata/${this.projectRootDir}/${this.basePath}/${path}`,
-      headers: { 'X-Vault-Token': await this.getToken() },
-
-    })
-  }
-
-  public async getCredentials(): Promise<AppRoleCredentials> {
-    const appRoleEnabled = await isAppRoleEnabled(this.axios, await this.getToken())
-    if (!appRoleEnabled) return this.defaultAppRoleCredentials
-    const { data: dataRole } = await this.axios.get(
-      `/v1/auth/approle/role/${this.roleName}/role-id`,
-      {
-        headers: { 'X-Vault-Token': await this.getToken() },
-      },
-    )
-    const { data: dataSecret } = await this.axios.put(
-      `/v1/auth/approle/role/${this.roleName}/secret-id`,
-      'null', // Force empty data
-      {
-        headers: { 'X-Vault-Token': await this.getToken() },
-      },
-    )
-    return {
-      ...this.defaultAppRoleCredentials,
-      roleId: dataRole.data?.role_id,
-      secretId: dataSecret.data?.secret_id,
-    }
+    return super.destroy(`${this.projectRootDir}/${this.basePath}/${path}`, this.coreKvName)
   }
 
   Project = {
@@ -284,6 +284,15 @@ export class VaultProjectApi extends VaultApi {
       await this.Policy.delete(this.policyName.techRO)
       await this.Group.delete()
       await this.Role.delete(this.roleName)
+    },
+    getCredentials: async () => {
+      const appRoleEnabled = await isAppRoleEnabled(this.axios, await this.getToken())
+      if (!appRoleEnabled) return this.defaultAppRoleCredentials
+      const creds = await this.Role.getCredentials(this.roleName)
+      return {
+        ...this.defaultAppRoleCredentials,
+        ...creds,
+      }
     },
   }
 
@@ -369,5 +378,27 @@ export class VaultZoneApi extends VaultApi {
       },
     )
     return await response.data
+  }
+
+  public async destroy(path: string = '/') {
+    if (path.startsWith('/'))
+      path = path.slice(1)
+    return super.destroy(path, this.kvName)
+  }
+
+  public async getCredentials() {
+    const appRoleEnabled = await isAppRoleEnabled(this.axios, await this.getToken())
+    if (!appRoleEnabled) {
+      return {
+        url: getConfig().publicUrl,
+        kvName: this.kvName,
+      }
+    }
+    const creds = await this.Role.getCredentials(this.roleName)
+    return {
+      url: getConfig().publicUrl,
+      kvName: this.kvName,
+      ...creds,
+    }
   }
 }
