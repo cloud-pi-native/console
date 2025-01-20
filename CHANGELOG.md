@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.23.0](https://github.com/cloud-pi-native/console/compare/v8.22.1...v8.23.0) (2025-01-20)
+
+
+### Features
+
+* :fire: remove organization feature ([3b331f6](https://github.com/cloud-pi-native/console/commit/3b331f680716880e7ae4e33b6e441452e2816f3c))
+* :sparkles: store cluster secret in Vault ([cea79ef](https://github.com/cloud-pi-native/console/commit/cea79efc6ecb4c33d868d7f5044ddc7825c69ed5))
+
+
+### Bug Fixes
+
+* :bug: test if description is string before using replaceAll function ([d5b1234](https://github.com/cloud-pi-native/console/commit/d5b12342c236dca1231d05528f6ccd7746f62309))
+
 ## [8.22.1](https://github.com/cloud-pi-native/console/compare/v8.22.0...v8.22.1) (2025-01-09)
 
 
