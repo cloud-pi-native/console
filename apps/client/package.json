@@ -51,9 +51,9 @@
     "xbytes": "^1.9.1"
   },
   "optionalDependencies": {
-    "@cypress/vue": "6.0.1",
-    "cypress": "13.16.1",
-    "cypress-vite": "1.5.0"
+    "@cypress/vue": "6.0.2",
+    "cypress": "14.0.0",
+    "cypress-vite": "1.6.0"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
