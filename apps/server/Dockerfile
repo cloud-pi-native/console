@@ -2,7 +2,7 @@
 FROM docker.io/node:22.11.0-bullseye-slim AS dev
 
 WORKDIR /app
-RUN npm install --ignore-scripts --location=global pnpm@9.15.0
+RUN npm install --ignore-scripts --location=global pnpm@9.15.4
 
 COPY --chown=node:root package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc turbo.json ./
 COPY --chown=node:root patches ./patches
