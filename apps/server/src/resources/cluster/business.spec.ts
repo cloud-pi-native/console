@@ -80,6 +80,7 @@ describe('test Cluster business logic', () => {
         clusterResources: false,
         kubeconfig: { cluster: { tlsServerName: faker.internet.domainName() }, user: {} },
         label: faker.string.alpha(10),
+        external: false,
       }, userId, reqId)
 
       expect(response).not.instanceOf(ErrorResType)
