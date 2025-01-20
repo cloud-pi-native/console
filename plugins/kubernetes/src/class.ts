@@ -61,6 +61,7 @@ export class KubernetesNamespace extends PluginApi {
     if (this.nsName) {
       return this.nsName
     }
+    if (!this.coreV1Api) return this.nsObjectExpected.metadata.name
     const currNs = await this.getFromCluster()
 
     if (currNs?.metadata?.name) {
@@ -121,7 +122,7 @@ export class KubernetesNamespace extends PluginApi {
     return ns ? this.ensure(ns) : this.create()
   }
 
-  public async createOrPatchRessource(r: ResourceParams) {
+  public async createOrPatchRessource(r: ResourceParams, patch?: Record<string, any>) {
     if (!this.anyObjectApi) return
 
     const nsName = await this.getNsName()
@@ -137,9 +138,10 @@ export class KubernetesNamespace extends PluginApi {
     }
     try {
       await this.anyObjectApi.getNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
-      await this.anyObjectApi.deleteNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
-    } catch (_error) { }
-    return this.anyObjectApi.createNamespacedCustomObject(r.group, r.version, nsName, r.plural, objToCreate)
+      return this.anyObjectApi.patchNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name, patch ?? objToCreate, undefined, undefined, undefined, patchOptions)
+    } catch (_error) {
+      return this.anyObjectApi.createNamespacedCustomObject(r.group, r.version, nsName, r.plural, objToCreate)
+    }
   }
 
   public async setQuota(quota: ResourceQuotaType) {
@@ -172,15 +174,17 @@ export class KubernetesProjectApi<GProject extends Project> extends PluginApi {
     }
   }
 
+  /** @deprecated please use in payload env kubernetes api (getFromClusterOrCreate)  */
   public getAllNamespaceFromClusterOrCreate() {
     return this.project.environments.map((env) => {
       return env.apis.kubernetes?.getFromClusterOrCreate()
     })
   }
 
-  public applyResourcesInAllEnvNamespaces(resource: ResourceParams) {
+  /** @deprecated please use in payload env kubernetes api (createOrPatchRessource) */
+  public applyResourcesInAllEnvNamespaces(resource: ResourceParams, patch: Record<string, any>) {
     return this.project.environments.map((env) => {
-      return env.apis.kubernetes?.createOrPatchRessource(resource)
+      return env.apis.kubernetes?.createOrPatchRessource(resource, patch)
     })
   }
 }

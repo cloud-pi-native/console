@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { PluginApi, type Project, type RepoCreds, type UniqueRepo } from '@cpn-console/hooks'
+import { PluginApi, type Project, type UniqueRepo } from '@cpn-console/hooks'
 import type { AccessTokenScopes, CommitAction, GroupSchema, GroupStatisticsSchema, MemberSchema, ProjectVariableSchema, VariableSchema } from '@gitbeaker/rest'
 import type { AllRepositoryTreesOptions, CondensedProjectSchema, Gitlab, PaginationRequestOptions, RepositoryFileExpandedSchema, RepositoryTreeSchema } from '@gitbeaker/core'
 import { AccessLevel } from '@gitbeaker/core'
@@ -348,21 +348,6 @@ export class GitlabProjectApi extends GitlabApi {
   public async createEmptyProjectRepository(repoName: string, description?: string | undefined) {
     const namespaceId = (await this.getOrCreateProjectGroup()).id
     return this.createEmptyRepository(repoName, namespaceId, description)
-  }
-
-  public async createCloneRepository(repoName: string, externalRepoUrn: string, creds?: RepoCreds) {
-    const group = await this.getOrCreateProjectGroup()
-    const url = creds?.username || creds?.token
-      ? `https://${creds?.username ?? ''}:${creds?.token ?? ''}@${externalRepoUrn}`
-      : `https://${externalRepoUrn}`
-
-    return this.api.Projects.create({
-      namespaceId: group.id,
-      name: repoName,
-      path: repoName,
-      ciConfigPath: '.gitlab-ci-dso.yml',
-      importUrl: url,
-    })
   }
 
   // Special Repositories

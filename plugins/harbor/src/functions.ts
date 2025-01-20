@@ -45,6 +45,7 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
         : deleteRobot(projectName, projectRobotName, vaultApi, api),
     ])
 
+    const secretObject = getSecretObject({ DOCKER_CONFIG: creds.DOCKER_CONFIG })
     await Promise.all(project.environments.map(async (env) => {
       try {
         await env.apis.kubernetes?.createOrPatchRessource({
@@ -52,7 +53,7 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
           name: 'registry-pull-secret',
           plural: 'secrets',
           version: 'v1',
-          body: getSecretObject({ DOCKER_CONFIG: creds.DOCKER_CONFIG }),
+          body: secretObject,
         })
       } catch (error) {
         console.log(error)
