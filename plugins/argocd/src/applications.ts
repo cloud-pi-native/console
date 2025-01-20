@@ -1,6 +1,5 @@
-import type { Environment, ProjectLite, Repository } from '@cpn-console/hooks'
+import type { BaseResources, Environment, ProjectLite, Repository } from '@cpn-console/hooks'
 import type { ArgoDestination } from './app-project.js'
-import type { BaseResources } from './utils.js'
 import { getConfig } from './utils.js'
 
 export function getApplicationObject({ name, destination, repoURL, appProjectName, project, environment, repository }:
@@ -35,8 +34,11 @@ export function getMinimalApplicationObject({ name, destination, repoURL, appPro
         'app.kubernetes.io/managed-by': 'dso-console',
         'dso/project': project.name,
         'dso/project.id': project.id,
+        'dso/project.slug': project.slug,
         'dso/environment': environment.name,
+        'dso/environment.id': environment.id,
         'dso/repository': repository.internalRepoName,
+        'dso/repository.id': repository.id,
       },
     },
     spec: {

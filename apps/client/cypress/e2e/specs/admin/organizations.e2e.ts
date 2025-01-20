@@ -160,14 +160,14 @@ describe('Administration organizations', () => {
 
     cy.getByDataTestid('menuMyProjects').click()
       .wait('@listProjects')
-    cy.getByDataTestid(`projectTile-${projectFailed.name}`)
+    cy.getByDataTestid(`projectTile-${projectFailed.slug}`)
       .click()
     cy.getByDataTestid(`${projectFailed.id}-locked-badge`)
       .should('exist')
 
     cy.getByDataTestid('menuMyProjects').click()
       .wait('@listProjects')
-    cy.getByDataTestid(`projectTile-${projectSucceed.name}`)
+    cy.getByDataTestid(`projectTile-${projectSucceed.slug}`)
       .click()
     cy.getByDataTestid(`${projectSucceed.id}-locked-badge`)
       .should('exist')
@@ -194,13 +194,13 @@ describe('Administration organizations', () => {
     cy.getByDataTestid('snackbar').should('contain', `Organisation ${organization.name} mise à jour`)
 
     cy.getByDataTestid('menuMyProjects').click()
-    cy.getByDataTestid(`projectTile-${projectFailed.name}`)
+    cy.getByDataTestid(`projectTile-${projectFailed.slug}`)
       .click()
     cy.getByDataTestid(`${projectFailed.id}-locked-badge`)
       .should('not.exist')
 
     cy.getByDataTestid('menuMyProjects').click()
-    cy.getByDataTestid(`projectTile-${projectSucceed.name}`)
+    cy.getByDataTestid(`projectTile-${projectSucceed.slug}`)
       .click()
     cy.getByDataTestid(`${projectSucceed.id}-locked-badge`)
       .should('not.exist')

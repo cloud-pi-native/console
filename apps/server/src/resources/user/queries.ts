@@ -1,7 +1,5 @@
 import type { Prisma, User } from '@prisma/client'
-import { exclude } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
-import { dbKeysExcluded } from '@/utils/queries-tools.js'
 
 type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>
 
@@ -9,13 +7,12 @@ type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>
 export const getUsers = (where?: Prisma.UserWhereInput) => prisma.user.findMany({ where })
 
 export async function getUserInfos(id: User['id']) {
-  const usr = await prisma.user.findMany({
+  return prisma.user.findMany({
     where: { id },
     include: {
       logs: true,
     },
   })
-  return exclude(usr, dbKeysExcluded)
 }
 
 export function getMatchingUsers(where: Prisma.UserWhereInput) {

@@ -60,6 +60,7 @@ export async function getProjectServices(projectId: Project['id'], permissionTar
           zones: Array.from(zones.values()),
           environments: project.environments,
           project: project.name,
+          projectSlug: project.slug,
           store,
         })
       : []

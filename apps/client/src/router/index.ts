@@ -9,7 +9,6 @@ import type {
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSystemSettingsStore } from '@/stores/system-settings.js'
-import { uuid } from '@/utils/regex.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
@@ -48,7 +47,7 @@ const MAIN_TITLE = 'Console Cloud π Native'
 
 function propTheProjectParam(to: RouteLocationNormalizedGeneric) {
   return {
-    projectId: Array.isArray(to.params.id) ? to.params.id[0] : to.params.id,
+    projectSlug: Array.isArray(to.params.slug) ? to.params.slug[0] : to.params.slug,
   }
 }
 export const routes: Readonly<RouteRecordRaw[]> = [
@@ -114,19 +113,19 @@ export const routes: Readonly<RouteRecordRaw[]> = [
         component: DsoProjects,
       },
       {
-        path: ':id',
+        path: ':slug',
         name: 'Project',
         async beforeEnter(to, _from, next) {
-          if (typeof to.params.id !== 'string' || !uuid.exec(to.params.id)) {
-            return next('/projects')
+          if (typeof to.params.slug !== 'string') {
+            return next({ name: 'Projects' })
           }
-          if (!useProjectStore().myProjects.some(project => project.id === to.params.id)) {
-            await useProjectStore().getProject(to.params.id).catch(async () => {
+          if (!(to.params.slug in useProjectStore().projectsBySlug)) {
+            await useProjectStore().getProject(to.params.slug).catch(async () => {
               console.log(`Unable to find project information, redirect to /projects`)
-              return next('/projects')
+              return next({ name: 'Projects' })
             })
           }
-          useProjectStore().lastSelectedProjectId = to.params.id
+          useProjectStore().lastSelectedProjectSlug = to.params.slug
           return next()
         },
         children: [
@@ -191,18 +190,18 @@ export const routes: Readonly<RouteRecordRaw[]> = [
         component: ListOrganizations,
       },
       {
-        path: 'projects/:id',
+        path: 'projects/:slug',
         name: 'AdminProject',
         component: AdminProject,
         async beforeEnter(to, _from, next) {
-          if (typeof to.params.id !== 'string' || !uuid.exec(to.params.id)) {
-            return next('/projects')
+          if (typeof to.params.slug !== 'string') {
+            return next('/admin/projects')
           }
-          await useProjectStore().getProject(to.params.id)
+          await useProjectStore().getProject(to.params.slug)
           return next()
         },
         props(to) {
-          return { projectId: to.params.id }
+          return { projectSlug: to.params.slug }
         },
       },
       {
@@ -321,9 +320,9 @@ router.beforeEach(async (to, _from, next) => {
 })
 
 export const isInProject = computed(() => router.currentRoute.value.matched.some(route => route.name === 'Project'))
-export const selectedProjectId = computed<string | undefined>(() => {
+export const selectedProjectSlug = computed<string | undefined>(() => {
   if (router.currentRoute.value.matched.some(route => route.name === 'Project')) {
-    return router.currentRoute.value.params.id as string
+    return router.currentRoute.value.params.slug as string
   }
   return undefined
 })

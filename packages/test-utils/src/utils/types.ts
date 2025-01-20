@@ -108,6 +108,7 @@ export interface Log {
 export interface Project {
   id: string
   name: string
+  slug: string
   organizationId: string
   description: string
   status: string

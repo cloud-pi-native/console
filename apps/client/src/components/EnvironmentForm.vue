@@ -8,6 +8,7 @@ import type {
 } from '@cpn-console/shared'
 import {
   EnvironmentSchema,
+  generateNamespaceName,
   longestEnvironmentName,
   parseZodError,
   projectIsLockedInfo,
@@ -16,6 +17,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useQuotaStore } from '@/stores/quota.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useZoneStore } from '@/stores/zone.js'
+import { copyContent } from '@/utils/func.js'
 
 interface OptionType {
   text: string
@@ -23,7 +25,7 @@ interface OptionType {
 }
 
 const props = withDefaults(defineProps<{
-  environment?: Partial<Omit<Environment, 'projectId' | 'updatedAt' | 'createdAt'>>
+  environment?: Partial<Omit<Environment, 'updatedAt' | 'createdAt'>>
   isEditable?: boolean
   canManage: boolean
   isProjectLocked?: boolean
@@ -31,6 +33,7 @@ const props = withDefaults(defineProps<{
   allClusters: CleanedCluster[]
 }>(), {
   environment: () => ({
+    projectId: '',
     id: '',
     name: '',
     stageId: undefined,
@@ -172,6 +175,22 @@ watch(localEnvironment.value, () => {
       :hint="props.isEditable ? 'Les champs munis d\'une astérisque (*) sont requis' : undefined"
       data-testid="environmentFieldset"
     >
+      <code
+        v-if="localEnvironment.id && localEnvironment.projectId"
+        class="fr-text-default--info text-xs cursor-pointer"
+        @click="copyContent(generateNamespaceName(localEnvironment.projectId, localEnvironment.id))"
+      >
+        ns kubernetes: {{ generateNamespaceName(localEnvironment.projectId, localEnvironment.id) }}
+      </code>
+      <div
+        title="Namespace kubernetes, les environnements créés en version <=8.22.1 utilisent l'ancien système de nommage"
+        class="inline"
+      >
+        <v-icon
+          name="ri:question-line"
+        />
+      </div>
+
       <DsfrInputGroup
         v-model="localEnvironment.name"
         data-testid="environmentNameInput"

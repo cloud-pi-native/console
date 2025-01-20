@@ -2,6 +2,7 @@ import type { DefaultArgs, Plugin, Project } from '@cpn-console/hooks'
 import infos from './infos.js'
 import { getProjectSecrets } from './misc.js'
 import { createNamespaces, deleteNamespaces } from './namespace.js'
+import type { KubernetesNamespace } from './class.js'
 import { KubernetesProjectApi } from './class.js'
 
 export const plugin: Plugin = {
@@ -28,5 +29,8 @@ declare module '@cpn-console/hooks' {
     kubernetes: Args extends (Project)
       ? KubernetesProjectApi<Args>
       : undefined
+  }
+  interface EnvironmentApis {
+    kubernetes?: KubernetesNamespace
   }
 }

@@ -4,11 +4,11 @@ import { computed, ref } from 'vue'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
-const props = defineProps<{ projectId: ProjectV2['id'] }>()
+const props = defineProps<{ projectSlug: ProjectV2['id'] }>()
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
-const project = computed(() => projectStore.projectsById[props.projectId])
+const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
 
 const services = ref<ProjectService[]>([])
 async function reload() {
@@ -35,7 +35,7 @@ watch(project, reload, { immediate: true })
 
 <template>
   <DsoSelectedProject
-    :project-id="projectId"
+    :project-slug="projectSlug"
   />
   <ServicesConfig
     :services="services"

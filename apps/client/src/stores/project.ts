@@ -17,14 +17,13 @@ export const useProjectStore = defineStore('project', () => {
       || project.members.some(member => member.userId === userStore.userProfile?.id))
 
   // mostly for admin views
-  const projectsById = ref<Record<string, Project>>({})
+  const projectsBySlug = ref<Record<string, Project>>({})
 
-  const projects = computed(() => Object.values(projectsById.value)
-    .sort((p1, p2) => p1.name.localeCompare(p2.name)),
+  const projects = computed(() => Object.values(projectsBySlug.value)
+    .sort((p1, p2) => p1.slug.localeCompare(p2.slug)),
   )
 
-  const myProjects = computed(() => projects.value.filter(project => project.status !== 'archived' && amIPartOf(project))
-    .sort((p1, p2) => p1.name.localeCompare(p2.name)),
+  const myProjects = computed(() => projects.value.filter(project => project.status !== 'archived' && amIPartOf(project)),
   )
 
   const updateStore = async (projectsRecieved: ProjectV2[]) => {
@@ -32,18 +31,18 @@ export const useProjectStore = defineStore('project', () => {
       await organizationStore.listOrganizations()
     }
     return projectsRecieved.map((project) => {
-      if (project.id in projectsById.value) {
-        return projectsById.value[project.id].Commands.updateData(project)
+      if (project.slug in projectsBySlug.value) {
+        return projectsBySlug.value[project.slug].Commands.updateData(project)
       }
       const newProject = new Project(project, organizationStore.organizationsById[project.organizationId])
-      projectsById.value[project.id] = newProject
+      projectsBySlug.value[project.slug] = newProject
       return newProject
     })
   }
 
-  const selectFromStore = (ids: ProjectV2['id'][]) => {
-    return ids.filter(id => id in projectsById.value)
-      .map(id => projectsById.value[id])
+  const selectFromStore = (slugs: ProjectV2['slug'][]) => {
+    return slugs.filter(slug => slug in projectsBySlug.value)
+      .map(slug => projectsBySlug.value[slug])
   }
 
   const getProject = async (projectId: ProjectV2['id']) => {
@@ -56,20 +55,20 @@ export const useProjectStore = defineStore('project', () => {
     const res = await apiClient.Projects.listProjects({ query })
       .then(response => extractData(response, 200))
     await updateStore(res)
-    return selectFromStore(res.map(project => project.id))
+    return selectFromStore(res.map(project => project.slug))
   }
 
   const listMyProjects = pDebounce(async () => {
     const res = await apiClient.Projects.listProjects({ query: { filter: 'member', statusNotIn: 'archived' } })
       .then(response => extractData(response, 200))
     await updateStore(res)
-    return selectFromStore(res.map(project => project.id))
+    return selectFromStore(res.map(project => project.slug))
   }, 200)
 
   const createProject = async (body: CreateProjectBody) => {
     const project = await apiClient.Projects.createProject({ body })
       .then(response => extractData(response, 201))
-    projectsById.value[project.id] = new Project(project, organizationStore.organizationsById[project.organizationId])
+    projectsBySlug.value[project.id] = new Project(project, organizationStore.organizationsById[project.organizationId])
     return project
   }
 
@@ -79,13 +78,13 @@ export const useProjectStore = defineStore('project', () => {
 
   // Should only be used for components and vue outside of Project route and its children, consider using the props instead
   // Should only be update by beforeEnter() of Project route
-  const lastSelectedProjectId = ref<ProjectV2['id']>()
+  const lastSelectedProjectSlug = ref<ProjectV2['slug']>()
 
   return {
     projects,
-    projectsById,
+    projectsBySlug,
     myProjects,
-    lastSelectedProjectId,
+    lastSelectedProjectSlug,
     getProject,
     listProjects,
     listMyProjects,

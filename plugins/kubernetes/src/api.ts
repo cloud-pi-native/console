@@ -23,27 +23,27 @@ export function createCustomObjectApi(cluster: ClusterObject) {
 }
 
 function makeClusterApi(cluster: ClusterObject): KubeConfig | undefined {
+  const kc = new KubeConfig()
+  if (cluster.label === inClusterLabel) {
+    kc.loadFromCluster()
+    return kc
+  }
   if (!cluster.user.keyData && !cluster.user.token) {
     // Special case: disable direct calls to the cluster
     return undefined
   }
-  const kc = new KubeConfig()
-  if (cluster.label === inClusterLabel) {
-    kc.loadFromCluster()
-  } else {
-    const clusterConfig = {
-      ...cluster.cluster,
-      skipTLSVerify: cluster.cluster.skipTLSVerify ?? false,
-      name: 'You should pass !',
-    }
-    const userConfig = {
-      ...cluster.user,
-      name: cluster.id,
-    }
-    if (cluster.cluster.skipTLSVerify) {
-      delete clusterConfig.caData
-    }
-    kc.loadFromClusterAndUser(clusterConfig, userConfig)
+  const clusterConfig = {
+    ...cluster.cluster,
+    skipTLSVerify: cluster.cluster.skipTLSVerify ?? false,
+    name: 'You should pass !',
   }
+  const userConfig = {
+    ...cluster.user,
+    name: cluster.id,
+  }
+  if (cluster.cluster.skipTLSVerify) {
+    delete clusterConfig.caData
+  }
+  kc.loadFromClusterAndUser(clusterConfig, userConfig)
   return kc
 }

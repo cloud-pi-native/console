@@ -12,7 +12,7 @@ describe('Dashboard', () => {
   before(() => {
     cy.kcLogin('test')
 
-    cy.assertCreateProjects([projectToKeep.name, projectCreated.name, projectFailed.name])
+    cy.assertCreateProjects([projectToKeep.slug, projectCreated.slug, projectFailed.slug])
   })
 
   it('Should display project statuses', () => {
@@ -22,7 +22,7 @@ describe('Dashboard', () => {
     cy.kcLogin('test')
     projects.forEach((project) => {
       cy.goToProjects()
-        .getByDataTestid(`projectTile-${project.name}`).click()
+        .getByDataTestid(`projectTile-${project.slug}`).click()
         .getByDataTestid('menuDashboard').click()
       cy.wait('@listStages')
         .getByDataTestid(`${project.id}-${project.status}-badge`)
@@ -40,7 +40,7 @@ describe('Dashboard', () => {
 
     cy.kcLogin('test')
       .goToProjects()
-      .getByDataTestid(`projectTile-${projectToKeep.name}`).click()
+      .getByDataTestid(`projectTile-${projectToKeep.slug}`).click()
       .getByDataTestid('menuDashboard').click()
     cy.wait('@listStages')
       .getByDataTestid('setDescriptionBtn').click()
@@ -65,7 +65,7 @@ describe('Dashboard', () => {
     cy.kcLogin('test')
 
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${projectCreated.name}`).click()
+      .getByDataTestid(`projectTile-${projectCreated.slug}`).click()
       .getByDataTestid('menuDashboard').click()
 
     cy.url().should('contain', 'dashboard')
@@ -85,7 +85,7 @@ describe('Dashboard', () => {
     cy.kcLogin('test')
 
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${projectCreated.name}`).click()
+      .getByDataTestid(`projectTile-${projectCreated.slug}`).click()
       .getByDataTestid('menuDashboard').click()
 
     cy.url().should('contain', 'dashboard')
@@ -101,7 +101,7 @@ describe('Dashboard', () => {
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
 
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${projectCreated.name}`).click()
+      .getByDataTestid(`projectTile-${projectCreated.slug}`).click()
       .getByDataTestid('menuDashboard').click()
 
     cy.url().should('contain', 'dashboard')
@@ -115,7 +115,7 @@ describe('Dashboard', () => {
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
 
     cy.goToProjects()
-      .getByDataTestid(`projectTile-${projectCreated.name}`).click()
+      .getByDataTestid(`projectTile-${projectCreated.slug}`).click()
       .getByDataTestid('menuDashboard').click()
 
     cy.url().should('contain', 'dashboard')
@@ -126,7 +126,7 @@ describe('Dashboard', () => {
   it('Should archive project as owner without impacting other projects', () => {
     cy.kcLogin('test')
     cy.archiveProject(projectToArchive)
-    cy.assertCreateProjects([projectToKeep.name, projectCreated.name, projectFailed.name])
+    cy.assertCreateProjects([projectToKeep.slug, projectCreated.slug, projectFailed.slug])
     cy.assertAddRepo(projectToKeep, projectToKeep.repositories)
     cy.assertUsers(projectToKeep, [owner.email, user.email])
     cy.assertAddEnvironment(projectToKeep, projectToKeep.environments, false)

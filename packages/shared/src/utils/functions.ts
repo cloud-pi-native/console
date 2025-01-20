@@ -1,5 +1,6 @@
 import { longestEnvironmentName } from './const.js'
 import type { ResourceById, ResourceByKey } from './types.js'
+import shortUUID from 'short-uuid'
 
 /**
  * @param {*} value Value wanted to be return as is
@@ -188,4 +189,15 @@ export function stb(v?: string | undefined) {
   return v === 'true'
     ? true
     : v === 'false' ? false : undefined
+}
+
+const uuidTranslator = shortUUID(shortUUID.constants.uuid25Base36, {
+  consistentLength: false,
+})
+
+export const compressUUID = uuidTranslator.fromUUID
+export const expandUUID = uuidTranslator.toUUID
+
+export function generateNamespaceName(projectId: string, envId: string) {
+  return `${compressUUID(envId)}--${compressUUID(projectId)}`
 }

@@ -8,18 +8,19 @@ import { copyContent } from '@/utils/func.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useLogStore } from '@/stores/log.js'
 
-const props = defineProps<{ projectId: ProjectV2['id'] }>()
+const props = defineProps<{ projectSlug: ProjectV2['slug'] }>()
 
 const projectStore = useProjectStore()
 const stageStore = useStageStore()
-const project = computed(() => projectStore.projectsById[props.projectId])
+const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
+const operationsInProgress = computed(() => project.value.operationsInProgress)
 
 const isEditingDescription = ref(false)
 const isArchivingProject = ref(false)
 const projectToArchive = ref('')
 const isSecretShown = ref(false)
 const projectSecrets = ref<Record<string, any>>({})
-const allStages = ref<Array<any>>([])
+const allStages = ref<Array<Stage>>([])
 const logStore = useLogStore()
 
 function updateProject() {
@@ -29,9 +30,9 @@ function updateProject() {
 
 async function archiveProject() {
   await project.value.Commands.delete()
-  projectStore.lastSelectedProjectId = undefined
+  projectStore.lastSelectedProjectSlug = undefined
   router.push('/projects')
-  delete projectStore.projectsById[project.value.id]
+  delete projectStore.projectsBySlug[project.value.slug]
 }
 
 async function handleSecretDisplay() {
@@ -109,7 +110,7 @@ onMounted(() => {
       </div>
     </div>
     <ReplayButton
-      :project-id="project.id"
+      :project-slug="project.slug"
     />
     <div
       class="fr-mt-2w"
@@ -122,7 +123,7 @@ onMounted(() => {
         :icon="project.operationsInProgress.includes('searchSecret')
           ? { name: 'ri:refresh-line', animation: 'spin' }
           : isSecretShown ? 'ri:eye-off-line' : 'ri:eye-line'"
-        :disabled="project.operationsInProgress.includes('searchSecret')"
+        :disabled="operationsInProgress.includes('searchSecret')"
         @click="handleSecretDisplay"
       />
       <div
@@ -197,7 +198,7 @@ onMounted(() => {
           <DsfrButton
             data-testid="archiveProjectBtn"
             :label="`Supprimer définitivement le projet ${project.name}`"
-            :disabled="projectToArchive !== project.name || project.operationsInProgress.includes('delete')"
+            :disabled="projectToArchive !== project.name || operationsInProgress.includes('delete')"
             secondary
             :icon="project.operationsInProgress.includes('delete')
               ? { name: 'ri:refresh-line', animation: 'spin' }

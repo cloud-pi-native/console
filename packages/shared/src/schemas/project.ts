@@ -17,6 +17,8 @@ const ProjectEnvironmentSchema = z.object({
     .regex(/^[a-z0-9]+$/)
     .min(2)
     .max(longestEnvironmentName),
+  slug: z.string()
+    .regex(/^[a-z0-9]+$/),
   projectId: z.string()
     .uuid(),
   quotaId: z.string().uuid(),
@@ -55,6 +57,7 @@ export const ProjectSchemaV2 = z.object({
     .min(2)
     .max(projectNameMaxLength)
     .regex(/^[a-z0-9]+$/),
+  slug: z.string(),
   description: z.string()
     .max(descriptionMaxLength)
     .optional(),

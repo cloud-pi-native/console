@@ -1,12 +1,12 @@
 import { dirname } from 'node:path'
-import type { ClusterObject, Environment, Project, Repository, StepCall } from '@cpn-console/hooks'
-import { parseError } from '@cpn-console/hooks'
+import type { ClusterObject, Environment, ListMinimumResources, Project, Repository, StepCall } from '@cpn-console/hooks'
+import { parseError, uniqueResource } from '@cpn-console/hooks'
 import { dump } from 'js-yaml'
 import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { PatchUtils } from '@kubernetes/client-node'
 import { inClusterLabel } from '@cpn-console/shared'
-import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi, uniqueResource } from './utils.js'
+import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi } from './utils.js'
 import { getApplicationObject, getMinimalApplicationObject } from './applications.js'
 import { getAppProjectObject, getMinimalAppProjectPatch } from './app-project.js'
 
@@ -16,21 +16,6 @@ export interface ArgoDestination {
   namespace?: string
   name?: string
   server?: string
-}
-
-interface BareMinimumResource {
-  metadata: {
-    name: string
-    labels: {
-      [x: string]: string
-    }
-  }
-}
-
-interface ListMinimumResources {
-  body: {
-    items: BareMinimumResource[]
-  }
 }
 
 function splitExtraRepositories(repos?: string): string[] {
@@ -45,8 +30,10 @@ export const upsertProject: StepCall<Project> = async (payload) => {
   try {
     const customK8sApi = getCustomK8sApi()
     const project = payload.args
-    const { kubernetes: kubeApi, gitlab: gitlabApi, keycloak: keycloakApi, vault: vaultApi } = payload.apis
-    const projectSelector = `dso/organization=${project.organization.name},dso/project=${project.name},app.kubernetes.io/managed-by=dso-console`
+    const { gitlab: gitlabApi, keycloak: keycloakApi, vault: vaultApi } = payload.apis
+    const projectSelectorOld = `dso/organization=${project.organization.name},dso/project=${project.name},app.kubernetes.io/managed-by=dso-console`
+    const projectSelector = `dso/project.slug=${project.slug},app.kubernetes.io/managed-by=dso-console`
+    const projectSelector2 = `dso/project.id=${project.id},app.kubernetes.io/managed-by=dso-console`
 
     const infraRepositories = project.repositories.filter(repo => repo.isInfra)
     const sourceRepos = [
@@ -56,21 +43,28 @@ export const upsertProject: StepCall<Project> = async (payload) => {
     ]
 
     // first create or patch resources
-    const applicationsList = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelector) as ListMinimumResources
+    const applicationsOld = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelectorOld) as ListMinimumResources
+    const applicationsNew = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelector) as ListMinimumResources
+    const applicationsNew2 = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelector2) as ListMinimumResources
 
-    const appProjectsList = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', undefined, undefined, undefined, undefined, projectSelector) as ListMinimumResources
+    const appProjectsOld = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', undefined, undefined, undefined, undefined, projectSelectorOld) as ListMinimumResources
+    const appProjectsNew = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', undefined, undefined, undefined, undefined, projectSelector) as ListMinimumResources
+    const appProjectsNew2 = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', undefined, undefined, undefined, undefined, projectSelector2) as ListMinimumResources
 
-    const applications = uniqueResource(applicationsList.body.items)
-    const appProjects = uniqueResource(appProjectsList.body.items)
+    const applications = uniqueResource(applicationsOld.body.items, applicationsNew.body.items, applicationsNew2.body.items)
+    const appProjects = uniqueResource(appProjectsOld.body.items, appProjectsNew.body.items, appProjectsNew2.body.items)
 
     await Promise.all([
       ...project.environments.map(async (environment) => {
+        if (!environment.apis.kubernetes) {
+          return
+        }
+        const nsName = await environment.apis.kubernetes.getNsName()
         const cluster = getCluster(project, environment)
         const infraProject = await gitlabApi.getOrCreateInfraProject(cluster.zone.slug)
-        const appProjectName = generateAppProjectName(project.organization.name, project.name, environment.name)
-        const appNamespace = kubeApi.namespaces[environment.name].nsObject.metadata.name
+        const appProjectName = generateAppProjectName(project.slug, environment.name)
         const destination: ArgoDestination = {
-          namespace: appNamespace,
+          namespace: nsName,
           name: cluster.label,
         }
         const roGroup = (await keycloakApi.getEnvGroup(environment.name)).subgroups.RO
@@ -79,7 +73,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         await ensureInfraEnvValues(
           project,
           environment,
-          appNamespace,
+          nsName,
           roGroup,
           rwGroup,
           appProjectName,
@@ -89,7 +83,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
           vaultApi,
         )
 
-        if (!cluster.user.keyData && !cluster.user.token) {
+        if (cluster.label !== inClusterLabel && !cluster.user.keyData && !cluster.user.token) {
           console.log(`Direct argocd API calls are disabled for cluster ${cluster.label}`)
           return undefined
         }
@@ -121,9 +115,9 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         }
 
         // manage every infra repositories
-        return infraRepositories.map(async (repository) => {
+        return Promise.all(infraRepositories.map(async (repository) => {
           const application = findApplication(applications, repository.internalRepoName, environment.name)
-          const applicationName = generateApplicationName(project.organization.name, project.name, environment.name, repository.internalRepoName)
+          const applicationName = generateApplicationName(project.slug, environment.name, repository.internalRepoName)
           const repoURL = await gitlabApi.getRepoUrl(repository.internalRepoName)
 
           if (application) {
@@ -149,7 +143,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
             })
             await customK8sApi.createNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', applicationObject)
           }
-        })
+        }))
       }),
     ])
 
@@ -230,6 +224,7 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
       'dso/organization': project.organization.name,
       'dso/project': project.name,
       'dso/project.id': project.id,
+      'dso/project.slug': project.slug,
       'dso/environment': environment.name,
     },
     argocd: {
