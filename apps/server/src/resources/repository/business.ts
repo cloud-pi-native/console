@@ -58,6 +58,9 @@ export async function createRepository({
     return new Unprocessable422('Echec des services lors de la création du dépôt')
   }
 
+  if (data.externalRepoUrl) {
+    await syncRepository({ repositoryId: repo.id, requestId, syncAllBranches: true, userId })
+  }
   return repo
 }
 
