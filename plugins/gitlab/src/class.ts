@@ -42,11 +42,20 @@ export class GitlabApi extends PluginApi {
     const project = await this.api.Projects.create({
       name: repoName,
       path: repoName,
+      ciConfigPath: '.gitlab-ci-dso.yml',
       namespaceId,
       description,
     })
     // Dépôt tout juste créé, zéro branche => pas d'erreur (filesTree undefined)
     await this.api.Commits.create(project.id, 'main', 'ci: 🌱 First commit', [])
+    return project
+  }
+
+  public async fixRepositoryConfig(projectId: number) {
+    const project = await this.api.Projects.edit(projectId, {
+      ciConfigPath: '.gitlab-ci-dso.yml',
+    })
+    // Dépôt tout juste créé, zéro branche => pas d'erreur (filesTree undefined)
     return project
   }
 

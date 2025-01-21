@@ -51,6 +51,8 @@ async function ensureRepositoryExists(gitlabRepositories: CondensedProjectSchema
 
   if (!gitlabRepository) {
     await gitlabApi.createEmptyProjectRepository(repository.internalRepoName)
+  } else {
+    await gitlabApi.fixRepositoryConfig(gitlabRepository.id)
   }
 
   if (!repository.externalRepoUrl) {
