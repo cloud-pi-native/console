@@ -1,5 +1,14 @@
 # Changelog
 
+## [8.23.2](https://github.com/cloud-pi-native/console/compare/v8.23.1...v8.23.2) (2025-01-21)
+
+
+### Bug Fixes
+
+* :bug: add a better patch capability for kubernetes ([0050394](https://github.com/cloud-pi-native/console/commit/005039450701f9d77a4479487ba872af602ec689))
+* :bug: can't retrieved enc ns name for gitops cluster ([dcf3c1a](https://github.com/cloud-pi-native/console/commit/dcf3c1a147755ae698ba09f7bb7d1d79d13cc1d1))
+* :triangular_flag_on_post: no more cloned repository at gitlab createProject ([211d070](https://github.com/cloud-pi-native/console/commit/211d070d77802d894c70c584fa2c41e86a297295))
+
 ## [8.23.1](https://github.com/cloud-pi-native/console/compare/v8.23.0...v8.23.1) (2025-01-20)
 
 
