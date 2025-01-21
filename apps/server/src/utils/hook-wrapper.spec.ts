@@ -60,7 +60,6 @@ const nonAssociatedCluster = {
 const project: ProjectInfos = {
   id: '011e7860-04d7-461f-912d-334c622d38b3',
   name: 'candilib',
-  organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
   description: 'Application de réservation de places à l\'examen du permis B.',
   status: 'created',
   locked: false,
@@ -68,15 +67,6 @@ const project: ProjectInfos = {
   updatedAt: '2023-07-03T14:46:56.783Z',
   everyonePerms: 896n,
   ownerId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565',
-  organization: {
-    id: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
-    source: 'dso-console',
-    name: 'mi',
-    label: 'Ministère de l\'Intérieur',
-    active: true,
-    createdAt: '2023-07-03T14:46:56.764Z',
-    updatedAt: '2023-07-03T14:46:56.764Z',
-  },
   members: [],
   clusters: [associatedCluster, nonAssociatedCluster],
   environments: [

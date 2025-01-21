@@ -18,7 +18,7 @@ export const projectContract = contractInstance.router({
     contentType: 'application/json',
     summary: 'Create project',
     description: 'Create a new project.',
-    body: ProjectSchemaV2.pick({ name: true, organizationId: true, description: true }),
+    body: ProjectSchemaV2.pick({ name: true, description: true }),
     responses: {
       201: ProjectSchemaV2.omit({ name: true }).extend({ name: z.string() }),
       400: ErrorSchema,
@@ -68,7 +68,6 @@ export const projectContract = contractInstance.router({
         name: true,
         status: true,
         locked: true,
-        organizationId: true,
         description: true,
         lastSuccessProvisionningVersion: true,
       })
@@ -76,7 +75,6 @@ export const projectContract = contractInstance.router({
         statusIn: z.string(),
         statusNotIn: z.string(),
         filter: z.enum(['owned', 'member', 'all']),
-        organizationName: z.string(),
         search: z.string(),
       })
       .partial(),

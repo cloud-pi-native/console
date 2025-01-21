@@ -3,9 +3,9 @@ import getConfig from './config.js'
 
 const infos: ServiceInfos = {
   name: 'vault',
-  to: ({ project, organization }) => getConfig().hideProjectService
+  to: ({ projectSlug }) => getConfig().hideProjectService
     ? undefined
-    : `${getConfig().publicUrl}/ui/vault/secrets/${organization}-${project}`,
+    : `${getConfig().publicUrl}/ui/vault/secrets/${projectSlug}`,
   title: 'Vault',
   imgSrc: '/img/vault.svg',
   description: 'Vault s\'intègre profondément avec les identités de confiance pour automatiser l\'accès aux secrets, aux données et aux systèmes',

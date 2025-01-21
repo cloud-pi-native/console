@@ -187,14 +187,14 @@ export class VaultProjectApi extends VaultApi {
 
   constructor(project: ProjectLite) {
     super()
-    this.basePath = `${project.organization.name}/${project.name}`
-    this.roleName = `${project.organization.name}-${project.name}`
+    this.basePath = project.slug
+    this.roleName = project.slug
     this.projectRootDir = getConfig().projectsRootDir
-    this.projectKvName = `${project.organization.name}-${project.name}`
-    this.groupName = `${project.organization.name}-${project.name}`
+    this.projectKvName = project.slug
+    this.groupName = project.slug
     this.policyName = {
-      techRO: `tech--${project.organization.name}-${project.name}--ro`,
-      appFull: `app--${project.organization.name}-${project.name}--admin`,
+      techRO: `tech--${project.slug}--ro`,
+      appFull: `app--${project.slug}--admin`,
     }
     this.defaultAppRoleCredentials = {
       url: getConfig().publicUrl,

@@ -23,9 +23,6 @@ describe('queries-tools', () => {
     const initial = {
       id: 'thisIsAnId',
       name: 'myProjectName',
-      organization: {
-        name: 'myOrganization',
-      },
       environment: {
         permissions: {
           password: 'secret',
@@ -36,9 +33,6 @@ describe('queries-tools', () => {
     const desired = {
       id: 'thisIsAnId',
       name: 'myProjectName',
-      organization: {
-        name: 'myOrganization',
-      },
       environment: {
         permissions: {
           id: 'notSecret',

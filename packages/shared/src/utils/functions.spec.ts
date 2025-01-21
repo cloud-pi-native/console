@@ -47,8 +47,7 @@ describe('function utils: exclude', () => {
 
 describe('function utils: calcProjectNameMaxLength', () => {
   it('should return max length', () => {
-    expect(calcProjectNameMaxLength('mtest')).toStrictEqual(45)
-    expect(calcProjectNameMaxLength('')).toStrictEqual(50)
+    expect(calcProjectNameMaxLength()).toStrictEqual(50)
   })
 })
 

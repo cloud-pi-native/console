@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
 import { getRandomId } from '@gouvminint/vue-dsfr'
-import type { ArrayElement, Organization, ProjectV2, projectContract } from '@cpn-console/shared'
+import type { ArrayElement, ProjectV2, projectContract } from '@cpn-console/shared'
 import { bts, statusDict } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
@@ -56,7 +56,7 @@ const filterMethods: FilterMethods = {
 }
 
 const selectedProjectIds = ref<ProjectV2['id'][]>([])
-const projects = ref<(ProjectV2 & { organization: Organization })[]>([])
+const projects = ref<(ProjectV2)[]>([])
 const projectWithSelection = computed(() => projects.value.map(project => ({ ...project, selected: selectedProjectIds.value.includes(project.id) })))
 const selectedProjects = computed(() => projectWithSelection.value.filter(project => project.selected))
 
@@ -213,7 +213,7 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
               @click="selectAll"
             >
           </td>
-          <td>Organisation</td>
+          <td>Slug</td>
           <td>Nom</td>
           <td>Souscripteur</td>
           <td>Status</td>
@@ -248,9 +248,7 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
             @click="(event: any) => switchSelection(event.target.checked, project.id)"
           >
         </td>
-        <td>
-          {{ project.organization.label }}
-        </td>
+        <td>{{ project.slug }}</td>
         <td>{{ project.name }}</td>
         <td>{{ project.owner.email }}</td>
         <td

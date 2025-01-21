@@ -10,10 +10,8 @@ export const identity = (value: unknown) => value
 
 export const getLongestStringOfArray = (array: Array<string>) => array.reduce((acc, curr) => acc.length < curr.length ? curr : acc, '')
 
-export function calcProjectNameMaxLength(organizationName: string) {
-  return organizationName
-    ? 61 - longestEnvironmentName - organizationName.length
-    : 61 - longestEnvironmentName
+export function calcProjectNameMaxLength() {
+  return 61 - longestEnvironmentName
 }
 
 export const getUniqueListBy = (arr: Array<Record<string, unknown>>, key: string) => [...new Map(arr.map(item => [item[key], item])).values()]

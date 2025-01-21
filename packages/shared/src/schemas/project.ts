@@ -3,7 +3,6 @@ import { longestEnvironmentName, projectStatus } from '../utils/const.js'
 import { AtDatesToStringExtend, CoerceBooleanSchema, permissionLevelSchema } from './_utils.js'
 import { RepoSchema } from './repository.js'
 import { MemberSchema, UserSchema } from './user.js'
-import { OrganizationSchema } from './organization.js'
 import { RoleSchema } from './role.js'
 
 export const descriptionMaxLength = 280
@@ -42,9 +41,7 @@ const ProjectEnvironmentSchema = z.object({
   })),
 })
 export const ProjectSchema = z.object({
-
   // ProjectInfos
-  organization: OrganizationSchema.optional(),
   repositories: RepoSchema.array(),
   environments: ProjectEnvironmentSchema.array(),
 })
@@ -61,8 +58,6 @@ export const ProjectSchemaV2 = z.object({
   description: z.string()
     .max(descriptionMaxLength)
     .optional(),
-  organizationId: z.string()
-    .uuid(),
   status: ProjectStatusSchema,
   locked: CoerceBooleanSchema,
 

@@ -6,7 +6,6 @@ import { AccessLevel } from '@gitbeaker/core'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { objectEntries } from '@cpn-console/shared'
 import type { GitbeakerRequestError } from '@gitbeaker/requester-utils'
-import { getOrganizationId } from './group.js'
 import { getApi, getGroupRootId, infraAppsRepoName, internalMirrorRepoName } from './utils.js'
 import config from './config.js'
 
@@ -226,7 +225,6 @@ export class GitlabProjectApi extends GitlabApi {
   private gitlabGroup: GroupSchema & { statistics: GroupStatisticsSchema } | undefined
   private specialRepositories: string[] = [infraAppsRepoName, internalMirrorRepoName]
   private zoneApi: GitlabZoneApi
-  // private organizationGroup: GroupSchema & { statistics: GroupStatisticsSchema } | undefined
 
   constructor(project: Project | UniqueRepo) {
     super()
@@ -238,7 +236,7 @@ export class GitlabProjectApi extends GitlabApi {
   // Group Project
   private async createProjectGroup(): Promise<GroupSchema> {
     const searchResult = await this.api.Groups.search(this.project.name)
-    const parentId = await getOrganizationId(this.project.organization.name)
+    const parentId = await getGroupRootId()
     const existingGroup = searchResult.find(group => group.parent_id === parentId && group.name === this.project.name)
 
     if (existingGroup) return existingGroup
@@ -253,7 +251,7 @@ export class GitlabProjectApi extends GitlabApi {
 
   public async getProjectGroup(): Promise<GroupSchema | undefined> {
     if (this.gitlabGroup) return this.gitlabGroup
-    const parentId = await getOrganizationId(this.project.organization.name)
+    const parentId = await getGroupRootId()
     const searchResult = await this.api.Groups.allSubgroups(parentId)
     this.gitlabGroup = searchResult.find(group => group.name === this.project.name)
     return this.gitlabGroup
@@ -286,7 +284,7 @@ export class GitlabProjectApi extends GitlabApi {
   }
 
   public async getProjectId(projectName: string) {
-    const pathProjectName = `${config().projectsRootDir}/${this.project.organization.name}/${this.project.name}/${projectName}`
+    const pathProjectName = `${config().projectsRootDir}/${this.project.slug}/${projectName}`
     const project = (await this.api.Projects.search(projectName)).find(p => p.path_with_namespace === pathProjectName)
 
     if (!project) {
@@ -344,7 +342,7 @@ export class GitlabProjectApi extends GitlabApi {
 
   // Repositories
   public async getRepoUrl(repoName: string) {
-    return `${config().publicUrl}/${config().projectsRootDir}/${this.project.organization.name}/${this.project.name}/${repoName}.git`
+    return `${config().publicUrl}/${config().projectsRootDir}/${this.project.slug}/${repoName}.git`
   }
 
   public async listRepositories() {
