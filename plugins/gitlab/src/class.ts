@@ -37,11 +37,12 @@ export class GitlabApi extends PluginApi {
     this.api = getApi()
   }
 
-  public async createEmptyRepository(repoName: string, groupId: number, description?: string | undefined) {
+  public async createEmptyRepository(repoName: string, groupId: number, description?: string | undefined, ciConfigPath?: string) {
     const namespaceId = groupId
     const project = await this.api.Projects.create({
       name: repoName,
       path: repoName,
+      ciConfigPath,
       namespaceId,
       description,
     })
@@ -345,9 +346,9 @@ export class GitlabProjectApi extends GitlabApi {
     }))
   }
 
-  public async createEmptyProjectRepository(repoName: string, description?: string | undefined) {
+  public async createEmptyProjectRepository(repoName: string, description?: string | undefined, clone?: boolean) {
     const namespaceId = (await this.getOrCreateProjectGroup()).id
-    return this.createEmptyRepository(repoName, namespaceId, description)
+    return this.createEmptyRepository(repoName, namespaceId, description, clone ? '.gitlab-ci-dso.yml' : undefined)
   }
 
   // Special Repositories

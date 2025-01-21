@@ -50,7 +50,7 @@ async function ensureRepositoryExists(gitlabRepositories: CondensedProjectSchema
   const currentVaultSecret = await vaultApi.read(vaultCredsPath, { throwIfNoEntry: false })
 
   if (!gitlabRepository) {
-    await gitlabApi.createEmptyProjectRepository(repository.internalRepoName)
+    await gitlabApi.createEmptyProjectRepository(repository.internalRepoName, undefined, !!repository.externalRepoUrl)
   }
 
   if (!repository.externalRepoUrl) {
