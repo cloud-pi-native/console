@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.23.3](https://github.com/cloud-pi-native/console/compare/v8.23.2...v8.23.3) (2025-01-21)
+
+
+### Bug Fixes
+
+* :ambulance: fix gitlab ci config file ([2c2a287](https://github.com/cloud-pi-native/console/commit/2c2a287a76723dfffecd9ae892a8897f03aef161))
+
 ## [8.23.2](https://github.com/cloud-pi-native/console/compare/v8.23.1...v8.23.2) (2025-01-21)
 
 
