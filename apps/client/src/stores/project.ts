@@ -3,13 +3,10 @@ import { ref } from 'vue'
 import type { CreateProjectBody, ProjectV2, projectContract } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
 import { useUserStore } from './user.js'
-import { useOrganizationStore } from './organization.js'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 import { Project } from '@/utils/project-utils.js'
 
 export const useProjectStore = defineStore('project', () => {
-  const organizationStore = useOrganizationStore()
-
   const userStore = useUserStore()
 
   const amIPartOf = (project: ProjectV2) => project.status !== 'archived'
@@ -27,14 +24,11 @@ export const useProjectStore = defineStore('project', () => {
   )
 
   const updateStore = async (projectsRecieved: ProjectV2[]) => {
-    if (projectsRecieved.some(project => !organizationStore.organizationsById[project.organizationId])) {
-      await organizationStore.listOrganizations()
-    }
     return projectsRecieved.map((project) => {
       if (project.slug in projectsBySlug.value) {
         return projectsBySlug.value[project.slug].Commands.updateData(project)
       }
-      const newProject = new Project(project, organizationStore.organizationsById[project.organizationId])
+      const newProject = new Project(project)
       projectsBySlug.value[project.slug] = newProject
       return newProject
     })
@@ -68,7 +62,7 @@ export const useProjectStore = defineStore('project', () => {
   const createProject = async (body: CreateProjectBody) => {
     const project = await apiClient.Projects.createProject({ body })
       .then(response => extractData(response, 201))
-    projectsBySlug.value[project.slug] = new Project(project, organizationStore.organizationsById[project.organizationId])
+    projectsBySlug.value[project.slug] = new Project(project)
     return project
   }
 

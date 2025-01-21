@@ -5,7 +5,6 @@ import {
   CleanedClusterSchema,
   ClusterDetailsSchema,
   EnvironmentSchema,
-  OrganizationSchema,
   UserSchema,
 } from '../schemas/index.js'
 import { CoerceBooleanSchema } from '../schemas/_utils.js'
@@ -65,7 +64,6 @@ export const clusterContract = contractInstance.router({
     pathParams: ClusterParams,
     responses: {
       200: z.array(z.object({
-        organization: OrganizationSchema.shape.name,
         // TODO: Remettre `ProjectSchemaV2.shape.name` mais attention aux projets non compatibles
         project: z.string(),
         name: EnvironmentSchema.shape.name,

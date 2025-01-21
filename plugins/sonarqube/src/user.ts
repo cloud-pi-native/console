@@ -20,9 +20,9 @@ export interface SonarUser {
   sonarLintLastConnectionDate: Date
 }
 
-export async function createUser(username: string, projectName: string, organizationName: string) {
+export async function createUser(username: string, projectSlug: string) {
   const axiosInstance = getAxiosInstance()
-  const fakeEmail = `${projectName}@${organizationName}`
+  const fakeEmail = `${projectSlug}@${projectSlug}`
 
   const newPwd = generateRandomPassword(30)
   await axiosInstance({
@@ -71,11 +71,11 @@ export async function getUser(username: string): Promise<SonarUser | undefined> 
   return users.users.find(u => u.login === username)
 }
 
-export async function ensureUserExists(username: string, projectName: string, organizationName: string, vaultUserSecret: VaultSonarSecret | undefined): Promise<VaultSonarSecret | undefined> {
+export async function ensureUserExists(username: string, projectSlug: string, vaultUserSecret: VaultSonarSecret | undefined): Promise<VaultSonarSecret | undefined> {
   const user = await getUser(username)
   if (!user) {
     return {
-      SONAR_PASSWORD: await createUser(username, projectName, organizationName),
+      SONAR_PASSWORD: await createUser(username, projectSlug),
       SONAR_TOKEN: await changeToken(username),
       SONAR_USERNAME: username,
     }

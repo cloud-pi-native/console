@@ -10,7 +10,6 @@ import {
   sortArrByObjKeyAsc,
 } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
-import { useOrganizationStore } from '@/stores/organization.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useClusterStore } from '@/stores/cluster'
@@ -23,7 +22,6 @@ type ClusterList = {
 
 const clusterStore = useClusterStore()
 const projectStore = useProjectStore()
-const organizationStore = useOrganizationStore()
 const zoneStore = useZoneStore()
 const stageStore = useStageStore()
 
@@ -109,7 +107,6 @@ onMounted(async () => {
   await Promise.all([
     projectStore.listProjects({ filter: 'all' }),
     zoneStore.getAllZones(),
-    organizationStore.listOrganizations(),
   ])
 })
 

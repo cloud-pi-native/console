@@ -134,10 +134,6 @@ const zone = {
 } as const
 
 const misc = {
-  fetchOrganizations: async () => {
-    const config = dbToObj(await getAdminPlugin())
-    return hooks.fetchOrganizations.execute({}, config)
-  },
   checkServices: async () => {
     const config = dbToObj(await getAdminPlugin())
     return hooks.checkServices.execute({}, config)

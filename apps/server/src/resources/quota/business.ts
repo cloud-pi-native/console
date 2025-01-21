@@ -22,8 +22,7 @@ export async function getQuotaAssociatedEnvironments(quotaId: string) {
   const environments = await getQuotaAssociatedEnvironmentById(quotaId)
   return environments.map(env => ({
     name: env.name,
-    project: env.project.name,
-    organization: env.project.organization.name,
+    project: env.project.slug,
     stage: env.stage.name,
     owner: env.project.owner.email,
   }))

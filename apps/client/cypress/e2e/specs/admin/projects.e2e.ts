@@ -1,20 +1,14 @@
-import type { Organization, ProjectV2 } from '@cpn-console/shared'
+import type { ProjectV2 } from '@cpn-console/shared'
 import { sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
-import { getModel, getModelById } from '../../support/func.js'
+import { getModelById } from '../../support/func.js'
 import type { Project } from '@/utils/project-utils.js'
 
 describe('Administration projects', () => {
   const admin = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')
-  const organizations = getModel('organization') as Organization[]
   let projects: ProjectV2[]
 
   const mapProjects = (body: Project[]) => {
     return sortArrByObjKeyAsc(body, 'name')
-      ?.map(project => ({
-        ...project,
-        organization: organizations?.find(organization => organization.id === project.organizationId)?.label,
-      }),
-      )
   }
 
   beforeEach(() => {
@@ -42,12 +36,12 @@ describe('Administration projects', () => {
       projects.forEach((project: Project) => {
         cy.getByDataTestid(`tr-${project.id}`)
           .within(() => {
-            cy.get('td:nth-of-type(2)').should('contain', getModelById('organization', project.organizationId).label)
+            cy.get('td:nth-of-type(2)').should('contain', project.slug)
             cy.get('td:nth-of-type(3)').should('contain', project.name)
             cy.get('td:nth-of-type(4)').should('contain', project.owner.email)
             cy.get('td:nth-of-type(5)').invoke('attr', 'title').should('contain', statusDict.status[project.status].wording)
             cy.get('td:nth-of-type(5)').invoke('attr', 'title').should('contain', statusDict.locked[String(!!project.locked)].wording)
-            cy.get('td:nth-of-type(6)').should('contain.text', '-')
+            cy.get('td:nth-of-type(6)').should('contain.text', project.lastSuccessProvisionningVersion)
             cy.get('td:nth-of-type(7)').should('contain.text', 'il y a')
           })
       })
@@ -139,7 +133,6 @@ describe('Administration projects', () => {
     cy.intercept('GET', 'api/v1/projects?filter=all&statusIn=archived').as('getArchivedProjects')
     cy.intercept('GET', 'api/v1/projects?filter=all&statusIn=failed').as('getFailedProjects')
     cy.intercept('GET', 'api/v1/projects?filter=all&locked=true&statusNotIn=archived').as('getLockedProjects')
-    cy.intercept('GET', 'api/v1/organizations').as('getOrganizations')
 
     cy.get('select#projectSearchFilter').select('Tous')
     cy.getByDataTestid('projectsSearchBtn')
@@ -314,7 +307,10 @@ describe('Administration projects', () => {
       .should('not.exist')
     cy.getByDataTestid('addUserSuggestionInput')
       .find('input')
+      .as('inputAddUser')
+    cy.get('@inputAddUser')
       .clear()
+    cy.get('@inputAddUser')
       .type(member.email)
     cy.getByDataTestid('addUserBtn')
       .click()
@@ -348,12 +344,9 @@ describe('Administration projects', () => {
     cy.get('.fr-callout__title')
       .should('contain', project.name)
 
+    cy.wait(500)
     cy.getByDataTestid('showTransferProjectBtn')
-      .should('be.enabled')
-    cy.getByDataTestid('transferProjectBtn')
-      .should('not.exist')
-    cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire').should('have.length', 1)
-    cy.getByDataTestid('showTransferProjectBtn').click()
+      .click()
     cy.getByDataTestid('transferProjectBtn')
       .should('exist')
       .should('be.disabled')

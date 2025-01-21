@@ -37,10 +37,10 @@ const groupPermissions = [
   'scan',
 ]
 
-export async function createDsoRepository(organizationName: string, projectName: string, internalRepoName: string, sonarProjectKey?: string) {
-  const sonarProjectName = `${organizationName}-${projectName}-${internalRepoName}`
+export async function createDsoRepository(projectSlug: string, internalRepoName: string, sonarProjectKey?: string) {
+  const sonarProjectName = `${projectSlug}-${internalRepoName}`
   if (!sonarProjectKey)
-    sonarProjectKey = generateProjectKey(organizationName, projectName, internalRepoName)
+    sonarProjectKey = generateProjectKey(projectSlug, internalRepoName)
   return createProject(sonarProjectKey, sonarProjectName)
 }
 
@@ -97,29 +97,26 @@ export async function deleteDsoRepository(projectKey: string) {
 }
 
 interface SonarProjectResult {
-  organization: string
-  project: string
+  projectSlug: string
   repository: string
   key: string
 }
 
-function filterProjectsOwning(repos: { key: string }[], organizationName: string, projectName: string): SonarProjectResult[] {
+function filterProjectsOwning(repos: { key: string }[], projectSlug: string): SonarProjectResult[] {
   return repos.reduce((acc, repo) => {
     let isOrphan = true
 
-    const sonarKey = repo.key as string
+    const sonarKey = repo.key
     const keyElements = sonarKey.split('-')
-    const organization = keyElements.shift() as string
     keyElements.pop()
     for (let i = keyElements.length - 1; i > 0; i--) {
       const project = keyElements.slice(0, i).join('-')
       const repository = keyElements.slice(i).join('-')
-      const keyComputed = generateProjectKey(organization, project, repository)
+      const keyComputed = generateProjectKey(project, repository)
       if (keyComputed === sonarKey) {
-        if (project === projectName && organization === organizationName) {
+        if (project === projectSlug) {
           acc.push({
-            organization,
-            project,
+            projectSlug,
             repository,
             key: sonarKey,
           })
@@ -134,10 +131,9 @@ function filterProjectsOwning(repos: { key: string }[], organizationName: string
   }, [] as SonarProjectResult[])
 }
 
-export async function findSonarProjectsForDsoProjects(organizationName: string, projectName: string) {
+export async function findSonarProjectsForDsoProjects(projectSlug: string) {
   const axiosInstance = getAxiosInstance()
   let foundProjectKeys: SonarProjectResult[] = []
-  const baseSearch = `${organizationName}-${projectName}`
 
   let page = 0
   const pageSize = 100
@@ -146,13 +142,13 @@ export async function findSonarProjectsForDsoProjects(organizationName: string, 
     page++
     const similarProjects = await axiosInstance.get('projects/search', {
       params: {
-        q: baseSearch,
+        q: projectSlug,
         p: page,
         ps: pageSize,
       },
     })
     total = similarProjects.data.paging.total
-    foundProjectKeys = [...foundProjectKeys, ...filterProjectsOwning(similarProjects.data.components, organizationName, projectName)]
+    foundProjectKeys = [...foundProjectKeys, ...filterProjectsOwning(similarProjects.data.components, projectSlug)]
   } while (page * pageSize < total)
 
   return foundProjectKeys

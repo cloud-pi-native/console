@@ -1,5 +1,5 @@
 import { type Pinia, createPinia, setActivePinia } from 'pinia'
-import { getRandomCluster, getRandomEnv, getRandomOrganization, getRandomProject, getRandomStage, getRandomZone, repeatFn } from '@cpn-console/test-utils'
+import { getRandomCluster, getRandomEnv, getRandomProject, getRandomStage, getRandomZone, repeatFn } from '@cpn-console/test-utils'
 import { ClusterPrivacy } from '@cpn-console/shared'
 
 import '@gouvfr/dsfr/dist/dsfr.min.css'
@@ -112,14 +112,13 @@ describe('ClusterForm.vue', () => {
 
   it('Should mount an update cluster ClusterForm with associated environments', () => {
     useSnackbarStore()
-    const organization = getRandomOrganization()
     const allProjects = repeatFn(5)(getRandomProject)
     const allStages = repeatFn(2)(getRandomStage)
     const allZones = repeatFn(2)(getRandomZone)
 
     const cluster = getRandomCluster({ projectIds: [allProjects[0].id], stageIds: [allStages[1].id], privacy: ClusterPrivacy.DEDICATED, zoneId: allZones[0].id })
     const env = getRandomEnv('integ-1', allProjects[0].id, 'qsId', cluster.id)
-    const associatedEnvironments = [{ organization: organization.name, project: allProjects[0].name, name: env.name, owner: 'owner@dso.fr' }]
+    const associatedEnvironments = [{ project: allProjects[0].name, name: env.name, owner: 'owner@dso.fr' }]
 
     const props = {
       cluster,

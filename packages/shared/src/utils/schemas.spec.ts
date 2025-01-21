@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
 import type { ProjectV2 } from '../index.js'
-import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, OrganizationSchema, ProjectSchemaV2, QuotaSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, ProjectSchemaV2, QuotaSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 
 describe('schemas utils', () => {
   it('should not validate an undefined object', () => {
@@ -44,31 +44,12 @@ describe('schemas utils', () => {
       .toStrictEqual({ data: toParse, success: true })
   })
 
-  it('should validate a correct organization schema', () => {
-    const toParse = {
-      id: faker.string.uuid(),
-      source: faker.lorem.word(),
-      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
-      label: faker.company.name(),
-      active: faker.datatype.boolean(),
-      updatedAt: new Date(),
-      createdAt: new Date(),
-    }
-    const parsed = structuredClone(toParse)
-    // @ts-ignore la date doit être transformé en string
-    parsed.createdAt = parsed.createdAt.toISOString()
-    // @ts-ignore
-    parsed.updatedAt = parsed.updatedAt.toISOString()
-    expect(OrganizationSchema.safeParse(toParse)).toStrictEqual({ data: parsed, success: true })
-  })
-
   it('should validate a correct project schema', () => {
     const toParse: ProjectV2 = {
       id: faker.string.uuid(),
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
       slug: faker.lorem.word({ length: { min: 2, max: 10 } }),
       description: '',
-      organizationId: faker.string.uuid(),
       status: 'created',
       locked: false,
       clusterIds: [],
@@ -146,22 +127,6 @@ describe('schemas utils', () => {
     }
 
     expect(StageSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
-  })
-
-  it('should not validate an organization schema with wrong external data', () => {
-    const toParse = {
-      id: faker.string.uuid(),
-      source: [],
-      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
-      label: faker.company.name(),
-      active: faker.datatype.boolean(),
-    }
-
-    // @ts-ignore
-    expect(parseZodError(OrganizationSchema
-      .safeParse(toParse)
-      .error))
-      .toMatch('Validation error: Expected string, received array at "source"')
   })
 
   it('should validate a repo business schema', () => {
@@ -272,7 +237,6 @@ describe('schemas utils', () => {
     const toParse = {
       id: faker.string.uuid(),
       name: faker.string.alpha({ casing: 'lower' }),
-      organizationId: faker.string.uuid(),
       status: 'created',
       locked: false,
       description: '',
@@ -292,7 +256,6 @@ describe('schemas utils', () => {
     const toParse = {
       id: faker.string.uuid(),
       name: faker.string.alpha({ length: 24, casing: 'lower' }),
-      organizationId: faker.string.uuid(),
       status: 'created',
       locked: false,
       description: '',
@@ -312,7 +275,6 @@ describe('schemas utils', () => {
     const toParse = {
       id: faker.string.uuid(),
       name: 'candilib',
-      organizationId: faker.string.uuid(),
       description: faker.string.alpha(descriptionMaxLength + 1),
       status: 'created',
       locked: false,

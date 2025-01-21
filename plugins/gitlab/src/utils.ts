@@ -31,8 +31,7 @@ export const internalMirrorRepoName = 'mirror'
 
 export interface VaultSecrets {
   GITLAB: {
-    ORGANIZATION_NAME: string
-    PROJECT_NAME: string
+    PROJECT_SLUG: string
     GIT_MIRROR_PROJECT_ID: number
     GIT_MIRROR_TOKEN: string
   }

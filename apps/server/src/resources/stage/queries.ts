@@ -53,10 +53,8 @@ export function getStageAssociatedEnvironmentById(id: Stage['id']) {
       project: {
         select: {
           name: true,
-          organization: {
-            select: { name: true },
-          },
           owner: true,
+          slug: true,
         },
       },
       quota: true,
