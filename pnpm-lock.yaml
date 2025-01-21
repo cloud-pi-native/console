@@ -105,14 +105,14 @@ importers:
         version: 1.9.1
     optionalDependencies:
       '@cypress/vue':
-        specifier: 6.0.1
-        version: 6.0.1(cypress@13.16.1)(vue@3.5.13(typescript@5.7.2))
+        specifier: 6.0.2
+        version: 6.0.2(cypress@14.0.0)(vue@3.5.13(typescript@5.7.2))
       cypress:
-        specifier: 13.16.1
-        version: 13.16.1
+        specifier: 14.0.0
+        version: 14.0.0
       cypress-vite:
-        specifier: 1.5.0
-        version: 1.5.0(vite@6.0.3(@types/node@22.10.2)(jiti@1.21.6)(terser@5.37.0)(tsx@4.19.2)(yaml@2.6.1))
+        specifier: 1.6.0
+        version: 1.6.0(vite@6.0.3(@types/node@22.10.2)(jiti@1.21.6)(terser@5.37.0)(tsx@4.19.2)(yaml@2.6.1))
     devDependencies:
       '@cpn-console/eslint-config':
         specifier: workspace:^
@@ -1770,9 +1770,9 @@ packages:
     resolution: {integrity: sha512-LzxlLEMbBOPYB85uXrDqvD4MgcenjRBLIns3zyhx7vTPj/0u2eQhzXvPiGcaJrV38Q9dbkExWp6cOHPJ+EtFYg==}
     engines: {node: '>= 6'}
 
-  '@cypress/vue@6.0.1':
-    resolution: {integrity: sha512-pXzy6ZsYzWORHqSeXticZgZn9st22Rv1WSeWLYSrilz1+Zxe1qcdn9812qYY1v23nlikgOktvQYbMFQhv0FZSA==}
-    engines: {node: '>=8'}
+  '@cypress/vue@6.0.2':
+    resolution: {integrity: sha512-To+Ik4CnhTPMmDh7VGpl5k0Z1LuE0xrI0j6LF7QyjROY2bkQwUE50WTmVPCz/Dvez9WrVpkJjRmflR5KlVmGiQ==}
+    engines: {node: '>=18'}
     peerDependencies:
       '@cypress/webpack-dev-server': '*'
       cypress: '>=7.0.0'
@@ -3796,14 +3796,14 @@ packages:
   csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
 
-  cypress-vite@1.5.0:
-    resolution: {integrity: sha512-vvTMqJZgI3sN2ylQTi4OQh8LRRjSrfrIdkQD5fOj+EC/e9oHkxS96lif1SyDF1PwailG1tnpJE+VpN6+AwO/rg==}
+  cypress-vite@1.6.0:
+    resolution: {integrity: sha512-6oZPDvHgLEZjuFgoejtRuyph369zbVn7fjh4hzhMar3XvKT5YhTEoA+KixksMuxNEaLn9uqA4HJVz6l7BybwBQ==}
     peerDependencies:
-      vite: ^2.9.0 || ^3.0.0 || ^4.0.0 || ^5.0.0
+      vite: ^2.9.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0
 
-  cypress@13.16.1:
-    resolution: {integrity: sha512-17FtCaz0cx7ssWYKXzGB0Vub8xHwpVPr+iPt2fHhLMDhVAPVrplD+rTQsZUsfb19LVBn5iwkEUFjQ1yVVJXsLA==}
-    engines: {node: ^16.0.0 || ^18.0.0 || >=20.0.0}
+  cypress@14.0.0:
+    resolution: {integrity: sha512-kEGqQr23so5IpKeg/dp6GVi7RlHx1NmW66o2a2Q4wk9gRaAblLZQSiZJuDI8UMC4LlG5OJ7Q6joAiqTrfRNbTw==}
+    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
 
   dargs@8.1.0:
@@ -9234,9 +9234,9 @@ snapshots:
       uuid: 8.3.2
     optional: true
 
-  '@cypress/vue@6.0.1(cypress@13.16.1)(vue@3.5.13(typescript@5.7.2))':
+  '@cypress/vue@6.0.2(cypress@14.0.0)(vue@3.5.13(typescript@5.7.2))':
     dependencies:
-      cypress: 13.16.1
+      cypress: 14.0.0
       vue: 3.5.13(typescript@5.7.2)
     optional: true
 
@@ -11370,7 +11370,7 @@ snapshots:
 
   csstype@3.1.3: {}
 
-  cypress-vite@1.5.0(vite@6.0.3(@types/node@22.10.2)(jiti@1.21.6)(terser@5.37.0)(tsx@4.19.2)(yaml@2.6.1)):
+  cypress-vite@1.6.0(vite@6.0.3(@types/node@22.10.2)(jiti@1.21.6)(terser@5.37.0)(tsx@4.19.2)(yaml@2.6.1)):
     dependencies:
       chokidar: 3.6.0
       debug: 4.4.0(supports-color@5.5.0)
@@ -11379,7 +11379,7 @@ snapshots:
       - supports-color
     optional: true
 
-  cypress@13.16.1:
+  cypress@14.0.0:
     dependencies:
       '@cypress/request': 3.0.7
       '@cypress/xvfb': 1.2.4(supports-color@8.1.1)

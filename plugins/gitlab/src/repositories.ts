@@ -44,15 +44,13 @@ export async function ensureRepositories(gitlabApi: GitlabProjectApi, project: P
 }
 
 async function ensureRepositoryExists(gitlabRepositories: CondensedProjectSchema[], repository: Repository, gitlabApi: GitlabProjectApi, projectMirrorCreds: ProjectMirrorCreds, vaultApi: VaultProjectApi) {
-  let gitlabRepository: CondensedProjectSchema | ProjectSchema | void = gitlabRepositories.find(gitlabRepository => gitlabRepository.name === repository.internalRepoName)
+  const gitlabRepository: CondensedProjectSchema | ProjectSchema | void = gitlabRepositories.find(gitlabRepository => gitlabRepository.name === repository.internalRepoName)
   const externalRepoUrn = repository.externalRepoUrl.split(/:\/\/(.*)/s)[1]
   const vaultCredsPath = `${repository.internalRepoName}-mirror`
   const currentVaultSecret = await vaultApi.read(vaultCredsPath, { throwIfNoEntry: false })
 
   if (!gitlabRepository) {
-    gitlabRepository = repository.externalRepoUrl
-      ? await gitlabApi.createCloneRepository(repository.internalRepoName, externalRepoUrn, repository.newCreds ?? { username: currentVaultSecret?.data.GIT_INPUT_USER, token: currentVaultSecret?.data.GIT_INPUT_PASSWORD })
-      : await gitlabApi.createEmptyProjectRepository(repository.internalRepoName)
+    await gitlabApi.createEmptyProjectRepository(repository.internalRepoName)
   }
 
   if (!repository.externalRepoUrl) {
