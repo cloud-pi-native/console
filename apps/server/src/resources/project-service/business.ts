@@ -55,12 +55,9 @@ export async function getProjectServices(projectId: Project['id'], permissionTar
     let urls: ServiceUrl[] = []
     const toResponse = to
       ? to({
-          organization: project?.organization.name,
           clusters: project.clusters,
           zones: Array.from(zones.values()),
           environments: project.environments,
-          project: project.name,
-          projectId: project.id,
           projectSlug: project.slug,
           store,
         })

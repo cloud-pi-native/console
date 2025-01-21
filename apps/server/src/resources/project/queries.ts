@@ -1,5 +1,4 @@
 import type {
-  Organization,
   Prisma,
   Project,
   User,
@@ -33,8 +32,6 @@ type ListProjectWhere = Omit<(typeof projectContract.listProjects.query._type), 
   Pick<Prisma.ProjectWhereInput, 'status'> &
   FilterWhere
 export async function listProjects({
-  organizationId,
-  organizationName,
   description,
   locked,
   name,
@@ -47,12 +44,10 @@ export async function listProjects({
 }: ListProjectWhere) {
   const whereAnd: Prisma.ProjectWhereInput[] = []
   if (id) whereAnd.push({ id })
-  if (organizationId) whereAnd.push({ organizationId })
   if (locked) whereAnd.push({ locked })
   if (name) whereAnd.push({ name })
   if (status) whereAnd.push({ status })
   if (description) whereAnd.push({ description: { contains: description } })
-  if (organizationName) whereAnd.push({ organization: { name: organizationName } })
   if (lastSuccessProvisionningVersion) {
     if (lastSuccessProvisionningVersion === 'outdated') whereAnd.push({ lastSuccessProvisionningVersion: { not: appVersion } })
     else if (lastSuccessProvisionningVersion === 'last') whereAnd.push({ lastSuccessProvisionningVersion: { equals: appVersion } })
@@ -60,10 +55,6 @@ export async function listProjects({
   }
   if (search) {
     whereAnd.push({ OR: [{
-      organization: { label: { contains: search } },
-    }, {
-      organization: { name: { contains: search } },
-    }, {
       name: { contains: search },
     }, {
       owner: { email: { contains: search } },
@@ -115,9 +106,6 @@ export function getProjectInfosByIdOrThrow(projectId: Project['id']) {
       name: true,
       slug: true,
       members: { include: { user: true } },
-      organization: {
-        select: { name: true },
-      },
       environments: {
         select: {
           id: true,
@@ -158,7 +146,6 @@ export function getProjectById(id: Project['id']) {
 }
 
 export const baseProjectIncludes = {
-  organization: true,
   members: { include: { user: true } },
   clusters: true,
   roles: true,
@@ -189,33 +176,10 @@ export function getProjectInfosAndRepos(id: Project['id']) {
   })
 }
 
-interface GetProjectByNameParams {
-  name: Project['name']
-  organizationName: Organization['name']
-}
-
-export function getProjectByNames({ name, organizationName }: GetProjectByNameParams) {
-  return prisma.project.findFirst({
-    where: {
-      name,
-      organization: { name: organizationName },
-    },
-  })
-}
-
 export function getSlugs(slugPrefix: string) {
   return prisma.project.findMany({
     where: {
       slug: { startsWith: slugPrefix },
-    },
-  })
-}
-
-export function getProjectByOrganizationId(organizationId: Organization['id']) {
-  return prisma.project.findMany({
-    where: {
-      organizationId,
-      status: { not: ProjectStatus.archived },
     },
   })
 }
@@ -227,9 +191,6 @@ export function getAllProjectsDataForExport() {
       description: true,
       createdAt: true,
       updatedAt: true,
-      organization: {
-        select: { label: true },
-      },
       environments: {
         select: {
           name: true,
@@ -272,7 +233,6 @@ export function getHookProjectInfos(id: Project['id']) {
   return prisma.project.findUniqueOrThrow({
     where: { id },
     include: {
-      organization: true,
       members: { include: { user: true }, where: { user: { type: 'human' } } },
       clusters: { select: clusterInfosSelect },
       environments: {
@@ -301,18 +261,16 @@ export function getHookProjectInfos(id: Project['id']) {
 // CREATE
 interface CreateProjectParams {
   name: Project['name']
-  organizationId: Organization['id']
   description?: Project['description']
   ownerId: User['id']
   slug: Project['slug']
 }
 
-export function initializeProject({ slug, name, organizationId, description = '', ownerId }: CreateProjectParams) {
+export function initializeProject({ slug, name, description = '', ownerId }: CreateProjectParams) {
   return prisma.project.create({
     data: {
       slug,
       name,
-      organizationId,
       description,
       status: ProjectStatus.created,
       locked: false,

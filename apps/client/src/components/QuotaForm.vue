@@ -68,7 +68,6 @@ function getRows(associatedEnvironments: QuotaAssociatedEnvironments) {
   return associatedEnvironments
     .map((associatedEnvironment) => {
       return [
-        toCodeComponent(associatedEnvironment.organization),
         toCodeComponent(associatedEnvironment.project),
         toCodeComponent(associatedEnvironment.name),
         toCodeComponent(associatedEnvironment.stage),
@@ -188,7 +187,7 @@ onBeforeMount(() => {
         <DsfrTable
           title=""
           data-testid="associatedEnvironmentsTable"
-          :headers="['Organisation', 'Projet', 'Nom', 'Type d\'environnement', 'Souscripteur']"
+          :headers="['Projet', 'Nom', 'Type d\'environnement', 'Souscripteur']"
           :rows="getRows(props.associatedEnvironments)"
         />
       </div>

@@ -254,7 +254,6 @@ export const data = {
           },
           project: 'int-2',
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
           repositories: [],
         },
@@ -315,7 +314,6 @@ export const data = {
           },
           project: 'int-2',
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
           repositories: [],
         },
@@ -377,7 +375,6 @@ export const data = {
           updatedAt: '2023-06-08T15:15:56.692Z',
           environment: [],
           internalUrl: 'https://blabla.com/bla/projects/mi/int-2/repo.git',
-          organization: 'mi',
           externalRepoUrl: 'https://github.com/dnum-mi/dso-console.git',
           externalUserName: '',
           internalRepoName: 'repo',
@@ -435,7 +432,6 @@ export const data = {
           updatedAt: '2023-06-08T15:15:56.692Z',
           environment: [],
           internalUrl: 'https://blabla.com/bla/projects/mi/int-2/repo.git',
-          organization: 'mi',
           externalRepoUrl: 'https://github.com/dnum-mi/dso-console.git',
           externalUserName: '',
           internalRepoName: 'repo',
@@ -492,7 +488,6 @@ export const data = {
           createdAt: '2023-06-08T15:14:53.517Z',
           updatedAt: '2023-06-08T15:14:53.517Z',
           description: '',
-          organization: 'mi',
         },
         nexus: {
           user: {
@@ -631,7 +626,6 @@ export const data = {
           createdAt: '2023-06-08T15:14:53.517Z',
           updatedAt: '2023-06-08T15:16:49.011Z',
           description: '',
-          organization: 'mi',
         },
         nexus: {
           status: {
@@ -697,7 +691,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -758,7 +751,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -819,7 +811,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -880,7 +871,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -941,7 +931,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -1002,7 +991,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -1063,7 +1051,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -1124,7 +1111,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -1185,7 +1171,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -1246,7 +1231,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -1307,7 +1291,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -1368,7 +1351,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -1429,7 +1411,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -1490,7 +1471,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -1551,7 +1531,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -1612,7 +1591,6 @@ export const data = {
           project: 'int-2',
           repository: [],
           environment: 'staging',
-          organization: 'mi',
           registryHost: 'blabla.com',
         },
         vault: {
@@ -1654,41 +1632,12 @@ export const data = {
       projectId: null,
     },
   ],
-  organization: [
-    {
-      id: '2368a61e-f243-42f6-b471-a85b056ee131',
-      source: 'dso-console',
-      name: 'dinum',
-      label: 'DINUM',
-      active: true,
-      createdAt: '2023-07-03T14:46:56.758Z',
-      updatedAt: '2023-07-03T14:46:56.758Z',
-    },
-    {
-      id: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
-      source: 'dso-console',
-      name: 'mi',
-      label: 'Ministère de l\'Intérieur',
-      active: true,
-      createdAt: '2023-07-03T14:46:56.764Z',
-      updatedAt: '2023-07-03T14:46:56.764Z',
-    },
-    {
-      id: '94e5b24b-ba73-4169-af09-e2df4b83a60f',
-      source: 'dso-console',
-      name: 'mj',
-      label: 'Ministère de la Justice',
-      active: true,
-      createdAt: '2023-07-03T14:46:56.765Z',
-      updatedAt: '2023-07-03T14:46:56.765Z',
-    },
-  ],
   project: [
     {
       id: '22e7044f-8414-435d-9c4a-2df42a65034b',
       name: 'betaapp',
-      slug: 'dinum-betaapp',
-      organizationId: '2368a61e-f243-42f6-b471-a85b056ee131',
+      slug: 'betaapp',
+      lastSuccessProvisionningVersion: '8.23.0',
       description: '',
       status: 'created',
       locked: false,
@@ -1700,8 +1649,8 @@ export const data = {
     {
       id: '9dabf3f9-6c86-4358-8598-65007d78df65',
       name: 'projecttoarchive',
-      slug: 'dinum-projecttoarchive',
-      organizationId: '2368a61e-f243-42f6-b471-a85b056ee131',
+      slug: 'projecttoarchive',
+      lastSuccessProvisionningVersion: '8.23.0',
       description: '',
       status: 'created',
       locked: false,
@@ -1713,8 +1662,8 @@ export const data = {
     {
       id: '011e7860-04d7-461f-912d-334c622d38b3',
       name: 'candilib',
-      slug: 'mi-candilib',
-      organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
+      slug: 'candilib',
+      lastSuccessProvisionningVersion: '8.23.0',
       description: 'Application de réservation de places à l\'examen du permis B.',
       status: 'created',
       locked: false,
@@ -1726,8 +1675,8 @@ export const data = {
     {
       id: '011e7860-04d7-461f-912d-334c622d38c5',
       name: 'basegun',
-      slug: 'mi-basegun',
-      organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
+      slug: 'basegun',
+      lastSuccessProvisionningVersion: '8.23.0',
       description: 'Application d\'aide à la catégorisation d\'armes à feu.',
       status: 'created',
       locked: false,
@@ -1739,8 +1688,8 @@ export const data = {
     {
       id: '83833faf-f654-40dd-bcd5-cf2e944fc702',
       name: 'psijfailed',
-      slug: 'mi-psijfailed',
-      organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
+      slug: 'psijfailed',
+      lastSuccessProvisionningVersion: '8.23.0',
       description: 'Application de transmission d\'informations entre agents de la PS et de l\'IJ.',
       status: 'failed',
       locked: true,
@@ -1752,8 +1701,8 @@ export const data = {
     {
       id: '8bd21636-e8ce-4098-8ed8-16cbd60af340',
       name: 'projet dégradé',
-      slug: 'mi-projet dégradé',
-      organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
+      slug: 'projet dégradé',
+      lastSuccessProvisionningVersion: '8.23.0',
       description: 'Projet testé en état dégradé',
       status: 'warning',
       locked: true,
@@ -1765,8 +1714,8 @@ export const data = {
     {
       id: '554d9150-9a07-42c1-8207-1163f2f0addd',
       name: 'pissenlit',
-      slug: 'mi-pissenlit',
-      organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
+      slug: 'pissenlit',
+      lastSuccessProvisionningVersion: '8.23.0',
       description: '',
       status: 'created',
       locked: false,
@@ -1778,8 +1727,8 @@ export const data = {
     {
       id: '94c860ab-023f-4e6e-8a4e-ff41456e249b',
       name: 'rolistes',
-      slug: 'mi-rolistes',
-      organizationId: 'b644c07f-193c-47ed-ae10-b88a8f63d20b',
+      slug: 'rolistes',
+      lastSuccessProvisionningVersion: '8.23.0',
       description: '',
       status: 'created',
       locked: false,

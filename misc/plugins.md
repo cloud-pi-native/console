@@ -27,7 +27,6 @@ Exemple :
   // args come from controllers
   args: {
     projectName: 'toto',
-    orgName: 'titi',
   },
   failed: true || undefined
   /*
