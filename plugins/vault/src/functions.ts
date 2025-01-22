@@ -42,14 +42,24 @@ export const deployAuth: StepCall<Project> = async (payload) => {
 
       // verify if vault CRDs are installed on the cluster
       if (apiHashicorp) {
+        const deployVaultConnectionInNs = getConfig().deployVaultConnectionInNs
         const vaultConnectionObject = generateVsoVaultConnection(appRoleCreds)
-        await nsKubeApi.createOrPatchRessource({
-          body: vaultConnectionObject,
-          name: vaultConnectionObject.metadata.name,
-          plural: 'vaultconnections',
-          version: 'v1beta1',
-          group: 'secrets.hashicorp.com',
-        })
+        if (deployVaultConnectionInNs) {
+          await nsKubeApi.createOrPatchRessource({
+            body: vaultConnectionObject,
+            name: vaultConnectionObject.metadata.name,
+            plural: 'vaultconnections',
+            version: 'v1beta1',
+            group: 'secrets.hashicorp.com',
+          })
+        } else {
+          await nsKubeApi.deleteResource({
+            name: vaultConnectionObject.metadata.name,
+            plural: 'vaultconnections',
+            version: 'v1beta1',
+            group: 'secrets.hashicorp.com',
+          })
+        }
 
         const vaultSecretObject = generateVsoSecret(appRoleCreds)
         await nsKubeApi.createOrPatchRessource({
@@ -60,7 +70,10 @@ export const deployAuth: StepCall<Project> = async (payload) => {
           group: '',
         })
 
-        const vaultAuthObject = generateVaultAuth(appRoleCreds)
+        const vaultConnectionRef = deployVaultConnectionInNs
+          ? vaultConnectionObject.metadata.name
+          : null
+        const vaultAuthObject = generateVaultAuth(appRoleCreds, vaultConnectionRef)
         await nsKubeApi.createOrPatchRessource({
           body: vaultAuthObject,
           name: vaultAuthObject.metadata.name,

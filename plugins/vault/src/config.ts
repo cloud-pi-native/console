@@ -7,6 +7,7 @@ class Config {
   projectsRootDir: string
   hideProjectService: boolean
   disableVaultSecrets: boolean
+  deployVaultConnectionInNs: boolean
   constructor() {
     this.token = requiredEnv('VAULT_TOKEN')
     this.publicUrl = removeTrailingSlash(requiredEnv('VAULT_URL'))
@@ -16,6 +17,7 @@ class Config {
       : this.publicUrl
     this.hideProjectService = process.env.VAULT__HIDE_PROJECT_SERVICE === 'true'
     this.disableVaultSecrets = process.env.VAULT__DISABLE_VAULT_SECRETS === 'true'
+    this.deployVaultConnectionInNs = process.env.VAULT__DEPLOY_VAULT_CONNECTION_IN_NS === 'true'
   }
 }
 
