@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.23.4](https://github.com/cloud-pi-native/console/compare/v8.23.3...v8.23.4) (2025-01-24)
+
+
+### Bug Fixes
+
+* fix gitlab, no first commit on cloned repository ([2d7038f](https://github.com/cloud-pi-native/console/commit/2d7038fd1f5aefb67259666086048d11a6d5537f))
+
 ## [8.23.3](https://github.com/cloud-pi-native/console/compare/v8.23.2...v8.23.3) (2025-01-21)
 
 
