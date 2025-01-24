@@ -187,6 +187,20 @@ export function getProjectInfosAndRepos(id: Project['id']) {
   })
 }
 
+interface GetProjectByNameParams {
+  name: Project['name']
+  organizationName: Organization['name']
+}
+
+export function getProjectByNames({ name, organizationName }: GetProjectByNameParams) {
+  return prisma.project.findFirst({
+    where: {
+      name,
+      organization: { name: organizationName },
+    },
+  })
+}
+
 export function getSlugs(slugPrefix: string) {
   return prisma.project.findMany({
     where: {

@@ -9,6 +9,7 @@ import {
   deleteAllRepositoryForProject,
   getAllProjectsDataForExport,
   getOrganizationById,
+  getProjectByNames,
   getProjectOrThrow,
   getSlugs,
   initializeProject,
@@ -73,6 +74,11 @@ export async function createProject(dataDto: typeof projectContract.createProjec
   const organization = await getOrganizationById(dataDto.organizationId)
   if (!organization) return new BadRequest400('Organisation introuvable')
   if (!organization.active) return new BadRequest400('Organisation inactive')
+
+  const projectSearch = await getProjectByNames({ name: dataDto.name, organizationName: organization.name })
+  if (projectSearch) {
+    return new BadRequest400(`Le projet "${dataDto.name}" existe déjà`)
+  }
 
   let slug = `${organization.name}-${dataDto.name}`
   const projectsWithSamePrefix = await getSlugs(slug)
