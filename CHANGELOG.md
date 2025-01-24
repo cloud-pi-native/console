@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.23.4](https://github.com/cloud-pi-native/console/compare/v8.23.3...v8.23.4) (2025-01-24)
+
+
+### Bug Fixes
+
+* :bug: duplicates name should not be already allowed ([eb2a4db](https://github.com/cloud-pi-native/console/commit/eb2a4db44596ad2f9f6affbbdb2dea84cb28067c))
+* fix gitlab, no first commit on cloned repository ([2d7038f](https://github.com/cloud-pi-native/console/commit/2d7038fd1f5aefb67259666086048d11a6d5537f))
+
 ## [8.23.3](https://github.com/cloud-pi-native/console/compare/v8.23.2...v8.23.3) (2025-01-21)
 
 
