@@ -28,6 +28,11 @@ type PendingCommits = Record<number, {
   branches: Record<string, { messages: string[], actions: CommitAction[] } >
 }>
 
+interface CreateEmptyRepositoryArgs {
+  repoName: string
+  description?: string
+}
+
 export class GitlabApi extends PluginApi {
   protected api: Gitlab<false>
   private pendingCommits: PendingCommits = {}
@@ -37,17 +42,22 @@ export class GitlabApi extends PluginApi {
     this.api = getApi()
   }
 
-  public async createEmptyRepository(repoName: string, groupId: number, description?: string | undefined, ciConfigPath?: string) {
-    const namespaceId = groupId
+  public async createEmptyRepository({ createFirstCommit, groupId, repoName, description, ciConfigPath }: CreateEmptyRepositoryArgs & {
+    createFirstCommit: boolean
+    groupId: number
+    ciConfigPath?: string
+  }) {
     const project = await this.api.Projects.create({
       name: repoName,
       path: repoName,
       ciConfigPath,
-      namespaceId,
+      namespaceId: groupId,
       description,
     })
     // Dépôt tout juste créé, zéro branche => pas d'erreur (filesTree undefined)
-    await this.api.Commits.create(project.id, 'main', 'ci: 🌱 First commit', [])
+    if (createFirstCommit) {
+      await this.api.Commits.create(project.id, 'main', 'ci: 🌱 First commit', [])
+    }
     return project
   }
 
@@ -201,10 +211,12 @@ export class GitlabZoneApi extends GitlabApi {
     const infraGroup = await this.getOrCreateInfraGroup()
     // Get or create projects_root_dir/infra/zone
     const infraProjects = await this.api.Groups.allProjects(infraGroup.id)
-    return infraProjects.find(repo => repo.name === zone) ?? await this.createEmptyRepository(
-      zone,
-      infraGroup.id,
-      'Repository hosting deployment files for this zone.',
+    return infraProjects.find(repo => repo.name === zone) ?? await this.createEmptyRepository({
+      repoName: zone,
+      groupId: infraGroup.id,
+      description: 'Repository hosting deployment files for this zone.',
+      createFirstCommit: true,
+    },
     )
   }
 }
@@ -346,9 +358,15 @@ export class GitlabProjectApi extends GitlabApi {
     }))
   }
 
-  public async createEmptyProjectRepository(repoName: string, description?: string | undefined, clone?: boolean) {
+  public async createEmptyProjectRepository({ repoName, description, clone }: CreateEmptyRepositoryArgs & { clone?: boolean }) {
     const namespaceId = (await this.getOrCreateProjectGroup()).id
-    return this.createEmptyRepository(repoName, namespaceId, description, clone ? '.gitlab-ci-dso.yml' : undefined)
+    return this.createEmptyRepository({
+      repoName,
+      groupId: namespaceId,
+      description,
+      ciConfigPath: clone ? '.gitlab-ci-dso.yml' : undefined,
+      createFirstCommit: !clone,
+    })
   }
 
   // Special Repositories
