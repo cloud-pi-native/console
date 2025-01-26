@@ -31,30 +31,6 @@ async function deleteToken() {
   await getAllTokens()
 }
 
-const rows = computed(() => tokens.value.length
-  ? tokens.value.map(token => ([
-      token.name,
-      (new Date(token.createdAt)).toLocaleString(),
-      token.expirationDate ? (new Date(token.expirationDate)).toLocaleString() : 'Jamais',
-      token.lastUse ? (new Date(token.lastUse)).toLocaleString() : 'Jamais',
-      statusWording[token.status],
-      {
-        cellAttrs: {
-          class: `fr-fi-close-line justify-center ${token.status === 'active' ? 'cursor-pointer fr-text-default--warning' : 'cursor-not-allowed'}`,
-          title: 'Supprimer',
-          onClick: () => { deleteModalOpened.value = true; deleteTokenId.value = token.id },
-        },
-      },
-    ]))
-  : [[{
-      field: 'string',
-      text: 'Aucune clé d\'api existante',
-      cellAttrs: {
-        colspan: headers.length,
-      },
-    }]],
-)
-
 async function getAllTokens() {
   tokens.value = await tokenStore.listPersonalAccessTokens()
 }
@@ -100,9 +76,34 @@ onMounted(async () => {
   <div>
     <DsfrTable
       data-testid="tokenTable"
+      title=""
+      no-caption
       :headers="headers"
-      :rows="rows"
-    />
+    >
+      <tr v-if="!tokens.length">
+        <td :colspan="headers.length">
+          Aucune clé d'api existante
+        </td>
+      </tr>
+      <tr
+        v-for="token in tokens"
+        v-else
+        :key="token.id"
+      >
+        <td>{{ token.name }}</td>
+        <td>{{ (new Date(token.createdAt)).toLocaleString() }}</td>
+        <td>{{ token.expirationDate ? (new Date(token.expirationDate)).toLocaleString() : 'Jamais' }}</td>
+        <td>{{ token.lastUse ? (new Date(token.lastUse)).toLocaleString() : 'Jamais' }}</td>
+        <td>{{ statusWording[token.status] }}</td>
+        <td>
+          <div
+            :class="`fr-fi-close-line justify-center ${token.status === 'active' ? 'cursor-pointer fr-text-default--warning' : 'cursor-not-allowed'}`"
+            title="Supprimer"
+            @click="() => { deleteModalOpened = true; deleteTokenId = token.id }"
+          />
+        </td>
+      </tr>
+    </DsfrTable>
   </div>
   <DsfrModal
     v-model:opened="deleteModalOpened"

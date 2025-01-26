@@ -165,7 +165,7 @@ onBeforeMount(async () => {
         data-testid="saveBtn"
         label="Enregistrer"
         secondary
-        :disabled="!isUpdated || errorSchema"
+        :disabled="!isUpdated || !!errorSchema"
         class="mr-5"
         @click="$emit('save', { ...role, permissions: role.permissions.toString() })"
       />
