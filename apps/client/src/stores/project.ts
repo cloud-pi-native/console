@@ -68,7 +68,7 @@ export const useProjectStore = defineStore('project', () => {
   const createProject = async (body: CreateProjectBody) => {
     const project = await apiClient.Projects.createProject({ body })
       .then(response => extractData(response, 201))
-    projectsBySlug.value[project.id] = new Project(project, organizationStore.organizationsById[project.organizationId])
+    projectsBySlug.value[project.slug] = new Project(project, organizationStore.organizationsById[project.organizationId])
     return project
   }
 
