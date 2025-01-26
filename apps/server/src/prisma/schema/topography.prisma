@@ -8,6 +8,7 @@ model Cluster {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   infos            String?        @db.VarChar(200)
+  external         Boolean        @default(false)
   zoneId           String         @db.Uuid
   kubeconfig       Kubeconfig     @relation(fields: [kubeConfigId], references: [id], onDelete: Cascade)
   zone             Zone           @relation(fields: [zoneId], references: [id])
