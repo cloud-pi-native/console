@@ -173,7 +173,7 @@ export class GitlabApi extends PluginApi {
       return files
     } catch (error) {
       const { cause } = error as GitbeakerRequestError
-      if (cause?.description === '404 Tree Not Found') {
+      if (cause?.description.includes('Not Found')) {
         // Empty repository, with zero commit ==> Zero files
         return []
       } else {
