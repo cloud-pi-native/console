@@ -1,5 +1,19 @@
 # Changelog
 
+## [8.24.0](https://github.com/cloud-pi-native/console/compare/v8.23.4...v8.24.0) (2025-01-28)
+
+
+### Features
+
+* :sparkles: add an 'external' boolean properties on clusters ([4a64abc](https://github.com/cloud-pi-native/console/commit/4a64abccea40d2675f435b6cec21bb4f9aa3aa43))
+* :sparkles: vault plugin, switch to deploy or not vaultconnections ([cc9c4e6](https://github.com/cloud-pi-native/console/commit/cc9c4e6ad40412921a8d7afc888f014d92ef46c8))
+
+
+### Bug Fixes
+
+* :alien: gitlab response changed on upgrade ([d595f3a](https://github.com/cloud-pi-native/console/commit/d595f3ac80e84070e27ed257d4b8879ee2611d46))
+* :bug: names displayed twice at project creation ([079a20a](https://github.com/cloud-pi-native/console/commit/079a20a4e5d910e64e43a6df2925acee5ea7368c))
+
 ## [8.23.4](https://github.com/cloud-pi-native/console/compare/v8.23.3...v8.23.4) (2025-01-24)
 
 
