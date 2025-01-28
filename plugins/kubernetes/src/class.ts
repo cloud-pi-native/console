@@ -144,6 +144,17 @@ export class KubernetesNamespace extends PluginApi {
     }
   }
 
+  public async deleteResource(r: Omit<ResourceParams, 'body'>) {
+    if (!this.anyObjectApi) return
+
+    const nsName = await this.getNsName()
+
+    try {
+      await this.anyObjectApi.getNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
+      return this.anyObjectApi.deleteNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
+    } catch (_error) {}
+  }
+
   public async setQuota(quota: ResourceQuotaType) {
     if (!this.coreV1Api) return
 

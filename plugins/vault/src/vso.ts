@@ -31,7 +31,7 @@ export function generateVsoSecret(creds: AppRoleCredentials) {
     },
   }
 }
-export function generateVaultAuth(creds: AppRoleCredentials) {
+export function generateVaultAuth(creds: AppRoleCredentials, vaultConnectionRef: string | null = null) {
   return {
     apiVersion: 'secrets.hashicorp.com/v1beta1',
     kind: 'VaultAuth',
@@ -42,7 +42,7 @@ export function generateVaultAuth(creds: AppRoleCredentials) {
       },
     },
     spec: {
-      vaultConnectionRef: 'default',
+      vaultConnectionRef,
       method: 'appRole',
       mount: 'approle',
       appRole: {

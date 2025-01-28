@@ -29,6 +29,7 @@ export async function getClustersAssociatedWithProject(projectId: Project['id'])
       id: true,
       infos: true,
       label: true,
+      external: true,
       privacy: true,
       secretName: true,
       kubeconfig: true,
@@ -107,6 +108,7 @@ export function getClusterDetails(id: Cluster['id']) {
       id: true,
       clusterResources: true,
       infos: true,
+      external: true,
       label: true,
       privacy: true,
       kubeconfig: true,
@@ -197,6 +199,7 @@ export function listClusters(where: Prisma.ClusterWhereInput) {
       clusterResources: true,
       privacy: true,
       infos: true,
+      external: true,
       zoneId: true,
     },
   })

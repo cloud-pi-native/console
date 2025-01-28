@@ -28,7 +28,7 @@ function makeClusterApi(cluster: ClusterObject): KubeConfig | undefined {
     kc.loadFromCluster()
     return kc
   }
-  if (!cluster.user.keyData && !cluster.user.token) {
+  if (cluster.external) {
     // Special case: disable direct calls to the cluster
     return undefined
   }

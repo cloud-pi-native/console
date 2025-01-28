@@ -27,7 +27,7 @@ describe('repositoryRouter tests', () => {
     externalRepoUrl: `${faker.internet.url()}.git`,
     isPrivate: true,
     externalToken: faker.string.alpha(),
-    externalUserName: faker.internet.userName(),
+    externalUserName: faker.internet.username(),
     isInfra: false,
     internalRepoName: faker.string.alpha({ length: 5, casing: 'lower' }),
   }
