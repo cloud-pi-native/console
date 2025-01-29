@@ -101,33 +101,9 @@ export function getProjectInfosByIdOrThrow(projectId: Project['id']) {
     where: {
       id: projectId,
     },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      members: { include: { user: true } },
-      environments: {
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          updatedAt: true,
-          clusterId: true,
-          stageId: true,
-          quotaId: true,
-        },
-      },
-      clusters: {
-        select: {
-          id: true,
-          label: true,
-          privacy: true,
-          external: true,
-          clusterResources: true,
-          infos: true,
-          zone: true,
-        },
-      },
+    include: {
+      environments: true,
+      clusters: { include: { zone: true } },
     },
   })
 }
