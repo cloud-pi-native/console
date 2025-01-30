@@ -20,14 +20,3 @@ model Log {
   project   Project? @relation(fields: [projectId], references: [id])
   user      User?    @relation(fields: [userId], references: [id])
 }
-
-model Organization {
-  id        String    @id @unique @default(uuid()) @db.Uuid
-  source    String
-  name      String    @unique
-  label     String    @unique
-  active    Boolean   @default(true)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  projects  Project[]
-}

@@ -8,8 +8,6 @@ import {
   deleteAllEnvironmentForProject,
   deleteAllRepositoryForProject,
   getAllProjectsDataForExport,
-  getOrganizationById,
-  getProjectByNames,
   getProjectOrThrow,
   getSlugs,
   initializeProject,
@@ -71,16 +69,8 @@ export async function getProjectSecrets(projectId: string) {
 
 export async function createProject(dataDto: typeof projectContract.createProject.body._type, requestor: UserDetails, requestId: string) {
   if (requestor.type !== 'human') return new BadRequest400('Seuls les comptes humains peuvent créer des projets')
-  const organization = await getOrganizationById(dataDto.organizationId)
-  if (!organization) return new BadRequest400('Organisation introuvable')
-  if (!organization.active) return new BadRequest400('Organisation inactive')
 
-  const projectSearch = await getProjectByNames({ name: dataDto.name, organizationName: organization.name })
-  if (projectSearch) {
-    return new BadRequest400(`Le projet "${dataDto.name}" existe déjà`)
-  }
-
-  let slug = `${organization.name}-${dataDto.name}`
+  let slug = dataDto.name
   const projectsWithSamePrefix = await getSlugs(slug)
   slug = generateSlug(slug, projectsWithSamePrefix?.map(project => project.slug))
 

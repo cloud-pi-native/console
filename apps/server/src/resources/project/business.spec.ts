@@ -44,7 +44,6 @@ const project: Project & {
   id: faker.string.uuid(),
   locked: false,
   name: faker.string.alphanumeric(8),
-  organizationId: faker.string.uuid(),
   status: 'created',
   ownerId: faker.string.uuid(),
   clusters: [],
@@ -119,7 +118,6 @@ describe('test project business logic', () => {
     it('should create project', async () => {
       logViaSessionMock.mockResolvedValue({ user })
 
-      prisma.organization.findUnique.mockResolvedValue({ id: project.organizationId, active: true })
       prisma.project.create.mockResolvedValue({ ...project, status: 'initializing' })
       prisma.project.findFirst.mockResolvedValue(undefined)
       prisma.project.findMany.mockResolvedValue([])
@@ -133,45 +131,9 @@ describe('test project business logic', () => {
       expect(hook.project.upsert).toHaveBeenCalledTimes(1)
     })
 
-    it('should not create project, cause missing organization', async () => {
-      logViaSessionMock.mockResolvedValue({ user })
-
-      prisma.organization.findUnique.mockResolvedValue(undefined)
-
-      await createProject(project, user, reqId)
-
-      expect(prisma.project.create).toHaveBeenCalledTimes(0)
-      expect(prisma.log.create).toHaveBeenCalledTimes(0)
-    })
-
-    it('should not create project, cause inactive organization', async () => {
-      logViaSessionMock.mockResolvedValue({ user })
-
-      prisma.organization.findUnique.mockResolvedValue({ id: project.organizationId, active: false })
-
-      await createProject(project, user, reqId)
-
-      expect(prisma.project.create).toHaveBeenCalledTimes(0)
-      expect(prisma.log.create).toHaveBeenCalledTimes(0)
-    })
-
-    it('should not create project, cause confilct', async () => {
-      logViaSessionMock.mockResolvedValue({ user })
-
-      prisma.organization.findUnique.mockResolvedValue({ id: project.organizationId })
-      prisma.project.create.mockResolvedValue({ ...project, status: 'initializing' })
-      prisma.project.findFirst.mockResolvedValue({ id: faker.string.uuid(), name: project.name, organizationId: project.organizationId })
-
-      await createProject(project, user, reqId)
-
-      expect(prisma.project.create).toHaveBeenCalledTimes(0)
-      expect(prisma.log.create).toHaveBeenCalledTimes(0)
-    })
-
     it('should return plugins failed', async () => {
       logViaSessionMock.mockResolvedValue({ user })
 
-      prisma.organization.findUnique.mockResolvedValue({ id: project.organizationId, active: true })
       prisma.project.create.mockResolvedValue({ ...project, status: 'initializing' })
       prisma.project.findFirst.mockResolvedValue(undefined)
       prisma.project.findMany.mockResolvedValue([])
@@ -246,7 +208,6 @@ describe('test project business logic', () => {
     it('should return plugins failed', async () => {
       logViaSessionMock.mockResolvedValue({ user })
 
-      prisma.organization.findUnique.mockResolvedValue({ id: project.organizationId })
       prisma.project.findUniqueOrThrow.mockResolvedValue({ status: 'created' })
       hook.project.upsert.mockResolvedValue({ results: { failed: true }, project: { ...project } })
 

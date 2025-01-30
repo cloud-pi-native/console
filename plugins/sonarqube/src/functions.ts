@@ -107,17 +107,14 @@ export const upsertProject: StepCall<Project> = async (payload) => {
       keycloak: keycloakApi,
     } = payload.apis
     const {
-      name: projectName,
-      organization: {
-        name: organizationName,
-      },
+      slug: projectSlug,
     } = project
-    const username = `${organizationName}-${projectName}`
+    const username = project.slug
     const keycloakGroupPath = await keycloakApi.getProjectGroupPath()
-    const sonarRepositories = await findSonarProjectsForDsoProjects(organizationName, projectName)
+    const sonarRepositories = await findSonarProjectsForDsoProjects(projectSlug)
 
     await Promise.all([
-      ensureUserAndVault(vaultApi, username, projectName, organizationName),
+      ensureUserAndVault(vaultApi, username, projectSlug),
       ensureGroupExists(keycloakGroupPath),
 
       // Remove excess repositories
@@ -127,9 +124,9 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 
       // Create or configure needed repos
       ...project.repositories.map(async (repository) => {
-        const projectKey = generateProjectKey(organizationName, projectName, repository.internalRepoName)
+        const projectKey = generateProjectKey(projectSlug, repository.internalRepoName)
         if (!sonarRepositories.find(sonarRepository => sonarRepository.repository === repository.internalRepoName)) {
-          await createDsoRepository(organizationName, projectName, repository.internalRepoName)
+          await createDsoRepository(projectSlug, repository.internalRepoName)
         }
         await ensureRepositoryConfiguration(projectKey, username, keycloakGroupPath)
       }),
@@ -158,10 +155,7 @@ export const setVariables: StepCall<Project> = async (payload) => {
   try {
     const project = payload.args
     const {
-      name: projectName,
-      organization: {
-        name: organizationName,
-      },
+      slug: projectSlug,
     } = project
     const { gitlab: gitlabApi } = payload.apis
 
@@ -169,7 +163,7 @@ export const setVariables: StepCall<Project> = async (payload) => {
     await Promise.all([
       // Sonar vars saving in CI (repositories)
       ...project.repositories.map(async (repo) => {
-        const projectKey = generateProjectKey(organizationName, projectName, repo.internalRepoName)
+        const projectKey = generateProjectKey(projectSlug, repo.internalRepoName)
         return [
           await gitlabApi.setGitlabRepoVariable(repo.internalRepoName, {
             key: 'PROJECT_KEY',
@@ -183,7 +177,7 @@ export const setVariables: StepCall<Project> = async (payload) => {
             key: 'PROJECT_NAME',
             masked: false,
             protected: false,
-            value: `${organizationName}-${projectName}-${repo.internalRepoName}`,
+            value: `${projectSlug}-${repo.internalRepoName}`,
             variable_type: 'env_var',
             environment_scope: '*',
           }),
@@ -227,14 +221,11 @@ export const deleteProject: StepCall<Project> = async (payload) => {
 
   const project = payload.args
   const {
-    name: projectName,
-    organization: {
-      name: organizationName,
-    },
+    slug: projectSlug,
   } = project
-  const username = `${organizationName}-${projectName}`
+  const username = projectSlug
   try {
-    const sonarRepositories = await findSonarProjectsForDsoProjects(organizationName, projectName)
+    const sonarRepositories = await findSonarProjectsForDsoProjects(projectSlug)
     await Promise.all(sonarRepositories.map(repo => deleteRepo(repo.key)))
     const users: { paging: SonarPaging, users: SonarUser[] } = (await axiosInstance({
       url: 'users/search',
@@ -286,8 +277,8 @@ async function deleteRepo(projectKey: string) {
   })
 }
 
-async function ensureUserAndVault(vaultApi: VaultProjectApi, username: string, projectName: string, organizationName: string) {
+async function ensureUserAndVault(vaultApi: VaultProjectApi, username: string, projectSlug: string) {
   const vaultUserSecret = await vaultApi.read('SONAR', { throwIfNoEntry: false }) as VaultSonarSecret | undefined
-  const newUserSecret = await ensureUserExists(username, projectName, organizationName, vaultUserSecret)
+  const newUserSecret = await ensureUserExists(username, projectSlug, vaultUserSecret)
   if (newUserSecret) await vaultApi.write(newUserSecret, 'SONAR')
 }

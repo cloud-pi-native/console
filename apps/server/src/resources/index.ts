@@ -2,7 +2,6 @@ import type { FastifyInstance } from 'fastify'
 import { clusterRouter } from './cluster/router.js'
 import { environmentRouter } from './environment/router.js'
 import { logRouter } from './log/router.js'
-import { organizationRouter } from './organization/router.js'
 import { projectRouter } from './project/router.js'
 import { adminRoleRouter } from './admin-role/router.js'
 import { projectRoleRouter } from './project-role/router.js'
@@ -31,7 +30,6 @@ export function apiRouter() {
     await app.register(serverInstance.plugin(clusterRouter()), validateTrue)
     await app.register(serverInstance.plugin(environmentRouter()), validateTrue)
     await app.register(serverInstance.plugin(logRouter()), validateTrue)
-    await app.register(serverInstance.plugin(organizationRouter()), validateTrue)
     await app.register(serverInstance.plugin(personalAccessTokenRouter()), validateTrue)
     await app.register(serverInstance.plugin(projectRouter()), validateTrue)
     await app.register(serverInstance.plugin(projectMemberRouter()), validateTrue)

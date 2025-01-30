@@ -41,7 +41,6 @@ describe('test projectContract', () => {
     createdAt: (new Date()).toISOString(),
     updatedAt: (new Date()).toISOString(),
     locked: false,
-    organizationId: faker.string.uuid(),
     status: 'created',
     everyonePerms: '0',
     members: [],

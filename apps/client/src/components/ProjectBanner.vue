@@ -38,7 +38,7 @@ function saveDescription() {
       class="fr-callout__title fr-mb-3w"
     >
       {{ project.name }}<span class="fr-callout__title fr-mb-3w italic inline opacity-70">
-        ({{ project.organization.label }})
+        ({{ project.slug }})
       </span>
     </h1>
 

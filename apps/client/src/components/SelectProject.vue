@@ -62,7 +62,9 @@ function selectProject(slug: string) {
         :value="project.slug"
         :selected="project.slug === selectedProjectSlug"
       >
-        {{ project.name }} ({{ project.slug }})
+        {{ project.name }}<template v-if="project.name !== project.slug">
+          &nbsp;({{ project.slug }})
+        </template>
       </option>
     </select>
     <DsfrButton

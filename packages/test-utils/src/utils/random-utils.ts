@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { type AchievedStatus, type ClusterDetails, ClusterPrivacy, type ProjectRoles, type Quota, type Stage, type Zone, achievedStatus, logActions, projectRoles } from '@cpn-console/shared'
 import { repeatFn } from './func-utils.js'
-import type { Cluster, Environment, Log, Member, Organization, Permission, Project, Repository, Role, User } from './types.js'
+import type { Cluster, Environment, Log, Member, Permission, Project, Repository, Role, User } from './types.js'
 
 export function getRandomProjectName() {
   return faker.lorem.word()
@@ -12,25 +12,12 @@ export function getRandomGitUrl() {
   return url.startsWith('https://') ? url : `https://${url.split('://')[1]}`
 }
 
-export function getRandomOrganization(name = 'mi', label = 'Ministère de l\'Intérieur', source = 'dso-console'): Organization {
-  return {
-    id: faker.string.uuid(),
-    name,
-    label,
-    source,
-    active: true,
-    updatedAt: (new Date()).toISOString(),
-    createdAt: (new Date()).toISOString(),
-  }
-}
-
-export function getRandomProject(organizationId = faker.string.uuid()): Project & { status: AchievedStatus, members?: Member[] } {
+export function getRandomProject(): Project & { status: AchievedStatus, members?: Member[] } {
   const name = getRandomProjectName()
   return {
     id: faker.string.uuid(),
-    organizationId,
     name,
-    slug: `${organizationId.slice(0, 3)}-${name}`,
+    slug: `${name}-1`,
     description: faker.lorem.sentence(8),
     status: faker.helpers.arrayElement(achievedStatus),
     locked: false,

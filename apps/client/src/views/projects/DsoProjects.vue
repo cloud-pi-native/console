@@ -8,7 +8,11 @@ const projectStore = useProjectStore()
 const logStore = useLogStore()
 
 const projectList = computed(() => projectStore.myProjects
-  .toSorted((p1, p2) => p1.slug.localeCompare(p2.slug)))
+  .toSorted((p1, p2) => {
+    const nameComp = p1.name.localeCompare(p2.name)
+    if (nameComp !== 0) return nameComp
+    return p1.slug.localeCompare(p2.slug)
+  }))
 
 async function setSelectedProject(slug: ProjectV2['slug']) {
   router.push({

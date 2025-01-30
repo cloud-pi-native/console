@@ -1,9 +1,5 @@
-import type { Organization } from '@cpn-console/shared'
-import { getModel, getModelById } from './func.js'
+import { getModelById } from './func.js'
 import { keycloakDomain } from '@/utils/env.js'
-
-const organizations = getModel('organization')
-const orgMi = organizations.find(({ name }) => name === 'mi') as Organization
 
 const defaultOwner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
 
@@ -49,7 +45,6 @@ Cypress.Commands.add('createProject', (project, ownerEmail = defaultOwner.email)
   cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
   const newProject = {
-    orgName: 'mi',
     name: 'cloud-pi-native',
     ...project,
   }
@@ -59,7 +54,6 @@ Cypress.Commands.add('createProject', (project, ownerEmail = defaultOwner.email)
     .get('h1').should('contain', 'Commander un espace projet')
     .get('[data-testid^="repoFieldset-"]').should('not.exist')
   cy.getByDataTestid('ownerInfo').should('contain', ownerEmail)
-    .get('select#organizationId-select').select(orgMi.id)
     .getByDataTestid('nameInput').clear().type(newProject.name)
     .getByDataTestid('nameInput').should('not.have.class', 'fr-input--error')
   cy.getByDataTestid('createProjectBtn').should('be.enabled').click()

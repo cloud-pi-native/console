@@ -1,8 +1,7 @@
-import { allOrganizations, projectRoles } from '@cpn-console/shared'
+import { projectRoles } from '@cpn-console/shared'
 import {
   getRandomCluster,
   getRandomEnv,
-  getRandomOrganization,
   getRandomPerm,
   getRandomProject,
   getRandomQuota,
@@ -17,16 +16,12 @@ import type { User } from './types.js'
 
 const basicStages = ['dev', 'staging', 'integration', 'prod']
 
-export function createRandomDbSetup({ nbUsers = 1, nbRepo = 3, envs = basicStages, organizationName = allOrganizations[0].name }) {
-  // Create organization
-  const allOrganizationsWhereName = allOrganizations.find(org => org.name === organizationName)
-  const organization = getRandomOrganization(allOrganizationsWhereName?.name, allOrganizationsWhereName?.label)
-
+export function createRandomDbSetup({ nbUsers = 1, nbRepo = 3, envs = basicStages }) {
   // Create users
   const users: User[] = repeatFn(nbUsers)(getRandomUser)
 
   // Create project
-  const project = getRandomProject(organization.id)
+  const project = getRandomProject()
 
   // Create Roles association table
   project.roles = users.map(user => ({
@@ -88,7 +83,6 @@ export function createRandomDbSetup({ nbUsers = 1, nbRepo = 3, envs = basicStage
   })
 
   return {
-    organization,
     users,
     stages,
     zones,
