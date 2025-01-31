@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { Ref, UnwrapRef } from 'vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import type {
   projectContract,
 } from '@cpn-console/shared'
@@ -13,20 +13,17 @@ import {
 } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
-import { useOrganizationStore } from '@/stores/organization.js'
 import router from '@/router/index.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
-const organizationStore = useOrganizationStore()
 const snackbarStore = useSnackbarStore()
 const buttonState = ref({
   isCreating: false,
 })
 
 const project = ref<typeof projectContract.createProject.body._type>({
-  organizationId: '',
   name: '',
   description: '',
 })
@@ -35,17 +32,9 @@ const remainingCharacters = computed(() => {
   return projectNameMaxLength - project.value?.name.length
 })
 const errorSchema = computed(() => {
-  const schemaValidation = ProjectSchemaV2.pick({ name: true, organizationId: true, description: true }).safeParse(project.value)
+  const schemaValidation = ProjectSchemaV2.pick({ name: true, description: true }).safeParse(project.value)
   return schemaValidation.success ? undefined : schemaValidation.error
 })
-
-interface OrgOption {
-  text: string
-  value: string
-  id: string
-  disabled?: true
-}
-const orgOptions = ref<OrgOption[]>([])
 
 const updatedValues: Ref<Record<any, any>> = ref({})
 
@@ -74,16 +63,6 @@ function updateProject(key: keyof UnwrapRef<typeof project>, value: string) {
   project.value[key] = value
   updatedValues.value[key] = true
 }
-
-onMounted(async () => {
-  await organizationStore.listOrganizations({ active: true })
-  orgOptions.value = organizationStore.organizations.map(org => ({
-    text: org.label,
-    value: org.id,
-    id: org.id,
-  }))
-  updateProject('organizationId', orgOptions.value[0]?.value ?? '')
-})
 </script>
 
 <template>
@@ -106,17 +85,6 @@ onMounted(async () => {
         small
         class="fr-mb-2w"
       />
-      <DsfrSelect
-        v-model="project.organizationId"
-        select-id="organizationId-select"
-        required
-        label="Nom de l'organisation"
-        label-visible
-        :options="orgOptions"
-        :default-unselected-text="orgOptions.length ? 'Choisissez une organisation' : 'Aucune organisation disponible, veuillez contacter un administrateur'"
-        :disabled="!organizationStore.organizations.length || buttonState.isCreating"
-        @update:model-value="updateProject('organizationId', $event)"
-      />
       <div
         class="fr-mb-6v"
       >
@@ -131,7 +99,7 @@ onMounted(async () => {
             :error-message="!!updatedValues.name && !ProjectSchemaV2.pick({ name: true }).safeParse({ name: project.name }).success ? `Le nom du projet doit être en minuscule, ne pas contenir d\'espace ni de trait d'union, faire plus de 2 et moins de ${projectNameMaxLength} caractères.` : undefined"
             label="Nom du projet"
             label-visible
-            :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, doit être unique pour l'organisation, doit être en minuscules, doit faire plus de 2 et moins de ${projectNameMaxLength} caractères.`"
+            :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, être en minuscules, faire plus de 2 et moins de ${projectNameMaxLength} caractères.`"
             placeholder="candilib"
             :disabled="buttonState.isCreating"
             @update:model-value="updateProject('name', $event)"
@@ -162,7 +130,7 @@ onMounted(async () => {
       data-testid="createProjectBtn"
       primary
       class="fr-mt-2w"
-      :disabled="!project.organizationId || !!errorSchema || buttonState.isCreating"
+      :disabled="!!errorSchema || buttonState.isCreating"
       :icon="buttonState.isCreating
         ? { name: 'ri:refresh-line', animation: 'spin' }
         : 'ri:send-plane-line'"

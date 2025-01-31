@@ -9,7 +9,6 @@ import type {
   CreateEnvironmentBody,
   CreateRepositoryBody,
   Environment,
-  Organization,
   PermissionTarget,
   PluginsUpdateBody,
   ProjectService,
@@ -64,8 +63,6 @@ export class Project implements ProjectV2 {
   owner: Omit<User, 'adminRoleIds'>
   ownerId: string
   roles: { id: string, name: string, permissions: string, position: number }[]
-  organizationId: string
-  organization: { id: string, updatedAt: string, createdAt: string, name: string, active: boolean, label: string, source: string }
   members: ({ userId: string, firstName: string, lastName: string, email: string, roleIds: string[] } | { updatedAt: string, createdAt: string, firstName: string, lastName: string, email: string, userId: string, roleIds: string[] })[]
   createdAt: string
   updatedAt: string
@@ -77,7 +74,7 @@ export class Project implements ProjectV2 {
   services: ProjectService[] = []
   lastSuccessProvisionningVersion: string | null
 
-  constructor(project: ProjectV2, organization: Organization) {
+  constructor(project: ProjectV2) {
     this.id = project.id
     this.clusterIds = project.clusterIds
     this.description = project.description
@@ -88,8 +85,6 @@ export class Project implements ProjectV2 {
     this.owner = project.owner
     this.ownerId = project.ownerId
     this.roles = project.roles
-    this.organizationId = project.organizationId
-    this.organization = organization
     this.members = project.members
     this.createdAt = project.createdAt
     this.updatedAt = project.updatedAt
@@ -137,7 +132,7 @@ export class Project implements ProjectV2 {
         callback()
       }
     },
-    updateData: (project: Partial<ProjectV2 & { organization: Organization }>) => {
+    updateData: (project: Partial<ProjectV2>) => {
       for (const key of objectKeys(project)) {
         // @ts-ignore
         this[key] = project[key]

@@ -124,8 +124,7 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
     const mirrorTriggerToken = await gitlabApi.getMirrorProjectTriggerToken(vaultApi)
 
     const gitlabSecret: VaultSecrets['GITLAB'] = {
-      ORGANIZATION_NAME: project.organization.name,
-      PROJECT_NAME: project.name,
+      PROJECT_SLUG: project.slug,
       GIT_MIRROR_PROJECT_ID: mirrorTriggerToken.repoId,
       GIT_MIRROR_TOKEN: mirrorTriggerToken.token,
     }

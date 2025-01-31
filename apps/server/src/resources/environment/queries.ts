@@ -13,7 +13,6 @@ export function getEnvironmentInfos(id: Environment['id']) {
     include: {
       project: {
         select: {
-          organization: true,
           owner: true,
           name: true,
           id: true,

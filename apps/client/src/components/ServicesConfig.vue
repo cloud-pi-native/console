@@ -252,4 +252,8 @@ const activeAccordion = ref<number>()
 .fr-grid-row .fr-tile {
   height: inherit
 }
+
+.fr-tile__pictogram > img {
+  width: inherit;
+}
 </style>

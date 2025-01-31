@@ -43,7 +43,7 @@ import type { ServiceInfos } from '@cpn-console/hooks'
 
 const infos: ServiceInfos = {
   name: 'my_plugin', // il serait bien que ça ne change jamais, imaginez que c'est un identifiant unique.
-  to: ({ project, organization }) => `${process.env.MON_URL}/${organization}/${project}`,
+  to: ({ projectSlug }) => `${process.env.MON_URL}/${projectSlug}`,
   title: 'Mon super plugin',
   imgSrc: 'https://un_lien_vers/image_externe.svg/', // préférez le svg
   description: 'La description générale de mon plugin',

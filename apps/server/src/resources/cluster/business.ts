@@ -57,7 +57,6 @@ export async function getClusterAssociatedEnvironments(clusterId: string) {
 
   return clusterEnvironments.map((environment) => {
     return ({
-      organization: environment.project?.organization?.name,
       project: environment.project?.name,
       name: environment.name,
       owner: environment.project.owner.email,

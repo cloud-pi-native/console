@@ -43,7 +43,6 @@ export const quotaContract = contractInstance.router({
     }),
     responses: {
       200: z.array(z.object({
-        organization: z.string(),
         project: z.string(),
         name: z.string(),
         stage: z.string(),

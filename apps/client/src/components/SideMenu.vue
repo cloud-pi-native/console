@@ -274,17 +274,6 @@ onMounted(() => {
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
               class="menu-link-icon"
-              data-testid="menuAdministrationOrganizations"
-              :active="routeName === 'ListOrganizations'"
-              to="/admin/organizations"
-            >
-              <v-icon name="ri:building-line" />
-              Organisations
-            </DsfrSideMenuLink>
-          </DsfrSideMenuListItem>
-          <DsfrSideMenuListItem>
-            <DsfrSideMenuLink
-              class="menu-link-icon"
               data-testid="menuAdministrationProjects"
               :active="routeName === 'ListProjects'"
               to="/admin/projects"

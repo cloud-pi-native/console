@@ -48,9 +48,7 @@ export function getQuotaAssociatedEnvironmentById(id: Quota['id']) {
       project: {
         select: {
           name: true,
-          organization: {
-            select: { name: true },
-          },
+          slug: true,
           owner: true,
         },
       },

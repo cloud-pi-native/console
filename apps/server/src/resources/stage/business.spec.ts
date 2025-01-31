@@ -99,18 +99,16 @@ describe('test stage busines logic', () => {
   describe('getStageAssociatedEnvironments', () => {
     it('should list all environments attached to a stage stages', async () => {
       const envName = faker.string.alpha(8)
-      const projectName = faker.string.alpha(8)
-      const orgName = faker.string.alpha(8)
+      const projectSlug = faker.string.alpha(8)
       const quotaName = faker.string.alpha(8)
       const clusterLabel = faker.string.alpha(8)
       const ownerEmail = faker.internet.email()
-      const envs = [{ name: envName, project: { name: projectName, organization: { name: orgName }, owner: { email: ownerEmail } }, quota: { name: quotaName }, cluster: { label: clusterLabel } }]
+      const envs = [{ name: envName, project: { slug: projectSlug, owner: { email: ownerEmail } }, quota: { name: quotaName }, cluster: { label: clusterLabel } }]
       prisma.environment.findMany.mockResolvedValue(envs)
       const response = await getStageAssociatedEnvironments(stage.id)
       expect(response).toStrictEqual([{
         name: envName,
-        project: projectName,
-        organization: orgName,
+        project: projectSlug,
         quota: quotaName,
         owner: ownerEmail,
         cluster: clusterLabel,

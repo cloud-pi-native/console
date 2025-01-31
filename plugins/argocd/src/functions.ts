@@ -31,7 +31,6 @@ export const upsertProject: StepCall<Project> = async (payload) => {
     const customK8sApi = getCustomK8sApi()
     const project = payload.args
     const { gitlab: gitlabApi, keycloak: keycloakApi, vault: vaultApi } = payload.apis
-    const projectSelectorOld = `dso/organization=${project.organization.name},dso/project=${project.name},app.kubernetes.io/managed-by=dso-console`
     const projectSelector = `dso/project.slug=${project.slug},app.kubernetes.io/managed-by=dso-console`
     const projectSelector2 = `dso/project.id=${project.id},app.kubernetes.io/managed-by=dso-console`
 
@@ -43,16 +42,14 @@ export const upsertProject: StepCall<Project> = async (payload) => {
     ]
 
     // first create or patch resources
-    const applicationsOld = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelectorOld) as ListMinimumResources
     const applicationsNew = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelector) as ListMinimumResources
     const applicationsNew2 = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelector2) as ListMinimumResources
 
-    const appProjectsOld = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', undefined, undefined, undefined, undefined, projectSelectorOld) as ListMinimumResources
     const appProjectsNew = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', undefined, undefined, undefined, undefined, projectSelector) as ListMinimumResources
     const appProjectsNew2 = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', undefined, undefined, undefined, undefined, projectSelector2) as ListMinimumResources
 
-    const applications = uniqueResource(applicationsOld.body.items, applicationsNew.body.items, applicationsNew2.body.items)
-    const appProjects = uniqueResource(appProjectsOld.body.items, appProjectsNew.body.items, appProjectsNew2.body.items)
+    const applications = uniqueResource(applicationsNew.body.items, applicationsNew2.body.items)
+    const appProjects = uniqueResource(appProjectsNew.body.items, appProjectsNew2.body.items)
 
     await Promise.all([
       ...project.environments.map(async (environment) => {
@@ -221,7 +218,6 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
   ])
   const values = {
     common: {
-      'dso/organization': project.organization.name,
       'dso/project': project.name,
       'dso/project.id': project.id,
       'dso/project.slug': project.slug,
@@ -319,7 +315,7 @@ export const deleteProject: StepCall<Project> = async (payload) => {
     const project = payload.args
     const { gitlab: gitlabApi } = payload.apis
     const customK8sApi = getCustomK8sApi()
-    const projectSelector = `dso/organization=${project.organization.name},dso/projet=${project.name},app.kubernetes.io/managed-by=dso-console`
+    const projectSelector = `dso/project.id=${project.id},app.kubernetes.io/managed-by=dso-console`
 
     const applications = await customK8sApi.listNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', undefined, undefined, undefined, undefined, projectSelector) as ListMinimumResources
 

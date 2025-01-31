@@ -118,7 +118,7 @@ export const getProjectSecrets: StepCall<ProjectLite> = async ({ args: project, 
     ? await vaultApi.read(`REGISTRY/${projectRobotName}`, { throwIfNoEntry: false }) as { data: VaultRobotSecret } | undefined
     : undefined
   let secrets: { [x: string]: string } = {
-    'Registry base path': `${getConfig().host}/${project.organization.name}-${project.name}/`,
+    'Registry base path': `${getConfig().host}/${project.slug}/`,
   }
 
   if (projectRobotEnabled) {

@@ -13,7 +13,6 @@ export async function getContract() {
       Clusters: (await import('./contracts/index.js')).clusterContract,
       Environments: (await import('./contracts/index.js')).environmentContract,
       Logs: (await import('./contracts/index.js')).logContract,
-      Organizations: (await import('./contracts/index.js')).organizationContract,
       PersonalAccessTokens: (await import('./contracts/index.js')).personalAccessTokenContract,
       Projects: (await import('./contracts/index.js')).projectContract,
       ProjectsMembers: (await import('./contracts/index.js')).projectMemberContract,

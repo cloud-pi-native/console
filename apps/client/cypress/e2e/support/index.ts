@@ -60,7 +60,7 @@ declare global {
       /**
        * Custom command to create a new project
        * @param project
-       * @example cy.createProject({ name: 'projectName', orgName: 'orgName' })
+       * @example cy.createProject({ name: 'projectName' })
        */
       createProject(
         project: Project

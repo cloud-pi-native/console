@@ -1,0 +1,15 @@
+{
+  "name": "dso-v9-migration",
+  "version": "1.0.0",
+  "description": "",
+  "author": "Cloud Pi Native",
+  "license": "ISC",
+  "main": "index.js",
+  "scripts": {
+    "start": "node migrate.js"
+  },
+  "dependencies": {
+    "@gitbeaker/rest": "~40.6.0",
+    "axios": "^1.7.9"
+  }
+}

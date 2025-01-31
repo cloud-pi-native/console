@@ -21,8 +21,7 @@ import prisma from '@/prisma.js'
 export async function getStageAssociatedEnvironments(stageId: Stage['id']) {
   const environments = await getStageAssociatedEnvironmentById(stageId)
   return environments.map(env => ({
-    organization: env.project.organization.name,
-    project: env.project.name,
+    project: env.project.slug,
     name: env.name,
     quota: env.quota.name,
     cluster: env.cluster.label,

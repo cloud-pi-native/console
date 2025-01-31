@@ -4,7 +4,6 @@ export * from './hook-project.js'
 export * from './hook-user.js'
 export * from './hook-zone.js'
 
-export type Organization = string
 export interface PartialEnvironment { environment: string, stage: string, clusterLabel: string }
 export type InternalRepoName = string
 export type ExternalRepoUrl = string

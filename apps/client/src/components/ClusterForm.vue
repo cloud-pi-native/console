@@ -170,7 +170,6 @@ function retrieveUserAndCluster(context: ContextType) {
 function getRows(associatedEnvironments: ClusterAssociatedEnvironments) {
   return associatedEnvironments
     ?.map(associatedEnvironment => ([
-      toCodeComponent(associatedEnvironment.organization),
       toCodeComponent(associatedEnvironment.project),
       toCodeComponent(associatedEnvironment.name),
       toCodeComponent(associatedEnvironment.owner ?? ''),
@@ -363,10 +362,10 @@ const isConnectionDetailsShown = ref(true)
         wrapped
         label="Projets associés"
         description="Sélectionnez les projets autorisés à utiliser ce cluster."
-        :options="props.allProjects.map(project => ({ id: project.id, label: `${project.organization?.name} - ${project.name}` }))"
+        :options="props.allProjects.map(project => ({ id: project.id, label: project.slug }))"
         :options-selected="props.allProjects
           .filter(project => localCluster.projectIds?.includes(project.id))
-          .map(project => ({ id: project.id, label: `${project.organization?.name} - ${project.name}` }))"
+          .map(project => ({ id: project.id, label: project.slug }))"
         label-key="label"
         value-key="id"
         :disabled="false"
@@ -433,7 +432,7 @@ const isConnectionDetailsShown = ref(true)
         <DsfrTable
           title="Environnements déployés sur le cluster"
           data-testid="associatedEnvironmentsTable"
-          :headers="['Organisation', 'Projet', 'Nom', 'Souscripteur']"
+          :headers="['Projet', 'Nom', 'Souscripteur']"
           :rows="getRows(props.associatedEnvironments)"
         />
       </div>

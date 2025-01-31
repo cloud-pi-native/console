@@ -33,11 +33,7 @@ export function getHookRepository(id: Repository['id']) {
       id,
     },
     include: {
-      project: {
-        include: {
-          organization: true,
-        },
-      },
+      project: true,
     },
   })
 }

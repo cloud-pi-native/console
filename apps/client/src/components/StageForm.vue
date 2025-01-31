@@ -66,7 +66,6 @@ function cancel() {
 function getRows(associatedEnvironments: StageAssociatedEnvironments) {
   return associatedEnvironments
     .map(associatedEnvironment => ([
-      toCodeComponent(associatedEnvironment.organization),
       toCodeComponent(associatedEnvironment.project),
       toCodeComponent(associatedEnvironment.name),
       toCodeComponent(associatedEnvironment.quota),
@@ -170,7 +169,7 @@ onBeforeMount(() => {
         <DsfrTable
           title=""
           data-testid="associatedEnvironmentsTable"
-          :headers="['Organisation', 'Projet', 'Nom', 'Quota', 'Cluster', 'Souscripteur']"
+          :headers="['Projet', 'Nom', 'Quota', 'Cluster', 'Souscripteur']"
           :rows="getRows(props.associatedEnvironments)"
         />
       </div>

@@ -108,86 +108,9 @@ export async function mockHooksPackage() {
       deleteCluster: hookTemplate,
       // user
       retrieveUserByEmail: hookTemplate,
-      // organizations
-      fetchOrganizations: {
-        execute: () => ({
-          args: {},
-          failed: false,
-          results: {
-            canel: {
-              status: {
-                result: 'OK',
-                message: 'Retrieved',
-              },
-              result: {
-                organizations: [
-                  {
-                    name: 'genat',
-                    label: 'MI - gendaremerie nationale',
-                    source: 'canel',
-                  },
-                  {
-                    name: 'mas',
-                    label: 'ministère affaires sociaux',
-                    source: 'canel',
-                  },
-                  {
-                    name: 'genat',
-                    label: 'ministère affaires sociaux',
-                    source: 'canel',
-                  },
-                ],
-              },
-            },
-          },
-        }),
-      },
     },
   }
 }
-
-export const fetchOrganizationsRes = {
-  args: undefined,
-  failed: false,
-  canel: {
-    status: {
-      result: 'OK',
-      message: 'Retrieved',
-    },
-    results: {
-      result: [
-        {
-          name: 'genat',
-          label: 'MI - gendaremerie nationale',
-          source: 'canel',
-        },
-        {
-          name: 'mas',
-          label: 'ministère affaires sociaux',
-          source: 'canel',
-        },
-        {
-          name: 'genat',
-          label: 'ministère affaires sociaux',
-          source: 'canel',
-        },
-      ],
-    },
-  },
-}
-
-export const filteredOrganizations = [
-  {
-    name: 'genat',
-    label: 'MI - gendaremerie nationale',
-    source: 'canel',
-  },
-  {
-    name: 'mas',
-    label: 'ministère affaires sociaux',
-    source: 'canel',
-  },
-]
 
 export type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
 

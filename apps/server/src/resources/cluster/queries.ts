@@ -83,10 +83,8 @@ export function getClusterEnvironments(clusterId: Cluster['id']) {
       name: true,
       project: {
         select: {
+          slug: true,
           name: true,
-          organization: {
-            select: { name: true },
-          },
           owner: true,
           members: true,
         },
@@ -172,9 +170,7 @@ export function getClustersWithProjectIdAndConfig() {
         select: {
           id: true,
           name: true,
-          organization: {
-            select: { name: true },
-          },
+          slug: true,
           status: true,
         },
       },

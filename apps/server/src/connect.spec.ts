@@ -13,7 +13,6 @@ vi.mock('./models/environment.js', () => getModel('getEnvironmentModel'))
 vi.mock('./models/project.js', () => getModel('getProjectModel'))
 vi.mock('./models/user.js', () => getModel('getUserModel'))
 vi.mock('./models/users-projects.js', () => getModel('getRolesModel'))
-vi.mock('./models/organization.js', () => getModel('getOrganizationModel'))
 vi.mock('./models/zone.js', () => getModel('getZoneModel'))
 vi.mock('./prisma.js')
 

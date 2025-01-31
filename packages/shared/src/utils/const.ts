@@ -25,22 +25,6 @@ export type ProjectRoles = typeof projectRoles[number]
 
 export const longestEnvironmentName = 11 as const
 
-// ! Une organisation ne doit pas faire plus de 19 caractères
-export const allOrganizations = [
-  {
-    name: 'dinum',
-    label: 'DINUM',
-  },
-  {
-    name: 'mi',
-    label: 'Ministère de l\'Intérieur',
-  },
-  {
-    name: 'mj',
-    label: 'Ministère de la Justice',
-  },
-]
-
 export const allStatus = [
   'initializing',
   'created',

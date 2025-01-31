@@ -5,11 +5,11 @@ const extraRepositoriesDesc = 'appproject.spec.sourceRepos supplémentaires, sé
 
 const infos = {
   name: 'argocd',
-  to: ({ zones, projectSlug }) => zones.map(z => ({
-    to: `${z.argocdUrl}/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=${projectSlug}`,
+  to: ({ zones, project }) => zones.map(z => ({
+    to: `${z.argocdUrl}/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=${project.slug}`,
     title: `ArgoCD Zone: ${z.slug}`,
   })).concat({
-    to: `${getConfig().url}/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=${projectSlug}`,
+    to: `${getConfig().url}/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=${project.slug}`,
     title: 'ArgoCD DSO',
   }),
   title: 'ArgoCD',

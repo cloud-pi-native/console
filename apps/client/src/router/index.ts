@@ -29,7 +29,6 @@ const DsoTeam = () => import('@/views/projects/DsoTeam.vue')
 const DsoRepos = () => import('@/views/projects/DsoRepos.vue')
 const DsoAdmin = () => import('@/views/admin/DsoAdmin.vue')
 const ListUser = () => import('@/views/admin/ListUser.vue')
-const ListOrganizations = () => import('@/views/admin/ListOrganizations.vue')
 const AdminProject = () => import('@/views/admin/AdminProject.vue')
 const ListProjects = () => import('@/views/admin/ListProjects.vue')
 const ListLogs = () => import('@/views/admin/ListLogs.vue')
@@ -183,11 +182,6 @@ export const routes: Readonly<RouteRecordRaw[]> = [
         path: 'users',
         name: 'ListUser',
         component: ListUser,
-      },
-      {
-        path: 'organizations',
-        name: 'ListOrganizations',
-        component: ListOrganizations,
       },
       {
         path: 'projects/:slug',

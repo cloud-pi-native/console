@@ -6,10 +6,9 @@ import { createHook } from './hook.js'
 export type EmptyPayload = Record<string, never>
 
 export const checkServices: Hook<EmptyPayload, EmptyPayload> = createHook()
-export const fetchOrganizations: Hook<EmptyPayload, EmptyPayload> = createHook(true)
 
 // misc project related hooks
-export type ProjectLite = Pick<Project, 'id' | 'name' | 'organization' | 'store' | 'slug'>
+export type ProjectLite = Pick<Project, 'id' | 'name' | 'store' | 'slug'>
 
 export const getProjectSecrets: Hook<ProjectLite, ProjectLite> = createHook()
 

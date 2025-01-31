@@ -2,7 +2,9 @@ import type { ProjectV2 } from '@cpn-console/shared'
 import { getModel } from '../support/func.js'
 
 const projects = getModel('project')
+
 const betaapp = projects.find(({ name }) => name === 'betaapp') as ProjectV2
+const candilib = projects.find(({ name }) => name === 'candilib') as ProjectV2
 
 describe('Project Logs', () => {
   beforeEach(() => {
@@ -68,7 +70,7 @@ describe('Project Logs', () => {
 
     // as member
     cy.goToProjects()
-    cy.getByDataTestid(`projectTile-mi-candilib`).click()
+    cy.getByDataTestid(`projectTile-${candilib.slug}`).click()
     cy.wait('@listLogs')
     cy.getByDataTestid('displayLogsPanel')
       .should('not.be.visible')

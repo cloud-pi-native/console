@@ -1,7 +1,8 @@
+import type { ProjectV2 } from '@cpn-console/shared'
 import { data } from '@cpn-console/test-utils'
 
-export const getModel = model => data[model]
-export const getProjectById = (id: string) => getProjects()?.find(project => project.id === id)
+export const getModel = (model: keyof typeof data) => data[model]
+export const getProjectById = (id: string) => getProjects().find((project: ProjectV2) => project.id === id)
 
 export function getModelById(model: string, id: string) {
   return model === 'project'
@@ -9,12 +10,10 @@ export function getModelById(model: string, id: string) {
     : data[model]?.find(key => key.id === id)
 }
 
-export function getProjects() {
+export function getProjects(): ProjectV2[] {
   return getModel('project')
-    ?.map(project => ({
+    .map(project => ({
       ...project,
-      organization: getModel('organization')
-        ?.find(organization => organization.id === project.organizationId),
       repositories: getModel('repository')
         ?.filter(repository => repository.projectId === project.id),
       environments: getModel('environment')
@@ -29,7 +28,7 @@ export function getProjects() {
           roleIds: member.roleIds,
           ...getModelById('user', member.userId),
         })),
-    }))
+    })) satisfies ProjectV2[]
 }
 
 export function getProjectMembers(userId: string) {

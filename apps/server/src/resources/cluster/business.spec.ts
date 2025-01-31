@@ -39,15 +39,13 @@ describe('test Cluster business logic', () => {
     it('should list all environments attached to a cluster', async () => {
       const envName = faker.string.alpha(8)
       const projectName = faker.string.alpha(8)
-      const orgName = faker.string.alpha(8)
       const ownerEmail = faker.internet.email()
-      const envs = [{ name: envName, project: { name: projectName, organization: { name: orgName }, owner: { email: ownerEmail } } }]
+      const envs = [{ name: envName, project: { name: projectName, owner: { email: ownerEmail } } }]
       prisma.environment.findMany.mockResolvedValue(envs)
       const response = await getClusterAssociatedEnvironments(cluster.id)
       expect(response).toStrictEqual([{
         name: envName,
         project: projectName,
-        organization: orgName,
         owner: ownerEmail,
       }])
     })
