@@ -235,13 +235,13 @@ export class GitlabProjectApi extends GitlabApi {
 
   // Group Project
   private async createProjectGroup(): Promise<GroupSchema> {
-    const searchResult = await this.api.Groups.search(this.project.name)
+    const searchResult = await this.api.Groups.search(this.project.slug)
     const parentId = await getGroupRootId()
-    const existingGroup = searchResult.find(group => group.parent_id === parentId && group.name === this.project.name)
+    const existingGroup = searchResult.find(group => group.parent_id === parentId && group.name === this.project.slug)
 
     if (existingGroup) return existingGroup
 
-    return this.api.Groups.create(this.project.name, this.project.name, {
+    return this.api.Groups.create(this.project.slug, this.project.slug, {
       parentId,
       projectCreationLevel: 'maintainer',
       subgroupCreationLevel: 'owner',
@@ -253,7 +253,7 @@ export class GitlabProjectApi extends GitlabApi {
     if (this.gitlabGroup) return this.gitlabGroup
     const parentId = await getGroupRootId()
     const searchResult = await this.api.Groups.allSubgroups(parentId)
-    this.gitlabGroup = searchResult.find(group => group.name === this.project.name)
+    this.gitlabGroup = searchResult.find(group => group.name === this.project.slug)
     return this.gitlabGroup
   }
 
