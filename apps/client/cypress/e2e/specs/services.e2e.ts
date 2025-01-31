@@ -10,7 +10,7 @@ describe('Services view', () => {
   it('Should display tiles and url services according to selected project', () => {
     cy.goToProjects()
     cy.getByDataTestid(`projectTile-${project.slug}`).click()
-    cy.getByDataTestid('menuServices').click()
+    cy.getByDataTestid('test-tab-services').click()
     cy.getByDataTestid('service-config-argocd')
       .click()
       .within(() => {

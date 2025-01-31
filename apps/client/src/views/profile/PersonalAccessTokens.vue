@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import type { AdminToken, PersonalAccessToken } from '@cpn-console/shared'
 import { useTokenStore } from '@/stores/token.js'
 import type { SimpleToken } from '@/components/TokenForm.vue'
+import { clickInDialog } from '@/utils/func.js'
 
 const statusWording: Record<AdminToken['status'], string> = {
   active: 'Actif',
@@ -49,6 +50,10 @@ async function resetForm() {
 onMounted(async () => {
   await getAllTokens()
 })
+
+function closeModal() {
+  deleteModalOpened.value = false
+}
 </script>
 
 <template>
@@ -89,6 +94,7 @@ onMounted(async () => {
         v-for="token in tokens"
         v-else
         :key="token.id"
+        :data-testid="`token-${token.id}`"
       >
         <td>{{ token.name }}</td>
         <td>{{ (new Date(token.createdAt)).toLocaleString() }}</td>
@@ -109,7 +115,8 @@ onMounted(async () => {
     v-model:opened="deleteModalOpened"
     title="Confirmer la suppression du token"
     :is-alert="true"
-    @close="deleteModalOpened = false"
+    @close="closeModal"
+    @click="(e: MouseEvent | TouchEvent) => clickInDialog(e, closeModal)"
   >
     <DsfrButton
       data-testid="confirmDeletionBtn"

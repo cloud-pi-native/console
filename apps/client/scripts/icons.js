@@ -5,6 +5,11 @@ import { icons as riCollection } from '@iconify-json/ri'
  * @type {string[]}
  */
 const riIconNames = [
+  'door-open-line',
+  'shield-keyhole-line',
+  'arrow-right-line',
+  'code-s-slash-line',
+  'git-repository-private-line',
   'account-circle-line',
   'add-line',
   'admin-line',
@@ -34,11 +39,13 @@ const riIconNames = [
   'filter-off-line',
   'flow-chart',
   'focus-3-line',
+  'folder-shield-2-line',
   'folder-user-line',
   'folders-line',
   'git-branch-line',
   'git-merge-line',
   'github-line',
+  'global-line',
   'heart-pulse-line',
   'key-2-line',
   'key-2-line',
@@ -56,6 +63,7 @@ const riIconNames = [
   'send-plane-line',
   'server-line',
   'settings-3-line',
+  'shapes-line',
   'shield-check-line',
   'sound-module-line',
   'stock-line',

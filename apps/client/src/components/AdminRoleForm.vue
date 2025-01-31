@@ -6,6 +6,7 @@ import pDebounce from 'p-debounce'
 import { getRandomId } from '@gouvminint/vue-dsfr'
 import SuggestionInput from './SuggestionInput.vue'
 import { useUsersStore } from '@/stores/users.js'
+import { clickInDialog } from '@/utils/func.js'
 
 const props = withDefaults(defineProps<{
   id: string
@@ -16,7 +17,7 @@ const props = withDefaults(defineProps<{
   name: 'Nouveau rôle',
   oidcGroup: '',
 })
-defineEmits<{
+const emits = defineEmits<{
   delete: []
   save: [{ name: string, permissions: string, oidcGroup: string }]
   cancel: []
@@ -106,6 +107,19 @@ async function switchUserMembership(checked: boolean, user: User, fromSuggestion
 onBeforeMount(async () => {
   users.value = await usersStore.listUsers({ adminRoleIds: role.value.id })
 })
+const deleteModalOpened = ref(false)
+function deleteRole(confirmed: boolean) {
+  if (confirmed) {
+    emits('delete')
+    deleteModalOpened.value = false
+  } else {
+    deleteModalOpened.value = true
+  }
+}
+
+function closeModal() {
+  deleteModalOpened.value = false
+}
 </script>
 
 <template>
@@ -173,7 +187,7 @@ onBeforeMount(async () => {
         data-testid="deleteBtn"
         label="Supprimer"
         secondary
-        @click="$emit('delete')"
+        @click="() => deleteRole(false)"
       />
     </DsfrTabContent>
     <DsfrTabContent
@@ -244,4 +258,18 @@ onBeforeMount(async () => {
       {{ selectedTabIndex === tabTitles.length - 1 && $emit('cancel') }}
     </DsfrTabContent>
   </DsfrTabs>
+  <DsfrModal
+    v-model:opened="deleteModalOpened"
+    title="Confirmer la suppression du role"
+    :is-alert="true"
+    @close="closeModal"
+    @click="(e: MouseEvent | TouchEvent) => clickInDialog(e, closeModal)"
+  >
+    <DsfrButton
+      data-testid="confirmDeletionBtn"
+      label="Supprimer"
+      secondary
+      @click="() => deleteRole(true)"
+    />
+  </DsfrModal>
 </template>

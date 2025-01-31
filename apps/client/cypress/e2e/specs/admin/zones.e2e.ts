@@ -1,4 +1,4 @@
-import type { Zone } from '@cpn-console/shared'
+import { deleteValidationInput, type Zone } from '@cpn-console/shared'
 import { getModel } from '../../support/func.js'
 
 describe('Administration zones', () => {
@@ -230,7 +230,7 @@ describe('Administration zones', () => {
     cy.wait('@getClusters').its('response.statusCode').should('match', /^20\d$/)
 
     newZone.clusters.forEach((cluster) => {
-      cy.getByDataTestid(`clusterTile-${cluster.label}`)
+      cy.getByDataTestid(`clusterTr-${cluster.label}`)
         .should('be.visible')
         .click()
       cy.get('#zone-select')
@@ -252,7 +252,7 @@ describe('Administration zones', () => {
       .click()
     cy.getByDataTestid('deleteZoneInput')
       .clear()
-      .type(newZone.slug)
+      .type(deleteValidationInput)
     cy.getByDataTestid('deleteZoneBtn')
       .click()
 

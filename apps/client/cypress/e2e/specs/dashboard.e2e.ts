@@ -23,12 +23,13 @@ describe('Dashboard', () => {
     projects.forEach((project) => {
       cy.goToProjects()
         .getByDataTestid(`projectTile-${project.slug}`).click()
-        .getByDataTestid('menuDashboard').click()
       cy.wait('@listStages')
         .getByDataTestid(`${project.id}-${project.status}-badge`)
-        .should('contain', `Projet ${project.name} : ${statusDict.status[project.status]?.wording}`)
+        .invoke('attr', 'title')
+        .should('contain', statusDict.status[project.status]?.wording)
         .getByDataTestid(`${project.id}-${project.locked ? '' : 'un'}locked-badge`)
-        .should('contain', `Projet ${project.name} : ${statusDict.locked[project.locked]?.wording}`)
+        .invoke('attr', 'title')
+        .should('contain', statusDict.locked[project.locked]?.wording)
     })
   })
 
@@ -41,7 +42,6 @@ describe('Dashboard', () => {
     cy.kcLogin('test')
       .goToProjects()
       .getByDataTestid(`projectTile-${projectToKeep.slug}`).click()
-      .getByDataTestid('menuDashboard').click()
     cy.wait('@listStages')
       .getByDataTestid('setDescriptionBtn').click()
       .getByDataTestid('descriptionInput').clear().type(description1)
@@ -66,9 +66,8 @@ describe('Dashboard', () => {
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${projectCreated.slug}`).click()
-      .getByDataTestid('menuDashboard').click()
 
-    cy.url().should('contain', 'dashboard')
+    cy.url().should('contain', projectCreated.slug)
     cy.wait('@listStages')
       .getByDataTestid('projectSecretsZone').should('not.exist')
       .getByDataTestid('showSecretsBtn').click()
@@ -86,9 +85,8 @@ describe('Dashboard', () => {
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${projectCreated.slug}`).click()
-      .getByDataTestid('menuDashboard').click()
 
-    cy.url().should('contain', 'dashboard')
+    cy.url().should('contain', projectCreated.slug)
     cy.wait('@listStages')
     cy.getByDataTestid('replayHooksBtn').click()
 
@@ -102,9 +100,8 @@ describe('Dashboard', () => {
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${projectCreated.slug}`).click()
-      .getByDataTestid('menuDashboard').click()
 
-    cy.url().should('contain', 'dashboard')
+    cy.url().should('contain', projectCreated.slug)
     cy.wait('@listStages')
       .getByDataTestid('projectSecretsZone').should('not.exist')
       .getByDataTestid('showSecretsBtn').should('not.exist')
@@ -116,11 +113,10 @@ describe('Dashboard', () => {
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${projectCreated.slug}`).click()
-      .getByDataTestid('menuDashboard').click()
 
-    cy.url().should('contain', 'dashboard')
+    cy.url().should('contain', projectCreated.slug)
     cy.wait('@listStages')
-      .getByDataTestid('archiveProjectZone').should('not.exist')
+      .getByDataTestid('showArchiveProjectBtn').should('not.exist')
   })
 
   it('Should archive project as owner without impacting other projects', () => {

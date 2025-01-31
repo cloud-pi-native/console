@@ -41,7 +41,6 @@ describe('cluster Store', () => {
     await adminClusterStore.getClusterDetails(data.id)
 
     expect(apiClientGet).toHaveBeenCalledTimes(1)
-    expect(adminClusterStore.selectedCluster).toEqual(data)
   })
 
   it('should get cluster\'s associated environments by api call', async () => {

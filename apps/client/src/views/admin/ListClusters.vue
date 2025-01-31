@@ -1,198 +1,125 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch } from 'vue'
-import {
-  type Cluster,
-  type ClusterAssociatedEnvironments,
-  type ClusterDetails,
-  type CreateClusterBody,
-  type Stage,
-  type UpdateClusterBody,
-  sortArrByObjKeyAsc,
+import { onMounted, ref } from 'vue'
+import type {
+  Cluster,
 } from '@cpn-console/shared'
-import { useProjectStore } from '@/stores/project.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { useStageStore } from '@/stores/stage.js'
-import { useClusterStore } from '@/stores/cluster'
+import { getRandomId } from '@gouvminint/vue-dsfr'
+import router from '@/router/index.js'
+import { useClusterStore } from '@/stores/cluster.js'
 
-type ClusterList = {
-  id: Cluster['id']
-  title: Cluster['label']
-  data: Cluster
-}[]
-
-const clusterStore = useClusterStore()
-const projectStore = useProjectStore()
 const zoneStore = useZoneStore()
 const stageStore = useStageStore()
+const clusterStore = useClusterStore()
 
-const clusters = computed(() => clusterStore.clusters)
-const allZones = computed(() => zoneStore.zones)
-const clusterList = ref<ClusterList>([])
-const allStages = ref<Stage[]>([])
-const isUpdatingCluster = ref(false)
-const isNewClusterForm = ref(false)
-const associatedEnvironments = ref<ClusterAssociatedEnvironments>([])
+const tableKey = ref(getRandomId('table'))
+const isLoading = ref(true)
+const inputSearchText = ref('')
 
-function setClusterTiles(clusterArr: typeof clusters.value) {
-  clusterList.value = sortArrByObjKeyAsc(clusterArr, 'label')
-    .map(cluster => ({
-      id: cluster.id,
-      title: cluster.label,
-      data: cluster,
-    }))
-}
-
-async function setSelectedCluster(id: Cluster['id']) {
-  if (clusterStore.selectedCluster?.id === id) {
-    clusterStore.selectedCluster = undefined
-    return
-  }
-  await Promise.all([
-    clusterStore.getClusterDetails(id),
-    getClusterAssociatedEnvironments(id),
-  ])
-  isNewClusterForm.value = false
-}
-
-async function getClusterAssociatedEnvironments(clusterId: string) {
-  isUpdatingCluster.value = true
-  associatedEnvironments.value = await clusterStore.getClusterAssociatedEnvironments(clusterId) ?? []
-  isUpdatingCluster.value = false
-}
+const clustersFiltered = computed(() => clusterStore.clusters.filter(cluster => cluster.label.includes(inputSearchText.value)))
+const title = 'Liste des clusters'
 
 function showNewClusterForm() {
-  isNewClusterForm.value = !isNewClusterForm.value
-  clusterStore.selectedCluster = undefined
-}
-
-function cancel() {
-  isNewClusterForm.value = false
-  clusterStore.selectedCluster = undefined
-}
-
-async function addCluster(cluster: CreateClusterBody) {
-  isUpdatingCluster.value = true
-  cancel()
-  await clusterStore.addCluster(cluster)
-  await clusterStore.getClusters()
-  isUpdatingCluster.value = false
-}
-
-async function updateCluster(cluster: UpdateClusterBody) {
-  isUpdatingCluster.value = true
-  if (clusterStore.selectedCluster?.id) {
-    await clusterStore.updateCluster({
-      ...cluster,
-      id: clusterStore.selectedCluster.id,
-    })
-  }
-  await clusterStore.getClusters()
-  cancel()
-  isUpdatingCluster.value = false
-}
-
-async function deleteCluster(clusterId: Cluster['id']) {
-  isUpdatingCluster.value = true
-  await clusterStore.deleteCluster(clusterId)
-  await clusterStore.getClusters()
-  setClusterTiles(clusters.value)
-  clusterStore.selectedCluster = undefined
-  isUpdatingCluster.value = false
+  router.push({ name: 'AdminCluster', params: { id: 'create' } })
 }
 
 onMounted(async () => {
-  allStages.value = await stageStore.getAllStages()
-  await clusterStore.getClusters()
-  setClusterTiles(clusters.value)
+  await stageStore.getAllStages()
   await Promise.all([
-    projectStore.listProjects({ filter: 'all' }),
     zoneStore.getAllZones(),
+    clusterStore.getClusters(),
   ])
+  isLoading.value = false
 })
 
-watch(clusters, () => {
-  setClusterTiles(clusters.value)
-})
+const privacyWording: Record<Cluster['privacy'], string> = {
+  dedicated: 'Dédié',
+  public: 'Publique',
+}
+
+function clickCluster(cluster: Cluster) {
+  router.push({ name: 'AdminCluster', params: { id: cluster.id } })
+}
 </script>
 
 <template>
   <div
-    class="flex <md:flex-col-reverse items-center justify-between pb-5"
+    class="flex justify-between gap-5 w-full items-end mb-5"
   >
-    <DsfrButton
-      v-if="!clusterStore.selectedCluster && !isNewClusterForm"
-      label="Ajouter un nouveau cluster"
-      data-testid="addClusterLink"
-      tertiary
-      title="Ajouter un cluster"
-      class="fr-mt-2v <md:mb-2"
-      icon="ri:add-line"
-      @click="showNewClusterForm()"
-    />
     <div
-      v-else
-      class="w-full flex justify-end"
+      class="flex gap-5 w-max items-end"
     >
+      <DsfrInputGroup
+        v-model="inputSearchText"
+        data-testid="projectsSearchInput"
+        label-visible
+        placeholder="Recherche textuelle"
+        label="Recherche"
+        class="mb-0"
+      />
       <DsfrButton
-        title="Revenir à la liste des clusters"
-        data-testid="goBackBtn"
-        secondary
-        icon-only
-        icon="ri:arrow-go-back-line"
-        @click="() => cancel()"
+        label="Ajouter un nouveau cluster"
+        data-testid="addClusterLink"
+        tertiary
+        title="Ajouter un cluster"
+        class="fr-mt-2v <md:mb-2"
+        icon="ri:add-line"
+        @click="showNewClusterForm()"
       />
     </div>
   </div>
-  <div
-    v-if="isNewClusterForm"
-    class="my-5 pb-10 border-grey-900 border-y-1"
+  <DsfrTable
+    :key="tableKey"
+    data-testid="tableAdministrationClusters"
+    :title="title"
   >
-    <ClusterForm
-      :all-zones="allZones"
-      :all-projects="projectStore.projects"
-      :all-stages="allStages"
-      class="w-full"
-      is-updating-cluster="isUpdatingCluster"
-      @add="(cluster: Omit<ClusterDetails, 'id'>) => addCluster(cluster)"
-      @cancel="cancel()"
-    />
-  </div>
-  <div
-    v-if="clusterStore.selectedCluster"
-  >
-    <ClusterForm
-      :cluster="clusterStore.selectedCluster"
-      :all-zones="allZones"
-      :all-projects="projectStore.projects"
-      :all-stages="allStages"
-      :associated-environments="associatedEnvironments"
-      is-updating-cluster="isUpdatingCluster"
-      class="w-full"
-      :is-new-cluster="false"
-      @update="(clusterUpdate: Partial<ClusterDetails>) => updateCluster(clusterUpdate)"
-      @delete="(clusterId: string) => deleteCluster(clusterId)"
-      @cancel="cancel()"
-    />
-  </div>
-  <div
-    v-else-if="clusterList.length"
-    class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full"
-  >
-    <div
-      v-for="cluster in clusterList"
+    <template #header>
+      <tr>
+        <td>Nom</td>
+        <td>Zone</td>
+        <td>Confidentialité</td>
+      </tr>
+    </template>
+    <tr
+      v-if="isLoading || !clustersFiltered.length"
+    >
+      <td colspan="7">
+        {{ isLoading ? 'Chargement...' : 'Aucun cluster trouvé' }}
+      </td>
+    </tr>
+    <tr
+      v-for="cluster in clustersFiltered"
+      v-else
       :key="cluster.id"
-      class="flex-basis-60 flex-stretch max-w-90"
+      :data-testid="`clusterTr-${cluster.label}`"
+      class="cursor-pointer relative"
+      :title="`Voir le tableau de bord du projet ${cluster.label}`"
+      @click.stop="() => clickCluster(cluster)"
     >
-      <DsfrTile
-        :title="cluster.title"
-        :data-testid="`clusterTile-${cluster.title}`"
-        @click="setSelectedCluster(cluster.id)"
-      />
-    </div>
-    <div
-      v-if="!clusterList.length && !isNewClusterForm"
-    >
-      <p>Aucun cluster enregistré</p>
-    </div>
-  </div>
+      <td>{{ cluster.label }}</td>
+      <td>
+        <Badge
+          type="zone"
+          :name="zoneStore.zonesById[cluster.zoneId]?.label"
+        />
+      </td>
+      <td
+        v-if="cluster.privacy === 'dedicated'"
+      >
+        <v-icon name="ri:folder-shield-2-line" /> {{ privacyWording[cluster.privacy] }}
+      </td>
+      <td
+        v-else
+      >
+        <v-icon name="ri:global-line" /> {{ privacyWording[cluster.privacy] }}
+      </td>
+    </tr>
+  </DsfrTable>
 </template>
+
+<style scoped>
+.fr-select-group, .fr-input-group {
+  margin-bottom: 0 !important;
+}
+</style>

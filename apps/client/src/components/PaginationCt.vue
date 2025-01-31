@@ -12,7 +12,7 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits(['setPage'])
-const maxPage = computed(() => Math.floor(props.length / props.step))
+const maxPage = computed(() => Math.floor((props.length - 1) / props.step))
 const currentStart = computed(() => Math.floor(props.page * props.step))
 </script>
 

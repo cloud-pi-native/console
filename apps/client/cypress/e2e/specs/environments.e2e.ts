@@ -53,8 +53,7 @@ describe('Manage project environments', () => {
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project0?.slug}`).click()
-      .getByDataTestid('menuEnvironments').click()
-      .url().should('contain', '/environments')
+      .getByDataTestid('test-tab-resources').click()
     cy.wait('@getClusters')
 
     cy.getByDataTestid('addEnvironmentLink').click()
@@ -99,9 +98,7 @@ describe('Manage project environments', () => {
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project0?.slug}`)
       .click()
-    cy.getByDataTestid('menuEnvironments')
-      .click()
-    cy.url().should('contain', '/environments')
+      .getByDataTestid('test-tab-resources').click()
     cy.wait('@getClusters')
 
     cy.getByDataTestid('addEnvironmentLink').click()
@@ -160,8 +157,7 @@ describe('Manage project environments', () => {
 
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project1?.slug}`).click()
-      .getByDataTestid('menuEnvironments').click()
-      .url().should('contain', '/environments')
+      .getByDataTestid('test-tab-resources').click()
     cy.wait('@getClusters')
 
     cy.getByDataTestid('addEnvironmentLink').click()
@@ -204,12 +200,10 @@ describe('Manage project environments', () => {
     cy.kcLogin('test')
     cy.goToProjects()
       .getByDataTestid(`projectTile-${project1.slug}`).click()
-      .getByDataTestid('menuEnvironments').click()
-      .url().should('contain', '/environments')
     cy.wait('@listEnvironments').its('response.statusCode').should('match', /^20\d$/)
     cy.wait('@getClusters').its('response.statusCode').should('match', /^20\d$/)
 
-    cy.getByDataTestid(`environmentTile-${project1FirstEnvironment.name}`).click()
+    cy.getByDataTestid(`environmentTr-${project1FirstEnvironment.name}`).click()
     cy.wait('@listStages')
     cy.getByDataTestid('environmentNameInput')
       .should('have.value', project1FirstEnvironment.name)
@@ -229,7 +223,7 @@ describe('Manage project environments', () => {
     cy.wait('@putEnvironment').its('response.statusCode').should('match', /^20\d$/)
     cy.wait('@listEnvironments').its('response.statusCode').should('match', /^20\d$/)
 
-    cy.getByDataTestid(`environmentTile-${project1FirstEnvironment.name}`).click()
+    cy.getByDataTestid(`environmentTr-${project1FirstEnvironment.name}`).click()
     cy.getByDataTestid('environmentNameInput')
       .should('have.value', project1FirstEnvironment.name)
       .and('be.disabled')
@@ -255,12 +249,10 @@ describe('Manage project environments', () => {
     cy.kcLogin((user.firstName.slice(0, 1) + user.lastName).toLowerCase())
       .goToProjects()
       .getByDataTestid(`projectTile-${project1.slug}`).click()
-      .getByDataTestid('menuEnvironments').click()
     cy.wait('@getClusters')
-    cy.getByDataTestid(`environmentTile-${project1FirstEnvironment?.name}`)
+    cy.getByDataTestid(`environmentTr-${project1FirstEnvironment?.name}`)
       .click()
     cy.wait('@listStages')
-      .url().should('contain', '/environments')
       .getByDataTestid('deleteEnvironmentZone').should('not.exist')
   })
 
@@ -271,9 +263,7 @@ describe('Manage project environments', () => {
     cy.kcLogin('test')
     cy.goToProjects()
       .getByDataTestid(`projectTile-${projectFailed.slug}`).click()
-      .getByDataTestid('menuEnvironments').click()
-      .url().should('contain', '/environments')
-    cy.getByDataTestid(`environmentTile-${projectFailed.environments[0].name}`).click()
+    cy.getByDataTestid(`environmentTr-${projectFailed.environments[0].name}`).click()
     cy.wait('@getClusters')
     cy.wait('@listStages')
 

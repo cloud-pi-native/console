@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
 import type { Cluster, CreateStageBody, Quota, SharedZodError, Stage, StageAssociatedEnvironments } from '@cpn-console/shared'
-import { StageSchema } from '@cpn-console/shared'
+import { deleteValidationInput, StageSchema } from '@cpn-console/shared'
 import { toCodeComponent } from '@/utils/func.js'
 import type { UpdateStageType } from '@/views/admin/ListStages.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -202,9 +202,9 @@ onBeforeMount(() => {
         <DsfrInput
           v-model="stageToDelete"
           data-testid="deleteStageInput"
-          :label="`Veuillez taper '${localStage.name}' pour confirmer la suppression du type d'environnement`"
+          :label="`Veuillez taper '${deleteValidationInput}' pour confirmer la suppression du type d'environnement`"
           label-visible
-          :placeholder="localStage.name"
+          :placeholder="deleteValidationInput"
           class="fr-mb-2w"
         />
         <div
@@ -213,7 +213,7 @@ onBeforeMount(() => {
           <DsfrButton
             data-testid="deleteStageBtn"
             :label="`Supprimer définitivement le type d'environnement ${localStage.name}`"
-            :disabled="stageToDelete !== localStage.name"
+            :disabled="stageToDelete !== deleteValidationInput"
             :title="`Supprimer définitivement le type d'environnement ${localStage.name}`"
             secondary
             icon="ri:delete-bin-7-line"

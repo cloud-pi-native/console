@@ -19,9 +19,9 @@ export function repositoryRouter() {
       const projectId = query.projectId
       const perms = await authUser(req, { id: projectId })
 
-      if (!ProjectAuthorized.ListRepositories(perms)) return new Forbidden403()
-
-      const body = await getProjectRepositories(projectId)
+      const body = ProjectAuthorized.ListRepositories(perms)
+        ? await getProjectRepositories(projectId)
+        : []
 
       return {
         status: 200,
