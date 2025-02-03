@@ -246,17 +246,8 @@ Cypress.Commands.add('assertAddEnvironment', (project, environments, isDeepCheck
         .should('have.value', environment?.quota?.id)
       cy.get('#cluster-select')
         .should('have.value', environment?.cluster?.id)
-      const comeBackMethod = Math.random()
-      if (comeBackMethod < 0.33) {
-        cy.get('#fr-modal-1')
-          .click('right')
-      } else if (comeBackMethod < 0.66) {
-        cy.get('div.fr-modal__header > button.fr-btn--close')
-          .click()
-      } else {
-        cy.getByDataTestid('cancelEnvironmentBtn')
-          .click()
-      }
+      cy.getByDataTestid('cancelEnvironmentBtn')
+        .click()
       cy.getByDataTestid('resource-modal')
         .should('not.exist')
     }

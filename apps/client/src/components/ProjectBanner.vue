@@ -130,12 +130,12 @@ function saveDescription() {
 
     <!-- Section technique -->
     <div class="flex flex-col gap-2 items-end">
-      <div>
+      <div class="flex flex-row">
         <code
           class="fr-text-default--info text-sm"
         >slug:&nbsp;{{ project.slug }}</code>
         <div
-          title="Slug du projet, identifiant unique"
+          title="Slug du projet, nom technique garantissant l'unicité"
           class="ml-2 inline"
         >
           <v-icon
@@ -145,6 +145,7 @@ function saveDescription() {
       </div>
       <div
         v-if="project.lastSuccessProvisionningVersion"
+        class="flex flex-row"
       >
         <code
           class="fr-text-default--info text-sm"

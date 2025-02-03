@@ -46,8 +46,6 @@ describe('Header', () => {
     cy.getByDataTestid('saveBtn')
       .click()
     cy.wait('@createToken').its('response').then((response) => {
-      console.log(response)
-
       createdToken = response.body
       cy.getByDataTestid('newTokenPassword')
         .should('be.visible')

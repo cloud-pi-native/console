@@ -243,7 +243,7 @@ async function transferOwnerShip() {
           v-else
         >
           <DsfrAlert
-            description="Attention, en transférant la propriété du projet vous perdrez vos droits sur le projet  et deviendrez un membre de l'équipe."
+            description="Attention, en transférant la propriété du projet vous perdez vos droits sur le projet et devenez un membre de l'équipe."
             small
             type="warning"
             class="fr-mb-4w w-40em"

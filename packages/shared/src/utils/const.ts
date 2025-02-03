@@ -55,7 +55,7 @@ export enum ClusterPrivacy {
 
 export const privacyWording: Record<ClusterPrivacy, { text: string, icon: string }> = {
   dedicated: { text: 'dédié', icon: 'ri:shield-keyhole-line' },
-  public: { text: 'publique', icon: 'ri:door-open-line' },
+  public: { text: 'public', icon: 'ri:door-open-line' },
 }
 
 export enum AllStatus {
@@ -135,3 +135,11 @@ export const statusDict = {
     },
   },
 } as const
+
+export const servicePluginOrder = [
+  'argocd',
+  'gitlab',
+  'registry',
+  'sonarqube',
+  'vault',
+]

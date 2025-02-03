@@ -35,7 +35,7 @@ onMounted(async () => {
 
 const privacyWording: Record<Cluster['privacy'], string> = {
   dedicated: 'Dédié',
-  public: 'Publique',
+  public: 'Public',
 }
 
 function clickCluster(cluster: Cluster) {

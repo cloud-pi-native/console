@@ -38,7 +38,7 @@ onMounted(async () => {
       <div
         title="Confidentialité"
       >
-        Confidentialité: {{ privacyWording[cluster.privacy].text }}<v-icon :name="privacyWording[cluster.privacy].icon" />
+        Confidentialité : {{ privacyWording[cluster.privacy].text }}<v-icon :name="privacyWording[cluster.privacy].icon" />
       </div>
       <div v-if="cluster.infos">
         <hr class="pt-2 pb-0">
