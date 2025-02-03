@@ -3,5 +3,5 @@ WORKDIR /app
 COPY ./package.json package.json
 RUN npm i
 COPY ./migrate.js migrate.js
-CMD [ "npm start" ]
+CMD [ "npm", "start" ]
 USER node
