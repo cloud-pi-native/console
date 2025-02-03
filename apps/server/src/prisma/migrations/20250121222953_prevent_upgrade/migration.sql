@@ -1,7 +1,7 @@
 -- Vérifie les versions dans la table Project
 DO $$
 DECLARE
-    project_id INT;
+    project_id TEXT;
     project_name TEXT;
     last_version TEXT;
 BEGIN
