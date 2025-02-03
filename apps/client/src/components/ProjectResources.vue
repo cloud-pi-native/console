@@ -13,7 +13,7 @@ import { getRandomId } from '@gouvminint/vue-dsfr'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
 
-type Source = 'Privé extérieur' | 'Publique extérieur' | 'Interne'
+type Source = 'Privée extérieure' | 'Publique extérieure' | 'Interne'
 
 const props = defineProps<{
   project: Project

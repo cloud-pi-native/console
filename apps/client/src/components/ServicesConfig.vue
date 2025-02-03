@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import type { PermissionTarget, PluginConfigItem, PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
+import { servicePluginOrder, type PermissionTarget, type PluginConfigItem, type PluginsUpdateBody, type ProjectService } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
@@ -67,6 +67,14 @@ const servicesWithRef = computed(() => refTheValues(services.value)
     wrapable: !!((props.displayGlobal && getItemsToShowLength(service.manifest.global, props.permissionTarget)) || getItemsToShowLength(service.manifest.project, props.permissionTarget)),
   }))
   .sort((a, b) => {
+    const fixedOrderA = servicePluginOrder.indexOf(a.name)
+    const fixedOrderB = servicePluginOrder.indexOf(b.name)
+    if (fixedOrderA >= 0 && fixedOrderB >= 0) {
+      return fixedOrderA - fixedOrderB
+    }
+    if (fixedOrderB < 0) {
+      return -1
+    }
     if (a.urls.length && b.urls.length) { // si les deux services ont des urls les trier par titre
       return a.title.localeCompare(b.title, 'fr', { sensitivity: 'base' })
     }
@@ -127,7 +135,7 @@ const activeAccordion = ref<number>()
           class="flex-basis-60 flex-grow max-w-50"
           :title=" url.name || service.title || service.name"
           :img-src="service.imgSrc"
-          :description="service.description"
+          :description="url.description"
           :icon="false"
           :to="url.to"
           shadow
@@ -154,6 +162,9 @@ const activeAccordion = ref<number>()
               :data-testid="`service-config-${service.name}`"
               :title="service.title || service.name"
             >
+              <p v-if="service.description">
+                {{ service.description }}
+              </p>
               <div
                 :class="getItemsToShowLength(service.manifest.project, permissionTarget) && (props.displayGlobal && getItemsToShowLength(service.manifest.global, permissionTarget)) ? '2xl:grid 2xl:grid-cols-2 2xl:gap-10' : ''"
               >

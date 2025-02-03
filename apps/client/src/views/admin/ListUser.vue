@@ -152,13 +152,7 @@ onBeforeMount(async () => {
         >
           <template #header>
             <tr>
-              <th
-                scope="col"
-                colspan="2"
-              >
-                Identité
-              </th>
-              <th scope="col">
+              <th scope="col" colspan="2">
                 Rôles
               </th>
               <th scope="col">
