@@ -7,7 +7,10 @@ export function listQuotas(userId: User['id']) {
       OR: [{
         isPrivate: false,
       }, {
-        environments: { some: { project: { members: { some: { userId } } } } },
+        environments: { some: { project: { OR: [
+          { members: { some: { userId } } },
+          { ownerId: userId },
+        ] } } },
       }],
     },
     include: {
