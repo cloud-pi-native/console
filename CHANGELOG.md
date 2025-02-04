@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.24.1](https://github.com/cloud-pi-native/console/compare/v8.24.0...v8.24.1) (2025-02-04)
+
+
+### Bug Fixes
+
+* :ambulance: owner of a project cannot see attached private quota ([297a4ac](https://github.com/cloud-pi-native/console/commit/297a4ac410c739142d3ef88f1da58492881ddb6f))
+
 ## [8.24.0](https://github.com/cloud-pi-native/console/compare/v8.23.4...v8.24.0) (2025-01-28)
 
 
