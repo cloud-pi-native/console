@@ -54,10 +54,13 @@ for (const organizationGroup of organizationGroups) {
     const newName = `${organizationGroup.name}-${projectGroup.name}`
     console.log(newName)
 
-    const renamedGroup = await api.Groups.edit(projectGroup.id, { name: newName, path: newName })
-    await api.Groups.transfer(renamedGroup.id, { groupId: groupRootId })
+    try {
+      const renamedGroup = await api.Groups.edit(projectGroup.id, { name: newName, path: newName })
+      await api.Groups.transfer(renamedGroup.id, { groupId: groupRootId })
+    } catch (_error) {
+      console.log(`cant transfer ${projectGroup.id}`)
+    }
   }
-  await api.Groups.remove(organizationGroup.id)
 }
 
 const coreKvName = 'forge-dso'
@@ -132,6 +135,5 @@ for (const [source, destination] of Object.entries(secretsMapper)) {
     })
   } catch (error) {
     console.log(error.response.data)
-    process.exit(1)
   }
 }
