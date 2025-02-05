@@ -4,6 +4,9 @@ We've taken the decision to abandon the organization feature, so the project won
 
 Organizations will return in future, but in a completely different form.
 
+## IMPORTANT
+Backup your gitlab instance and the vault KV !!!
+
 ## Resource preparation
 Since version 8.22.0, the api server stores its version number for each successfully provisioned project.
 
@@ -22,13 +25,11 @@ You can run this image (once only) before or after upgrading to v9
 apiVersion: v1
 kind: Pod
 metadata:
-  labels:
-    run: ghcr.io/cloud-pi-native/migration:v9
   name: migrate-v9
 spec:
   containers:
-    - image: docker
-      name: ghcr.io/cloud-pi-native/migration:v9
+    - image: ghcr.io/cloud-pi-native/migration:v9
+      name: migrate-v9
       resources: {}
       envFrom:
         - secretRef:
@@ -36,3 +37,6 @@ spec:
   restartPolicy: Never
 ```
 kubectl run --image docker ghcr.io/cloud-pi-native/migration:v9
+
+### About Gitlab
+Because gitlab performs many tasks asynchronously, we can't delete the old organization groups after transferring the project groups. You'll have to log in manually to search for and delete them. If you don't, it's not a big deal...
