@@ -5,18 +5,63 @@ import config from './config.js'
 
 let api: IGitlab | undefined
 
-let groupRootId: number | void
+let groupRootId: number
 
-export async function getGroupRootId(): Promise<number> {
+export async function getGroupRootId(throwIfNotFound?: true): Promise<number>
+export async function getGroupRootId(throwIfNotFound?: false): Promise<number | undefined>
+export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number | undefined> {
   const gitlabApi = getApi()
   const projectRootDir = config().projectsRootDir
   if (groupRootId) return groupRootId
   const groupRootSearch = await gitlabApi.Groups.search(projectRootDir)
-  groupRootId = (groupRootSearch.find(grp => grp.full_path === projectRootDir))?.id
-  if (!groupRootId) {
-    throw new Error(`Gitlab inaccessible, impossible de trouver le groupe ${projectRootDir}`)
+  const searchId = (groupRootSearch.find(grp => grp.full_path === projectRootDir))?.id
+  if (typeof searchId === 'undefined') {
+    if (throwIfNotFound) {
+      throw new Error(`Gitlab inaccessible, impossible de trouver le groupe ${projectRootDir}`)
+    }
+    return searchId
   }
+  groupRootId = searchId
   return groupRootId
+}
+
+async function createGroupRoot(): Promise<number> {
+  const gitlabApi = getApi()
+  const projectRootDir = config().projectsRootDir
+  const projectRootDirArray = projectRootDir.split('/')
+
+  const rootGroupPath = projectRootDirArray.shift()
+  if (!rootGroupPath) {
+    throw new Error('No projectRootDir available')
+  }
+
+  let parentGroup = (await gitlabApi.Groups.search(rootGroupPath))
+    .find(grp => grp.full_path === rootGroupPath)
+    ?? await gitlabApi.Groups.create(rootGroupPath, rootGroupPath)
+
+  if (parentGroup.full_path === projectRootDir) {
+    return parentGroup.id
+  }
+
+  for (const path of projectRootDirArray) {
+    const futureFullPath = `${parentGroup.full_path}/${path}`
+    parentGroup = (await gitlabApi.Groups.search(futureFullPath))
+      .find(grp => grp.full_path === futureFullPath)
+      ?? await gitlabApi.Groups.create(path, path, { parentId: parentGroup.id, visibility: 'internal' })
+
+    if (parentGroup.full_path === projectRootDir) {
+      return parentGroup.id
+    }
+  }
+  throw new Error('No projectRootDir available or is malformed')
+}
+
+export async function getOrCreateGroupRoot(): Promise<number> {
+  let rootId = await getGroupRootId(false)
+  if (typeof rootId === 'undefined') {
+    rootId = await createGroupRoot()
+  }
+  return rootId
 }
 
 export function getApi(): IGitlab {
