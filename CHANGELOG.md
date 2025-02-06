@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.24.2](https://github.com/cloud-pi-native/console/compare/v8.24.1...v8.24.2) (2025-02-06)
+
+
+### Bug Fixes
+
+* :recycle: add projectId to url params ([3986376](https://github.com/cloud-pi-native/console/commit/3986376d418c017f8edc802ad237df4e3a29df25))
+
 ## [8.24.1](https://github.com/cloud-pi-native/console/compare/v8.24.0...v8.24.1) (2025-02-04)
 
 
