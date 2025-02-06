@@ -1,4 +1,5 @@
 export const adminGroupPath = '/admin'
+export const deleteValidationInput = 'DELETE'
 
 export const inClusterLabel = 'in-cluster' as const
 export const projectIsLockedInfo = 'Le projet est verrouillé, pas d\'action possible'
@@ -52,6 +53,11 @@ export enum ClusterPrivacy {
   DEDICATED = 'dedicated',
 }
 
+export const privacyWording: Record<ClusterPrivacy, { text: string, icon: string }> = {
+  dedicated: { text: 'dédié', icon: 'ri:shield-keyhole-line' },
+  public: { text: 'public', icon: 'ri:door-open-line' },
+}
+
 export enum AllStatus {
   CREATED = 'created',
   FAILED = 'failed',
@@ -91,7 +97,7 @@ export const statusDict = {
       testId: 'created-badge',
       type: 'success',
       icon: 'ri:check-line',
-      wording: 'opérations réussies',
+      wording: 'succès',
       animation: '',
       color: 'var(--success-425-625)',
     },
@@ -129,3 +135,11 @@ export const statusDict = {
     },
   },
 } as const
+
+export const servicePluginOrder = [
+  'argocd',
+  'gitlab',
+  'registry',
+  'sonarqube',
+  'vault',
+]

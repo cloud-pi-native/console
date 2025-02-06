@@ -1,3 +1,4 @@
+import { deleteValidationInput } from '@cpn-console/shared'
 import { getModelById } from './func.js'
 import { keycloakDomain } from '@/utils/env.js'
 
@@ -36,7 +37,6 @@ Cypress.Commands.add('goToProjects', () => {
     }
   })
   cy.getByDataTestid('menuMyProjects').click()
-  cy.wait('@listProjects', { timeout: 10_000 })
   cy.url({ timeout: 10_000 }).should('contain', '/projects')
 })
 
@@ -76,18 +76,18 @@ Cypress.Commands.add('archiveProject', (project) => {
 
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.slug}`).click()
-    .getByDataTestid('menuDashboard').click()
 
-  cy.url().should('contain', 'dashboard')
+  cy.url().should('contain', project.slug)
   cy.wait('@getAllStages')
     .getByDataTestid('archiveProjectInput').should('not.exist')
-    .getByDataTestid('archiveProjectZone').should('be.visible')
-    .getByDataTestid('showArchiveProjectBtn').click()
-    .getByDataTestid('archiveProjectBtn')
+    .getByDataTestid('showArchiveProjectBtn')
+    .should('be.visible')
+    .click()
+  cy.getByDataTestid('confirmDeletionBtn')
     .should('be.disabled')
-    .getByDataTestid('archiveProjectInput').should('be.visible')
-    .type(project.name)
-    .getByDataTestid('archiveProjectBtn')
+  cy.getByDataTestid('archiveProjectInput').should('be.visible')
+    .type(deleteValidationInput)
+  cy.getByDataTestid('confirmDeletionBtn')
     .should('be.enabled')
     .click()
 
@@ -95,13 +95,11 @@ Cypress.Commands.add('archiveProject', (project) => {
   cy.wait('@listProjects').its('response.statusCode').should('eq', 200)
   cy.getByDataTestid(`projectTile-${project.slug}`)
     .should('not.exist')
-  cy.getByDataTestid('archiveProjectZone')
-    .should('not.exist')
 })
 
 Cypress.Commands.add('addRepos', (project, repos) => {
   cy.intercept('POST', '/api/v1/repositories').as('postRepo')
-  cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
+  cy.intercept('GET', `/api/v1/repositories?projectId=${project.id}`).as('listRepos')
 
   const newRepo = repo => ({
     internalRepoName: 'console',
@@ -117,8 +115,6 @@ Cypress.Commands.add('addRepos', (project, repos) => {
 
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.slug}`).click()
-    .getByDataTestid('menuRepos').click()
-    .url().should('contain', '/repositories')
 
   newRepos.forEach((repo) => {
     cy.getByDataTestid('addRepoLink').click()
@@ -142,62 +138,61 @@ Cypress.Commands.add('addRepos', (project, repos) => {
 
     cy.getByDataTestid('addRepoBtn').click()
     cy.wait('@postRepo').its('response.statusCode').should('eq', 201)
-    cy.wait('@listProjects').its('response.statusCode').should('eq', 200)
-    cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
-    cy.wait(1000).reload()
-    cy.wait('@listProjects').its('response.statusCode').should('eq', 200)
+    cy.wait('@listRepos').its('response.statusCode').should('eq', 200)
+    cy.getByDataTestid(`repoTr-${repo.internalRepoName}`).should('exist')
   })
 })
 
 Cypress.Commands.add('assertAddRepo', (project, repos) => {
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.slug}`).click()
-    .getByDataTestid('menuRepos').click()
+    .getByDataTestid('test-tab-resources').click()
 
   repos.forEach((repo) => {
-    cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).should('exist')
+    cy.getByDataTestid(`repoTr-${repo.internalRepoName}`).should('exist')
   })
 })
 
 Cypress.Commands.add('deleteRepo', (project, repo) => {
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.slug}`).click()
-    .getByDataTestid('menuRepos').click()
 
-  cy.getByDataTestid(`repoTile-${repo.internalRepoName}`).click()
+  cy.getByDataTestid(`repoTr-${repo.internalRepoName}`).click()
     .getByDataTestid('repo-form').should('exist')
     .getByDataTestid('deleteRepoInput').should('not.exist')
-    .getByDataTestid('deleteRepoZone').should('be.visible')
+    .getByDataTestid('deleteRepoZone')
+    .scrollIntoView()
+    .should('be.visible')
     .getByDataTestid('showDeleteRepoBtn').click()
     .getByDataTestid('deleteRepoBtn')
     .should('be.disabled')
     .getByDataTestid('deleteRepoInput').should('be.visible')
-    .type(repo.internalRepoName)
+    .type(deleteValidationInput)
     .getByDataTestid('deleteRepoBtn')
     .should('be.enabled')
     .click()
     .getByDataTestid('repo-form').should('not.exist')
     .reload()
-    .getByDataTestid(`repoTile-${repo.internalRepoName}`)
+    .getByDataTestid(`repoTr-${repo.internalRepoName}`)
     .should('not.exist')
 })
 
 Cypress.Commands.add('addEnvironment', (project, environments) => {
   cy.intercept('GET', 'api/v1/stages').as('listStages')
+  cy.intercept('GET', `api/v1/environments?projectId=${project.id}`).as('listEnvironments')
   cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
   cy.intercept('GET', 'api/v1/clusters').as('getClusters')
   cy.intercept('POST', '/api/v1/environments').as('postEnvironment')
   cy.intercept('GET', '/api/v1/projects?filter=member&statusNotIn=archived').as('listProjects')
 
-  environments.forEach((environment) => {
-    cy.goToProjects()
-      .getByDataTestid(`projectTile-${project?.slug}`)
-      .click()
-    cy.getByDataTestid('menuEnvironments')
-      .click()
-    cy.url().should('contain', '/environments')
-    cy.wait('@getClusters')
+  cy.goToProjects()
+    .getByDataTestid(`projectTile-${project?.slug}`)
+    .click()
+  cy.getByDataTestid('test-tab-resources')
+    .click()
+  cy.wait('@getClusters')
 
+  environments.forEach((environment) => {
     cy.getByDataTestid('addEnvironmentLink').click()
     cy.wait('@listStages')
     cy.wait('@listQuotas')
@@ -215,8 +210,8 @@ Cypress.Commands.add('addEnvironment', (project, environments) => {
 
     cy.getByDataTestid('addEnvironmentBtn').click()
     cy.wait('@postEnvironment').its('response.statusCode').should('eq', 201)
-    cy.wait('@listProjects').its('response.statusCode').should('eq', 200)
-    cy.getByDataTestid(`environmentTile-${environment?.name}`).should('exist')
+    cy.wait('@listEnvironments').its('response.statusCode').should('eq', 200)
+    cy.getByDataTestid(`environmentTr-${environment?.name}`).should('exist')
   })
 })
 
@@ -228,16 +223,16 @@ Cypress.Commands.add('assertAddEnvironment', (project, environments, isDeepCheck
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.slug}`)
     .click()
-  cy.getByDataTestid('menuEnvironments')
+  cy.getByDataTestid('test-tab-resources')
     .click()
   cy.wait('@listEnvironments')
   cy.wait('@getClusters')
 
   environments.forEach((environment) => {
-    cy.getByDataTestid(`environmentTile-${environment.name}`)
+    cy.getByDataTestid(`environmentTr-${environment.name}`)
       .should('exist')
     if (isDeepCheck) {
-      cy.getByDataTestid(`environmentTile-${environment.name}`)
+      cy.getByDataTestid(`environmentTr-${environment.name}`)
         .click()
       cy.wait('@listStages')
       cy.wait('@listQuotas')
@@ -251,8 +246,10 @@ Cypress.Commands.add('assertAddEnvironment', (project, environments, isDeepCheck
         .should('have.value', environment?.quota?.id)
       cy.get('#cluster-select')
         .should('have.value', environment?.cluster?.id)
-      cy.getByDataTestid('goBackBtn')
+      cy.getByDataTestid('cancelEnvironmentBtn')
         .click()
+      cy.getByDataTestid('resource-modal')
+        .should('not.exist')
     }
   })
 })
@@ -265,50 +262,22 @@ Cypress.Commands.add('deleteEnvironment', (project, environmentName) => {
 
   cy.goToProjects()
   cy.getByDataTestid(`projectTile-${project.slug}`).click()
-  cy.getByDataTestid('menuEnvironments').click()
   cy.wait('@listEnvironments')
   cy.wait('@getClusters')
-  cy.getByDataTestid(`environmentTile-${environmentName}`)
+  cy.getByDataTestid(`environmentTr-${environmentName}`)
     .click()
-  cy.url().should('contain', '/environments')
   cy.getByDataTestid('showDeleteEnvironmentBtn').click()
   cy.getByDataTestid('deleteEnvironmentInput').should('be.visible')
   cy.getByDataTestid('deleteEnvironmentInput')
     .type(environmentName.slice(0, 2))
   cy.getByDataTestid('deleteEnvironmentBtn').should('be.disabled')
   cy.getByDataTestid('deleteEnvironmentInput').clear()
-    .type(environmentName)
+    .type(deleteValidationInput)
   cy.getByDataTestid('deleteEnvironmentBtn').should('be.enabled')
     .click()
   cy.wait('@deleteEnvironment').its('response.statusCode').should('eq', 204)
   cy.wait('@listProjects').its('response.statusCode').should('eq', 200)
-  cy.getByDataTestid(`environmentTile-${environmentName}`).should('not.exist')
-})
-
-Cypress.Commands.add('assertPermission', (project, environmentName, permissions) => {
-  cy.intercept('GET', '/api/v1/environments?projectId=*').as('listEnvironments')
-  cy.intercept('GET', 'api/v1/clusters').as('getClusters')
-
-  cy.goToProjects()
-    .getByDataTestid(`projectTile-${project.slug}`).click()
-    .getByDataTestid('menuEnvironments').click()
-  cy.wait('@listEnvironments')
-  cy.wait('@getClusters')
-  cy.getByDataTestid(`environmentTile-${environmentName}`)
-    .click()
-
-  permissions.forEach((permission) => {
-    cy.getByDataTestid(`userPermissionLi-${permission.email}`).within(() => {
-      cy.getByDataTestid('userEmail')
-        .should('contain', permission.email)
-        .getByDataTestid('deletePermissionBtn')
-        .should(permission.isOwner ? 'be.disabled' : 'be.enabled')
-        .and('have.attr', 'title', permission.isOwner ? 'Les droits du owner ne peuvent être supprimés' : `Supprimer les droits de ${permission.email}`)
-        .getByDataTestid('permissionLevelRange')
-        .find('input')
-        .should(permission.isOwner ? 'be.disabled' : 'be.enabled')
-    })
-  })
+  cy.getByDataTestid(`environmentTr-${environmentName}`).should('not.exist')
 })
 
 Cypress.Commands.add('addProjectMember', (project, userEmail) => {
@@ -339,7 +308,7 @@ Cypress.Commands.add('addProjectMember', (project, userEmail) => {
 Cypress.Commands.add('assertUsers', (project, emails) => {
   cy.goToProjects()
     .getByDataTestid(`projectTile-${project.slug}`).click()
-    .getByDataTestid('menuTeam').click()
+    .getByDataTestid('test-tab-team').click()
 
   emails.forEach((email) => {
     cy.getByDataTestid('teamTable').within(() => {

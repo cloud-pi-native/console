@@ -2,10 +2,8 @@
 import type { ProjectV2 } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
-import { useLogStore } from '@/stores/log.js'
 
 const projectStore = useProjectStore()
-const logStore = useLogStore()
 
 const projectList = computed(() => projectStore.myProjects
   .toSorted((p1, p2) => {
@@ -16,17 +14,16 @@ const projectList = computed(() => projectStore.myProjects
 
 async function setSelectedProject(slug: ProjectV2['slug']) {
   router.push({
-    name: 'Dashboard',
+    name: 'Project',
     params: { slug },
   })
 }
 
 function goToCreateProject() {
-  router.push('/projects/create-project')
+  router.push({ name: 'CreateProject' })
 }
 
 onBeforeMount(async () => {
-  logStore.displayProjectLogs = false
   await projectStore.listMyProjects()
 })
 </script>
@@ -55,8 +52,8 @@ onBeforeMount(async () => {
       <DsfrTile
         :title="project.name"
         :data-testid="`projectTile-${project.slug}`"
-        :to="`/projects/${project.slug}/dashboard`"
-        :description="project.slug"
+        :to="`/projects/${project.slug}`"
+        :description="project.slug !== project.name ? project.slug : undefined"
         :horizontal="false"
         @click="setSelectedProject(project.slug)"
       />

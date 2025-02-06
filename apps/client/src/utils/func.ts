@@ -64,3 +64,11 @@ export function listQuotasToConsumption(quotas: Quota[]): Consumption {
     memory: 0,
   })
 }
+
+export function clickInDialog(e?: MouseEvent | TouchEvent, fn?: () => void) {
+  // @ts-ignore
+  if (e && e.target?.tagName !== 'DIALOG') {
+    return
+  }
+  fn?.()
+}

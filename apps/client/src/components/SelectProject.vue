@@ -22,16 +22,12 @@ const projectOptions = computed(() => {
 
 function selectProject(slug: string) {
   if (slug === myProjects.value) {
-    return router.push('/projects')
-  }
-  if (selectedProjectSlug.value) {
-    return router.push({
-      params: { slug },
-    })
+    return router.push({ name: 'Projects' })
   }
   return router.push({
-    name: 'Dashboard',
+    name: 'Project',
     params: { slug },
+    query: { tab: router.currentRoute.value.query?.tab },
   })
 }
 </script>
@@ -39,7 +35,7 @@ function selectProject(slug: string) {
 <template>
   <div
     v-if="userStore.isLoggedIn"
-    class="select-project flex flex-row <lg:hidden"
+    class="select-project flex flex-row"
   >
     <select
       v-if="projectStore.myProjects.length"
@@ -75,7 +71,7 @@ function selectProject(slug: string) {
       :icon-only="!!projectStore.myProjects.length"
       :label="!projectStore.myProjects.length ? 'Créer un nouveau projet' : ''"
       small
-      @click="() => router.currentRoute.value.name !== 'CreateProject' && router.push('/projects/create-project')"
+      @click="() => router.currentRoute.value.name !== 'CreateProject' && router.push({ name: 'CreateProject' })"
     />
   </div>
 </template>

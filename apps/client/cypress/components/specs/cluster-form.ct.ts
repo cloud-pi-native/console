@@ -1,6 +1,6 @@
 import { type Pinia, createPinia, setActivePinia } from 'pinia'
 import { getRandomCluster, getRandomEnv, getRandomProject, getRandomStage, getRandomZone, repeatFn } from '@cpn-console/test-utils'
-import { ClusterPrivacy } from '@cpn-console/shared'
+import { ClusterPrivacy, deleteValidationInput } from '@cpn-console/shared'
 
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
@@ -106,7 +106,7 @@ describe('ClusterForm.vue', () => {
     cy.getByDataTestid('deleteClusterZone').should('exist')
     cy.getByDataTestid('showDeleteClusterBtn').click()
     cy.getByDataTestid('deleteClusterBtn').should('be.disabled')
-    cy.getByDataTestid('deleteClusterInput').clear().type(props.cluster.label)
+    cy.getByDataTestid('deleteClusterInput').clear().type(deleteValidationInput)
     cy.getByDataTestid('deleteClusterBtn').should('be.enabled')
   })
 

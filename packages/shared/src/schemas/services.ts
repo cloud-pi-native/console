@@ -4,6 +4,8 @@ import { pluginsPopulatedManifests } from './config.js'
 export const serviceUrl = z.object({
   to: z.string(),
   name: z.string(),
+  description: z.string()
+    .optional(),
 })
 
 export type ServiceUrl = Zod.infer<typeof serviceUrl>

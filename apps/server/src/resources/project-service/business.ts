@@ -63,7 +63,7 @@ export async function getProjectServices(projectId: Project['id'], permissionTar
         })
       : []
     if (Array.isArray(toResponse)) {
-      urls = toResponse.map(res => ({ name: res.title ?? '', to: res.to }))
+      urls = toResponse.map(res => ({ name: res.title ?? '', description: res.description ?? '', to: res.to }))
     } else if (typeof toResponse === 'string') {
       urls = [{ to: toResponse, name: '' }]
     } else if (toResponse) {

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
 import type { Cluster, CreateZoneBody, SharedZodError, UpdateZoneBody, Zone } from '@cpn-console/shared'
-import { ZoneSchema } from '@cpn-console/shared'
+import { deleteValidationInput, ZoneSchema } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
@@ -192,9 +192,9 @@ onBeforeMount(() => {
         <DsfrInput
           v-model="zoneToDelete"
           data-testid="deleteZoneInput"
-          :label="`Veuillez taper '${localZone.slug}' pour confirmer la suppression de la zone`"
+          :label="`Veuillez taper '${deleteValidationInput}' pour confirmer la suppression de la zone`"
           label-visible
-          :placeholder="localZone.slug"
+          :placeholder="deleteValidationInput"
           class="fr-mb-2w"
         />
         <div
@@ -203,7 +203,7 @@ onBeforeMount(() => {
           <DsfrButton
             data-testid="deleteZoneBtn"
             :label="`Supprimer définitivement la zone ${localZone.slug}`"
-            :disabled="zoneToDelete !== localZone.slug"
+            :disabled="zoneToDelete !== deleteValidationInput"
             :title="`Supprimer définitivement la zone ${localZone.slug}`"
             secondary
             icon="ri:delete-bin-7-line"

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
 import type { Quota, QuotaAssociatedEnvironments, SharedZodError, Stage, UpdateQuotaBody, quotaContract } from '@cpn-console/shared'
-import { QuotaSchema } from '@cpn-console/shared'
+import { deleteValidationInput, QuotaSchema } from '@cpn-console/shared'
 import { toCodeComponent } from '@/utils/func.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
@@ -220,9 +220,9 @@ onBeforeMount(() => {
         <DsfrInput
           v-model="quotaToDelete"
           data-testid="deleteQuotaInput"
-          :label="`Veuillez taper '${localQuota.name}' pour confirmer la suppression du quota`"
+          :label="`Veuillez taper '${deleteValidationInput}' pour confirmer la suppression du quota`"
           label-visible
-          :placeholder="localQuota.name"
+          :placeholder="deleteValidationInput"
           class="fr-mb-2w"
         />
         <div
@@ -231,7 +231,7 @@ onBeforeMount(() => {
           <DsfrButton
             data-testid="deleteQuotaBtn"
             :label="`Supprimer définitivement le quota ${localQuota.name}`"
-            :disabled="quotaToDelete !== localQuota.name"
+            :disabled="quotaToDelete !== deleteValidationInput"
             :title="`Supprimer définitivement le quota ${localQuota.name}`"
             secondary
             icon="ri:delete-bin-7-line"
