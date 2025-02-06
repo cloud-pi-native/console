@@ -12,12 +12,13 @@ export interface ToUrlFnParamaters {
   zones: ZoneObject[]
   environments: EnvironmentObject[]
   projectSlug: string
+  projectId: string
 }
 type ToUrlFnResponse = ToUrlObject | ToUrlObject[] | string | void
 
 export interface ServiceInfos {
   name: string
-  to?: ({ project, organization, store, clusters, zones, environments, projectSlug }: ToUrlFnParamaters) => ToUrlFnResponse
+  to?: (params: ToUrlFnParamaters) => ToUrlFnResponse
   monitor?: Monitor
   title: string
   imgSrc?: string

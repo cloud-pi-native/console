@@ -111,6 +111,7 @@ export function getProjectInfosByIdOrThrow(projectId: Project['id']) {
       id: projectId,
     },
     select: {
+      id: true,
       name: true,
       slug: true,
       members: { include: { user: true } },
