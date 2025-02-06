@@ -284,10 +284,15 @@ export class GitlabProjectApi extends GitlabApi {
   }
 
   public async getProjectId(projectName: string) {
-    const pathProjectName = `${config().projectsRootDir}/${this.project.slug}/${projectName}`
-    const project = (await this.api.Projects.search(projectName)).find(p => p.path_with_namespace === pathProjectName)
+    const projectGroup = await this.getProjectGroup()
+    if (!projectGroup) {
+      throw new Error('Parent DSO Project group has not been created yet')
+    }
+    const projectsInGroup = await this.api.Groups.allProjects(projectGroup?.id, { perPage: 100 })
+    const project = projectsInGroup.find(p => p.path === projectName)
 
     if (!project) {
+      const pathProjectName = `${config().projectsRootDir}/${this.project.slug}/${projectName}`
       throw new Error(`Gitlab project "${pathProjectName}" not found`)
     }
     return project.id
