@@ -10,9 +10,10 @@ import { plugin as sonarqube } from '@cpn-console/sonarqube-plugin'
 import { plugin as vault } from '@cpn-console/vault-plugin'
 import { pluginManagerOptions } from './utils/plugins.js'
 import { pluginsDir } from './utils/env.js'
+import { hostFunctions } from './utils/host-functions.js'
 
 export async function initPm() {
-  const pm = pluginManager(pluginManagerOptions)
+  const pm = pluginManager(pluginManagerOptions, hostFunctions)
   pm.register(argo)
   pm.register(gitlab)
   pm.register(harbor)

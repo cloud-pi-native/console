@@ -13,10 +13,12 @@ import { getOrCreateGroupRoot } from './utils.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
 import { GitlabProjectApi, GitlabZoneApi } from './class.js'
+import { startTracker } from './tracker.js'
 
 const onlyApi = { api: (project: Project | UniqueRepo) => new GitlabProjectApi(project) }
 
 function start() {
+  startTracker()
   getOrCreateGroupRoot().catch((error) => {
     console.log(error)
     throw new Error('Error at gitlab plugin start')

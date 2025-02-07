@@ -64,6 +64,18 @@ const infos = {
       value: '-1',
       description: `Stockage limite par projet (${quotaDescription}`,
       placeholder: '-1',
+    }, {
+      kind: 'text',
+      permissions: {
+        admin: { read: true, write: true },
+        user: { read: false, write: false },
+      },
+      key: 'projectsToIgnore',
+      title: 'Projets à ignorer dans le suivi',
+      value: '',
+      description: `Nom des projets à ignorer dans le suivi des resources, séparés par des virgules (inclut par défaut library et dockerhub)`,
+      placeholder: 'library,dockerhub',
+      section: 'Tracking',
     }],
   },
 } as const satisfies ServiceInfos

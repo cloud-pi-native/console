@@ -5,6 +5,7 @@ import { PluginApi } from '@cpn-console/hooks'
 import getConfig from './config.js'
 import { generateKVConfigUpdate, getAuthMethod, isAppRoleEnabled } from './utils.js'
 
+export const technicalKvName = 'forge-dso'
 interface ReadOptions {
   throwIfNoEntry: boolean
 }
@@ -48,6 +49,16 @@ export class VaultApi extends PluginApi {
   }
 
   Kv = {
+    list: async () => {
+      const token = await this.getToken()
+      return this.axios({
+        method: 'get',
+        url: `/v1/sys/mounts`,
+        headers: { 'X-Vault-Token': token },
+        validateStatus: code => [400, 200].includes(code),
+      }).then(res => res.data.data)
+    },
+
     upsert: async (kvName: string) => {
       const token = await this.getToken()
       const kvRes = await this.axios({
@@ -99,6 +110,16 @@ export class VaultApi extends PluginApi {
   }
 
   Policy = {
+    list: async () => {
+      return this.axios({
+        method: 'get',
+        url: `/v1/sys/policies/acl?list=true`,
+        headers: {
+          'X-Vault-Token': await this.getToken(),
+          'Content-Type': 'application/json',
+        },
+      }).then(res => res.data.data.keys)
+    },
     upsert: async (policyName: string, policy: string) => {
       await this.axios({
         method: 'put',
@@ -177,7 +198,7 @@ export class VaultProjectApi extends VaultApi {
   private readonly roleName: string
   private readonly projectRootDir: string
   private readonly defaultAppRoleCredentials: AppRoleCredentials
-  private readonly coreKvName: string = 'forge-dso'
+  private readonly coreKvName: string = technicalKvName
   private readonly projectKvName: string
   private readonly groupName: string
   private readonly policyName: {

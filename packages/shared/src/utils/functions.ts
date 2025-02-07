@@ -199,3 +199,49 @@ export const expandUUID = uuidTranslator.toUUID
 export function generateNamespaceName(projectId: string, envId: string) {
   return `${compressUUID(envId)}--${compressUUID(projectId)}`
 }
+
+export class ItemCollector<T> {
+  collector: Record<string, T[]>
+  constructor() {
+    this.collector = {}
+  }
+
+  public add(key: string, value: T) {
+    if (key in this.collector) {
+      this.collector[key].push(value)
+      return true
+    }
+    this.collector[key] = [value]
+  }
+
+  public remove(key: string, value: T) {
+    if (!(key in this.collector)) {
+      return true
+    }
+    this.collector[key]?.filter(v => v !== value)
+    if (this.collector[key].length === 0) {
+      delete this.collector[key]
+    }
+    return true
+  }
+
+  public get(key: string): T[] | undefined {
+    return this.collector[key]
+  }
+
+  public delete(key: string) {
+    delete this.collector[key]
+  }
+
+  public keys() {
+    return Object.keys(this.collector)
+  }
+
+  public values() {
+    return Object.values(this.collector)
+  }
+
+  public entries() {
+    return Object.entries(this.collector)
+  }
+}

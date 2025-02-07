@@ -14,7 +14,9 @@ export function getProjectStore(projectId: Project['id']) {
   })
 }
 
-export const getAdminPlugin = prisma.adminPlugin.findMany
+export function getAdminPlugin(pluginName?: string) {
+  return prisma.adminPlugin.findMany({ where: { pluginName } })
+}
 
 export async function saveProjectStore(records: ConfigRecords, projectId: Project['id']) {
   for (const { pluginName, key, value } of records) {

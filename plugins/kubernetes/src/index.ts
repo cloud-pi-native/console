@@ -4,6 +4,7 @@ import { getProjectSecrets } from './misc.js'
 import { createNamespaces, deleteNamespaces } from './namespace.js'
 import type { KubernetesNamespace } from './class.js'
 import { KubernetesProjectApi } from './class.js'
+import { startTracker } from './tracker.js'
 
 export const plugin: Plugin = {
   infos,
@@ -22,6 +23,7 @@ export const plugin: Plugin = {
     },
     getProjectSecrets: { steps: { main: getProjectSecrets } },
   },
+  start: startTracker,
 }
 
 declare module '@cpn-console/hooks' {

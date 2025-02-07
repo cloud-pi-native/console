@@ -164,7 +164,7 @@ export const hook = {
   user: genericProxy(user, {}),
 }
 
-function formatClusterInfos({ kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt' | 'createdAt' | 'zoneId' | 'kubeConfigId'>
+export function formatClusterInfos({ kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt' | 'createdAt' | 'zoneId' | 'kubeConfigId'>
   & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug' | 'argocdUrl'> }) {
   return {
     user: kubeconfig.user as unknown as KubeUser,

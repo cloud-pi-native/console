@@ -51,7 +51,7 @@ services:
       - 9229:9229
     volumes:
       - ${KUBECONFIG_HOST_PATH}:${KUBECONFIG_PATH:-/home/node/.kube/config}
-      - ${EXTERNAL_PLUGINS_DIR_HOST_PATH}:/plugins
+      # - ${EXTERNAL_PLUGINS_DIR_HOST_PATH}:/plugins
     env_file:
       - ../apps/server/.env.docker
       - ../apps/server/.env.integ

@@ -1,5 +1,6 @@
 import { generateProjectKey } from '@cpn-console/hooks'
 import { getAxiosInstance } from './tech.js'
+import type { XOR } from '@cpn-console/shared'
 
 export interface SonarPaging {
   pageIndex: number
@@ -96,7 +97,7 @@ export async function deleteDsoRepository(projectKey: string) {
   })
 }
 
-interface SonarProjectResult {
+export interface SonarProjectResult {
   projectSlug: string
   repository: string
   key: string
@@ -156,4 +157,40 @@ export async function findSonarProjectsForDsoProjects(projectSlug: string) {
 
 export const files = {
   'sonar-project.properties': (key: string) => `sonar.projectKey=${key}\nsonar.qualitygate.wait=true\n`,
+}
+
+export type ProjectSearchResult = XOR<{
+  slug: string
+  repo: string
+}, {
+    slug: null
+    repo: null
+  }> & {
+    sonarProject: SonarProjectResult
+    key: string
+  }
+
+export function splitProjectKey(sonarProject: SonarProjectResult): ProjectSearchResult {
+  const sonarKey = sonarProject.key
+  const keyElements = sonarKey.split('-')
+  keyElements.pop()
+  for (let i = keyElements.length - 1; i > 0; i--) {
+    const project = keyElements.slice(0, i).join('-')
+    const repository = keyElements.slice(i).join('-')
+    const keyComputed = generateProjectKey(project, repository)
+    if (keyComputed === sonarKey) {
+      return {
+        key: sonarProject.key,
+        slug: project,
+        repo: repository,
+        sonarProject,
+      }
+    }
+  }
+  return {
+    key: sonarProject.key,
+    slug: null,
+    repo: null,
+    sonarProject,
+  }
 }
