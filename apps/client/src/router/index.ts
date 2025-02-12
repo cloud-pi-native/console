@@ -3,6 +3,7 @@ import {
   createWebHistory,
 } from 'vue-router'
 import type {
+  RouteLocationNormalizedGeneric,
   RouteRecordRaw,
 } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
@@ -12,6 +13,7 @@ import { useSystemSettingsStore } from '@/stores/system-settings.js'
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
 import { swaggerUiPath } from '@cpn-console/shared'
+import { uuid } from '@/utils/regex.js'
 
 const AdminCluster = () => import('@/views/admin/AdminCluster.vue')
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
@@ -36,6 +38,13 @@ const Maintenance = () => import('@/views/DsoMaintenance.vue')
 const AdminTokens = () => import('@/views/admin/AdminTokens.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
+
+export function detectProjectslug(to: Pick<RouteLocationNormalizedGeneric, 'params'>) {
+  const slugParam = to.params.slug as string
+  return uuid.test(slugParam)
+    ? useProjectStore().projects.find(project => project.id === slugParam)?.slug
+    : slugParam
+}
 
 export const routes: Readonly<RouteRecordRaw[]> = [
   {
@@ -116,7 +125,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
         },
         props(to) {
           return {
-            projectSlug: to.params.slug,
+            projectSlug: detectProjectslug(to),
             parentRoute: 'Projects',
             asProfile: 'user',
             tab: to.query.tab,
@@ -161,7 +170,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
             },
             props(to) {
               return {
-                projectSlug: to.params.slug,
+                projectSlug: detectProjectslug(to),
                 parentRoute: 'ListProjects',
                 asProfile: 'admin',
               }

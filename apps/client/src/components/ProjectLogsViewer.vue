@@ -18,7 +18,7 @@ const totalLength = ref(0)
 async function showLogs(newPage?: number) {
   if (newPage != null) page.value = newPage
   isUpdating.value = true
-  const res = await props.project.Logs.list({ offset: page.value * step, limit: step })
+  const res = await props.project.Logs.list({ offset: page.value * step, limit: step, clean: props.asProfile === 'user' ? 'true' : 'false' })
   logs.value = res.logs
   totalLength.value = res.total
   isUpdating.value = false

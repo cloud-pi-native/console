@@ -1,10 +1,39 @@
 import { describe, expect, it } from 'vitest'
 import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
-import type { ProjectV2 } from '../index.js'
-import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, ProjectSchemaV2, QuotaSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import type { Log, ProjectV2 } from '../index.js'
+import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, LogSchema, ProjectSchemaV2, QuotaSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 
 describe('schemas utils', () => {
+  it('should delete config in log', () => {
+    const toParse: Log = {
+      id: faker.string.uuid(),
+      projectId: faker.string.uuid(),
+      action: 'Create a log',
+      // @ts-ignore la date doit être transformé en string
+      createdAt: new Date(),
+      // @ts-ignore la date doit être transformé en string
+      updatedAt: new Date(),
+      data: {
+        args: {},
+        failed: false,
+        config: {},
+      },
+      requestId: faker.string.uuid(),
+      userId: faker.string.uuid(),
+    }
+    const parsed = structuredClone(toParse)
+    // @ts-ignore la date doit être transformé en string
+    parsed.createdAt = parsed.createdAt.toISOString()
+    // @ts-ignore
+    parsed.updatedAt = parsed.updatedAt.toISOString()
+    // @ts-ignore
+    delete parsed.data.config
+    expect(LogSchema
+      .safeParse(toParse))
+      .toStrictEqual({ data: parsed, success: true })
+  })
+
   it('should not validate an undefined object', () => {
     // @ts-ignore
     expect(RepoSchema.safeParse(undefined).error).toBeInstanceOf(ZodError)

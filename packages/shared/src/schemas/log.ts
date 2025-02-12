@@ -32,5 +32,6 @@ export const LogSchema = z.object({
   action: z.string(),
   userId: z.string().nullable(),
   requestId: z.string().nullable(),
+  projectId: z.string().nullable(),
 })
   .extend(AtDatesToStringExtend)
