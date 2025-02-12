@@ -1,12 +1,13 @@
 <script setup lang="ts">
 const _props = defineProps<{
   name: string
-  type: 'cluster' | 'zone'
+  type: 'cluster' | 'zone' | 'project'
 }>()
 
 const iconTypeMapper: Record<typeof _props['type'], string> = {
   cluster: 'ri:server-line',
   zone: 'ri:focus-3-line',
+  project: 'ri:folder-line',
 }
 </script>
 
