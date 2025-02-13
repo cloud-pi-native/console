@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { Project } from '@/utils/project-utils.js'
 import { descriptionMaxLength, projectIsLockedInfo, bts } from '@cpn-console/shared'
+import { copyContent } from '@/utils/func.js'
 
 withDefaults(defineProps<{
   project: Project
@@ -133,9 +134,25 @@ function saveDescription() {
       <div class="flex flex-row">
         <code
           class="fr-text-default--info text-sm"
+          @click="copyContent(project.slug)"
         >slug:&nbsp;{{ project.slug }}</code>
         <div
           title="Slug du projet, nom technique garantissant l'unicité"
+          class="ml-2 inline"
+        >
+          <v-icon
+            name="ri:question-line"
+          />
+        </div>
+      </div>
+      <div class="flex flex-row">
+        <code
+          class="fr-text-default--info text-sm"
+          :title="project.id"
+          @click="copyContent(project.id)"
+        >Id:&nbsp;...{{ project.id.slice(-5) }}</code>
+        <div
+          title="Id du projet, uuid"
           class="ml-2 inline"
         >
           <v-icon
@@ -149,6 +166,7 @@ function saveDescription() {
       >
         <code
           class="fr-text-default--info text-sm"
+          @click="copyContent(project.lastSuccessProvisionningVersion)"
         >Version:&nbsp;{{ project.lastSuccessProvisionningVersion }}
         </code>
         <div

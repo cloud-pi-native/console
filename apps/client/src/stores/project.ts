@@ -88,5 +88,6 @@ export const useProjectStore = defineStore('project', () => {
     listMyProjects,
     createProject,
     generateProjectsData,
+    updateStore,
   }
 })

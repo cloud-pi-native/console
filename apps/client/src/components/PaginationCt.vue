@@ -18,11 +18,11 @@ const currentStart = computed(() => Math.floor(props.page * props.step))
 
 <template>
   <div
-    class="flex justify-around"
+    class="flex justify-evenly"
     data-testid="paginationCt"
   >
     <div
-      class="flex gap-2"
+      class="flex gap-2 grow justify-end"
     >
       <DsfrButton
         icon="ri:arrow-left-double-line"
@@ -41,14 +41,17 @@ const currentStart = computed(() => Math.floor(props.page * props.step))
         @click="emit('setPage', Math.max(props.page - 1, 0))"
       />
     </div>
-    <span
-      class="flex items-center"
-      data-testid="positionInfo"
-    >
-      {{ length ? `${currentStart + 1} - ${Math.min(currentStart + props.step, props.length)} sur ${props.length}` : `0 - 0 sur 0` }}
-    </span>
     <div
-      class="flex gap-2"
+      class="flex justify-center items-center mx-10 min-w-30"
+    >
+      <span
+        data-testid="positionInfo"
+      >
+        {{ length ? `${currentStart + 1} - ${Math.min(currentStart + props.step, props.length)} sur ${props.length}` : `0 - 0 sur 0` }}
+      </span>
+    </div>
+    <div
+      class="flex gap-2 grow"
     >
       <DsfrButton
         icon="ri:arrow-drop-right-line"
