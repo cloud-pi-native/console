@@ -9,13 +9,13 @@ export async function getGroupByName(kcClient: KeycloakAdminClient, name: string
   return groupSearch.find(grp => grp.name === name)
 }
 
-export async function getAllSubgroups(kcClient: KeycloakAdminClient, parentId: string, first: number, subgroups: GroupRepresentation[] = []): Promise<GroupRepresentation[]> {
-  const newSubgroups = [
-    ...subgroups,
-    ...await kcClient.groups.listSubGroups({ parentId, briefRepresentation: false, max: 10, first }),
-  ]
-  if (newSubgroups.length - subgroups.length === 10) {
-    return getAllSubgroups(kcClient, parentId, first + 10, newSubgroups)
+export async function getAllGroups(kcClient: KeycloakAdminClient, first: number, initialGroups: GroupRepresentation[] = [], parentId?: string): Promise<GroupRepresentation[]> {
+  const groups = parentId
+    ? await kcClient.groups.listSubGroups({ parentId, briefRepresentation: false, max: 10, first })
+    : await kcClient.groups.find({ briefRepresentation: false, max: 10, first })
+  const newSubgroups = initialGroups.concat(groups)
+  if (newSubgroups.length - initialGroups.length === 10) {
+    return getAllGroups(kcClient, first + 10, newSubgroups, parentId)
   }
   return newSubgroups
 }
@@ -32,7 +32,7 @@ export async function getOrCreateChildGroup(kcClient: KeycloakAdminClient, paren
       }
     }
   }
-  subGroups = await getAllSubgroups(kcClient, parentId, 0)
+  subGroups = await getAllGroups(kcClient, 0, [], parentId)
   // console.log(subGroups.map(({ name, path }) => ({ name, path })))
 
   const matchingGroup = subGroups?.find(({ name: groupName }) => groupName === name) as Required<GroupRepresentation> | undefined
