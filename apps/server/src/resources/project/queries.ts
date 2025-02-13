@@ -44,7 +44,7 @@ export async function listProjects({
 }: ListProjectWhere) {
   const whereAnd: Prisma.ProjectWhereInput[] = []
   if (id) whereAnd.push({ id })
-  if (locked) whereAnd.push({ locked })
+  if (locked != null) whereAnd.push({ locked })
   if (name) whereAnd.push({ name })
   if (status) whereAnd.push({ status })
   if (description) whereAnd.push({ description: { contains: description } })
