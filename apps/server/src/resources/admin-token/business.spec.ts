@@ -15,6 +15,16 @@ describe('test admin-token business', () => {
       const response = await listTokens({})
       expect(response).toEqual([{ permissions: '4' }])
     })
+    it('should return revoked', async () => {
+      const partialtoken: Partial<AdminToken> = {
+        permissions: 4n,
+        status: 'revoked',
+      }
+
+      prisma.adminToken.findMany.mockResolvedValueOnce([partialtoken])
+      const response = await listTokens({ withRevoked: true })
+      expect(response).toEqual([{ ...partialtoken, permissions: '4' }])
+    })
   })
 
   describe('createToken', () => {
@@ -44,6 +54,12 @@ describe('test admin-token business', () => {
           owner: true,
         },
       })
+    })
+    it('should not create cause expiration is too short', async () => {
+      const expirationDate = new Date()
+      await createToken({ name: 'test', permissions: '2', expirationDate: expirationDate.toISOString() })
+
+      expect(prisma.adminToken.create).toHaveBeenCalledTimes(0)
     })
   })
 
