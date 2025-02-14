@@ -2,10 +2,17 @@
 import type { ProjectV2 } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
+import { useUserStore } from '@/stores/user.js'
 
 const projectStore = useProjectStore()
+const userStore = useUserStore()
 
 const projectList = computed(() => projectStore.myProjects
+  .map(project => ({
+    ...project,
+    description: project.slug !== project.name ? project.slug : '',
+    details: userStore.userProfile?.id !== project.owner.id ? `propriétaire: ${project.owner.firstName} ${project.owner.lastName}` : 'propriétaire: Vous',
+  }))
   .toSorted((p1, p2) => {
     const nameComp = p1.name.localeCompare(p2.name)
     if (nameComp !== 0) return nameComp
@@ -42,20 +49,21 @@ onBeforeMount(async () => {
     />
   </div>
   <div
-    class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full"
+    class="gap-8 flex flex-wrap"
   >
     <div
       v-for="project in projectList"
       :key="project.id"
-      class="flex-basis-60 flex-stretch max-w-90"
+      class="min-w-75 h-45"
     >
       <DsfrTile
+        class="h-full"
+        v-bind="project"
         :title="project.name"
         :data-testid="`projectTile-${project.slug}`"
         :to="`/projects/${project.slug}`"
-        :description="project.slug !== project.name ? project.slug : undefined"
-        :horizontal="false"
-        @click="setSelectedProject(project.slug)"
+        horizontal
+        @click.stop="setSelectedProject(project.slug)"
       />
     </div>
     <template
@@ -74,6 +82,20 @@ onBeforeMount(async () => {
 }
 
 a.fr-tile__link::after {
+  display: none;
+}
+
+.fr-tile__content {
+  padding-bottom: 0 !important;
+}
+
+.fr-tile__detail {
+  align-items: end;
+  height: 100%;
+  margin-bottom: 0 !important;
+}
+
+.fr-tile__header {
   display: none;
 }
 </style>

@@ -26,19 +26,12 @@ export type ProjectRoles = typeof projectRoles[number]
 
 export const longestEnvironmentName = 11 as const
 
-export const allStatus = [
-  'initializing',
-  'created',
-  'failed',
-  'deleting',
-] as const
-
 export const projectStatus = [
-  'initializing',
   'created',
+  'warning',
   'failed',
   'archived',
-  'warning',
+  'initializing',
 ] as const
 
 export const achievedStatus = [
@@ -58,12 +51,6 @@ export const privacyWording: Record<ClusterPrivacy, { text: string, icon: string
   public: { text: 'public', icon: 'ri:door-open-line' },
 }
 
-export enum AllStatus {
-  CREATED = 'created',
-  FAILED = 'failed',
-  DELETING = 'deleting',
-}
-
 export const logActions = [
   'Create Project',
   'Create Repository',
@@ -79,7 +66,7 @@ export const statusDict = {
       testId: 'unlocked-badge',
       type: 'success',
       icon: 'ri:lock-unlock-line',
-      wording: 'déverrouillé',
+      wording: 'Déverrouillé',
       animation: '',
       color: 'var(--success-425-625)',
     },
@@ -87,7 +74,7 @@ export const statusDict = {
       testId: 'locked-badge',
       type: 'warning',
       icon: 'ri:lock-line',
-      wording: 'verrouillé',
+      wording: 'Verrouillé',
       animation: '',
       color: 'var(--warning-425-625)',
     },
@@ -97,7 +84,7 @@ export const statusDict = {
       testId: 'created-badge',
       type: 'success',
       icon: 'ri:check-line',
-      wording: 'succès',
+      wording: 'Succès',
       animation: '',
       color: 'var(--success-425-625)',
     },
@@ -105,7 +92,7 @@ export const statusDict = {
       testId: 'failed-badge',
       type: 'error',
       icon: 'ri:close-line',
-      wording: 'opérations échouées',
+      wording: 'Échouées',
       animation: '',
       color: 'var(--error-425-625)',
     },
@@ -114,14 +101,14 @@ export const statusDict = {
       type: 'info',
       icon: 'ri:loader-4-line',
       animation: 'spin',
-      wording: 'opérations en cours',
+      wording: 'En cours',
       color: 'var(--info-425-625)',
     },
     archived: {
       testId: 'archived-badge',
       type: 'info',
       icon: 'ri:archive-line',
-      wording: 'archivé',
+      wording: 'Archivé',
       animation: '',
       color: 'var(--text-mention-grey)',
     },
@@ -129,7 +116,7 @@ export const statusDict = {
       testId: 'warning-badge',
       type: 'warning',
       icon: 'ri:alert-line',
-      wording: 'partiellement dégradé',
+      wording: 'Dégradé',
       animation: '',
       color: 'var(--warning-425-625)',
     },

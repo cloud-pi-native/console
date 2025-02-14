@@ -1,25 +1,25 @@
 diff --git a/dist/vue-dsfr.js b/dist/vue-dsfr.js
-index 15c64cf6f42b6295bd92ed8195262d276bce21c7..60b27d2acfeba16846e255fc06682912b58edc7b 100644
+index e042994a90c3bfd7f4250b6d788207315d6e0060..817585b78f96827c03d4ac9548336a8f10dbe518 100644
 --- a/dist/vue-dsfr.js
 +++ b/dist/vue-dsfr.js
-@@ -22,7 +22,7 @@ const st = Symbol("accordions"), rt = Symbol("header"), He = Symbol("tabs"), he
+@@ -22,7 +22,7 @@ const rt = Symbol("accordions"), nt = Symbol("header"), Ke = Symbol("tabs"), ye
      adjust: s,
-     onTransitionEnd: (r, c = !0) => {
-       var u, v;
--      e.value = !1, c && ((v = (u = o.value) == null ? void 0 : u.querySelector("a")) == null || v.focus()), o.value && r === !1 && o.value.style.removeProperty("--collapse-max-height");
-+      e.value = !1, c && ((v = (u = o.value) == null ? void 0 : u.querySelector("a")) == null), o.value && r === !1 && o.value.style.removeProperty("--collapse-max-height");
+     onTransitionEnd: (r, f = !0) => {
+       var d, v;
+-      e.value = !1, f && ((v = (d = l.value) == null ? void 0 : d.querySelector("a")) == null || v.focus()), l.value && r === !1 && l.value.style.removeProperty("--collapse-max-height");
++      e.value = !1, f && ((v = (d = l.value) == null ? void 0 : d.querySelector("a")) == null), l.value && r === !1 && l.value.style.removeProperty("--collapse-max-height");
      }
    };
- }, ma = "(prefers-color-scheme: dark)", ga = "vue-dsfr-scheme";
-@@ -3325,10 +3325,7 @@ const al = {
-     }, i = b(() => t.isAlert ? "alertdialog" : "dialog"), r = V(null), c = V();
-     ue(() => t.opened, (y) => {
-       var H, q;
--      y ? ((H = c.value) == null || H.showModal(), setTimeout(() => {
--        var h;
--        (h = r.value) == null || h.focus();
--      }, 100)) : (q = c.value) == null || q.close(), u(y);
-+      y ? ((H = c.value) == null || H.showModal()) : (q = c.value) == null || q.close(), u(y);
+ }, ba = "(prefers-color-scheme: dark)", ha = "vue-dsfr-scheme";
+@@ -3343,10 +3343,7 @@ const so = {
+     }, o = b(() => t.isAlert ? "alertdialog" : "dialog"), r = R(null), f = R();
+     de(() => t.opened, (k) => {
+       var O, K;
+-      k ? ((O = f.value) == null || O.showModal(), setTimeout(() => {
+-        var y;
+-        (y = r.value) == null || y.focus();
+-      }, 100)) : (K = f.value) == null || K.close(), d(k);
++      k ? ((O = f.value) == null || O.showModal()) : (K = f.value) == null || K.close(), d(k);
      });
-     function u(y) {
-       typeof window < "u" && document.body.classList.toggle("modal-open", y);
+     function d(k) {
+       typeof window < "u" && document.body.classList.toggle("modal-open", k);
