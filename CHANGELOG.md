@@ -1,5 +1,26 @@
 # Changelog
 
+## [9.0.0](https://github.com/cloud-pi-native/console/compare/v8.24.2...v9.0.0) (2025-02-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* :triangular_flag_on_post: remove organizations final part
+
+### Features
+
+* :sparkles: auto create projectRootDir in Gitlab ([b4f1212](https://github.com/cloud-pi-native/console/commit/b4f12120e81d8d689b1d65de12ed06c65a95279b))
+* :triangular_flag_on_post: remove organizations final part ([73ce9a9](https://github.com/cloud-pi-native/console/commit/73ce9a9497f44bb4d831aed8c25f9ee2e8a337f5))
+* search cluster, table display ([d21be53](https://github.com/cloud-pi-native/console/commit/d21be53e168a820f500334d97faa73ae30aeaf6e))
+* unique dashboard ([d21be53](https://github.com/cloud-pi-native/console/commit/d21be53e168a820f500334d97faa73ae30aeaf6e))
+
+
+### Bug Fixes
+
+* :ambulance: bad migration ([baa0712](https://github.com/cloud-pi-native/console/commit/baa071203693db68154ffda61f99a66a72a2c1c8))
+* :ambulance: forgot to use slug in gitlab group ([aa22f19](https://github.com/cloud-pi-native/console/commit/aa22f1963d0d87d28d1a9d74fbf13ac207545382))
+* :bug: auto re login when session expiry ([6c16e88](https://github.com/cloud-pi-native/console/commit/6c16e884d505372a8d2142d5870aed635ac4afbd))
+
 ## [8.24.2](https://github.com/cloud-pi-native/console/compare/v8.24.1...v8.24.2) (2025-02-06)
 
 
