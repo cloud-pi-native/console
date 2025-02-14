@@ -129,7 +129,7 @@ export const getSecrets: StepCall<ProjectLite> = async (payload) => {
       result: 'OK',
     },
     secrets: {
-      '.spec.mount': `${payload.args.organization.name}-${payload.args.name}`,
+      '.spec.mount': `${payload.args.slug}`,
       '.spec.vaultAuthRef': 'vault-auth',
     },
   }

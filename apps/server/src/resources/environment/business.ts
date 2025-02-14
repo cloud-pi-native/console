@@ -3,9 +3,7 @@ import type { XOR } from '@cpn-console/shared'
 import {
   addLogs,
   deleteEnvironment as deleteEnvironmentQuery,
-  getEnvironmentInfos as getEnvironmentInfosQuery,
   getEnvironmentsByProjectId,
-  getPublicClusters,
   initializeEnvironment,
   updateEnvironment as updateEnvironmentQuery,
 } from '@/resources/queries-index.js'
@@ -15,22 +13,10 @@ import type {
 } from '@/utils/errors.js'
 import {
   BadRequest400,
-  NotFound404,
   Unprocessable422,
 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import prisma from '@/prisma.js'
-
-// Fetch infos
-export async function getEnvironmentInfosAndClusters(environmentId: string) {
-  const env = await getEnvironmentInfosQuery(environmentId)
-  if (!env) return new NotFound404()
-
-  const authorizedClusters = [...await getPublicClusters(), ...env.project.clusters]
-  return { env, authorizedClusters }
-}
-
-export const getEnvironmentInfos = async (environmentId: string) => getEnvironmentInfosQuery(environmentId)
 
 export function getProjectEnvironments(projectId: Project['id']) {
   return getEnvironmentsByProjectId(projectId)

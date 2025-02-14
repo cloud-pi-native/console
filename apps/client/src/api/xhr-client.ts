@@ -29,6 +29,12 @@ export const apiClient = await getApiClient(
 )
 
 export function extractData<T extends { status: number, body: unknown, headers: Headers }, S extends T['status']>(response: T, expectedStatus: S): Extract<T, { status: S }>['body'] {
+  if (response.status === 401) {
+    const keycloak = getKeycloak()
+    if (!keycloak.authenticated) {
+      keycloak.login()
+    }
+  }
   if (response.status >= 400) {
     // @ts-ignore
     throw new Error(response.body?.error ?? response.body?.message ?? 'Erreur inconnue')

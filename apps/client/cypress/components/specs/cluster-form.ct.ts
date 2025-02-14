@@ -1,6 +1,6 @@
 import { type Pinia, createPinia, setActivePinia } from 'pinia'
-import { getRandomCluster, getRandomEnv, getRandomOrganization, getRandomProject, getRandomStage, getRandomZone, repeatFn } from '@cpn-console/test-utils'
-import { ClusterPrivacy } from '@cpn-console/shared'
+import { getRandomCluster, getRandomEnv, getRandomProject, getRandomStage, getRandomZone, repeatFn } from '@cpn-console/test-utils'
+import { ClusterPrivacy, deleteValidationInput } from '@cpn-console/shared'
 
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
@@ -106,20 +106,19 @@ describe('ClusterForm.vue', () => {
     cy.getByDataTestid('deleteClusterZone').should('exist')
     cy.getByDataTestid('showDeleteClusterBtn').click()
     cy.getByDataTestid('deleteClusterBtn').should('be.disabled')
-    cy.getByDataTestid('deleteClusterInput').clear().type(props.cluster.label)
+    cy.getByDataTestid('deleteClusterInput').clear().type(deleteValidationInput)
     cy.getByDataTestid('deleteClusterBtn').should('be.enabled')
   })
 
   it('Should mount an update cluster ClusterForm with associated environments', () => {
     useSnackbarStore()
-    const organization = getRandomOrganization()
     const allProjects = repeatFn(5)(getRandomProject)
     const allStages = repeatFn(2)(getRandomStage)
     const allZones = repeatFn(2)(getRandomZone)
 
     const cluster = getRandomCluster({ projectIds: [allProjects[0].id], stageIds: [allStages[1].id], privacy: ClusterPrivacy.DEDICATED, zoneId: allZones[0].id })
     const env = getRandomEnv('integ-1', allProjects[0].id, 'qsId', cluster.id)
-    const associatedEnvironments = [{ organization: organization.name, project: allProjects[0].name, name: env.name, owner: 'owner@dso.fr' }]
+    const associatedEnvironments = [{ project: allProjects[0].name, name: env.name, owner: 'owner@dso.fr' }]
 
     const props = {
       cluster,

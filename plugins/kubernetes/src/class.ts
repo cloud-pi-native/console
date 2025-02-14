@@ -102,7 +102,6 @@ export class KubernetesNamespace extends PluginApi {
     } catch (_error) {
       const namespacesFound = await searchEnvNamespaces({
         projectName: this.project.name,
-        organizationName: this.project.organization.name,
         projectSlug: this.project.slug,
         envName: this.environment.name,
       }, this.coreV1Api)

@@ -6,7 +6,6 @@ import { AccessLevel } from '@gitbeaker/core'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { objectEntries } from '@cpn-console/shared'
 import type { GitbeakerRequestError } from '@gitbeaker/requester-utils'
-import { getOrganizationId } from './group.js'
 import { getApi, getGroupRootId, infraAppsRepoName, internalMirrorRepoName } from './utils.js'
 import config from './config.js'
 
@@ -226,7 +225,6 @@ export class GitlabProjectApi extends GitlabApi {
   private gitlabGroup: GroupSchema & { statistics: GroupStatisticsSchema } | undefined
   private specialRepositories: string[] = [infraAppsRepoName, internalMirrorRepoName]
   private zoneApi: GitlabZoneApi
-  // private organizationGroup: GroupSchema & { statistics: GroupStatisticsSchema } | undefined
 
   constructor(project: Project | UniqueRepo) {
     super()
@@ -237,13 +235,13 @@ export class GitlabProjectApi extends GitlabApi {
 
   // Group Project
   private async createProjectGroup(): Promise<GroupSchema> {
-    const searchResult = await this.api.Groups.search(this.project.name)
-    const parentId = await getOrganizationId(this.project.organization.name)
-    const existingGroup = searchResult.find(group => group.parent_id === parentId && group.name === this.project.name)
+    const searchResult = await this.api.Groups.search(this.project.slug)
+    const parentId = await getGroupRootId()
+    const existingGroup = searchResult.find(group => group.parent_id === parentId && group.name === this.project.slug)
 
     if (existingGroup) return existingGroup
 
-    return this.api.Groups.create(this.project.name, this.project.name, {
+    return this.api.Groups.create(this.project.slug, this.project.slug, {
       parentId,
       projectCreationLevel: 'maintainer',
       subgroupCreationLevel: 'owner',
@@ -253,9 +251,9 @@ export class GitlabProjectApi extends GitlabApi {
 
   public async getProjectGroup(): Promise<GroupSchema | undefined> {
     if (this.gitlabGroup) return this.gitlabGroup
-    const parentId = await getOrganizationId(this.project.organization.name)
+    const parentId = await getGroupRootId()
     const searchResult = await this.api.Groups.allSubgroups(parentId)
-    this.gitlabGroup = searchResult.find(group => group.name === this.project.name)
+    this.gitlabGroup = searchResult.find(group => group.name === this.project.slug)
     return this.gitlabGroup
   }
 
@@ -286,10 +284,15 @@ export class GitlabProjectApi extends GitlabApi {
   }
 
   public async getProjectId(projectName: string) {
-    const pathProjectName = `${config().projectsRootDir}/${this.project.organization.name}/${this.project.name}/${projectName}`
-    const project = (await this.api.Projects.search(projectName)).find(p => p.path_with_namespace === pathProjectName)
+    const projectGroup = await this.getProjectGroup()
+    if (!projectGroup) {
+      throw new Error('Parent DSO Project group has not been created yet')
+    }
+    const projectsInGroup = await this.api.Groups.allProjects(projectGroup?.id, { perPage: 100 })
+    const project = projectsInGroup.find(p => p.path === projectName)
 
     if (!project) {
+      const pathProjectName = `${config().projectsRootDir}/${this.project.slug}/${projectName}`
       throw new Error(`Gitlab project "${pathProjectName}" not found`)
     }
     return project.id
@@ -344,7 +347,7 @@ export class GitlabProjectApi extends GitlabApi {
 
   // Repositories
   public async getRepoUrl(repoName: string) {
-    return `${config().publicUrl}/${config().projectsRootDir}/${this.project.organization.name}/${this.project.name}/${repoName}.git`
+    return `${config().publicUrl}/${config().projectsRootDir}/${this.project.slug}/${repoName}.git`
   }
 
   public async listRepositories() {

@@ -10,7 +10,6 @@ export const hook = {
   },
   misc: {
     checkServices: vi.fn(),
-    fetchOrganizations: vi.fn(),
     syncRepository: vi.fn(),
   },
   project: {

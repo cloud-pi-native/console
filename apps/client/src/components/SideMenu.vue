@@ -1,25 +1,14 @@
 <script lang="ts" setup>
-import { ProjectAuthorized } from '@cpn-console/shared'
-import router, { isInProject } from '../router/index.js'
+import { isInProject } from '../router/index.js'
 import { useUserStore } from '@/stores/user.js'
-import { useProjectStore } from '@/stores/project.js'
 import { useServiceStore } from '@/stores/services-monitor.js'
-import type { Project } from '@/utils/project-utils.js'
 
 const route = useRoute()
 const userStore = useUserStore()
-const projectStore = useProjectStore()
 const serviceStore = useServiceStore()
 
 const routeName = computed(() => route.name)
 const isLoggedIn = computed(() => userStore.isLoggedIn)
-const selectedProjectSlug = computed<string | undefined>(() => {
-  if (router.currentRoute.value.matched.some(route => route.name === 'Project')) {
-    return router.currentRoute.value.params.slug as string
-  }
-  return undefined
-})
-const project = computed<Project | undefined>(() => projectStore.projectsBySlug[selectedProjectSlug.value ?? ''])
 
 const isDarkScheme = ref<boolean>()
 const selectedScheme = computed<string | undefined>(() =>
@@ -65,20 +54,22 @@ onMounted(() => {
   >
     <DsfrSideMenuList
       id="menuList"
+      class="mt-0 mb-4 ml-4"
       :expanded="isExpanded.mainMenu"
     >
-      <div
-        class="my-2 flex flex-row gap-2 items-center cursor-pointer"
-        @click="isDarkScheme = !isDarkScheme"
-      >
-        <v-icon
-          :name="isDarkScheme ? 'ri:sun-line' : 'ri:moon-clear-line'"
-          :fill="isDarkScheme ? 'var(--yellow-moutarde-sun-348-moon-860)' : 'var(--blue-france-sun-113-625)'"
-        />
-        <span
-          class="fr-hint-text"
-        >{{ isDarkScheme ? 'Thème clair' : 'Thème sombre' }}</span>
-      </div>
+      <DsfrSideMenuListItem>
+        <DsfrSideMenuLink
+          to=""
+          class="flex flex-row gap-2 "
+          @click="isDarkScheme = !isDarkScheme"
+        >
+          {{ isDarkScheme ? 'Thème clair' : 'Thème sombre' }}
+          <v-icon
+            :name="isDarkScheme ? 'ri:sun-line' : 'ri:moon-clear-line'"
+            :fill="isDarkScheme ? 'var(--yellow-moutarde-sun-348-moon-860)' : 'var(--blue-france-sun-113-625)'"
+          />
+        </DsfrSideMenuLink>
+      </DsfrSideMenuListItem>
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
           data-testid="menuHome"
@@ -145,105 +136,13 @@ onMounted(() => {
           Mes projets
         </DsfrSideMenuLink>
       </DsfrSideMenuListItem>
-      <DsfrSideMenuListItem
-        v-if="isLoggedIn"
-        :class="`transition-all ${project ? '' : 'hidden'}`"
-      >
-        <DsfrSideMenuButton
-          data-testid="menuProjectBtn"
-          :expanded="isExpanded.projects"
-          button-label="Mes projets"
-          control-id="projectList"
-          @toggle-expand="toggleExpand('projects')"
-        >
-          Projet {{ project?.name }}
-        </DsfrSideMenuButton>
-        <DsfrSideMenuList
-          id="projectList"
-          data-testid="menuProjectList"
-          :expanded="isExpanded.projects"
-          :collapsable="true"
-        >
-          <div>
-            <DsfrSideMenuListItem>
-              <DsfrSideMenuLink
-                class="menu-link-icon"
-                data-testid="menuDashboard"
-                :active="routeName === 'Dashboard'"
-                :to="`/projects/${project?.slug}/dashboard`"
-              >
-                <v-icon name="ri:dashboard-line" />
-                Tableau de bord
-              </DsfrSideMenuLink>
-            </DsfrSideMenuListItem>
-            <DsfrSideMenuListItem>
-              <DsfrSideMenuLink
-                class="menu-link-icon"
-                data-testid="menuServices"
-                :active="routeName === 'Services'"
-                :to="`/projects/${project?.slug}/services`"
-              >
-                <v-icon name="ri:flow-chart" />
-                Services externes
-              </DsfrSideMenuLink>
-            </DsfrSideMenuListItem>
-            <DsfrSideMenuListItem>
-              <DsfrSideMenuLink
-                class="menu-link-icon"
-                data-testid="menuTeam"
-                :active="routeName === 'Team'"
-                :to="`/projects/${project?.slug}/team`"
-              >
-                <v-icon name="ri:team-line" />
-                Équipe
-              </DsfrSideMenuLink>
-            </DsfrSideMenuListItem>
-            <DsfrSideMenuListItem
-              v-if="ProjectAuthorized.ManageRoles({ projectPermissions: project?.myPerms })"
-            >
-              <DsfrSideMenuLink
-                class="menu-link-icon"
-                data-testid="menuProjectRole"
-                :active="routeName === 'ProjectRoles'"
-                :to="`/projects/${project?.slug}/roles`"
-              >
-                <v-icon name="ri:admin-line" />
-                Rôles
-              </DsfrSideMenuLink>
-            </DsfrSideMenuListItem>
-            <DsfrSideMenuListItem
-              v-if="ProjectAuthorized.ListRepositories({ projectPermissions: project?.myPerms })"
-            >
-              <DsfrSideMenuLink
-                class="menu-link-icon"
-                data-testid="menuRepos"
-                :active="routeName === 'Repos'"
-                :to="`/projects/${project?.slug}/repositories`"
-              >
-                <v-icon name="ri:git-branch-line" />
-                Dépôts
-              </DsfrSideMenuLink>
-            </DsfrSideMenuListItem>
-            <DsfrSideMenuListItem
-              v-if="ProjectAuthorized.ListEnvironments({ projectPermissions: project?.myPerms })"
-            >
-              <DsfrSideMenuLink
-                class="menu-link-icon"
-                data-testid="menuEnvironments"
-                :active="routeName === 'Environments'"
-                :to="`/projects/${project?.slug}/environments`"
-              >
-                <v-icon name="ri:microsoft-line" />
-                Environnements
-              </DsfrSideMenuLink>
-            </DsfrSideMenuListItem>
-          </div>
-        </DsfrSideMenuList>
-      </DsfrSideMenuListItem>
 
       <!-- Onglet Administration -->
       <DsfrSideMenuListItem
         v-if="userStore.adminPerms"
+        v-bind="{
+          focusFirstAnchor: false,
+        }"
       >
         <DsfrSideMenuButton
           data-testid="menuAdministrationBtn"
@@ -269,17 +168,6 @@ onMounted(() => {
             >
               <v-icon name="ri:folder-user-line" />
               Utilisateurs
-            </DsfrSideMenuLink>
-          </DsfrSideMenuListItem>
-          <DsfrSideMenuListItem>
-            <DsfrSideMenuLink
-              class="menu-link-icon"
-              data-testid="menuAdministrationOrganizations"
-              :active="routeName === 'ListOrganizations'"
-              to="/admin/organizations"
-            >
-              <v-icon name="ri:building-line" />
-              Organisations
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
@@ -431,5 +319,15 @@ onMounted(() => {
 <style>
 .menu-link-icon {
   @apply flex gap-2;
+}
+
+.fr-sidemenu{
+  display: flex;
+}
+
+.fr-sidemenu__inner{
+  padding-bottom: 0;
+  padding-right: 0;
+  width: 100%;
 }
 </style>

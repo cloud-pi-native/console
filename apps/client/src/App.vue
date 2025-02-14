@@ -70,13 +70,13 @@ watch(userStore, async () => {
       title="Le mode Maintenance est actuellement activé"
       data-testid="maintenance-notice"
     />
-    <div class="fr-container flex flex-row <md:flex-col fr-mb-2w grow">
+    <div class="flex flex-row <md:flex-col grow">
       <SideMenu class="md:w-max min-w-80" />
-      <div class="grow fr-py-6v">
+      <div class="grow fr-py-4w fr-pr-4w">
         <router-view />
       </div>
       <DsoSnackbar class="w-full fixed flex justify-center" />
-      <SelectProject class="block <thousand:hidden" />
+      <SelectProject class="block <dsfrmenu:hidden" />
     </div>
 
     <DsfrFooter

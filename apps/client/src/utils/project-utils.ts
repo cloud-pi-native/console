@@ -9,7 +9,7 @@ import type {
   CreateEnvironmentBody,
   CreateRepositoryBody,
   Environment,
-  Organization,
+  GetLogsQuery,
   PermissionTarget,
   PluginsUpdateBody,
   ProjectService,
@@ -43,6 +43,7 @@ export type ProjectOperations = 'create'
   | 'update'
   | 'lockHandling'
   | 'saveServices'
+  | 'roleManagement'
 
 function calculateProjectPerms(project: ProjectV2 | undefined, userId: string | undefined) {
   if (!project || !userId) return 0n
@@ -64,8 +65,6 @@ export class Project implements ProjectV2 {
   owner: Omit<User, 'adminRoleIds'>
   ownerId: string
   roles: { id: string, name: string, permissions: string, position: number }[]
-  organizationId: string
-  organization: { id: string, updatedAt: string, createdAt: string, name: string, active: boolean, label: string, source: string }
   members: ({ userId: string, firstName: string, lastName: string, email: string, roleIds: string[] } | { updatedAt: string, createdAt: string, firstName: string, lastName: string, email: string, userId: string, roleIds: string[] })[]
   createdAt: string
   updatedAt: string
@@ -76,8 +75,9 @@ export class Project implements ProjectV2 {
   environments: Ref<Environment[]>
   services: ProjectService[] = []
   lastSuccessProvisionningVersion: string | null
+  needReplay: Ref<boolean>
 
-  constructor(project: ProjectV2, organization: Organization) {
+  constructor(project: ProjectV2) {
     this.id = project.id
     this.clusterIds = project.clusterIds
     this.description = project.description
@@ -88,8 +88,6 @@ export class Project implements ProjectV2 {
     this.owner = project.owner
     this.ownerId = project.ownerId
     this.roles = project.roles
-    this.organizationId = project.organizationId
-    this.organization = organization
     this.members = project.members
     this.createdAt = project.createdAt
     this.updatedAt = project.updatedAt
@@ -99,6 +97,7 @@ export class Project implements ProjectV2 {
     this.operationsInProgress = ref([])
     this.environments = ref([])
     this.repositories = ref([])
+    this.needReplay = ref(false)
   }
 
   private removeOperation(operationName: ProjectOperations) {
@@ -110,6 +109,7 @@ export class Project implements ProjectV2 {
   }
 
   private addOperation(operationName: ProjectOperations): () => void {
+    this.needReplay.value = ['teamManagement', 'saveServices', 'roleManagement'].includes(operationName)
     if (this.operationsInProgress.value.includes(operationName)) {
       operationName += getRandomId()
     }
@@ -137,7 +137,7 @@ export class Project implements ProjectV2 {
         callback()
       }
     },
-    updateData: (project: Partial<ProjectV2 & { organization: Organization }>) => {
+    updateData: (project: Partial<ProjectV2>) => {
       for (const key of objectKeys(project)) {
         // @ts-ignore
         this[key] = project[key]
@@ -303,7 +303,7 @@ export class Project implements ProjectV2 {
       return this.roles
     },
     patch: async (body: typeof projectRoleContract.patchProjectRoles.body._type) => {
-      const callback = this.addOperation('update')
+      const callback = this.addOperation('roleManagement')
       try {
         this.roles = await apiClient.ProjectsRoles.patchProjectRoles({ body, params: { projectId: this.id } })
           .then(response => extractData(response, 200))
@@ -312,16 +312,13 @@ export class Project implements ProjectV2 {
       } finally { callback() }
     },
     create: async (body: typeof projectRoleContract.createProjectRole.body._type) => {
-      const callback = this.addOperation('update')
-      try {
-        this.roles = await apiClient.ProjectsRoles.createProjectRole({ body, params: { projectId: this.id } })
-          .then(response => extractData(response, 201))
-        this.computePerms()
-        return this.roles
-      } finally { callback() }
+      this.roles = await apiClient.ProjectsRoles.createProjectRole({ body, params: { projectId: this.id } })
+        .then(response => extractData(response, 201))
+      this.computePerms()
+      return this.roles
     },
     delete: async (roleId: Role['id']) => {
-      const callback = this.addOperation('update')
+      const callback = this.addOperation('roleManagement')
       try {
         await apiClient.ProjectsRoles.deleteProjectRole({ params: { projectId: this.id, roleId } })
           .then(response => extractData(response, 204))
@@ -342,12 +339,19 @@ export class Project implements ProjectV2 {
       return this.services
     },
     update: async (body: PluginsUpdateBody) => {
-      const callback = this.addOperation('update')
+      const callback = this.addOperation('saveServices')
       try {
         await apiClient.ProjectServices.updateProjectServices({ params: { projectId: this.id }, body })
           .then(response => extractData(response, 204))
         return this.Services.list()
       } finally { callback() }
+    },
+  }
+
+  Logs = {
+    list: async ({ offset, limit, clean }: GetLogsQuery = { offset: 0, limit: 10 }) => {
+      return apiClient.Logs.getLogs({ query: { offset, limit, clean, projectId: this.id } })
+        .then(response => extractData(response, 200))
     },
   }
 }

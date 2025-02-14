@@ -1,4 +1,5 @@
 export const adminGroupPath = '/admin'
+export const deleteValidationInput = 'DELETE'
 
 export const inClusterLabel = 'in-cluster' as const
 export const projectIsLockedInfo = 'Le projet est verrouillé, pas d\'action possible'
@@ -25,22 +26,6 @@ export type ProjectRoles = typeof projectRoles[number]
 
 export const longestEnvironmentName = 11 as const
 
-// ! Une organisation ne doit pas faire plus de 19 caractères
-export const allOrganizations = [
-  {
-    name: 'dinum',
-    label: 'DINUM',
-  },
-  {
-    name: 'mi',
-    label: 'Ministère de l\'Intérieur',
-  },
-  {
-    name: 'mj',
-    label: 'Ministère de la Justice',
-  },
-]
-
 export const allStatus = [
   'initializing',
   'created',
@@ -66,6 +51,11 @@ export type AchievedStatus = typeof achievedStatus[number]
 export enum ClusterPrivacy {
   PUBLIC = 'public',
   DEDICATED = 'dedicated',
+}
+
+export const privacyWording: Record<ClusterPrivacy, { text: string, icon: string }> = {
+  dedicated: { text: 'dédié', icon: 'ri:shield-keyhole-line' },
+  public: { text: 'public', icon: 'ri:door-open-line' },
 }
 
 export enum AllStatus {
@@ -107,7 +97,7 @@ export const statusDict = {
       testId: 'created-badge',
       type: 'success',
       icon: 'ri:check-line',
-      wording: 'opérations réussies',
+      wording: 'succès',
       animation: '',
       color: 'var(--success-425-625)',
     },
@@ -145,3 +135,11 @@ export const statusDict = {
     },
   },
 } as const
+
+export const servicePluginOrder = [
+  'argocd',
+  'gitlab',
+  'registry',
+  'sonarqube',
+  'vault',
+]

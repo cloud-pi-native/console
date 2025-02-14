@@ -71,7 +71,7 @@ export interface ProjectPermState { projectPermissions?: bigint, projectId: Proj
 export type UserProjectProfile = UserProfile & ProjectPermState
 
 type ProjectUniqueFinder = XOR<
-  { name: string, organizationName: string },
+  { slug: string },
   XOR<{ environmentId: string }, XOR<{ repositoryId: string }, { id: string }>>
 >
 
@@ -136,9 +136,9 @@ export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqu
         where: { slug: projectUnique.id },
         select: projectPermsSelect,
       })
-  } else if (projectUnique.organizationName) {
+  } else if (projectUnique.slug) {
     project = await prisma.project.findFirstOrThrow({
-      where: { name: projectUnique.name, organization: { name: projectUnique.organizationName } },
+      where: { slug: projectUnique.slug },
       select: projectPermsSelect,
     })
   }

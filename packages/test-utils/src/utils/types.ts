@@ -1,13 +1,3 @@
-export interface Organization {
-  id: string
-  name: string
-  label: string
-  source: string
-  active: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-}
-
 export interface Repository {
   id: string
   projectId: string
@@ -109,11 +99,9 @@ export interface Project {
   id: string
   name: string
   slug: string
-  organizationId: string
   description: string
   status: string
   locked: boolean
-  organization?: Organization
   roles?: Role[]
   clusters?: Cluster[]
   repositories?: Repository[]

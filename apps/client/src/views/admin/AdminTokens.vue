@@ -4,6 +4,7 @@ import type { AdminToken } from '@cpn-console/shared'
 import { getAdminPermLabelsByValue } from '@cpn-console/shared'
 import { useAdminTokenStore } from '@/stores/admin-token.js'
 import type { SimpleToken } from '@/components/TokenForm.vue'
+import { clickInDialog } from '@/utils/func.js'
 
 const statusWording: Record<AdminToken['status'], string> = {
   active: 'Actif',
@@ -87,6 +88,10 @@ function switchDisplayRevoked() {
 onMounted(async () => {
   await getAllTokens()
 })
+
+function closeModal() {
+  deleteModalOpened.value = false
+}
 </script>
 
 <template>
@@ -128,7 +133,8 @@ onMounted(async () => {
     v-model:opened="deleteModalOpened"
     title="Confirmer la suppression du token"
     :is-alert="true"
-    @close="deleteModalOpened = false"
+    @close="closeModal"
+    @click="(e: MouseEvent | TouchEvent) => clickInDialog(e, closeModal)"
   >
     <DsfrButton
       data-testid="confirmDeletionBtn"

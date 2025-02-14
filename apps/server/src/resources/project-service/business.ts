@@ -55,18 +55,15 @@ export async function getProjectServices(projectId: Project['id'], permissionTar
     let urls: ServiceUrl[] = []
     const toResponse = to
       ? to({
-          organization: project?.organization.name,
           clusters: project.clusters,
           zones: Array.from(zones.values()),
           environments: project.environments,
-          project: project.name,
-          projectId: project.id,
-          projectSlug: project.slug,
+          project,
           store,
         })
       : []
     if (Array.isArray(toResponse)) {
-      urls = toResponse.map(res => ({ name: res.title ?? '', to: res.to }))
+      urls = toResponse.map(res => ({ name: res.title ?? '', description: res.description ?? '', to: res.to }))
     } else if (typeof toResponse === 'string') {
       urls = [{ to: toResponse, name: '' }]
     } else if (toResponse) {

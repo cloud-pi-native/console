@@ -1,24 +1,19 @@
 import type { Monitor, MonitorInfos, PluginConfig, PluginsUpdateBody } from '@cpn-console/shared'
-import type { ClusterObject, EnvironmentObject, ZoneObject } from './hooks/index.js'
+import type { ClusterObject, EnvironmentObject, ProjectLite, ZoneObject } from './hooks/index.js'
 
 interface ToUrlObject { to: string, title?: string, description?: string, imgSrc?: string }
 export interface ToUrlFnParamaters {
-  /** @deprecated project will be removed in next release you should use slug to track object */
-  project: string
-  /** @deprecated organization will be removed in next release you should use slug to track object */
-  organization: string
   store: PluginsUpdateBody
   clusters: Omit<ClusterObject, 'secretName' | 'kubeConfigId' | 'createdAt' | 'updatedAt' | 'user' | 'cluster'>[]
   zones: ZoneObject[]
   environments: EnvironmentObject[]
-  projectSlug: string
-  projectId: string
+  project: Omit<ProjectLite, 'store'>
 }
 type ToUrlFnResponse = ToUrlObject | ToUrlObject[] | string | void
 
 export interface ServiceInfos {
   name: string
-  to?: (params: ToUrlFnParamaters) => ToUrlFnResponse
+  to?: ({ store, clusters, zones, environments, project }: ToUrlFnParamaters) => ToUrlFnResponse
   monitor?: Monitor
   title: string
   imgSrc?: string

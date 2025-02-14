@@ -107,17 +107,15 @@ describe('test quota busines logic', () => {
   describe('getQuotaAssociatedEnvironments', () => {
     it('should list all quotas (admin, no userId provided)', async () => {
       const envName = faker.string.alpha(8)
-      const projectName = faker.string.alpha(8)
-      const orgName = faker.string.alpha(8)
+      const projectSlug = faker.string.alpha(8)
       const stageName = faker.string.alpha(8)
       const ownerEmail = faker.internet.email()
-      const envs = [{ name: envName, project: { name: projectName, organization: { name: orgName }, owner: { email: ownerEmail } }, stage: { name: stageName } }]
+      const envs = [{ name: envName, project: { slug: projectSlug, owner: { email: ownerEmail } }, stage: { name: stageName } }]
       prisma.environment.findMany.mockResolvedValue(envs)
       const response = await getQuotaAssociatedEnvironments(quota.id)
       expect(response).toStrictEqual([{
         name: envName,
-        project: projectName,
-        organization: orgName,
+        project: projectSlug,
         stage: stageName,
         owner: ownerEmail,
       }])

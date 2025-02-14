@@ -9,9 +9,10 @@ export function environmentRouter() {
     listEnvironments: async ({ request: req, query }) => {
       const projectId = query.projectId
       const perms = await authUser(req, { id: projectId })
-      if (!ProjectAuthorized.ListEnvironments(perms)) return new NotFound404()
 
-      const environments = await getProjectEnvironments(projectId)
+      const environments = ProjectAuthorized.ListEnvironments(perms)
+        ? await getProjectEnvironments(projectId)
+        : []
 
       return {
         status: 200,

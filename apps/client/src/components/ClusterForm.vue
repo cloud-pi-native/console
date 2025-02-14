@@ -10,20 +10,21 @@ import {
   ClusterDetailsSchema,
   ClusterPrivacy,
   KubeconfigSchema,
+  deleteValidationInput,
   inClusterLabel,
 } from '@cpn-console/shared'
 // @ts-ignore 'js-yaml' missing types
 import { load } from 'js-yaml'
 // @ts-ignore 'vue3-json-viewer' missing types
 import { JsonViewer } from 'vue3-json-viewer'
-import type { Project } from '../utils/project-utils.js'
 import ChoiceSelector from './ChoiceSelector.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { toCodeComponent } from '@/utils/func.js'
+import type { Project } from '@/utils/project-utils.js'
 
 const props = withDefaults(defineProps<{
   isNewCluster: boolean
-  cluster: ClusterDetails
+  cluster?: ClusterDetails
   allProjects: Project[]
   allStages: Stage[]
   allZones: Zone[]
@@ -170,7 +171,6 @@ function retrieveUserAndCluster(context: ContextType) {
 function getRows(associatedEnvironments: ClusterAssociatedEnvironments) {
   return associatedEnvironments
     ?.map(associatedEnvironment => ([
-      toCodeComponent(associatedEnvironment.organization),
       toCodeComponent(associatedEnvironment.project),
       toCodeComponent(associatedEnvironment.name),
       toCodeComponent(associatedEnvironment.owner ?? ''),
@@ -216,6 +216,18 @@ const isConnectionDetailsShown = ref(true)
   <div
     data-testid="cluster-form"
   >
+    <div
+      class="w-full flex justify-end"
+    >
+      <DsfrButton
+        title="Revenir à la liste des clusters"
+        data-testid="goBackBtn"
+        secondary
+        icon-only
+        icon="ri:arrow-go-back-line"
+        @click="cancel"
+      />
+    </div>
     <h1
       class="fr-h1"
     >
@@ -363,10 +375,10 @@ const isConnectionDetailsShown = ref(true)
         wrapped
         label="Projets associés"
         description="Sélectionnez les projets autorisés à utiliser ce cluster."
-        :options="props.allProjects.map(project => ({ id: project.id, label: `${project.organization?.name} - ${project.name}` }))"
+        :options="props.allProjects.map(project => ({ id: project.id, label: project.slug }))"
         :options-selected="props.allProjects
           .filter(project => localCluster.projectIds?.includes(project.id))
-          .map(project => ({ id: project.id, label: `${project.organization?.name} - ${project.name}` }))"
+          .map(project => ({ id: project.id, label: project.slug }))"
         label-key="label"
         value-key="id"
         :disabled="false"
@@ -433,7 +445,7 @@ const isConnectionDetailsShown = ref(true)
         <DsfrTable
           title="Environnements déployés sur le cluster"
           data-testid="associatedEnvironmentsTable"
-          :headers="['Organisation', 'Projet', 'Nom', 'Souscripteur']"
+          :headers="['Projet', 'Nom', 'Souscripteur']"
           :rows="getRows(props.associatedEnvironments)"
         />
       </div>
@@ -466,9 +478,9 @@ const isConnectionDetailsShown = ref(true)
         <DsfrInput
           v-model="clusterToDelete"
           data-testid="deleteClusterInput"
-          :label="`Veuillez taper '${localCluster.label}' pour confirmer la suppression du cluster`"
+          :label="`Veuillez taper '${deleteValidationInput}' pour confirmer la suppression du cluster`"
           label-visible
-          :placeholder="localCluster.label"
+          :placeholder="deleteValidationInput"
           class="fr-mb-2w"
         />
         <div
@@ -477,7 +489,7 @@ const isConnectionDetailsShown = ref(true)
           <DsfrButton
             data-testid="deleteClusterBtn"
             :label="`Supprimer définitivement le cluster ${localCluster.label}`"
-            :disabled="clusterToDelete !== localCluster.label"
+            :disabled="clusterToDelete !== deleteValidationInput"
             :title="`Supprimer définitivement le cluster ${localCluster.label}`"
             secondary
             icon="ri:delete-bin-7-line"

@@ -1,4 +1,4 @@
-import { type Cluster, type ClusterDetails, ClusterPrivacy, type Project, type Stage } from '@cpn-console/shared'
+import { type Cluster, type ClusterDetails, ClusterPrivacy, deleteValidationInput, type Project, type Stage } from '@cpn-console/shared'
 import { getModel, getModelById } from '../../support/func.js'
 
 describe('Administration clusters', () => {
@@ -35,14 +35,14 @@ describe('Administration clusters', () => {
 
   it('Should display clusters list', () => {
     clusters?.forEach((cluster) => {
-      cy.getByDataTestid(`clusterTile-${cluster.label}`)
+      cy.getByDataTestid(`clusterTr-${cluster.label}`)
         .should('be.visible')
     })
   })
 
   it('Should display a public cluster form', () => {
     let cluster1Infos: ClusterDetails
-    cy.getByDataTestid(`clusterTile-${cluster1.label}`)
+    cy.getByDataTestid(`clusterTr-${cluster1.label}`)
       .should('be.visible')
       .click()
     cy.wait('@getClustersDetails').its('response').then((response) => {
@@ -80,7 +80,7 @@ describe('Administration clusters', () => {
 
   it('Should display a dedicated cluster form', () => {
     let cluster2Infos: ClusterDetails
-    cy.getByDataTestid(`clusterTile-${cluster2.label}`)
+    cy.getByDataTestid(`clusterTr-${cluster2.label}`)
       .should('be.visible')
       .click()
     cy.wait('@getClustersDetails').its('response').then((response) => {
@@ -171,7 +171,7 @@ describe('Administration clusters', () => {
     cy.wait('@createCluster')
       .its('response.statusCode').should('match', /^20\d$/)
 
-    cy.getByDataTestid(`clusterTile-${newCluster.label}`)
+    cy.getByDataTestid(`clusterTr-${newCluster.label}`)
       .should('be.visible')
       .click()
     cy.wait('@getClustersDetails')
@@ -221,7 +221,7 @@ describe('Administration clusters', () => {
       },
     }
 
-    cy.getByDataTestid(`clusterTile-${newCluster.label}`)
+    cy.getByDataTestid(`clusterTr-${newCluster.label}`)
       .should('be.visible')
       .click()
     cy.wait('@getClustersDetails')
@@ -255,7 +255,7 @@ describe('Administration clusters', () => {
     cy.wait('@updateCluster')
       .its('response.statusCode').should('match', /^20\d$/)
 
-    cy.getByDataTestid(`clusterTile-${newCluster.label}`)
+    cy.getByDataTestid(`clusterTr-${newCluster.label}`)
       .should('be.visible')
       .click()
     cy.wait('@getClustersDetails')
@@ -291,7 +291,7 @@ describe('Administration clusters', () => {
   it('Should delete a cluster', () => {
     cy.intercept('DELETE', '/api/v1/clusters/*').as('deleteCluster')
 
-    cy.getByDataTestid(`clusterTile-${newCluster.label}`)
+    cy.getByDataTestid(`clusterTr-${newCluster.label}`)
       .should('be.visible')
       .click()
     cy.wait('@getClustersDetails')
@@ -301,18 +301,18 @@ describe('Administration clusters', () => {
     cy.getByDataTestid('deleteClusterBtn').should('be.disabled')
     cy.getByDataTestid('deleteClusterInput')
       .clear()
-      .type(newCluster.label)
+      .type(deleteValidationInput)
     cy.getByDataTestid('deleteClusterBtn')
       .should('be.enabled')
       .click()
     cy.wait('@deleteCluster')
       .its('response.statusCode').should('match', /^20\d$/)
-    cy.getByDataTestid(`clusterTile-${newCluster.label}`)
+    cy.getByDataTestid(`clusterTr-${newCluster.label}`)
       .should('not.exist')
   })
 
   it('Should not delete a cluster if associated environments', () => {
-    cy.getByDataTestid(`clusterTile-${cluster1.label}`)
+    cy.getByDataTestid(`clusterTr-${cluster1.label}`)
       .should('be.visible')
       .click()
     cy.wait('@getClustersDetails')
