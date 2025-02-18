@@ -65,5 +65,5 @@ export interface Project {
   owner: UserObject
 }
 
-export const upsertProject: Hook<Project, Project> = createHook()
-export const deleteProject: Hook<Project, Project> = createHook()
+export const upsertProject: Hook<Project> = createHook()
+export const deleteProject: Hook<Project> = createHook()
