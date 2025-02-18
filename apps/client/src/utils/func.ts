@@ -72,3 +72,11 @@ export function clickInDialog(e?: MouseEvent | TouchEvent, fn?: () => void) {
   }
   fn?.()
 }
+
+function randomId() {
+  String.fromCharCode(97)
+  return (Array.from({ length: 6 })).map(() => String.fromCharCode(97 + Math.floor(Math.random() * 26)))
+}
+export function getRandomId(suffix?: string, prefix?: string) {
+  return (prefix ? (`${prefix}-`) : '') + randomId() + (suffix ? (`-${suffix}`) : '')
+}

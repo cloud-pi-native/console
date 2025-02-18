@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import { getRandomId } from '@gouvminint/vue-dsfr'
 import type {
   CleanedCluster,
   CreateEnvironmentBody,
@@ -18,7 +17,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useQuotaStore } from '@/stores/quota.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useZoneStore } from '@/stores/zone.js'
-import { copyContent } from '@/utils/func.js'
+import { copyContent, getRandomId } from '@/utils/func.js'
 
 interface OptionType {
   text: string

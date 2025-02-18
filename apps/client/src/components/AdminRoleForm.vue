@@ -3,10 +3,9 @@ import { computed, onBeforeMount, ref } from 'vue'
 import type { AdminPermsKeys, LettersQuery, SharedZodError, User } from '@cpn-console/shared'
 import { ADMIN_PERMS, RoleSchema, adminPermsDetails, shallowEqual } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
-import { getRandomId } from '@gouvminint/vue-dsfr'
 import SuggestionInput from './SuggestionInput.vue'
 import { useUsersStore } from '@/stores/users.js'
-import { clickInDialog } from '@/utils/func.js'
+import { clickInDialog, getRandomId } from '@/utils/func.js'
 
 const props = withDefaults(defineProps<{
   id: string

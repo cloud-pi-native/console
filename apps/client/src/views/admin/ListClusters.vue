@@ -5,9 +5,9 @@ import type {
 } from '@cpn-console/shared'
 import { useZoneStore } from '@/stores/zone.js'
 import { useStageStore } from '@/stores/stage.js'
-import { getRandomId } from '@gouvminint/vue-dsfr'
 import router from '@/router/index.js'
 import { useClusterStore } from '@/stores/cluster.js'
+import { getRandomId } from '@/utils/func.js'
 
 const zoneStore = useZoneStore()
 const stageStore = useStageStore()

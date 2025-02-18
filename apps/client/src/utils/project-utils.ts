@@ -25,13 +25,13 @@ import type {
   projectRoleContract,
 } from '@cpn-console/shared'
 
-import { getRandomId } from '@gouvminint/vue-dsfr'
 import {
   apiClient,
   extractData,
 } from '@/api/xhr-client.js'
 import { useUserStore } from '@/stores/user.js'
 import { useLogStore } from '@/stores/log.js'
+import { getRandomId } from './func.js'
 
 export type ProjectOperations = 'create'
   | 'delete'
