@@ -5,6 +5,8 @@ import { icons as riCollection } from '@iconify-json/ri'
  * @type {string[]}
  */
 const riIconNames = [
+  'file-info-line',
+  'folder-line',
   'door-open-line',
   'shield-keyhole-line',
   'arrow-right-line',
