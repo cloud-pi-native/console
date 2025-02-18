@@ -11,12 +11,11 @@ export * from './utils/logger.js'
 export type HookChoice = keyof typeof hooks
 
 type ExecArgs<Choice extends HookChoice> = Parameters<typeof hooks[Choice]['execute']>[0]
-type ValidateArgs<Choice extends HookChoice> = Parameters<typeof hooks[Choice]['validate']>[0]
 
 export type PluginsFunctions = Partial<{
   [C in HookChoice]: {
     steps?: Partial<{
-      [S in HookStepsNames]: S extends 'check' ? StepCall<ValidateArgs<C>> : StepCall<ExecArgs<C>>
+      [S in HookStepsNames]: StepCall<ExecArgs<C>>
     }>
     api?: (args: ExecArgs<C>) => PluginApi
   }
@@ -110,7 +109,6 @@ function pluginManager(options: PluginManagerOptions): PluginManager {
     delete servicesInfos[name]
 
     Object.values(hooks).forEach((hook) => {
-      delete hook.steps.check[name]
       delete hook.steps.pre[name]
       delete hook.steps.main[name]
       delete hook.steps.post[name]
