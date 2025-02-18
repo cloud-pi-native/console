@@ -1,9 +1,8 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch } from 'vue'
-import { getRandomId } from '@gouvminint/vue-dsfr'
+import { computed, ref, watch } from 'vue'
+import { useRandomId } from '@gouvminint/vue-dsfr'
 import type {
   LettersQuery,
-  Member,
   User,
 } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
@@ -40,12 +39,11 @@ const headers = [
 
 const snackbarStore = useSnackbarStore()
 const userStore = useUserStore()
-const newUserInputKey = ref(getRandomId('input'))
+const newUserInputKey = ref(useRandomId('input'))
 const newUserEmail = ref<string>('')
 const usersToAdd = ref<User[]>([])
-const rows = ref<any[][]>([])
 const lettersNotMatching = ref('')
-const tableKey = ref(getRandomId('table'))
+const tableKey = ref(useRandomId('table'))
 
 const isUserAlreadyInTeam = computed(() => {
   return !!(newUserEmail.value && (props.project.owner.email === newUserEmail.value || props.project.members.find(member => member.email === newUserEmail.value)))
@@ -57,59 +55,6 @@ const usersToSuggest = computed(() => usersToAdd.value.map(userToAdd => ({
 })))
 
 const getRolesNames = (ids?: string[]) => ids ? props.project.roles.filter(role => ids.includes(role.id)).map(role => role.name).join(' / ') || '-' : ''
-function getCopyIdComponent(id: string) {
-  return {
-    component: 'code',
-    text: id,
-    title: 'Copier l\'id',
-    'data-testid': 'ownerId',
-    class: 'fr-text-default--info text-xs truncate cursor-pointer',
-    onClick: () => copyContent(id),
-  }
-}
-
-function createMemberRow(member: Member) {
-  const row: Array<any> = [
-    getCopyIdComponent(member.userId),
-    member.email,
-    props.project.ownerId === member.userId ? 'Propriétaire' : getRolesNames(member.roleIds),
-  ]
-  if (props.project.ownerId === member.userId) {
-    row.push('-')
-  } else if (member.userId === userStore.userProfile?.id) {
-    row.push({
-      cellAttrs: {
-        class: 'fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning',
-        title: 'Quitter le projet',
-        onClick: () => removeUserFromProject(member.userId),
-      },
-    })
-  } else if (props.canManage) {
-    row.push({
-      cellAttrs: {
-        class: 'fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning',
-        title: `Retirer ${member.email} du projet`,
-        onClick: () => removeUserFromProject(member.userId),
-      },
-    })
-  } else {
-    row.push('-')
-  }
-  return row
-}
-
-function setRows() {
-  rows.value = []
-  if (!props.project.members.find(member => member.userId === props.project.ownerId)) {
-    rows.value.push(createMemberRow({ ...props.project.owner, roleIds: [], userId: props.project.owner.id }))
-  }
-  if (props.project.members?.length) {
-    props.project.members.forEach((member) => {
-      rows.value.push(createMemberRow(member))
-    })
-  }
-  tableKey.value = getRandomId('table')
-}
 
 const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) => {
   // Ne pas lancer de requête à moins de 3 caractères tapés
@@ -123,11 +68,9 @@ const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) =>
   }
 }, 300)
 
-onMounted(() => {
-  setRows()
-})
-
-watch(() => props.project.members, setRows, { immediate: true })
+watch(() => props.project.members, () => {
+  tableKey.value = useRandomId('table')
+}, { immediate: true })
 
 const isTransferingProject = ref(false)
 const nextOwnerId = ref<string | undefined>(undefined)
@@ -146,7 +89,7 @@ async function addUserToProject() {
 
   newUserEmail.value = ''
   usersToAdd.value = []
-  newUserInputKey.value = getRandomId('input')
+  newUserInputKey.value = useRandomId('input')
 }
 
 async function removeUserFromProject(userId: string) {
@@ -177,8 +120,43 @@ async function transferOwnerShip() {
       title="Membres du projet"
       data-testid="teamTable"
       :headers="headers"
-      :rows="rows"
-    />
+    >
+      <tr
+        v-for="member in [{ ...props.project.owner, roleIds: [], userId: props.project.owner.id }, ...project.members]"
+        :key="member.userId"
+      >
+        <td>
+          <code
+            text="id"
+            title="Copier l'id"
+            :data-testid="member.userId"
+            class="fr-text-default--info text-xs truncate cursor-pointer"
+            @click="() => copyContent(member.userId)"
+          >{{ member.userId }}</code>
+        </td>
+        <td>{{ member.email }}</td>
+        <td>{{ project.ownerId === member.userId ? 'Propriétaire' : getRolesNames(member.roleIds) }}</td>
+        <td>
+          <div
+            v-if="props.project.ownerId === member.userId"
+          >
+            -
+          </div>
+          <div
+            v-else-if="member.userId === userStore.userProfile?.id"
+            class="fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning"
+            title="Quitter le projet"
+            @click="() => removeUserFromProject(member.userId)"
+          />
+          <div
+            v-else
+            class="fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning"
+            :title="`Retirer ${member.email} du projet`"
+            @click="() => removeUserFromProject(member.userId)"
+          />
+        </td>
+      </tr>
+    </DsfrTable>
 
     <div
       class="flex w-full items-end"

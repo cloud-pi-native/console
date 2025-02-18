@@ -10,9 +10,9 @@ import router from '@/router/index.js'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useZoneStore } from '@/stores/zone.js'
 import OperationPanel from '@/components/OperationPanel.vue'
-import { getRandomId } from '@gouvminint/vue-dsfr'
 import type { DashboardPanelTabs } from '@/utils/misc.js'
 import ProjectClustersInfos from '@/components/ProjectClustersInfos.vue'
+import { getRandomId } from '@/utils/func.js'
 
 const props = withDefaults(defineProps<{
   projectSlug: ProjectV2['slug']
@@ -76,6 +76,13 @@ const activeTab = ref(Math.max(tabTitles.findIndex(tab => `tab-${router.currentR
 async function refreshMembers() {
   await project.value.Members.list()
   teamId.value = getRandomId('team')
+}
+
+async function leaveProject() {
+  if (props.asProfile === 'user') {
+    return unSelectProject()
+  }
+  await refreshMembers()
 }
 
 watch(activeTab, (tabIndex) => {
@@ -171,7 +178,7 @@ async function saveDescription() {
             :can-manage="asProfile === 'admin' || ProjectAuthorized.ManageMembers({ projectPermissions: project.myPerms })"
             :can-transfer="asProfile === 'admin' || project.ownerId === userStore.userProfile?.id"
             @refresh="refreshMembers"
-            @leave="() => asProfile === 'user' && unSelectProject()"
+            @leave="leaveProject"
           />
         </DsfrTabContent>
 
