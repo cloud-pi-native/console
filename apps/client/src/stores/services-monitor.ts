@@ -56,6 +56,7 @@ const serviceHealthOptions = {
 export const useServiceStore = defineStore('serviceMonitor', () => {
   const callStastus = ref<'ok' | 'fetching' | 'error'>('fetching')
 
+  const displayCause = ref(false)
   const services = ref<ServiceBody>([])
 
   const serviceHealthIndex = computed<keyof typeof serviceHealthOptions>(() => {
@@ -82,12 +83,20 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
   const checkServicesHealth = async () => {
     callStastus.value = 'fetching'
     try {
-      services.value = await apiClient.Services.getServiceHealth()
+      services.value = await (displayCause.value
+        ? apiClient.Services.getCompleteServiceHealth()
+        : apiClient.Services.getServiceHealth())
         .then(res => extractData(res, 200))
       callStastus.value = 'ok'
     } catch (_error) {
       callStastus.value = 'error'
     }
+  }
+
+  const refreshServicesHealth = async () => {
+    await apiClient.Services.refreshServiceHealth()
+      .then(res => extractData(res, 200))
+    return checkServicesHealth()
   }
 
   const startHealthPolling = async () => {
@@ -98,10 +107,18 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
     interval = setInterval(checkServicesHealth, 300_000_000)
   }
 
+  async function toggleDisplayCause() {
+    displayCause.value = !displayCause.value
+    await checkServicesHealth()
+  }
+
   return {
+    displayCause,
     servicesHealth,
     services,
     checkServicesHealth,
+    refreshServicesHealth,
+    toggleDisplayCause,
     startHealthPolling,
   }
 })

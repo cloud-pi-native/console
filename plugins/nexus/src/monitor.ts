@@ -14,7 +14,9 @@ const auxComponents = [
   'NuGet V2 repositories',
   'Scheduler',
   'Thread Deadlock Detector',
-  'Transactions',
+  'Coordinate Content Selectors',
+  'Read-Only Detector',
+  'Default Admin Credentials',
 ]
 
 type NexusRes = Record<string, {
@@ -44,15 +46,18 @@ async function monitor(instance: Monitor): Promise<MonitorInfos> {
     }
     if (statusCheck.status === 200) {
       const data = statusCheck.data as NexusRes
-      if (coreComponents.some(name => !data[name].healthy)) {
-        instance.lastStatus.status = MonitorStatus.ERROR
-        instance.lastStatus.message = 'Des composants sont en erreur'
-        return instance.lastStatus
-      }
-      if (auxComponents.some(name => !data[name].healthy)) {
-        instance.lastStatus.status = MonitorStatus.ERROR
-        instance.lastStatus.message = 'Le service est potentiellement dégradé'
-        instance.lastStatus.cause = data
+
+      const failedCoreComponents = coreComponents.filter(component => !data[component]?.healthy)
+      const failedAuxComponents = auxComponents.filter(component => !data[component]?.healthy)
+      if (failedAuxComponents.length || failedCoreComponents.length) {
+        instance.lastStatus.status = failedCoreComponents.length
+          ? MonitorStatus.ERROR
+          : MonitorStatus.WARNING
+        instance.lastStatus.message = failedCoreComponents.length
+          ? 'Des composants critiques sont en erreur'
+          : 'Le service est partiellement dégradé'
+
+        instance.lastStatus.cause = `Les composants suivants sont en erreurs: ${failedCoreComponents.concat(failedAuxComponents).join(', ')}`
         return instance.lastStatus
       }
     }
