@@ -1,4 +1,4 @@
-import { apiPrefix, swaggerUiPath } from '@cpn-console/shared'
+import { serviceContract, swaggerUiPath, systemContract } from '@cpn-console/shared'
 import type { KeycloakOptions } from 'fastify-keycloak-adapter'
 import {
   keycloakClientId,
@@ -22,7 +22,12 @@ export const keycloakConf = {
   // @ts-ignore
   userPayloadMapper,
   retries: 5,
-  excludedPatterns: [`${apiPrefix}/version`, `${apiPrefix}/healthz`, `${swaggerUiPath}/**`, `${apiPrefix}/services`],
+  excludedPatterns: [
+    systemContract.getVersion.path,
+    systemContract.getHealth.path,
+    serviceContract.getServiceHealth.path,
+    `${swaggerUiPath}/**`,
+  ],
   bypassFn,
 } as const satisfies KeycloakOptions
 
