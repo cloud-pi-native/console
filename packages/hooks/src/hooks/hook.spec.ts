@@ -100,7 +100,6 @@ describe('createHook', () => {
         revert: {},
       },
       execute: expect.any(Function),
-      validate: expect.any(Function),
     })
 
     const hookUnique = createHook(true)
@@ -193,39 +192,6 @@ describe('createHook', () => {
           main: expect.any(Number),
         },
       },
-    })
-  })
-
-  it('test hook validate, simple ok', async () => {
-    const hook = createHook(false)
-    hook.steps.check.plugin1 = simpleOkHookCall
-    hook.apis.plugin1 = () => new PluginApi() // à tester ailleurs
-
-    const hookResult = await hook.validate({}, {})
-
-    expect(hookResult.args).toEqual({})
-    expect(hookResult.args).toEqual({})
-    expect(hookResult.config).toEqual({})
-    expect(hookResult.totalExecutionTime).toEqual(expect.any(Number))
-    expect(hookResult.failed).toEqual(false)
-    expect(hookResult.results).toEqual({
-      plugin1: { ...okStatus, executionTime: { validate: expect.any(Number) } },
-    })
-  })
-
-  it('test hook validate, fail', async () => {
-    const hook = createHook(false)
-    hook.steps.check.plugin1 = simpleFailedHookCall
-
-    const hookResult = await hook.validate({}, {})
-
-    expect(hookResult.args).toEqual({})
-    expect(hookResult.args).toEqual({})
-    expect(hookResult.config).toEqual({})
-    expect(hookResult.totalExecutionTime).toEqual(expect.any(Number))
-    expect(hookResult.failed).toEqual(['plugin1'])
-    expect(hookResult.results).toEqual({
-      plugin1: { ...koStatus, executionTime: { validate: expect.any(Number) } },
     })
   })
 })

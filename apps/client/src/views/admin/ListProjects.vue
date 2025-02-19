@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
-import { getRandomId } from '@gouvminint/vue-dsfr'
 import type { ArrayElement, ProjectV2, projectContract } from '@cpn-console/shared'
 import { bts, statusDict } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
@@ -9,6 +8,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
 import { apiClient, extractData } from '@/api/xhr-client.js'
+import { getRandomId } from '@/utils/func.js'
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()

@@ -36,14 +36,13 @@ export type HookResult<Args extends DefaultArgs> = Omit<HookPayload<Args>, 'apis
 export type StepCall<Args extends DefaultArgs> = (payload: HookPayload<Args>) => Promise<PluginResult>
 type HookStep = Record<string, StepCall<DefaultArgs>>
 export type HookStepsNames = 'check' | 'pre' | 'main' | 'post' | 'revert'
-export interface Hook<E extends DefaultArgs, V extends DefaultArgs> {
+export interface Hook<E extends DefaultArgs> {
   uniquePlugin?: string // if plugin register on it no other one can register on it
   execute: (args: E, store: Config) => Promise<HookResult<E>>
-  validate: (args: V, store: Config) => Promise<HookResult<V>>
-  apis: Record<string, (args: E | V) => PluginApi>
+  apis: Record<string, (args: E) => PluginApi>
   steps: Record<HookStepsNames, HookStep>
 }
-export type HookList<E extends DefaultArgs, V extends DefaultArgs> = Record<keyof typeof hooks, Hook<E, V>>
+export type HookList<E extends DefaultArgs> = Record<keyof typeof hooks, Hook<E>>
 
 function generateMessageResume<Args extends DefaultArgs>(payload: HookPayload<Args>): string | undefined {
   let messageResume = ''
@@ -90,7 +89,7 @@ export async function executeStep<Args extends DefaultArgs>(step: HookStep, payl
   return payload
 }
 
-export function createHook<E extends DefaultArgs, V extends DefaultArgs>(unique = false) {
+export function createHook<E extends DefaultArgs>(unique = false) {
   const steps: Record<HookStepsNames, HookStep> = {
     check: {},
     pre: {},
@@ -98,11 +97,11 @@ export function createHook<E extends DefaultArgs, V extends DefaultArgs>(unique 
     post: {},
     revert: {},
   }
-  const apis: Record<string, (args: E | V) => PluginApi> = {
+  const apis: Record<string, (args: E) => PluginApi> = {
   }
   const execute = async (args: E, config: Config): Promise<HookResult<E>> => {
     const startTime = Date.now()
-    const payloadApis: HookPayloadApis<E | V> = {}
+    const payloadApis: HookPayloadApis<E> = {}
     Object.entries(apis).forEach(([pluginName, apiFn]) => {
       payloadApis[pluginName] = apiFn(args)
     })
@@ -134,37 +133,10 @@ export function createHook<E extends DefaultArgs, V extends DefaultArgs>(unique 
     }
   }
 
-  const validate = async (args: V, config: Config): Promise<HookResult<V>> => {
-    const startTime = Date.now()
-    const payloadApis: HookPayloadApis<E | V> = {}
-    Object.entries(apis).forEach(([pluginName, apiFn]) => {
-      payloadApis[pluginName] = apiFn(args)
-    })
-    const payload: HookPayload<V> = {
-      failed: false,
-      args,
-      results: {},
-      apis: payloadApis,
-      config,
-      warning: [],
-    }
-
-    const result = await executeStep(steps.check, payload, 'validate')
-    return {
-      args: result.args,
-      results: result.results,
-      failed: result.failed,
-      totalExecutionTime: Date.now() - startTime,
-      config,
-      warning: payload.warning,
-      messageResume: generateMessageResume(result),
-    }
-  }
-  const hook: Hook<E, V> = {
+  const hook: Hook<E> = {
     apis,
     steps,
     execute,
-    validate,
   }
   if (unique) {
     hook.uniquePlugin = ''
