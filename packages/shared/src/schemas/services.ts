@@ -25,3 +25,11 @@ export const permissionTarget = z.enum(['user', 'admin']).default('user')
 
 export type PermissionTarget = Zod.infer<typeof permissionTarget>
 export type ProjectService = Zod.infer<typeof ServiceSchema>
+
+export const ServiceHealthSchema = z.object({
+  name: z.string(),
+  status: z.enum(['OK', 'Dégradé', 'En échec', 'Inconnu']),
+  interval: z.number(),
+  lastUpdateTimestamp: z.number(),
+  message: z.string(),
+})

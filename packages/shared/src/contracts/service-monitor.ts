@@ -1,28 +1,50 @@
 import { z } from 'zod'
 import type { ClientInferResponseBody } from '@ts-rest/core'
-import { apiPrefix, contractInstance } from '../index.js'
+import { apiPrefix, contractInstance, ServiceHealthSchema } from '../index.js'
 import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const serviceContract = contractInstance.router({
   getServiceHealth: {
     method: 'GET',
-    path: '',
+    path: '/health-services',
     summary: 'Get services health',
+    description: 'Retrieve services health.',
+    responses: {
+      200: ServiceHealthSchema.array(),
+      500: ErrorSchema,
+    },
+  },
+
+  getCompleteServiceHealth: {
+    method: 'GET',
+    path: '/complete-services',
+    summary: 'Get services health with cause',
+    description: 'Retrieve services health with cause.',
+    responses: {
+      200: ServiceHealthSchema.extend({
+        cause: z.any().optional(),
+      }).array(),
+      401: ErrorSchema,
+      403: ErrorSchema,
+      500: ErrorSchema,
+    },
+  },
+
+  refreshServiceHealth: {
+    method: 'GET',
+    path: '/refresh-services',
+    summary: 'Force services health',
     description: 'Retrieved services health.',
     responses: {
-      200: z.array(z.object({
-        name: z.string(),
-        status: z.enum(['OK', 'Dégradé', 'En échec', 'Inconnu']),
-        interval: z.number(),
-        lastUpdateTimestamp: z.number(),
-        message: z.string(),
-      })),
+      200: ServiceHealthSchema.array(),
+      401: ErrorSchema,
+      403: ErrorSchema,
       500: ErrorSchema,
     },
   },
 }, {
   baseHeaders,
-  pathPrefix: `${apiPrefix}/services`,
+  pathPrefix: `${apiPrefix}`,
 })
 
-export type ServiceBody = ClientInferResponseBody<typeof serviceContract.getServiceHealth, 200>
+export type ServiceBody = ClientInferResponseBody<typeof serviceContract.getCompleteServiceHealth, 200>

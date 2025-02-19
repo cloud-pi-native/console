@@ -20,7 +20,10 @@ export class Monitor {
 
   constructor(callback: (instance: Monitor) => Promise<MonitorInfos>, interval: number = 5 * 60 * 1000) {
     this.intervalTime = interval
-    this.monitorFn = callback
+    this.monitorFn = () => {
+      this.lastStatus.cause = undefined
+      return callback(this)
+    }
     this.lastStatus = {
       interval: this.intervalTime,
       lastUpdateTimestamp: (new Date()).getTime(),

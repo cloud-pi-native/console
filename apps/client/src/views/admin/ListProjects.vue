@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
 import type { ArrayElement, ProjectV2, projectContract } from '@cpn-console/shared'
-import { bts, statusDict } from '@cpn-console/shared'
+import { bts, projectStatus, statusDict } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -10,6 +10,7 @@ import router from '@/router/index.js'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 import { getRandomId } from '@/utils/func.js'
 
+const userPrefStore = useUserPreferenceStore()
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
 
@@ -20,9 +21,7 @@ type FileForDownload = File & {
 }
 
 const tableKey = ref(getRandomId('table'))
-const inputSearchText = ref('')
 const isLoading = ref(true)
-const activeFilter = ref<keyof FilterMethods>('Non archivés')
 const file = ref<FileForDownload | undefined>(undefined)
 const queryChanged = ref(false)
 // Add locale-specific relative date/time formatting rules.
@@ -45,19 +44,10 @@ const bulkActions: Array<{
 type BulkActions = (typeof bulkActions)[number]['value']
 const selectedAction = ref<BulkActions>('replay')
 
-type FilterMethods = Record<string, typeof projectContract.listProjects.query._type>
-const filterMethods: FilterMethods = {
-  Tous: { filter: 'all' },
-  'Non archivés': { filter: 'all', statusNotIn: 'archived' },
-  Archivés: { filter: 'all', statusIn: 'archived' },
-  Échoués: { filter: 'all', statusIn: 'failed' },
-  Verrouillés: { filter: 'all', locked: true, statusNotIn: 'archived' },
-  'Non à jour': { filter: 'all', statusNotIn: 'archived', lastSuccessProvisionningVersion: 'outdated' },
-}
-
 const selectedProjectIds = ref<ProjectV2['id'][]>([])
 const projects = ref<(ProjectV2)[]>([])
-const projectWithSelection = computed(() => projects.value.map(project => ({ ...project, selected: selectedProjectIds.value.includes(project.id) })))
+
+const projectWithSelection = computed(() => sort(projects.value.map(project => ({ ...project, selected: selectedProjectIds.value.includes(project.id) }))))
 const selectedProjects = computed(() => projectWithSelection.value.filter(project => project.selected))
 
 const isAllSelected = computed<boolean>(() => {
@@ -72,21 +62,54 @@ function selectAll() {
   }
 }
 
-function switchSelection(checked: boolean, id: ProjectV2['id']) {
-  selectedProjectIds.value = selectedProjectIds.value.filter(projectId => projectId !== id)
-  if (checked) {
-    selectedProjectIds.value.push(id)
+// SORT
+function sort<P extends ProjectV2>(projects: P[]): P[] {
+  for (const sortItem of userPrefStore.sorts) {
+    projects.sort((p1, p2) => {
+      if (sortItem.field === 'ownerEmail') {
+        return p2.owner.email.localeCompare(p1.owner.email) * (sortItem.inverted ? 1 : -1)
+      }
+      return String(p2[sortItem.field]).localeCompare(String(p1[sortItem.field])) * (sortItem.inverted ? 1 : -1)
+    })
   }
+  return projects
 }
+
+const chooseSort = userPrefStore.chooseSort
+
+// FILTER
+const statusOptions = ref(projectStatus.slice(0, -1).map(status => ({
+  value: status,
+  label: statusDict.status[status],
+})))
+
+const lockOptions = ref([{
+  value: 'false',
+  label: statusDict.locked.false,
+}, {
+  value: 'true',
+  label: statusDict.locked.true,
+}])
+
+const versionWording: Record<Version, string> = {
+  any: 'N\'importe',
+  last: 'Dernière version',
+  outdated: 'Obsolète',
+}
+
+const versionOptions = ref(Object.entries(versionWording).map(entry => ({ value: entry[0], text: entry[1] })))
 
 async function getProjects() {
   queryChanged.value = false
   isLoading.value = true
   try {
     projects.value = await projectStore.listProjects({
-      ...filterMethods[activeFilter.value],
-      ...inputSearchText.value && { search: inputSearchText.value.toLowerCase() },
-    })
+      filter: 'all',
+      statusIn: userPrefStore.statusChoice.join(','),
+      ...userPrefStore.projectSearchText && { search: userPrefStore.projectSearchText.toLowerCase() },
+      ...userPrefStore.lockChoice.length === 1 && { locked: userPrefStore.lockChoice[0] === 'true' },
+      lastSuccessProvisionningVersion: userPrefStore.versionChoice !== 'any' ? userPrefStore.versionChoice : undefined,
+    }).then(sort)
   } finally {
     isLoading.value = false
     tableKey.value = getRandomId('table')
@@ -130,14 +153,32 @@ async function validateBulkAction() {
   snackbarStore.setMessage('Traitement en cours, en fonction du nombre de projets cela peut prendre plusieurs minutes, veuillez rafraichir dans quelques instants')
 }
 
-function clickProject(project: ArrayElement<typeof projectWithSelection.value>) {
-  if (project.selected)
+const lastActiveSelectionId = ref<ProjectV2['id']>()
+const lastActiveSelectionIndex = computed(() => projectWithSelection.value.findIndex(p => p.id === lastActiveSelectionId.value))
+
+function clickProject(project: ArrayElement<typeof projectWithSelection.value>, event: MouseEvent) {
+  if (project.selected && !event.shiftKey)
     return switchSelection(false, project.id)
-  if (selectedProjects.value.length)
+  if (selectedProjects.value.length || event.shiftKey) {
+    if (lastActiveSelectionIndex.value >= 0) {
+      const selectedIndex = projectWithSelection.value.findIndex(p => p.id === project.id)
+      for (let i = Math.min(selectedIndex, lastActiveSelectionIndex.value); i < Math.max(selectedIndex, lastActiveSelectionIndex.value); i++) {
+        switchSelection(true, projectWithSelection.value[i].id)
+      }
+    }
+    lastActiveSelectionId.value = project.id
     return switchSelection(true, project.id)
+  }
   if (project.status === 'archived')
     return snackbarStore.setMessage('Le projet est archivé, pas d\'action possible', 'info')
   return goToProject(project.slug)
+}
+
+function switchSelection(checked: boolean, id: ProjectV2['id']) {
+  selectedProjectIds.value = selectedProjectIds.value.filter(projectId => projectId !== id)
+  if (checked) {
+    selectedProjectIds.value.push(id)
+  }
 }
 </script>
 
@@ -146,39 +187,59 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
     class="relative"
   >
     <div
-      class="flex justify-between gap-5 w-full items-end mb-5"
+      class="grid grid-cols-3 justify-between gap-5 items-start mb-5"
     >
-      <div
-        class="flex gap-5 w-max items-end"
+      <DsfrMultiselect
+        id="statusSelector"
+        v-model="userPrefStore.statusChoice"
+        :options="statusOptions"
+        label="Statut"
+        :search="false"
+        select-all
+        :filtering-keys="['label']"
+        id-key="value"
+        @update:model-value="queryChanged = true"
       >
-        <DsfrSelect
-          v-model="activeFilter"
-          select-id="projectSearchFilter"
-          label="Filtre rapide"
-          class="mb-0"
-          :options="Object.keys(filterMethods)"
-          @update:model-value="queryChanged = true"
-        />
-        <DsfrInputGroup
-          v-model="inputSearchText"
-          data-testid="projectsSearchInput"
-          label-visible
-          placeholder="Recherche textuelle"
-          label="Recherche"
-          class="mb-0"
-          @update:model-value="queryChanged = true"
-          @keyup.enter="getProjects"
-        />
-        <DsfrButton
-          label="Rechercher"
-          data-testid="projectsSearchBtn"
-          v-bind="{ tertiary: !queryChanged, secondary: queryChanged }"
-          @click="getProjects"
-        />
-      </div>
-      <div
-        class="w-auto flex gap-4 justify-end"
+        <template #checkbox-label="{ option }">
+          <span>
+            <v-icon
+              :name="option.label.icon"
+              :fill="option.label.color"
+            />{{ option.label.wording }}
+          </span>
+        </template>
+      </DsfrMultiselect>
+      <DsfrMultiselect
+        id="lockSelector"
+        v-model="userPrefStore.lockChoice"
+        :options="lockOptions"
+        label="Verrouillage"
+        :search="false"
+        select-all
+        :filtering-keys="['label']"
+        id-key="value"
+        @update:model-value="queryChanged = true"
       >
+        <template #checkbox-label="{ option }">
+          <span>
+            <v-icon
+              :name="option.label.icon"
+              :fill="option.label.color"
+            />{{ option.label.wording }}
+          </span>
+        </template>
+      </DsfrMultiselect>
+      <div
+        class="place-self-end flex gap-4 justify-start"
+      >
+        <DsfrFileDownload
+          v-if="file"
+          :format="file.format"
+          :size="`${file.size} bytes`"
+          :href="file.href"
+          :title="file.title"
+          :download="file.title"
+        />
         <DsfrButton
           data-testid="download-btn"
           title="Exporter les données de tous les projets"
@@ -188,120 +249,168 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
           :disabled="snackbarStore.isWaitingForResponse"
           @click="generateProjectsDataFile()"
         />
-        <DsfrFileDownload
-          v-if="file"
-          :format="file.format"
-          :size="`${file.size} bytes`"
-          :href="file.href"
-          :title="file.title"
-          :download="file.title"
-        />
       </div>
-    </div>
-    <DsfrTable
-      :key="tableKey"
-      data-testid="tableAdministrationProjects"
-      :title="title"
-    >
-      <template #header>
-        <tr>
-          <td>
-            <input
-              type="checkbox"
-              data-testid="select-all-cbx"
-              :checked="!!projectWithSelection.length && isAllSelected"
-              @click="selectAll"
-            >
-          </td>
-          <td>Slug</td>
-          <td>Nom</td>
-          <td>Souscripteur</td>
-          <td>Status</td>
-          <td>Version</td>
-          <td>Date de création</td>
-        </tr>
-      </template>
-      <tr
-        v-if="isLoading || !projects.length"
-      >
-        <td colspan="7">
-          {{ isLoading ? 'Chargement...' : 'Aucun projet trouvé' }}
-        </td>
-      </tr>
-      <tr
-        v-for="project in projectWithSelection.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))"
-        v-else
-        :key="project.id"
-        :data-testid="`tr-${project.id}`"
-        :selected="project.selected ? '' : null"
-        class="cursor-pointer relative"
-        :title="`Voir le tableau de bord du projet ${project.name}`"
-        @click.stop="() => clickProject(project)"
-      >
-        <td
-          @click.stop
-        >
-          <input
-            type="checkbox"
-            :data-testid="`select-${project.id}-cbx`"
-            :checked="project.selected"
-            @click="(event: any) => switchSelection(event.target.checked, project.id)"
-          >
-        </td>
-        <td>{{ project.slug }}</td>
-        <td>{{ project.name }}</td>
-        <td>{{ project.owner.email }}</td>
-        <td
-          :title="`${statusDict.status[project.status].wording}\n${statusDict.locked[bts(project.locked)].wording}`"
-        >
-          <div
-            class="grid md:grid-cols-2 gap-2"
-          >
-            <v-icon
-              :name="statusDict.status[project.status].icon"
-              :fill="statusDict.status[project.status].color"
-            />
-            <v-icon
-              :name="statusDict.locked[bts(project.locked)].icon"
-              :fill="statusDict.locked[bts(project.locked)].color"
-            />
-          </div>
-        </td>
-        <td>{{ project.lastSuccessProvisionningVersion ?? '-' }}</td>
-        <td
-          :title="(new Date(project.createdAt)).toLocaleString()"
-        >
-          {{ timeAgo.format(new Date(project.createdAt)) }}
-        </td>
-      </tr>
-    </DsfrTable>
-    <div
-      class="w-max flex gap-5 items-end"
-    >
       <DsfrSelect
-        v-model="selectedAction"
-        data-testid="selectBulkAction"
-        label="Traitement en masse"
-        :options="bulkActions"
-        class="mb-0 m-0"
-        :attrs="{ class: 'mb-0' }"
+        v-model="userPrefStore.versionChoice"
+        :options="versionOptions"
+        label="Version"
+        @update:model-value="queryChanged = true"
+      />
+      <DsfrInputGroup
+        v-model="userPrefStore.projectSearchText"
+        data-testid="projectsSearchInput"
+        label-visible
+        placeholder="Recherche textuelle"
+        label="Recherche"
+        class="mb-0"
+        @update:model-value="queryChanged = true"
+        @keyup.enter="getProjects"
       />
       <DsfrButton
-        type="buttonType"
-        data-testid="validateBulkAction"
-        label="Valider"
-        secondary
-        class="mb-0"
-        :disabled="!selectedProjects.length"
-        @click="validateBulkAction"
-      />
-      <DsfrBadge
-        v-if="selectedProjects.length"
-        data-testid="projectSelectedCount"
-        class="mb-2"
-        :label="`${selectedProjects.length} projets sélectionnés`"
+        class="self-end"
+        label="Rechercher"
+        data-testid="projectsSearchBtn"
+        v-bind="{ tertiary: !queryChanged, secondary: queryChanged }"
+        @click="getProjects"
       />
     </div>
+  </div>
+  <DsfrTable
+    :key="tableKey"
+    data-testid="tableAdministrationProjects"
+    :title="`${title}: ${projects.length} ${selectedProjects.length ? `(${selectedProjects.length} sélectionnés)` : ''}`"
+  >
+    <template #header>
+      <tr>
+        <td>
+          <input
+            type="checkbox"
+            data-testid="select-all-cbx"
+            :checked="!!projectWithSelection.length && isAllSelected"
+            @click="selectAll"
+          >
+        </td>
+        <td @click="chooseSort('slug', $event)">
+          <v-icon
+            v-if="userPrefStore.sorts.some(item => item.field === 'slug')"
+            :name=" userPrefStore.sorts.some(item => item.field === 'slug' && item.inverted) ? 'ri:sort-desc' : 'ri:sort-asc'"
+          />
+          Slug
+        </td>
+        <td @click="chooseSort('name', $event)">
+          <v-icon
+            v-if="userPrefStore.sorts.some(item => item.field === 'name')"
+            :name=" userPrefStore.sorts.some(item => item.field === 'name' && item.inverted) ? 'ri:sort-desc' : 'ri:sort-asc'"
+          />Nom
+        </td>
+        <td @click="chooseSort('ownerEmail', $event)">
+          <v-icon
+            v-if="userPrefStore.sorts.some(item => item.field === 'ownerEmail')"
+            :name=" userPrefStore.sorts.some(item => item.field === 'ownerEmail' && item.inverted) ? 'ri:sort-desc' : 'ri:sort-asc'"
+          />Souscripteur
+        </td>
+        <td @click="chooseSort('status', $event)">
+          <v-icon
+            v-if="userPrefStore.sorts.some(item => item.field === 'status')"
+            :name=" userPrefStore.sorts.some(item => item.field === 'status' && item.inverted) ? 'ri:sort-desc' : 'ri:sort-asc'"
+          />Status
+        </td>
+        <td @click="chooseSort('lastSuccessProvisionningVersion', $event)">
+          <v-icon
+            v-if="userPrefStore.sorts.some(item => item.field === 'lastSuccessProvisionningVersion')"
+            :name=" userPrefStore.sorts.some(item => item.field === 'lastSuccessProvisionningVersion' && item.inverted) ? 'ri:sort-desc' : 'ri:sort-asc'"
+          />Version
+        </td>
+        <td @click="chooseSort('createdAt', $event)">
+          <v-icon
+            v-if="userPrefStore.sorts.some(item => item.field === 'createdAt')"
+            :name=" userPrefStore.sorts.some(item => item.field === 'createdAt' && item.inverted) ? 'ri:sort-desc' : 'ri:sort-asc'"
+          />Date de création
+        </td>
+      </tr>
+    </template>
+    <tr
+      v-if="isLoading || !projects.length"
+    >
+      <td colspan="7">
+        {{ isLoading ? 'Chargement...' : 'Aucun projet trouvé' }}
+      </td>
+    </tr>
+    <tr
+      v-for="project in projectWithSelection"
+      v-else
+      :key="project.id"
+      :data-testid="`tr-${project.id}`"
+      :selected="project.selected ? '' : null"
+      class="cursor-pointer relative"
+      :title="`Voir le tableau de bord du projet ${project.name}`"
+      @click.stop="clickProject(project, $event)"
+    >
+      <td
+        @click.stop
+      >
+        <input
+          type="checkbox"
+          :data-testid="`select-${project.id}-cbx`"
+          :checked="project.selected"
+          @click="(event: any) => switchSelection(event.target.checked, project.id)"
+        >
+      </td>
+      <td class="unselectable">
+        {{ project.slug }}
+      </td>
+      <td>{{ project.name }}</td>
+      <td>{{ project.owner.email }}</td>
+      <td
+        :title="`${statusDict.status[project.status].wording}\n${statusDict.locked[bts(project.locked)].wording}`"
+      >
+        <div
+          class="grid md:grid-cols-2 gap-2"
+        >
+          <v-icon
+            :name="statusDict.status[project.status].icon"
+            :fill="statusDict.status[project.status].color"
+          />
+          <v-icon
+            :name="statusDict.locked[bts(project.locked)].icon"
+            :fill="statusDict.locked[bts(project.locked)].color"
+          />
+        </div>
+      </td>
+      <td>{{ project.lastSuccessProvisionningVersion ?? '-' }}</td>
+      <td
+        :title="(new Date(project.createdAt)).toLocaleString()"
+      >
+        {{ timeAgo.format(new Date(project.createdAt)) }}
+      </td>
+    </tr>
+  </DsfrTable>
+  <div
+    class="w-max flex gap-5 items-end"
+  >
+    <DsfrSelect
+      v-model="selectedAction"
+      data-testid="selectBulkAction"
+      label="Traitement en masse"
+      :options="bulkActions"
+      class="mb-0 m-0"
+      :attrs="{ class: 'mb-0' }"
+    />
+    <DsfrButton
+      type="buttonType"
+      data-testid="validateBulkAction"
+      label="Valider"
+      secondary
+      class="mb-0"
+      :disabled="!selectedProjects.length"
+      @click="validateBulkAction"
+    />
+    <DsfrBadge
+      v-if="selectedProjects.length"
+      data-testid="projectSelectedCount"
+      class="mb-2"
+      :label="`${selectedProjects.length} projets sélectionnés`"
+    />
   </div>
 </template>
 
@@ -316,5 +425,9 @@ tr[selected]{
 
 tr:nth-child(2n)[selected]{
   background-color: var(--background-alt-blue-france-active) !important;
+}
+
+td, td * {
+  user-select: none;
 }
 </style>
