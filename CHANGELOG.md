@@ -1,5 +1,18 @@
 # Changelog
 
+## [9.1.0](https://github.com/cloud-pi-native/console/compare/v9.0.0...v9.1.0) (2025-02-19)
+
+
+### Features
+
+* :sparkles: display last refresh monitor and display cause to admins ([054ea37](https://github.com/cloud-pi-native/console/commit/054ea37d556b1c6e0fabf0e52f4611395aec18b4))
+
+
+### Bug Fixes
+
+* :alien: fix nexus monitoring ([8bb7448](https://github.com/cloud-pi-native/console/commit/8bb74480deaa2b88628d2a715496e93aa4d27629))
+* :bug: missing icons ([d2b98c2](https://github.com/cloud-pi-native/console/commit/d2b98c201fb9f4ce3181c2d2b55fdac2a85f11f5))
+
 ## [9.0.0](https://github.com/cloud-pi-native/console/compare/v8.24.2...v9.0.0) (2025-02-14)
 
 
