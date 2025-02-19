@@ -1,3 +1,9 @@
 import { services } from '@cpn-console/hooks'
 
-export const checkServicesHealth = async () => services.getStatus()
+export function checkServicesHealth() {
+  return services.getStatus()
+}
+
+export async function refreshServicesHealth() {
+  return Promise.all(services.refreshStatus())
+}
