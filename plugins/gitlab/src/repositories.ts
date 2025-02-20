@@ -15,32 +15,32 @@ export async function ensureRepositories(gitlabApi: GitlabProjectApi, project: P
   const specialRepos = await gitlabApi.getSpecialRepositories()
   const gitlabRepositories = await gitlabApi.listRepositories()
 
-  const promises: Promise<any>[] = [
-    // delete excess repositories
-    ...gitlabRepositories
-      .filter(gitlabRepository => (
-        !specialRepos.includes(gitlabRepository.name)
-        && !gitlabRepository.topics?.includes(pluginManagedTopic)
-        && !project.repositories.find(repo => repo.internalRepoName === gitlabRepository.name,
-        )))
-      .map(gitlabRepository => gitlabApi.deleteRepository(gitlabRepository.id)),
-    // create missing repositories
-    ...project.repositories.map(repo => ensureRepositoryExists(gitlabRepositories, repo, gitlabApi, projectMirrorCreds, vaultApi)),
-  ]
+  const timerLabel = `${(new Date()).toISOString()}: gitlab repository routine for ${project.slug}`
+  console.time(timerLabel)
+  for (const gitlabRepository of gitlabRepositories) {
+    console.timeLog(timerLabel, `existing repo ${gitlabRepository.path}`)
+    if (specialRepos.includes(gitlabRepository.name)) continue
+    if (gitlabRepository.topics?.includes(pluginManagedTopic)) continue
+    if (project.repositories.find(repo => repo.internalRepoName === gitlabRepository.name)) continue
+    console.timeLog(timerLabel, `existing repo ${gitlabRepository.path}: delete`)
+    await gitlabApi.deleteRepository(gitlabRepository.id)
+  }
+
+  for (const repo of project.repositories) {
+    console.timeLog(timerLabel, `expected repo ${repo.internalRepoName}: ensure`)
+    await ensureRepositoryExists(gitlabRepositories, repo, gitlabApi, projectMirrorCreds, vaultApi)
+  }
 
   if (!gitlabRepositories.find(repo => repo.name === infraAppsRepoName)) {
-    promises.push(
-      gitlabApi.createEmptyProjectRepository({ repoName: infraAppsRepoName, clone: false }),
-    )
+    console.timeLog(timerLabel, `${infraAppsRepoName}`)
+    await gitlabApi.createEmptyProjectRepository({ repoName: infraAppsRepoName, clone: false })
   }
   if (!gitlabRepositories.find(repo => repo.name === internalMirrorRepoName)) {
-    promises.push(
-      gitlabApi.createEmptyProjectRepository({ repoName: internalMirrorRepoName, clone: false })
-        .then(mirrorRepo => provisionMirror(mirrorRepo.id)),
-    )
+    console.timeLog(timerLabel, `${internalMirrorRepoName}`)
+    await gitlabApi.createEmptyProjectRepository({ repoName: internalMirrorRepoName, clone: false })
+      .then(mirrorRepo => provisionMirror(mirrorRepo.id))
   }
-
-  await Promise.all(promises)
+  console.timeEnd(timerLabel)
 }
 
 async function ensureRepositoryExists(gitlabRepositories: CondensedProjectSchema[], repository: Repository, gitlabApi: GitlabProjectApi, projectMirrorCreds: ProjectMirrorCreds, vaultApi: VaultProjectApi) {
