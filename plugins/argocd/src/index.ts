@@ -4,6 +4,7 @@ import monitor from './monitor.js'
 import { deleteProject, upsertProject } from './functions.js'
 import { deleteCluster, upsertCluster } from './cluster.js'
 import { upsertZone } from './zone.js'
+import { startTracker } from './tracker.js'
 
 export const plugin: Plugin = {
   infos,
@@ -35,6 +36,7 @@ export const plugin: Plugin = {
     },
   },
   monitor,
+  start: startTracker,
 }
 
 declare module '@cpn-console/hooks' {

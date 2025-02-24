@@ -5,8 +5,9 @@ import * as hooks from './hooks/index.js'
 import { type ServiceInfos, servicesInfos } from './services.js'
 import type { HookStepsNames, StepCall } from './hooks/hook.js'
 import { addPlugin, editStrippers } from './config.js'
+import { populateHostFunctions, type HostFunctions } from './utils/host-functions.js'
 
-export * from './utils/logger.js'
+export * from './utils/index.js'
 
 export type HookChoice = keyof typeof hooks
 
@@ -45,8 +46,9 @@ export interface PluginManagerOptions {
 }
 
 let config: PluginManagerOptions
-function pluginManager(options: PluginManagerOptions): PluginManager {
+function pluginManager(options: PluginManagerOptions, hostFuncs: HostFunctions): PluginManager {
   config = options
+  populateHostFunctions(hostFuncs)
   const register: RegisterFn = (plugin: Plugin) => {
     if (plugin.infos.config) {
       addPlugin(plugin.infos.name, plugin.infos.config, editStrippers)
@@ -54,8 +56,6 @@ function pluginManager(options: PluginManagerOptions): PluginManager {
 
     if (plugin.infos.to && config.mockExternalServices)
       plugin.infos.to = () => [{ name: 'Lien', to: 'https://theuselessweb.com/' }]
-    if (plugin.start && options.startPlugins)
-      plugin.start({})
     const message: string[] = []
     if (plugin.monitor && config.mockMonitoring) {
       plugin.monitor.monitorFn = async (instance: Monitor) => instance.lastStatus
@@ -103,6 +103,8 @@ function pluginManager(options: PluginManagerOptions): PluginManager {
     if (process.env.NODE_ENV !== 'test') {
       console.warn(`Plugin ${name} registered${message.length ? ' at ' : ''}${message.join(' ')}`)
     }
+    if (plugin.start && options.startPlugins)
+      plugin.start({})
   }
 
   const unregister: UnregisterFn = (name) => {
