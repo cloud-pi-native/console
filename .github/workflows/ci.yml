@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: 22.13.0
+  NODE_VERSION: 22.14.0
   PNPM_VERSION: 9.15.4
   REGISTRY: ghcr.io
   NAMESPACE: "${{ github.repository }}"

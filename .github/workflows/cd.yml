@@ -11,7 +11,7 @@ env:
   BUILD_AMD64: true
   BUILD_ARM64: true
   USE_QEMU: false
-  NODE_VERSION: 22.13.0
+  NODE_VERSION: 22.14.0
   PNPM_VERSION: 9.15.4
 
 jobs:
