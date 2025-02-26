@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   root: true,
   extends: [
     'stylelint-config-standard',
@@ -6,7 +6,21 @@ module.exports = {
     'stylelint-config-html',
     'stylelint-config-recommended-vue',
   ],
+  ignoreDisables: false,
   rules: {
+    'at-rule-no-deprecated': [
+      true,
+      {
+        ignoreAtRules: [
+          'windi',
+          'apply',
+          'include',
+          'variants',
+          'responsive',
+          'screen',
+        ],
+      },
+    ],
     'at-rule-no-unknown': [
       true,
       {

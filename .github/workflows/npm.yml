@@ -35,7 +35,7 @@ on:
         description: Pnpm version used
         required: true
         type: string
-        default: 9.15.4
+        default: 10.5.2
       PUBLISH_APPS:
         description: Publish apps modules
         required: true

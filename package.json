@@ -3,7 +3,7 @@
   "type": "module",
   "version": "9.1.0",
   "private": true,
-  "packageManager": "pnpm@9.15.4",
+  "packageManager": "pnpm@10.5.2",
   "scripts": {
     "build": "turbo run build --color --no-daemon",
     "build:clean": "turbo run build:clean --no-daemon",
@@ -64,10 +64,10 @@
     "test:e2e-ci": "pnpm kube:prod; pnpm kube:e2e-ci"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^2.26.0",
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@cpn-console/eslint-config": "workspace:^",
+    "eslint": "^9.15.0",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.7",
     "turbo": "^2.0.5"
@@ -78,7 +78,15 @@
       "fastify-keycloak-adapter@2.3.2": "patches/fastify-keycloak-adapter@2.3.2.patch",
       "@gouvminint/vue-dsfr": "patches/@gouvminint__vue-dsfr.patch"
     },
-    "allowNonAppliedPatches": true
+    "allowNonAppliedPatches": true,
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "cypress",
+      "esbuild",
+      "prisma",
+      "vue-demi"
+    ]
   },
   "volta": {
     "node": "22.14.0"
