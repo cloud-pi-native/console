@@ -12,29 +12,28 @@ i=1
 # Default values
 BRANCH_TO_SYNC=main
 
-# Declare script helper
-TEXT_HELPER="\nThis script aims to send a synchronization request to DSO.
-Following flags are available:
-
-  -a  Api url to send the synchronization request.
-
-  -b  Branch which is wanted to be synchronize for the given repository.
-      Default is '$BRANCH_TO_SYNC'.
-
-  -g  GitLab token to trigger the pipeline on the gitlab mirror project.
-
-  -i  Gitlab mirror project id.
-
-  -r  Gitlab repository name to mirror.
-
-  -h  Print script help.\n\n"
-
 print_help() {
+  TEXT_HELPER="\nThis script aims to send a synchronization request to DSO.\nFollowing flags are available:
+  -a  Api url to send the synchronization request
+  -b  Branch which is wanted to be synchronize for the given repository (default '$BRANCH_TO_SYNC')
+  -g  GitLab token to trigger the pipeline on the gitlab mirror project
+  -i  Gitlab mirror project id
+  -r  Gitlab repository name to mirror
+  -h  Print script help\n"
   printf "$TEXT_HELPER"
 }
 
+print_args() {
+  printf "\nArguments received:
+  -a API_URL: $API_URL
+  -b BRANCH_TO_SYNC: $BRANCH_TO_SYNC
+  -g GITLAB_TRIGGER_TOKEN length: ${#GITLAB_TRIGGER_TOKEN}
+  -i GITLAB_MIRROR_PROJECT_ID: $GITLAB_MIRROR_PROJECT_ID
+  -r REPOSITORY_NAME: $REPOSITORY_NAME\n"
+}
+
 # Parse options
-while getopts :ha:b:g:i: flag
+while getopts :ha:b:g:i:r: flag
 do
   case "${flag}" in
     a)
@@ -47,23 +46,32 @@ do
       GITLAB_MIRROR_PROJECT_ID=${OPTARG};;
     r)
       REPOSITORY_NAME=${OPTARG};;
-    h | *)
+    h)
+      printf "\nHelp requested.\n"
       print_help
+      printf "\nExiting.\n"
       exit 0;;
+    *)
+      printf "\nInvalid argument ${OPTARG} (${flag}).\n"
+      print_help
+      print_args
+      exit 1;;
   esac
 done
 
-
 # Test if arguments are missing
 if [ -z ${API_URL} ] || [ -z ${BRANCH_TO_SYNC} ] || [ -z ${GITLAB_TRIGGER_TOKEN} ] || [ -z ${GITLAB_MIRROR_PROJECT_ID} ] || [ -z ${REPOSITORY_NAME} ]; then
-  printf "\nArgument(s) missing.\n"
+  printf "\nArgument(s) missing!\n"
   print_help
-  exit 0
+  print_args
+  exit 2
 fi
 
+# Print arguments
+print_args
 
 # Send synchronization request
-printf "\n\n${red}${i}.${no_color} Send request to DSO api.\n\n"
+printf "\n${red}${i}.${no_color} Send request to DSO api.\n\n"
 
 curl \
   -X POST \
