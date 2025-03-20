@@ -160,12 +160,15 @@ export const setVariables: StepCall<Project> = async (payload) => {
     const { gitlab: gitlabApi } = payload.apis
 
     const sonarSecret = await payload.apis.vault.read('SONAR')
+    const listGroupVars = await gitlabApi.getGitlabGroupVariables()
     await Promise.all([
       // Sonar vars saving in CI (repositories)
       ...project.repositories.map(async (repo) => {
         const projectKey = generateProjectKey(projectSlug, repo.internalRepoName)
+        const repoId = await payload.apis.gitlab.getProjectId(repo.internalRepoName)
+        const listVars = await gitlabApi.getGitlabRepoVariables(repoId)
         return [
-          await gitlabApi.setGitlabRepoVariable(repo.internalRepoName, {
+          await gitlabApi.setGitlabRepoVariable(repoId, listVars, {
             key: 'PROJECT_KEY',
             masked: false,
             protected: false,
@@ -173,7 +176,7 @@ export const setVariables: StepCall<Project> = async (payload) => {
             variable_type: 'env_var',
             environment_scope: '*',
           }),
-          await gitlabApi.setGitlabRepoVariable(repo.internalRepoName, {
+          await gitlabApi.setGitlabRepoVariable(repoId, listVars, {
             key: 'PROJECT_NAME',
             masked: false,
             protected: false,
@@ -181,7 +184,7 @@ export const setVariables: StepCall<Project> = async (payload) => {
             variable_type: 'env_var',
             environment_scope: '*',
           }),
-          await gitlabApi.setGitlabRepoVariable(repo.internalRepoName, {
+          await gitlabApi.setGitlabRepoVariable(repoId, listVars, {
             variable_type: 'file',
             key: 'SONAR_PROJECT_PROPERTIES',
             masked: false,
@@ -192,7 +195,7 @@ export const setVariables: StepCall<Project> = async (payload) => {
         ]
       }).flat(),
       // Sonar vars saving in CI (group)
-      await gitlabApi.setGitlabGroupVariable({
+      await gitlabApi.setGitlabGroupVariable(listGroupVars, {
         key: 'SONAR_TOKEN',
         masked: true,
         protected: false,
