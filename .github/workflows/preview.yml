@@ -19,7 +19,7 @@ jobs:
       - name: Generate app url
         id: generate-url
         run: |
-          echo "CONSOLE_URL=$(echo "${{ vars.CONSOLE_TEMPLATE_URL }}" | sed 's|<pr_number>|${{ github.event.number }}|g')" >> $GITHUB_OUTPUT
+          echo "CONSOLE_URL=$(echo "${{ vars.ARGOCD_CONSOLE_URL_TEMPLATE }}" | sed 's|<pr_number>|${{ github.event.number }}|g')" >> $GITHUB_OUTPUT
 
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v2
