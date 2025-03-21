@@ -400,9 +400,13 @@ export class GitlabProjectApi extends GitlabApi {
   }
 
   // CI Variables
-  public async setGitlabGroupVariable(toSetVariable: VariableSchema): Promise<setVariableResult> {
+  public async getGitlabGroupVariables(): Promise<VariableSchema[]> {
     const group = await this.getOrCreateProjectGroup()
-    const listVars = await this.api.GroupVariables.all(group.id)
+    return await this.api.GroupVariables.all(group.id)
+  }
+
+  public async setGitlabGroupVariable(listVars: VariableSchema[], toSetVariable: VariableSchema): Promise<setVariableResult> {
+    const group = await this.getOrCreateProjectGroup()
     const currentVariable = listVars.find(v => v.key === toSetVariable.key)
     if (currentVariable) {
       if (
@@ -425,29 +429,26 @@ export class GitlabProjectApi extends GitlabApi {
         return 'updated'
       }
       return 'already up-to-date'
-    } else {
-      await this.api.GroupVariables.create(
-        group.id,
-        toSetVariable.key,
-        toSetVariable.value,
-        {
-          variableType: toSetVariable.variable_type,
-          masked: toSetVariable.masked,
-          protected: toSetVariable.protected,
-
-        },
-      )
-      return 'created'
     }
+    await this.api.GroupVariables.create(
+      group.id,
+      toSetVariable.key,
+      toSetVariable.value,
+      {
+        variableType: toSetVariable.variable_type,
+        masked: toSetVariable.masked,
+        protected: toSetVariable.protected,
+
+      },
+    )
+    return 'created'
   }
 
-  public async setGitlabRepoVariable(repoName: string, toSetVariable: ProjectVariableSchema): Promise<setVariableResult | 'repository not found'> {
-    const group = await this.getOrCreateProjectGroup()
-    const allRepositories = await this.api.Groups.allProjects(group.id, { perPage: 1000 })
-    const repository = allRepositories.find(({ name }) => name === repoName)
-    if (!repository) return 'repository not found'
+  public async getGitlabRepoVariables(repoId: number): Promise<VariableSchema[]> {
+    return await this.api.ProjectVariables.all(repoId)
+  }
 
-    const listVars = await this.api.ProjectVariables.all(repository.id)
+  public async setGitlabRepoVariable(repoId: number, listVars: VariableSchema[], toSetVariable: ProjectVariableSchema): Promise<setVariableResult | 'repository not found'> {
     const currentVariable = listVars.find(v => v.key === toSetVariable.key)
     if (currentVariable) {
       if (
@@ -457,7 +458,7 @@ export class GitlabProjectApi extends GitlabApi {
         || currentVariable.variable_type !== toSetVariable.variable_type
       ) {
         await this.api.ProjectVariables.edit(
-          repository.id,
+          repoId,
           toSetVariable.key,
           toSetVariable.value,
           {
@@ -472,19 +473,18 @@ export class GitlabProjectApi extends GitlabApi {
         return 'updated'
       }
       return 'already up-to-date'
-    } else {
-      await this.api.ProjectVariables.create(
-        repository.id,
-        toSetVariable.key,
-        toSetVariable.value,
-        {
-          variableType: toSetVariable.variable_type,
-          masked: toSetVariable.masked,
-          protected: toSetVariable.protected,
-        },
-      )
-      return 'created'
     }
+    await this.api.ProjectVariables.create(
+      repoId,
+      toSetVariable.key,
+      toSetVariable.value,
+      {
+        variableType: toSetVariable.variable_type,
+        masked: toSetVariable.masked,
+        protected: toSetVariable.protected,
+      },
+    )
+    return 'created'
   }
 
   // Mirror
