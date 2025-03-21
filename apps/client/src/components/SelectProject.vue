@@ -88,7 +88,7 @@ function selectProject(slug: string) {
 .select-project select{
   width: 250px;
   height: 50px;
-  background-color: --var(--background-default-grey);
+  background-color: var(--background-default-grey);
 }
 
 .select-project .create-project{

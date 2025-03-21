@@ -1,8 +1,8 @@
 # Dev stage
-FROM docker.io/node:22.13.0-bullseye-slim AS dev
+FROM docker.io/node:22.14.0-bullseye-slim AS dev
 
 WORKDIR /app
-RUN npm install --ignore-scripts --location=global pnpm@9.15.4
+RUN npm install --ignore-scripts --location=global pnpm@10.5.2
 COPY --chown=node:root package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
 COPY --chown=node:root patches ./patches
 COPY --chown=node:root apps/client/package.json ./apps/client/package.json
