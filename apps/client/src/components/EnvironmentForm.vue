@@ -95,16 +95,6 @@ function setEnvironmentOptions() {
     text: stage.name,
     value: stage.id,
   }))
-  quotaOptions.value
-    = quotaStore.quotas
-      .filter(quota =>
-        (quota.stageIds.includes(localEnvironment.value.stageId ?? '') // quotas disponibles pour ce type d'environnement
-          && (!quota.isPrivate || props.canSeePrivateQuotas)) // et ne pas afficher les quotas privés
-          || quota.id === localEnvironment.value.quotaId) // ou quota actuellement associé (au cas où l'association ne soit plus disponible)
-      .map(quota => ({
-        text: `${quota.name} (${quota.cpu}CPU, ${quota.memory})`,
-        value: quota.id,
-      }))
   clusterOptions.value = props.availableClusters
     .filter(cluster =>
       (cluster.stageIds.includes(localEnvironment.value.stageId ?? '') // correspondant à ce stage
@@ -115,6 +105,19 @@ function setEnvironmentOptions() {
       text: cluster.label,
       value: cluster.id,
     }))
+}
+
+function setQuotaOptions() {
+  quotaOptions.value
+    = quotaStore.quotas
+      .filter(quota =>
+        (quota.stageIds.includes(localEnvironment.value.stageId ?? '') // quotas disponibles pour ce type d'environnement
+          && (!quota.isPrivate || props.canSeePrivateQuotas)) // et ne pas afficher les quotas privés
+          || quota.id === localEnvironment.value.quotaId) // ou quota actuellement associé (au cas où l'association ne soit plus disponible)
+      .map(quota => ({
+        text: `${quota.name} (${quota.cpu}CPU, ${quota.memory})`,
+        value: quota.id,
+      }))
 }
 
 function resetCluster() {
@@ -144,6 +147,7 @@ onBeforeMount(async () => {
     zoneStore.getAllZones(),
   ])
   setEnvironmentOptions()
+  setQuotaOptions()
 })
 
 onMounted(() => {
@@ -224,7 +228,7 @@ watch(localEnvironment.value, () => {
       required
       :disabled="!props.isEditable || !props.canManage"
       :options="stageOptions"
-      @update:model-value="resetCluster()"
+      @update:model-value="() => { resetCluster(); setQuotaOptions() }"
     />
     <div>
       <div
@@ -245,7 +249,7 @@ watch(localEnvironment.value, () => {
           hint="Si votre projet nécessite d'avantage de ressources que celles proposées ci-dessus, contactez les administrateurs."
           required
           :options="quotaOptions"
-          :disabled="!!(localEnvironment.quotaId && quotaStore.quotasById[localEnvironment.quotaId]?.isPrivate) || !props.canManage"
+          :disabled="!props.canManage"
         />
       </div>
       <DsfrAlert
