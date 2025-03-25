@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.2.1](https://github.com/cloud-pi-native/console/compare/v9.2.0...v9.2.1) (2025-03-25)
+
+
+### Bug Fixes
+
+* :bug: update condition to allow private quota modification ([f4c34bb](https://github.com/cloud-pi-native/console/commit/f4c34bb1e462a9d393c4af231a0f524eb20fcad1))
+
 ## [9.2.0](https://github.com/cloud-pi-native/console/compare/v9.1.0...v9.2.0) (2025-03-21)
 
 
