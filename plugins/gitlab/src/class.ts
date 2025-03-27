@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { PluginApi, type Project, type UniqueRepo } from '@cpn-console/hooks'
 import type { AccessTokenScopes, CommitAction, GroupSchema, GroupStatisticsSchema, MemberSchema, ProjectVariableSchema, VariableSchema } from '@gitbeaker/rest'
-import type { AllRepositoryTreesOptions, CondensedProjectSchema, Gitlab, PaginationRequestOptions, RepositoryFileExpandedSchema, RepositoryTreeSchema } from '@gitbeaker/core'
+import type { AllRepositoryTreesOptions, CondensedProjectSchema, Gitlab, PaginationRequestOptions, ProjectSchema, RepositoryFileExpandedSchema, RepositoryTreeSchema } from '@gitbeaker/core'
 import { AccessLevel } from '@gitbeaker/core'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import { objectEntries } from '@cpn-console/shared'
@@ -187,8 +187,11 @@ export class GitlabApi extends PluginApi {
 }
 
 export class GitlabZoneApi extends GitlabApi {
+  private infraProjectsByZoneSlug: Map<string, ProjectSchema>
+
   constructor() {
     super()
+    this.infraProjectsByZoneSlug = new Map()
   }
 
   // Group Infra
@@ -206,17 +209,26 @@ export class GitlabZoneApi extends GitlabApi {
     })
   }
 
-  public async getOrCreateInfraProject(zone: string) {
+  public async getOrCreateInfraProject(zone: string): Promise<ProjectSchema> {
+    if (this.infraProjectsByZoneSlug.has(zone)) {
+      return this.infraProjectsByZoneSlug.get(zone)!
+    }
     const infraGroup = await this.getOrCreateInfraGroup()
     // Get or create projects_root_dir/infra/zone
-    const infraProjects = await this.api.Groups.allProjects(infraGroup.id)
-    return infraProjects.find(repo => repo.name === zone) ?? await this.createEmptyRepository({
+    const infraProjects = await this.api.Groups.allProjects(infraGroup.id, {
+      search: zone,
+      simple: true,
+      perPage: 100,
+    })
+    const project: ProjectSchema = infraProjects.find(repo => repo.name === zone) ?? await this.createEmptyRepository({
       repoName: zone,
       groupId: infraGroup.id,
       description: 'Repository hosting deployment files for this zone.',
       createFirstCommit: true,
     },
     )
+    this.infraProjectsByZoneSlug.set(zone, project)
+    return project
   }
 }
 
@@ -288,7 +300,11 @@ export class GitlabProjectApi extends GitlabApi {
     if (!projectGroup) {
       throw new Error('Parent DSO Project group has not been created yet')
     }
-    const projectsInGroup = await this.api.Groups.allProjects(projectGroup?.id, { perPage: 100 })
+    const projectsInGroup = await this.api.Groups.allProjects(projectGroup.id, {
+      search: projectName,
+      simple: true,
+      perPage: 100,
+    })
     const project = projectsInGroup.find(p => p.path === projectName)
 
     if (!project) {
