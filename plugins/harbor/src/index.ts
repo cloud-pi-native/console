@@ -2,6 +2,7 @@ import type { DeclareModuleGenerator, Plugin } from '@cpn-console/hooks'
 import { createDsoProject, deleteDsoProject, getProjectSecrets } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
+import { startTracker } from './tracker.js'
 
 export const plugin: Plugin = {
   infos,
@@ -11,6 +12,7 @@ export const plugin: Plugin = {
     getProjectSecrets: { steps: { main: getProjectSecrets } },
   },
   monitor,
+  start: startTracker,
 }
 
 declare module '@cpn-console/hooks' {
