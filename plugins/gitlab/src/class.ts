@@ -196,6 +196,8 @@ export class GitlabZoneApi extends GitlabApi {
     const rootId = await getGroupRootId()
     // Get or create projects_root_dir/infra group
     const searchResult = await this.api.Groups.search(infraGroupName)
+    // console.log("[SEARCH_GROUPE_BY_ZONE]")
+    // console.trace(searchResult)
     const existingParentGroup = searchResult.find(group => group.parent_id === rootId && group.name === infraGroupName)
     return existingParentGroup || await this.api.Groups.create(infraGroupName, infraGroupPath, {
       parentId: rootId,
@@ -210,6 +212,8 @@ export class GitlabZoneApi extends GitlabApi {
     const infraGroup = await this.getOrCreateInfraGroup()
     // Get or create projects_root_dir/infra/zone
     const infraProjects = await this.api.Groups.allProjects(infraGroup.id)
+    // console.log("[GET_ALL_PROJECTS_BY_INFRA_GROUP]")
+    // console.trace(infraProjects)
     return infraProjects.find(repo => repo.name === zone) ?? await this.createEmptyRepository({
       repoName: zone,
       groupId: infraGroup.id,
