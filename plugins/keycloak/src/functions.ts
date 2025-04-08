@@ -157,6 +157,7 @@ export const upsertZone: StepCall<ZoneObject> = async ({ args: zone, apis }) => 
       clientAuthenticatorType: 'client-secret',
       protocol: 'openid-connect',
       publicClient: false,
+      defaultClientScopes: ['generic'],
       redirectUris: [`${argocdUrl}/auth/callback`],
       webOrigins: [argocdUrl],
       rootUrl: argocdUrl,
