@@ -46,6 +46,13 @@ export function getMinimalApplicationObject({ name, destination, repoURL, appPro
       project: appProjectName,
       source: {
         repoURL,
+        plugin: {
+          env: [
+            { name: 'AVP_SECRET', value: 'vault-plugin-secret' },
+            { name: 'HELM_ARGS', value: '-f values.yaml' },
+            { name: 'HELM_VALUES', value: '' },
+          ],
+        },
       },
     },
   } as BaseResources
