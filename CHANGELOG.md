@@ -12,7 +12,6 @@
 
 ### Features
 
-* :zap: limit gitlab api calls to list cicd variables in sonar plugin ([8b04be3](https://github.com/cloud-pi-native/console/commit/8b04be3b8dc4627a10bc818d8eb17369d5d31a82))
 * :zap: limit gitlab api calls to list cicd variables in sonar plugin ([c1b3299](https://github.com/cloud-pi-native/console/commit/c1b32998f4f340c945c657d2dbbb81160fc054f8))
 
 ## [9.1.0](https://github.com/cloud-pi-native/console/compare/v9.0.0...v9.1.0) (2025-02-19)
