@@ -3,7 +3,7 @@ import { generateRandomPassword, parseError } from '@cpn-console/hooks'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation.js'
 import type { CustomGroup } from './group.js'
-import { consoleGroupName, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateProjectGroup } from './group.js'
+import { consoleGroupName, getAllGroups, getGroupByName, getOrCreateChildGroup, getOrCreateProjectGroup } from './group.js'
 import { getkcClient } from './client.js'
 
 export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: { email } }) => {
@@ -89,12 +89,12 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
     ])
 
     // Ensure envs subgroups exists
-    const projectGroups = await getAllSubgroups(kcClient, projectGroup.id, 0)
+    const projectGroups = await getAllGroups(kcClient, 0, [], projectGroup.id)
 
     const consoleGroup: Required<CustomGroup> = projectGroups.find(({ name }) => name === consoleGroupName) as Required<GroupRepresentation>
       ?? await getOrCreateChildGroup(kcClient, projectGroup.id, consoleGroupName) as Required<GroupRepresentation>
 
-    const envGroups = await getAllSubgroups(kcClient, consoleGroup.id, 0) as CustomGroup[]
+    const envGroups = await getAllGroups(kcClient, 0, [], consoleGroup.id) as CustomGroup[]
 
     const promises: Promise<any>[] = []
     for (const environment of project.environments) {

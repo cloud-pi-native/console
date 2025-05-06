@@ -3,26 +3,28 @@ import type { ClusterObject } from '@cpn-console/hooks'
 import { inClusterLabel } from '@cpn-console/shared'
 import { AnyObjectsApi } from './customApiClass.js'
 
-export function createCoreV1Api(cluster: ClusterObject) {
+type ClusterConnectionInfo = Pick<ClusterObject, 'label' | 'external' | 'cluster' | 'user'>
+
+export function createCoreV1Api(cluster: ClusterConnectionInfo) {
   const kc = makeClusterApi(cluster)
   return kc ? kc.makeApiClient(CoreV1Api) : undefined
 }
 
-export function createApisApi(cluster: ClusterObject) {
+export function createApisApi(cluster: ClusterConnectionInfo) {
   const kc = makeClusterApi(cluster)
   return kc ? kc.makeApiClient(ApisApi) : undefined
 }
 
-export function createCoreV1Apis(clusters: ClusterObject[]) {
+export function createCoreV1Apis(clusters: ClusterConnectionInfo[]) {
   return clusters.map(createCoreV1Api)
 }
 
-export function createCustomObjectApi(cluster: ClusterObject) {
+export function createCustomObjectApi(cluster: ClusterConnectionInfo) {
   const kc = makeClusterApi(cluster)
   return kc ? kc.makeApiClient(AnyObjectsApi) : undefined
 }
 
-function makeClusterApi(cluster: ClusterObject): KubeConfig | undefined {
+function makeClusterApi(cluster: ClusterConnectionInfo): KubeConfig | undefined {
   const kc = new KubeConfig()
   if (cluster.label === inClusterLabel) {
     kc.loadFromCluster()
@@ -39,7 +41,7 @@ function makeClusterApi(cluster: ClusterObject): KubeConfig | undefined {
   }
   const userConfig = {
     ...cluster.user,
-    name: cluster.id,
+    name: cluster.label,
   }
   if (cluster.cluster.skipTLSVerify) {
     delete clusterConfig.caData

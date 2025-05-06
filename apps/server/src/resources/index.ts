@@ -12,7 +12,7 @@ import { serviceMonitorRouter } from './service-monitor/router.js'
 import { projectServiceRouter } from './project-service/router.js'
 import { stageRouter } from './stage/router.js'
 import { systemRouter } from './system/router.js'
-import { pluginConfigRouter } from './system/config/router.js'
+import { pluginRouter } from './plugin/router.js'
 import { userRouter } from './user/router.js'
 import { zoneRouter } from './zone/router.js'
 import { systemSettingsRouter } from './system/settings/router.js'
@@ -38,7 +38,7 @@ export function apiRouter() {
     await app.register(serverInstance.plugin(quotaRouter()), validateTrue)
     await app.register(serverInstance.plugin(repositoryRouter()), validateTrue)
     await app.register(serverInstance.plugin(serviceMonitorRouter()), validateTrue)
-    await app.register(serverInstance.plugin(pluginConfigRouter()), validateTrue)
+    await app.register(serverInstance.plugin(pluginRouter()), validateTrue)
     await app.register(serverInstance.plugin(stageRouter()), validateTrue)
     await app.register(serverInstance.plugin(systemRouter()), validateTrue)
     await app.register(serverInstance.plugin(systemSettingsRouter()), validateTrue)
