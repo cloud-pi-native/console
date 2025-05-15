@@ -36,7 +36,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 
     const infraRepositories = project.repositories.filter(repo => repo.isInfra)
     const sourceRepos = [
-      ...await Promise.all(infraRepositories.map(repo => gitlabApi.getRepoUrl(repo.internalRepoName))),
+      `${await gitlabApi.getGroupUrl()}/**`,
       ...splitExtraRepositories(payload.config.argocd?.extraRepositories),
       ...splitExtraRepositories(project.store.argocd?.extraRepositories),
     ]

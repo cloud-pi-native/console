@@ -275,6 +275,10 @@ export class GitlabProjectApi extends GitlabApi {
     return this.createProjectGroup()
   }
 
+  public async getGroupUrl() {
+    return `${config().publicUrl}/${config().projectsRootDir}/${this.project.slug}`
+  }
+
   // Tokens
   public async getProjectMirrorCreds(vaultApi: VaultProjectApi): Promise<GitlabMirrorSecret> {
     const tokenName = `${this.project.slug}-bot`
@@ -363,7 +367,7 @@ export class GitlabProjectApi extends GitlabApi {
 
   // Repositories
   public async getRepoUrl(repoName: string) {
-    return `${config().publicUrl}/${config().projectsRootDir}/${this.project.slug}/${repoName}.git`
+    return `${await this.getGroupUrl()}/${repoName}.git`
   }
 
   public async listRepositories() {
