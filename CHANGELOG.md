@@ -1,5 +1,19 @@
 # Changelog
 
+## [9.3.0](https://github.com/cloud-pi-native/console/compare/v9.2.1...v9.3.0) (2025-05-19)
+
+
+### Features
+
+* :zap: optimization of gitlab API calls ([d9b236e](https://github.com/cloud-pi-native/console/commit/d9b236ebe032d4976094fed757467165ac40df25))
+
+
+### Bug Fixes
+
+* :bug: add missing scope when creating keycloak client ([ec24df1](https://github.com/cloud-pi-native/console/commit/ec24df116469237ad85e67d183560976283fc1ec))
+* :wrench: duplicate changelog entries ([#1587](https://github.com/cloud-pi-native/console/issues/1587)) ([ea9fdec](https://github.com/cloud-pi-native/console/commit/ea9fdec8e15132d537f888aec0369ccb655a3667))
+* allowed sources repositories ([a5ce7ad](https://github.com/cloud-pi-native/console/commit/a5ce7ad7a6a3cc17fa8726a6be42cdf53828034b))
+
 ## [9.2.1](https://github.com/cloud-pi-native/console/compare/v9.2.0...v9.2.1) (2025-03-25)
 
 
