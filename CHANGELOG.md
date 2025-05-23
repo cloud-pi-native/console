@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.3.1](https://github.com/cloud-pi-native/console/compare/v9.3.0...v9.3.1) (2025-05-23)
+
+
+### Bug Fixes
+
+* :bug: adapt status analysis to Nexus 3.78 response ([95001c2](https://github.com/cloud-pi-native/console/commit/95001c2d96afa101e9867da177d5eed8dcc6b40d))
+
 ## [9.3.0](https://github.com/cloud-pi-native/console/compare/v9.2.1...v9.3.0) (2025-05-19)
 
 
