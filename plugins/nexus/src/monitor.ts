@@ -8,13 +8,12 @@ const coreComponents = [
   'Read-Only Detector',
 ]
 const auxComponents = [
+  'Available CPUs',
   'Blob Stores Quota',
   'File Descriptors',
-  'Lifecycle Phase',
   'NuGet V2 repositories',
   'Scheduler',
   'Thread Deadlock Detector',
-  'Coordinate Content Selectors',
   'Read-Only Detector',
   'Default Admin Credentials',
 ]
