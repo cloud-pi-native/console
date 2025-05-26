@@ -55,6 +55,7 @@ onBeforeMount(async () => {
       v-for="project in projectList"
       :key="project.id"
       class="min-w-75 h-45"
+      id="project-list"
     >
       <DsfrTile
         class="h-full"
@@ -95,7 +96,7 @@ a.fr-tile__link::after {
   margin-bottom: 0 !important;
 }
 
-.fr-tile__header {
+#project-list .fr-tile__header {
   display: none;
 }
 </style>
