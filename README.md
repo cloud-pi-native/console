@@ -7,6 +7,51 @@ En addition du provisionnement automatique, elle garantit aussi le contrôle d'a
 
 <img src="./misc/images/projects.png" width="30%"></img> <img src="./misc/images/repositories.png" width="30%"></img> <img src="./misc/images/environments.png" width="30%"></img> <img src="./misc/images/services.png" width="30%"></img> <img src="./misc/images/members.png" width="30%"></img> <img src="./misc/images/status.png" width="30%"></img>
 
+## Démarrage Rapide (OnBoarding)
+
+Afin de démarrer rapidement l'application pour la découvrir il vous faudra satisfaire à un certain nombre de prérequis.
+
+### Prérequis
+
+- [Docker >= v27](https://docs.docker.com/get-docker/) Orchestrateur de conteneurs
+  - [Plugin compose >= v2.35](https://github.com/docker/compose) (attention à ne pas avoir une vieille version qui traînerait dans `~/.docker/cli-plugins/` !) Permet de composer plusieurs conteneurs Docker
+  - [Plugin buildx](https://github.com/docker/buildx) Permet d'étendre les capacités de Docker à l'aide de BuildKit
+- [Node.js >= v22](https://nodejs.org/en/download/) Environnement d'exécution JavaScript. Vous pouvez utiliser [Volta](https://volta) pour gérer automatiquement l'installation de la version approuvée
+- [PnPM >= v10](https://pnpm.io/installation) Gestionnaire de paquets pour JavaScript
+
+### Configuration locale
+
+Afin de pouvoir démarrer l'application, il vous faudra également récupérer (ou bien créer vous-même) les fichiers :
+
+- `apps/client/.env.docker`
+- `apps/client/.env.integ`
+- `apps/server/.env.docker`
+- `apps/server/.env.integ`
+
+En vous basant sur une infrastructure existante.
+
+### Lancement Rapide
+
+Maintenant que vous avez les prérequis et la configuration, vous pouvez construire et déployer le projet :
+
+```bash
+# Installer toutes les dépendances
+$ pnpm install
+
+# Construire les applications client et server
+$ pnpm build
+
+# Construire les images dockers client et server, puis lancer la stack docker compose d'intégration
+$ pnpm run docker:integ
+
+# Initialiser la base de données PostgreSQL lancée localement
+$ pnpm db:generate
+```
+
+Cette série de commandes va installer les diverses dépendances, construire l'intégralité de l'application Console (client et serveur) dans des images docker locales, et finalement lancer l'application en la connectant dans votre infrastructure d'Intégration existante.
+
+Si vous voulez une vue plus approfondie du lancement de l'application, vous pouvez vous référer à la [section détaillée à ce sujet](#développement).
+
 ## Architecture
 
 Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuejs.org/), [Postgres](https://www.postgresql.org/) et [Keycloak](https://www.keycloak.org/).
@@ -45,23 +90,6 @@ Plusieurs plugins sont nativement enregistrés auprès du serveur pour assurer l
 ## Développement
 
 Le développement s'effectue à l'aide de Docker *(le client et le serveur peuvent tourner en local ou dans Docker)* ou encore directement dans un cluster Kubernetes à l'aide de Kind, un outil permettant de créer des noeuds Kubernetes dans des conteneurs Docker.
-
-### Prérequis
-
-Liste des outils utilisés par le projet à installer sur son ordinateur :
-
-- [Docker](https://docs.docker.com/get-docker/) *- moteur d'exécution de conteneur*
-  - [Plugin compose](https://github.com/docker/compose) *- define and run multi-container applications with Docker*
-  - [Plugin buildx](https://github.com/docker/buildx) *- Docker CLI plugin for extended build capabilities with BuildKit*
-- [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) *- kubernetes dans Docker*
-- [Kubectl](https://kubernetes.io/fr/docs/tasks/tools/install-kubectl/) *- interface en ligne de commande pour kubernetes*
-- [Helm](https://helm.sh/docs/intro/install/) *- gestionnaire de paquets kubernetes*
-- [Nodejs](https://nodejs.org/en/download/) *- environnement d'exécution javascript*
-- [Pnpm](https://pnpm.io/installation) *- gestionnaire de paquets pour javascript*
-
-> Pour une meilleure expérience développeur, il est recommandé :
->   - de gérer les versions de Nodejs avec [Volta](https://volta.sh/).
->   - de lancer les commandes Nodejs à l'aide de [Ni](https://github.com/antfu/ni).
 
 ### Lancer l'application
 
@@ -123,6 +151,13 @@ pnpm run docker:dev:delete
 > Pour lancer le debugger nodejs sur le serveur, dans les fichiers `docker-compose` remplacer la directive  `command: ["dev"]` par `command: ["debug"]`.
 
 __Kubernetes :__
+
+Nous recommandons l'utilisation de [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) ("Kubernetes in Docker") pour des tests en local
+
+Vous aurez également besoin d'installer les outils suivants pour des déploiements avancés, plus proche d'une exploitation en mode "Production" :
+
+- [Kubectl](https://kubernetes.io/fr/docs/tasks/tools/install-kubectl/) Interface en ligne de commande pour Kubernetes
+- [Helm](https://helm.sh/docs/intro/install/) Gestionnaire de ressources Kubernetes (manifestes YAML) sous la forme de "charts"
 
 ```shell
 # Initialiser Kind (ajoute des noms de domaines dans /etc/hosts, le mot de passe sera demandé)
