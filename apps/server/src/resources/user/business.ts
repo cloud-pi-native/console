@@ -88,34 +88,33 @@ export enum TokenInvalidReason {
 
 type UserTrial = Omit<UserDetails, 'type'>
 export async function logViaSession({ id, email, groups, ...user }: UserTrial): Promise<{ user: User, adminPerms: bigint }> {
-  const userDb = await prisma.user.findUnique({
+  let userDb = await prisma.user.findUnique({
     where: { id },
   })
+
+  if (!userDb) {
+    userDb = await prisma.user.create({ data: { email, id, ...user, adminRoleIds: [], type: 'human' } })
+  }
+
   const matchingAdminRoles = await prisma.adminRole.findMany({
-    where: { OR: [{ oidcGroup: { in: groups } }, { id: { in: userDb?.adminRoleIds } }] },
+    where: { OR: [{ oidcGroup: { in: groups } }, { id: { in: userDb.adminRoleIds } }] },
   })
 
   const oidcRoleIds = matchingAdminRoles
     .filter(({ oidcGroup }) => oidcGroup && groups.includes(oidcGroup))
     .map(({ id }) => id)
 
-  if (!userDb) {
-    const createdUser = await prisma.user.create({ data: { email, id, ...user, adminRoleIds: [], type: 'human' } })
-    return {
-      user: createdUser,
-      adminPerms: sumAdminPerms(matchingAdminRoles),
-    }
-  }
-
   const nonOidcRoleIds = matchingAdminRoles
     .filter(({ oidcGroup, id }) => !oidcGroup && userDb.adminRoleIds.includes(id))
     .map(({ id }) => id)
 
-  const updatedUser = await prisma.user.update({ where: { id }, data: { ...user, adminRoleIds: nonOidcRoleIds, lastLogin: (new Date()).toISOString() } }) // on enregistre en bdd uniquement les roles de l'utilisateurs qui ne viennent pas de keycloak
+  // On enregistre en bdd uniquement les roles de l'utilisateur
+  // qui ne viennent pas de keycloak
+  const updatedUser = await prisma.user.update({ where: { id }, data: { ...user, adminRoleIds: nonOidcRoleIds, lastLogin: (new Date()).toISOString() } })
     .then(user => ({ ...user, adminRoleIds: [...user.adminRoleIds, ...oidcRoleIds] }))
   return {
     user: updatedUser,
-    adminPerms: matchingAdminRoles.reduce((acc, curr) => acc | curr.permissions, 0n),
+    adminPerms: sumAdminPerms(matchingAdminRoles),
   }
 }
 
