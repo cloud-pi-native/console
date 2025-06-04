@@ -149,6 +149,8 @@ describe('test users business', () => {
     it('should create user and return adminPerms', async () => {
       prisma.adminRole.findMany.mockResolvedValue(adminRoles)
       prisma.user.findUnique.mockResolvedValue(undefined)
+      prisma.user.create.mockResolvedValue(user)
+      prisma.user.update.mockResolvedValue(user)
       const response = await logViaSession(userToLog)
       expect(response.adminPerms).toBe(0n)
       expect(prisma.user.create).toHaveBeenCalledTimes(1)
