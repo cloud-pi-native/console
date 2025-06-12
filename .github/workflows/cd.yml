@@ -89,8 +89,14 @@ jobs:
       - release
       - build-amd64
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
       - name: Trigger helm-charts update
         env:
-          GH_TOKEN: ${{ secrets.HELM_CHART_TOKEN }}
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
           gh workflow --repo cloud-pi-native/helm-charts run update-chart.yaml -f APP_VERSION=${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }} -f CHART_NAME=dso-console
