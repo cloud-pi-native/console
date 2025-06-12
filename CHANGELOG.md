@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.3.3](https://github.com/cloud-pi-native/console/compare/v9.3.2...v9.3.3) (2025-06-12)
+
+
+### Bug Fixes
+
+* :bug: fix gitlab deletion API request ([7acd71b](https://github.com/cloud-pi-native/console/commit/7acd71bc9aed370882b41f31c37dcbb8122bdd3d))
+
 ## [9.3.2](https://github.com/cloud-pi-native/console/compare/v9.3.1...v9.3.2) (2025-06-12)
 
 
