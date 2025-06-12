@@ -181,8 +181,9 @@ export class GitlabApi extends PluginApi {
     }
   }
 
-  public async deleteRepository(repoId: number) {
-    return this.api.Projects.remove(repoId, { permanentlyRemove: true })
+  public async deleteRepository(repoId: number, fullPath: string) {
+    await this.api.Projects.remove(repoId) // Marks for deletion
+    return this.api.Projects.remove(repoId, { permanentlyRemove: true, fullPath }) // Effective deletion
   }
 }
 
