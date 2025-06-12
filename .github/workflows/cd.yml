@@ -95,6 +95,8 @@ jobs:
         with:
           app-id: ${{ secrets.GH_APP_ID }}
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: helm-charts
       - name: Trigger helm-charts update
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
