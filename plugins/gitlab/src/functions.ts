@@ -143,7 +143,7 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
 export const deleteDsoProject: StepCall<Project> = async (payload) => {
   try {
     const group = await payload.apis.gitlab.getProjectGroup()
-    if (group) await deleteGroup(group?.id)
+    if (group) await deleteGroup(group.id, group.full_path)
 
     return {
       status: {
@@ -208,7 +208,7 @@ export const deleteZone: StepCall<ZoneObject> = async (payload) => {
   try {
     const gitlabApi = payload.apis.gitlab
     const zoneRepo = await gitlabApi.getOrCreateInfraProject(payload.args.slug)
-    await gitlabApi.deleteRepository(zoneRepo.id)
+    await gitlabApi.deleteRepository(zoneRepo.id, zoneRepo.path_with_namespace)
     return returnResult
   } catch (error) {
     returnResult.error = parseError(cleanGitlabError(error))
