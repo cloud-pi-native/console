@@ -23,7 +23,7 @@ export async function ensureRepositories(gitlabApi: GitlabProjectApi, project: P
         && !gitlabRepository.topics?.includes(pluginManagedTopic)
         && !project.repositories.find(repo => repo.internalRepoName === gitlabRepository.name,
         )))
-      .map(gitlabRepository => gitlabApi.deleteRepository(gitlabRepository.id)),
+      .map(gitlabRepository => gitlabApi.deleteRepository(gitlabRepository.id, gitlabRepository.path_with_namespace)),
     // create missing repositories
     ...project.repositories.map(repo => ensureRepositoryExists(gitlabRepositories, repo, gitlabApi, projectMirrorCreds, vaultApi)),
   ]
