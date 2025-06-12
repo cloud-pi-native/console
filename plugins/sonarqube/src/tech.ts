@@ -1,33 +1,8 @@
 import axios from 'axios'
-import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
-
-const config: {
-  url?: string
-  user?: string
-  password?: string
-} = {}
-
-export function getConfig(): Required<typeof config> {
-  config.url = config.url ?? removeTrailingSlash(requiredEnv('SONARQUBE_URL'))
-  config.user = config.user ?? requiredEnv('SONAR_API_TOKEN')
-  // @ts-ignore
-  return config
-}
-export function getAxiosOptions() {
-  return {
-    baseURL: `${getConfig().url}/api/`,
-    auth: {
-      username: getConfig().user,
-      password: '', // Token is used, so password is useless
-    },
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-  }
-}
+import getConfig from './config.js'
 
 export function getAxiosInstance() {
-  return axios.create(getAxiosOptions())
+  return axios.create(getConfig().axiosOptions)
 }
 
 export interface VaultSonarSecret {
