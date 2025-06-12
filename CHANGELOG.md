@@ -1,5 +1,14 @@
 # Changelog
 
+## [9.3.2](https://github.com/cloud-pi-native/console/compare/v9.3.1...v9.3.2) (2025-06-12)
+
+
+### Bug Fixes
+
+* :bug: add missing custom source repositories in argocd values (pulling mode) ([5330f7a](https://github.com/cloud-pi-native/console/commit/5330f7ae16565d7f6e0840fab7bb86691c6aeb4a))
+* fix admin roles not being retrieved when a new user logs in for the first time ([e40c00b](https://github.com/cloud-pi-native/console/commit/e40c00b1b25ecb4026612018737a6a0a1abd5aec))
+* fix hiding tile header for all tiles instead of just the projects ones ([156e75a](https://github.com/cloud-pi-native/console/commit/156e75a215bd18a90b9abe6adee5a300ea180bbd))
+
 ## [9.3.1](https://github.com/cloud-pi-native/console/compare/v9.3.0...v9.3.1) (2025-05-23)
 
 
