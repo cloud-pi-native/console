@@ -1,0 +1,22 @@
+name: Test
+
+on:
+  workflow_dispatch:
+    inputs: {}
+jobs:
+  update-chart:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: helm-charts
+      - name: Trigger helm-charts update
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: |
+          gh workflow --repo cloud-pi-native/helm-charts run update-chart.yaml -f APP_VERSION=9.3.3 -f CHART_NAME=dso-console
