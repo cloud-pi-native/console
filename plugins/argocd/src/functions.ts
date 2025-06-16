@@ -97,6 +97,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
             rwGroup,
             project,
             environment,
+            cluster,
           )
           await customK8sApi.patchNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProjectName, minimalAppProject, undefined, undefined, undefined, patchOptions)
         } else {
@@ -108,6 +109,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
             rwGroup,
             environment,
             project,
+            cluster,
           })
           await customK8sApi.createNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProjectObject)
         }

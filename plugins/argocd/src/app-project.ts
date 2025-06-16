@@ -1,4 +1,4 @@
-import type { BaseResources, Environment, Project } from '@cpn-console/hooks'
+import type { BaseResources, ClusterObject, Environment, Project } from '@cpn-console/hooks'
 import { getConfig } from './utils.js'
 
 export interface ArgoDestination {
@@ -7,15 +7,15 @@ export interface ArgoDestination {
   server?: string
 }
 
-export function getAppProjectObject({ name, sourceRepositories, roGroup, rwGroup, destination, project, environment }:
-{ name: string, sourceRepositories: string[], roGroup: string, rwGroup: string, destination: ArgoDestination, project: Project, environment: Environment }) {
-  const minimalAppProject = getMinimalAppProjectPatch(destination, name, sourceRepositories, roGroup, rwGroup, project, environment)
+export function getAppProjectObject({ name, sourceRepositories, roGroup, rwGroup, destination, project, environment, cluster }:
+{ name: string, sourceRepositories: string[], roGroup: string, rwGroup: string, destination: ArgoDestination, project: Project, environment: Environment, cluster: ClusterObject }) {
+  const minimalAppProject = getMinimalAppProjectPatch(destination, name, sourceRepositories, roGroup, rwGroup, project, environment, cluster)
   minimalAppProject.apiVersion = 'argoproj.io/v1alpha1'
   minimalAppProject.metadata.namespace = getConfig().namespace
   return minimalAppProject
 }
 
-export function getMinimalAppProjectPatch(destination: ArgoDestination, name: string, sourceRepositories: string[], roGroup: string, rwGroup: string, project: Project, environment: Environment) {
+export function getMinimalAppProjectPatch(destination: ArgoDestination, name: string, sourceRepositories: string[], roGroup: string, rwGroup: string, project: Project, environment: Environment, cluster: ClusterObject) {
   return {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'AppProject',
@@ -32,6 +32,12 @@ export function getMinimalAppProjectPatch(destination: ArgoDestination, name: st
     },
     spec: {
       destinations: [destination],
+      clusterResourceWhitelist: cluster.clusterResources && cluster.privacy === 'dedicated'
+        ? [{
+            group: '*',
+            kind: '*',
+          }]
+        : [],
       namespaceResourceWhitelist: [{
         group: '*',
         kind: '*',
