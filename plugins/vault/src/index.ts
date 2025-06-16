@@ -3,6 +3,7 @@ import { archiveDsoProject, deleteZone, deployAuth, getSecrets, upsertProject, u
 import infos from './infos.js'
 import monitor from './monitor.js'
 import { VaultProjectApi, VaultZoneApi } from './class.js'
+import { startTracker } from './tracker.js'
 
 const onlyApi = { api: (project: ProjectLite) => new VaultProjectApi(project) }
 
@@ -46,6 +47,7 @@ export const plugin: Plugin = {
     },
   },
   monitor,
+  start: startTracker,
 }
 
 declare module '@cpn-console/hooks' {

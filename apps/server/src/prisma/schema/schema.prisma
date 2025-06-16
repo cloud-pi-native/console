@@ -20,3 +20,9 @@ model Log {
   project   Project? @relation(fields: [projectId], references: [id])
   user      User?    @relation(fields: [userId], references: [id])
 }
+
+model PluginReport {
+  pluginName String @unique
+  report  String?
+  updatedAt DateTime?
+}

@@ -16,6 +16,7 @@ import { swaggerUiPath } from '@cpn-console/shared'
 import { uuid } from '@/utils/regex.js'
 
 const AdminCluster = () => import('@/views/admin/AdminCluster.vue')
+const AdminPlugin = () => import('@/views/admin/AdminPlugin.vue')
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
 const ProfileWrapper = () => import('@/views/profile/ProfileWrapper.vue')
@@ -220,8 +221,22 @@ export const routes: Readonly<RouteRecordRaw[]> = [
       },
       {
         path: 'plugins',
-        name: 'ListPlugins',
-        component: ListPlugins,
+        children: [
+          {
+            path: '',
+            name: 'ListPlugins',
+            component: ListPlugins,
+          },
+          {
+            path: ':name',
+            component: AdminPlugin,
+            props(to) {
+              return {
+                name: to.params.name,
+              }
+            },
+          },
+        ],
       },
       {
         path: 'system-settings',
