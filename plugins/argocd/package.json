@@ -16,7 +16,11 @@
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
     "dev": "nodemon --watch src --ext .ts --exec 'pnpm run build'",
     "format": "eslint ./ --fix",
-    "lint": "eslint ./"
+    "lint": "eslint ./",
+    "test": "vitest run",
+    "test:cov": "vitest run --coverage",
+    "test:e2e-ci": "echo 'check cache'",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@cpn-console/gitlab-plugin": "workspace:^",
