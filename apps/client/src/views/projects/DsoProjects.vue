@@ -53,9 +53,9 @@ onBeforeMount(async () => {
   >
     <div
       v-for="project in projectList"
+      id="project-list"
       :key="project.id"
       class="min-w-75 h-45"
-      id="project-list"
     >
       <DsfrTile
         class="h-full"
