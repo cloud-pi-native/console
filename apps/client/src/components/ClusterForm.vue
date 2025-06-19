@@ -185,6 +185,12 @@ function updateCluster() {
   if (isClusterValid.value) emit('update', localCluster.value)
 }
 
+// We only allow cluster-wide resources creation on dedicated clusters, for security reasons
+// Selecting a Public (e.g shared) cluster instantly invalidates the related property
+function updatePrivacy(privacy: ClusterPrivacy) {
+  if (privacy === ClusterPrivacy.PUBLIC) localCluster.value.clusterResources = false
+}
+
 function cancel() {
   emit('cancel')
 }
@@ -337,13 +343,6 @@ const isConnectionDetailsShown = ref(true)
       label-visible
       hint="Facultatif. Attention, ces informations seront visibles par les utilisateurs de la console à qui ce cluster est destiné (tous si cluster public, membres des projets concernés pour les clusters réservés)."
     />
-    <DsfrCheckbox
-      id="clusterResourcesCbx"
-      v-model="localCluster.clusterResources"
-      label="Ressources cluster"
-      hint="Cochez la case si des ressources de type cluster peuvent être déployées par Argocd."
-      name="isClusterResources"
-    />
     <DsfrSelect
       v-model="localCluster.zoneId"
       required
@@ -365,6 +364,7 @@ const isConnectionDetailsShown = ref(true)
       select-id="privacy-select"
       label="Confidentialité du cluster"
       :options="Object.values(ClusterPrivacy)"
+      @change="updatePrivacy($event.target.value)"
     />
     <div
       v-if="localCluster.privacy === ClusterPrivacy.DEDICATED"
@@ -372,6 +372,7 @@ const isConnectionDetailsShown = ref(true)
     >
       <ChoiceSelector
         id="projects-select"
+        class="fr-mb-2w"
         wrapped
         label="Projets associés"
         description="Sélectionnez les projets autorisés à utiliser ce cluster."
@@ -383,6 +384,13 @@ const isConnectionDetailsShown = ref(true)
         value-key="id"
         :disabled="false"
         @update="(_p, projectIds) => localCluster.projectIds = projectIds"
+      />
+      <DsfrCheckbox
+        id="clusterResourcesCbx"
+        v-model="localCluster.clusterResources"
+        label="Ressources cluster"
+        hint="Cochez la case si des ressources de type cluster peuvent être déployées par Argocd."
+        name="isClusterResources"
       />
     </div>
     <div
