@@ -174,10 +174,32 @@ describe('ClusterForm.vue', () => {
 
     cy.mount(ClusterForm, { props })
     cy.get('#privacy-select')
-      .select(ClusterPrivacy.DEDICATED)
+      .select('dedicated')
     cy.get('#projects-select').should('be.visible')
     cy.get('#privacy-select')
       .select('public')
     cy.get('#projects-select').should('not.to.exist')
+  })
+
+  it('Should disallow cluster-wide resources when privacy is public', () => {
+    useSnackbarStore()
+
+    const props = {
+      cluster: {
+        ...getRandomCluster({}),
+        privacy: ClusterPrivacy.DEDICATED,
+        clusterResources: true,
+      },
+    }
+
+    cy.mount(ClusterForm, { props })
+    cy.get('#privacy-select')
+      .select('public')
+    cy.get('#clusterResourcesCbx').should('not.to.exist')
+    // Going back to dedicated should show that the checkbox has been forcibly reset
+    // to false when going to public
+    cy.get('#privacy-select')
+      .select('dedicated')
+    cy.get('#clusterResourcesCbx').should('not.be.checked')
   })
 })
