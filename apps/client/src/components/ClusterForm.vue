@@ -337,13 +337,6 @@ const isConnectionDetailsShown = ref(true)
       label-visible
       hint="Facultatif. Attention, ces informations seront visibles par les utilisateurs de la console à qui ce cluster est destiné (tous si cluster public, membres des projets concernés pour les clusters réservés)."
     />
-    <DsfrCheckbox
-      id="clusterResourcesCbx"
-      v-model="localCluster.clusterResources"
-      label="Ressources cluster"
-      hint="Cochez la case si des ressources de type cluster peuvent être déployées par Argocd."
-      name="isClusterResources"
-    />
     <DsfrSelect
       v-model="localCluster.zoneId"
       required
