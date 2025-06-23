@@ -67,6 +67,7 @@ export function getMinimalAppProjectPatch(
     },
     spec: {
       destinations: [destination],
+      clusterResourceWhitelist: [],
       namespaceResourceWhitelist: [
         {
           group: '*',
