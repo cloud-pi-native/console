@@ -157,6 +157,20 @@ function closeModal() {
   selectedEnv.value = undefined
   newResource.value = undefined
 }
+
+// Allow the copy to clipboard on click
+const copiedText = ref('')
+const MILLISECONDS_UNTIL_CLIPBOARD_CLEAR = 2000
+
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text)
+    copiedText.value = text
+    setTimeout(() => (copiedText.value = ''), MILLISECONDS_UNTIL_CLIPBOARD_CLEAR)
+  } catch (err) {
+    console.error('Erreur de copie :', err)
+  }
+}
 </script>
 
 <template>
@@ -393,13 +407,22 @@ function closeModal() {
             placeholder="main"
           />
         </div>
-        <DsfrButton
-          data-testid="syncRepoBtn"
-          label="Lancer la synchronisation"
-          secondary
-          :disabled="!branchName && !isAllSyncing"
-          @click="syncRepository()"
-        />
+        <div
+          class="flex space-x-10 mt-5"
+        >
+          <DsfrButton
+            data-testid="syncRepoBtn"
+            label="Lancer la synchronisation"
+            secondary
+            :disabled="!branchName && !isAllSyncing"
+            @click="syncRepository()"
+          />
+          <DsfrButton
+            data-testid="getIdRepoBtn"
+            label="Récupérer l'ID du dépôt"
+            @click="copyToClipboard(selectedRepo.id)"
+          />
+        </div>
       </div>
       <RepoForm
         :is-project-locked="project.locked"
