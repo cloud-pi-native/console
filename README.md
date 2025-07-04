@@ -240,7 +240,10 @@ pnpm run test
 pnpm run test:ct
 
 # Lancer les tests de bout en bout
-pnpm run test:e2e
+# D'abord lancer une stack, par ex, celle de Dev
+pnpm run docker:dev
+# Lancer ensuite les tests E2E
+pnpm run playwright:test
 ```
 
 L'intégralité des commandes est disponibles dans le fichier [package.json](./package.json) à la racine du projet, vous pouvez lancer ces dernières à l'aide de la commande `pnpm run <le_nom_du_script>`.
