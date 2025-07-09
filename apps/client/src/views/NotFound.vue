@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import router from '@/router/index.js'
+import { contactEmail } from '@/utils/env.js'
 
 const redirectButtons = [
   {
@@ -8,7 +9,7 @@ const redirectButtons = [
   },
   {
     label: 'Contactez-nous',
-    onClick: () => { window.location.assign('mailto:cloudpinative-relations@interieur.gouv.fr?subject=404 console Cloud π Native') },
+    onClick: () => { window.location.assign(`mailto:${contactEmail}?subject=404 console Cloud π Native`) },
     secondary: true,
   },
 ]
