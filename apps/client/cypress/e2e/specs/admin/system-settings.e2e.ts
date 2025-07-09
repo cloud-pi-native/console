@@ -3,6 +3,7 @@ import { getModel } from '../../support/func.js'
 
 describe('Administration system settings', () => {
   const systemSettings = getModel('systemSetting') as SystemSettings
+  const contactEmail = Cypress.env('CONTACT_EMAIL') || 'cloudpinative-relations@interieur.gouv.fr'
 
   beforeEach(() => {
     cy.intercept('GET', 'api/v1/system/settings?key=maintenance').as('listMaintenanceSetting')
@@ -70,7 +71,7 @@ describe('Administration system settings', () => {
     cy.visit('/projects')
     cy.url().should('contain', '/maintenance')
     cy.getByDataTestid('contact-us')
-      .should('have.attr', 'title', 'cloudpinative-relations@interieur.gouv.fr')
+      .should('have.attr', 'title', contactEmail)
   })
 
   it('Should turn off maintenance mode', () => {

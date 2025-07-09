@@ -41,6 +41,8 @@ export const adminsUserId = process.env.ADMIN_KC_USER_ID
   ? process.env.ADMIN_KC_USER_ID.split(',')
   : []
 
+export const contactEmail = process.env.CONTACT_EMAIL ?? 'cloudpinative-relations@interieur.gouv.fr'
+
 // plugins
 export const mockPlugins = process.env.MOCK_PLUGINS === 'true'
 export const projectRootDir = process.env.PROJECTS_ROOT_DIR

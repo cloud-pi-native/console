@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { contactEmail } from '@/utils/env.js'
+
 interface MailType {
   to: string
   label: string
@@ -6,9 +8,9 @@ interface MailType {
 }
 
 const mail: MailType = {
-  to: 'mailto:cloudpinative-relations@interieur.gouv.fr?subject=Maintenance console Cloud π Native',
-  label: 'Nous écrire (cloudpinative-relations@interieur.gouv.fr)',
-  address: 'cloudpinative-relations@interieur.gouv.fr',
+  to: `mailto:${contactEmail}?subject=Maintenance console Cloud π Native`,
+  label: `Nous écrire (${contactEmail})`,
+  address: contactEmail,
 }
 
 function setWindowLocation(to: string) {
