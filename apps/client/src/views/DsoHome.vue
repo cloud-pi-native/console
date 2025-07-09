@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { type Ref, ref } from 'vue'
+import { contactEmail } from '@/utils/env.js'
 
 interface TabTitle {
   title: string
@@ -44,9 +45,9 @@ const tabContents: Array<string> = [
 ]
 
 const mail: MailType = {
-  to: 'mailto:cloudpinative-relations@interieur.gouv.fr?subject=Question à propos de Cloud π Native',
-  label: 'Nous écrire (cloudpinative-relations@interieur.gouv.fr)',
-  address: 'cloudpinative-relations@interieur.gouv.fr',
+  to: `mailto:${contactEmail}?subject=Question à propos de Cloud π Native`,
+  label: `Nous écrire (${contactEmail})`,
+  address: contactEmail,
 }
 const ghFormationUrl: string = 'https://github.com/cloud-pi-native/embarquement-autoformation'
 
@@ -174,7 +175,7 @@ function setWindowLocation(to: string) {
     </h2>
     <DsfrCallout
       title="Une offre en co-construction"
-      content="L'offre Cloud π native est actuellement en co-construction en agilité, avec nos partenaires clients, le soutien financier du plan de relance et l'appui de la DINUM. Afin de vous accompagner dans son expérimentation et sa construction, nous vous invitons à prendre contact avec nos équipes via l'adresse cloudpinative-relations@interieur.gouv.fr."
+      :content="`L'offre Cloud π native est actuellement en co-construction en agilité, avec nos partenaires clients, le soutien financier du plan de relance et l'appui de la DINUM. Afin de vous accompagner dans son expérimentation et sa construction, nous vous invitons à prendre contact avec nos équipes via l'adresse ${contactEmail}.`"
       :button="knowMoreBtn"
     />
   </section>
