@@ -1,27 +1,51 @@
 name: Playwright Tests
 on:
-  push:
-    branches: [main, master]
-  pull_request:
-    branches: [main, master]
+  workflow_call:
+    inputs:
+      TAG:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      TAG:
+        required: true
+        type: string
+        default: latest
 jobs:
   test:
     timeout-minutes: 60
+
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
+
       - name: Install dependencies
         run: npm install -g pnpm && pnpm install
+
       - name: Install Playwright Browsers
-        run: pnpm exec playwright install --with-deps
+        run: pnpm --dir playwright exec playwright install --with-deps
+
+      - name: Initialize environment
+        run: |
+          ./ci/scripts/init-env.sh
+          docker pull ghcr.io/cloud-pi-native/console/server:$TAG && docker tag ghcr.io/cloud-pi-native/console/server:$TAG dso-console/server:prod
+          docker pull ghcr.io/cloud-pi-native/console/client:$TAG && docker tag ghcr.io/cloud-pi-native/console/client:$TAG dso-console/client:prod
+          docker compose -f ./docker/docker-compose.prod.yml up -d --remove-orphans
+
       - name: Run Playwright tests
-        run: pnpm exec playwright test
+        run: pnpm --dir playwright exec playwright test
+
+      - name: Clean up resources
+        run: docker compose -f ./docker/docker-compose.prod.yml down -v --remove-orphans
+
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: playwright-report/
+          path: playwright/playwright-report/
           retention-days: 30
