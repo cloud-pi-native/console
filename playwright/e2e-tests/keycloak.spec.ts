@@ -2,9 +2,11 @@ import type { Page } from '@playwright/test'
 import { test, expect } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 
+const keycloakURL = `${process.env.KEYCLOAK_PROTOCOL}://${process.env.KEYCLOAK_DOMAIN}${process.env.KEYCLOAK_PORT ? `:${process.env.KEYCLOAK_PORT}` : ''}/`
+
 async function signInMasterRealm({ page }: { page: Page }) {
   // Ouverture de Keycloak
-  await page.goto('http://localhost:8090/')
+  await page.goto(keycloakURL)
 
   // Connexion à la console d'administration de l'instance Keycloak
   await page.getByRole('link', { name: 'Administration Console' }).click()
@@ -66,7 +68,7 @@ test.describe('Keycloak', () => {
 
     test('should create a group', async ({ page }) => {
       await page.getByRole('link', { name: 'Groups' }).click()
-      await page.getByTestId('openCreateGroupModal').click()
+      await page.getByRole('button', { name: 'Create group' }).click()
       await page.getByTestId('groupNameInput').fill(faker.string.alpha(10))
       await page.getByTestId('createGroup').click()
       await expect(page.getByLabel('Group created')).toBeVisible()
@@ -84,17 +86,23 @@ test.describe('Keycloak', () => {
 
       // Create group
       await page.getByRole('link', { name: 'Groups' }).click()
-      await page.getByTestId('openCreateGroupModal').click()
+      await page.getByRole('button', { name: 'Create group' }).click()
       const groupName = faker.string.alpha(10)
       await page.getByTestId('groupNameInput').fill(groupName)
       await page.getByTestId('createGroup').click()
       await expect(page.getByLabel('Group created')).toBeVisible()
 
-      await page.getByRole('textbox', { name: 'Search input' }).fill(groupName)
-      await page.getByRole('textbox', { name: 'Search input' }).press('Enter')
-      await page.getByRole('link', { name: groupName }).click()
+      await page
+        .getByTestId('searchForGroups')
+        .getByRole('textbox', { name: 'Search' })
+        .fill(groupName)
+      await page
+        .getByTestId('searchForGroups')
+        .getByRole('textbox', { name: 'Search' })
+        .press('Enter')
+      await page.getByRole('button', { name: groupName }).click()
       await page.getByTestId('members').click()
-      await page.getByTestId('no-users-found-empty-action').click()
+      await page.getByRole('button', { name: 'Add member' }).click()
       await page.getByRole('checkbox', { name: 'Select row 1' }).check()
       await page.getByTestId('add').click()
       await expect(page.getByText('user added to the group')).toBeVisible()
@@ -102,13 +110,19 @@ test.describe('Keycloak', () => {
 
     test('should delete a group', async ({ page }) => {
       await page.getByRole('link', { name: 'Groups' }).click()
-      await page.getByTestId('openCreateGroupModal').click()
+      await page.getByRole('button', { name: 'Create group' }).click()
       const groupName = faker.string.alpha(10)
       await page.getByTestId('groupNameInput').fill(groupName)
       await page.getByTestId('createGroup').click()
       await expect(page.getByLabel('Group created')).toBeVisible()
-      await page.getByRole('textbox', { name: 'Search input' }).fill(groupName)
-      await page.getByRole('textbox', { name: 'Search input' }).press('Enter')
+      await page
+        .getByTestId('searchForGroups')
+        .getByRole('textbox', { name: 'Search' })
+        .fill(groupName)
+      await page
+        .getByTestId('searchForGroups')
+        .getByRole('textbox', { name: 'Search' })
+        .press('Enter')
       await page
         .getByRole('treeitem', { name: `${groupName} Actions` })
         .getByLabel('Actions')
