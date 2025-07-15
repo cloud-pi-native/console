@@ -3,3 +3,4 @@ packages:
   - "packages/**"
   - "plugins/**"
   - "!apps/server/src/plugins/external/**"
+  - "playwright/**"
