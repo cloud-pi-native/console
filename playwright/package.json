@@ -1,0 +1,16 @@
+{
+  "name": "@cpn-console/playwright",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.5.2",
+  "description": "Our Playwright automated test suite",
+  "keywords": ["playwright", "tests", "e2e"],
+  "main": "playwright.config.ts",
+  "scripts": {
+    "playwright:test": "pnpm exec playwright test",
+    "playwright:test:ui": "pnpm exec playwright test --ui"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.53.2"
+  }
+}
