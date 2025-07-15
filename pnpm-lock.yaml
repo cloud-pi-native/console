@@ -29,12 +29,6 @@ importers:
       '@cpn-console/eslint-config':
         specifier: workspace:^
         version: link:packages/eslintconfig
-      '@faker-js/faker':
-        specifier: ^9.3.0
-        version: 9.5.1
-      '@types/node':
-        specifier: ^22.10.2
-        version: 22.13.5
       eslint:
         specifier: ^9.15.0
         version: 9.21.0(jiti@2.4.2)
@@ -510,10 +504,19 @@ importers:
   packages/tsconfig: {}
 
   playwright:
-    dependencies:
+    devDependencies:
+      '@faker-js/faker':
+        specifier: ^9.3.0
+        version: 9.5.1
       '@playwright/test':
         specifier: ^1.53.2
         version: 1.54.1
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.13.5
+      dotenv:
+        specifier: ^16.4.7
+        version: 16.4.7
 
   plugins/argocd:
     dependencies:
