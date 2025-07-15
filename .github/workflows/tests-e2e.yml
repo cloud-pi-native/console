@@ -1,4 +1,4 @@
-name: Tests - e2e
+name: Tests - Cypress
 
 on:
   workflow_call:
@@ -51,8 +51,8 @@ jobs:
           BROWSERS=$(echo "\"${{ inputs.BROWSERS }}\"" | jq -c 'split(",")')
           echo "BROWSERS=$BROWSERS" >> $GITHUB_OUTPUT
 
-  e2e-tests:
-    name: End to end tests
+  cypress-tests:
+    name: Automated tests through Cypress
     runs-on: ubuntu-latest
     needs:
       - matrix
@@ -134,7 +134,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run e2e tests
+      - name: Run Cypress tests
         run: |
           ./ci/scripts/init-env.sh
           ./ci/scripts/run-tests.sh -e -t "${{ inputs.TAG }}" -b "${{ matrix.browsers }}"
