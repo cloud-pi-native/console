@@ -132,7 +132,7 @@ jobs:
     with:
       CONF_PATH: ./.github/labeler/build.yml
 
-  e2e-tests:
+  cypress-tests:
     uses: ./.github/workflows/tests-e2e.yml
     if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' }}
     needs:
