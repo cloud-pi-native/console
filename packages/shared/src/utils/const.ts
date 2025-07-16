@@ -1,5 +1,6 @@
 export const adminGroupPath = '/admin'
 export const deleteValidationInput = 'DELETE'
+export const forbiddenRepoNames = ['mirror', 'infra-apps', 'infra-observability']
 
 export const inClusterLabel = 'in-cluster' as const
 export const projectIsLockedInfo = 'Le projet est verrouillé, pas d\'action possible'
