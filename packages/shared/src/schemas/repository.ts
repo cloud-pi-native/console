@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { invalidGitUrl, invalidInternalRepoName, missingCredentials } from '../utils/const.js'
+import { invalidGitUrl, invalidInternalRepoName, missingCredentials, forbiddenRepoNames } from '../utils/const.js'
 import { AtDatesToStringExtend } from './_utils.js'
 
 export const RepoSchema = z.object({
@@ -8,7 +8,10 @@ export const RepoSchema = z.object({
   internalRepoName: z.string()
     .min(2, { message: 'Longueur minimum 2 caractères' })
     .max(20, { message: 'Longueur maximum 20 caractères' })
-    .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/, { message: invalidInternalRepoName }),
+    .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/, { message: invalidInternalRepoName })
+    .refine(name => !forbiddenRepoNames.includes(name.toLowerCase()), {
+      message: `Le nom du dépôt choisi est inclus dans la liste d'exclusion: ${forbiddenRepoNames.join(', ')}`,
+    }),
   externalRepoUrl: z.string()
     .regex(/^https:\/\/.*\.git$/, { message: invalidGitUrl })
     .url({ message: 'Url invalide' })
