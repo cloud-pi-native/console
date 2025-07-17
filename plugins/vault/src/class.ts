@@ -197,7 +197,7 @@ export class VaultProjectApi extends VaultApi {
       appFull: `app--${project.slug}--admin`,
     }
     this.defaultAppRoleCredentials = {
-      url: getConfig().publicUrl,
+      url: getConfig().deployVaultConnectionInNs ? getConfig().publicUrl : '',
       coreKvName: this.coreKvName,
       roleId: 'none',
       secretId: 'none',
