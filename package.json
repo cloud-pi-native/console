@@ -18,7 +18,7 @@
     "docker:e2e-ci": "docker compose -f ./docker/docker-compose.prod.yml up ${TAG:+--no-build} -d --remove-orphans; turbo run test:e2e-ci --filter=@cpn-console/client --color --no-daemon",
     "docker:e2e-ci:delete": "docker compose -f ./docker/docker-compose.prod.yml down -v --remove-orphans",
     "docker:integ": "docker compose --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml up -d; docker compose --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml watch --no-up & docker compose --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml logs server client -f",
-    "docker:integ:build": "export $(cat apps/server/.env.integ | grep -v '#' | xargs) && export COMPOSE_FILE=./docker/docker-compose.integ.yml && cd $(dirname $COMPOSE_FILE) && docker buildx bake --file $(basename $COMPOSE_FILE) --load && cd - > /dev/null",
+    "docker:integ:build": "export $(cat apps/server/.env.integ | grep -v '#' | xargs) && export COMPOSE_FILE=./docker/docker-compose.integ.yml && cd $(dirname $COMPOSE_FILE) && docker buildx bake --allow=fs.read=.. --file $(basename $COMPOSE_FILE) --load && cd - > /dev/null",
     "docker:integ:clean": "docker compose --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml down --remove-orphans",
     "docker:integ:delete": "docker compose --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml down -v --remove-orphans",
     "docker:prod": "docker compose -f ./docker/docker-compose.prod.yml up --remove-orphans",
