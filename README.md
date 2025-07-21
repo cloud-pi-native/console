@@ -180,7 +180,8 @@ L'application peut se lancer de plusieurs manières, à savoir :
 __Local :__
 
 ```shell
-# Lancer keycloak, postgres et pgadmin dans des conteneurs
+# Lancer postgres et pgadmin dans des conteneurs
+# (le keycloak utilisé devra être configuré dans les .env.integ)
 pnpm run integ
 
 # Lancer le serveur
@@ -189,10 +190,10 @@ pnpm --filter @cpn-console/server run integ
 # Lancer le client
 pnpm --filter @cpn-console/client run integ
 
-# Supprimer les conteneurs keycloak, postgres et pgadmin
+# Supprimer les conteneurs postgres et pgadmin
 pnpm run integ:clean
 
-# Supprimer les conteneurs keycloak, postgres et pgadmin (supprime les volumes docker)
+# Supprimer les conteneurs postgres et pgadmin (supprime les volumes docker)
 pnpm run integ:delete
 ```
 
