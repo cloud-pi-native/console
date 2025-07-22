@@ -10,9 +10,10 @@ if (!clientURL) {
 
 async function signInCloudPiNative({ page }: { page: Page }) {
   await page.getByRole('link', { name: 'Se connecter' }).click()
-  await page.getByRole('textbox', { name: 'username' }).fill('strebel')
-  await page.getByRole('textbox', { name: 'password' }).fill('strebel')
-  await page.getByRole('button', { name: 'Connect' }).click()
+  await page.locator('#username').fill('test')
+  await page.locator('#password').fill('test')
+  await page.locator('#kc-login').click()
+  await expect(page.locator('#top')).toContainText('Cloud π Native')
 }
 
 // Assuming we are on the Home page, create a random project with given name, or a generated one
