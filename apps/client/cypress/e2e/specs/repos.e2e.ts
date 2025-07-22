@@ -225,7 +225,7 @@ describe('Add repos into project', () => {
 
     cy.wait('@syncRepo').its('response.statusCode').should('match', /^20\d$/)
 
-    cy.getByDataTestid('snackbar').should('contain', `Job de synchronisation lancé pour le dépôt repo03`)
+    cy.getByDataTestid('snackbar').should('contain', `Travail de synchronisation lancé pour le dépôt repo03`)
 
     cy.getByDataTestid('branchNameInput')
       .clear()
@@ -242,7 +242,7 @@ describe('Add repos into project', () => {
 
     cy.wait('@syncRepo').its('response.statusCode').should('match', /^20\d$/)
 
-    cy.getByDataTestid('snackbar').should('contain', `Job de synchronisation lancé pour le dépôt repo03`)
+    cy.getByDataTestid('snackbar').should('contain', `Travail de synchronisation lancé pour le dépôt repo03`)
   })
 
   it('Should delete a repo', () => {

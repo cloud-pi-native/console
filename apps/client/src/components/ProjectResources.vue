@@ -113,7 +113,7 @@ async function syncRepository() {
   if (!selectedRepo.value) return
   if (!isAllSyncing.value && !branchName.value) branchName.value = 'main'
   await props.project.Repositories.sync(selectedRepo.value.id, { syncAllBranches: isAllSyncing.value, branchName: branchName.value })
-  snackbarStore.setMessage(`Job de synchronisation lancé pour le dépôt ${selectedRepo.value.internalRepoName}`)
+  snackbarStore.setMessage(`Travail de synchronisation lancé pour le dépôt ${selectedRepo.value.internalRepoName}`)
 }
 
 // Add locale-specific relative date/time formatting rules.
