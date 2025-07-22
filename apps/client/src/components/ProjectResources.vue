@@ -59,6 +59,10 @@ const projectClusters = computed(() => ([
 const canManageEnvs = computed(() => !props.project.locked && props.asProfile === 'user' && ProjectAuthorized.ManageEnvironments({ projectPermissions: props.project.myPerms }))
 const canManageRepos = computed(() => !props.project.locked && props.asProfile === 'user' && ProjectAuthorized.ManageRepositories({ projectPermissions: props.project.myPerms }))
 
+watch(selectedRepo, async () => {
+  branchName.value = 'main'
+})
+
 async function putEnvironment(environment: UpdateEnvironmentBody, envId: Environment['id']) {
   selectedEnv.value = undefined
   if (!props.project.locked) {
