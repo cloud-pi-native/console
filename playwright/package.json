@@ -16,6 +16,7 @@
     "format": "eslint ./ --fix"
   },
   "devDependencies": {
+    "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
     "@faker-js/faker": "^9.3.0",
     "@playwright/test": "^1.53.2",

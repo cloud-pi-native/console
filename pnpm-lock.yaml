@@ -505,6 +505,9 @@ importers:
 
   playwright:
     devDependencies:
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
+        version: link:../packages/eslintconfig
       '@cpn-console/ts-config':
         specifier: workspace:^
         version: link:../packages/tsconfig
