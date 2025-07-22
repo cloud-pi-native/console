@@ -10,9 +10,9 @@ async function signInMasterRealm({ page }: { page: Page }) {
 
   // Connexion à la console d'administration de l'instance Keycloak
   await page.getByRole('link', { name: 'Administration Console' }).click()
-  await page.getByRole('textbox', { name: 'Username or email' }).fill('admin')
-  await page.getByRole('textbox', { name: 'Password' }).fill('admin')
-  await page.getByRole('button', { name: 'Sign In' }).click()
+  await page.locator('#username').fill('admin')
+  await page.locator('#password').fill('admin')
+  await page.locator('#kc-login').click()
   await expect(page.getByRole('link', { name: 'Logo' })).toBeVisible()
 }
 
