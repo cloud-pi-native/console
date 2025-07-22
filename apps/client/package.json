@@ -52,7 +52,7 @@
   },
   "optionalDependencies": {
     "@cypress/vue": "6.0.2",
-    "cypress": "14.1.0",
+    "cypress": "14.5.2",
     "cypress-vite": "1.6.0"
   },
   "devDependencies": {
