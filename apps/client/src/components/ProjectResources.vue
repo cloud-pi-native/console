@@ -6,6 +6,7 @@ import { useStageStore } from '@/stores/stage.js'
 import { useUserStore } from '@/stores/user.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { clickInDialog, getRandomId } from '@/utils/func.js'
+import { defaultBranchName } from '@/utils/misc'
 import type { Project } from '@/utils/project-utils.js'
 import type { UpdateEnvironmentBody, Environment, Repo, CreateEnvironmentBody, CleanedCluster, Zone, Quota, Cluster } from '@cpn-console/shared'
 import { AdminAuthorized, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
@@ -29,7 +30,7 @@ const userStore = useUserStore()
 const environments = ref<(Environment & { cluster?: Cluster, zone?: Zone, quota?: Quota })[]>()
 const repositories = ref<(Repo & { source: Source })[]>()
 
-const branchName = ref<string>('main')
+const branchName = ref<string>(defaultBranchName)
 
 const environmentsCtKey = ref(getRandomId('environment'))
 const repositoriesCtKey = ref(getRandomId('repository'))
@@ -60,7 +61,7 @@ const canManageEnvs = computed(() => !props.project.locked && props.asProfile ==
 const canManageRepos = computed(() => !props.project.locked && props.asProfile === 'user' && ProjectAuthorized.ManageRepositories({ projectPermissions: props.project.myPerms }))
 
 watch(selectedRepo, async () => {
-  branchName.value = 'main'
+  branchName.value = defaultBranchName
 })
 
 async function putEnvironment(environment: UpdateEnvironmentBody, envId: Environment['id']) {
@@ -115,7 +116,7 @@ async function deleteRepo(repoId: Repo['id']) {
 
 async function syncRepository() {
   if (!selectedRepo.value) return
-  if (!isAllSyncing.value && !branchName.value) branchName.value = 'main'
+  if (!isAllSyncing.value && !branchName.value) branchName.value = defaultBranchName
   await props.project.Repositories.sync(selectedRepo.value.id, { syncAllBranches: isAllSyncing.value, branchName: branchName.value })
   snackbarStore.setMessage(`Job de synchronisation lancé pour le dépôt ${selectedRepo.value.internalRepoName}`)
 }
