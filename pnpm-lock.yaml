@@ -204,10 +204,10 @@ importers:
     optionalDependencies:
       '@cypress/vue':
         specifier: 6.0.2
-        version: 6.0.2(cypress@14.0.0)(vue@3.5.13(typescript@5.7.2))
+        version: 6.0.2(cypress@14.1.0)(vue@3.5.13(typescript@5.7.2))
       cypress:
-        specifier: 14.0.0
-        version: 14.0.0
+        specifier: 14.1.0
+        version: 14.1.0
       cypress-vite:
         specifier: 1.6.0
         version: 1.6.0(vite@6.2.0(@types/node@22.13.5)(jiti@2.4.2)(terser@5.39.0)(tsx@4.19.3)(yaml@2.7.0))
@@ -3585,8 +3585,8 @@ packages:
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0
 
-  cypress@14.0.0:
-    resolution: {integrity: sha512-kEGqQr23so5IpKeg/dp6GVi7RlHx1NmW66o2a2Q4wk9gRaAblLZQSiZJuDI8UMC4LlG5OJ7Q6joAiqTrfRNbTw==}
+  cypress@14.1.0:
+    resolution: {integrity: sha512-pPPj8Uu9NwjaaiXAEcjYZZmgsq6v9Zs1Nw6a+zRF+ANgYSNhH4S32SjFRsvMcuOHR/8dp4GBJhBPqIPSs+TxaA==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
 
@@ -8653,9 +8653,9 @@ snapshots:
       uuid: 8.3.2
     optional: true
 
-  '@cypress/vue@6.0.2(cypress@14.0.0)(vue@3.5.13(typescript@5.7.2))':
+  '@cypress/vue@6.0.2(cypress@14.1.0)(vue@3.5.13(typescript@5.7.2))':
     dependencies:
-      cypress: 14.0.0
+      cypress: 14.1.0
       vue: 3.5.13(typescript@5.7.2)
     optional: true
 
@@ -10629,7 +10629,7 @@ snapshots:
       - supports-color
     optional: true
 
-  cypress@14.0.0:
+  cypress@14.1.0:
     dependencies:
       '@cypress/request': 3.0.7
       '@cypress/xvfb': 1.2.4(supports-color@8.1.1)
