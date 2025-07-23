@@ -8,10 +8,32 @@ if (!clientURL) {
   process.exit(1)
 }
 
-async function signInCloudPiNative({ page }: { page: Page }) {
+interface Credentials {
+  username: string
+  password: string
+}
+
+// Users referenced in Keycloak dev realm (../keycloak/realms/realm-dev.json)
+const testUser: Credentials = {
+  username: 'test',
+  password: 'test',
+}
+const cnolletUser: Credentials = {
+  username: 'cnollet',
+  password: 'test',
+}
+
+async function signInCloudPiNative({
+  page,
+  credentials,
+}: {
+  page: Page
+  credentials: Credentials
+}) {
+  const { username, password } = credentials
   await page.getByRole('link', { name: 'Se connecter' }).click()
-  await page.locator('#username').fill('test')
-  await page.locator('#password').fill('test')
+  await page.locator('#username').fill(username)
+  await page.locator('#password').fill(password)
   await page.locator('#kc-login').click()
   await expect(page.locator('#top')).toContainText('Cloud π Native')
 }
@@ -78,22 +100,41 @@ async function synchronizeBranchOnRepository({
   return branchName
 }
 
-test.describe('CπNative Projects page', () => {
-  test.beforeEach(async ({ page }) => {
+test.describe('Projects page', () => {
+  test('should display only projects that user is member of', async ({
+    page,
+  }) => {
+    // Create a project as one user
     await page.goto(clientURL)
-    await signInCloudPiNative({ page })
+    await signInCloudPiNative({ page, credentials: testUser })
+    const projectName = await addProject({ page })
+
+    // Sign off and login as another user
+    await page.getByRole('link', { name: 'Se déconnecter' }).click()
+    await signInCloudPiNative({ page, credentials: cnolletUser })
+
+    // Previously created project should not appear for this user
+    await page.getByTestId('menuMyProjects').click()
+    await expect(page.getByRole('link', { name: projectName })).not.toBeVisible()
   })
 
   test('should not keep the same default branch name for all repositories of a projects', async ({
     page,
   }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
     await addProject({ page })
     // Adding a project directly puts us on the newly created project page,
     // so no need to add navigation steps to go there
     const firstRepositoryName = await addRandomRepositoryToProject({ page })
-    const branchName = await synchronizeBranchOnRepository({ page, repositoryName: firstRepositoryName })
+    const branchName = await synchronizeBranchOnRepository({
+      page,
+      repositoryName: firstRepositoryName,
+    })
     const secondRepositoryName = await addRandomRepositoryToProject({ page })
     await page.getByRole('cell', { name: secondRepositoryName }).click()
-    await expect(page.getByTestId('branchNameInput')).not.toHaveValue(branchName)
+    await expect(page.getByTestId('branchNameInput')).not.toHaveValue(
+      branchName,
+    )
   })
 })
