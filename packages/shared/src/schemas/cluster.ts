@@ -9,7 +9,7 @@ export const CleanedClusterSchema = z.object({
     .regex(/^[a-z0-9-]+$/i)
     .max(50),
   infos: z.string()
-    .max(200)
+    .max(1000)
     .optional()
     .nullable()
     .transform(value => value ?? ''),
