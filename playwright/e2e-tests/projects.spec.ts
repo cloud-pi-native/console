@@ -1,42 +1,7 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 import { faker } from '@faker-js/faker'
-
-// Retrieve frontend URL from environment variables (see playwright.config.ts)
-const clientURL = process.env.KEYCLOAK_REDIRECT_URI
-if (!clientURL) {
-  process.exit(1)
-}
-
-interface Credentials {
-  username: string
-  password: string
-}
-
-// Users referenced in Keycloak dev realm (../keycloak/realms/realm-dev.json)
-const testUser: Credentials = {
-  username: 'test',
-  password: 'test',
-}
-const cnolletUser: Credentials = {
-  username: 'cnollet',
-  password: 'test',
-}
-
-async function signInCloudPiNative({
-  page,
-  credentials,
-}: {
-  page: Page
-  credentials: Credentials
-}) {
-  const { username, password } = credentials
-  await page.getByRole('link', { name: 'Se connecter' }).click()
-  await page.locator('#username').fill(username)
-  await page.locator('#password').fill(password)
-  await page.locator('#kc-login').click()
-  await expect(page.locator('#top')).toContainText('Cloud π Native')
-}
+import { clientURL, cnolletUser, signInCloudPiNative, testUser } from './utils'
 
 // Assuming we are on the Home page, create a random project with given name, or a generated one
 async function addProject({
