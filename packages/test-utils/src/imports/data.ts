@@ -182,13 +182,15 @@ export const data = {
       type: 'human',
     },
     {
-      id: '89e5d1ca-3194-4b0a-b226-75a5f4fe6a34',
+      id: '387216f1-3b87-4211-9cac-4371125e1175',
       firstName: 'Admin',
       lastName: 'ADMIN',
       email: 'admin@test.com',
       createdAt: '2023-07-03T18:01:52.884Z',
       updatedAt: '2023-07-06T12:53:39.183Z',
-      adminRoleIds: [],
+      adminRoleIds: [
+        '76229c96-4716-45bc-99da-00498ec9018c',
+      ],
       type: 'human',
     },
     {
