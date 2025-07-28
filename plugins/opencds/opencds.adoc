@@ -1,0 +1,39 @@
+= À propos
+
+Ce document, temporaire, va servir de fil conducteur pour toutes les idées autour de l'implémentation de la Console OpenCDS. Il permettra à l'équipe Socle d'échanger (au travers, par exemple, des commentaires de MR) sur les différentes problématiques entourant les travaux. C'est un document vivant, dynamique, qui sera remplacé par un "vrai" document d'architecture par la suite.
+
+== Cadrage effectué
+
+- SSO à prévoir avec Keycloak (déjà intégré dans la Console)
+- Rôles à prédéfinir dans Keycloak:
+  - Admin (a accès à toute l'application)
+  - CDS (n'a accès qu'à la partie qui concerne ses projets)
+
+Flux GUI:
+- Tous:
+  - Login/Logout à travers le SSO Keycloak comme la Console
+- Admin:
+  - Liste de toutes les CDS
+  - Relancer un CDS en particulier
+  - Afficher les "flows" (étapes) d'un CDS
+- CDS:
+  - Pouvoir lister les CDS de leur équipe
+  - Afficher les "flows" (étapes) d'un CDS qu'ils ont le droit de voir
+  - Avoir un écran de confirmation de création d'un CDS. Actuellement un mail leur est envoyé qui contient un lien pour validation. Ce lien valide la création du CDS. Il faudrait donc crééer un point d'entrée dans l'application pour plutôt ouvrir un écran de confirmation de la création
+
+Lotissement possible:
+- Création en tant que fonctionnalité "feature togglée" de Console (on verra plus tard si on en fait quelque chose à part)
+- Admin - Liste des CDS
+- Admin - Liste des Flow
+- Admin - Relancer un CDS
+- CDS - Liste des CDS/Flow de leur périmètre
+- CDS - Écran de confirmation de la création d'un CDS
+
+= Contraintes
+
+- Console étant un projet OpenSource, et OpenCDS étant un sujet exclusivement "MI", le couplage entre les deux doit être le plus léger possible. Idéalement OpenCDS devrait être une "extension" (plugin ? À voir) de la Console de manière à ne jamais être directement référencé dans l'application.
+=> Dans un premier temps on va fonctionner avec une branche temporaire de Console, agrémenté d'un Feature Toggling rudimentaire (une variable d'environnement), pour voir où on va, et ensuite on verra comment établir une séparation claire entre Console et sa partie OpenCDS.
+
+= Jeu de données
+
+Afin de pouvoir avancer sans forcément dépendre du backend OpenCDS, un Mockoon sera utilisé (./plugins/opencds/opencds_api.json) pour simuler cette partie.
