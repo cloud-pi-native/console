@@ -1,0 +1,417 @@
+{
+  "uuid": "b263d1c1-3103-4a17-940c-1c92215bb3b8",
+  "lastMigration": 33,
+  "name": "Opencds api",
+  "endpointPrefix": "api/v1/",
+  "latency": 0,
+  "port": 3003,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "d1957152-f453-45bb-a384-1443a582da05",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "",
+      "responses": [
+        {
+          "uuid": "00fc2c99-ad17-406c-9aef-d75320fd0f89",
+          "body": "{\r\n  'success': True,\r\n  'message': \"La requête a été créée. En attente de la validation du mail pour débuter le processus\",\r\n  'data': {\r\n    'request_id': {{faker 'string.uuid'}},\r\n    'state': 'opened',\r\n    'success': None\r\n}",
+          "latency": 0,
+          "statusCode": 201,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "ab19d917-3d73-49fd-b9ad-cb40945cf4e7",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 403,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "210c5fa6-22dc-4c79-a89e-4289fd2b84bb",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "requests",
+      "responses": [
+        {
+          "uuid": "28bd3efb-d903-44c3-b728-66db3af526bc",
+          "body": "{{setVar 'refDSO' (faker 'string.uuid')}}\n{{setVar 'refTEST' (faker 'string.uuid')}}\n[\n  {\n    \"id\": (getVar 'refDSO'),\n    \"state\": \"done\",\n    \"success\": true,\n    \"validation_id\": {{faker 'string.uuid'}},\n    \"validated_by\": {{faker 'string.uuid'}},\n    \"version\": \"1.0\",\n    \"pai\": \"DSO\",\n    \"ref\": null,\n    \"payload\": {\n      \"location\":\"SIL\",\n      \"targetAddress\":\"10.224.3.4\",\n      \"PAI\":\"DSO\",\n      \"projectId\":\"00000\",\n      \"env\":\"INT\",\n      \"network\":\"RIE\",\n      \"commonName\":\"dso.dso.minint.fr\",\n      \"subjectAlternativeName\":[\"dso-san.dso.minint.fr\"],\n      \"redirect\":true,\n      \"antivirus\":false,\n      \"maxFileSize\":10,\n      \"websocket\":false,\n      \"ipWhiteList\":[\"10.0.0.0/8\"],\n      \"sslOutgoing\":true}\n    },\n    \"createat\": \"2025-07-22 11:29:30.654612\",\n    \"updateat\": \"2025-07-22 12:30:34.689813\"\n  },\n  {\n    \"id\": {{faker 'string.uuid'}},\n    \"state\": \"done\",\n    \"success\": true,\n    \"validation_id\": {{faker 'string.uuid'}},\n    \"validated_by\": {{faker 'string.uuid'}},\n    \"version\": \"1.0\",\n    \"pai\": \"DSO\",\n    \"ref\": (getVar 'refDSO'),\n    \"payload\": {\n      \"location\":\"SIL\",\n      \"targetAddress\":\"10.224.3.5\",\n      \"PAI\":\"DSO\",\n      \"projectId\":\"00000\",\n      \"env\":\"INT\",\n      \"network\":\"RIE\",\n      \"commonName\":\"dso-ref.dso.minint.fr\",\n      \"subjectAlternativeName\":[],\n      \"redirect\":false,\n      \"antivirus\":false,\n      \"maxFileSize\":10,\n      \"websocket\":false,\n      \"ipWhiteList\":[\"10.0.0.0/8\"],\n      \"sslOutgoing\":false}\n    },\n    \"createat\": \"2025-07-22 11:29:30.654612\",\n    \"updateat\": \"2025-07-22 12:30:34.689813\"\n  },\n  {\n    \"id\": (getVar 'refTEST'),\n    \"state\": \"done\",\n    \"success\": true,\n    \"validation_id\": {{faker 'string.uuid'}},\n    \"validated_by\": {{faker 'string.uuid'}},\n    \"version\": \"1.0\",\n    \"pai\": \"TEST\",\n    \"ref\": null,\n    \"payload\": {\n      \"location\":\"SIL\",\n      \"targetAddress\":\"10.224.12.5\",\n      \"PAI\":\"TEST\",\n      \"projectId\":\"00000\",\n      \"env\":\"INT\",\n      \"network\":\"RIE\",\n      \"commonName\":\"test.dso.minint.fr\",\n      \"subjectAlternativeName\":[\"test-san.dso.minint.fr\"],\n      \"redirect\":true,\n      \"antivirus\":false,\n      \"maxFileSize\":10,\n      \"websocket\":false,\n      \"ipWhiteList\":[\"10.0.0.0/8\"],\n      \"sslOutgoing\":true}\n    },\n    \"createat\": \"2025-07-24 11:29:30.654612\",\n    \"updateat\": \"2025-07-25 12:30:34.689813\"\n  },\n  {\n    \"id\": {{faker 'string.uuid'}},\n    \"state\": \"done\",\n    \"success\": true,\n    \"validation_id\": {{faker 'string.uuid'}},\n    \"validated_by\": {{faker 'string.uuid'}},\n    \"version\": \"1.0\",\n    \"pai\": \"TEST\",\n    \"ref\": (getVar 'refTEST'),\n    \"payload\": {\n      \"location\":\"SIL\",\n      \"targetAddress\":\"10.224.3.5\",\n      \"PAI\":\"TEST\",\n      \"projectId\":\"00000\",\n      \"env\":\"INT\",\n      \"network\":\"RIE\",\n      \"commonName\":\"test-ref.dso.minint.fr\",\n      \"subjectAlternativeName\":[],\n      \"redirect\":false,\n      \"antivirus\":false,\n      \"maxFileSize\":10,\n      \"websocket\":false,\n      \"ipWhiteList\":[\"10.0.0.0/8\"],\n      \"sslOutgoing\":false}\n    },\n    \"createat\": \"2025-07-28 11:29:30.654612\",\n    \"updateat\": \"2025-07-28 12:30:34.689813\"\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "8f00d8d7-7df4-4401-b751-6440ee0e1658",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "requests/:request_id",
+      "responses": [
+        {
+          "uuid": "410bd286-4377-47e5-ae3f-e4131fcb0b68",
+          "body": "{\n    \"id\": {{urlParam 'id'}},\n    \"state\": \"done\",\n    \"success\": true,\n    \"validation_id\": {{faker 'string.uuid'}},\n    \"validated_by\": {{faker 'string.uuid'}},\n    \"version\": \"1.0\",\n    \"pai\": \"DSO\",\n    \"ref\": null,\n    \"payload\": {\n      \"location\":\"SIL\",\n      \"targetAddress\":\"10.224.3.4\",\n      \"PAI\":\"DSO\",\n      \"projectId\":\"00000\",\n      \"env\":\"INT\",\n      \"network\":\"RIE\",\n      \"commonName\":\"dso.dso.minint.fr\",\n      \"subjectAlternativeName\":[\"dso-san.dso.minint.fr\"],\n      \"redirect\":true,\n      \"antivirus\":false,\n      \"maxFileSize\":10,\n      \"websocket\":false,\n      \"ipWhiteList\":[\"10.0.0.0/8\"],\n      \"sslOutgoing\":true}\n    },\n    \"createat\": \"2025-07-22 11:29:30.654612\",\n    \"updateat\": \"2025-07-22 12:30:34.689813\"\n  }",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "8ff2f39f-a82f-4364-90ed-135b5ec8f19b",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "requests/:request_id/flows",
+      "responses": [
+        {
+          "uuid": "b24f3f54-b45c-4749-a134-dc1fa003a417",
+          "body": "[\n  {\n    \"id\": \"40\",\n    \"request_id\": {{urlParam 'id'}},\n    \"state\": \"done\",\n    \"success\": true,\n    \"action\": \"reserve_ip\",\n    \"params\": [\n      {\n        \"name\": \"G1_SIR_RIE_10_ACCAPP\",\n        \"number\": 1,\n        \"sni\": true\n      },\n      {\n        \"name\": \"G1_SIR_RIE_ACCLB\",\n        \"number\": 1,\n        \"sni\": true\n      },\n      {\n        \"name\": \"G1_SIR_RIE_ACCWAF\",\n        \"number\": 5,\n        \"diff\": 256,\n        \"sni\": true\n      },\n      {\n        \"name\": \"G1_VIP_SIR_ZH_LBIN\",\n        \"number\": 1,\n        \"sni\": false\n      }\n    ],\n    \"output\": {\n      \"success\": true,\n      \"ips\": {\n        \"G1_SIR_RIE_10_ACCAPP\": [\"10.230.144.1\"],\n        \"G1_SIR_RIE_ACCLB\": [\"172.27.8.1\"],\n        \"G1_SIR_RIE_ACCWAF\": [\"172.19.0.1\", \"172.19.1.1\", \"172.19.2.1\", \"172.19.3.1\", \"172.19.4.1\"],\n        \"G1_VIP_SIR_ZH_LBIN\": [\"10.234.16.1\"]},\n        \"reserved\": [\"G1_SIR_RIE_10_ACCAPP\", \"G1_SIR_RIE_ACCLB\", \"G1_SIR_RIE_ACCWAF\", \"G1_VIP_SIR_ZH_LBIN\"]\n    },\n    \"createat\": \"2025-07-22 11:29:30.654612\",\n    \"updateat\": \"2025-07-22 12:30:34.689813\"\n  },\n  {\n    \"id\": \"41\",\n    \"request_id\": {{urlParam 'id'}},\n    \"state\": \"done\",\n    \"success\": true,\n    \"action\": \"call_exec\",\n    \"params\": {\n      \"payload\": {\n        \"project\": \"PAI\",\n        \"site\": \"location\",\n        \"network\": \"network\",\n        \"environment\": \"env\",\n        \"customers_ip\": \"ipWhiteList\",\n        \"url_cn\": \"commonName\",\n        \"url_an\": \"subjectAlternativeName\",\n        \"redirect_http_to_https\": \"redirect\",\n        \"analyze_uploaded_file\": \"antivirus\",\n        \"av_max_file_size\": \"maxFileSize\",\n        \"allow_websocket\": \"websocket\",\n        \"backend_ip\": \"targetAddress\",\n        \"ssl_outgoing\": \"endToEndSSL\"\n      },\n      \"ips\": {\n        \"exposition_ingress_ip\": \"G1_SIR_RIE_10_ACCAPP\",\n        \"exposition_outgoing_ip\": \"G1_SIR_RIE_ACCLB\",\n        \"tunnel_ingress_ip\": \"G1_SIR_RIE_ACCWAF\",\n        \"tunnel_outgoing_ip\": \"G1_VIP_SIR_ZH_LBIN\"\n      }\n    },\n    \"output\": {\n      \"build_id\": 556,\n      \"message\": \"\"\n    },\n    \"createat\": \"2025-07-22 11:29:30.654612\",\n    \"updateat\": \"2025-07-22 12:30:34.689813\"\n  },\n  {\n    \"id\": \"42\",\n    \"request_id\": {{urlParam 'id'}},\n    \"state\": \"done\",\n    \"success\": true,\n    \"action\": \"activate_ip\",\n    \"params\": \"\",\n    \"output\": {\"success\": true,\n    \"createat\": \"2025-07-22 11:29:30.654612\",\n    \"updateat\": \"2025-07-22 12:30:34.689813\"\n  },\n  {\n    \"id\": \"43\",\n    \"request_id\": {{urlParam 'id'}},\n    \"state\": \"done\",\n    \"success\": true,\n    \"action\": \"dns_request\",\n    \"params\": {\"ip_exposition\": \"G1_SIR_RIE_10_ACCAPP\"},\n    \"output\": \"\",\n    \"createat\": \"2025-07-22 11:29:30.654612\",\n    \"updateat\": \"2025-07-22 12:30:34.689813\"\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "42d7aae1-500f-47e9-ad5d-500e41b9298f",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "requests/:request_id/flows/:flow_id",
+      "responses": [
+        {
+          "uuid": "e5bd4094-fb22-4b9e-8aec-e1ec69ad532d",
+          "body": "{\n    \"id\": \"40\",\n    \"request_id\": {{urlParam 'id'}},\n    \"state\": \"done\",\n    \"success\": true,\n    \"action\": \"reserve_ip\",\n    \"params\": [\n      {\n        \"name\": \"G1_SIR_RIE_10_ACCAPP\",\n        \"number\": 1,\n        \"sni\": true\n      },\n      {\n        \"name\": \"G1_SIR_RIE_ACCLB\",\n        \"number\": 1,\n        \"sni\": true\n      },\n      {\n        \"name\": \"G1_SIR_RIE_ACCWAF\",\n        \"number\": 5,\n        \"diff\": 256,\n        \"sni\": true\n      },\n      {\n        \"name\": \"G1_VIP_SIR_ZH_LBIN\",\n        \"number\": 1,\n        \"sni\": false\n      }\n    ],\n    \"output\": {\n      \"success\": true,\n      \"ips\": {\n        \"G1_SIR_RIE_10_ACCAPP\": [\"10.230.144.1\"],\n        \"G1_SIR_RIE_ACCLB\": [\"172.27.8.1\"],\n        \"G1_SIR_RIE_ACCWAF\": [\"172.19.0.1\", \"172.19.1.1\", \"172.19.2.1\", \"172.19.3.1\", \"172.19.4.1\"],\n        \"G1_VIP_SIR_ZH_LBIN\": [\"10.234.16.1\"]},\n        \"reserved\": [\"G1_SIR_RIE_10_ACCAPP\", \"G1_SIR_RIE_ACCLB\", \"G1_SIR_RIE_ACCWAF\", \"G1_VIP_SIR_ZH_LBIN\"]\n    },\n    \"createat\": \"2025-07-22 11:29:30.654612\",\n    \"updateat\": \"2025-07-22 12:30:34.689813\"\n  },",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "params",
+              "modifier": "flow_id",
+              "value": "40",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "9cc0eae4-eef1-44ec-92cd-47819501695f",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "validate/{validation_id}",
+      "responses": [
+        {
+          "uuid": "69bc6592-1208-40a9-a3c0-f8b445fc9f4c",
+          "body": "{\r\n  'success': True,\r\n  'message': \"L'id de validation est valide.\",\r\n  'data': {\r\n      'validation_id': {{urlParam 'validation_id'}},\r\n  }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "X-API-Key",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "bb61c12f-8185-43fe-9498-22b6661e998c",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "requests/:request_id/retry",
+      "responses": [
+        {
+          "uuid": "b703c7f4-7325-448a-ab57-5b122896c3cc",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "02546e6b-488e-41ee-9371-b91baff5d3a4",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "requests/:request_id/flows/:flow_id/retry",
+      "responses": [
+        {
+          "uuid": "e4251b6f-c7fd-4578-b328-99d9f7462639",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "d1957152-f453-45bb-a384-1443a582da05"
+    },
+    {
+      "type": "route",
+      "uuid": "210c5fa6-22dc-4c79-a89e-4289fd2b84bb"
+    },
+    {
+      "type": "route",
+      "uuid": "8f00d8d7-7df4-4401-b751-6440ee0e1658"
+    },
+    {
+      "type": "route",
+      "uuid": "8ff2f39f-a82f-4364-90ed-135b5ec8f19b"
+    },
+    {
+      "type": "route",
+      "uuid": "42d7aae1-500f-47e9-ad5d-500e41b9298f"
+    },
+    {
+      "type": "route",
+      "uuid": "9cc0eae4-eef1-44ec-92cd-47819501695f"
+    },
+    {
+      "type": "route",
+      "uuid": "bb61c12f-8185-43fe-9498-22b6661e998c"
+    },
+    {
+      "type": "route",
+      "uuid": "02546e6b-488e-41ee-9371-b91baff5d3a4"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
