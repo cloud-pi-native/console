@@ -1,5 +1,5 @@
 import type { Quota, Stage, User } from '@prisma/client'
-import prisma from '@/prisma.js'
+import prisma from '@/prisma'
 
 export function listQuotas(userId: User['id']) {
   return prisma.quota.findMany({

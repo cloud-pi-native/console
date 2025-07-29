@@ -3,10 +3,10 @@ import type { ClusterObject, HookResult, KubeCluster, KubeUser, Project as Proje
 import { hooks } from '@cpn-console/hooks'
 import type { AsyncReturnType } from '@cpn-console/shared'
 import { ProjectAuthorized, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
-import { genericProxy } from './proxy.js'
-import { archiveProject, getAdminPlugin, getClusterByIdOrThrow, getClusterNamesByZoneId, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '@/resources/queries-index.js'
-import type { ConfigRecords } from '@/resources/project-service/business.js'
-import { dbToObj } from '@/resources/project-service/business.js'
+import { genericProxy } from './proxy'
+import { archiveProject, getAdminPlugin, getClusterByIdOrThrow, getClusterNamesByZoneId, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '@/resources/queries-index'
+import type { ConfigRecords } from '@/resources/project-service/business'
+import { dbToObj } from '@/resources/project-service/business'
 
 export type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
 export type ProjectInfos = AsyncReturnType<typeof getHookProjectInfos>

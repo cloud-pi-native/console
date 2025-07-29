@@ -2,9 +2,9 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { CreateProjectBody, ProjectV2, projectContract } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
-import { useUserStore } from './user.js'
-import { apiClient, extractData } from '@/api/xhr-client.js'
-import { Project } from '@/utils/project-utils.js'
+import { useUserStore } from './user'
+import { apiClient, extractData } from '@/api/xhr-client'
+import { Project } from '@/utils/project-utils'
 
 export const useProjectStore = defineStore('project', () => {
   const userStore = useUserStore()

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { genericProxy } from './proxy.js'
+import { genericProxy } from './proxy'
 
 // Création d'une cible de test
 const target = {

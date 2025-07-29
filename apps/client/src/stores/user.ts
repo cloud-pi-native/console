@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { AdminRole, User, UserProfile } from '@cpn-console/shared'
-import { useAdminRoleStore } from './admin-role.js'
-import { apiClient, extractData } from '@/api/xhr-client.js'
-import { getKeycloak, getUserProfile, keycloakLogin, keycloakLogout } from '@/utils/keycloak/keycloak.js'
+import { useAdminRoleStore } from './admin-role'
+import { apiClient, extractData } from '@/api/xhr-client'
+import { getKeycloak, getUserProfile, keycloakLogin, keycloakLogout } from '@/utils/keycloak/keycloak'
 
 export const useUserStore = defineStore('user', () => {
   const adminRoleStore = useAdminRoleStore()

@@ -1,8 +1,8 @@
 <script  lang="ts" setup>
 import { type Ref, onBeforeMount, ref } from 'vue'
-import { alertTypeMapper, useServiceStore } from '@/stores/services-monitor.js'
+import { alertTypeMapper, useServiceStore } from '@/stores/services-monitor'
 import { AdminAuthorized } from '@cpn-console/shared'
-import { useUserStore } from '@/stores/user.js'
+import { useUserStore } from '@/stores/user'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
 

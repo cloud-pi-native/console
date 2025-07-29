@@ -2,8 +2,8 @@
 import { computed, onBeforeMount, ref } from 'vue'
 import type { Quota, QuotaAssociatedEnvironments, SharedZodError, Stage, UpdateQuotaBody, quotaContract } from '@cpn-console/shared'
 import { deleteValidationInput, QuotaSchema } from '@cpn-console/shared'
-import { toCodeComponent } from '@/utils/func.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { toCodeComponent } from '@/utils/func'
+import { useSnackbarStore } from '@/stores/snackbar'
 
 type UpdateQuotaType = UpdateQuotaBody & Pick<Quota, 'id'> & Required<Pick<Quota, 'stageIds' | 'name'>>
 

@@ -1,5 +1,5 @@
 import type { Environment, ProjectPermsKeys, ProjectRole, ProjectV2, Repo, User } from '@cpn-console/shared'
-import { getModel, getModelById } from '../support/func.js'
+import { getModel, getModelById } from '../support/func'
 
 const roles: ProjectRole[] = getModel('projectRole')
 const user: User = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569')

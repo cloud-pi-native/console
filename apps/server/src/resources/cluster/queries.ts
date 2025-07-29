@@ -1,5 +1,5 @@
 import type { Cluster, Environment, Kubeconfig, Prisma, Project, Stage } from '@prisma/client'
-import prisma from '@/prisma.js'
+import prisma from '@/prisma'
 
 export async function getClustersAssociatedWithProject(projectId: Project['id']) {
   const [

@@ -8,8 +8,8 @@ import { plugin as kubernetes } from '@cpn-console/kubernetes-plugin'
 import { plugin as nexus } from '@cpn-console/nexus-plugin'
 import { plugin as sonarqube } from '@cpn-console/sonarqube-plugin'
 import { plugin as vault } from '@cpn-console/vault-plugin'
-import { pluginManagerOptions } from './utils/plugins.js'
-import { pluginsDir } from './utils/env.js'
+import { pluginManagerOptions } from './utils/plugins'
+import { pluginsDir } from './utils/env'
 
 export async function initPm() {
   const pm = pluginManager(pluginManagerOptions)

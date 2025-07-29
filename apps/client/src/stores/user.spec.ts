@@ -1,8 +1,8 @@
 import Keycloak from 'keycloak-js'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { apiClient } from '../api/xhr-client.js'
-import { useUserStore } from './user.js'
+import { apiClient } from '../api/xhr-client'
+import { useUserStore } from './user'
 
 const authMock = vi.spyOn(apiClient.Users, 'auth')
 const listAdminRoles = vi.spyOn(apiClient.AdminRoles, 'listAdminRoles')

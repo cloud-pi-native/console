@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import type { CleanLog, Log, XOR } from '@cpn-console/shared'
 // @ts-ignore 'vue3-json-viewer' missing types
 import { JsonViewer } from 'vue3-json-viewer'
-import router from '@/router/index.js'
+import router from '@/router/index'
 
 const props = withDefaults(defineProps<{
   totalLength: number

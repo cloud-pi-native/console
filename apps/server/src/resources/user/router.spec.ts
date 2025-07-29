@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { userContract } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
-import app from '../../app.js'
-import * as utilsController from '../../utils/controller.js'
-import { getUserMockInfos, setRequestor } from '../../utils/mocks.js'
-import * as business from './business.js'
+import app from '../../app'
+import * as utilsController from '../../utils/controller'
+import { getUserMockInfos, setRequestor } from '../../utils/mocks'
+import * as business from './business'
 
-vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
 const businessGetMatchingMock = vi.spyOn(business, 'getMatchingUsers')
 const businessLogViaSessionMock = vi.spyOn(business, 'logViaSession')

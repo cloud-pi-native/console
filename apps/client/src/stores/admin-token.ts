@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import type { AdminToken, adminTokenContract } from '@cpn-console/shared'
-import { apiClient, extractData } from '../api/xhr-client.js'
+import { apiClient, extractData } from '../api/xhr-client'
 
 export const useAdminTokenStore = defineStore('adminToken', () => {
   const listTokens = async (query: typeof adminTokenContract.listAdminTokens.query._type = {}) => {

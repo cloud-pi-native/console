@@ -6,14 +6,14 @@ import type {
   RouteLocationNormalizedGeneric,
   RouteRecordRaw,
 } from 'vue-router'
-import { useUserStore } from '@/stores/user.js'
-import { useProjectStore } from '@/stores/project.js'
-import { useSystemSettingsStore } from '@/stores/system-settings.js'
+import { useUserStore } from '@/stores/user'
+import { useProjectStore } from '@/stores/project'
+import { useSystemSettingsStore } from '@/stores/system-settings'
 
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
 import { swaggerUiPath } from '@cpn-console/shared'
-import { uuid } from '@/utils/regex.js'
+import { uuid } from '@/utils/regex'
 
 const AdminCluster = () => import('@/views/admin/AdminCluster.vue')
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')

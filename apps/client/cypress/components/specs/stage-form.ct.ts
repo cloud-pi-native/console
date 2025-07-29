@@ -7,7 +7,7 @@ import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 import { getRandomCluster, getRandomEnv, getRandomQuota, getRandomStage, repeatFn } from '@cpn-console/test-utils'
 import StageForm from '@/components/StageForm.vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useSnackbarStore } from '@/stores/snackbar'
 
 describe('StageForm.vue', () => {
   let pinia: Pinia

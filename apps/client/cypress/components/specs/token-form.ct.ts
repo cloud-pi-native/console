@@ -7,7 +7,7 @@ import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 
 import TokenForm from '@/components/TokenForm.vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useSnackbarStore } from '@/stores/snackbar'
 
 describe('TokenForm.vue', () => {
   let pinia: Pinia

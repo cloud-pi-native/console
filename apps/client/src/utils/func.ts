@@ -1,6 +1,6 @@
 import type { Quota } from '@cpn-console/shared'
 import xbytes from 'xbytes'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useSnackbarStore } from '@/stores/snackbar'
 
 export async function copyContent(content: string): Promise<void> {
   const snackbarStore = useSnackbarStore()

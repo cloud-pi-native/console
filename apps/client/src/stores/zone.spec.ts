@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { apiClient } from '../api/xhr-client.js'
-import { useZoneStore } from './zone.js'
+import { apiClient } from '../api/xhr-client'
+import { useZoneStore } from './zone'
 
 const apiClientGet = vi.spyOn(apiClient.Zones, 'listZones')
 const apiClientPost = vi.spyOn(apiClient.Zones, 'createZone')

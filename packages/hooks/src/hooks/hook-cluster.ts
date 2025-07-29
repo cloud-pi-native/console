@@ -1,6 +1,6 @@
-import type { Hook } from './hook.js'
-import { createHook } from './hook.js'
-import type { ClusterObject } from './index.js'
+import type { Hook } from './hook'
+import { createHook } from './hook'
+import type { ClusterObject } from './index'
 
 export const upsertCluster: Hook<ClusterObject> = createHook()
 export const deleteCluster: Hook<ClusterObject> = createHook()

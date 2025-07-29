@@ -2,9 +2,9 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import type { CreateQuotaBody, Quota, QuotaAssociatedEnvironments, UpdateQuotaBody } from '@cpn-console/shared'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useQuotaStore } from '@/stores/quota.js'
-import { useStageStore } from '@/stores/stage.js'
+import { useSnackbarStore } from '@/stores/snackbar'
+import { useQuotaStore } from '@/stores/quota'
+import { useStageStore } from '@/stores/stage'
 
 type UpdateQuotaType = UpdateQuotaBody & Pick<Quota, 'id'>
 const quotaStore = useQuotaStore()

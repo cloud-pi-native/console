@@ -3,9 +3,9 @@ import type { AdminRole, adminRoleContract } from '@cpn-console/shared'
 import {
   listAdminRoles,
 } from '@/resources/queries-index.js'
-import type { ErrorResType } from '@/utils/errors.js'
-import { BadRequest400 } from '@/utils/errors.js'
-import prisma from '@/prisma.js'
+import type { ErrorResType } from '@/utils/errors'
+import { BadRequest400 } from '@/utils/errors'
+import prisma from '@/prisma'
 
 export async function listRoles() {
   return listAdminRoles()

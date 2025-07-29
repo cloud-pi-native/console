@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { PROJECT_PERMS, projectServiceContract } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
-import app from '../../app.js'
-import * as utilsController from '../../utils/controller.js'
-import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
-import * as business from './business.js'
+import app from '../../app'
+import * as utilsController from '../../utils/controller'
+import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks'
+import * as business from './business'
 
-vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
 const businessGetServicesMock = vi.spyOn(business, 'getProjectServices')
 const businessUpdateServicesMock = vi.spyOn(business, 'updateProjectServices')

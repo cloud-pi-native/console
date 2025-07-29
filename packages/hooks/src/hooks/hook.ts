@@ -1,5 +1,5 @@
-import type { PluginApi } from '../utils/utils.js'
-import type * as hooks from './index.js'
+import type { PluginApi } from '../utils/utils'
+import type * as hooks from './index'
 
 export type DefaultArgs = Record<any, any>
 export interface PluginResult {

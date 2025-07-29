@@ -7,7 +7,7 @@ import {
   initializeEnvironment,
   updateEnvironment as updateEnvironmentQuery,
 } from '@/resources/queries-index.js'
-import type { UserDetails } from '@/types/index.js'
+import type { UserDetails } from '@/types/index'
 import type {
   ErrorResType,
 } from '@/utils/errors.js'
@@ -15,8 +15,8 @@ import {
   BadRequest400,
   Unprocessable422,
 } from '@/utils/errors.js'
-import { hook } from '@/utils/hook-wrapper.js'
-import prisma from '@/prisma.js'
+import { hook } from '@/utils/hook-wrapper'
+import prisma from '@/prisma'
 
 export function getProjectEnvironments(projectId: Project['id']) {
   return getEnvironmentsByProjectId(projectId)

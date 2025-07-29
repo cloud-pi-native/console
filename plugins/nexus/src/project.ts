@@ -1,11 +1,11 @@
 import axios from 'axios'
 import type { Project, ProjectLite, StepCall } from '@cpn-console/hooks'
 import { generateRandomPassword, parseError, specificallyDisabled } from '@cpn-console/hooks'
-import { getAxiosOptions } from './functions.js'
-import { createMavenRepo, deleteMavenRepo, getMavenUrls } from './maven.js'
-import { createNpmRepo, deleteNpmRepo, getNpmUrls } from './npm.js'
-import type { WritePolicy } from './utils.js'
-import { deleteIfExists, getTechUsed, parseProjectOptions, updateStore } from './utils.js'
+import { getAxiosOptions } from './functions'
+import { createMavenRepo, deleteMavenRepo, getMavenUrls } from './maven'
+import { createNpmRepo, deleteNpmRepo, getNpmUrls } from './npm'
+import type { WritePolicy } from './utils'
+import { deleteIfExists, getTechUsed, parseProjectOptions, updateStore } from './utils'
 
 const getAxiosInstance = () => axios.create(getAxiosOptions())
 

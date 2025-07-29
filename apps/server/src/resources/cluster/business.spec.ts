@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { faker } from '@faker-js/faker'
 import type { Cluster } from '@prisma/client'
-import prisma from '../../__mocks__/prisma.js'
+import prisma from '../../__mocks__/prisma'
 import { hook } from '../../__mocks__/utils/hook-wrapper.ts'
 import { BadRequest400, ErrorResType, NotFound404, Unprocessable422 } from '../../utils/errors.ts'
 import { createCluster, deleteCluster, getClusterAssociatedEnvironments, getClusterDetails, listClusters, updateCluster } from './business.ts'

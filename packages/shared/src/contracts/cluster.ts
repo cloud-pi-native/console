@@ -1,14 +1,14 @@
 import type { ClientInferResponseBody } from '@ts-rest/core'
 import { z } from 'zod'
-import { apiPrefix, contractInstance } from '../api-client.js'
+import { apiPrefix, contractInstance } from '../api-client'
 import {
   CleanedClusterSchema,
   ClusterDetailsSchema,
   EnvironmentSchema,
   UserSchema,
 } from '../schemas/index.js'
-import { CoerceBooleanSchema } from '../schemas/_utils.js'
-import { ErrorSchema, baseHeaders } from './_utils.js'
+import { CoerceBooleanSchema } from '../schemas/_utils'
+import { ErrorSchema, baseHeaders } from './_utils'
 
 export const ClusterParams = z.object({
   clusterId: CleanedClusterSchema.shape.id,

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import type { PluginConfigItem, PluginSchema } from '@cpn-console/shared'
-import { usePluginsConfigStore } from '@/stores/plugins.js'
+import { usePluginsConfigStore } from '@/stores/plugins'
 import { useSnackbarStore } from '@/stores/snackbar'
 
 const pluginsStore = usePluginsConfigStore()

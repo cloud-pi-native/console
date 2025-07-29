@@ -1,7 +1,7 @@
 import type { DeclareModuleGenerator, Plugin } from '@cpn-console/hooks'
-import { createNexusProject, deleteNexusProject, getSecrets } from './project.js'
-import infos from './infos.js'
-import monitor from './monitor.js'
+import { createNexusProject, deleteNexusProject, getSecrets } from './project'
+import infos from './infos'
+import monitor from './monitor'
 
 export const plugin: Plugin = {
   infos,

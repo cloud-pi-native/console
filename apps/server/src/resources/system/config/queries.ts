@@ -1,5 +1,5 @@
-import type { ConfigRecords } from './business.js'
-import prisma from '@/prisma.js'
+import type { ConfigRecords } from './business'
+import prisma from '@/prisma'
 
 // CONFIG
 export const getAdminPlugin = prisma.adminPlugin.findMany

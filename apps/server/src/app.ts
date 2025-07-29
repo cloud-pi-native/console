@@ -9,12 +9,12 @@ import fastifySwaggerUi from '@fastify/swagger-ui'
 import { initServer } from '@ts-rest/fastify'
 import { generateOpenApi } from '@ts-rest/open-api'
 import { apiPrefix, getContract } from '@cpn-console/shared'
-import { isDev, isInt, isTest } from './utils/env.js'
-import { fastifyConf, swaggerConf, swaggerUiConf } from './utils/fastify.js'
-import { apiRouter } from './resources/index.js'
-import { keycloakConf, sessionConf } from './utils/keycloak.js'
-import type { CustomLogger } from './utils/logger.js'
-import { log } from './utils/logger.js'
+import { isDev, isInt, isTest } from './utils/env'
+import { fastifyConf, swaggerConf, swaggerUiConf } from './utils/fastify'
+import { apiRouter } from './resources/index'
+import { keycloakConf, sessionConf } from './utils/keycloak'
+import type { CustomLogger } from './utils/logger'
+import { log } from './utils/logger'
 
 export const serverInstance: ReturnType<typeof initServer> = initServer()
 

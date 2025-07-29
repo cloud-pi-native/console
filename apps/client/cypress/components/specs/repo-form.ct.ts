@@ -9,7 +9,7 @@ import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
 
 import RepoForm from '@/components/RepoForm.vue'
-import { useProjectStore } from '@/stores/project.js'
+import { useProjectStore } from '@/stores/project'
 
 describe('RepoForm.vue', () => {
   let pinia: Pinia

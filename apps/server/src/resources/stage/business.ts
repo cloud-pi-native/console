@@ -15,8 +15,8 @@ import {
   unlinkStageFromQuotas,
   updateStageName,
 } from '@/resources/queries-index.js'
-import { BadRequest400, NotFound404 } from '@/utils/errors.js'
-import prisma from '@/prisma.js'
+import { BadRequest400, NotFound404 } from '@/utils/errors'
+import prisma from '@/prisma'
 
 export async function getStageAssociatedEnvironments(stageId: Stage['id']) {
   const environments = await getStageAssociatedEnvironmentById(stageId)

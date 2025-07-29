@@ -8,7 +8,7 @@ import {
   keycloakProtocol,
   keycloakRealm,
   keycloakRedirectUri,
-} from '../env.js'
+} from '../env'
 
 export const keycloakInitOptions: KeycloakInitOptions = {
   onLoad: 'check-sso',

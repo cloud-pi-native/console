@@ -6,7 +6,7 @@ import {
   type Zone,
   resourceListToDict,
 } from '@cpn-console/shared'
-import { apiClient, extractData } from '@/api/xhr-client.js'
+import { apiClient, extractData } from '@/api/xhr-client'
 
 export const useZoneStore = defineStore('zone', () => {
   const zones = ref<Zone[]>([])

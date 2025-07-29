@@ -1,8 +1,8 @@
 import { okStatus, parseError } from '@cpn-console/hooks'
 import type { Project, ProjectLite, StepCall, ZoneObject } from '@cpn-console/hooks'
-import { generateVaultAuth, generateVsoSecret, generateVsoVaultConnection } from './vso.js'
-import getConfig from './config.js'
-import type { KubernetesNamespace } from '@cpn-console/kubernetes-plugin/types/class.js'
+import { generateVaultAuth, generateVsoSecret, generateVsoVaultConnection } from './vso'
+import getConfig from './config'
+import type { KubernetesNamespace } from '@cpn-console/kubernetes-plugin/types/class'
 
 export const upsertProject: StepCall<Project> = async (payload) => {
   try {

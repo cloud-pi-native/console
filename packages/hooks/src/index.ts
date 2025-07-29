@@ -1,12 +1,12 @@
 import type { Monitor } from '@cpn-console/shared'
-import type { PluginApi } from './utils/utils.js'
-import { objectEntries } from './utils/utils.js'
-import * as hooks from './hooks/index.js'
-import { type ServiceInfos, servicesInfos } from './services.js'
-import type { HookStepsNames, StepCall } from './hooks/hook.js'
-import { addPlugin, editStrippers } from './config.js'
+import type { PluginApi } from './utils/utils'
+import { objectEntries } from './utils/utils'
+import * as hooks from './hooks/index'
+import { type ServiceInfos, servicesInfos } from './services'
+import type { HookStepsNames, StepCall } from './hooks/hook'
+import { addPlugin, editStrippers } from './config'
 
-export * from './utils/logger.js'
+export * from './utils/logger'
 
 export type HookChoice = keyof typeof hooks
 
@@ -129,9 +129,9 @@ export {
   hooks,
 }
 
-export * from './services.js'
-export * from './utils/crypto.js'
-export * from './hooks/index.js'
-export * from './hooks/hook.js'
-export * from './utils/utils.js'
-export * from './config.js'
+export * from './services'
+export * from './utils/crypto'
+export * from './hooks/index'
+export * from './hooks/hook'
+export * from './utils/utils'
+export * from './config'

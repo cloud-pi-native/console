@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import type { ProjectV2 } from '@cpn-console/shared'
-import { useProjectStore } from '@/stores/project.js'
-import router from '@/router/index.js'
-import { useUserStore } from '@/stores/user.js'
+import { useProjectStore } from '@/stores/project'
+import router from '@/router/index'
+import { useUserStore } from '@/stores/user'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()

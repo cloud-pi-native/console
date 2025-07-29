@@ -6,9 +6,9 @@ import {
   listRoles,
   patchRoles,
 } from './business.js'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, NotFound404 } from '@/utils/errors.js'
+import { serverInstance } from '@/app'
+import { authUser } from '@/utils/controller'
+import { ErrorResType, Forbidden403, NotFound404 } from '@/utils/errors'
 
 export function projectRoleRouter() {
   return serverInstance.router(projectRoleContract, {

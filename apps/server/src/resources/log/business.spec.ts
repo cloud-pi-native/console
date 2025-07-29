@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { faker } from '@faker-js/faker'
-import prisma from '../../__mocks__/prisma.js'
+import prisma from '../../__mocks__/prisma'
 import { getLogs } from './business.ts'
 
 describe('test log business', () => {

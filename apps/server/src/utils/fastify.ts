@@ -3,8 +3,8 @@ import type { FastifyServerOptions } from 'fastify'
 import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui/types'
 import type { generateOpenApi } from '@ts-rest/open-api'
 import { swaggerUiPath } from '@cpn-console/shared'
-import { loggerConf } from './logger.js'
-import { NODE_ENV, appVersion, keycloakClientId, keycloakClientSecret, keycloakRealm, keycloakRedirectUri } from './env.js'
+import { loggerConf } from './logger'
+import { NODE_ENV, appVersion, keycloakClientId, keycloakClientSecret, keycloakRealm, keycloakRedirectUri } from './env'
 
 export const fastifyConf: FastifyServerOptions = {
   maxParamLength: 5000,

@@ -14,7 +14,7 @@
  * https://discordapi.com/permissions.html#32
  * https://discord.com/developers/docs/topics/permissions#permissions
  */
-import type { ResourceById } from './types.js'
+import type { ResourceById } from './types'
 
 export function getPermsByUserRoles(userRoles: string[] | undefined, rolesById: ResourceById<{ id: string, permissions: bigint | string }>, basePerms?: bigint | string) {
   if (!userRoles) {

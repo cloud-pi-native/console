@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useSnackbarStore } from '@/stores/snackbar'
 
 const route = useRoute()
 const snackbarStore = useSnackbarStore()

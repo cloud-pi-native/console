@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { AdminRole, User } from '@prisma/client'
 import { faker } from '@faker-js/faker'
-import prisma from '../../__mocks__/prisma.js'
+import prisma from '../../__mocks__/prisma'
 import { BadRequest400 } from '../../utils/errors.ts'
 import { countRolesMembers, createRole, deleteRole, listRoles, patchRoles } from './business.ts'
 

@@ -5,7 +5,7 @@ import type {
   ProjectRole,
 } from '@prisma/client'
 
-import prisma from '@/prisma.js'
+import prisma from '@/prisma'
 
 export const listRoles = (projectId: Project['id']) => prisma.projectRole.findMany({ where: { projectId }, orderBy: { position: 'asc' } })
 

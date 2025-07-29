@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from 'vitest'
 import { MonitorStatus, serviceContract } from '@cpn-console/shared'
 import type { ServiceStatus } from '@cpn-console/hooks'
-import app from '../../app.js'
-import * as business from './business.js'
-import { getUserMockInfos } from '../../utils/mocks.js'
-import * as utilsController from '../../utils/controller.js'
+import app from '../../app'
+import * as business from './business'
+import { getUserMockInfos } from '../../utils/mocks'
+import * as utilsController from '../../utils/controller'
 
 const authUserMock = vi.spyOn(utilsController, 'authUser')
 
-vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks')).mockSessionPlugin)
 const businessCheckMock = vi.spyOn(business, 'checkServicesHealth')
 const businessRefreshMock = vi.spyOn(business, 'refreshServicesHealth')
 

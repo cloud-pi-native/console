@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { CleanLog } from '@cpn-console/shared'
 import { ref, watch } from 'vue'
-import type { Project } from '@/utils/project-utils.js'
+import type { Project } from '@/utils/project-utils'
 
 const props = defineProps<{
   project: Project

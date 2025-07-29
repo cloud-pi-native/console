@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import router, { isInProject, selectedProjectSlug } from '../router/index.js'
-import { useUserStore } from '@/stores/user.js'
-import { useProjectStore } from '@/stores/project.js'
+import router, { isInProject, selectedProjectSlug } from '../router/index'
+import { useUserStore } from '@/stores/user'
+import { useProjectStore } from '@/stores/project'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()

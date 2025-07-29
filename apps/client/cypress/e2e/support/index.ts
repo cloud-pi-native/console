@@ -15,8 +15,8 @@
 
 /* eslint-disable ts/method-signature-style */
 
-import type { CiForm, Project, Repository } from '../../types.js'
-import './commands.js'
+import type { CiForm, Project, Repository } from '../../types'
+import './commands'
 
 Cypress.on('window:before:load', (win) => {
   let copyText: string

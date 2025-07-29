@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { getPreparedApp } from './prepare-app.js'
-import { getConnection } from './connect.js'
-import { initDb } from './init/db/index.js'
-import app, { logger } from './app.js'
+import { getPreparedApp } from './prepare-app'
+import { getConnection } from './connect'
+import { initDb } from './init/db/index'
+import app, { logger } from './app'
 
-vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin)
+vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks')).mockSessionPlugin)
 vi.mock('./connect.js')
 vi.mock('./index.js')
 vi.mock('./utils/logger.js')

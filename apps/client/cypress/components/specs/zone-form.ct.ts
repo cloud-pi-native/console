@@ -8,7 +8,7 @@ import '@/main.css'
 
 import { getRandomCluster, getRandomZone } from '@cpn-console/test-utils'
 import ZoneForm from '@/components/ZoneForm.vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useSnackbarStore } from '@/stores/snackbar'
 
 describe('ZoneForm.vue', () => {
   let pinia: Pinia

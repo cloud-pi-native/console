@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { apiClient } from '../api/xhr-client.js'
-import { useQuotaStore } from './quota.js'
+import { apiClient } from '../api/xhr-client'
+import { useQuotaStore } from './quota'
 
 const apiClientListQuotas = vi.spyOn(apiClient.Quotas, 'listQuotas')
 const apiClientGet = vi.spyOn(apiClient.Quotas, 'listQuotaEnvironments')

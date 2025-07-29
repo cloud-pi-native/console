@@ -2,12 +2,12 @@
 import bytes from 'bytes'
 import { type PluginResult, type Project, type ProjectLite, type StepCall, parseError, specificallyDisabled, specificallyEnabled } from '@cpn-console/hooks'
 import { DEFAULT, ENABLED } from '@cpn-console/shared'
-import { getApi, getConfig, projectRobotName, roRobotName, rwRobotName } from './utils.js'
-import { createProject, deleteProject } from './project.js'
-import { addProjectGroupMember } from './permission.js'
-import type { VaultRobotSecret } from './robot.js'
-import { deleteRobot, ensureRobot, roAccess, rwAccess } from './robot.js'
-import { getSecretObject } from './kubeSecret.js'
+import { getApi, getConfig, projectRobotName, roRobotName, rwRobotName } from './utils'
+import { createProject, deleteProject } from './project'
+import { addProjectGroupMember } from './permission'
+import type { VaultRobotSecret } from './robot'
+import { deleteRobot, ensureRobot, roAccess, rwAccess } from './robot'
+import { getSecretObject } from './kubeSecret'
 
 export const createDsoProject: StepCall<Project> = async (payload) => {
   const returnResult: PluginResult = {

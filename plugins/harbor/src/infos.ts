@@ -1,6 +1,6 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
 import { DISABLED } from '@cpn-console/shared'
-import { getConfig } from './utils.js'
+import { getConfig } from './utils'
 
 const quotaDescription = '-1 -> illimité, sinon 100MB / 1.2GB (unités : B, KB, MB, GB, TB)), max 1024TB'
 const infos = {

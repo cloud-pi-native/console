@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { longestEnvironmentName } from '../utils/const.js'
-import { AtDatesToStringExtend } from './_utils.js'
+import { longestEnvironmentName } from '../utils/const'
+import { AtDatesToStringExtend } from './_utils'
 
 export const EnvironmentSchema = z.object({
   id: z.string()

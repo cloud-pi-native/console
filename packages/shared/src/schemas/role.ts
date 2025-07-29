@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { permissionLevelSchema } from './_utils.js'
+import { permissionLevelSchema } from './_utils'
 
 export const RoleNameSchema = z.string().max(30)
 

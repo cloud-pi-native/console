@@ -1,5 +1,5 @@
 import type { User } from '@cpn-console/shared'
-import { getModel } from '../../support/func.js'
+import { getModel } from '../../support/func'
 
 const users = getModel('user') as User[]
 const anonUser = users.find(user => user.email === 'anon@user') as User

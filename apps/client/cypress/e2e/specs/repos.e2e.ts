@@ -1,5 +1,5 @@
 import { fakeToken, invalidGitUrl, invalidInternalRepoName } from '@cpn-console/shared'
-import { getModelById } from '../support/func.js'
+import { getModelById } from '../support/func'
 
 describe('Add repos into project', () => {
   const project = getModelById('project', '554d9150-9a07-42c1-8207-1163f2f0addd')

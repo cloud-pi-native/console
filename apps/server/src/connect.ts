@@ -1,6 +1,6 @@
 import { setTimeout } from 'node:timers/promises'
-import prisma from './prisma.js'
-import { logger } from './app.js'
+import prisma from './prisma'
+import { logger } from './app'
 import {
   dbUrl,
   isCI,

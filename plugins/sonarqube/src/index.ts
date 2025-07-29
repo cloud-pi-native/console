@@ -1,8 +1,8 @@
 import type { HookStepsNames, Plugin } from '@cpn-console/hooks'
-import { getStatus } from './check.js'
-import { deleteProject, initSonar, setVariables, upsertProject } from './functions.js'
-import infos from './infos.js'
-import monitor from './monitor.js'
+import { getStatus } from './check'
+import { deleteProject, initSonar, setVariables, upsertProject } from './functions'
+import infos from './infos'
+import monitor from './monitor'
 
 function start(_options: unknown) {
   try {

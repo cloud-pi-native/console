@@ -1,6 +1,6 @@
 import { Monitor, type MonitorInfos, MonitorStatus } from '@cpn-console/shared'
 import axios from 'axios'
-import { getAxiosOptions } from './functions.js'
+import { getAxiosOptions } from './functions'
 
 const coreComponents = [
   'Blob Stores Ready',

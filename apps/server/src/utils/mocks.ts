@@ -4,8 +4,8 @@ import type { PluginsManifests, RepoCreds, ServiceInfos } from '@cpn-console/hoo
 import { editStrippers, populatePluginManifests } from '@cpn-console/hooks'
 import { DEFAULT, DISABLED, PROJECT_PERMS } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
-import type { UserDetails } from '../types/index.js'
-import type * as utilsController from '../utils/controller.js'
+import type { UserDetails } from '../types/index'
+import type * as utilsController from '../utils/controller'
 
 let requestor: Requestor
 

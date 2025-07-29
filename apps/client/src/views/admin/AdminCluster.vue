@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import router from '@/router/index.js'
-import { useClusterStore } from '@/stores/cluster.js'
-import { useProjectStore } from '@/stores/project.js'
-import { useStageStore } from '@/stores/stage.js'
-import { useZoneStore } from '@/stores/zone.js'
-import type { Project } from '@/utils/project-utils.js'
+import router from '@/router/index'
+import { useClusterStore } from '@/stores/cluster'
+import { useProjectStore } from '@/stores/project'
+import { useStageStore } from '@/stores/stage'
+import { useZoneStore } from '@/stores/zone'
+import type { Project } from '@/utils/project-utils'
 import type { Cluster, ClusterAssociatedEnvironments, ClusterDetails, CreateClusterBody, UpdateClusterBody } from '@cpn-console/shared'
 
 const props = defineProps<{

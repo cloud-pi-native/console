@@ -15,13 +15,13 @@ import {
   lockProject,
   updateProject as updateProjectQuery,
 } from '@/resources/queries-index.js'
-import type { ErrorResType } from '@/utils/errors.js'
-import { BadRequest400, Forbidden403, Unprocessable422 } from '@/utils/errors.js'
-import { whereBuilder } from '@/utils/controller.js'
-import { hook } from '@/utils/hook-wrapper.js'
-import type { UserDetails } from '@/types/index.js'
-import prisma from '@/prisma.js'
-import { parallelBulkLimit } from '@/utils/env.js'
+import type { ErrorResType } from '@/utils/errors'
+import { BadRequest400, Forbidden403, Unprocessable422 } from '@/utils/errors'
+import { whereBuilder } from '@/utils/controller'
+import { hook } from '@/utils/hook-wrapper'
+import type { UserDetails } from '@/types/index'
+import prisma from '@/prisma'
+import { parallelBulkLimit } from '@/utils/env'
 
 export function generateSlug(prefix: string, existingSlugs?: string[]) {
   if (!existingSlugs?.includes(prefix)) {

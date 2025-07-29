@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { resourceListToDict, type CleanedCluster, type Cluster, type CreateClusterBody, type UpdateClusterBody } from '@cpn-console/shared'
-import { apiClient, extractData } from '@/api/xhr-client.js'
+import { apiClient, extractData } from '@/api/xhr-client'
 
 export const useClusterStore = defineStore('cluster', () => {
   const clusters = ref<Array<CleanedCluster>>([])

@@ -1,5 +1,5 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
-import getConfig from './config.js'
+import getConfig from './config'
 
 const infos: ServiceInfos = {
   name: 'vault',

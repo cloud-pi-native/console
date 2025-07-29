@@ -1,6 +1,5 @@
 {
   "name": "@cpn-console/kubernetes-plugin",
-  "type": "module",
   "version": "2.3.0",
   "private": false,
   "description": "",

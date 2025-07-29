@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import { longestEnvironmentName, projectStatus } from '../utils/const.js'
-import { AtDatesToStringExtend, CoerceBooleanSchema, permissionLevelSchema } from './_utils.js'
-import { RepoSchema } from './repository.js'
-import { MemberSchema, UserSchema } from './user.js'
-import { RoleSchema } from './role.js'
+import { longestEnvironmentName, projectStatus } from '../utils/const'
+import { AtDatesToStringExtend, CoerceBooleanSchema, permissionLevelSchema } from './_utils'
+import { RepoSchema } from './repository'
+import { MemberSchema, UserSchema } from './user'
+import { RoleSchema } from './role'
 
 export const descriptionMaxLength = 280
 export const projectNameMaxLength = 20

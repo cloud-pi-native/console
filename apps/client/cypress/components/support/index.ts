@@ -1,5 +1,5 @@
 /* eslint-disable ts/method-signature-style */
-import './commands.js'
+import './commands'
 import type { mount } from '@cypress/vue'
 
 type MountParams = Parameters<typeof mount>

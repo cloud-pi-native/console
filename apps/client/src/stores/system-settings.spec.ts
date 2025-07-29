@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { apiClient } from '../api/xhr-client.js'
-import { useSystemSettingsStore } from './system-settings.js'
+import { apiClient } from '../api/xhr-client'
+import { useSystemSettingsStore } from './system-settings'
 
 const listSystemSettings = vi.spyOn(apiClient.SystemSettings, 'listSystemSettings')
 const upsertSystemSetting = vi.spyOn(apiClient.SystemSettings, 'upsertSystemSetting')

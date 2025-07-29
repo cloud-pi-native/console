@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { Member, Role, RoleBigint } from '@cpn-console/shared'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import type { Project } from '@/utils/project-utils.js'
+import { useSnackbarStore } from '@/stores/snackbar'
+import type { Project } from '@/utils/project-utils'
 
 const props = defineProps<{
   project: Project

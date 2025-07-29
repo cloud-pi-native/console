@@ -13,10 +13,10 @@ import {
   linkQuotaToStages,
   unlinkQuotaFromStages,
 } from '@/resources/queries-index.js'
-import { validateSchema } from '@/utils/business.js'
+import { validateSchema } from '@/utils/business'
 
-import { BadRequest400, ErrorResType, NotFound404 } from '@/utils/errors.js'
-import prisma from '@/prisma.js'
+import { BadRequest400, ErrorResType, NotFound404 } from '@/utils/errors'
+import prisma from '@/prisma'
 
 export async function getQuotaAssociatedEnvironments(quotaId: string) {
   const environments = await getQuotaAssociatedEnvironmentById(quotaId)

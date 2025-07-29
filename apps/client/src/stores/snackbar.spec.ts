@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useSnackbarStore } from './snackbar.js'
+import { useSnackbarStore } from './snackbar'
 
 describe('snackbar Store', () => {
   beforeEach(() => {

@@ -1,8 +1,8 @@
 import { AdminAuthorized, serviceContract } from '@cpn-console/shared'
-import { checkServicesHealth, refreshServicesHealth } from './business.js'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { Forbidden403 } from '@/utils/errors.js'
+import { checkServicesHealth, refreshServicesHealth } from './business'
+import { serverInstance } from '@/app'
+import { authUser } from '@/utils/controller'
+import { Forbidden403 } from '@/utils/errors'
 
 export function serviceMonitorRouter() {
   return serverInstance.router(serviceContract, {

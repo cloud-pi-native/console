@@ -1,6 +1,6 @@
 import type { BaseResources, Environment, ProjectLite, Repository } from '@cpn-console/hooks'
-import type { ArgoDestination } from './app-project.js'
-import { getConfig } from './utils.js'
+import type { ArgoDestination } from './app-project'
+import { getConfig } from './utils'
 
 export function getApplicationObject({ name, destination, repoURL, appProjectName, project, environment, repository }:
 { name: string, destination: ArgoDestination, repoURL: string, appProjectName: string, project: ProjectLite, environment: Environment, repository: Repository }) {

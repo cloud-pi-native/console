@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { isInProject } from '../router/index.js'
-import { useUserStore } from '@/stores/user.js'
-import { useServiceStore } from '@/stores/services-monitor.js'
+import { isInProject } from '../router/index'
+import { useUserStore } from '@/stores/user'
+import { useServiceStore } from '@/stores/services-monitor'
 
 const route = useRoute()
 const userStore = useUserStore()

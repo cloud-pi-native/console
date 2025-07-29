@@ -2,7 +2,7 @@
 import { computed, onBeforeMount, ref } from 'vue'
 import type { Cluster, CreateZoneBody, SharedZodError, UpdateZoneBody, Zone } from '@cpn-console/shared'
 import { deleteValidationInput, ZoneSchema } from '@cpn-console/shared'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useSnackbarStore } from '@/stores/snackbar'
 
 const props = withDefaults(defineProps<{
   isNewZone: boolean

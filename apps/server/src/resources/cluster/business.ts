@@ -18,11 +18,11 @@ import {
   removeClusterFromStage,
   updateCluster as updateClusterQuery,
 } from '@/resources/queries-index.js'
-import { linkClusterToStages } from '@/resources/stage/business.js'
-import { validateSchema } from '@/utils/business.js'
-import { hook } from '@/utils/hook-wrapper.js'
-import { BadRequest400, ErrorResType, NotFound404, Unprocessable422 } from '@/utils/errors.js'
-import prisma from '@/prisma.js'
+import { linkClusterToStages } from '@/resources/stage/business'
+import { validateSchema } from '@/utils/business'
+import { hook } from '@/utils/hook-wrapper'
+import { BadRequest400, ErrorResType, NotFound404, Unprocessable422 } from '@/utils/errors'
+import prisma from '@/prisma'
 
 export async function listClusters(userId?: User['id']) {
   const where: Prisma.ClusterWhereInput = userId

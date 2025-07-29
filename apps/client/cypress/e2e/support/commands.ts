@@ -1,6 +1,6 @@
 import { deleteValidationInput } from '@cpn-console/shared'
-import { getModelById } from './func.js'
-import { keycloakDomain } from '@/utils/env.js'
+import { getModelById } from './func'
+import { keycloakDomain } from '@/utils/env'
 
 const defaultOwner = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6565')
 

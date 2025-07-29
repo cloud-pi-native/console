@@ -11,8 +11,8 @@ import {
   getRandomUser,
   getRandomZone,
 } from './random-utils.js'
-import { repeatFn } from './func-utils.js'
-import type { User } from './types.js'
+import { repeatFn } from './func-utils'
+import type { User } from './types'
 
 const basicStages = ['dev', 'staging', 'integration', 'prod']
 

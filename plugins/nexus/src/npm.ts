@@ -1,7 +1,7 @@
 import type { AxiosInstance } from 'axios'
-import type { WritePolicy } from './utils.js'
-import { deleteIfExists } from './utils.js'
-import getConfig from './config.js'
+import type { WritePolicy } from './utils'
+import { deleteIfExists } from './utils'
+import getConfig from './config'
 
 function getRepoNames(projectName: string) { // Unique function per language cause names are unique per repo
   return {

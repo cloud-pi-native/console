@@ -6,7 +6,7 @@ import {
   type UpdateStageBody,
   resourceListToDict,
 } from '@cpn-console/shared'
-import { apiClient, extractData } from '@/api/xhr-client.js'
+import { apiClient, extractData } from '@/api/xhr-client'
 
 export const useStageStore = defineStore('stage', () => {
   const stages = ref<Stage[]>([])

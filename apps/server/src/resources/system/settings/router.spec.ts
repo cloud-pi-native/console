@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { systemSettingsContract } from '@cpn-console/shared'
-import app from '../../../app.js'
-import * as utilsController from '../../../utils/controller.js'
-import { getUserMockInfos } from '../../../utils/mocks.js'
-import * as business from './business.js'
+import app from '../../../app'
+import * as utilsController from '../../../utils/controller'
+import { getUserMockInfos } from '../../../utils/mocks'
+import * as business from './business'
 
-vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
 const businessGetSystemSettingsMock = vi.spyOn(business, 'getSystemSettings')
 const businessUpsertSystemSettingMock = vi.spyOn(business, 'upsertSystemSetting')

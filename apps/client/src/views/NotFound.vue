@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import router from '@/router/index.js'
-import { contactEmail } from '@/utils/env.js'
+import router from '@/router/index'
+import { contactEmail } from '@/utils/env'
 
 const redirectButtons = [
   {

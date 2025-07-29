@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { contactEmail } from '@/utils/env.js'
+import { contactEmail } from '@/utils/env'
 
 interface MailType {
   to: string

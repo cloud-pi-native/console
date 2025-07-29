@@ -6,10 +6,10 @@ import {
   listStages,
   updateStage,
 } from './business.js'
-import { serverInstance } from '@/app.js'
+import { serverInstance } from '@/app'
 
-import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
+import { authUser } from '@/utils/controller'
+import { ErrorResType, Forbidden403 } from '@/utils/errors'
 
 export function stageRouter() {
   return serverInstance.router(stageContract, {

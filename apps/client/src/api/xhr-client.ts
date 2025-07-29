@@ -1,6 +1,6 @@
 import { type ApiFetcherArgs, tsRestFetchApi } from '@ts-rest/core'
 import { apiPrefix, getApiClient } from '@cpn-console/shared'
-import { getKeycloak } from '@/utils/keycloak/keycloak.js'
+import { getKeycloak } from '@/utils/keycloak/keycloak.ts'
 
 export const apiClient = await getApiClient(
   '',

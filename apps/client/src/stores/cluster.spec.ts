@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { ClusterPrivacy } from '@cpn-console/shared'
-import { apiClient } from '../api/xhr-client.js'
-import { useClusterStore } from './cluster.js'
+import { apiClient } from '../api/xhr-client'
+import { useClusterStore } from './cluster'
 
 const apiClientGet = vi.spyOn(apiClient.Clusters, 'getClusterDetails')
 const apiClientGetClusterEnvironments = vi.spyOn(apiClient.Clusters, 'getClusterEnvironments')

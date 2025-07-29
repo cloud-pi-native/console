@@ -3,11 +3,11 @@ import { onMounted, ref } from 'vue'
 import type {
   Cluster,
 } from '@cpn-console/shared'
-import { useZoneStore } from '@/stores/zone.js'
-import { useStageStore } from '@/stores/stage.js'
-import router from '@/router/index.js'
-import { useClusterStore } from '@/stores/cluster.js'
-import { getRandomId } from '@/utils/func.js'
+import { useZoneStore } from '@/stores/zone'
+import { useStageStore } from '@/stores/stage'
+import router from '@/router/index'
+import { useClusterStore } from '@/stores/cluster'
+import { getRandomId } from '@/utils/func'
 
 const zoneStore = useZoneStore()
 const stageStore = useStageStore()

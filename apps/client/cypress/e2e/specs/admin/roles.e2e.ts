@@ -1,5 +1,5 @@
 import type { Role, User } from '@cpn-console/shared'
-import { getModel } from '../../support/func.js'
+import { getModel } from '../../support/func'
 
 const roles: Role[] = getModel('adminRole')
 const users: User[] = getModel('user').filter(user => user.type === 'human')

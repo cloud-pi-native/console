@@ -1,5 +1,5 @@
 import { PluginApi } from '@cpn-console/hooks'
-import { consoleGroupName } from './group.js'
+import { consoleGroupName } from './group'
 
 interface KeycloakEnv {
   path: string

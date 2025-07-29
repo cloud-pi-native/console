@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { detectProjectslug } from './index.js'
-import { useProjectStore } from '@/stores/project.js'
+import { detectProjectslug } from './index'
+import { useProjectStore } from '@/stores/project'
 
 setActivePinia(createPinia())
 describe('test router functions: detectProjectslug', () => {

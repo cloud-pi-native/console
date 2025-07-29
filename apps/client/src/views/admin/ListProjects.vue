@@ -4,11 +4,11 @@ import type { ArrayElement, ProjectV2, projectContract } from '@cpn-console/shar
 import { bts, statusDict } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useProjectStore } from '@/stores/project.js'
-import router from '@/router/index.js'
-import { apiClient, extractData } from '@/api/xhr-client.js'
-import { getRandomId } from '@/utils/func.js'
+import { useSnackbarStore } from '@/stores/snackbar'
+import { useProjectStore } from '@/stores/project'
+import router from '@/router/index'
+import { apiClient, extractData } from '@/api/xhr-client'
+import { getRandomId } from '@/utils/func'
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()

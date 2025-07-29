@@ -1,5 +1,5 @@
-import { getApi } from './utils.js'
-import type { Project as HarborProject, Quota } from './api/Api.js'
+import { getApi } from './utils'
+import type { Project as HarborProject, Quota } from './api/Api'
 
 export async function createProject(projectName: string, storageLimit: number = -1): Promise<HarborProject> {
   const api = getApi()

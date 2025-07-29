@@ -1,4 +1,4 @@
-import { getApi } from './utils.js'
+import { getApi } from './utils'
 
 export async function addProjectGroupMember(projectName: string, groupName: string, accessLevel: number = 3): Promise<any> {
   const api = getApi()

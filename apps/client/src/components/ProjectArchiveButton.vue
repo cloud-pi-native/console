@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { useProjectStore } from '@/stores/project.js'
-import { clickInDialog } from '@/utils/func.js'
-import type { Project } from '@/utils/project-utils.js'
+import { useProjectStore } from '@/stores/project'
+import { clickInDialog } from '@/utils/func'
+import type { Project } from '@/utils/project-utils'
 import { deleteValidationInput } from '@cpn-console/shared'
 
 const props = defineProps<{

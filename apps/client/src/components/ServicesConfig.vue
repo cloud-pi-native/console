@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { servicePluginOrder, type PermissionTarget, type PluginConfigItem, type PluginsUpdateBody, type ProjectService } from '@cpn-console/shared'
-import type { Project } from '@/utils/project-utils.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import type { Project } from '@/utils/project-utils'
+import { useSnackbarStore } from '@/stores/snackbar'
 
 const props = withDefaults(defineProps<{
   project: Project

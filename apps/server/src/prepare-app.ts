@@ -1,11 +1,11 @@
 import { rm } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { isCI, isDev, isDevSetup, isInt, isProd, isTest, port } from './utils/env.js'
-import app, { logger } from './app.js'
-import { getConnection } from './connect.js'
-import { initDb } from './init/db/index.js'
-import { initPm } from './plugins.js'
+import { isCI, isDev, isDevSetup, isInt, isProd, isTest, port } from './utils/env'
+import app, { logger } from './app'
+import { getConnection } from './connect'
+import { initDb } from './init/db/index'
+import { initPm } from './plugins'
 
 // Workaround because fetch isn't using http_proxy variables
 // See. https://github.com/gajus/global-agent/issues/52#issuecomment-1134525621
@@ -40,7 +40,7 @@ export async function startServer(defaultPort: number = (port ? +port : 8080)) {
 
   try {
     const dataPath = (isProd || isInt)
-      ? './init/db/imports/data.js'
+      ? './init/db/imports/data'
       : '@cpn-console/test-utils/src/imports/data.ts'
     await initializeDB(dataPath)
     if (isProd && !isDevSetup) {
@@ -82,7 +82,7 @@ export async function getPreparedApp() {
 
   try {
     const dataPath = (isProd || isInt)
-      ? './init/db/imports/data.js'
+      ? './init/db/imports/data'
       : '@cpn-console/test-utils/src/imports/data.ts'
     await initializeDB(dataPath)
     if (isProd && !isDevSetup) {

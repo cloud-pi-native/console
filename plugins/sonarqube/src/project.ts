@@ -1,5 +1,5 @@
 import { generateProjectKey } from '@cpn-console/hooks'
-import { getAxiosInstance } from './tech.js'
+import { getAxiosInstance } from './tech'
 
 export interface SonarPaging {
   pageIndex: number

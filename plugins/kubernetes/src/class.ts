@@ -2,11 +2,11 @@ import type { ClusterObject, Environment, Project, ProjectLite, ResourceQuotaTyp
 import { PluginApi } from '@cpn-console/hooks'
 import type { ApisApi, CoreV1Api, V1Namespace, V1ObjectMeta } from '@kubernetes/client-node'
 import { shallowMatch } from '@cpn-console/shared'
-import { getNsObject, searchEnvNamespaces } from './namespace.js'
-import { createApisApi, createCoreV1Api, createCustomObjectApi } from './api.js'
-import { getQuotaObject } from './quota.js'
-import type { AnyObjectsApi } from './customApiClass.js'
-import { patchOptions } from './misc.js'
+import { getNsObject, searchEnvNamespaces } from './namespace'
+import { createApisApi, createCoreV1Api, createCustomObjectApi } from './api'
+import { getQuotaObject } from './quota'
+import type { AnyObjectsApi } from './customApiClass'
+import { patchOptions } from './misc'
 
 type V1ObjectMetaPopulated = V1ObjectMeta & {
   name: string

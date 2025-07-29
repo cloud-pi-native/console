@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import type { ServiceBody } from '@cpn-console/shared'
-import { apiClient } from '../api/xhr-client.js'
-import { useServiceStore } from './services-monitor.js'
+import { apiClient } from '../api/xhr-client'
+import { useServiceStore } from './services-monitor'
 
 const apiClientGet = vi.spyOn(apiClient.Services, 'getServiceHealth')
 

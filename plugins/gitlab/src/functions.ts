@@ -1,13 +1,13 @@
 import { okStatus, parseError, specificallyDisabled } from '@cpn-console/hooks'
 import type { PluginResult, Project, ProjectLite, StepCall, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
 import { insert } from '@cpn-console/shared'
-import { deleteGroup } from './group.js'
-import { createUsername, getUser } from './user.js'
-import { ensureMembers } from './members.js'
-import { ensureRepositories } from './repositories.js'
-import type { VaultSecrets } from './utils.js'
-import { cleanGitlabError } from './utils.js'
-import config from './config.js'
+import { deleteGroup } from './group'
+import { createUsername, getUser } from './user'
+import { ensureMembers } from './members'
+import { ensureRepositories } from './repositories'
+import type { VaultSecrets } from './utils'
+import { cleanGitlabError } from './utils'
+import config from './config'
 
 // Check
 export const checkApi: StepCall<Project> = async (payload) => {

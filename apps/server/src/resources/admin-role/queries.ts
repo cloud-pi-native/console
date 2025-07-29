@@ -2,7 +2,7 @@ import type {
   AdminRole,
   Prisma,
 } from '@prisma/client'
-import prisma from '@/prisma.js'
+import prisma from '@/prisma'
 
 export const listAdminRoles = () => prisma.adminRole.findMany({ orderBy: { position: 'asc' } })
 

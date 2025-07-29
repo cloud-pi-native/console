@@ -1,6 +1,6 @@
 import { Monitor, type MonitorInfos, MonitorStatus } from '@cpn-console/shared'
 import axios from 'axios'
-import config from './config.js'
+import config from './config'
 
 enum HealthStatus {
   failed = 'failed',

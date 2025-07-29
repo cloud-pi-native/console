@@ -1,11 +1,11 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Cluster, Zone } from '@prisma/client'
-import prisma from '../../__mocks__/prisma.js'
+import prisma from '../../__mocks__/prisma'
 import { BadRequest400 } from '../../utils/errors.ts'
 import { hook } from '../../__mocks__/utils/hook-wrapper.ts'
 import { createZone, deleteZone, listZones, updateZone } from './business.ts'
-import * as queries from './queries.js'
+import * as queries from './queries'
 
 const userId = faker.string.uuid()
 const reqId = faker.string.uuid()

@@ -1,3 +1,3 @@
-export * from './crypto.js'
-export * from './logger.js'
-export * from './utils.js'
+export * from './crypto'
+export * from './logger'
+export * from './utils'

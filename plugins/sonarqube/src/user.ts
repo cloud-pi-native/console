@@ -1,8 +1,8 @@
 // import type { StepCall, ArchiveProjectExecArgs } from '@cpn-console/hooks'
 import { generateRandomPassword } from '@cpn-console/hooks'
-import type { VaultSonarSecret } from './tech.js'
-import { getAxiosInstance } from './tech.js'
-import type { SonarPaging } from './project.js'
+import type { VaultSonarSecret } from './tech'
+import { getAxiosInstance } from './tech'
+import type { SonarPaging } from './project'
 
 export interface SonarUser {
   login: string

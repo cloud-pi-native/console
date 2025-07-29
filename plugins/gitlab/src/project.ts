@@ -1,6 +1,6 @@
 import * as fs from 'node:fs/promises'
 import path from 'node:path'
-import { getApi } from './utils.js'
+import { getApi } from './utils'
 
 const baseDir = path.resolve(import.meta.url, '../../files/').split(':')[1]
 

@@ -18,9 +18,9 @@ import { load } from 'js-yaml'
 // @ts-ignore 'vue3-json-viewer' missing types
 import { JsonViewer } from 'vue3-json-viewer'
 import ChoiceSelector from './ChoiceSelector.vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { toCodeComponent } from '@/utils/func.js'
-import type { Project } from '@/utils/project-utils.js'
+import { useSnackbarStore } from '@/stores/snackbar'
+import { toCodeComponent } from '@/utils/func'
+import type { Project } from '@/utils/project-utils'
 
 const props = withDefaults(defineProps<{
   isNewCluster: boolean

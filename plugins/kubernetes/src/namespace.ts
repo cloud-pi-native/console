@@ -3,8 +3,8 @@ import type { BareMinimumResource, Environment, ListMinimumResources, PluginResu
 import { parseError, uniqueResource } from '@cpn-console/hooks'
 import { generateNamespaceName } from '@cpn-console/shared'
 import type { CoreV1Api } from '@kubernetes/client-node'
-import { createCoreV1Api } from './api.js'
-import type { V1NamespacePopulated } from './class.js'
+import { createCoreV1Api } from './api'
+import type { V1NamespacePopulated } from './class'
 
 export type NamespaceProvided = Required<Namespace> & { metadata: Required<Namespace['metadata']> }
 

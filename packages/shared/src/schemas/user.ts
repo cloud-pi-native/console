@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { AtDatesToStringExtend, dateToString } from './_utils.js'
+import { AtDatesToStringExtend, dateToString } from './_utils'
 
 export const UserSchema = z.object({
   id: z.string()

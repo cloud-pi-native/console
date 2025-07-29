@@ -1,5 +1,5 @@
-import { longestEnvironmentName } from './const.js'
-import type { ResourceById, ResourceByKey } from './types.js'
+import { longestEnvironmentName } from './const'
+import type { ResourceById, ResourceByKey } from './types'
 import shortUUID from 'short-uuid'
 
 /**

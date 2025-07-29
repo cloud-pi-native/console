@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Cluster, Project, ProjectMembers, ProjectRole, User } from '@prisma/client'
-import prisma from '../../__mocks__/prisma.js'
+import prisma from '../../__mocks__/prisma'
 import { hook } from '../../__mocks__/utils/hook-wrapper.ts'
 import { createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.ts'
 import { ErrorResType } from '../../utils/errors.ts'

@@ -2,8 +2,8 @@ import type { AxiosInstance } from 'axios'
 import axios from 'axios'
 import type { ProjectLite } from '@cpn-console/hooks'
 import { PluginApi } from '@cpn-console/hooks'
-import getConfig from './config.js'
-import { generateKVConfigUpdate, getAuthMethod, isAppRoleEnabled } from './utils.js'
+import getConfig from './config'
+import { generateKVConfigUpdate, getAuthMethod, isAppRoleEnabled } from './utils'
 
 interface ReadOptions {
   throwIfNoEntry: boolean

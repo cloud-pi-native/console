@@ -1,8 +1,8 @@
 import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 import { z } from 'zod'
-import { apiPrefix, contractInstance } from '../api-client.js'
-import { StageSchema } from '../schemas/index.js'
-import { ErrorSchema, baseHeaders } from './_utils.js'
+import { apiPrefix, contractInstance } from '../api-client'
+import { StageSchema } from '../schemas/index'
+import { ErrorSchema, baseHeaders } from './_utils'
 
 export const stageContract = contractInstance.router({
   listStages: {

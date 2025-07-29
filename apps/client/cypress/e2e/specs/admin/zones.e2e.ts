@@ -1,5 +1,5 @@
 import { deleteValidationInput, type Zone } from '@cpn-console/shared'
-import { getModel } from '../../support/func.js'
+import { getModel } from '../../support/func'
 
 describe('Administration zones', () => {
   let zones: Zone[]

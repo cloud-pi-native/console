@@ -1,9 +1,9 @@
 import type { User, Zone } from '@cpn-console/shared'
-import { addLogs } from '../queries-index.js'
-import { linkZoneToClusters } from './queries.js'
-import { BadRequest400, Unprocessable422 } from '@/utils/errors.js'
-import prisma from '@/prisma.js'
-import { hook } from '@/utils/hook-wrapper.js'
+import { addLogs } from '../queries-index'
+import { linkZoneToClusters } from './queries'
+import { BadRequest400, Unprocessable422 } from '@/utils/errors'
+import prisma from '@/prisma'
+import { hook } from '@/utils/hook-wrapper'
 
 export const listZones = prisma.zone.findMany
 

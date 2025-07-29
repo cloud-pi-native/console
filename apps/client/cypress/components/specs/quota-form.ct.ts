@@ -7,8 +7,8 @@ import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 import { getRandomEnv, getRandomQuota, getRandomStage, repeatFn } from '@cpn-console/test-utils'
 import QuotaForm from '@/components/QuotaForm.vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useQuotaStore } from '@/stores/quota.js'
+import { useSnackbarStore } from '@/stores/snackbar'
+import { useQuotaStore } from '@/stores/quota'
 
 describe('QuotaForm.vue', () => {
   let pinia: Pinia

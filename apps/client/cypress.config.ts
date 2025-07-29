@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { defineConfig } from 'cypress'
 import vitePreprocessor from 'cypress-vite'
-import viteConfig from './vite.config.js'
+import viteConfig from './vite.config'
 
 const argocdUrl = process.env.ARGOCD_URL ?? 'https://argo-cd.readthedocs.io'
 const gitlabUrl = process.env.GITLAB_URL ?? 'https://gitlab.com'

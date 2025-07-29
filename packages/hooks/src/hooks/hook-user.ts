@@ -1,5 +1,5 @@
-import { type Hook, createHook } from './hook.js'
-import type { UserObject } from './index.js'
+import { type Hook, createHook } from './hook'
+import type { UserObject } from './index'
 
 export type UserEmail = Pick<UserObject, 'email'>
 export type UserAdmin = Pick<UserObject, 'id'> & { isAdmin: boolean }

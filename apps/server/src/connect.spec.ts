@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { PrismaClientInitializationError } from '@prisma/client/runtime/library.js'
-import prisma from './__mocks__/prisma.js'
-import app, { logger } from './app.js'
-import { getConnection } from './connect.js'
+import { PrismaClientInitializationError } from '@prisma/client/runtime/library'
+import prisma from './__mocks__/prisma'
+import app, { logger } from './app'
+import { getConnection } from './connect'
 
-vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin)
+vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks')).mockSessionPlugin)
 vi.mock('@/resources/queries-index.js')
 vi.mock('./models/log.js', () => getModel('getLogModel'))
 vi.mock('./models/repository.js', () => getModel('getRepositoryModel'))

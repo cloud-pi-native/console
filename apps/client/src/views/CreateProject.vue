@@ -11,10 +11,10 @@ import {
   parseZodError,
   projectNameMaxLength,
 } from '@cpn-console/shared'
-import { useProjectStore } from '@/stores/project.js'
-import { useUserStore } from '@/stores/user.js'
-import router from '@/router/index.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useProjectStore } from '@/stores/project'
+import { useUserStore } from '@/stores/user'
+import router from '@/router/index'
+import { useSnackbarStore } from '@/stores/snackbar'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()

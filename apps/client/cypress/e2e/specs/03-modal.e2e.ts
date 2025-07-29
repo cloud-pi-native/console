@@ -1,4 +1,4 @@
-import { getModelById } from '../support/func.js'
+import { getModelById } from '../support/func'
 
 describe('Manage project environments', () => {
   const project = getModelById('project', '011e7860-04d7-461f-912d-334c622d38c5')

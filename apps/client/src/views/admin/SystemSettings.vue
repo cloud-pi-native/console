@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { useSystemSettingsStore } from '@/stores/system-settings.js'
+import { useSystemSettingsStore } from '@/stores/system-settings'
 
 const systemStore = useSystemSettingsStore()
 

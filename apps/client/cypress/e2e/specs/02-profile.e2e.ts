@@ -1,5 +1,5 @@
 import type { PersonalAccessToken, User } from '@cpn-console/shared'
-import { getModelById } from '../support/func.js'
+import { getModelById } from '../support/func'
 
 const userClaire = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567') as User
 const userTibo = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566') as User

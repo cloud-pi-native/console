@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useClusterStore } from '@/stores/cluster.js'
-import { useZoneStore } from '@/stores/zone.js'
-import type { Project } from '@/utils/project-utils.js'
+import { useClusterStore } from '@/stores/cluster'
+import { useZoneStore } from '@/stores/zone'
+import type { Project } from '@/utils/project-utils'
 import { privacyWording, type Cluster } from '@cpn-console/shared'
 
 const props = defineProps<{

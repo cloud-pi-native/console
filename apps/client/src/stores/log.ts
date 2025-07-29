@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { GetLogsQuery, Log } from '@cpn-console/shared'
-import { apiClient, extractData } from '@/api/xhr-client.js'
+import { apiClient, extractData } from '@/api/xhr-client'
 
 export const useLogStore = defineStore('log', () => {
   const logs = ref<Log[]>([])

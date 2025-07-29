@@ -1,6 +1,5 @@
 {
   "name": "@cpn-console/harbor-plugin",
-  "type": "module",
   "version": "2.2.3",
   "private": false,
   "description": "",

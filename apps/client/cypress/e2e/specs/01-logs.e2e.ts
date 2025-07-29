@@ -1,5 +1,5 @@
 import type { ProjectV2 } from '@cpn-console/shared'
-import { getModel } from '../support/func.js'
+import { getModel } from '../support/func'
 
 const projects = getModel('project')
 

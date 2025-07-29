@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { AtDatesToStringExtend } from './_utils.js'
+import { AtDatesToStringExtend } from './_utils'
 
 export const CleanLogSchema = z.object({
   id: z.string(),

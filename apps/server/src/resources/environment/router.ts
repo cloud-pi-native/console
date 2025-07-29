@@ -1,8 +1,8 @@
 import { AdminAuthorized, ProjectAuthorized, environmentContract } from '@cpn-console/shared'
-import { checkEnvironmentInput, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.js'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, NotFound404, Unauthorized401 } from '@/utils/errors.js'
+import { checkEnvironmentInput, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business'
+import { serverInstance } from '@/app'
+import { authUser } from '@/utils/controller'
+import { ErrorResType, Forbidden403, NotFound404, Unauthorized401 } from '@/utils/errors'
 
 export function environmentRouter() {
   return serverInstance.router(environmentContract, {

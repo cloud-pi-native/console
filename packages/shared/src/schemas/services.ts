@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { pluginsPopulatedManifests } from './config.js'
+import { pluginsPopulatedManifests } from './config'
 
 export const serviceUrl = z.object({
   to: z.string(),

@@ -1,4 +1,4 @@
-import getConfig from './config.js'
+import getConfig from './config'
 
 let axiosOptions: {
   baseURL: string

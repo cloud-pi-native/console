@@ -8,9 +8,9 @@ import '@/main.css'
 import type { ProjectV2 } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import TeamCt from '@/components/TeamCt.vue'
-import { useProjectStore } from '@/stores/project.js'
-import { useUsersStore } from '@/stores/users.js'
-import { useUserStore } from '@/stores/user.js'
+import { useProjectStore } from '@/stores/project'
+import { useUsersStore } from '@/stores/users'
+import { useUserStore } from '@/stores/user'
 
 const ownerId = faker.string.uuid()
 const props: {

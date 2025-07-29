@@ -5,7 +5,7 @@ import {
   type UpsertSystemSettingBody,
   resourceListToDictByKey,
 } from '@cpn-console/shared'
-import { apiClient, extractData } from '@/api/xhr-client.js'
+import { apiClient, extractData } from '@/api/xhr-client'
 
 export const useSystemSettingsStore = defineStore('systemSettings', () => {
   const systemSettings = ref<SystemSettings>([])

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { userPayloadMapper } from './keycloak-utils.js'
+import { userPayloadMapper } from './keycloak-utils'
 
 describe('keycloak', () => {
   it('should map keycloak user object to DSO user object without groups', () => {

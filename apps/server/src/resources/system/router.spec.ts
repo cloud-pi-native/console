@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import { systemContract } from '@cpn-console/shared'
-import app from '../../app.js'
+import app from '../../app'
 
-vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks')).mockSessionPlugin)
 
 describe('system - router', () => {
   it('should send application version', async () => {

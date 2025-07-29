@@ -6,11 +6,11 @@ import type {
   User,
 } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { copyContent } from '@/utils/func.js'
-import { useUserStore } from '@/stores/user.js'
-import { useProjectStore } from '@/stores/project.js'
-import type { Project } from '@/utils/project-utils.js'
+import { useSnackbarStore } from '@/stores/snackbar'
+import { copyContent } from '@/utils/func'
+import { useUserStore } from '@/stores/user'
+import { useProjectStore } from '@/stores/project'
+import type { Project } from '@/utils/project-utils'
 
 const props = withDefaults(
   defineProps<{

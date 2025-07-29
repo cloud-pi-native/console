@@ -9,10 +9,10 @@ import {
   upsertDsoProject,
   upsertZone,
 } from './functions.js'
-import { getOrCreateGroupRoot } from './utils.js'
-import infos from './infos.js'
-import monitor from './monitor.js'
-import { GitlabProjectApi, GitlabZoneApi } from './class.js'
+import { getOrCreateGroupRoot } from './utils'
+import infos from './infos'
+import monitor from './monitor'
+import { GitlabProjectApi, GitlabZoneApi } from './class'
 
 const onlyApi = { api: (project: Project | UniqueRepo) => new GitlabProjectApi(project) }
 

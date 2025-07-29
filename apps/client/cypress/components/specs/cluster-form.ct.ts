@@ -9,7 +9,7 @@ import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
 
 import ClusterForm from '@/components/ClusterForm.vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useSnackbarStore } from '@/stores/snackbar'
 
 describe('ClusterForm.vue', () => {
   let pinia: Pinia

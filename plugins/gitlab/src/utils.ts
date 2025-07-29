@@ -1,7 +1,7 @@
 import { Gitlab } from '@gitbeaker/rest'
 import type { Gitlab as IGitlab } from '@gitbeaker/core'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
-import config from './config.js'
+import config from './config'
 
 let api: IGitlab | undefined
 

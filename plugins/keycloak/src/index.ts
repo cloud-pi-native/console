@@ -6,10 +6,10 @@ import {
   upsertProject,
   upsertZone,
 } from './functions.js'
-import infos from './infos.js'
-import monitor from './monitor.js'
-import { start } from './client.js'
-import { KeycloakProjectApi } from './class.js'
+import infos from './infos'
+import monitor from './monitor'
+import { start } from './client'
+import { KeycloakProjectApi } from './class'
 
 export const plugin: Plugin = {
   infos,

@@ -2,13 +2,13 @@ import { dirname } from 'node:path'
 import type { ClusterObject, Environment, ListMinimumResources, Project, Repository, StepCall } from '@cpn-console/hooks'
 import { parseError, uniqueResource } from '@cpn-console/hooks'
 import { dump } from 'js-yaml'
-import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
+import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class'
 import { PatchUtils } from '@kubernetes/client-node'
 import { inClusterLabel } from '@cpn-console/shared'
-import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi } from './utils.js'
-import { getApplicationObject, getMinimalApplicationObject } from './applications.js'
-import { getAppProjectObject, getMinimalAppProjectPatch } from './app-project.js'
+import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi } from './utils'
+import { getApplicationObject, getMinimalApplicationObject } from './applications'
+import { getAppProjectObject, getMinimalAppProjectPatch } from './app-project'
 
 export const patchOptions = { headers: { 'Content-type': PatchUtils.PATCH_FORMAT_JSON_MERGE_PATCH } }
 

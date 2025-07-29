@@ -1,5 +1,5 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
-import { getConfig } from './tech.js'
+import { getConfig } from './tech'
 
 const infos: ServiceInfos = {
   name: 'sonarqube',

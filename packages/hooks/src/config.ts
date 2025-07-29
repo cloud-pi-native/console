@@ -1,7 +1,7 @@
 import type { PermissionTarget, PluginConfig } from '@cpn-console/shared'
 import { DEFAULT, atomicValidators, pluginConfig } from '@cpn-console/shared'
 import { z } from 'zod'
-import { objectEntries } from './utils/utils.js'
+import { objectEntries } from './utils/utils'
 
 export type PluginsManifests = Record<string, PluginConfig>
 export const pluginsManifests: PluginsManifests = {}

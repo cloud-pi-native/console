@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { AdminRoleSchema, apiPrefix, contractInstance } from '../index.js'
-import { ErrorSchema, baseHeaders } from './_utils.js'
+import { AdminRoleSchema, apiPrefix, contractInstance } from '../index'
+import { ErrorSchema, baseHeaders } from './_utils'
 
 export const adminRoleContract = contractInstance.router({
   listAdminRoles: {

@@ -1,6 +1,6 @@
 import type { Environment, Prisma, Project } from '@prisma/client'
 import type { Quota } from '@cpn-console/shared'
-import prisma from '@/prisma.js'
+import prisma from '@/prisma'
 
 // SELECT
 export function getEnvironmentByIdOrThrow(id: Environment['id']) {

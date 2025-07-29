@@ -5,10 +5,10 @@ import {
   logViaSession,
   patchUsers,
 } from './business.js'
-import '@/types/index.js'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors.js'
+import '@/types/index'
+import { serverInstance } from '@/app'
+import { authUser } from '@/utils/controller'
+import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors'
 
 export function userRouter() {
   return serverInstance.router(userContract, {

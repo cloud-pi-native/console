@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { onMounted } from 'vue'
 import type { AdminToken, PersonalAccessToken } from '@cpn-console/shared'
-import { useTokenStore } from '@/stores/token.js'
+import { useTokenStore } from '@/stores/token'
 import type { SimpleToken } from '@/components/TokenForm.vue'
-import { clickInDialog } from '@/utils/func.js'
+import { clickInDialog } from '@/utils/func'
 
 const statusWording: Record<AdminToken['status'], string> = {
   active: 'Actif',

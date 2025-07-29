@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
 import { type AllUsers, type Role, formatDate } from '@cpn-console/shared'
-import { useAdminRoleStore } from '@/stores/admin-role.js'
-import { copyContent } from '@/utils/func.js'
-import { useUsersStore } from '@/stores/users.js'
+import { useAdminRoleStore } from '@/stores/admin-role'
+import { copyContent } from '@/utils/func'
+import { useUsersStore } from '@/stores/users'
 
 const adminRoleStore = useAdminRoleStore()
 const usersStore = useUsersStore()

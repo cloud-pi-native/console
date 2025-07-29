@@ -1,5 +1,5 @@
 import type { Monitor, MonitorInfos, PluginConfig, PluginsUpdateBody } from '@cpn-console/shared'
-import type { ClusterObject, EnvironmentObject, ProjectLite, ZoneObject } from './hooks/index.js'
+import type { ClusterObject, EnvironmentObject, ProjectLite, ZoneObject } from './hooks/index'
 
 interface ToUrlObject { to: string, title?: string, description?: string, imgSrc?: string }
 export interface ToUrlFnParamaters {

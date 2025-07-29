@@ -13,11 +13,11 @@ import {
   parseZodError,
   projectIsLockedInfo,
 } from '@cpn-console/shared'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useQuotaStore } from '@/stores/quota.js'
-import { useStageStore } from '@/stores/stage.js'
-import { useZoneStore } from '@/stores/zone.js'
-import { copyContent, getRandomId } from '@/utils/func.js'
+import { useSnackbarStore } from '@/stores/snackbar'
+import { useQuotaStore } from '@/stores/quota'
+import { useStageStore } from '@/stores/stage'
+import { useZoneStore } from '@/stores/zone'
+import { copyContent, getRandomId } from '@/utils/func'
 
 interface OptionType {
   text: string

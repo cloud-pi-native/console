@@ -1,4 +1,4 @@
-import { getModel } from '../../support/func.js'
+import { getModel } from '../../support/func'
 
 const tokens = getModel('adminToken')
 

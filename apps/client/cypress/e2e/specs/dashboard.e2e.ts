@@ -1,5 +1,5 @@
 import { statusDict } from '@cpn-console/shared'
-import { getModelById } from '../support/func.js'
+import { getModelById } from '../support/func'
 
 describe('Dashboard', () => {
   const projectToArchive = getModelById('project', '9dabf3f9-6c86-4358-8598-65007d78df65')

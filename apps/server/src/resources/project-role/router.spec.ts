@@ -1,14 +1,14 @@
 import { faker } from '@faker-js/faker'
 import { PROJECT_PERMS, projectRoleContract } from '@cpn-console/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import app from '../../app.js'
-import * as utilsController from '../../utils/controller.js'
-import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
-import { BadRequest400 } from '../../utils/errors.js'
-import * as business from './business.js'
+import app from '../../app'
+import * as utilsController from '../../utils/controller'
+import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks'
+import { BadRequest400 } from '../../utils/errors'
+import * as business from './business'
 
 vi.mock('./business.js')
-vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks')).mockSessionPlugin)
 
 const authUserMock = vi.spyOn(utilsController, 'authUser')
 const businessCreateRoleMock = vi.spyOn(business, 'createRole')

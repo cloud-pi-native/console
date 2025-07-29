@@ -3,7 +3,7 @@ import type {
   Environment,
   Project,
 } from '@cpn-console/hooks'
-import { getConfig } from './utils.js'
+import { getConfig } from './utils'
 
 export interface ArgoDestination {
   namespace?: string

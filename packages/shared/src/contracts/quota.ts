@@ -1,8 +1,8 @@
 import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 import { z } from 'zod'
-import { apiPrefix, contractInstance } from '../api-client.js'
-import { QuotaSchema } from '../schemas/index.js'
-import { ErrorSchema, baseHeaders } from './_utils.js'
+import { apiPrefix, contractInstance } from '../api-client'
+import { QuotaSchema } from '../schemas/index'
+import { ErrorSchema, baseHeaders } from './_utils'
 
 export const quotaContract = contractInstance.router({
   listQuotas: {

@@ -4,8 +4,8 @@ import type { AdminPermsKeys, LettersQuery, SharedZodError, User } from '@cpn-co
 import { ADMIN_PERMS, RoleSchema, adminPermsDetails, shallowEqual } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
 import SuggestionInput from './SuggestionInput.vue'
-import { useUsersStore } from '@/stores/users.js'
-import { clickInDialog, getRandomId } from '@/utils/func.js'
+import { useUsersStore } from '@/stores/users'
+import { clickInDialog, getRandomId } from '@/utils/func'
 
 const props = withDefaults(defineProps<{
   id: string

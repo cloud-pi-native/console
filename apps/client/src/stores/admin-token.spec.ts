@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import type { ExposedAdminToken } from '@cpn-console/shared'
-import { apiClient } from '../api/xhr-client.js'
-import { useAdminTokenStore } from './admin-token.js'
+import { apiClient } from '../api/xhr-client'
+import { useAdminTokenStore } from './admin-token'
 
 const apiClientGet = vi.spyOn(apiClient.AdminTokens, 'listAdminTokens')
 const apiClientPost = vi.spyOn(apiClient.AdminTokens, 'createAdminToken')

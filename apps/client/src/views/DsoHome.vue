@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { type Ref, ref } from 'vue'
-import { contactEmail } from '@/utils/env.js'
+import { contactEmail } from '@/utils/env'
 
 interface TabTitle {
   title: string

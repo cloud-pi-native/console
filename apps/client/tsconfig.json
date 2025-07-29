@@ -13,8 +13,8 @@
     // Base
     "baseUrl": "./",
     "rootDir": "./src",
-    "module": "Preserve",
-    "moduleResolution": "Bundler",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "paths": {
       "@/*": [
         "src/*"
@@ -27,7 +27,7 @@
       "vite-plugin-pwa/vue",
       "vite-plugin-pwa/client"
     ],
-    "allowImportingTsExtensions": false,
+    "allowImportingTsExtensions": true,
     "allowJs": true,
     "strict": true,
     "strictNullChecks": true,
@@ -41,7 +41,7 @@
     "declaration": true,
     "declarationDir": "./types",
     "emitDeclarationOnly": false,
-    "noEmit": false,
+    "noEmit": true,
     "outDir": "./dist",
     "sourceMap": true,
     "esModuleInterop": true,

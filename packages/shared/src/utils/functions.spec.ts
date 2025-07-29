@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcProjectNameMaxLength, exclude, identity, removeTrailingSlash, shallowMatch } from './functions.js'
+import { calcProjectNameMaxLength, exclude, identity, removeTrailingSlash, shallowMatch } from './functions'
 
 describe('function utils: identity', () => {
   it('should return identity', () => {

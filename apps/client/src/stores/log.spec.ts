@@ -1,7 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { apiClient } from '../api/xhr-client.js'
-import { useLogStore } from './log.js'
+import { apiClient } from '../api/xhr-client'
+import { useLogStore } from './log'
 
 const apiClientGet = vi.spyOn(apiClient.Logs, 'getLogs')
 

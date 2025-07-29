@@ -1,7 +1,7 @@
 import type { Project } from '@cpn-console/hooks'
 import type { UserSchema } from '@gitbeaker/core'
-import type { GitlabProjectApi } from './class.js'
-import { upsertUser } from './user.js'
+import type { GitlabProjectApi } from './class'
+import { upsertUser } from './user'
 
 export async function ensureMembers(gitlabApi: GitlabProjectApi, project: Project) {
   // Ensure all users exists in gitlab

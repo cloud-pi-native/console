@@ -1,6 +1,6 @@
 import { Monitor, type MonitorInfos, MonitorStatus } from '@cpn-console/shared'
 import axios from 'axios'
-import { getAxiosOptions } from './tech.js'
+import { getAxiosOptions } from './tech'
 
 const statusMap = {
   GREEN: MonitorStatus.OK,

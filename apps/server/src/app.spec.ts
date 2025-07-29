@@ -1,9 +1,9 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiPrefix } from '@cpn-console/shared'
-import app from './app.js'
-import { getRandomRequestor, setRequestor } from './utils/mocks.js'
+import app from './app'
+import { getRandomRequestor, setRequestor } from './utils/mocks'
 
-vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin)
+vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks')).mockSessionPlugin)
 
 describe('app', () => {
   beforeEach(() => {

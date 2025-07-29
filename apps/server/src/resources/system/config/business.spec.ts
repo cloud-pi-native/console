@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import prisma from '../../../__mocks__/prisma.js'
+import prisma from '../../../__mocks__/prisma'
 import { objToDb, updatePluginConfig } from './business.ts'
 
 describe('test system/config business', () => {
