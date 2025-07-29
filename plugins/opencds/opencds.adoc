@@ -29,11 +29,26 @@ Lotissement possible:
 - CDS - Liste des CDS/Flow de leur périmètre
 - CDS - Écran de confirmation de la création d'un CDS
 
+= Architecture
+
+L'architecture retenue est celle consistant à utiliser le server ("Back for front") de la console comme d'un Proxy pour OpenCDS. Ceci permet de réutiliser toute la mécanique de sérialisation/désérialisation entre `client` et `server` (le Frontend et le BFF de la console), ainsi que la génération des types TypeScript (à travers l'utilisation de schémas et de contrats `zod`). De cette manière, l'implémentation des ressources OpenCDS (`service-chains` et `flows`) peut se faire de la même manière que les autres ressources existantes (`cluster`, `projet`, etc.)
+
 = Contraintes
 
 - Console étant un projet OpenSource, et OpenCDS étant un sujet exclusivement "MI", le couplage entre les deux doit être le plus léger possible. Idéalement OpenCDS devrait être une "extension" (plugin ? À voir) de la Console de manière à ne jamais être directement référencé dans l'application.
-=> Dans un premier temps on va fonctionner avec une branche temporaire de Console, agrémenté d'un Feature Toggling rudimentaire (une variable d'environnement), pour voir où on va, et ensuite on verra comment établir une séparation claire entre Console et sa partie OpenCDS.
+=> Dans un premier temps on va fonctionner avec une branche temporaire de Console, agrémenté d'un Feature Toggling rudimentaire (une variable d'environnement), pour voir où on va, et ensuite on verra comment éventuellement établir une séparation claire entre Console et sa partie OpenCDS.
 
 = Jeu de données
 
-Afin de pouvoir avancer sans forcément dépendre du backend OpenCDS, un Mockoon sera utilisé (./plugins/opencds/opencds_api.json) pour simuler cette partie.
+Afin de pouvoir avancer sans forcément dépendre du backend OpenCDS, un https://mockoon.com/[Mockoon] sera utilisé (./opencds_api.json) pour simuler cette partie.
+
+= Mise en place
+
+- Utilisation de varables d'environnements qui va nous servir de moyen d'activer la fonctionnalité
+  - Côté `apps/client`: `ENABLE_OPENCDS` (par défaut à false), qui active ou non la fonctionnalité côté Front
+  - Côté `apps/server`: `OPENCDS_URL` (par défaut à `undefined`), qui active ou non les routes permettant de communiquer avec un serveur OpenCDS
+  - Il est naturellement obligatoire que ces deux var d'env soient correctement paramétrées pour que tout le flux soit activé
+
+= Notes
+
+Sachant qu'il n'est pas trivial de lancer des services docker-compose de manière conditionnelle, le service `opencds-mockoon` est systématiquement lancé dans les docker-compose concernés.
