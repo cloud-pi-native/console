@@ -37,6 +37,10 @@ test.describe('Clusters page', () => {
       }),
     ).toBeVisible()
     await page.getByRole('cell', { name: clusterName }).click()
+    // TODO There seem to be an issue when loading a cluster details page
+    // My intuition is that there is some sort of lazy-loading that prevents the element
+    // `infosInput` (and other) to be displayed consistently
+    await page.waitForTimeout(5_000)
     expect(page.getByTestId('infosInput')).toHaveValue(informations)
   })
 
