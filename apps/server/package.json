@@ -1,18 +1,11 @@
 {
   "name": "@cpn-console/server",
-  "type": "module",
   "version": "9.3.3",
   "description": "cpn-console server",
-  "main": "dist/server.js",
-  "module": "dist/server.js",
-  "types": "types/server.d.ts",
-  "files": [
-    "dist",
-    "src"
-  ],
+  "main": "src/server.ts",
   "scripts": {
     "build": "tspc",
-    "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
+    "build:clean": "rimraf ./tsconfig.tsbuildinfo",
     "db:deploy": "prisma migrate deploy --schema ./src/prisma/schema",
     "db:diff": "prisma migrate diff --schema ./src/prisma/schema",
     "db:generate": "prisma generate --schema ./src/prisma/schema",

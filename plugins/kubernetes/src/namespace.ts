@@ -4,7 +4,7 @@ import { parseError, uniqueResource } from '@cpn-console/hooks'
 import { generateNamespaceName } from '@cpn-console/shared'
 import type { CoreV1Api } from '@kubernetes/client-node'
 import { createCoreV1Api } from './api'
-import type { V1NamespacePopulated } from './class'
+import type { KubernetesNamespace, V1NamespacePopulated } from './class'
 
 export type NamespaceProvided = Required<Namespace> & { metadata: Required<Namespace['metadata']> }
 
@@ -16,8 +16,9 @@ export const createNamespaces: StepCall<Project> = async (payload) => {
 
     await Promise.all(project.environments.map(async (env) => {
       if (env.apis.kubernetes) {
-        await env.apis.kubernetes.getFromClusterOrCreate()
-        return env.apis.kubernetes.setQuota(env.quota)
+        const api = env.apis.kubernetes as KubernetesNamespace
+        await api.getFromClusterOrCreate()
+        return api.setQuota(env.quota)
       }
     }))
 

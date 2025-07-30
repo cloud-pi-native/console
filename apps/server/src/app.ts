@@ -18,8 +18,6 @@ import { log } from './utils/logger'
 
 export const serverInstance: ReturnType<typeof initServer> = initServer()
 
-const openApiDocument = generateOpenApi(await getContract(), swaggerConf, { setOperationId: true })
-
 const app = fastify(fastifyConf)
   .register(helmet, () => ({
     contentSecurityPolicy: !(isInt || isDev || isTest),
@@ -28,32 +26,45 @@ const app = fastify(fastifyConf)
   .register(fastifySession, sessionConf)
   // @ts-ignore
   .register(keycloak, keycloakConf)
-  .register(fastifySwagger, { transformObject: () => openApiDocument })
-  .register(fastifySwaggerUi, swaggerUiConf)
-  .register(apiRouter())
-  .addHook('onRoute', (opts) => {
-    if (opts.path === `${apiPrefix}/healthz`) {
-      opts.logLevel = 'silent'
-    }
-  })
-  .setErrorHandler((error: Error, req: FastifyRequest, reply) => {
-    const statusCode = 500
-    // @ts-ignore vérifier l'objet
-    const message = error.description || error.message
-    reply.status(statusCode).send({ status: statusCode, error: message, stack: error.stack })
-    log('info', { reqId: req.id, error })
-  })
-  .addHook('onResponse', (req, res) => {
-    if (res.statusCode < 400) {
-      req.log.info({ status: res.statusCode, userId: req.session?.user?.id })
-    } else if (res.statusCode < 500) {
-      req.log.warn({ status: res.statusCode, userId: req.session?.user?.id })
-    } else {
-      req.log.error({ status: res.statusCode, userId: req.session?.user?.id })
-    }
+
+getContract().then((contract) => {
+  const openApiDocument = generateOpenApi(contract, swaggerConf, {
+    setOperationId: true,
   })
 
-await app.ready()
+  app
+    .register(fastifySwagger, { transformObject: () => openApiDocument })
+    .register(fastifySwaggerUi, swaggerUiConf)
+    .register(apiRouter())
+    .addHook('onRoute', (opts) => {
+      if (opts.path === `${apiPrefix}/healthz`) {
+        opts.logLevel = 'silent'
+      }
+    })
+    .setErrorHandler((error: Error, req: FastifyRequest, reply) => {
+      const statusCode = 500
+      // @ts-ignore vérifier l'objet
+      const message = error.description || error.message
+      reply
+        .status(statusCode)
+        .send({ status: statusCode, error: message, stack: error.stack })
+      log('info', { reqId: req.id, error })
+    })
+    .addHook('onResponse', (req, res) => {
+      if (res.statusCode < 400) {
+        req.log.info({ status: res.statusCode, userId: req.session?.user?.id })
+      } else if (res.statusCode < 500) {
+        req.log.warn({ status: res.statusCode, userId: req.session?.user?.id })
+      } else {
+        req.log.error({
+          status: res.statusCode,
+          userId: req.session?.user?.id,
+        })
+      }
+    })
+
+  app.ready()
+})
 
 export const logger = app.log as CustomLogger
 export default app

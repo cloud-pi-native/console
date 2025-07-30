@@ -1,6 +1,11 @@
-import type { HookStepsNames, Plugin } from '@cpn-console/hooks'
+import type { Plugin } from '@cpn-console/hooks'
 import { getStatus } from './check'
-import { deleteProject, initSonar, setVariables, upsertProject } from './functions'
+import {
+  deleteProject,
+  initSonar,
+  setVariables,
+  upsertProject,
+} from './functions'
 import infos from './infos'
 import monitor from './monitor'
 
@@ -28,10 +33,4 @@ export const plugin: Plugin = {
   },
   start,
   monitor,
-}
-
-declare module '@cpn-console/hooks' {
-  interface PluginResult {
-    errors?: Partial<Record<HookStepsNames, unknown>>
-  }
 }

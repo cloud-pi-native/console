@@ -1,4 +1,4 @@
-import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks'
+import type { Plugin } from '@cpn-console/hooks'
 import {
   deleteProject,
   deleteZone,
@@ -34,10 +34,4 @@ export const plugin: Plugin = {
   start,
 }
 
-declare module '@cpn-console/hooks' {
-  interface HookPayloadApis<Args extends DefaultArgs> {
-    keycloak: Args extends (ProjectLite | Project)
-      ? KeycloakProjectApi
-      : undefined
-  }
-}
+export { KeycloakProjectApi } from './class'

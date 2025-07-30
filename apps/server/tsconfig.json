@@ -5,13 +5,10 @@
   "compilerOptions": {
     "baseUrl": "./",
     "rootDir": "./src",
-    "module": "esnext",
-    "moduleResolution": "bundler",
     "paths": {
       "@/*": ["src/*"]
     },
     "useUnknownInCatchVariables": false,
-    "declarationDir": "./types",
     "outDir": "./dist",
     "plugins": [{ "transform": "typescript-transform-paths" }]
   },

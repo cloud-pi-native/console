@@ -1,4 +1,4 @@
-import type { PluginApi } from '@/utils/utils'
+import type { PluginApi } from '../utils'
 import type { Hook } from './hook'
 import { createHook } from './hook'
 import type { ClusterObject, ExternalRepoUrl, InternalRepoName, IsInfra, IsPrivate, UserObject } from './index'

@@ -1,4 +1,4 @@
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin'
 import type { HarborApi } from './utils'
 import { toVaultSecret } from './utils'
 import type { Access, Robot, RobotCreated } from './api/Api'

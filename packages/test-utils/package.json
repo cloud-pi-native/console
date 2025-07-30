@@ -5,14 +5,9 @@
   "description": "",
   "main": "src/index.ts",
   "module": "src/index.ts",
-  "types": "types/index.d.ts",
-  "files": [
-    "dist",
-    "types"
-  ],
   "scripts": {
     "build": "tsc",
-    "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
+    "build:clean": "rimraf ./tsconfig.tsbuildinfo",
     "format": "eslint ./ --fix",
     "kube:e2e-ci": "echo 'check cache'",
     "lint": "eslint ./",

@@ -1,5 +1,4 @@
-import type KeycloakAdminClient from '@keycloak/keycloak-admin-client'
-import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation'
+import type { GroupRepresentation, KeycloakAdminClient } from '@s3pweb/keycloak-admin-client-cjs'
 
 export const consoleGroupName = 'console'
 

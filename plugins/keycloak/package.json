@@ -4,15 +4,10 @@
   "private": false,
   "description": "",
   "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "types/index.d.ts",
-  "files": [
-    "dist",
-    "types"
-  ],
+  "types": "src/index.ts",
   "scripts": {
     "build": "tsc",
-    "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
+    "build:clean": "rimraf ./tsconfig.tsbuildinfo",
     "dev": "nodemon --watch src --ext .ts --exec 'pnpm run build'",
     "format": "eslint ./ --fix",
     "lint": "eslint ./"
@@ -20,13 +15,13 @@
   "dependencies": {
     "@cpn-console/hooks": "workspace:^",
     "@cpn-console/shared": "workspace:^",
-    "@keycloak/keycloak-admin-client": "^26.0.7",
+    "@cpn-console/vault-plugin": "workspace:^",
+    "@s3pweb/keycloak-admin-client-cjs": "^26.0.7",
     "axios": "^1.7.9"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
-    "@cpn-console/vault-plugin": "workspace:^",
     "@types/node": "^22.10.2",
     "@vitest/coverage-v8": "^2.1.8",
     "nodemon": "^3.1.7",

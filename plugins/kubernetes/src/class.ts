@@ -1,6 +1,18 @@
-import type { ClusterObject, Environment, Project, ProjectLite, ResourceQuotaType, UserObject } from '@cpn-console/hooks'
+import type {
+  ClusterObject,
+  Environment,
+  Project,
+  ProjectLite,
+  ResourceQuotaType,
+  UserObject,
+} from '@cpn-console/hooks'
 import { PluginApi } from '@cpn-console/hooks'
-import type { ApisApi, CoreV1Api, V1Namespace, V1ObjectMeta } from '@kubernetes/client-node'
+import type {
+  ApisApi,
+  CoreV1Api,
+  V1Namespace,
+  V1ObjectMeta,
+} from '@kubernetes/client-node'
 import { shallowMatch } from '@cpn-console/shared'
 import { getNsObject, searchEnvNamespaces } from './namespace'
 import { createApisApi, createCoreV1Api, createCustomObjectApi } from './api'
@@ -42,7 +54,12 @@ export class KubernetesNamespace extends PluginApi {
   apisApi: ApisApi | undefined
   project: ProjectLite
 
-  constructor(project: ProjectLite, environment: Environment, owner: UserObject, cluster: ClusterObject) {
+  constructor(
+    project: ProjectLite,
+    environment: Environment,
+    owner: UserObject,
+    cluster: ClusterObject,
+  ) {
     super()
     this.project = project
     this.environment = environment
@@ -67,12 +84,16 @@ export class KubernetesNamespace extends PluginApi {
     if (currNs?.metadata?.name) {
       return currNs.metadata.name
     }
-    throw new Error('Can\'t determine namespace name cause it doesn\'t exist yet or have already been deleted')
+    throw new Error(
+      'Can\'t determine namespace name cause it doesn\'t exist yet or have already been deleted',
+    )
   }
 
   public async create(): Promise<V1NamespacePopulated | undefined> {
     if (!this.coreV1Api) return
-    const ns = await this.coreV1Api.createNamespace(this.nsObjectExpected) as { body: V1NamespacePopulated }
+    const ns = (await this.coreV1Api.createNamespace(
+      this.nsObjectExpected,
+    )) as { body: V1NamespacePopulated }
     this.nsName = this.nsObjectExpected.metadata.name
     return ns.body
   }
@@ -80,8 +101,23 @@ export class KubernetesNamespace extends PluginApi {
   public async ensure(currNs: V1Namespace): Promise<V1Namespace> {
     if (!this.coreV1Api) return currNs
 
-    if (!shallowMatch(this.nsObjectExpected.metadata.labels, currNs.metadata?.labels) && currNs.metadata?.name) {
-      const newNs = await this.coreV1Api.patchNamespace(currNs.metadata.name, this.nsObjectExpected, undefined, undefined, undefined, undefined, undefined, patchOptions)
+    if (
+      !shallowMatch(
+        this.nsObjectExpected.metadata.labels,
+        currNs.metadata?.labels,
+      )
+      && currNs.metadata?.name
+    ) {
+      const newNs = await this.coreV1Api.patchNamespace(
+        currNs.metadata.name,
+        this.nsObjectExpected,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        patchOptions,
+      )
       return newNs.body
     }
     return currNs
@@ -97,16 +133,26 @@ export class KubernetesNamespace extends PluginApi {
     if (!this.coreV1Api) return
     let ns: V1Namespace | undefined
     try {
-      const resByName = await this.coreV1Api.readNamespace(this.nsObjectExpected.metadata.name)
+      const resByName = await this.coreV1Api.readNamespace(
+        this.nsObjectExpected.metadata.name,
+      )
       ns = resByName.body
     } catch (_error) {
-      const namespacesFound = await searchEnvNamespaces({
-        projectName: this.project.name,
-        projectSlug: this.project.slug,
-        envName: this.environment.name,
-      }, this.coreV1Api)
-      ns = namespacesFound
-        .find(candidateNs => candidateNs.metadata?.labels?.['dso/environment'] === this.environment.name || candidateNs.metadata?.labels?.['dso/environment.id'] === this.environment.id)
+      const namespacesFound = await searchEnvNamespaces(
+        {
+          projectName: this.project.name,
+          projectSlug: this.project.slug,
+          envName: this.environment.name,
+        },
+        this.coreV1Api,
+      )
+      ns = namespacesFound.find(
+        candidateNs =>
+          candidateNs.metadata?.labels?.['dso/environment']
+          === this.environment.name
+          || candidateNs.metadata?.labels?.['dso/environment.id']
+          === this.environment.id,
+      )
     }
     if (!this.nsName && ns?.metadata?.name) {
       this.nsName = ns.metadata.name
@@ -121,7 +167,10 @@ export class KubernetesNamespace extends PluginApi {
     return ns ? this.ensure(ns) : this.create()
   }
 
-  public async createOrPatchRessource(r: ResourceParams, patch?: Record<string, any>) {
+  public async createOrPatchRessource(
+    r: ResourceParams,
+    patch?: Record<string, any>,
+  ) {
     if (!this.anyObjectApi) return
 
     const nsName = await this.getNsName()
@@ -131,15 +180,41 @@ export class KubernetesNamespace extends PluginApi {
 
     // ajout des labels
     if (objToCreate.metadata.labels) {
-      objToCreate.metadata.labels['app.kubernetes.io/managed-by'] = 'dso-console'
+      objToCreate.metadata.labels['app.kubernetes.io/managed-by']
+        = 'dso-console'
     } else {
-      objToCreate.metadata.labels = { 'app.kubernetes.io/managed-by': 'dso-console' }
+      objToCreate.metadata.labels = {
+        'app.kubernetes.io/managed-by': 'dso-console',
+      }
     }
     try {
-      await this.anyObjectApi.getNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
-      return this.anyObjectApi.patchNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name, patch ?? objToCreate, undefined, undefined, undefined, patchOptions)
+      await this.anyObjectApi.getNamespacedCustomObject(
+        r.group,
+        r.version,
+        nsName,
+        r.plural,
+        r.name,
+      )
+      return this.anyObjectApi.patchNamespacedCustomObject(
+        r.group,
+        r.version,
+        nsName,
+        r.plural,
+        r.name,
+        patch ?? objToCreate,
+        undefined,
+        undefined,
+        undefined,
+        patchOptions,
+      )
     } catch (_error) {
-      return this.anyObjectApi.createNamespacedCustomObject(r.group, r.version, nsName, r.plural, objToCreate)
+      return this.anyObjectApi.createNamespacedCustomObject(
+        r.group,
+        r.version,
+        nsName,
+        r.plural,
+        objToCreate,
+      )
     }
   }
 
@@ -149,8 +224,20 @@ export class KubernetesNamespace extends PluginApi {
     const nsName = await this.getNsName()
 
     try {
-      await this.anyObjectApi.getNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
-      return this.anyObjectApi.deleteNamespacedCustomObject(r.group, r.version, nsName, r.plural, r.name)
+      await this.anyObjectApi.getNamespacedCustomObject(
+        r.group,
+        r.version,
+        nsName,
+        r.plural,
+        r.name,
+      )
+      return this.anyObjectApi.deleteNamespacedCustomObject(
+        r.group,
+        r.version,
+        nsName,
+        r.plural,
+        r.name,
+      )
     } catch (_error) {}
   }
 
@@ -161,9 +248,16 @@ export class KubernetesNamespace extends PluginApi {
     const nsName = await this.getNsName()
     const quotaObject = getQuotaObject(nsName, quota)
     try {
-      await this.coreV1Api.readNamespacedResourceQuota(resourceQuotaName, nsName)
-      // @ts-ignore
-      await this.coreV1Api.replaceNamespacedResourceQuota(resourceQuotaName, nsName, quotaObject)
+      await this.coreV1Api.readNamespacedResourceQuota(
+        resourceQuotaName,
+        nsName,
+      )
+      await this.coreV1Api.replaceNamespacedResourceQuota(
+        resourceQuotaName,
+        nsName,
+        // @ts-ignore
+        quotaObject,
+      )
     } catch (_error) {
       // @ts-ignore
       return this.coreV1Api.createNamespacedResourceQuota(nsName, quotaObject)
@@ -178,7 +272,9 @@ export class KubernetesProjectApi<GProject extends Project> extends PluginApi {
     this.project = project
     const owner = project.owner
     for (const env of project.environments) {
-      const cluster = project.clusters.find(cluster => cluster.id === env.clusterId) as ClusterObject
+      const cluster = project.clusters.find(
+        cluster => cluster.id === env.clusterId,
+      ) as ClusterObject
       const envClass = new KubernetesNamespace(project, env, owner, cluster)
       env.apis.kubernetes = envClass
     }
@@ -186,15 +282,24 @@ export class KubernetesProjectApi<GProject extends Project> extends PluginApi {
 
   /** @deprecated please use in payload env kubernetes api (getFromClusterOrCreate)  */
   public getAllNamespaceFromClusterOrCreate() {
-    return this.project.environments.map((env) => {
-      return env.apis.kubernetes?.getFromClusterOrCreate()
+    return this.project.environments.forEach((env) => {
+      if (env.apis.kubernetes) {
+        const api = env.apis.kubernetes as KubernetesNamespace
+        return api.getFromClusterOrCreate()
+      }
     })
   }
 
   /** @deprecated please use in payload env kubernetes api (createOrPatchRessource) */
-  public applyResourcesInAllEnvNamespaces(resource: ResourceParams, patch: Record<string, any>) {
-    return this.project.environments.map((env) => {
-      return env.apis.kubernetes?.createOrPatchRessource(resource, patch)
+  public applyResourcesInAllEnvNamespaces(
+    resource: ResourceParams,
+    patch: Record<string, any>,
+  ) {
+    return this.project.environments.forEach((env) => {
+      if (env.apis.kubernetes) {
+        const api = env.apis.kubernetes as KubernetesNamespace
+        return api.createOrPatchRessource(resource, patch)
+      }
     })
   }
 }

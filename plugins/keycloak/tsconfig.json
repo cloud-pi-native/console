@@ -5,8 +5,6 @@
   "compilerOptions": {
     "baseUrl": "./",
     "rootDir": "./src",
-    "module": "esnext",
-    "moduleResolution": "bundler",
     "paths": {
       "@/*": ["src/*"]
     },

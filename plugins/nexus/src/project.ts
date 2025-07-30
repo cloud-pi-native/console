@@ -1,15 +1,27 @@
 import axios from 'axios'
 import type { Project, ProjectLite, StepCall } from '@cpn-console/hooks'
-import { generateRandomPassword, parseError, specificallyDisabled } from '@cpn-console/hooks'
+import {
+  generateRandomPassword,
+  parseError,
+  specificallyDisabled,
+} from '@cpn-console/hooks'
 import { getAxiosOptions } from './functions'
 import { createMavenRepo, deleteMavenRepo, getMavenUrls } from './maven'
 import { createNpmRepo, deleteNpmRepo, getNpmUrls } from './npm'
 import type { WritePolicy } from './utils'
-import { deleteIfExists, getTechUsed, parseProjectOptions, updateStore } from './utils'
+import {
+  deleteIfExists,
+  getTechUsed,
+  parseProjectOptions,
+  updateStore,
+} from './utils'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin'
 
 const getAxiosInstance = () => axios.create(getAxiosOptions())
 
-export const deleteNexusProject: StepCall<Project> = async ({ args: project }) => {
+export const deleteNexusProject: StepCall<Project> = async ({
+  args: project,
+}) => {
   const axiosInstance = getAxiosInstance()
   const projectName = project.slug
   try {
@@ -65,7 +77,9 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
     const owner = payload.args.owner
     const res: any = {}
     const options = parseProjectOptions(payload.args.store.nexus)
-    const failedProvisionning: Partial<Record<keyof typeof techUsed, { error: Error | unknown, message: string }>> = {}
+    const failedProvisionning: Partial<
+      Record<keyof typeof techUsed, { error: Error | unknown, message: string }>
+    > = {}
     const techUsed = getTechUsed(payload)
 
     if (options.keysInError.length) {
@@ -85,23 +99,39 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
           releaseWritePolicy: options.mavenReleaseWritePolicy as WritePolicy,
           snapshotWritePolicy: options.mavenSnapshotWritePolicy as WritePolicy,
         })
-        privilegesToAccess.push(names.group.privilege, ...names.hosted.map(({ privilege }) => privilege))
+        privilegesToAccess.push(
+          names.group.privilege,
+          ...names.hosted.map(({ privilege }) => privilege),
+        )
       } else {
         await Promise.all(deleteMavenRepo(axiosInstance, projectName))
       }
     } catch (error) {
-      failedProvisionning.maven = { error, message: `Maven failed to ${techUsed.maven ? 'provision' : 'delete'} repositories please try again in few minutes` }
+      failedProvisionning.maven = {
+        error,
+        message: `Maven failed to ${techUsed.maven ? 'provision' : 'delete'} repositories please try again in few minutes`,
+      }
     }
 
     try {
       if (techUsed.npm) {
-        const names = await createNpmRepo(axiosInstance, projectName, options.npmWritePolicy as WritePolicy)
-        privilegesToAccess.push(names.group.privilege, ...names.hosted.map(({ privilege }) => privilege))
+        const names = await createNpmRepo(
+          axiosInstance,
+          projectName,
+          options.npmWritePolicy as WritePolicy,
+        )
+        privilegesToAccess.push(
+          names.group.privilege,
+          ...names.hosted.map(({ privilege }) => privilege),
+        )
       } else {
         await Promise.all(deleteNpmRepo(axiosInstance, projectName))
       }
     } catch (error) {
-      failedProvisionning.npm = { error, message: `Npm failed to ${techUsed.npm ? 'provision' : 'delete'} repositories please try again in few minutes` }
+      failedProvisionning.npm = {
+        error,
+        message: `Npm failed to ${techUsed.npm ? 'provision' : 'delete'} repositories please try again in few minutes`,
+      }
     }
 
     const roleId = `${projectName}-ID`
@@ -136,13 +166,16 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
       })
     }
 
-    const vaultNexusSecret = await payload.apis.vault.read('NEXUS', { throwIfNoEntry: false })
+    const vaultNexusSecret = await (payload.apis.vault as VaultProjectApi).read(
+      'NEXUS',
+      { throwIfNoEntry: false },
+    )
     let currentPwd: string = vaultNexusSecret?.NEXUS_PASSWORD
 
     const newPwd = generateRandomPassword(30)
-    const getUser = await axiosInstance({
+    const getUser = (await axiosInstance({
       url: `/security/users?userId=${projectName}`,
-    }) as { data: { userId: string }[] }
+    })) as { data: { userId: string }[] }
     const user = getUser.data.find(user => user.userId === projectName)
     if (user) {
       res.user = getUser.data[0]
@@ -159,7 +192,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
         currentPwd = newPwd
       }
     } else {
-    // createUser
+      // createUser
       await axiosInstance({
         method: 'post',
         url: '/security/users',
@@ -176,11 +209,15 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
       currentPwd = newPwd
     }
 
-    if (!getUser.data.length || (getUser.data.length && !vaultNexusSecret)) { // conditions précédentes, si non existent ou si modp a dû être changé
-      await payload.apis.vault.write({
-        NEXUS_PASSWORD: currentPwd,
-        NEXUS_USERNAME: projectName,
-      }, 'NEXUS')
+    if (!getUser.data.length || (getUser.data.length && !vaultNexusSecret)) {
+      // conditions précédentes, si non existent ou si modp a dû être changé
+      await (payload.apis.vault as VaultProjectApi).write(
+        {
+          NEXUS_PASSWORD: currentPwd,
+          NEXUS_USERNAME: projectName,
+        },
+        'NEXUS',
+      )
     }
 
     if (Object.keys(failedProvisionning).length) {
@@ -228,8 +265,8 @@ export const getSecrets: StepCall<ProjectLite> = async (payload) => {
       result: 'OK',
     },
     secrets: {
-      ...techUsed.maven && getMavenUrls(projectName),
-      ...techUsed.npm && getNpmUrls(projectName),
+      ...(techUsed.maven && getMavenUrls(projectName)),
+      ...(techUsed.npm && getNpmUrls(projectName)),
     },
   }
 }

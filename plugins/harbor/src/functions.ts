@@ -1,13 +1,30 @@
 // @ts-ignore pas de typage disponible pour le paquet bytes
 import bytes from 'bytes'
-import { type PluginResult, type Project, type ProjectLite, type StepCall, parseError, specificallyDisabled, specificallyEnabled } from '@cpn-console/hooks'
+import {
+  type PluginResult,
+  type Project,
+  type ProjectLite,
+  type StepCall,
+  parseError,
+  specificallyDisabled,
+  specificallyEnabled,
+} from '@cpn-console/hooks'
 import { DEFAULT, ENABLED } from '@cpn-console/shared'
-import { getApi, getConfig, projectRobotName, roRobotName, rwRobotName } from './utils'
+import {
+  getApi,
+  getConfig,
+  projectRobotName,
+  roRobotName,
+  rwRobotName,
+} from './utils'
 import { createProject, deleteProject } from './project'
 import { addProjectGroupMember } from './permission'
 import type { VaultRobotSecret } from './robot'
 import { deleteRobot, ensureRobot, roAccess, rwAccess } from './robot'
 import { getSecretObject } from './kubeSecret'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin'
+import type { KeycloakProjectApi } from '@cpn-console/keycloak-plugin'
+import type { KubernetesNamespace } from '@cpn-console/kubernetes-plugin'
 
 export const createDsoProject: StepCall<Project> = async (payload) => {
   const returnResult: PluginResult = {
@@ -19,19 +36,28 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
   try {
     const project = payload.args
     const projectName = project.slug
-    const { vault: vaultApi, keycloak: keycloakApi } = payload.apis
+    const vaultApi = payload.apis.vault as VaultProjectApi
+    const keycloakApi = payload.apis.keycloak as KeycloakProjectApi
 
     const publishRoRobotProject = project.store.registry?.publishProjectRobot
     const publishRoRobotConfig = payload.config.registry?.publishProjectRobot
-    const createProjectRobot = specificallyEnabled(publishRoRobotProject) || (specificallyEnabled(publishRoRobotConfig) && !specificallyDisabled(publishRoRobotProject))
+    const createProjectRobot
+      = specificallyEnabled(publishRoRobotProject)
+        || (specificallyEnabled(publishRoRobotConfig)
+          && !specificallyDisabled(publishRoRobotProject))
 
-    const quotaHardLimit = project.store.registry?.quotaHardLimit || payload.config.registry?.quotaHardLimit
+    const quotaHardLimit
+      = project.store.registry?.quotaHardLimit
+        || payload.config.registry?.quotaHardLimit
     const quotaHardLimitBytes = quotaHardLimit
       ? bytes.parse(quotaHardLimit)
       : undefined
 
     const [projectCreated, oidcGroup] = await Promise.all([
-      createProject(projectName, quotaHardLimitBytes === 1 ? undefined : quotaHardLimitBytes),
+      createProject(
+        projectName,
+        quotaHardLimitBytes === 1 ? undefined : quotaHardLimitBytes,
+      ),
       keycloakApi.getProjectGroupPath(),
     ])
     const api = getApi()
@@ -45,23 +71,33 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
         : deleteRobot(projectName, projectRobotName, vaultApi, api),
     ])
 
-    const secretObject = getSecretObject({ DOCKER_CONFIG: creds.DOCKER_CONFIG })
-    await Promise.all(project.environments.map(async (env) => {
-      try {
-        await env.apis.kubernetes?.createOrPatchRessource({
-          group: '',
-          name: 'registry-pull-secret',
-          plural: 'secrets',
-          version: 'v1',
-          body: secretObject,
-        })
-      } catch (error) {
-        console.log(error)
-        warnReasons.push(`Can't create / update registry-pull-secret in ${await env.apis.kubernetes?.getNsName()} for env ${env.name}`)
-      }
-    }))
+    const secretObject = getSecretObject({
+      DOCKER_CONFIG: creds.DOCKER_CONFIG,
+    })
+    await Promise.all(
+      project.environments.map(async (env) => {
+        const kubernetesAPI = env.apis.kubernetes as
+          | KubernetesNamespace
+          | undefined
+        try {
+          await kubernetesAPI?.createOrPatchRessource({
+            group: '',
+            name: 'registry-pull-secret',
+            plural: 'secrets',
+            version: 'v1',
+            body: secretObject,
+          })
+        } catch (error) {
+          console.log(error)
+          warnReasons.push(
+            `Can't create / update registry-pull-secret in ${await kubernetesAPI?.getNsName()} for env ${env.name}`,
+          )
+        }
+      }),
+    )
 
-    if (!projectCreated.project_id) throw new Error('Unable to retrieve project_id')
+    if (!projectCreated.project_id)
+      throw new Error('Unable to retrieve project_id')
     returnResult.status.message = `Created${createProjectRobot ? ' , with project robot' : ''}`
     returnResult.store = {
       projectId: projectCreated.project_id,
@@ -108,14 +144,25 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
   }
 }
 
-export const getProjectSecrets: StepCall<ProjectLite> = async ({ args: project, apis: { vault: vaultApi }, config }) => {
+export const getProjectSecrets: StepCall<ProjectLite> = async ({
+  args: project,
+  apis: { vault: vaultApi },
+  config,
+}) => {
   const publishRoRobotProject = project.store.registry?.publishProjectRobot
   const publishRoRobotConfig = config.registry?.publishProjectRobot
-  const projectRobotEnabled = publishRoRobotProject === ENABLED
-    || (publishRoRobotConfig === ENABLED && (!publishRoRobotProject || publishRoRobotProject === DEFAULT))
+  const projectRobotEnabled
+    = publishRoRobotProject === ENABLED
+      || (publishRoRobotConfig === ENABLED
+        && (!publishRoRobotProject || publishRoRobotProject === DEFAULT))
 
   const VaultRobotSecret = projectRobotEnabled
-    ? await vaultApi.read(`REGISTRY/${projectRobotName}`, { throwIfNoEntry: false }) as { data: VaultRobotSecret } | undefined
+    ? ((await (vaultApi as VaultProjectApi).read(
+        `REGISTRY/${projectRobotName}`,
+        {
+          throwIfNoEntry: false,
+        },
+      )) as { data: VaultRobotSecret } | undefined)
     : undefined
   let secrets: { [x: string]: string } = {
     'Registry base path': `${getConfig().host}/${project.slug}/`,

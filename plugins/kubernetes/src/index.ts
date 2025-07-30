@@ -1,8 +1,7 @@
-import type { DefaultArgs, Plugin, Project } from '@cpn-console/hooks'
+import type { Plugin } from '@cpn-console/hooks'
 import infos from './infos'
 import { getProjectSecrets } from './misc'
 import { createNamespaces, deleteNamespaces } from './namespace'
-import type { KubernetesNamespace } from './class'
 import { KubernetesProjectApi } from './class'
 
 export const plugin: Plugin = {
@@ -24,13 +23,4 @@ export const plugin: Plugin = {
   },
 }
 
-declare module '@cpn-console/hooks' {
-  interface HookPayloadApis<Args extends DefaultArgs> {
-    kubernetes: Args extends (Project)
-      ? KubernetesProjectApi<Args>
-      : undefined
-  }
-  interface EnvironmentApis {
-    kubernetes?: KubernetesNamespace
-  }
-}
+export { KubernetesNamespace } from './class'

@@ -1,12 +1,25 @@
-import type { Project, StepCall, UserEmail, ZoneObject } from '@cpn-console/hooks'
+import type {
+  Project,
+  StepCall,
+  UserEmail,
+  ZoneObject,
+} from '@cpn-console/hooks'
 import { generateRandomPassword, parseError } from '@cpn-console/hooks'
-import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation'
-import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin'
 import type { CustomGroup } from './group'
-import { consoleGroupName, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateProjectGroup } from './group'
+import {
+  consoleGroupName,
+  getAllSubgroups,
+  getGroupByName,
+  getOrCreateChildGroup,
+  getOrCreateProjectGroup,
+} from './group'
 import { getkcClient } from './client'
+import type { ClientRepresentation, GroupRepresentation } from '@s3pweb/keycloak-admin-client-cjs'
 
-export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: { email } }) => {
+export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({
+  args: { email },
+}) => {
   const kcClient = await getkcClient()
   try {
     const user = (await kcClient.users.find({ email }))[0]
@@ -64,13 +77,15 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
     const kcClient = await getkcClient()
     const projectName = project.slug
     const projectGroup = await getOrCreateProjectGroup(kcClient, projectName)
-    const groupMembers = await kcClient.groups.listMembers({ id: projectGroup.id })
+    const groupMembers = await kcClient.groups.listMembers({
+      id: projectGroup.id,
+    })
 
     await Promise.all([
       ...groupMembers.map((member) => {
         if (!project.users.some(({ id }) => id === member.id)) {
           return kcClient.users.delFromGroup({
-          // @ts-ignore id is present on user, bad typing in lib
+            // @ts-ignore id is present on user, bad typing in lib
             id: member.id,
             groupId: projectGroup.id,
           })
@@ -91,15 +106,33 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
     // Ensure envs subgroups exists
     const projectGroups = await getAllSubgroups(kcClient, projectGroup.id, 0)
 
-    const consoleGroup: Required<CustomGroup> = projectGroups.find(({ name }) => name === consoleGroupName) as Required<GroupRepresentation>
-      ?? await getOrCreateChildGroup(kcClient, projectGroup.id, consoleGroupName) as Required<GroupRepresentation>
+    const consoleGroup: Required<CustomGroup>
+      = (projectGroups.find(
+        ({ name }) => name === consoleGroupName,
+      ) as Required<GroupRepresentation>)
+      ?? ((await getOrCreateChildGroup(
+        kcClient,
+        projectGroup.id,
+        consoleGroupName,
+      )) as Required<GroupRepresentation>)
 
-    const envGroups = await getAllSubgroups(kcClient, consoleGroup.id, 0) as CustomGroup[]
+    const envGroups = (await getAllSubgroups(
+      kcClient,
+      consoleGroup.id,
+      0,
+    )) as CustomGroup[]
 
     const promises: Promise<any>[] = []
     for (const environment of project.environments) {
-      const envGroup: Required<CustomGroup> = envGroups.find(group => group.name === environment.name) as Required<CustomGroup>
-        ?? await getOrCreateChildGroup(kcClient, consoleGroup.id, environment.name)
+      const envGroup: Required<CustomGroup>
+        = (envGroups.find(
+          group => group.name === environment.name,
+        ) as Required<CustomGroup>)
+        ?? (await getOrCreateChildGroup(
+          kcClient,
+          consoleGroup.id,
+          environment.name,
+        ))
 
       const [roGroup, rwGroup] = await Promise.all([
         getOrCreateChildGroup(kcClient, envGroup.id, 'RO'),
@@ -109,26 +142,48 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
       // Ensure envs permissions membership exists
       for (const permission of environment.permissions) {
         if (permission.permissions.ro) {
-          promises.push(kcClient.users.addToGroup({ id: permission.userId, groupId: roGroup.id }))
+          promises.push(
+            kcClient.users.addToGroup({
+              id: permission.userId,
+              groupId: roGroup.id,
+            }),
+          )
         } else {
-          promises.push(kcClient.users.delFromGroup({ id: permission.userId, groupId: roGroup.id }))
+          promises.push(
+            kcClient.users.delFromGroup({
+              id: permission.userId,
+              groupId: roGroup.id,
+            }),
+          )
         }
         if (permission.permissions.rw) {
-          promises.push(kcClient.users.addToGroup({ id: permission.userId, groupId: rwGroup.id }))
+          promises.push(
+            kcClient.users.addToGroup({
+              id: permission.userId,
+              groupId: rwGroup.id,
+            }),
+          )
         } else {
-          promises.push(kcClient.users.delFromGroup({ id: permission.userId, groupId: rwGroup.id }))
+          promises.push(
+            kcClient.users.delFromGroup({
+              id: permission.userId,
+              groupId: rwGroup.id,
+            }),
+          )
         }
       }
     }
 
     await Promise.all(promises)
 
-    await Promise.all(envGroups.map((subGroup) => {
-      if (!project.environments.some(({ name }) => name === subGroup.name)) {
-        return kcClient.groups.del({ id: subGroup.id })
-      }
-      return undefined
-    }))
+    await Promise.all(
+      envGroups.map((subGroup) => {
+        if (!project.environments.some(({ name }) => name === subGroup.name)) {
+          return kcClient.groups.del({ id: subGroup.id })
+        }
+        return undefined
+      }),
+    )
 
     return {
       status: {
@@ -147,7 +202,10 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
   }
 }
 
-export const upsertZone: StepCall<ZoneObject> = async ({ args: zone, apis }) => {
+export const upsertZone: StepCall<ZoneObject> = async ({
+  args: zone,
+  apis,
+}) => {
   try {
     const kcClient = await getkcClient()
     const argocdUrl = zone.argocdUrl
@@ -169,7 +227,10 @@ export const upsertZone: StepCall<ZoneObject> = async ({ args: zone, apis }) => 
       await kcClient.clients.update({ id: result[0].id }, client)
     } else {
       const password = generateRandomPassword(30)
-      await apis.vault.write({ clientSecret: password }, 'keycloak')
+      await (apis.vault as VaultProjectApi).write(
+        { clientSecret: password },
+        'keycloak',
+      )
       await kcClient.clients.create({
         secret: password,
         ...client,

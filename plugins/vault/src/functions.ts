@@ -1,15 +1,25 @@
 import { okStatus, parseError } from '@cpn-console/hooks'
-import type { Project, ProjectLite, StepCall, ZoneObject } from '@cpn-console/hooks'
-import { generateVaultAuth, generateVsoSecret, generateVsoVaultConnection } from './vso'
+import type {
+  Project,
+  ProjectLite,
+  StepCall,
+  ZoneObject,
+} from '@cpn-console/hooks'
+import {
+  generateVaultAuth,
+  generateVsoSecret,
+  generateVsoVaultConnection,
+} from './vso'
 import getConfig from './config'
-import type { KubernetesNamespace } from '@cpn-console/kubernetes-plugin/types/class'
+import type { KubernetesNamespace } from '@cpn-console/kubernetes-plugin'
+import type { VaultProjectApi, VaultZoneApi } from './class'
 
 export const upsertProject: StepCall<Project> = async (payload) => {
   try {
     if (!payload.apis.vault) {
       throw new Error('no Vault available')
     }
-    await payload.apis.vault.Project.upsert()
+    await (payload.apis.vault as VaultProjectApi).Project.upsert()
     return {
       status: {
         result: 'OK',
@@ -30,7 +40,9 @@ export const deployAuth: StepCall<Project> = async (payload) => {
     if (!payload.apis.vault) {
       throw new Error('no Vault available')
     }
-    const appRoleCreds = await payload.apis.vault.Project.getCredentials()
+    const appRoleCreds = await (
+      payload.apis.vault as VaultProjectApi
+    ).Project.getCredentials()
     if (getConfig().disableVaultSecrets) {
       return okStatus
     }
@@ -38,7 +50,9 @@ export const deployAuth: StepCall<Project> = async (payload) => {
     for (const env of payload.args.environments) {
       const nsKubeApi = env.apis.kubernetes as KubernetesNamespace
       const apiVersions = await nsKubeApi.apisApi?.getAPIVersions()
-      const apiHashicorp = apiVersions?.body.groups.find(group => group.name === 'secrets.hashicorp.com')
+      const apiHashicorp = apiVersions?.body.groups.find(
+        group => group.name === 'secrets.hashicorp.com',
+      )
 
       // verify if vault CRDs are installed on the cluster
       if (apiHashicorp) {
@@ -73,7 +87,10 @@ export const deployAuth: StepCall<Project> = async (payload) => {
         const vaultConnectionRef = deployVaultConnectionInNs
           ? vaultConnectionObject.metadata.name
           : null
-        const vaultAuthObject = generateVaultAuth(appRoleCreds, vaultConnectionRef)
+        const vaultAuthObject = generateVaultAuth(
+          appRoleCreds,
+          vaultConnectionRef,
+        )
         await nsKubeApi.createOrPatchRessource({
           body: vaultAuthObject,
           name: vaultAuthObject.metadata.name,
@@ -97,12 +114,12 @@ export const deployAuth: StepCall<Project> = async (payload) => {
 
 export const archiveDsoProject: StepCall<Project> = async (payload) => {
   try {
-    if (!payload.apis.vault)
-      throw new Error('no Vault available')
-    await payload.apis.vault.Project.delete()
-    const allSecrets = await payload.apis.vault.list('/')
+    if (!payload.apis.vault) throw new Error('no Vault available')
+    const api = payload.apis.vault as VaultProjectApi
+    await api.Project.delete()
+    const allSecrets = await api.list('/')
     const promisesDestroy = allSecrets.map((path) => {
-      return payload.apis.vault.destroy(path)
+      return api.destroy(path)
     })
     await Promise.all(promisesDestroy)
 
@@ -139,7 +156,7 @@ export const upsertZone: StepCall<ZoneObject> = async (payload) => {
     if (!payload.apis.vault) {
       throw new Error('no Vault available')
     }
-    await payload.apis.vault.upsert()
+    await (payload.apis.vault as VaultZoneApi).upsert()
     return okStatus
   } catch (error) {
     return {
@@ -156,7 +173,7 @@ export const deleteZone: StepCall<ZoneObject> = async (payload) => {
     if (!payload.apis.vault) {
       throw new Error('no Vault available')
     }
-    await payload.apis.vault.delete()
+    await (payload.apis.vault as VaultZoneApi).delete()
     return okStatus
   } catch (error) {
     return {

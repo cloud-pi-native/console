@@ -1,8 +1,8 @@
-import KcAdminClient from '@keycloak/keycloak-admin-client'
+import { KeycloakAdminClient } from '@s3pweb/keycloak-admin-client-cjs'
 import getConfig from './config'
 
 export async function getkcClient() {
-  const kcClient = new KcAdminClient({
+  const kcClient = new KeycloakAdminClient({
     baseUrl: getConfig().url,
   })
 

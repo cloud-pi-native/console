@@ -5,14 +5,9 @@
   "compilerOptions": {
     "baseUrl": "./",
     "rootDir": "./src",
-    "module": "esnext",
-    "moduleResolution": "bundler",
     "paths": {
       "@/*": ["src/*"]
     },
-    "allowImportingTsExtensions": true,
-    "declarationDir": "./types",
-    "noEmit": true,
     "outDir": "./dist"
   },
   "include": [

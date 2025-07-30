@@ -1,4 +1,4 @@
-import type { DeclareModuleGenerator, Plugin } from '@cpn-console/hooks'
+import type { Plugin } from '@cpn-console/hooks'
 import infos from './infos'
 import monitor from './monitor'
 import { deleteProject, upsertProject } from './functions'
@@ -35,9 +35,4 @@ export const plugin: Plugin = {
     },
   },
   monitor,
-}
-
-declare module '@cpn-console/hooks' {
-  interface ProjectStore extends DeclareModuleGenerator<typeof infos, 'project'> {}
-  interface Config extends DeclareModuleGenerator<typeof infos, 'global'> {}
 }

@@ -1,12 +1,17 @@
 import type { V1Secret } from '@kubernetes/client-node'
-import { type ClusterObject, type StepCall, parseError } from '@cpn-console/hooks'
+import {
+  type ClusterObject,
+  type StepCall,
+  parseError,
+} from '@cpn-console/hooks'
 import { inClusterLabel } from '@cpn-console/shared'
 import { getConfig, getK8sApi } from './utils'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin'
 
 export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
   try {
     const cluster = payload.args
-    const { vault } = payload.apis
+    const vaultApi = payload.apis.vault as VaultProjectApi
     if (cluster.label === inClusterLabel) {
       await deleteClusterSecret(cluster.secretName)
     } else {
@@ -18,7 +23,10 @@ export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
       server: cluster.cluster.server,
       config: JSON.stringify(convertConfig(cluster)),
     }
-    await vault.write(clusterData, `clusters/cluster-${cluster.label}/argocd-cluster-secret`)
+    await vaultApi.write(
+      clusterData,
+      `clusters/cluster-${cluster.label}/argocd-cluster-secret`,
+    )
     return {
       status: {
         result: 'OK',
@@ -40,7 +48,9 @@ export const deleteCluster: StepCall<ClusterObject> = async (payload) => {
   try {
     const secretName = payload.args.secretName
     await deleteClusterSecret(secretName)
-    await payload.apis.vault.destroy(`clusters/cluster-${payload.args.label}/argocd-cluster-secret`)
+    await (payload.apis.vault as VaultProjectApi).destroy(
+      `clusters/cluster-${payload.args.label}/argocd-cluster-secret`,
+    )
     return {
       status: {
         result: 'OK',
@@ -61,14 +71,17 @@ export const deleteCluster: StepCall<ClusterObject> = async (payload) => {
 // ...désolé
 function convertConfig(cluster: ClusterObject) {
   return {
-    ...cluster.user?.username && { username: cluster.user?.username },
-    ...cluster.user?.password && { password: cluster.user?.password },
-    ...cluster.user?.token && { bearerToken: cluster.user?.token },
+    ...(cluster.user?.username && { username: cluster.user?.username }),
+    ...(cluster.user?.password && { password: cluster.user?.password }),
+    ...(cluster.user?.token && { bearerToken: cluster.user?.token }),
     tlsClientConfig: {
-      ...cluster.user?.keyData && { keyData: cluster.user?.keyData },
-      ...cluster.user?.certData && { certData: cluster.user?.certData },
-      ...(cluster.cluster?.caData && !cluster.cluster?.skipTLSVerify) && { caData: cluster.cluster?.caData },
-      ...cluster.cluster?.skipTLSVerify && { insecure: cluster.cluster.skipTLSVerify },
+      ...(cluster.user?.keyData && { keyData: cluster.user?.keyData }),
+      ...(cluster.user?.certData && { certData: cluster.user?.certData }),
+      ...(cluster.cluster?.caData
+        && !cluster.cluster?.skipTLSVerify && { caData: cluster.cluster?.caData }),
+      ...(cluster.cluster?.skipTLSVerify && {
+        insecure: cluster.cluster.skipTLSVerify,
+      }),
       serverName: cluster.cluster.tlsServerName,
     },
   }
@@ -97,16 +110,28 @@ function convertClusterToSecret(cluster: ClusterObject): V1Secret {
 async function createClusterSecret(cluster: ClusterObject) {
   const k8sApi = getK8sApi()
   try {
-    await k8sApi.readNamespacedSecret(cluster.secretName, getConfig().namespace)
-    await k8sApi.replaceNamespacedSecret(cluster.secretName, getConfig().namespace, convertClusterToSecret(cluster))
+    await k8sApi.readNamespacedSecret(
+      cluster.secretName,
+      getConfig().namespace,
+    )
+    await k8sApi.replaceNamespacedSecret(
+      cluster.secretName,
+      getConfig().namespace,
+      convertClusterToSecret(cluster),
+    )
   } catch (error) {
     // @ts-ignore add control on error
     if (error?.response?.statusCode !== 404) throw error
-    await k8sApi.createNamespacedSecret(getConfig().namespace, convertClusterToSecret(cluster))
+    await k8sApi.createNamespacedSecret(
+      getConfig().namespace,
+      convertClusterToSecret(cluster),
+    )
   }
 }
 
-export async function deleteClusterSecret(secretName: ClusterObject['secretName']) {
+export async function deleteClusterSecret(
+  secretName: ClusterObject['secretName'],
+) {
   const k8sApi = getK8sApi()
   try {
     await k8sApi.deleteNamespacedSecret(secretName, getConfig().namespace)

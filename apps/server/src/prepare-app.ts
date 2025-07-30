@@ -1,16 +1,15 @@
 import { rm } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import { isCI, isDev, isDevSetup, isInt, isProd, isTest, port } from './utils/env'
 import app, { logger } from './app'
 import { getConnection } from './connect'
 import { initDb } from './init/db/index'
 import { initPm } from './plugins'
+import * as Undici from 'undici'
 
 // Workaround because fetch isn't using http_proxy variables
 // See. https://github.com/gajus/global-agent/issues/52#issuecomment-1134525621
 if (process.env.HTTP_PROXY) {
-  const Undici = await import('undici')
   const ProxyAgent = Undici.ProxyAgent
   const setGlobalDispatcher = Undici.setGlobalDispatcher
   setGlobalDispatcher(
@@ -45,8 +44,6 @@ export async function startServer(defaultPort: number = (port ? +port : 8080)) {
     await initializeDB(dataPath)
     if (isProd && !isDevSetup) {
       logger.info('Cleaning up imported data file...')
-      const __filename = fileURLToPath(import.meta.url)
-      const __dirname = dirname(__filename)
       await rm(resolve(__dirname, dataPath))
       logger.info(`Successfully deleted '${dataPath}'`)
     }
@@ -87,8 +84,6 @@ export async function getPreparedApp() {
     await initializeDB(dataPath)
     if (isProd && !isDevSetup) {
       logger.info('Cleaning up imported data file...')
-      const __filename = fileURLToPath(import.meta.url)
-      const __dirname = dirname(__filename)
       await rm(resolve(__dirname, dataPath))
       logger.info(`Successfully deleted '${dataPath}'`)
     }
@@ -102,5 +97,5 @@ export async function getPreparedApp() {
   }
 
   logger.debug({ isDev, isTest, isCI, isDevSetup, isProd })
-  return app
+  return app as any
 }

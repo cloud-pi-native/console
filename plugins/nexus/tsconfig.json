@@ -5,13 +5,10 @@
   "compilerOptions": {
     "baseUrl": "./",
     "rootDir": "./src",
-    "module": "esnext",
-    "moduleResolution": "bundler",
     "paths": {
       "@/*": ["src/*"]
     },
     "useUnknownInCatchVariables": true,
-    "declarationDir": "./types",
     "outDir": "./dist"
   },
   "include": [

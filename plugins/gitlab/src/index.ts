@@ -1,4 +1,4 @@
-import type { DeclareModuleGenerator, DefaultArgs, Plugin, Project, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
+import type { Plugin, Project, UniqueRepo } from '@cpn-console/hooks'
 import {
   checkApi,
   commitFiles,
@@ -67,17 +67,4 @@ export const plugin: Plugin = {
   start,
 }
 
-declare module '@cpn-console/hooks' {
-  interface HookPayloadApis<Args extends DefaultArgs> {
-    gitlab: Args extends Project | UniqueRepo
-      ? GitlabProjectApi
-      : Args extends ZoneObject
-        ? GitlabZoneApi
-        : undefined
-  }
-  interface ProjectStore extends DeclareModuleGenerator<typeof infos, 'project'> {}
-  interface Config extends DeclareModuleGenerator<typeof infos, 'global'> {}
-  interface PluginResult {
-    warnReasons?: string[]
-  }
-}
+export { GitlabProjectApi, GitlabZoneApi } from './class'

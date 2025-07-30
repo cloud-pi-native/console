@@ -4,7 +4,6 @@
   "version": "1.0.2",
   "license": "ISC",
   "main": "src/index.js",
-  "types": "types/index.d.ts",
   "devDependencies": {
     "@antfu/eslint-config": "^3.11.2",
     "eslint": "^9.15.0"

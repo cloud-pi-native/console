@@ -4,16 +4,10 @@
   "private": false,
   "description": "",
   "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "types/index.d.ts",
-  "files": [
-    "dist",
-    "types",
-    "utils.d.ts"
-  ],
+  "types": "src/index.ts",
   "scripts": {
     "build": "tsc",
-    "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
+    "build:clean": "rimraf ./tsconfig.tsbuildinfo",
     "dev": "nodemon --watch src --ext .ts --exec 'pnpm run build'",
     "format": "eslint ./ --fix",
     "lint": "eslint ./",

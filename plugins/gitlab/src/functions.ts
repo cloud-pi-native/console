@@ -1,5 +1,12 @@
 import { okStatus, parseError, specificallyDisabled } from '@cpn-console/hooks'
-import type { PluginResult, Project, ProjectLite, StepCall, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
+import type {
+  PluginResult,
+  Project,
+  ProjectLite,
+  StepCall,
+  UniqueRepo,
+  ZoneObject,
+} from '@cpn-console/hooks'
 import { insert } from '@cpn-console/shared'
 import { deleteGroup } from './group'
 import { createUsername, getUser } from './user'
@@ -8,13 +15,18 @@ import { ensureRepositories } from './repositories'
 import type { VaultSecrets } from './utils'
 import { cleanGitlabError } from './utils'
 import config from './config'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin'
+import type { GitlabProjectApi } from './class'
 
 // Check
 export const checkApi: StepCall<Project> = async (payload) => {
   try {
     const { users } = payload.args
     for (const user of users) {
-      const userInfos = await getUser({ ...user, username: createUsername(user.email) })
+      const userInfos = await getUser({
+        ...user,
+        username: createUsername(user.email),
+      })
       if (userInfos?.id === 1) {
         return {
           status: {
@@ -46,7 +58,9 @@ export const getDsoProjectSecrets: StepCall<ProjectLite> = async (payload) => {
   try {
     if (!specificallyDisabled(payload.config.gitlab?.displayTriggerHint)) {
       // TODO déplacer les secrets dans un dossier pour tout lister plutôt que de sélectionner dans le code
-      const gitlab = (await payload.apis.vault.read('GITLAB')).data as VaultSecrets['GITLAB']
+      const gitlab = (
+        await (payload.apis.vault as VaultProjectApi).read('GITLAB')
+      ).data as VaultSecrets['GITLAB']
       /* eslint-disable no-template-curly-in-string */
       const curlCommand = [
         'curl -X POST --fail',
@@ -96,14 +110,19 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
   }
   try {
     const project = payload.args
-    const { gitlab: gitlabApi, vault: vaultApi } = payload.apis
+
+    const gitlabApi = payload.apis.gitlab as GitlabProjectApi
+    const vaultApi = payload.apis.vault as VaultProjectApi
 
     await gitlabApi.getOrCreateProjectGroup()
 
     const { failedInUpsertUsers } = await ensureMembers(gitlabApi, project)
     if (failedInUpsertUsers) {
       returnResult.status.result = 'WARNING'
-      returnResult.warnReasons = insert(returnResult.warnReasons, 'Failed to create or upsert users in Gitlab')
+      returnResult.warnReasons = insert(
+        returnResult.warnReasons,
+        'Failed to create or upsert users in Gitlab',
+      )
     }
 
     const projectMirrorCreds = await gitlabApi.getProjectMirrorCreds(vaultApi)
@@ -115,13 +134,19 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
     const destroySecrets = (await vaultApi.list())
       .filter(path => path.endsWith('-mirror'))
       .map(path => path.slice(1, path.length - 7))
-      .filter(repoName => !project.repositories.find(projectRepo => projectRepo.internalRepoName === repoName))
+      .filter(
+        repoName =>
+          !project.repositories.find(
+            projectRepo => projectRepo.internalRepoName === repoName,
+          ),
+      )
 
-    await Promise.all(destroySecrets
-      .map(repoName => vaultApi.destroy(`${repoName}-mirror`)),
+    await Promise.all(
+      destroySecrets.map(repoName => vaultApi.destroy(`${repoName}-mirror`)),
     )
 
-    const mirrorTriggerToken = await gitlabApi.getMirrorProjectTriggerToken(vaultApi)
+    const mirrorTriggerToken
+      = await gitlabApi.getMirrorProjectTriggerToken(vaultApi)
 
     const gitlabSecret: VaultSecrets['GITLAB'] = {
       PROJECT_SLUG: project.slug,
@@ -142,7 +167,9 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
 
 export const deleteDsoProject: StepCall<Project> = async (payload) => {
   try {
-    const group = await payload.apis.gitlab.getProjectGroup()
+    const group = await (
+      payload.apis.gitlab as GitlabProjectApi
+    ).getProjectGroup()
     if (group) await deleteGroup(group.id, group.full_path)
 
     return {
@@ -164,9 +191,13 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
 
 export const syncRepository: StepCall<UniqueRepo> = async (payload) => {
   const targetRepo = payload.args.repo
-  const gitlabApi = payload.apis.gitlab
+  const gitlabApi = payload.apis.gitlab as GitlabProjectApi
   try {
-    await gitlabApi.triggerMirror(targetRepo.internalRepoName, targetRepo.syncAllBranches, targetRepo.branchName)
+    await gitlabApi.triggerMirror(
+      targetRepo.internalRepoName,
+      targetRepo.syncAllBranches,
+      targetRepo.branchName,
+    )
     return {
       status: {
         result: 'OK',
@@ -187,7 +218,7 @@ export const syncRepository: StepCall<UniqueRepo> = async (payload) => {
 export const upsertZone: StepCall<ZoneObject> = async (payload) => {
   const returnResult: PluginResult = okStatus
   try {
-    const gitlabApi = payload.apis.gitlab
+    const gitlabApi = payload.apis.gitlab as GitlabProjectApi
     await gitlabApi.getOrCreateInfraProject(payload.args.slug)
     return returnResult
   } catch (error) {
@@ -206,7 +237,7 @@ export const deleteZone: StepCall<ZoneObject> = async (payload) => {
     },
   }
   try {
-    const gitlabApi = payload.apis.gitlab
+    const gitlabApi = payload.apis.gitlab as GitlabProjectApi
     const zoneRepo = await gitlabApi.getOrCreateInfraProject(payload.args.slug)
     await gitlabApi.deleteRepository(zoneRepo.id, zoneRepo.path_with_namespace)
     return returnResult
@@ -218,10 +249,14 @@ export const deleteZone: StepCall<ZoneObject> = async (payload) => {
   }
 }
 
-export const commitFiles: StepCall<UniqueRepo | Project | ZoneObject> = async (payload) => {
+export const commitFiles: StepCall<UniqueRepo | Project | ZoneObject> = async (
+  payload,
+) => {
   const returnResult = payload.results.gitlab
   try {
-    const filesUpdated = await payload.apis.gitlab.commitFiles()
+    const filesUpdated = await (
+      payload.apis.gitlab as GitlabProjectApi
+    ).commitFiles()
 
     returnResult.status.message = `${filesUpdated} file${filesUpdated > 1 ? 's' : ''} updated`
     return returnResult

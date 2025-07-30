@@ -2,13 +2,15 @@ import { dirname } from 'node:path'
 import type { ClusterObject, Environment, ListMinimumResources, Project, Repository, StepCall } from '@cpn-console/hooks'
 import { parseError, uniqueResource } from '@cpn-console/hooks'
 import { dump } from 'js-yaml'
-import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class'
+import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin'
 import { PatchUtils } from '@kubernetes/client-node'
 import { inClusterLabel } from '@cpn-console/shared'
 import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi } from './utils'
 import { getApplicationObject, getMinimalApplicationObject } from './applications'
 import { getAppProjectObject, getMinimalAppProjectPatch } from './app-project'
+import type { KeycloakProjectApi } from '@cpn-console/keycloak-plugin'
+import type { KubernetesNamespace } from '@cpn-console/kubernetes-plugin'
 
 export const patchOptions = { headers: { 'Content-type': PatchUtils.PATCH_FORMAT_JSON_MERGE_PATCH } }
 
@@ -30,7 +32,9 @@ export const upsertProject: StepCall<Project> = async (payload) => {
   try {
     const customK8sApi = getCustomK8sApi()
     const project = payload.args
-    const { gitlab: gitlabApi, keycloak: keycloakApi, vault: vaultApi } = payload.apis
+    const vaultApi = payload.apis.vault as VaultProjectApi
+    const keycloakApi = payload.apis.keycloak as KeycloakProjectApi
+    const gitlabApi = payload.apis.gitlab as GitlabProjectApi
     const projectSelector = `dso/project.slug=${project.slug},app.kubernetes.io/managed-by=dso-console`
     const projectSelector2 = `dso/project.id=${project.id},app.kubernetes.io/managed-by=dso-console`
 
@@ -56,7 +60,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         if (!environment.apis.kubernetes) {
           return
         }
-        const nsName = await environment.apis.kubernetes.getNsName()
+        const nsName = await (environment.apis.kubernetes as KubernetesNamespace).getNsName()
         const cluster = getCluster(project, environment)
         const infraProject = await gitlabApi.getOrCreateInfraProject(cluster.zone.slug)
         const appProjectName = generateAppProjectName(project.slug, environment.name)
@@ -312,7 +316,7 @@ function getDistinctZones(project: Project) {
 export const deleteProject: StepCall<Project> = async (payload) => {
   try {
     const project = payload.args
-    const { gitlab: gitlabApi } = payload.apis
+    const gitlabApi = payload.apis.gitlab as GitlabProjectApi
     const customK8sApi = getCustomK8sApi()
     const projectSelector = `dso/project.id=${project.id},app.kubernetes.io/managed-by=dso-console`
 

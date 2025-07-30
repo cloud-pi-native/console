@@ -10,7 +10,9 @@
     "paths": {
       "@/*": ["src/*"]
     },
+    "allowImportingTsExtensions": true,
     "declarationDir": "./types",
+    "noEmit": true,
     "outDir": "./dist"
   },
   "include": [

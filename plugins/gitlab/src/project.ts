@@ -1,11 +1,11 @@
-import * as fs from 'node:fs/promises'
+import * as fs from 'node:fs'
 import path from 'node:path'
 import { getApi } from './utils'
 
-const baseDir = path.resolve(import.meta.url, '../../files/').split(':')[1]
+const baseDir = path.resolve(__dirname, '../../files/').split(':')[1]
 
-const gitlabCiYml = (await fs.readFile(`${baseDir}/.gitlab-ci.yml`)).toString()
-const mirrorSh = (await fs.readFile(`${baseDir}/mirror.sh`)).toString()
+const gitlabCiYml = (fs.readFileSync(`${baseDir}/.gitlab-ci.yml`)).toString()
+const mirrorSh = (fs.readFileSync(`${baseDir}/mirror.sh`)).toString()
 
 const mirrorFirstActions: CommitAction[] = [
   {
