@@ -169,8 +169,8 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
     npm run kube:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
   else
     if [[ -n "$TAG" ]]; then
-      docker pull ghcr.io/cloud-pi-native/console/server:$TAG && docker tag ghcr.io/cloud-pi-native/console/server:$TAG dso-console/server:prod
-      docker pull ghcr.io/cloud-pi-native/console/client:$TAG && docker tag ghcr.io/cloud-pi-native/console/client:$TAG dso-console/client:prod
+      docker pull ghcr.io/cloud-pi-native/console/server:$TAG && docker tag ghcr.io/cloud-pi-native/console/server:$TAG dso-console/server:ci
+      docker pull ghcr.io/cloud-pi-native/console/client:$TAG && docker tag ghcr.io/cloud-pi-native/console/client:$TAG dso-console/client:ci
     fi
     npm run docker:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
   fi
