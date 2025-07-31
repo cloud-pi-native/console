@@ -86,6 +86,20 @@ services:
     networks:
       - dso-network
 
+  opencds-mockoon:
+    restart: unless-stopped
+    build:
+      context: ../plugins/opencds
+      dockerfile: plugins/opencds/Dockerfile_mockoon
+    image: dso-console/server:prod
+    container_name: dso-opencds_mockoon
+    user: root
+    depends_on:
+    ports:
+      - 6000:6000
+    networks:
+      - dso-network
+
 networks:
   dso-network:
     name: dso-network
