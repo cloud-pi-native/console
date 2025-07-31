@@ -1,23 +1,25 @@
 import type { FastifyInstance } from 'fastify'
+import { serverInstance } from '@/app.js'
+
+import { adminRoleRouter } from './admin-role/router.js'
+import { adminTokenRouter } from './admin-token/router.js'
 import { clusterRouter } from './cluster/router.js'
 import { environmentRouter } from './environment/router.js'
 import { logRouter } from './log/router.js'
-import { projectRouter } from './project/router.js'
-import { adminRoleRouter } from './admin-role/router.js'
-import { projectRoleRouter } from './project-role/router.js'
+import { personalAccessTokenRouter } from './user/tokens/router.js'
+import { pluginConfigRouter } from './system/config/router.js'
 import { projectMemberRouter } from './project-member/router.js'
-import { repositoryRouter } from './repository/router.js'
-import { serviceMonitorRouter } from './service-monitor/router.js'
+import { projectRoleRouter } from './project-role/router.js'
+import { projectRouter } from './project/router.js'
 import { projectServiceRouter } from './project-service/router.js'
+import { repositoryRouter } from './repository/router.js'
+import { serviceChainRouter } from './service-chain/router.js'
+import { serviceMonitorRouter } from './service-monitor/router.js'
 import { stageRouter } from './stage/router.js'
 import { systemRouter } from './system/router.js'
-import { pluginConfigRouter } from './system/config/router.js'
+import { systemSettingsRouter } from './system/settings/router.js'
 import { userRouter } from './user/router.js'
 import { zoneRouter } from './zone/router.js'
-import { systemSettingsRouter } from './system/settings/router.js'
-import { adminTokenRouter } from './admin-token/router.js'
-import { personalAccessTokenRouter } from './user/tokens/router.js'
-import { serverInstance } from '@/app.js'
 
 // relax validation schema if NO_VALIDATION env var is set to true.
 // /!\ It can lead to security leaks !!!!
@@ -27,6 +29,7 @@ export function apiRouter() {
     await app.register(serverInstance.plugin(adminRoleRouter()), validateTrue)
     await app.register(serverInstance.plugin(adminTokenRouter()), validateTrue)
     await app.register(serverInstance.plugin(clusterRouter()), validateTrue)
+    await app.register(serverInstance.plugin(serviceChainRouter()), validateTrue)
     await app.register(serverInstance.plugin(environmentRouter()), validateTrue)
     await app.register(serverInstance.plugin(logRouter()), validateTrue)
     await app.register(serverInstance.plugin(personalAccessTokenRouter()), validateTrue)

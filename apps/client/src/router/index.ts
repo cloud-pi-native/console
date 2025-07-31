@@ -29,6 +29,8 @@ const ListProjects = () => import('@/views/admin/ListProjects.vue')
 const ListLogs = () => import('@/views/admin/ListLogs.vue')
 const AdminRoles = () => import('@/views/admin/AdminRoles.vue')
 const ListClusters = () => import('@/views/admin/ListClusters.vue')
+const ListServiceChains = () => import('@/views/admin/ListServiceChains.vue')
+const ListQuotas = () => import('@/views/admin/ListQuotas.vue')
 const ListStages = () => import('@/views/admin/ListStages.vue')
 const ListZones = () => import('@/views/admin/ListZones.vue')
 const ListPlugins = () => import('@/views/admin/ListPlugins.vue')
@@ -175,6 +177,26 @@ export const routes: Readonly<RouteRecordRaw[]> = [
               }
             },
           },
+        ],
+      },
+      {
+        path: 'service-chains',
+        children: [
+          {
+            path: '',
+            name: 'ListServiceChains',
+            component: ListServiceChains,
+          },
+          // {
+          // path: ':id',
+          // name: 'AdminServiceChain',
+          // component: AdminServiceChain,
+          // props(to) {
+          // return {
+          // id: to.params.id,
+          // }
+          // },
+          // },
         ],
       },
       {
