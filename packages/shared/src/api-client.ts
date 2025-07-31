@@ -11,6 +11,7 @@ export async function getContract() {
       AdminTokens: (await import('./contracts/index.js')).adminTokenContract,
       AdminRoles: (await import('./contracts/index.js')).adminRoleContract,
       Clusters: (await import('./contracts/index.js')).clusterContract,
+      ServiceChains: (await import('./contracts/index.js')).serviceChainContract,
       Environments: (await import('./contracts/index.js')).environmentContract,
       Logs: (await import('./contracts/index.js')).logContract,
       PersonalAccessTokens: (await import('./contracts/index.js')).personalAccessTokenContract,

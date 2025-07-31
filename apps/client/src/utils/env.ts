@@ -15,3 +15,5 @@ export const keycloakClientId: string = process.env.KEYCLOAK_CLIENT_ID ?? 'dso-k
 export const keycloakRedirectUri: string = process.env.KEYCLOAK_REDIRECT_URI ?? 'dso-keycloak-redirect-uri'
 
 export const contactEmail: string = process.env.CONTACT_EMAIL ?? 'cloudpinative-relations@interieur.gouv.fr'
+
+export const openCDSEnabled: string = process.env.OPENCDS_ENABLED ?? 'dso-opencds-enabled'
