@@ -1,5 +1,6 @@
 export * from '@/resources/admin-role/queries.js'
 export * from '@/resources/cluster/queries.js'
+export * from '@/resources/service-chain/queries.js'
 export * from '@/resources/environment/queries.js'
 export * from '@/resources/log/queries.js'
 export * from '@/resources/project/queries.js'

@@ -2,6 +2,7 @@
 import { isInProject } from '../router/index.js'
 import { useUserStore } from '@/stores/user.js'
 import { useServiceStore } from '@/stores/services-monitor.js'
+import { openCDSEnabled } from '@/utils/env.js'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -12,9 +13,7 @@ const isLoggedIn = computed(() => userStore.isLoggedIn)
 
 const isDarkScheme = ref<boolean>()
 const selectedScheme = computed<string | undefined>(() =>
-  isDarkScheme.value
-    ? 'dark'
-    : 'light',
+  isDarkScheme.value ? 'dark' : 'light',
 )
 
 const isExpanded = ref({
@@ -24,14 +23,20 @@ const isExpanded = ref({
   profile: false,
 })
 
+const isCDSActivated = ref<boolean>()
+
 function toggleExpand(key: keyof typeof isExpanded.value) {
   isExpanded.value[key] = !isExpanded.value[key]
 }
 
 watch(route, (currentRoute) => {
   isExpanded.value.projects = isInProject.value
-  isExpanded.value.profile = currentRoute.matched.some(match => match.name === 'Profile')
-  isExpanded.value.administration = currentRoute.matched.some(match => match.name === 'ParentAdmin')
+  isExpanded.value.profile = currentRoute.matched.some(
+    match => match.name === 'Profile',
+  )
+  isExpanded.value.administration = currentRoute.matched.some(
+    match => match.name === 'ParentAdmin',
+  )
 })
 
 onMounted(() => {
@@ -39,6 +44,7 @@ onMounted(() => {
   const { scheme, setScheme } = useScheme()
 
   isDarkScheme.value = scheme.value === 'dark'
+  isCDSActivated.value = openCDSEnabled === 'true'
 
   watchEffect(() => setScheme(selectedScheme.value))
 })
@@ -60,13 +66,17 @@ onMounted(() => {
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
           to=""
-          class="flex flex-row gap-2 "
+          class="flex flex-row gap-2"
           @click="isDarkScheme = !isDarkScheme"
         >
           {{ isDarkScheme ? 'Thème clair' : 'Thème sombre' }}
           <v-icon
             :name="isDarkScheme ? 'ri:sun-line' : 'ri:moon-clear-line'"
-            :fill="isDarkScheme ? 'var(--yellow-moutarde-sun-348-moon-860)' : 'var(--blue-france-sun-113-625)'"
+            :fill="
+              isDarkScheme
+                ? 'var(--yellow-moutarde-sun-348-moon-860)'
+                : 'var(--blue-france-sun-113-625)'
+            "
           />
         </DsfrSideMenuLink>
       </DsfrSideMenuListItem>
@@ -81,9 +91,7 @@ onMounted(() => {
       </DsfrSideMenuListItem>
 
       <!-- Onglet Profile -->
-      <DsfrSideMenuListItem
-        v-if="isLoggedIn"
-      >
+      <DsfrSideMenuListItem v-if="isLoggedIn">
         <DsfrSideMenuButton
           data-testid="menuUserList"
           :expanded="isExpanded.profile"
@@ -91,7 +99,8 @@ onMounted(() => {
           control-id="projectList"
           @toggle-expand="toggleExpand('profile')"
         >
-          {{ userStore.userProfile?.firstName }} {{ userStore.userProfile?.lastName }}
+          {{ userStore.userProfile?.firstName }}
+          {{ userStore.userProfile?.lastName }}
         </DsfrSideMenuButton>
         <DsfrSideMenuList
           id="profileList"
@@ -179,6 +188,18 @@ onMounted(() => {
             >
               <v-icon name="ri:folders-line" />
               Projets
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              v-if="isCDSActivated"
+              class="menu-link-icon"
+              data-testid="menuAdministrationServiceChains"
+              :active="routeName === 'ListServiceChains'"
+              to="/admin/service-chains"
+            >
+              <v-icon name="ri:links-line" />
+              Chaînes de Services
             </DsfrSideMenuLink>
           </DsfrSideMenuListItem>
           <DsfrSideMenuListItem>
@@ -278,11 +299,7 @@ onMounted(() => {
           to="/services-health"
           class="flex flex-row space-between"
         >
-          <span
-            class="grow"
-          >
-            Status des services
-          </span>
+          <span class="grow"> Status des services </span>
           <v-icon
             :fill="serviceStore.servicesHealth.dotColor"
             name="ri:checkbox-blank-circle-fill"
@@ -310,11 +327,11 @@ onMounted(() => {
   @apply flex gap-2;
 }
 
-.fr-sidemenu{
+.fr-sidemenu {
   display: flex;
 }
 
-.fr-sidemenu__inner{
+.fr-sidemenu__inner {
   padding-bottom: 0;
   padding-right: 0;
   width: 100%;

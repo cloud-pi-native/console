@@ -84,6 +84,8 @@ services:
       - ../apps/client/nginx/default.docker.conf:/opt/bitnami/nginx/conf/server_blocks/default.conf
     env_file:
       - ../apps/client/.env.docker
+    environment:
+      OPENCDS_ENABLED: "true"
     networks:
       - dso-network
 
@@ -91,7 +93,8 @@ services:
     restart: unless-stopped
     build:
       context: ../plugins/opencds
-      dockerfile: plugins/opencds/Dockerfile_mockoon
+      dockerfile: Dockerfile_mockoon
+    image: dso-console/opencds-mockoon:ci
     container_name: dso-opencds_mockoon
     user: root
     ports:
