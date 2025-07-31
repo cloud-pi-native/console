@@ -91,16 +91,16 @@ jobs:
         run: |
           ./ci/scripts/init-env.sh
           docker pull ghcr.io/cloud-pi-native/console/server:${{ inputs.TAG }}
-          docker tag ghcr.io/cloud-pi-native/console/server:${{ inputs.TAG }} dso-console/server:prod
+          docker tag ghcr.io/cloud-pi-native/console/server:${{ inputs.TAG }} dso-console/server:ci
           docker pull ghcr.io/cloud-pi-native/console/client:${{ inputs.TAG }}
-          docker tag ghcr.io/cloud-pi-native/console/client:${{ inputs.TAG }} dso-console/client:prod
-          docker compose -f ./docker/docker-compose.prod.yml up --no-build -d --remove-orphans
+          docker tag ghcr.io/cloud-pi-native/console/client:${{ inputs.TAG }} dso-console/client:ci
+          docker compose -f ./docker/docker-compose.ci.yml up --no-build -d --remove-orphans
 
       - name: Run Playwright tests
         run: pnpm --dir playwright exec playwright test
 
       - name: Clean up docker resources (containers, volumes)
-        run: docker compose -f ./docker/docker-compose.prod.yml down -v --remove-orphans
+        run: docker compose -f ./docker/docker-compose.ci.yml down -v --remove-orphans
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
