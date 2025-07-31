@@ -315,6 +315,7 @@ pnpm --filter @cpn-console/server run db:wrapper -h
 Ce dépôt utilise des fichiers docker-compose pour construire les images docker:
 
 - [docker-compose.dev.yml](./ci/docker/docker-compose.dev.yml) pour la construction des images docker du mode développement.
+- [docker-compose.ci.yml](./ci/docker/docker-compose.ci.yml) pour la construction des images docker utilisées dans nos pipelines d'Intégration Continue.
 - [docker-compose.prod.yml](./ci/docker/docker-compose.prod.yml) pour la construction des images docker du mode production.
 
 ## Configuration du Keycloak
