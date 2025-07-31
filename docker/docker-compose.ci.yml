@@ -64,6 +64,7 @@ services:
       NODE_ENV: production
       CI: "true"
       DEV_SETUP: "true"
+      OPENCDS_URL: "http://dso-opencds_mockoon:6000"
     networks:
       - dso-network
 
@@ -83,6 +84,18 @@ services:
       - ../apps/client/nginx/default.docker.conf:/opt/bitnami/nginx/conf/server_blocks/default.conf
     env_file:
       - ../apps/client/.env.docker
+    networks:
+      - dso-network
+
+  opencds-mockoon:
+    restart: unless-stopped
+    build:
+      context: ../plugins/opencds
+      dockerfile: plugins/opencds/Dockerfile_mockoon
+    container_name: dso-opencds_mockoon
+    user: root
+    ports:
+      - 6000:6000
     networks:
       - dso-network
 
