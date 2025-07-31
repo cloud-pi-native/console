@@ -1,0 +1,18 @@
+FROM node:18-alpine
+
+RUN npm install -g @mockoon/cli@9.3.0
+COPY ./opencds_api.json ./opencds_api.json
+
+# Install curl for healthcheck and tzdata for timezone support.
+RUN apk --no-cache add curl tzdata
+
+# Do not run as root.
+RUN adduser --shell /bin/sh --disabled-password --gecos "" mockoon
+RUN chown -R mockoon ./opencds_api.json
+USER mockoon
+
+EXPOSE 6000
+
+ENTRYPOINT ["mockoon-cli","start","--disable-log-to-file","--data","./opencds_api.json","--port","6000"]
+
+# Usage: docker run -p <host_port>:6000 mockoon-test
