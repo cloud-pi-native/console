@@ -13,7 +13,6 @@ import {
   deleteValidationInput,
   inClusterLabel,
 } from '@cpn-console/shared'
-// @ts-ignore 'js-yaml' missing types
 import { load } from 'js-yaml'
 // @ts-ignore 'vue3-json-viewer' missing types
 import { JsonViewer } from 'vue3-json-viewer'
