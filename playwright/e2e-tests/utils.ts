@@ -5,7 +5,7 @@ import { expect } from '@playwright/test'
 // Retrieve frontend URL from environment variables (see playwright.config.ts)
 export const clientURL = process.env.KEYCLOAK_REDIRECT_URI || 'http://change-me'
 
-interface Credentials {
+export interface Credentials {
   username: string
   password: string
   email: string
