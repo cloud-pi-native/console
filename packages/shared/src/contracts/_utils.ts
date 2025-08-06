@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { tokenHeaderName } from '../utils/const.js'
 
+export const EmptySchema = z.object({})
+
 export const ErrorSchema = z.lazy(() => z.object({
   message: z.string()
     .optional(),

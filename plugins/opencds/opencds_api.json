@@ -17,7 +17,7 @@
       "responses": [
         {
           "uuid": "28bd3efb-d903-44c3-b728-66db3af526bc",
-          "body": "{{setVar 'networks' (array 'RIE' 'INTERNET')}}\n{{setVar 'state' (array 'opened' 'pending' 'success' 'error')}}\n[\n  {{#repeat 50 100 comma=true}}\n  {{setVar 'createdAt' (date '2024-01-01' (now) \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")}}\n  {{setVar 'updatedAt' (date (getVar 'createdAt') (now) \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")}}\n  {\n    \"id\": \"{{faker 'string.uuid'}}\",\n    \"state\": \"{{oneOf (getVar 'state')}}\",\n    \"commonName\": \"{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.minint.fr\",\n    \"pai\": \"{{faker 'string.alpha' '{ length: 3, casing: \\\"upper\\\" }'}}\",\n    \"network\": \"{{oneOf (getVar 'networks')}}\",\n    \"createdAt\": \"{{getVar 'createdAt'}}\",\n    \"updatedAt\": \"{{getVar 'updatedAt'}}\"\n  }\n  {{/repeat}}\n]",
+          "body": "{{setVar 'networks' (array 'RIE' 'INTERNET')}}\n{{setVar 'state' (array 'opened' 'pending' 'success' 'failed')}}\n[\n  {{#repeat 50 100 comma=true}}\n  {{setVar 'createdAt' (date '2024-01-01' (now) \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")}}\n  {{setVar 'updatedAt' (date (getVar 'createdAt') (now) \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")}}\n  {\n    \"id\": \"{{faker 'string.uuid'}}\",\n    \"state\": \"{{oneOf (getVar 'state')}}\",\n    \"commonName\": \"{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.minint.fr\",\n    \"pai\": \"{{faker 'string.alpha' '{ length: 3, casing: \\\"upper\\\" }'}}\",\n    \"network\": \"{{oneOf (getVar 'networks')}}\",\n    \"createdAt\": \"{{getVar 'createdAt'}}\",\n    \"updatedAt\": \"{{getVar 'updatedAt'}}\"\n  }\n  {{/repeat}}\n]",
           "latency": 0,
           "statusCode": 200,
           "label": "",
@@ -35,7 +35,7 @@
           "callbacks": []
         }
       ],
-      "responseMode": "RANDOM",
+      "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
     },
@@ -48,7 +48,7 @@
       "responses": [
         {
           "uuid": "410bd286-4377-47e5-ae3f-e4131fcb0b68",
-          "body": "{{setVar 'networks' (array 'RIE' 'INTERNET')}}\n{{setVar 'state' (array 'opened' 'pending' 'success' 'error')}}\n{{setVar 'createdAt' (date '2024-01-01' (now) \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")}}\n{{setVar 'updatedAt' (date (getVar 'createdAt') (now) \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")}}\n{{setVar 'location' (array 'SIR' 'SIL')}}\n{{setVar 'environment' (array 'INT' 'PROD')}}\n\n{\n    \"id\": \"{{urlParam 'request_id'}}\",\n    \n    \"state\": \"{{oneOf (getVar 'state')}}\",\n    \"commonName\": \"{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.minint.fr\",\n    \"pai\": \"{{faker 'string.alpha' '{ length: 3, casing: \\\"upper\\\" }'}}\",\n    \"network\": \"{{oneOf (getVar 'networks')}}\",\n    \"createdAt\": \"{{getVar 'createdAt'}}\",\n    \"updatedAt\": \"{{getVar 'updatedAt'}}\",\n\n    \"validation_id\": \"{{faker 'string.uuid'}}\",\n    \"validated_by\": \"{{faker 'string.uuid'}}\",\n    \"ref\": \"{{faker 'string.uuid'}}\",\n    \"location\": \"{{oneOf (getVar 'location')}}\",\n    \"targetAddress\": \"{{faker 'internet.ipv4'}}\",\n    \"projectId\": \"{{faker 'string.uuid'}}\",\n    \"env\": \"{{oneOf (getVar 'environment')}}\",\n    \"subjectAlternativeName\": [{{#repeat 0 50 comma=true}}\"{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.minint.fr\"{{/repeat}}],\n    \"redirect\": {{boolean}},\n    \"antivirus\": {{#if (eq (boolean) true)}}{\n        \"maxFileSize\": {{int 1 100}}\n    }{{else}}null{{/if}},\n    \"websocket\": {{boolean}},\n    \"ipWhiteList\": [{{#repeat 0 10 comma=true}}\"{{faker 'internet.ipv4'}}\n    \n    \n    /{{int 8 32}}\n    \n    \n    \"{{/repeat}}],\n    \"sslOutgoing\": {{boolean}}\n}",
+          "body": "{{setVar 'networks' (array 'RIE' 'INTERNET')}}\n{{setVar 'state' (array 'opened' 'pending' 'success' 'failed')}}\n{{setVar 'createdAt' (date '2024-01-01' (now) \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")}}\n{{setVar 'updatedAt' (date (getVar 'createdAt') (now) \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")}}\n{{setVar 'location' (array 'SIR' 'SIL')}}\n{{setVar 'environment' (array 'INT' 'PROD')}}\n{\n    \"id\": \"{{urlParam 'request_id'}}\",\n    \n    \"state\": \"{{oneOf (getVar 'state')}}\",\n    \"commonName\": \"{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.minint.fr\",\n    \"pai\": \"{{faker 'string.alpha' '{ length: 3, casing: \\\"upper\\\" }'}}\",\n    \"network\": \"{{oneOf (getVar 'networks')}}\",\n    \"createdAt\": \"{{getVar 'createdAt'}}\",\n    \"updatedAt\": \"{{getVar 'updatedAt'}}\",\n\n    \"validationId\": \"{{faker 'string.uuid'}}\",\n    \"validatedBy\": \"{{faker 'string.uuid'}}\",\n    \"ref\": \"{{faker 'string.uuid'}}\",\n    \"location\": \"{{oneOf (getVar 'location')}}\",\n    \"targetAddress\": \"{{faker 'internet.ipv4'}}\",\n    \"projectId\": \"{{faker 'string.uuid'}}\",\n    \"env\": \"{{oneOf (getVar 'environment')}}\",\n    \"subjectAlternativeName\": [{{#repeat 0 50 comma=true}}\"{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.minint.fr\"{{/repeat}}],\n    \"redirect\": {{boolean}},\n    \"antivirus\": {{#if (eq (boolean) true)}}{\n        \"maxFileSize\": {{int 1 100}}\n    }{{else}}null{{/if}},\n    \"websocket\": {{boolean}},\n    \"ipWhiteList\": [{{#repeat 0 10 comma=true}}\"{{faker 'internet.ipv4'}}/{{int 8 32}}\"{{/repeat}}],\n    \"sslOutgoing\": {{boolean}}\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "",
@@ -85,7 +85,7 @@
           "callbacks": []
         }
       ],
-      "responseMode": "RANDOM",
+      "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
     },
@@ -135,7 +135,7 @@
           "callbacks": []
         }
       ],
-      "responseMode": "RANDOM",
+      "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
     },
@@ -204,7 +204,7 @@
           "callbacks": []
         }
       ],
-      "responseMode": "RANDOM",
+      "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
     },
@@ -273,7 +273,7 @@
           "callbacks": []
         }
       ],
-      "responseMode": "RANDOM",
+      "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
     }

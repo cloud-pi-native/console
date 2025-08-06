@@ -1,35 +1,57 @@
 import { z } from 'zod'
 
-export const CleanedServiceChainSchema = z.object({
-  id: z.string(),
-  state: z.string(),
-  success: z.boolean(),
-  validation_id: z.string(),
-  validated_by: z.string(),
-  version: z.string(),
+export const serviceChainStateEnum = ['opened', 'pending', 'success', 'failed'] as const
+export const ServiceChainStateZodEnum = z.enum(serviceChainStateEnum)
+export type ServiceChainState = Zod.infer<typeof ServiceChainStateZodEnum>
+
+export const serviceChainNetworkEnum = ['RIE', 'INTERNET'] as const
+export const ServiceChainNetworkZodEnum = z.enum(serviceChainNetworkEnum)
+export type ServiceChainNetwork = Zod.infer<typeof ServiceChainNetworkZodEnum>
+
+export const serviceChainLocationEnum = ['SIR', 'SIL'] as const
+export const ServiceChainLocationZodEnum = z.enum(serviceChainLocationEnum)
+export type ServiceChainLocation = Zod.infer<typeof ServiceChainLocationZodEnum>
+
+export const serviceChainEnvironmentEnum = ['INT', 'PROD'] as const
+export const ServiceChainEnvironmentZodEnum = z.enum(serviceChainEnvironmentEnum)
+export type ServiceChainEnvironment = Zod.infer<
+  typeof ServiceChainEnvironmentZodEnum
+>
+
+export const ServiceChainSchema = z.object({
+  id: z.string().uuid(),
+  state: ServiceChainStateZodEnum,
+  commonName:
+    // @TODO: Replace with z.hostname when upgraded to Zod v4
+    z.string(),
   pai: z.string(),
-  ref: z.string(),
-  location: z.string(),
-  targetAddress: z.string().ip(),
-  PAI: z.string(),
-  projectId: z.string(),
-  env: z.string(),
-  network: z.string(),
-  commonName: z.string(),
-  subjectAlternativeName: z.array(z.string()),
-  redirect: z.boolean(),
-  antivirus: z.boolean(),
-  maxFileSize: z.number(),
-  websocket: z.boolean(),
-  ipWhiteList: z.array(z.string()),
-  sslOutgoing: z.boolean(),
-  createat: z.string(),
-  updateat: z.string(),
+  network: ServiceChainNetworkZodEnum,
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 })
+export type ServiceChain = Zod.infer<typeof ServiceChainSchema>
 
-export const ServiceChainDetailsSchema = CleanedServiceChainSchema
+export const ServiceChainListSchema = z.array(ServiceChainSchema)
+export type ServiceChainList = Zod.infer<typeof ServiceChainListSchema>
 
-export type ServiceChain = Zod.infer<typeof CleanedServiceChainSchema>
+export const ServiceChainDetailsSchema = ServiceChainSchema.extend({
+  validationId: z.string().uuid(),
+  validatedBy: z.string().uuid(),
+  ref: z.nullable(z.string().uuid()),
+  location: ServiceChainLocationZodEnum,
+  targetAddress: z.string().ip(),
+  projectId: z.string().uuid(),
+  env: ServiceChainEnvironmentZodEnum,
+  subjectAlternativeName: z.array(
+    // @TODO: Replace with z.hostname when upgraded to Zod v4
+    z.string(),
+  ),
+  redirect: z.boolean(),
+  antivirus: z.nullable(z.object({
+    maxFileSize: z.number(),
+  })),
+  websocket: z.boolean(),
+  ipWhiteList: z.array(z.string().cidr()),
+  sslOutgoing: z.boolean(),
+})
 export type ServiceChainDetails = Zod.infer<typeof ServiceChainDetailsSchema>
-
-export type CleanedServiceChain = Zod.infer<typeof CleanedServiceChainSchema>
