@@ -1,7 +1,15 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ServiceChainDetails } from '@cpn-console/shared'
-import { serviceChainContract } from '@cpn-console/shared'
+import type { ServiceChain, ServiceChainDetails } from '@cpn-console/shared'
+import {
+  ServiceChainDetailsSchema,
+  ServiceChainSchemaList,
+  serviceChainContract,
+  serviceChainEnvironmentEnum,
+  serviceChainLocationEnum,
+  serviceChainNetworkEnum,
+  serviceChainStateEnum,
+} from '@cpn-console/shared'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
 import { getUserMockInfos } from '../../utils/mocks.js'
@@ -14,6 +22,8 @@ vi.mock(
 const authUserMock = vi.spyOn(utilsController, 'authUser')
 const businessListMock = vi.spyOn(business, 'listServiceChains')
 const businessGetDetailsMock = vi.spyOn(business, 'getServiceChainDetails')
+const businessRetryMock = vi.spyOn(business, 'retryServiceChain')
+const businessValidateMock = vi.spyOn(business, 'validateServiceChain')
 
 describe('test ServiceChainContract', () => {
   beforeEach(() => {
@@ -36,10 +46,19 @@ describe('test ServiceChainContract', () => {
     })
     it('as admin', async () => {
       const user = getUserMockInfos(true)
+      const serviceChainList = faker.helpers.multiple<ServiceChain>(() => ({
+        id: faker.string.uuid(),
+        state: faker.helpers.arrayElement(serviceChainStateEnum),
+        commonName: `${faker.string.alpha(3)}.${faker.string.alpha(3)}.minint.fr`,
+        pai: faker.string.alpha(3).toUpperCase(),
+        network: faker.helpers.arrayElement(serviceChainNetworkEnum),
+        createdAt: faker.date.recent(),
+        updatedAt: faker.date.recent(),
+      }))
 
       authUserMock.mockResolvedValueOnce(user)
 
-      businessListMock.mockResolvedValueOnce([])
+      businessListMock.mockResolvedValueOnce(serviceChainList)
       const response = await app
         .inject()
         .get(serviceChainContract.listServiceChains.path)
@@ -47,59 +66,64 @@ describe('test ServiceChainContract', () => {
 
       expect(businessListMock).toHaveBeenCalledWith()
 
-      expect(response.json()).toStrictEqual([])
+      expect(ServiceChainSchemaList.parse(response.json())).toStrictEqual(
+        serviceChainList,
+      )
       expect(response.statusCode).toEqual(200)
     })
   })
 
   describe('getServiceChainDetails', () => {
     it('should return serviceChain details', async () => {
-      const serviceChain: ServiceChainDetails = {
+      const serviceChainDetails: ServiceChainDetails = {
         id: faker.string.uuid(),
-        state: faker.string.alpha(),
-        success: faker.datatype.boolean(),
-        validation_id: faker.string.uuid(),
-        validated_by: faker.string.uuid(),
-        version: faker.string.alpha(),
-        pai: faker.string.alpha(),
-        ref: faker.string.alpha(),
-        location: faker.string.alpha(),
+        state: faker.helpers.arrayElement(serviceChainStateEnum),
+        commonName: `${faker.string.alpha(3)}.${faker.string.alpha(3)}.minint.fr`,
+        pai: faker.string.alpha(3).toUpperCase(),
+        network: faker.helpers.arrayElement(serviceChainNetworkEnum),
+        createdAt: faker.date.recent(),
+        updatedAt: faker.date.recent(),
+        validationId: faker.string.uuid(),
+        validatedBy: faker.string.uuid(),
+        ref: faker.string.uuid(),
+        location: faker.helpers.arrayElement(serviceChainLocationEnum),
         targetAddress: faker.internet.ipv4(),
-        PAI: faker.string.alpha(),
         projectId: faker.string.uuid(),
-        env: faker.string.alpha(),
-        network: faker.string.alpha(),
-        commonName: faker.string.alpha(),
+        env: faker.helpers.arrayElement(serviceChainEnvironmentEnum),
         subjectAlternativeName: faker.helpers.uniqueArray(
           faker.internet.domainName,
           3,
         ),
         redirect: faker.datatype.boolean(),
-        antivirus: faker.datatype.boolean(),
-        maxFileSize: faker.number.int(),
+        antivirus:
+          faker.helpers.maybe(() => ({
+            maxFileSize: faker.number.int(),
+          })) || null, // undefined is not wanted here
         websocket: faker.datatype.boolean(),
-        ipWhiteList: faker.helpers.uniqueArray(faker.internet.ipv4, 5),
+        ipWhiteList: faker.helpers
+          .uniqueArray(faker.internet.ipv4, 5)
+          .map(e => `${e}/32`), // We want a CIDR here
         sslOutgoing: faker.datatype.boolean(),
-        createat: faker.date.recent().toString(),
-        updateat: faker.date.recent().toString(),
       }
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessGetDetailsMock.mockResolvedValueOnce(serviceChain)
+      businessGetDetailsMock.mockResolvedValueOnce(serviceChainDetails)
       const response = await app
         .inject()
         .get(
           serviceChainContract.getServiceChainDetails.path.replace(
             ':serviceChainId',
-            serviceChain.id,
+            serviceChainDetails.id,
           ),
         )
         .end()
 
-      expect(businessGetDetailsMock).toHaveBeenCalledTimes(1)
-      expect(response.json()).toEqual(serviceChain)
+      expect(ServiceChainDetailsSchema.parse(response.json())).toEqual(
+        serviceChainDetails,
+      )
       expect(response.statusCode).toEqual(200)
+      expect(businessGetDetailsMock).toHaveBeenCalledTimes(1)
     })
     it('should return 403 if not admin', async () => {
       const user = getUserMockInfos(false)
@@ -115,7 +139,91 @@ describe('test ServiceChainContract', () => {
         )
         .end()
 
+      expect(response.statusCode).toEqual(403)
       expect(businessGetDetailsMock).toHaveBeenCalledTimes(0)
+    })
+  })
+
+  describe('retryServiceChain', () => {
+    it('should return 204', async () => {
+      const user = getUserMockInfos(true)
+      authUserMock.mockResolvedValueOnce(user)
+
+      businessRetryMock.mockResolvedValueOnce({
+        status: 204,
+        body: undefined,
+      })
+      const response = await app
+        .inject()
+        .post(
+          serviceChainContract.retryServiceChain.path.replace(
+            ':serviceChainId',
+            faker.string.uuid(),
+          ),
+        )
+        .end()
+
+      expect(response.body).toEqual('')
+      expect(businessRetryMock).toHaveBeenCalledTimes(1)
+      expect(response.statusCode).toEqual(204)
+    })
+    it('should return 403 if not admin', async () => {
+      const user = getUserMockInfos(false)
+      authUserMock.mockResolvedValueOnce(user)
+
+      const response = await app
+        .inject()
+        .post(
+          serviceChainContract.retryServiceChain.path.replace(
+            ':serviceChainId',
+            faker.string.uuid(),
+          ),
+        )
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(businessRetryMock).toHaveBeenCalledTimes(0)
+    })
+  })
+
+  describe('validateServiceChain', () => {
+    it('should return 204', async () => {
+      const user = getUserMockInfos(true)
+      authUserMock.mockResolvedValueOnce(user)
+
+      businessValidateMock.mockResolvedValueOnce({
+        status: 204,
+        body: undefined,
+      })
+      const response = await app
+        .inject()
+        .post(
+          serviceChainContract.validateServiceChain.path.replace(
+            ':validationId',
+            faker.string.uuid(),
+          ),
+        )
+        .end()
+
+      expect(businessValidateMock).toHaveBeenCalledTimes(1)
+      expect(response.body).toEqual('')
+      expect(response.statusCode).toEqual(204)
+    })
+    it('should return 403 if not admin', async () => {
+      const user = getUserMockInfos(false)
+      authUserMock.mockResolvedValueOnce(user)
+
+      const response = await app
+        .inject()
+        .post(
+          serviceChainContract.validateServiceChain.path.replace(
+            ':validationId',
+            faker.string.uuid(),
+          ),
+        )
+        .end()
+
+      expect(businessValidateMock).toHaveBeenCalledTimes(0)
       expect(response.statusCode).toEqual(403)
     })
   })

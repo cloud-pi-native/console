@@ -1,4 +1,8 @@
-import type { ServiceChain } from '@cpn-console/shared'
+import {
+  ServiceChainDetailsSchema,
+  ServiceChainListSchema,
+  type ServiceChain,
+} from '@cpn-console/shared'
 import axios from 'axios'
 
 const openCDSEnvVar = 'OPENCDS_URL'
@@ -14,65 +18,34 @@ function getOpenCDSBaseURL() {
 
 export async function listServiceChains() {
   if (opencdsURL) {
-    const response = await axios.get(`${getOpenCDSBaseURL()}/requests`)
-    return response.data.map(
-      (e: any) =>
-        ({
-          id: e.id,
-          state: e.state,
-          success: e.success,
-          validation_id: e.validation_id,
-          validated_by: e.validated_by,
-          version: e.version,
-          pai: e.pai,
-          ref: e.ref,
-          ...e.payload,
-          createat: e.createat,
-          updateat: e.updateat,
-        }) as ServiceChain,
+    return ServiceChainListSchema.parse(
+      (await axios.get(`${getOpenCDSBaseURL()}/requests`)).data,
     )
   }
   throw new Error(openCDSDisabledErrorMessage)
 }
 
-export async function getServiceChainById(id: ServiceChain['id']) {
+export async function getServiceChainDetails(
+  serviceChainId: ServiceChain['id'],
+) {
   if (opencdsURL) {
-    const response = await axios.get(`${getOpenCDSBaseURL()}/requests/${id}`)
-    const e = response.data
-    return {
-      id: e.id,
-      state: e.state,
-      success: e.success,
-      validation_id: e.validation_id,
-      validated_by: e.validated_by,
-      version: e.version,
-      pai: e.pai,
-      ref: e.ref,
-      ...e.payload,
-      createat: e.createat,
-      updateat: e.updateat,
-    } as ServiceChain
+    return ServiceChainDetailsSchema.parse((await axios.get(`${getOpenCDSBaseURL()}/requests/${serviceChainId}`)).data)
   }
   throw new Error(openCDSDisabledErrorMessage)
 }
 
-export async function getServiceChainDetails(id: ServiceChain['id']) {
+export async function retryServiceChain(serviceChainId: ServiceChain['id']) {
   if (opencdsURL) {
-    const response = await axios.get(`${getOpenCDSBaseURL()}/requests/${id}`)
-    const e = response.data
-    return {
-      id: e.id,
-      state: e.state,
-      success: e.success,
-      validation_id: e.validation_id,
-      validated_by: e.validated_by,
-      version: e.version,
-      pai: e.pai,
-      ref: e.ref,
-      ...e.payload,
-      createat: e.createat,
-      updateat: e.updateat,
-    } as ServiceChain
+    return await axios.post(
+      `${getOpenCDSBaseURL()}/requests/${serviceChainId}/retry`,
+    )
+  }
+  throw new Error(openCDSDisabledErrorMessage)
+}
+
+export async function validateServiceChain(validationId: string) {
+  if (opencdsURL) {
+    return await axios.post(`${getOpenCDSBaseURL()}/validate/${validationId}`)
   }
   throw new Error(openCDSDisabledErrorMessage)
 }
