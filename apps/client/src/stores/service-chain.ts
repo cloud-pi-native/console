@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { resourceListToDict, type ServiceChainDetails, type ServiceChainList } from '@cpn-console/shared'
+import { resourceListToDict, ServiceChainDetailsSchema, type ServiceChainDetails, type ServiceChainList } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useServiceChainStore = defineStore('serviceChain', () => {
@@ -15,7 +15,7 @@ export const useServiceChainStore = defineStore('serviceChain', () => {
 
   const getServiceChainDetails = async (serviceChainId: ServiceChainDetails['id']) =>
     apiClient.ServiceChains.getServiceChainDetails({ params: { serviceChainId } })
-      .then(response => extractData(response, 200))
+      .then(response => ServiceChainDetailsSchema.parse(extractData(response, 200)))
 
   return {
     serviceChains,
