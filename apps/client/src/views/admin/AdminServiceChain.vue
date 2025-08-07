@@ -4,19 +4,17 @@ import { useServiceChainStore } from '@/stores/service-chain.js'
 import type { ServiceChain, ServiceChainDetails } from '@cpn-console/shared'
 
 const props = defineProps<{
-  id: ServiceChain['id'] | 'create'
+  id: ServiceChain['id']
 }>()
 
 const isLoading = ref(true)
 const serviceChainStore = useServiceChainStore()
-const serviceChain = ref<ServiceChainDetails>()
+const serviceChainDetails = ref<ServiceChainDetails>()
 
 onMounted(async () => {
-  if (props.id !== 'create') {
-    serviceChain.value = await serviceChainStore.getServiceChainDetails(
-      props.id,
-    )
-  }
+  serviceChainDetails.value = await serviceChainStore.getServiceChainDetails(
+    props.id,
+  )
   isLoading.value = false
 })
 
@@ -27,6 +25,6 @@ function goBack() {
 
 <template>
   <template v-if="!isLoading">
-    <ServiceChainForm :service-chain="serviceChain" @cancel="goBack" />
+    <ServiceChainForm :service-chain-details="serviceChainDetails" @cancel="goBack" />
   </template>
 </template>
