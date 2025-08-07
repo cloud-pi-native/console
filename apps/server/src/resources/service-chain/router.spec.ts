@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ServiceChain, ServiceChainDetails } from '@cpn-console/shared'
 import {
   ServiceChainDetailsSchema,
-  ServiceChainSchemaList,
+  ServiceChainListSchema,
   serviceChainContract,
   serviceChainEnvironmentEnum,
   serviceChainLocationEnum,
@@ -66,7 +66,7 @@ describe('test ServiceChainContract', () => {
 
       expect(businessListMock).toHaveBeenCalledWith()
 
-      expect(ServiceChainSchemaList.parse(response.json())).toStrictEqual(
+      expect(ServiceChainListSchema.parse(response.json())).toStrictEqual(
         serviceChainList,
       )
       expect(response.statusCode).toEqual(200)
