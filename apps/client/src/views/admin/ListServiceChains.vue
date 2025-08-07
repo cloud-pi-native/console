@@ -14,11 +14,11 @@ const isLoading = ref(true)
 const inputSearchText = ref('')
 
 const serviceChainsFiltered = computed(() => serviceChainStore.serviceChains.filter(serviceChain => serviceChain.commonName.includes(inputSearchText.value)))
-const title = 'Liste des Chaînes de Service'
+const title = 'Liste des chaînes de Service'
 
 onMounted(async () => {
   await Promise.all([
-    serviceChainStore.getServiceChains(),
+    serviceChainStore.getServiceChainsList(),
   ])
   isLoading.value = false
 })
@@ -30,7 +30,7 @@ function clickServiceChain(serviceChain: ServiceChain) {
 
 <template>
   <div
-    class="flex justify-between gap-5 w-full items-end mb-5"
+    class="flex justify-between gap-5 w-max items-end mb-5"
   >
     <div
       class="flex gap-5 w-max items-end"
@@ -39,9 +39,10 @@ function clickServiceChain(serviceChain: ServiceChain) {
         v-model="inputSearchText"
         data-testid="projectsSearchInput"
         common-name-visible
-        placeholder="Recherche textuelle"
+        placeholder="Recherche textuelle (Common Name)"
         common-name="Recherche"
         class="mb-0"
+        style="field-sizing: content;"
       />
     </div>
   </div>
@@ -52,9 +53,12 @@ function clickServiceChain(serviceChain: ServiceChain) {
   >
     <template #header>
       <tr>
-        <td>Nom commun</td>
+        <td>CN (Common Name)</td>
         <td>PAI</td>
+        <td>Réseau</td>
         <td>État</td>
+        <td>Créé le</td>
+        <td>Mis à jour le</td>
       </tr>
     </template>
     <tr
@@ -70,12 +74,15 @@ function clickServiceChain(serviceChain: ServiceChain) {
       :key="serviceChain.id"
       :data-testid="`serviceChainTr-${serviceChain.commonName}`"
       class="cursor-pointer relative"
-      :title="`Voir le tableau de bord du projet ${serviceChain.commonName}`"
+      :title="`Voir les détails de la chaîne de service ${serviceChain.commonName}`"
       @click.stop="() => clickServiceChain(serviceChain)"
     >
       <td>{{ serviceChain.commonName }}</td>
       <td>{{ serviceChain.pai }}</td>
+      <td>{{ serviceChain.network }}</td>
       <td>{{ serviceChain.state }}</td>
+      <td>{{ (new Date(serviceChain.createdAt)).toLocaleString() }}</td>
+      <td>{{ (new Date(serviceChain.updatedAt)).toLocaleString() }}</td>
     </tr>
   </DsfrTable>
 </template>
