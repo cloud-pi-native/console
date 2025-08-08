@@ -95,4 +95,7 @@ async function deleteCluster(clusterId: Cluster['id']) {
       @cancel="goBack"
     />
   </template>
+  <template v-else>
+    <Loader />
+  </template>
 </template>
