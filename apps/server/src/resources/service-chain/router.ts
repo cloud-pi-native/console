@@ -5,6 +5,7 @@ import {
   getServiceChainDetails as getServiceChainDetailsBusiness,
   retryServiceChain as retryServiceChainBusiness,
   validateServiceChain as validateServiceChainBusiness,
+  getServiceChainFlows as getServiceChainFlowsBusiness,
 } from './business.js'
 import '@/types/index.js'
 import { serverInstance } from '@/app.js'
@@ -69,5 +70,21 @@ export function serviceChainRouter() {
         body: null,
       }
     },
+
+    getServiceChainFlows: async ({ params, request: req }) => {
+      const perms = await authUser(req)
+      if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+        return new Forbidden403()
+
+      const serviceChainId = params.serviceChainId
+      const serviceChainFlows
+        = await getServiceChainFlowsBusiness(serviceChainId)
+
+      return {
+        status: 200,
+        body: serviceChainFlows,
+      }
+    },
+
   })
 }

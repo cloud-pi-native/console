@@ -6,6 +6,7 @@ withDefaults(defineProps<{
 
 <template>
   <div
+    data-testid="cpin-loader"
     :class="`flex items-center justify-center ${cover ? 'absolute top-0 bottom-0 left-0 right-0 bg-[#5555] bg-blend-luminosity' : ''}`"
   >
     <span class="text-xl">

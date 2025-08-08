@@ -1,11 +1,13 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ServiceChain, ServiceChainDetails } from '@cpn-console/shared'
+import type { ServiceChain, ServiceChainDetails, ServiceChainFlows } from '@cpn-console/shared'
 import {
   ServiceChainDetailsSchema,
+  ServiceChainFlowsSchema,
   ServiceChainListSchema,
   serviceChainContract,
   serviceChainEnvironmentEnum,
+  serviceChainFlowStateEnum,
   serviceChainLocationEnum,
   serviceChainNetworkEnum,
   serviceChainStateEnum,
@@ -20,10 +22,11 @@ vi.mock(
   (await import('../../utils/mocks.js')).mockSessionPlugin,
 )
 const authUserMock = vi.spyOn(utilsController, 'authUser')
-const businessListMock = vi.spyOn(business, 'listServiceChains')
-const businessGetDetailsMock = vi.spyOn(business, 'getServiceChainDetails')
-const businessRetryMock = vi.spyOn(business, 'retryServiceChain')
-const businessValidateMock = vi.spyOn(business, 'validateServiceChain')
+const businessListServiceChainsMock = vi.spyOn(business, 'listServiceChains')
+const businessGetServiceChainDetailsMock = vi.spyOn(business, 'getServiceChainDetails')
+const businessRetryServiceChainMock = vi.spyOn(business, 'retryServiceChain')
+const businessValidateServiceChainMock = vi.spyOn(business, 'validateServiceChain')
+const businessGetServiceChainsFlowsMock = vi.spyOn(business, 'getServiceChainFlows')
 
 describe('test ServiceChainContract', () => {
   beforeEach(() => {
@@ -35,7 +38,7 @@ describe('test ServiceChainContract', () => {
 
       authUserMock.mockResolvedValueOnce(user)
 
-      businessListMock.mockResolvedValueOnce([])
+      businessListServiceChainsMock.mockResolvedValueOnce([])
       const response = await app
         .inject()
         .get(serviceChainContract.listServiceChains.path)
@@ -58,13 +61,13 @@ describe('test ServiceChainContract', () => {
 
       authUserMock.mockResolvedValueOnce(user)
 
-      businessListMock.mockResolvedValueOnce(serviceChainList)
+      businessListServiceChainsMock.mockResolvedValueOnce(serviceChainList)
       const response = await app
         .inject()
         .get(serviceChainContract.listServiceChains.path)
         .end()
 
-      expect(businessListMock).toHaveBeenCalledWith()
+      expect(businessListServiceChainsMock).toHaveBeenCalledWith()
 
       expect(ServiceChainListSchema.parse(response.json())).toStrictEqual(
         serviceChainList,
@@ -108,7 +111,7 @@ describe('test ServiceChainContract', () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessGetDetailsMock.mockResolvedValueOnce(serviceChainDetails)
+      businessGetServiceChainDetailsMock.mockResolvedValueOnce(serviceChainDetails)
       const response = await app
         .inject()
         .get(
@@ -123,7 +126,7 @@ describe('test ServiceChainContract', () => {
         serviceChainDetails,
       )
       expect(response.statusCode).toEqual(200)
-      expect(businessGetDetailsMock).toHaveBeenCalledTimes(1)
+      expect(businessGetServiceChainDetailsMock).toHaveBeenCalledTimes(1)
     })
     it('should return 403 if not admin', async () => {
       const user = getUserMockInfos(false)
@@ -140,7 +143,7 @@ describe('test ServiceChainContract', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(businessGetDetailsMock).toHaveBeenCalledTimes(0)
+      expect(businessGetServiceChainDetailsMock).toHaveBeenCalledTimes(0)
     })
   })
 
@@ -149,7 +152,7 @@ describe('test ServiceChainContract', () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessRetryMock.mockResolvedValueOnce({
+      businessRetryServiceChainMock.mockResolvedValueOnce({
         status: 204,
         body: undefined,
       })
@@ -164,7 +167,7 @@ describe('test ServiceChainContract', () => {
         .end()
 
       expect(response.body).toEqual('')
-      expect(businessRetryMock).toHaveBeenCalledTimes(1)
+      expect(businessRetryServiceChainMock).toHaveBeenCalledTimes(1)
       expect(response.statusCode).toEqual(204)
     })
     it('should return 403 if not admin', async () => {
@@ -182,7 +185,7 @@ describe('test ServiceChainContract', () => {
         .end()
 
       expect(response.statusCode).toEqual(403)
-      expect(businessRetryMock).toHaveBeenCalledTimes(0)
+      expect(businessRetryServiceChainMock).toHaveBeenCalledTimes(0)
     })
   })
 
@@ -191,7 +194,7 @@ describe('test ServiceChainContract', () => {
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessValidateMock.mockResolvedValueOnce({
+      businessValidateServiceChainMock.mockResolvedValueOnce({
         status: 204,
         body: undefined,
       })
@@ -205,7 +208,7 @@ describe('test ServiceChainContract', () => {
         )
         .end()
 
-      expect(businessValidateMock).toHaveBeenCalledTimes(1)
+      expect(businessValidateServiceChainMock).toHaveBeenCalledTimes(1)
       expect(response.body).toEqual('')
       expect(response.statusCode).toEqual(204)
     })
@@ -223,8 +226,81 @@ describe('test ServiceChainContract', () => {
         )
         .end()
 
-      expect(businessValidateMock).toHaveBeenCalledTimes(0)
+      expect(businessValidateServiceChainMock).toHaveBeenCalledTimes(0)
       expect(response.statusCode).toEqual(403)
+    })
+  })
+
+  describe('getServiceChainFlows', () => {
+    it('should return serviceChain flows', async () => {
+      const serviceChainFlows: ServiceChainFlows = {
+        reserve_ip: {
+          state: faker.helpers.arrayElement(serviceChainFlowStateEnum),
+          input: '{ "foo": 0, "bar": true, "qux": "test" }',
+          output: '{ "foo": 0, "bar": true, "qux": "test" }',
+          updatedAt: faker.date.recent(),
+        },
+        create_cert: {
+          state: faker.helpers.arrayElement(serviceChainFlowStateEnum),
+          input: '{ "foo": 0, "bar": true, "qux": "test" }',
+          output: '{ "foo": 0, "bar": true, "qux": "test" }',
+          updatedAt: faker.date.recent(),
+        },
+        call_exec: {
+          state: faker.helpers.arrayElement(serviceChainFlowStateEnum),
+          input: '{ "foo": 0, "bar": true, "qux": "test" }',
+          output: '{ "foo": 0, "bar": true, "qux": "test" }',
+          updatedAt: faker.date.recent(),
+        },
+        activate_ip: {
+          state: faker.helpers.arrayElement(serviceChainFlowStateEnum),
+          input: '{ "foo": 0, "bar": true, "qux": "test" }',
+          output: '{ "foo": 0, "bar": true, "qux": "test" }',
+          updatedAt: faker.date.recent(),
+        },
+        dns_request: {
+          state: faker.helpers.arrayElement(serviceChainFlowStateEnum),
+          input: '{ "foo": 0, "bar": true, "qux": "test" }',
+          output: '{ "foo": 0, "bar": true, "qux": "test" }',
+          updatedAt: faker.date.recent(),
+        },
+      }
+      const user = getUserMockInfos(true)
+      authUserMock.mockResolvedValueOnce(user)
+
+      businessGetServiceChainsFlowsMock.mockResolvedValueOnce(serviceChainFlows)
+      const response = await app
+        .inject()
+        .get(
+          serviceChainContract.getServiceChainFlows.path.replace(
+            ':serviceChainId',
+            faker.string.uuid(),
+          ),
+        )
+        .end()
+
+      expect(ServiceChainFlowsSchema.parse(response.json())).toEqual(
+        serviceChainFlows,
+      )
+      expect(response.statusCode).toEqual(200)
+      expect(businessGetServiceChainsFlowsMock).toHaveBeenCalledTimes(1)
+    })
+    it('should return 403 if not admin', async () => {
+      const user = getUserMockInfos(false)
+      authUserMock.mockResolvedValueOnce(user)
+
+      const response = await app
+        .inject()
+        .get(
+          serviceChainContract.getServiceChainFlows.path.replace(
+            ':serviceChainId',
+            faker.string.uuid(),
+          ),
+        )
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+      expect(businessGetServiceChainsFlowsMock).toHaveBeenCalledTimes(0)
     })
   })
 })
