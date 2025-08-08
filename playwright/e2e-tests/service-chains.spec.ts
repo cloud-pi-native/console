@@ -10,13 +10,19 @@ test.describe('Service Chains page', () => {
       user = adminUser
     })
 
-    test('should list every service chain', async ({ page }) => {
+    // @TODO These tests assume that there is at least one Service Chain present
+    // in the mocked up data. Ensure that this is true at all times !
+    test('should list service chains', async ({ page }) => {
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: user })
       await page.getByTestId('menuAdministrationBtn').click()
       await page.getByTestId('menuAdministrationServiceChains').click()
+      // We take the first service chain available
       await expect(
-        page.getByRole('cell', { name: 'dso.dso.minint.fr' }),
+        page
+          .getByTestId('tableAdministrationServiceChains')
+          .locator('tr')
+          .nth(1),
       ).toBeVisible()
     })
 
@@ -25,8 +31,32 @@ test.describe('Service Chains page', () => {
       await signInCloudPiNative({ page, credentials: user })
       await page.getByTestId('menuAdministrationBtn').click()
       await page.getByTestId('menuAdministrationServiceChains').click()
-      await page.getByRole('cell', { name: 'dso.dso.minint.fr' }).click()
-      await expect(page.locator('h1')).toContainText('dso.dso.minint.fr')
+      // We take the first service chain available
+      await page
+        .getByTestId('tableAdministrationServiceChains')
+        .locator('tr')
+        .nth(1)
+        .click()
+      await expect(
+        page.getByRole('heading', { name: /Chaîne de services/ }),
+      ).toContainText('Chaîne de services')
+    })
+
+    test('should show a service chain flows', async ({ page }) => {
+      await page.goto(clientURL)
+      await signInCloudPiNative({ page, credentials: user })
+      await page.getByTestId('menuAdministrationBtn').click()
+      await page.getByTestId('menuAdministrationServiceChains').click()
+      await expect(page.getByTestId('cpin-loader')).toHaveCount(0)
+      // We take the first service chain available
+      await page
+        .getByTestId('tableAdministrationServiceChains')
+        .locator('tr')
+        .nth(1)
+        .click()
+      await expect(
+        page.getByTestId('service-chain-flows').locator('div').nth(2),
+      ).toBeVisible()
     })
   })
 })

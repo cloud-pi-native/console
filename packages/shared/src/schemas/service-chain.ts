@@ -55,3 +55,48 @@ export const ServiceChainDetailsSchema = ServiceChainSchema.extend({
   sslOutgoing: z.boolean(),
 })
 export type ServiceChainDetails = Zod.infer<typeof ServiceChainDetailsSchema>
+
+// JSON as String validation through Zod. Instead of adding yet-another-dependency,
+// I merely copied the code as-is.
+// Many thanks to JacobWeisenburger/zod_utilz !
+//
+// Usage: use stringToJSON() as you would use z.string() to validate strings that must
+// contain JSON stringified content
+const literalSchema = z.union([
+  z.string(),
+  z.number(),
+  z.boolean(),
+  z.null(),
+])
+type Literal = z.infer<typeof literalSchema>
+type Json = Literal | { [ key: string ]: Json } | Json[]
+const jsonSchema: z.ZodType<Json> = z.lazy(() =>
+  z.union([
+    literalSchema,
+    z.array(jsonSchema),
+    z.record(jsonSchema),
+  ]),
+)
+export const json = () => jsonSchema
+
+export const serviceChainFlowStateEnum = ['opened', 'pending', 'success', 'failed'] as const
+export const ServiceChainFlowStateZodEnum = z.enum(serviceChainFlowStateEnum)
+export type ServiceChainFlowState = Zod.infer<typeof ServiceChainFlowStateZodEnum>
+
+export const ServiceChainFlowDetailsSchema = z.object({
+  state: ServiceChainFlowStateZodEnum,
+  input: json(),
+  output: json(),
+  updatedAt: z.coerce.date(),
+})
+export type ServiceChainFlowDetails = Zod.infer<typeof ServiceChainFlowDetailsSchema>
+
+export const ServiceChainFlowsSchema = z.object({
+  reserve_ip: ServiceChainFlowDetailsSchema,
+  create_cert: ServiceChainFlowDetailsSchema,
+  call_exec: ServiceChainFlowDetailsSchema,
+  activate_ip: ServiceChainFlowDetailsSchema,
+  dns_request: ServiceChainFlowDetailsSchema,
+})
+// Flows is on object, so always used in plural sense
+export type ServiceChainFlows = Zod.infer<typeof ServiceChainFlowsSchema>

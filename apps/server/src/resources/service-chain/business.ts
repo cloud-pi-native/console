@@ -3,6 +3,7 @@ import {
   listServiceChains as listServiceChainsQuery,
   retryServiceChain as retryServiceChainQuery,
   validateServiceChain as validateServiceChainQuery,
+  getServiceChainFlows as getServiceChainFlowsQuery,
 } from '@/resources/queries-index.js'
 
 export async function listServiceChains() {
@@ -19,4 +20,8 @@ export async function retryServiceChain(serviceChainId: string) {
 
 export async function validateServiceChain(validationId: string) {
   return validateServiceChainQuery(validationId)
+}
+
+export async function getServiceChainFlows(serviceChainId: string) {
+  return getServiceChainFlowsQuery(serviceChainId)
 }

@@ -1,6 +1,11 @@
-import type { ServiceChain, ServiceChainDetails } from '@cpn-console/shared'
+import type {
+  ServiceChain,
+  ServiceChainDetails,
+  ServiceChainFlows,
+} from '@cpn-console/shared'
 import {
   serviceChainEnvironmentEnum,
+  serviceChainFlowStateEnum,
   serviceChainLocationEnum,
   serviceChainNetworkEnum,
   serviceChainStateEnum,
@@ -15,12 +20,14 @@ import {
   listServiceChains,
   retryServiceChain,
   validateServiceChain,
+  getServiceChainFlows,
 } from './business.ts'
 
 vi.mock('axios')
 
 let serviceChain: ServiceChain
 let serviceChainDetails: ServiceChainDetails
+let serviceChainFlows: ServiceChainFlows
 
 describe('test ServiceChain business logic', () => {
   beforeEach(() => {
@@ -33,6 +40,7 @@ describe('test ServiceChain business logic', () => {
       createdAt: faker.date.recent(),
       updatedAt: faker.date.recent(),
     }
+
     serviceChainDetails = {
       ...serviceChain,
       validationId: faker.string.uuid(),
@@ -56,6 +64,39 @@ describe('test ServiceChain business logic', () => {
         .uniqueArray(faker.internet.ipv4, 5)
         .map(e => `${e}/32`), // We want a CIDR here
       sslOutgoing: faker.datatype.boolean(),
+    }
+
+    serviceChainFlows = {
+      reserve_ip: {
+        state: faker.helpers.arrayElement(serviceChainFlowStateEnum),
+        input: '{ "foo": 0, "bar": true, "qux": "test" }',
+        output: '{ "foo": 0, "bar": true, "qux": "test" }',
+        updatedAt: faker.date.recent(),
+      },
+      create_cert: {
+        state: faker.helpers.arrayElement(serviceChainFlowStateEnum),
+        input: '{ "foo": 0, "bar": true, "qux": "test" }',
+        output: '{ "foo": 0, "bar": true, "qux": "test" }',
+        updatedAt: faker.date.recent(),
+      },
+      call_exec: {
+        state: faker.helpers.arrayElement(serviceChainFlowStateEnum),
+        input: '{ "foo": 0, "bar": true, "qux": "test" }',
+        output: '{ "foo": 0, "bar": true, "qux": "test" }',
+        updatedAt: faker.date.recent(),
+      },
+      activate_ip: {
+        state: faker.helpers.arrayElement(serviceChainFlowStateEnum),
+        input: '{ "foo": 0, "bar": true, "qux": "test" }',
+        output: '{ "foo": 0, "bar": true, "qux": "test" }',
+        updatedAt: faker.date.recent(),
+      },
+      dns_request: {
+        state: faker.helpers.arrayElement(serviceChainFlowStateEnum),
+        input: '{ "foo": 0, "bar": true, "qux": "test" }',
+        output: '{ "foo": 0, "bar": true, "qux": "test" }',
+        updatedAt: faker.date.recent(),
+      },
     }
   })
 
@@ -100,6 +141,16 @@ describe('test ServiceChain business logic', () => {
       await validateServiceChain(faker.string.uuid())
 
       expect(axios.post).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('getServiceChainFlows', () => {
+    it('should return a service chain flows', async () => {
+      (axios.get as Mock).mockResolvedValue({ data: serviceChainFlows })
+
+      await getServiceChainFlows(faker.string.uuid())
+
+      expect(axios.get).toHaveBeenCalledTimes(1)
     })
   })
 })
