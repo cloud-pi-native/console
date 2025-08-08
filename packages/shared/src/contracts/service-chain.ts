@@ -3,6 +3,7 @@ import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   ServiceChainSchema,
   ServiceChainDetailsSchema,
+  ServiceChainFlowsSchema,
 } from '../schemas/index.js'
 import { EmptySchema, ErrorSchema, baseHeaders } from './_utils.js'
 import { ContractNoBody } from '@ts-rest/core'
@@ -75,6 +76,21 @@ export const serviceChainContract = contractInstance.router(
         500: ErrorSchema,
       },
     },
+
+    getServiceChainFlows: {
+      method: 'GET',
+      path: `/:serviceChainId/flows`,
+      summary: 'Get Service Chain flow details',
+      description: 'Retrieved flow details of a Service Chain.',
+      pathParams: ServiceChainParams,
+      responses: {
+        200: ServiceChainFlowsSchema,
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+
   },
   {
     baseHeaders,

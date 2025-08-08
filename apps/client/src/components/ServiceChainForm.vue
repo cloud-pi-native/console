@@ -1,16 +1,21 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
-import type { ServiceChainDetails } from '@cpn-console/shared'
+import type {
+  ServiceChainDetails,
+  ServiceChainFlows,
+} from '@cpn-console/shared'
 import {
   DsfrBadge,
   DsfrFieldset,
   DsfrInputGroup,
+  DsfrStepper,
   DsfrToggleSwitch,
 } from '@gouvminint/vue-dsfr'
 
 const props = withDefaults(
   defineProps<{
     serviceChainDetails?: ServiceChainDetails
+    serviceChainFlows?: ServiceChainFlows
   }>(),
   {
     serviceChainDetails: () => ({
@@ -35,6 +40,39 @@ const props = withDefaults(
       ipWhiteList: [],
       sslOutgoing: false,
     }),
+
+    serviceChainFlows: () => ({
+      reserve_ip: {
+        state: 'failed',
+        input: '',
+        output: '',
+        updatedAt: new Date(),
+      },
+      create_cert: {
+        state: 'failed',
+        input: '',
+        output: '',
+        updatedAt: new Date(),
+      },
+      call_exec: {
+        state: 'failed',
+        input: '',
+        output: '',
+        updatedAt: new Date(),
+      },
+      activate_ip: {
+        state: 'failed',
+        input: '',
+        output: '',
+        updatedAt: new Date(),
+      },
+      dns_request: {
+        state: 'failed',
+        input: '',
+        output: '',
+        updatedAt: new Date(),
+      },
+    }),
   },
 )
 
@@ -42,10 +80,13 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
-const localServiceChain = ref<ServiceChainDetails>(props.serviceChainDetails)
+const localServiceChainDetails = ref<ServiceChainDetails>(
+  props.serviceChainDetails,
+)
+const localServiceChainFlows = ref<ServiceChainFlows>(props.serviceChainFlows)
 
 const badgeStatus = computed(() => {
-  switch (localServiceChain.value.state) {
+  switch (localServiceChainDetails.value.state) {
     case 'success':
       return 'success'
     case 'opened':
@@ -57,7 +98,7 @@ const badgeStatus = computed(() => {
   }
 })
 const state = computed(() => {
-  switch (localServiceChain.value.state) {
+  switch (localServiceChainDetails.value.state) {
     case 'success':
       return 'Succès'
     case 'opened':
@@ -69,25 +110,45 @@ const state = computed(() => {
   }
 })
 const createdAt = computed(() =>
-  localServiceChain.value.createdAt.toISOString().slice(0, 19),
+  localServiceChainDetails.value.createdAt.toISOString().slice(0, 19),
 )
 const updatedAt = computed(() =>
-  localServiceChain.value.updatedAt.toISOString().slice(0, 19),
+  localServiceChainDetails.value.updatedAt.toISOString().slice(0, 19),
 )
 const subjectAlternativeNameList = computed(() =>
-  localServiceChain.value.subjectAlternativeName.join(', '),
+  localServiceChainDetails.value.subjectAlternativeName.join(', '),
 )
 const ipWhiteList = computed(() =>
-  localServiceChain.value.ipWhiteList.join(', '),
+  localServiceChainDetails.value.ipWhiteList.join(', '),
 )
-const antivirus = computed(() => !!localServiceChain.value.antivirus)
+const antivirus = computed(() => !!localServiceChainDetails.value.antivirus)
+
+const flows = [
+  'reserve_ip',
+  'create_cert',
+  'call_exec',
+  'activate_ip',
+  'dns_request',
+] as const
+const localizedFlows = [
+  'Réservation de l\'IP',
+  'Creation du certificat',
+  'Appel de l\'exécutable',
+  'Activation de l\'IP',
+  'Création du DNS',
+]
+const currentFlow = computed(() =>
+  flows.findIndex(
+    flow => localServiceChainFlows.value[flow].state !== 'success',
+  ),
+)
 
 function cancel() {
   emit('cancel')
 }
 
 onBeforeMount(() => {
-  localServiceChain.value = props.serviceChainDetails
+  localServiceChainDetails.value = props.serviceChainDetails
 })
 </script>
 
@@ -104,13 +165,16 @@ onBeforeMount(() => {
       />
     </div>
     <h1 class="fr-h1">
-      {{ `Chaîne de services "${localServiceChain.commonName}"` }}
+      <span class="mr-5">{{
+        `Chaîne de services "${localServiceChainDetails.commonName}"`
+      }}</span>
+      <DsfrBadge data-testid="state" :type="badgeStatus" :label="state" />
     </h1>
 
     <DsfrFieldset legend="Informations sur la chaîne de services">
       <div class="grid-wrapper">
         <DsfrInputGroup
-          v-model="localServiceChain.env"
+          v-model="localServiceChainDetails.env"
           data-testid="env"
           :disabled="false"
           label="Environnement"
@@ -119,25 +183,19 @@ onBeforeMount(() => {
           hint="INT ou PROD"
         />
 
-        <DsfrBadge
-          data-testid="state"
-          :type="badgeStatus"
-          :label="`État de la CdS: ${state}`"
-        />
-
         <DsfrInputGroup
-          v-model="localServiceChain.pai"
+          v-model="localServiceChainDetails.pai"
           data-testid="pai"
           :disabled="false"
-          label="Plan d'Adressage Interne (PAI)"
+          label="Nom du projet (PAI)"
           label-visible
           class="w-full"
           wrapper-class="mr-5"
-          hint="Le PAI défini lors de la création de la chaîne de services"
+          hint="Le PAI (nom de projet) défini lors de la création de la chaîne de services"
         />
 
         <DsfrInputGroup
-          v-model="localServiceChain.network"
+          v-model="localServiceChainDetails.network"
           data-testid="network"
           :disabled="false"
           label="Réseau"
@@ -170,7 +228,7 @@ onBeforeMount(() => {
         />
 
         <DsfrInputGroup
-          v-model="localServiceChain.validationId"
+          v-model="localServiceChainDetails.validationId"
           data-testid="validationId"
           :disabled="false"
           label="ID de validation"
@@ -180,17 +238,17 @@ onBeforeMount(() => {
         />
 
         <DsfrInputGroup
-          v-model="localServiceChain.validatedBy"
+          v-model="localServiceChainDetails.validatedBy"
           data-testid="validatedBy"
           :disabled="false"
-          label="UUID qui a validé"
+          label="Validé par"
           label-visible
           class="w-full mb-5"
-          hint="L'UUID qui a validé la demande de chaîne de services"
+          hint="L'UUID de la personne qui a validé la demande de chaîne de services"
         />
 
         <DsfrInputGroup
-          v-model="localServiceChain.ref"
+          v-model="localServiceChainDetails.ref"
           data-testid="ref"
           :disabled="false"
           label="Chaîne de services référente"
@@ -200,16 +258,16 @@ onBeforeMount(() => {
         />
 
         <DsfrInputGroup
-          v-model="localServiceChain.location"
+          v-model="localServiceChainDetails.location"
           data-testid="location"
           :disabled="false"
-          label="Emplacement"
+          label="Emplacement du datacenter"
           label-visible
           class="w-full mb-5"
-          hint="SIL ou SIR"
+          hint="SIL, SIR, etc."
         />
         <DsfrInputGroup
-          v-model="localServiceChain.targetAddress"
+          v-model="localServiceChainDetails.targetAddress"
           data-testid="targetAddress"
           :disabled="false"
           label="Adresse IP cible"
@@ -218,7 +276,7 @@ onBeforeMount(() => {
         />
 
         <DsfrInputGroup
-          v-model="localServiceChain.projectId"
+          v-model="localServiceChainDetails.projectId"
           data-testid="projectId"
           :disabled="false"
           label="Projet lié"
@@ -227,35 +285,6 @@ onBeforeMount(() => {
           hint="L'UUID du projet lié à cette chaîne de services"
         />
 
-        <DsfrToggleSwitch
-          v-model="localServiceChain.redirect"
-          name="redirect"
-          data-testid="redirect"
-          label="Redirection"
-          label-visible
-          class="mb-5"
-          hint="Indique si une redirection du traffic doit-être effectuée"
-        />
-
-        <DsfrToggleSwitch
-          v-model="localServiceChain.websocket"
-          name="websocket"
-          data-testid="websocket"
-          label="Support de WebSocket"
-          label-visible
-          class="mb-5"
-          hint="Indique si le support de WebSocket doit être activé"
-        />
-
-        <DsfrToggleSwitch
-          v-model="localServiceChain.sslOutgoing"
-          name="sslOutgoing"
-          data-testid="sslOutgoing"
-          label="SSL Sortant"
-          label-visible
-          class="mb-5"
-          hint="Indique si SSL doit être mis en place sur le traffic sortant"
-        />
         <DsfrInputGroup
           v-model="subjectAlternativeNameList"
           data-testid="subjectAlternativeName"
@@ -268,16 +297,46 @@ onBeforeMount(() => {
           hint="Les SANs du certificat"
         />
 
+        <DsfrToggleSwitch
+          v-model="localServiceChainDetails.redirect"
+          name="redirect"
+          data-testid="redirect"
+          label="Redirection"
+          label-visible
+          class="mb-5"
+          hint="Indique si une redirection du traffic doit-être effectuée"
+        />
+
+        <DsfrToggleSwitch
+          v-model="localServiceChainDetails.websocket"
+          name="websocket"
+          data-testid="websocket"
+          label="Support de WebSocket"
+          label-visible
+          class="mb-5"
+          hint="Indique si le support de WebSocket doit être activé"
+        />
+
+        <DsfrToggleSwitch
+          v-model="localServiceChainDetails.sslOutgoing"
+          name="sslOutgoing"
+          data-testid="sslOutgoing"
+          label="SSL Sortant"
+          label-visible
+          class="mb-5"
+          hint="Indique si SSL doit être mis en place sur le traffic sortant"
+        />
+
         <DsfrInputGroup
           v-model="ipWhiteList"
           data-testid="ipWhiteList"
           :disabled="false"
           type="text"
           is-textarea
-          label="Adresses IP Whitelistées"
+          label="Adresses IP autorisées pour la chaîne de services"
           label-visible
           class="w-full mb-5"
-          hint="Les blocks d'adresses CIDR autorisés pour la chaîne de services"
+          hint="Uniquement des blocs CIDRs"
         />
 
         <DsfrToggleSwitch
@@ -290,8 +349,8 @@ onBeforeMount(() => {
         />
 
         <DsfrInputGroup
-          v-if="localServiceChain.antivirus"
-          v-model="localServiceChain.antivirus.maxFileSize"
+          v-if="localServiceChainDetails.antivirus"
+          v-model="localServiceChainDetails.antivirus.maxFileSize"
           data-testid="antivirus-maxFileSize"
           :disabled="false"
           label="Taille de fichier maximal pour l'antivirus"
@@ -300,6 +359,18 @@ onBeforeMount(() => {
           hint="L'antivirus ignorera les fichiers dont la taille dépasse celle spécifiée ici"
         />
       </div>
+    </DsfrFieldset>
+
+    <DsfrFieldset
+      legend="Étapes de création de la chaîne de services"
+      data-testid="service-chain-flows"
+    >
+      <DsfrStepper
+        :steps="localizedFlows"
+        :current-step="currentFlow"
+        class="w-full mb-5"
+        hint="Lorem ipsum"
+      />
     </DsfrFieldset>
   </div>
 </template>

@@ -1,5 +1,6 @@
 import {
   ServiceChainDetailsSchema,
+  ServiceChainFlowsSchema,
   ServiceChainListSchema,
   type ServiceChain,
 } from '@cpn-console/shared'
@@ -46,6 +47,16 @@ export async function retryServiceChain(serviceChainId: ServiceChain['id']) {
 export async function validateServiceChain(validationId: string) {
   if (opencdsURL) {
     return await axios.post(`${getOpenCDSBaseURL()}/validate/${validationId}`)
+  }
+  throw new Error(openCDSDisabledErrorMessage)
+}
+
+export async function getServiceChainFlows(
+  serviceChainId: ServiceChain['id'],
+) {
+  if (opencdsURL) {
+    const response = await axios.get(`${getOpenCDSBaseURL()}/requests/${serviceChainId}/flows`)
+    return ServiceChainFlowsSchema.parse((response).data)
   }
   throw new Error(openCDSDisabledErrorMessage)
 }
