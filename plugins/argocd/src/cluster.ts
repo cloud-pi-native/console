@@ -18,6 +18,7 @@ export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
       server: cluster.cluster.server,
       config: JSON.stringify(convertConfig(cluster)),
     }
+    await vault.upsert()
     await vault.write(clusterData, `clusters/cluster-${cluster.label}/argocd-cluster-secret`)
     return {
       status: {
