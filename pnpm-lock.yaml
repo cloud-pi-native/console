@@ -681,6 +681,9 @@ importers:
       bytes:
         specifier: ^3.1.2
         version: 3.1.2
+      cron-validator:
+        specifier: ^1.4.0
+        version: 1.4.0
     devDependencies:
       '@cpn-console/eslint-config':
         specifier: workspace:^
@@ -3556,6 +3559,9 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  cron-validator@1.4.0:
+    resolution: {integrity: sha512-wGcJ9FCy65iaU6egSH8b5dZYJF7GU/3Jh06wzaT9lsa5dbqExjljmu+0cJ8cpKn+vUyZa/EM4WAxeLR6SypJXw==}
 
   cross-spawn@6.0.6:
     resolution: {integrity: sha512-VqCUuhcd1iB+dsv8gxPttb5iZh/D0iubSP21g36KXdEuf6I5JiioesUVjpCdHV9MZRUfVFlvwtIUyPfxo5trtw==}
@@ -10601,6 +10607,8 @@ snapshots:
       parse-json: 5.2.0
     optionalDependencies:
       typescript: 5.7.2
+
+  cron-validator@1.4.0: {}
 
   cross-spawn@6.0.6:
     dependencies:
