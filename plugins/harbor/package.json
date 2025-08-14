@@ -27,7 +27,8 @@
     "@cpn-console/shared": "workspace:^",
     "@cpn-console/vault-plugin": "workspace:^",
     "axios": "1.12.2",
-    "bytes": "^3.1.2"
+    "bytes": "^3.1.2",
+    "cron-validator": "^1.4.0"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
