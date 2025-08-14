@@ -5,6 +5,7 @@ import { DEFAULT, ENABLED } from '@cpn-console/shared'
 import { getApi, getConfig, projectRobotName, roRobotName, rwRobotName } from './utils.js'
 import { createProject, deleteProject } from './project.js'
 import { addProjectGroupMember } from './permission.js'
+import { addRetentionPolicy } from './policy.js'
 import type { VaultRobotSecret } from './robot.js'
 import { deleteRobot, ensureRobot, roAccess, rwAccess } from './robot.js'
 import { getSecretObject } from './kubeSecret.js'
@@ -40,6 +41,7 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
       ensureRobot(projectName, roRobotName, vaultApi, roAccess, api), // cette ligne en premier sinon ça foire au dessus
       ensureRobot(projectName, rwRobotName, vaultApi, rwAccess, api),
       addProjectGroupMember(projectName, oidcGroup),
+      addRetentionPolicy(projectName, projectCreated.project_id as number),
       createProjectRobot
         ? ensureRobot(projectName, projectRobotName, vaultApi, roAccess, api)
         : deleteRobot(projectName, projectRobotName, vaultApi, api),
