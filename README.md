@@ -42,7 +42,7 @@ $ pnpm install
 $ pnpm build
 
 # Construire les images dockers client et server, puis lancer la stack docker compose d'intégration
-$ pnpm run docker:integ
+$ export KUBECONFIG_HOST_PATH="$HOME/.kube/config" && pnpm run docker:integ
 
 # Initialiser la base de données PostgreSQL lancée localement
 $ pnpm db:generate
