@@ -28,6 +28,8 @@ COPY --chown=node:root plugins/ ./plugins/
 COPY --chown=node:root packages/ ./packages/
 
 COPY --chown=node:root apps/server/ ./apps/server/
+# Generate Prisma client for dev
+RUN pnpm --filter server run db:generate
 ENTRYPOINT [ "pnpm", "--filter", "server", "run" ]
 CMD [ "dev" ]
 
