@@ -140,7 +140,10 @@ export const statusDict = {
 export const servicePluginOrder = [
   'argocd',
   'gitlab',
-  'registry',
+  'registry', // harbor
+  'keycloak',
+  'kubernetes',
+  'nexus',
   'sonarqube',
   'vault',
 ]

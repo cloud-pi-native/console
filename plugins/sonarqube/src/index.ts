@@ -3,11 +3,13 @@ import { getStatus } from './check.js'
 import { deleteProject, initSonar, setVariables, upsertProject } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
+import { startTracker } from './tracker.js'
 
 function start(_options: unknown) {
   try {
     initSonar()
     getStatus()
+    startTracker()
   } catch (_error) {}
 }
 

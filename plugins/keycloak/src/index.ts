@@ -1,4 +1,4 @@
-import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks'
+import type { DeclareModuleGenerator, DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks'
 import {
   deleteProject,
   deleteZone,
@@ -40,4 +40,5 @@ declare module '@cpn-console/hooks' {
       ? KeycloakProjectApi
       : undefined
   }
+  interface Config extends DeclareModuleGenerator<typeof infos, 'global'> {}
 }

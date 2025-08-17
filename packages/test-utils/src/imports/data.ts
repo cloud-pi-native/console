@@ -1,4 +1,5 @@
 export const data = {
+  pluginReport: [],
   personalAccessToken: [],
   adminToken: [
     {

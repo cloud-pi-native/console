@@ -1,67 +1,45 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import type { PluginConfigItem, PluginSchema } from '@cpn-console/shared'
-import { usePluginsConfigStore } from '@/stores/plugins.js'
-import { useSnackbarStore } from '@/stores/snackbar'
+import { servicePluginOrder, type PluginSchema } from '@cpn-console/shared'
+import { usePluginsStore } from '@/stores/plugins.js'
 
-const pluginsStore = usePluginsConfigStore()
-const snackbarStore = useSnackbarStore()
+const pluginsStore = usePluginsStore()
 
-const updated = ref<Record<string, Record<string, string>>>({})
-
-function getItemsToShowLength(items: (PluginConfigItem & { value: any })[] | undefined): number | undefined {
-  return items?.filter(item => item.permissions.admin.read || item.permissions.admin.write).length
-}
-
-function refTheValues(services: PluginSchema[]) {
-  return services.map((service) => {
-    return {
-      ...service,
-      manifest: service.manifest?.map(item => ({ ...item, value: ref(item.value) })),
-      wrapable: !!((getItemsToShowLength(service.manifest))),
-    }
-  })
-}
-
-const services: Ref<ReturnType<typeof refTheValues>> = ref([])
+const services = ref<Omit<PluginSchema, 'manifest'>[]>([])
 
 async function reload() {
-  const resServices = await pluginsStore.getPluginsConfig()
+  const res = await pluginsStore.listPlugins()
   services.value = []
-  await nextTick()
-
-  services.value = refTheValues(resServices)
-
-  updated.value = {}
-}
-
-async function save() {
-  snackbarStore.isWaitingForResponse = true
-  try {
-    await pluginsStore.updatePluginsConfig(updated.value)
-    snackbarStore.setMessage('Paramètres sauvegardés', 'success')
-  } catch (error) {
-    console.log(error)
-    snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
-  }
-  await reload()
-  snackbarStore.isWaitingForResponse = false
+  nextTick()
+  services.value = res.sort((a, b) => {
+    const fixedOrderA = servicePluginOrder.indexOf(a.name)
+    const fixedOrderB = servicePluginOrder.indexOf(b.name)
+    if (fixedOrderA >= 0 && fixedOrderB >= 0) {
+      return fixedOrderA - fixedOrderB
+    }
+    if (fixedOrderB < 0) {
+      return -1
+    }
+    return a.title.localeCompare(b.title, 'fr', { sensitivity: 'base' })
+  })
 }
 
 onBeforeMount(() => {
   reload()
 })
-
-function update(data: { value: string, key: string, plugin: string }) {
-  if (!updated.value[data.plugin]) updated.value[data.plugin] = {}
-  updated.value[data.plugin][data.key] = data.value
-}
-
-const servicesWrapableLength = computed(() => services.value.filter(({ wrapable }) => wrapable).length)
-const activeAccordion = ref<number>()
 </script>
 
 <template>
+  <div
+    class="flex justify-end gap-10"
+  >
+    <DsfrButton
+      label="Recharger"
+      secondary
+      data-testid="reloadBtn"
+      @click="reload"
+    />
+  </div>
   <div
     v-if="!services.length"
     id="servicesTable"
@@ -69,71 +47,44 @@ const activeAccordion = ref<number>()
   >
     Aucun service disponible
   </div>
-  <template
-    v-if="servicesWrapableLength"
+  <h3
+    v-else
+    id="servicesTable"
   >
-    <h3>Configuration des plugins</h3>
-    <DsfrAccordionsGroup
-      v-model="activeAccordion"
-      class="mb-10"
+    Services externes
+  </h3>
+
+  <div
+    data-testid="services-urls"
+    class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full mb-10"
+  >
+    <template
+      v-for="service in services"
+      :key="service.name"
     >
-      <template
-        v-for="service in services"
-        :key="service.name"
-      >
-        <template
-          v-if="service.wrapable"
-        >
-          <DsfrAccordion
-            :id="service.name"
-            :title="service.title || service.name"
-          >
-            <p
-              v-if="service.description"
-            >
-              {{ service.description }}
-            </p>
-            <div>
-              <DsfrCallout
-                v-if="service.manifest.length"
-                title="Configuration globale"
-                class="flex flex-col gap-2"
-              >
-                <ConfigParam
-                  v-for="item in service.manifest"
-                  :key="item.key"
-                  :options="{
-                    value: ref(item.value),
-                    kind: item.kind,
-                    description: item.description,
-                    name: item.title,
-                    // @ts-ignore si si il y a potentiellement un placeholder
-                    placeholder: item.placeholder || '',
-                    disabled: !item.permissions.admin.write,
-                  }"
-                  @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
-                />
-              </DsfrCallout>
-            </div>
-          </DsfrAccordion>
-        </template>
-      </template>
-    </DsfrAccordionsGroup>
-    <div
-      class="flex justify-end gap-10"
-    >
-      <DsfrButton
-        v-if="Object.values(updated).keys() && Object.values(updated).map(v => Object.keys(v)).flat().length"
-        label="Enregistrer"
-        data-testid="saveBtn"
-        @click="save()"
+      <DsfrTile
+        class="flex-basis-60 flex-grow max-w-50"
+        :title="service.title || service.name"
+        :img-src="service.imgSrc"
+        :description="service.description"
+        :icon="false"
+        :to="`/admin/plugins/${service.name}`"
+        shadow
       />
-      <DsfrButton
-        label="Recharger"
-        secondary
-        data-testid="reloadBtn"
-        @click="reload()"
-      />
-    </div>
-  </template>
+    </template>
+  </div>
 </template>
+
+<style>
+.fr-tile__title [target="_blank"]::after {
+  display: none;
+}
+
+.fr-grid-row .fr-tile {
+  height: inherit
+}
+
+.fr-tile__pictogram > img {
+  width: inherit;
+}
+</style>
