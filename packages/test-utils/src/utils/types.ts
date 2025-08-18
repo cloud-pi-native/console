@@ -70,9 +70,11 @@ export interface Cluster {
 export interface Environment {
   id: string
   name: string
+  cpu: number
+  gpu: number
+  memory: number
   projectId: string
   clusterId: string
-  quotaId: string
   stageId: string
   permissions?: Permission[]
   cluster?: Cluster

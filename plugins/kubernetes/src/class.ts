@@ -1,4 +1,4 @@
-import type { ClusterObject, Environment, Project, ProjectLite, ResourceQuotaType, UserObject } from '@cpn-console/hooks'
+import type { ClusterObject, Environment, Project, ProjectLite, UserObject } from '@cpn-console/hooks'
 import { PluginApi } from '@cpn-console/hooks'
 import type { ApisApi, CoreV1Api, V1Namespace, V1ObjectMeta } from '@kubernetes/client-node'
 import { shallowMatch } from '@cpn-console/shared'
@@ -154,12 +154,12 @@ export class KubernetesNamespace extends PluginApi {
     } catch (_error) {}
   }
 
-  public async setQuota(quota: ResourceQuotaType) {
+  public async setQuota(env: Environment) {
     if (!this.coreV1Api) return
 
     const resourceQuotaName = 'dso-quota'
     const nsName = await this.getNsName()
-    const quotaObject = getQuotaObject(nsName, quota)
+    const quotaObject = getQuotaObject(nsName, env)
     try {
       await this.coreV1Api.readNamespacedResourceQuota(resourceQuotaName, nsName)
       // @ts-ignore

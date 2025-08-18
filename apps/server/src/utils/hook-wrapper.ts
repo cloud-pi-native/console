@@ -182,8 +182,7 @@ export function transformToHookProject(project: ProjectInfos, store: Store, repo
   return ({
     ...project,
     clusters,
-    environments: project.environments.map(({ quota, stage, ...environment }) => ({
-      quota,
+    environments: project.environments.map(({ stage, ...environment }) => ({
       stage: stage.name,
       permissions: [
         { permissions: { rw: true, ro: true }, userId: project.ownerId },

@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { type AchievedStatus, type ClusterDetails, ClusterPrivacy, type ProjectRoles, type Quota, type Stage, type Zone, achievedStatus, logActions, projectRoles } from '@cpn-console/shared'
+import { type AchievedStatus, type ClusterDetails, ClusterPrivacy, type ProjectRoles, type Stage, type Zone, achievedStatus, logActions, projectRoles } from '@cpn-console/shared'
 import { repeatFn } from './func-utils.js'
 import type { Cluster, Environment, Log, Member, Permission, Project, Repository, Role, User } from './types.js'
 
@@ -104,36 +104,24 @@ export function getRandomRepo(projectId = faker.string.uuid()): Repository {
 }
 
 export function getRandomStage(name: string = faker.lorem.word({ length: { min: 2, max: 20 } }), links?: {
-  quotaIds?: string[]
-  quotas?: Quota[]
   clusterIds?: string[]
   clusters?: Cluster[]
 }): Stage {
   return {
     id: faker.string.uuid(),
     name,
-    quotaIds: links?.quotaIds ?? links?.quotas?.map(({ id }) => id) ?? [] as string[],
     clusterIds: links?.clusterIds ?? links?.clusters?.map(({ id }) => id) ?? [] as string[],
   }
 }
 
-export function getRandomQuota(name: string = faker.lorem.word(), links?: { stageIds?: string[], stages?: Stage[] }): Quota {
+export function getRandomEnv(name = faker.lorem.slug(1), projectId = faker.string.uuid(), stageId = faker.string.uuid(), clusterId = faker.string.uuid()): Environment {
   return {
     id: faker.string.uuid(),
     name,
-    cpu: faker.number.int({ min: 1, max: 18 }),
-    memory: `${faker.number.int({ max: 18 })}Gi`,
-    isPrivate: faker.datatype.boolean(),
-    stageIds: links?.stageIds ?? links?.stages?.map(({ id }) => id) ?? [] as string[],
-  }
-}
-
-export function getRandomEnv(name = faker.lorem.slug(1), projectId = faker.string.uuid(), stageId = faker.string.uuid(), quotaId = faker.string.uuid(), clusterId = faker.string.uuid()): Environment {
-  return {
-    id: faker.string.uuid(),
-    name,
+    cpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+    gpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+    memory: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
     projectId,
-    quotaId,
     stageId,
     clusterId,
   }

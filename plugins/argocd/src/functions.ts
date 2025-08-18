@@ -238,8 +238,9 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
     },
     application: {
       quota: {
-        cpu: environment.quota.cpu,
-        memory: environment.quota.memory,
+        cpu: environment.cpu,
+        gpu: environment.gpu,
+        memory: `${environment.memory}Gi`,
       },
       sourceRepositories,
       destination: {
