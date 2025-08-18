@@ -6,7 +6,6 @@ import { projectRouter } from './project/router.js'
 import { adminRoleRouter } from './admin-role/router.js'
 import { projectRoleRouter } from './project-role/router.js'
 import { projectMemberRouter } from './project-member/router.js'
-import { quotaRouter } from './quota/router.js'
 import { repositoryRouter } from './repository/router.js'
 import { serviceMonitorRouter } from './service-monitor/router.js'
 import { projectServiceRouter } from './project-service/router.js'
@@ -35,7 +34,6 @@ export function apiRouter() {
     await app.register(serverInstance.plugin(projectMemberRouter()), validateTrue)
     await app.register(serverInstance.plugin(projectRoleRouter()), validateTrue)
     await app.register(serverInstance.plugin(projectServiceRouter()), validateTrue)
-    await app.register(serverInstance.plugin(quotaRouter()), validateTrue)
     await app.register(serverInstance.plugin(repositoryRouter()), validateTrue)
     await app.register(serverInstance.plugin(serviceMonitorRouter()), validateTrue)
     await app.register(serverInstance.plugin(pluginConfigRouter()), validateTrue)

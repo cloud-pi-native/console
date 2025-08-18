@@ -1,5 +1,5 @@
-import { AdminAuthorized, ProjectAuthorized, environmentContract } from '@cpn-console/shared'
-import { checkEnvironmentInput, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.js'
+import { ProjectAuthorized, environmentContract } from '@cpn-console/shared'
+import { checkEnvironmentCreate, checkEnvironmentUpdate, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.js'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
 import { ErrorResType, Forbidden403, NotFound404, Unauthorized401 } from '@/utils/errors.js'
@@ -20,8 +20,8 @@ export function environmentRouter() {
       }
     },
 
-    createEnvironment: async ({ request: req, body: data }) => {
-      const projectId = data.projectId
+    createEnvironment: async ({ request: req, body: requestBody }) => {
+      const projectId = requestBody.projectId
       const perms = await authUser(req, { id: projectId })
 
       if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
@@ -30,18 +30,18 @@ export function environmentRouter() {
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-      const allowPrivateQuota = AdminAuthorized.isAdmin(perms.adminPermissions)
-      const allowInvalidQuotaStage = AdminAuthorized.isAdmin(perms.adminPermissions)
-      const invalidReason = await checkEnvironmentInput({ allowPrivateQuota, allowInvalidQuotaStage, ...data })
+      const invalidReason = await checkEnvironmentCreate({ ...requestBody })
       if (invalidReason) return invalidReason
 
       const body = await createEnvironment({
         userId: perms.user.id,
         projectId,
-        name: data.name,
-        clusterId: data.clusterId,
-        quotaId: data.quotaId,
-        stageId: data.stageId,
+        name: requestBody.name,
+        clusterId: requestBody.clusterId,
+        cpu: requestBody.cpu,
+        gpu: requestBody.gpu,
+        memory: requestBody.memory,
+        stageId: requestBody.stageId,
         requestId: req.id,
       })
       if (body instanceof ErrorResType) return body
@@ -52,7 +52,7 @@ export function environmentRouter() {
       }
     },
 
-    updateEnvironment: async ({ request: req, body: data, params }) => {
+    updateEnvironment: async ({ request: req, body: requestBody, params }) => {
       const { environmentId } = params
       const perms = await authUser(req, { environmentId })
       if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
@@ -61,15 +61,15 @@ export function environmentRouter() {
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-      const allowPrivateQuota = AdminAuthorized.isAdmin(perms.adminPermissions)
-      const allowInvalidQuotaStage = AdminAuthorized.isAdmin(perms.adminPermissions)
-      const invalidReason = await checkEnvironmentInput({ allowPrivateQuota, allowInvalidQuotaStage, environmentId, ...data })
+      const invalidReason = await checkEnvironmentUpdate({ environmentId, ...requestBody })
       if (invalidReason) return invalidReason
 
       const body = await updateEnvironment({
         user: perms.user,
         environmentId,
-        quotaId: data.quotaId,
+        cpu: requestBody.cpu,
+        gpu: requestBody.gpu,
+        memory: requestBody.memory,
         requestId: req.id,
       })
       if (body instanceof ErrorResType) return body

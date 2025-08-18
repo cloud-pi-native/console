@@ -76,7 +76,7 @@ describe('test stageContract', () => {
   })
 
   describe('createStage', () => {
-    const stage: Stage = { id: faker.string.uuid(), name: faker.string.alpha({ length: 5 }), clusterIds: [], quotaIds: [] }
+    const stage: Stage = { id: faker.string.uuid(), name: faker.string.alpha({ length: 5 }), clusterIds: [] }
 
     it('should create and return stage for admin', async () => {
       const user = getUserMockInfos(true)
@@ -120,7 +120,7 @@ describe('test stageContract', () => {
 
   describe('updateStage', () => {
     const stageId = faker.string.uuid()
-    const stage = { name: faker.string.alpha({ length: 5 }), clusterIds: [], quotaIds: [] }
+    const stage = { name: faker.string.alpha({ length: 5 }), clusterIds: [] }
 
     it('should update and return stage for admin', async () => {
       const user = getUserMockInfos(true)

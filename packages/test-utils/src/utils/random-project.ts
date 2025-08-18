@@ -4,7 +4,6 @@ import {
   getRandomEnv,
   getRandomPerm,
   getRandomProject,
-  getRandomQuota,
   getRandomRepo,
   getRandomRole,
   getRandomStage,
@@ -55,25 +54,12 @@ export function createRandomDbSetup({ nbUsers = 1, nbRepo = 3, envs = basicStage
     stage.clusters = project.clusters
   })
 
-  // Create quotas
-  const quotas = repeatFn(4)(getRandomQuota)
-
-  // Associate stages and quotas
-  stages.forEach((stage) => {
-    stage.quotaIds = quotas.map(({ id }) => id)
-  })
-
-  // Associate stages and quotas
-  quotas.forEach((quota) => {
-    quota.stageIds = stages.map(({ id }) => id)
-  })
-
   // Create repositories
   project.repositories = repeatFn(nbRepo)(getRandomRepo, project.id)
 
   // Create environment
   project.environments = envs
-    .map(env => getRandomEnv(env, project.id, stages[0].id, quotas[0].id, clusters[0].id))
+    .map(env => getRandomEnv(env, project.id, stages[0].id, clusters[0].id))
 
   // Create permissions
   project.environments.forEach((env) => {
@@ -86,7 +72,6 @@ export function createRandomDbSetup({ nbUsers = 1, nbRepo = 3, envs = basicStage
     users,
     stages,
     zones,
-    quotas,
     project,
   }
 }

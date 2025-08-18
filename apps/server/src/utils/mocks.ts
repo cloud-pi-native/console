@@ -126,8 +126,8 @@ export function getRandomRequestor(user?: Requestor): Partial<UserDetails> {
   }
 }
 
-export function getUserMockInfos(isAdmin: boolean, user?: UserDetails): utilsController.UserProfile
-export function getUserMockInfos(isAdmin: boolean, user?: UserDetails, project?: utilsController.ProjectPermState): utilsController.UserProjectProfile
+export function getUserMockInfos(isAdmin: boolean, user?: UserDetails): utilsController.UserProfile & utilsController.ProjectPermState
+export function getUserMockInfos(isAdmin: boolean, user?: UserDetails, project?: utilsController.ProjectPermState): utilsController.UserProjectProfile & utilsController.ProjectPermState
 export function getUserMockInfos(isAdmin: boolean, user = getRandomRequestor(), project?: utilsController.ProjectPermState): utilsController.UserProfile | utilsController.UserProjectProfile {
   return {
     adminPermissions: isAdmin ? 2n : 0n,

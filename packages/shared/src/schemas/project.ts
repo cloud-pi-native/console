@@ -20,7 +20,6 @@ const ProjectEnvironmentSchema = z.object({
     .regex(/^[a-z0-9]+$/),
   projectId: z.string()
     .uuid(),
-  quotaId: z.string().uuid(),
   stageId: z.string().uuid(),
   clusterId: z.string()
     .uuid(),
