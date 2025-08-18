@@ -17,7 +17,7 @@ export const createNamespaces: StepCall<Project> = async (payload) => {
     await Promise.all(project.environments.map(async (env) => {
       if (env.apis.kubernetes) {
         await env.apis.kubernetes.getFromClusterOrCreate()
-        return env.apis.kubernetes.setQuota(env.quota)
+        return env.apis.kubernetes.setQuota(env)
       }
     }))
 

@@ -1,5 +1,4 @@
-import type { Cluster, Environment, Project, Quota, Stage, User } from '@prisma/client'
-import type { XOR } from '@cpn-console/shared'
+import type { Cluster, Environment, Project, Stage, User } from '@prisma/client'
 import {
   addLogs,
   deleteEnvironment as deleteEnvironmentQuery,
@@ -27,8 +26,10 @@ interface CreateEnvironmentParam {
   userId: User['id']
   projectId: Project['id']
   name: Environment['name']
+  cpu: Environment['cpu']
+  gpu: Environment['gpu']
+  memory: Environment['memory']
   clusterId: Environment['clusterId']
-  quotaId: Quota['id']
   stageId: Stage['id']
   requestId: string
 }
@@ -37,12 +38,14 @@ export async function createEnvironment({
   userId,
   projectId,
   name,
+  cpu,
+  gpu,
+  memory,
   clusterId,
-  quotaId,
   stageId,
   requestId,
 }: CreateEnvironmentParam) {
-  const environment = await initializeEnvironment({ projectId, name, clusterId, quotaId, stageId })
+  const environment = await initializeEnvironment({ projectId, name, cpu, gpu, memory, clusterId, stageId })
 
   const { results } = await hook.project.upsert(projectId)
   await addLogs({ action: 'Create Environment', data: results, userId, requestId, projectId })
@@ -52,7 +55,6 @@ export async function createEnvironment({
 
   return {
     ...environment,
-    quotaId,
     stageId,
   }
 }
@@ -60,7 +62,9 @@ export async function createEnvironment({
 interface UpdateEnvironmentParam {
   user: UserDetails
   environmentId: Environment['id']
-  quotaId: Quota['id']
+  cpu: Environment['cpu']
+  gpu: Environment['gpu']
+  memory: Environment['memory']
   requestId: string
 }
 
@@ -68,16 +72,20 @@ export async function updateEnvironment({
   user,
   environmentId,
   requestId,
-  quotaId,
+  cpu,
+  gpu,
+  memory,
 }: UpdateEnvironmentParam) {
-  // Modification du quota
-  const env = await updateEnvironmentQuery({ id: environmentId, quotaId })
-  if (quotaId) {
-    const { results } = await hook.project.upsert(env.projectId)
-    await addLogs({ action: 'Update Environment Quotas', data: results, userId: user.id, requestId, projectId: env.projectId })
-    if (results.failed) {
-      return new Unprocessable422('Echec des services à la mise à jour des quotas pour l\'environnement')
-    }
+  const env = await updateEnvironmentQuery({
+    id: environmentId,
+    cpu,
+    gpu,
+    memory,
+  })
+  const { results } = await hook.project.upsert(env.projectId)
+  await addLogs({ action: 'Update Environment', data: results, userId: user.id, requestId, projectId: env.projectId })
+  if (results.failed) {
+    return new Unprocessable422('Echec des services à la mise à jour de l\'environnement')
   }
 
   return env
@@ -106,24 +114,13 @@ export async function deleteEnvironment({
   return null
 }
 
-type CheckEnvironmentInput = {
-  allowInvalidQuotaStage: boolean
-  allowPrivateQuota: boolean
-  quotaId: Quota['id']
-} & XOR<{ // mode create
+export async function checkEnvironmentCreate(input: {
   clusterId: Cluster['id']
   projectId: Project['id']
   name: Environment['name']
   stageId: Stage['id']
-}, {
-    environmentId: Environment['id'] // mode update
-  }>
-export async function checkEnvironmentInput(input: CheckEnvironmentInput): Promise<ErrorResType | undefined> {
-  const [quota, environment, stage, sameNameEnvironment, cluster] = await Promise.all([
-    prisma.quota.findUnique({ where: { id: input.quotaId }, include: { stages: true } }),
-    input.environmentId
-      ? prisma.environment.findUnique({ where: { id: input.environmentId } })
-      : undefined,
+}): Promise<ErrorResType | undefined> {
+  const [stage, sameNameEnvironment, cluster] = await Promise.all([
     input.stageId
       ? prisma.stage.findUnique({ where: { id: input.stageId } })
       : undefined,
@@ -140,25 +137,23 @@ export async function checkEnvironmentInput(input: CheckEnvironmentInput): Promi
               id: input.clusterId, // un cluster dédié rattaché au projet
               privacy: 'dedicated',
               projects: { some: { id: input.projectId } },
-            }, {
-              id: input.clusterId, // le cluster actuel de l'environment
-              environments: { some: { id: input.environmentId } },
             }],
           },
         })
       : undefined,
   ])
-  const quotaError = new BadRequest400('Quota invalide.')
-  if (!quota) return quotaError
-
-  // update
-  if (input.environmentId && (quota.id !== environment?.quotaId && quota.isPrivate && !input.allowPrivateQuota)) return quotaError
-  if (input.environmentId && quota.id) return
-
-  // create
-  if (quota.isPrivate && !input.allowPrivateQuota) return quotaError
   if (sameNameEnvironment) return new BadRequest400('Ce nom d\'environnement est déjà pris.')
   if (!cluster) return new BadRequest400('Cluster invalide.')
   if (!stage) return new BadRequest400('Type d\'environnment invalide.')
-  if (!input.allowInvalidQuotaStage && !quota.stages.find(stage => stage.id === input.stageId)) return new BadRequest400('Ce quota n\'est pas disponible pour le type d\'environnement choisi.')
+}
+
+export async function checkEnvironmentUpdate(_input: {
+  environmentId: Environment['id']
+  cpu: Environment['cpu']
+  gpu: Environment['gpu']
+  memory: Environment['memory']
+}): Promise<ErrorResType | undefined> {
+  // update
+  // TODO Check cluster capacity for updated resources
+  return undefined
 }
