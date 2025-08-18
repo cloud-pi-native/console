@@ -14,7 +14,7 @@
     "build": "tspc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
     "db:deploy": "prisma migrate deploy --schema ./src/prisma/schema",
-    "db:diff": "prisma migrate diff --schema ./src/prisma/schema",
+    "db:diff": "prisma migrate diff",
     "db:generate": "prisma generate --schema ./src/prisma/schema",
     "db:migrate": "prisma migrate dev --name dso --schema ./src/prisma/schema",
     "db:reset": "prisma migrate reset --schema ./src/prisma/schema",

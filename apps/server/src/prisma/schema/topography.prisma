@@ -26,22 +26,11 @@ model Kubeconfig {
   parentCluster Cluster?
 }
 
-model Quota {
-  id           String        @id @unique @default(uuid()) @db.Uuid
-  memory       String        @db.VarChar
-  cpu          Float         @db.Real
-  name         String        @unique @db.VarChar
-  isPrivate    Boolean       @default(false)
-  environments Environment[]
-  stages       Stage[]       @relation("QuotaToStage")
-}
-
 model Stage {
   id           String        @id @unique @default(uuid()) @db.Uuid
   name         String        @unique @db.VarChar
   environments Environment[]
   clusters     Cluster[]     @relation("ClusterToStage")
-  quotas       Quota[]       @relation("QuotaToStage")
 }
 
 model Zone {
