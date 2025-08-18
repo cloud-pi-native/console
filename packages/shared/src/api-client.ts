@@ -18,7 +18,6 @@ export async function getContract() {
       ProjectsMembers: (await import('./contracts/index.js')).projectMemberContract,
       ProjectsRoles: (await import('./contracts/index.js')).projectRoleContract,
       ProjectServices: (await import('./contracts/index.js')).projectServiceContract,
-      Quotas: (await import('./contracts/index.js')).quotaContract,
       Repositories: (await import('./contracts/index.js')).repositoryContract,
       Stages: (await import('./contracts/index.js')).stageContract,
       Services: (await import('./contracts/index.js')).serviceContract,

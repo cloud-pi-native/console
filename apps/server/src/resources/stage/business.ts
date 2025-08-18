@@ -9,10 +9,8 @@ import {
   getStageByName,
   linkClusterToStages as linkClusterToStagesQuery,
   linkStageToClusters,
-  linkStageToQuotas,
   listStages as listStagesQuery,
   removeClusterFromStage,
-  unlinkStageFromQuotas,
   updateStageName,
 } from '@/resources/queries-index.js'
 import { BadRequest400, NotFound404 } from '@/utils/errors.js'
@@ -23,21 +21,16 @@ export async function getStageAssociatedEnvironments(stageId: Stage['id']) {
   return environments.map(env => ({
     project: env.project.slug,
     name: env.name,
-    quota: env.quota.name,
     cluster: env.cluster.label,
     owner: env.project.owner.email,
   }))
 }
 
-export async function createStage({ clusterIds = [], name, quotaIds = [] }: CreateStageBody) {
+export async function createStage({ clusterIds = [], name }: CreateStageBody) {
   const isNameTaken = await getStageByName(name)
   if (isNameTaken) return new BadRequest400('Un type d\'environnement portant ce nom existe déjà')
 
   const stage = await createStageQuery({ name })
-
-  if (quotaIds.length) {
-    await linkStageToQuotas(stage.id, quotaIds)
-  }
 
   if (clusterIds.length) {
     await linkStageToClusters(stage.id, clusterIds)
@@ -47,11 +40,10 @@ export async function createStage({ clusterIds = [], name, quotaIds = [] }: Crea
     id: stage.id,
     name: stage.name,
     clusterIds,
-    quotaIds,
   }
 }
 
-export async function updateStage(stageId: Stage['id'], { clusterIds, name, quotaIds }: UpdateStageBody) {
+export async function updateStage(stageId: Stage['id'], { clusterIds, name }: UpdateStageBody) {
   const dbStage = await getStageById(stageId)
   if (!dbStage) return new NotFound404()
   if (name === dbStage.name) {
@@ -70,27 +62,10 @@ export async function updateStage(stageId: Stage['id'], { clusterIds, name, quot
     await linkStageToClusters(stageId, clusterIds)
   }
 
-  if (quotaIds) {
-    const dbQuotas = dbStage.quotas
-    const quotaIdsToRemove = dbQuotas
-      .filter(({ id }) => !quotaIds.includes(id))
-      .map(({ id }) => id)
-
-    if (quotaIdsToRemove.length) {
-      await unlinkStageFromQuotas(stageId, quotaIdsToRemove)
-    }
-    const quotaIdsToAdd = quotaIds
-      .filter(quotaIdToAdd => !dbQuotas.find(({ id }) => id === quotaIdToAdd))
-    if (quotaIdsToAdd.length) {
-      await linkStageToQuotas(stageId, quotaIdsToAdd)
-    }
-  }
-
   return {
     id: stageId,
     name: name ?? dbStage.name,
     clusterIds: clusterIds ?? dbStage.clusters.map(({ id }) => id),
-    quotaIds: quotaIds ?? dbStage.quotas.map(({ id }) => id),
   }
 }
 
@@ -109,7 +84,6 @@ export async function listStages() {
     return {
       id: stage.id,
       name: stage.name,
-      quotaIds: stage.quotas.map(({ id }) => id),
       clusterIds: stage.clusters.map(({ id }) => id),
     }
   })

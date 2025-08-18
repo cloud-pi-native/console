@@ -171,7 +171,6 @@ export function getAllProjectsDataForExport() {
         select: {
           name: true,
           stage: true,
-          quota: true,
           cluster: {
             select: { label: true },
           },
@@ -213,7 +212,6 @@ export function getHookProjectInfos(id: Project['id']) {
       clusters: { select: clusterInfosSelect },
       environments: {
         include: {
-          quota: true,
           stage: true,
           cluster: {
             select: clusterInfosSelect,

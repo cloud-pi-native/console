@@ -1,4 +1,4 @@
-import { AdminAuthorized, ProjectAuthorized, environmentContract } from '@cpn-console/shared'
+import { ProjectAuthorized, environmentContract } from '@cpn-console/shared'
 import { checkEnvironmentInput, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.js'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
@@ -30,9 +30,7 @@ export function environmentRouter() {
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-      const allowPrivateQuota = AdminAuthorized.isAdmin(perms.adminPermissions)
-      const allowInvalidQuotaStage = AdminAuthorized.isAdmin(perms.adminPermissions)
-      const invalidReason = await checkEnvironmentInput({ allowPrivateQuota, allowInvalidQuotaStage, ...data })
+      const invalidReason = await checkEnvironmentInput({ ...data })
       if (invalidReason) return invalidReason
 
       const body = await createEnvironment({
@@ -40,7 +38,9 @@ export function environmentRouter() {
         projectId,
         name: data.name,
         clusterId: data.clusterId,
-        quotaId: data.quotaId,
+        cpu: data.cpu,
+        gpu: data.gpu,
+        memory: data.memory,
         stageId: data.stageId,
         requestId: req.id,
       })
@@ -61,15 +61,15 @@ export function environmentRouter() {
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-      const allowPrivateQuota = AdminAuthorized.isAdmin(perms.adminPermissions)
-      const allowInvalidQuotaStage = AdminAuthorized.isAdmin(perms.adminPermissions)
-      const invalidReason = await checkEnvironmentInput({ allowPrivateQuota, allowInvalidQuotaStage, environmentId, ...data })
+      const invalidReason = await checkEnvironmentInput({ environmentId, ...data })
       if (invalidReason) return invalidReason
 
       const body = await updateEnvironment({
         user: perms.user,
         environmentId,
-        quotaId: data.quotaId,
+        cpu: data.cpu,
+        gpu: data.gpu,
+        memory: data.memory,
         requestId: req.id,
       })
       if (body instanceof ErrorResType) return body

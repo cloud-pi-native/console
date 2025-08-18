@@ -22,7 +22,7 @@ export const stageContract = contractInstance.router({
     contentType: 'application/json',
     summary: 'Create stage',
     description: 'Create new stage.',
-    body: StageSchema.omit({ id: true }).partial({ clusterIds: true, quotaIds: true }),
+    body: StageSchema.omit({ id: true }).partial({ clusterIds: true }),
     responses: {
       201: StageSchema,
       400: ErrorSchema,
@@ -44,7 +44,6 @@ export const stageContract = contractInstance.router({
       200: z.array(z.object({
         project: z.string(),
         name: z.string(),
-        quota: z.string(),
         cluster: z.string(),
         owner: z.string().optional(),
       })),
@@ -61,7 +60,7 @@ export const stageContract = contractInstance.router({
       stageId: z.string()
         .uuid(),
     }),
-    body: StageSchema.pick({ clusterIds: true, name: true, quotaIds: true }).partial(),
+    body: StageSchema.pick({ clusterIds: true, name: true }).partial(),
     responses: {
       200: StageSchema,
       500: ErrorSchema,

@@ -1,10 +1,10 @@
-import type { ResourceQuotaType } from '@cpn-console/hooks'
+import type { Environment } from '@cpn-console/hooks'
 import { ResourceQuota } from 'kubernetes-models/v1'
 
 const resourceQuotaName = 'dso-quota'
 
 // Utils
-export function getQuotaObject(nsName: string, quota: ResourceQuotaType): ResourceQuota {
+export function getQuotaObject(nsName: string, env: Environment): ResourceQuota {
   return new ResourceQuota({
     metadata: {
       name: resourceQuotaName,
@@ -15,10 +15,10 @@ export function getQuotaObject(nsName: string, quota: ResourceQuotaType): Resour
     },
     spec: {
       hard: {
-        'requests.cpu': String(quota.cpu),
-        'requests.memory': quota.memory,
-        'limits.cpu': String(quota.cpu),
-        'limits.memory': quota.memory,
+        'requests.cpu': String(env.cpu),
+        'requests.memory': env.memory,
+        'limits.cpu': String(env.cpu),
+        'limits.memory': env.memory,
       },
     },
   })

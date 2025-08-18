@@ -12,9 +12,11 @@ export const EnvironmentSchema = z.object({
   projectId: z.string()
     .uuid(),
   stageId: z.string().uuid(),
-  quotaId: z.string().uuid(),
   clusterId: z.string()
     .uuid(),
+  cpu: z.coerce.number().positive(),
+  gpu: z.coerce.number().positive(),
+  memory: z.coerce.number().positive(),
 }).extend(AtDatesToStringExtend)
 
 export type Environment = Zod.infer<typeof EnvironmentSchema>

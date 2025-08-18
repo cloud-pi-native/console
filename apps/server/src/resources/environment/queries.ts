@@ -1,10 +1,9 @@
 import type { Environment, Prisma, Project } from '@prisma/client'
-import type { Quota } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 
 // SELECT
 export function getEnvironmentByIdOrThrow(id: Environment['id']) {
-  return prisma.environment.findUniqueOrThrow({ where: { id }, include: { quota: true, stage: true } })
+  return prisma.environment.findUniqueOrThrow({ where: { id }, include: { stage: true } })
 }
 
 export function getEnvironmentInfos(id: Environment['id']) {
@@ -40,7 +39,6 @@ export async function getEnvironmentsByProjectId(projectId: Project['id']) {
   return prisma.environment.findMany({
     where: { projectId },
     include: {
-      quota: true,
       stage: true,
     },
   })
@@ -73,13 +71,15 @@ export function initializeEnvironment(data: Prisma.EnvironmentUncheckedCreateInp
   })
 }
 
-export function updateEnvironment({ id, quotaId }: { id: Environment['id'], quotaId: Quota['id'] }) {
+export function updateEnvironment({ id, cpu, gpu, memory }: { id: Environment['id'], cpu: Environment['cpu'], gpu: Environment['gpu'], memory: Environment['memory'] }) {
   return prisma.environment.update({
     where: {
       id,
     },
     data: {
-      quotaId,
+      cpu,
+      gpu,
+      memory,
     },
   })
 }

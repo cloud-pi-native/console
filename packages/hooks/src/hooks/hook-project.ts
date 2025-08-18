@@ -3,11 +3,6 @@ import type { Hook } from './hook.js'
 import { createHook } from './hook.js'
 import type { ClusterObject, ExternalRepoUrl, InternalRepoName, IsInfra, IsPrivate, UserObject } from './index.js'
 
-export interface ResourceQuotaType {
-  memory: string
-  cpu: number
-}
-
 export interface RepoCreds {
   username: string
   token: string
@@ -25,7 +20,9 @@ export interface Environment {
   id: string
   name: string
   clusterId: ClusterObject['id']
-  quota: ResourceQuotaType
+  cpu: number
+  gpu: number
+  memory: number
   stage: string
   permissions: {
     userId: UserObject['id']

@@ -1,11 +1,10 @@
-import type { Cluster, Quota, Stage } from '@prisma/client'
+import type { Cluster, Stage } from '@prisma/client'
 import prisma from '@/prisma.js'
 
 export function listStages() {
   return prisma.stage.findMany({
     include: {
       clusters: true,
-      quotas: true,
     },
   })
 }
@@ -23,7 +22,6 @@ export function getStageById(id: Stage['id']) {
     where: { id },
     include: {
       clusters: true,
-      quotas: true,
     },
   })
 }
@@ -33,7 +31,6 @@ export function getStageByIdOrThrow(id: Stage['id']) {
     where: { id },
     include: {
       clusters: true,
-      quotas: true,
     },
   })
 }
@@ -57,7 +54,6 @@ export function getStageAssociatedEnvironmentById(id: Stage['id']) {
           slug: true,
         },
       },
-      quota: true,
     },
   })
 }
@@ -106,28 +102,6 @@ export function updateStageName(id: Stage['id'], name: Stage['name']) {
       name,
     },
   })
-}
-
-export function linkStageToQuotas(stageId: Stage['id'], quotaIds: Quota['id'][]) {
-  return Promise.all(quotaIds.map(quotaId => prisma.stage.update({
-    where: {
-      id: stageId,
-    },
-    data: {
-      quotas: { connect: { id: quotaId } },
-    },
-  })))
-}
-
-export function unlinkStageFromQuotas(stageId: Stage['id'], quotaIds: Quota['id'][]) {
-  return Promise.all(quotaIds.map(quotaId => prisma.stage.update({
-    where: {
-      id: stageId,
-    },
-    data: {
-      quotas: { disconnect: { id: quotaId } },
-    },
-  })))
 }
 
 export function deleteStage(id: Stage['id']) {
