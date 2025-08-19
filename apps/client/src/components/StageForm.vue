@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
-import type { Cluster, CreateStageBody, Quota, SharedZodError, Stage, StageAssociatedEnvironments } from '@cpn-console/shared'
+import type { Cluster, CreateStageBody, SharedZodError, Stage, StageAssociatedEnvironments } from '@cpn-console/shared'
 import { deleteValidationInput, StageSchema } from '@cpn-console/shared'
 import { toCodeComponent } from '@/utils/func.js'
 import type { UpdateStageType } from '@/views/admin/ListStages.vue'
@@ -9,13 +9,11 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 const props = withDefaults(defineProps<{
   isNewStage: boolean
   stage: Stage
-  allQuotas: Quota[]
   allClusters: Cluster[]
   associatedEnvironments: StageAssociatedEnvironments
 }>(), {
   isNewStage: false,
-  stage: () => ({ name: '', clusterIds: [], quotaIds: [], id: '' }),
-  allQuotas: () => [],
+  stage: () => ({ name: '', clusterIds: [], id: '' }),
   allClusters: () => [],
   associatedEnvironments: () => [],
 })
@@ -47,10 +45,6 @@ function updateClusters(value: string[]) {
   localStage.value.clusterIds = value
 }
 
-function updateQuotas(value: string[]) {
-  localStage.value.quotaIds = value
-}
-
 function addStage() {
   if (isStageValid.value) emit('add', localStage.value)
 }
@@ -68,7 +62,6 @@ function getRows(associatedEnvironments: StageAssociatedEnvironments) {
     .map(associatedEnvironment => ([
       toCodeComponent(associatedEnvironment.project),
       toCodeComponent(associatedEnvironment.name),
-      toCodeComponent(associatedEnvironment.quota),
       toCodeComponent(associatedEnvironment.cluster),
       toCodeComponent(associatedEnvironment.owner ?? ''),
     ]))
@@ -94,22 +87,6 @@ onBeforeMount(() => {
       :disabled="!isNewStage"
       placeholder="dev"
     />
-    <div
-
-      class="fr-mb-2w"
-    >
-      <ChoiceSelector
-        id="quotas-select"
-        :wrapped="false"
-        label="Quotas associés"
-        description="Sélectionnez les quotas autorisés à utiliser ce type d'environnement."
-        :options="allQuotas"
-        :options-selected="allQuotas.filter(({ id }) => localStage.quotaIds.includes(id))"
-        label-key="name"
-        value-key="id"
-        @update="(_q, quotaIds) => updateQuotas(quotaIds)"
-      />
-    </div>
     <div
       class="fr-mb-2w"
     >
@@ -169,7 +146,7 @@ onBeforeMount(() => {
         <DsfrTable
           title=""
           data-testid="associatedEnvironmentsTable"
-          :headers="['Projet', 'Nom', 'Quota', 'Cluster', 'Souscripteur']"
+          :headers="['Projet', 'Nom', 'Cluster', 'Souscripteur']"
           :rows="getRows(props.associatedEnvironments)"
         />
       </div>

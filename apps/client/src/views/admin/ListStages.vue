@@ -3,12 +3,10 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import type { CreateStageBody, Stage, StageAssociatedEnvironments, UpdateStageBody } from '@cpn-console/shared'
 import { useStageStore } from '@/stores/stage.js'
-import { useQuotaStore } from '@/stores/quota'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const stageStore = useStageStore()
-const quotaStore = useQuotaStore()
 const clusterStore = useClusterStore()
 const snackbarStore = useSnackbarStore()
 
@@ -18,7 +16,6 @@ const associatedEnvironments = ref<StageAssociatedEnvironments>([])
 const isNewStageForm = ref(false)
 
 const stages = computed(() => stageStore.stages)
-const allQuotas = computed(() => quotaStore.quotas)
 const allClusters = computed(() => clusterStore.clusters)
 
 function setStageTiles(stages: Stage[]) {
@@ -85,7 +82,6 @@ async function getStageAssociatedEnvironments(stageId: string) {
 }
 
 onMounted(async () => {
-  await quotaStore.getAllQuotas()
   await clusterStore.getClusters()
   await stageStore.getAllStages()
   setStageTiles(stages.value)
@@ -129,7 +125,6 @@ watch(stages, () => {
     class="my-5 pb-10 border-grey-900 border-y-1"
   >
     <StageForm
-      :all-quotas="allQuotas"
       :all-clusters="allClusters"
       class="w-full"
       :is-new-stage="true"
@@ -140,7 +135,6 @@ watch(stages, () => {
   <div v-else-if="selectedStage">
     <StageForm
       v-if="selectedStage"
-      :all-quotas="allQuotas"
       :all-clusters="allClusters"
       :stage="selectedStage"
       class="w-full"
