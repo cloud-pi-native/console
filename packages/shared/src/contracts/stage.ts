@@ -60,7 +60,7 @@ export const stageContract = contractInstance.router({
       stageId: z.string()
         .uuid(),
     }),
-    body: StageSchema.pick({ clusterIds: true, name: true }).partial(),
+    body: StageSchema.pick({ clusterIds: true, name: true }),
     responses: {
       200: StageSchema,
       500: ErrorSchema,

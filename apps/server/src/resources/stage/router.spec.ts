@@ -40,7 +40,7 @@ describe('test stageContract', () => {
     it('should return stage environments for admin', async () => {
       const environments = []
       const user = getUserMockInfos(true)
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user as utilsController.UserProjectProfile)
 
       businessGetEnvironmentsMock.mockResolvedValueOnce(environments)
       const response = await app.inject()
@@ -53,7 +53,7 @@ describe('test stageContract', () => {
     })
     it('should pass business error', async () => {
       const user = getUserMockInfos(true)
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user as utilsController.UserProjectProfile)
 
       businessGetEnvironmentsMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
@@ -64,7 +64,7 @@ describe('test stageContract', () => {
     })
     it('should return 403 for non-admin', async () => {
       const user = getUserMockInfos(false)
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user as utilsController.UserProjectProfile)
 
       const response = await app.inject()
         .get(stageContract.getStageEnvironments.path.replace(':stageId', faker.string.uuid()))
@@ -76,11 +76,11 @@ describe('test stageContract', () => {
   })
 
   describe('createStage', () => {
-    const stage: Stage = { id: faker.string.uuid(), name: faker.string.alpha({ length: 5 }), clusterIds: [], quotaIds: [] }
+    const stage: Stage = { id: faker.string.uuid(), name: faker.string.alpha({ length: 5 }), clusterIds: [] }
 
     it('should create and return stage for admin', async () => {
       const user = getUserMockInfos(true)
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user as utilsController.UserProjectProfile)
 
       businessCreateMock.mockResolvedValueOnce(stage)
       const response = await app.inject()
@@ -94,7 +94,7 @@ describe('test stageContract', () => {
     })
     it('should pass business error', async () => {
       const user = getUserMockInfos(true)
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user as utilsController.UserProjectProfile)
 
       businessCreateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
@@ -106,7 +106,7 @@ describe('test stageContract', () => {
     })
     it('should return 403 for non-admin', async () => {
       const user = getUserMockInfos(false)
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user as utilsController.UserProjectProfile)
 
       const response = await app.inject()
         .post(stageContract.createStage.path)
@@ -120,11 +120,11 @@ describe('test stageContract', () => {
 
   describe('updateStage', () => {
     const stageId = faker.string.uuid()
-    const stage = { name: faker.string.alpha({ length: 5 }), clusterIds: [], quotaIds: [] }
+    const stage = { name: faker.string.alpha({ length: 5 }), clusterIds: [] }
 
     it('should update and return stage for admin', async () => {
       const user = getUserMockInfos(true)
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user as utilsController.UserProjectProfile)
 
       businessUpdateMock.mockResolvedValueOnce({ id: stageId, ...stage })
       const response = await app.inject()
@@ -138,7 +138,7 @@ describe('test stageContract', () => {
     })
     it('should pass business error', async () => {
       const user = getUserMockInfos(true)
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user as utilsController.UserProjectProfile)
 
       businessUpdateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
@@ -150,7 +150,7 @@ describe('test stageContract', () => {
     })
     it('should return 403 for non-admin', async () => {
       const user = getUserMockInfos(false)
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user as utilsController.UserProjectProfile)
 
       const response = await app.inject()
         .put(stageContract.updateStage.path.replace(':stageId', stageId))
@@ -165,7 +165,7 @@ describe('test stageContract', () => {
   describe('deleteStage', () => {
     it('should delete stage for admin', async () => {
       const user = getUserMockInfos(true)
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user as utilsController.UserProjectProfile)
 
       businessDeleteMock.mockResolvedValueOnce(null)
       const response = await app.inject()
@@ -178,7 +178,7 @@ describe('test stageContract', () => {
     })
     it('should pass business error', async () => {
       const user = getUserMockInfos(true)
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user as utilsController.UserProjectProfile)
 
       businessDeleteMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
       const response = await app.inject()
@@ -189,7 +189,7 @@ describe('test stageContract', () => {
     })
     it('should return 403 for non-admin', async () => {
       const user = getUserMockInfos(false)
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user as utilsController.UserProjectProfile)
 
       const response = await app.inject()
         .delete(stageContract.deleteStage.path.replace(':stageId', faker.string.uuid()))

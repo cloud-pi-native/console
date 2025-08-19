@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { PROJECT_PERMS, environmentContract } from '@cpn-console/shared'
+import { type Environment, PROJECT_PERMS, environmentContract } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
 import { atDates, getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
@@ -16,13 +16,24 @@ const businessDeleteEnvironmentMock = vi.spyOn(business, 'deleteEnvironment')
 const businessCheckEnvironmentInputMock = vi.spyOn(business, 'checkEnvironmentInput')
 
 describe('environmentRouter tests', () => {
+  let projectId: string
+  let environmentId: string
+  let environmentData: Omit<Environment, 'id' | 'createdAt' | 'updatedAt'>
+
   beforeEach(() => {
     vi.resetAllMocks()
+    projectId = faker.string.uuid()
+    environmentId = faker.string.uuid()
+    environmentData = {
+      projectId,
+      name: 'envname',
+      cpu: faker.number.float({ min: 0.1, max: 10, fractionDigits: 1 }),
+      gpu: faker.number.float({ min: 0.1, max: 10, fractionDigits: 1 }),
+      memory: faker.number.float({ min: 0.1, max: 10, fractionDigits: 1 }),
+      clusterId: faker.string.uuid(),
+      stageId: faker.string.uuid(),
+    }
   })
-
-  const projectId = faker.string.uuid()
-  const environmentId = faker.string.uuid()
-  const environmentData = { projectId, name: 'envname', clusterId: faker.string.uuid(), quotaId: faker.string.uuid(), stageId: faker.string.uuid() }
 
   describe('listEnvironments', () => {
     it('should return environments for authorized user', async () => {
@@ -157,8 +168,15 @@ describe('environmentRouter tests', () => {
   })
 
   describe('updateEnvironment', () => {
-    const updateData = { quotaId: faker.string.uuid() }
-    it('should create environment for authorized user', async () => {
+    let updateData: { cpu: number, gpu: number, memory: number }
+    beforeEach(() => {
+      updateData = {
+        cpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+        gpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+        memory: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+      }
+    })
+    it('should update environment for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_ENVIRONMENTS })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)

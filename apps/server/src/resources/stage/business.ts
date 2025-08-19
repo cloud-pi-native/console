@@ -46,11 +46,12 @@ export async function createStage({ clusterIds = [], name }: CreateStageBody) {
 export async function updateStage(stageId: Stage['id'], { clusterIds, name }: UpdateStageBody) {
   const dbStage = await getStageById(stageId)
   if (!dbStage) return new NotFound404()
-  if (name === dbStage.name) {
+  if (name !== dbStage.name) {
     await updateStageName(stageId, name)
   }
   // Remove clusters
-  if (clusterIds) {
+  const dbClusterIds = dbStage.clusters.map(({ id }) => id)
+  if (clusterIds.sort().toString() !== dbClusterIds.sort().toString()) {
     const dbClusters = dbStage.clusters
     if (dbClusters?.length) {
       const clustersToRemove = dbClusters.filter(dbCluster => !clusterIds.includes(dbCluster.id))
@@ -65,7 +66,7 @@ export async function updateStage(stageId: Stage['id'], { clusterIds, name }: Up
   return {
     id: stageId,
     name: name ?? dbStage.name,
-    clusterIds: clusterIds ?? dbStage.clusters.map(({ id }) => id),
+    clusterIds: clusterIds ?? dbClusterIds,
   }
 }
 

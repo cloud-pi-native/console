@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
 import type { Log, ProjectV2 } from '../index.js'
-import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, LogSchema, ProjectSchemaV2, QuotaSchema, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, LogSchema, ProjectSchemaV2, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 
 describe('schemas utils', () => {
   it('should delete config in log', () => {
@@ -61,9 +61,11 @@ describe('schemas utils', () => {
     const toParse = {
       id: faker.string.uuid(),
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
+      cpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+      gpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+      memory: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
       projectId: faker.string.uuid(),
       clusterId: faker.string.uuid(),
-      quotaId: faker.string.uuid(),
       stageId: faker.string.uuid(),
     }
 
@@ -134,25 +136,11 @@ describe('schemas utils', () => {
     expect(UserSchema.safeParse(toParse)).toStrictEqual({ data: parsed, success: true })
   })
 
-  it('should validate a correct quota schema', () => {
-    const toParse = {
-      id: faker.string.uuid(),
-      name: faker.lorem.word({ length: { min: 2, max: 10 } }),
-      memory: '12Gi',
-      cpu: faker.number.int({ min: 0 }),
-      isPrivate: faker.datatype.boolean(),
-      stageIds: [],
-    }
-
-    expect(QuotaSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
-  })
-
   it('should validate a correct stage schema', () => {
     const toParse = {
       id: faker.string.uuid(),
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
       clusterIds: [],
-      quotaIds: [],
     }
 
     expect(StageSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
