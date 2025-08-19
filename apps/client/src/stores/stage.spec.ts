@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { apiClient } from '../api/xhr-client.js'
 import { useStageStore } from './stage.js'
+import type { Stage } from '@cpn-console/shared'
 
 const apiClientListStages = vi.spyOn(apiClient.Stages, 'listStages')
 const apiClientGet = vi.spyOn(apiClient.Stages, 'getStageEnvironments')
@@ -22,8 +23,8 @@ describe('stage Store', () => {
       { id: 'id1', name: 'dev' },
       { id: 'id2', name: 'int' },
       { id: 'id3', name: 'prod' },
-    ]
-    apiClientListStages.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
+    ] as Stage[]
+    apiClientListStages.mockResolvedValueOnce({ status: 200, body: data, headers: null })
     const stageStore = useStageStore()
 
     await stageStore.getAllStages()
@@ -35,11 +36,11 @@ describe('stage Store', () => {
   it('should get a stage\'s associated environments by api call', async () => {
     const stageId = 'stageId'
     const data = [
-      { id: 'id1', name: 'env1' },
-      { id: 'id2', name: 'env2' },
-      { id: 'id3', name: 'env3' },
-    ]
-    apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
+      { name: 'env1' },
+      { name: 'env2' },
+      { name: 'env3' },
+    ] as { name: string, project: string, cluster: string, owner: string }[]
+    apiClientGet.mockResolvedValueOnce({ status: 200, body: data, headers: null })
     const stageStore = useStageStore()
 
     const res = await stageStore.getStageAssociatedEnvironments(stageId)
@@ -51,10 +52,9 @@ describe('stage Store', () => {
   it('should create a stage by api call', async () => {
     const data = {
       name: 'int',
-      quotaIds: ['quota1'],
-    }
+    } as Stage
 
-    apiClientPost.mockReturnValueOnce(Promise.resolve({ status: 201, body: data }))
+    apiClientPost.mockResolvedValueOnce({ status: 201, body: data, headers: null })
     const stageStore = useStageStore()
 
     const res = await stageStore.addStage(data)
@@ -74,10 +74,10 @@ describe('stage Store', () => {
       id: stageId,
     }
 
-    apiClientPut.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
+    apiClientPut.mockResolvedValueOnce({ status: 200, body: data, headers: null })
     const stageStore = useStageStore()
 
-    const res = await stageStore.updateStage(stageId, { quotaIds, clusterIds, name: 'stageA' })
+    const res = await stageStore.updateStage(stageId, { clusterIds, name: 'stageA' })
 
     expect(res).toBe(data)
     expect(apiClientPut).toHaveBeenCalledTimes(1)
@@ -86,7 +86,7 @@ describe('stage Store', () => {
   it('should delete a stage by api call', async () => {
     const stageId = 'stageId'
 
-    apiClientDelete.mockReturnValueOnce(Promise.resolve({ status: 204 }))
+    apiClientDelete.mockResolvedValueOnce({ status: 204, body: null, headers: null })
     const stageStore = useStageStore()
 
     await stageStore.deleteStage(stageId)

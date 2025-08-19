@@ -3,7 +3,6 @@ import { onBeforeMount, ref } from 'vue'
 import { ProjectAuthorized } from '@cpn-console/shared'
 import type { ProjectV2 } from '@cpn-console/shared'
 import { useUserStore } from '@/stores/user.js'
-import { useQuotaStore } from '@/stores/quota.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useStageStore } from '@/stores/stage.js'
 import router from '@/router/index.js'
@@ -27,7 +26,6 @@ const projectStore = useProjectStore()
 const zoneStore = useZoneStore()
 const clusterStore = useClusterStore()
 const userStore = useUserStore()
-const quotaStore = useQuotaStore()
 const stageStore = useStageStore()
 
 const teamId = ref(getRandomId('team'))
@@ -46,7 +44,6 @@ async function archive() {
 onBeforeMount(async () => {
   await Promise.all([
     stageStore.getAllStages(),
-    quotaStore.getAllQuotas(),
     clusterStore.getClusters(),
     zoneStore.getAllZones(),
   ])

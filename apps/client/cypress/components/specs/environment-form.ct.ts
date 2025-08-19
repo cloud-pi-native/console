@@ -9,9 +9,9 @@ import '@/main.css'
 
 import EnvironmentForm from '@/components/EnvironmentForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useQuotaStore } from '@/stores/quota.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useZoneStore } from '@/stores/zone.js'
+import type { ComponentCustomProps } from 'vue'
 
 process.env.NODE_ENV = 'test'
 process.env.CT = 'true'
@@ -27,19 +27,12 @@ describe('EnvironmentForm.vue', () => {
 
   it('Should mount a EnvironmentForm', () => {
     const randomDbSetup = createRandomDbSetup({ envs: [] })
-    randomDbSetup.quotas[0].isPrivate = true
-    randomDbSetup.quotas[1].isPrivate = true
-    randomDbSetup.quotas[2].isPrivate = false
-    randomDbSetup.quotas[3].isPrivate = false
 
     const zones = randomDbSetup.zones
     const project: Required<typeof randomDbSetup.project> = randomDbSetup.project as Required<typeof randomDbSetup.project>
     const stageIds = randomDbSetup.stages.map(({ id }) => id)
     project.clusters = project.clusters.map(cluster => ({ ...cluster, stageIds }))
 
-    cy.intercept('GET', 'api/v1/quotas', {
-      body: randomDbSetup.quotas,
-    }).as('listQuotas')
     cy.intercept('GET', 'api/v1/stages', {
       body: randomDbSetup.stages,
     }).as('listStages')
@@ -48,7 +41,6 @@ describe('EnvironmentForm.vue', () => {
     }).as('listStages')
 
     useSnackbarStore()
-    useQuotaStore()
     useStageStore()
 
     const zoneStore = useZoneStore()
@@ -62,12 +54,8 @@ describe('EnvironmentForm.vue', () => {
       canManage: true,
     }
 
-    // @ts-ignore
-    cy.mount(EnvironmentForm, { props })
+    cy.mount(EnvironmentForm, { props } as ComponentCustomProps)
 
-    cy.wait('@listQuotas').its('response').then(($response) => {
-      expect($response.body.length).to.equal(4)
-    })
     cy.wait('@listStages').its('response').then(($response) => {
       expect($response.body.length).to.equal(4)
     })
@@ -76,12 +64,16 @@ describe('EnvironmentForm.vue', () => {
     cy.getByDataTestid('environmentFieldset').should('have.length', 1)
     cy.getByDataTestid('environmentNameInput')
       .should('have.value', '')
+    cy.getByDataTestid('cpuInput')
+      .should('have.value', '')
+    cy.getByDataTestid('gpuInput')
+      .should('have.value', '')
+    cy.getByDataTestid('memoryInput')
+      .should('have.value', '')
     cy.get('select#zone-select')
       .should('have.value', null)
     cy.get('select#stage-select')
       .should('have.value', null)
-    cy.get('select#quota-select')
-      .should('not.exist')
     cy.get('select#cluster-select')
       .should('not.exist')
     cy.getByDataTestid('addEnvironmentBtn').should('be.disabled')
@@ -99,34 +91,28 @@ describe('EnvironmentForm.vue', () => {
 
     cy.get('select#stage-select')
       .select(1)
-    cy.get('select#quota-select > option')
-      .should('have.length', 3)
-
-    cy.get('select#quota-select')
-      .select(1)
     cy.get('select#cluster-select > option')
       .should('have.length', props.availableClusters.length + 1)
 
     cy.get('select#cluster-select')
       .select(1)
+    cy.getByDataTestid('cpuInput')
+      .clear().type('2')
+    cy.getByDataTestid('gpuInput')
+      .clear().type('0')
+    cy.getByDataTestid('memoryInput')
+      .clear().type('3.5')
     cy.getByDataTestid('addEnvironmentBtn').should('be.enabled')
     cy.getByDataTestid('cancelEnvironmentBtn').should('be.enabled')
   })
   it('Should mount a EnvironmentForm as viewer', () => {
     const randomDbSetup = createRandomDbSetup({ envs: [] })
-    randomDbSetup.quotas[0].isPrivate = true
-    randomDbSetup.quotas[1].isPrivate = true
-    randomDbSetup.quotas[2].isPrivate = false
-    randomDbSetup.quotas[3].isPrivate = false
 
     const zones = randomDbSetup.zones
     const project: Required<typeof randomDbSetup.project> = randomDbSetup.project as Required<typeof randomDbSetup.project>
     const stageIds = randomDbSetup.stages.map(({ id }) => id)
     project.clusters = project.clusters.map(cluster => ({ ...cluster, stageIds }))
 
-    cy.intercept('GET', 'api/v1/quotas', {
-      body: randomDbSetup.quotas,
-    }).as('listQuotas')
     cy.intercept('GET', 'api/v1/stages', {
       body: randomDbSetup.stages,
     }).as('listStages')
@@ -135,7 +121,6 @@ describe('EnvironmentForm.vue', () => {
     }).as('listStages')
 
     useSnackbarStore()
-    useQuotaStore()
     useStageStore()
 
     const zoneStore = useZoneStore()
@@ -146,9 +131,11 @@ describe('EnvironmentForm.vue', () => {
         projectId: randomDbSetup.project.id,
         id: randomDbSetup.project.id,
         name: 'test',
+        cpu: 2,
+        gpu: 0,
+        memory: 4,
         clusterId: project.clusters[0].id,
         stageId: randomDbSetup.stages[0].id,
-        quotaId: randomDbSetup.quotas[0].id,
         zoneId: randomDbSetup.zones[0].id,
       },
       availableClusters: project.clusters,
@@ -156,12 +143,8 @@ describe('EnvironmentForm.vue', () => {
       isEditable: true,
     }
 
-    // @ts-ignore
-    cy.mount(EnvironmentForm, { props })
+    cy.mount(EnvironmentForm, { props } as ComponentCustomProps)
 
-    cy.wait('@listQuotas').its('response').then(($response) => {
-      expect($response.body.length).to.equal(4)
-    })
     cy.wait('@listStages').its('response').then(($response) => {
       expect($response.body.length).to.equal(4)
     })
@@ -177,12 +160,15 @@ describe('EnvironmentForm.vue', () => {
     cy.get('select#stage-select')
       .should('have.value', props.environment.stageId)
       .should('be.disabled')
-    cy.get('select#quota-select')
-      .should('have.value', props.environment.quotaId)
-      .should('be.disabled')
     cy.get('select#cluster-select')
       .should('have.value', props.environment.clusterId)
       .should('be.disabled')
+    cy.getByDataTestid('cpuInput')
+      .should('have.value', props.environment.cpu)
+    cy.getByDataTestid('gpuInput')
+      .should('have.value', props.environment.gpu)
+    cy.getByDataTestid('memoryInput')
+      .should('have.value', props.environment.memory)
     cy.getByDataTestid('addEnvironmentBtn').should('not.exist')
     cy.getByDataTestid('cancelEnvironmentBtn').should('not.exist')
   })
