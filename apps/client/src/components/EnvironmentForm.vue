@@ -14,10 +14,9 @@ import {
   projectIsLockedInfo,
 } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useQuotaStore } from '@/stores/quota.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useZoneStore } from '@/stores/zone.js'
-import { copyContent, getRandomId } from '@/utils/func.js'
+import { copyContent } from '@/utils/func.js'
 
 interface OptionType {
   text: string
@@ -47,34 +46,31 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   addEnvironment: [environment: Omit<CreateEnvironmentBody, 'projectId'>]
-  putEnvironment: [environment: Pick<Environment, 'quotaId'>]
+  putEnvironment: [environment: Pick<Environment, 'cpu' | 'gpu' | 'memory'>]
   deleteEnvironment: [environmentId: Environment['id']]
   cancel: []
 }>()
 
 const snackbarStore = useSnackbarStore()
 const stageStore = useStageStore()
-const quotaStore = useQuotaStore()
 const zoneStore = useZoneStore()
 
 const localEnvironment = ref(props.environment)
 const environmentToDelete = ref('')
 const isDeletingEnvironment = ref(false)
-const inputKey = ref(getRandomId('input'))
 const zoneId = ref<string>()
 const stageOptions = ref<OptionType[]>([])
 const zoneOptions = ref<OptionType[]>([])
-const quotaOptions = ref<OptionType[]>([])
 const clusterOptions = ref<OptionType[]>([])
 
 const chosenZoneDescription = computed(() => zoneStore.zonesById[zoneId.value ?? '']?.description ?? '')
 
 const schema = computed(() => {
   if (localEnvironment.value?.id) {
-    const schemaValidation = EnvironmentSchema.pick({ id: true, quotaId: true }).safeParse(localEnvironment.value)
+    const schemaValidation = EnvironmentSchema.pick({ id: true, cpu: true, gpu: true, memory: true }).safeParse(localEnvironment.value)
     return schemaValidation
   } else {
-    const schemaValidation = EnvironmentSchema.pick({ clusterId: true, name: true, quotaId: true, stageId: true }).safeParse(localEnvironment.value)
+    const schemaValidation = EnvironmentSchema.pick({ clusterId: true, name: true, cpu: true, gpu: true, memory: true, stageId: true }).safeParse(localEnvironment.value)
     return schemaValidation
   }
 })
@@ -107,19 +103,6 @@ function setEnvironmentOptions() {
     }))
 }
 
-function setQuotaOptions() {
-  quotaOptions.value
-    = quotaStore.quotas
-      .filter(quota =>
-        (quota.stageIds.includes(localEnvironment.value.stageId ?? '') // quotas disponibles pour ce type d'environnement
-          && (!quota.isPrivate || props.canSeePrivateQuotas)) // et ne pas afficher les quotas privés
-          || quota.id === localEnvironment.value.quotaId) // ou quota actuellement associé (au cas où l'association ne soit plus disponible)
-      .map(quota => ({
-        text: `${quota.name} (${quota.cpu}CPU, ${quota.memory})`,
-        value: quota.id,
-      }))
-}
-
 function resetCluster() {
   localEnvironment.value.clusterId = ''
 }
@@ -143,11 +126,9 @@ function cancel() {
 onBeforeMount(async () => {
   await Promise.all([
     stageStore.getAllStages(),
-    quotaStore.getAllQuotas(),
     zoneStore.getAllZones(),
   ])
   setEnvironmentOptions()
-  setQuotaOptions()
 })
 
 onMounted(() => {
@@ -228,30 +209,9 @@ watch(localEnvironment.value, () => {
       required
       :disabled="!props.isEditable || !props.canManage"
       :options="stageOptions"
-      @update:model-value="() => { resetCluster(); setQuotaOptions() }"
+      @update:model-value="resetCluster()"
     />
     <div>
-      <div
-        v-if="localEnvironment.stageId"
-        class="fr-my-2w"
-      >
-        <DsfrAlert
-          v-if="localEnvironment.quotaId && quotaStore.quotasById[localEnvironment.quotaId]?.isPrivate"
-          description="Vous disposez d'un quota privé pour cet environnement. Veuillez contacter un administrateur si vous souhaitez le modifier."
-          small
-        />
-        <DsfrSelect
-          :key="inputKey"
-          v-model="localEnvironment.quotaId"
-          data-testid="quota-select"
-          select-id="quota-select"
-          label="Dimensionnement des ressources allouées à l'environnement"
-          hint="Si votre projet nécessite d'avantage de ressources que celles proposées ci-dessus, contactez les administrateurs."
-          required
-          :options="quotaOptions"
-          :disabled="!props.canManage"
-        />
-      </div>
       <DsfrAlert
         v-if="localEnvironment.stageId && zoneId && !clusterOptions.length"
         data-testid="noClusterOptionAlert"
@@ -269,6 +229,45 @@ watch(localEnvironment.value, () => {
         default-unselected-text="Choisissez un cluster de destination"
         :disabled="!props.isEditable || !props.canManage"
         :options="clusterOptions"
+      />
+      <DsfrInputGroup
+        v-model="localEnvironment.memory"
+        label="Mémoire allouée (en GiB)"
+        label-visible
+        type="number"
+        min="0"
+        max="100"
+        step="0.1"
+        :required="true"
+        data-testid="memoryInput"
+        placeholder="0.1"
+        @update:model-value="(value: string) => localEnvironment.memory = parseFloat(value)"
+      />
+      <DsfrInputGroup
+        v-model="localEnvironment.cpu"
+        label="CPU alloué(s)"
+        label-visible
+        type="number"
+        min="0"
+        max="100"
+        step="0.1"
+        :required="true"
+        data-testid="cpuInput"
+        placeholder="0.1"
+        @update:model-value="(value: string) => localEnvironment.cpu = parseFloat(value)"
+      />
+      <DsfrInputGroup
+        v-model="localEnvironment.gpu"
+        label="GPU alloué(s)"
+        label-visible
+        type="number"
+        min="0"
+        max="100"
+        step="0.1"
+        :required="true"
+        data-testid="gpuInput"
+        placeholder="0.1"
+        @update:model-value="(value: string) => localEnvironment.gpu = parseFloat(value)"
       />
       <DsfrAlert
         v-if="clusterInfos"

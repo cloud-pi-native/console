@@ -29,7 +29,6 @@ const ListProjects = () => import('@/views/admin/ListProjects.vue')
 const ListLogs = () => import('@/views/admin/ListLogs.vue')
 const AdminRoles = () => import('@/views/admin/AdminRoles.vue')
 const ListClusters = () => import('@/views/admin/ListClusters.vue')
-const ListQuotas = () => import('@/views/admin/ListQuotas.vue')
 const ListStages = () => import('@/views/admin/ListStages.vue')
 const ListZones = () => import('@/views/admin/ListZones.vue')
 const ListPlugins = () => import('@/views/admin/ListPlugins.vue')
@@ -202,11 +201,6 @@ export const routes: Readonly<RouteRecordRaw[]> = [
             },
           },
         ],
-      },
-      {
-        path: 'quotas',
-        name: 'ListQuotas',
-        component: ListQuotas,
       },
       {
         path: 'stages',

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useClusterStore } from '@/stores/cluster.js'
-import { useQuotaStore } from '@/stores/quota.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useUserStore } from '@/stores/user.js'
@@ -8,7 +7,7 @@ import { useZoneStore } from '@/stores/zone.js'
 import { clickInDialog, getRandomId } from '@/utils/func.js'
 import { defaultBranchName } from '@/utils/misc'
 import type { Project } from '@/utils/project-utils.js'
-import type { UpdateEnvironmentBody, Environment, Repo, CreateEnvironmentBody, CleanedCluster, Zone, Quota, Cluster } from '@cpn-console/shared'
+import type { UpdateEnvironmentBody, Environment, Repo, CreateEnvironmentBody, CleanedCluster, Zone, Cluster } from '@cpn-console/shared'
 import { AdminAuthorized, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
@@ -24,10 +23,9 @@ const zoneStore = useZoneStore()
 const clusterStore = useClusterStore()
 const snackbarStore = useSnackbarStore()
 const stageStore = useStageStore()
-const quotaStore = useQuotaStore()
 const userStore = useUserStore()
 
-const environments = ref<(Environment & { cluster?: Cluster, zone?: Zone, quota?: Quota })[]>()
+const environments = ref<(Environment & { cluster?: Cluster, zone?: Zone })[]>()
 const repositories = ref<(Repo & { source: Source })[]>()
 
 const branchName = ref<string>(defaultBranchName)
@@ -136,7 +134,6 @@ async function reload() {
         ...environment,
         cluster,
         zone,
-        quota: quotaStore.quotas.find(quota => quota.id === environment.quotaId),
       }
     }))
   repositories.value = await props.project.Repositories.list()
@@ -144,7 +141,7 @@ async function reload() {
       return repos.map((repo: Repo) => {
         let source: Source
         if (repo.externalRepoUrl) {
-          source = repo.isPrivate ? 'Privé extérieur' : 'Publique extérieur'
+          source = repo.isPrivate ? 'Privée extérieur' : 'Publique extérieur'
         } else {
           source = 'Interne'
         }
@@ -207,7 +204,7 @@ async function copyToClipboard(text) {
           <td>{{ env.name }}</td>
           <td>{{ stageStore.stages.find(stage => stage.id === env.stageId)?.name ?? 'Type inconnu...' }}</td>
           <td>
-            {{ env.quota?.name }}: {{ env.quota?.cpu }}CPU {{ env.quota?.memory }}
+            {{ env.memory }}GiB {{ env.cpu }}CPU {{ env.gpu }}GPU
           </td>
           <td>
             <div class="flex flex-row gap-2">
