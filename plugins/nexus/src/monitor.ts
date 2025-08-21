@@ -10,12 +10,19 @@ const coreComponents = [
 const auxComponents = [
   'Available CPUs',
   'Blob Stores Quota',
+  'Blob Stores Ready',
+  'Default Admin Credentials',
+  'DefaultRoleRealm',
+  'File Blob Stores Path',
   'File Descriptors',
   'NuGet V2 repositories',
   'Scheduler',
-  'Thread Deadlock Detector',
+  'com.codahale.metrics.health.jvm.ThreadDeadlockHealthCheck',
+  'Node Health Check',
+  'Re-encryption required',
   'Read-Only Detector',
   'Default Admin Credentials',
+  'Recent version',
 ]
 
 type NexusRes = Record<string, {
