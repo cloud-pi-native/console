@@ -1,25 +1,7 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 import { faker } from '@faker-js/faker'
-import { clientURL, cnolletUser, signInCloudPiNative, testUser } from './utils'
-
-// Assuming we are on the Home page, create a random project with given name, or a generated one
-async function addProject({
-  page,
-  projectName,
-}: {
-  page: Page
-  projectName?: string
-}) {
-  projectName = projectName ?? faker.string.alpha(10).toLowerCase()
-  await page.getByTestId('menuMyProjects').click()
-  await page.getByTestId('createProjectLink').click()
-  await page.getByTestId('nameInput').click()
-  await page.getByTestId('nameInput').fill(projectName)
-  await page.getByTestId('createProjectBtn').click()
-  await expect(page.locator('h1')).toContainText(projectName)
-  return projectName
-}
+import { addProject, clientURL, cnolletUser, signInCloudPiNative, testUser } from './utils'
 
 // Assuming we are on a given Project page, add a random repository with given name, or a generated one
 async function addRandomRepositoryToProject({
@@ -80,6 +62,7 @@ test.describe('Projects page', () => {
 
     // Previously created project should not appear for this user
     await page.getByTestId('menuMyProjects').click()
+    await expect(page.getByTestId('createProjectLink')).toBeVisible()
     await expect(page.getByRole('link', { name: projectName })).not.toBeVisible()
   })
 
