@@ -42,7 +42,7 @@ services:
       target: dev
     image: dso-console/server:dev
     container_name: dso-console_server
-    command: [dev] # use "debug" to run debug mode
+    command: [dev]
     depends_on:
       postgres:
         condition: service_started
@@ -126,8 +126,6 @@ services:
 networks:
   dso-network:
     driver: bridge
-    # driver_opts:
-    # com.docker.network.driver.mtu: 1450
 
 volumes:
   dso-pgadmin-data-integ:
