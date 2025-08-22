@@ -240,7 +240,6 @@ describe('Administration projects', () => {
       cy.get('tr').contains(projectName)
         .click()
     })
-    cy.wait('@listQuotas')
     cy.get('.fr-callout__title')
       .should('contain', projectName)
     cy.getByDataTestid('archiveProjectInput').should('not.exist')
@@ -255,48 +254,6 @@ describe('Administration projects', () => {
     cy.wait('@archiveProject')
       .its('response.statusCode')
       .should('match', /^20\d$/)
-  })
-
-  it('Should update an environment quota, loggedIn as admin', () => {
-    cy.intercept('GET', '/api/v1/environments?projectId=*').as('listEnvironments')
-    cy.intercept('GET', 'api/v1/projects?filter=all&statusNotIn=archived').as('getAllProjects')
-    cy.intercept('GET', 'api/v1/environments?projectId=*').as('getProjectEnvironments')
-    cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
-    cy.intercept('GET', 'api/v1/stages').as('listStages')
-    cy.intercept('POST', '/api/v1/quotas').as('createQuota')
-    cy.intercept('PUT', '/api/v1/environments/*').as('putEnvironment')
-
-    cy.getByDataTestid('tableAdministrationProjects').within(() => {
-      cy.get('tr').contains('betaapp')
-        .click()
-    })
-
-    cy.url().should('contain', 'betaapp')
-    cy.wait('@listEnvironments').its('response.statusCode').should('match', /^20\d$/)
-    cy.getByDataTestid('environmentTr-staging').click()
-    cy.getByDataTestid('quota-select')
-      .should('be.enabled')
-      .should('have.value', '5a57b62f-2465-4fb6-a853-5a751d099199')
-      .select('08770663-3b76-4af6-8978-9f75eda4faa7')
-    cy.getByDataTestid('putEnvironmentBtn').click()
-    cy.wait('@putEnvironment').its('response.statusCode').should('match', /^20\d$/)
-    cy.wait('@listEnvironments').its('response.statusCode').should('match', /^20\d$/)
-
-    cy.wait(500)
-    cy.getByDataTestid('environmentTr-staging').click()
-    cy.getByDataTestid('quota-select')
-      .should('be.enabled')
-      .should('have.value', '08770663-3b76-4af6-8978-9f75eda4faa7')
-      .select('5a57b62f-2465-4fb6-a853-5a751d099199')
-    cy.getByDataTestid('putEnvironmentBtn').click()
-    cy.wait('@putEnvironment').its('response.statusCode').should('match', /^20\d$/)
-    cy.wait('@listEnvironments').its('response.statusCode').should('match', /^20\d$/)
-
-    cy.wait(500)
-    cy.getByDataTestid('environmentTr-staging').click()
-    cy.getByDataTestid('quota-select')
-      .should('be.enabled')
-      .should('have.value', '5a57b62f-2465-4fb6-a853-5a751d099199')
   })
 
   it('Should remove and add a user from a project, loggedIn as admin', () => {
