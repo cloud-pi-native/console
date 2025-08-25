@@ -1,5 +1,37 @@
 # Changelog
 
+## [9.4.0](https://github.com/cloud-pi-native/console/compare/v9.3.3...v9.4.0) (2025-08-25)
+
+
+### Features
+
+* :rocket: empty Vault url to use the default VaultConnection ([e2d3b28](https://github.com/cloud-pi-native/console/commit/e2d3b287964952b0f6dd0a00ea97499827cb7198))
+* :sparkles: create contact email environment variable ([779cb4a](https://github.com/cloud-pi-native/console/commit/779cb4a83492d4159a7efa868822adc5640dd6f8))
+* ✨ Add the repo UID display on console ([2ed10e4](https://github.com/cloud-pi-native/console/commit/2ed10e4b612687b9a18441458749d2821bcff43e))
+* ✨ Variabilize clipboard timeout ([2ed10e4](https://github.com/cloud-pi-native/console/commit/2ed10e4b612687b9a18441458749d2821bcff43e))
+* add Playwright E2E tests for Keycloak ([1524bba](https://github.com/cloud-pi-native/console/commit/1524bba8d6adcc8b360d740e85b51fcf8db71964))
+* add README for ArgoCD plugin ([5d66223](https://github.com/cloud-pi-native/console/commit/5d66223c5e6af45fdc02d3f1e062a6424b0e6cdc))
+* allow cluster informations property to be up to 1000 characters long ([9fe3182](https://github.com/cloud-pi-native/console/commit/9fe3182a5c771552f23f1e147475acd606efe67a))
+* configure Playwright Github workflow ([4ac7f55](https://github.com/cloud-pi-native/console/commit/4ac7f55f6fc6d3d747bafad20efa7184e608b146))
+* **playwright:** add Project page tests ([419ea3c](https://github.com/cloud-pi-native/console/commit/419ea3c735dd3ece8e02ce2d77beaa815170f7cd))
+
+
+### Bug Fixes
+
+* :bug: adapt status analysis to Nexus 3.83.1 response ([4efa720](https://github.com/cloud-pi-native/console/commit/4efa720c50e766068d3c8773df83e3754d29c9f1))
+* **#1681:** :bug: missing kv creation if not exists ([e862c5c](https://github.com/cloud-pi-native/console/commit/e862c5ca51dee5a0216f2c66040f90d510579df4))
+* **1638:** add validation for repo names in Zod schema ([48621bd](https://github.com/cloud-pi-native/console/commit/48621bdc63446be7cd5e38ca13b98762af322c16))
+* **client:** ensure branch name is reset to default value after synchronization on a repository ([af0ea44](https://github.com/cloud-pi-native/console/commit/af0ea44186dd8c22c370c5c7edd77b4807fb9e80))
+* **client:** fix Teams E2E cypress being broken after keycloak realm update ([9c95fdf](https://github.com/cloud-pi-native/console/commit/9c95fdffbb208cae9b930fc0d2ca9516bb2cbe9b))
+* fix docker build permissions to allow local path import ([c0aaa2f](https://github.com/cloud-pi-native/console/commit/c0aaa2f29017845575c38ef83d18850f6ae741cb))
+* fix docker build permissions to allow local path import ([6b9461d](https://github.com/cloud-pi-native/console/commit/6b9461dd5e481486a5d1e479f4364348e1cf4fda))
+* fix formatting issue ([662a834](https://github.com/cloud-pi-native/console/commit/662a8342bd83242a61eceae900eb328b1eab5cc5))
+* fix typo ([c20bd60](https://github.com/cloud-pi-native/console/commit/c20bd60e462f59222b1d873d65dcb2ec980b6c33))
+* **playwright:** ensure keycloak tests work for all languages ([44e27a3](https://github.com/cloud-pi-native/console/commit/44e27a3a8d666949ad29d26b8cbd77da50b067bb))
+* **playwright:** fix format command not working ([578e4b3](https://github.com/cloud-pi-native/console/commit/578e4b3e5a0538ac41e9410d09b47f45b98f30bb))
+* remove cluster resources to avoid confusion on its usage ([2ecf9d7](https://github.com/cloud-pi-native/console/commit/2ecf9d70330581b9cb757fa5822a85c6464e0bec))
+* **tests:** fix admin id in pgsql import data not being consistent with keycloak ([3ee2583](https://github.com/cloud-pi-native/console/commit/3ee2583c6f1f7761b5586047b6a93d40c3fb5d58))
+
 ## [9.3.3](https://github.com/cloud-pi-native/console/compare/v9.3.2...v9.3.3) (2025-06-12)
 
 
