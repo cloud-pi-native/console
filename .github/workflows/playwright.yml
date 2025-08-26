@@ -94,7 +94,7 @@ jobs:
           docker tag ghcr.io/cloud-pi-native/console/server:${{ inputs.TAG }} dso-console/server:ci
           docker pull ghcr.io/cloud-pi-native/console/client:${{ inputs.TAG }}
           docker tag ghcr.io/cloud-pi-native/console/client:${{ inputs.TAG }} dso-console/client:ci
-          docker buildx bake --file docker/docker-compose.ci.yml --load --allow=fs.read=.. opencds-mockoon
+          docker buildx build -t dso-console/opencds-mockoon:ci packages/opencds/
           docker compose -f ./docker/docker-compose.ci.yml up --no-build -d --remove-orphans
 
       - name: Run Playwright tests

@@ -64,11 +64,12 @@ services:
       - dso-network
     attach: false
 
-  mockoon:
+  opencds-mockoon:
     restart: unless-stopped
     build:
-      context: ../plugins/opencds
-      dockerfile: Dockerfile_mockoon
+      context: ../packages/opencds
+      dockerfile: Dockerfile
+    image: dso-console/opencds-mockoon:local
     container_name: dso-opencds_mockoon
     user: root
     ports:

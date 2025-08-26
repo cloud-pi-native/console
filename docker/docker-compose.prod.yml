@@ -89,9 +89,9 @@ services:
   opencds-mockoon:
     restart: unless-stopped
     build:
-      context: ../plugins/opencds
-      dockerfile: plugins/opencds/Dockerfile_mockoon
-    image: dso-console/server:prod
+      context: ../packages/opencds
+      dockerfile: Dockerfile
+    image: dso-console/opencds-mockoon:prod
     container_name: dso-opencds_mockoon
     user: root
     depends_on:
