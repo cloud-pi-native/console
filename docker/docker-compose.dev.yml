@@ -12,7 +12,7 @@ services:
 
   keycloak:
     restart: unless-stopped
-    image: docker.io/bitnami/keycloak:23.0.7
+    image: docker.io/bitnami/keycloak:26.3.3-debian-12-r0
     container_name: dso-console_keycloak
     # depends_on:
     #   keycloak-fetch-theme:
@@ -21,7 +21,7 @@ services:
       - 8090:8080
     volumes:
       - ../keycloak/realms:/opt/bitnami/keycloak/data/import
-      - ../keycloak/data/dev:/opt/bitnami/keycloak/data/h2
+      - ../keycloak/data/dev:/opt/bitnami/keycloak/data
     # - type: volume
     #   source: dso-keycloak-dsfr-theme
     #   target: /opt/bitnami/keycloak/providers/keycloak-theme-dsfr.jar
@@ -29,9 +29,10 @@ services:
     #     subpath: keycloak-theme-dsfr.jar
     user: root
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
       KC_HEALTH_ENABLED: true
+      KC_DB: dev-file
       # DSFR_THEME_HOME_URL: http://localhost:8080
       # DSFR_THEME_SERVICE_TITLE: Console Cloud π Native
       # DSFR_THEME_BRAND_TOP: Ministère<br/>de l'Intérieur</br>et des Outre-Mer
