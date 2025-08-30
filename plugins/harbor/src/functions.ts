@@ -5,6 +5,7 @@ import { DEFAULT, ENABLED } from '@cpn-console/shared'
 import { getApi, getConfig, projectRobotName, roRobotName, rwRobotName } from './utils.js'
 import { createProject, deleteProject } from './project.js'
 import { addProjectGroupMember } from './permission.js'
+import { addRetentionPolicy } from './policy.js'
 import type { VaultRobotSecret } from './robot.js'
 import { deleteRobot, ensureRobot, roAccess, rwAccess } from './robot.js'
 import { getSecretObject } from './kubeSecret.js'
@@ -40,6 +41,31 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
       ensureRobot(projectName, roRobotName, vaultApi, roAccess, api), // cette ligne en premier sinon ça foire au dessus
       ensureRobot(projectName, rwRobotName, vaultApi, rwAccess, api),
       addProjectGroupMember(projectName, oidcGroup),
+      addRetentionPolicy(
+        projectName,
+        projectCreated.project_id as number,
+        {
+          algorithm: 'or',
+          scope: { level: 'project', ref: projectCreated.project_id as number },
+          rules: [
+            {
+              disabled: false,
+              action: 'retain',
+              template: 'nDaysSinceLastPull',
+              params: { nDaysSinceLastPull: 10 },
+              tag_selectors: [{ kind: 'doublestar', decoration: 'matches', pattern: '**' }],
+              scope_selectors: {
+                repository: [{ kind: 'doublestar', decoration: 'repoMatches', pattern: '**' }],
+              },
+            },
+          ],
+          trigger: {
+            kind: 'Schedule',
+            settings: { cron: '0 22 2 * * *' },
+            references: [],
+          },
+        },
+      ),
       createProjectRobot
         ? ensureRobot(projectName, projectRobotName, vaultApi, roAccess, api)
         : deleteRobot(projectName, projectRobotName, vaultApi, api),
