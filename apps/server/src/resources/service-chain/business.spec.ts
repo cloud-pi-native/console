@@ -13,14 +13,14 @@ import {
 import { faker } from '@faker-js/faker'
 import axios from 'axios'
 import type { Mock } from 'vitest'
-import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   getServiceChainDetails,
+  getServiceChainFlows,
   listServiceChains,
   retryServiceChain,
   validateServiceChain,
-  getServiceChainFlows,
 } from './business.ts'
 
 vi.mock('axios')
@@ -106,51 +106,66 @@ describe('test ServiceChain business logic', () => {
 
   describe('listServiceChains', () => {
     it('should return a list of service chains', async () => {
-      (axios.get as Mock).mockResolvedValue({ data: [serviceChain] })
+      const input = [serviceChain];
+      (axios.create as Mock).mockReturnValue({
+        get: () => ({ data: input }),
+      })
 
-      await listServiceChains()
+      const result = await listServiceChains()
 
-      expect(axios.get).toHaveBeenCalledTimes(1)
+      expect(result).toStrictEqual(input)
     })
   })
 
   describe('getServiceChainDetails', () => {
     it('should return a service chain details', async () => {
-      (axios.get as Mock).mockResolvedValue({ data: serviceChainDetails })
+      const input = serviceChainDetails;
+      (axios.create as Mock).mockReturnValue({
+        get: () => ({ data: input }),
+      })
 
-      await getServiceChainDetails(faker.string.uuid())
+      const result = await getServiceChainDetails(faker.string.uuid())
 
-      expect(axios.get).toHaveBeenCalledTimes(1)
+      expect(result).toStrictEqual(input)
     })
   })
 
   describe('retryServiceChain', () => {
     it('should trigger a service chain retry attempt', async () => {
-      (axios.post as Mock).mockResolvedValue({})
+      const input = {};
+      (axios.create as Mock).mockReturnValue({
+        post: () => ({ data: input }),
+      })
 
-      await retryServiceChain(faker.string.uuid())
+      const result = await retryServiceChain(faker.string.uuid())
 
-      expect(axios.post).toHaveBeenCalledTimes(1)
+      expect(result.data).toStrictEqual(input)
     })
   })
 
   describe('validateServiceChain', () => {
     it('should trigger a service chain validate attempt', async () => {
-      (axios.post as Mock).mockResolvedValue({})
+      const input = {};
+      (axios.create as Mock).mockReturnValue({
+        post: () => ({ data: input }),
+      })
 
-      await validateServiceChain(faker.string.uuid())
+      const result = await validateServiceChain(faker.string.uuid())
 
-      expect(axios.post).toHaveBeenCalledTimes(1)
+      expect(result.data).toStrictEqual(input)
     })
   })
 
   describe('getServiceChainFlows', () => {
     it('should return a service chain flows', async () => {
-      (axios.get as Mock).mockResolvedValue({ data: serviceChainFlows })
+      const input = serviceChainFlows;
+      (axios.create as Mock).mockReturnValue({
+        get: () => ({ data: input }),
+      })
 
-      await getServiceChainFlows(faker.string.uuid())
+      const result = await getServiceChainFlows(faker.string.uuid())
 
-      expect(axios.get).toHaveBeenCalledTimes(1)
+      expect(result).toStrictEqual(input)
     })
   })
 })
