@@ -2,9 +2,13 @@ global:
   env:
     NODE_ENV: production
   keycloak:
-    domain: keycloak.dso.local
+    domain:
+      backend: keycloak.dso.local
+      frontend: keycloak.dso.local
     realm: cloud-pi-native
-    protocol: http
+    protocol:
+      backend: http
+      frontend: http
     clientIds:
       frontend: dso-console-frontend
       backend: console-backend
