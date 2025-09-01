@@ -108,6 +108,9 @@ pnpm install
 # Copier les fichiers d'environnement exemples
 ./ci/scripts/init-env.sh
 
+# Générer le client Prisma côté serveur
+pnpm --filter @cpn-console/server run db:generate
+
 # Construire les paquets applicatifs
 pnpm build
 ```
