@@ -37,11 +37,17 @@ export const useServiceChainStore = defineStore('serviceChain', () => {
       ServiceChainFlowsSchema.parse(extractData(response, 200)),
     )
 
+  const retryServiceChain = async (serviceChainId: ServiceChain['id']) =>
+    apiClient.ServiceChains.retryServiceChain({
+      params: { serviceChainId },
+    })
+
   return {
     serviceChains,
     serviceChainsById,
     getServiceChainDetails,
     getServiceChainFlows,
     getServiceChainsList,
+    retryServiceChain,
   }
 })

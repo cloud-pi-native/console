@@ -44,7 +44,7 @@ const serviceChainsFiltered = computed(() =>
       }
     }),
 )
-const title = 'Liste des chaînes de Service'
+const title = 'Liste des Chaînes de Services'
 
 onMounted(async () => {
   await Promise.all([serviceChainStore.getServiceChainsList()])

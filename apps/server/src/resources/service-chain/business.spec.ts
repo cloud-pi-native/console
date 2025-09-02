@@ -44,7 +44,7 @@ describe('test ServiceChain business logic', () => {
     serviceChainDetails = {
       ...serviceChain,
       validationId: faker.string.uuid(),
-      validatedBy: faker.string.uuid(),
+      validatedBy: faker.helpers.maybe(() => faker.string.uuid()) || null,
       ref: faker.string.uuid(),
       location: faker.helpers.arrayElement(serviceChainLocationEnum),
       targetAddress: faker.internet.ipv4(),
@@ -73,12 +73,12 @@ describe('test ServiceChain business logic', () => {
         output: '{ "foo": 0, "bar": true, "qux": "test" }',
         updatedAt: faker.date.recent(),
       },
-      create_cert: {
+      create_cert: faker.helpers.maybe(() => ({
         state: faker.helpers.arrayElement(serviceChainFlowStateEnum),
         input: '{ "foo": 0, "bar": true, "qux": "test" }',
         output: '{ "foo": 0, "bar": true, "qux": "test" }',
         updatedAt: faker.date.recent(),
-      },
+      })) || null,
       call_exec: {
         state: faker.helpers.arrayElement(serviceChainFlowStateEnum),
         input: '{ "foo": 0, "bar": true, "qux": "test" }',

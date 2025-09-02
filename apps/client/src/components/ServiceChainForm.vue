@@ -1,16 +1,19 @@
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
 import type {
+  ServiceChain,
   ServiceChainDetails,
   ServiceChainFlows,
 } from '@cpn-console/shared'
 import {
   DsfrBadge,
+  DsfrButton,
   DsfrFieldset,
   DsfrInputGroup,
   DsfrStepper,
   DsfrToggleSwitch,
 } from '@gouvminint/vue-dsfr'
+import { useServiceChainStore } from '@/stores/service-chain'
 
 const props = withDefaults(
   defineProps<{
@@ -139,7 +142,7 @@ const localizedFlows = [
 ]
 const currentFlow = computed(() =>
   flows.findIndex(
-    flow => localServiceChainFlows.value[flow].state !== 'success',
+    flow => localServiceChainFlows.value[flow]?.state !== 'success',
   ),
 )
 
@@ -150,6 +153,15 @@ function cancel() {
 onBeforeMount(() => {
   localServiceChainDetails.value = props.serviceChainDetails
 })
+
+const serviceChainStore = useServiceChainStore()
+const isRetryDisabled = ref(false)
+const retryButtonLabel = ref('Relancer')
+async function clickRetry(id: ServiceChain['id']) {
+  await serviceChainStore.retryServiceChain(id)
+  isRetryDisabled.value = true
+  retryButtonLabel.value = 'Relancé'
+}
 </script>
 
 <template>
@@ -168,7 +180,18 @@ onBeforeMount(() => {
       <span class="mr-5">{{
         `Chaîne de services "${localServiceChainDetails.commonName}"`
       }}</span>
-      <DsfrBadge data-testid="state" :type="badgeStatus" :label="state" />
+      <DsfrBadge
+        class="mr-12"
+        data-testid="state"
+        :type="badgeStatus"
+        :label="state"
+      />
+      <DsfrButton
+        v-if="localServiceChainDetails.state === 'failed'"
+        :label="retryButtonLabel"
+        :disabled="isRetryDisabled"
+        @click.stop="() => clickRetry(localServiceChainDetails.id)"
+      />
     </h1>
 
     <DsfrFieldset legend="Informations sur la chaîne de services">
