@@ -10,6 +10,7 @@ import '@/main.css'
 
 import ClusterForm from '@/components/ClusterForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import type { ComponentCustomProps } from 'vue'
 
 describe('ClusterForm.vue', () => {
   let pinia: Pinia
@@ -34,7 +35,7 @@ describe('ClusterForm.vue', () => {
       associatedEnvironments: [],
     }
 
-    cy.mount(ClusterForm, { props })
+    cy.mount(ClusterForm, { props } as ComponentCustomProps)
     cy.getByDataTestid('tlsServerNameInput')
       .type('tlsServerName')
     cy.getByDataTestid('labelInput')
@@ -71,7 +72,7 @@ describe('ClusterForm.vue', () => {
       associatedEnvironments: [],
     }
 
-    cy.mount(ClusterForm, { props })
+    cy.mount(ClusterForm, { props } as ComponentCustomProps)
 
     cy.getByDataTestid('user-json').should('be.visible')
     cy.getByDataTestid('cluster-json').should('be.visible')
@@ -97,6 +98,12 @@ describe('ClusterForm.vue', () => {
       .click()
     cy.get('#stages-select .fr-tag--dismiss')
       .should('have.length', props.cluster.stageIds?.length)
+    cy.getByDataTestid('memoryInput')
+      .should('have.value', props.cluster.memory)
+    cy.getByDataTestid('cpuInput')
+      .should('have.value', props.cluster.cpu)
+    cy.getByDataTestid('gpuInput')
+      .should('have.value', props.cluster.gpu)
     cy.getByDataTestid('updateClusterBtn').should('be.enabled')
     cy.getByDataTestid('associatedEnvironmentsZone').should('not.exist')
     cy.getByDataTestid('deleteClusterZone').should('exist')
@@ -125,7 +132,7 @@ describe('ClusterForm.vue', () => {
       associatedEnvironments,
     }
 
-    cy.mount(ClusterForm, { props })
+    cy.mount(ClusterForm, { props } as ComponentCustomProps)
 
     cy.getByDataTestid('user-json').should('be.visible')
     cy.getByDataTestid('cluster-json').should('be.visible')
@@ -151,6 +158,12 @@ describe('ClusterForm.vue', () => {
       .click()
     cy.get('#stages-select .fr-tag--dismiss')
       .should('have.length', props.cluster.stageIds?.length)
+    cy.getByDataTestid('memoryInput')
+      .should('have.value', props.cluster.memory)
+    cy.getByDataTestid('cpuInput')
+      .should('have.value', props.cluster.cpu)
+    cy.getByDataTestid('gpuInput')
+      .should('have.value', props.cluster.gpu)
     cy.getByDataTestid('updateClusterBtn').should('be.enabled')
     cy.getByDataTestid('deleteClusterZone').should('not.exist')
     cy.getByDataTestid('associatedEnvironmentsZone').should('exist')
@@ -166,7 +179,7 @@ describe('ClusterForm.vue', () => {
       associatedEnvironments: [],
     }
 
-    cy.mount(ClusterForm, { props })
+    cy.mount(ClusterForm, { props } as ComponentCustomProps)
     cy.get('#privacy-select')
       .select('dedicated')
     cy.get('#projects-select').should('be.visible')

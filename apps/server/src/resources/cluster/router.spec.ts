@@ -65,6 +65,9 @@ describe('test clusterContract', () => {
         privacy: 'public',
         stageIds: [],
         zoneId: faker.string.uuid(),
+        cpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+        gpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+        memory: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
         kubeconfig: {
           cluster: { tlsServerName: faker.string.alpha() },
           user: {},
@@ -133,6 +136,9 @@ describe('test clusterContract', () => {
       privacy: 'public',
       stageIds: [],
       zoneId: faker.string.uuid(),
+      cpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+      gpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+      memory: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
       kubeconfig: {
         cluster: { tlsServerName: faker.string.alpha() },
         user: {},
@@ -187,6 +193,9 @@ describe('test clusterContract', () => {
       privacy: 'public',
       stageIds: [],
       zoneId: faker.string.uuid(),
+      cpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+      gpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+      memory: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
       kubeconfig: {
         cluster: { tlsServerName: faker.string.alpha() },
         user: {},

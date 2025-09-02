@@ -21,6 +21,9 @@ export const CleanedClusterSchema = z.object({
   stageIds: z.string()
     .uuid()
     .array(),
+  cpu: z.coerce.number().gte(0),
+  gpu: z.coerce.number().gte(0),
+  memory: z.coerce.number().gte(0),
 })
 
 export const KubeconfigSchema = z.object({

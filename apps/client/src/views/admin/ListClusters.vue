@@ -79,6 +79,7 @@ function clickCluster(cluster: Cluster) {
         <td>Nom</td>
         <td>Zone</td>
         <td>Confidentialité</td>
+        <td>Ressources allouables</td>
       </tr>
     </template>
     <tr
@@ -113,6 +114,9 @@ function clickCluster(cluster: Cluster) {
         v-else
       >
         <v-icon name="ri:global-line" /> {{ privacyWording[cluster.privacy] }}
+      </td>
+      <td>
+        {{ cluster.memory }}GiB {{ cluster.cpu }}CPU {{ cluster.gpu }}GPU
       </td>
     </tr>
   </DsfrTable>
