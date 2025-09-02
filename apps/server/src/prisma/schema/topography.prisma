@@ -9,6 +9,9 @@ model Cluster {
   updatedAt        DateTime       @updatedAt
   infos            String?        @db.VarChar(1000)
   external         Boolean        @default(false)
+  memory           Float          @db.Real
+  cpu              Float          @db.Real
+  gpu              Float          @db.Real
   zoneId           String         @db.Uuid
   kubeconfig       Kubeconfig     @relation(fields: [kubeConfigId], references: [id], onDelete: Cascade)
   zone             Zone           @relation(fields: [zoneId], references: [id])

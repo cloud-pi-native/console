@@ -196,6 +196,9 @@ const clusterInfosSelect = {
   secretName: true,
   kubeconfig: true,
   clusterResources: true,
+  cpu: true,
+  gpu: true,
+  memory: true,
   zone: {
     select: {
       id: true,

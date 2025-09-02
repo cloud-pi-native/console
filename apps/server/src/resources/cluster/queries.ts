@@ -34,6 +34,9 @@ export async function getClustersAssociatedWithProject(projectId: Project['id'])
       secretName: true,
       kubeconfig: true,
       clusterResources: true,
+      cpu: true,
+      gpu: true,
+      memory: true,
       zone: {
         select: {
           id: true,
@@ -113,6 +116,9 @@ export function getClusterDetails(id: Cluster['id']) {
       stages: true,
       updatedAt: true,
       zoneId: true,
+      cpu: true,
+      gpu: true,
+      memory: true,
     },
   })
 }
@@ -181,6 +187,9 @@ export function getClustersWithProjectIdAndConfig() {
       secretName: true,
       kubeconfig: true,
       zoneId: true,
+      cpu: true,
+      gpu: true,
+      memory: true,
     },
   })
 }
@@ -197,6 +206,9 @@ export function listClusters(where: Prisma.ClusterWhereInput) {
       infos: true,
       external: true,
       zoneId: true,
+      cpu: true,
+      gpu: true,
+      memory: true,
     },
   })
 }
