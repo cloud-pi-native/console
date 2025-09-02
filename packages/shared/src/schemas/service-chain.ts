@@ -12,7 +12,7 @@ export const serviceChainLocationEnum = ['SIR', 'SIL'] as const
 export const ServiceChainLocationZodEnum = z.enum(serviceChainLocationEnum)
 export type ServiceChainLocation = Zod.infer<typeof ServiceChainLocationZodEnum>
 
-export const serviceChainEnvironmentEnum = ['INT', 'PROD'] as const
+export const serviceChainEnvironmentEnum = ['INT', 'PROD', 'BAS'] as const
 export const ServiceChainEnvironmentZodEnum = z.enum(serviceChainEnvironmentEnum)
 export type ServiceChainEnvironment = Zod.infer<
   typeof ServiceChainEnvironmentZodEnum
@@ -36,7 +36,7 @@ export type ServiceChainList = Zod.infer<typeof ServiceChainListSchema>
 
 export const ServiceChainDetailsSchema = ServiceChainSchema.extend({
   validationId: z.string().uuid(),
-  validatedBy: z.string().uuid(),
+  validatedBy: z.nullable(z.string().uuid()),
   ref: z.nullable(z.string().uuid()),
   location: ServiceChainLocationZodEnum,
   targetAddress: z.string().ip(),
@@ -93,7 +93,7 @@ export type ServiceChainFlowDetails = Zod.infer<typeof ServiceChainFlowDetailsSc
 
 export const ServiceChainFlowsSchema = z.object({
   reserve_ip: ServiceChainFlowDetailsSchema,
-  create_cert: ServiceChainFlowDetailsSchema,
+  create_cert: z.nullable(ServiceChainFlowDetailsSchema),
   call_exec: ServiceChainFlowDetailsSchema,
   activate_ip: ServiceChainFlowDetailsSchema,
   dns_request: ServiceChainFlowDetailsSchema,
