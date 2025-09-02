@@ -37,6 +37,9 @@ const props = withDefaults(defineProps<{
     infos: '',
     external: false,
     id: '',
+    cpu: 0,
+    gpu: 0,
+    memory: 0,
     kubeconfig: {
       cluster: {
         tlsServerName: '',
@@ -98,7 +101,7 @@ function updateKubeconfig(files: FileList) {
     const reader = new FileReader()
     reader.onload = (evt) => {
       // Retrieve YAML kubeconfig, turn it to JSON object.
-      if (evt.target) jsonKConfig.value = load(evt.target.result, 'utf8')
+      if (evt.target) jsonKConfig.value = load(evt.target.result as string) as object
       // Retrieve context.
       let context
       if (!jsonKConfig.value.contexts) throw new Error('Pas de contexts spécifiés dans le kubeconfig.')
@@ -295,6 +298,7 @@ const isConnectionDetailsShown = ref(true)
       <DsfrCheckbox
         id="clusterSkipTLSVerifyCbx"
         v-model="localCluster.kubeconfig.cluster.skipTLSVerify"
+        value="localCluster.kubeconfig.cluster.skipTLSVerify"
         label="Ignorer le certificat TLS du server (risques potentiels de sécurité !)"
         hint="Ignorer le certificat TLS présenté pour contacter l'API server Kubernetes"
         name="isClusterSkipTlsVerify"
@@ -304,6 +308,7 @@ const isConnectionDetailsShown = ref(true)
       <DsfrCheckbox
         id="externalClusterCbx"
         v-model="localCluster.external"
+        value="localCluster.external"
         label="Cluster externe"
         hint="La console DSO n'essaiera pas de joindre l'API de ce cluster, le ArgoCD de la zone de chargera de configurer celui-ci."
         name="isExternalCluster"
@@ -356,6 +361,48 @@ const isConnectionDetailsShown = ref(true)
       select-id="privacy-select"
       label="Confidentialité du cluster"
       :options="Object.values(ClusterPrivacy)"
+    />
+    <DsfrInputGroup
+      v-model="localCluster.memory"
+      label="Mémoire utilisable"
+      label-visible
+      hint="En GiB"
+      type="number"
+      min="0"
+      max="100"
+      step="0.1"
+      :required="true"
+      data-testid="memoryInput"
+      placeholder="0.1"
+      @update:model-value="(value: string) => localCluster.memory = parseFloat(value)"
+    />
+    <DsfrInputGroup
+      v-model="localCluster.cpu"
+      label="CPU utilisable"
+      label-visible
+      hint="En décimal : 0.1 équivaut à 100m, soit 100 milli-cores, soit 10% d'un CPU"
+      type="number"
+      min="0"
+      max="100"
+      step="0.1"
+      :required="true"
+      data-testid="cpuInput"
+      placeholder="0.1"
+      @update:model-value="(value: string) => localCluster.cpu = parseFloat(value)"
+    />
+    <DsfrInputGroup
+      v-model="localCluster.gpu"
+      label="GPU utilisable"
+      label-visible
+      hint="En décimal : 0.1 équivaut à 100m, soit 100 milli-cores, soit 10% d'un GPU"
+      type="number"
+      min="0"
+      max="100"
+      step="0.1"
+      :required="true"
+      data-testid="gpuInput"
+      placeholder="0.1"
+      @update:model-value="(value: string) => localCluster.gpu = parseFloat(value)"
     />
     <div
       v-if="localCluster.privacy === ClusterPrivacy.DEDICATED"
