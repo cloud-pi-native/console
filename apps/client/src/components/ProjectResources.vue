@@ -5,7 +5,6 @@ import { useStageStore } from '@/stores/stage.js'
 import { useUserStore } from '@/stores/user.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { clickInDialog, getRandomId } from '@/utils/func.js'
-import { defaultBranchName } from '@/utils/misc'
 import type { Project } from '@/utils/project-utils.js'
 import type { UpdateEnvironmentBody, Environment, Repo, CreateEnvironmentBody, CleanedCluster, Zone, Cluster } from '@cpn-console/shared'
 import { AdminAuthorized, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
@@ -28,6 +27,7 @@ const userStore = useUserStore()
 const environments = ref<(Environment & { cluster?: Cluster, zone?: Zone })[]>()
 const repositories = ref<(Repo & { source: Source })[]>()
 
+const defaultBranchName = 'main'
 const branchName = ref<string>(defaultBranchName)
 
 const environmentsCtKey = ref(getRandomId('environment'))

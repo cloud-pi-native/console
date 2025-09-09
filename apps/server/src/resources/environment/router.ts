@@ -31,7 +31,7 @@ export function environmentRouter() {
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
       const checkCreateResult = await checkEnvironmentCreate({ ...requestBody })
-      if (!checkCreateResult.success) return new BadRequest400(checkCreateResult.error)
+      if (checkCreateResult.isError) return new BadRequest400(checkCreateResult.error)
 
       const result = await createEnvironment({
         userId: perms.user.id,
@@ -63,7 +63,7 @@ export function environmentRouter() {
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
       const checkUpdateResult = await checkEnvironmentUpdate({ environmentId, ...requestBody })
-      if (!checkUpdateResult.success) return new BadRequest400(checkUpdateResult.error)
+      if (checkUpdateResult.isError) return new BadRequest400(checkUpdateResult.error)
 
       const result = await updateEnvironment({
         user: perms.user,

@@ -241,17 +241,22 @@ interface CreateProjectParams {
   description?: Project['description']
   ownerId: User['id']
   slug: Project['slug']
+  limitless: boolean
+  hprodCpu: number
+  hprodGpu: number
+  hprodMemory: number
+  prodCpu: number
+  prodGpu: number
+  prodMemory: number
 }
 
-export function initializeProject({ slug, name, description = '', ownerId }: CreateProjectParams) {
+export function initializeProject(params: CreateProjectParams) {
   return prisma.project.create({
     data: {
-      slug,
-      name,
-      description,
+      description: params.description ?? '',
       status: ProjectStatus.created,
       locked: false,
-      ownerId,
+      ...params,
     },
   })
 }
@@ -326,9 +331,4 @@ export async function archiveProject(id: Project['id']) {
     },
     include: baseProjectIncludes,
   })
-}
-
-// TECH
-export function _initializeProject(data: Parameters<typeof prisma.project.upsert>[0]['create']) {
-  return prisma.project.upsert({ where: { id: data.id }, create: data, update: data })
 }

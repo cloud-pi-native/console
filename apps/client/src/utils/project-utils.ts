@@ -68,6 +68,13 @@ export class Project implements ProjectV2 {
   members: ({ userId: string, firstName: string, lastName: string, email: string, roleIds: string[] } | { updatedAt: string, createdAt: string, firstName: string, lastName: string, email: string, userId: string, roleIds: string[] })[]
   createdAt: string
   updatedAt: string
+  limitless: boolean
+  hprodMemory: number
+  hprodCpu: number
+  hprodGpu: number
+  prodMemory: number
+  prodCpu: number
+  prodGpu: number
   status: ProjectV2['status']
   operationsInProgress: Ref<ProjectOperations[]>
   myPerms: bigint
@@ -91,6 +98,13 @@ export class Project implements ProjectV2 {
     this.members = project.members
     this.createdAt = project.createdAt
     this.updatedAt = project.updatedAt
+    this.limitless = project.limitless
+    this.hprodMemory = project.hprodMemory
+    this.hprodCpu = project.hprodCpu
+    this.hprodGpu = project.hprodGpu
+    this.prodMemory = project.prodMemory
+    this.prodCpu = project.prodCpu
+    this.prodGpu = project.prodGpu
     this.lastSuccessProvisionningVersion = project.lastSuccessProvisionningVersion
     this.status = project.status
     this.myPerms = calculateProjectPerms(this, useUserStore().userProfile?.id)

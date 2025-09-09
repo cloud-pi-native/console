@@ -41,6 +41,12 @@ interface CreateEnvironmentResult {
   stageId: Stage['id']
 }
 
+interface Resources {
+  cpu: number
+  gpu: number
+  memory: number
+}
+
 export async function createEnvironment({
   userId,
   projectId,
@@ -158,9 +164,14 @@ export async function checkEnvironmentCreate(input: {
   if (!cluster) {
     errorMessages.push('Cluster invalide.')
   } else {
-    const resourceCheckResult = await checkResources(input, cluster)
-    if (!resourceCheckResult.success) {
+    const resourceCheckResult = await checkClusterResources(input, cluster)
+    if (resourceCheckResult.isError) {
       errorMessages.push(resourceCheckResult.error)
+    }
+    const project = await prisma.project.findUniqueOrThrow({ where: { id: input.projectId } })
+    const projectCheckResult = await checkProjectResources(input, project)
+    if (projectCheckResult.isError) {
+      errorMessages.push(projectCheckResult.error)
     }
   }
   if (errorMessages.length > 0) {
@@ -169,7 +180,7 @@ export async function checkEnvironmentCreate(input: {
   return Result.succeed(true)
 }
 
-export async function checkResources(input: {
+export async function checkClusterResources(input: {
   cpu: Environment['cpu']
   gpu: Environment['gpu']
   memory: Environment['memory']
@@ -178,30 +189,59 @@ export async function checkResources(input: {
     // Unconfigured cluster
     return Result.succeed(true)
   }
-  const envs = await prisma.environment.aggregate({
-    _sum: {
-      memory: true,
-      cpu: true,
-      gpu: true,
-    },
+  const unsufficientResource = await getOverflowResources({
+    request: { cpu: input.cpu, gpu: input.gpu, memory: input.memory },
+    limit: { cpu: cluster.cpu, gpu: cluster.gpu, memory: cluster.memory },
     where: {
       cluster: {
         id: cluster.id,
       },
     },
   })
-  const unsufficientResource: string[] = []
-  if (envs._sum.cpu !== null && (envs._sum.cpu + input.cpu > cluster.cpu)) {
-    unsufficientResource.push('CPU')
-  }
-  if (envs._sum.gpu !== null && (envs._sum.gpu + input.gpu > cluster.gpu)) {
-    unsufficientResource.push('GPU')
-  }
-  if (envs._sum.memory !== null && (envs._sum.memory + input.memory > cluster.memory)) {
-    unsufficientResource.push('Mémoire')
-  }
   if (unsufficientResource.length > 0) {
     return Result.fail(`Le cluster ne dispose pas de suffisamment de ressources : ${unsufficientResource.join(', ')}.`)
+  }
+  return Result.succeed(true)
+}
+
+export async function checkProjectResources(input: {
+  cpu: Environment['cpu']
+  gpu: Environment['gpu']
+  memory: Environment['memory']
+  stageId: Environment['stageId']
+}, project: Project): Promise<Result<boolean>> {
+  if (project.limitless) {
+    // No limits
+    return Result.succeed(true)
+  }
+  const stage = await prisma.stage.findUnique({ where: { id: input.stageId } })
+  const prodStages = await prisma.stage.findMany({ select: { id: true }, where: { name: 'prod' } })
+  let overflowResources: string[]
+  if (stage?.name === 'prod') {
+    overflowResources = await getOverflowResources({
+      request: { cpu: input.cpu, gpu: input.gpu, memory: input.memory },
+      limit: { cpu: project.prodCpu, gpu: project.prodGpu, memory: project.prodMemory },
+      where: {
+        projectId: project.id,
+        stageId: {
+          in: prodStages.map(s => s.id),
+        },
+      },
+    })
+  } else { // hprod
+    overflowResources = await getOverflowResources({
+      request: { cpu: input.cpu, gpu: input.gpu, memory: input.memory },
+      limit: { cpu: project.hprodCpu, gpu: project.hprodGpu, memory: project.hprodMemory },
+      where: {
+        projectId: project.id,
+        stageId: {
+          notIn: prodStages.map(s => s.id),
+        },
+      },
+    })
+  }
+  if (overflowResources.length > 0) {
+    return Result.fail(`Le projet ne dispose pas de suffisamment de ressources : ${overflowResources.join(', ')}.`)
   }
   return Result.succeed(true)
 }
@@ -213,11 +253,54 @@ export async function checkEnvironmentUpdate(input: {
   memory: Environment['memory']
 }): Promise<Result<boolean>> {
   const environment = await prisma.environment.findUniqueOrThrow({
-    select: { cluster: true },
+    select: { cluster: true, projectId: true, stageId: true },
     where: { id: input.environmentId },
   })
   const cluster = await prisma.cluster.findUniqueOrThrow({
     where: { id: environment.cluster.id },
   })
-  return checkResources(input, cluster)
+  const errorMessages: string[] = []
+  const resourceCheckResult = await checkClusterResources(input, cluster)
+  if (resourceCheckResult.isError) {
+    errorMessages.push(resourceCheckResult.error)
+  }
+  const project = await prisma.project.findUniqueOrThrow({ where: { id: environment.projectId } })
+  const projectCheckResult = await checkProjectResources({ stageId: environment.stageId, ...input }, project)
+  if (projectCheckResult.isError) {
+    errorMessages.push(projectCheckResult.error)
+  }
+  if (errorMessages.length > 0) {
+    return Result.fail(errorMessages.join('\n'))
+  }
+  return Result.succeed(true)
+}
+
+export async function getOverflowResources({ request, limit, where }: {
+  request: Resources
+  limit: Resources
+  where: any
+}): Promise<string[]> {
+  if (limit.cpu === 0 && limit.memory === 0) {
+    // Unconfigured project prod resources
+    return []
+  }
+  const environmentResources = await prisma.environment.aggregate({
+    _sum: {
+      memory: true,
+      cpu: true,
+      gpu: true,
+    },
+    where,
+  })
+  const unsufficientResource: string[] = []
+  if ((environmentResources._sum.cpu ?? 0) + request.cpu > limit.cpu) {
+    unsufficientResource.push('CPU')
+  }
+  if ((environmentResources._sum.gpu ?? 0) + request.gpu > limit.gpu) {
+    unsufficientResource.push('GPU')
+  }
+  if ((environmentResources._sum.memory ?? 0) + request.memory > limit.memory) {
+    unsufficientResource.push('Mémoire')
+  }
+  return unsufficientResource
 }
