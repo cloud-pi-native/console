@@ -22,6 +22,30 @@ test.describe('Environments page', () => {
     await expect(page.getByRole('cell', { name: envName })).toBeVisible()
   })
 
+  test('should not add environments to a project without enough hprod GPU', async ({ page }) => {
+    const envName = faker.string.alpha(10).toLowerCase()
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await addProject({ page, hprodResources: {
+      cpu: 10,
+      memory: 10,
+      gpu: 1,
+    } })
+
+    await page.getByTestId('addEnvironmentLink').click()
+    await page.getByTestId('environmentNameInput').fill(envName)
+    await page.getByLabel('Choix de la zone cible').selectOption({ label: 'publique' })
+    await page.getByLabel('Type d\'environnement').selectOption({ label: 'dev' })
+    await expect(page.getByLabel('Choix du cluster cible')).toBeVisible()
+    await page.getByLabel('Choix du cluster cible').selectOption({ label: 'public1' })
+    await page.getByTestId('memoryInput').fill('10')
+    await page.getByTestId('cpuInput').fill('2')
+    await page.getByTestId('gpuInput').fill('2')
+    await page.getByTestId('addEnvironmentBtn').click()
+    await expect(page.getByRole('cell', { name: envName })).not.toBeVisible()
+    await expect(page.getByTestId('snackbar').getByText('Le projet ne dispose pas de suffisamment de ressources : GPU.')).toBeVisible()
+  })
+
   test('should not add incorrect environments', async ({ page }) => {
     const envName = faker.string.alpha(10).toLowerCase()
     await page.goto(clientURL)
@@ -123,6 +147,38 @@ test.describe('Environments page', () => {
     await page.getByTestId('gpuInput').fill('10')
     await page.getByTestId('putEnvironmentBtn').click()
     await expect(page.getByTestId(`environmentTr-${envName}`)).toContainText('1.5GiB 2CPU 10GPU')
+  })
+
+  test('should not update environment resources when cluster is too small', async ({ page }) => {
+    const envName = faker.string.alpha(10).toLowerCase()
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await addProject({ page })
+    await page.getByTestId('addEnvironmentLink').click()
+    await page.getByTestId('environmentNameInput').fill(envName)
+    await page.getByLabel('Choix de la zone cible').selectOption({ label: 'publique' })
+    await page.getByLabel('Type d\'environnement').selectOption({ label: 'dev' })
+    await expect(page.getByLabel('Choix du cluster cible')).toBeVisible()
+    await page.getByLabel('Choix du cluster cible').selectOption({ label: 'public1' })
+    await page.getByTestId('memoryInput').fill('1')
+    await page.getByTestId('cpuInput').fill('1')
+    await page.getByTestId('gpuInput').fill('1')
+    await page.getByTestId('addEnvironmentBtn').click()
+    await expect(page.getByTestId(`environmentTr-${envName}`)).toContainText('1GiB 1CPU 1GPU')
+
+    await page.getByTestId(`environmentTr-${envName}`).click()
+    await expect(page.getByTestId('putEnvironmentBtn')).toBeVisible()
+    await expect(page.locator('#zone-select option[selected]')).toHaveText('publique')
+    await expect(page.locator('#stage-select option[selected]')).toHaveText('dev')
+    await expect(page.locator('#cluster-select option[selected]')).toHaveText('public1')
+    await expect(page.getByTestId('memoryInput')).toHaveValue('1')
+    await expect(page.getByTestId('cpuInput')).toHaveValue('1')
+    await expect(page.getByTestId('gpuInput')).toHaveValue('1')
+    await page.getByTestId('memoryInput').fill('120')
+    await page.getByTestId('cpuInput').fill('1')
+    await page.getByTestId('gpuInput').fill('1')
+    await page.getByTestId('putEnvironmentBtn').click()
+    await expect(page.getByTestId('snackbar').getByText('Le cluster ne dispose pas de suffisamment de ressources : Mémoire.')).toBeVisible()
   })
 
   test('should delete an environment', async ({ page }) => {

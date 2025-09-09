@@ -7,6 +7,7 @@ import * as utilsController from '../../utils/controller.js'
 import { getProjectMockInfos, getRandomRequestor, getUserMockInfos } from '../../utils/mocks.js'
 import { BadRequest400 } from '../../utils/errors.js'
 import * as business from './business.js'
+import type { UserDetails } from '../../types/index.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')
@@ -37,6 +38,13 @@ describe('test projectContract', () => {
     name: faker.string.alpha({ length: 10, casing: 'lower' }),
     slug: faker.string.alpha({ length: 5, casing: 'lower' }),
     description: faker.string.alpha({ length: 5 }),
+    limitless: false,
+    hprodCpu: faker.number.int({ min: 0, max: 1000 }),
+    hprodGpu: faker.number.int({ min: 0, max: 1000 }),
+    hprodMemory: faker.number.int({ min: 0, max: 1000 }),
+    prodCpu: faker.number.int({ min: 0, max: 1000 }),
+    prodGpu: faker.number.int({ min: 0, max: 1000 }),
+    prodMemory: faker.number.int({ min: 0, max: 1000 }),
     clusterIds: [],
     createdAt: (new Date()).toISOString(),
     updatedAt: (new Date()).toISOString(),
@@ -203,7 +211,7 @@ describe('test projectContract', () => {
       const userDetails = getRandomRequestor()
       const projectPerms = getProjectMockInfos({ projectOwnerId: faker.string.uuid(), projectPermissions: PROJECT_PERMS.MANAGE })
       const projectUpdated = { ownerId: faker.string.uuid(), description: faker.lorem.words() }
-      const user = getUserMockInfos(false, userDetails, projectPerms)
+      const user = getUserMockInfos(false, userDetails as UserDetails, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessUpdateMock.mockResolvedValueOnce({ id: projectId, ...project, ...projectUpdated })
@@ -221,7 +229,7 @@ describe('test projectContract', () => {
       const requestor = getRandomRequestor()
       const projectPerms = getProjectMockInfos({ projectOwnerId: requestor.id, projectPermissions: PROJECT_PERMS.MANAGE })
       const projectUpdated = { ownerId: faker.string.uuid(), description: faker.lorem.words() }
-      const user = getUserMockInfos(false, requestor, projectPerms)
+      const user = getUserMockInfos(false, requestor as UserDetails, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessUpdateMock.mockResolvedValueOnce({ id: projectId, ...project, ...projectUpdated })

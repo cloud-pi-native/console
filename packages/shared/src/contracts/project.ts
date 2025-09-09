@@ -18,7 +18,17 @@ export const projectContract = contractInstance.router({
     contentType: 'application/json',
     summary: 'Create project',
     description: 'Create a new project.',
-    body: ProjectSchemaV2.pick({ name: true, description: true }),
+    body: ProjectSchemaV2.pick({
+      name: true,
+      description: true,
+      limitless: true,
+      hprodCpu: true,
+      hprodGpu: true,
+      hprodMemory: true,
+      prodCpu: true,
+      prodGpu: true,
+      prodMemory: true,
+    }),
     responses: {
       201: ProjectSchemaV2.omit({ name: true }).extend({ name: z.string() }),
       400: ErrorSchema,
@@ -81,7 +91,9 @@ export const projectContract = contractInstance.router({
     summary: 'Get projects',
     description: 'Get projects with filters',
     responses: {
-      200: ProjectSchemaV2.omit({ name: true }).extend({ name: z.string() }).array(),
+      200: ProjectSchemaV2.omit({
+        name: true,
+      }).extend({ name: z.string() }).array(),
       401: ErrorSchema,
       500: ErrorSchema,
     },
@@ -114,6 +126,13 @@ export const projectContract = contractInstance.router({
         everyonePerms: true,
         locked: true,
         ownerId: true,
+        limitless: true,
+        hprodMemory: true,
+        hprodCpu: true,
+        hprodGpu: true,
+        prodMemory: true,
+        prodCpu: true,
+        prodGpu: true,
       })
       .partial(),
     responses: {

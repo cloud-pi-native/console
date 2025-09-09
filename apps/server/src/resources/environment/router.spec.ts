@@ -148,7 +148,7 @@ describe('environmentRouter tests', () => {
       authUserMock.mockResolvedValueOnce(user)
 
       businessCheckEnvironmentCreateMock.mockResolvedValueOnce({ success: true, message: 'pas d erreur' })
-      businessCreateEnvironmentMock.mockResolvedValueOnce({ success: false, message: 'une erreur' })
+      businessCreateEnvironmentMock.mockResolvedValueOnce({ isError: true, message: 'une erreur' })
       const response = await app.inject()
         .post(environmentContract.createEnvironment.path)
         .body(environmentData)
@@ -161,7 +161,7 @@ describe('environmentRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCheckEnvironmentCreateMock.mockResolvedValueOnce({ success: false, message: 'une erreur' })
+      businessCheckEnvironmentCreateMock.mockResolvedValueOnce({ isError: true, message: 'une erreur' })
       const response = await app.inject()
         .post(environmentContract.createEnvironment.path)
         .body(environmentData)
@@ -268,7 +268,7 @@ describe('environmentRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessUpdateEnvironmentMock.mockResolvedValueOnce({ success: false, value: 'une erreur' })
+      businessUpdateEnvironmentMock.mockResolvedValueOnce({ isError: true, value: 'une erreur' })
       const response = await app.inject()
         .put(environmentContract.updateEnvironment.path.replace(':environmentId', environmentId))
         .body(updateData)
@@ -281,7 +281,7 @@ describe('environmentRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCheckEnvironmentUpdateMock.mockResolvedValueOnce({ success: false, value: 'une erreur' })
+      businessCheckEnvironmentUpdateMock.mockResolvedValueOnce({ isError: true, value: 'une erreur' })
       const response = await app.inject()
         .put(environmentContract.updateEnvironment.path.replace(':environmentId', environmentId))
         .body(updateData)

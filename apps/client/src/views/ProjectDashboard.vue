@@ -9,9 +9,9 @@ import router from '@/router/index.js'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useZoneStore } from '@/stores/zone.js'
 import OperationPanel from '@/components/OperationPanel.vue'
-import type { DashboardPanelTabs } from '@/utils/misc.js'
 import ProjectClustersInfos from '@/components/ProjectClustersInfos.vue'
 import { getRandomId } from '@/utils/func.js'
+import ProjectSettings from '@/components/ProjectSettings.vue'
 
 const props = withDefaults(defineProps<{
   projectSlug: ProjectV2['slug']
@@ -51,6 +51,7 @@ onBeforeMount(async () => {
 
 const tabListName = 'Liste d’onglet'
 
+type DashboardPanelTabs = 'resources' | 'services' | 'team' | 'roles' | 'logs' | 'clusters' | 'configuration'
 interface TabTitle { title: string, icon: `${string}:${string}`, tabId: `tab-${DashboardPanelTabs}`, panelId: `panel-${DashboardPanelTabs}` }
 
 const resourcesTitle: TabTitle = { title: 'Ressources', icon: 'ri:shapes-line', tabId: 'tab-resources', panelId: 'panel-resources' }
@@ -59,6 +60,7 @@ const teamTitle: TabTitle = { title: 'Équipe', icon: 'ri:team-line', tabId: 'ta
 const rolesTitle: TabTitle = { title: 'Rôles', icon: 'ri:admin-line', tabId: 'tab-roles', panelId: 'panel-roles' }
 const logsTitle: TabTitle = { title: 'Journaux', icon: 'ri:newspaper-line', tabId: 'tab-logs', panelId: 'panel-logs' }
 const clustersTitle: TabTitle = { title: 'Clusters', icon: 'ri:server-line', tabId: 'tab-clusters', panelId: 'panel-clusters' }
+const configurationTitle: TabTitle = { title: 'Configuration', icon: 'ri:settings-5-line', tabId: 'tab-configuration', panelId: 'panel-configuration' }
 const tabTitles: TabTitle[] = [
   resourcesTitle,
   servicesTitle,
@@ -66,9 +68,13 @@ const tabTitles: TabTitle[] = [
   rolesTitle,
   logsTitle,
   clustersTitle,
+  configurationTitle,
 ]
 
 const activeTab = ref(Math.max(tabTitles.findIndex(tab => `tab-${router.currentRoute.value.query?.tab}` === tab.tabId), 0))
+const saveProjectState = ref({
+  isProcessing: false,
+})
 
 async function refreshMembers() {
   await project.value.Members.list()
@@ -94,9 +100,19 @@ watch(activeTab, (tabIndex) => {
   }
 })
 
-async function saveDescription() {
-  await project.value.Commands.update({ description: project.value.description })
-    .finally(() => project.value.Commands.refresh())
+async function saveProject() {
+  saveProjectState.value.isProcessing = true
+  await project.value.Commands.update({
+    description: project.value.description,
+    limitless: project.value.limitless,
+    hprodMemory: project.value.hprodMemory,
+    hprodCpu: project.value.hprodCpu,
+    hprodGpu: project.value.hprodGpu,
+    prodMemory: project.value.prodMemory,
+    prodCpu: project.value.prodCpu,
+    prodGpu: project.value.prodGpu,
+  }).finally(() => project.value.Commands.refresh())
+  saveProjectState.value.isProcessing = false
 }
 </script>
 
@@ -121,7 +137,7 @@ async function saveDescription() {
         :project="project"
         :can-edit-description="asProfile === 'user' && ProjectAuthorized.Manage({ projectPermissions: project.myPerms })"
         @update:model-value="(desc: string) => { project.description = desc }"
-        @save-description="saveDescription"
+        @save-description="saveProject"
       />
       <ProjectAction
         :project="project"
@@ -218,6 +234,23 @@ async function saveDescription() {
           <ProjectClustersInfos
             :key="project.id"
             :project="project"
+          />
+        </DsfrTabContent>
+        <DsfrTabContent
+          :panel-id="configurationTitle.panelId"
+          :tab-id="configurationTitle.tabId"
+        >
+          <ProjectSettings :project="project" />
+          <DsfrButton
+            label="Sauvegarder la configuration"
+            data-testid="saveProjectBtn"
+            primary
+            class="fr-mt-2w"
+            :disabled="saveProjectState.isProcessing"
+            :icon="saveProjectState.isProcessing
+              ? { name: 'ri:refresh-line', animation: 'spin' }
+              : 'ri:send-plane-line'"
+            @click="saveProject()"
           />
         </DsfrTabContent>
       </DsfrTabs>

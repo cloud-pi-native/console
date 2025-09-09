@@ -43,13 +43,12 @@ export async function listProjects({ status, statusIn, statusNotIn, filter = 'me
     status: whereBuilder({ enumValues: projectStatus, eqValue: status, inValues: statusIn, notInValues: statusNotIn }),
     filter,
     userId,
-  }).then(projects => projects
-    .map(({ clusters, ...project }) => ({
-      ...project,
-      clusterIds: clusters.map(({ id }) => id),
-      roles: project.roles.map(role => ({ ...role, permissions: role.permissions.toString() })),
-      everyonePerms: project.everyonePerms.toString(),
-    })))
+  }).then(projects => projects.map(({ clusters, ...project }) => ({
+    ...project,
+    clusterIds: clusters.map(({ id }) => id),
+    roles: project.roles.map(role => ({ ...role, permissions: role.permissions.toString() })),
+    everyonePerms: project.everyonePerms.toString(),
+  })))
 }
 
 export async function getProjectSecrets(projectId: string) {
@@ -101,7 +100,7 @@ export async function getProject(projectId: Project['id']) {
 }
 
 export async function updateProject(
-  { description, ownerId: ownerIdCandidate, everyonePerms, locked }: typeof projectContract.updateProject.body._type,
+  { description, ownerId: ownerIdCandidate, everyonePerms, locked, ...data }: typeof projectContract.updateProject.body._type,
   projectId: Project['id'],
   requestor: UserDetails,
   requestId: string,
@@ -138,6 +137,7 @@ export async function updateProject(
       description,
       locked,
       ...everyonePerms && { everyonePerms: BigInt(everyonePerms) },
+      ...data,
     })
   }
 
