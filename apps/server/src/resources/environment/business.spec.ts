@@ -1,9 +1,9 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Cluster, Environment, Project, ProjectMembers, ProjectRole, User } from '@prisma/client'
+import type { Cluster, Environment, Project, ProjectMembers, ProjectRole, Stage, User } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
 import { hook } from '../../__mocks__/utils/hook-wrapper.ts'
-import { checkResources, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.ts'
+import { checkClusterResources, checkProjectResources, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.ts'
 import { Result } from '../../utils/business.js'
 
 vi.mock('../../utils/hook-wrapper.ts', async () => ({
@@ -37,6 +37,13 @@ const project: Project & {
   status: 'created',
   ownerId: faker.string.uuid(),
   owner: user,
+  limitless: false,
+  hprodCpu: faker.number.int({ min: 0, max: 1000 }),
+  hprodGpu: faker.number.int({ min: 0, max: 1000 }),
+  hprodMemory: faker.number.int({ min: 0, max: 1000 }),
+  prodCpu: faker.number.int({ min: 0, max: 1000 }),
+  prodGpu: faker.number.int({ min: 0, max: 1000 }),
+  prodMemory: faker.number.int({ min: 0, max: 1000 }),
   clusters: [],
   roles: [],
   members: [],
@@ -197,14 +204,14 @@ describe('test environment business', () => {
     })
   })
 
-  describe('checkResources', () => {
+  describe('checkClusterResources', () => {
     it('should authorize cluster not yet configured', async () => {
       const cluster: Cluster = {
         cpu: 0,
         gpu: 0,
         memory: 0,
       } as Cluster
-      const result = await checkResources({ cpu: 1, gpu: 0, memory: 1 }, cluster)
+      const result = await checkClusterResources({ cpu: 1, gpu: 0, memory: 1 }, cluster)
       expect(result).toBeInstanceOf(Result)
       expect(result.success).toBeTruthy()
     })
@@ -221,7 +228,7 @@ describe('test environment business', () => {
           memory: 0,
         },
       } as any)
-      const result = await checkResources({ cpu: 8, gpu: 0, memory: 7 }, cluster)
+      const result = await checkClusterResources({ cpu: 8, gpu: 0, memory: 7 }, cluster)
       expect(result).toBeInstanceOf(Result)
       expect(result.success).toBeTruthy()
     })
@@ -238,7 +245,7 @@ describe('test environment business', () => {
           memory: 2,
         },
       } as any)
-      const result = await checkResources({ cpu: 8, gpu: 0, memory: 6 }, cluster)
+      const result = await checkClusterResources({ cpu: 8, gpu: 0, memory: 6 }, cluster)
       expect(result).toBeInstanceOf(Result)
       expect(result.success).toBeTruthy()
     })
@@ -255,7 +262,7 @@ describe('test environment business', () => {
           memory: 5,
         },
       } as any)
-      const result = await checkResources({ cpu: 8, gpu: 0, memory: 6 }, cluster)
+      const result = await checkClusterResources({ cpu: 8, gpu: 0, memory: 6 }, cluster)
       expect(result).toBeInstanceOf(Result)
       expect(result.success).toBeFalsy()
       expect(result.error).toEqual('Le cluster ne dispose pas de suffisamment de ressources : CPU, Mémoire.')
@@ -273,10 +280,74 @@ describe('test environment business', () => {
           memory: 2,
         },
       } as any)
-      const result = await checkResources({ cpu: 2, gpu: 1, memory: 2 }, cluster)
+      const result = await checkClusterResources({ cpu: 2, gpu: 1, memory: 2 }, cluster)
       expect(result).toBeInstanceOf(Result)
       expect(result.success).toBeFalsy()
       expect(result.error).toEqual('Le cluster ne dispose pas de suffisamment de ressources : GPU.')
+    })
+  })
+
+  describe('checkProjectResources', () => {
+    const prodStage: Stage = {
+      id: faker.string.uuid(),
+      name: 'prod',
+    }
+    const hprodStage: Stage = {
+      id: faker.string.uuid(),
+      name: 'hprod',
+    }
+    it('should authorize prod deployment for project with hprod resource but no prod resources', async () => {
+      const project: Project = {
+        hprodCpu: 10,
+        hprodGpu: 10,
+        hprodMemory: 10,
+        prodCpu: 0,
+        prodGpu: 0,
+        prodMemory: 0,
+      } as Project
+      prisma.stage.findUnique.mockResolvedValue(prodStage)
+      prisma.stage.findMany.mockResolvedValue([prodStage])
+      const result = await checkProjectResources({ cpu: 1, gpu: 0, memory: 1, stageId: prodStage.id }, project)
+      expect(result).toBeInstanceOf(Result)
+      expect(result.success).toBeTruthy()
+    })
+    it('should refuse hprod deployment for project with hprod resource but no prod resources', async () => {
+      const project: Project = {
+        hprodCpu: 10,
+        hprodGpu: 10,
+        hprodMemory: 10,
+        prodCpu: 0,
+        prodGpu: 0,
+        prodMemory: 0,
+      } as Project
+      prisma.stage.findUnique.mockResolvedValue(hprodStage)
+      prisma.stage.findMany.mockResolvedValue([prodStage] as Stage[])
+      prisma.environment.aggregate.mockResolvedValue({
+        _sum: { cpu: 0, gpu: 0, memory: 0 },
+      } as any)
+      const result = await checkProjectResources({ cpu: 20, gpu: 20, memory: 20, stageId: hprodStage.id }, project)
+      expect(result).toBeInstanceOf(Result)
+      expect(result.success).toBeFalsy()
+      expect(result.error).toEqual('Le projet ne dispose pas de suffisamment de ressources : CPU, GPU, Mémoire.')
+    })
+    it('should refuse overloading hprod deployment', async () => {
+      const project: Project = {
+        hprodCpu: 20,
+        hprodGpu: 20,
+        hprodMemory: 20,
+        prodCpu: 10,
+        prodGpu: 10,
+        prodMemory: 10,
+      } as Project
+      prisma.stage.findUnique.mockResolvedValue(hprodStage)
+      prisma.stage.findMany.mockResolvedValue([prodStage] as Stage[])
+      prisma.environment.aggregate.mockResolvedValue({
+        _sum: { cpu: 15, gpu: 15, memory: 15 },
+      } as any)
+      const result = await checkProjectResources({ cpu: 5, gpu: 6, memory: 5, stageId: hprodStage.id }, project)
+      expect(result).toBeInstanceOf(Result)
+      expect(result.success).toBeFalsy()
+      expect(result.error).toEqual('Le projet ne dispose pas de suffisamment de ressources : GPU.')
     })
   })
 })

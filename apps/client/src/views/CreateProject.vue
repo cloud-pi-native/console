@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Ref, UnwrapRef } from 'vue'
+import type { Ref } from 'vue'
 import { computed, ref } from 'vue'
 import type {
   projectContract,
@@ -15,6 +15,7 @@ import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
 import router from '@/router/index.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import ProjectSettings from '@/components/ProjectSettings.vue'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
@@ -26,6 +27,13 @@ const buttonState = ref({
 const project = ref<typeof projectContract.createProject.body._type>({
   name: '',
   description: '',
+  limitless: false,
+  hprodCpu: 0,
+  hprodGpu: 0,
+  hprodMemory: 0,
+  prodCpu: 0,
+  prodGpu: 0,
+  prodMemory: 0,
 })
 
 const remainingCharacters = computed(() => {
@@ -52,26 +60,22 @@ async function createProject() {
         params: { slug: newProject.slug },
       })
     } catch (error) {
-      snackbarStore.setMessage(error?.message, 'error')
+      snackbarStore.setMessage((error as Error)?.message, 'error')
     } finally {
       buttonState.value.isCreating = false
     }
   }
 }
 
-function updateProject(key: keyof UnwrapRef<typeof project>, value: string) {
+function updateProject(key: 'name' | 'description', value: string) {
   project.value[key] = value
   updatedValues.value[key] = true
 }
 </script>
 
 <template>
-  <div
-    class="relative"
-  >
-    <h1
-      class="fr-h1"
-    >
+  <div class="relative">
+    <h1 class="fr-h1">
       Commander un espace projet
     </h1>
     <DsfrFieldset
@@ -85,12 +89,8 @@ function updateProject(key: keyof UnwrapRef<typeof project>, value: string) {
         small
         class="fr-mb-2w"
       />
-      <div
-        class="fr-mb-6v"
-      >
-        <div
-          class="fr-mb-1v"
-        >
+      <div class="fr-mb-6v">
+        <div class="fr-mb-1v">
           <DsfrInputGroup
             v-model="project.name"
             data-testid="nameInput"
@@ -125,6 +125,7 @@ function updateProject(key: keyof UnwrapRef<typeof project>, value: string) {
         @update:model-value="updateProject('description', $event)"
       />
     </DsfrFieldset>
+    <ProjectSettings :project="project" />
     <DsfrButton
       label="Commander mon espace projet"
       data-testid="createProjectBtn"

@@ -59,6 +59,13 @@ export const ProjectSchemaV2 = z.object({
     .optional(),
   status: ProjectStatusSchema,
   locked: CoerceBooleanSchema,
+  limitless: CoerceBooleanSchema,
+  hprodCpu: z.coerce.number().gte(0),
+  hprodGpu: z.coerce.number().gte(0),
+  hprodMemory: z.coerce.number().gte(0),
+  prodCpu: z.coerce.number().gte(0),
+  prodGpu: z.coerce.number().gte(0),
+  prodMemory: z.coerce.number().gte(0),
 
   id: z.string()
     .uuid(),

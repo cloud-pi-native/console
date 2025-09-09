@@ -84,7 +84,13 @@ model Project {
   repositories   Repository[]
   clusters       Cluster[]        @relation("ClusterToProject")
   slug           String           @unique
-
+  limitless      Boolean          @default(true)
+  hprodCpu       Float            @db.Real
+  hprodGpu       Float            @db.Real
+  hprodMemory    Float            @db.Real
+  prodCpu        Float            @db.Real
+  prodGpu        Float            @db.Real
+  prodMemory     Float            @db.Real
   lastSuccessProvisionningVersion String?
 }
 

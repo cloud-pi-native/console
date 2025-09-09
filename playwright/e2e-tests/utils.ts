@@ -28,6 +28,12 @@ export const cnolletUser: Credentials = {
   email: 'claire.nollet@test.com',
 }
 
+interface Resources {
+  cpu: number
+  gpu: number
+  memory: number
+}
+
 export async function signInCloudPiNative({
   page,
   credentials,
@@ -48,16 +54,34 @@ export async function addProject({
   page,
   projectName,
   members,
+  hprodResources,
+  prodResources,
 }: {
   page: Page
   projectName?: string
   members?: Credentials[]
+  hprodResources?: Resources
+  prodResources?: Resources
 }) {
   projectName = projectName ?? faker.string.alpha(10).toLowerCase()
   await page.getByTestId('menuMyProjects').click()
   await page.getByTestId('createProjectLink').click()
   await page.getByTestId('nameInput').click()
   await page.getByTestId('nameInput').fill(projectName)
+  if (hprodResources) {
+    await page.getByTestId('cpuHprodInput').fill(hprodResources.cpu.toString())
+    await page.getByTestId('gpuHprodInput').fill(hprodResources.gpu.toString())
+    await page.getByTestId('memoryHprodInput').fill(hprodResources.memory.toString())
+  }
+  if (prodResources) {
+    await page.getByTestId('cpuProdInput').fill(prodResources.cpu.toString())
+    await page.getByTestId('gpuProdInput').fill(prodResources.gpu.toString())
+    await page.getByTestId('memoryProdInput').fill(prodResources.memory.toString())
+  }
+  if (!hprodResources && !prodResources) {
+    // Limitless
+    await page.getByTestId('limitlessProjectSwitch').locator('label').click()
+  }
   await page.getByTestId('createProjectBtn').click()
   await expect(page.locator('h1')).toContainText(projectName)
   if (members) {
