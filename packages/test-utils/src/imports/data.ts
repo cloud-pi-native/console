@@ -1880,32 +1880,6 @@ export const data = {
       stageId: '4a9ad694-4c54-4a3c-9579-548bf4b7b1b9',
     },
   ],
-  projectClusterHistory: [
-    {
-      projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
-      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-    },
-    {
-      projectId: '9dabf3f9-6c86-4358-8598-65007d78df65',
-      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-    },
-    {
-      projectId: '011e7860-04d7-461f-912d-334c622d38b3',
-      clusterId: 'aaaaaaaa-5b03-45d5-847b-149dec875680',
-    },
-    {
-      projectId: '011e7860-04d7-461f-912d-334c622d38b3',
-      clusterId: '126ac57f-263c-4463-87bb-d4e9017056b2',
-    },
-    {
-      projectId: '011e7860-04d7-461f-912d-334c622d38c5',
-      clusterId: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
-    },
-    {
-      projectId: '83833faf-f654-40dd-bcd5-cf2e944fc702',
-      clusterId: '32636a52-4dd1-430b-b08a-b2e5ed9d1789',
-    },
-  ],
   projectMembers: [
     {
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569',

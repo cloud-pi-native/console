@@ -4,7 +4,7 @@ import { hooks } from '@cpn-console/hooks'
 import type { AsyncReturnType } from '@cpn-console/shared'
 import { ProjectAuthorized, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
 import { genericProxy } from './proxy.js'
-import { archiveProject, getAdminPlugin, getClusterByIdOrThrow, getClusterNamesByZoneId, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '@/resources/queries-index.js'
+import { archiveProject, getAdminPlugin, getClusterByIdOrThrow, getClusterNamesByZoneId, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getZoneByIdOrThrow, saveProjectStore, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '@/resources/queries-index.js'
 import type { ConfigRecords } from '@/resources/project-service/business.js'
 import { dbToObj } from '@/resources/project-service/business.js'
 
@@ -44,7 +44,7 @@ async function upsertProject(projectId: Project['id'], reposCreds?: ReposCreds) 
   }, [] as ConfigRecords)
 
   await saveProjectStore(records, projectId)
-  const project = await manageProjectStatus(projectId, results, 'upsert', payload.environments.map(env => env.clusterId))
+  const project = await manageProjectStatus(projectId, results, 'upsert')
   return {
     results,
     project,
@@ -64,7 +64,7 @@ const project = {
     const results = await hooks.deleteProject.execute(payload, dbToObj(config))
     return {
       results,
-      project: await manageProjectStatus(projectId, results, 'delete', []),
+      project: await manageProjectStatus(projectId, results, 'delete'),
     }
   },
   getSecrets: async (projectId: Project['id']) => {
@@ -77,10 +77,7 @@ const project = {
 } as const
 
 type ProjectAction = keyof typeof project
-async function manageProjectStatus(projectId: Project['id'], hookReply: HookResult<ProjectPayload>, action: ProjectAction, envClusterIds: Cluster['id'][]): Promise<AsyncReturnType<typeof updateProjectCreated>> {
-  if (!hookReply.failed && hookReply.results?.kubernetes) {
-    await updateProjectClusterHistory(projectId, envClusterIds)
-  }
+async function manageProjectStatus(projectId: Project['id'], hookReply: HookResult<ProjectPayload>, action: ProjectAction): Promise<AsyncReturnType<typeof updateProjectCreated>> {
   if (hookReply.failed) {
     return updateProjectFailed(projectId)
   } else if (hookReply.warning.length) {

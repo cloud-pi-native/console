@@ -2,29 +2,8 @@ import type { Cluster, Environment, Kubeconfig, Prisma, Project, Stage } from '@
 import prisma from '@/prisma.js'
 
 export async function getClustersAssociatedWithProject(projectId: Project['id']) {
-  const [
-    clusterIdsHistory,
-    clusterIdsEnv,
-  ] = await Promise.all([
-    prisma.projectClusterHistory.findMany({
-      select: {
-        clusterId: true,
-      },
-      where: {
-        projectId,
-      },
-    }).then(history => history.map(({ clusterId }) => clusterId)),
-    prisma.cluster.findMany({
-      where: { environments: { some: { project: { id: projectId } } } },
-      select: { id: true },
-    }).then(cluster => cluster.map(({ id }) => id)),
-  ])
-  const clusterIds = [
-    ...clusterIdsHistory,
-    ...clusterIdsEnv.filter(id => !clusterIdsHistory.includes(id)),
-  ]
   return prisma.cluster.findMany({
-    where: { id: { in: clusterIds } },
+    where: { environments: { some: { project: { id: projectId } } } },
     select: {
       id: true,
       infos: true,
@@ -46,23 +25,6 @@ export async function getClustersAssociatedWithProject(projectId: Project['id'])
       },
     },
   })
-}
-
-export async function updateProjectClusterHistory(projectId: Project['id'], clusterIds: Cluster['id'][]) {
-  return prisma.$transaction([
-    prisma.projectClusterHistory.deleteMany({
-      where: {
-        AND: {
-          projectId,
-          clusterId: { notIn: clusterIds },
-        },
-      },
-    }),
-    prisma.projectClusterHistory.createMany({
-      data: clusterIds.map(clusterId => ({ clusterId, projectId })),
-      skipDuplicates: true,
-    }),
-  ])
 }
 
 export function getClusterById(id: Cluster['id']) {
