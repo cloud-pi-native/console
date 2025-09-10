@@ -33,3 +33,7 @@ npm run format
 ```sh
 npm start
 ```
+
+## Activation OpenCDS
+
+Se référer à [la documentation dédiée](../../packages/opencds/README.adoc)
