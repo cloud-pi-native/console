@@ -1,0 +1,58 @@
+= À propos
+
+Ce document va servir de fil conducteur pour toutes les idées autour de l'implémentation de la Console OpenCDS. Il permettra à l'équipe Socle d'échanger (au travers, par exemple, des commentaires de MR) sur les différentes problématiques entourant les travaux. C'est un document vivant, dynamique, qui sera remplacé par un "vrai" document d'architecture par la suite.
+
+== Cadrage effectué
+
+- SSO à prévoir avec Keycloak (déjà intégré dans la Console, d'où l'intérêt de l'utiliser pour intégrer le front OpenCDS)
+- Rôles à prédéfinir dans *Keycloak* :
+  - `admin` (a accès à toute l'application)
+  - `cds` (n'a accès qu'à la partie qui concerne ses projets)
+
+Flux GUI définis :
+- Pour tous les utilisateurs :
+  - Login/Logout à travers le SSO Keycloak comme la Console
+- Utilisateurs `admin`:
+  - Liste de toutes les CDS
+  - Relancer une CDS en particulier
+  - Afficher les "flows" (étapes) d'un CDS
+- Utilisateurs `cds`:
+  - Pouvoir lister les CDS de leur équipe
+  - Afficher les "flows" (étapes) d'une CDS qu'ils ont le droit de voir
+  - Avoir un écran de confirmation (on parlera plutôt de "validation" étant donné que la route côté OpenCDS s'appelle `/validate`) de création d'une CDS. Actuellement un mail leur est envoyé qui contient un lien pour validation. Ce lien valide la création de la CDS. Il faudra donc crééer un point d'entrée dans l'application pour plutôt ouvrir un écran de confirmation de la création.
+
+Lotissement des évolutions:
+- [x] Création en tant que fonctionnalité "feature togglée" de Console (on verra plus tard si on en fait quelque chose à part)
+- [x] Admin - Liste des CDS
+- [x] Admin - Liste des Flow
+- [x] Admin - Relancer un CDS en statut "échoué" (`/retry`)
+- [ ] CDS - Liste des CDS/Flow de leur périmètre
+- [ ] CDS - Écran de confirmation de la création d'un CDS (`/validate`)
+
+= Architecture
+
+L'architecture retenue est celle consistant à utiliser le serveur ("Back for Front") de la console comme d'un Proxy pour OpenCDS. Ceci permet de réutiliser toute la mécanique d'authentification en SSO par Keycloak, la sérialisation/désérialisation entre `client` et `server` (le Frontend et son BFF), ainsi que la génération des types TypeScript (à travers l'utilisation de schémas et de contrats `zod`). De cette manière, l'implémentation des ressources OpenCDS (`service-chains` et `flows`) peut se faire de la même manière que les autres ressources existantes (`cluster`, `projet`, etc.), avec le même niveau de qualité (tests unitaires avec vitest, et E2E avec Playwright).
+
+= Contraintes
+
+- Console étant un projet OpenSource, et OpenCDS étant un sujet exclusivement "MI", le couplage entre les deux doit être le plus faible possible. Idéalement OpenCDS devrait être une "extension" de la Console de manière à ne jamais être directement référencé dans l'application.
+=> Dans un premier temps on va fonctionner avec un "Feature Toggling" rudimentaire (à l'aide de variables d'environnement), pour voir où on va, et ensuite on verra comment éventuellement établir une séparation claire entre la console et sa partie OpenCDS, par exemple dans un projet Git totalement à part.
+
+= Jeu de données
+
+Afin de pouvoir avancer sans forcément dépendre du backend OpenCDS, un https://mockoon.com/[Mockoon] sera utilisé (./opencds_api.json) pour simuler cette partie. Lors de la convergence entre les développements de la console et ceux côté OpenCDS, une version d'"intégration" de celle-ci sera déployée sur notre environnement `sdid-hp` afin d'effectuer une recette dédiée.
+
+= Mise en place
+
+Utilisation de varables d'environnements qui vont nous servir de moyen d'activer la fonctionnalité:
+  - Côté `apps/client`:
+    - `OPENCDS_ENABLE`: active ou non la fonctionnalité côté Front (cette activation est indépendante de `apps/server`, donc il faut que cette variable d'environnement soit activée pour que la console affiche les écrans concernés par OpenCDS)
+  - Côté `apps/server`:
+    - `OPENCDS_URL`: Adresse du service OpenCDS distant
+    - `OPENCDS_API_TOKEN`: Définit le token d'authentification au service OpenCDS qui sera utilisé pour chaque requête effectuée
+    - `OPENCDS_API_TLS_REJECT_UNAUTHORIZED`: Indique si on accepte les certificats non-validés (par exemple les certificats auto-signés, ou signés par une Autorité de Certification inconnue). Cette fonctionnalié permet d'intéragir facilement avec des services OpenCDS de "test"
+
+= Notes
+
+- Sachant qu'il n'est pas trivial de lancer des services docker-compose de manière conditionnelle, le service `opencds-mockoon` est systématiquement lancé dans les docker-compose concernés (développement local, tests en CI, etc.)
+- Les documentations de link:../../apps/client/README.md[la console] et link:../../apps/server/README.md[son backend] ont été amendées pour référencer cette documentation, de manière à centraliser ici tous les aspects concernant OpenCDS.
