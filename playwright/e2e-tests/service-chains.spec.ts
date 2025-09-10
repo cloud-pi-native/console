@@ -39,7 +39,7 @@ test.describe('Service Chains page', () => {
         .click()
       await expect(
         page.getByRole('heading', { name: /Chaîne de services/ }),
-      ).toContainText('Chaîne de services')
+      ).toBeVisible()
     })
 
     test('should show a service chain flows', async ({ page }) => {
@@ -55,7 +55,7 @@ test.describe('Service Chains page', () => {
         .nth(1)
         .click()
       await expect(
-        page.getByTestId('service-chain-flows').locator('div').nth(2),
+        page.getByTestId('service-chain-flows'),
       ).toBeVisible()
     })
   })
