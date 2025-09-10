@@ -43,6 +43,10 @@ npm run preview
 ## Récupérer toutes les icones du projets
 `grep -r -oh "ri:[a-z0-9-]*" . | sort | uniq | cut -d ':' -f 2 | awk NF | awk '{print "  \047" $1 "\047,"}'`
 
+## Activation OpenCDS
+
+Se référer à [la documentation dédiée](../../packages/opencds/README.adoc)
+
 ## Crédits
 
 - [vue](https://github.com/vuejs/)
