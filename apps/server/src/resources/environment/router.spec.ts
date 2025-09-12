@@ -4,7 +4,6 @@ import { type Environment, PROJECT_PERMS, environmentContract } from '@cpn-conso
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
 import { atDates, getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
-import { BadRequest400 } from '../../utils/errors.js'
 import * as business from './business.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
@@ -75,8 +74,11 @@ describe('environmentRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCheckEnvironmentCreateMock.mockResolvedValueOnce(null)
-      businessCreateEnvironmentMock.mockResolvedValueOnce({ id: environmentId, ...environmentData, ...atDates })
+      businessCheckEnvironmentCreateMock.mockResolvedValueOnce({ success: true })
+      businessCreateEnvironmentMock.mockResolvedValueOnce({
+        success: true,
+        data: { id: environmentId, ...environmentData, ...atDates },
+      })
 
       const response = await app.inject()
         .post(environmentContract.createEnvironment.path)
@@ -145,20 +147,21 @@ describe('environmentRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCreateEnvironmentMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
+      businessCheckEnvironmentCreateMock.mockResolvedValueOnce({ success: true, message: 'pas d erreur' })
+      businessCreateEnvironmentMock.mockResolvedValueOnce({ success: false, message: 'une erreur' })
       const response = await app.inject()
         .post(environmentContract.createEnvironment.path)
         .body(environmentData)
         .end()
 
-      expect(response.statusCode).toEqual(400)
+      expect(response.statusCode).toEqual(500)
     })
     it('should pass invalid reason error', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_ENVIRONMENTS })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCheckEnvironmentCreateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
+      businessCheckEnvironmentCreateMock.mockResolvedValueOnce({ success: false, message: 'une erreur' })
       const response = await app.inject()
         .post(environmentContract.createEnvironment.path)
         .body(environmentData)
@@ -182,8 +185,8 @@ describe('environmentRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCheckEnvironmentUpdateMock.mockResolvedValueOnce(undefined)
-      businessUpdateEnvironmentMock.mockResolvedValueOnce({ id: environmentId, ...environmentData, ...atDates })
+      businessCheckEnvironmentUpdateMock.mockResolvedValueOnce({ success: true, value: true })
+      businessUpdateEnvironmentMock.mockResolvedValueOnce({ success: true, data: { id: environmentId, ...environmentData, ...atDates } })
 
       const response = await app.inject()
         .put(environmentContract.updateEnvironment.path.replace(':environmentId', environmentId))
@@ -265,20 +268,20 @@ describe('environmentRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessUpdateEnvironmentMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
+      businessUpdateEnvironmentMock.mockResolvedValueOnce({ success: false, value: 'une erreur' })
       const response = await app.inject()
         .put(environmentContract.updateEnvironment.path.replace(':environmentId', environmentId))
         .body(updateData)
         .end()
 
-      expect(response.statusCode).toEqual(400)
+      expect(response.statusCode).toEqual(500)
     })
     it('should pass invalid reason error', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_ENVIRONMENTS })
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessCheckEnvironmentUpdateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
+      businessCheckEnvironmentUpdateMock.mockResolvedValueOnce({ success: false, value: 'une erreur' })
       const response = await app.inject()
         .put(environmentContract.updateEnvironment.path.replace(':environmentId', environmentId))
         .body(updateData)
@@ -294,7 +297,7 @@ describe('environmentRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessDeleteEnvironmentMock.mockResolvedValueOnce(null)
+      businessDeleteEnvironmentMock.mockResolvedValueOnce({ success: true })
 
       const response = await app.inject()
         .delete(environmentContract.deleteEnvironment.path.replace(':environmentId', environmentId))
@@ -358,12 +361,12 @@ describe('environmentRouter tests', () => {
       const user = getUserMockInfos(false, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
-      businessDeleteEnvironmentMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
+      businessDeleteEnvironmentMock.mockResolvedValueOnce({ isError: true, value: 'une erreur' })
       const response = await app.inject()
         .delete(environmentContract.deleteEnvironment.path.replace(':environmentId', environmentId))
         .end()
 
-      expect(response.statusCode).toEqual(400)
+      expect(response.statusCode).toEqual(500)
     })
   })
 })

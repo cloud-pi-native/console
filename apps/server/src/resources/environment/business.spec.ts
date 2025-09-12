@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Cluster, Environment, Project, ProjectMembers, ProjectRole, User } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
 import { hook } from '../../__mocks__/utils/hook-wrapper.ts'
-import { createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.ts'
-import { ErrorResType } from '../../utils/errors.ts'
+import { checkResources, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.ts'
+import { Result } from '../../utils/business.js'
 
 vi.mock('../../utils/hook-wrapper.ts', async () => ({
   hook,
@@ -70,7 +70,7 @@ describe('test environment business', () => {
       prisma.environment.create.mockResolvedValue({ clusterId } as Environment)
       hook.project.upsert.mockResolvedValue({ results: {}, project: { ...project } })
 
-      await createEnvironment({
+      const result = await createEnvironment({
         userId: user.id,
         projectId: project.id,
         name: env.name,
@@ -85,9 +85,11 @@ describe('test environment business', () => {
       expect(prisma.log.create).toHaveBeenCalledTimes(1)
       expect(prisma.environment.create).toHaveBeenCalledTimes(1)
       expect(hook.project.upsert).toHaveBeenCalledTimes(1)
+      expect(result).toBeInstanceOf(Result)
+      expect(result.success).toBeTruthy()
     })
 
-    it('should create quota and trigger hook but hooks failed', async () => {
+    it('should create environment and trigger hook but hooks failed', async () => {
       const requestId = faker.string.uuid()
 
       prisma.environment.create.mockResolvedValue({ clusterId } as Environment)
@@ -108,7 +110,8 @@ describe('test environment business', () => {
       expect(prisma.log.create).toHaveBeenCalledTimes(1)
       expect(prisma.environment.create).toHaveBeenCalledTimes(1)
       expect(hook.project.upsert).toHaveBeenCalledTimes(1)
-      expect(result).toBeInstanceOf(ErrorResType)
+      expect(result).toBeInstanceOf(Result)
+      expect(result.success).toBeFalsy()
     })
   })
 
@@ -120,7 +123,7 @@ describe('test environment business', () => {
       prisma.environment.update.mockResolvedValue({ projectId: project.id } as Environment)
       hook.project.upsert.mockResolvedValue({ results: {}, project: { ...project } })
 
-      await updateEnvironment({
+      const result = await updateEnvironment({
         user,
         environmentId,
         requestId,
@@ -132,6 +135,8 @@ describe('test environment business', () => {
       expect(prisma.log.create).toHaveBeenCalledTimes(1)
       expect(prisma.environment.update).toHaveBeenCalledTimes(1)
       expect(hook.project.upsert).toHaveBeenCalledTimes(1)
+      expect(result).toBeInstanceOf(Result)
+      expect(result.success).toBeTruthy()
     })
 
     it('should update environment and trigger hook but hooks failed', async () => {
@@ -153,26 +158,29 @@ describe('test environment business', () => {
       expect(prisma.log.create).toHaveBeenCalledTimes(1)
       expect(prisma.environment.update).toHaveBeenCalledTimes(1)
       expect(hook.project.upsert).toHaveBeenCalledTimes(1)
-      expect(result).toBeInstanceOf(ErrorResType)
+      expect(result).toBeInstanceOf(Result)
+      expect(result.success).toBeFalsy()
     })
   })
 
   describe('deleteEnvironment', () => {
-    it('should update quota and trigger hook', async () => {
+    it('should delete environment and trigger hook', async () => {
       const requestId = faker.string.uuid()
       const environmentId = faker.string.uuid()
 
       prisma.environment.delete.mockResolvedValue({ projectId: project.id } as Environment)
       hook.project.upsert.mockResolvedValue({ results: {}, project: { ...project } })
 
-      await deleteEnvironment({ environmentId, userId: user.id, projectId: project.id, requestId })
+      const result = await deleteEnvironment({ environmentId, userId: user.id, projectId: project.id, requestId })
 
       expect(prisma.log.create).toHaveBeenCalledTimes(1)
       expect(prisma.environment.delete).toHaveBeenCalledTimes(1)
       expect(hook.project.upsert).toHaveBeenCalledTimes(1)
+      expect(result).toBeInstanceOf(Result)
+      expect(result.success).toBeTruthy()
     })
 
-    it('should update quota and trigger hook but hooks failed', async () => {
+    it('should delete environment and trigger hook but hooks failed', async () => {
       const requestId = faker.string.uuid()
       const environmentId = faker.string.uuid()
 
@@ -184,7 +192,91 @@ describe('test environment business', () => {
       expect(prisma.log.create).toHaveBeenCalledTimes(1)
       expect(prisma.environment.delete).toHaveBeenCalledTimes(1)
       expect(hook.project.upsert).toHaveBeenCalledTimes(1)
-      expect(result).toBeInstanceOf(ErrorResType)
+      expect(result).toBeInstanceOf(Result)
+      expect(result.success).toBeFalsy()
+    })
+  })
+
+  describe('checkResources', () => {
+    it('should authorize cluster not yet configured', async () => {
+      const cluster: Cluster = {
+        cpu: 0,
+        gpu: 0,
+        memory: 0,
+      } as Cluster
+      const result = await checkResources({ cpu: 1, gpu: 0, memory: 1 }, cluster)
+      expect(result).toBeInstanceOf(Result)
+      expect(result.success).toBeTruthy()
+    })
+    it('should authorize cluster not yet used', async () => {
+      const cluster: Cluster = {
+        cpu: 10,
+        gpu: 0,
+        memory: 8,
+      } as Cluster
+      prisma.environment.aggregate.mockResolvedValue({
+        _sum: {
+          cpu: 0,
+          gpu: 0,
+          memory: 0,
+        },
+      } as any)
+      const result = await checkResources({ cpu: 8, gpu: 0, memory: 7 }, cluster)
+      expect(result).toBeInstanceOf(Result)
+      expect(result.success).toBeTruthy()
+    })
+    it('should authorize cluster used but not full', async () => {
+      const cluster: Cluster = {
+        cpu: 10,
+        gpu: 0,
+        memory: 8,
+      } as Cluster
+      prisma.environment.aggregate.mockResolvedValue({
+        _sum: {
+          cpu: 2,
+          gpu: 0,
+          memory: 2,
+        },
+      } as any)
+      const result = await checkResources({ cpu: 8, gpu: 0, memory: 6 }, cluster)
+      expect(result).toBeInstanceOf(Result)
+      expect(result.success).toBeTruthy()
+    })
+    it('should refuse cluster without enough space', async () => {
+      const cluster: Cluster = {
+        cpu: 10,
+        gpu: 0,
+        memory: 8,
+      } as Cluster
+      prisma.environment.aggregate.mockResolvedValue({
+        _sum: {
+          cpu: 5,
+          gpu: 0,
+          memory: 5,
+        },
+      } as any)
+      const result = await checkResources({ cpu: 8, gpu: 0, memory: 6 }, cluster)
+      expect(result).toBeInstanceOf(Result)
+      expect(result.success).toBeFalsy()
+      expect(result.error).toEqual('Le cluster ne dispose pas de suffisamment de ressources : CPU, Mémoire.')
+    })
+    it('should refuse cluster without GPU', async () => {
+      const cluster: Cluster = {
+        cpu: 10,
+        gpu: 0,
+        memory: 8,
+      } as Cluster
+      prisma.environment.aggregate.mockResolvedValue({
+        _sum: {
+          cpu: 2,
+          gpu: 0,
+          memory: 2,
+        },
+      } as any)
+      const result = await checkResources({ cpu: 2, gpu: 1, memory: 2 }, cluster)
+      expect(result).toBeInstanceOf(Result)
+      expect(result.success).toBeFalsy()
+      expect(result.error).toEqual('Le cluster ne dispose pas de suffisamment de ressources : GPU.')
     })
   })
 })
