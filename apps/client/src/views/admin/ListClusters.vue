@@ -89,24 +89,23 @@ const headers = [
       />
     </div>
   </div>
+  <Loader v-if="isLoading" />
+  <span v-else-if="!clustersFiltered.length" data-testid="noClusterMsg">
+    Aucun cluster trouvé
+  </span>
   <DsfrDataTable
+    v-else
     :key="tableKey"
     data-testid="tableAdministrationClusters"
     :title="title"
     :headers-row="headers"
     :rows="clustersFiltered"
-    :sortable-rows="true"
+    sortable-rows
   >
     <template #header="{ label }">
       {{ label }}
     </template>
-    <template v-if="isLoading" #cell>
-      <Loader />
-    </template>
-    <template v-else-if="!clustersFiltered.length" #cell>
-      Aucun cluster trouvé
-    </template>
-    <template v-else #cell="{ colKey, cell }">
+    <template #cell="{ colKey, cell }">
       <template v-if="colKey === 'nom'">
         <a
           :href="`clusters/${(cell as Cluster).id}`"

@@ -179,7 +179,7 @@ function getRows(associatedEnvironments: ClusterAssociatedEnvironments) {
     ]))
 }
 
-function getHeaderRow() {
+function getHeadersRow() {
   return ['Projet', 'Nom', 'Souscripteur', 'Ressources'].map(row => ({
     key: row.toLowerCase(),
     label: row,
@@ -491,8 +491,8 @@ const isConnectionDetailsShown = ref(true)
         <DsfrDataTable
           title="Environnements déployés sur le cluster"
           data-testid="associatedEnvironmentsTable"
-          :sortable-rows="true"
-          :headers-row="getHeaderRow()"
+          sortable-rows
+          :headers-row="getHeadersRow()"
           :rows="getRows(props.associatedEnvironments)"
         />
       </div>

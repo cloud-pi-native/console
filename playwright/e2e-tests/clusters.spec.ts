@@ -21,8 +21,8 @@ test.describe('Clusters page', () => {
     await page.getByTestId('projectsSearchInput').fill(clusterName)
     // Validate
     await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-    await expect(page.getByTestId(`clusterTr-${clusterName}`).getByText('publique')).toBeVisible()
-    await expect(page.getByTestId(`clusterTr-${clusterName}`).getByText('Public')).toBeVisible()
+    await expect(page.getByRole('row', { name: clusterName }).getByText('publique')).toBeVisible()
+    await expect(page.getByRole('row', { name: clusterName }).getByText('Public')).toBeVisible()
   })
 
   test('should update a public cluster', async ({ page }) => {
@@ -53,7 +53,7 @@ test.describe('Clusters page', () => {
     // Validate
     await page.getByTestId('projectsSearchInput').fill(clusterName)
     await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-    await expect(page.getByTestId(`clusterTr-${clusterName}`)).toContainText('1GiB 1CPU 1GPU')
+    await expect(page.getByRole('row', { name: clusterName })).toContainText('1GiB 1CPU 1GPU')
   })
 
   test('should create a dedicated cluster', async ({ page }) => {
@@ -72,7 +72,7 @@ test.describe('Clusters page', () => {
     // Validate
     await page.getByTestId('projectsSearchInput').fill(clusterName)
     await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-    await expect(page.getByTestId(`clusterTr-${clusterName}`)).toContainText('Dédié')
+    await expect(page.getByRole('row', { name: clusterName })).toContainText('Dédié')
   })
 
   test('should associate a project to a dedicated cluster', async ({ page }) => {
@@ -107,7 +107,7 @@ test.describe('Clusters page', () => {
     // Validate
     await page.getByTestId('projectsSearchInput').fill(clusterName)
     await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-    await expect(page.getByTestId(`clusterTr-${clusterName}`)).toContainText('Dédié')
+    await expect(page.getByRole('row', { name: clusterName })).toContainText('Dédié')
   })
 
   test('should create a cluster even if given informations is longer than 200 chars but shorter than 1001 chars', async ({
@@ -175,8 +175,8 @@ test.describe('Clusters page', () => {
     await page.getByTestId('deleteClusterBtn').click()
     // Validate
     await page.getByTestId('projectsSearchInput').fill(clusterName)
-    await expect(page.locator('table tbody tr')).toHaveCount(1)
-    await expect(page.locator('table tbody tr')).toHaveText('Aucun cluster trouvé')
+    await expect(page.getByTestId('noClusterMsg')).toBeVisible()
+    await expect(page.getByTestId('noClusterMsg')).toHaveText('Aucun cluster trouvé')
   })
 
   test('should NOT delete a cluster with associated environment', async ({ page }) => {
