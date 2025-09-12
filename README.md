@@ -9,17 +9,28 @@ En addition du provisionnement automatique, elle garantit aussi le contrôle d'a
 
 ## Démarrage Rapide (OnBoarding)
 
-Afin de démarrer rapidement l'application pour la découvrir il vous faudra satisfaire à un certain nombre de prérequis.
+Afin de démarrer rapidement l'application pour la découvrir il vous faudra d'abord cloner ce dépôt, puis satisfaire à un certain nombre de prérequis.
+
+### Cloner le projet
+
+```bash
+git clone https://github.com/cloud-pi-native/console.git
+
+# Se rendre dans le dossier du projet
+cd console
+```
 
 ### Prérequis
 
+#### Prérequis techniques du projet
+
 - [Docker >= v27](https://docs.docker.com/get-docker/) Orchestrateur de conteneurs
-  - [Plugin compose >= v2.35](https://github.com/docker/compose) (attention à ne pas avoir une vieille version qui traînerait dans `~/.docker/cli-plugins/` !) Permet de composer plusieurs conteneurs Docker
+  - [Plugin compose >= v2.35](https://github.com/docker/compose) (attention à ne pas avoir une vieille version qui traînerait dans `~/.docker/cli-plugins/` !). Permet de composer plusieurs conteneurs Docker
   - [Plugin buildx](https://github.com/docker/buildx) Permet d'étendre les capacités de Docker à l'aide de BuildKit
 - [Node.js >= v22](https://nodejs.org/en/download/) Environnement d'exécution JavaScript. Vous pouvez utiliser [Volta](https://volta) pour gérer automatiquement l'installation de la version approuvée
 - [PnPM >= v10](https://pnpm.io/installation) Gestionnaire de paquets pour JavaScript
 
-### Configuration locale
+#### Prérequis de configuration du projet
 
 Afin de pouvoir démarrer l'application, il vous faudra également récupérer (ou bien créer vous-même) les fichiers :
 
@@ -28,11 +39,11 @@ Afin de pouvoir démarrer l'application, il vous faudra également récupérer (
 - `apps/server/.env.docker`
 - `apps/server/.env.integ`
 
-En vous basant sur une infrastructure existante.
+En vous basant sur une infrastructure distante (comme un environnement d'intégration, cf. la section suivante) ou votre infrastructure locale si vous préférez tout héberger en local.
 
-### Lancement Rapide
+### Lancement rapide utilisant l'application en local et les services sur un environnement distant
 
-Maintenant que vous avez les prérequis et la configuration, vous pouvez construire et déployer le projet :
+Maintenant que vous avez les prérequis projets (prérequis techniques et de configuration), vous pouvez construire et lancer l'application localement, en la couplant avec les services (par exemple Keycloak) d'un environnement d'intégration :
 
 ```bash
 # Installer toutes les dépendances
@@ -91,45 +102,41 @@ Plusieurs plugins sont nativement enregistrés auprès du serveur pour assurer l
 
 Le développement s'effectue à l'aide de Docker *(le client et le serveur peuvent tourner en local ou dans Docker)* ou encore directement dans un cluster Kubernetes à l'aide de Kind, un outil permettant de créer des noeuds Kubernetes dans des conteneurs Docker.
 
-### Lancer l'application
+### Construire l'application
 
-Lancez les commandes suivantes dans votre terminal pour installer le projet :
+Une fois le projet cloné, lancez les commandes suivantes dans votre terminal pour installer le projet et construire l'ensemble de l'application `console` :
 
 ```shell
-# Cloner le projet
-git clone https://github.com/cloud-pi-native/console.git
-
-# Se rendre dans le dossier du projet
-cd console
-
 # Installer les dépendances du projet
 pnpm install
 
-# Copier les fichiers d'environnement exemples
+# Créer les fichiers d'environnement exemples
 ./ci/scripts/init-env.sh
 
 # Générer le client Prisma côté serveur
 pnpm --filter @cpn-console/server run db:generate
 
-# Construire les paquets applicatifs
+# Construire tous les paquets applicatifs
 pnpm build
 ```
 
-#### Développement
+#### Lancer l'application
 
 L'application peut se lancer de plusieurs manières, à savoir :
 
-__Local :__
+__Déploiement local du client et du serveur de la console, le reste dans des conteneurs :__
 
 ```shell
 # Lancer keycloak, postgres et pgadmin dans des conteneurs
 pnpm run dev
 
-# Lancer le serveur
+# Lancer le serveur dans un shell (la commande va afficher les logs)
 pnpm --filter @cpn-console/server run dev
 
-# Lancer le client
+# Lancer le client dans un shell (la commande va afficher les logs)
 pnpm --filter @cpn-console/client run dev
+
+# …une fois que vous terminé d'utiliser l'application:
 
 # Supprimer les conteneurs keycloak, postgres et pgadmin
 pnpm run dev:clean
@@ -138,7 +145,7 @@ pnpm run dev:clean
 pnpm run dev:delete
 ```
 
-__Docker :__
+__Tout dans des conteneurs :__
 
 ```shell
 # Lancer l'application
@@ -147,15 +154,15 @@ pnpm run docker:dev
 # Supprimer les conteneurs
 pnpm run docker:dev:clean
 
-# Supprimer les conteneurs (supprime les volumes docker)
+# Supprimer les conteneurs (supprime également les volumes !)
 pnpm run docker:dev:delete
 ```
 
 > Pour lancer le debugger nodejs sur le serveur, dans les fichiers `docker-compose` remplacer la directive  `command: ["dev"]` par `command: ["debug"]`.
 
-__Kubernetes :__
+__Lancement de la stack complète dans un cluster Kubernetes :__
 
-Nous recommandons l'utilisation de [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) ("Kubernetes in Docker") pour des tests en local
+Nous recommandons l'utilisation de [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) ("Kubernetes in Docker") pour créer un cluster k8s en local.
 
 Vous aurez également besoin d'installer les outils suivants pour des déploiements avancés, plus proche d'une exploitation en mode "Production" :
 
@@ -180,7 +187,7 @@ pnpm run kube:delete
 
 L'application peut se lancer de plusieurs manières, à savoir :
 
-__Local :__
+__Déploiement local du client et du serveur de la console, le reste dans des conteneurs :__
 
 ```shell
 # Lancer postgres et pgadmin dans des conteneurs
@@ -200,7 +207,7 @@ pnpm run integ:clean
 pnpm run integ:delete
 ```
 
-__Docker :__
+__Tout dans des conteneurs :__
 
 ```shell
 # Lancer l'application
@@ -213,7 +220,7 @@ pnpm run docker:integ:clean
 pnpm run docker:integ:delete
 ```
 
-__Kubernetes :__
+__Lancement de la stack complète dans un cluster Kubernetes :__
 
 ```shell
 # Initialiser Kind (ajoute des noms de domaines dans /etc/hosts, le mot de passe sera demandé)
@@ -234,6 +241,9 @@ pnpm run kube:delete
 Les commandes utilitaires de l'application :
 
 ```shell
+# Formattage du code
+pnpm run format
+
 # Lancer la vérification syntaxique
 pnpm run lint
 
@@ -252,7 +262,7 @@ Se référer à la [documentation concernée](./playwright/README.md).
 
 ### Accès aux services
 
-Les services sont disponibles via des nom de domaines ajouté dans le fichier `/etc/hosts` de votre système, l'ajout des domaines se fait automatiquement lors de la commande `pnpm run kube:init`.
+Les services sont disponibles via des noms de domaines ajoutés dans le fichier `/etc/hosts` de votre système, l'ajout des domaines se fait automatiquement lors de la commande `pnpm run kube:init`.
 
 | Service                                        | Url (kubernetes)               | Url (local/docker)      |
 | ---------------------------------------------- | ------------------------------ | ----------------------- |
@@ -261,7 +271,7 @@ Les services sont disponibles via des nom de domaines ajouté dans le fichier `/
 | Interface d'administration de base de données  | <http://pgadmin.dso.local>     | <http://localhost:8081> |
 | Interface d'administration du serveur keycloak | <http://keycloak.dso.local>    | <http://localhost:8090> |
 
-*__Notes:__ :warning: Il est possible que le navigateur utilisé (particulière Brave ou Firefox) bloque les cookies utilisés entre le frontend et keycloak, il est nécessaire de désactiver les protections de ce type dans votre navigateur (ex: Brave Shield).*
+*__Notes:__ ⚠ Il est possible que le navigateur utilisé (particulièrement Brave ou Firefox) bloque les cookies utilisés entre le frontend et keycloak, il est nécessaire de désactiver les protections de ce type dans votre navigateur (ex: Brave Shield).*
 
 ### Informations de connexion
 
