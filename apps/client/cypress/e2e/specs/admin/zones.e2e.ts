@@ -230,7 +230,7 @@ describe('Administration zones', () => {
     cy.wait('@getClusters').its('response.statusCode').should('match', /^20\d$/)
 
     newZone.clusters.forEach((cluster) => {
-      cy.getByDataTestid(`clusterTr-${cluster.label}`)
+      cy.get(`a[title='Éditer le cluster ${cluster.label}']`)
         .should('be.visible')
         .click()
       cy.get('#zone-select')

@@ -2,7 +2,7 @@ import { ProjectAuthorized, environmentContract } from '@cpn-console/shared'
 import { checkEnvironmentCreate, checkEnvironmentUpdate, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.js'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, NotFound404, Unauthorized401 } from '@/utils/errors.js'
+import { BadRequest400, Forbidden403, Internal500, NotFound404, Unauthorized401 } from '@/utils/errors.js'
 
 export function environmentRouter() {
   return serverInstance.router(environmentContract, {
@@ -30,10 +30,10 @@ export function environmentRouter() {
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-      const invalidReason = await checkEnvironmentCreate({ ...requestBody })
-      if (invalidReason) return invalidReason
+      const checkCreateResult = await checkEnvironmentCreate({ ...requestBody })
+      if (!checkCreateResult.success) return new BadRequest400(checkCreateResult.error)
 
-      const body = await createEnvironment({
+      const result = await createEnvironment({
         userId: perms.user.id,
         projectId,
         name: requestBody.name,
@@ -44,11 +44,12 @@ export function environmentRouter() {
         stageId: requestBody.stageId,
         requestId: req.id,
       })
-      if (body instanceof ErrorResType) return body
-
+      if (result.isError) {
+        return new Internal500(result.error)
+      }
       return {
         status: 201,
-        body,
+        body: result.data,
       }
     },
 
@@ -61,10 +62,10 @@ export function environmentRouter() {
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-      const invalidReason = await checkEnvironmentUpdate({ environmentId, ...requestBody })
-      if (invalidReason) return invalidReason
+      const checkUpdateResult = await checkEnvironmentUpdate({ environmentId, ...requestBody })
+      if (!checkUpdateResult.success) return new BadRequest400(checkUpdateResult.error)
 
-      const body = await updateEnvironment({
+      const result = await updateEnvironment({
         user: perms.user,
         environmentId,
         cpu: requestBody.cpu,
@@ -72,11 +73,12 @@ export function environmentRouter() {
         memory: requestBody.memory,
         requestId: req.id,
       })
-      if (body instanceof ErrorResType) return body
-
+      if (result.isError) {
+        return new Internal500(result.error)
+      }
       return {
         status: 200,
-        body,
+        body: result.data,
       }
     },
 
@@ -88,17 +90,19 @@ export function environmentRouter() {
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
-      const body = await deleteEnvironment({
+      const result = await deleteEnvironment({
         userId: perms.user?.id,
         environmentId,
         requestId: req.id,
         projectId: perms.projectId,
       })
-      if (body instanceof ErrorResType) return body
+      if (result.isError) {
+        return new Internal500(result.error)
+      }
 
       return {
         status: 204,
-        body,
+        body: result.data,
       }
     },
   })
