@@ -60,6 +60,9 @@ export async function getClusterAssociatedEnvironments(clusterId: string) {
       project: environment.project?.name,
       name: environment.name,
       owner: environment.project.owner.email,
+      cpu: environment.cpu,
+      gpu: environment.gpu,
+      memory: environment.memory,
     })
   })
 }
