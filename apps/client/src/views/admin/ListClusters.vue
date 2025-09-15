@@ -8,6 +8,7 @@ import { useStageStore } from '@/stores/stage.js'
 import router from '@/router/index.js'
 import { useClusterStore } from '@/stores/cluster.js'
 import { getRandomId } from '@/utils/func.js'
+import { DsfrDataTable } from '@gouvminint/vue-dsfr'
 
 const zoneStore = useZoneStore()
 const stageStore = useStageStore()
@@ -41,6 +42,25 @@ const privacyWording: Record<Cluster['privacy'], string> = {
 function clickCluster(cluster: Cluster) {
   router.push({ name: 'AdminCluster', params: { id: cluster.id } })
 }
+
+const headers = [
+  {
+    key: 'nom',
+    label: 'Nom',
+  },
+  {
+    key: 'zone',
+    label: 'Zone',
+  },
+  {
+    key: 'usage',
+    label: 'Confidentialité',
+  },
+  {
+    key: 'resources',
+    label: 'Ressources allouables',
+  },
+]
 </script>
 
 <template>
@@ -69,57 +89,52 @@ function clickCluster(cluster: Cluster) {
       />
     </div>
   </div>
-  <DsfrTable
+  <DsfrDataTable
     :key="tableKey"
     data-testid="tableAdministrationClusters"
     :title="title"
+    :headers-row="headers"
+    :rows="clustersFiltered"
+    :sortable-rows="true"
   >
-    <template #header>
-      <tr>
-        <td>Nom</td>
-        <td>Zone</td>
-        <td>Confidentialité</td>
-        <td>Ressources allouables</td>
-      </tr>
+    <template #header="{ label }">
+      {{ label }}
     </template>
-    <tr
-      v-if="isLoading || !clustersFiltered.length"
-    >
-      <td colspan="7">
-        {{ isLoading ? 'Chargement...' : 'Aucun cluster trouvé' }}
-      </td>
-    </tr>
-    <tr
-      v-for="cluster in clustersFiltered"
-      v-else
-      :key="cluster.id"
-      :data-testid="`clusterTr-${cluster.label}`"
-      class="cursor-pointer relative"
-      :title="`Voir le tableau de bord du projet ${cluster.label}`"
-      @click.stop="() => clickCluster(cluster)"
-    >
-      <td>{{ cluster.label }}</td>
-      <td>
+    <template v-if="isLoading" #cell>
+      <Loader />
+    </template>
+    <template v-else-if="!clustersFiltered.length" #cell>
+      Aucun cluster trouvé
+    </template>
+    <template v-else #cell="{ colKey, cell }">
+      <template v-if="colKey === 'nom'">
+        <a
+          :href="`clusters/${(cell as Cluster).id}`"
+          :title="`Éditer le cluster ${(cell as Cluster).label}`"
+          @click="() => clickCluster(cell as Cluster)"
+        >
+          {{ (cell as Cluster).label }}
+        </a>
+      </template>
+      <template v-else-if="colKey === 'zone'">
         <Badge
           type="zone"
-          :name="zoneStore.zonesById[cluster.zoneId]?.label"
+          :name="zoneStore.zonesById[(cell as Cluster).zoneId]?.label"
         />
-      </td>
-      <td
-        v-if="cluster.privacy === 'dedicated'"
-      >
-        <v-icon name="ri:folder-shield-2-line" /> {{ privacyWording[cluster.privacy] }}
-      </td>
-      <td
-        v-else
-      >
-        <v-icon name="ri:global-line" /> {{ privacyWording[cluster.privacy] }}
-      </td>
-      <td>
-        {{ cluster.memory }}GiB {{ cluster.cpu }}CPU {{ cluster.gpu }}GPU
-      </td>
-    </tr>
-  </DsfrTable>
+      </template>
+      <template v-else-if="colKey === 'usage'">
+        <v-icon v-if="(cell as Cluster).privacy === 'dedicated'" name="ri:folder-shield-2-line" />
+        <v-icon v-else name="ri:global-line" />
+        {{ privacyWording[(cell as Cluster).privacy] }}
+      </template>
+      <template v-else-if="colKey === 'resources'">
+        {{ (cell as Cluster).memory }}GiB {{ (cell as Cluster).cpu }}CPU {{ (cell as Cluster).gpu }}GPU
+      </template>
+      <template v-else>
+        {{ cell }}
+      </template>
+    </template>
+  </DsfrDataTable>
 </template>
 
 <style scoped>

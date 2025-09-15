@@ -84,6 +84,9 @@ export function getClusterEnvironments(clusterId: Cluster['id']) {
     where: { clusterId },
     select: {
       name: true,
+      cpu: true,
+      gpu: true,
+      memory: true,
       project: {
         select: {
           slug: true,

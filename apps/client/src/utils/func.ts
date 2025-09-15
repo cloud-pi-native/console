@@ -1,5 +1,3 @@
-import type { Quota } from '@cpn-console/shared'
-import xbytes from 'xbytes'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 export async function copyContent(content: string): Promise<void> {
@@ -41,28 +39,6 @@ export function truncateDescription(description: string) {
     title: description,
     innerHTML,
   }
-}
-
-export interface Consumption {
-  cpu?: number
-  memory?: number
-}
-
-export function listQuotasToConsumption(quotas: Quota[]): Consumption {
-  return quotas.reduce((acc, value) => {
-    if (!value) return acc
-    acc.cpu += value.cpu
-    if (!value.memory.endsWith('B')) value.memory = `${value.memory}B`
-    const memorySize = xbytes.parseSize(value.memory)
-
-    if (memorySize && Number.isInteger(memorySize)) {
-      acc.memory += memorySize
-    }
-    return acc
-  }, {
-    cpu: 0,
-    memory: 0,
-  })
 }
 
 export function clickInDialog(e?: MouseEvent | TouchEvent, fn?: () => void) {
