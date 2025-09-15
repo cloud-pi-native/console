@@ -17,8 +17,8 @@ import { load } from 'js-yaml'
 import { JsonViewer } from 'vue3-json-viewer'
 import ChoiceSelector from './ChoiceSelector.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import { toCodeComponent } from '@/utils/func.js'
 import type { Project } from '@/utils/project-utils.js'
+import { DsfrDataTable } from '@gouvminint/vue-dsfr'
 
 const props = withDefaults(defineProps<{
   isNewCluster: boolean
@@ -172,10 +172,18 @@ function retrieveUserAndCluster(context: ContextType) {
 function getRows(associatedEnvironments: ClusterAssociatedEnvironments) {
   return associatedEnvironments
     ?.map(associatedEnvironment => ([
-      toCodeComponent(associatedEnvironment.project),
-      toCodeComponent(associatedEnvironment.name),
-      toCodeComponent(associatedEnvironment.owner ?? ''),
+      associatedEnvironment.project,
+      associatedEnvironment.name,
+      associatedEnvironment.owner ?? '',
+      `${associatedEnvironment.memory}GiB ${associatedEnvironment.cpu}CPU ${associatedEnvironment.gpu}GPU`,
     ]))
+}
+
+function getHeaderRow() {
+  return ['Projet', 'Nom', 'Souscripteur', 'Ressources'].map(row => ({
+    key: row.toLowerCase(),
+    label: row,
+  }))
 }
 
 function addCluster() {
@@ -480,10 +488,11 @@ const isConnectionDetailsShown = ref(true)
       <div
         class="flex flex-row flex-wrap gap-4 w-full"
       >
-        <DsfrTable
+        <DsfrDataTable
           title="Environnements déployés sur le cluster"
           data-testid="associatedEnvironmentsTable"
-          :headers="['Projet', 'Nom', 'Souscripteur']"
+          :sortable-rows="true"
+          :headers-row="getHeaderRow()"
           :rows="getRows(props.associatedEnvironments)"
         />
       </div>
