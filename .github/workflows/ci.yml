@@ -27,6 +27,7 @@ jobs:
     outputs:
       apps: ${{ steps.filter.outputs.apps }}
       packages: ${{ steps.filter.outputs.packages }}
+      e2e: ${{ steps.filter.outputs.e2e }}
       ci: ${{ steps.filter.outputs.ci }}
     steps:
       - name: Checks-out repository
@@ -44,6 +45,9 @@ jobs:
               - 'plugins/**'
             ci:
               - '.github/workflows/**'
+            e2e:
+              - 'playwright/**'
+              - 'apps/client/cypress/**'
 
   expose-vars:
     runs-on: ubuntu-latest
@@ -134,7 +138,7 @@ jobs:
 
   cypress-tests:
     uses: ./.github/workflows/tests-e2e.yml
-    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' }}
+    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true' }}
     needs:
       - path-filter
       - expose-vars
@@ -147,7 +151,7 @@ jobs:
 
   playwright-tests:
     uses: ./.github/workflows/playwright.yml
-    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' }}
+    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true' }}
     needs:
       - path-filter
       - expose-vars
