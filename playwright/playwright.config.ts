@@ -28,8 +28,13 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
-  /* In milliseconds */
-  timeout: 60_000,
+  /* All timeouts are in milliseconds */
+  // Timeout for each and every `test` block
+  timeout: 30_000,
+  // Timeout for each and every `expect` command
+  expect: {
+    timeout: 10_000,
+  },
 
   /* Configure projects for major browsers */
   projects: [
