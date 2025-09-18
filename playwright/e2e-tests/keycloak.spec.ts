@@ -9,7 +9,6 @@ async function signInMasterRealm({ page }: { page: Page }) {
   await page.goto(keycloakURL)
 
   // Connexion à la console d'administration de l'instance Keycloak
-  await page.getByRole('link', { name: 'Administration Console' }).click()
   await page.locator('#username').fill('admin')
   await page.locator('#password').fill('admin')
   await page.locator('#kc-login').click()
@@ -28,7 +27,7 @@ test.describe('Keycloak', () => {
   })
 
   test('should have a CπN realm', async ({ page }) => {
-    await page.getByTestId('realmSelectorToggle').click()
+    await page.getByTestId('realmSelector').click()
     await expect(
       page.getByRole('menuitem', { name: 'cloud-pi-native' }),
     ).toBeVisible()
@@ -36,7 +35,7 @@ test.describe('Keycloak', () => {
 
   test.describe('CπN realm', () => {
     test.beforeEach(async ({ page }) => {
-      await page.getByTestId('realmSelectorToggle').click()
+      await page.getByTestId('realmSelector').click()
       await page.getByRole('menuitem', { name: 'cloud-pi-native' }).click()
     })
 
@@ -61,15 +60,15 @@ test.describe('Keycloak', () => {
       await page
         .getByRole('textbox', { name: 'Username' })
         .fill(faker.internet.username())
-      await page.getByTestId('email-input').fill(faker.internet.email())
-      await page.getByTestId('create-user').click()
+      await page.getByTestId('email').fill(faker.internet.email())
+      await page.getByTestId('user-creation-save').click()
       await expect(page.getByLabel('The user has been created')).toBeVisible()
     })
 
     test('should create a group', async ({ page }) => {
       await page.getByRole('link', { name: 'Groups' }).click()
       await page.getByRole('button', { name: 'Create group' }).click()
-      await page.getByTestId('groupNameInput').fill(faker.string.alpha(10))
+      await page.getByTestId('name').fill(faker.string.alpha(10))
       await page.getByTestId('createGroup').click()
       await expect(page.getByLabel('Group created')).toBeVisible()
     })
@@ -80,15 +79,15 @@ test.describe('Keycloak', () => {
       await page.getByTestId('add-user').click()
       const username = faker.internet.username()
       await page.getByRole('textbox', { name: 'Username' }).fill(username)
-      await page.getByTestId('email-input').fill(faker.internet.email())
-      await page.getByTestId('create-user').click()
+      await page.getByTestId('email').fill(faker.internet.email())
+      await page.getByTestId('user-creation-save').click()
       await expect(page.getByLabel('The user has been created')).toBeVisible()
 
       // Create group
       await page.getByRole('link', { name: 'Groups' }).click()
       await page.getByRole('button', { name: 'Create group' }).click()
       const groupName = faker.string.alpha(10)
-      await page.getByTestId('groupNameInput').fill(groupName)
+      await page.getByTestId('name').fill(groupName)
       await page.getByTestId('createGroup').click()
       await expect(page.getByLabel('Group created')).toBeVisible()
 
@@ -112,7 +111,7 @@ test.describe('Keycloak', () => {
       await page.getByRole('link', { name: 'Groups' }).click()
       await page.getByRole('button', { name: 'Create group' }).click()
       const groupName = faker.string.alpha(10)
-      await page.getByTestId('groupNameInput').fill(groupName)
+      await page.getByTestId('name').fill(groupName)
       await page.getByTestId('createGroup').click()
       await expect(page.getByLabel('Group created')).toBeVisible()
       await page
@@ -136,13 +135,10 @@ test.describe('Keycloak', () => {
       await page.getByTestId('add-user').click()
       const username = faker.internet.username()
       await page.getByRole('textbox', { name: 'Username' }).fill(username)
-      await page.getByTestId('email-input').fill(faker.internet.email())
-      await page.getByTestId('create-user').click()
+      await page.getByTestId('email').fill(faker.internet.email())
+      await page.getByTestId('user-creation-save').click()
       await expect(page.getByLabel('The user has been created')).toBeVisible()
-      await page
-        .getByTestId('action-dropdown')
-        .getByRole('button', { name: 'Action' })
-        .click()
+      await page.getByTestId('action-dropdown').click()
       await page.getByRole('menuitem', { name: 'Delete' }).click()
       await page.getByTestId('confirm').click()
     })
