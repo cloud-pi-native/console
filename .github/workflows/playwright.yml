@@ -24,6 +24,7 @@ on:
         type: string
         default: 10.5.2
       TAG:
+        description: Container images version to use for console client and server
         required: true
         type: string
         default: latest

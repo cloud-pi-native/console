@@ -37,7 +37,7 @@ describe('Project Logs', () => {
       })
   })
 
-  it('Should handle display project logs as manager or memebr of project', () => {
+  it('Should handle display project logs as manager or member of project', () => {
     cy.kcLogin('tcolin')
     cy.intercept('GET', '/api/v1/logs?*').as('listLogs')
 
