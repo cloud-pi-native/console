@@ -15,7 +15,7 @@ Cypress.Commands.add('kcLogin', (name, password = 'test') => {
     cy.origin(`http://${keycloakDomain}`, { args: { name, password } }, ({ name, password }) => {
       cy.get('input#username').type(name)
         .get('input#password').type(password)
-        .get('input#kc-login').click()
+        .get('#kc-login').click()
     })
     cy.url().should('contain', `${Cypress.env('clientHost')}`)
   }, {

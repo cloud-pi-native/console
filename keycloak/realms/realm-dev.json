@@ -281,7 +281,8 @@
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
       "defaultClientScopes": [
-        "generic"
+        "generic",
+        "basic"
       ],
       "optionalClientScopes": [
         "address",
@@ -373,6 +374,29 @@
         "consent.screen.text": "${offlineAccessScopeConsentText}",
         "display.on.consent.screen": "true"
       }
+    },
+    {
+      "id": "a067866c-7812-47c6-aa28-9e3421fd673b",
+      "name": "basic",
+      "description": "",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false",
+        "gui.order": "",
+        "consent.screen.text": ""
+      },
+      "protocolMappers": [{
+        "id": "910359ad-0368-44dd-b10c-d1cae6c6dd17",
+        "name": "sub",
+        "protocol": "openid-connect",
+        "protocolMapper": "oidc-sub-mapper",
+        "consentRequired": false,
+        "config": {
+          "introspection.token.claim": "true",
+          "access.token.claim": "true"
+        }
+      }]
     },
     {
       "id": "1611458d-38ab-4a9f-859e-1812d251c1ac",
