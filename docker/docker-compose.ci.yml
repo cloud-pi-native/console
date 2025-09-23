@@ -8,7 +8,7 @@ services:
       - 8090:8080
     volumes:
       - ../keycloak/realms:/opt/bitnami/keycloak/data/import
-      - ../keycloak/data/dev:/opt/bitnami/keycloak/data/h2
+      - /opt/bitnami/keycloak/data/h2
     user: root
     environment:
       KEYCLOAK_ADMIN: admin

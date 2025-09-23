@@ -42,7 +42,7 @@ describe('Redirection', () => {
     cy.origin(`http://${keycloakDomain}`, () => {
       cy.get('input#username').type('test')
         .get('input#password').type('test')
-        .get('input#kc-login').click()
+        .get('#kc-login').click()
     })
     cy.wait('@postToken')
     cy.url().should('contain', `/projects/${project.slug}`)
@@ -61,7 +61,7 @@ describe('Redirection', () => {
     cy.origin(`http://${keycloakDomain}`, () => {
       cy.get('input#username').type('test')
         .get('input#password').type('test')
-        .get('input#kc-login').click()
+        .get('#kc-login').click()
     })
     cy.wait('@postToken')
     cy.url().should('contain', '/')
