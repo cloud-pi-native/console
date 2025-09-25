@@ -66,7 +66,8 @@
     "node-vault-client": "^1.0.1",
     "prisma": "^6.0.1",
     "undici": "^7.1.0",
-    "vitest-mock-extended": "^2.0.2"
+    "vitest-mock-extended": "^2.0.2",
+    "vue": "^3.5.13"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",

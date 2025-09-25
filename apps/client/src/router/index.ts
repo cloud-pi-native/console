@@ -16,7 +16,7 @@ import { swaggerUiPath } from '@cpn-console/shared'
 import { uuid } from '@/utils/regex.js'
 
 const AdminCluster = () => import('@/views/admin/AdminCluster.vue')
-const AdminServiceChain = () => import('@/views/admin/AdminServiceChain.vue')
+// const AdminServiceChain = () => import('@/views/admin/AdminServiceChain.vue')
 const ServicesHealth = () => import('@/views/ServicesHealth.vue')
 const CreateProject = () => import('@/views/CreateProject.vue')
 const ProfileWrapper = () => import('@/views/profile/ProfileWrapper.vue')
@@ -30,7 +30,7 @@ const ListProjects = () => import('@/views/admin/ListProjects.vue')
 const ListLogs = () => import('@/views/admin/ListLogs.vue')
 const AdminRoles = () => import('@/views/admin/AdminRoles.vue')
 const ListClusters = () => import('@/views/admin/ListClusters.vue')
-const ListServiceChains = () => import('@/views/admin/ListServiceChains.vue')
+const ListServiceChainsBis = () => import('@/views/admin/ListServiceChainsBis.vue')
 const ListStages = () => import('@/views/admin/ListStages.vue')
 const ListZones = () => import('@/views/admin/ListZones.vue')
 const ListPlugins = () => import('@/views/admin/ListPlugins.vue')
@@ -185,18 +185,23 @@ export const routes: Readonly<RouteRecordRaw[]> = [
           {
             path: '',
             name: 'ListServiceChains',
-            component: ListServiceChains,
+            component: ListServiceChainsBis,
           },
-          {
-            path: ':id',
-            name: 'AdminServiceChain',
-            component: AdminServiceChain,
-            props(to) {
-              return {
-                id: to.params.id,
-              }
-            },
-          },
+          // {
+          // path: '',
+          // name: 'ListServiceChains',
+          // component: ListServiceChains,
+          // },
+          // {
+          // path: ':id',
+          // name: 'AdminServiceChain',
+          // component: AdminServiceChain,
+          // props(to) {
+          // return {
+          // id: to.params.id,
+          // }
+          // },
+          // },
         ],
       },
       {
