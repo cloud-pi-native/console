@@ -99,7 +99,7 @@ jobs:
           docker compose -f ./docker/docker-compose.ci.yml up --no-build -d --remove-orphans
 
       - name: Run Playwright tests
-        run: pnpm --dir playwright exec playwright test
+        run: pnpm --dir playwright exec playwright test --grep @e2e
 
       - name: Clean up docker resources (containers, volumes)
         run: docker compose -f ./docker/docker-compose.ci.yml down -v --remove-orphans

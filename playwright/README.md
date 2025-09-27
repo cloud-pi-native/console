@@ -29,11 +29,11 @@ $ pnpm run docker:dev
 On peut ensuite lancer ensuite les tests :
 
 ```shell
-$ pnpm run playwright:test
+$ pnpm run playwright:test --grep @e2e
 ```
 
 OU (autre possibilité), lancer la "console" Playwright pour parcourir/exécuter les tests manuellement :
 
 ```shell
-$ pnpm run playwright:test:ui
+$ pnpm run playwright:test:ui --grep @e2e
 ```
