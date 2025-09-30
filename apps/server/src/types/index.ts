@@ -9,6 +9,12 @@ export type UserDetails = {
   type: User['type'],
 }
 
+export interface Resources {
+  cpu: number
+  gpu: number
+  memory: number
+}
+
 declare module 'fastify' {
   interface Session {
     user?: UserDetails

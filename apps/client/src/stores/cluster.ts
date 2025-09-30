@@ -17,6 +17,10 @@ export const useClusterStore = defineStore('cluster', () => {
     apiClient.Clusters.getClusterDetails({ params: { clusterId } })
       .then(response => extractData(response, 200))
 
+  const getClusterUsage = async (clusterId: Cluster['id']) =>
+    apiClient.Clusters.getClusterUsage({ params: { clusterId } })
+      .then(response => extractData(response, 200))
+
   const getClusterAssociatedEnvironments = (clusterId: Cluster['id']) =>
     apiClient.Clusters.getClusterEnvironments({ params: { clusterId } })
       .then(response => extractData(response, 200))
@@ -41,6 +45,7 @@ export const useClusterStore = defineStore('cluster', () => {
     updateCluster,
     deleteCluster,
     getClusterDetails,
+    getClusterUsage,
     getClusters,
   }
 })

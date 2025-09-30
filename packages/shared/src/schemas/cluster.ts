@@ -58,6 +58,12 @@ export const ClusterDetailsSchema = CleanedClusterSchema.merge(z.object({
   kubeconfig: KubeconfigSchema,
 }))
 
+export const ClusterUsageSchema = z.object({
+  cpu: z.number(),
+  gpu: z.number(),
+  memory: z.number(),
+})
+
 export type Cluster = Zod.infer<typeof CleanedClusterSchema>
 export type ClusterDetails = Zod.infer<typeof ClusterDetailsSchema>
 export type Kubeconfig = Zod.infer<typeof KubeconfigSchema>

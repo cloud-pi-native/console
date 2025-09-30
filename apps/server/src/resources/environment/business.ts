@@ -6,7 +6,7 @@ import {
   initializeEnvironment,
   updateEnvironment as updateEnvironmentQuery,
 } from '@/resources/queries-index.js'
-import type { UserDetails } from '@/types/index.js'
+import type { Resources, UserDetails } from '@/types/index.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import prisma from '@/prisma.js'
 import { Result } from '@/utils/business.js'
@@ -39,12 +39,6 @@ interface CreateEnvironmentResult {
   memory: Environment['memory']
   clusterId: Environment['clusterId']
   stageId: Stage['id']
-}
-
-interface Resources {
-  cpu: number
-  gpu: number
-  memory: number
 }
 
 export async function createEnvironment({

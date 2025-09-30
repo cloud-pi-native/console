@@ -23,6 +23,7 @@ import { validateSchema } from '@/utils/business.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import { BadRequest400, ErrorResType, NotFound404, Unprocessable422 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
+import type { Resources } from '@/types/index.js'
 
 export async function listClusters(userId?: User['id']) {
   const where: Prisma.ClusterWhereInput = userId
@@ -69,7 +70,6 @@ export async function getClusterAssociatedEnvironments(clusterId: string) {
 
 export async function getClusterDetails(clusterId: string): Promise<ClusterDetails> {
   const { infos, projects, stages, kubeconfig, ...details } = await getClusterDetailsQuery(clusterId)
-
   return {
     ...details,
     infos: infos ?? '',
@@ -79,6 +79,24 @@ export async function getClusterDetails(clusterId: string): Promise<ClusterDetai
       cluster: kubeconfig.cluster as unknown as Kubeconfig['cluster'],
       user: kubeconfig.user as unknown as Kubeconfig['user'],
     },
+  }
+}
+
+export async function getClusterUsage(clusterId: string): Promise<Resources> {
+  const clusterUsage = await prisma.environment.aggregate({
+    _sum: {
+      memory: true,
+      cpu: true,
+      gpu: true,
+    },
+    where: {
+      clusterId,
+    },
+  })
+  return {
+    cpu: clusterUsage._sum.cpu ?? 0,
+    gpu: clusterUsage._sum.gpu ?? 0,
+    memory: clusterUsage._sum.memory ?? 0,
   }
 }
 

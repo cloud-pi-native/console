@@ -4,6 +4,7 @@ import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CleanedClusterSchema,
   ClusterDetailsSchema,
+  ClusterUsageSchema,
   EnvironmentSchema,
   UserSchema,
 } from '../schemas/index.js'
@@ -50,6 +51,20 @@ export const clusterContract = contractInstance.router({
     pathParams: ClusterParams,
     responses: {
       200: ClusterDetailsSchema,
+      401: ErrorSchema,
+      404: ErrorSchema,
+      500: ErrorSchema,
+    },
+  },
+
+  getClusterUsage: {
+    method: 'GET',
+    path: `/usage/:clusterId`,
+    summary: 'Get cluster usage',
+    description: 'Retrieved resources usage of a cluster.',
+    pathParams: ClusterParams,
+    responses: {
+      200: ClusterUsageSchema,
       401: ErrorSchema,
       404: ErrorSchema,
       500: ErrorSchema,
