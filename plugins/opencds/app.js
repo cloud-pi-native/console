@@ -2,9 +2,8 @@
 
 import { createSSRApp } from 'vue'
 
+const ListServiceChains = await import('./ListServiceChains.vue')
+
 export function createApp() {
-  return createSSRApp({
-    data: () => ({ count: 1 }),
-    template: `<div @click="count++">{{ count }}</div>`,
-  })
+  return createSSRApp(ListServiceChains)
 }
