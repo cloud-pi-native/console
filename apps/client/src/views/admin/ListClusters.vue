@@ -19,6 +19,11 @@ const isLoading = ref(true)
 const inputSearchText = ref('')
 
 const clustersFiltered = computed(() => clusterStore.clusters.filter(cluster => cluster.label.includes(inputSearchText.value)))
+let clustersUsage: {
+  id: string
+  resources: string
+}[] = []
+
 const title = 'Liste des clusters'
 
 function showNewClusterForm() {
@@ -31,6 +36,13 @@ onMounted(async () => {
     zoneStore.getAllZones(),
     clusterStore.getClusters(),
   ])
+  clustersUsage = await Promise.all(clusterStore.clusters.map(async (c) => {
+    const usage = await clusterStore.getClusterUsage(c.id)
+    return {
+      id: c.id,
+      resources: `${usage.memory}GiB ${usage.cpu}CPU ${usage.gpu}GPU`,
+    }
+  }))
   isLoading.value = false
 })
 
@@ -53,12 +65,16 @@ const headers = [
     label: 'Zone',
   },
   {
-    key: 'usage',
+    key: 'access',
     label: 'Confidentialité',
   },
   {
     key: 'resources',
     label: 'Ressources allouables',
+  },
+  {
+    key: 'usage',
+    label: 'Ressources allouées',
   },
 ]
 </script>
@@ -121,13 +137,16 @@ const headers = [
           :name="zoneStore.zonesById[(cell as Cluster).zoneId]?.label"
         />
       </template>
-      <template v-else-if="colKey === 'usage'">
+      <template v-else-if="colKey === 'access'">
         <v-icon v-if="(cell as Cluster).privacy === 'dedicated'" name="ri:folder-shield-2-line" />
         <v-icon v-else name="ri:global-line" />
         {{ privacyWording[(cell as Cluster).privacy] }}
       </template>
       <template v-else-if="colKey === 'resources'">
         {{ (cell as Cluster).memory }}GiB {{ (cell as Cluster).cpu }}CPU {{ (cell as Cluster).gpu }}GPU
+      </template>
+      <template v-else-if="colKey === 'usage'">
+        {{ clustersUsage.find(c => c.id === (cell as Cluster).id)?.resources }}
       </template>
       <template v-else>
         {{ cell }}

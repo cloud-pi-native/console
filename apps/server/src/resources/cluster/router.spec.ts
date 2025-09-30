@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ClusterDetails } from '@cpn-console/shared'
+import type { ClusterDetails, Environment } from '@cpn-console/shared'
 import { clusterContract } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
@@ -12,6 +12,7 @@ vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockS
 const authUserMock = vi.spyOn(utilsController, 'authUser')
 const businessListMock = vi.spyOn(business, 'listClusters')
 const businessGetDetailsMock = vi.spyOn(business, 'getClusterDetails')
+const businessGetUsageMock = vi.spyOn(business, 'getClusterUsage')
 const businessGetEnvironmentsMock = vi.spyOn(business, 'getClusterAssociatedEnvironments')
 const businessCreateMock = vi.spyOn(business, 'createCluster')
 const businessUpdateMock = vi.spyOn(business, 'updateCluster')
@@ -98,9 +99,41 @@ describe('test clusterContract', () => {
     })
   })
 
+  describe('getClusterUsage', () => {
+    it('should return cluster usage', async () => {
+      const resources = {
+        cpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+        gpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+        memory: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+      }
+      const user = getUserMockInfos(true)
+      authUserMock.mockResolvedValueOnce(user)
+
+      businessGetUsageMock.mockResolvedValueOnce(resources)
+      const response = await app.inject()
+        .get(clusterContract.getClusterUsage.path.replace(':clusterId', faker.string.uuid()))
+        .end()
+
+      expect(businessGetUsageMock).toHaveBeenCalledTimes(1)
+      expect(response.json()).toEqual(resources)
+      expect(response.statusCode).toEqual(200)
+    })
+    it('should return 403 if not admin', async () => {
+      const user = getUserMockInfos(false)
+      authUserMock.mockResolvedValueOnce(user)
+
+      const response = await app.inject()
+        .get(clusterContract.getClusterUsage.path.replace(':clusterId', faker.string.uuid()))
+        .end()
+
+      expect(businessGetUsageMock).toHaveBeenCalledTimes(0)
+      expect(response.statusCode).toEqual(403)
+    })
+  })
+
   describe('getClusterEnvironments', () => {
     it('should return cluster environments', async () => {
-      const envs = []
+      const envs: Environment[] = []
       const user = getUserMockInfos(true)
       authUserMock.mockResolvedValueOnce(user)
 
