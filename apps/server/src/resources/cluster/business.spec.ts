@@ -4,7 +4,7 @@ import type { Cluster, Environment } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
 import { hook } from '../../__mocks__/utils/hook-wrapper.ts'
 import { BadRequest400, ErrorResType, NotFound404, Unprocessable422 } from '../../utils/errors.ts'
-import { createCluster, deleteCluster, getClusterAssociatedEnvironments, getClusterDetails, listClusters, updateCluster } from './business.ts'
+import { createCluster, deleteCluster, getClusterAssociatedEnvironments, getClusterDetails, getClusterUsage, listClusters, updateCluster } from './business.ts'
 
 vi.mock('../../utils/hook-wrapper.ts', async () => ({
   hook,
@@ -77,6 +77,22 @@ describe('test Cluster business logic', () => {
       prisma.cluster.findUniqueOrThrow.mockResolvedValue({ ...cluster, infos: null, projects: [], stages: [], kubeconfig: { user: {}, cluster: {} } } as Cluster)
       const response = await getClusterDetails(cluster.id)
       expect(response.infos).toBe('')
+    })
+  })
+
+  describe('getClusterUsage', () => {
+    it('should return a cluster usage', async () => {
+      prisma.environment.aggregate.mockResolvedValue({ _count: {}, _avg: {}, _min: {}, _max: {}, _sum: {
+        cpu: 10,
+        gpu: 5,
+        memory: 20,
+      } })
+      const response = await getClusterUsage(cluster.id)
+      expect(response).toStrictEqual({
+        cpu: 10,
+        gpu: 5,
+        memory: 20,
+      })
     })
   })
 

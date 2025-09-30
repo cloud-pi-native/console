@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
 import type { Log, ProjectV2 } from '../index.js'
-import { ClusterDetailsSchema, ClusterPrivacy, EnvironmentSchema, LogSchema, ProjectSchemaV2, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import { ClusterDetailsSchema, ClusterPrivacy, ClusterUsageSchema, EnvironmentSchema, LogSchema, ProjectSchemaV2, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
 
 describe('schemas utils', () => {
   it('should delete config in log', () => {
@@ -171,7 +171,7 @@ describe('schemas utils', () => {
       .toStrictEqual({ data: toParse, success: true })
   })
 
-  it('should validate a cluster details schema, case 1', () => {
+  it('should validate an internal dedicated cluster details schema', () => {
     const toParse = {
       id: faker.string.uuid(),
       label: 'cluster',
@@ -198,7 +198,7 @@ describe('schemas utils', () => {
       .toStrictEqual({ data: toParse, success: true })
   })
 
-  it('should validate a cluster details schema, case 2', () => {
+  it('should validate an external public cluster details schema', () => {
     const toParse = {
       id: faker.string.uuid(),
       label: 'cluster',
@@ -221,6 +221,18 @@ describe('schemas utils', () => {
     expect(ClusterDetailsSchema
       .safeParse(toParse))
       .toStrictEqual({ data: { ...toParse, infos: '' }, success: true })
+  })
+
+  it('should validate a cluster usage schema', () => {
+    const toParse = {
+      cpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+      gpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+      memory: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+    }
+
+    expect(ClusterUsageSchema
+      .safeParse(toParse))
+      .toStrictEqual({ data: toParse, success: true })
   })
 
   it('should not validate a repository schema with wrong internal repo name', () => {

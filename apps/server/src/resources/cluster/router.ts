@@ -5,6 +5,7 @@ import {
   deleteCluster,
   getClusterAssociatedEnvironments,
   getClusterDetails as getClusterDetailsBusiness,
+  getClusterUsage,
   listClusters,
   updateCluster,
 } from './business.js'
@@ -41,6 +42,19 @@ export function clusterRouter() {
       return {
         status: 200,
         body: cluster,
+      }
+    },
+
+    getClusterUsage: async ({ params, request: req }) => {
+      const perms = await authUser(req)
+      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
+      const clusterId = params.clusterId
+      const usage = await getClusterUsage(clusterId)
+
+      return {
+        status: 200,
+        body: usage,
       }
     },
 
