@@ -56,6 +56,7 @@
     "@ts-rest/core": "^3.51.0",
     "@ts-rest/fastify": "^3.51.0",
     "@ts-rest/open-api": "^3.51.0",
+    "@vitejs/plugin-vue": "^5.2.1",
     "axios": "^1.7.9",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
@@ -66,7 +67,8 @@
     "node-vault-client": "^1.0.1",
     "prisma": "^6.0.1",
     "undici": "^7.1.0",
-    "vitest-mock-extended": "^2.0.2"
+    "vitest-mock-extended": "^2.0.2",
+    "vue": "^3.5.13"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",

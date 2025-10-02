@@ -1,5 +1,8 @@
 import type { FastifyInstance } from 'fastify'
+import { renderToString } from 'vue/server-renderer'
+
 import { serverInstance } from '@/app.js'
+import { createApp } from '@/opencds/app.js'
 
 import { adminRoleRouter } from './admin-role/router.js'
 import { adminTokenRouter } from './admin-token/router.js'
@@ -45,5 +48,16 @@ export function apiRouter() {
     await app.register(serverInstance.plugin(systemSettingsRouter()), validateTrue)
     await app.register(serverInstance.plugin(userRouter()), validateTrue)
     await app.register(serverInstance.plugin(zoneRouter()), validateTrue)
+
+    // Dynamically render a Vue.js component and send it back
+    // as a raw string
+    app.get('/api/v1/opencds', async (_, reply) => {
+      const component = createApp()
+      const html = await renderToString(component)
+      reply
+        .code(200)
+        .header('Content-Type', 'text/html; charset=utf-8')
+        .send(`<div id="opencds">${html}</div>`)
+    })
   }
 }
