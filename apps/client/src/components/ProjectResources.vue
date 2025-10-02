@@ -26,6 +26,10 @@ const userStore = useUserStore()
 
 const environments = ref<(Environment & { cluster?: Cluster, zone?: Zone })[]>()
 const repositories = ref<(Repo & { source: Source })[]>()
+const projectUsage = ref<({
+  hprod: { cpu: number, gpu: number, memory: number }
+  prod: { cpu: number, gpu: number, memory: number }
+})>()
 
 const defaultBranchName = 'main'
 const branchName = ref<string>(defaultBranchName)
@@ -46,7 +50,7 @@ const hideRepos = computed(() => props.asProfile === 'user' && !ProjectAuthorize
 
 const openedModal = computed(() => !!(selectedRepo.value || selectedEnv.value || newResource.value))
 
-const environmentNames = computed(() => props.project.environments.value?.map(env => env.name) ?? [])
+const prodStageId = stageStore.stages.find(stage => stage.name === 'prod')?.id
 
 const publicClusters = computed(() => clusterStore.clusters.filter(({ privacy }) => privacy === 'public'))
 const dedicatedProjectClusters = computed(() => clusterStore.clusters.filter(cluster => props.project.clusterIds.includes(cluster.id)))
@@ -141,7 +145,7 @@ async function reload() {
       return repos.map((repo: Repo) => {
         let source: Source
         if (repo.externalRepoUrl) {
-          source = repo.isPrivate ? 'Privée extérieur' : 'Publique extérieur'
+          source = repo.isPrivate ? 'Privée extérieure' : 'Publique extérieure'
         } else {
           source = 'Interne'
         }
@@ -151,6 +155,26 @@ async function reload() {
         }
       })
     })
+  projectUsage.value = environments.value?.reduce(
+    (accumulator, current) => {
+      if (current.stageId === prodStageId) {
+        accumulator.prod.cpu += current.cpu
+        accumulator.prod.gpu += current.gpu
+        accumulator.prod.memory += current.memory
+      } else {
+        accumulator.hprod.cpu += current.cpu
+        accumulator.hprod.gpu += current.gpu
+        accumulator.hprod.memory += current.memory
+      }
+      return accumulator
+    },
+    {
+      hprod: { cpu: 0, gpu: 0, memory: 0 },
+      prod: { cpu: 0, gpu: 0, memory: 0 },
+    },
+  )
+
+  console.log(props.project.environments)
 }
 onMounted(reload)
 
@@ -235,6 +259,13 @@ async function copyToClipboard(text: string) {
           </td>
         </tr>
       </DsfrTable>
+      <div v-if="!project.limitless">
+        Utilisation des ressources projets :
+        <ul>
+          <li>Hors-Prod: {{ projectUsage?.hprod.memory }}/{{ project.hprodMemory }} GiB {{ projectUsage?.hprod.cpu }}/{{ project.hprodCpu }} CPU {{ projectUsage?.hprod.gpu }}/{{ project.hprodGpu }} GPU</li>
+          <li>Prod: {{ projectUsage?.prod.memory }}/{{ project.prodMemory }} GiB {{ projectUsage?.prod.cpu }}/{{ project.prodCpu }} CPU {{ projectUsage?.prod.gpu }}/{{ project.prodGpu }} GPU</li>
+        </ul>
+      </div>
       <DsfrButton
         v-if="canManageEnvs"
         label="Ajouter un nouvel environnement"
@@ -366,10 +397,8 @@ async function copyToClipboard(text: string) {
     />
     <EnvironmentForm
       v-else-if="newResource === 'env'"
-      :environment-names="environmentNames"
       :is-project-locked="project.locked"
       :available-clusters="projectClusters"
-      :all-clusters="clusterStore.clusters"
       :can-manage="canManageEnvs"
       is-editable
       @add-environment="(environment: Omit<CreateEnvironmentBody, 'id' | 'projectId'>) => addEnvironment(environment)"
