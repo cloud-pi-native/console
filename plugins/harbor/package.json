@@ -26,7 +26,7 @@
     "@cpn-console/kubernetes-plugin": "workspace:^",
     "@cpn-console/shared": "workspace:^",
     "@cpn-console/vault-plugin": "workspace:^",
-    "axios": "^1.7.9",
+    "axios": "^1.8.2",
     "bytes": "^3.1.2"
   },
   "devDependencies": {
