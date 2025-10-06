@@ -69,8 +69,8 @@ importers:
         specifier: ^0.7.0
         version: 0.7.0(typescript@5.7.2)(vue@3.5.13(typescript@5.7.2))
       axios:
-        specifier: ^1.7.9
-        version: 1.8.1
+        specifier: ^1.8.2
+        version: 1.12.2
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
@@ -282,13 +282,13 @@ importers:
         version: 3.52.0(@types/node@22.13.5)(zod@3.24.2)
       '@ts-rest/fastify':
         specifier: ^3.51.0
-        version: 3.52.0(@ts-rest/core@3.52.0(@types/node@22.13.5)(zod@3.24.2))(fastify@4.29.0)(zod@3.24.2)
+        version: 3.52.0(@ts-rest/core@3.52.0(@types/node@22.13.5)(zod@3.24.2))(fastify@4.29.1)(zod@3.24.2)
       '@ts-rest/open-api':
         specifier: ^3.51.0
         version: 3.52.0(@ts-rest/core@3.52.0(@types/node@22.13.5)(zod@3.24.2))(zod@3.24.2)
       axios:
-        specifier: ^1.7.9
-        version: 1.8.1
+        specifier: ^1.8.2
+        version: 1.12.2
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -296,8 +296,8 @@ importers:
         specifier: ^16.4.7
         version: 16.4.7
       fastify:
-        specifier: ^4.29.0
-        version: 4.29.0
+        specifier: ^4.29.1
+        version: 4.29.1
       fastify-keycloak-adapter:
         specifier: 2.3.2
         version: 2.3.2(patch_hash=6846b953fc520dd1ca6cb2e790cf190cbc3ed9fa9ff69739100458c520293447)
@@ -560,8 +560,8 @@ importers:
         specifier: 4.0.9
         version: 4.0.9
       axios:
-        specifier: ^1.7.9
-        version: 1.8.1
+        specifier: ^1.8.2
+        version: 1.12.2
       js-yaml:
         specifier: 4.1.0
         version: 4.1.0
@@ -621,8 +621,8 @@ importers:
         specifier: ~40.6.0
         version: 40.6.0
       axios:
-        specifier: ^1.7.9
-        version: 1.8.1
+        specifier: ^1.8.2
+        version: 1.12.2
       js-yaml:
         specifier: 4.1.0
         version: 4.1.0
@@ -676,8 +676,8 @@ importers:
         specifier: workspace:^
         version: link:../vault
       axios:
-        specifier: ^1.7.9
-        version: 1.8.1
+        specifier: ^1.8.2
+        version: 1.12.2
       bytes:
         specifier: ^3.1.2
         version: 3.1.2
@@ -774,8 +774,8 @@ importers:
         specifier: ^0.22.3
         version: 0.22.3
       axios:
-        specifier: ^1.7.9
-        version: 1.8.1
+        specifier: ^1.8.2
+        version: 1.12.2
       kubernetes-models:
         specifier: ^4.4.2
         version: 4.4.2
@@ -3219,6 +3219,9 @@ packages:
     peerDependencies:
       axios: 0.x || 1.x
 
+  axios@1.12.2:
+    resolution: {integrity: sha512-vMJzPewAlRyOgxV2dU0Cuz2O8zzzx9VYtbJOaBgXFeLc4IV/Eg50n4LowmehOOR61S8ZMpc2K5Sa7g6A4jfkUw==}
+
   axios@1.8.1:
     resolution: {integrity: sha512-NN+fvwH/kV01dYUQ3PTOZns4LWtWhOFCAhQ/pHb88WQ1hNe5V/dvFwc4VJcDL11LT9xSX0QtsR8sWUuyOuOq7g==}
 
@@ -4172,8 +4175,8 @@ packages:
   fastify-plugin@5.0.1:
     resolution: {integrity: sha512-HCxs+YnRaWzCl+cWRYFnHmeRFyR5GVnJTAaCJQiYzQSDwK9MgJdyAsuL3nh0EWRCYMgQ5MeziymvmAhUHYHDUQ==}
 
-  fastify@4.29.0:
-    resolution: {integrity: sha512-MaaUHUGcCgC8fXQDsDtioaCcag1fmPJ9j64vAKunqZF4aSub040ZGi/ag8NGE2714yREPOKZuHCfpPzuUD3UQQ==}
+  fastify@4.29.1:
+    resolution: {integrity: sha512-m2kMNHIG92tSNWv+Z3UeTR9AWLLuo7KctC7mlFPtMEVrfjIhmQhkQnT9v15qA/BfVq3vvj134Y0jl9SBje3jXQ==}
 
   fastparallel@2.4.1:
     resolution: {integrity: sha512-qUmhxPgNHmvRjZKBFUNI0oZuuH9OlSIOXmJ98lhKPxMZZ7zS/Fi0wRHOihDSz0R1YiIOjxzOY4bq65YTcdBi2Q==}
@@ -4274,6 +4277,10 @@ packages:
 
   form-data@4.0.2:
     resolution: {integrity: sha512-hGfm/slu0ZabnNt4oaRZ6uREyfCj6P4fT/n6A1rGV+Z0VdGXjfOhVUpkn6qVQONHGIFwmveGXyDs75+nr6FM8w==}
+    engines: {node: '>= 6'}
+
+  form-data@4.0.4:
+    resolution: {integrity: sha512-KrGhL9Q4zjj0kiUt5OO4Mr/A/jlI2jDYs5eHBpYHPcBEVSiipAvn2Ko2HnPe20rmcuuvMHNdZFp+4IlGTMF0Ow==}
     engines: {node: '>= 6'}
 
   forwarded@0.2.0:
@@ -9603,10 +9610,10 @@ snapshots:
       '@types/node': 22.13.5
       zod: 3.24.2
 
-  '@ts-rest/fastify@3.52.0(@ts-rest/core@3.52.0(@types/node@22.13.5)(zod@3.24.2))(fastify@4.29.0)(zod@3.24.2)':
+  '@ts-rest/fastify@3.52.0(@ts-rest/core@3.52.0(@types/node@22.13.5)(zod@3.24.2))(fastify@4.29.1)(zod@3.24.2)':
     dependencies:
       '@ts-rest/core': 3.52.0(@types/node@22.13.5)(zod@3.24.2)
-      fastify: 4.29.0
+      fastify: 4.29.1
     optionalDependencies:
       zod: 3.24.2
 
@@ -10245,10 +10252,18 @@ snapshots:
 
   aws4@1.13.2: {}
 
-  axios-retry@4.5.0(axios@1.8.1):
+  axios-retry@4.5.0(axios@1.12.2):
     dependencies:
-      axios: 1.8.1
+      axios: 1.12.2
       is-retry-allowed: 2.2.0
+
+  axios@1.12.2:
+    dependencies:
+      follow-redirects: 1.15.9
+      form-data: 4.0.4
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
 
   axios@1.8.1:
     dependencies:
@@ -11457,8 +11472,8 @@ snapshots:
       '@fastify/cookie': 9.4.0
       '@fastify/jwt': 8.0.1
       '@fastify/session': 10.9.0
-      axios: 1.8.1
-      axios-retry: 4.5.0(axios@1.8.1)
+      axios: 1.12.2
+      axios-retry: 4.5.0(axios@1.12.2)
       fastify-plugin: 4.5.1
       fp-ts: 2.16.9
       grant: 5.4.24
@@ -11472,7 +11487,7 @@ snapshots:
 
   fastify-plugin@5.0.1: {}
 
-  fastify@4.29.0:
+  fastify@4.29.1:
     dependencies:
       '@fastify/ajv-compiler': 3.6.0
       '@fastify/error': 3.4.1
@@ -11603,6 +11618,14 @@ snapshots:
       asynckit: 0.4.0
       combined-stream: 1.0.8
       es-set-tostringtag: 2.1.0
+      mime-types: 2.1.35
+
+  form-data@4.0.4:
+    dependencies:
+      asynckit: 0.4.0
+      combined-stream: 1.0.8
+      es-set-tostringtag: 2.1.0
+      hasown: 2.0.2
       mime-types: 2.1.35
 
   forwarded@0.2.0: {}
