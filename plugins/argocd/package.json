@@ -29,7 +29,7 @@
     "@kubernetes-models/argo-cd": "^2.6.2",
     "@kubernetes/client-node": "^0.22.3",
     "@types/js-yaml": "4.0.9",
-    "axios": "^1.8.2",
+    "axios": "1.12.2",
     "js-yaml": "4.1.0",
     "kubernetes-models": "^4.4.2"
   },

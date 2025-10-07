@@ -1,4 +1,4 @@
-import { projectRoles } from '@cpn-console/shared'
+import { type Cluster, type Project, projectRoles, type Stage, type Zone } from '@cpn-console/shared'
 import {
   getRandomCluster,
   getRandomEnv,
@@ -15,7 +15,12 @@ import type { User } from './types.js'
 
 const basicStages = ['dev', 'staging', 'integration', 'prod']
 
-export function createRandomDbSetup({ nbUsers = 1, nbRepo = 3, envs = basicStages }) {
+export function createRandomDbSetup({ nbUsers = 1, nbRepo = 3, envs = basicStages }): {
+  users: User[]
+  stages: Stage[]
+  zones: Zone[]
+  project: Project
+} {
   // Create users
   const users: User[] = repeatFn(nbUsers)(getRandomUser)
 
@@ -44,13 +49,11 @@ export function createRandomDbSetup({ nbUsers = 1, nbRepo = 3, envs = basicStage
 
   // Create cluster
   const clusters = [getRandomCluster({ projectIds: [project.id], zoneId: zones[0].id })]
-  // @ts-ignore
-  project.clusters = clusters
+  project.clusters = clusters as Cluster[]
 
   // Create stages
-  const stages = basicStages.map(baseEnvironment => getRandomStage(baseEnvironment))
+  const stages = basicStages.map(baseEnvironment => getRandomStage(baseEnvironment)) as Stage[]
   stages.forEach((stage) => {
-    // @ts-ignore
     stage.clusters = project.clusters
   })
 

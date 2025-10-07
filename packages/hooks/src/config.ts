@@ -1,12 +1,12 @@
 import type { PermissionTarget, PluginConfig } from '@cpn-console/shared'
 import { DEFAULT, atomicValidators, pluginConfig } from '@cpn-console/shared'
-import { z } from 'zod'
+import { z, type ZodRawShape } from 'zod'
 import { objectEntries } from './utils/utils.js'
 
 export type PluginsManifests = Record<string, PluginConfig>
 export const pluginsManifests: PluginsManifests = {}
 
-export const editStrippersGenerator = pluginConfig.transform((arg) => {
+export const editStrippersGenerator: ReturnType<typeof pluginConfig.transform> = pluginConfig.transform((arg) => {
   const project = {
     user: z.object({}),
     admin: z.object({}),
@@ -16,10 +16,10 @@ export const editStrippersGenerator = pluginConfig.transform((arg) => {
   for (const item of arg.project) {
     const zAny = atomicValidators[item.kind].optional()
     if (item.permissions.user.write) {
-      project.user = project.user.merge(z.object({ [item.key]: zAny }))
+      project.user = project.user.merge(z.object({ [item.key]: zAny } as ZodRawShape))
     }
     if (item.permissions.admin.write) {
-      project.admin = project.admin.merge(z.object({ [item.key]: zAny }))
+      project.admin = project.admin.merge(z.object({ [item.key]: zAny } as ZodRawShape))
     }
   }
 

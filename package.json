@@ -66,13 +66,13 @@
     "test:e2e-ci": "pnpm kube:prod; pnpm kube:e2e-ci"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.3.0",
-    "@commitlint/config-conventional": "^19.2.2",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@cpn-console/eslint-config": "workspace:^",
-    "eslint": "^9.15.0",
-    "husky": "^9.0.11",
-    "lint-staged": "^15.2.7",
-    "turbo": "^2.0.5"
+    "eslint": "^9.37.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
+    "turbo": "^2.5.8"
   },
   "pnpm": {
     "patchedDependencies": {
