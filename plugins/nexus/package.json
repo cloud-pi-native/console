@@ -23,7 +23,7 @@
     "@cpn-console/hooks": "workspace:^",
     "@cpn-console/shared": "workspace:^",
     "@cpn-console/vault-plugin": "workspace:^",
-    "axios": "^1.7.9"
+    "axios": "1.12.2"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
