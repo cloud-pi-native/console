@@ -126,7 +126,7 @@ export async function createCluster(data: typeof clusterContract.createCluster.b
     await linkClusterToStages(clusterCreated.id, stageIds)
   }
 
-  const hookReply = await hook.cluster.upsert(clusterCreated.id)
+  const hookReply = await hook.cluster.upsert(clusterCreated.id, zoneId)
   await addLogs({ action: 'Create Cluster', data: hookReply, userId, requestId })
   if (hookReply.failed) {
     return new Unprocessable422('Echec des services à la création du cluster')
@@ -192,7 +192,7 @@ export async function updateCluster(data: typeof clusterContract.updateCluster.b
     }
   }
 
-  const hookReply = await hook.cluster.upsert(clusterId)
+  const hookReply = await hook.cluster.upsert(clusterId, dbCluster.zoneId)
   await addLogs({ action: 'Update Cluster', data: hookReply, userId, requestId })
   if (hookReply.failed) {
     return new Unprocessable422('Echec des services à la mise à jour du cluster')

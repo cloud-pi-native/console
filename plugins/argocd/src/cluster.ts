@@ -1,7 +1,7 @@
 import type { V1Secret } from '@kubernetes/client-node'
 import { type ClusterObject, type StepCall, parseError } from '@cpn-console/hooks'
 import { inClusterLabel } from '@cpn-console/shared'
-import { getConfig, getK8sApi } from './utils.js'
+import { getConfig, getK8sApi, updateZoneValues } from './utils.js'
 
 export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
   try {
@@ -20,6 +20,7 @@ export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
     }
     await vault.upsert()
     await vault.write(clusterData, `clusters/cluster-${cluster.label}/argocd-cluster-secret`)
+    await updateZoneValues(cluster.zone, payload.apis)
     return {
       status: {
         result: 'OK',
@@ -42,6 +43,7 @@ export const deleteCluster: StepCall<ClusterObject> = async (payload) => {
     const secretName = payload.args.secretName
     await deleteClusterSecret(secretName)
     await payload.apis.vault.destroy(`clusters/cluster-${payload.args.label}/argocd-cluster-secret`)
+    await updateZoneValues(payload.args.zone, payload.apis)
     return {
       status: {
         result: 'OK',
