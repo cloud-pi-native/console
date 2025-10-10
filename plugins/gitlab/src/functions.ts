@@ -1,5 +1,5 @@
 import { okStatus, parseError, specificallyDisabled } from '@cpn-console/hooks'
-import type { PluginResult, Project, ProjectLite, StepCall, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
+import type { ClusterObject, PluginResult, Project, ProjectLite, StepCall, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
 import { insert } from '@cpn-console/shared'
 import { deleteGroup } from './group.js'
 import { createUsername, getUser } from './user.js'
@@ -218,7 +218,7 @@ export const deleteZone: StepCall<ZoneObject> = async (payload) => {
   }
 }
 
-export const commitFiles: StepCall<UniqueRepo | Project | ZoneObject> = async (payload) => {
+export const commitFiles: StepCall<UniqueRepo | Project | ClusterObject | ZoneObject> = async (payload) => {
   const returnResult = payload.results.gitlab
   try {
     const filesUpdated = await payload.apis.gitlab.commitFiles()

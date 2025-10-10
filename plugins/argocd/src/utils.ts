@@ -1,6 +1,8 @@
 import { createHmac } from 'node:crypto'
 import { CoreV1Api, CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
+import type { ClusterObject, HookPayloadApis, ZoneObject } from '@cpn-console/hooks'
+import { dump } from 'js-yaml'
 
 export function generateAppProjectName(projectSlug: string, env: string) {
   const envHash = createHmac('sha256', '')
@@ -58,4 +60,20 @@ export function getK8sApi(): CoreV1Api {
 export function getCustomK8sApi(): CustomObjectsApi {
   customK8sApi = customK8sApi ?? getClient().makeApiClient(CustomObjectsApi)
   return customK8sApi
+}
+
+export async function updateZoneValues(zone: ZoneObject, apis: HookPayloadApis<ZoneObject> | HookPayloadApis<ClusterObject>) {
+  const { gitlab, vault } = apis
+  const values = {
+    vault: await vault.getCredentials(),
+    clusters: zone.clusterNames,
+  }
+  const zoneRepo = await gitlab.getOrCreateInfraProject(zone.slug)
+  await gitlab.commitCreateOrUpdate(zoneRepo.id, dump(values), 'argocd-values.yaml')
+  return {
+    status: {
+      result: 'OK',
+      message: 'Zone argocd configuration created/updated',
+    },
+  }
 }
