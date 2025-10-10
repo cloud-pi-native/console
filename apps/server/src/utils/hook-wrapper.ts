@@ -94,20 +94,40 @@ async function manageProjectStatus(projectId: Project['id'], hookReply: HookResu
 }
 
 const cluster = {
-  upsert: async (clusterId: Cluster['id']) => {
+  upsert: async (clusterId: Cluster['id'], previousZoneId: Cluster['zoneId']) => {
     const cluster = await getClusterByIdOrThrow(clusterId)
+    const clusterObject = cluster as unknown as ClusterObject
     const store = dbToObj(await getAdminPlugin())
+    if (cluster.zoneId !== previousZoneId) {
+      // Upsert on the old zone to remove cluster
+      const previousClusterObject = {
+        ...cluster,
+      } as unknown as ClusterObject
+      previousClusterObject.zone = await getZoneByIdOrThrow(previousZoneId)
+      previousClusterObject.zone.clusterNames = await getClusterNamesByZoneId(previousZoneId)
+      const hookResult = await hooks.upsertCluster.execute({
+        ...cluster.kubeconfig as unknown as Pick<ClusterObject, 'cluster' | 'user'>,
+        ...previousClusterObject,
+      }, store)
+      if (hookResult.failed) {
+        return hookResult
+      }
+    }
+    clusterObject.zone.clusterNames = await getClusterNamesByZoneId(cluster.zoneId)
     return hooks.upsertCluster.execute({
       ...cluster.kubeconfig as unknown as Pick<ClusterObject, 'cluster' | 'user'>,
-      ...cluster,
+      ...clusterObject,
     }, store)
   },
   delete: async (clusterId: Cluster['id']) => {
     const cluster = await getClusterByIdOrThrow(clusterId)
+    const clusterObject = cluster as unknown as ClusterObject
+    const clusterNames = await getClusterNamesByZoneId(cluster.zoneId)
+    clusterObject.zone.clusterNames = clusterNames.filter(c => c !== cluster.label)
     const store = dbToObj(await getAdminPlugin())
     return hooks.deleteCluster.execute({
       ...cluster.kubeconfig as unknown as ClusterObject,
-      ...cluster,
+      ...clusterObject,
     }, store)
   },
 } as const

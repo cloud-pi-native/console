@@ -49,6 +49,18 @@ export const plugin: Plugin = {
         post: commitFiles,
       },
     },
+    upsertCluster: {
+      api: () => new GitlabZoneApi(),
+      steps: {
+        post: commitFiles,
+      },
+    },
+    deleteCluster: {
+      api: () => new GitlabZoneApi(),
+      steps: {
+        post: commitFiles,
+      },
+    },
     upsertZone: {
       api: () => new GitlabZoneApi(),
       steps: {
@@ -73,7 +85,7 @@ declare module '@cpn-console/hooks' {
       ? GitlabProjectApi
       : Args extends ZoneObject
         ? GitlabZoneApi
-        : undefined
+        : never
   }
   interface ProjectStore extends DeclareModuleGenerator<typeof infos, 'project'> {}
   interface Config extends DeclareModuleGenerator<typeof infos, 'global'> {}
