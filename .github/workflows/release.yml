@@ -40,7 +40,7 @@ jobs:
         if: ${{ ! steps.release.outputs.release_created }}
         run: |
           export OUTPUT_PR=$(echo $'${{ steps.release.outputs.pr }}')
-          export BRANCH=$(sed 's/[{|,|}]/\n/g' <<< $OUTPUT_PR | awk -F':' '$1=="\"headBranchName\""{print $2}')
+          export BRANCH=$(sed 's/[{|,|}]/\n/g' <<< $OUTPUT_PR | awk -F':' '$1=="\"headBranchName\""{print $2}' | tr -d '"')
           git fetch
           git checkout "$BRANCH"
           VERSION=$(jq -r .version package.json)
