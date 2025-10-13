@@ -1,29 +1,34 @@
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
 
-import { addProject, adminUser, clientURL, cnolletUser, signInCloudPiNative, testUser } from './utils'
+import {
+  addEnvToProject,
+  addProject,
+  adminUser,
+  clientURL,
+  cnolletUser,
+  signInCloudPiNative,
+  removeEnvFromProject,
+  testUser,
+} from './utils'
 
-test.describe('Environments page', () => {
+test.describe('Environments page', { tag: '@e2e' }, () => {
   test('should add environments to an existing project', async ({ page }) => {
-    const envName = faker.string.alpha(10).toLowerCase()
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
     await addProject({ page })
-    await page.getByTestId('addEnvironmentLink').click()
-    await page.getByTestId('environmentNameInput').fill(envName)
-    await page.getByLabel('Choix de la zone cible').selectOption({ label: 'publique' })
-    await page.getByLabel('Type d\'environnement').selectOption({ label: 'dev' })
-    await expect(page.getByLabel('Choix du cluster cible')).toBeVisible()
-    await page.getByLabel('Choix du cluster cible').selectOption({ label: 'public1' })
-    await page.getByTestId('memoryInput').fill('1')
-    await page.getByTestId('cpuInput').fill('2')
-    await page.getByTestId('gpuInput').fill('0')
-    await page.getByTestId('addEnvironmentBtn').click()
+    const envName = await addEnvToProject({
+      page,
+      zone: 'publique',
+      customStageName: 'dev',
+      customClusterName: 'public1',
+      cpuInput: '2',
+      gpuInput: '0',
+    })
     await expect(page.getByRole('cell', { name: envName })).toBeVisible()
   })
 
   test('should not add environments to a project without enough hprod GPU', async ({ page }) => {
-    const envName = faker.string.alpha(10).toLowerCase()
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
     await addProject({ page, hprodResources: {
@@ -31,17 +36,14 @@ test.describe('Environments page', () => {
       memory: 10,
       gpu: 1,
     } })
-
-    await page.getByTestId('addEnvironmentLink').click()
-    await page.getByTestId('environmentNameInput').fill(envName)
-    await page.getByLabel('Choix de la zone cible').selectOption({ label: 'publique' })
-    await page.getByLabel('Type d\'environnement').selectOption({ label: 'dev' })
-    await expect(page.getByLabel('Choix du cluster cible')).toBeVisible()
-    await page.getByLabel('Choix du cluster cible').selectOption({ label: 'public1' })
-    await page.getByTestId('memoryInput').fill('10')
-    await page.getByTestId('cpuInput').fill('2')
-    await page.getByTestId('gpuInput').fill('2')
-    await page.getByTestId('addEnvironmentBtn').click()
+    const envName = await addEnvToProject({
+      page,
+      zone: 'publique',
+      customStageName: 'dev',
+      customClusterName: 'public1',
+      memoryInput: '2',
+      gpuInput: '2',
+    })
     await expect(page.getByRole('cell', { name: envName })).not.toBeVisible()
     await expect(page.getByTestId('snackbar').getByText('Le projet ne dispose pas de suffisamment de ressources : GPU.')).toBeVisible()
   })
@@ -59,29 +61,23 @@ test.describe('Environments page', () => {
     await expect(page.getByRole('alert').getByText('Le nom de l\'environnment ne doit pas')).toBeVisible()
 
     // Valid input
-    await page.getByTestId('environmentNameInput').clear()
-    await page.getByTestId('environmentNameInput').fill(envName)
-    await page.getByLabel('Choix de la zone cible').selectOption({ label: 'publique' })
-    await page.getByLabel('Type d\'environnement').selectOption({ label: 'dev' })
-    await expect(page.getByLabel('Choix du cluster cible')).toBeVisible()
-    await page.getByLabel('Choix du cluster cible').selectOption({ label: 'public1' })
-    await page.getByTestId('memoryInput').fill('1')
-    await page.getByTestId('cpuInput').fill('2')
-    await page.getByTestId('gpuInput').fill('0')
-    await page.getByTestId('addEnvironmentBtn').click()
+    await page.getByTestId('cancelEnvironmentBtn').click()
+    await addEnvToProject({
+      page,
+      envName,
+      zone: 'publique',
+      customStageName: 'dev',
+      customClusterName: 'public1',
+    })
 
     // Second try with same name (invalid)
-    await page.getByTestId('addEnvironmentLink').click()
-    await page.getByTestId('environmentNameInput').click()
-    await page.getByTestId('environmentNameInput').fill(envName)
-    await page.getByLabel('Choix de la zone cible').selectOption({ label: 'publique' })
-    await page.getByLabel('Type d\'environnement').selectOption({ label: 'dev' })
-    await expect(page.getByLabel('Choix du cluster cible')).toBeVisible()
-    await page.getByLabel('Choix du cluster cible').selectOption({ label: 'public1' })
-    await page.getByTestId('memoryInput').fill('1')
-    await page.getByTestId('cpuInput').fill('2')
-    await page.getByTestId('gpuInput').fill('0')
-    await page.getByTestId('addEnvironmentBtn').click()
+    await addEnvToProject({
+      page,
+      envName,
+      zone: 'publique',
+      customStageName: 'dev',
+      customClusterName: 'public1',
+    })
     await expect(page.getByTestId('snackbar').getByText('Ce nom d\'environnement est déjà pris')).toBeVisible()
   })
 
@@ -118,20 +114,15 @@ test.describe('Environments page', () => {
   })
 
   test('should update environment resources', async ({ page }) => {
-    const envName = faker.string.alpha(10).toLowerCase()
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
     await addProject({ page })
-    await page.getByTestId('addEnvironmentLink').click()
-    await page.getByTestId('environmentNameInput').fill(envName)
-    await page.getByLabel('Choix de la zone cible').selectOption({ label: 'publique' })
-    await page.getByLabel('Type d\'environnement').selectOption({ label: 'dev' })
-    await expect(page.getByLabel('Choix du cluster cible')).toBeVisible()
-    await page.getByLabel('Choix du cluster cible').selectOption({ label: 'public1' })
-    await page.getByTestId('memoryInput').fill('1')
-    await page.getByTestId('cpuInput').fill('1')
-    await page.getByTestId('gpuInput').fill('1')
-    await page.getByTestId('addEnvironmentBtn').click()
+    const envName = await addEnvToProject({
+      page,
+      zone: 'publique',
+      customStageName: 'dev',
+      customClusterName: 'public1',
+    })
     await expect(page.getByTestId(`environmentTr-${envName}`)).toContainText('1GiB 1CPU 1GPU')
 
     await page.getByTestId(`environmentTr-${envName}`).click()
@@ -150,20 +141,15 @@ test.describe('Environments page', () => {
   })
 
   test('should not update environment resources when cluster is too small', async ({ page }) => {
-    const envName = faker.string.alpha(10).toLowerCase()
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
     await addProject({ page })
-    await page.getByTestId('addEnvironmentLink').click()
-    await page.getByTestId('environmentNameInput').fill(envName)
-    await page.getByLabel('Choix de la zone cible').selectOption({ label: 'publique' })
-    await page.getByLabel('Type d\'environnement').selectOption({ label: 'dev' })
-    await expect(page.getByLabel('Choix du cluster cible')).toBeVisible()
-    await page.getByLabel('Choix du cluster cible').selectOption({ label: 'public1' })
-    await page.getByTestId('memoryInput').fill('1')
-    await page.getByTestId('cpuInput').fill('1')
-    await page.getByTestId('gpuInput').fill('1')
-    await page.getByTestId('addEnvironmentBtn').click()
+    const envName = await addEnvToProject({
+      page,
+      zone: 'publique',
+      customStageName: 'dev',
+      customClusterName: 'public1',
+    })
     await expect(page.getByTestId(`environmentTr-${envName}`)).toContainText('1GiB 1CPU 1GPU')
 
     await page.getByTestId(`environmentTr-${envName}`).click()
@@ -182,45 +168,29 @@ test.describe('Environments page', () => {
   })
 
   test('should delete an environment', async ({ page }) => {
-    const envName = faker.string.alpha(10).toLowerCase()
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    await addProject({ page })
-    await page.getByTestId('addEnvironmentLink').click()
-    await page.getByTestId('environmentNameInput').fill(envName)
-    await page.getByLabel('Choix de la zone cible').selectOption({ label: 'publique' })
-    await page.getByLabel('Type d\'environnement').selectOption({ label: 'dev' })
-    await expect(page.getByLabel('Choix du cluster cible')).toBeVisible()
-    await page.getByLabel('Choix du cluster cible').selectOption({ label: 'public1' })
-    await page.getByTestId('memoryInput').fill('1')
-    await page.getByTestId('cpuInput').fill('1')
-    await page.getByTestId('gpuInput').fill('1')
-    await page.getByTestId('addEnvironmentBtn').click()
-    await expect(page.getByRole('cell', { name: envName })).toBeVisible()
+    const projectName = await addProject({ page })
+    const envName = await addEnvToProject({
+      page,
+      zone: 'publique',
+      customStageName: 'dev',
+      customClusterName: 'public1',
+    })
 
-    await page.getByTestId(`environmentTr-${envName}`).click()
-    await page.getByTestId('showDeleteEnvironmentBtn').click()
-    await expect(page.getByTestId('deleteEnvironmentZone')).toBeVisible()
-    await page.getByTestId('deleteEnvironmentInput').fill('DELETE')
-    await page.getByTestId('deleteEnvironmentBtn').click()
-    await expect(page.getByTestId(`environmentTr-${envName}`)).not.toBeVisible()
+    await removeEnvFromProject(page, projectName, envName)
   })
 
   test('should not be able to delete an environment if not owner', async ({ page }) => {
-    const envName = faker.string.alpha(10).toLowerCase()
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
     const projectName = await addProject({ page, members: [cnolletUser] })
-    await page.getByTestId('addEnvironmentLink').click()
-    await page.getByTestId('environmentNameInput').fill(envName)
-    await page.getByLabel('Choix de la zone cible').selectOption({ label: 'publique' })
-    await page.getByLabel('Type d\'environnement').selectOption({ label: 'dev' })
-    await expect(page.getByLabel('Choix du cluster cible')).toBeVisible()
-    await page.getByLabel('Choix du cluster cible').selectOption({ label: 'public1' })
-    await page.getByTestId('memoryInput').fill('1')
-    await page.getByTestId('cpuInput').fill('1')
-    await page.getByTestId('gpuInput').fill('1')
-    await page.getByTestId('addEnvironmentBtn').click()
+    const envName = await addEnvToProject({
+      page,
+      zone: 'publique',
+      customStageName: 'dev',
+      customClusterName: 'public1',
+    })
     await expect(page.getByRole('cell', { name: envName })).toBeVisible()
 
     // Sign off and login as another user (project member)
@@ -237,20 +207,15 @@ test.describe('Environments page', () => {
   })
 
   test('should not be able to delete an environment if project locked', async ({ page }) => {
-    const envName = faker.string.alpha(10).toLowerCase()
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
     const projectName = await addProject({ page })
-    await page.getByTestId('addEnvironmentLink').click()
-    await page.getByTestId('environmentNameInput').fill(envName)
-    await page.getByLabel('Choix de la zone cible').selectOption({ label: 'publique' })
-    await page.getByLabel('Type d\'environnement').selectOption({ label: 'dev' })
-    await expect(page.getByLabel('Choix du cluster cible')).toBeVisible()
-    await page.getByLabel('Choix du cluster cible').selectOption({ label: 'public1' })
-    await page.getByTestId('memoryInput').fill('1')
-    await page.getByTestId('cpuInput').fill('1')
-    await page.getByTestId('gpuInput').fill('1')
-    await page.getByTestId('addEnvironmentBtn').click()
+    const envName = await addEnvToProject({
+      page,
+      zone: 'publique',
+      customStageName: 'dev',
+      customClusterName: 'public1',
+    })
     await expect(page.getByRole('cell', { name: envName })).toBeVisible()
 
     // Sign off and login as admin to lock the project
