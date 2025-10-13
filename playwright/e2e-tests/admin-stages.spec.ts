@@ -1,14 +1,11 @@
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
+import { adminUser, clientURL, signInCloudPiNative, testUser } from '../config/console'
 
 import {
   addProject,
-  adminUser,
-  clientURL,
   createStage,
   deleteStage,
-  signInCloudPiNative,
-  testUser,
 } from './utils'
 
 test.describe('Stages administration page', { tag: '@e2e' }, () => {
