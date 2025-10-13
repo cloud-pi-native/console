@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import type { Credentials } from './utils'
-import { adminUser, clientURL, signInCloudPiNative } from './utils'
+import { adminUser, clientURL, signInCloudPiNative } from '../config/console'
 
 test.describe('Service Chains page', () => {
   test.describe('Given an Admin-level user', () => {

@@ -1,7 +1,8 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 import { faker } from '@faker-js/faker'
-import { addProject, clientURL, cnolletUser, signInCloudPiNative, testUser } from './utils'
+import { clientURL, cnolletUser, signInCloudPiNative, testUser } from '../config/console'
+import { addProject } from './utils'
 
 // Assuming we are on a given Project page, add a random repository with given name, or a generated one
 async function addRandomRepositoryToProject({

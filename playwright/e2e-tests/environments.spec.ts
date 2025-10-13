@@ -1,15 +1,17 @@
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
-
 import {
-  addEnvToProject,
-  addProject,
   adminUser,
   clientURL,
   cnolletUser,
   signInCloudPiNative,
-  removeEnvFromProject,
   testUser,
+} from '../config/console'
+
+import {
+  addEnvToProject,
+  addProject,
+  removeEnvFromProject,
 } from './utils'
 
 test.describe('Environments page', { tag: '@e2e' }, () => {

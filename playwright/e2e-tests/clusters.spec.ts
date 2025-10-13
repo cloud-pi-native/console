@@ -1,14 +1,12 @@
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
+import { adminUser, clientURL, signInCloudPiNative } from '../config/console'
 
 import {
   addProject,
   addEnvToProject,
-  adminUser,
-  clientURL,
   createCluster,
   deleteCluster,
-  signInCloudPiNative,
 } from './utils'
 
 test.describe('Clusters page', () => {
