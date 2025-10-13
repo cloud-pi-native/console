@@ -171,10 +171,7 @@ test.describe('Clusters page', () => {
       confidentiality: 'dedicated',
     })
     // Delete
-    await deleteCluster({
-      page,
-      clusterName,
-    })
+    await deleteCluster(page, clusterName)
     // Validate
     await page.getByTestId('projectsSearchInput').fill(clusterName)
     await expect(page.getByTestId('noClusterMsg')).toBeVisible()
