@@ -13,6 +13,7 @@
   "scripts": {
     "playwright:test": "pnpm exec playwright test",
     "playwright:test:ui": "pnpm exec playwright test --ui",
+    "playwright:test:integration": "pnpm exec playwright test -c playwright.config.integration.ts",
     "format": "eslint ./ --fix"
   },
   "devDependencies": {

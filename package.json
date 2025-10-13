@@ -57,6 +57,7 @@
     "lint:ts": "turbo run lint:ts --color --no-daemon",
     "playwright:test": "pnpm --dir playwright run playwright:test",
     "playwright:test:ui": "pnpm --dir playwright run playwright:test:ui",
+    "playwright:test:integration": "pnpm --dir playwright run playwright:test:integration",
     "prepare": "husky",
     "test": "turbo run test --concurrency 1 --color --no-daemon",
     "test:cov": "turbo run test:cov --color --no-daemon",

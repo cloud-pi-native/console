@@ -81,6 +81,60 @@ export async function deleteProject(page: Page, projectName: string) {
   ).not.toBeVisible()
 }
 
+// Assuming we are on a given Project page, add a random repository with given name, or a generated one
+export async function addRandomRepositoryToProject({
+  page,
+  repositoryName,
+  externalRepoUrlInput,
+}: {
+  page: Page
+  repositoryName?: string
+  externalRepoUrlInput?: string
+}) {
+  repositoryName = repositoryName ?? faker.string.alpha(10).toLowerCase()
+  await page.getByTestId('addRepoLink').click()
+  await page.getByTestId('internalRepoNameInput').fill(repositoryName)
+  if (externalRepoUrlInput) {
+    await page
+      .getByTestId('externalRepoUrlInput')
+      .fill(externalRepoUrlInput)
+  } else {
+    await page
+      .getByTestId('externalRepoUrlInput')
+      .fill(`${faker.internet.url({ appendSlash: true })}myrepository.git`)
+  }
+  await page.getByTestId('addRepoBtn').click()
+  await expect(page.getByTestId(`repoTr-${repositoryName}`)).toContainText(
+    repositoryName,
+  )
+  return repositoryName
+}
+
+// Assuming we are on a given Project page, and we have a Repository and a Branch name,
+// start branch synchronisation with this branch
+export async function synchronizeBranchOnRepository({
+  page,
+  repositoryName,
+  branchName,
+}: {
+  page: Page
+  repositoryName: string
+  branchName?: string
+}) {
+  branchName = branchName ?? faker.string.alpha(10).toLowerCase()
+  await page.getByRole('cell', { name: repositoryName }).click()
+  await page.getByTestId('branchNameInput').fill(branchName)
+  await page.getByTestId('syncRepoBtn').click()
+  await page
+    .getByTestId('resource-modal')
+    .getByRole('button', { name: 'Fermer' })
+    .click()
+  await expect(
+    page.getByText('Travail de synchronisation lancé'),
+  ).toBeVisible()
+  return branchName
+}
+
 // functions use in admin-stages.spec.ts
 export async function createStage({
   page,
@@ -172,7 +226,7 @@ export async function createCluster({
     await expect(page.locator('#projects-select')).toBeVisible()
   }
   if (associateStageNames) {
-    for (const customStageName in associateStageNames) {
+    for (const customStageName of associateStageNames) {
       await page
         .getByTestId('choice-selector-search-stages-select')
         .fill(customStageName)
@@ -197,13 +251,10 @@ export async function createCluster({
   return clusterName
 }
 
-export async function deleteCluster({
-  page,
-  clusterName,
-}: {
-  page: Page
-  clusterName: string
-}) {
+export async function deleteCluster(
+  page: Page,
+  clusterName: string,
+) {
   await page.getByTestId('menuAdministrationClusters').click()
   await expect(page.getByTestId('cpin-loader')).toHaveCount(0)
   await page.getByTestId('projectsSearchInput').fill(clusterName)
@@ -231,6 +282,17 @@ export async function createZone({ page }: { page: Page }): Promise<string> {
     .fill(faker.string.alpha(100).toLowerCase())
   await page.getByTestId('addZoneBtn').click()
   return zoneName
+}
+
+export async function deleteZone(
+  page: Page,
+  zoneName: string,
+) {
+  await page.getByTestId('menuAdministrationZones').click()
+  await page.getByRole('link', { name: zoneName }).click()
+  await page.getByTestId('showDeleteZoneBtn').click()
+  await page.getByTestId('deleteZoneInput').fill('DELETE')
+  await page.getByTestId('deleteZoneBtn').click()
 }
 
 // functions use in environment.spec.ts
