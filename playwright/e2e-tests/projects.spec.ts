@@ -1,6 +1,4 @@
-import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
-import { faker } from '@faker-js/faker'
 import {
   adminUser,
   clientURL,
@@ -8,53 +6,12 @@ import {
   signInCloudPiNative,
   testUser,
 } from '../config/console'
-import { addProject, deleteValidationInput } from './utils'
-
-// Assuming we are on a given Project page, add a random repository with given name, or a generated one
-async function addRandomRepositoryToProject({
-  page,
-  repositoryName,
-}: {
-  page: Page
-  repositoryName?: string
-}) {
-  repositoryName = repositoryName ?? faker.string.alpha(10).toLowerCase()
-  await page.getByTestId('addRepoLink').click()
-  await page.getByTestId('internalRepoNameInput').fill(repositoryName)
-  await page
-    .getByTestId('externalRepoUrlInput')
-    .fill(`${faker.internet.url({ appendSlash: true })}myrepository.git`)
-  await page.getByTestId('addRepoBtn').click()
-  await expect(page.getByTestId(`repoTr-${repositoryName}`)).toContainText(
-    repositoryName,
-  )
-  return repositoryName
-}
-
-// Assuming we are on a given Project page, and we have a Repository and a Branch name,
-// start branch synchronisation with this branch
-async function synchronizeBranchOnRepository({
-  page,
-  repositoryName,
-  branchName,
-}: {
-  page: Page
-  repositoryName: string
-  branchName?: string
-}) {
-  branchName = branchName ?? faker.string.alpha(10).toLowerCase()
-  await page.getByRole('cell', { name: repositoryName }).click()
-  await page.getByTestId('branchNameInput').fill(branchName)
-  await page.getByTestId('syncRepoBtn').click()
-  await page
-    .getByTestId('resource-modal')
-    .getByRole('button', { name: 'Fermer' })
-    .click()
-  await expect(
-    page.getByText('Travail de synchronisation lancé'),
-  ).toBeVisible()
-  return branchName
-}
+import {
+  addProject,
+  addRandomRepositoryToProject,
+  deleteValidationInput,
+  synchronizeBranchOnRepository,
+} from './utils'
 
 test.describe('Projects page', () => {
   test(
