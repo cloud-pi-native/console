@@ -1,9 +1,17 @@
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
 
-import { addProject, adminUser, clientURL, signInCloudPiNative, testUser } from './utils'
+import {
+  addProject,
+  adminUser,
+  clientURL,
+  createStage,
+  deleteStage,
+  signInCloudPiNative,
+  testUser,
+} from './utils'
 
-test.describe('Stages administration page', () => {
+test.describe('Stages administration page', { tag: '@e2e' }, () => {
   test('should display default stages list', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
@@ -15,31 +23,11 @@ test.describe('Stages administration page', () => {
   })
 
   test('should create a custom stage', async ({ page }) => {
+    // Create stage
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationStages').click()
-    const stageName = faker.string.alpha(10).toLowerCase()
-    // Create stage
-    await expect(page.getByTestId('addStageLink')).toBeVisible()
-    await page.getByTestId('addStageLink').click()
-    await expect(page.locator('h1')).toContainText('Informations du type d\'environnement')
-    await expect(page.getByTestId('addStageBtn')).toBeVisible()
-    await expect(page.getByTestId('addStageBtn')).toBeDisabled()
-    await expect(page.getByTestId('updateStageBtn')).not.toBeVisible()
-    await page.getByTestId('nameInput').fill(stageName)
-    await expect(page.getByTestId('addStageBtn')).toBeEnabled()
-    // Aucun cluster associé
-    await expect(page.locator('.fr-tag--dismiss')).toHaveCount(0)
-    // Association de tous les clusters disponibles
-    await expect(page.locator('.fr-tag')).not.toHaveCount(0)
-    const numberOfAvalaibleClusters = (await page.locator('.fr-tag').all()).length
-    for (let i = 0; i < numberOfAvalaibleClusters; i++) {
-      await page.locator('.fr-tag').first().click()
-    }
-    await expect(page.locator('.fr-tag--dismiss')).toHaveCount(numberOfAvalaibleClusters)
+    const stageName = await createStage({ page, associateToCluster: 'all' })
     // Validation de la création
-    await page.getByTestId('addStageBtn').click()
     await expect(page.getByTestId('addStageLink')).toBeVisible()
     await expect(page.getByTestId(`stageTile-${stageName}`)).toBeVisible()
 
@@ -62,18 +50,10 @@ test.describe('Stages administration page', () => {
   })
 
   test('should update a custom stage', async ({ page }) => {
+    // Create stage (1 cluster)
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationStages').click()
-    const stageName = faker.string.alpha(10).toLowerCase()
-    // Create stage (1 cluster)
-    await expect(page.getByTestId('addStageLink')).toBeVisible()
-    await page.getByTestId('addStageLink').click()
-    await page.getByTestId('nameInput').fill(stageName)
-    await page.locator('.fr-tag').first().click()
-    await expect(page.locator('.fr-tag--dismiss')).toHaveCount(1)
-    await page.getByTestId('addStageBtn').click()
+    const stageName = await createStage({ page, associateToCluster: 'first' })
     await expect(page.getByTestId(`stageTile-${stageName}`)).toBeVisible()
     // Update stage (adding 1 extra cluster)
     await page.getByTestId(`stageTile-${stageName}`).click()
@@ -107,59 +87,23 @@ test.describe('Stages administration page', () => {
   })
 
   test('should delete a custom stage', async ({ page }) => {
+    // Create stage
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationStages').click()
-    const stageName = faker.string.alpha(10).toLowerCase()
-    // Create stage
-    await expect(page.getByTestId('addStageLink')).toBeVisible()
-    await page.getByTestId('addStageLink').click()
-    await expect(page.locator('h1')).toContainText('Informations du type d\'environnement')
-    await expect(page.getByTestId('addStageBtn')).toBeVisible()
-    await expect(page.getByTestId('addStageBtn')).toBeDisabled()
-    await expect(page.getByTestId('updateStageBtn')).not.toBeVisible()
-    await page.getByTestId('nameInput').fill(stageName)
-    await expect(page.getByTestId('addStageBtn')).toBeEnabled()
-    await page.locator('.fr-tag').first().click()
-    await page.getByTestId('addStageBtn').click()
+    const stageName = await createStage({ page, associateToCluster: 'first' })
     await expect(page.getByTestId('addStageLink')).toBeVisible()
     await expect(page.getByTestId(`stageTile-${stageName}`)).toBeVisible()
 
     // Delete custom stage
-    await page.getByTestId(`stageTile-${stageName}`).click()
-    await expect(page.getByTestId('deleteStageZone')).toBeVisible()
-    await expect(page.getByTestId('associatedEnvironmentsZone')).not.toBeVisible()
-    await expect(page.getByTestId('associatedEnvironmentsTable')).not.toBeVisible()
-    await page.getByTestId('showDeleteStageBtn').click()
-    await page.getByTestId('deleteStageInput').fill('DELETE')
-    await page.getByTestId('deleteStageBtn').click()
+    await deleteStage(page, stageName)
     await expect(page.getByTestId(`stageTile-${stageName}`)).not.toBeVisible()
   })
 
   test('should not delete a used custom stage', async ({ page }) => {
+    // Create stage
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationStages').click()
-    const stageName = faker.string.alpha(10).toLowerCase()
-    // Create stage
-    await expect(page.getByTestId('addStageLink')).toBeVisible()
-    await page.getByTestId('addStageLink').click()
-    await expect(page.locator('h1')).toContainText('Informations du type d\'environnement')
-    await expect(page.getByTestId('addStageBtn')).toBeVisible()
-    await expect(page.getByTestId('addStageBtn')).toBeDisabled()
-    await expect(page.getByTestId('updateStageBtn')).not.toBeVisible()
-    await page.getByTestId('nameInput').fill(stageName)
-    await expect(page.getByTestId('addStageBtn')).toBeEnabled()
-    // Association de tous les clusters disponibles
-    await expect(page.locator('.fr-tag')).not.toHaveCount(0)
-    const numberOfAvalaibleClusters = (await page.locator('.fr-tag').all()).length
-    for (let i = 0; i < numberOfAvalaibleClusters; i++) {
-      await page.locator('.fr-tag').first().click()
-    }
-    // Validation de la création
-    await page.getByTestId('addStageBtn').click()
+    const stageName = await createStage({ page, associateToCluster: 'all' })
     await expect(page.getByTestId('addStageLink')).toBeVisible()
     await expect(page.getByTestId(`stageTile-${stageName}`)).toBeVisible()
 

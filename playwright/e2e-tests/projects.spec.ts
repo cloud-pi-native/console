@@ -48,7 +48,7 @@ async function synchronizeBranchOnRepository({
 }
 
 test.describe('Projects page', () => {
-  test('should display only projects that user is member of', async ({
+  test('should display only projects that user is member of', { tag: '@e2e' }, async ({
     page,
   }) => {
     // Create a project as one user
@@ -66,7 +66,7 @@ test.describe('Projects page', () => {
     await expect(page.getByRole('link', { name: projectName })).not.toBeVisible()
   })
 
-  test('should not keep the same default branch name for all repositories of a projects', async ({
+  test('should not keep the same default branch name for all repositories of a projects', { tag: '@e2e' }, async ({
     page,
   }) => {
     await page.goto(clientURL)

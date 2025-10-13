@@ -12,7 +12,7 @@ test.describe('Service Chains page', () => {
 
     // @TODO These tests assume that there is at least one Service Chain present
     // in the mocked up data. Ensure that this is true at all times !
-    test('should list service chains', async ({ page }) => {
+    test('should list service chains', { tag: '@e2e' }, async ({ page }) => {
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: user })
       await page.getByTestId('menuAdministrationBtn').click()
@@ -26,7 +26,7 @@ test.describe('Service Chains page', () => {
       ).toBeVisible()
     })
 
-    test('should show a service chain details', async ({ page }) => {
+    test('should show a service chain details', { tag: '@e2e' }, async ({ page }) => {
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: user })
       await page.getByTestId('menuAdministrationBtn').click()
@@ -42,7 +42,7 @@ test.describe('Service Chains page', () => {
       ).toBeVisible()
     })
 
-    test('should show a service chain flows', async ({ page }) => {
+    test('should show a service chain flows', { tag: '@e2e' }, async ({ page }) => {
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: user })
       await page.getByTestId('menuAdministrationBtn').click()
