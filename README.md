@@ -423,4 +423,5 @@ Cf. [Conventions - MIOM Fabrique Numérique](https://docs.fabrique-numerique.fr/
 
 Les commits doivent suivre la spécification des [Commits Conventionnels](https://www.conventionalcommits.org/en/v1.0.0/), il est possible d'ajouter l'[extension VSCode](https://github.com/vivaxy/vscode-conventional-commits) pour faciliter la création des commits.
 
-Une PR doit être faite avec une branche à jour avec la branche `develop` en rebase (et sans merge) avant demande de fusion, et la fusion doit être demandée dans `develop`.
+Une PR doit être faite à partir de la branche `main` à jour (utiliser `rebase` si besoin) avant la demande de fusion (PR). Les PR sont mergées dans `main`, ce qui déclenche automatiquement une nouvelle release (tag + version) dans une PR dédiée.
+La version est publiée dès que la PR de release est fusionnée.

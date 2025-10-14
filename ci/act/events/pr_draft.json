@@ -4,7 +4,7 @@
       "ref": "feat/this-is-a-test"
     },
     "base": {
-      "ref": "develop"
+      "ref": "main"
     },
     "draft": true
   },
