@@ -331,13 +331,13 @@ const isConnectionDetailsShown = ref(true)
       v-model="localCluster.label"
       data-testid="labelInput"
       type="text"
-      :disabled="!isNewCluster"
+      :disabled="props.associatedEnvironments.length !== 0"
       :required="true"
       :error-message="localCluster.label && !ClusterDetailsSchema.pick({ label: true }).safeParse({ label: localCluster.label }).success ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux' : undefined"
       label="Nom du cluster applicatif"
       label-visible
-      hint="Nom du cluster applicatif utilisable lors des déploiements Argocd."
-      placeholder="erpc-ovh"
+      hint="Nom du cluster applicatif utilisable lors des déploiements Argocd. Modifiable uniquement si le cluster ne comporte aucun environnement."
+      placeholder="nom-cluster"
     />
     <DsfrInputGroup
       v-model="localCluster.infos"
