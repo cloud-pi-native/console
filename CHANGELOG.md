@@ -1,5 +1,41 @@
 # Changelog
 
+## [9.5.0](https://github.com/cloud-pi-native/console/compare/v9.4.0...v9.5.0) (2025-10-10)
+
+
+### Features
+
+* :sparkles: add project usage on resources tab ([1ee66ce](https://github.com/cloud-pi-native/console/commit/1ee66ce8211c2017b328887b7800a2e1ab537300))
+* :sparkles: add resources occupancy on clusters ([75ce5e9](https://github.com/cloud-pi-native/console/commit/75ce5e9450ca68d45d2635b29e0ff8bd8d8614d7))
+* :sparkles: add tags retention policy rules ([a0e3f98](https://github.com/cloud-pi-native/console/commit/a0e3f9839d18c9459264e452b14cc87359a3f6c8))
+* :sparkles: check cluster resources when adding an environment ([826f1e9](https://github.com/cloud-pi-native/console/commit/826f1e9d8f46bf2aed419c7c395ef336131849dc))
+* :sparkles: save resources constraints for the project ([58e6d7a](https://github.com/cloud-pi-native/console/commit/58e6d7ad2d06fbb9e766fa755ccd7ab44556409e))
+* **client:** add service chain details form ([d56e68c](https://github.com/cloud-pi-native/console/commit/d56e68c626ee854fd12e60694acbc87d178ee270))
+* move environments and stages scenario from cypress to playwright ([c4e703f](https://github.com/cloud-pi-native/console/commit/c4e703f92f964e5850ca16ae7d066dc6e7d692cf))
+* **opencds:** add 'list all service chains' section in admin side menu ([f58de6e](https://github.com/cloud-pi-native/console/commit/f58de6e55ad23ed8f8e81aa769f76f9adc62b7b1))
+* **opencds:** add client-side service chain details page ([478bc35](https://github.com/cloud-pi-native/console/commit/478bc35408c43da95da875b105f1cd8222dfa217))
+* **opencds:** add feature toggling default value ([5dc6071](https://github.com/cloud-pi-native/console/commit/5dc607178179c5ab76dedf0d84ab22d3e08cabf5))
+* **opencds:** add flows retrieval and display as a stepper ([7194218](https://github.com/cloud-pi-native/console/commit/71942182464d6c42da0ab818f28ee60024c2e056))
+* **opencds:** add mockoon docker image for local dev and ci considerations ([0cf8de5](https://github.com/cloud-pi-native/console/commit/0cf8de5cd04860cdcfe2259640abffd48881ac5b))
+* **opencds:** adjust service chain list view ([fa0f5c3](https://github.com/cloud-pi-native/console/commit/fa0f5c3b91d940547ef132ad443f3b0a187238aa))
+* **opencds:** clean up mockoon json ([8bd1f74](https://github.com/cloud-pi-native/console/commit/8bd1f7483d5b772705c317510cded0552cad40c6))
+* **opencds:** handle OpenCDS API token-based security ([409ae6e](https://github.com/cloud-pi-native/console/commit/409ae6e40a2e42b54fd95a05904c35e1efd18371))
+* **opencds:** use a badge for state on service-chain list ([e3c1340](https://github.com/cloud-pi-native/console/commit/e3c134095e0dc7fb8009bfdb8fc14e6e8d62959b))
+* remove quota table ([1561d8d](https://github.com/cloud-pi-native/console/commit/1561d8da82ab1413047a3573269ddc4a133360ca))
+* remove Quota table references to use Environment attributes instead ([03297ec](https://github.com/cloud-pi-native/console/commit/03297ec88fb69834c6d76f61b25309ce1a363f4f))
+* update Cluster model to store resources capability ([6167743](https://github.com/cloud-pi-native/console/commit/6167743743c91f5e109da7297de275ea9d4d23d3))
+* update Environment form to use new resources attributes ([ff58b26](https://github.com/cloud-pi-native/console/commit/ff58b26662db51f385ce49ac14b4073bd5cf71cf))
+
+
+### Bug Fixes
+
+* :bug: update zone values when modifying a cluster ([253acb9](https://github.com/cloud-pi-native/console/commit/253acb9d6106727fc11b22c8268cfcd07320001a)), closes [#1642](https://github.com/cloud-pi-native/console/issues/1642)
+* :lipstick: show resources in clusters and environment tables ([8494e2a](https://github.com/cloud-pi-native/console/commit/8494e2ad19afc7e0c8afb65ccc2ee216d7399615))
+* config and locator due to keycloak upgrade ([516d9d5](https://github.com/cloud-pi-native/console/commit/516d9d5bc34b5261490170f2c356c050168f54e5))
+* **opencds:** fix validatedBy pseudo-null value conflicting with OpenCDS contract in server ([cde51a2](https://github.com/cloud-pi-native/console/commit/cde51a2f08cfd64e57714f6096a6ec2d6bb8962f))
+* **playwright:** bump playwright to 1.54.2 ([44ea5e3](https://github.com/cloud-pi-native/console/commit/44ea5e3f5093a45cf95266c0691dad60ca33de26))
+* **playwright:** fix flaky test on cluster informations by adding a loader ([ffc7b43](https://github.com/cloud-pi-native/console/commit/ffc7b436efa7af16a1a7d166c52d02317c26ab74))
+
 ## [9.4.0](https://github.com/cloud-pi-native/console/compare/v9.3.3...v9.4.0) (2025-08-25)
 
 
