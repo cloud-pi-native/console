@@ -1,5 +1,13 @@
 # Changelog
 
+## [9.6.0](https://github.com/cloud-pi-native/console/compare/v9.5.0...v9.6.0) (2025-10-14)
+
+
+### Features
+
+* :sparkles: allow cluster name update ([161086d](https://github.com/cloud-pi-native/console/commit/161086dfd7c226eac65b3f5e3c835b7f923cf511))
+* :sparkles: allow cluster name update ([0cbc53e](https://github.com/cloud-pi-native/console/commit/0cbc53eb7f3b0e41f128e1066f584aadb55b9766)), closes [#1582](https://github.com/cloud-pi-native/console/issues/1582)
+
 ## [9.5.0](https://github.com/cloud-pi-native/console/compare/v9.4.0...v9.5.0) (2025-10-10)
 
 
