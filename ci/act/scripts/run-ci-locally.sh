@@ -9,6 +9,7 @@ i=1
 # Get project directories
 PROJECT_DIR="$(git rev-parse --show-toplevel)"
 ACT_DIR="$PROJECT_DIR/ci/act"
+export PATH=$PATH:"${ACT_DIR}/scripts/bin"
 ACT_ENV_FILE="$ACT_DIR/env/.env"
 REGISTRY_DIR="$ACT_DIR/docker/registry"
 
@@ -21,7 +22,7 @@ DOCKER_COMPOSE_VERSION="$(docker compose version)"
 NOW=$(date +'%Y-%m-%dT%H-%M-%S')
 
 # Default
-EVENT_FILE="$ACT_DIR/events/pr_base_main.json"
+EVENT_FILE="$ACT_DIR/events/push_tag.json"
 START_REGISTRY="false"
 WORKFLOW_DIR="$ACT_DIR/workflows/"
 
@@ -32,13 +33,13 @@ source $ACT_ENV_FILE
 TEXT_HELPER="\nThis script aims to run CI locally for tests.
 Following flags are available:
 
-  -e    (Optional) Event file in './ci/act/events/' that will trigger workflows. e.g: './ci/act/events/push_base_main.json'.
+  -e    (Optional) Event file in './ci/act/events/' that will trigger workflows. e.g: './ci/act/events/push_tag.json'.
         Default is '$EVENT_FILE'.
 
   -r    (Optional) Start a local registry running as a docker container.
         Default is '$START_REGISTRY'.
 
-  -w    (Optional) Workflow directory that will be triggered. e.g: './github/worlflows' or './ci/act/workflows/test'.
+  -w    (Optional) Workflow directory that will be triggered. e.g: './github/workflows' or './ci/act/workflows/test'.
         Default is '$WORKFLOW_DIR'.
 
   -h    Print script help.\n\n"

@@ -81,7 +81,7 @@ describe('ClusterForm.vue', () => {
       .and('be.enabled')
     cy.getByDataTestid('labelInput')
       .should('have.value', props.cluster.label)
-      .and('be.disabled')
+      .and('be.enabled')
     cy.getByDataTestid('infosInput')
       .should('have.value', props.cluster.infos)
       .and('be.enabled')

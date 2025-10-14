@@ -99,7 +99,7 @@ export const clusterContract = contractInstance.router({
     summary: 'Update cluster',
     description: 'Update a cluster by its ID.',
     pathParams: ClusterParams,
-    body: ClusterDetailsSchema.omit({ id: true, label: true }).partial(),
+    body: ClusterDetailsSchema.omit({ id: true }).partial(),
     responses: {
       200: ClusterDetailsSchema,
       400: ErrorSchema,
