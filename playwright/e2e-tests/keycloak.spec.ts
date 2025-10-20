@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '@playwright/test'
 import { faker } from '@faker-js/faker'
-import { loadKeycloakConfig } from '../config/keycloak'
+import { loadKeycloakConfig, signInKeycloak } from '../config/keycloak'
 
 const keycloakConfig = loadKeycloakConfig()
 const usersToDelete: string[] = []
@@ -34,11 +34,7 @@ export async function createGroup(page: Page, groupsToDelete: string[]) {
 
 test.describe('Keycloak', () => {
   test.beforeEach({ tag: ['@e2e', '@integ'] }, async ({ page }) => {
-    await page.goto(keycloakConfig.url)
-    await page.locator('#username').fill(keycloakConfig.adminUser)
-    await page.locator('#password').fill(keycloakConfig.adminPass)
-    await page.locator('#kc-login').click()
-    await expect(page.getByRole('link', { name: 'Logo' })).toBeVisible()
+    await signInKeycloak(page)
   })
 
   test('should sign in to master realm', { tag: ['@e2e', '@integ'] }, async ({ page }) => {
