@@ -37,3 +37,12 @@ OU (autre possibilité), lancer la "console" Playwright pour parcourir/exécuter
 ```shell
 $ pnpm run playwright:test:ui --grep @e2e
 ```
+
+## Conventions de code
+
+Afin d'assurer la lisibilité et la maintenabilité des tests Playwright, quelques décisions ont été prises concernant l'écriture du code :
+- Pas d'imbrication de if : les conditions sont autorisées dans les fonctions, mais ne doivent pas être imbriquées.
+- Arguments explicites : certains arguments initialement optionnels doivent être rendus obligatoires afin de rendre le comportement de la fonction plus clair (par exemple pour les zones publiques, ou les contextes spécifiques).
+- Visibilité des tests : il doit être évident, à la lecture du test, de voir ce qui est réellement vérifié. Par conséquent, évitez de masquer les expect à l'intérieur de fonctions utilitaires. Les assertions doivent apparaître directement dans le corps du test lorsqu'elles participent à la vérification d'un comportement.
+
+Ces conventions ont pour objectif de rendre les tests plus explicites, plus faciles à relire, et de réduire les effets de bord cachés.
