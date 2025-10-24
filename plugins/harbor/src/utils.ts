@@ -5,11 +5,13 @@ import type { VaultRobotSecret } from './robot.js'
 
 const config: {
   url?: string
+  internalUrl?: string
   host?: string
 } = {}
 
 export function getConfig(): Required<typeof config> {
   config.url = config.url ?? removeTrailingSlash(requiredEnv('HARBOR_URL'))
+  config.internalUrl = config.internalUrl ?? removeTrailingSlash(requiredEnv('HARBOR_INTERNAL_URL'))
   config.host = config.host ?? config?.url?.split('://')[1]
   // @ts-ignore
   return config
@@ -21,7 +23,7 @@ function getApiConfig() {
       username: requiredEnv('HARBOR_ADMIN'),
       password: requiredEnv('HARBOR_ADMIN_PASSWORD'),
     },
-    baseURL: `${getConfig().url}/api/v2.0/`,
+    baseURL: `${getConfig().internalUrl}/api/v2.0/`,
   }
 }
 

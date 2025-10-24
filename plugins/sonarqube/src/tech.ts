@@ -3,19 +3,21 @@ import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
 
 const config: {
   url?: string
+  internalUrl?: string
   user?: string
   password?: string
 } = {}
 
 export function getConfig(): Required<typeof config> {
   config.url = config.url ?? removeTrailingSlash(requiredEnv('SONARQUBE_URL'))
+  config.internalUrl = config.internalUrl ?? removeTrailingSlash(requiredEnv('SONARQUBE_INTERNAL_URL'))
   config.user = config.user ?? requiredEnv('SONAR_API_TOKEN')
   // @ts-ignore
   return config
 }
 export function getAxiosOptions() {
   return {
-    baseURL: `${getConfig().url}/api/`,
+    baseURL: `${getConfig().internalUrl}/api/`,
     auth: {
       username: getConfig().user,
       password: '', // Token is used, so password is useless
