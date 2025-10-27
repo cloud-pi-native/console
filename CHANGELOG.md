@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.7.1](https://github.com/cloud-pi-native/console/compare/v9.7.0...v9.7.1) (2025-10-27)
+
+
+### Bug Fixes
+
+* :bug: use the renamed path of repository/group being deleted ([38b8cff](https://github.com/cloud-pi-native/console/commit/38b8cffaff3484257104d325dd9e034bfa2611fa))
+
 ## [9.7.0](https://github.com/cloud-pi-native/console/compare/v9.6.0...v9.7.0) (2025-10-27)
 
 
