@@ -183,7 +183,7 @@ export class GitlabApi extends PluginApi {
 
   public async deleteRepository(repoId: number, fullPath: string) {
     await this.api.Projects.remove(repoId) // Marks for deletion
-    return this.api.Projects.remove(repoId, { permanentlyRemove: true, fullPath }) // Effective deletion
+    return this.api.Projects.remove(repoId, { permanentlyRemove: true, fullPath: `${fullPath}-deletion_scheduled-${repoId}` }) // Effective deletion
   }
 }
 
