@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.7.0](https://github.com/cloud-pi-native/console/compare/v9.6.0...v9.7.0) (2025-10-27)
+
+
+### Features
+
+* :sparkles: add support for SonarQube and Harbor internal url ([43ce886](https://github.com/cloud-pi-native/console/commit/43ce88690883d84214c29a4cb910f81609e8cb4d))
+
 ## [9.6.0](https://github.com/cloud-pi-native/console/compare/v9.5.0...v9.6.0) (2025-10-14)
 
 
