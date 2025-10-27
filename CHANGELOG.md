@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.7.2](https://github.com/cloud-pi-native/console/compare/v9.7.1...v9.7.2) (2025-10-27)
+
+
+### Bug Fixes
+
+* release please condition ([c293866](https://github.com/cloud-pi-native/console/commit/c29386619ff3624d22a2a72f9753bc443045b5c0))
+
 ## [9.7.1](https://github.com/cloud-pi-native/console/compare/v9.7.0...v9.7.1) (2025-10-27)
 
 
