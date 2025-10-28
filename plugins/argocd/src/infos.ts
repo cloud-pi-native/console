@@ -1,5 +1,4 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
-import { getConfig } from './utils.js'
 
 const extraRepositoriesDesc = 'appproject.spec.sourceRepos supplémentaires, séparés par des virgules (https://a.com/repo.git,https://b.com/'
 
@@ -7,11 +6,8 @@ const infos = {
   name: 'argocd',
   to: ({ zones, project }) => zones.map(z => ({
     to: `${z.argocdUrl}/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=${project.slug}`,
-    title: `ArgoCD Zone: ${z.slug}`,
-  })).concat({
-    to: `${getConfig().url}/applications?showFavorites=false&proj=&sync=&health=&namespace=&cluster=&labels=&search=${project.slug}`,
-    title: 'ArgoCD DSO',
-  }),
+    title: `ArgoCD ${z.label}`,
+  })),
   title: 'ArgoCD',
   imgSrc: '/img/argocd.svg',
   description: 'ArgoCD est un outil déclaratif de livraison continue GitOps pour Kubernetes',
