@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.8.0](https://github.com/cloud-pi-native/console/compare/v9.7.2...v9.8.0) (2025-10-28)
+
+
+### Features
+
+* :poop: change the naming convention of cluster secret ([a471766](https://github.com/cloud-pi-native/console/commit/a47176643cb9a97f41c1345477da60bce5935f85))
+
 ## [9.7.2](https://github.com/cloud-pi-native/console/compare/v9.7.1...v9.7.2) (2025-10-27)
 
 
