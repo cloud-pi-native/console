@@ -53,6 +53,9 @@ export interface ClusterObject {
   label: string
   privacy: 'public' | 'dedicated'
   external: boolean
+  /**
+   * @deprecated Le nom aléatoire stocké ici n'est plus utilisé, au profit d'un nom caculé et déterministe.
+   */
   secretName: string
   clusterResources: boolean
   infos: string | null
