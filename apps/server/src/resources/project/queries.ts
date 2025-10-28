@@ -204,6 +204,7 @@ const clusterInfosSelect = {
       id: true,
       slug: true,
       argocdUrl: true,
+      label: true,
     },
   },
 }

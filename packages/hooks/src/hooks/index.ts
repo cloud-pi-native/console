@@ -44,6 +44,7 @@ export interface KubeCluster {
 export interface ZoneObject {
   id: string
   slug: string
+  label: string
   argocdUrl: string
   clusterNames?: string[]
 }
