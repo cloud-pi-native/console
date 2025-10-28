@@ -185,7 +185,7 @@ export const hook = {
 }
 
 function formatClusterInfos({ kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt' | 'createdAt' | 'zoneId' | 'kubeConfigId'>
-  & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug' | 'argocdUrl'> }) {
+  & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug' | 'label' | 'argocdUrl'> }) {
   return {
     user: kubeconfig.user as unknown as KubeUser,
     cluster: kubeconfig.cluster as unknown as KubeCluster,
