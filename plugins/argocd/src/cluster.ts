@@ -1,17 +1,13 @@
 import type { V1Secret } from '@kubernetes/client-node'
 import { type ClusterObject, type StepCall, parseError } from '@cpn-console/hooks'
-import { inClusterLabel } from '@cpn-console/shared'
 import { getConfig, getK8sApi, updateZoneValues } from './utils.js'
 
 export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
   try {
     const cluster = payload.args
     const { vault } = payload.apis
-    if (cluster.label === inClusterLabel) {
-      await deleteClusterSecret(cluster.secretName)
-    } else {
-      await createClusterSecret(cluster)
-    }
+    await deleteClusterSecret(cluster.secretName) // Delete old fashion named secret (random UID)
+    await createClusterSecretIfNotExist(cluster, `${cluster.label}-cluster-secret`) // Create with the new naming convention (same as Helm Chart way)
     const clusterData = {
       name: cluster.label,
       clusterResources: cluster.clusterResources.toString(),
@@ -77,12 +73,12 @@ function convertConfig(cluster: ClusterObject) {
   }
 }
 
-function convertClusterToSecret(cluster: ClusterObject): V1Secret {
+function convertClusterToSecret(cluster: ClusterObject, secretName: string): V1Secret {
   return {
     apiVersion: 'v1',
     kind: 'Secret',
     metadata: {
-      name: cluster.secretName,
+      name: secretName,
       labels: {
         'argocd.argoproj.io/secret-type': 'cluster',
         'dso/zone': cluster.zone.slug,
@@ -97,15 +93,14 @@ function convertClusterToSecret(cluster: ClusterObject): V1Secret {
   }
 }
 
-async function createClusterSecret(cluster: ClusterObject) {
+async function createClusterSecretIfNotExist(cluster: ClusterObject, secretName: string) {
   const k8sApi = getK8sApi()
   try {
-    await k8sApi.readNamespacedSecret(cluster.secretName, getConfig().namespace)
-    await k8sApi.replaceNamespacedSecret(cluster.secretName, getConfig().namespace, convertClusterToSecret(cluster))
+    await k8sApi.readNamespacedSecret(secretName, getConfig().namespace)
   } catch (error) {
     // @ts-ignore add control on error
     if (error?.response?.statusCode !== 404) throw error
-    await k8sApi.createNamespacedSecret(getConfig().namespace, convertClusterToSecret(cluster))
+    await k8sApi.createNamespacedSecret(getConfig().namespace, convertClusterToSecret(cluster, secretName))
   }
 }
 
