@@ -22,7 +22,7 @@
     "@cpn-console/hooks": "workspace:^",
     "@cpn-console/shared": "workspace:^",
     "@kubernetes-models/argo-cd": "^2.6.2",
-    "@kubernetes/client-node": "^0.22.3",
+    "@kubernetes/client-node": "~1.4.0",
     "axios": "1.12.2",
     "kubernetes-models": "^4.4.2",
     "request": "^2.88.2"

@@ -27,7 +27,7 @@
     "@cpn-console/vault-plugin": "workspace:^",
     "@himenon/argocd-typescript-openapi": "^1.2.2",
     "@kubernetes-models/argo-cd": "^2.6.2",
-    "@kubernetes/client-node": "^0.22.3",
+    "@kubernetes/client-node": "^1.4.0",
     "@types/js-yaml": "4.0.9",
     "axios": "1.12.2",
     "js-yaml": "4.1.0",
