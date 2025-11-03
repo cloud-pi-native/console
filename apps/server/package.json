@@ -82,7 +82,7 @@
     "ts-patch": "^3.3.0",
     "typescript": "^5.7.2",
     "typescript-transform-paths": "^3.5.2",
-    "vite": "^6.0.3",
+    "vite": "^7.1.12",
     "vite-node": "^2.1.8",
     "vitest": "^2.1.8"
   },
