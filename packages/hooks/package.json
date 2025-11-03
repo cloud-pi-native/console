@@ -27,7 +27,7 @@
     "@cpn-console/shared": "workspace:^",
     "json-schema": "^0.4.0",
     "vitest-mock-extended": "^2.0.2",
-    "zod": "^4.1.12"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",

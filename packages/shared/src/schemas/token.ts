@@ -1,3 +1,4 @@
+import type Zod from 'zod'
 import { z } from 'zod'
 import { UserSchema } from './user.js'
 import { dateToString, permissionLevelSchema } from './_utils.js'

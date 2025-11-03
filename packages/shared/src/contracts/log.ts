@@ -1,3 +1,4 @@
+import type Zod from 'zod'
 import { z } from 'zod'
 import type { ClientInferRequest } from '@ts-rest/core'
 import { CleanLogSchema, LogSchema, apiPrefix, contractInstance } from '../index.js'

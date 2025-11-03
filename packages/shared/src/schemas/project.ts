@@ -1,3 +1,4 @@
+import type Zod from 'zod'
 import { z } from 'zod'
 import { longestEnvironmentName, projectStatus } from '../utils/const.js'
 import { AtDatesToStringExtend, CoerceBooleanSchema, permissionLevelSchema } from './_utils.js'

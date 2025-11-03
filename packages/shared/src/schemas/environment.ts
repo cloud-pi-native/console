@@ -1,3 +1,4 @@
+import type Zod from 'zod'
 import { z } from 'zod'
 import { longestEnvironmentName } from '../utils/const.js'
 import { AtDatesToStringExtend } from './_utils.js'

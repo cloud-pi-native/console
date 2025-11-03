@@ -1,3 +1,4 @@
+import type Zod from 'zod'
 import { z } from 'zod'
 import { pluginsPopulatedManifests } from './config.js'
 

@@ -1,4 +1,5 @@
 import type { ClientInferResponseBody } from '@ts-rest/core'
+import type Zod from 'zod'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {

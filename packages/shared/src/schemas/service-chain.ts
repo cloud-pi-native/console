@@ -1,3 +1,4 @@
+import type Zod from 'zod'
 import { z } from 'zod'
 
 export const serviceChainStateEnum = ['opened', 'pending', 'success', 'failed'] as const
