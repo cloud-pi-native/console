@@ -51,15 +51,11 @@
     "vue3-json-viewer": "^2.4.1",
     "xbytes": "^1.9.1"
   },
-  "optionalDependencies": {
-    "@cypress/vue": "6.0.2",
-    "cypress": "14.5.2",
-    "cypress-vite": "1.8.0"
-  },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/test-utils": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
+    "@cypress/vue": "^6.0.2",
     "@eslint/compat": "^1.2.4",
     "@faker-js/faker": "^9.3.0",
     "@iconify/types": "^2.0.0",
@@ -69,6 +65,8 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "@vitest/coverage-v8": "^2.1.8",
     "@vue/eslint-config-typescript": "^14.1.4",
+    "cypress": "15.5.0",
+    "cypress-vite": "1.8.0",
     "eslint-plugin-cypress": "^4.1.0",
     "eslint-plugin-vue": "^9.32.0",
     "jsdom": "^25.0.1",
