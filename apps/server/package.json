@@ -63,7 +63,6 @@
     "fastify-keycloak-adapter": "2.3.2",
     "json-2-csv": "^5.5.7",
     "mustache": "^4.2.0",
-    "node-vault-client": "^1.0.1",
     "prisma": "^6.0.1",
     "undici": "^7.1.0",
     "vitest-mock-extended": "^2.0.2"
