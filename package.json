@@ -80,7 +80,7 @@
       "fastify-keycloak-adapter@2.3.2": "patches/fastify-keycloak-adapter@2.3.2.patch",
       "@gouvminint/vue-dsfr": "patches/@gouvminint__vue-dsfr.patch"
     },
-    "allowNonAppliedPatches": true,
+    "allowUnusedPatches": true,
     "onlyBuiltDependencies": [
       "@prisma/client",
       "@prisma/engines",
