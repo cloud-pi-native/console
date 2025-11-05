@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type Zod from 'zod'
 import { configProjectItemDeclaration } from './config.js'
 
 export const pluginSchema = z.object({
