@@ -13,7 +13,6 @@ on:
 
 env:
   NODE_VERSION: 22.14.0
-  PNPM_VERSION: 10.5.2
   REGISTRY: ghcr.io
   NAMESPACE: "${{ github.repository }}"
   BUILD_AMD64: true
@@ -54,7 +53,6 @@ jobs:
     if: ${{ !github.event.pull_request.draft }}
     outputs:
       NODE_VERSION: ${{ env.NODE_VERSION }}
-      PNPM_VERSION: ${{ env.PNPM_VERSION }}
       REGISTRY: ${{ env.REGISTRY }}
       NAMESPACE: ${{ env.NAMESPACE }}
       BUILD_AMD64: ${{ env.BUILD_AMD64 }}
@@ -71,7 +69,6 @@ jobs:
       - path-filter
       - expose-vars
     with:
-      PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
       PUBLISH_APPS: false
       PUBLISH_PACKAGES: false
@@ -86,7 +83,6 @@ jobs:
       - expose-vars
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
-      PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
 
   unit-tests:
     uses: ./.github/workflows/tests-unit.yml
@@ -96,7 +92,6 @@ jobs:
       - expose-vars
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
-      PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
     secrets:
       SONAR_HOST_URL: "${{ secrets.SONAR_HOST_URL }}"
       SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
@@ -110,7 +105,6 @@ jobs:
       - expose-vars
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
-      PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
       BROWSERS: "${{ github.base_ref == 'main' && 'chrome,firefox' || 'firefox' }}"
 
   build:
@@ -145,7 +139,6 @@ jobs:
       - build
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
-      PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
       TAG: pr-${{ github.event.pull_request.number || github.event.number }}
       BROWSERS: "${{ github.base_ref == 'main' && 'chrome,firefox' || 'firefox' }}"
 
@@ -158,7 +151,6 @@ jobs:
       - build
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
-      PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
       TAG: pr-${{ github.event.pull_request.number || github.event.number }}
 
   deploy-tests:
