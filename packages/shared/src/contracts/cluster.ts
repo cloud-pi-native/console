@@ -1,5 +1,6 @@
 import type { ClientInferResponseBody } from '@ts-rest/core'
 import { z } from 'zod'
+import type Zod from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   CleanedClusterSchema,
