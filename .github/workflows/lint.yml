@@ -6,9 +6,6 @@ on:
       NODE_VERSION:
         required: false
         type: string
-      PNPM_VERSION:
-        required: false
-        type: string
   workflow_dispatch:
     inputs:
       NODE_VERSION:
@@ -16,11 +13,6 @@ on:
         required: true
         type: string
         default: 22.14.0
-      PNPM_VERSION:
-        description: Pnpm version used to run tests
-        required: true
-        type: string
-        default: 10.5.2
 
 jobs:
   lint:
@@ -34,7 +26,6 @@ jobs:
         uses: pnpm/action-setup@v4
         id: pnpm-install
         with:
-          version: "${{ inputs.PNPM_VERSION }}"
           run_install: false
 
       - name: Setup Node.js
