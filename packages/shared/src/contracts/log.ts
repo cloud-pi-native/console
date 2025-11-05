@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type Zod from 'zod'
 import type { ClientInferRequest } from '@ts-rest/core'
 import { CleanLogSchema, LogSchema, apiPrefix, contractInstance } from '../index.js'
 import { CoerceBooleanSchema } from '../schemas/_utils.js'
