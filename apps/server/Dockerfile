@@ -1,8 +1,7 @@
-# Base stage
+# Base stage -----------------------------------------------------------------------
 FROM docker.io/node:22.14.0-bullseye-slim AS dev
 
 WORKDIR /app
-RUN npm install --ignore-scripts --location=global pnpm@10.5.2
 
 COPY --chown=node:root package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc turbo.json ./
 COPY --chown=node:root patches ./patches
@@ -23,6 +22,9 @@ COPY --chown=node:root plugins/nexus/package.json ./plugins/nexus/package.json
 COPY --chown=node:root plugins/sonarqube/package.json ./plugins/sonarqube/package.json
 COPY --chown=node:root plugins/vault/package.json ./plugins/vault/package.json
 
+# Install pnpm version defined in package.json "packageManager" property
+RUN npm install --global corepack@latest && corepack enable && corepack enable pnpm
+
 RUN pnpm install --frozen-lockfile
 COPY --chown=node:root plugins/ ./plugins/
 COPY --chown=node:root packages/ ./packages/
@@ -34,7 +36,7 @@ ENTRYPOINT [ "pnpm", "--filter", "server", "run" ]
 CMD [ "dev" ]
 
 
-# Build stage
+# Build stage ----------------------------------------------------------------------
 FROM dev AS build
 
 RUN pnpm run db:generate
@@ -43,7 +45,7 @@ RUN pnpm --filter @cpn-console/server run build
 RUN pnpm --filter @cpn-console/server --prod deploy build
 
 
-# Prod stage
+# Prod stage -----------------------------------------------------------------------
 FROM docker.io/node:22.14.0-bullseye-slim AS prod
 
 ARG APP_VERSION

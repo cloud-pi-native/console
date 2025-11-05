@@ -1,8 +1,8 @@
-# Dev stage
+# Dev stage ------------------------------------------------------------------------
 FROM docker.io/node:22.14.0-bullseye-slim AS dev
 
 WORKDIR /app
-RUN npm install --ignore-scripts --location=global pnpm@10.5.2
+
 COPY --chown=node:root package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
 COPY --chown=node:root patches ./patches
 COPY --chown=node:root apps/client/package.json ./apps/client/package.json
@@ -10,22 +10,29 @@ COPY --chown=node:root packages/eslintconfig/package.json ./packages/eslintconfi
 COPY --chown=node:root packages/shared/package.json ./packages/shared/package.json
 COPY --chown=node:root packages/test-utils/package.json ./packages/test-utils/package.json
 COPY --chown=node:root packages/tsconfig/package.json ./packages/tsconfig/package.json
+
+# Install pnpm version defined in package.json "packageManager" property
+RUN npm install --global corepack@latest && corepack enable && corepack enable pnpm
+
 RUN pnpm install --ignore-scripts # --no-optional
+
 COPY --chown=node:root packages/ ./packages/
 RUN pnpm --filter @cpn-console/shared run build
+
 COPY --chown=node:root apps/client/ ./apps/client/
 RUN pnpm --filter client run icons
+
 ENTRYPOINT [ "pnpm", "--filter", "client", "run", "dev" ]
 
 
-# Build stage
+# Build stage ----------------------------------------------------------------------
 FROM dev AS build
 
 ARG APP_VERSION
 RUN pnpm --filter @cpn-console/client run build
 
 
-# Prod stage
+# Prod stage -----------------------------------------------------------------------
 FROM docker.io/bitnamilegacy/nginx:1.29.1 AS prod
 
 USER 0
