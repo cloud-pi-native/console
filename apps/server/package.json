@@ -6,18 +6,15 @@
   "main": "dist/server.js",
   "module": "dist/server.js",
   "types": "types/server.d.ts",
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "prisma.config.ts", "src"],
   "scripts": {
     "build": "tspc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
-    "db:deploy": "prisma migrate deploy --schema ./src/prisma/schema",
+    "db:deploy": "prisma migrate deploy",
     "db:diff": "prisma migrate diff",
-    "db:generate": "prisma generate --schema ./src/prisma/schema",
-    "db:migrate": "prisma migrate dev --name dso --schema ./src/prisma/schema",
-    "db:reset": "prisma migrate reset --schema ./src/prisma/schema",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev --name dso",
+    "db:reset": "prisma migrate reset",
     "db:wrapper": "sh ./migrate-db.sh",
     "dev": "pnpm run db:deploy && nodemon --exec 'vite-node src/server.ts'",
     "debug": "pnpm run db:migrate && nodemon --exec 'NODE_OPTIONS=\"--inspect-brk=0.0.0.0\" vite-node src/server.ts'",
@@ -48,8 +45,8 @@
     "@fastify/session": "^10.9.0",
     "@fastify/swagger": "^8.15.0",
     "@fastify/swagger-ui": "^4.2.0",
-    "@gitbeaker/core": "~40.6.0",
-    "@gitbeaker/rest": "~40.6.0",
+    "@gitbeaker/core": "^40.6.0",
+    "@gitbeaker/rest": "^40.6.0",
     "@kubernetes-models/argo-cd": "^2.6.2",
     "@kubernetes/client-node": "^0.22.3",
     "@prisma/client": "^6.0.1",
@@ -89,8 +86,5 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public",
     "tag": "latest"
-  },
-  "prisma": {
-    "schema": "src/prisma/schema/"
   }
 }
