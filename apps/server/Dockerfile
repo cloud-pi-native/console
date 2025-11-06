@@ -3,7 +3,12 @@ FROM docker.io/node:22.14.0-bullseye-slim AS dev
 
 WORKDIR /app
 
-COPY --chown=node:root package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc turbo.json ./
+COPY --chown=node:root package.json ./
+
+# Install pnpm version defined in package.json "packageManager" property
+RUN npm install --global corepack@latest && corepack enable && corepack enable pnpm
+
+COPY --chown=node:root pnpm-workspace.yaml pnpm-lock.yaml .npmrc turbo.json ./
 COPY --chown=node:root patches ./patches
 COPY --chown=node:root apps/server/package.json ./apps/server/package.json
 
@@ -22,15 +27,12 @@ COPY --chown=node:root plugins/nexus/package.json ./plugins/nexus/package.json
 COPY --chown=node:root plugins/sonarqube/package.json ./plugins/sonarqube/package.json
 COPY --chown=node:root plugins/vault/package.json ./plugins/vault/package.json
 
-# Install pnpm version defined in package.json "packageManager" property
-RUN npm install --global corepack@latest && corepack enable && corepack enable pnpm
-
 RUN pnpm install --frozen-lockfile
 COPY --chown=node:root plugins/ ./plugins/
 COPY --chown=node:root packages/ ./packages/
 
 COPY --chown=node:root apps/server/ ./apps/server/
-# Generate Prisma client for dev
+# Generate Prisma client
 RUN pnpm --filter server run db:generate
 ENTRYPOINT [ "pnpm", "--filter", "server", "run" ]
 CMD [ "dev" ]
@@ -39,9 +41,11 @@ CMD [ "dev" ]
 # Build stage ----------------------------------------------------------------------
 FROM dev AS build
 
-RUN pnpm run db:generate
+# Build @cpn-console/server console-related dependencies
 RUN pnpm run build
+# Build @cpn-console/server
 RUN pnpm --filter @cpn-console/server run build
+# Export @cpn-console/server to target build directory
 RUN pnpm --filter @cpn-console/server --prod deploy build
 
 

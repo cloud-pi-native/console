@@ -3,7 +3,11 @@ FROM docker.io/node:22.14.0-bullseye-slim AS dev
 
 WORKDIR /app
 
-COPY --chown=node:root package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+COPY --chown=node:root package.json  ./
+
+RUN npm install --global corepack@latest && corepack enable && corepack enable pnpm
+
+COPY --chown=node:root pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
 COPY --chown=node:root patches ./patches
 COPY --chown=node:root apps/client/package.json ./apps/client/package.json
 COPY --chown=node:root packages/eslintconfig/package.json ./packages/eslintconfig/package.json
