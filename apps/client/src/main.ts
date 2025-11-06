@@ -3,7 +3,7 @@ import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
-import 'vue3-json-viewer/dist/index.css'
+import 'vue3-json-viewer/dist/vue3-json-viewer.css'
 import collections from './icon-collections.js'
 
 // @ts-ignore 'vue3-json-viewer' missing types
