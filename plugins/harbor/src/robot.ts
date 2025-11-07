@@ -1,6 +1,6 @@
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
 import type { HarborApi } from './utils.js'
-import { toVaultSecret } from './utils.js'
+import { getConfig, toVaultSecret } from './utils.js'
 import type { Access, Robot, RobotCreated } from './api/Api.js'
 
 export interface VaultRobotSecret {
@@ -18,17 +18,19 @@ export const getRobot = async (projectName: string, robotName: string, api: Harb
 export async function ensureRobot(projectName: string, robotName: string, vaultApi: VaultProjectApi, access: Access[], api: HarborApi): Promise<VaultRobotSecret> {
   const vaultPath = `REGISTRY/${robotName}`
   const robot = await getRobot(projectName, robotName, api)
-  const VaultRobotSecret = await vaultApi.read(vaultPath, { throwIfNoEntry: false }) as { data: VaultRobotSecret } | undefined
+  const vaultRobotSecret = await vaultApi.read(vaultPath, { throwIfNoEntry: false }) as { data: VaultRobotSecret } | undefined
 
   let creds: VaultRobotSecret
-  if (VaultRobotSecret?.data) {
-    creds = VaultRobotSecret.data
+  // only regenerate robot if there is a change with the host
+  if (vaultRobotSecret?.data && vaultRobotSecret.data.HOST === getConfig().host) {
+    creds = vaultRobotSecret.data
   } else if (robot) {
     creds = toVaultSecret(await regenerateRobot(projectName, robotName, access, api) as Required<RobotCreated>)
+    await vaultApi.write(creds, vaultPath)
   } else {
     creds = toVaultSecret(await createRobot(projectName, robotName, access, api) as Required<RobotCreated>)
+    await vaultApi.write(creds, vaultPath)
   }
-  await vaultApi.write(creds, vaultPath)
   return creds
 }
 
@@ -38,9 +40,9 @@ export async function deleteRobot(projectName: string, robotName: string, vaultA
   if (robot?.id) {
     api.robots.deleteRobot(robot.id)
   }
-  const VaultRobotSecret = await vaultApi.read(vaultPath, { throwIfNoEntry: false }) as { data: VaultRobotSecret } | undefined
+  const vaultRobotSecret = await vaultApi.read(vaultPath, { throwIfNoEntry: false }) as { data: VaultRobotSecret } | undefined
 
-  if (VaultRobotSecret) {
+  if (vaultRobotSecret) {
     await vaultApi.destroy(vaultPath)
   }
 }
