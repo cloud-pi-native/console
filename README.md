@@ -49,14 +49,14 @@ Maintenant que vous avez les prérequis projets (prérequis techniques et de con
 # Installer toutes les dépendances
 $ pnpm install
 
+# Initialiser la base de données PostgreSQL lancée localement
+$ pnpm db:generate
+
 # Construire les applications client et server
 $ pnpm build
 
 # Construire les images dockers client et server, puis lancer la stack docker compose d'intégration
 $ export KUBECONFIG_HOST_PATH="$HOME/.kube/config" && pnpm run docker:integ
-
-# Initialiser la base de données PostgreSQL lancée localement
-$ pnpm db:generate
 ```
 
 Cette série de commandes va installer les diverses dépendances, construire l'intégralité de l'application Console (client et serveur) dans des images docker locales, et finalement lancer l'application en la connectant dans votre infrastructure d'Intégration existante.
