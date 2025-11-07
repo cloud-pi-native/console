@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { localeParseFloat } from '@/utils/func.js'
 import type { ProjectV2 } from '@cpn-console/shared'
 
 type ProjectSettings = Pick<ProjectV2, 'limitless' | 'hprodMemory' | 'hprodCpu' | 'hprodGpu' | 'prodMemory' | 'prodCpu' | 'prodGpu'>
@@ -61,7 +62,7 @@ function toggleLimitless(e: boolean) {
               :required="true"
               data-testid="memoryHprodInput"
               placeholder="16"
-              @update:model-value="(value: string) => localProject.hprodMemory = parseFloat(value)"
+              @update:model-value="(value: string) => localProject.hprodMemory = localeParseFloat(value)"
             />
           </div>
           <div class="fr-col fr-ml-10v fr-mr-10v">
@@ -77,7 +78,7 @@ function toggleLimitless(e: boolean) {
               :required="true"
               data-testid="cpuHprodInput"
               placeholder="8"
-              @update:model-value="(value: string) => localProject.hprodCpu = parseFloat(value)"
+              @update:model-value="(value: string) => localProject.hprodCpu = localeParseFloat(value)"
             />
           </div>
           <div class="fr-col fr-mr-1v">
@@ -94,7 +95,7 @@ function toggleLimitless(e: boolean) {
               :required="true"
               data-testid="gpuHprodInput"
               placeholder="2"
-              @update:model-value="(value: string) => localProject.hprodGpu = parseFloat(value)"
+              @update:model-value="(value: string) => localProject.hprodGpu = localeParseFloat(value)"
             />
           </div>
         </div>

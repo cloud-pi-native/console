@@ -16,7 +16,7 @@ import {
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useZoneStore } from '@/stores/zone.js'
-import { copyContent } from '@/utils/func.js'
+import { copyContent, localeParseFloat, ONE_TENTH_STR } from '@/utils/func.js'
 
 interface OptionType {
   text: string
@@ -245,40 +245,37 @@ watch(localEnvironment.value, () => {
         hint="En GiB"
         type="number"
         min="0"
-        max="100"
         step="0.1"
         :required="true"
         data-testid="memoryInput"
-        placeholder="0.1"
-        @update:model-value="(value: string) => localEnvironment.memory = parseFloat(value)"
+        :placeholder="ONE_TENTH_STR"
+        @update:model-value="(value: string) => localEnvironment.memory = localeParseFloat(value)"
       />
       <DsfrInputGroup
         v-model="localEnvironment.cpu"
         label="CPU alloué"
         label-visible
-        hint="En décimal : 0.1 équivaut à 100m, soit 100 milli-cores, soit 10% d'un CPU"
+        :hint="`En décimal : ${ONE_TENTH_STR} équivaut à 100m, soit 100 milli-cores, soit 10% d'un CPU`"
         type="number"
         min="0"
-        max="100"
         step="0.1"
         :required="true"
         data-testid="cpuInput"
-        placeholder="0.1"
-        @update:model-value="(value: string) => localEnvironment.cpu = parseFloat(value)"
+        :placeholder="ONE_TENTH_STR"
+        @update:model-value="(value: string) => localEnvironment.cpu = localeParseFloat(value)"
       />
       <DsfrInputGroup
         v-model="localEnvironment.gpu"
         label="GPU alloué"
         label-visible
-        hint="En décimal : 0.1 équivaut à 100m, soit 100 milli-cores, soit 10% d'un GPU"
+        :hint="`En décimal : ${ONE_TENTH_STR} équivaut à 100m, soit 100 milli-cores, soit 10% d'un GPU`"
         type="number"
         min="0"
-        max="100"
         step="0.1"
         :required="true"
         data-testid="gpuInput"
-        placeholder="0.1"
-        @update:model-value="(value: string) => localEnvironment.gpu = parseFloat(value)"
+        :placeholder="ONE_TENTH_STR"
+        @update:model-value="(value: string) => localEnvironment.gpu = localeParseFloat(value)"
       />
       <div
         v-if="localEnvironment.id && canManage"
