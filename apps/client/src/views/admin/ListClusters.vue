@@ -40,7 +40,7 @@ onMounted(async () => {
     const usage = await clusterStore.getClusterUsage(c.id)
     return {
       id: c.id,
-      resources: `${usage.memory}GiB ${usage.cpu}CPU ${usage.gpu}GPU`,
+      resources: `${usage.memory.toLocaleString()}GiB ${usage.cpu.toLocaleString()}CPU ${usage.gpu.toLocaleString()}GPU`,
     }
   }))
   isLoading.value = false
@@ -143,7 +143,7 @@ const headers = [
         {{ privacyWording[(cell as Cluster).privacy] }}
       </template>
       <template v-else-if="colKey === 'resources'">
-        {{ (cell as Cluster).memory }}GiB {{ (cell as Cluster).cpu }}CPU {{ (cell as Cluster).gpu }}GPU
+        {{ (cell as Cluster).memory.toLocaleString() }}GiB {{ (cell as Cluster).cpu.toLocaleString() }}CPU {{ (cell as Cluster).gpu.toLocaleString() }}GPU
       </template>
       <template v-else-if="colKey === 'usage'">
         {{ clustersUsage.find(c => c.id === (cell as Cluster).id)?.resources }}

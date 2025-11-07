@@ -19,6 +19,7 @@ import ChoiceSelector from './ChoiceSelector.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import type { Project } from '@/utils/project-utils.js'
 import { DsfrDataTable } from '@gouvminint/vue-dsfr'
+import { localeParseFloat, ONE_TENTH_STR } from '@/utils/func.js'
 
 const props = withDefaults(defineProps<{
   isNewCluster: boolean
@@ -377,40 +378,37 @@ const isConnectionDetailsShown = ref(true)
       hint="En GiB"
       type="number"
       min="0"
-      max="100"
       step="0.1"
       :required="true"
       data-testid="memoryInput"
-      placeholder="0.1"
-      @update:model-value="(value: string) => localCluster.memory = parseFloat(value)"
+      :placeholder="ONE_TENTH_STR"
+      @update:model-value="(value: string) => localCluster.memory = localeParseFloat(value)"
     />
     <DsfrInputGroup
       v-model="localCluster.cpu"
       label="CPU utilisable"
       label-visible
-      hint="En décimal : 0.1 équivaut à 100m, soit 100 milli-cores, soit 10% d'un CPU"
+      :hint="`En décimal : ${ONE_TENTH_STR} équivaut à 100m, soit 100 milli-cores, soit 10% d'un CPU`"
       type="number"
       min="0"
-      max="100"
       step="0.1"
       :required="true"
       data-testid="cpuInput"
-      placeholder="0.1"
-      @update:model-value="(value: string) => localCluster.cpu = parseFloat(value)"
+      :placeholder="ONE_TENTH_STR"
+      @update:model-value="(value: string) => localCluster.cpu = localeParseFloat(value)"
     />
     <DsfrInputGroup
       v-model="localCluster.gpu"
       label="GPU utilisable"
       label-visible
-      hint="En décimal : 0.1 équivaut à 100m, soit 100 milli-cores, soit 10% d'un GPU"
+      :hint="`En décimal : ${ONE_TENTH_STR} équivaut à 100m, soit 100 milli-cores, soit 10% d'un GPU`"
       type="number"
       min="0"
-      max="100"
       step="0.1"
       :required="true"
       data-testid="gpuInput"
-      placeholder="0.1"
-      @update:model-value="(value: string) => localCluster.gpu = parseFloat(value)"
+      :placeholder="ONE_TENTH_STR"
+      @update:model-value="(value: string) => localCluster.gpu = localeParseFloat(value)"
     />
     <div
       v-if="localCluster.privacy === ClusterPrivacy.DEDICATED"
