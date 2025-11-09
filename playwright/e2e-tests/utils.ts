@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import type { Page } from '@playwright/test'
 import { expect } from '@playwright/test'
+import type { Credentials } from 'config/console.js'
 
 interface Resources {
   cpu: number

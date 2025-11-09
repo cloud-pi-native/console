@@ -206,3 +206,69 @@ sequenceDiagram
   Console ->> Gitlab: Create infrastructure project for the zone if needed
   Console ->> Gitlab: Create argocd-values.yaml file
 ```
+
+# Deployment as-code (declarative mode)
+
+```mermaid
+---
+config:
+  layout: default
+  theme: base
+  flowchart:
+    curve: linear
+    defaultRenderer: "elk"
+---
+flowchart TD
+    subgraph "Helm-charts"
+        H1@{ shape: doc, label: "Chart 'dso-argocd-zone'" }
+        H2@{ shape: doc, label: "Chart 'dso-env'" }
+        H3@{ shape: doc, label: "Chart 'dso-ns'" }
+    end
+    subgraph "Gitlab DSO"
+        subgraph "zone repository"
+            V1@{ shape: doc, label: "/argocd-values.yaml" }
+            V2@{ shape: docs, label: "**/values.yaml" }
+        end
+        subgraph "project repositories"
+            V3@{ shape: docs, label: "infra sources" }
+        end
+    end
+    subgraph "DSO Cluster"
+        A1[Application zone-#lt;name>-app]
+        A1 --Deploy--> A3[ApplicationSet dso-appset]
+        A1 --Deploy--> S1[Cluster secrets]
+        V2 --Generator--> A3
+        A3 --Generates--> A4[Application *-root]
+        V2 --> A4
+        H2 -.-> A4
+        A4 --Deploys--> A7[Application #lt;project>-env]
+        A4 --Deploys--> A8@{ shape: procs, label: "Application #lt;project>-#lt;env>-#lt;random-id>" }
+
+    end
+    S1 --> apps
+    V1 --> A1
+    H1 -.-> A1
+    V3 ==> A8
+    H3 -.-> A7
+    V2 --> A7
+    A7 --Deploys--> namespace & R1 & R2 & R3
+    A8 ==Deploys==> A10
+    A8 --Deploys--> A11
+    subgraph apps["Apps Clusters"]
+        subgraph namespace["Namespace"]
+            A10@{ shape: procs, label: "K8S resources" }
+            A11@{ shape: procs, label: "VaultStaticSecrets" }
+            R1[ResourceQuota]
+            R2[VaultConnection]
+            R3[VaultStaticSecret registry-pull-secret]
+            R3 --> R4[Secret registry-pull-secret]
+            A11 --> R5@{ shape: procs, label: "Secrets" }
+        end
+    end
+    subgraph "Vault DSO"
+        kv1["KV Infra"]
+        kv2@{ shape: procs, label: "KV Projets" }
+    end
+    kv1 --> R3
+    kv2 --> A11
+```
