@@ -134,6 +134,7 @@ function saveDescription() {
       <div class="flex flex-row">
         <code
           class="fr-text-default--info text-sm"
+          data-testid="project-slug"
           @click="copyContent(project.slug)"
         >slug:&nbsp;{{ project.slug }}</code>
         <div
@@ -149,6 +150,7 @@ function saveDescription() {
         <code
           class="fr-text-default--info text-sm"
           :title="project.id"
+          data-testid="project-id"
           @click="copyContent(project.id)"
         >Id:&nbsp;...{{ project.id.slice(-5) }}</code>
         <div

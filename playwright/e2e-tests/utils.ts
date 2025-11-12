@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import type { Page } from '@playwright/test'
 import { expect } from '@playwright/test'
-import type { Credentials } from 'config/console.js'
+import type { Credentials } from 'config/console'
 
 interface Resources {
   cpu: number
@@ -12,7 +12,7 @@ interface Resources {
 // Assuming we are on the Home page, create a random project with given name, or a generated one
 export async function addProject({
   page,
-  projectName,
+  projectName: name,
   members,
   hprodResources,
   prodResources,
@@ -22,51 +22,63 @@ export async function addProject({
   members?: Credentials[]
   hprodResources?: Resources
   prodResources?: Resources
-}) {
-  projectName = projectName ?? faker.string.alpha(10).toLowerCase()
+}): Promise<{ id: string, slug: string, name: string }> {
+  name = name ?? faker.string.alpha(10).toLowerCase()
   await page.getByTestId('menuMyProjects').click()
   await page.getByTestId('createProjectLink').click()
   await page.getByTestId('nameInput').click()
-  await page.getByTestId('nameInput').fill(projectName)
+  await page.getByTestId('nameInput').fill(name)
   if (hprodResources) {
     await page.getByTestId('cpuHprodInput').fill(hprodResources.cpu.toString())
     await page.getByTestId('gpuHprodInput').fill(hprodResources.gpu.toString())
-    await page.getByTestId('memoryHprodInput').fill(hprodResources.memory.toString())
+    await page
+      .getByTestId('memoryHprodInput')
+      .fill(hprodResources.memory.toString())
   }
   if (prodResources) {
     await page.getByTestId('cpuProdInput').fill(prodResources.cpu.toString())
     await page.getByTestId('gpuProdInput').fill(prodResources.gpu.toString())
-    await page.getByTestId('memoryProdInput').fill(prodResources.memory.toString())
+    await page
+      .getByTestId('memoryProdInput')
+      .fill(prodResources.memory.toString())
   }
   if (!hprodResources && !prodResources) {
     // Limitless
     await page.getByTestId('limitlessProjectSwitch').locator('label').click()
   }
   await page.getByTestId('createProjectBtn').click()
-  await expect(page.locator('h1')).toContainText(projectName)
+  await expect(page.locator('h1')).toContainText(name)
   if (members) {
     await page.getByTestId('test-tab-team').click()
     for (const member of members) {
-      await page.getByRole('combobox', { name: 'Ajouter un utilisateur' }).fill(member.email)
+      await page
+        .getByRole('combobox', { name: 'Ajouter un utilisateur' })
+        .fill(member.email)
       await page.getByTestId('addUserBtn').click()
-      await expect(page.getByRole('cell', { name: member.email })).toBeVisible()
+      await expect(
+        page.getByRole('cell', { name: member.email }),
+      ).toBeVisible()
     }
     await page.getByTestId('test-tab-resources').click()
   }
-  return projectName
+  const slug = (
+    (await page.getByTestId('project-slug').textContent()) || 'no-slug'
+  ).replace('slug: ', '')
+  const id
+    = (await page.getByTestId('project-id').getAttribute('title')) || 'no-id'
+  return { name, slug, id }
 }
 
-export async function deleteProject(
-  page: Page,
-  projectName: string,
-) {
+export async function deleteProject(page: Page, projectName: string) {
   await page.getByTestId('menuAdministrationBtn').click()
   await page.getByTestId('menuAdministrationProjects').click()
   await page.getByRole('row', { name: new RegExp(projectName) }).click()
   await page.getByRole('button', { name: 'Supprimer le projet' }).click()
   await page.getByTestId('archiveProjectInput').fill('DELETE')
   await page.getByTestId('confirmDeletionBtn').click()
-  await expect(page.getByRole('row', { name: new RegExp(projectName) })).not.toBeVisible()
+  await expect(
+    page.getByRole('row', { name: new RegExp(projectName) }),
+  ).not.toBeVisible()
 }
 
 // functions use in admin-stages.spec.ts
@@ -82,7 +94,9 @@ export async function createStage({
   await page.getByTestId('menuAdministrationStages').click()
   await expect(page.getByTestId('addStageLink')).toBeVisible()
   await page.getByTestId('addStageLink').click()
-  await expect(page.locator('h1')).toContainText('Informations du type d\'environnement')
+  await expect(page.locator('h1')).toContainText(
+    'Informations du type d\'environnement',
+  )
   await expect(page.getByTestId('addStageBtn')).toBeVisible()
   await expect(page.getByTestId('addStageBtn')).toBeDisabled()
   await expect(page.getByTestId('updateStageBtn')).not.toBeVisible()
@@ -97,25 +111,29 @@ export async function createStage({
   }
   if (associateToCluster === 'all') {
     await expect(page.locator('.fr-tag')).not.toHaveCount(0)
-    const numberOfAvalaibleClusters = (await page.locator('.fr-tag').all()).length
+    const numberOfAvalaibleClusters = (await page.locator('.fr-tag').all())
+      .length
     for (let i = 0; i < numberOfAvalaibleClusters; i++) {
       await page.locator('.fr-tag').first().click()
     }
-    await expect(page.locator('.fr-tag--dismiss')).toHaveCount(numberOfAvalaibleClusters)
+    await expect(page.locator('.fr-tag--dismiss')).toHaveCount(
+      numberOfAvalaibleClusters,
+    )
   }
   await page.getByTestId('addStageBtn').click()
   return stageName
 }
 
-export async function deleteStage(
-  page: Page,
-  stageName: string,
-) {
+export async function deleteStage(page: Page, stageName: string) {
   await page.getByTestId('menuAdministrationStages').click()
   await page.getByTestId(`stageTile-${stageName}`).click()
   await expect(page.getByTestId('deleteStageZone')).toBeVisible()
-  await expect(page.getByTestId('associatedEnvironmentsZone')).not.toBeVisible()
-  await expect(page.getByTestId('associatedEnvironmentsTable')).not.toBeVisible()
+  await expect(
+    page.getByTestId('associatedEnvironmentsZone'),
+  ).not.toBeVisible()
+  await expect(
+    page.getByTestId('associatedEnvironmentsTable'),
+  ).not.toBeVisible()
   await page.getByTestId('showDeleteStageBtn').click()
   await page.getByTestId('deleteStageInput').fill('DELETE')
   await page.getByTestId('deleteStageBtn').click()
@@ -155,7 +173,9 @@ export async function createCluster({
   }
   if (associateStageNames) {
     for (const customStageName in associateStageNames) {
-      await page.getByTestId('choice-selector-search-stages-select').fill(customStageName)
+      await page
+        .getByTestId('choice-selector-search-stages-select')
+        .fill(customStageName)
       await page.locator('#stages-select .fr-tag').first().click()
     }
   }
@@ -163,7 +183,8 @@ export async function createCluster({
     await page.locator('#stages-select .fr-tag').first().click()
   }
   if (associateStage === 'all') {
-    const numberOfStages = (await page.locator('#stages-select .fr-tag').all()).length
+    const numberOfStages = (await page.locator('#stages-select .fr-tag').all())
+      .length
     for (let i = 0; i < numberOfStages; i++) {
       await page.locator('#stages-select .fr-tag').first().click()
     }
@@ -198,18 +219,16 @@ export async function deleteCluster({
 }
 
 // functions use in integration.spec.ts
-export async function createZone({
-  page,
-}: {
-  page: Page
-}): Promise<string> {
+export async function createZone({ page }: { page: Page }): Promise<string> {
   const zoneName = faker.string.alpha(10).toLowerCase()
   await page.getByTestId('menuAdministrationZones').click()
   await page.getByTestId('createZoneLink').click()
   await page.getByTestId('slugInput').fill(zoneName)
   await page.getByTestId('labelInput').fill(zoneName)
   await page.getByTestId('argocdUrlInput').fill(faker.internet.url())
-  await page.getByTestId('descriptionInput').fill(faker.string.alpha(100).toLowerCase())
+  await page
+    .getByTestId('descriptionInput')
+    .fill(faker.string.alpha(100).toLowerCase())
   await page.getByTestId('addZoneBtn').click()
   return zoneName
 }
@@ -241,9 +260,13 @@ export async function addEnvToProject({
   await page.getByTestId('addEnvironmentLink').click()
   await page.getByTestId('environmentNameInput').fill(envName)
   await page.getByLabel('Choix de la zone cible').selectOption({ label: zone })
-  await page.getByLabel('Type d\'environnement').selectOption({ label: customStageName })
+  await page
+    .getByLabel('Type d\'environnement')
+    .selectOption({ label: customStageName })
   await expect(page.getByLabel('Choix du cluster cible')).toBeVisible()
-  await page.getByLabel('Choix du cluster cible').selectOption({ label: customClusterName })
+  await page
+    .getByLabel('Choix du cluster cible')
+    .selectOption({ label: customClusterName })
   await page.getByTestId('memoryInput').fill(memoryInput)
   await page.getByTestId('cpuInput').fill(cpuInput)
   await page.getByTestId('gpuInput').fill(gpuInput)

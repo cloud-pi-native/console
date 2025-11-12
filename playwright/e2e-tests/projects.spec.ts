@@ -1,7 +1,12 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 import { faker } from '@faker-js/faker'
-import { clientURL, cnolletUser, signInCloudPiNative, testUser } from '../config/console'
+import {
+  clientURL,
+  cnolletUser,
+  signInCloudPiNative,
+  testUser,
+} from '../config/console'
 import { addProject } from './utils'
 
 // Assuming we are on a given Project page, add a random repository with given name, or a generated one
@@ -44,46 +49,54 @@ async function synchronizeBranchOnRepository({
     .getByTestId('resource-modal')
     .getByRole('button', { name: 'Fermer' })
     .click()
-  await expect(page.getByText('Travail de synchronisation lancé')).toBeVisible()
+  await expect(
+    page.getByText('Travail de synchronisation lancé'),
+  ).toBeVisible()
   return branchName
 }
 
 test.describe('Projects page', () => {
-  test('should display only projects that user is member of', { tag: '@e2e' }, async ({
-    page,
-  }) => {
-    // Create a project as one user
-    await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: testUser })
-    const projectName = await addProject({ page })
+  test(
+    'should display only projects that user is member of',
+    { tag: '@e2e' },
+    async ({ page }) => {
+      // Create a project as one user
+      await page.goto(clientURL)
+      await signInCloudPiNative({ page, credentials: testUser })
+      const { name: projectName } = await addProject({ page })
 
-    // Sign off and login as another user
-    await page.getByRole('link', { name: 'Se déconnecter' }).click()
-    await signInCloudPiNative({ page, credentials: cnolletUser })
+      // Sign off and login as another user
+      await page.getByRole('link', { name: 'Se déconnecter' }).click()
+      await signInCloudPiNative({ page, credentials: cnolletUser })
 
-    // Previously created project should not appear for this user
-    await page.getByTestId('menuMyProjects').click()
-    await expect(page.getByTestId('createProjectLink')).toBeVisible()
-    await expect(page.getByRole('link', { name: projectName })).not.toBeVisible()
-  })
+      // Previously created project should not appear for this user
+      await page.getByTestId('menuMyProjects').click()
+      await expect(page.getByTestId('createProjectLink')).toBeVisible()
+      await expect(
+        page.getByRole('link', { name: projectName }),
+      ).not.toBeVisible()
+    },
+  )
 
-  test('should not keep the same default branch name for all repositories of a projects', { tag: '@e2e' }, async ({
-    page,
-  }) => {
-    await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: testUser })
-    await addProject({ page })
-    // Adding a project directly puts us on the newly created project page,
-    // so no need to add navigation steps to go there
-    const firstRepositoryName = await addRandomRepositoryToProject({ page })
-    const branchName = await synchronizeBranchOnRepository({
-      page,
-      repositoryName: firstRepositoryName,
-    })
-    const secondRepositoryName = await addRandomRepositoryToProject({ page })
-    await page.getByRole('cell', { name: secondRepositoryName }).click()
-    await expect(page.getByTestId('branchNameInput')).not.toHaveValue(
-      branchName,
-    )
-  })
+  test(
+    'should not keep the same default branch name for all repositories of a projects',
+    { tag: '@e2e' },
+    async ({ page }) => {
+      await page.goto(clientURL)
+      await signInCloudPiNative({ page, credentials: testUser })
+      await addProject({ page })
+      // Adding a project directly puts us on the newly created project page,
+      // so no need to add navigation steps to go there
+      const firstRepositoryName = await addRandomRepositoryToProject({ page })
+      const branchName = await synchronizeBranchOnRepository({
+        page,
+        repositoryName: firstRepositoryName,
+      })
+      const secondRepositoryName = await addRandomRepositoryToProject({ page })
+      await page.getByRole('cell', { name: secondRepositoryName }).click()
+      await expect(page.getByTestId('branchNameInput')).not.toHaveValue(
+        branchName,
+      )
+    },
+  )
 })
