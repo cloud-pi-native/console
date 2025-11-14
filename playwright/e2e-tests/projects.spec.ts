@@ -2,12 +2,13 @@ import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import {
+  adminUser,
   clientURL,
   cnolletUser,
   signInCloudPiNative,
   testUser,
 } from '../config/console'
-import { addProject } from './utils'
+import { addProject, deleteValidationInput } from './utils'
 
 // Assuming we are on a given Project page, add a random repository with given name, or a generated one
 async function addRandomRepositoryToProject({
@@ -57,7 +58,7 @@ async function synchronizeBranchOnRepository({
 
 test.describe('Projects page', () => {
   test(
-    'should display only projects that user is member of',
+    'Should display only projects that user is member of',
     { tag: '@e2e' },
     async ({ page }) => {
       // Create a project as one user
@@ -79,7 +80,7 @@ test.describe('Projects page', () => {
   )
 
   test(
-    'should not keep the same default branch name for all repositories of a projects',
+    'Should not keep the same default branch name for all repositories of a projects',
     { tag: '@e2e' },
     async ({ page }) => {
       await page.goto(clientURL)
@@ -97,6 +98,42 @@ test.describe('Projects page', () => {
       await expect(page.getByTestId('branchNameInput')).not.toHaveValue(
         branchName,
       )
+    },
+  )
+
+  // @TODO Archiving and Deleting a project is, basically, the same thing. It seems that
+  // initially we wanted to delete projects but we moved on to archiving, while not updating
+  // the frontend x)
+  test(
+    'Should archive a project, when logged in as an admin',
+    { tag: ['@e2e', '@need-rework'] },
+    async ({ page }) => {
+      // Arrange
+      await page.goto(clientURL)
+      await signInCloudPiNative({ page, credentials: adminUser })
+      const { name: projectName } = await addProject({ page })
+
+      // Act
+      await page.getByTestId('menuAdministrationBtn').click()
+      await page.getByTestId('menuAdministrationProjects').click()
+      await page.getByLabel('Filtre rapide').selectOption('Tous')
+      await page.getByTestId('projectsSearchInput').fill(projectName)
+      await page.getByTestId('projectsSearchBtn').click()
+      await page.getByRole('cell', { name: projectName }).first().click()
+      await expect(page.locator('h1')).toContainText(projectName)
+      await expect(page.getByTestId('archiveProjectInput')).not.toBeVisible()
+      await page.getByTestId('showArchiveProjectBtn').click()
+      await expect(page.getByTestId('confirmDeletionBtn')).toBeDisabled()
+      await page.getByTestId('archiveProjectInput').fill(deleteValidationInput)
+      await page.getByTestId('confirmDeletionBtn').click()
+
+      // Assert
+      await page.getByTestId('menuAdministrationProjects').click()
+      await page.getByLabel('Filtre rapide').selectOption('Archivés')
+      await page.getByTestId('projectsSearchInput').fill(projectName)
+      await page.getByTestId('projectsSearchBtn').click()
+      // Projects are renamed (suffixed with a timestamp and `_archived`) so @TODO: Do Better…
+      await expect(page.getByRole('table', { name: 'Liste des projets' })).toContainText(projectName)
     },
   )
 })
