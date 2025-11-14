@@ -1,10 +1,14 @@
-# Base stage
+# Base stage -----------------------------------------------------------------------
 FROM docker.io/node:22.14.0-bullseye-slim AS dev
 
 WORKDIR /app
-RUN npm install --ignore-scripts --location=global pnpm@10.5.2
 
-COPY --chown=node:root package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc turbo.json ./
+COPY --chown=node:root package.json ./
+
+# Install pnpm version defined in package.json "packageManager" property
+RUN npm install --global corepack@latest && corepack enable && corepack enable pnpm
+
+COPY --chown=node:root pnpm-workspace.yaml pnpm-lock.yaml .npmrc turbo.json ./
 COPY --chown=node:root patches ./patches
 COPY --chown=node:root apps/server/package.json ./apps/server/package.json
 
@@ -28,22 +32,24 @@ COPY --chown=node:root plugins/ ./plugins/
 COPY --chown=node:root packages/ ./packages/
 
 COPY --chown=node:root apps/server/ ./apps/server/
-# Generate Prisma client for dev
+# Generate Prisma client
 RUN pnpm --filter server run db:generate
 ENTRYPOINT [ "pnpm", "--filter", "server", "run" ]
 CMD [ "dev" ]
 
 
-# Build stage
+# Build stage ----------------------------------------------------------------------
 FROM dev AS build
 
-RUN pnpm run db:generate
+# Build @cpn-console/server console-related dependencies
 RUN pnpm run build
+# Build @cpn-console/server
 RUN pnpm --filter @cpn-console/server run build
+# Export @cpn-console/server to target build directory
 RUN pnpm --filter @cpn-console/server --prod deploy build
 
 
-# Prod stage
+# Prod stage -----------------------------------------------------------------------
 FROM docker.io/node:22.14.0-bullseye-slim AS prod
 
 ARG APP_VERSION

@@ -8,11 +8,7 @@ import {
   testUser,
 } from '../config/console'
 
-import {
-  addEnvToProject,
-  addProject,
-  removeEnvFromProject,
-} from './utils'
+import { addEnvToProject, addProject, removeEnvFromProject } from './utils'
 
 test.describe('Environments page', { tag: '@e2e' }, () => {
   test('should add environments to an existing project', async ({ page }) => {
@@ -30,14 +26,19 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     await expect(page.getByRole('cell', { name: envName })).toBeVisible()
   })
 
-  test('should not add environments to a project without enough hprod GPU', async ({ page }) => {
+  test('should not add environments to a project without enough hprod GPU', async ({
+    page,
+  }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    await addProject({ page, hprodResources: {
-      cpu: 10,
-      memory: 10,
-      gpu: 1,
-    } })
+    await addProject({
+      page,
+      hprodResources: {
+        cpu: 10,
+        memory: 10,
+        gpu: 1,
+      },
+    })
     const envName = await addEnvToProject({
       page,
       zone: 'publique',
@@ -47,7 +48,13 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
       gpuInput: '2',
     })
     await expect(page.getByRole('cell', { name: envName })).not.toBeVisible()
-    await expect(page.getByTestId('snackbar').getByText('Le projet ne dispose pas de suffisamment de ressources : GPU.')).toBeVisible()
+    await expect(
+      page
+        .getByTestId('snackbar')
+        .getByText(
+          'Le projet ne dispose pas de suffisamment de ressources : GPU.',
+        ),
+    ).toBeVisible()
   })
 
   test('should not add incorrect environments', async ({ page }) => {
@@ -60,7 +67,9 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     // Incorrect input
     await page.getByTestId('environmentNameInput').click()
     await page.getByTestId('environmentNameInput').fill(`${envName}-yolo`)
-    await expect(page.getByRole('alert').getByText('Le nom de l\'environnment ne doit pas')).toBeVisible()
+    await expect(
+      page.getByRole('alert').getByText('Le nom de l\'environnment ne doit pas'),
+    ).toBeVisible()
 
     // Valid input
     await page.getByTestId('cancelEnvironmentBtn').click()
@@ -80,7 +89,11 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
       customStageName: 'dev',
       customClusterName: 'public1',
     })
-    await expect(page.getByTestId('snackbar').getByText('Ce nom d\'environnement est déjà pris')).toBeVisible()
+    await expect(
+      page
+        .getByTestId('snackbar')
+        .getByText('Ce nom d\'environnement est déjà pris'),
+    ).toBeVisible()
   })
 
   test('should alert cluster unavailability', async ({ page }) => {
@@ -90,12 +103,18 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     await addProject({ page })
     await page.getByTestId('addEnvironmentLink').click()
     await page.getByTestId('environmentNameInput').fill(envName)
-    await page.getByLabel('Choix de la zone cible').selectOption({ label: 'Zone privée' })
-    await page.getByLabel('Type d\'environnement').selectOption({ label: 'dev' })
+    await page
+      .getByLabel('Choix de la zone cible')
+      .selectOption({ label: 'Zone privée' })
+    await page
+      .getByLabel('Type d\'environnement')
+      .selectOption({ label: 'dev' })
     await expect(page.getByTestId('noClusterOptionAlert')).toBeVisible()
     await expect(page.getByLabel('Choix du cluster cible')).not.toBeVisible()
 
-    await page.getByLabel('Choix de la zone cible').selectOption({ label: 'publique' })
+    await page
+      .getByLabel('Choix de la zone cible')
+      .selectOption({ label: 'publique' })
     await expect(page.getByTestId('noClusterOptionAlert')).not.toBeVisible()
     await expect(page.getByLabel('Choix du cluster cible')).toBeVisible()
   })
@@ -107,11 +126,17 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     await addProject({ page })
     await page.getByTestId('addEnvironmentLink').click()
     await page.getByTestId('environmentNameInput').fill(envName)
-    await page.getByLabel('Choix de la zone cible').selectOption({ label: 'publique' })
+    await page
+      .getByLabel('Choix de la zone cible')
+      .selectOption({ label: 'publique' })
     await expect(page.getByTestId('chosenZoneDescription')).toBeVisible()
 
-    await page.getByLabel('Type d\'environnement').selectOption({ label: 'dev' })
-    await page.getByLabel('Choix du cluster cible').selectOption({ label: 'public1' })
+    await page
+      .getByLabel('Type d\'environnement')
+      .selectOption({ label: 'dev' })
+    await page
+      .getByLabel('Choix du cluster cible')
+      .selectOption({ label: 'public1' })
     await expect(page.getByTestId('clusterInfos')).toBeVisible()
   })
 
@@ -125,13 +150,21 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
       customStageName: 'dev',
       customClusterName: 'public1',
     })
-    await expect(page.getByTestId(`environmentTr-${envName}`)).toContainText('1GiB 1CPU 1GPU')
+    await expect(page.getByTestId(`environmentTr-${envName}`)).toContainText(
+      '1GiB 1CPU 1GPU',
+    )
 
     await page.getByTestId(`environmentTr-${envName}`).click()
     await expect(page.getByTestId('putEnvironmentBtn')).toBeVisible()
-    await expect(page.locator('#zone-select option[selected]')).toHaveText('publique')
-    await expect(page.locator('#stage-select option[selected]')).toHaveText('dev')
-    await expect(page.locator('#cluster-select option[selected]')).toHaveText('public1')
+    await expect(page.locator('#zone-select option[selected]')).toHaveText(
+      'publique',
+    )
+    await expect(page.locator('#stage-select option[selected]')).toHaveText(
+      'dev',
+    )
+    await expect(page.locator('#cluster-select option[selected]')).toHaveText(
+      'public1',
+    )
     await expect(page.getByTestId('memoryInput')).toHaveValue('1')
     await expect(page.getByTestId('cpuInput')).toHaveValue('1')
     await expect(page.getByTestId('gpuInput')).toHaveValue('1')
@@ -139,10 +172,14 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     await page.getByTestId('cpuInput').fill('2')
     await page.getByTestId('gpuInput').fill('10')
     await page.getByTestId('putEnvironmentBtn').click()
-    await expect(page.getByTestId(`environmentTr-${envName}`)).toContainText('1.5GiB 2CPU 10GPU')
+    await expect(page.getByTestId(`environmentTr-${envName}`)).toContainText(
+      '1.5GiB 2CPU 10GPU',
+    )
   })
 
-  test('should not update environment resources when cluster is too small', async ({ page }) => {
+  test('should not update environment resources when cluster is too small', async ({
+    page,
+  }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
     await addProject({ page })
@@ -152,13 +189,21 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
       customStageName: 'dev',
       customClusterName: 'public1',
     })
-    await expect(page.getByTestId(`environmentTr-${envName}`)).toContainText('1GiB 1CPU 1GPU')
+    await expect(page.getByTestId(`environmentTr-${envName}`)).toContainText(
+      '1GiB 1CPU 1GPU',
+    )
 
     await page.getByTestId(`environmentTr-${envName}`).click()
     await expect(page.getByTestId('putEnvironmentBtn')).toBeVisible()
-    await expect(page.locator('#zone-select option[selected]')).toHaveText('publique')
-    await expect(page.locator('#stage-select option[selected]')).toHaveText('dev')
-    await expect(page.locator('#cluster-select option[selected]')).toHaveText('public1')
+    await expect(page.locator('#zone-select option[selected]')).toHaveText(
+      'publique',
+    )
+    await expect(page.locator('#stage-select option[selected]')).toHaveText(
+      'dev',
+    )
+    await expect(page.locator('#cluster-select option[selected]')).toHaveText(
+      'public1',
+    )
     await expect(page.getByTestId('memoryInput')).toHaveValue('1')
     await expect(page.getByTestId('cpuInput')).toHaveValue('1')
     await expect(page.getByTestId('gpuInput')).toHaveValue('1')
@@ -166,13 +211,19 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     await page.getByTestId('cpuInput').fill('1')
     await page.getByTestId('gpuInput').fill('1')
     await page.getByTestId('putEnvironmentBtn').click()
-    await expect(page.getByTestId('snackbar').getByText('Le cluster ne dispose pas de suffisamment de ressources : Mémoire.')).toBeVisible()
+    await expect(
+      page
+        .getByTestId('snackbar')
+        .getByText(
+          'Le cluster ne dispose pas de suffisamment de ressources : Mémoire.',
+        ),
+    ).toBeVisible()
   })
 
   test('should delete an environment', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const projectName = await addProject({ page })
+    const { name: projectName } = await addProject({ page })
     const envName = await addEnvToProject({
       page,
       zone: 'publique',
@@ -183,10 +234,15 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     await removeEnvFromProject(page, projectName, envName)
   })
 
-  test('should not be able to delete an environment if not owner', async ({ page }) => {
+  test('should not be able to delete an environment if not owner', async ({
+    page,
+  }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const projectName = await addProject({ page, members: [cnolletUser] })
+    const { name: projectName } = await addProject({
+      page,
+      members: [cnolletUser],
+    })
     const envName = await addEnvToProject({
       page,
       zone: 'publique',
@@ -205,13 +261,17 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     await expect(page.getByRole('cell', { name: envName })).toBeVisible()
     // Verify absence of delete button
     await page.getByTestId(`environmentTr-${envName}`).click()
-    await expect(page.getByTestId('showDeleteEnvironmentBtn')).not.toBeVisible()
+    await expect(
+      page.getByTestId('showDeleteEnvironmentBtn'),
+    ).not.toBeVisible()
   })
 
-  test('should not be able to delete an environment if project locked', async ({ page }) => {
+  test('should not be able to delete an environment if project locked', async ({
+    page,
+  }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const projectName = await addProject({ page })
+    const { name: projectName } = await addProject({ page })
     const envName = await addEnvToProject({
       page,
       zone: 'publique',
@@ -238,6 +298,8 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     await page.getByTestId('menuMyProjects').click()
     await page.getByRole('link', { name: projectName }).click()
     await page.getByTestId(`environmentTr-${envName}`).click()
-    await expect(page.getByTestId('showDeleteEnvironmentBtn')).not.toBeVisible()
+    await expect(
+      page.getByTestId('showDeleteEnvironmentBtn'),
+    ).not.toBeVisible()
   })
 })

@@ -12,7 +12,6 @@ env:
   BUILD_ARM64: true
   USE_QEMU: false
   NODE_VERSION: 22.14.0
-  PNPM_VERSION: 10.5.2
 
 jobs:
   expose-vars:
@@ -24,7 +23,6 @@ jobs:
       BUILD_ARM64: ${{ env.BUILD_ARM64 }}
       USE_QEMU: ${{ env.USE_QEMU }}
       NODE_VERSION: ${{ env.NODE_VERSION }}
-      PNPM_VERSION: ${{ env.PNPM_VERSION }}
     steps:
       - name: Exposing env vars
         run: echo "Exposing env vars"
@@ -73,7 +71,6 @@ jobs:
       - expose-vars
       - release
     with:
-      PNPM_VERSION: ${{ needs.expose-vars.outputs.PNPM_VERSION }}
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
       PUBLISH_APPS: false
       PUBLISH_PACKAGES: true

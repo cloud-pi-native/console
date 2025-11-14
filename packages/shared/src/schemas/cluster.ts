@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type Zod from 'zod'
 
 export const ClusterPrivacySchema = z.enum(['public', 'dedicated'])
 

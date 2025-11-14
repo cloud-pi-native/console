@@ -23,9 +23,9 @@
     "@cpn-console/hooks": "workspace:^",
     "@cpn-console/shared": "workspace:^",
     "@cpn-console/vault-plugin": "workspace:^",
-    "@gitbeaker/core": "~40.6.0",
-    "@gitbeaker/requester-utils": "~40.6.0",
-    "@gitbeaker/rest": "~40.6.0",
+    "@gitbeaker/core": "^40.6.0",
+    "@gitbeaker/requester-utils": "^40.6.0",
+    "@gitbeaker/rest": "^40.6.0",
     "axios": "1.12.2",
     "js-yaml": "4.1.0"
   },
@@ -38,7 +38,7 @@
     "nodemon": "^3.1.7",
     "rimraf": "^6.0.1",
     "typescript": "^5.7.2",
-    "vite": "^6.0.3",
+    "vite": "^7.2.1",
     "vitest": "^2.1.8"
   },
   "publishConfig": {
