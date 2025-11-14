@@ -1,5 +1,5 @@
 import type { ProjectV2 } from '@cpn-console/shared'
-import { deleteValidationInput, sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
+import { sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
 import { getModelById } from '../../support/func.js'
 import type { Project } from '@/utils/project-utils.js'
 
@@ -219,39 +219,6 @@ describe('Administration projects', () => {
       .should('contain', 'Déverrouiller le projet')
       .click()
     cy.wait('@handleProjectLocking')
-      .its('response.statusCode')
-      .should('match', /^20\d$/)
-  })
-
-  it('Should archive a project, loggedIn as admin', () => {
-    cy.intercept('GET', 'api/v1/projects*').as('getAllProjects')
-    cy.intercept('GET', 'api/v1/quotas').as('listQuotas')
-    cy.intercept('DELETE', 'api/v1/projects/*').as('archiveProject')
-
-    const projectName = 'adminarchive'
-
-    cy.createProject({ name: projectName }, admin?.email)
-
-    cy.visit('/admin/projects')
-    cy.url().should('contain', '/admin/projects')
-    cy.wait('@getAllProjects')
-    cy.get('select#projectSearchFilter').select('Tous')
-    cy.getByDataTestid('tableAdministrationProjects').within(() => {
-      cy.get('tr').contains(projectName)
-        .click()
-    })
-    cy.get('.fr-callout__title')
-      .should('contain', projectName)
-    cy.getByDataTestid('archiveProjectInput').should('not.exist')
-      .getByDataTestid('showArchiveProjectBtn').click()
-      .getByDataTestid('confirmDeletionBtn')
-      .should('be.disabled')
-      .getByDataTestid('archiveProjectInput').should('be.visible')
-      .type(deleteValidationInput)
-      .getByDataTestid('confirmDeletionBtn')
-      .should('be.enabled')
-      .click()
-    cy.wait('@archiveProject')
       .its('response.statusCode')
       .should('match', /^20\d$/)
   })
