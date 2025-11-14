@@ -228,7 +228,7 @@ async function copyToClipboard(text: string) {
           <td>{{ env.name }}</td>
           <td>{{ stageStore.stages.find(stage => stage.id === env.stageId)?.name ?? 'Type inconnu...' }}</td>
           <td>
-            {{ env.memory }}GiB {{ env.cpu }}CPU {{ env.gpu }}GPU
+            {{ env.memory.toLocaleString() }}GiB {{ env.cpu.toLocaleString() }}CPU {{ env.gpu.toLocaleString() }}GPU
           </td>
           <td>
             <div class="flex flex-row gap-2">
@@ -262,8 +262,8 @@ async function copyToClipboard(text: string) {
       <div v-if="!project.limitless">
         Utilisation des ressources projets :
         <ul>
-          <li>Hors-Prod: {{ projectUsage?.hprod.memory }}/{{ project.hprodMemory }} GiB {{ projectUsage?.hprod.cpu }}/{{ project.hprodCpu }} CPU {{ projectUsage?.hprod.gpu }}/{{ project.hprodGpu }} GPU</li>
-          <li>Prod: {{ projectUsage?.prod.memory }}/{{ project.prodMemory }} GiB {{ projectUsage?.prod.cpu }}/{{ project.prodCpu }} CPU {{ projectUsage?.prod.gpu }}/{{ project.prodGpu }} GPU</li>
+          <li>Hors-Prod: {{ projectUsage?.hprod.memory.toLocaleString() }}/{{ project.hprodMemory.toLocaleString() }} GiB {{ projectUsage?.hprod.cpu.toLocaleString() }}/{{ project.hprodCpu.toLocaleString() }} CPU {{ projectUsage?.hprod.gpu.toLocaleString() }}/{{ project.hprodGpu.toLocaleString() }} GPU</li>
+          <li>Prod: {{ projectUsage?.prod.memory.toLocaleString() }}/{{ project.prodMemory.toLocaleString() }} GiB {{ projectUsage?.prod.cpu.toLocaleString() }}/{{ project.prodCpu.toLocaleString() }} CPU {{ projectUsage?.prod.gpu.toLocaleString() }}/{{ project.prodGpu.toLocaleString() }} GPU</li>
         </ul>
       </div>
       <DsfrButton

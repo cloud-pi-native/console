@@ -139,7 +139,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     await page.getByTestId('cpuInput').fill('2')
     await page.getByTestId('gpuInput').fill('10')
     await page.getByTestId('putEnvironmentBtn').click()
-    await expect(page.getByTestId(`environmentTr-${envName}`)).toContainText('1.5GiB 2CPU 10GPU')
+    await expect(page.getByTestId(`environmentTr-${envName}`)).toContainText('1,5GiB 2CPU 10GPU')
   })
 
   test('should not update environment resources when cluster is too small', async ({ page }) => {
