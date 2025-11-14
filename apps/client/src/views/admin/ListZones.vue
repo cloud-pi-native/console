@@ -153,6 +153,7 @@ watch(zones, async () => {
   >
     <div
       v-for="zone in zoneList"
+      :id="`zoneTile-${zone.data.slug}`"
       :key="zone.data.slug"
       class="flex-basis-60 flex-stretch max-w-90"
     >
