@@ -2,9 +2,11 @@ import { expect, test } from '@playwright/test'
 
 import { clientURL, signInCloudPiNative, tcolinUser } from '../config/console'
 import { faker } from '@faker-js/faker'
+import { deleteValidationInput } from './utils'
 
 test.describe('Zone page', () => {
-  test('Should create a zone', { tag: '@e2e' }, async ({ page }) => {
+  // @TODO: Add clusters to this test to ensure this part of the feature
+  test('Should create a zone', { tag: ['@e2e', '@need-rework'] }, async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })
@@ -135,5 +137,54 @@ test.describe('Zone page', () => {
 
     // Assert
     await expect(page.getByTestId('snackbar')).toContainText(`Une zone portant le nom ${zone.slug} existe déjà.`)
+  })
+
+  test('Should not delete a zone if associated clusters', { tag: '@e2e' }, async ({ page }) => {
+    // Arrange
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: tcolinUser })
+    // No data to arrange, a public zone is present by default (I guess ?)
+
+    // Act
+    await page.getByTestId('menuAdministrationBtn').click()
+    await page.getByTestId('menuAdministrationZones').click()
+
+    // Assert
+    await page.getByTestId(`zoneTile-publique`).click()
+    await expect(page.getByTestId('showDeleteZoneBtn')).not.toBeVisible()
+    await expect(page.getByTestId('associatedClustersAlert')).toBeVisible()
+  })
+
+  test('Should delete a zone', { tag: '@e2e' }, async ({ page }) => {
+    // Arrange
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: tcolinUser })
+    const zone = {
+      slug: faker.string.alpha(10).toLowerCase(),
+      label: 'Zone à Défendre',
+      argocdUrl: 'https://vousetesici.fr',
+      description: 'Il faut défendre cette zone.',
+    }
+    // Create the zone
+    await page.getByTestId('menuAdministrationBtn').click()
+    await page.getByTestId('menuAdministrationZones').click()
+    await page.getByTestId('createZoneLink').click()
+    await page.getByTestId('slugInput').fill(zone.slug)
+    await page.getByTestId('labelInput').fill(zone.label)
+    await page.getByTestId('argocdUrlInput').fill(zone.argocdUrl)
+    await page.getByTestId('descriptionInput').fill(zone.description)
+    await page.getByTestId('addZoneBtn').click()
+    // @TODO: Add clusters to this test to ensure we can't delete a zone that has clusters
+
+    // Act
+    await page.getByTestId('menuAdministrationZones').click()
+    await page.locator(`#zoneTile-${zone.slug}`).click()
+    await page.getByTestId('showDeleteZoneBtn').click()
+    await page.getByTestId('deleteZoneInput').fill(deleteValidationInput)
+    await page.getByTestId('deleteZoneBtn').click()
+
+    // Assert
+    await page.getByTestId('menuAdministrationZones').click()
+    await expect(page.locator(`#zoneTile-${zone.slug}`)).not.toBeVisible()
   })
 })
