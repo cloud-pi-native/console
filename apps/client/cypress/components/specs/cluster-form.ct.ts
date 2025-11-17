@@ -1,5 +1,5 @@
 import { type Pinia, createPinia, setActivePinia } from 'pinia'
-import { getRandomCluster, getRandomEnv, getRandomProject, getRandomStage, getRandomZone, repeatFn } from '@cpn-console/test-utils'
+import { getRandomCluster, getRandomEnv, getRandomStage, getRandomZone, repeatFn } from '@cpn-console/test-utils'
 import { ClusterPrivacy, deleteValidationInput } from '@cpn-console/shared'
 
 import '@gouvfr/dsfr/dist/dsfr.min.css'
@@ -11,6 +11,7 @@ import '@/main.css'
 import ClusterForm from '@/components/ClusterForm.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import type { ComponentCustomProps } from 'vue'
+import { faker } from '@faker-js/faker'
 
 describe('ClusterForm.vue', () => {
   let pinia: Pinia
@@ -24,7 +25,7 @@ describe('ClusterForm.vue', () => {
   it('Should mount a new cluster ClusterForm', () => {
     useSnackbarStore()
 
-    const allProjects = repeatFn(5)(getRandomProject)
+    const allProjects = repeatFn(5)(() => { return { id: faker.string.uuid(), label: faker.lorem.word() } })
     const allStages = repeatFn(4)(getRandomStage)
     const allZones = repeatFn(3)(getRandomZone)
 
@@ -59,7 +60,7 @@ describe('ClusterForm.vue', () => {
 
   it('Should mount an update cluster ClusterForm', () => {
     useSnackbarStore()
-    const allProjects = repeatFn(5)(getRandomProject)
+    const allProjects = repeatFn(5)(() => { return { id: faker.string.uuid(), label: faker.lorem.word() } })
     const allStages = repeatFn(2)(getRandomStage)
     const allZones = repeatFn(1)(getRandomZone)
 
@@ -115,7 +116,7 @@ describe('ClusterForm.vue', () => {
 
   it('Should mount an update cluster ClusterForm with associated environments', () => {
     useSnackbarStore()
-    const allProjects = repeatFn(5)(getRandomProject)
+    const allProjects = repeatFn(5)(() => { return { id: faker.string.uuid(), label: faker.lorem.word() } })
     const allStages = repeatFn(2)(getRandomStage)
     const allZones = repeatFn(2)(getRandomZone)
 
@@ -172,7 +173,7 @@ describe('ClusterForm.vue', () => {
   it('Should disable project selector when privacy is public', () => {
     useSnackbarStore()
 
-    const allProjects = repeatFn(5)(getRandomProject)
+    const allProjects = repeatFn(5)(() => { return { id: faker.string.uuid(), label: faker.lorem.word() } })
 
     const props = {
       allProjects,

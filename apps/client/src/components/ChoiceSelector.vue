@@ -1,6 +1,6 @@
 <script lang="ts" setup generic="T extends Record<string, any>, VALUE extends (Extract<keyof T, string>), LABEL extends (Extract<keyof T, string>)">
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
-import { computed, onBeforeMount, ref } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = withDefaults(defineProps<{
   options: T[]
