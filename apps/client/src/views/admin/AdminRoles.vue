@@ -63,6 +63,7 @@ onBeforeMount(async () => {
     >
       <div
         class="flex flex-col"
+        data-testid="role-list"
       >
         <DsfrButton
           label="Ajouter un rôle"
