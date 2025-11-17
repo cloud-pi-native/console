@@ -4,7 +4,6 @@ import { useClusterStore } from '@/stores/cluster.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useZoneStore } from '@/stores/zone.js'
-import type { Project } from '@/utils/project-utils.js'
 import type { Cluster, ClusterAssociatedEnvironments, ClusterDetails, CreateClusterBody, UpdateClusterBody } from '@cpn-console/shared'
 
 const props = defineProps<{
@@ -22,16 +21,17 @@ const clusterStore = useClusterStore()
 const cluster = ref<ClusterDetails>()
 const allZones = computed(() => zoneStore.zones)
 const allStages = computed(() => stageStore.stages)
-const allProjects = ref<Project[]>([])
+const allProjects = ref<{ id: string, label: string }[]>([])
 
 onBeforeMount(async () => {
+  allProjects.value = (await projectStore.listProjects({ statusNotIn: 'archived', filter: 'all' }))
+    .map(project => ({ id: project.id, label: project.slug }))
   if (!stageStore.stages.length) {
     await stageStore.getAllStages()
   }
   if (!zoneStore.zones.length) {
     await zoneStore.getAllZones()
   }
-  allProjects.value = await projectStore.listProjects({ statusNotIn: 'archived', filter: 'all' })
 })
 
 onMounted(async () => {

@@ -17,14 +17,13 @@ import { load } from 'js-yaml'
 import { JsonViewer } from 'vue3-json-viewer'
 import ChoiceSelector from './ChoiceSelector.vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
-import type { Project } from '@/utils/project-utils.js'
 import { DsfrDataTable } from '@gouvminint/vue-dsfr'
 import { localeParseFloat, ONE_TENTH_STR } from '@/utils/func.js'
 
 const props = withDefaults(defineProps<{
   isNewCluster: boolean
   cluster?: ClusterDetails
-  allProjects: Project[]
+  allProjects: { id: string, label: string }[]
   allStages: Stage[]
   allZones: Zone[]
   associatedEnvironments: ClusterAssociatedEnvironments
@@ -419,13 +418,10 @@ const isConnectionDetailsShown = ref(true)
         wrapped
         label="Projets associés"
         description="Sélectionnez les projets autorisés à utiliser ce cluster."
-        :options="props.allProjects.map(project => ({ id: project.id, label: project.slug }))"
-        :options-selected="props.allProjects
-          .filter(project => localCluster.projectIds?.includes(project.id))
-          .map(project => ({ id: project.id, label: project.slug }))"
+        :options="props.allProjects"
+        :options-selected="props.allProjects.filter(project => props.cluster.projectIds?.includes(project.id))"
         label-key="label"
         value-key="id"
-        :disabled="false"
         @update="(_p, projectIds) => localCluster.projectIds = projectIds"
       />
     </div>
@@ -441,7 +437,6 @@ const isConnectionDetailsShown = ref(true)
         :options-selected="props.allStages.filter(stage => props.cluster.stageIds.includes(stage.id))"
         label-key="name"
         value-key="id"
-        :disabled="false"
         @update="(_s, stageIds) => localCluster.stageIds = stageIds"
       />
     </div>
