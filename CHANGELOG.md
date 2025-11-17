@@ -1,5 +1,24 @@
 # Changelog
 
+## [9.8.0](https://github.com/cloud-pi-native/console/compare/v9.7.2...v9.8.0) (2025-11-17)
+
+
+### Features
+
+* :fire: de-duplicates Argo CD links for default zone ([2db26cd](https://github.com/cloud-pi-native/console/commit/2db26cdfce71ffbf330bdbe07a48f1276bad7cd9))
+* :poop: change the naming convention of cluster secret ([a471766](https://github.com/cloud-pi-native/console/commit/a47176643cb9a97f41c1345477da60bce5935f85))
+
+
+### Bug Fixes
+
+* :bug: improve number inputs for decimal values ([d69a8ba](https://github.com/cloud-pi-native/console/commit/d69a8ba547174be521ac8cab0e47db2448415a61))
+* **#1640:** :bug: only regenerate robot secret if host changes ([e5d3ba8](https://github.com/cloud-pi-native/console/commit/e5d3ba87f895451795be1d7fa42a389e63521a68))
+
+
+### Performance Improvements
+
+* :zap: direct service communication for Gitlab pipelines ([4991451](https://github.com/cloud-pi-native/console/commit/4991451f3d0c7dbac32cf5fed1fc880b29a37a1c))
+
 ## [9.7.2](https://github.com/cloud-pi-native/console/compare/v9.7.1...v9.7.2) (2025-10-27)
 
 
