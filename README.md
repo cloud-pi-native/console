@@ -409,6 +409,8 @@ Pour publier les versions des modules npm du dépôt un [pipeline](https://githu
 
 > Il est possible de créer une version de pré-release d'un module npm en modifiant la clé `publishConfig.tag` dans le `package.json` avec par exemple `beta` pour générer une version beta.
 
+À propos du cycle de vie des dépendances, et notamment leur mise à jour, un document spécifique est disponible [ici](https://github.com/cloud-pi-native/documentation-interne-socle/blob/main/Divers/Mode-op%C3%A9ratoire-mont%C3%A9es-version-librairies.md). Ce document détaille la stratégie choisie en interne de mise à jour des dépendances de la Console CPiN.
+
 ### Version des dépendances Helm
 
 La console embarque une dépendance avec le Helm Chart utilisé par ArgoCD pour consommer le fichier values qu'elle construit. Afin d'assurer la compatibilité, il faut toujours que la version du Helm chart associé ait été publiée au préalable (voir [la documentation dédiée](https://github.com/cloud-pi-native/helm-charts?tab=readme-ov-file#contribution)).
