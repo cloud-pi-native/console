@@ -198,11 +198,9 @@ export async function deleteCluster({
 }
 
 // functions use in integration.spec.ts
-export async function createZone({
-  page,
-}: {
-  page: Page
-}): Promise<string> {
+export async function createZone(
+  page: Page,
+) {
   const zoneName = faker.string.alpha(10).toLowerCase()
   await page.getByTestId('menuAdministrationZones').click()
   await page.getByTestId('createZoneLink').click()
@@ -212,6 +210,17 @@ export async function createZone({
   await page.getByTestId('descriptionInput').fill(faker.string.alpha(100).toLowerCase())
   await page.getByTestId('addZoneBtn').click()
   return zoneName
+}
+
+export async function deleteZone(
+  page: Page,
+  zoneName: string,
+) {
+  await page.getByTestId('menuAdministrationZones').click()
+  await page.getByRole('link', { name: zoneName }).click()
+  await page.getByTestId('showDeleteZoneBtn').click()
+  await page.getByTestId('deleteZoneInput').fill('DELETE')
+  await page.getByTestId('deleteZoneBtn').click()
 }
 
 // functions use in environment.spec.ts
