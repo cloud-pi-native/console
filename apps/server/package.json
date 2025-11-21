@@ -1,12 +1,16 @@
 {
   "name": "@cpn-console/server",
   "type": "module",
-  "version": "9.8.0",
+  "version": "9.8.1",
   "description": "cpn-console server",
   "main": "dist/server.js",
   "module": "dist/server.js",
   "types": "types/server.d.ts",
-  "files": ["dist", "prisma.config.ts", "src"],
+  "files": [
+    "dist",
+    "prisma.config.ts",
+    "src"
+  ],
   "scripts": {
     "build": "tspc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
