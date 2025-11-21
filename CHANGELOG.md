@@ -1,5 +1,17 @@
 # Changelog
 
+## [9.8.1](https://github.com/cloud-pi-native/console/compare/v9.8.0...v9.8.1) (2025-11-21)
+
+
+### Bug Fixes
+
+* :bug: display associated project on cluster form ([488ff24](https://github.com/cloud-pi-native/console/commit/488ff24dab0d90a6af83e96bdbe815a0f955220e))
+* :bug: public url for Harbor image pull secret ([16cd209](https://github.com/cloud-pi-native/console/commit/16cd209a0274d045deeb51f7fabf432448c0066b))
+* **ci:** remove PNPM_VERSION from Github Actions ([bd1f4af](https://github.com/cloud-pi-native/console/commit/bd1f4af2592658f7edcbcada13f1ea6cafcab3d4))
+* rely on packageManager property to retrieve the right version of pnpm ([7b20b83](https://github.com/cloud-pi-native/console/commit/7b20b832b6f83d367c33573d87c444a8da315703))
+* **shared:** explicitely import Zod type ([2a8a4d8](https://github.com/cloud-pi-native/console/commit/2a8a4d8074e45742769fb2f451672777c4f4afa5))
+* **tests:** ensure Cypress tests are green again ([5b7042b](https://github.com/cloud-pi-native/console/commit/5b7042b0be48697ce9dfa4a69377a04ceae8fb5c))
+
 ## [9.8.0](https://github.com/cloud-pi-native/console/compare/v9.7.2...v9.8.0) (2025-11-17)
 
 
