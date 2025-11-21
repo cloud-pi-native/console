@@ -12,7 +12,7 @@ const config: {
 export function getConfig(): Required<typeof config> {
   config.url = config.url ?? removeTrailingSlash(requiredEnv('HARBOR_URL'))
   config.internalUrl = config.internalUrl ?? removeTrailingSlash(requiredEnv('HARBOR_INTERNAL_URL'))
-  config.host = config.host ?? config?.internalUrl?.split('://')[1]
+  config.host = config.host ?? config?.url?.split('://')[1]
   // @ts-ignore
   return config
 }
