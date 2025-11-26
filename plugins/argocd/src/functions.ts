@@ -36,7 +36,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 
     const infraRepositories = project.repositories.filter(repo => repo.isInfra)
     const sourceRepositories = [
-      `${await gitlabApi.getGroupUrl()}/**`,
+      `${await gitlabApi.getPublicGroupUrl()}/**`,
       ...splitExtraRepositories(payload.config.argocd?.extraRepositories),
       ...splitExtraRepositories(project.store.argocd?.extraRepositories),
     ]
@@ -116,7 +116,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         return Promise.all(infraRepositories.map(async (repository) => {
           const application = findApplication(applications, repository.internalRepoName, environment.name)
           const applicationName = generateApplicationName(project.slug, environment.name, repository.internalRepoName)
-          const repoURL = await gitlabApi.getRepoUrl(repository.internalRepoName)
+          const repoURL = await gitlabApi.getPublicRepoUrl(repository.internalRepoName)
 
           if (application) {
             const minimalPatch = getMinimalApplicationObject({
@@ -259,7 +259,7 @@ async function getArgoRepoSource(repoName: string, env: string, gitlabApi: Gitla
   const valueFiles = [] // Empty means not a Helm repository
   let path = '.'
   const repoId = await gitlabApi.getProjectId(repoName)
-  const repoURL = await gitlabApi.getRepoUrl(repoName)
+  const repoURL = await gitlabApi.getPublicRepoUrl(repoName)
   try {
     const files = await gitlabApi.listFiles(repoId, { path: '/', ref: 'HEAD', recursive: false })
     const result = files.find(f => f.name === 'values.yaml')

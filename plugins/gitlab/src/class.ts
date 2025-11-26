@@ -276,7 +276,11 @@ export class GitlabProjectApi extends GitlabApi {
     return this.createProjectGroup()
   }
 
-  public async getGroupUrl() {
+  public async getPublicGroupUrl() {
+    return `${config().publicUrl}/${config().projectsRootDir}/${this.project.slug}`
+  }
+
+  public async getInternalGroupUrl() {
     return `${config().internalUrl}/${config().projectsRootDir}/${this.project.slug}`
   }
 
@@ -367,8 +371,12 @@ export class GitlabProjectApi extends GitlabApi {
   }
 
   // Repositories
-  public async getRepoUrl(repoName: string) {
-    return `${await this.getGroupUrl()}/${repoName}.git`
+  public async getPublicRepoUrl(repoName: string) {
+    return `${await this.getPublicGroupUrl()}/${repoName}.git`
+  }
+
+  public async getInternalRepoUrl(repoName: string) {
+    return `${await this.getInternalGroupUrl()}/${repoName}.git`
   }
 
   public async listRepositories() {
