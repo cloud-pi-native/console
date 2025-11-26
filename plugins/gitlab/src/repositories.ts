@@ -68,7 +68,7 @@ async function ensureRepositoryExists(gitlabRepositories: CondensedProjectSchema
     gitInputPassword = currentVaultSecret.data.GIT_INPUT_PASSWORD
   }
 
-  const internalRepoUrl = await gitlabApi.getRepoUrl(repository.internalRepoName)
+  const internalRepoUrl = await gitlabApi.getInternalRepoUrl(repository.internalRepoName)
 
   const { data: gitlabSecret } = await vaultApi.read('tech/GITLAB_MIRROR', { throwIfNoEntry: false })
   const mirrorSecretData = {
