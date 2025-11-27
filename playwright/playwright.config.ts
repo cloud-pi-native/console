@@ -30,10 +30,10 @@ export default defineConfig({
 
   /* All timeouts are in milliseconds */
   // Timeout for each and every `test` block
-  timeout: 30_000,
+  timeout: Number(process.env.CONSOLE_GLOBAL_TIMEOUT) || 30_000,
   // Timeout for each and every `expect` command
   expect: {
-    timeout: 10_000,
+    timeout: Number(process.env.CONSOLE_EXPECT_TIMEOUT) || 10_000,
   },
 
   /* Configure projects for major browsers */
