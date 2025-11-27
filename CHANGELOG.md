@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.9.0](https://github.com/cloud-pi-native/console/compare/v9.8.1...v9.9.0) (2025-11-27)
+
+
+### Features
+
+* :sparkles: distinguish between public and internal gitlab url ([616c01c](https://github.com/cloud-pi-native/console/commit/616c01c0d1b4607a48a52701a6b101bde8c50f22))
+
 ## [9.8.1](https://github.com/cloud-pi-native/console/compare/v9.8.0...v9.8.1) (2025-11-21)
 
 
