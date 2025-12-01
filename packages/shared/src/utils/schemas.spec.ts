@@ -47,6 +47,7 @@ describe('schemas utils', () => {
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       externalToken: 'eddddsqsq-_',
       isPrivate: true,
+      isAutoSynced: false,
       isInfra: false,
       externalUserName: 'clai+re-nlet_',
     }
@@ -162,6 +163,7 @@ describe('schemas utils', () => {
       externalUserName: 'clairenlet',
       externalToken: 'myToken',
       isPrivate: true,
+      isAutoSynced: true,
       isInfra: false,
     }
 
@@ -242,6 +244,7 @@ describe('schemas utils', () => {
       internalRepoName: '-candilib',
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       isPrivate: false,
+      isAutoSynced: false,
       isInfra: false,
     }
 

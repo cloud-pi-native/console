@@ -13,6 +13,7 @@ const props = withDefaults(defineProps<{
   repo: () => ({
     isInfra: false,
     isPrivate: false,
+    isAutoSynced: false,
     internalRepoName: '',
     externalRepoUrl: '',
     isStandalone: false,
@@ -174,6 +175,15 @@ function toggleStandalone(e: boolean) {
             @update:model-value="updateRepo('externalRepoUrl', $event)"
           />
         </div>
+        <DsfrCheckbox
+          id="autoSyncCheckbox"
+          v-model="localRepo.isAutoSynced"
+          :disabled="props.isProjectLocked || !canManage"
+          label="Synchronisation automatique du projet"
+          hint="Si vous travaillez depuis GitHub ou un repo publique, vous pouvez cocher cette case pour synchroniser automatiquement le projet"
+          name="isAutoSynced"
+          @update:model-value="updateRepo('isAutoSynced', $event)"
+        />
         <DsfrCheckbox
           id="privateRepoCbx"
           v-model="localRepo.isPrivate"

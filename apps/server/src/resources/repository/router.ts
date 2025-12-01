@@ -83,6 +83,7 @@ export function repositoryRouter() {
       const keysAllowedForUpdate = [
         'externalRepoUrl',
         'isPrivate',
+        'isAutoSynced',
         'externalToken',
         'externalUserName',
         'isInfra',
