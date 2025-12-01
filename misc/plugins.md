@@ -59,3 +59,10 @@ Note: Si un module réutilise son propre payload, il doit penser à renvoyer le 
   // anotherKey: {},
 }
 ```
+
+## Notes
+
+La communication des services associés à la chaîne DSO se fait au maximum en direct par les services Kubernetes via les url internes. On note toutefois les exceptions suivantes :
+- Argocd communique avec l'url publique de Gitlab peu importe s'ils sont sur le même cluster.
+- L'url publique de Harbor est utilisée dans les jobs de CI : il faudrait sinon une `imagePullSecret` avec url interne pour les jobs de CI et une avec url publique pour les pods des clusters applicatifs.
+- L'url publique de Nexus est utilisée dans les jobs de CI : une redirection de http vers https empêche l'utilisation de l'url interne.
