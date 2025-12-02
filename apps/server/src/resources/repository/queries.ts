@@ -10,6 +10,14 @@ export function getProjectRepositories(projectId: Project['id']) {
   return prisma.repository.findMany({ where: { projectId } })
 }
 
+export function getAutoSyncedRepositories() {
+  return prisma.repository.findMany({
+    where: {
+      isAutoSynced: true,
+    },
+  })
+}
+
 // CREATE
 type RepositoryCreate = Pick<Repository, 'projectId' | 'internalRepoName' | 'isInfra' | 'isPrivate' | 'isAutoSynced'> &
   Partial<Pick<Repository, 'externalUserName' | 'externalRepoUrl'>>
