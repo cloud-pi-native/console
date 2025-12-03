@@ -1,95 +1,124 @@
-import type { Project, ProjectPlugin } from '@prisma/client'
-import type {
-  PermissionTarget,
-  PluginsUpdateBody,
-  ServiceUrl,
-} from '@cpn-console/shared'
-import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
-import type { ZoneObject } from '@cpn-console/hooks'
 import {
-  getAdminPlugin,
-  getProjectInfosByIdOrThrow,
-  getProjectStore,
-  getPublicClusters,
-  saveProjectStore,
-} from '@old-server/resources/queries-index.js'
+    editStrippers,
+    populatePluginManifests,
+    servicesInfos,
+} from '@cpn-console/hooks';
+import type { ZoneObject } from '@cpn-console/hooks';
+import type {
+    PermissionTarget,
+    PluginsUpdateBody,
+    ServiceUrl,
+} from '@cpn-console/shared';
+import {
+    getAdminPlugin,
+    getProjectInfosByIdOrThrow,
+    getProjectStore,
+    getPublicClusters,
+    saveProjectStore,
+} from '@old-server/resources/queries-index.js';
+import type { Project, ProjectPlugin } from '@prisma/client';
 
 export type ConfigRecords = {
-  key: string
-  pluginName: string
-  value: string | number | null
-}[]
+    key: string;
+    pluginName: string;
+    value: string | number | null;
+}[];
 
-export function dbToObj(records: Omit<ProjectPlugin, 'projectId'>[]): PluginsUpdateBody {
-  const obj: PluginsUpdateBody = {}
-  for (const record of records) {
-    if (!obj[record.pluginName]) obj[record.pluginName] = {}
-    obj[record.pluginName][record.key] = record.value
-  }
-  return obj
+export function dbToObj(
+    records: Omit<ProjectPlugin, 'projectId'>[],
+): PluginsUpdateBody {
+    const obj: PluginsUpdateBody = {};
+    for (const record of records) {
+        if (!obj[record.pluginName]) obj[record.pluginName] = {};
+        obj[record.pluginName][record.key] = record.value;
+    }
+    return obj;
 }
 
 export function objToDb(obj: PluginsUpdateBody): ConfigRecords {
-  return Object.entries(obj)
-    .map(([pluginName, values]) => Object.entries(values)
-      .map(([key, value]) => ({ pluginName, key, value })))
-    .flat()
+    return Object.entries(obj)
+        .map(([pluginName, values]) =>
+            Object.entries(values).map(([key, value]) => ({
+                pluginName,
+                key,
+                value,
+            })),
+        )
+        .flat();
 }
 
-export async function getProjectServices(projectId: Project['id'], permissionTarget: PermissionTarget) {
-  // Pré-requis
-  const project = await getProjectInfosByIdOrThrow(projectId)
+export async function getProjectServices(
+    projectId: Project['id'],
+    permissionTarget: PermissionTarget,
+) {
+    // Pré-requis
+    const project = await getProjectInfosByIdOrThrow(projectId);
 
-  const [projectStore, globalConfig] = await Promise.all([
-    getProjectStore(projectId),
-    getAdminPlugin(),
-  ])
-  const store = dbToObj([...projectStore, ...globalConfig])
+    const [projectStore, globalConfig] = await Promise.all([
+        getProjectStore(projectId),
+        getAdminPlugin(),
+    ]);
+    const store = dbToObj([...projectStore, ...globalConfig]);
 
-  const publicClusters = await getPublicClusters()
-  project.clusters = project.clusters.concat(publicClusters)
-  const zones: Map<string, ZoneObject> = new Map() // Pour dédoublonnage des zones
-  project.clusters.map(c => zones.set(c.zone.id, c.zone))
+    const publicClusters = await getPublicClusters();
+    project.clusters = project.clusters.concat(publicClusters);
+    const zones: Map<string, ZoneObject> = new Map(); // Pour dédoublonnage des zones
+    project.clusters.map((c) => zones.set(c.zone.id, c.zone));
 
-  return Object.values(servicesInfos).map(({ name, title, to, imgSrc, description }) => {
-    let urls: ServiceUrl[] = []
-    const toResponse = to
-      ? to({
-          clusters: project.clusters,
-          zones: Array.from(zones.values()),
-          environments: project.environments,
-          project,
-          store,
+    return Object.values(servicesInfos)
+        .map(({ name, title, to, imgSrc, description }) => {
+            let urls: ServiceUrl[] = [];
+            const toResponse = to
+                ? to({
+                      clusters: project.clusters,
+                      zones: Array.from(zones.values()),
+                      environments: project.environments,
+                      project,
+                      store,
+                  })
+                : [];
+            if (Array.isArray(toResponse)) {
+                urls = toResponse.map((res) => ({
+                    name: res.title ?? '',
+                    description: res.description ?? '',
+                    to: res.to,
+                }));
+            } else if (typeof toResponse === 'string') {
+                urls = [{ to: toResponse, name: '' }];
+            } else if (toResponse) {
+                urls = [{ name: toResponse.title ?? '', to: toResponse.to }];
+            }
+            const manifest = populatePluginManifests({
+                data: {
+                    project: projectStore,
+                    global: globalConfig,
+                },
+                permissionTarget,
+                pluginName: name,
+                select: {
+                    global: true,
+                    project: true,
+                },
+            });
+            return { imgSrc, title, name, urls, manifest, description };
         })
-      : []
-    if (Array.isArray(toResponse)) {
-      urls = toResponse.map(res => ({ name: res.title ?? '', description: res.description ?? '', to: res.to }))
-    } else if (typeof toResponse === 'string') {
-      urls = [{ to: toResponse, name: '' }]
-    } else if (toResponse) {
-      urls = [{ name: toResponse.title ?? '', to: toResponse.to }]
-    }
-    const manifest = populatePluginManifests({
-      data: {
-        project: projectStore,
-        global: globalConfig,
-      },
-      permissionTarget,
-      pluginName: name,
-      select: {
-        global: true,
-        project: true,
-      },
-    })
-    return { imgSrc, title, name, urls, manifest, description }
-  }).filter(s => s.urls.length || s.manifest.global?.length || s.manifest.project?.length)
+        .filter(
+            (s) =>
+                s.urls.length ||
+                s.manifest.global?.length ||
+                s.manifest.project?.length,
+        );
 }
 
-export async function updateProjectServices(projectId: Project['id'], data: PluginsUpdateBody, stripperRoles: Array<'user' | 'admin'>) {
-  for (const role of stripperRoles) {
-    const parsedData = editStrippers.project[role].safeParse(data)
-    if (!parsedData.success) continue
-    await saveProjectStore(objToDb(parsedData.data), projectId)
-  }
-  return null
+export async function updateProjectServices(
+    projectId: Project['id'],
+    data: PluginsUpdateBody,
+    stripperRoles: Array<'user' | 'admin'>,
+) {
+    for (const role of stripperRoles) {
+        const parsedData = editStrippers.project[role].safeParse(data);
+        if (!parsedData.success) continue;
+        await saveProjectStore(objToDb(parsedData.data), projectId);
+    }
+    return null;
 }

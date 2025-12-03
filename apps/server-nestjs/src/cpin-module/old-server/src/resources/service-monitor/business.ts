@@ -1,9 +1,9 @@
-import { services } from '@cpn-console/hooks'
+import { services } from '@cpn-console/hooks';
 
 export function checkServicesHealth() {
-  return services.getStatus()
+    return services.getStatus();
 }
 
 export async function refreshServicesHealth() {
-  return Promise.all(services.refreshStatus())
+    return Promise.all(services.refreshStatus());
 }
