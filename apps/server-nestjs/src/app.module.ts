@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+
 import { CpinModule } from './cpin-module/cpin.module';
 
+// This module only exists to import other module.
+// « One module to rule them all, and in NestJs bind them »
 @Module({
-  imports: [CpinModule],
-  controllers: [AppController],
-  providers: [AppService],
+    imports: [CpinModule],
+    controllers: [],
+    providers: [],
 })
 export class AppModule {}
