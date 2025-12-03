@@ -1,6 +1,6 @@
 import type { FastifyBaseLogger, FastifyLogFn, PinoLoggerOptions } from 'fastify/types/logger.js'
 import type { XOR } from '@cpn-console/shared'
-import { logger as customLogger } from '@/app.js'
+import { logger as customLogger } from '@old-server/app.js'
 
 export const customLevels = {
   audit: 25,

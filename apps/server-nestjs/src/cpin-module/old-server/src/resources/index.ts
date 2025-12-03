@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { serverInstance } from '@/app.js'
+import { serverInstance } from '@old-server/app.js'
 
 import { adminRoleRouter } from './admin-role/router.js'
 import { adminTokenRouter } from './admin-token/router.js'

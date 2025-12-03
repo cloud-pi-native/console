@@ -1,5 +1,5 @@
 import type { Project, Repository } from '@prisma/client'
-import prisma from '@/prisma.js'
+import prisma from '@old-server/prisma.js'
 
 // SELECT
 export function getRepositoryById(id: Repository['id']) {

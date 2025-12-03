@@ -5,9 +5,9 @@ import {
   listMembers,
   listRoles as listRolesQuery,
   updateRole,
-} from '@/resources/queries-index.js'
-import { BadRequest400 } from '@/utils/errors.js'
-import prisma from '@/prisma.js'
+} from '@old-server/resources/queries-index.js'
+import { BadRequest400 } from '@old-server/utils/errors.js'
+import prisma from '@old-server/prisma.js'
 
 export async function listRoles(projectId: Project['id']) {
   return listRolesQuery(projectId)

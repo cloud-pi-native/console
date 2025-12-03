@@ -7,9 +7,9 @@ import {
   ProjectStatus,
 } from '@prisma/client'
 import type { XOR, projectContract } from '@cpn-console/shared'
-import prisma from '@/prisma.js'
-import { appVersion } from '@/utils/env.js'
-import { uuid } from '@/utils/queries-tools.js'
+import prisma from '@old-server/prisma.js'
+import { appVersion } from '@old-server/utils/env.js'
+import { uuid } from '@old-server/utils/queries-tools.js'
 
 type ProjectUpdate = Partial<Pick<Project, 'description' | 'ownerId' | 'everyonePerms' | 'locked'>>
 export function updateProject(id: Project['id'], data: ProjectUpdate) {

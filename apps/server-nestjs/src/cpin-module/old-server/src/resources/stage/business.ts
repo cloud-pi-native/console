@@ -12,9 +12,9 @@ import {
   listStages as listStagesQuery,
   removeClusterFromStage,
   updateStageName,
-} from '@/resources/queries-index.js'
-import { BadRequest400, NotFound404 } from '@/utils/errors.js'
-import prisma from '@/prisma.js'
+} from '@old-server/resources/queries-index.js'
+import { BadRequest400, NotFound404 } from '@old-server/utils/errors.js'
+import prisma from '@old-server/prisma.js'
 
 export async function getStageAssociatedEnvironments(stageId: Stage['id']) {
   const environments = await getStageAssociatedEnvironmentById(stageId)
