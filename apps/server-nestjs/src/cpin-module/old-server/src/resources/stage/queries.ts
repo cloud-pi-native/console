@@ -1,5 +1,5 @@
 import type { Cluster, Stage } from '@prisma/client'
-import prisma from '@/prisma.js'
+import prisma from '@old-server/prisma.js'
 
 export function listStages() {
   return prisma.stage.findMany({

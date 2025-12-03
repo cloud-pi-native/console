@@ -1,10 +1,10 @@
 import type { CleanLog, Log, XOR } from '@cpn-console/shared'
 import { AdminAuthorized, logContract } from '@cpn-console/shared'
 import { getLogs } from './business.js'
-import { serverInstance } from '@/app.js'
-import type { UserProfile, UserProjectProfile } from '@/utils/controller.js'
-import { authUser } from '@/utils/controller.js'
-import { Forbidden403 } from '@/utils/errors.js'
+import { serverInstance } from '@old-server/app.js'
+import type { UserProfile, UserProjectProfile } from '@old-server/utils/controller.js'
+import { authUser } from '@old-server/utils/controller.js'
+import { Forbidden403 } from '@old-server/utils/errors.js'
 
 export function logRouter() {
   return serverInstance.router(logContract, {

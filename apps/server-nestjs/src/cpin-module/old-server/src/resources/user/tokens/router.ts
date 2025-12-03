@@ -1,10 +1,10 @@
 import { personalAccessTokenContract } from '@cpn-console/shared'
 
-import '@/types/index.js'
+import '@old-server/types/index.js'
 import { createToken, deleteToken, listTokens } from './business.js'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
+import { serverInstance } from '@old-server/app.js'
+import { authUser } from '@old-server/utils/controller.js'
+import { ErrorResType, Forbidden403 } from '@old-server/utils/errors.js'
 
 export function personalAccessTokenRouter() {
   return serverInstance.router(personalAccessTokenContract, {

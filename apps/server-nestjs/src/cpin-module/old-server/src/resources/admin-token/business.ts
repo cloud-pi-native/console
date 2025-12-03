@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { type adminTokenContract, generateRandomPassword, isAtLeastTomorrow } from '@cpn-console/shared'
 import type { $Enums, AdminToken, Prisma } from '@prisma/client'
 import prisma from '../../prisma.js'
-import { BadRequest400 } from '@/utils/errors.js'
+import { BadRequest400 } from '@old-server/utils/errors.js'
 
 export async function listTokens(query: typeof adminTokenContract.listAdminTokens.query._type) {
   const where = {

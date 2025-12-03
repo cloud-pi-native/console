@@ -7,10 +7,10 @@ import {
   validateServiceChain as validateServiceChainBusiness,
   getServiceChainFlows as getServiceChainFlowsBusiness,
 } from './business.js'
-import '@/types/index.js'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { Forbidden403 } from '@/utils/errors.js'
+import '@old-server/types/index.js'
+import { serverInstance } from '@old-server/app.js'
+import { authUser } from '@old-server/utils/controller.js'
+import { Forbidden403 } from '@old-server/utils/errors.js'
 
 export function serviceChainRouter() {
   return serverInstance.router(serviceChainContract, {
