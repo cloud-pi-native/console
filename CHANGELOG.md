@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.9.1](https://github.com/cloud-pi-native/console/compare/v9.9.0...v9.9.1) (2025-12-03)
+
+
+### Bug Fixes
+
+* :bug: internal url for status monitor ([ba48bd6](https://github.com/cloud-pi-native/console/commit/ba48bd6602cbbebf2b41061e748de251686d19d1))
+
 ## [9.9.0](https://github.com/cloud-pi-native/console/compare/v9.8.1...v9.9.0) (2025-11-27)
 
 
