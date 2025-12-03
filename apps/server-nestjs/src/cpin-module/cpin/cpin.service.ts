@@ -6,7 +6,7 @@ import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 import { Injectable } from '@nestjs/common';
 import { logger } from '@old-server/app';
-import { closeConnections } from '@old-server/connect';
+import { ConnectionService } from '@old-server/connect';
 import { getPreparedApp } from '@old-server/prepare-app';
 import { apiRouter } from '@old-server/resources/index.js';
 import {
@@ -34,7 +34,11 @@ import keycloak from 'fastify-keycloak-adapter';
 
 @Injectable()
 export class CpinService {
+    constructor(private readonly connectionService: ConnectionService) {}
+
     app: any;
+    serverInstance: ReturnType<typeof initServer> = initServer();
+    logger: CustomLogger;
 
     handleExit() {
         process.on('exit', this.logExitCode);
@@ -58,7 +62,7 @@ export class CpinService {
         }
         await this.app.close();
         logger.info('Closing connections...');
-        await closeConnections();
+        await this.connectionService.closeConnections();
         logger.info('Exiting...');
         process.exit(error instanceof Error ? 1 : 0);
     }
@@ -78,8 +82,6 @@ export class CpinService {
     }
 
     async createApp() {
-        const serverInstance: ReturnType<typeof initServer> = initServer();
-
         const openApiDocument = generateOpenApi(
             await getContract(),
             swaggerConf,
@@ -138,6 +140,6 @@ export class CpinService {
 
         await app.ready();
 
-        const logger = app.log as CustomLogger;
+        this.logger = app.log as CustomLogger;
     }
 }
