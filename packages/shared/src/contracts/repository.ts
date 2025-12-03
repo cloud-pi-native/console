@@ -61,6 +61,18 @@ export const repositoryContract = contractInstance.router({
     },
   },
 
+  autoSyncRepositories: {
+    method: 'POST',
+    path: `/sync`,
+    summary: 'Update auto synced repos',
+    description: 'Update all repo marked for auto sync.',
+    body: null,
+    responses: {
+      204: null,
+      500: ErrorSchema,
+    },
+  },
+
   updateRepository: {
     method: 'PUT',
     path: `/:repositoryId`,

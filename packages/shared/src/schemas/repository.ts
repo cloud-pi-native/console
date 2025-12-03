@@ -19,6 +19,7 @@ export const RepoSchema = z.object({
     .or(z.literal(''))
     .optional(),
   isPrivate: z.boolean(),
+  isAutoSynced: z.boolean(),
   isInfra: z.boolean(),
   externalUserName: z.string()
     .optional(),
