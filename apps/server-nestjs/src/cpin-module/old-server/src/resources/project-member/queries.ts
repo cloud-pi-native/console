@@ -4,7 +4,7 @@ import type {
   Project,
 } from '@prisma/client'
 
-import prisma from '@/prisma.js'
+import prisma from '@old-server/prisma.js'
 
 export const listMembers = (projectId: Project['id']) => prisma.projectMembers.findMany({ where: { projectId }, include: { user: true } })
 

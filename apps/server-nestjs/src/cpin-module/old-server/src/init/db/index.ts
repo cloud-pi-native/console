@@ -1,6 +1,6 @@
 import { modelKeys } from './utils.js'
-import { logger } from '@/app.js'
-import prisma from '@/prisma.js'
+import { logger } from '@old-server/app.js'
+import prisma from '@old-server/prisma.js'
 
 type ExtractKeysWithFields<T> = {
   [K in keyof T]: T[K] extends { fields: any } ? K : never

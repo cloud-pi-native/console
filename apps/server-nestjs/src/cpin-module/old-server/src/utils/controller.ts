@@ -4,9 +4,9 @@ import { PROJECT_PERMS as PP, PROJECT_PERMS, projectIsLockedInfo, tokenHeaderNam
 import type { FastifyRequest } from 'fastify'
 import { Unauthorized401 } from './errors.js'
 import { uuid } from './queries-tools.js'
-import type { UserDetails } from '@/types/index.js'
-import prisma from '@/prisma.js'
-import { logViaSession, logViaToken } from '@/resources/user/business.js'
+import type { UserDetails } from '@old-server/types/index.js'
+import prisma from '@old-server/prisma.js'
+import { logViaSession, logViaToken } from '@old-server/resources/user/business.js'
 
 export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
   Pick<T, Exclude<keyof T, Keys>>

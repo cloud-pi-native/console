@@ -9,10 +9,10 @@ import {
   listClusters,
   updateCluster,
 } from './business.js'
-import '@/types/index.js'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors.js'
+import '@old-server/types/index.js'
+import { serverInstance } from '@old-server/app.js'
+import { authUser } from '@old-server/utils/controller.js'
+import { ErrorResType, Forbidden403, Unauthorized401 } from '@old-server/utils/errors.js'
 
 export function clusterRouter() {
   return serverInstance.router(clusterContract, {

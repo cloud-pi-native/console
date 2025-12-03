@@ -5,7 +5,7 @@ import app, { logger } from './app.js'
 import { getConnection } from './connect.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin)
-vi.mock('@/resources/queries-index.js')
+vi.mock('@old-server/resources/queries-index.js')
 vi.mock('./models/log.js', () => getModel('getLogModel'))
 vi.mock('./models/repository.js', () => getModel('getRepositoryModel'))
 vi.mock('./models/permission.js', () => getModel('getPermissionModel'))

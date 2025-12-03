@@ -6,11 +6,11 @@ import {
   syncRepository,
   updateRepository,
 } from './business.js'
-import { serverInstance } from '@/app.js'
+import { serverInstance } from '@old-server/app.js'
 
-import { filterObjectByKeys } from '@/utils/queries-tools.js'
-import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, NotFound404, Unauthorized401 } from '@/utils/errors.js'
+import { filterObjectByKeys } from '@old-server/utils/queries-tools.js'
+import { authUser } from '@old-server/utils/controller.js'
+import { ErrorResType, Forbidden403, NotFound404, Unauthorized401 } from '@old-server/utils/errors.js'
 
 export function repositoryRouter() {
   return serverInstance.router(repositoryContract, {

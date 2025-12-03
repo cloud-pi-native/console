@@ -1,8 +1,8 @@
 import { AdminAuthorized, systemPluginContract } from '@cpn-console/shared'
 import { getPluginsConfig, updatePluginConfig } from './business.js'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
+import { serverInstance } from '@old-server/app.js'
+import { authUser } from '@old-server/utils/controller.js'
+import { ErrorResType, Forbidden403 } from '@old-server/utils/errors.js'
 
 export function pluginConfigRouter() {
   return serverInstance.router(systemPluginContract, {
