@@ -368,6 +368,63 @@ importers:
 
   apps/server-nestjs:
     dependencies:
+      '@cpn-console/argocd-plugin':
+        specifier: workspace:^
+        version: file:plugins/argocd(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/gitlab-plugin':
+        specifier: workspace:^
+        version: file:plugins/gitlab(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/harbor-plugin':
+        specifier: workspace:^
+        version: file:plugins/harbor(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/hooks':
+        specifier: workspace:^
+        version: file:packages/hooks(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/keycloak-plugin':
+        specifier: workspace:^
+        version: file:plugins/keycloak(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/kubernetes-plugin':
+        specifier: workspace:^
+        version: file:plugins/kubernetes(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/nexus-plugin':
+        specifier: workspace:^
+        version: file:plugins/nexus(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/shared':
+        specifier: workspace:^
+        version: file:packages/shared(@types/node@22.19.3)
+      '@cpn-console/sonarqube-plugin':
+        specifier: workspace:^
+        version: file:plugins/sonarqube(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/vault-plugin':
+        specifier: workspace:^
+        version: file:plugins/vault(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@fastify/cookie':
+        specifier: ^9.4.0
+        version: 9.4.0
+      '@fastify/helmet':
+        specifier: ^11.1.1
+        version: 11.1.1
+      '@fastify/session':
+        specifier: ^10.9.0
+        version: 10.9.0
+      '@fastify/swagger':
+        specifier: ^8.15.0
+        version: 8.15.0
+      '@fastify/swagger-ui':
+        specifier: ^4.2.0
+        version: 4.2.0
+      '@gitbeaker/core':
+        specifier: ^40.6.0
+        version: 40.6.0
+      '@gitbeaker/rest':
+        specifier: ^40.6.0
+        version: 40.6.0
+      '@kubernetes-models/argo-cd':
+        specifier: ^2.6.2
+        version: 2.7.2
+      '@kubernetes/client-node':
+        specifier: ^0.22.3
+        version: 0.22.3
       '@nestjs/common':
         specifier: ^11.0.1
         version: 11.1.11(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -377,19 +434,73 @@ importers:
       '@nestjs/platform-express':
         specifier: ^11.0.1
         version: 11.1.11(@nestjs/common@11.1.11(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.11)
+      '@prisma/client':
+        specifier: ^6.0.1
+        version: 6.19.0(prisma@6.19.0(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@22.19.3)(zod@3.25.76)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.19.3)(zod@3.25.76))(fastify@4.29.1)(zod@3.25.76)
+      '@ts-rest/open-api':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.19.3)(zod@3.25.76))(zod@3.25.76)
+      axios:
+        specifier: 1.12.2
+        version: 1.12.2
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
+      dotenv:
+        specifier: ^16.4.7
+        version: 16.6.1
+      fastify:
+        specifier: ^4.29.1
+        version: 4.29.1
+      fastify-keycloak-adapter:
+        specifier: 2.3.2
+        version: 2.3.2(patch_hash=6846b953fc520dd1ca6cb2e790cf190cbc3ed9fa9ff69739100458c520293447)
+      json-2-csv:
+        specifier: ^5.5.7
+        version: 5.5.10
+      mustache:
+        specifier: ^4.2.0
+        version: 4.2.0
+      prisma:
+        specifier: ^6.0.1
+        version: 6.19.0(magicast@0.3.5)(typescript@5.9.3)
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
+      undici:
+        specifier: ^7.1.0
+        version: 7.16.0
+      vitest-mock-extended:
+        specifier: ^2.0.2
+        version: 2.0.2(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
     devDependencies:
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
+        version: link:../../packages/eslintconfig
+      '@cpn-console/test-utils':
+        specifier: workspace:^
+        version: file:packages/test-utils(@types/node@22.19.3)
+      '@cpn-console/ts-config':
+        specifier: workspace:^
+        version: link:../../packages/tsconfig
       '@eslint/eslintrc':
         specifier: ^3.2.0
         version: 3.3.1
       '@eslint/js':
         specifier: ^9.18.0
         version: 9.39.1
+      '@faker-js/faker':
+        specifier: ^9.3.0
+        version: 9.9.0
       '@nestjs/cli':
         specifier: ^11.0.0
         version: 11.0.14(@types/node@22.19.3)
@@ -399,6 +510,9 @@ importers:
       '@nestjs/testing':
         specifier: ^11.0.1
         version: 11.1.11(@nestjs/common@11.1.11(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.11)(@nestjs/platform-express@11.1.11)
+      '@trivago/prettier-plugin-sort-imports':
+        specifier: ^6.0.0
+        version: 6.0.1(@vue/compiler-sfc@3.5.23)(prettier@3.7.4)
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -411,6 +525,9 @@ importers:
       '@types/supertest':
         specifier: ^6.0.2
         version: 6.0.3
+      '@vitest/coverage-v8':
+        specifier: ^2.1.8
+        version: 2.1.9(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
       eslint:
         specifier: ^9.18.0
         version: 9.39.1(jiti@2.6.1)
@@ -420,15 +537,27 @@ importers:
       eslint-plugin-prettier:
         specifier: ^5.2.2
         version: 5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))(prettier@3.7.4)
+      fastify-plugin:
+        specifier: ^5.0.1
+        version: 5.1.0
       globals:
         specifier: ^16.0.0
         version: 16.5.0
       jest:
         specifier: ^30.0.0
         version: 30.2.0(@types/node@22.19.3)(ts-node@10.9.2(@types/node@22.19.3)(typescript@5.9.3))
+      nodemon:
+        specifier: ^3.1.7
+        version: 3.1.10
+      pino-pretty:
+        specifier: ^13.0.0
+        version: 13.1.2
       prettier:
         specifier: ^3.4.2
         version: 3.7.4
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.1.0
       source-map-support:
         specifier: ^0.5.21
         version: 0.5.21
@@ -444,6 +573,9 @@ importers:
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.19.3)(typescript@5.9.3)
+      ts-patch:
+        specifier: ^3.3.0
+        version: 3.3.0
       tsconfig-paths:
         specifier: ^4.2.0
         version: 4.2.0
@@ -453,6 +585,18 @@ importers:
       typescript-eslint:
         specifier: ^8.20.0
         version: 8.46.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      typescript-transform-paths:
+        specifier: ^3.5.2
+        version: 3.5.5(typescript@5.9.3)
+      vite:
+        specifier: ^7.2.1
+        version: 7.2.1(@types/node@22.19.3)(jiti@2.6.1)(terser@5.44.1)(tsx@4.19.3)(yaml@2.8.1)
+      vite-node:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.19.3)(terser@5.44.1)
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1)
 
   packages/eslintconfig:
     devDependencies:
@@ -1847,6 +1991,39 @@ packages:
     resolution: {integrity: sha512-/yCrWGCoA1SVKOks25EGadP9Pnj0oAIHGpl2wH2M2Y46dPM2ueb8wyCVOD7O3WCTkaJ0IkKvzhl1JY7+uCT2Dw==}
     engines: {node: '>=v18'}
 
+  '@cpn-console/argocd-plugin@file:plugins/argocd':
+    resolution: {directory: plugins/argocd, type: directory}
+
+  '@cpn-console/gitlab-plugin@file:plugins/gitlab':
+    resolution: {directory: plugins/gitlab, type: directory}
+
+  '@cpn-console/harbor-plugin@file:plugins/harbor':
+    resolution: {directory: plugins/harbor, type: directory}
+
+  '@cpn-console/hooks@file:packages/hooks':
+    resolution: {directory: packages/hooks, type: directory}
+
+  '@cpn-console/keycloak-plugin@file:plugins/keycloak':
+    resolution: {directory: plugins/keycloak, type: directory}
+
+  '@cpn-console/kubernetes-plugin@file:plugins/kubernetes':
+    resolution: {directory: plugins/kubernetes, type: directory}
+
+  '@cpn-console/nexus-plugin@file:plugins/nexus':
+    resolution: {directory: plugins/nexus, type: directory}
+
+  '@cpn-console/shared@file:packages/shared':
+    resolution: {directory: packages/shared, type: directory}
+
+  '@cpn-console/sonarqube-plugin@file:plugins/sonarqube':
+    resolution: {directory: plugins/sonarqube, type: directory}
+
+  '@cpn-console/test-utils@file:packages/test-utils':
+    resolution: {directory: packages/test-utils, type: directory}
+
+  '@cpn-console/vault-plugin@file:plugins/vault':
+    resolution: {directory: plugins/vault, type: directory}
+
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
@@ -3066,6 +3243,25 @@ packages:
 
   '@tokenizer/token@0.3.0':
     resolution: {integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==}
+
+  '@trivago/prettier-plugin-sort-imports@6.0.1':
+    resolution: {integrity: sha512-6B13DCWDfAfh4AEJ43gRgeCSAQmlKG5LHqHzHc0lbUwgBy0rX7o41US+46Fd4XiXBx+JDGEz3NBadCbUls0dUQ==}
+    engines: {node: '>= 20'}
+    peerDependencies:
+      '@vue/compiler-sfc': 3.x
+      prettier: 2.x - 3.x
+      prettier-plugin-ember-template-tag: '>= 2.0.0'
+      prettier-plugin-svelte: 3.x
+      svelte: 4.x || 5.x
+    peerDependenciesMeta:
+      '@vue/compiler-sfc':
+        optional: true
+      prettier-plugin-ember-template-tag:
+        optional: true
+      prettier-plugin-svelte:
+        optional: true
+      svelte:
+        optional: true
 
   '@ts-rest/core@3.52.1':
     resolution: {integrity: sha512-tAjz7Kxq/grJodcTA1Anop4AVRDlD40fkksEV5Mmal88VoZeRKAG8oMHsDwdwPZz+B/zgnz0q2sF+cm5M7Bc7g==}
@@ -5960,6 +6156,9 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  javascript-natural-sort@0.7.1:
+    resolution: {integrity: sha512-nO6jcEfZWQXDhOiBtG2KvKyEptz7RVbpGP4vTD2hLBdmNQSsCiicO2Ioinv6UI4y9ukqnBpy+XZ9H6uLNgJTlw==}
+
   javascript-time-ago@2.5.12:
     resolution: {integrity: sha512-s8PPq2HQ3HIbSU0SjhNvTitf5VoXbQWof9q6k3gIX7F2il0ptjD5lONTDccpuKt/2U7RjbCp/TCHPK7eDwO7zQ==}
 
@@ -6329,6 +6528,9 @@ packages:
   locate-path@7.2.0:
     resolution: {integrity: sha512-gvVijfZvn7R+2qyPX8mAuKcFGDf6Nc61GdvGafQsHL0sBIxfKzA+usWn4GFC/bk+QdwPUD4kWFJLhElipq+0VA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  lodash-es@4.17.22:
+    resolution: {integrity: sha512-XEawp1t0gxSi9x01glktRZ5HDy0HXqrM0x5pXQM98EaI0NxO6jVM7omDOxsuEo5UIASAnm2bRp1Jt/e0a2XU8Q==}
 
   lodash.camelcase@4.3.0:
     resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
@@ -9872,7 +10074,7 @@ snapshots:
   '@babel/template@7.27.2':
     dependencies:
       '@babel/code-frame': 7.27.1
-      '@babel/parser': 7.27.7
+      '@babel/parser': 7.28.5
       '@babel/types': 7.28.5
 
   '@babel/traverse@7.27.7':
@@ -10052,6 +10254,166 @@ snapshots:
     dependencies:
       '@types/conventional-commits-parser': 5.0.2
       chalk: 5.6.2
+
+  '@cpn-console/argocd-plugin@file:plugins/argocd(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))':
+    dependencies:
+      '@cpn-console/gitlab-plugin': file:plugins/gitlab(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/keycloak-plugin': file:plugins/keycloak(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/kubernetes-plugin': file:plugins/kubernetes(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/shared': file:packages/shared(@types/node@22.19.3)
+      '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@himenon/argocd-typescript-openapi': 1.2.2
+      '@kubernetes-models/argo-cd': 2.7.2
+      '@kubernetes/client-node': 0.22.3
+      '@types/js-yaml': 4.0.9
+      axios: 1.12.2
+      js-yaml: 4.1.0
+      kubernetes-models: 4.5.1
+    transitivePeerDependencies:
+      - '@types/node'
+      - bufferutil
+      - debug
+      - typescript
+      - utf-8-validate
+      - vitest
+
+  '@cpn-console/gitlab-plugin@file:plugins/gitlab(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))':
+    dependencies:
+      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/shared': file:packages/shared(@types/node@22.19.3)
+      '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@gitbeaker/core': 40.6.0
+      '@gitbeaker/requester-utils': 40.6.0
+      '@gitbeaker/rest': 40.6.0
+      axios: 1.12.2
+      js-yaml: 4.1.0
+    transitivePeerDependencies:
+      - '@types/node'
+      - bufferutil
+      - debug
+      - typescript
+      - utf-8-validate
+      - vitest
+
+  '@cpn-console/harbor-plugin@file:plugins/harbor(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))':
+    dependencies:
+      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/keycloak-plugin': file:plugins/keycloak(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/kubernetes-plugin': file:plugins/kubernetes(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/shared': file:packages/shared(@types/node@22.19.3)
+      '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      axios: 1.12.2
+      bytes: 3.1.2
+      cron-validator: 1.4.0
+    transitivePeerDependencies:
+      - '@types/node'
+      - bufferutil
+      - debug
+      - typescript
+      - utf-8-validate
+      - vitest
+
+  '@cpn-console/hooks@file:packages/hooks(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))':
+    dependencies:
+      '@cpn-console/shared': file:packages/shared(@types/node@22.19.3)
+      json-schema: 0.4.0
+      vitest-mock-extended: 2.0.2(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - '@types/node'
+      - typescript
+      - vitest
+
+  '@cpn-console/keycloak-plugin@file:plugins/keycloak(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))':
+    dependencies:
+      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/shared': file:packages/shared(@types/node@22.19.3)
+      '@keycloak/keycloak-admin-client': 26.4.2
+      axios: 1.12.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - debug
+      - typescript
+      - vitest
+
+  '@cpn-console/kubernetes-plugin@file:plugins/kubernetes(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))':
+    dependencies:
+      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/shared': file:packages/shared(@types/node@22.19.3)
+      '@kubernetes-models/argo-cd': 2.7.2
+      '@kubernetes/client-node': 0.22.3
+      axios: 1.12.2
+      kubernetes-models: 4.5.1
+      request: 2.88.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - bufferutil
+      - debug
+      - typescript
+      - utf-8-validate
+      - vitest
+
+  '@cpn-console/nexus-plugin@file:plugins/nexus(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))':
+    dependencies:
+      '@cpn-console/gitlab-plugin': file:plugins/gitlab(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/shared': file:packages/shared(@types/node@22.19.3)
+      '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      axios: 1.12.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - bufferutil
+      - debug
+      - typescript
+      - utf-8-validate
+      - vitest
+
+  '@cpn-console/shared@file:packages/shared(@types/node@22.19.3)':
+    dependencies:
+      '@ts-rest/core': 3.52.1(@types/node@22.19.3)(zod@3.25.76)
+      short-uuid: 5.2.0
+      zod: 3.25.76
+      zod-validation-error: 3.5.4(zod@3.25.76)
+    transitivePeerDependencies:
+      - '@types/node'
+
+  '@cpn-console/sonarqube-plugin@file:plugins/sonarqube(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))':
+    dependencies:
+      '@cpn-console/gitlab-plugin': file:plugins/gitlab(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/keycloak-plugin': file:plugins/keycloak(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/shared': file:packages/shared(@types/node@22.19.3)
+      '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      axios: 1.12.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - bufferutil
+      - debug
+      - typescript
+      - utf-8-validate
+      - vitest
+
+  '@cpn-console/test-utils@file:packages/test-utils(@types/node@22.19.3)':
+    dependencies:
+      '@cpn-console/shared': file:packages/shared(@types/node@22.19.3)
+      '@faker-js/faker': 9.9.0
+    transitivePeerDependencies:
+      - '@types/node'
+
+  '@cpn-console/vault-plugin@file:plugins/vault(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))':
+    dependencies:
+      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
+      '@cpn-console/shared': file:packages/shared(@types/node@22.19.3)
+      '@kubernetes/client-node': 0.22.3
+      axios: 1.12.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - bufferutil
+      - debug
+      - typescript
+      - utf-8-validate
+      - vitest
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -11305,9 +11667,37 @@ snapshots:
 
   '@tokenizer/token@0.3.0': {}
 
+  '@trivago/prettier-plugin-sort-imports@6.0.1(@vue/compiler-sfc@3.5.23)(prettier@3.7.4)':
+    dependencies:
+      '@babel/generator': 7.28.5
+      '@babel/parser': 7.28.5
+      '@babel/traverse': 7.28.5
+      '@babel/types': 7.28.5
+      javascript-natural-sort: 0.7.1
+      lodash-es: 4.17.22
+      minimatch: 9.0.5
+      parse-imports-exports: 0.2.4
+      prettier: 3.7.4
+    optionalDependencies:
+      '@vue/compiler-sfc': 3.5.23
+    transitivePeerDependencies:
+      - supports-color
+
+  '@ts-rest/core@3.52.1(@types/node@22.19.3)(zod@3.25.76)':
+    optionalDependencies:
+      '@types/node': 22.19.3
+      zod: 3.25.76
+
   '@ts-rest/core@3.52.1(@types/node@24.10.0)(zod@3.25.76)':
     optionalDependencies:
       '@types/node': 24.10.0
+      zod: 3.25.76
+
+  '@ts-rest/fastify@3.52.1(@ts-rest/core@3.52.1(@types/node@22.19.3)(zod@3.25.76))(fastify@4.29.1)(zod@3.25.76)':
+    dependencies:
+      '@ts-rest/core': 3.52.1(@types/node@22.19.3)(zod@3.25.76)
+      fastify: 4.29.1
+    optionalDependencies:
       zod: 3.25.76
 
   '@ts-rest/fastify@3.52.1(@ts-rest/core@3.52.1(@types/node@24.10.0)(zod@3.25.76))(fastify@4.29.1)(zod@3.25.76)':
@@ -11315,6 +11705,13 @@ snapshots:
       '@ts-rest/core': 3.52.1(@types/node@24.10.0)(zod@3.25.76)
       fastify: 4.29.1
     optionalDependencies:
+      zod: 3.25.76
+
+  '@ts-rest/open-api@3.52.1(@ts-rest/core@3.52.1(@types/node@22.19.3)(zod@3.25.76))(zod@3.25.76)':
+    dependencies:
+      '@anatine/zod-openapi': 1.14.2(openapi3-ts@2.0.2)(zod@3.25.76)
+      '@ts-rest/core': 3.52.1(@types/node@22.19.3)(zod@3.25.76)
+      openapi3-ts: 2.0.2
       zod: 3.25.76
 
   '@ts-rest/open-api@3.52.1(@ts-rest/core@3.52.1(@types/node@24.10.0)(zod@3.25.76))(zod@3.25.76)':
@@ -11830,6 +12227,24 @@ snapshots:
       vite: 7.2.1(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.1)(tsx@4.19.3)(yaml@2.8.1)
       vue: 3.5.23(typescript@5.9.3)
 
+  '@vitest/coverage-v8@2.1.9(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))':
+    dependencies:
+      '@ampproject/remapping': 2.3.0
+      '@bcoe/v8-coverage': 0.2.3
+      debug: 4.4.3(supports-color@5.5.0)
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-lib-source-maps: 5.0.6
+      istanbul-reports: 3.2.0
+      magic-string: 0.30.21
+      magicast: 0.3.5
+      std-env: 3.10.0
+      test-exclude: 7.0.1
+      tinyrainbow: 1.2.0
+      vitest: 2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1)
+    transitivePeerDependencies:
+      - supports-color
+
   '@vitest/coverage-v8@2.1.9(vitest@2.1.9(@types/node@24.10.0)(jsdom@25.0.1)(terser@5.44.1))':
     dependencies:
       '@ampproject/remapping': 2.3.0
@@ -11865,6 +12280,14 @@ snapshots:
       '@vitest/utils': 2.1.9
       chai: 5.3.3
       tinyrainbow: 1.2.0
+
+  '@vitest/mocker@2.1.9(vite@5.4.21(@types/node@22.19.3)(terser@5.44.1))':
+    dependencies:
+      '@vitest/spy': 2.1.9
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      vite: 5.4.21(@types/node@22.19.3)(terser@5.44.1)
 
   '@vitest/mocker@2.1.9(vite@5.4.21(@types/node@24.10.0)(terser@5.44.1))':
     dependencies:
@@ -14732,6 +15155,8 @@ snapshots:
       filelist: 1.0.4
       picocolors: 1.1.1
 
+  javascript-natural-sort@0.7.1: {}
+
   javascript-time-ago@2.5.12:
     dependencies:
       relative-time-format: 1.1.11
@@ -15331,6 +15756,8 @@ snapshots:
   locate-path@7.2.0:
     dependencies:
       p-locate: 6.0.0
+
+  lodash-es@4.17.22: {}
 
   lodash.camelcase@4.3.0: {}
 
@@ -17911,6 +18338,24 @@ snapshots:
       core-util-is: 1.0.2
       extsprintf: 1.3.0
 
+  vite-node@2.1.9(@types/node@22.19.3)(terser@5.44.1):
+    dependencies:
+      cac: 6.7.14
+      debug: 4.4.3(supports-color@5.5.0)
+      es-module-lexer: 1.7.0
+      pathe: 1.1.2
+      vite: 5.4.21(@types/node@22.19.3)(terser@5.44.1)
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
   vite-node@2.1.9(@types/node@24.10.0)(terser@5.44.1):
     dependencies:
       cac: 6.7.14
@@ -17940,6 +18385,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  vite@5.4.21(@types/node@22.19.3)(terser@5.44.1):
+    dependencies:
+      esbuild: 0.21.5
+      postcss: 8.5.6
+      rollup: 4.52.5
+    optionalDependencies:
+      '@types/node': 22.19.3
+      fsevents: 2.3.3
+      terser: 5.44.1
+
   vite@5.4.21(@types/node@24.10.0)(terser@5.44.1):
     dependencies:
       esbuild: 0.21.5
@@ -17949,6 +18404,22 @@ snapshots:
       '@types/node': 24.10.0
       fsevents: 2.3.3
       terser: 5.44.1
+
+  vite@7.2.1(@types/node@22.19.3)(jiti@2.6.1)(terser@5.44.1)(tsx@4.19.3)(yaml@2.8.1):
+    dependencies:
+      esbuild: 0.25.12
+      fdir: 6.5.0(picomatch@4.0.3)
+      picomatch: 4.0.3
+      postcss: 8.5.6
+      rollup: 4.52.5
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@types/node': 22.19.3
+      fsevents: 2.3.3
+      jiti: 2.6.1
+      terser: 5.44.1
+      tsx: 4.19.3
+      yaml: 2.8.1
 
   vite@7.2.1(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.1)(tsx@4.19.3)(yaml@2.8.1):
     dependencies:
@@ -17966,11 +18437,53 @@ snapshots:
       tsx: 4.19.3
       yaml: 2.8.1
 
+  vitest-mock-extended@2.0.2(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1)):
+    dependencies:
+      ts-essentials: 10.1.1(typescript@5.9.3)
+      typescript: 5.9.3
+      vitest: 2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1)
+
   vitest-mock-extended@2.0.2(typescript@5.9.3)(vitest@2.1.9(@types/node@24.10.0)(jsdom@25.0.1)(terser@5.44.1)):
     dependencies:
       ts-essentials: 10.1.1(typescript@5.9.3)
       typescript: 5.9.3
       vitest: 2.1.9(@types/node@24.10.0)(jsdom@25.0.1)(terser@5.44.1)
+
+  vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1):
+    dependencies:
+      '@vitest/expect': 2.1.9
+      '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@22.19.3)(terser@5.44.1))
+      '@vitest/pretty-format': 2.1.9
+      '@vitest/runner': 2.1.9
+      '@vitest/snapshot': 2.1.9
+      '@vitest/spy': 2.1.9
+      '@vitest/utils': 2.1.9
+      chai: 5.3.3
+      debug: 4.4.3(supports-color@5.5.0)
+      expect-type: 1.2.2
+      magic-string: 0.30.21
+      pathe: 1.1.2
+      std-env: 3.10.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinypool: 1.1.1
+      tinyrainbow: 1.2.0
+      vite: 5.4.21(@types/node@22.19.3)(terser@5.44.1)
+      vite-node: 2.1.9(@types/node@22.19.3)(terser@5.44.1)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 22.19.3
+      jsdom: 25.0.1
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
 
   vitest@2.1.9(@types/node@24.10.0)(jsdom@25.0.1)(terser@5.44.1):
     dependencies:
