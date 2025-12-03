@@ -368,6 +368,63 @@ importers:
 
   apps/server-nestjs:
     dependencies:
+      '@cpn-console/argocd-plugin':
+        specifier: workspace:^
+        version: link:../../plugins/argocd
+      '@cpn-console/gitlab-plugin':
+        specifier: workspace:^
+        version: link:../../plugins/gitlab
+      '@cpn-console/harbor-plugin':
+        specifier: workspace:^
+        version: link:../../plugins/harbor
+      '@cpn-console/hooks':
+        specifier: workspace:^
+        version: link:../../packages/hooks
+      '@cpn-console/keycloak-plugin':
+        specifier: workspace:^
+        version: link:../../plugins/keycloak
+      '@cpn-console/kubernetes-plugin':
+        specifier: workspace:^
+        version: link:../../plugins/kubernetes
+      '@cpn-console/nexus-plugin':
+        specifier: workspace:^
+        version: link:../../plugins/nexus
+      '@cpn-console/shared':
+        specifier: workspace:^
+        version: link:../../packages/shared
+      '@cpn-console/sonarqube-plugin':
+        specifier: workspace:^
+        version: link:../../plugins/sonarqube
+      '@cpn-console/vault-plugin':
+        specifier: workspace:^
+        version: link:../../plugins/vault
+      '@fastify/cookie':
+        specifier: ^9.4.0
+        version: 9.4.0
+      '@fastify/helmet':
+        specifier: ^11.1.1
+        version: 11.1.1
+      '@fastify/session':
+        specifier: ^10.9.0
+        version: 10.9.0
+      '@fastify/swagger':
+        specifier: ^8.15.0
+        version: 8.15.0
+      '@fastify/swagger-ui':
+        specifier: ^4.2.0
+        version: 4.2.0
+      '@gitbeaker/core':
+        specifier: ^40.6.0
+        version: 40.6.0
+      '@gitbeaker/rest':
+        specifier: ^40.6.0
+        version: 40.6.0
+      '@kubernetes-models/argo-cd':
+        specifier: ^2.6.2
+        version: 2.7.2
+      '@kubernetes/client-node':
+        specifier: ^0.22.3
+        version: 0.22.3
       '@nestjs/common':
         specifier: ^11.0.1
         version: 11.1.9(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -377,19 +434,73 @@ importers:
       '@nestjs/platform-express':
         specifier: ^11.0.1
         version: 11.1.9(@nestjs/common@11.1.9(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.9)
+      '@prisma/client':
+        specifier: ^6.0.1
+        version: 6.19.0(prisma@6.19.0(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@22.19.0)(zod@3.25.76)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.19.0)(zod@3.25.76))(fastify@4.29.1)(zod@3.25.76)
+      '@ts-rest/open-api':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.19.0)(zod@3.25.76))(zod@3.25.76)
+      axios:
+        specifier: 1.12.2
+        version: 1.12.2
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
+      dotenv:
+        specifier: ^16.4.7
+        version: 16.6.1
+      fastify:
+        specifier: ^4.29.1
+        version: 4.29.1
+      fastify-keycloak-adapter:
+        specifier: 2.3.2
+        version: 2.3.2(patch_hash=6846b953fc520dd1ca6cb2e790cf190cbc3ed9fa9ff69739100458c520293447)
+      json-2-csv:
+        specifier: ^5.5.7
+        version: 5.5.10
+      mustache:
+        specifier: ^4.2.0
+        version: 4.2.0
+      prisma:
+        specifier: ^6.0.1
+        version: 6.19.0(magicast@0.3.5)(typescript@5.9.3)
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
+      undici:
+        specifier: ^7.1.0
+        version: 7.16.0
+      vitest-mock-extended:
+        specifier: ^2.0.2
+        version: 2.0.2(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.0)(jsdom@25.0.1)(terser@5.44.1))
     devDependencies:
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
+        version: link:../../packages/eslintconfig
+      '@cpn-console/test-utils':
+        specifier: workspace:^
+        version: link:../../packages/test-utils
+      '@cpn-console/ts-config':
+        specifier: workspace:^
+        version: link:../../packages/tsconfig
       '@eslint/eslintrc':
         specifier: ^3.2.0
         version: 3.3.1
       '@eslint/js':
         specifier: ^9.18.0
         version: 9.39.1
+      '@faker-js/faker':
+        specifier: ^9.3.0
+        version: 9.9.0
       '@nestjs/cli':
         specifier: ^11.0.0
         version: 11.0.14(@types/node@22.19.0)
@@ -399,6 +510,9 @@ importers:
       '@nestjs/testing':
         specifier: ^11.0.1
         version: 11.1.9(@nestjs/common@11.1.9(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.9)(@nestjs/platform-express@11.1.9)
+      '@trivago/prettier-plugin-sort-imports':
+        specifier: ^6.0.0
+        version: 6.0.0(@vue/compiler-sfc@3.5.23)(prettier@3.7.3)
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.5
@@ -411,6 +525,9 @@ importers:
       '@types/supertest':
         specifier: ^6.0.2
         version: 6.0.3
+      '@vitest/coverage-v8':
+        specifier: ^2.1.8
+        version: 2.1.9(vitest@2.1.9(@types/node@22.19.0)(jsdom@25.0.1)(terser@5.44.1))
       eslint:
         specifier: ^9.18.0
         version: 9.39.1(jiti@2.6.1)
@@ -420,15 +537,27 @@ importers:
       eslint-plugin-prettier:
         specifier: ^5.2.2
         version: 5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))(prettier@3.7.3)
+      fastify-plugin:
+        specifier: ^5.0.1
+        version: 5.1.0
       globals:
         specifier: ^16.0.0
         version: 16.5.0
       jest:
         specifier: ^30.0.0
         version: 30.2.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
+      nodemon:
+        specifier: ^3.1.7
+        version: 3.1.10
+      pino-pretty:
+        specifier: ^13.0.0
+        version: 13.1.2
       prettier:
         specifier: ^3.4.2
         version: 3.7.3
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.1.0
       source-map-support:
         specifier: ^0.5.21
         version: 0.5.21
@@ -444,6 +573,9 @@ importers:
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.19.0)(typescript@5.9.3)
+      ts-patch:
+        specifier: ^3.3.0
+        version: 3.3.0
       tsconfig-paths:
         specifier: ^4.2.0
         version: 4.2.0
@@ -453,6 +585,169 @@ importers:
       typescript-eslint:
         specifier: ^8.20.0
         version: 8.46.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      typescript-transform-paths:
+        specifier: ^3.5.2
+        version: 3.5.5(typescript@5.9.3)
+      vite:
+        specifier: ^7.2.1
+        version: 7.2.1(@types/node@22.19.0)(jiti@2.6.1)(terser@5.44.1)(tsx@4.19.3)(yaml@2.8.1)
+      vite-node:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.19.0)(terser@5.44.1)
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.19.0)(jsdom@25.0.1)(terser@5.44.1)
+
+  apps/server-nestjs/src/cpin/old-server:
+    dependencies:
+      '@cpn-console/argocd-plugin':
+        specifier: workspace:^
+        version: link:../../../../../plugins/argocd
+      '@cpn-console/gitlab-plugin':
+        specifier: workspace:^
+        version: link:../../../../../plugins/gitlab
+      '@cpn-console/harbor-plugin':
+        specifier: workspace:^
+        version: link:../../../../../plugins/harbor
+      '@cpn-console/hooks':
+        specifier: workspace:^
+        version: link:../../../../../packages/hooks
+      '@cpn-console/keycloak-plugin':
+        specifier: workspace:^
+        version: link:../../../../../plugins/keycloak
+      '@cpn-console/kubernetes-plugin':
+        specifier: workspace:^
+        version: link:../../../../../plugins/kubernetes
+      '@cpn-console/nexus-plugin':
+        specifier: workspace:^
+        version: link:../../../../../plugins/nexus
+      '@cpn-console/shared':
+        specifier: workspace:^
+        version: link:../../../../../packages/shared
+      '@cpn-console/sonarqube-plugin':
+        specifier: workspace:^
+        version: link:../../../../../plugins/sonarqube
+      '@cpn-console/vault-plugin':
+        specifier: workspace:^
+        version: link:../../../../../plugins/vault
+      '@fastify/cookie':
+        specifier: ^9.4.0
+        version: 9.4.0
+      '@fastify/helmet':
+        specifier: ^11.1.1
+        version: 11.1.1
+      '@fastify/session':
+        specifier: ^10.9.0
+        version: 10.9.0
+      '@fastify/swagger':
+        specifier: ^8.15.0
+        version: 8.15.0
+      '@fastify/swagger-ui':
+        specifier: ^4.2.0
+        version: 4.2.0
+      '@gitbeaker/core':
+        specifier: ^40.6.0
+        version: 40.6.0
+      '@gitbeaker/rest':
+        specifier: ^40.6.0
+        version: 40.6.0
+      '@kubernetes-models/argo-cd':
+        specifier: ^2.6.2
+        version: 2.7.2
+      '@kubernetes/client-node':
+        specifier: ^0.22.3
+        version: 0.22.3
+      '@prisma/client':
+        specifier: ^6.0.1
+        version: 6.19.0(prisma@6.19.0(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@22.19.0)(zod@3.25.76)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.19.0)(zod@3.25.76))(fastify@4.29.1)(zod@3.25.76)
+      '@ts-rest/open-api':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.19.0)(zod@3.25.76))(zod@3.25.76)
+      axios:
+        specifier: 1.12.2
+        version: 1.12.2
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
+      dotenv:
+        specifier: ^16.4.7
+        version: 16.6.1
+      fastify:
+        specifier: ^4.29.1
+        version: 4.29.1
+      fastify-keycloak-adapter:
+        specifier: 2.3.2
+        version: 2.3.2(patch_hash=6846b953fc520dd1ca6cb2e790cf190cbc3ed9fa9ff69739100458c520293447)
+      json-2-csv:
+        specifier: ^5.5.7
+        version: 5.5.10
+      mustache:
+        specifier: ^4.2.0
+        version: 4.2.0
+      prisma:
+        specifier: ^6.0.1
+        version: 6.19.0(magicast@0.3.5)(typescript@5.9.3)
+      undici:
+        specifier: ^7.1.0
+        version: 7.16.0
+      vitest-mock-extended:
+        specifier: ^2.0.2
+        version: 2.0.2(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.0)(jsdom@25.0.1)(terser@5.44.1))
+    devDependencies:
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
+        version: link:../../../../../packages/eslintconfig
+      '@cpn-console/test-utils':
+        specifier: workspace:^
+        version: link:../../../../../packages/test-utils
+      '@cpn-console/ts-config':
+        specifier: workspace:^
+        version: link:../../../../../packages/tsconfig
+      '@faker-js/faker':
+        specifier: ^9.3.0
+        version: 9.9.0
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.19.0
+      '@vitest/coverage-v8':
+        specifier: ^2.1.8
+        version: 2.1.9(vitest@2.1.9(@types/node@22.19.0)(jsdom@25.0.1)(terser@5.44.1))
+      fastify-plugin:
+        specifier: ^5.0.1
+        version: 5.1.0
+      nodemon:
+        specifier: ^3.1.7
+        version: 3.1.10
+      pino-pretty:
+        specifier: ^13.0.0
+        version: 13.1.2
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.1.0
+      ts-patch:
+        specifier: ^3.3.0
+        version: 3.3.0
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      typescript-transform-paths:
+        specifier: ^3.5.2
+        version: 3.5.5(typescript@5.9.3)
+      vite:
+        specifier: ^7.2.1
+        version: 7.2.1(@types/node@22.19.0)(jiti@2.6.1)(terser@5.44.1)(tsx@4.19.3)(yaml@2.8.1)
+      vite-node:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.19.0)(terser@5.44.1)
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.19.0)(jsdom@25.0.1)(terser@5.44.1)
 
   packages/eslintconfig:
     devDependencies:
@@ -3066,6 +3361,25 @@ packages:
 
   '@tokenizer/token@0.3.0':
     resolution: {integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==}
+
+  '@trivago/prettier-plugin-sort-imports@6.0.0':
+    resolution: {integrity: sha512-Xarx55ow0R8oC7ViL5fPmDsg1EBa1dVhyZFVbFXNtPPJyW2w9bJADIla8YFSaNG9N06XfcklA9O9vmw4noNxkQ==}
+    engines: {node: '>= 20'}
+    peerDependencies:
+      '@vue/compiler-sfc': 3.x
+      prettier: 2.x - 3.x
+      prettier-plugin-ember-template-tag: '>= 2.0.0'
+      prettier-plugin-svelte: 3.x
+      svelte: 4.x || 5.x
+    peerDependenciesMeta:
+      '@vue/compiler-sfc':
+        optional: true
+      prettier-plugin-ember-template-tag:
+        optional: true
+      prettier-plugin-svelte:
+        optional: true
+      svelte:
+        optional: true
 
   '@ts-rest/core@3.52.1':
     resolution: {integrity: sha512-tAjz7Kxq/grJodcTA1Anop4AVRDlD40fkksEV5Mmal88VoZeRKAG8oMHsDwdwPZz+B/zgnz0q2sF+cm5M7Bc7g==}
@@ -5961,6 +6275,9 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  javascript-natural-sort@0.7.1:
+    resolution: {integrity: sha512-nO6jcEfZWQXDhOiBtG2KvKyEptz7RVbpGP4vTD2hLBdmNQSsCiicO2Ioinv6UI4y9ukqnBpy+XZ9H6uLNgJTlw==}
+
   javascript-time-ago@2.5.12:
     resolution: {integrity: sha512-s8PPq2HQ3HIbSU0SjhNvTitf5VoXbQWof9q6k3gIX7F2il0ptjD5lONTDccpuKt/2U7RjbCp/TCHPK7eDwO7zQ==}
 
@@ -6330,6 +6647,9 @@ packages:
   locate-path@7.2.0:
     resolution: {integrity: sha512-gvVijfZvn7R+2qyPX8mAuKcFGDf6Nc61GdvGafQsHL0sBIxfKzA+usWn4GFC/bk+QdwPUD4kWFJLhElipq+0VA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  lodash-es@4.17.21:
+    resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
 
   lodash.camelcase@4.3.0:
     resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
@@ -9872,14 +10192,14 @@ snapshots:
   '@babel/template@7.27.2':
     dependencies:
       '@babel/code-frame': 7.27.1
-      '@babel/parser': 7.27.7
+      '@babel/parser': 7.28.5
       '@babel/types': 7.28.5
 
   '@babel/traverse@7.27.7':
     dependencies:
       '@babel/code-frame': 7.27.1
       '@babel/generator': 7.28.5
-      '@babel/parser': 7.27.7
+      '@babel/parser': 7.28.5
       '@babel/template': 7.27.2
       '@babel/types': 7.28.5
       debug: 4.4.3(supports-color@8.1.1)
@@ -11305,6 +11625,22 @@ snapshots:
       - supports-color
 
   '@tokenizer/token@0.3.0': {}
+
+  '@trivago/prettier-plugin-sort-imports@6.0.0(@vue/compiler-sfc@3.5.23)(prettier@3.7.3)':
+    dependencies:
+      '@babel/generator': 7.28.5
+      '@babel/parser': 7.28.5
+      '@babel/traverse': 7.28.5
+      '@babel/types': 7.28.5
+      javascript-natural-sort: 0.7.1
+      lodash-es: 4.17.21
+      minimatch: 9.0.5
+      parse-imports-exports: 0.2.4
+      prettier: 3.7.3
+    optionalDependencies:
+      '@vue/compiler-sfc': 3.5.23
+    transitivePeerDependencies:
+      - supports-color
 
   '@ts-rest/core@3.52.1(@types/node@22.19.0)(zod@3.25.76)':
     optionalDependencies:
@@ -14685,6 +15021,8 @@ snapshots:
       filelist: 1.0.4
       picocolors: 1.1.1
 
+  javascript-natural-sort@0.7.1: {}
+
   javascript-time-ago@2.5.12:
     dependencies:
       relative-time-format: 1.1.11
@@ -15284,6 +15622,8 @@ snapshots:
   locate-path@7.2.0:
     dependencies:
       p-locate: 6.0.0
+
+  lodash-es@4.17.21: {}
 
   lodash.camelcase@4.3.0: {}
 
