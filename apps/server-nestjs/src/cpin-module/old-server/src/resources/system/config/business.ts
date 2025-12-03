@@ -6,7 +6,7 @@ import {
   getAdminPlugin,
   savePluginsConfig,
 } from './queries.js'
-import { BadRequest400 } from '@/utils/errors.js'
+import { BadRequest400 } from '@old-server/utils/errors.js'
 
 export type ConfigRecords = {
   key: string

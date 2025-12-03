@@ -4,7 +4,7 @@ import {
   retryServiceChain as retryServiceChainQuery,
   validateServiceChain as validateServiceChainQuery,
   getServiceChainFlows as getServiceChainFlowsQuery,
-} from '@/resources/queries-index.js'
+} from '@old-server/resources/queries-index.js'
 
 export async function listServiceChains() {
   return listServiceChainsQuery()

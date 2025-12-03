@@ -7,10 +7,10 @@ import {
   deleteMember,
   listMembers as listMembersQuery,
   upsertMember,
-} from '@/resources/queries-index.js'
-import prisma from '@/prisma.js'
-import { BadRequest400, NotFound404 } from '@/utils/errors.js'
-import { hook } from '@/utils/hook-wrapper.js'
+} from '@old-server/resources/queries-index.js'
+import prisma from '@old-server/prisma.js'
+import { BadRequest400, NotFound404 } from '@old-server/utils/errors.js'
+import { hook } from '@old-server/utils/hook-wrapper.js'
 
 export const listMembers = async (projectId: Project['id']) => listMembersQuery(projectId)
 

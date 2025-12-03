@@ -5,11 +5,11 @@ import {
   getEnvironmentsByProjectId,
   initializeEnvironment,
   updateEnvironment as updateEnvironmentQuery,
-} from '@/resources/queries-index.js'
-import type { Resources, UserDetails } from '@/types/index.js'
-import { hook } from '@/utils/hook-wrapper.js'
-import prisma from '@/prisma.js'
-import { Result } from '@/utils/business.js'
+} from '@old-server/resources/queries-index.js'
+import type { Resources, UserDetails } from '@old-server/types/index.js'
+import { hook } from '@old-server/utils/hook-wrapper.js'
+import prisma from '@old-server/prisma.js'
+import { Result } from '@old-server/utils/business.js'
 
 export function getProjectEnvironments(projectId: Project['id']) {
   return getEnvironmentsByProjectId(projectId)

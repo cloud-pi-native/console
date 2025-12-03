@@ -1,8 +1,8 @@
 import { ProjectAuthorized, environmentContract } from '@cpn-console/shared'
 import { checkEnvironmentCreate, checkEnvironmentUpdate, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.js'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { BadRequest400, Forbidden403, Internal500, NotFound404, Unauthorized401 } from '@/utils/errors.js'
+import { serverInstance } from '@old-server/app.js'
+import { authUser } from '@old-server/utils/controller.js'
+import { BadRequest400, Forbidden403, Internal500, NotFound404, Unauthorized401 } from '@old-server/utils/errors.js'
 
 export function environmentRouter() {
   return serverInstance.router(environmentContract, {
