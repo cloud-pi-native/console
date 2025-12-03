@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
-import { CpinController } from './cpin/cpin.controller';
-import { CpinService } from './cpin/cpin.service';
+import { ServerService } from '@old-server/server';
 
 @Module({
-  controllers: [CpinController],
-  providers: [CpinService]
+    controllers: [],
+    providers: [ServerService],
 })
 export class CpinModule {}
