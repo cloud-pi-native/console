@@ -1,46 +1,52 @@
 import { AdminAuthorized, serviceContract } from '@cpn-console/shared';
-import { serverInstance } from '@old-server/app.js';
+import { Injectable } from '@nestjs/common';
+import { AppService } from '@old-server/app.js';
 import { authUser } from '@old-server/utils/controller.js';
 import { Forbidden403 } from '@old-server/utils/errors.js';
 
 import { checkServicesHealth, refreshServicesHealth } from './business.js';
 
-export function serviceMonitorRouter() {
-    return serverInstance.router(serviceContract, {
-        getServiceHealth: async () => {
-            const serviceData = checkServicesHealth();
+@Injectable()
+export class ServiceMonitorRouterService {
+    constructor(private readonly appService: AppService) {}
 
-            return {
-                status: 200,
-                body: serviceData,
-            };
-        },
+    serviceMonitorRouter() {
+        return this.appService.serverInstance.router(serviceContract, {
+            getServiceHealth: async () => {
+                const serviceData = checkServicesHealth();
 
-        getCompleteServiceHealth: async ({ request: req }) => {
-            const { adminPermissions } = await authUser(req);
+                return {
+                    status: 200,
+                    body: serviceData,
+                };
+            },
 
-            if (!AdminAuthorized.isAdmin(adminPermissions))
-                return new Forbidden403();
-            const serviceData = checkServicesHealth();
+            getCompleteServiceHealth: async ({ request: req }) => {
+                const { adminPermissions } = await authUser(req);
 
-            return {
-                status: 200,
-                body: serviceData,
-            };
-        },
+                if (!AdminAuthorized.isAdmin(adminPermissions))
+                    return new Forbidden403();
+                const serviceData = checkServicesHealth();
 
-        refreshServiceHealth: async ({ request: req }) => {
-            const { adminPermissions } = await authUser(req);
-            if (!AdminAuthorized.isAdmin(adminPermissions))
-                return new Forbidden403();
+                return {
+                    status: 200,
+                    body: serviceData,
+                };
+            },
 
-            await refreshServicesHealth();
-            const serviceData = checkServicesHealth();
+            refreshServiceHealth: async ({ request: req }) => {
+                const { adminPermissions } = await authUser(req);
+                if (!AdminAuthorized.isAdmin(adminPermissions))
+                    return new Forbidden403();
 
-            return {
-                status: 200,
-                body: serviceData,
-            };
-        },
-    });
+                await refreshServicesHealth();
+                const serviceData = checkServicesHealth();
+
+                return {
+                    status: 200,
+                    body: serviceData,
+                };
+            },
+        });
+    }
 }

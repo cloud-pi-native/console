@@ -1,5 +1,6 @@
 import { AdminAuthorized, stageContract } from '@cpn-console/shared';
-import { serverInstance } from '@old-server/app.js';
+import { Injectable } from '@nestjs/common';
+import { AppService } from '@old-server/app.js';
 import { authUser } from '@old-server/utils/controller.js';
 import { ErrorResType, Forbidden403 } from '@old-server/utils/errors.js';
 
@@ -11,81 +12,86 @@ import {
     updateStage,
 } from './business.js';
 
-export function stageRouter() {
-    return serverInstance.router(stageContract, {
-        // Récupérer les types d'environnement disponibles
-        listStages: async () => {
-            const body = await listStages();
+@Injectable()
+export class StageRouterService {
+    constructor(private readonly appService: AppService) {}
 
-            return {
-                status: 200,
-                body,
-            };
-        },
+    stageRouter() {
+        return this.appService.serverInstance.router(stageContract, {
+            // Récupérer les types d'environnement disponibles
+            listStages: async () => {
+                const body = await listStages();
 
-        // Récupérer les environnements associés au stage
-        getStageEnvironments: async ({ request: req, params }) => {
-            const perms = await authUser(req);
-            if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                return new Forbidden403();
+                return {
+                    status: 200,
+                    body,
+                };
+            },
 
-            const stageId = params.stageId;
-            const body = await getStageAssociatedEnvironments(stageId);
-            if (body instanceof ErrorResType) return body;
+            // Récupérer les environnements associés au stage
+            getStageEnvironments: async ({ request: req, params }) => {
+                const perms = await authUser(req);
+                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+                    return new Forbidden403();
 
-            return {
-                status: 200,
-                body,
-            };
-        },
+                const stageId = params.stageId;
+                const body = await getStageAssociatedEnvironments(stageId);
+                if (body instanceof ErrorResType) return body;
 
-        // Créer un stage
-        createStage: async ({ request: req, body: data }) => {
-            const perms = await authUser(req);
-            if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                return new Forbidden403();
+                return {
+                    status: 200,
+                    body,
+                };
+            },
 
-            const body = await createStage(data);
-            if (body instanceof ErrorResType) return body;
+            // Créer un stage
+            createStage: async ({ request: req, body: data }) => {
+                const perms = await authUser(req);
+                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+                    return new Forbidden403();
 
-            return {
-                status: 201,
-                body,
-            };
-        },
+                const body = await createStage(data);
+                if (body instanceof ErrorResType) return body;
 
-        // Modifier une association stage / clusters
-        updateStage: async ({ request: req, params, body: data }) => {
-            const perms = await authUser(req);
-            if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                return new Forbidden403();
+                return {
+                    status: 201,
+                    body,
+                };
+            },
 
-            const stageId = params.stageId;
+            // Modifier une association stage / clusters
+            updateStage: async ({ request: req, params, body: data }) => {
+                const perms = await authUser(req);
+                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+                    return new Forbidden403();
 
-            const body = await updateStage(stageId, data);
-            if (body instanceof ErrorResType) return body;
+                const stageId = params.stageId;
 
-            return {
-                status: 200,
-                body,
-            };
-        },
+                const body = await updateStage(stageId, data);
+                if (body instanceof ErrorResType) return body;
 
-        // Supprimer un stage
-        deleteStage: async ({ request: req, params }) => {
-            const perms = await authUser(req);
-            if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                return new Forbidden403();
+                return {
+                    status: 200,
+                    body,
+                };
+            },
 
-            const stageId = params.stageId;
+            // Supprimer un stage
+            deleteStage: async ({ request: req, params }) => {
+                const perms = await authUser(req);
+                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+                    return new Forbidden403();
 
-            const body = await deleteStage(stageId);
-            if (body instanceof ErrorResType) return body;
+                const stageId = params.stageId;
 
-            return {
-                status: 204,
-                body,
-            };
-        },
-    });
+                const body = await deleteStage(stageId);
+                if (body instanceof ErrorResType) return body;
+
+                return {
+                    status: 204,
+                    body,
+                };
+            },
+        });
+    }
 }
