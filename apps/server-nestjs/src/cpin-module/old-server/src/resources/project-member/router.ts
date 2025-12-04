@@ -3,7 +3,8 @@ import {
     ProjectAuthorized,
     projectMemberContract,
 } from '@cpn-console/shared';
-import { serverInstance } from '@old-server/app.js';
+import { Injectable } from '@nestjs/common';
+import { AppService } from '@old-server/app.js';
 import { authUser } from '@old-server/utils/controller.js';
 import {
     ErrorResType,
@@ -19,107 +20,112 @@ import {
     removeMember,
 } from './business.js';
 
-export function projectMemberRouter() {
-    return serverInstance.router(projectMemberContract, {
-        listMembers: async ({ request: req, params }) => {
-            const { projectId } = params;
-            const perms = await authUser(req, { id: projectId });
-            if (
-                !perms.projectPermissions &&
-                !AdminAuthorized.isAdmin(perms.adminPermissions)
-            )
-                return new NotFound404();
+@Injectable()
+export class ProjectMemberRouterService {
+    constructor(private readonly appService: AppService) {}
 
-            const body = await listMembers(projectId);
+    projectMemberRouter() {
+        return this.appService.serverInstance.router(projectMemberContract, {
+            listMembers: async ({ request: req, params }) => {
+                const { projectId } = params;
+                const perms = await authUser(req, { id: projectId });
+                if (
+                    !perms.projectPermissions &&
+                    !AdminAuthorized.isAdmin(perms.adminPermissions)
+                )
+                    return new NotFound404();
 
-            return {
-                status: 200,
-                body,
-            };
-        },
+                const body = await listMembers(projectId);
 
-        addMember: async ({ request: req, params, body }) => {
-            const { projectId } = params;
-            const perms = await authUser(req, { id: projectId });
+                return {
+                    status: 200,
+                    body,
+                };
+            },
 
-            if (!perms.user)
-                return new Unauthorized401(
-                    'Require to be requested from user not api key',
+            addMember: async ({ request: req, params, body }) => {
+                const { projectId } = params;
+                const perms = await authUser(req, { id: projectId });
+
+                if (!perms.user)
+                    return new Unauthorized401(
+                        'Require to be requested from user not api key',
+                    );
+                if (
+                    !perms.projectPermissions &&
+                    !AdminAuthorized.isAdmin(perms.adminPermissions)
+                )
+                    return new NotFound404();
+                if (!ProjectAuthorized.ManageMembers(perms))
+                    return new Forbidden403();
+                if (perms.projectLocked)
+                    return new Forbidden403('Le projet est verrouillé');
+                if (perms.projectStatus === 'archived')
+                    return new Forbidden403('Le projet est archivé');
+
+                const resBody = await addMember(
+                    projectId,
+                    body,
+                    perms.user.id,
+                    req.id,
+                    perms.projectOwnerId,
                 );
-            if (
-                !perms.projectPermissions &&
-                !AdminAuthorized.isAdmin(perms.adminPermissions)
-            )
-                return new NotFound404();
-            if (!ProjectAuthorized.ManageMembers(perms))
-                return new Forbidden403();
-            if (perms.projectLocked)
-                return new Forbidden403('Le projet est verrouillé');
-            if (perms.projectStatus === 'archived')
-                return new Forbidden403('Le projet est archivé');
+                if (resBody instanceof ErrorResType) return resBody;
 
-            const resBody = await addMember(
-                projectId,
-                body,
-                perms.user.id,
-                req.id,
-                perms.projectOwnerId,
-            );
-            if (resBody instanceof ErrorResType) return resBody;
+                return {
+                    status: 201,
+                    body: resBody,
+                };
+            },
 
-            return {
-                status: 201,
-                body: resBody,
-            };
-        },
+            patchMembers: async ({ request: req, params, body }) => {
+                const { projectId } = params;
+                const perms = await authUser(req, { id: projectId });
 
-        patchMembers: async ({ request: req, params, body }) => {
-            const { projectId } = params;
-            const perms = await authUser(req, { id: projectId });
+                if (!perms.projectPermissions) return new NotFound404();
+                if (!ProjectAuthorized.ManageMembers(perms))
+                    return new Forbidden403();
+                if (perms.projectLocked)
+                    return new Forbidden403('Le projet est verrouillé');
+                if (perms.projectStatus === 'archived')
+                    return new Forbidden403('Le projet est archivé');
 
-            if (!perms.projectPermissions) return new NotFound404();
-            if (!ProjectAuthorized.ManageMembers(perms))
-                return new Forbidden403();
-            if (perms.projectLocked)
-                return new Forbidden403('Le projet est verrouillé');
-            if (perms.projectStatus === 'archived')
-                return new Forbidden403('Le projet est archivé');
+                const resBody = await patchMembers(projectId, body);
 
-            const resBody = await patchMembers(projectId, body);
+                return {
+                    status: 200,
+                    body: resBody,
+                };
+            },
 
-            return {
-                status: 200,
-                body: resBody,
-            };
-        },
+            removeMember: async ({ request: req, params }) => {
+                const { projectId, userId } = params;
+                const perms = await authUser(req, { id: projectId });
 
-        removeMember: async ({ request: req, params }) => {
-            const { projectId, userId } = params;
-            const perms = await authUser(req, { id: projectId });
+                if (perms.projectLocked)
+                    return new Forbidden403('Le projet est verrouillé');
+                if (perms.projectStatus === 'archived')
+                    return new Forbidden403('Le projet est archivé');
 
-            if (perms.projectLocked)
-                return new Forbidden403('Le projet est verrouillé');
-            if (perms.projectStatus === 'archived')
-                return new Forbidden403('Le projet est archivé');
+                if (
+                    !perms.projectPermissions &&
+                    !AdminAuthorized.isAdmin(perms.adminPermissions)
+                )
+                    return new NotFound404();
 
-            if (
-                !perms.projectPermissions &&
-                !AdminAuthorized.isAdmin(perms.adminPermissions)
-            )
-                return new NotFound404();
+                if (
+                    !ProjectAuthorized.ManageMembers(perms) &&
+                    userId !== perms.user?.id
+                )
+                    return new Forbidden403();
 
-            if (
-                !ProjectAuthorized.ManageMembers(perms) &&
-                userId !== perms.user?.id
-            )
-                return new Forbidden403();
+                const resBody = await removeMember(projectId, params.userId);
 
-            const resBody = await removeMember(projectId, params.userId);
-
-            return {
-                status: 200,
-                body: resBody,
-            };
-        },
-    });
+                return {
+                    status: 200,
+                    body: resBody,
+                };
+            },
+        });
+    }
 }

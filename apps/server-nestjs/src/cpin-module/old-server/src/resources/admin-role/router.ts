@@ -1,5 +1,6 @@
 import { AdminAuthorized, adminRoleContract } from '@cpn-console/shared';
-import { serverInstance } from '@old-server/app.js';
+import { Injectable } from '@nestjs/common';
+import { AppService } from '@old-server/app.js';
 import { authUser } from '@old-server/utils/controller.js';
 import { ErrorResType, Forbidden403 } from '@old-server/utils/errors.js';
 
@@ -11,69 +12,74 @@ import {
     patchRoles,
 } from './business.js';
 
-export function adminRoleRouter() {
-    return serverInstance.router(adminRoleContract, {
-        // Récupérer des projets
-        listAdminRoles: async () => {
-            const body = await listRoles();
+@Injectable()
+export class AdminRoleRouterService {
+    constructor(private readonly appService: AppService) {}
 
-            return {
-                status: 200,
-                body,
-            };
-        },
+    adminRoleRouter() {
+        return this.appService.serverInstance.router(adminRoleContract, {
+            // Récupérer des projets
+            listAdminRoles: async () => {
+                const body = await listRoles();
 
-        createAdminRole: async ({ request: req, body }) => {
-            const perms = await authUser(req);
-            if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                return new Forbidden403();
+                return {
+                    status: 200,
+                    body,
+                };
+            },
 
-            const resBody = await createRole(body);
+            createAdminRole: async ({ request: req, body }) => {
+                const perms = await authUser(req);
+                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+                    return new Forbidden403();
 
-            return {
-                status: 201,
-                body: resBody,
-            };
-        },
+                const resBody = await createRole(body);
 
-        patchAdminRoles: async ({ request: req, body }) => {
-            const perms = await authUser(req);
-            if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                return new Forbidden403();
+                return {
+                    status: 201,
+                    body: resBody,
+                };
+            },
 
-            const resBody = await patchRoles(body);
-            if (resBody instanceof ErrorResType) return resBody;
+            patchAdminRoles: async ({ request: req, body }) => {
+                const perms = await authUser(req);
+                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+                    return new Forbidden403();
 
-            return {
-                status: 200,
-                body: resBody,
-            };
-        },
+                const resBody = await patchRoles(body);
+                if (resBody instanceof ErrorResType) return resBody;
 
-        adminRoleMemberCounts: async ({ request: req }) => {
-            const perms = await authUser(req);
-            if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                return new Forbidden403();
+                return {
+                    status: 200,
+                    body: resBody,
+                };
+            },
 
-            const resBody = await countRolesMembers();
+            adminRoleMemberCounts: async ({ request: req }) => {
+                const perms = await authUser(req);
+                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+                    return new Forbidden403();
 
-            return {
-                status: 200,
-                body: resBody,
-            };
-        },
+                const resBody = await countRolesMembers();
 
-        deleteAdminRole: async ({ request: req, params }) => {
-            const perms = await authUser(req);
-            if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                return new Forbidden403();
+                return {
+                    status: 200,
+                    body: resBody,
+                };
+            },
 
-            const resBody = await deleteRole(params.roleId);
+            deleteAdminRole: async ({ request: req, params }) => {
+                const perms = await authUser(req);
+                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+                    return new Forbidden403();
 
-            return {
-                status: 204,
-                body: resBody,
-            };
-        },
-    });
+                const resBody = await deleteRole(params.roleId);
+
+                return {
+                    status: 204,
+                    body: resBody,
+                };
+            },
+        });
+    }
 }

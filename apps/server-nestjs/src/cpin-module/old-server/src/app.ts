@@ -11,15 +11,21 @@ import type { FastifyRequest } from 'fastify';
 import fastify from 'fastify';
 import keycloak from 'fastify-keycloak-adapter';
 
-import { apiRouter } from './resources/index.js';
+import { ResourcesService } from './resources/index.js';
 import { isDev, isInt, isTest } from './utils/env.js';
-import { fastifyConf, swaggerConf, swaggerUiConf } from './utils/fastify.js';
+import { FastifyService } from './utils/fastify.js';
 import { keycloakConf, sessionConf } from './utils/keycloak.js';
 import type { CustomLogger } from './utils/logger.js';
-import { log } from './utils/logger.js';
+import { LoggerService } from './utils/logger.js';
 
 @Injectable()
 export class AppService {
+    constructor(
+        private readonly loggerService: LoggerService,
+        private readonly fastifyService: FastifyService,
+        private readonly resourcesService: ResourcesService,
+    ) {}
+
     serverInstance: ReturnType<typeof initServer> = initServer();
 
     app: any;
@@ -27,7 +33,7 @@ export class AppService {
 
     async init() {
         const contract = await getContract();
-        this.app = fastify(fastifyConf)
+        this.app = fastify(this.fastifyService.fastifyConf)
             .register(helmet, () => ({
                 contentSecurityPolicy: !(isInt || isDev || isTest),
             }))
@@ -37,12 +43,12 @@ export class AppService {
             .register(keycloak, keycloakConf)
             .register(fastifySwagger, {
                 transformObject: () =>
-                    generateOpenApi(contract, swaggerConf, {
+                    generateOpenApi(contract, this.fastifyService.swaggerConf, {
                         setOperationId: true,
                     }),
             })
-            .register(fastifySwaggerUi, swaggerUiConf)
-            .register(apiRouter())
+            .register(fastifySwaggerUi, this.fastifyService.swaggerUiConf)
+            .register(this.resourcesService.apiRouter())
             .addHook('onRoute', (opts) => {
                 if (opts.path === `${apiPrefix}/healthz`) {
                     opts.logLevel = 'silent';
@@ -57,7 +63,7 @@ export class AppService {
                     error: message,
                     stack: error.stack,
                 });
-                log('info', { reqId: req.id, error });
+                this.loggerService.log('info', { reqId: req.id, error });
             })
             .addHook('onResponse', (req, res) => {
                 if (res.statusCode < 400) {

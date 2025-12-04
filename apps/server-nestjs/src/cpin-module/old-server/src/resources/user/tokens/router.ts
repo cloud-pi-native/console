@@ -1,51 +1,63 @@
 import { personalAccessTokenContract } from '@cpn-console/shared';
-import { serverInstance } from '@old-server/app.js';
+import { Injectable } from '@nestjs/common';
+import { AppService } from '@old-server/app.js';
 import '@old-server/types/index.js';
 import { authUser } from '@old-server/utils/controller.js';
 import { ErrorResType, Forbidden403 } from '@old-server/utils/errors.js';
 
 import { createToken, deleteToken, listTokens } from './business.js';
 
-export function personalAccessTokenRouter() {
-    return serverInstance.router(personalAccessTokenContract, {
-        listPersonalAccessTokens: async ({ request: req }) => {
-            const perms = await authUser(req);
+@Injectable()
+export class UserTokensRouterService {
+    constructor(private readonly appService: AppService) {}
 
-            if (!perms.user?.id || perms.user?.type !== 'human')
-                return new Forbidden403();
-            const body = await listTokens(perms.user.id);
+    personalAccessTokenRouter() {
+        return this.appService.serverInstance.router(
+            personalAccessTokenContract,
+            {
+                listPersonalAccessTokens: async ({ request: req }) => {
+                    const perms = await authUser(req);
 
-            return {
-                status: 200,
-                body,
-            };
-        },
+                    if (!perms.user?.id || perms.user?.type !== 'human')
+                        return new Forbidden403();
+                    const body = await listTokens(perms.user.id);
 
-        createPersonalAccessToken: async ({ request: req, body: data }) => {
-            const perms = await authUser(req);
+                    return {
+                        status: 200,
+                        body,
+                    };
+                },
 
-            if (!perms.user?.id || perms.user?.type !== 'human')
-                return new Forbidden403();
-            const body = await createToken(data, perms.user.id);
-            if (body instanceof ErrorResType) return body;
+                createPersonalAccessToken: async ({
+                    request: req,
+                    body: data,
+                }) => {
+                    const perms = await authUser(req);
 
-            return {
-                status: 201,
-                body,
-            };
-        },
+                    if (!perms.user?.id || perms.user?.type !== 'human')
+                        return new Forbidden403();
+                    const body = await createToken(data, perms.user.id);
+                    if (body instanceof ErrorResType) return body;
 
-        deletePersonalAccessToken: async ({ request: req, params }) => {
-            const perms = await authUser(req);
+                    return {
+                        status: 201,
+                        body,
+                    };
+                },
 
-            if (!perms.user?.id || perms.user?.type !== 'human')
-                return new Forbidden403();
-            await deleteToken(params.tokenId, perms.user.id);
+                deletePersonalAccessToken: async ({ request: req, params }) => {
+                    const perms = await authUser(req);
 
-            return {
-                status: 204,
-                body: null,
-            };
-        },
-    });
+                    if (!perms.user?.id || perms.user?.type !== 'human')
+                        return new Forbidden403();
+                    await deleteToken(params.tokenId, perms.user.id);
+
+                    return {
+                        status: 204,
+                        body: null,
+                    };
+                },
+            },
+        );
+    }
 }
