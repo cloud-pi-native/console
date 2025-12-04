@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { setTimeout } from 'node:timers/promises';
 
-import { logger } from './app.js';
+import { AppService } from './app.js';
 import prisma from './prisma.js';
 import { dbUrl, isCI, isDev, isTest } from './utils/env.js';
 
 @Injectable()
 export class ConnectionService {
+    constructor(private readonly appService: AppService) {}
+
     closingConnections = false;
 
     async getConnection(triesLeft = 5): Promise<void> {
@@ -17,22 +19,30 @@ export class ConnectionService {
 
         try {
             if (isDev || isTest || isCI) {
-                logger.info(`Trying to connect to Postgres with: ${dbUrl}`);
+                this.appService.logger.info(
+                    `Trying to connect to Postgres with: ${dbUrl}`,
+                );
             }
             await prisma.$connect();
 
-            logger.info('Connected to Postgres!');
+            this.appService.logger.info('Connected to Postgres!');
         } catch (error) {
             if (triesLeft > 0) {
-                logger.error(error);
-                logger.info(`Could not connect to Postgres: ${error.message}`);
-                logger.info(`Retrying (${triesLeft} tries left)`);
+                this.appService.logger.error(error);
+                this.appService.logger.info(
+                    `Could not connect to Postgres: ${error.message}`,
+                );
+                this.appService.logger.info(
+                    `Retrying (${triesLeft} tries left)`,
+                );
                 await setTimeout(isTest || isCI ? 1000 : 10000);
                 return this.getConnection(triesLeft);
             }
 
-            logger.info(`Could not connect to Postgres: ${error.message}`);
-            logger.info('Out of retries');
+            this.appService.logger.info(
+                `Could not connect to Postgres: ${error.message}`,
+            );
+            this.appService.logger.info('Out of retries');
             error.message = `Out of retries, last error: ${error.message}`;
             throw error;
         }
@@ -43,7 +53,7 @@ export class ConnectionService {
         try {
             await prisma.$disconnect();
         } catch (error) {
-            logger.error(error);
+            this.appService.logger.error(error);
         } finally {
             this.closingConnections = false;
         }

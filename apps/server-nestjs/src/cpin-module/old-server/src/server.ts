@@ -13,8 +13,8 @@ import keycloak from 'fastify-keycloak-adapter';
 
 import { AppService } from './app';
 import { ConnectionService } from './connect';
-import { getPreparedApp } from './prepare-app';
-import { apiRouter } from './resources/index.js';
+import { PrepareAppService } from './prepare-app';
+import { ResourcesService } from './resources/index.js';
 import {
     isCI,
     isDev,
@@ -24,16 +24,20 @@ import {
     isTest,
     port,
 } from './utils/env.js';
-import { fastifyConf, swaggerConf, swaggerUiConf } from './utils/fastify.js';
+import { FastifyService } from './utils/fastify.js';
 import { keycloakConf, sessionConf } from './utils/keycloak.js';
 import type { CustomLogger } from './utils/logger.js';
-import { log } from './utils/logger.js';
+import { LoggerService } from './utils/logger.js';
 
 @Injectable()
 export class ServerService {
     constructor(
-        private readonly connectionService: ConnectionService,
         private readonly appService: AppService,
+        private readonly connectionService: ConnectionService,
+        private readonly fastifyService: FastifyService,
+        private readonly loggerService: LoggerService,
+        private readonly prepareAppService: PrepareAppService,
+        private readonly resourceService: ResourcesService,
     ) {}
 
     app: any;
@@ -72,7 +76,7 @@ export class ServerService {
     }
 
     async getApp(): Promise<void> {
-        const app = await getPreparedApp();
+        const app = await this.prepareAppService.getPreparedApp();
 
         try {
             await app.listen({ host: '0.0.0.0', port: +(port ?? 8080) });
@@ -94,13 +98,13 @@ export class ServerService {
     async createApp() {
         const openApiDocument = generateOpenApi(
             await getContract(),
-            swaggerConf,
+            this.fastifyService.swaggerConf,
             {
                 setOperationId: true,
             },
         );
 
-        const app = fastify(fastifyConf)
+        const app = fastify(this.fastifyService.fastifyConf)
             .register(helmet, () => ({
                 contentSecurityPolicy: !(isInt || isDev || isTest),
             }))
@@ -111,8 +115,8 @@ export class ServerService {
             .register(fastifySwagger, {
                 transformObject: () => openApiDocument,
             })
-            .register(fastifySwaggerUi, swaggerUiConf)
-            .register(apiRouter())
+            .register(fastifySwaggerUi, this.fastifyService.swaggerConf as any)
+            .register(this.resourceService.apiRouter())
             .addHook('onRoute', (opts) => {
                 if (opts.path === `${apiPrefix}/healthz`) {
                     opts.logLevel = 'silent';
@@ -127,7 +131,7 @@ export class ServerService {
                     error: message,
                     stack: error.stack,
                 });
-                log('info', { reqId: req.id, error });
+                this.loggerService.log('info', { reqId: req.id, error });
             })
             .addHook('onResponse', (req, res) => {
                 if (res.statusCode < 400) {

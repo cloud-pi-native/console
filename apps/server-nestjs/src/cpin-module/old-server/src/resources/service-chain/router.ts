@@ -1,6 +1,7 @@
 import type { AsyncReturnType } from '@cpn-console/shared';
 import { AdminAuthorized, serviceChainContract } from '@cpn-console/shared';
-import { serverInstance } from '@old-server/app.js';
+import { Injectable } from '@nestjs/common';
+import { AppService } from '@old-server/app.js';
 import '@old-server/types/index.js';
 import { authUser } from '@old-server/utils/controller.js';
 import { Forbidden403 } from '@old-server/utils/errors.js';
@@ -13,78 +14,84 @@ import {
     validateServiceChain as validateServiceChainBusiness,
 } from './business.js';
 
-export function serviceChainRouter() {
-    return serverInstance.router(serviceChainContract, {
-        listServiceChains: async ({ request: req }) => {
-            const { adminPermissions } = await authUser(req);
+@Injectable()
+export class ServiceChainRouterService {
+    constructor(private readonly appService: AppService) {}
 
-            let body: AsyncReturnType<typeof listServiceChainsBusiness> = [];
-            if (AdminAuthorized.isAdmin(adminPermissions)) {
-                body = await listServiceChainsBusiness();
-            }
+    serviceChainRouter() {
+        return this.appService.serverInstance.router(serviceChainContract, {
+            listServiceChains: async ({ request: req }) => {
+                const { adminPermissions } = await authUser(req);
 
-            return {
-                status: 200,
-                body,
-            };
-        },
+                let body: AsyncReturnType<typeof listServiceChainsBusiness> =
+                    [];
+                if (AdminAuthorized.isAdmin(adminPermissions)) {
+                    body = await listServiceChainsBusiness();
+                }
 
-        getServiceChainDetails: async ({ params, request: req }) => {
-            const perms = await authUser(req);
-            if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                return new Forbidden403();
+                return {
+                    status: 200,
+                    body,
+                };
+            },
 
-            const serviceChainId = params.serviceChainId;
-            const serviceChainDetails =
-                await getServiceChainDetailsBusiness(serviceChainId);
+            getServiceChainDetails: async ({ params, request: req }) => {
+                const perms = await authUser(req);
+                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+                    return new Forbidden403();
 
-            return {
-                status: 200,
-                body: serviceChainDetails,
-            };
-        },
+                const serviceChainId = params.serviceChainId;
+                const serviceChainDetails =
+                    await getServiceChainDetailsBusiness(serviceChainId);
 
-        retryServiceChain: async ({ params, request: req }) => {
-            const perms = await authUser(req);
-            if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                return new Forbidden403();
+                return {
+                    status: 200,
+                    body: serviceChainDetails,
+                };
+            },
 
-            const serviceChainId = params.serviceChainId;
-            await retryServiceChainBusiness(serviceChainId);
+            retryServiceChain: async ({ params, request: req }) => {
+                const perms = await authUser(req);
+                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+                    return new Forbidden403();
 
-            return {
-                status: 204,
-                body: null,
-            };
-        },
+                const serviceChainId = params.serviceChainId;
+                await retryServiceChainBusiness(serviceChainId);
 
-        validateServiceChain: async ({ params, request: req }) => {
-            const perms = await authUser(req);
-            if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                return new Forbidden403();
+                return {
+                    status: 204,
+                    body: null,
+                };
+            },
 
-            const serviceChainId = params.validationId;
-            await validateServiceChainBusiness(serviceChainId);
+            validateServiceChain: async ({ params, request: req }) => {
+                const perms = await authUser(req);
+                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+                    return new Forbidden403();
 
-            return {
-                status: 204,
-                body: null,
-            };
-        },
+                const serviceChainId = params.validationId;
+                await validateServiceChainBusiness(serviceChainId);
 
-        getServiceChainFlows: async ({ params, request: req }) => {
-            const perms = await authUser(req);
-            if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                return new Forbidden403();
+                return {
+                    status: 204,
+                    body: null,
+                };
+            },
 
-            const serviceChainId = params.serviceChainId;
-            const serviceChainFlows =
-                await getServiceChainFlowsBusiness(serviceChainId);
+            getServiceChainFlows: async ({ params, request: req }) => {
+                const perms = await authUser(req);
+                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+                    return new Forbidden403();
 
-            return {
-                status: 200,
-                body: serviceChainFlows,
-            };
-        },
-    });
+                const serviceChainId = params.serviceChainId;
+                const serviceChainFlows =
+                    await getServiceChainFlowsBusiness(serviceChainId);
+
+                return {
+                    status: 200,
+                    body: serviceChainFlows,
+                };
+            },
+        });
+    }
 }

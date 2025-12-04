@@ -1,38 +1,44 @@
 import { AdminAuthorized, systemPluginContract } from '@cpn-console/shared';
-import { serverInstance } from '@old-server/app.js';
+import { Injectable } from '@nestjs/common';
+import { AppService } from '@old-server/app.js';
 import { authUser } from '@old-server/utils/controller.js';
 import { ErrorResType, Forbidden403 } from '@old-server/utils/errors.js';
 
 import { getPluginsConfig, updatePluginConfig } from './business.js';
 
-export function pluginConfigRouter() {
-    return serverInstance.router(systemPluginContract, {
-        // Récupérer les configurations plugins
-        getPluginsConfig: async ({ request: req }) => {
-            const perms = await authUser(req);
-            if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                return new Forbidden403();
+@Injectable()
+export class SystemConfigRouterService {
+    constructor(private readonly appService: AppService) {}
 
-            const services = await getPluginsConfig();
+    pluginConfigRouter() {
+        return this.appService.serverInstance.router(systemPluginContract, {
+            // Récupérer les configurations plugins
+            getPluginsConfig: async ({ request: req }) => {
+                const perms = await authUser(req);
+                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+                    return new Forbidden403();
 
-            return {
-                status: 200,
-                body: services,
-            };
-        },
-        // Mettre à jour les configurations plugins
-        updatePluginsConfig: async ({ request: req, body }) => {
-            const perms = await authUser(req);
-            if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                return new Forbidden403();
+                const services = await getPluginsConfig();
 
-            const resBody = await updatePluginConfig(body);
-            if (resBody instanceof ErrorResType) return resBody;
+                return {
+                    status: 200,
+                    body: services,
+                };
+            },
+            // Mettre à jour les configurations plugins
+            updatePluginsConfig: async ({ request: req, body }) => {
+                const perms = await authUser(req);
+                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+                    return new Forbidden403();
 
-            return {
-                status: 204,
-                body: resBody,
-            };
-        },
-    });
+                const resBody = await updatePluginConfig(body);
+                if (resBody instanceof ErrorResType) return resBody;
+
+                return {
+                    status: 204,
+                    body: resBody,
+                };
+            },
+        });
+    }
 }
