@@ -1,5 +1,6 @@
 import { AdminAuthorized, zoneContract } from '@cpn-console/shared';
-import { serverInstance } from '@old-server/app.js';
+import { Injectable } from '@nestjs/common';
+import { AppService } from '@old-server/app.js';
 import { authUser } from '@old-server/utils/controller.js';
 import {
     ErrorResType,
@@ -9,72 +10,77 @@ import {
 
 import { createZone, deleteZone, listZones, updateZone } from './business.js';
 
-export function zoneRouter() {
-    return serverInstance.router(zoneContract, {
-        listZones: async () => {
-            const zones = await listZones();
+@Injectable()
+export class ZoneRouterService {
+    constructor(private readonly appService: AppService) {}
 
-            return {
-                status: 200,
-                body: zones,
-            };
-        },
+    zoneRouter() {
+        return this.appService.serverInstance.router(zoneContract, {
+            listZones: async () => {
+                const zones = await listZones();
 
-        createZone: async ({ request: req, body: data }) => {
-            const { user, adminPermissions } = await authUser(req);
-            if (!AdminAuthorized.isAdmin(adminPermissions))
-                return new Forbidden403();
-            if (!user)
-                return new Unauthorized401(
-                    'Require to be requested from user not api key',
-                );
+                return {
+                    status: 200,
+                    body: zones,
+                };
+            },
 
-            const body = await createZone(data, user.id, req.id);
-            if (body instanceof ErrorResType) return body;
+            createZone: async ({ request: req, body: data }) => {
+                const { user, adminPermissions } = await authUser(req);
+                if (!AdminAuthorized.isAdmin(adminPermissions))
+                    return new Forbidden403();
+                if (!user)
+                    return new Unauthorized401(
+                        'Require to be requested from user not api key',
+                    );
 
-            return {
-                status: 201,
-                body,
-            };
-        },
+                const body = await createZone(data, user.id, req.id);
+                if (body instanceof ErrorResType) return body;
 
-        updateZone: async ({ request: req, params, body: data }) => {
-            const { user, adminPermissions } = await authUser(req);
-            if (!AdminAuthorized.isAdmin(adminPermissions))
-                return new Forbidden403();
-            if (!user)
-                return new Unauthorized401(
-                    'Require to be requested from user not api key',
-                );
+                return {
+                    status: 201,
+                    body,
+                };
+            },
 
-            const zoneId = params.zoneId;
+            updateZone: async ({ request: req, params, body: data }) => {
+                const { user, adminPermissions } = await authUser(req);
+                if (!AdminAuthorized.isAdmin(adminPermissions))
+                    return new Forbidden403();
+                if (!user)
+                    return new Unauthorized401(
+                        'Require to be requested from user not api key',
+                    );
 
-            const body = await updateZone(zoneId, data, user.id, req.id);
-            if (body instanceof ErrorResType) return body;
+                const zoneId = params.zoneId;
 
-            return {
-                status: 200,
-                body,
-            };
-        },
+                const body = await updateZone(zoneId, data, user.id, req.id);
+                if (body instanceof ErrorResType) return body;
 
-        deleteZone: async ({ request: req, params }) => {
-            const { user, adminPermissions } = await authUser(req);
-            if (!AdminAuthorized.isAdmin(adminPermissions))
-                return new Forbidden403();
-            if (!user)
-                return new Unauthorized401(
-                    'Require to be requested from user not api key',
-                );
-            const zoneId = params.zoneId;
+                return {
+                    status: 200,
+                    body,
+                };
+            },
 
-            const body = await deleteZone(zoneId, user.id, req.id);
-            if (body instanceof ErrorResType) return body;
+            deleteZone: async ({ request: req, params }) => {
+                const { user, adminPermissions } = await authUser(req);
+                if (!AdminAuthorized.isAdmin(adminPermissions))
+                    return new Forbidden403();
+                if (!user)
+                    return new Unauthorized401(
+                        'Require to be requested from user not api key',
+                    );
+                const zoneId = params.zoneId;
 
-            return {
-                status: 204,
-                body,
-            };
-        },
-    });
+                const body = await deleteZone(zoneId, user.id, req.id);
+                if (body instanceof ErrorResType) return body;
+
+                return {
+                    status: 204,
+                    body,
+                };
+            },
+        });
+    }
 }

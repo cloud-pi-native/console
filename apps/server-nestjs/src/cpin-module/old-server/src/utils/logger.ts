@@ -1,37 +1,11 @@
 import type { XOR } from '@cpn-console/shared';
-import { logger as customLogger } from '@old-server/app.js';
+import { Injectable } from '@nestjs/common';
+import { AppService } from '@old-server/app';
 import type {
     FastifyBaseLogger,
     FastifyLogFn,
     PinoLoggerOptions,
-} from 'fastify/types/logger.js';
-
-export const customLevels = {
-    audit: 25,
-};
-
-export const loggerConf: Record<string, PinoLoggerOptions> = {
-    development: {
-        transport: {
-            target: 'pino-pretty',
-            options: {
-                translateTime: 'dd/mm/yyyy - HH:MM:ss Z',
-                ignore: 'pid,hostname',
-                colorize: true,
-                singleLine: true,
-            },
-        },
-        customLevels,
-        level: process.env.LOG_LEVEL ?? 'debug',
-    },
-    production: {
-        customLevels,
-        level: process.env.LOG_LEVEL ?? 'audit',
-    },
-    test: {
-        level: 'silent',
-    },
-};
+} from 'fastify/types/logger';
 
 type LoggerType =
     | 'info'
@@ -42,64 +16,6 @@ type LoggerType =
     | 'debug'
     | 'audit'
     | undefined;
-const loggerWrapper = {
-    level: '',
-    child: () => loggerWrapper,
-    silent: () => {},
-    audit: (msg: string | unknown) => console.log(msg),
-    info: (msg: string | unknown) => console.log(msg),
-    warn: (msg: string | unknown) => console.warn(msg),
-    error: (msg: string | unknown) => console.error(msg),
-    fatal: (msg: string | unknown) => console.error(msg),
-    trace: (msg: string | unknown) => console.trace(msg),
-    debug: (msg: string | unknown) => console.debug(msg),
-};
-
-export function log(
-    type: LoggerType,
-    {
-        reqId,
-        userId,
-        tokenId,
-        message,
-        error,
-        infos,
-    }: {
-        reqId?: string;
-        userId?: string;
-        tokenId?: string;
-        infos?: Record<string, unknown>;
-    } & XOR<
-        { message: string },
-        { error: Record<string, unknown> | string | Error }
-    >,
-) {
-    const logger = customLogger || loggerWrapper;
-
-    const logInfos = {
-        message,
-        infos,
-        reqId,
-        userId,
-        tokenId,
-    };
-
-    if (error) {
-        const errorInfos = {
-            ...logInfos,
-            error: {
-                message:
-                    typeof error === 'string'
-                        ? error
-                        : error?.message || 'unexpected error',
-                trace: error instanceof Error && error?.stack,
-            },
-        };
-        logger.error({ ...errorInfos });
-        return;
-    }
-    logger[type || 'info']({ reqId, userId, logInfos });
-}
 
 export interface CustomLogger extends FastifyBaseLogger {
     /**
@@ -112,4 +28,95 @@ export interface CustomLogger extends FastifyBaseLogger {
      * @param ...args: format string values when `msg` is a format string
      */
     audit: FastifyLogFn;
+}
+
+@Injectable()
+export class LoggerService {
+    constructor(private readonly appService: AppService) {}
+
+    customLevels = {
+        audit: 25,
+    };
+
+    loggerConf: Record<string, PinoLoggerOptions> = {
+        development: {
+            transport: {
+                target: 'pino-pretty',
+                options: {
+                    translateTime: 'dd/mm/yyyy - HH:MM:ss Z',
+                    ignore: 'pid,hostname',
+                    colorize: true,
+                    singleLine: true,
+                },
+            },
+            customLevels: this.customLevels,
+            level: process.env.LOG_LEVEL ?? 'debug',
+        },
+        production: {
+            customLevels: this.customLevels,
+            level: process.env.LOG_LEVEL ?? 'audit',
+        },
+        test: {
+            level: 'silent',
+        },
+    };
+
+    loggerWrapper = {
+        level: '',
+        child: () => this.loggerWrapper,
+        silent: () => {},
+        audit: (msg: string | unknown) => console.log(msg),
+        info: (msg: string | unknown) => console.log(msg),
+        warn: (msg: string | unknown) => console.warn(msg),
+        error: (msg: string | unknown) => console.error(msg),
+        fatal: (msg: string | unknown) => console.error(msg),
+        trace: (msg: string | unknown) => console.trace(msg),
+        debug: (msg: string | unknown) => console.debug(msg),
+    };
+
+    log(
+        type: LoggerType,
+        {
+            reqId,
+            userId,
+            tokenId,
+            message,
+            error,
+            infos,
+        }: {
+            reqId?: string;
+            userId?: string;
+            tokenId?: string;
+            infos?: Record<string, unknown>;
+        } & XOR<
+            { message: string },
+            { error: Record<string, unknown> | string | Error }
+        >,
+    ) {
+        const logger = this.appService.logger || this.loggerWrapper;
+
+        const logInfos = {
+            message,
+            infos,
+            reqId,
+            userId,
+            tokenId,
+        };
+
+        if (error) {
+            const errorInfos = {
+                ...logInfos,
+                error: {
+                    message:
+                        typeof error === 'string'
+                            ? error
+                            : error?.message || 'unexpected error',
+                    trace: error instanceof Error && error?.stack,
+                },
+            };
+            logger.error({ ...errorInfos });
+            return;
+        }
+        logger[type || 'info']({ reqId, userId, logInfos });
+    }
 }
