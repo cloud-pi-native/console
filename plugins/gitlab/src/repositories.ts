@@ -70,7 +70,6 @@ async function ensureRepositoryExists(gitlabRepositories: CondensedProjectSchema
 
   const internalRepoUrl = await gitlabApi.getInternalRepoUrl(repository.internalRepoName)
 
-  const { data: gitlabSecret } = await vaultApi.read('tech/GITLAB_MIRROR', { throwIfNoEntry: false })
   const mirrorSecretData = {
     GIT_INPUT_URL: externalRepoUrn,
     GIT_INPUT_USER: repository.isPrivate
@@ -83,8 +82,10 @@ async function ensureRepositoryExists(gitlabRepositories: CondensedProjectSchema
     GIT_OUTPUT_USER: projectMirrorCreds.botAccount,
     GIT_OUTPUT_PASSWORD: projectMirrorCreds.token,
   }
-
-  if (!shallowEqual(mirrorSecretData, gitlabSecret)) {
+  if (
+    !currentVaultSecret?.data
+    || !shallowEqual(mirrorSecretData, currentVaultSecret.data)
+  ) {
     await vaultApi.write(mirrorSecretData, vaultCredsPath)
   }
 }

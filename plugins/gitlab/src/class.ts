@@ -294,10 +294,27 @@ export class GitlabProjectApi extends GitlabApi {
     }
     if (currentToken) {
       const vaultSecret = await vaultApi.read('tech/GITLAB_MIRROR', { throwIfNoEntry: false }) as { data: GitlabMirrorSecret }
-      if (vaultSecret) return vaultSecret.data
-      await this.revokeProjectToken(currentToken.id)
+      if (vaultSecret) {
+        try {
+          const group = await this.getProjectGroup()
+          if (!group) throw new Error('Group not created yet')
+
+          const res = await fetch(`${config().internalUrl}/api/v4/groups/${group.id}`, {
+            headers: { 'PRIVATE-TOKEN': vaultSecret.data.MIRROR_TOKEN },
+          })
+
+          if (res.ok) {
+            return vaultSecret.data // valid token hence early exit
+          }
+
+          throw new Error('Invalid token')
+        } catch (error) {
+          console.warn('Warning:', error)
+          await this.revokeProjectToken(currentToken.id)
+        }
+      }
     }
-    const newToken = await this.createProjectToken(tokenName, ['write_repository', 'read_repository'])
+    const newToken = await this.createProjectToken(tokenName, ['write_repository', 'read_repository', 'read_api'])
     creds.MIRROR_TOKEN = newToken.token
     creds.MIRROR_USER = newToken.name
     await vaultApi.write(creds, 'tech/GITLAB_MIRROR')

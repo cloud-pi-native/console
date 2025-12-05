@@ -108,15 +108,21 @@ export function resourceListToDictByKey<T extends { key: string }>(resList: Arra
 }
 
 export function shallowEqual(object1: Record<string, unknown>, object2: Record<string, unknown>) {
-  const keys1 = Object.keys(object1)
-  const keys2 = Object.keys(object2)
+  const definedObject1 = Object.fromEntries(
+    Object.entries(object1).filter(([_, v]) => v !== undefined),
+  )
+  const definedObject2 = Object.fromEntries(
+    Object.entries(object2).filter(([_, v]) => v !== undefined),
+  )
+  const keys1 = Object.keys(definedObject1)
+  const keys2 = Object.keys(definedObject2)
 
   if (keys1.length !== keys2.length) {
     return false
   }
 
   for (const key of keys1) {
-    if (object1[key] !== object2[key]) {
+    if (definedObject1[key] !== definedObject2[key]) {
       return false
     }
   }
