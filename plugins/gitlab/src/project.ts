@@ -1,30 +1,37 @@
 import * as fs from 'node:fs/promises'
 import path from 'node:path'
+
 import { getApi } from './utils.js'
 
-const baseDir = path.resolve(import.meta.url, '../../files/').split(':')[1]
-
-const gitlabCiYml = (await fs.readFile(`${baseDir}/.gitlab-ci.yml`)).toString()
-const mirrorSh = (await fs.readFile(`${baseDir}/mirror.sh`)).toString()
-
-const mirrorFirstActions: CommitAction[] = [
-  {
-    action: 'create',
-    filePath: '.gitlab-ci.yml',
-    content: gitlabCiYml,
-    execute_filemode: false,
-  },
-  {
-    action: 'create',
-    filePath: 'mirror.sh',
-    content: mirrorSh,
-    execute_filemode: true,
-  },
-]
-
 export async function provisionMirror(repoId: number) {
+  const baseDir = path.resolve(import.meta.url, '../../files/').split(':')[1]
+
+  const gitlabCiYml = (
+    await fs.readFile(`${baseDir}/.gitlab-ci.yml`)
+  ).toString()
+  const mirrorSh = (await fs.readFile(`${baseDir}/mirror.sh`)).toString()
+
+  const mirrorFirstActions: CommitAction[] = [
+    {
+      action: 'create',
+      filePath: '.gitlab-ci.yml',
+      content: gitlabCiYml,
+      execute_filemode: false,
+    },
+    {
+      action: 'create',
+      filePath: 'mirror.sh',
+      content: mirrorSh,
+      execute_filemode: true,
+    },
+  ]
   const api = getApi()
-  await api.Commits.create(repoId, 'main', 'ci: :construction_worker: first mirror', mirrorFirstActions)
+  await api.Commits.create(
+    repoId,
+    'main',
+    'ci: :construction_worker: first mirror',
+    mirrorFirstActions,
+  )
 }
 
 interface CommitAction {
