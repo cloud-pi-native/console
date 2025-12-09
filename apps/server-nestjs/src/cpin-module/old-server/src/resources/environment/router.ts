@@ -1,14 +1,14 @@
 import { ProjectAuthorized, environmentContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
-import { AppService } from '@old-server/app.js';
-import { authUser } from '@old-server/utils/controller.js';
+import { AppService } from '@old-server/app';
+import { authUser } from '@old-server/utils/controller';
 import {
     BadRequest400,
     Forbidden403,
     Internal500,
     NotFound404,
     Unauthorized401,
-} from '@old-server/utils/errors.js';
+} from '@old-server/utils/errors';
 
 import {
     checkEnvironmentCreate,
@@ -17,7 +17,7 @@ import {
     deleteEnvironment,
     getProjectEnvironments,
     updateEnvironment,
-} from './business.js';
+} from './business';
 
 @Injectable()
 export class EnvironmentRouterService {

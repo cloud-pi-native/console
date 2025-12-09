@@ -1,10 +1,10 @@
 import { AdminAuthorized, serviceContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
-import { AppService } from '@old-server/app.js';
-import { authUser } from '@old-server/utils/controller.js';
-import { Forbidden403 } from '@old-server/utils/errors.js';
+import { AppService } from '@old-server/app';
+import { authUser } from '@old-server/utils/controller';
+import { Forbidden403 } from '@old-server/utils/errors';
 
-import { checkServicesHealth, refreshServicesHealth } from './business.js';
+import { checkServicesHealth, refreshServicesHealth } from './business';
 
 @Injectable()
 export class ServiceMonitorRouterService {

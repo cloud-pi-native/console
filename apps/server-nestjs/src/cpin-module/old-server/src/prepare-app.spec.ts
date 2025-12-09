@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import app, { logger } from './app.js';
-import { getConnection } from './connect.js';
-import { initDb } from './init/db/index.js';
-import { getPreparedApp } from './prepare-app.js';
+import app, { logger } from './app';
+import { getConnection } from './connect';
+import { initDb } from './init/db/index';
+import { getPreparedApp } from './prepare-app';
 
 vi.mock(
     'fastify-keycloak-adapter',
-    (await import('./utils/mocks.js')).mockSessionPlugin,
+    (await import('./utils/mocks')).mockSessionPlugin,
 );
-vi.mock('./connect.js');
-vi.mock('./index.js');
-vi.mock('./utils/logger.js');
-vi.mock('./init/db/index.js', () => ({ initDb: vi.fn() }));
+vi.mock('./connect');
+vi.mock('./index');
+vi.mock('./utils/logger');
+vi.mock('./init/db/index', () => ({ initDb: vi.fn() }));
 
 vi.spyOn(app, 'listen');
 vi.spyOn(logger, 'info');

@@ -9,9 +9,9 @@ import {
     getProjectRepositories as getProjectRepositoriesQuery,
     initializeRepository,
     updateRepository as updateRepositoryQuery,
-} from '@old-server/resources/queries-index.js';
-import { BadRequest400, Unprocessable422 } from '@old-server/utils/errors.js';
-import { hook } from '@old-server/utils/hook-wrapper.js';
+} from '@old-server/resources/queries-index';
+import { BadRequest400, Unprocessable422 } from '@old-server/utils/errors';
+import { hook } from '@old-server/utils/hook-wrapper';
 import type { Project, Repository, User } from '@prisma/client';
 
 export async function getProjectRepositories(projectId: Project['id']) {

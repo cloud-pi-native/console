@@ -6,18 +6,18 @@ import {
 import { faker } from '@faker-js/faker';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import app from '../../app.js';
-import * as utilsController from '../../utils/controller.js';
+import app from '../../app';
+import * as utilsController from '../../utils/controller';
 import {
     atDates,
     getProjectMockInfos,
     getUserMockInfos,
-} from '../../utils/mocks.js';
-import * as business from './business.js';
+} from '../../utils/mocks';
+import * as business from './business';
 
 vi.mock(
     'fastify-keycloak-adapter',
-    (await import('../../utils/mocks.js')).mockSessionPlugin,
+    (await import('../../utils/mocks')).mockSessionPlugin,
 );
 const authUserMock = vi.spyOn(utilsController, 'authUser');
 const businessGetProjectEnvironmentsMock = vi.spyOn(

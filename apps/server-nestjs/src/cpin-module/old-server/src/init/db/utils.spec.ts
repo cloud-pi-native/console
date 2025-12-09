@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import prisma from '../../__mocks__/prisma.js';
-import { modelKeys, moveBefore, resourceListToDict } from './utils.js';
+import prisma from '../../__mocks__/prisma';
+import { modelKeys, moveBefore, resourceListToDict } from './utils';
 
 vi.mock('fs', () => ({ writeFileSync: vi.fn() }));
 for (const modelKey of modelKeys) {

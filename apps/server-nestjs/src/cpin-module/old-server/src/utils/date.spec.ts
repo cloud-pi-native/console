@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getJSDateFromUtcIso } from './date.js';
+import { getJSDateFromUtcIso } from './date';
 
 describe('date-util', () => {
     it('should return a native Date object', () => {

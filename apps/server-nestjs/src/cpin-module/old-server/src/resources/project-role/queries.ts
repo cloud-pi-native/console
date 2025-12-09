@@ -1,4 +1,4 @@
-import prisma from '@old-server/prisma.js';
+import prisma from '@old-server/prisma';
 import type { Prisma, Project, ProjectRole } from '@prisma/client';
 
 export const listRoles = (projectId: Project['id']) =>

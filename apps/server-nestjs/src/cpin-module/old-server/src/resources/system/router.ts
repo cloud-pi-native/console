@@ -1,7 +1,7 @@
 import { systemContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
-import { AppService } from '@old-server/app.js';
-import { appVersion } from '@old-server/utils/env.js';
+import { AppService } from '@old-server/app';
+import { appVersion } from '@old-server/utils/env';
 
 @Injectable()
 export class SystemRouterService {

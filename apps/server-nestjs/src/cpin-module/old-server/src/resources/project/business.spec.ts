@@ -8,15 +8,15 @@ import type {
 } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import prisma from '../../__mocks__/prisma.js';
-import { hook } from '../../__mocks__/utils/hook-wrapper.ts';
+import prisma from '../../__mocks__/prisma';
+import { hook } from '../../__mocks__/utils/hook-wrapper';
 import {
     BadRequest400,
     ErrorResType,
     Unprocessable422,
-} from '../../utils/errors.js';
-import { dbToObj } from '../project-service/business.ts';
-import * as userBusiness from '../user/business.js';
+} from '../../utils/errors';
+import { dbToObj } from '../project-service/business';
+import * as userBusiness from '../user/business';
 import {
     archiveProject,
     chunk,
@@ -27,9 +27,9 @@ import {
     listProjects,
     replayHooks,
     updateProject,
-} from './business.ts';
+} from './business';
 
-vi.mock('../../utils/hook-wrapper.ts', async () => ({
+vi.mock('../../utils/hook-wrapper', async () => ({
     hook,
 }));
 

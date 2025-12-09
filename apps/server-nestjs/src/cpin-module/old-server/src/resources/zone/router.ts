@@ -1,14 +1,14 @@
 import { AdminAuthorized, zoneContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
-import { AppService } from '@old-server/app.js';
-import { authUser } from '@old-server/utils/controller.js';
+import { AppService } from '@old-server/app';
+import { authUser } from '@old-server/utils/controller';
 import {
     ErrorResType,
     Forbidden403,
     Unauthorized401,
-} from '@old-server/utils/errors.js';
+} from '@old-server/utils/errors';
 
-import { createZone, deleteZone, listZones, updateZone } from './business.js';
+import { createZone, deleteZone, listZones, updateZone } from './business';
 
 @Injectable()
 export class ZoneRouterService {

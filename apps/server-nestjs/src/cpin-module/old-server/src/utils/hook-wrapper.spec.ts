@@ -6,8 +6,8 @@ import type {
 } from '@cpn-console/hooks';
 import { describe, expect, it } from 'vitest';
 
-import type { ProjectInfos, ReposCreds } from './hook-wrapper.ts';
-import { transformToHookProject } from './hook-wrapper.ts';
+import type { ProjectInfos, ReposCreds } from './hook-wrapper';
+import { transformToHookProject } from './hook-wrapper';
 
 const associatedCluster = {
     id: 'f0e39981-0b6d-4c16-aa96-225062b75767',

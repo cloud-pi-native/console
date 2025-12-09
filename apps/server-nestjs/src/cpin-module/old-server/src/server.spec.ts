@@ -1,19 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { logger } from './app.js';
-import { closeConnections } from './connect.js';
-import { exitGracefully, handleExit } from './server.js';
+import { logger } from './app';
+import { closeConnections } from './connect';
+import { exitGracefully, handleExit } from './server';
 
 vi.mock(
     'fastify-keycloak-adapter',
-    (await import('./utils/mocks.js')).mockSessionPlugin,
+    (await import('./utils/mocks')).mockSessionPlugin,
 );
-vi.mock('./init/db/index.js', () => ({ initDb: vi.fn() }));
-vi.mock('./connect.js');
+vi.mock('./init/db/index', () => ({ initDb: vi.fn() }));
+vi.mock('./connect');
 
 process.exit = vi.fn();
 
-vi.mock('./prepare-app.js', () => {
+vi.mock('./prepare-app', () => {
     const app = {
         listen: vi.fn(),
         close: vi.fn(async () => {}),

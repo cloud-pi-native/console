@@ -14,7 +14,7 @@ import keycloak from 'fastify-keycloak-adapter';
 import { AppService } from './app';
 import { ConnectionService } from './connect';
 import { PrepareAppService } from './prepare-app';
-import { ResourcesService } from './resources/index.js';
+import { ResourcesService } from './resources/index';
 import {
     isCI,
     isDev,
@@ -23,11 +23,11 @@ import {
     isProd,
     isTest,
     port,
-} from './utils/env.js';
-import { FastifyService } from './utils/fastify.js';
-import { keycloakConf, sessionConf } from './utils/keycloak.js';
-import type { CustomLogger } from './utils/logger.js';
-import { LoggerService } from './utils/logger.js';
+} from './utils/env';
+import { FastifyService } from './utils/fastify';
+import { keycloakConf, sessionConf } from './utils/keycloak';
+import type { CustomLogger } from './utils/logger';
+import { LoggerService } from './utils/logger';
 
 @Injectable()
 export class ServerService {

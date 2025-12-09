@@ -1,10 +1,10 @@
 import { AdminAuthorized, systemPluginContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
-import { AppService } from '@old-server/app.js';
-import { authUser } from '@old-server/utils/controller.js';
-import { ErrorResType, Forbidden403 } from '@old-server/utils/errors.js';
+import { AppService } from '@old-server/app';
+import { authUser } from '@old-server/utils/controller';
+import { ErrorResType, Forbidden403 } from '@old-server/utils/errors';
 
-import { getPluginsConfig, updatePluginConfig } from './business.js';
+import { getPluginsConfig, updatePluginConfig } from './business';
 
 @Injectable()
 export class SystemConfigRouterService {

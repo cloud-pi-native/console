@@ -1,6 +1,6 @@
 import type { logContract } from '@cpn-console/shared';
 import { CleanLogSchema } from '@cpn-console/shared';
-import { getAllLogs } from '@old-server/resources/queries-index.js';
+import { getAllLogs } from '@old-server/resources/queries-index';
 
 export async function getLogs({
     offset,
