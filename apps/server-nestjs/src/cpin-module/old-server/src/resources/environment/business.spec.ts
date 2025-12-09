@@ -10,9 +10,9 @@ import type {
 } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import prisma from '../../__mocks__/prisma.js';
-import { hook } from '../../__mocks__/utils/hook-wrapper.ts';
-import { Result } from '../../utils/business.js';
+import prisma from '../../__mocks__/prisma';
+import { hook } from '../../__mocks__/utils/hook-wrapper';
+import { Result } from '../../utils/business';
 import {
     checkClusterResources,
     checkProjectResources,
@@ -20,9 +20,9 @@ import {
     deleteEnvironment,
     getProjectEnvironments,
     updateEnvironment,
-} from './business.ts';
+} from './business';
 
-vi.mock('../../utils/hook-wrapper.ts', async () => ({
+vi.mock('../../utils/hook-wrapper', async () => ({
     hook,
 }));
 

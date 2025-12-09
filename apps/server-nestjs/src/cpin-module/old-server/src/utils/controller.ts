@@ -5,12 +5,12 @@ import {
     projectIsLockedInfo,
     tokenHeaderName,
 } from '@cpn-console/shared';
-import prisma from '@old-server/prisma.js';
+import prisma from '@old-server/prisma';
 import {
     logViaSession,
     logViaToken,
-} from '@old-server/resources/user/business.js';
-import type { UserDetails } from '@old-server/types/index.js';
+} from '@old-server/resources/user/business';
+import type { UserDetails } from '@old-server/types/index';
 import type {
     Cluster,
     Prisma,
@@ -20,8 +20,8 @@ import type {
 } from '@prisma/client';
 import type { FastifyRequest } from 'fastify';
 
-import { Unauthorized401 } from './errors.js';
-import { uuid } from './queries-tools.js';
+import { Unauthorized401 } from './errors';
+import { uuid } from './queries-tools';
 
 export type RequireOnlyOne<T, Keys extends keyof T = keyof T> = Pick<
     T,

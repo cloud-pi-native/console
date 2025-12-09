@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import prisma from '../../../__mocks__/prisma.js';
-import { objToDb, updatePluginConfig } from './business.ts';
+import prisma from '../../../__mocks__/prisma';
+import { objToDb, updatePluginConfig } from './business';
 
 describe('test system/config business', () => {
     const config = { test: { key1: 'value1' } };

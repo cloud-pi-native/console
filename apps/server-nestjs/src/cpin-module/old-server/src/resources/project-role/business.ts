@@ -1,12 +1,12 @@
 import type { projectRoleContract } from '@cpn-console/shared';
-import prisma from '@old-server/prisma.js';
+import prisma from '@old-server/prisma';
 import {
     deleteRole as deleteRoleQuery,
     listMembers,
     listRoles as listRolesQuery,
     updateRole,
-} from '@old-server/resources/queries-index.js';
-import { BadRequest400 } from '@old-server/utils/errors.js';
+} from '@old-server/resources/queries-index';
+import { BadRequest400 } from '@old-server/utils/errors';
 import type { Project, ProjectRole } from '@prisma/client';
 
 export async function listRoles(projectId: Project['id']) {

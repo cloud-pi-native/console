@@ -5,7 +5,7 @@
  * format ./data.ts with linter
  * cut/paste to packages/test-utils/src/imports/data.ts
  */
-import prisma from '@old-server/prisma.js';
+import prisma from '@old-server/prisma';
 import { Prisma } from '@prisma/client';
 import { writeFileSync } from 'node:fs';
 
@@ -15,7 +15,7 @@ import {
     modelKeys,
     models,
     resourceListToDict,
-} from './utils.js';
+} from './utils';
 
 const Models = resourceListToDict(Prisma.dmmf.datamodel.models);
 
@@ -35,4 +35,4 @@ for (const [model, targetModel, relationKey] of manyToManyRelation) {
 }
 const a = JSON.stringify({ ...models, associations }, null, 2);
 
-writeFileSync('./data.ts', `export const data = ${a}`);
+writeFileSync('./data', `export const data = ${a}`);

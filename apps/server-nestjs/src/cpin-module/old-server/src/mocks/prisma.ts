@@ -2,7 +2,7 @@ import type { PrismaClient } from '@prisma/client';
 import { beforeEach, vi } from 'vitest';
 import { mockDeep, mockReset } from 'vitest-mock-extended';
 
-vi.mock('../prisma.js');
+vi.mock('../prisma');
 
 const prisma = mockDeep<PrismaClient>();
 

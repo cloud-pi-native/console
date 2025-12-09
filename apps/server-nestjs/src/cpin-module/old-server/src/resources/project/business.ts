@@ -1,7 +1,7 @@
 import { servicesInfos } from '@cpn-console/hooks';
 import type { projectContract } from '@cpn-console/shared';
 import { ProjectStatusSchema } from '@cpn-console/shared';
-import prisma from '@old-server/prisma.js';
+import prisma from '@old-server/prisma';
 import {
     addLogs,
     deleteAllEnvironmentForProject,
@@ -13,17 +13,17 @@ import {
     listProjects as listProjectsQuery,
     lockProject,
     updateProject as updateProjectQuery,
-} from '@old-server/resources/queries-index.js';
-import type { UserDetails } from '@old-server/types/index.js';
-import { whereBuilder } from '@old-server/utils/controller.js';
-import { parallelBulkLimit } from '@old-server/utils/env.js';
-import type { ErrorResType } from '@old-server/utils/errors.js';
+} from '@old-server/resources/queries-index';
+import type { UserDetails } from '@old-server/types/index';
+import { whereBuilder } from '@old-server/utils/controller';
+import { parallelBulkLimit } from '@old-server/utils/env';
+import type { ErrorResType } from '@old-server/utils/errors';
 import {
     BadRequest400,
     Forbidden403,
     Unprocessable422,
-} from '@old-server/utils/errors.js';
-import { hook } from '@old-server/utils/hook-wrapper.js';
+} from '@old-server/utils/errors';
+import { hook } from '@old-server/utils/hook-wrapper';
 import type { Project, User } from '@prisma/client';
 import { json2csv } from 'json-2-csv';
 

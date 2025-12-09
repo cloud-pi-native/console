@@ -12,8 +12,8 @@ import {
     keycloakClientSecret,
     keycloakRealm,
     keycloakRedirectUri,
-} from './env.js';
-import { LoggerService } from './logger.js';
+} from './env';
+import { LoggerService } from './logger';
 
 @Injectable()
 export class FastifyService {

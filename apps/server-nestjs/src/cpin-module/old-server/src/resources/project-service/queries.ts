@@ -1,7 +1,7 @@
-import prisma from '@old-server/prisma.js';
+import prisma from '@old-server/prisma';
 import type { Project } from '@prisma/client';
 
-import type { ConfigRecords } from './business.js';
+import type { ConfigRecords } from './business';
 
 // CONFIG
 export function getProjectStore(projectId: Project['id']) {

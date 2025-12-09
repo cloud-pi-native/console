@@ -16,8 +16,8 @@ import {
     getPermsByUserRoles,
     resourceListToDict,
 } from '@cpn-console/shared';
-import type { ConfigRecords } from '@old-server/resources/project-service/business.js';
-import { dbToObj } from '@old-server/resources/project-service/business.js';
+import type { ConfigRecords } from '@old-server/resources/project-service/business';
+import { dbToObj } from '@old-server/resources/project-service/business';
 import {
     archiveProject,
     getAdminPlugin,
@@ -33,7 +33,7 @@ import {
     updateProjectCreated,
     updateProjectFailed,
     updateProjectWarning,
-} from '@old-server/resources/queries-index.js';
+} from '@old-server/resources/queries-index';
 import type {
     Cluster,
     Kubeconfig,
@@ -42,7 +42,7 @@ import type {
     Zone,
 } from '@prisma/client';
 
-import { genericProxy } from './proxy.js';
+import { genericProxy } from './proxy';
 
 export type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>;
 export type ProjectInfos = AsyncReturnType<typeof getHookProjectInfos>;

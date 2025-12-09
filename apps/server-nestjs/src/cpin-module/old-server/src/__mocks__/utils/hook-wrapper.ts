@@ -1,7 +1,7 @@
 import { beforeEach, vi } from 'vitest';
 import { mockDeep, mockReset } from 'vitest-mock-extended';
 
-vi.mock('../utils/hook-wrapper.ts');
+vi.mock('../utils/hook-wrapper');
 
 export const hook = {
     cluster: {

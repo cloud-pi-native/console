@@ -11,12 +11,12 @@ import type { FastifyRequest } from 'fastify';
 import fastify from 'fastify';
 import keycloak from 'fastify-keycloak-adapter';
 
-import { ResourcesService } from './resources/index.js';
-import { isDev, isInt, isTest } from './utils/env.js';
-import { FastifyService } from './utils/fastify.js';
-import { keycloakConf, sessionConf } from './utils/keycloak.js';
-import type { CustomLogger } from './utils/logger.js';
-import { LoggerService } from './utils/logger.js';
+import { ResourcesService } from './resources/index';
+import { isDev, isInt, isTest } from './utils/env';
+import { FastifyService } from './utils/fastify';
+import { keycloakConf, sessionConf } from './utils/keycloak';
+import type { CustomLogger } from './utils/logger';
+import { LoggerService } from './utils/logger';
 
 @Injectable()
 export class AppService {

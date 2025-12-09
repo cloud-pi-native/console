@@ -2,16 +2,16 @@ import { faker } from '@faker-js/faker';
 import type { Cluster, Zone } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import prisma from '../../__mocks__/prisma.js';
-import { hook } from '../../__mocks__/utils/hook-wrapper.ts';
-import { BadRequest400 } from '../../utils/errors.ts';
-import { createZone, deleteZone, listZones, updateZone } from './business.ts';
-import * as queries from './queries.js';
+import prisma from '../../__mocks__/prisma';
+import { hook } from '../../__mocks__/utils/hook-wrapper';
+import { BadRequest400 } from '../../utils/errors';
+import { createZone, deleteZone, listZones, updateZone } from './business';
+import * as queries from './queries';
 
 const userId = faker.string.uuid();
 const reqId = faker.string.uuid();
 const linkZoneToClustersMock = vi.spyOn(queries, 'linkZoneToClusters');
-vi.mock('../../utils/hook-wrapper.ts', async () => ({
+vi.mock('../../utils/hook-wrapper', async () => ({
     hook,
 }));
 

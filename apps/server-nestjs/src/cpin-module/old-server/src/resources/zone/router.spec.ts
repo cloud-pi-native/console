@@ -3,15 +3,15 @@ import { zoneContract } from '@cpn-console/shared';
 import { faker } from '@faker-js/faker';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import app from '../../app.js';
-import * as utilsController from '../../utils/controller.js';
-import { BadRequest400 } from '../../utils/errors.js';
-import { getUserMockInfos } from '../../utils/mocks.js';
-import * as business from './business.js';
+import app from '../../app';
+import * as utilsController from '../../utils/controller';
+import { BadRequest400 } from '../../utils/errors';
+import { getUserMockInfos } from '../../utils/mocks';
+import * as business from './business';
 
 vi.mock(
     'fastify-keycloak-adapter',
-    (await import('../../utils/mocks.js')).mockSessionPlugin,
+    (await import('../../utils/mocks')).mockSessionPlugin,
 );
 const authUserMock = vi.spyOn(utilsController, 'authUser');
 const businessListMock = vi.spyOn(business, 'listZones');

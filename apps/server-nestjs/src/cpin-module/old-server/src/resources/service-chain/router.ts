@@ -1,10 +1,10 @@
 import type { AsyncReturnType } from '@cpn-console/shared';
 import { AdminAuthorized, serviceChainContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
-import { AppService } from '@old-server/app.js';
-import '@old-server/types/index.js';
-import { authUser } from '@old-server/utils/controller.js';
-import { Forbidden403 } from '@old-server/utils/errors.js';
+import { AppService } from '@old-server/app';
+import '@old-server/types/index';
+import { authUser } from '@old-server/utils/controller';
+import { Forbidden403 } from '@old-server/utils/errors';
 
 import {
     getServiceChainDetails as getServiceChainDetailsBusiness,
@@ -12,7 +12,7 @@ import {
     listServiceChains as listServiceChainsBusiness,
     retryServiceChain as retryServiceChainBusiness,
     validateServiceChain as validateServiceChainBusiness,
-} from './business.js';
+} from './business';
 
 @Injectable()
 export class ServiceChainRouterService {

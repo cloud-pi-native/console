@@ -4,9 +4,9 @@ import {
     servicesInfos,
 } from '@cpn-console/hooks';
 import type { PluginsUpdateBody } from '@cpn-console/shared';
-import { BadRequest400 } from '@old-server/utils/errors.js';
+import { BadRequest400 } from '@old-server/utils/errors';
 
-import { getAdminPlugin, savePluginsConfig } from './queries.js';
+import { getAdminPlugin, savePluginsConfig } from './queries';
 
 export type ConfigRecords = {
     key: string;

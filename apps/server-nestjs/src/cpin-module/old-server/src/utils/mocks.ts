@@ -9,8 +9,8 @@ import { faker } from '@faker-js/faker';
 import type { Repository } from '@prisma/client';
 import fp from 'fastify-plugin';
 
-import type { UserDetails } from '../types/index.js';
-import type * as utilsController from '../utils/controller.js';
+import type { UserDetails } from '../types/index';
+import type * as utilsController from '../utils/controller';
 
 let requestor: Requestor;
 

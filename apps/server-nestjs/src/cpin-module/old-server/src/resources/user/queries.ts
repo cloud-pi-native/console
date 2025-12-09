@@ -1,4 +1,4 @@
-import prisma from '@old-server/prisma.js';
+import prisma from '@old-server/prisma';
 import type { Prisma, User } from '@prisma/client';
 
 type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>;
