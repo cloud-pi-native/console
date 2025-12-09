@@ -26,7 +26,7 @@ Il faut d'abord lancer une stack, par ex, celle de Dev:
 ```shell
 $ pnpm run docker:dev
 ```
-On peut ensuite lancer ensuite les tests :
+On peut lancer ensuite les tests :
 
 ```shell
 $ pnpm run playwright:test --grep @e2e
@@ -36,6 +36,28 @@ OU (autre possibilité), lancer la "console" Playwright pour parcourir/exécuter
 
 ```shell
 $ pnpm run playwright:test:ui --grep @e2e
+```
+
+Et pour les tests d'intégration, il faut au préalable exporter des variables d'environnement :
+
+```shell
+$ export KEYCLOAK_DOMAIN=keycloak.example.com
+$ export KEYCLOAK_REDIRECT_URI=https://console.example.com
+$ export KEYCLOAK_PROTOCOL=https
+$ export KEYCLOAK_ADMIN_USERNAME=<admin_username>
+$ export KEYCLOAK_ADMIN_PASSWORD=<admin_password>
+$ export KEYCLOAK_REALM=dso
+$ export CONSOLE_ADMIN_USERNAME=<admin_dso_username>
+$ export CONSOLE_ADMIN_PASSWORD=<admin_dso_password>
+$ export CONSOLE_ADMIN_EMAIL=<admin_dso_email>
+$ export CONSOLE_GLOBAL_TIMEOUT='900000'
+$ export CONSOLE_EXPECT_TIMEOUT='900000'
+```
+
+On peut lancer ensuite les tests :
+
+```shell
+$ pnpm run playwright:test:integration --grep @integ
 ```
 
 ## Conventions de code
