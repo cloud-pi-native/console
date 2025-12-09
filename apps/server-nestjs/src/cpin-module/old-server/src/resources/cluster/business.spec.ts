@@ -2,14 +2,14 @@ import { faker } from '@faker-js/faker';
 import type { Cluster, Environment } from '@prisma/client';
 import { describe, expect, it, vi } from 'vitest';
 
-import prisma from '../../__mocks__/prisma.js';
-import { hook } from '../../__mocks__/utils/hook-wrapper.ts';
+import prisma from '../../__mocks__/prisma';
+import { hook } from '../../__mocks__/utils/hook-wrapper';
 import {
     BadRequest400,
     ErrorResType,
     NotFound404,
     Unprocessable422,
-} from '../../utils/errors.ts';
+} from '../../utils/errors';
 import {
     createCluster,
     deleteCluster,
@@ -18,9 +18,9 @@ import {
     getClusterUsage,
     listClusters,
     updateCluster,
-} from './business.ts';
+} from './business';
 
-vi.mock('../../utils/hook-wrapper.ts', async () => ({
+vi.mock('../../utils/hook-wrapper', async () => ({
     hook,
 }));
 

@@ -1,4 +1,4 @@
-import prisma from '@old-server/prisma.js';
+import prisma from '@old-server/prisma';
 import type { AdminRole, Prisma } from '@prisma/client';
 
 export const listAdminRoles = () =>

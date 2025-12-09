@@ -5,7 +5,7 @@ import type {
     clusterContract,
 } from '@cpn-console/shared';
 import { ClusterDetailsSchema, ClusterPrivacy } from '@cpn-console/shared';
-import prisma from '@old-server/prisma.js';
+import prisma from '@old-server/prisma';
 import {
     addLogs,
     createCluster as createClusterQuery,
@@ -22,17 +22,17 @@ import {
     removeClusterFromProject,
     removeClusterFromStage,
     updateCluster as updateClusterQuery,
-} from '@old-server/resources/queries-index.js';
-import { linkClusterToStages } from '@old-server/resources/stage/business.js';
-import type { Resources } from '@old-server/types/index.js';
-import { validateSchema } from '@old-server/utils/business.js';
+} from '@old-server/resources/queries-index';
+import { linkClusterToStages } from '@old-server/resources/stage/business';
+import type { Resources } from '@old-server/types/index';
+import { validateSchema } from '@old-server/utils/business';
 import {
     BadRequest400,
     ErrorResType,
     NotFound404,
     Unprocessable422,
-} from '@old-server/utils/errors.js';
-import { hook } from '@old-server/utils/hook-wrapper.js';
+} from '@old-server/utils/errors';
+import { hook } from '@old-server/utils/hook-wrapper';
 import type { Prisma, Project, User } from '@prisma/client';
 
 export async function listClusters(userId?: User['id']) {

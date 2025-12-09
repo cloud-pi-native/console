@@ -1,4 +1,4 @@
-import prisma from '@old-server/prisma.js';
+import prisma from '@old-server/prisma';
 import type { Cluster, Stage } from '@prisma/client';
 
 export function listStages() {

@@ -1,4 +1,4 @@
-import prisma from '@old-server/prisma.js';
+import prisma from '@old-server/prisma';
 import type { Prisma, SystemSetting } from '@prisma/client';
 
 export function upsertSystemSetting(newSystemSetting: SystemSetting) {

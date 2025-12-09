@@ -1,24 +1,24 @@
-import { PrismaClientInitializationError } from '@prisma/client/runtime/library.js';
+import { PrismaClientInitializationError } from '@prisma/client/runtime/library';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import prisma from './__mocks__/prisma.js';
-import app, { logger } from './app.js';
-import { getConnection } from './connect.js';
+import prisma from './__mocks__/prisma';
+import app, { logger } from './app';
+import { getConnection } from './connect';
 
 vi.mock(
     'fastify-keycloak-adapter',
-    (await import('./utils/mocks.js')).mockSessionPlugin,
+    (await import('./utils/mocks')).mockSessionPlugin,
 );
-vi.mock('@old-server/resources/queries-index.js');
-vi.mock('./models/log.js', () => getModel('getLogModel'));
-vi.mock('./models/repository.js', () => getModel('getRepositoryModel'));
-vi.mock('./models/permission.js', () => getModel('getPermissionModel'));
-vi.mock('./models/environment.js', () => getModel('getEnvironmentModel'));
-vi.mock('./models/project.js', () => getModel('getProjectModel'));
-vi.mock('./models/user.js', () => getModel('getUserModel'));
-vi.mock('./models/users-projects.js', () => getModel('getRolesModel'));
-vi.mock('./models/zone.js', () => getModel('getZoneModel'));
-vi.mock('./prisma.js');
+vi.mock('@old-server/resources/queries-index');
+vi.mock('./models/log', () => getModel('getLogModel'));
+vi.mock('./models/repository', () => getModel('getRepositoryModel'));
+vi.mock('./models/permission', () => getModel('getPermissionModel'));
+vi.mock('./models/environment', () => getModel('getEnvironmentModel'));
+vi.mock('./models/project', () => getModel('getProjectModel'));
+vi.mock('./models/user', () => getModel('getUserModel'));
+vi.mock('./models/users-projects', () => getModel('getRolesModel'));
+vi.mock('./models/zone', () => getModel('getZoneModel'));
+vi.mock('./prisma');
 
 vi.spyOn(app, 'listen');
 vi.spyOn(logger, 'info');

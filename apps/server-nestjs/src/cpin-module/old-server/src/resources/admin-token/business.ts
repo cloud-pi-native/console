@@ -3,11 +3,11 @@ import {
     generateRandomPassword,
     isAtLeastTomorrow,
 } from '@cpn-console/shared';
-import { BadRequest400 } from '@old-server/utils/errors.js';
+import { BadRequest400 } from '@old-server/utils/errors';
 import type { $Enums, AdminToken, Prisma } from '@prisma/client';
 import { createHash, randomUUID } from 'node:crypto';
 
-import prisma from '../../prisma.js';
+import prisma from '../../prisma';
 
 export async function listTokens(
     query: typeof adminTokenContract.listAdminTokens.query._type,

@@ -1,4 +1,4 @@
-import prisma from '@old-server/prisma.js';
+import prisma from '@old-server/prisma';
 import type { Environment, Prisma, Project } from '@prisma/client';
 
 // SELECT

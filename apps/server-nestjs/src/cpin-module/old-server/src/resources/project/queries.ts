@@ -1,7 +1,7 @@
 import type { XOR, projectContract } from '@cpn-console/shared';
-import prisma from '@old-server/prisma.js';
-import { appVersion } from '@old-server/utils/env.js';
-import { uuid } from '@old-server/utils/queries-tools.js';
+import prisma from '@old-server/prisma';
+import { appVersion } from '@old-server/utils/env';
+import { uuid } from '@old-server/utils/queries-tools';
 import type { Prisma, Project, User } from '@prisma/client';
 import { ProjectStatus } from '@prisma/client';
 

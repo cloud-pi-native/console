@@ -1,11 +1,11 @@
 import type { XOR, userContract } from '@cpn-console/shared';
-import prisma from '@old-server/prisma.js';
+import prisma from '@old-server/prisma';
 import {
     getMatchingUsers as getMatchingUsersQuery,
     getUsers as getUsersQuery,
-} from '@old-server/resources/queries-index.js';
-import type { UserDetails } from '@old-server/types/index.js';
-import { BadRequest400 } from '@old-server/utils/errors.js';
+} from '@old-server/resources/queries-index';
+import type { UserDetails } from '@old-server/types/index';
+import { BadRequest400 } from '@old-server/utils/errors';
 import type {
     AdminRole,
     AdminToken,

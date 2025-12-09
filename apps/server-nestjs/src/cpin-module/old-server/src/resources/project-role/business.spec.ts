@@ -2,15 +2,15 @@ import { faker } from '@faker-js/faker';
 import type { ProjectMembers, ProjectRole, User } from '@prisma/client';
 import { describe, expect, it } from 'vitest';
 
-import prisma from '../../__mocks__/prisma.js';
-import { BadRequest400 } from '../../utils/errors.ts';
+import prisma from '../../__mocks__/prisma';
+import { BadRequest400 } from '../../utils/errors';
 import {
     countRolesMembers,
     createRole,
     deleteRole,
     listRoles,
     patchRoles,
-} from './business.ts';
+} from './business';
 
 const projectId = faker.string.uuid();
 describe('test project-role business', () => {

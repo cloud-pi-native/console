@@ -1,10 +1,10 @@
 import { AdminAuthorized, adminTokenContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
-import { authUser } from '@old-server/utils/controller.js';
-import { ErrorResType, Forbidden403 } from '@old-server/utils/errors.js';
+import { authUser } from '@old-server/utils/controller';
+import { ErrorResType, Forbidden403 } from '@old-server/utils/errors';
 
-import { AppService } from '../../app.js';
-import { createToken, deleteToken, listTokens } from './business.js';
+import { AppService } from '../../app';
+import { createToken, deleteToken, listTokens } from './business';
 
 @Injectable()
 export class AdminTokenRouterService {

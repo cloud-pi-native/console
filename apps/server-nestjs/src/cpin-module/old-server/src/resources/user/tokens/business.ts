@@ -1,10 +1,10 @@
 import type { personalAccessTokenContract } from '@cpn-console/shared';
 import { generateRandomPassword, isAtLeastTomorrow } from '@cpn-console/shared';
-import { BadRequest400 } from '@old-server/utils/errors.js';
+import { BadRequest400 } from '@old-server/utils/errors';
 import type { AdminToken, User } from '@prisma/client';
 import { createHash } from 'node:crypto';
 
-import prisma from '../../../prisma.js';
+import prisma from '../../../prisma';
 
 export async function listTokens(userId: User['id']) {
     return prisma.personalAccessToken.findMany({

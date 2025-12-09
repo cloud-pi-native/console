@@ -4,7 +4,7 @@ import { ProxyAgent, setGlobalDispatcher } from 'undici';
 import { AppService } from './app';
 import { ConnectionService } from './connect';
 import { InitDBService } from './init/db';
-import { initPm } from './plugins';
+import { PluginService } from './plugins';
 import { isCI, isDev, isDevSetup, isProd, isTest } from './utils/env';
 
 @Injectable()
@@ -13,6 +13,8 @@ export class PrepareAppService {
         private readonly appService: AppService,
         private readonly connectionService: ConnectionService,
         private readonly initDBService: InitDBService,
+        private readonly pluginService: PluginService,
+
     ) {
         // Workaround because fetch isn't using http_proxy variables
         // See. https://github.com/gajus/global-agent/issues/52#issuecomment-1134525621
@@ -37,15 +39,15 @@ export class PrepareAppService {
             throw error;
         }
 
-        initPm();
+        this.pluginService.initPm();
 
         this.appService.logger.info('Reading init database file');
 
         // try {
         // const dataPath =
         // isProd || isInt
-        // ? './init/db/imports/data.js'
-        // : '@cpn-console/test-utils/src/imports/data.ts';
+        // ? './init/db/imports/data'
+        // : '@cpn-console/test-utils/src/imports/data';
         // await initializeDB(dataPath);
         // if (isProd && !isDevSetup) {
         // this.appService.logger.info('Cleaning up imported data file...');
@@ -84,15 +86,15 @@ export class PrepareAppService {
             throw error;
         }
 
-        initPm();
+        this.pluginService.initPm();
 
         this.appService.logger.info('Reading init database file');
 
         // try {
         // const dataPath =
         // isProd || isInt
-        // ? './init/db/imports/data.js'
-        // : '@cpn-console/test-utils/src/imports/data.ts';
+        // ? './init/db/imports/data'
+        // : '@cpn-console/test-utils/src/imports/data';
         // await initializeDB(dataPath);
         // if (isProd && !isDevSetup) {
         // this.appService.logger.info('Cleaning up imported data file...');

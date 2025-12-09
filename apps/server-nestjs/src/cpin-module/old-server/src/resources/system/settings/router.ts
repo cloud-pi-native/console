@@ -1,10 +1,10 @@
 import { AdminAuthorized, systemSettingsContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
-import { AppService } from '@old-server/app.js';
-import { authUser } from '@old-server/utils/controller.js';
-import { Forbidden403 } from '@old-server/utils/errors.js';
+import { AppService } from '@old-server/app';
+import { authUser } from '@old-server/utils/controller';
+import { Forbidden403 } from '@old-server/utils/errors';
 
-import { getSystemSettings, upsertSystemSetting } from './business.js';
+import { getSystemSettings, upsertSystemSetting } from './business';
 
 @Injectable()
 export class SystemSettingsRouterService {

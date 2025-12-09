@@ -1,11 +1,11 @@
 import { personalAccessTokenContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
-import { AppService } from '@old-server/app.js';
-import '@old-server/types/index.js';
-import { authUser } from '@old-server/utils/controller.js';
-import { ErrorResType, Forbidden403 } from '@old-server/utils/errors.js';
+import { AppService } from '@old-server/app';
+import '@old-server/types/index';
+import { authUser } from '@old-server/utils/controller';
+import { ErrorResType, Forbidden403 } from '@old-server/utils/errors';
 
-import { createToken, deleteToken, listTokens } from './business.js';
+import { createToken, deleteToken, listTokens } from './business';
 
 @Injectable()
 export class UserTokensRouterService {

@@ -3,7 +3,7 @@ import type { UpsertSystemSettingBody } from '@cpn-console/shared';
 import {
     getSystemSettings as getSystemSettingsQuery,
     upsertSystemSetting as upsertSystemSettingQuery,
-} from './queries.js';
+} from './queries';
 
 export const getSystemSettings = (key?: string) =>
     getSystemSettingsQuery({ key });
