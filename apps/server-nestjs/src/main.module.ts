@@ -9,4 +9,4 @@ import { CpinModule } from './cpin-module/cpin.module';
     controllers: [],
     providers: [],
 })
-export class AppModule {}
+export class MainModule {}
