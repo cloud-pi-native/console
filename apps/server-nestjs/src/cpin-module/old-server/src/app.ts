@@ -7,7 +7,7 @@ import fastifySwaggerUi from '@fastify/swagger-ui';
 import { Injectable } from '@nestjs/common';
 import { initServer } from '@ts-rest/fastify';
 import { generateOpenApi } from '@ts-rest/open-api';
-import type { FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import fastify from 'fastify';
 import keycloak from 'fastify-keycloak-adapter';
 
@@ -28,7 +28,7 @@ export class AppService {
 
     serverInstance: ReturnType<typeof initServer> = initServer();
 
-    app: any;
+    app: FastifyInstance;
     logger: any;
 
     async init() {
