@@ -7,50 +7,54 @@ import { plugin as kubernetes } from '@cpn-console/kubernetes-plugin';
 import { plugin as nexus } from '@cpn-console/nexus-plugin';
 import { plugin as sonarqube } from '@cpn-console/sonarqube-plugin';
 import { plugin as vault } from '@cpn-console/vault-plugin';
+import { Injectable } from '@nestjs/common';
 import { readdirSync, statSync } from 'node:fs';
 
-import { pluginsDir } from './utils/env.js';
-import { pluginManagerOptions } from './utils/plugins.js';
+import { pluginsDir } from './utils/env';
+import { pluginManagerOptions } from './utils/plugins';
 
-export async function initPm() {
-    const pm = pluginManager(pluginManagerOptions);
-    pm.register(argo);
-    pm.register(gitlab);
-    pm.register(harbor);
-    pm.register(keycloak);
-    pm.register(kubernetes);
-    pm.register(nexus);
-    pm.register(sonarqube);
-    pm.register(vault);
+@Injectable()
+export class PluginService {
+    async initPm() {
+        const pm = pluginManager(pluginManagerOptions);
+        pm.register(argo);
+        pm.register(gitlab);
+        pm.register(harbor);
+        pm.register(keycloak);
+        pm.register(kubernetes);
+        pm.register(nexus);
+        pm.register(sonarqube);
+        pm.register(vault);
 
-    if (
-        !statSync(pluginsDir, {
-            throwIfNoEntry: false,
-        })
-    ) {
+        if (
+            !statSync(pluginsDir, {
+                throwIfNoEntry: false,
+            })
+        ) {
+            return pm;
+        }
+        for (const dirName of readdirSync(pluginsDir)) {
+            const moduleAbsPath = `${pluginsDir}/${dirName}`;
+            try {
+                statSync(`${moduleAbsPath}/package.json`);
+                const pkg = await import(`${moduleAbsPath}/package.json`, {
+                    with: { type: 'json' },
+                });
+                const entrypoint = pkg.default.module || pkg.default.main;
+                if (!entrypoint)
+                    throw new Error(
+                        `No entrypoint found in package.json : ${pkg.default.name}`,
+                    );
+                const { plugin } = (await import(
+                    `${moduleAbsPath}/${entrypoint}`
+                )) as { plugin: Plugin };
+                pm.register(plugin);
+            } catch (error) {
+                console.error(`Could not import module ${moduleAbsPath}`);
+                console.error(error.stack);
+            }
+        }
+
         return pm;
     }
-    for (const dirName of readdirSync(pluginsDir)) {
-        const moduleAbsPath = `${pluginsDir}/${dirName}`;
-        try {
-            statSync(`${moduleAbsPath}/package.json`);
-            const pkg = await import(`${moduleAbsPath}/package.json`, {
-                with: { type: 'json' },
-            });
-            const entrypoint = pkg.default.module || pkg.default.main;
-            if (!entrypoint)
-                throw new Error(
-                    `No entrypoint found in package.json : ${pkg.default.name}`,
-                );
-            const { plugin } = (await import(
-                `${moduleAbsPath}/${entrypoint}`
-            )) as { plugin: Plugin };
-            pm.register(plugin);
-        } catch (error) {
-            console.error(`Could not import module ${moduleAbsPath}`);
-            console.error(error.stack);
-        }
-    }
-
-    return pm;
 }
