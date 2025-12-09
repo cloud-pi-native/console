@@ -86,6 +86,9 @@ export function repositoryRouter() {
         'externalToken',
         'externalUserName',
         'isInfra',
+        'deployRevision',
+        'deployPath',
+        'helmValuesFiles',
       ]
       const data = filterObjectByKeys(body, keysAllowedForUpdate)
 

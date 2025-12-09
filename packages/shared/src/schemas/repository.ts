@@ -26,6 +26,10 @@ export const RepoSchema = z.object({
     .optional(),
   projectId: z.string()
     .uuid(),
+  // Optional deployment settings for infra repositories
+  deployRevision: z.string().optional(),
+  deployPath: z.string().optional(),
+  helmValuesFiles: z.string().optional(),
 }).extend(AtDatesToStringExtend)
 
 // To only use in frontend form

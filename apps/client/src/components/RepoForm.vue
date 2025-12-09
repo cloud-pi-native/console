@@ -16,6 +16,9 @@ const props = withDefaults(defineProps<{
     internalRepoName: '',
     externalRepoUrl: '',
     isStandalone: false,
+    deployRevision: undefined,
+    deployPath: undefined,
+    helmValuesFiles: undefined,
   }),
   canManage: false,
   isProjectLocked: false,
@@ -30,7 +33,7 @@ const localRepo = ref<RepoForm>({
   ...isExistingAndPrivate && { externalToken: fakeToken },
   isStandalone: !!(props.repo.id && !props.repo.externalRepoUrl), // key present only in frontend for form
 })
-const updatedValues = ref<Record<keyof Omit<typeof localRepo.value, 'id' | 'projectId'>, boolean>>(instanciateSchema(RepoFormSchema, false))
+const updatedValues = ref<Record<keyof Omit<typeof localRepo.value, 'id' | 'projectId' | 'createdAt' | 'updatedAt'>, boolean>>(instanciateSchema(RepoFormSchema, false))
 
 const repoToDelete = ref('')
 const isDeletingRepo = ref(false)
@@ -46,9 +49,16 @@ const errorSchema = computed<SharedZodError | undefined>(() => {
   return schemaValidation.success ? undefined : schemaValidation.error
 })
 const isRepoValid = computed(() => !errorSchema.value)
+const helmValuesFilesTextarea = computed(() => {
+  return (localRepo.value.helmValuesFiles || '').split(',').join('\n')
+})
 
-function updateRepo<K extends keyof Omit<typeof localRepo.value, 'id' | 'projectId'>>(key: K, value: typeof localRepo.value[K]) {
-  localRepo.value[key] = value
+function updateRepo<K extends keyof typeof updatedValues.value>(key: K, value: typeof localRepo.value[K]) {
+  if (key === 'helmValuesFiles') {
+    localRepo.value.helmValuesFiles = value ? (value as string).split('\n').join(',') : undefined
+  } else {
+    localRepo.value[key] = value
+  }
   updatedValues.value[key] = true
 
   if (key === 'externalRepoUrl' && value === '') {
@@ -60,6 +70,12 @@ function updateRepo<K extends keyof Omit<typeof localRepo.value, 'id' | 'project
   if (key === 'isPrivate') {
     localRepo.value.externalUserName = undefined
     localRepo.value.externalToken = undefined
+  }
+
+  if (key === 'isInfra' && !value) {
+    localRepo.value.deployRevision = undefined
+    localRepo.value.deployPath = undefined
+    localRepo.value.helmValuesFiles = undefined
   }
 }
 
@@ -142,6 +158,50 @@ function toggleStandalone(e: boolean) {
           name="infraRepoCbx"
           @update:model-value="updateRepo('isInfra', $event)"
         />
+      </DsfrFieldset>
+      <DsfrFieldset
+        v-if="localRepo.isInfra"
+        legend="Déploiement"
+      >
+        <div class="fr-mb-2w">
+          <DsfrInputGroup
+            v-model="localRepo.deployRevision"
+            data-testid="deployRevisionInput"
+            type="text"
+            :disabled="props.isProjectLocked || !canManage"
+            label="Nom de la révision à déployer (branche, tag, commit)"
+            label-visible
+            hint="Laisser vide pour utiliser la branche par défaut (HEAD)"
+            placeholder="main"
+          />
+        </div>
+        <div class="fr-mb-2w">
+          <DsfrInputGroup
+            v-model="localRepo.deployPath"
+            data-testid="deployPathInput"
+            :disabled="props.isProjectLocked || !canManage"
+            label="Chemin du répertoire à déployer"
+            label-visible
+            hint="Laisser vide pour utiliser le répertoire racine par défaut (.)."
+            placeholder="manifests/"
+          />
+        </div>
+        <div class="fr-mb-2w">
+          <DsfrInputGroup
+            v-model="helmValuesFilesTextarea"
+            is-textarea
+            :disabled="props.isProjectLocked || !canManage"
+            data-testid="helmValuesFilesTextarea"
+            label="Fichiers values (Helm)"
+            label-visible
+            hint="Un fichier par ligne. Indiquer le chemin relatif par rapport au répertoire à déployer. L'ordre des fichiers est déterminant pour la surcharge des valeurs communes. Champ optionnel."
+            placeholder="values/prod.yaml
+values/extra.yaml"
+            @update:model-value="updateRepo('helmValuesFiles', $event)"
+          />
+        </div>
+      </DsfrFieldset>
+      <DsfrFieldset>
         <DsfrToggleSwitch
           v-model="localRepo.isStandalone"
           data-testid="standaloneRepoSwitch"
