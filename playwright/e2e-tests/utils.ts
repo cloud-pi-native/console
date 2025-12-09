@@ -86,10 +86,12 @@ export async function addRandomRepositoryToProject({
   page,
   repositoryName,
   externalRepoUrlInput,
+  infraRepo,
 }: {
   page: Page
   repositoryName?: string
   externalRepoUrlInput?: string
+  infraRepo?: bool
 }) {
   repositoryName = repositoryName ?? faker.string.alpha(10).toLowerCase()
   await page.getByTestId('addRepoLink').click()
@@ -102,6 +104,9 @@ export async function addRandomRepositoryToProject({
     await page
       .getByTestId('externalRepoUrlInput')
       .fill(`${faker.internet.url({ appendSlash: true })}myrepository.git`)
+  }
+  if (infraRepo) {
+    await page.getByText('Dépôt contenant du code d\'').click()
   }
   await page.getByTestId('addRepoBtn').click()
   await expect(page.getByTestId(`repoTr-${repositoryName}`)).toContainText(
