@@ -1,4 +1,3 @@
-import { dirname } from 'node:path'
 import type { ClusterObject, Environment, ListMinimumResources, Project, Repository, StepCall } from '@cpn-console/hooks'
 import { parseError, uniqueResource } from '@cpn-console/hooks'
 import { dump } from 'js-yaml'
@@ -212,8 +211,15 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
   const valueFilePath = getValueFilePath(project, cluster, environment)
   const vaultCredentials = await vaultApi.Project.getCredentials()
   const repositories: ArgoRepoSource[] = await Promise.all([
-    getArgoRepoSource('infra-apps', environment.name, gitlabApi),
-    ...infraRepositories.map(repo => getArgoRepoSource(repo.internalRepoName, environment.name, gitlabApi)),
+    ...infraRepositories.map(async (repository) => {
+      const repoURL = await gitlabApi.getPublicRepoUrl(repository.internalRepoName)
+      return {
+        repoURL,
+        targetRevision: repository.deployRevision || 'HEAD',
+        path: repository.deployPath || '.',
+        valueFiles: repository.helmValuesFiles?.split(',') || [],
+      }
+    }),
   ])
   const values = {
     common: {
@@ -221,6 +227,7 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
       'dso/project.id': project.id,
       'dso/project.slug': project.slug,
       'dso/environment': environment.name,
+      'dso/environment.id': environment.id,
     },
     argocd: {
       cluster: inClusterLabel,
@@ -252,34 +259,6 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
     },
   }
   await gitlabApi.commitCreateOrUpdate(repoId, dump(values), valueFilePath)
-}
-
-async function getArgoRepoSource(repoName: string, env: string, gitlabApi: GitlabProjectApi): Promise<ArgoRepoSource> {
-  const targetRevision = 'HEAD'
-  const valueFiles = [] // Empty means not a Helm repository
-  let path = '.'
-  const repoId = await gitlabApi.getProjectId(repoName)
-  const repoURL = await gitlabApi.getPublicRepoUrl(repoName)
-  try {
-    const files = await gitlabApi.listFiles(repoId, { path: '/', ref: 'HEAD', recursive: false })
-    const result = files.find(f => f.name === 'values.yaml')
-    if (result) {
-      valueFiles.push('values.yaml')
-      path = dirname(result.path)
-      const valuesEnv = `values-${env}.yaml`
-      if (files.find(f => (path === '.' && f.path === valuesEnv) || f.path === `${path}/${valuesEnv}`)) {
-        valueFiles.push(valuesEnv)
-      }
-    }
-  } catch (error) {
-    console.log(`Error ignored when trying to list files of repository ${repoName}: ${error.message}`)
-  }
-  return {
-    repoURL,
-    targetRevision,
-    path,
-    valueFiles,
-  }
 }
 
 function getCluster(p: Project, e: Environment): ClusterObject {

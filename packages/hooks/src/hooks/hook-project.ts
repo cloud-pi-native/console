@@ -41,6 +41,9 @@ export interface Repository {
   externalRepoUrl: ExternalRepoUrl
   isPrivate: IsPrivate
   isInfra: IsInfra
+  deployRevision: string | null
+  deployPath: string | null
+  helmValuesFiles: string | null
 }
 
 export interface ProjectStore {

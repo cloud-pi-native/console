@@ -10,6 +10,7 @@ import '@/main.css'
 
 import RepoForm from '@/components/RepoForm.vue'
 import { useProjectStore } from '@/stores/project.js'
+import type { ComponentCustomProps } from 'vue'
 
 describe('RepoForm.vue', () => {
   let pinia: Pinia
@@ -31,7 +32,7 @@ describe('RepoForm.vue', () => {
       [randomDbSetup.project.slug]: randomDbSetup.project,
     }
 
-    cy.mount(RepoForm, { props })
+    cy.mount(RepoForm, { props } as ComponentCustomProps)
 
     cy.get('h2').should('contain', 'Ajouter un dépôt au projet')
     cy.getByDataTestid('repoFieldset').should('have.length', 1)
@@ -91,6 +92,9 @@ describe('RepoForm.vue', () => {
         isPrivate: true,
         isInfra: false,
         externalUserName: 'claire+nlet',
+        deployRevision: 'fix/deploy',
+        deployPath: 'helm4/',
+        helmValuesFiles: 'values/prod.yaml,values/extra.yaml',
       },
       canManage: true,
     }
@@ -101,7 +105,7 @@ describe('RepoForm.vue', () => {
       [randomDbSetup.project.slug]: randomDbSetup.project,
     }
 
-    cy.mount(RepoForm, { props })
+    cy.mount(RepoForm, { props } as ComponentCustomProps)
 
     cy.get('h2').should('contain', 'Modifier le dépôt')
     cy.getByDataTestid('repoFieldset').should('have.length', 1)
@@ -168,6 +172,12 @@ describe('RepoForm.vue', () => {
 
     // Case 3 : no Git source, infra
     cy.getByDataTestid('input-checkbox-infraRepoCbx').check({ force: true })
+    cy.getByDataTestid('deployRevisionInput').should('have.value', props.repo.deployRevision)
+      .and('be.enabled')
+    cy.getByDataTestid('deployPathInput').should('have.value', props.repo.deployPath)
+      .and('be.enabled')
+    cy.getByDataTestid('helmValuesFilesTextarea').should('have.value', props.repo.helmValuesFiles.split(',').join('\n'))
+      .and('be.enabled')
     cy.getByDataTestid('updateRepoBtn').should('be.enabled')
     cy.getByDataTestid('cancelRepoBtn').should('be.enabled')
 
@@ -193,7 +203,7 @@ describe('RepoForm.vue', () => {
       [randomDbSetup.project.slug]: randomDbSetup.project,
     }
 
-    cy.mount(RepoForm, { props })
+    cy.mount(RepoForm, { props } as ComponentCustomProps)
 
     cy.getByDataTestid('repoFieldset').should('have.length', 1)
     cy.getByDataTestid('internalRepoNameInput')
@@ -240,7 +250,7 @@ describe('RepoForm.vue', () => {
       [randomDbSetup.project.slug]: randomDbSetup.project,
     }
 
-    cy.mount(RepoForm, { props })
+    cy.mount(RepoForm, { props } as ComponentCustomProps)
 
     cy.getByDataTestid('repoFieldset').should('have.length', 1)
 
@@ -281,7 +291,7 @@ describe('RepoForm.vue', () => {
       [randomDbSetup.project.slug]: randomDbSetup.project,
     }
 
-    cy.mount(RepoForm, { props })
+    cy.mount(RepoForm, { props } as ComponentCustomProps)
 
     cy.getByDataTestid('repoFieldset').should('have.length', 1)
 
