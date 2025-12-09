@@ -1,14 +1,14 @@
-import prisma from '@old-server/prisma.js';
+import prisma from '@old-server/prisma';
 import {
     addLogs,
     deleteEnvironment as deleteEnvironmentQuery,
     getEnvironmentsByProjectId,
     initializeEnvironment,
     updateEnvironment as updateEnvironmentQuery,
-} from '@old-server/resources/queries-index.js';
-import type { Resources, UserDetails } from '@old-server/types/index.js';
-import { Result } from '@old-server/utils/business.js';
-import { hook } from '@old-server/utils/hook-wrapper.js';
+} from '@old-server/resources/queries-index';
+import type { Resources, UserDetails } from '@old-server/types/index';
+import { Result } from '@old-server/utils/business';
+import { hook } from '@old-server/utils/hook-wrapper';
 import type {
     Cluster,
     Environment,

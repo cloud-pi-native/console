@@ -21,7 +21,7 @@ import {
     listServiceChains,
     retryServiceChain,
     validateServiceChain,
-} from './business.ts';
+} from './business';
 
 vi.mock('axios');
 

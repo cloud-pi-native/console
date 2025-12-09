@@ -2,15 +2,15 @@ import { faker } from '@faker-js/faker';
 import type { Environment, Stage } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import prisma from '../../__mocks__/prisma.js';
-import { BadRequest400, NotFound404 } from '../../utils/errors.ts';
+import prisma from '../../__mocks__/prisma';
+import { BadRequest400, NotFound404 } from '../../utils/errors';
 import {
     createStage,
     deleteStage,
     getStageAssociatedEnvironments,
     listStages,
     updateStage,
-} from './business.ts';
+} from './business';
 
 describe('test stage busines logic', () => {
     let stage: Stage;

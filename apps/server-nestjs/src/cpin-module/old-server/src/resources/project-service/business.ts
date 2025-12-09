@@ -15,7 +15,7 @@ import {
     getProjectStore,
     getPublicClusters,
     saveProjectStore,
-} from '@old-server/resources/queries-index.js';
+} from '@old-server/resources/queries-index';
 import type { Project, ProjectPlugin } from '@prisma/client';
 
 export type ConfigRecords = {

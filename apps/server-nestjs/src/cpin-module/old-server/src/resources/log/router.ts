@@ -1,15 +1,15 @@
 import type { CleanLog, Log, XOR } from '@cpn-console/shared';
 import { AdminAuthorized, logContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
-import { AppService } from '@old-server/app.js';
+import { AppService } from '@old-server/app';
 import type {
     UserProfile,
     UserProjectProfile,
-} from '@old-server/utils/controller.js';
-import { authUser } from '@old-server/utils/controller.js';
-import { Forbidden403 } from '@old-server/utils/errors.js';
+} from '@old-server/utils/controller';
+import { authUser } from '@old-server/utils/controller';
+import { Forbidden403 } from '@old-server/utils/errors';
 
-import { getLogs } from './business.js';
+import { getLogs } from './business';
 
 @Injectable()
 export class LogRouterService {

@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker';
 import { describe, expect, it } from 'vitest';
 
-import prisma from '../../__mocks__/prisma.js';
-import { getLogs } from './business.ts';
+import prisma from '../../__mocks__/prisma';
+import { getLogs } from './business';
 
 describe('test log business', () => {
     it('should map filter (clean logs)', async () => {

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { setTimeout } from 'node:timers/promises';
 
-import { AppService } from './app.js';
-import prisma from './prisma.js';
-import { dbUrl, isCI, isDev, isTest } from './utils/env.js';
+import { AppService } from './app';
+import prisma from './prisma';
+import { dbUrl, isCI, isDev, isTest } from './utils/env';
 
 @Injectable()
 export class ConnectionService {

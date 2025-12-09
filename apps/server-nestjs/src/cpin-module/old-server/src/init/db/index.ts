@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { AppService } from '@old-server/app.js';
-import prisma from '@old-server/prisma.js';
+import { AppService } from '@old-server/app';
+import prisma from '@old-server/prisma';
 
-import { modelKeys } from './utils.js';
+import { modelKeys } from './utils';
 
 type ExtractKeysWithFields<T> = {
     [K in keyof T]: T[K] extends { fields: any } ? K : never;

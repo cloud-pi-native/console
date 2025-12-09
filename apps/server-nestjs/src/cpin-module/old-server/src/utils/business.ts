@@ -3,7 +3,7 @@ import {
     parseZodError,
 } from '@cpn-console/shared';
 
-import { BadRequest400 } from './errors.js';
+import { BadRequest400 } from './errors';
 
 export type Success<T> = Result<T>;
 export type Failure = Result<never>;

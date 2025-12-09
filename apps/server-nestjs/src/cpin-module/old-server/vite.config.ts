@@ -10,6 +10,6 @@ export default defineConfig({
         },
     },
     test: {
-        poolMatchGlobs: [['**/resources/**/*.spec.ts', 'forks']],
+        poolMatchGlobs: [['**/resources/**/*.spec', 'forks']],
     },
 } as any);

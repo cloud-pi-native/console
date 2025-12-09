@@ -1,8 +1,8 @@
 import { AdminAuthorized, stageContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
-import { AppService } from '@old-server/app.js';
-import { authUser } from '@old-server/utils/controller.js';
-import { ErrorResType, Forbidden403 } from '@old-server/utils/errors.js';
+import { AppService } from '@old-server/app';
+import { authUser } from '@old-server/utils/controller';
+import { ErrorResType, Forbidden403 } from '@old-server/utils/errors';
 
 import {
     createStage,
@@ -10,7 +10,7 @@ import {
     getStageAssociatedEnvironments,
     listStages,
     updateStage,
-} from './business.js';
+} from './business';
 
 @Injectable()
 export class StageRouterService {
