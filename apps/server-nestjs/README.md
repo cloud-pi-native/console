@@ -1,98 +1,229 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# À propos
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Ce dossier contient une nouvelle version de `server`, basée sur NestJS.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+On va profiter de cette nouvelle mouture pour passer de ça :
 
-## Description
+```mermaid
+flowchart TD
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+    %% --- Top-level ---
+    NestJS["Nest.js"]
+    FutursModules["Futurs modules<br/>Nest.js correctement<br/>découpés..."]
+    MainModule["MainModule"]
 
-## Project setup
+    NestJS --> MainModule
+    MainModule --> CPinModule
+    MainModule -.-> FutursModules
 
-```bash
-$ pnpm install
+    CPinModule["CPinModule<br/>(Contient TOUT le code actuel de 'server')"]
+
+    %% --- Core services ---
+    ConnectionService["ConnectionService"]
+    LoggerService["LoggerService"]
+    FastifyService["FastifyService"]
+    ServerService["ServerService"]
+    AppService["AppService"]
+    ResourceService["ResourceService"]
+    PrepareAppService["PrepareAppService"]
+    InitDbService["InitDbService"]
+    PluginService["PluginService"]
+
+    %% --- Router services ---
+    AdminRoleRouterService["AdminRoleRouterService"]
+    AdminTokenRouterService["AdminTokenRouterService"]
+    ClusterRouterService["ClusterRouterService"]
+    OtherRouterService["...RouterService"]
+
+    %% --- External services ---
+    Gitlab["Gitlab"]
+    ArgoCD["ArgoCD"]
+    Dots["..."]
+
+    %% --- CPinModule connections ---
+    CPinModule --> ConnectionService
+    CPinModule --> AppService
+    CPinModule --> LoggerService
+    CPinModule --> FastifyService
+    CPinModule --> ServerService
+    CPinModule --> ResourceService
+    CPinModule --> PrepareAppService
+
+    %% --- AppService central connections ---
+    ConnectionService --> AppService
+    LoggerService --> AppService
+    FastifyService --> AppService
+    ServerService --> AppService
+
+    AppService --> ResourceService
+    AppService --> PrepareAppService
+    AppService --> ServerService
+    AppService --> FastifyService
+    AppService --> LoggerService
+    AppService --> ConnectionService
+
+    %% --- ResourceService to routers ---
+    ResourceService --> AdminRoleRouterService
+    ResourceService --> AdminTokenRouterService
+    ResourceService --> ClusterRouterService
+    ResourceService --> OtherRouterService
+
+    %% --- PrepareAppService ---
+    PrepareAppService --> InitDbService
+    PrepareAppService --> PluginService
+    PrepareAppService --> ServerService
+
+    %% --- PluginService external interactions ---
+    PluginService --> Gitlab
+    PluginService --> ArgoCD
+    PluginService --> Dots
+
+    %% --- Bounding box (visual grouping only) ---
+    subgraph CPinBlock[" "]
+        CPinModule
+        ConnectionService
+        LoggerService
+        FastifyService
+        ServerService
+        AppService
+        ResourceService
+        PrepareAppService
+        InitDbService
+        PluginService
+        AdminRoleRouterService
+        AdminTokenRouterService
+        ClusterRouterService
+        OtherRouterService
+    end
 ```
 
-## Compile and run the project
+à ça :
 
-```bash
-# development
-$ pnpm run start
+```mermaid
+flowchart TD
 
-# watch mode
-$ pnpm run start:dev
+    %% --- Top-level Nest module ---
+    NestJS["Point d'entrée de NestJS"]
+    MainModule["MainModule"]
+    CPinModule["CPinModule"]
+    FutursModules["Futurs modules<br/>NestJS correctement<br/>découpés..."]
 
-# production mode
-$ pnpm run start:prod
+    NestJS --> MainModule
+    MainModule --> CPinModule
+    MainModule -.-> FutursModules
+
+    %% --- Layering for clarity ---
+    subgraph LayerInit["Initialisation de l'application"]
+        InitAppService["InitAppService"]
+        InitDbService["InitDbService"]
+        PluginService["PluginService"]
+    end
+
+    subgraph LayerCore["Coeur de l'application"]
+        AppService["AppService"]
+        RouterService["RouterService"]
+        ServerService["ServerService"]
+    end
+
+    subgraph LayerInfra["Couche Infrastructure"]
+        LoggerService["LoggerService"]
+        ConfigurationService["ConfigurationService"]
+        DatabaseService["DatabaseService"]
+        FastifyService["FastifyService"]
+        AxiosService["AxiosService"]
+    end
+
+    OtherAPIService["APIs externes</br>(par ex. OpenCDS)"]
+    AxiosService --> OtherAPIService
+
+    subgraph LayerBusiness["Modules métiers"]
+        subgraph AdminRole["Admin Roles"]
+            AdminRoleRouterService["AdminRoleRouterService"]
+            AdminRoleBusinessService["AdminRoleBusinessService"]
+            AdminRoleDTOService["AdminRoleDTOService"]
+            AdminRoleRouterService --> AdminRoleBusinessService
+            AdminRoleRouterService --> LoggerService
+            AdminRoleBusinessService --> AdminRoleDTOService
+            AdminRoleBusinessService --> LoggerService
+            AdminRoleDTOService --> LoggerService
+            AdminRoleDTOService --> DatabaseService
+        end
+        subgraph AdminToken["Admin Tokens"]
+            AdminTokenRouterService["AdminTokenRouterService"]
+            AdminTokenBusinessService["AdminTokenBusinessService"]
+            AdminTokenDTOService["AdminTokenDTOService"]
+            AdminTokenRouterService --> AdminTokenBusinessService
+            AdminTokenRouterService --> LoggerService
+            AdminTokenBusinessService --> AdminTokenDTOService
+            AdminTokenBusinessService --> LoggerService
+            AdminTokenDTOService --> DatabaseService
+            AdminTokenDTOService --> LoggerService
+        end
+        subgraph ServiceChain["Service chains"]
+            ServiceChainRouterService["ServiceChainRouterService"]
+            ServiceChainBusinessService["ServiceChainBusinessService"]
+            ServiceChainRouterService --> ServiceChainBusinessService
+            ServiceChainRouterService --> LoggerService
+            ServiceChainBusinessService --> AxiosService
+            ServiceChainBusinessService --> LoggerService
+
+        end
+        subgraph Cluster["Clusters"]
+            ClusterRouterService["ClusterRouterService"]
+            ClusterBusinessService["ClusterBusinessService"]
+            ClusterDTOService["ClusterDTOService"]
+            ClusterRouterService --> ClusterBusinessService
+            ClusterRouterService --> LoggerService
+            ClusterBusinessService --> ClusterDTOService
+            ClusterBusinessService --> LoggerService
+            ClusterDTOService --> DatabaseService
+            ClusterDTOService --> LoggerService
+        end
+        OtherBusinessModules["...Other Business Modules"]
+    end
+
+    RouterService --> AdminRoleRouterService
+    RouterService --> AdminTokenRouterService
+    RouterService --> ClusterRouterService
+    RouterService --> ServiceChainRouterService
+    RouterService --> OtherBusinessModules
+    RouterService --> LoggerService
+
+    subgraph LayerPlugins["Plugins compatibles CPiN"]
+        Gitlab["Gitlab"]
+        ArgoCD["ArgoCD"]
+        Kubernetes["Kubernetes"]
+        Dots["..."]
+    end
+
+    %% --- Module wiring ---
+    CPinModule --> InitAppService
+
+    %% Application initialization
+    InitAppService --> LoggerService
+    InitAppService --> ConfigurationService
+    InitAppService --> FastifyService
+    InitAppService --> AppService
+    InitAppService --> InitDbService
+    InitDbService --> DatabaseService
+    InitDbService --> LoggerService
+    InitAppService --> PluginService
+    InitAppService --> LoggerService
+
+    %% App Core internal flow
+    AppService --> RouterService
+    AppService --> ServerService
+    AppService --> LoggerService
+    ServerService --> LoggerService
+
+    %% Plugin Management
+    PluginService --> Gitlab
+    PluginService --> ArgoCD
+    PluginService --> Kubernetes
+    PluginService --> Dots
+    PluginService --> LoggerService
+    Gitlab --> LoggerService
+    ArgoCD --> LoggerService
+    Kubernetes --> LoggerService
+    Dots --> LoggerService
 ```
-
-## Run tests
-
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
