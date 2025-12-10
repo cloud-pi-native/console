@@ -172,7 +172,7 @@ export async function createMavenRepo(axiosInstance: AxiosInstance, projectName:
   return names
 }
 
-export function deleteMavenRepo(axiosInstance: AxiosInstance, projectName: string) {
+export async function deleteMavenRepo(axiosInstance: AxiosInstance, projectName: string) {
   const names = getRepoNames(projectName)
   const repoPaths = [names.group, ...names.hosted]
   const privileges = [...names.hosted, names.group]
@@ -182,7 +182,9 @@ export function deleteMavenRepo(axiosInstance: AxiosInstance, projectName: strin
     // delete local repo maven snapshot
     ...repoPaths.map(repo => `/repositories/${repo.repo}`),
   ]
-  return pathsToDelete.map(path => deleteIfExists(path, axiosInstance))
+  for (const path of pathsToDelete) {
+    await deleteIfExists(path, axiosInstance)
+  }
 }
 
 export function getMavenUrls(projectName: string) {

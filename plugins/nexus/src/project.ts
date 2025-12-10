@@ -13,9 +13,9 @@ export const deleteNexusProject: StepCall<Project> = async ({ args: project }) =
   const axiosInstance = getAxiosInstance()
   const projectName = project.slug
   try {
+    await deleteMavenRepo(axiosInstance, projectName)
+    await deleteNpmRepo(axiosInstance, projectName)
     await Promise.all([
-      ...deleteMavenRepo(axiosInstance, projectName),
-      ...deleteNpmRepo(axiosInstance, projectName),
       // delete role
       deleteIfExists(`/security/roles/${projectName}-ID`, axiosInstance),
       // delete user
@@ -87,7 +87,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
         })
         privilegesToAccess.push(names.group.privilege, ...names.hosted.map(({ privilege }) => privilege))
       } else {
-        await Promise.all(deleteMavenRepo(axiosInstance, projectName))
+        await deleteMavenRepo(axiosInstance, projectName)
       }
     } catch (error) {
       failedProvisionning.maven = { error, message: `Maven failed to ${techUsed.maven ? 'provision' : 'delete'} repositories please try again in few minutes` }
@@ -98,7 +98,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
         const names = await createNpmRepo(axiosInstance, projectName, options.npmWritePolicy as WritePolicy)
         privilegesToAccess.push(names.group.privilege, ...names.hosted.map(({ privilege }) => privilege))
       } else {
-        await Promise.all(deleteNpmRepo(axiosInstance, projectName))
+        await deleteNpmRepo(axiosInstance, projectName)
       }
     } catch (error) {
       failedProvisionning.npm = { error, message: `Npm failed to ${techUsed.npm ? 'provision' : 'delete'} repositories please try again in few minutes` }
