@@ -1,11 +1,30 @@
 import type { Project, Repository, User } from '@prisma/client'
 import type { CreateRepositoryBody, UpdateRepositoryBody } from '@cpn-console/shared'
-import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfosAndRepos, getProjectRepositories as getProjectRepositoriesQuery, initializeRepository, updateRepository as updateRepositoryQuery } from '@/resources/queries-index.js'
+import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfosAndRepos, getProjectRepositories as getProjectRepositoriesQuery, initializeRepository, getAutoSyncedRepositories as getAutoSyncedRepositoriesQuery, updateRepository as updateRepositoryQuery } from '@/resources/queries-index.js'
 import { BadRequest400, Unprocessable422 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
 export async function getProjectRepositories(projectId: Project['id']) {
   return getProjectRepositoriesQuery(projectId)
+}
+
+export async function autoSyncRepositories({
+  requestId,
+  userId,
+}: {
+  requestId: string
+  userId: User['id']
+}) {
+  const repositories = await getAutoSyncedRepositoriesQuery()
+
+  repositories.forEach(async (r) => {
+    await syncRepository({
+      repositoryId: r.id,
+      userId,
+      syncAllBranches: true,
+      requestId,
+    })
+  })
 }
 
 export async function syncRepository({

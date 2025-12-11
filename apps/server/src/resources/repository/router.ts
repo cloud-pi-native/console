@@ -4,6 +4,7 @@ import {
   deleteRepository,
   getProjectRepositories,
   syncRepository,
+  autoSyncRepositories,
   updateRepository,
 } from './business.js'
 import { serverInstance } from '@/app.js'
@@ -49,6 +50,23 @@ export function repositoryRouter() {
       }
     },
 
+    // Synchroniser les repo marqués avec le flag `isAutoSynced`
+    autoSyncRepositories: async ({ request: req }) => {
+      const perms = await authUser(req)
+      if (!perms.user) return new Unauthorized401('Require to be requested from user or api key')
+
+      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) {
+        return new Forbidden403()
+      }
+
+      await autoSyncRepositories({ requestId: req.id, userId: perms.user.id })
+
+      return {
+        status: 204,
+        body: null,
+      }
+    },
+
     // Créer un repository
     createRepository: async ({ request: req, body: data }) => {
       const projectId = data.projectId
@@ -83,6 +101,7 @@ export function repositoryRouter() {
       const keysAllowedForUpdate = [
         'externalRepoUrl',
         'isPrivate',
+        'isAutoSynced',
         'externalToken',
         'externalUserName',
         'isInfra',
