@@ -1,24 +1,21 @@
-import prisma from '@old-server/prisma';
-import type { Cluster, Zone } from '@prisma/client';
+import type { Cluster, Zone } from '@prisma/client'
+import prisma from '@old-server/prisma'
 
 export function getZoneByIdOrThrow(id: Zone['id']) {
-    return prisma.zone.findUniqueOrThrow({
-        where: { id },
-    });
+  return prisma.zone.findUniqueOrThrow({
+    where: { id },
+  })
 }
 
-export function linkZoneToClusters(
-    zoneId: Zone['id'],
-    clusterIds: Cluster['id'][],
-) {
-    return prisma.zone.update({
-        where: {
-            id: zoneId,
-        },
-        data: {
-            clusters: {
-                connect: clusterIds.map((clusterId) => ({ id: clusterId })),
-            },
-        },
-    });
+export function linkZoneToClusters(zoneId: Zone['id'], clusterIds: Cluster['id'][]) {
+  return prisma.zone.update({
+    where: {
+      id: zoneId,
+    },
+    data: {
+      clusters: {
+        connect: clusterIds.map(clusterId => ({ id: clusterId })),
+      },
+    },
+  })
 }

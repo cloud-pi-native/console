@@ -1,161 +1,125 @@
-import type { AsyncReturnType } from '@cpn-console/shared';
-import { AdminAuthorized, clusterContract } from '@cpn-console/shared';
-import { Injectable } from '@nestjs/common';
-import { AppService } from '@old-server/app';
-import '@old-server/types/index';
-import { authUser } from '@old-server/utils/controller';
+import type { AsyncReturnType } from '@cpn-console/shared'
+import { AdminAuthorized, clusterContract } from '@cpn-console/shared'
 import {
-    ErrorResType,
-    Forbidden403,
-    Unauthorized401,
-} from '@old-server/utils/errors';
+  createCluster,
+  deleteCluster,
+  getClusterAssociatedEnvironments,
+  getClusterDetails as getClusterDetailsBusiness,
+  getClusterUsage,
+  listClusters,
+  updateCluster,
+} from './business'
+import '@old-server/types/index'
+import { serverInstance } from '@old-server/app'
+import { authUser } from '@old-server/utils/controller'
+import { ErrorResType, Forbidden403, Unauthorized401 } from '@old-server/utils/errors'
 
-import {
-    createCluster,
-    deleteCluster,
-    getClusterAssociatedEnvironments,
-    getClusterDetails as getClusterDetailsBusiness,
-    getClusterUsage,
-    listClusters,
-    updateCluster,
-} from './business';
+export function clusterRouter() {
+  return serverInstance.router(clusterContract, {
+    listClusters: async ({ request: req }) => {
+      const { adminPermissions, user } = await authUser(req)
 
-@Injectable()
-export class ClusterRouterService {
-    constructor(private readonly appService: AppService) {}
+      let body: AsyncReturnType<typeof listClusters> = []
+      if (AdminAuthorized.isAdmin(adminPermissions)) {
+        body = await listClusters()
+      } else if (user) {
+        body = await listClusters(user.id)
+      }
 
-    clusterRouter() {
-        return this.appService.serverInstance.router(clusterContract, {
-            listClusters: async ({ request: req }) => {
-                const { adminPermissions, user } = await authUser(req);
+      return {
+        status: 200,
+        body,
+      }
+    },
 
-                let body: AsyncReturnType<typeof listClusters> = [];
-                if (AdminAuthorized.isAdmin(adminPermissions)) {
-                    body = await listClusters();
-                } else if (user) {
-                    body = await listClusters(user.id);
-                }
+    getClusterDetails: async ({ params, request: req }) => {
+      const perms = await authUser(req)
+      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
-                return {
-                    status: 200,
-                    body,
-                };
-            },
+      const clusterId = params.clusterId
+      const cluster = await getClusterDetailsBusiness(clusterId)
 
-            getClusterDetails: async ({ params, request: req }) => {
-                const perms = await authUser(req);
-                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                    return new Forbidden403();
+      return {
+        status: 200,
+        body: cluster,
+      }
+    },
 
-                const clusterId = params.clusterId;
-                const cluster = await getClusterDetailsBusiness(clusterId);
+    getClusterUsage: async ({ params, request: req }) => {
+      const perms = await authUser(req)
+      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
-                return {
-                    status: 200,
-                    body: cluster,
-                };
-            },
+      const clusterId = params.clusterId
+      const usage = await getClusterUsage(clusterId)
 
-            getClusterUsage: async ({ params, request: req }) => {
-                const perms = await authUser(req);
-                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                    return new Forbidden403();
+      return {
+        status: 200,
+        body: usage,
+      }
+    },
 
-                const clusterId = params.clusterId;
-                const usage = await getClusterUsage(clusterId);
+    createCluster: async ({ request: req, body: data }) => {
+      const { adminPermissions, user } = await authUser(req)
+      if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
 
-                return {
-                    status: 200,
-                    body: usage,
-                };
-            },
+      if (!user) return new Unauthorized401('Require to be requested from user not api key')
+      const body = await createCluster(data, user.id, req.id)
+      if (body instanceof ErrorResType) return body
 
-            createCluster: async ({ request: req, body: data }) => {
-                const { adminPermissions, user } = await authUser(req);
-                if (!AdminAuthorized.isAdmin(adminPermissions))
-                    return new Forbidden403();
+      return {
+        status: 201,
+        body,
+      }
+    },
 
-                if (!user)
-                    return new Unauthorized401(
-                        'Require to be requested from user not api key',
-                    );
-                const body = await createCluster(data, user.id, req.id);
-                if (body instanceof ErrorResType) return body;
+    getClusterEnvironments: async ({ request: req, params }) => {
+      const perms = await authUser(req)
+      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
-                return {
-                    status: 201,
-                    body,
-                };
-            },
+      const clusterId = params.clusterId
+      const environments = await getClusterAssociatedEnvironments(clusterId)
 
-            getClusterEnvironments: async ({ request: req, params }) => {
-                const perms = await authUser(req);
-                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                    return new Forbidden403();
+      return {
+        status: 200,
+        body: environments,
+      }
+    },
 
-                const clusterId = params.clusterId;
-                const environments =
-                    await getClusterAssociatedEnvironments(clusterId);
+    updateCluster: async ({ request: req, params, body: data }) => {
+      const { user, adminPermissions } = await authUser(req)
+      if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+      if (!user) return new Unauthorized401('Require to be requested from user not api key')
 
-                return {
-                    status: 200,
-                    body: environments,
-                };
-            },
+      const clusterId = params.clusterId
+      const body = await updateCluster(data, clusterId, user.id, req.id)
 
-            updateCluster: async ({ request: req, params, body: data }) => {
-                const { user, adminPermissions } = await authUser(req);
-                if (!AdminAuthorized.isAdmin(adminPermissions))
-                    return new Forbidden403();
-                if (!user)
-                    return new Unauthorized401(
-                        'Require to be requested from user not api key',
-                    );
+      if (body instanceof ErrorResType) return body
 
-                const clusterId = params.clusterId;
-                const body = await updateCluster(
-                    data,
-                    clusterId,
-                    user.id,
-                    req.id,
-                );
+      return {
+        status: 200,
+        body,
+      }
+    },
 
-                if (body instanceof ErrorResType) return body;
+    deleteCluster: async ({ request: req, params, query: { force } }) => {
+      const { user, adminPermissions, tokenId } = await authUser(req)
+      if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+      if (!user?.id && !tokenId) return new Unauthorized401('Your identity has not been found')
 
-                return {
-                    status: 200,
-                    body,
-                };
-            },
+      const clusterId = params.clusterId
+      const body = await deleteCluster({
+        clusterId,
+        userId: user?.id,
+        requestId: req.id,
+        force,
+      })
 
-            deleteCluster: async ({
-                request: req,
-                params,
-                query: { force },
-            }) => {
-                const { user, adminPermissions, tokenId } = await authUser(req);
-                if (!AdminAuthorized.isAdmin(adminPermissions))
-                    return new Forbidden403();
-                if (!user?.id && !tokenId)
-                    return new Unauthorized401(
-                        'Your identity has not been found',
-                    );
+      if (body instanceof ErrorResType) return body
 
-                const clusterId = params.clusterId;
-                const body = await deleteCluster({
-                    clusterId,
-                    userId: user?.id,
-                    requestId: req.id,
-                    force,
-                });
-
-                if (body instanceof ErrorResType) return body;
-
-                return {
-                    status: 204,
-                    body,
-                };
-            },
-        });
-    }
+      return {
+        status: 204,
+        body,
+      }
+    },
+  })
 }

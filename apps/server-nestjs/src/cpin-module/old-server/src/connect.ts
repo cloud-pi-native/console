@@ -1,61 +1,52 @@
-import { Injectable } from '@nestjs/common';
-import { setTimeout } from 'node:timers/promises';
+import { setTimeout } from 'node:timers/promises'
+import prisma from './prisma'
+import { logger } from './app'
+import {
+  dbUrl,
+  isCI,
+  isDev,
+  isTest,
+} from './utils/env'
 
-import { AppService } from './app';
-import prisma from './prisma';
-import { dbUrl, isCI, isDev, isTest } from './utils/env';
+const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
+let closingConnections = false
 
-@Injectable()
-export class ConnectionService {
-    constructor(private readonly appService: AppService) {}
+export async function getConnection(triesLeft = 5): Promise<void> {
+  if (closingConnections || triesLeft <= 0) {
+    throw new Error('Unable to connect to Postgres server')
+  }
+  triesLeft--
 
-    closingConnections = false;
+  try {
+    if (isDev || isTest || isCI) {
+      logger.info(`Trying to connect to Postgres with: ${dbUrl}`)
+    }
+    await prisma.$connect()
 
-    async getConnection(triesLeft = 5): Promise<void> {
-        if (this.closingConnections || triesLeft <= 0) {
-            throw new Error('Unable to connect to Postgres server');
-        }
-        triesLeft--;
-
-        try {
-            if (isDev || isTest || isCI) {
-                this.appService.logger.info(
-                    `Trying to connect to Postgres with: ${dbUrl}`,
-                );
-            }
-            await prisma.$connect();
-
-            this.appService.logger.info('Connected to Postgres!');
-        } catch (error) {
-            if (triesLeft > 0) {
-                this.appService.logger.error(error);
-                this.appService.logger.info(
-                    `Could not connect to Postgres: ${error.message}`,
-                );
-                this.appService.logger.info(
-                    `Retrying (${triesLeft} tries left)`,
-                );
-                await setTimeout(isTest || isCI ? 1000 : 10000);
-                return this.getConnection(triesLeft);
-            }
-
-            this.appService.logger.info(
-                `Could not connect to Postgres: ${error.message}`,
-            );
-            this.appService.logger.info('Out of retries');
-            error.message = `Out of retries, last error: ${error.message}`;
-            throw error;
-        }
+    logger.info('Connected to Postgres!')
+  } catch (error) {
+    if (triesLeft > 0) {
+      logger.error(error)
+      logger.info(`Could not connect to Postgres: ${error.message}`)
+      logger.info(`Retrying (${triesLeft} tries left)`)
+      await setTimeout(DELAY_BEFORE_RETRY)
+      return getConnection(triesLeft)
     }
 
-    async closeConnections() {
-        this.closingConnections = true;
-        try {
-            await prisma.$disconnect();
-        } catch (error) {
-            this.appService.logger.error(error);
-        } finally {
-            this.closingConnections = false;
-        }
-    }
+    logger.info(`Could not connect to Postgres: ${error.message}`)
+    logger.info('Out of retries')
+    error.message = `Out of retries, last error: ${error.message}`
+    throw error
+  }
+}
+
+export async function closeConnections() {
+  closingConnections = true
+  try {
+    await prisma.$disconnect()
+  } catch (error) {
+    logger.error(error)
+  } finally {
+    closingConnections = false
+  }
 }
