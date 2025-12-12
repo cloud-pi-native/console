@@ -24,6 +24,7 @@ export interface Environment {
   gpu: number
   memory: number
   stage: string
+  autosync: boolean
   permissions: {
     userId: UserObject['id']
     permissions: {

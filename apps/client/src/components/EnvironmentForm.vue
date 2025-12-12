@@ -37,6 +37,7 @@ const props = withDefaults(defineProps<{
     cpu: undefined,
     gpu: undefined,
     memory: undefined,
+    autosync: true,
     stageId: undefined,
     clusterId: undefined,
   }),
@@ -46,7 +47,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   addEnvironment: [environment: Omit<CreateEnvironmentBody, 'projectId'>]
-  putEnvironment: [environment: Pick<Environment, 'cpu' | 'gpu' | 'memory'>]
+  putEnvironment: [environment: Pick<Environment, 'cpu' | 'gpu' | 'memory' | 'autosync'>]
   deleteEnvironment: [environmentId: Environment['id']]
   cancel: []
 }>()
@@ -67,10 +68,10 @@ const chosenZoneDescription = computed(() => zoneStore.zonesById[zoneId.value ??
 
 const schema = computed(() => {
   if (localEnvironment.value?.id) {
-    const schemaValidation = EnvironmentSchema.pick({ id: true, cpu: true, gpu: true, memory: true }).safeParse(localEnvironment.value)
+    const schemaValidation = EnvironmentSchema.pick({ id: true, cpu: true, gpu: true, memory: true, autosync: true }).safeParse(localEnvironment.value)
     return schemaValidation
   } else {
-    const schemaValidation = EnvironmentSchema.pick({ clusterId: true, name: true, cpu: true, gpu: true, memory: true, stageId: true }).safeParse(localEnvironment.value)
+    const schemaValidation = EnvironmentSchema.pick({ clusterId: true, name: true, cpu: true, gpu: true, memory: true, autosync: true, stageId: true }).safeParse(localEnvironment.value)
     return schemaValidation
   }
 })
@@ -276,6 +277,21 @@ watch(localEnvironment.value, () => {
         data-testid="gpuInput"
         :placeholder="ONE_TENTH_STR"
         @update:model-value="(value: string) => localEnvironment.gpu = localeParseFloat(value)"
+      />
+      <DsfrCheckbox
+        id="autosyncCbx"
+        v-model="localEnvironment.autosync"
+        value="localEnvironment.autosync"
+        label="Synchronisation automatique"
+        hint="Activation ou désactivation de la synchronisation automatique des déploiements."
+        name="isAutosync"
+      />
+      <DsfrAlert
+        v-if="!localEnvironment.autosync"
+        data-testid="noAutosyncAlert"
+        description="La synchronisation automatique est désactivée. Les déploiements devront être synchronisés manuellement."
+        type="warning"
+        small
       />
       <div
         v-if="localEnvironment.id && canManage"
