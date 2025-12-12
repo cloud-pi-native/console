@@ -48,6 +48,8 @@
     "fastify-keycloak-adapter": "2.3.2",
     "json-2-csv": "^5.5.7",
     "mustache": "^4.2.0",
+    "nestjs-pino": "^4.5.0",
+    "pino-http": "^11.0.0",
     "prisma": "^6.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",

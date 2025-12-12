@@ -1,11 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AppService } from '@old-server/app';
-import { ConnectionService } from '@old-server/connect';
-import { PrepareAppService } from '@old-server/prepare-app';
-import { ResourcesService } from '@old-server/resources';
-import { ServerService } from '@old-server/server';
-import { FastifyService } from '@old-server/utils/fastify';
-import { CustomLoggerService } from '@old-server/utils/logger';
+
 import { ApplicationInitializationModule } from './application-initialization/application-initialization.module';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 
@@ -14,15 +8,7 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module';
 // as many modules as possible !
 @Module({
     controllers: [],
-    providers: [
-        AppService,
-        ConnectionService,
-        FastifyService,
-        CustomLoggerService,
-        PrepareAppService,
-        ResourcesService,
-        ServerService,
-    ],
+    providers: [],
     imports: [ApplicationInitializationModule, InfrastructureModule],
 })
 export class CpinModule {}

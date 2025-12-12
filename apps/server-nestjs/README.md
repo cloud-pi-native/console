@@ -227,3 +227,18 @@ flowchart TD
     Kubernetes --> LoggerService
     Dots --> LoggerService
 ```
+
+To update `old-server` (after rebasing on `origin/master`, for instance) :
+
+```bash
+server-nestjs/$ rm -rf src/cpin-module/old-server
+server-nestjs/$ cp -r ../server src/cpin-module/old-server
+server-nestjs/$ find src/cpin-module/old-server -type f -iname "*.ts" -exec sed -i -e "s#@/#@old-server/#g" {} \;
+server-nestjs/$ find src/cpin-module/old-server -type f -iname "*.ts" -exec sed -i -e "s#\.[jt]s'#'#g" {} \;
+```
+
+## To delete (once we have a sastifying nestjs implementation):
+
+```
+old-server/src/utils/logger.ts
+```
