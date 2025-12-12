@@ -1,63 +1,54 @@
-import prisma from '@old-server/prisma';
-import type { Prisma, Project, ProjectRole } from '@prisma/client';
+import type {
+  Prisma,
+  Project,
 
-export const listRoles = (projectId: Project['id']) =>
-    prisma.projectRole.findMany({
-        where: { projectId },
-        orderBy: { position: 'asc' },
-    });
+  ProjectRole,
+} from '@prisma/client'
 
-export function createRole(
-    data: Pick<
-        Prisma.ProjectRoleUncheckedCreateInput,
-        'permissions' | 'name' | 'position' | 'projectId'
-    >,
-) {
-    return prisma.projectRole.create({
-        data: {
-            name: data.name,
-            permissions: 0n,
-            position: data.position,
-            projectId: data.projectId,
-        },
-    });
+import prisma from '@old-server/prisma'
+
+export const listRoles = (projectId: Project['id']) => prisma.projectRole.findMany({ where: { projectId }, orderBy: { position: 'asc' } })
+
+export function createRole(data: Pick<Prisma.ProjectRoleUncheckedCreateInput, 'permissions' | 'name' | 'position' | 'projectId'>) {
+  return prisma.projectRole.create({
+    data: {
+      name: data.name,
+      permissions: 0n,
+      position: data.position,
+      projectId: data.projectId,
+    },
+  })
 }
 
-export function updateRole(
-    id: ProjectRole['id'],
-    data: Pick<
-        Prisma.ProjectRoleUncheckedUpdateInput,
-        'permissions' | 'name' | 'position' | 'id'
-    >,
-) {
-    return prisma.projectRole.update({
-        where: { id },
-        data,
-    });
+export function updateRole(id: ProjectRole['id'], data: Pick<Prisma.ProjectRoleUncheckedUpdateInput, 'permissions' | 'name' | 'position' | 'id'>) {
+  return prisma.projectRole.update({
+    where: { id },
+    data,
+  })
 }
 
 export async function deleteRole(id: ProjectRole['id']) {
-    const role = await prisma.projectRole.delete({
-        where: {
-            id,
+  const role = await prisma.projectRole.delete({
+    where: {
+      id,
+    },
+  })
+  const attachedMembers = await prisma.projectMembers.findMany({
+    where: { projectId: role.projectId, roleIds: { has: id } },
+  })
+  for (const member of attachedMembers) {
+    await prisma.projectMembers.update({
+      where: {
+        projectId_userId: {
+          projectId: role.projectId,
+          userId: member.userId,
         },
-    });
-    const attachedMembers = await prisma.projectMembers.findMany({
-        where: { projectId: role.projectId, roleIds: { has: id } },
-    });
-    for (const member of attachedMembers) {
-        await prisma.projectMembers.update({
-            where: {
-                projectId_userId: {
-                    projectId: role.projectId,
-                    userId: member.userId,
-                },
-            },
-            data: {
-                roleIds: {
-                    set: member.roleIds.filter((roleId) => roleId !== id),
-                },
-            },
-        });
-    }
+      },
+      data: {
+        roleIds: {
+          set: member.roleIds.filter(roleId => roleId !== id),
+        },
+      },
+    })
+  }
 }

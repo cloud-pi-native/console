@@ -1,5 +1,5 @@
-import { parseISO } from 'date-fns';
+import { parseISO } from 'date-fns'
 
 export function getJSDateFromUtcIso(dateUtcIso: string) {
-    return parseISO(dateUtcIso);
+  return parseISO(dateUtcIso)
 }

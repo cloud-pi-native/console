@@ -1,79 +1,63 @@
-import { AdminAuthorized, userContract } from '@cpn-console/shared';
-import { Injectable } from '@nestjs/common';
-import { AppService } from '@old-server/app';
-import '@old-server/types/index';
-import { authUser } from '@old-server/utils/controller';
+import { AdminAuthorized, userContract } from '@cpn-console/shared'
 import {
-    ErrorResType,
-    Forbidden403,
-    Unauthorized401,
-} from '@old-server/utils/errors';
+  getMatchingUsers,
+  getUsers,
+  logViaSession,
+  patchUsers,
+} from './business'
+import '@old-server/types/index'
+import { serverInstance } from '@old-server/app'
+import { authUser } from '@old-server/utils/controller'
+import { ErrorResType, Forbidden403, Unauthorized401 } from '@old-server/utils/errors'
 
-import {
-    getMatchingUsers,
-    getUsers,
-    logViaSession,
-    patchUsers,
-} from './business';
+export function userRouter() {
+  return serverInstance.router(userContract, {
+    getMatchingUsers: async ({ query }) => {
+      const usersMatching = await getMatchingUsers(query)
 
-@Injectable()
-export class UserRouterService {
-    constructor(private readonly appService: AppService) {}
+      return {
+        status: 200,
+        body: usersMatching,
+      }
+    },
 
-    userRouter() {
-        return this.appService.serverInstance.router(userContract, {
-            getMatchingUsers: async ({ query }) => {
-                const usersMatching = await getMatchingUsers(query);
+    auth: async ({ request: req }) => {
+      const user = req.session.user
 
-                return {
-                    status: 200,
-                    body: usersMatching,
-                };
-            },
+      if (!user) return new Unauthorized401()
 
-            auth: async ({ request: req }) => {
-                const user = req.session.user;
+      const { user: body } = await logViaSession(user)
 
-                if (!user) return new Unauthorized401();
+      return {
+        status: 200,
+        body,
+      }
+    },
 
-                const { user: body } = await logViaSession(user);
+    getAllUsers: async ({ request: req, query: { relationType, ...query } }) => {
+      const perms = await authUser(req)
 
-                return {
-                    status: 200,
-                    body,
-                };
-            },
+      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
-            getAllUsers: async ({
-                request: req,
-                query: { relationType, ...query },
-            }) => {
-                const perms = await authUser(req);
+      const body = await getUsers(query, relationType)
+      if (body instanceof ErrorResType) return body
 
-                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                    return new Forbidden403();
+      return {
+        status: 200,
+        body,
+      }
+    },
 
-                const body = await getUsers(query, relationType);
-                if (body instanceof ErrorResType) return body;
+    patchUsers: async ({ request: req, body }) => {
+      const perms = await authUser(req)
+      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
-                return {
-                    status: 200,
-                    body,
-                };
-            },
+      const users = await patchUsers(body)
 
-            patchUsers: async ({ request: req, body }) => {
-                const perms = await authUser(req);
-                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                    return new Forbidden403();
-
-                const users = await patchUsers(body);
-
-                return {
-                    status: 200,
-                    body: users,
-                };
-            },
-        });
-    }
+      return {
+        status: 200,
+        body: users,
+      }
+    },
+  })
 }
