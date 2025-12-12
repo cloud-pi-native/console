@@ -213,13 +213,14 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
   const repositories: ArgoRepoSource[] = await Promise.all([
     ...infraRepositories.map(async (repository) => {
       const repoURL = await gitlabApi.getPublicRepoUrl(repository.internalRepoName)
+      const valueFiles = repository.helmValuesFiles ? repository.helmValuesFiles.replaceAll('<env>', environment.name).split(',') : []
       return {
         id: repository.id,
         name: repository.internalRepoName,
         repoURL,
         targetRevision: repository.deployRevision || 'HEAD',
         path: repository.deployPath || '.',
-        valueFiles: repository.helmValuesFiles?.split(',') || [],
+        valueFiles,
       }
     }),
   ])
