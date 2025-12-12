@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
-import { LoggerService } from './logger/logger.service';
+
+import { ConfigurationModule } from './configuration/configuration.module';
 import { DatabaseService } from './database/database.service';
-import { HttpClientService } from './http-client/http-client.service';
 import { FastifyService } from './fastify/fastify.service';
-import { ConfigurationService } from './configuration/configuration.service';
+import { HttpClientService } from './http-client/http-client.service';
+import { LoggerModule } from './logger/logger.module';
 
 @Module({
-  providers: [LoggerService, DatabaseService, HttpClientService, FastifyService, ConfigurationService]
+    providers: [DatabaseService, HttpClientService, FastifyService],
+    imports: [LoggerModule, ConfigurationModule],
 })
 export class InfrastructureModule {}
