@@ -70,9 +70,8 @@ export async function addProject({
 }
 
 export async function deleteProject(page: Page, projectName: string) {
-  await page.getByTestId('menuAdministrationBtn').click()
-  await page.getByTestId('menuAdministrationProjects').click()
-  await page.getByRole('row', { name: new RegExp(projectName) }).click()
+  await page.getByTestId('menuMyProjects').click()
+  await page.getByRole('link', { name: projectName }).click()
   await page.getByRole('button', { name: 'Supprimer le projet' }).click()
   await page.getByTestId('archiveProjectInput').fill('DELETE')
   await page.getByTestId('confirmDeletionBtn').click()

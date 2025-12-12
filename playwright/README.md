@@ -50,6 +50,9 @@ $ export KEYCLOAK_REALM=dso
 $ export CONSOLE_ADMIN_USERNAME=<admin_dso_username>
 $ export CONSOLE_ADMIN_PASSWORD=<admin_dso_password>
 $ export CONSOLE_ADMIN_EMAIL=<admin_dso_email>
+$ export CONSOLE_TEST_USERNAME=<user_dso_username>
+$ export CONSOLE_TEST_PASSWORD=<user_dso_password>
+$ export CONSOLE_TEST_EMAIL=<user_dso_email>
 $ export CONSOLE_GLOBAL_TIMEOUT='900000'
 $ export CONSOLE_EXPECT_TIMEOUT='900000'
 ```

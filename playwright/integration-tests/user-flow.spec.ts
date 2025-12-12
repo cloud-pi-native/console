@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { adminUser, clientURL, signInCloudPiNative } from '../config/console'
+import { testUser, clientURL, signInCloudPiNative } from '../config/console'
 
 import {
   addProject,
@@ -17,7 +17,7 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
 
   test('Project creation and configuration', async ({ page }) => {
     await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: adminUser })
+    await signInCloudPiNative({ page, credentials: testUser })
     await addProject({ page, projectName })
     // Enable Nexus Maven plugin
     await page.getByTestId('test-tab-services').click()
@@ -40,9 +40,31 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     })
   })
 
-  test('Pipelines run', async ({ page }) => {
+  test('Check Vault kv', { tag: '@replayable' }, async ({ page }) => {
     await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: adminUser })
+    await signInCloudPiNative({ page, credentials: testUser })
+    await page.getByTestId('menuMyProjects').click()
+    await page.getByRole('link', { name: projectName }).click()
+    await page.getByTestId('test-tab-services').click()
+    const page1Promise = page.waitForEvent('popup')
+    await page.getByRole('link', { name: 'Vault' }).click()
+    const page1 = await page1Promise
+    const page2Promise = page1.waitForEvent('popup')
+    await page1.getByRole('button', { name: 'Sign in with OIDC Provider' }).click()
+    await page2Promise
+    await expect(page1.getByRole('link', { name: 'Vault home' })).toBeVisible()
+    await page1.goto(`https://vault.sdid-hp.cpin.numerique-interieur.com/ui/vault/secrets/${projectName}/kv/list?page=1`)
+    // Check that standard user has access to his project kv
+    await expect(page1.getByText('No secrets yet')).toBeVisible()
+    await expect(page1.getByRole('link', { name: 'Create secret' })).toBeVisible()
+    await page1.getByLabel('breadcrumbs').getByRole('link', { name: 'Secrets' }).click()
+    // Check that forge-dso kv is not accessible for standard user
+    await expect(page1.getByRole('link', { name: 'forge-dso' })).not.toBeVisible()
+  })
+
+  test('Pipelines run', { tag: '@replayable' }, async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
     await page.getByTestId('menuMyProjects').click()
     await page.getByRole('link', { name: projectName }).click()
     // Check if mirror pipeline is successful
@@ -72,7 +94,7 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
 
   test('Prepare ArgoCD deployment', async ({ page }) => {
     await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: adminUser })
+    await signInCloudPiNative({ page, credentials: testUser })
     await page.getByTestId('menuMyProjects').click()
     await page.getByRole('link', { name: projectName }).click()
     // Create environment for project to trigger ArgoCD deployment
@@ -92,7 +114,7 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
 
   test('View Sonar scan report', { tag: '@replayable' }, async ({ page }) => {
     await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: adminUser })
+    await signInCloudPiNative({ page, credentials: testUser })
     await page.getByTestId('menuMyProjects').click()
     await page.getByRole('link', { name: projectName }).click()
     // Check if sonar scan is available
@@ -110,7 +132,7 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
 
   test('ArgoCD deployment', { tag: '@replayable' }, async ({ page }) => {
     await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: adminUser })
+    await signInCloudPiNative({ page, credentials: testUser })
     await page.getByTestId('menuMyProjects').click()
     await page.getByRole('link', { name: projectName }).click()
     // Check if ArgoCD deployment is successful
@@ -132,10 +154,10 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
 
   test('Cleanup user test data', async ({ page }) => {
     await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: adminUser })
+    await signInCloudPiNative({ page, credentials: testUser })
     // ArgoCD deployment will be deleted when stage is deleted
     await page.getByTestId('menuMyProjects').click()
-    await page.getByRole('link', { name: `${projectName}` }).click()
+    await page.getByRole('link', { name: projectName }).click()
     await page.getByRole('cell', { name: 'integ' }).click()
     await page.getByTestId('showDeleteEnvironmentBtn').click()
     await page.getByTestId('deleteEnvironmentInput').fill('DELETE')
