@@ -1,38 +1,30 @@
-import { AdminAuthorized, systemSettingsContract } from '@cpn-console/shared';
-import { Injectable } from '@nestjs/common';
-import { AppService } from '@old-server/app';
-import { authUser } from '@old-server/utils/controller';
-import { Forbidden403 } from '@old-server/utils/errors';
+import { AdminAuthorized, systemSettingsContract } from '@cpn-console/shared'
+import { getSystemSettings, upsertSystemSetting } from './business'
+import { serverInstance } from '@old-server/app'
+import { authUser } from '@old-server/utils/controller'
+import { Forbidden403 } from '@old-server/utils/errors'
 
-import { getSystemSettings, upsertSystemSetting } from './business';
+export function systemSettingsRouter() {
+  return serverInstance.router(systemSettingsContract, {
+    listSystemSettings: async ({ query }) => {
+      const systemSettings = await getSystemSettings(query.key)
 
-@Injectable()
-export class SystemSettingsRouterService {
-    constructor(private readonly appService: AppService) {}
+      return {
+        status: 200,
+        body: systemSettings,
+      }
+    },
 
-    systemSettingsRouter() {
-        return this.appService.serverInstance.router(systemSettingsContract, {
-            listSystemSettings: async ({ query }) => {
-                const systemSettings = await getSystemSettings(query.key);
+    upsertSystemSetting: async ({ request: req, body: data }) => {
+      const perms = await authUser(req)
+      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
 
-                return {
-                    status: 200,
-                    body: systemSettings,
-                };
-            },
+      const systemSetting = await upsertSystemSetting(data)
 
-            upsertSystemSetting: async ({ request: req, body: data }) => {
-                const perms = await authUser(req);
-                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                    return new Forbidden403();
-
-                const systemSetting = await upsertSystemSetting(data);
-
-                return {
-                    status: 201,
-                    body: systemSetting,
-                };
-            },
-        });
-    }
+      return {
+        status: 201,
+        body: systemSetting,
+      }
+    },
+  })
 }

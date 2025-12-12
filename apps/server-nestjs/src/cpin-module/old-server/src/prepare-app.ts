@@ -1,128 +1,106 @@
-import { Injectable } from '@nestjs/common';
-import { ProxyAgent, setGlobalDispatcher } from 'undici';
+import { rm } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { isCI, isDev, isDevSetup, isInt, isProd, isTest, port } from './utils/env'
+import app, { logger } from './app'
+import { getConnection } from './connect'
+import { initDb } from './init/db/index'
+import { initPm } from './plugins'
 
-import { AppService } from './app';
-import { ConnectionService } from './connect';
-import { InitDBService } from './init/db';
-import { PluginService } from './plugins';
-import { isCI, isDev, isDevSetup, isProd, isTest } from './utils/env';
+// Workaround because fetch isn't using http_proxy variables
+// See. https://github.com/gajus/global-agent/issues/52#issuecomment-1134525621
+if (process.env.HTTP_PROXY) {
+  const Undici = await import('undici')
+  const ProxyAgent = Undici.ProxyAgent
+  const setGlobalDispatcher = Undici.setGlobalDispatcher
+  setGlobalDispatcher(
+    new ProxyAgent(process.env.HTTP_PROXY),
+  )
+}
 
-@Injectable()
-export class PrepareAppService {
-    constructor(
-        private readonly appService: AppService,
-        private readonly connectionService: ConnectionService,
-        private readonly initDBService: InitDBService,
-        private readonly pluginService: PluginService,
+async function initializeDB(path: string) {
+  logger.info('Starting init DB...')
+  const { data } = await import(path)
+  await initDb(data)
+  logger.info('initDb invoked successfully')
+}
 
-    ) {
-        // Workaround because fetch isn't using http_proxy variables
-        // See. https://github.com/gajus/global-agent/issues/52#issuecomment-1134525621
-        if (process.env.HTTP_PROXY) {
-            setGlobalDispatcher(new ProxyAgent(process.env.HTTP_PROXY));
-        }
+export async function startServer(defaultPort: number = (port ? +port : 8080)) {
+  try {
+    await getConnection()
+  } catch (error) {
+    if (!(error instanceof Error)) return
+    logger.error(error.message)
+    throw error
+  }
+
+  initPm()
+
+  logger.info('Reading init database file')
+
+  try {
+    const dataPath = (isProd || isInt)
+      ? './init/db/imports/data'
+      : '@cpn-console/test-utils/src/imports/data'
+    await initializeDB(dataPath)
+    if (isProd && !isDevSetup) {
+      logger.info('Cleaning up imported data file...')
+      const __filename = fileURLToPath(import.meta.url)
+      const __dirname = dirname(__filename)
+      await rm(resolve(__dirname, dataPath))
+      logger.info(`Successfully deleted '${dataPath}'`)
     }
-
-    async initializeDB(path: string) {
-        this.appService.logger.info('Starting init DB...');
-        const { data } = await import(path);
-        await this.initDBService.initDb(data);
-        this.appService.logger.info('initDb invoked successfully');
+  } catch (error) {
+    if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.includes('Failed to load') || error.message.includes('Cannot find module')) {
+      logger.info('No initDb file, skipping')
+    } else {
+      logger.warn(error.message)
+      throw error
     }
+  }
 
-    async startServer() {
-        try {
-            await this.connectionService.getConnection();
-        } catch (error) {
-            if (!(error instanceof Error)) return;
-            this.appService.logger.error(error.message);
-            throw error;
-        }
+  try {
+    await app.listen({ host: '0.0.0.0', port: defaultPort ?? 8080 })
+  } catch (error) {
+    logger.error(error)
+    process.exit(1)
+  }
+  logger.debug({ isDev, isTest, isCI, isDevSetup, isProd })
+}
 
-        this.pluginService.initPm();
+export async function getPreparedApp() {
+  try {
+    await getConnection()
+  } catch (error) {
+    logger.error(error.message)
+    throw error
+  }
 
-        this.appService.logger.info('Reading init database file');
+  initPm()
 
-        // try {
-        // const dataPath =
-        // isProd || isInt
-        // ? './init/db/imports/data'
-        // : '@cpn-console/test-utils/src/imports/data';
-        // await initializeDB(dataPath);
-        // if (isProd && !isDevSetup) {
-        // this.appService.logger.info('Cleaning up imported data file...');
-        // const __filename = fileURLToPath(import.meta.url);
-        // const __dirname = dirname(__filename);
-        // await rm(resolve(__dirname, dataPath));
-        // this.appService.logger.info(`Successfully deleted '${dataPath}'`);
-        // }
-        // } catch (error) {
-        // if (
-        // error.code === 'ERR_MODULE_NOT_FOUND' ||
-        // error.message.includes('Failed to load') ||
-        // error.message.includes('Cannot find module')
-        // ) {
-        // this.appService.logger.info('No initDb file, skipping');
-        // } else {
-        // this.appService.logger.warn(error.message);
-        // throw error;
-        // }
-        // }
+  logger.info('Reading init database file')
 
-        this.appService.logger.debug({
-            isDev,
-            isTest,
-            isCI,
-            isDevSetup,
-            isProd,
-        });
+  try {
+    const dataPath = (isProd || isInt)
+      ? './init/db/imports/data'
+      : '@cpn-console/test-utils/src/imports/data'
+    await initializeDB(dataPath)
+    if (isProd && !isDevSetup) {
+      logger.info('Cleaning up imported data file...')
+      const __filename = fileURLToPath(import.meta.url)
+      const __dirname = dirname(__filename)
+      await rm(resolve(__dirname, dataPath))
+      logger.info(`Successfully deleted '${dataPath}'`)
     }
-
-    async getPreparedApp() {
-        try {
-            await this.connectionService.getConnection();
-        } catch (error) {
-            this.appService.logger.error(error.message);
-            throw error;
-        }
-
-        this.pluginService.initPm();
-
-        this.appService.logger.info('Reading init database file');
-
-        // try {
-        // const dataPath =
-        // isProd || isInt
-        // ? './init/db/imports/data'
-        // : '@cpn-console/test-utils/src/imports/data';
-        // await initializeDB(dataPath);
-        // if (isProd && !isDevSetup) {
-        // this.appService.logger.info('Cleaning up imported data file...');
-        // const __filename = fileURLToPath(import.meta.url);
-        // const __dirname = dirname(__filename);
-        // await rm(resolve(__dirname, dataPath));
-        // this.appService.logger.info(`Successfully deleted '${dataPath}'`);
-        // }
-        // } catch (error) {
-        // if (
-        // error.code === 'ERR_MODULE_NOT_FOUND' ||
-        // error.message.includes('Failed to load') ||
-        // error.message.includes('Cannot find module')
-        // ) {
-        // this.appService.logger.info('No initDb file, skipping');
-        // } else {
-        // this.appService.logger.warn(error.message);
-        // throw error;
-        // }
-        // }
-
-        this.appService.logger.debug({
-            isDev,
-            isTest,
-            isCI,
-            isDevSetup,
-            isProd,
-        });
-        return this.appService.app;
+  } catch (error) {
+    if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.includes('Failed to load') || error.message.includes('Cannot find module')) {
+      logger.info('No initDb file, skipping')
+    } else {
+      logger.warn(error.message)
+      throw error
     }
+  }
+
+  logger.debug({ isDev, isTest, isCI, isDevSetup, isProd })
+  return app
 }

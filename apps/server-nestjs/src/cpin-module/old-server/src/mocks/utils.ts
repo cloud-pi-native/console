@@ -1,24 +1,24 @@
-import type { User } from '@cpn-console/test-utils';
-import fp from 'fastify-plugin';
+import fp from 'fastify-plugin'
+import type { User } from '@cpn-console/test-utils'
 
-let requestor: User;
+let requestor: User
 
 export function setRequestor(user: User) {
-    requestor = user;
+  requestor = user
 }
 
 export function getRequestor() {
-    return requestor;
+  return requestor
 }
 
 export async function mockSessionPlugin() {
-    const sessionPlugin = (app, opt, next) => {
-        app.addHook('onRequest', (req, res, next) => {
-            req.session = { user: getRequestor() };
-            next();
-        });
-        next();
-    };
+  const sessionPlugin = (app, opt, next) => {
+    app.addHook('onRequest', (req, res, next) => {
+      req.session = { user: getRequestor() }
+      next()
+    })
+    next()
+  }
 
-    return { default: fp(sessionPlugin) };
+  return { default: fp(sessionPlugin) }
 }

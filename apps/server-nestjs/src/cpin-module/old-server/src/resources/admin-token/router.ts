@@ -1,54 +1,44 @@
-import { AdminAuthorized, adminTokenContract } from '@cpn-console/shared';
-import { Injectable } from '@nestjs/common';
-import { authUser } from '@old-server/utils/controller';
-import { ErrorResType, Forbidden403 } from '@old-server/utils/errors';
+import { AdminAuthorized, adminTokenContract } from '@cpn-console/shared'
+import { serverInstance } from '../../app'
+import { createToken, deleteToken, listTokens } from './business'
+import { authUser } from '@old-server/utils/controller'
+import { ErrorResType, Forbidden403 } from '@old-server/utils/errors'
 
-import { AppService } from '../../app';
-import { createToken, deleteToken, listTokens } from './business';
+export function adminTokenRouter() {
+  return serverInstance.router(adminTokenContract, {
+    listAdminTokens: async ({ request: req, query }) => {
+      const perms = await authUser(req)
+      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      const body = await listTokens(query)
 
-@Injectable()
-export class AdminTokenRouterService {
-    constructor(private readonly appService: AppService) {}
+      return {
+        status: 200,
+        body,
+      }
+    },
 
-    adminTokenRouter() {
-        return this.appService.serverInstance.router(adminTokenContract, {
-            listAdminTokens: async ({ request: req, query }) => {
-                const perms = await authUser(req);
-                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                    return new Forbidden403();
-                const body = await listTokens(query);
+    createAdminToken: async ({ request: req, body: data }) => {
+      const perms = await authUser(req)
 
-                return {
-                    status: 200,
-                    body,
-                };
-            },
+      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      const body = await createToken(data)
+      if (body instanceof ErrorResType) return body
 
-            createAdminToken: async ({ request: req, body: data }) => {
-                const perms = await authUser(req);
+      return {
+        status: 201,
+        body,
+      }
+    },
 
-                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                    return new Forbidden403();
-                const body = await createToken(data);
-                if (body instanceof ErrorResType) return body;
+    deleteAdminToken: async ({ request: req, params }) => {
+      const perms = await authUser(req)
+      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      await deleteToken(params.tokenId)
 
-                return {
-                    status: 201,
-                    body,
-                };
-            },
-
-            deleteAdminToken: async ({ request: req, params }) => {
-                const perms = await authUser(req);
-                if (!AdminAuthorized.isAdmin(perms.adminPermissions))
-                    return new Forbidden403();
-                await deleteToken(params.tokenId);
-
-                return {
-                    status: 204,
-                    body: null,
-                };
-            },
-        });
-    }
+      return {
+        status: 204,
+        body: null,
+      }
+    },
+  })
 }
