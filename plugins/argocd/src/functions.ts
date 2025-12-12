@@ -214,6 +214,8 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
     ...infraRepositories.map(async (repository) => {
       const repoURL = await gitlabApi.getPublicRepoUrl(repository.internalRepoName)
       return {
+        id: repository.id,
+        name: repository.internalRepoName,
         repoURL,
         targetRevision: repository.deployRevision || 'HEAD',
         path: repository.deployPath || '.',
