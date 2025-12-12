@@ -64,6 +64,7 @@ describe('schemas utils', () => {
       cpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
       gpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
       memory: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
+      autosync: faker.datatype.boolean(),
       projectId: faker.string.uuid(),
       clusterId: faker.string.uuid(),
       stageId: faker.string.uuid(),

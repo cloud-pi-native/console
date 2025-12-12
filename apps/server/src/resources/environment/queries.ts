@@ -71,7 +71,7 @@ export function initializeEnvironment(data: Prisma.EnvironmentUncheckedCreateInp
   })
 }
 
-export function updateEnvironment({ id, cpu, gpu, memory }: { id: Environment['id'], cpu: Environment['cpu'], gpu: Environment['gpu'], memory: Environment['memory'] }) {
+export function updateEnvironment({ id, cpu, gpu, memory, autosync }: { id: Environment['id'], cpu: Environment['cpu'], gpu: Environment['gpu'], memory: Environment['memory'], autosync: Environment['autosync'] }) {
   return prisma.environment.update({
     where: {
       id,
@@ -80,6 +80,7 @@ export function updateEnvironment({ id, cpu, gpu, memory }: { id: Environment['i
       cpu,
       gpu,
       memory,
+      autosync,
     },
   })
 }
