@@ -37,6 +37,7 @@ const props = withDefaults(defineProps<{
     cpu: undefined,
     gpu: undefined,
     memory: undefined,
+    autosync: true,
     stageId: undefined,
     clusterId: undefined,
   }),
@@ -276,6 +277,21 @@ watch(localEnvironment.value, () => {
         data-testid="gpuInput"
         :placeholder="ONE_TENTH_STR"
         @update:model-value="(value: string) => localEnvironment.gpu = localeParseFloat(value)"
+      />
+      <DsfrCheckbox
+        id="autosyncCbx"
+        v-model="localEnvironment.autosync"
+        value="localEnvironment.autosync"
+        label="Synchronisation automatique"
+        hint="Activation de la synchronisation automatique des déploiements."
+        name="isAutosync"
+      />
+      <DsfrAlert
+        v-if="!localEnvironment.autosync"
+        data-testid="noAutosyncAlert"
+        description="La synchronisation automatique est désactivée. Les déploiements devront être synchronisés manuellement."
+        type="warning"
+        small
       />
       <div
         v-if="localEnvironment.id && canManage"
