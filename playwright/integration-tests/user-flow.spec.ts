@@ -130,6 +130,26 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     ).toBeVisible()
   })
 
+  test('Check Harbor repository', { tag: '@replayable' }, async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await page.getByTestId('menuMyProjects').click()
+    await page.getByRole('link', { name: projectName }).click()
+    await page.getByTestId('test-tab-services').click()
+    const page1Promise = page.waitForEvent('popup')
+    await page.getByRole('link', { name: 'Harbor' }).click()
+    const page1 = await page1Promise
+    await page1.getByRole('button', { name: 'LOGIN WITH keycloak' }).click()
+    await expect(page1.getByRole('button', { name: 'Administration' })).not.toBeVisible()
+    await expect(page1.getByText('Guest')).toBeVisible()
+    await expect(page1.getByRole('heading', { name: 'Private' })).toBeVisible()
+    await page1.getByRole('link', { name: `${projectName}/java-demo` }).click()
+    await expect(page1.getByRole('button', { name: 'main' })).toBeVisible()
+    await expect(page1.getByText('Policy')).not.toBeVisible()
+    // Check trivy scan result, hopefully will stay at C
+    await expect(page1.getByRole('button', { name: 'C', exact: true })).toBeVisible()
+  })
+
   test('ArgoCD deployment', { tag: '@replayable' }, async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
