@@ -1,5 +1,21 @@
 # Changelog
 
+## [9.10.0](https://github.com/cloud-pi-native/console/compare/v9.9.0...v9.10.0) (2025-12-12)
+
+
+### Features
+
+* :sparkles: add environment name tag in helm values ([1668604](https://github.com/cloud-pi-native/console/commit/1668604f436f4ae51beb3eef7b018b8f5e42a3f7))
+* :sparkles: Ajout des champs de saisie pour choisir les spécificités du dépôt d'infra ([5d2a156](https://github.com/cloud-pi-native/console/commit/5d2a156e691a680995031cac54d558ebc3ee3bff))
+
+
+### Bug Fixes
+
+* :bug: gitlab mirror access token generation ([7045582](https://github.com/cloud-pi-native/console/commit/70455823614a7684f1e3af7d220c5f99506208d8))
+* :bug: internal url for status monitor ([ba48bd6](https://github.com/cloud-pi-native/console/commit/ba48bd6602cbbebf2b41061e748de251686d19d1))
+* :bug: only regenerate mirror secret if there is user or token change ([a4a3e0e](https://github.com/cloud-pi-native/console/commit/a4a3e0e8b3156d1a3de76d42663d70dcd6ec0a94))
+* :bug: switch to sequential deletion ([30f7e47](https://github.com/cloud-pi-native/console/commit/30f7e478feb4661050222f28e0abd7d32e51c82b))
+
 ## [9.9.0](https://github.com/cloud-pi-native/console/compare/v9.8.1...v9.9.0) (2025-11-27)
 
 
