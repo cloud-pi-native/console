@@ -194,9 +194,9 @@ function toggleStandalone(e: boolean) {
             data-testid="helmValuesFilesTextarea"
             label="Fichiers values (Helm)"
             label-visible
-            hint="Un fichier par ligne. Indiquer le chemin relatif par rapport au répertoire à déployer. L'ordre des fichiers est déterminant pour la surcharge des valeurs communes. Champ optionnel."
-            placeholder="values/prod.yaml
-values/extra.yaml"
+            hint="Un fichier par ligne, chemin relatif par rapport au répertoire à déployer. La balise <env> sera remplacée par le nom de l'environnement. L'ordre des fichiers est déterminant pour la surcharge des valeurs communes. Champ optionnel."
+            placeholder="values/extra.yaml
+values-<env>/custom.yaml"
             @update:model-value="updateRepo('helmValuesFiles', $event)"
           />
         </div>
