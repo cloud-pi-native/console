@@ -114,9 +114,9 @@ flowchart TD
 
     %% --- Layering for clarity ---
     subgraph LayerInit["Initialisation de l'application"]
-        InitAppService["InitAppService"]
-        InitDbService["InitDbService"]
-        PluginService["PluginService"]
+        ApplicationInitializationService["ApplicationInitializationService"]
+        DatabaseInitializationService["DatabaseInitializationService"]
+        PluginManagementService["PluginManagementService"]
     end
 
     subgraph LayerCore["Coeur de l'application"]
@@ -130,11 +130,11 @@ flowchart TD
         ConfigurationService["ConfigurationService"]
         DatabaseService["DatabaseService"]
         FastifyService["FastifyService"]
-        AxiosService["AxiosService"]
+        HTTPClientService["HTTPClientService"]
     end
 
     OtherAPIService["APIs externes</br>(par ex. OpenCDS)"]
-    AxiosService --> OtherAPIService
+    HTTPClientService --> OtherAPIService
 
     subgraph LayerBusiness["Modules métiers"]
         subgraph AdminRole["Admin Roles"]
@@ -164,7 +164,7 @@ flowchart TD
             ServiceChainBusinessService["ServiceChainBusinessService"]
             ServiceChainRouterService --> ServiceChainBusinessService
             ServiceChainRouterService --> LoggerService
-            ServiceChainBusinessService --> AxiosService
+            ServiceChainBusinessService --> HTTPClientService
             ServiceChainBusinessService --> LoggerService
 
         end
@@ -197,18 +197,18 @@ flowchart TD
     end
 
     %% --- Module wiring ---
-    CPinModule --> InitAppService
+    CPinModule --> ApplicationInitializationService
 
     %% Application initialization
-    InitAppService --> LoggerService
-    InitAppService --> ConfigurationService
-    InitAppService --> FastifyService
-    InitAppService --> AppService
-    InitAppService --> InitDbService
-    InitDbService --> DatabaseService
-    InitDbService --> LoggerService
-    InitAppService --> PluginService
-    InitAppService --> LoggerService
+    ApplicationInitializationService --> LoggerService
+    ApplicationInitializationService --> ConfigurationService
+    ApplicationInitializationService --> FastifyService
+    ApplicationInitializationService --> AppService
+    ApplicationInitializationService --> DatabaseInitializationService
+    DatabaseInitializationService --> DatabaseService
+    DatabaseInitializationService --> LoggerService
+    ApplicationInitializationService --> PluginManagementService
+    ApplicationInitializationService --> LoggerService
 
     %% App Core internal flow
     AppService --> RouterService
@@ -217,11 +217,11 @@ flowchart TD
     ServerService --> LoggerService
 
     %% Plugin Management
-    PluginService --> Gitlab
-    PluginService --> ArgoCD
-    PluginService --> Kubernetes
-    PluginService --> Dots
-    PluginService --> LoggerService
+    PluginManagementService --> Gitlab
+    PluginManagementService --> ArgoCD
+    PluginManagementService --> Kubernetes
+    PluginManagementService --> Dots
+    PluginManagementService --> LoggerService
     Gitlab --> LoggerService
     ArgoCD --> LoggerService
     Kubernetes --> LoggerService
