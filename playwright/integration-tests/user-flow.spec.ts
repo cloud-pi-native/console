@@ -15,23 +15,10 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
   const repositoryName = 'socle-project-test'
   projectsToDelete.push(projectName)
 
-  test('Project creation', async ({ page }) => {
+  test('Project creation and configuration', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
     await addProject({ page, projectName })
-    await addRandomRepositoryToProject({
-      page,
-      repositoryName,
-      externalRepoUrlInput: 'https://github.com/cloud-pi-native/socle-project-test.git',
-      infraRepo: true,
-    })
-  })
-
-  test('Project configuration', async ({ page }) => {
-    await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: adminUser })
-    await page.getByTestId('menuMyProjects').click()
-    await page.getByRole('link', { name: projectName }).click()
     // Enable Nexus Maven plugin
     await page.getByTestId('test-tab-services').click()
     await page.getByRole('button', { name: 'Nexus' }).click()
@@ -43,13 +30,14 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     await page.getByTestId('replayHooksBtn').click()
     await expect(page.getByRole('heading', { name: 'Opération en cours...' })).toBeVisible()
     await expect(page.getByText('Le projet a été reprovisionn')).toBeVisible()
-    // Check if mirror pipeline is successful
-    await page.getByTestId('test-tab-services').click()
-    const page1Promise = page.waitForEvent('popup')
-    await page.getByRole('link', { name: 'Gitlab' }).click()
-    const page1 = await page1Promise
-    await page1.getByTestId('group-name').filter({ hasText: 'mirror' }).click()
-    await expect(page1.getByTestId('status_success_borderless-icon')).toBeVisible()
+    // Add repository to project
+    await page.getByTestId('test-tab-resources').click()
+    await addRandomRepositoryToProject({
+      page,
+      repositoryName,
+      externalRepoUrlInput: 'https://github.com/cloud-pi-native/socle-project-test.git',
+      infraRepo: true,
+    })
   })
 
   test('Pipelines run', async ({ page }) => {
@@ -57,16 +45,17 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     await signInCloudPiNative({ page, credentials: adminUser })
     await page.getByTestId('menuMyProjects').click()
     await page.getByRole('link', { name: projectName }).click()
-    // Run pipeline and check if tests are successful
+    // Check if mirror pipeline is successful
     await page.getByTestId('test-tab-services').click()
     const page1Promise = page.waitForEvent('popup')
     await page.getByRole('link', { name: 'Gitlab' }).click()
     const page1 = await page1Promise
+    await page1.getByTestId('group-name').filter({ hasText: 'mirror' }).click()
+    await expect(page1.getByTestId('status_success_borderless-icon')).toBeVisible()
+    // Check if tests are successful
+    await page1.getByRole('link', { name: projectName }).click()
     await page1.getByTestId('group-name').filter({ hasText: repositoryName }).click()
-    await page1.getByRole('button', { name: 'Build' }).hover()
-    await page1.getByRole('link', { name: 'Pipelines' }).click()
-    await page1.getByTestId('run-pipeline-button').click()
-    await page1.getByTestId('run-pipeline-button').click() // Not a duplicate
+    await page1.getByTestId('ci-icon').click()
     await expect(
       page1.getByRole('link', { name: 'Status: Passed test-vault' }),
     ).toBeVisible()
