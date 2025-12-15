@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { testUser, clientURL, signInCloudPiNative } from '../config/console'
+import { adminUser, testUser, clientURL, signInCloudPiNative } from '../config/console'
 
 import {
   addProject,
@@ -15,6 +15,28 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
   const repositoryName = 'socle-project-test'
   const destinationCluster = process.env.CONSOLE_DESTINATION_CLUSTER || 'cpin-app-hp'
   projectsToDelete.push(projectName)
+
+  test('Preliminary checks', { tag: '@replayable' }, async ({ page }) => {
+    await page.goto(clientURL)
+    // Check all services are healthy
+    await page.getByTestId('menuServicesHealth').click()
+    await expect(page.getByTestId('ArgoCD-info').getByText('OK')).toBeVisible()
+    await expect(page.getByTestId('Gitlab-info').getByText('OK')).toBeVisible()
+    await expect(page.getByTestId('Harbor-info').getByText('OK')).toBeVisible()
+    await expect(page.getByTestId('Keycloak-info').getByText('OK')).toBeVisible()
+    await expect(page.getByTestId('Nexus-info').getByText('OK')).toBeVisible()
+    await expect(page.getByTestId('SonarQube-info').getByText('OK')).toBeVisible()
+    await expect(page.getByTestId('Vault-info').getByText('OK')).toBeVisible()
+    await expect(page.getByText('Tous les services')).toBeVisible()
+    // Check maintenance mode is disabled
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: adminUser })
+    await page.getByTestId('menuAdministrationBtn').click()
+    await page.getByTestId('menuAdministrationSystemSettings').click()
+    await expect(page.getByText('Le mode Maintenance est')).not.toBeVisible()
+    await expect(page.getByText('Désactiver le mode maintenance')).not.toBeVisible()
+    await expect(page.getByText('Activer le mode maintenance')).toBeVisible()
+  })
 
   test('Project creation and configuration', async ({ page }) => {
     await page.goto(clientURL)
