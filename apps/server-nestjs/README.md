@@ -240,5 +240,7 @@ server-nestjs/$ find src/cpin-module/old-server -type f -iname "*.ts" -exec sed 
 ## To delete (once we have a sastifying nestjs implementation):
 
 ```
-old-server/src/utils/logger.ts
+old-server/src/utils/logger.ts -> Replaced by LoggerModule
+old-server/src/utils/env.ts -> Replaced by ConfigurationModule
+old-server/src/init/db/* (except dump.ts) -> Replaced by DatabaseInitializationService
 ```
