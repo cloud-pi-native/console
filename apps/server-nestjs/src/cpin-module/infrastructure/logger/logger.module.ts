@@ -39,7 +39,14 @@ export const loggerConfiguration: Record<string, PinoLoggerOptions> = {
             inject: [ConfigurationService],
             useFactory: async (configService: ConfigurationService) => {
                 return {
-                    pinoHttp: loggerConfiguration[configService.environment],
+                    pinoHttp:
+                        loggerConfiguration[
+                            configService.isProd
+                                ? 'production'
+                                : configService.isTest
+                                  ? 'test'
+                                  : 'development'
+                        ],
                 };
             },
         }),
