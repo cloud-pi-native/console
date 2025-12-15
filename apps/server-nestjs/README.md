@@ -239,8 +239,14 @@ server-nestjs/$ find src/cpin-module/old-server -type f -iname "*.ts" -exec sed 
 
 ## To delete (once we have a sastifying nestjs implementation):
 
+Some `old-server` files are being rewritten and incorporated as NestJS modules.
+We will keep track of them here so that we can go back and forth between the previous
+implementation and the future NestJS one. In the meantime their code is commented out
+in order to show if they can be safely removed (no import errors elsewhere)
+
 ```
 old-server/src/utils/logger.ts -> Replaced by LoggerModule
 old-server/src/utils/env.ts -> Replaced by ConfigurationModule
 old-server/src/init/db/* (except dump.ts) -> Replaced by DatabaseInitializationService
+old-server/src/connect.ts -> Replaced by DatabaseService
 ```
