@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Cluster" ALTER COLUMN "infos" SET DATA TYPE VARCHAR(1000);
