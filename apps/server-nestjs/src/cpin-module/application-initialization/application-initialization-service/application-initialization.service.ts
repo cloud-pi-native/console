@@ -15,7 +15,9 @@ export class ApplicationInitializationService {
         private readonly pluginManagementService: PluginManagementService,
         private readonly databaseInitializationService: DatabaseInitializationService,
         private readonly databaseService: DatabaseService,
-    ) {}
+    ) {
+        this.handleExit();
+    }
 
     async setUpHTTPProxy() {
         // Workaround because fetch isn't using http_proxy variables
@@ -78,5 +80,37 @@ export class ApplicationInitializationService {
             isDevSetup: this.config.isDevSetup,
             isProd: this.config.isProd,
         });
+    }
+
+    async exitGracefully(error?: Error) {
+        if (error instanceof Error) {
+            this.logger.fatal(error);
+        }
+        // @TODO Determine if it is necessary, or if we would rather plug ourselves
+        // onto NestJS lifecycle, or even if all this is actually necessary
+        // at all anymore
+        //
+        // await app.close();
+
+        this.logger.log('Closing connections...');
+        await this.databaseService.closeConnections();
+        this.logger.log('Exiting...');
+        process.exit(error instanceof Error ? 1 : 0);
+    }
+
+    logExitCode(code: number) {
+        this.logger.warn(`received signal: ${code}`);
+    }
+
+    logUnhandledRejection(reason: unknown, promise: Promise<unknown>) {
+        this.logger.error({ message: 'Unhandled Rejection', promise, reason });
+    }
+
+    handleExit() {
+        process.on('exit', this.logExitCode);
+        process.on('SIGINT', this.exitGracefully);
+        process.on('SIGTERM', this.exitGracefully);
+        process.on('uncaughtException', this.exitGracefully);
+        process.on('unhandledRejection', this.logUnhandledRejection);
     }
 }
