@@ -249,4 +249,5 @@ old-server/src/utils/logger.ts -> Replaced by LoggerModule
 old-server/src/utils/env.ts -> Replaced by ConfigurationModule
 old-server/src/init/db/* (except dump.ts) -> Replaced by DatabaseInitializationService
 old-server/src/connect.ts -> Replaced by DatabaseService
+old-server/src/server.ts -> Incorporated in ApplicationInitializationService
 ```
