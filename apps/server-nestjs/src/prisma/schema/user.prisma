@@ -1,0 +1,23 @@
+model User {
+  id           String    @id @db.Uuid
+  firstName    String
+  lastName     String
+  email        String    @unique
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastLogin    DateTime?
+  adminRoleIds String[]
+  type         UserType
+
+  logs                 Log[]
+  projectsOwned        Project[]
+  adminTokens          AdminToken[]
+  projectMembers       ProjectMembers[]
+  personalAccessTokens PersonalAccessToken[]
+}
+
+enum UserType {
+  human
+  bot
+  ghost
+}
