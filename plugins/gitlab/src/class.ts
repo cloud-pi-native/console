@@ -399,6 +399,11 @@ export class GitlabProjectApi extends GitlabApi {
   public async listRepositories() {
     const group = await this.getOrCreateProjectGroup()
     const projects = await this.api.Groups.allProjects(group.id, { simple: false }) // to refactor with https://github.com/jdalrymple/gitbeaker/pull/3624
+    console.log('[listRepositories] projects.length =', projects.length)
+    console.log(
+      '[listRepositories] project names:',
+      projects.map(p => p.name),
+    )
     return Promise.all(projects.map(async (project) => {
       if (this.specialRepositories.includes(project.name) && (!project.topics || !project.topics.includes(pluginManagedTopic))) {
         return this.api.Projects.edit(project.id, { topics: project.topics ? [...project.topics, pluginManagedTopic] : [pluginManagedTopic] })
