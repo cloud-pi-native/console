@@ -8,13 +8,13 @@ import {
 } from '../e2e-tests/utils'
 
 const projectsToDelete: string[] = []
+const projectName = 'socleprojecttest'
+const repositoryName = 'socle-project-test'
+const destinationCluster = process.env.CONSOLE_DESTINATION_CLUSTER || 'cpin-app-hp'
+projectsToDelete.push(projectName)
 
-test.describe('Integration tests user flow', { tag: '@integ' }, () => {
+test.describe('Integration tests user flow: project creation', { tag: '@integ' }, () => {
   test.describe.configure({ mode: 'serial' })
-  const projectName = 'socleprojecttest'
-  const repositoryName = 'socle-project-test'
-  const destinationCluster = process.env.CONSOLE_DESTINATION_CLUSTER || 'cpin-app-hp'
-  projectsToDelete.push(projectName)
 
   test('Preliminary checks', { tag: '@replayable' }, async ({ page }) => {
     await page.goto(clientURL)
@@ -68,6 +68,10 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     await page.getByTestId('updateRepoBtn').click()
     await expect(page.getByRole('heading', { name: 'Opération en cours...' })).toBeVisible()
   })
+})
+
+test.describe('Integration tests user flow: first checks', { tag: '@integ' }, () => {
+  test.describe.configure({ mode: 'parallel' })
 
   test('Check Vault kv', { tag: '@replayable' }, async ({ page }) => {
     await page.goto(clientURL)
@@ -119,6 +123,10 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
       page1.getByRole('link', { name: 'Status: Passed test-sonar' }),
     ).toBeVisible()
   })
+})
+
+test.describe('Integration tests user flow: after pipelines checks', { tag: '@integ' }, () => {
+  test.describe.configure({ mode: 'parallel' })
 
   test('Prepare ArgoCD deployment', async ({ page }) => {
     await page.goto(clientURL)
@@ -177,6 +185,10 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     // Check trivy scan result, hopefully will stay at C
     await expect(page1.getByRole('button', { name: 'C', exact: true })).toBeVisible()
   })
+})
+
+test.describe('Integration tests user flow: deployment and metrics', { tag: '@integ' }, () => {
+  test.describe.configure({ mode: 'serial' })
 
   test('ArgoCD deployment', { tag: '@replayable' }, async ({ page }) => {
     await page.goto(clientURL)
@@ -199,6 +211,43 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     const page2 = await page2Promise
     await expect(page2.locator('html')).toContainText('Application is running')
   })
+
+  test('Check Grafana', { tag: '@replayable' }, async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await page.getByTestId('menuMyProjects').click()
+    await page.getByRole('link', { name: projectName }).click()
+    await page.getByTestId('test-tab-services').click()
+    const page1Promise = page.waitForEvent('popup')
+    await page.getByRole('link', { name: 'Grafana' }).click()
+    const page1 = await page1Promise
+    await page1.getByRole('link', { name: 'Sign in with grafana-projects' }).click()
+    await expect(page1.getByRole('link', { name: 'Grafana', exact: true })).toBeVisible()
+    await page1.getByTestId('data-testid Toggle menu').click()
+    await page1.getByRole('button', { name: 'Expand section Dashboards' }).click()
+    await page1.getByRole('link', { name: 'Dashboards', exact: true }).click()
+    await page1.getByRole('link', { name: 'dso-grafana' }).click()
+    // Check if we can see some metrics
+    await page1.getByRole('link', { name: 'Kubernetes / Views /' }).click()
+    await expect(page1.getByText('0.100')).toBeVisible() // Cpu request
+    await expect(page1.getByText('0.500')).toBeVisible() // Cpu limit
+    await expect(page1.getByText('256')).toBeVisible() // Memory request
+    await expect(page1.getByText('512')).toBeVisible() // Memory limit
+    // Check if we can see some logs
+    await page1.getByTestId('data-testid dso-grafana breadcrumb').click()
+    await page1.getByRole('link', { name: 'Loki Kubernetes Logs' }).click()
+    await expect(page1.getByTestId('data-testid Panel status error').first()).not.toBeVisible()
+    await expect(page1.locator('.rc-drawer-mask')).not.toBeVisible()
+    await page1.getByTestId('data-testid TimePicker Open Button').click()
+    await page1.getByText('Last 1 hour').click()
+    await page1.locator('.css-13x53bc-Icon-topVerticalAlign').first().click()
+    await expect(page1.getByRole('cell', { name: 'app_kubernetes_io_name' }).nth(1)).toBeVisible()
+    await expect(page1.getByText('demo-java-helm').nth(1)).toBeVisible()
+  })
+})
+
+test.describe('Integration tests user flow: Cleanup', { tag: '@integ' }, () => {
+  test.describe.configure({ mode: 'serial' })
 
   test('Cleanup user test data', async ({ page }) => {
     await page.goto(clientURL)
