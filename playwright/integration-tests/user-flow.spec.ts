@@ -53,7 +53,6 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     await page1.getByRole('button', { name: 'Sign in with OIDC Provider' }).click()
     await page2Promise
     await expect(page1.getByRole('link', { name: 'Vault home' })).toBeVisible()
-    await page1.goto(`https://vault.sdid-hp.cpin.numerique-interieur.com/ui/vault/secrets/${projectName}/kv/list?page=1`)
     // Check that standard user has access to his project kv
     await expect(page1.getByText('No secrets yet')).toBeVisible()
     await expect(page1.getByRole('link', { name: 'Create secret' })).toBeVisible()
