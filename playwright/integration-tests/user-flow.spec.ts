@@ -8,13 +8,13 @@ import {
 } from '../e2e-tests/utils'
 
 const projectsToDelete: string[] = []
+const projectName = 'socleprojecttest'
+const repositoryName = 'socle-project-test'
+const destinationCluster = process.env.CONSOLE_DESTINATION_CLUSTER || 'cpin-app-hp'
+projectsToDelete.push(projectName)
 
-test.describe('Integration tests user flow', { tag: '@integ' }, () => {
+test.describe('Integration tests user flow: project creation', { tag: '@integ' }, () => {
   test.describe.configure({ mode: 'serial' })
-  const projectName = 'socleprojecttest'
-  const repositoryName = 'socle-project-test'
-  const destinationCluster = process.env.CONSOLE_DESTINATION_CLUSTER || 'cpin-app-hp'
-  projectsToDelete.push(projectName)
 
   test('Preliminary checks', { tag: '@replayable' }, async ({ page }) => {
     await page.goto(clientURL)
@@ -68,6 +68,10 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     await page.getByTestId('updateRepoBtn').click()
     await expect(page.getByRole('heading', { name: 'Opération en cours...' })).toBeVisible()
   })
+})
+
+test.describe('Integration tests user flow: first checks', { tag: '@integ' }, () => {
+  test.describe.configure({ mode: 'serial' })
 
   test('Check Vault kv', { tag: '@replayable' }, async ({ page }) => {
     await page.goto(clientURL)
@@ -119,6 +123,10 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
       page1.getByRole('link', { name: 'Status: Passed test-sonar' }),
     ).toBeVisible()
   })
+})
+
+test.describe('Integration tests user flow: after pipelines checks', { tag: '@integ' }, () => {
+  test.describe.configure({ mode: 'serial' })
 
   test('Prepare ArgoCD deployment', async ({ page }) => {
     await page.goto(clientURL)
@@ -177,6 +185,10 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     // Check trivy scan result, hopefully will stay at C
     await expect(page1.getByRole('button', { name: 'C', exact: true })).toBeVisible()
   })
+})
+
+test.describe('Integration tests user flow: deployment and metrics', { tag: '@integ' }, () => {
+  test.describe.configure({ mode: 'serial' })
 
   test('ArgoCD deployment', { tag: '@replayable' }, async ({ page }) => {
     await page.goto(clientURL)
@@ -232,6 +244,10 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     await expect(page1.getByRole('cell', { name: 'app_kubernetes_io_name' }).nth(1)).toBeVisible()
     await expect(page1.getByText('demo-java-helm').nth(1)).toBeVisible()
   })
+})
+
+test.describe('Integration tests user flow: Cleanup', { tag: '@integ' }, () => {
+  test.describe.configure({ mode: 'serial' })
 
   test('Cleanup user test data', async ({ page }) => {
     await page.goto(clientURL)
