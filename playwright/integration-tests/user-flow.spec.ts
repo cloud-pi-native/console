@@ -200,6 +200,39 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     await expect(page2.locator('html')).toContainText('Application is running')
   })
 
+  test('Check Grafana', { tag: '@replayable' }, async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await page.getByTestId('menuMyProjects').click()
+    await page.getByRole('link', { name: projectName }).click()
+    await page.getByTestId('test-tab-services').click()
+    const page1Promise = page.waitForEvent('popup')
+    await page.getByRole('link', { name: 'Grafana' }).click()
+    const page1 = await page1Promise
+    await page1.getByRole('link', { name: 'Sign in with grafana-projects' }).click()
+    await expect(page1.getByRole('link', { name: 'Grafana', exact: true })).toBeVisible()
+    await page1.getByTestId('data-testid Toggle menu').click()
+    await page1.getByRole('button', { name: 'Expand section Dashboards' }).click()
+    await page1.getByRole('link', { name: 'Dashboards', exact: true }).click()
+    await page1.getByRole('link', { name: 'dso-grafana' }).click()
+    // Check if we can see some metrics
+    await page1.getByRole('link', { name: 'Kubernetes / Views /' }).click()
+    await expect(page1.getByText('0.100')).toBeVisible() // Cpu request
+    await expect(page1.getByText('0.500')).toBeVisible() // Cpu limit
+    await expect(page1.getByText('256')).toBeVisible() // Memory request
+    await expect(page1.getByText('512')).toBeVisible() // Memory limit
+    // Check if we can see some logs
+    await page1.getByTestId('data-testid dso-grafana breadcrumb').click()
+    await page1.getByRole('link', { name: 'Loki Kubernetes Logs' }).click()
+    await expect(page1.getByTestId('data-testid Panel status error').first()).not.toBeVisible()
+    await expect(page1.locator('.rc-drawer-mask')).not.toBeVisible()
+    await page1.getByTestId('data-testid TimePicker Open Button').click()
+    await page1.getByText('Last 1 hour').click()
+    await page1.locator('.css-13x53bc-Icon-topVerticalAlign').first().click()
+    await expect(page1.getByRole('cell', { name: 'app_kubernetes_io_name' }).nth(1)).toBeVisible()
+    await expect(page1.getByText('demo-java-helm').nth(1)).toBeVisible()
+  })
+
   test('Cleanup user test data', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
