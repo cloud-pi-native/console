@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.10.1](https://github.com/cloud-pi-native/console/compare/v9.10.0...v9.10.1) (2025-12-18)
+
+
+### Bug Fixes
+
+* :bug: set non nullable and default constraints on Repository ([500e497](https://github.com/cloud-pi-native/console/commit/500e4978fe8fb7a23976bd8adb39f9650ad4dd32))
+
 ## [9.10.0](https://github.com/cloud-pi-native/console/compare/v9.9.0...v9.10.0) (2025-12-12)
 
 
