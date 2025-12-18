@@ -6,10 +6,9 @@ import { ConfigurationService } from '../configuration/configuration.service';
 
 @Injectable()
 export class DatabaseService {
-    constructor(
-        private readonly configurationService: ConfigurationService,
-        private readonly loggerService = new Logger(DatabaseService.name),
-    ) {
+    private readonly loggerService = new Logger(DatabaseService.name);
+
+    constructor(private readonly configurationService: ConfigurationService) {
         this.DELAY_BEFORE_RETRY =
             this.configurationService.isTest || this.configurationService.isCI
                 ? 1000
