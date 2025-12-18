@@ -20,7 +20,7 @@ export class PluginResultBuilder {
   }
 
   addOkMessage(...messages: string[]) {
-    this.koMessages.push(...messages)
+    this.okMessages.push(...messages)
     return this
   }
 
@@ -35,7 +35,7 @@ export class PluginResultBuilder {
   }
 
   setOkMessage(...messages: string[]) {
-    this.koMessages = messages
+    this.okMessages = messages
     return this
   }
 
