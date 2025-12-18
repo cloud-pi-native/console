@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.10.2](https://github.com/cloud-pi-native/console/compare/v9.10.1...v9.10.2) (2025-12-18)
+
+
+### Bug Fixes
+
+* :bug: upgrade dso-ns chart to fix pull secret path ([13b9648](https://github.com/cloud-pi-native/console/commit/13b96488406284c7efd7ca3cfa7ed168ca8b1fa2))
+
 ## [9.10.1](https://github.com/cloud-pi-native/console/compare/v9.10.0...v9.10.1) (2025-12-18)
 
 
