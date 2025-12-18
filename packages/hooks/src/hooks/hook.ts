@@ -2,9 +2,11 @@ import type { PluginApi } from '../utils/utils.js'
 import type * as hooks from './index.js'
 
 export type DefaultArgs = Record<any, any>
+export type PluginResultStoreValue = string | number | null
+export type PluginResultStore = Record<string, PluginResultStoreValue>
 export interface PluginResult {
   status: { result: 'OK', message?: string } | { result: 'KO' | 'WARNING', message: string }
-  store?: Record<string, string | number | null>
+  store?: PluginResultStore
   [key: string]: any
 }
 
