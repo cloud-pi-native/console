@@ -1,5 +1,5 @@
 import type { Project, StepCall, UserEmail, ZoneObject } from '@cpn-console/hooks'
-import { generateRandomPassword, parseError } from '@cpn-console/hooks'
+import { generateRandomPassword, parseError, PluginResultBuilder } from '@cpn-console/hooks'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation.js'
 import type { CustomGroup } from './group.js'
@@ -60,6 +60,7 @@ export const deleteProject: StepCall<Project> = async ({ args: project }) => {
 }
 
 export const upsertProject: StepCall<Project> = async ({ args: project }) => {
+  const pluginResult = new PluginResultBuilder('Up-to-date')
   try {
     const kcClient = await getkcClient()
     const projectName = project.slug
@@ -74,6 +75,10 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
             id: member.id,
             groupId: projectGroup.id,
           })
+            .catch((err) => {
+              pluginResult.addKoMessage(`Can't remove ${member.email} from keycloak project group`)
+              pluginResult.addExtra(`remove-${member.id}`, err)
+            })
         }
         return undefined
       }),
@@ -83,6 +88,10 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
             id: user.id,
             groupId: projectGroup.id,
           })
+            .catch((err) => {
+              pluginResult.addKoMessage(`Can't add ${user.email} to keycloak project group`)
+              pluginResult.addExtra(`add-${user.id}`, err)
+            })
         }
         return undefined
       }),
@@ -130,20 +139,9 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
       return undefined
     }))
 
-    return {
-      status: {
-        result: 'OK',
-        message: 'Up-to-date',
-      },
-    }
+    return pluginResult.getResultObject()
   } catch (error) {
-    return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        message: 'Failed',
-      },
-    }
+    return pluginResult.returnUnexpectedError(error)
   }
 }
 
