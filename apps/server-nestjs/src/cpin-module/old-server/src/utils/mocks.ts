@@ -131,7 +131,7 @@ export function getUserMockInfos(isAdmin: boolean, user?: UserDetails, project?:
 export function getUserMockInfos(isAdmin: boolean, user = getRandomRequestor(), project?: utilsController.ProjectPermState): utilsController.UserProfile | utilsController.UserProjectProfile {
   return {
     adminPermissions: isAdmin ? 2n : 0n,
-    user,
+    user: user as UserDetails,
     ...project,
   }
 }
