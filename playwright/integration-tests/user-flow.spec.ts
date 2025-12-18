@@ -38,6 +38,12 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
       externalRepoUrlInput: 'https://github.com/cloud-pi-native/socle-project-test.git',
       infraRepo: true,
     })
+    await page.getByRole('cell', { name: repositoryName }).click()
+    await page.getByTestId('deployRevisionInput').fill('main')
+    await page.getByTestId('deployPathInput').fill('helm/')
+    await page.getByTestId('helmValuesFilesTextarea').fill('values-cpin-hp.yaml')
+    await page.getByTestId('updateRepoBtn').click()
+    await expect(page.getByRole('heading', { name: 'Opération en cours...' })).toBeVisible()
   })
 
   test('Check Vault kv', { tag: '@replayable' }, async ({ page }) => {
