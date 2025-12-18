@@ -13,6 +13,7 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
   test.describe.configure({ mode: 'serial' })
   const projectName = 'socleprojecttest'
   const repositoryName = 'socle-project-test'
+  const destinationCluster = process.env.CONSOLE_DESTINATION_CLUSTER || 'cpin-app-hp'
   projectsToDelete.push(projectName)
 
   test('Project creation and configuration', async ({ page }) => {
@@ -109,7 +110,7 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     await page.getByTestId('environmentNameInput').fill('integ')
     await page.getByLabel('Zone *Choix de la zone cible').selectOption({ label: 'DSO' })
     await page.getByLabel('Type d\'environnement *Type d\'').selectOption({ label: 'dev' })
-    await page.getByLabel('Cluster *Choix du cluster').selectOption({ label: 'sdid-hp' })
+    await page.getByLabel('Cluster *Choix du cluster').selectOption({ label: destinationCluster })
     await page.getByTestId('memoryInput').fill('2')
     await page.getByTestId('cpuInput').fill('1')
     await page.getByTestId('gpuInput').fill('0')
@@ -166,7 +167,7 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     await page.getByRole('link', { name: 'ArgoCD DSO' }).click()
     const page1 = await page1Promise
     await page1.getByRole('button', { name: 'Log in via Keycloak' }).click()
-    await page1.locator('span').filter({ hasText: `${projectName}-integ-socle-` }).click()
+    await page1.getByText('app.kubernetes.io/managed-by=dso-console, dso/environment=integ, dso/').click()
     await expect(page1.getByText('Synced').nth(1)).toBeVisible()
     await expect(page1.getByText('Sync OK')).toBeVisible()
     await expect(page1.getByText('Healthy').nth(1)).toBeVisible()
