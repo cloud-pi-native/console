@@ -6,6 +6,6 @@ import { MainModule } from './main.module';
 async function bootstrap() {
     const app = await NestFactory.create(MainModule, { bufferLogs: true });
     app.useLogger(app.get(Logger));
-    await app.listen(process.env.PORT ?? 8080);
+    await app.listen(process.env.PORT ?? 0);
 }
 bootstrap();

@@ -12,14 +12,13 @@ import fastifySession, { FastifySessionOptions } from '@fastify/session';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 import { Injectable, Logger } from '@nestjs/common';
-import { initServer } from '@ts-rest/fastify';
 import { generateOpenApi } from '@ts-rest/open-api';
 import fastify from 'fastify';
 import type { FastifyRequest } from 'fastify';
 import keycloak, { KeycloakOptions } from 'fastify-keycloak-adapter';
 
-import { apiRouter } from './resources/index';
-import { fastifyConf, swaggerConf, swaggerUiConf } from './utils/fastify';
+import { FastifyService } from '../fastify/fastify.service';
+import { RouterService } from '../router/router.service';
 
 interface KeycloakPayload {
     sub: string;
@@ -48,10 +47,12 @@ function bypassFn(request: FastifyRequest) {
 
 @Injectable()
 export class AppService {
+    private readonly loggerService = new Logger(AppService.name);
+
     constructor(
         private readonly configurationService: ConfigurationService,
-
-        private readonly loggerService = new Logger(AppService.name),
+        private readonly routerService: RouterService,
+        private readonly fastifyService: FastifyService,
     ) {
         this.keycloakConf = {
             appOrigin:
@@ -92,16 +93,13 @@ export class AppService {
     sessionConf!: FastifySessionOptions;
 
     async startApp() {
-        //@TODO is this still necessary ?
-        initServer();
-
         const openApiDocument = generateOpenApi(
             await getContract(),
-            swaggerConf,
+            this.fastifyService.swaggerConf,
             { setOperationId: true },
         );
 
-        const app = fastify(fastifyConf)
+        const app = fastify(this.fastifyService.fastifyConf)
             .register(helmet, () => ({
                 contentSecurityPolicy: !(
                     this.configurationService.isInt ||
@@ -116,8 +114,8 @@ export class AppService {
             .register(fastifySwagger, {
                 transformObject: () => openApiDocument,
             })
-            .register(fastifySwaggerUi, swaggerUiConf)
-            .register(apiRouter())
+            .register(fastifySwaggerUi, this.fastifyService.swaggerUiConf)
+            .register(this.routerService.apiRouter())
             .addHook('onRoute', (opts) => {
                 if (opts.path === `${apiPrefix}/healthz`) {
                     opts.logLevel = 'silent';

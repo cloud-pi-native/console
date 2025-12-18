@@ -44,8 +44,4 @@ export class ConfigurationService {
               ? 'development'
               : 'production';
 
-    // server tuning
-    parallelBulkLimit = process.env.PARALLEL_BULK_LIMIT
-        ? Number(process.env.PARALLEL_BULK_LIMIT)
-        : 5;
 }
