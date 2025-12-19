@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { adminUser, testUser, clientURL, signInCloudPiNative } from '../config/console'
+import { adminUser, secondTestUser, testUser, clientURL, signInCloudPiNative } from '../config/console'
 
 import {
   addProject,
@@ -11,6 +11,7 @@ const projectsToDelete: string[] = []
 const projectName = 'socleprojecttest'
 const repositoryName = 'socle-project-test'
 const destinationCluster = process.env.CONSOLE_DESTINATION_CLUSTER || 'cpin-app-hp'
+const helmValuesFiles = process.env.CONSOLE_VALUES_FILE || 'values-cpin-hp.yaml'
 projectsToDelete.push(projectName)
 
 test.describe('Integration tests user flow: project creation', { tag: '@integ' }, () => {
@@ -64,7 +65,7 @@ test.describe('Integration tests user flow: project creation', { tag: '@integ' }
     await page.getByRole('cell', { name: repositoryName }).click()
     await page.getByTestId('deployRevisionInput').fill('main')
     await page.getByTestId('deployPathInput').fill('helm/')
-    await page.getByTestId('helmValuesFilesTextarea').fill('values-cpin-hp.yaml')
+    await page.getByTestId('helmValuesFilesTextarea').fill(helmValuesFiles)
     await page.getByTestId('updateRepoBtn').click()
     await expect(page.getByRole('heading', { name: 'Opération en cours...' })).toBeVisible()
   })
@@ -92,6 +93,37 @@ test.describe('Integration tests user flow: first checks', { tag: '@integ' }, ()
     await page1.getByLabel('breadcrumbs').getByRole('link', { name: 'Secrets' }).click()
     // Check that forge-dso kv is not accessible for standard user
     await expect(page1.getByRole('link', { name: 'forge-dso' })).not.toBeVisible()
+  })
+
+  test('Project permissions', async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await page.getByTestId('menuMyProjects').click()
+    await page.getByRole('link', { name: projectName }).click()
+    // Add user to project
+    await page.getByTestId('test-tab-team').click()
+    await page.getByTestId('addUserSuggestionInput').locator('input').fill(secondTestUser.email)
+    await page.getByTestId('addUserBtn').click()
+    await expect(page.getByRole('heading', { name: 'Reprovisionnement nécessaire' })).toBeVisible()
+    // Create read-only role
+    await page.getByTestId('test-tab-roles').click()
+    await page.getByTestId('addRoleBtn').click()
+    await page.getByTestId('roleNameInput').fill('readOnly')
+    await page.getByText('Afficher les secrets Permet d').click()
+    await page.getByText('Voir les environnements').click()
+    await page.getByText('Voir les dépôts Permet de').click()
+    await page.getByTestId('saveBtn').click()
+    await expect(page.getByText('Rôle mis à jour')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Reprovisionnement nécessaire' })).toBeVisible()
+    // Add user to read-only role
+    await page.getByTestId('test-members').click()
+    await page.getByLabel('Rôles', { exact: true }).getByText(secondTestUser.email).click()
+    await expect(page.getByText('Rôle mis à jour')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Reprovisionnement nécessaire' })).toBeVisible()
+    // Replay project hooks
+    await page.getByTestId('replayHooksBtn').click()
+    await expect(page.getByRole('heading', { name: 'Opération en cours...' })).toBeVisible()
+    await expect(page.getByText('Le projet a été reprovisionn')).toBeVisible()
   })
 
   test('Pipelines run', { tag: '@replayable' }, async ({ page }) => {
@@ -249,10 +281,30 @@ test.describe('Integration tests user flow: deployment and metrics', { tag: '@in
 test.describe('Integration tests user flow: Cleanup', { tag: '@integ' }, () => {
   test.describe.configure({ mode: 'serial' })
 
-  test('Cleanup user test data', async ({ page }) => {
+  test('Remove permissions and user', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    // ArgoCD deployment will be deleted when stage is deleted
+    await page.getByTestId('menuMyProjects').click()
+    await page.getByRole('link', { name: projectName }).click()
+    // Remove role membership
+    await page.getByTestId('test-tab-roles').click()
+    await page.getByRole('button', { name: 'readOnly' }).click()
+    await page.getByTestId('test-members').click()
+    await page.getByLabel('Rôles', { exact: true }).getByText(secondTestUser.email).click()
+    await expect(page.getByText('Rôle mis à jour')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Reprovisionnement nécessaire' })).toBeVisible()
+    // Remove role
+    await page.getByTestId('test-general').click()
+    await page.getByTestId('deleteBtn').click()
+    await page.getByText('Rôle supprimé').click()
+    // Remove project membership
+    await page.getByTestId('test-tab-team').click()
+    await page.getByTitle(`Retirer ${secondTestUser.email} du`).click()
+  })
+
+  test('Remove stage', async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
     await page.getByTestId('menuMyProjects').click()
     await page.getByRole('link', { name: projectName }).click()
     await page.getByRole('cell', { name: 'integ' }).click()
@@ -263,6 +315,7 @@ test.describe('Integration tests user flow: Cleanup', { tag: '@integ' }, () => {
     await expect(
       page.getByRole('cell', { name: 'Aucun environnement existant' }),
     ).toBeVisible()
+    // ArgoCD deployment will be deleted when stage is deleted
     await page.getByTestId('test-tab-services').click()
     const page1Promise = page.waitForEvent('popup')
     await page.getByRole('link', { name: 'ArgoCD DSO' }).click()
@@ -271,7 +324,13 @@ test.describe('Integration tests user flow: Cleanup', { tag: '@integ' }, () => {
     await expect(
       page1.locator('span').filter({ hasText: `${projectName}-integ-socle-` }),
     ).not.toBeVisible()
-    // Remove repository from project
+  })
+
+  test('Remove repository from project', async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await page.getByTestId('menuMyProjects').click()
+    await page.getByRole('link', { name: projectName }).click()
     await page.getByTestId('test-tab-resources').click()
     await page.getByRole('cell', { name: repositoryName }).click()
     await page.getByTestId('showDeleteRepoBtn').click()
