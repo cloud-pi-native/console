@@ -53,9 +53,13 @@ $ export CONSOLE_ADMIN_EMAIL=<admin_dso_email>
 $ export CONSOLE_TEST_USERNAME=<user_dso_username>
 $ export CONSOLE_TEST_PASSWORD=<user_dso_password>
 $ export CONSOLE_TEST_EMAIL=<user_dso_email>
+$ export CONSOLE_SECOND_TEST_USERNAME=<another_user_dso_username>
+$ export CONSOLE_SECOND_TEST_PASSWORD=<another_user_dso_password>
+$ export CONSOLE_SECOND_TEST_EMAIL=<another_user_dso_email>
 $ export CONSOLE_GLOBAL_TIMEOUT='900000'
 $ export CONSOLE_EXPECT_TIMEOUT='900000'
 $ export CONSOLE_DESTINATION_CLUSTER=<cluster_name_where_argo_deploys_apps>
+$ export CONSOLE_VALUES_FILE=<values_file_for_argo>
 ```
 
 On peut lancer ensuite les tests :
