@@ -26,7 +26,7 @@
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
-    "@types/node": "^22.10.2",
+    "@types/node": "^24.1.0",
     "rimraf": "^6.0.1",
     "typescript": "^5.7.2"
   },

@@ -34,7 +34,7 @@
     "@cpn-console/ts-config": "workspace:^",
     "@faker-js/faker": "^9.3.0",
     "@kubernetes/client-node": "^0.22.3",
-    "@types/node": "^22.10.2",
+    "@types/node": "^24.1.0",
     "@vitest/coverage-v8": "^2.1.8",
     "nodemon": "^3.1.7",
     "rimraf": "^6.0.1",
