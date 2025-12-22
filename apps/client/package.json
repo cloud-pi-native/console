@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/client",
   "type": "module",
-  "version": "9.10.2",
+  "version": "9.11.0",
   "private": false,
   "description": "cpn-console client",
   "scripts": {
