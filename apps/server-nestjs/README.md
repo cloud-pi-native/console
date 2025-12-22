@@ -2,7 +2,21 @@
 
 Ce dossier contient une nouvelle version de `server`, basée sur NestJS.
 
-On va profiter de cette nouvelle mouture pour passer de ça :
+## Objectifs
+
+Rappel : L'objectif principal de cette démarche est de préparer l'extraction de
+chaque "plugin" en tant que module NestJS incluant à la fois la partie Front et
+la partie Backend pour une meilleure composition de la Console.
+
+On va profiter de cette vision pour passer, côté `server` d'un "Back For
+Front", à un backend qui va gérer à la fois le Front et le Back de différentes
+fonctionnalités (appelée "Plugins"), et ce parfois de manière dynamique (mais
+déjà en statique, ce sera pas mal 😅).
+
+
+## Conséquences pour apps/server
+
+On va donc passer de ça :
 
 ```mermaid
 flowchart TD
@@ -228,7 +242,7 @@ flowchart TD
     Dots --> LoggerService
 ```
 
-To update `old-server` (after rebasing on `origin/master`, for instance) :
+Pour mettre à jour `old-server` (après avoir rebasé sur `origin/master`, par exemple) :
 
 ```bash
 server-nestjs/$ rm -rf src/cpin-module/old-server
@@ -237,17 +251,65 @@ server-nestjs/$ find src/cpin-module/old-server -type f -iname "*.ts" -exec sed 
 server-nestjs/$ find src/cpin-module/old-server -type f -iname "*.ts" -exec sed -i -e "s#\.[jt]s'#'#g" {} \;
 ```
 
-## To delete (once we have a sastifying nestjs implementation):
+## Fichiers à supprimer dans le futur
 
-Some `old-server` files are being rewritten and incorporated as NestJS modules.
-We will keep track of them here so that we can go back and forth between the previous
-implementation and the future NestJS one. In the meantime their code is commented out
-in order to show if they can be safely removed (no import errors elsewhere)
+Certains fichiers de `old-server` servait de "framework" pour le backend, et
+vont donc être réécrits en tant que modules/services NestJS. On va garder la
+liste ici, ce qui permettra de ne pas être constamment en conflit sur le code
+de `server`. En attendant de pouvoir s'en débarrasser, et afin de s'assurer que
+leur code n'est pas utilisé dans d'autres parties du backend, on va commenter
+l'intégralité de ces fichiers (comme ça pas d'erreur d'import quand on les
+supprimera).
+
+
+Voilà donc la liste des fichiers "dépréciés" :
 
 ```
-old-server/src/utils/logger.ts -> Replaced by LoggerModule
-old-server/src/utils/env.ts -> Replaced by ConfigurationModule
-old-server/src/init/db/* (except dump.ts) -> Replaced by DatabaseInitializationService
-old-server/src/connect.ts -> Replaced by DatabaseService
-old-server/src/server.ts -> Incorporated in ApplicationInitializationService
+old-server/src/app.ts -> Réécrit en AppService
+old-server/src/connect.ts -> Réécrit en DatabaseService
+old-server/src/init/db/* (à part dump.ts) -> Réécrit en DatabaseInitializationService
+old-server/src/resources/**/router.ts -> Réécrit en **RouterService
+old-server/src/resources/index.ts -> Réécrit en RouterService
+old-server/src/server.ts -> Intégré à ApplicationInitializationService
+old-server/src/utils/env.ts -> Réécrit en ConfigurationModule
+old-server/src/utils/fastify.ts -> Réécrit en FastifyService
+old-server/src/utils/keycloak-utils.ts -> Intégré dans AppService
+old-server/src/utils/keycloak.ts -> Intégré dans AppService
+old-server/src/utils/logger.ts -> Réécrit en LoggerModule
+old-server/src/utils/plugin.ts -> Réécrit en PluginManagementService
 ```
+
+## Prochaines itérations sur le sujet
+
+Tâches à réaliser par la suite dans d'autres itérations/tickets/etc. :
+
+- Migrer une fonctionnalité "verticale" complète (Route, Contract, Controller,
+  Business, Queries, Prisma schema) dans son propre module NestJS qui sera
+  importé dans `MainModule` (et pas dans `CpinModule` qui devra disparaître
+  à terme).
+- Définir la liste de ces fonctionnalités verticales, et planifier l'extraction
+  de certaines d'entre elles (OpenCDS, typiquement, qui n'a rien à faire dans
+  le code de base de la Console)
+- Migrer la base actuelle de NestJS de Jest vers Vitest et s'assurer que les
+  tests unitaires passent à nouveaux (attention, certains d'entre eux devront
+  être adaptés vu qu'on a commencé à réécrire du code au standard NestJS)
+- Intérgrer `server-nestjs` dans tous les `docker compose` et les différents
+  scripts PNPM/Bash qui font tout le sel de nos process de dev
+- Revoir les imports de données (le fameux `dump.ts`). C'était déjà une
+  mauvaise idée à l'époque, ça l'est encore plus aujourd'hui. On ferait mieux
+  d'utiliser un side-container pour ça
+- Être capable de déployer `server-nestjs` en parallèle de `server`, avec
+  probablement un reverse proxy dédié à la migration des routes de l'ancien
+  vers le nouveau (à rediscuter plus concrètement)
+
+Les étapes d'après-après (quand on sera sereins sur la migration de `server`
+vers `server-nestjs`) :
+
+- Tester les capacités de NestJS SSR (Server Side Rendering), notamment
+  vis-à-vis de nos composants VueJS. Il y aura probablement des sujets autour
+  de l'isolation du code VueJS des différentes fonctionnalités afin de
+  faciliter leur extraction de `client` vers `server`
+- Implémenter une fonctionnalité du Front en tant que module NestJS SSR
+  (OpenCDS est un très bon cas d'étude grâce à son côté très isolé dans le
+  code). Idéalement ce code "Front" ajouté "côté Backend" devra être colocalisé
+  avec le code "Backend" correspondant.
