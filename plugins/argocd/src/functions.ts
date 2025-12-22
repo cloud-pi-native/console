@@ -236,7 +236,7 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
       cluster: inClusterLabel,
       namespace: getConfig().namespace,
       project: appProjectName,
-      envChartVersion: process.env.DSO_ENV_CHART_VERSION ?? 'dso-env-1.5.2',
+      envChartVersion: process.env.DSO_ENV_CHART_VERSION ?? 'dso-env-1.6.0',
       nsChartVersion: process.env.DSO_NS_CHART_VERSION ?? 'dso-ns-1.1.4',
     },
     environment: {
