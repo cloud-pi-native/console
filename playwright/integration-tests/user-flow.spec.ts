@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { testUser, clientURL, signInCloudPiNative } from '../config/console'
+import { adminUser, testUser, clientURL, signInCloudPiNative } from '../config/console'
 
 import {
   addProject,
@@ -13,7 +13,30 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
   test.describe.configure({ mode: 'serial' })
   const projectName = 'socleprojecttest'
   const repositoryName = 'socle-project-test'
+  const destinationCluster = process.env.CONSOLE_DESTINATION_CLUSTER || 'cpin-app-hp'
   projectsToDelete.push(projectName)
+
+  test('Preliminary checks', { tag: '@replayable' }, async ({ page }) => {
+    await page.goto(clientURL)
+    // Check all services are healthy
+    await page.getByTestId('menuServicesHealth').click()
+    await expect(page.getByTestId('ArgoCD-info').getByText('OK')).toBeVisible()
+    await expect(page.getByTestId('Gitlab-info').getByText('OK')).toBeVisible()
+    await expect(page.getByTestId('Harbor-info').getByText('OK')).toBeVisible()
+    await expect(page.getByTestId('Keycloak-info').getByText('OK')).toBeVisible()
+    await expect(page.getByTestId('Nexus-info').getByText('OK')).toBeVisible()
+    await expect(page.getByTestId('SonarQube-info').getByText('OK')).toBeVisible()
+    await expect(page.getByTestId('Vault-info').getByText('OK')).toBeVisible()
+    await expect(page.getByText('Tous les services')).toBeVisible()
+    // Check maintenance mode is disabled
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: adminUser })
+    await page.getByTestId('menuAdministrationBtn').click()
+    await page.getByTestId('menuAdministrationSystemSettings').click()
+    await expect(page.getByText('Le mode Maintenance est')).not.toBeVisible()
+    await expect(page.getByText('Désactiver le mode maintenance')).not.toBeVisible()
+    await expect(page.getByText('Activer le mode maintenance')).toBeVisible()
+  })
 
   test('Project creation and configuration', async ({ page }) => {
     await page.goto(clientURL)
@@ -38,6 +61,12 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
       externalRepoUrlInput: 'https://github.com/cloud-pi-native/socle-project-test.git',
       infraRepo: true,
     })
+    await page.getByRole('cell', { name: repositoryName }).click()
+    await page.getByTestId('deployRevisionInput').fill('main')
+    await page.getByTestId('deployPathInput').fill('helm/')
+    await page.getByTestId('helmValuesFilesTextarea').fill('values-cpin-hp.yaml')
+    await page.getByTestId('updateRepoBtn').click()
+    await expect(page.getByRole('heading', { name: 'Opération en cours...' })).toBeVisible()
   })
 
   test('Check Vault kv', { tag: '@replayable' }, async ({ page }) => {
@@ -53,7 +82,6 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     await page1.getByRole('button', { name: 'Sign in with OIDC Provider' }).click()
     await page2Promise
     await expect(page1.getByRole('link', { name: 'Vault home' })).toBeVisible()
-    await page1.goto(`https://vault.sdid-hp.cpin.numerique-interieur.com/ui/vault/secrets/${projectName}/kv/list?page=1`)
     // Check that standard user has access to his project kv
     await expect(page1.getByText('No secrets yet')).toBeVisible()
     await expect(page1.getByRole('link', { name: 'Create secret' })).toBeVisible()
@@ -104,7 +132,7 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     await page.getByTestId('environmentNameInput').fill('integ')
     await page.getByLabel('Zone *Choix de la zone cible').selectOption({ label: 'DSO' })
     await page.getByLabel('Type d\'environnement *Type d\'').selectOption({ label: 'dev' })
-    await page.getByLabel('Cluster *Choix du cluster').selectOption({ label: 'sdid-hp' })
+    await page.getByLabel('Cluster *Choix du cluster').selectOption({ label: destinationCluster })
     await page.getByTestId('memoryInput').fill('2')
     await page.getByTestId('cpuInput').fill('1')
     await page.getByTestId('gpuInput').fill('0')
@@ -161,7 +189,7 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     await page.getByRole('link', { name: 'ArgoCD DSO' }).click()
     const page1 = await page1Promise
     await page1.getByRole('button', { name: 'Log in via Keycloak' }).click()
-    await page1.locator('span').filter({ hasText: `${projectName}-integ-socle-` }).click()
+    await page1.getByText('app.kubernetes.io/managed-by=dso-console, dso/environment=integ, dso/').click()
     await expect(page1.getByText('Synced').nth(1)).toBeVisible()
     await expect(page1.getByText('Sync OK')).toBeVisible()
     await expect(page1.getByText('Healthy').nth(1)).toBeVisible()
@@ -170,6 +198,39 @@ test.describe('Integration tests user flow', { tag: '@integ' }, () => {
     await page1.getByRole('link', { name: `http://${repositoryName}.` }).click()
     const page2 = await page2Promise
     await expect(page2.locator('html')).toContainText('Application is running')
+  })
+
+  test('Check Grafana', { tag: '@replayable' }, async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await page.getByTestId('menuMyProjects').click()
+    await page.getByRole('link', { name: projectName }).click()
+    await page.getByTestId('test-tab-services').click()
+    const page1Promise = page.waitForEvent('popup')
+    await page.getByRole('link', { name: 'Grafana' }).click()
+    const page1 = await page1Promise
+    await page1.getByRole('link', { name: 'Sign in with grafana-projects' }).click()
+    await expect(page1.getByRole('link', { name: 'Grafana', exact: true })).toBeVisible()
+    await page1.getByTestId('data-testid Toggle menu').click()
+    await page1.getByRole('button', { name: 'Expand section Dashboards' }).click()
+    await page1.getByRole('link', { name: 'Dashboards', exact: true }).click()
+    await page1.getByRole('link', { name: 'dso-grafana' }).click()
+    // Check if we can see some metrics
+    await page1.getByRole('link', { name: 'Kubernetes / Views /' }).click()
+    await expect(page1.getByText('0.100')).toBeVisible() // Cpu request
+    await expect(page1.getByText('0.500')).toBeVisible() // Cpu limit
+    await expect(page1.getByText('256')).toBeVisible() // Memory request
+    await expect(page1.getByText('512')).toBeVisible() // Memory limit
+    // Check if we can see some logs
+    await page1.getByTestId('data-testid dso-grafana breadcrumb').click()
+    await page1.getByRole('link', { name: 'Loki Kubernetes Logs' }).click()
+    await expect(page1.getByTestId('data-testid Panel status error').first()).not.toBeVisible()
+    await expect(page1.locator('.rc-drawer-mask')).not.toBeVisible()
+    await page1.getByTestId('data-testid TimePicker Open Button').click()
+    await page1.getByText('Last 1 hour').click()
+    await page1.locator('.css-13x53bc-Icon-topVerticalAlign').first().click()
+    await expect(page1.getByRole('cell', { name: 'app_kubernetes_io_name' }).nth(1)).toBeVisible()
+    await expect(page1.getByText('demo-java-helm').nth(1)).toBeVisible()
   })
 
   test('Cleanup user test data', async ({ page }) => {

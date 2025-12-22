@@ -41,6 +41,7 @@ export function environmentRouter() {
         cpu: requestBody.cpu,
         gpu: requestBody.gpu,
         memory: requestBody.memory,
+        autosync: requestBody.autosync,
         stageId: requestBody.stageId,
         requestId: req.id,
       })
@@ -71,6 +72,7 @@ export function environmentRouter() {
         cpu: requestBody.cpu,
         gpu: requestBody.gpu,
         memory: requestBody.memory,
+        autosync: requestBody.autosync,
         requestId: req.id,
       })
       if (result.isError) {

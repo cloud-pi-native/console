@@ -51,7 +51,7 @@ export const environmentContract = contractInstance.router({
       environmentId: z.string()
         .uuid(),
     }),
-    body: EnvironmentSchema.pick({ cpu: true, gpu: true, memory: true }),
+    body: EnvironmentSchema.pick({ cpu: true, gpu: true, memory: true, autosync: true }),
     responses: {
       200: EnvironmentSchema,
       400: ErrorSchema,

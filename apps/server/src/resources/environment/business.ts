@@ -23,6 +23,7 @@ interface CreateEnvironmentParam {
   cpu: Environment['cpu']
   gpu: Environment['gpu']
   memory: Environment['memory']
+  autosync: Environment['autosync']
   clusterId: Environment['clusterId']
   stageId: Stage['id']
   requestId: string
@@ -37,6 +38,7 @@ interface CreateEnvironmentResult {
   cpu: Environment['cpu']
   gpu: Environment['gpu']
   memory: Environment['memory']
+  autosync: Environment['autosync']
   clusterId: Environment['clusterId']
   stageId: Stage['id']
 }
@@ -48,11 +50,12 @@ export async function createEnvironment({
   cpu,
   gpu,
   memory,
+  autosync,
   clusterId,
   stageId,
   requestId,
 }: CreateEnvironmentParam): Promise<Result<CreateEnvironmentResult>> {
-  const environment = await initializeEnvironment({ projectId, name, cpu, gpu, memory, clusterId, stageId })
+  const environment = await initializeEnvironment({ projectId, name, cpu, gpu, memory, autosync, clusterId, stageId })
 
   const { results } = await hook.project.upsert(projectId)
   await addLogs({ action: 'Create Environment', data: results, userId, requestId, projectId })
@@ -72,6 +75,7 @@ interface UpdateEnvironmentParam {
   cpu: Environment['cpu']
   gpu: Environment['gpu']
   memory: Environment['memory']
+  autosync: Environment['autosync']
   requestId: string
 }
 
@@ -82,12 +86,14 @@ export async function updateEnvironment({
   cpu,
   gpu,
   memory,
+  autosync,
 }: UpdateEnvironmentParam) {
   const env = await updateEnvironmentQuery({
     id: environmentId,
     cpu,
     gpu,
     memory,
+    autosync,
   })
   const { results } = await hook.project.upsert(env.projectId)
   await addLogs({ action: 'Update Environment', data: results, userId: user.id, requestId, projectId: env.projectId })

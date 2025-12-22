@@ -302,4 +302,33 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
       page.getByTestId('showDeleteEnvironmentBtn'),
     ).not.toBeVisible()
   })
+
+  test('should show a warning if autosync is deactivated', async ({
+    page,
+  }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await addProject({ page })
+    const envName = await addEnvToProject({
+      page,
+      zone: 'publique',
+      customStageName: 'dev',
+      customClusterName: 'public1',
+    })
+    await expect(page.getByRole('cell', { name: envName })).toBeVisible()
+
+    // Verify warning message
+    await page.getByTestId(`environmentTr-${envName}`).click()
+    await expect(page.getByTestId('input-checkbox-autosyncCbx')).toBeVisible()
+    await expect(page.getByTestId('input-checkbox-autosyncCbx')).toBeChecked()
+    await expect(page.getByTestId('noAutosyncAlert')).not.toBeVisible()
+
+    // Act - Uncheck auto-sync to trigger warning message
+    await page.getByTestId('input-checkbox-autosyncCbx').uncheck({
+      force: true,
+    })
+    await expect(page.getByTestId('noAutosyncAlert')).toBeVisible()
+    await expect(page.getByTestId('noAutosyncAlert'))
+      .toHaveText('La synchronisation automatique est désactivée. Les déploiements devront être synchronisés manuellement.')
+  })
 })

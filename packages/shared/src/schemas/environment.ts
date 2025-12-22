@@ -18,6 +18,7 @@ export const EnvironmentSchema = z.object({
   cpu: z.coerce.number().gte(0),
   gpu: z.coerce.number().gte(0),
   memory: z.coerce.number().gte(0),
+  autosync: z.boolean(),
 }).extend(AtDatesToStringExtend)
 
 export type Environment = Zod.infer<typeof EnvironmentSchema>
