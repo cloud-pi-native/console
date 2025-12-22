@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.11.0](https://github.com/cloud-pi-native/console/compare/v9.10.2...v9.11.0) (2025-12-22)
+
+
+### Features
+
+* :sparkles: add autosync management on environment ([df06f99](https://github.com/cloud-pi-native/console/commit/df06f995976cf396e344db990e506ec2ce8236c5))
+
 ## [9.10.2](https://github.com/cloud-pi-native/console/compare/v9.10.1...v9.10.2) (2025-12-18)
 
 
