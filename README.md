@@ -27,7 +27,7 @@ cd console
 - [Docker >= v27](https://docs.docker.com/get-docker/) Orchestrateur de conteneurs
   - [Plugin compose >= v2.35](https://github.com/docker/compose) (attention à ne pas avoir une vieille version qui traînerait dans `~/.docker/cli-plugins/` !). Permet de composer plusieurs conteneurs Docker
   - [Plugin buildx](https://github.com/docker/buildx) Permet d'étendre les capacités de Docker à l'aide de BuildKit
-- [Node.js >= v22](https://nodejs.org/en/download/) Environnement d'exécution JavaScript. Vous pouvez utiliser [Volta](https://volta) pour gérer automatiquement l'installation de la version approuvée
+- [Node.js >= v24](https://nodejs.org/en/download/) Environnement d'exécution JavaScript
 - [PnPM >= v10](https://pnpm.io/installation) Gestionnaire de paquets pour JavaScript
 
 #### Prérequis de configuration du projet

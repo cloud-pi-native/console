@@ -1,5 +1,5 @@
 # Base stage -----------------------------------------------------------------------
-FROM docker.io/node:22.14.0-bullseye-slim AS dev
+FROM docker.io/node:24.12.0-bullseye-slim AS dev
 
 WORKDIR /app
 
@@ -50,7 +50,7 @@ RUN pnpm --filter @cpn-console/server --prod deploy build
 
 
 # Prod stage -----------------------------------------------------------------------
-FROM docker.io/node:22.14.0-bullseye-slim AS prod
+FROM docker.io/node:24.12.0-bullseye-slim AS prod
 
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION

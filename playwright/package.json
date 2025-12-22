@@ -21,7 +21,7 @@
     "@cpn-console/ts-config": "workspace:^",
     "@faker-js/faker": "^9.3.0",
     "@playwright/test": "^1.56.1",
-    "@types/node": "^22.10.2",
+    "@types/node": "^24.1.0",
     "dotenv": "^16.4.7"
   }
 }
