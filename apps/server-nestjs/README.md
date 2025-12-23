@@ -242,6 +242,135 @@ flowchart TD
     Dots --> LoggerService
 ```
 
+et enfin à ça :
+
+```mermaid
+flowchart TD
+
+    %% --- Top-level Nest module ---
+    NestJS["Point d'entrée de NestJS"]
+    MainModule["MainModule"]
+
+    NestJS --> MainModule
+
+    subgraph CoreModule["CoreModule"]
+        ApplicationInitializationService["ApplicationInitializationService"]
+    end
+
+    subgraph InfrastructureModule["InfrastructureModule"]
+        LoggerService["LoggerService"]
+        ConfigurationService["ConfigurationService"]
+        DatabaseService["DatabaseService"]
+        HTTPClientService["HTTPClientService"]
+    end
+
+    OtherAPIService["APIs externes</br>(par ex. OpenCDS)"]
+    HTTPClientService --> OtherAPIService
+
+    subgraph MandatoryModules["Modules obligatoires CPiN"]
+        subgraph GitlabModule["GitlabModule"]
+            GitlabController["GitlabController"]
+            GitlabBusinessService["GitlabBusinessService"]
+            GitlabDTOService["GitlabDTOService"]
+            GitlabController --> GitlabBusinessService
+            GitlabController --> LoggerService
+            GitlabBusinessService --> GitlabDTOService
+            GitlabBusinessService --> LoggerService
+            GitlabDTOService --> DatabaseService
+            GitlabDTOService --> LoggerService
+        end
+        
+        subgraph ArgoCDModule["ArgoCDModule"]
+            ArgoCDController["ArgoCDController"]
+            ArgoCDBusinessService["ArgoCDBusinessService"]
+            ArgoCDDTOService["ArgoCDDTOService"]
+            ArgoCDController --> ArgoCDBusinessService
+            ArgoCDController --> LoggerService
+            ArgoCDBusinessService --> ArgoCDDTOService
+            ArgoCDBusinessService --> LoggerService
+            ArgoCDDTOService --> DatabaseService
+            ArgoCDDTOService --> LoggerService
+        end
+        
+        subgraph KubernetesModule["KubernetesModule"]
+            KubernetesController["KubernetesController"]
+            KubernetesBusinessService["KubernetesBusinessService"]
+            KubernetesDTOService["KubernetesDTOService"]
+            KubernetesController --> KubernetesBusinessService
+            KubernetesController --> LoggerService
+            KubernetesBusinessService --> KubernetesDTOService
+            KubernetesBusinessService --> LoggerService
+            KubernetesDTOService --> DatabaseService
+            KubernetesDTOService --> LoggerService
+        end
+        
+        subgraph AdminRoleModule["AdminRoleModule"]
+            AdminRoleController["AdminRoleController"]
+            AdminRoleBusinessService["AdminRoleBusinessService"]
+            AdminRoleDTOService["AdminRoleDTOService"]
+            AdminRoleController --> AdminRoleBusinessService
+            AdminRoleController --> LoggerService
+            AdminRoleBusinessService --> AdminRoleDTOService
+            AdminRoleBusinessService --> LoggerService
+            AdminRoleDTOService --> LoggerService
+            AdminRoleDTOService --> DatabaseService
+        end
+        
+        subgraph AdminTokenModule["AdminTokenModule"]
+            AdminTokenController["AdminTokenController"]
+            AdminTokenBusinessService["AdminTokenBusinessService"]
+            AdminTokenDTOService["AdminTokenDTOService"]
+            AdminTokenController --> AdminTokenBusinessService
+            AdminTokenController --> LoggerService
+            AdminTokenBusinessService --> AdminTokenDTOService
+            AdminTokenBusinessService --> LoggerService
+            AdminTokenDTOService --> DatabaseService
+            AdminTokenDTOService --> LoggerService
+        end
+        
+        subgraph ClusterModule["ClusterModule"]
+            ClusterController["ClusterController"]
+            ClusterBusinessService["ClusterBusinessService"]
+            ClusterDTOService["ClusterDTOService"]
+            ClusterController --> ClusterBusinessService
+            ClusterController --> LoggerService
+            ClusterBusinessService --> ClusterDTOService
+            ClusterBusinessService --> LoggerService
+            ClusterDTOService --> DatabaseService
+            ClusterDTOService --> LoggerService
+        end
+        OtherBusinessModules["...Other Business Modules"]
+    end
+
+    CoreModule --> GitlabModule
+    CoreModule --> ArgoCDModule
+    CoreModule --> KubernetesModule
+    CoreModule --> AdminRoleModule
+    CoreModule --> AdminTokenModule
+    CoreModule --> ClusterModule
+
+    subgraph ThirdPartyModules["Modules optionnels de CPin"]
+        subgraph ServiceChainModule["ServiceChainModule"]
+            ServiceChainController["ServiceChainController"]
+            ServiceChainBusinessService["ServiceChainBusinessService"]
+            ServiceChainController --> ServiceChainBusinessService
+            ServiceChainController --> LoggerService
+            ServiceChainBusinessService --> HTTPClientService
+            ServiceChainBusinessService --> LoggerService
+        end
+    end
+
+    CoreModule --> ServiceChainModule
+
+    %% --- Module wiring ---
+    MainModule --> ApplicationInitializationService
+
+    %% Application initialization
+    ApplicationInitializationService --> LoggerService
+    ApplicationInitializationService --> ConfigurationService
+    ApplicationInitializationService --> LoggerService
+```
+
 Pour mettre à jour `old-server` (après avoir rebasé sur `origin/master`, par exemple) :
 
 ```bash
