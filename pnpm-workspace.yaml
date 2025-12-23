@@ -1,3 +1,5 @@
+autoInstallPeers: true
+injectWorkspacePackages: true
 packages:
   - "apps/**"
   - "packages/**"
