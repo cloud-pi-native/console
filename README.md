@@ -411,6 +411,12 @@ Pour publier les versions des modules npm du dépôt un [pipeline](https://githu
 
 À propos du cycle de vie des dépendances, et notamment leur mise à jour, un document spécifique est disponible [ici](https://github.com/cloud-pi-native/documentation-interne-socle/blob/main/Divers/Mode-op%C3%A9ratoire-mont%C3%A9es-version-librairies.md). Ce document détaille la stratégie choisie en interne de mise à jour des dépendances de la Console CPiN.
 
+Concernant la mise à jour de `browserlist` et de `caniuse-lite`, utiliser la commande suivante sachant qu'on utilise `pnpm` :
+
+```shell
+$ pnpm update caniuse-lite -r
+```
+
 ### Version des dépendances Helm
 
 La console embarque une dépendance avec le Helm Chart utilisé par ArgoCD pour consommer le fichier values qu'elle construit. Afin d'assurer la compatibilité, il faut toujours que la version du Helm chart associé ait été publiée au préalable (voir [la documentation dédiée](https://github.com/cloud-pi-native/helm-charts?tab=readme-ov-file#contribution)).
