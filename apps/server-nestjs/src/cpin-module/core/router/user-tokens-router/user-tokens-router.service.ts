@@ -1,4 +1,4 @@
-import { ServerService } from '@/cpin-module/infrastructure/server/server.service';
+import type { ServerService } from '@/cpin-module/infrastructure/server/server.service';
 import { personalAccessTokenContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
 import {

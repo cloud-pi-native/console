@@ -7,16 +7,8 @@ import { LoggerModule } from './logger/logger.module';
 import { ServerService } from './server/server.service';
 
 @Module({
-    providers: [
-        DatabaseService,
-        HttpClientService,
-        ServerService,
-    ],
+    providers: [DatabaseService, HttpClientService, ServerService],
     imports: [LoggerModule, ConfigurationModule],
-    exports: [
-        DatabaseService,
-        HttpClientService,
-        ServerService,
-    ],
+    exports: [DatabaseService, HttpClientService, ServerService],
 })
 export class InfrastructureModule {}

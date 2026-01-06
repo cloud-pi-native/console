@@ -1,4 +1,4 @@
-import { ServerService } from '@/cpin-module/infrastructure/server/server.service';
+import type { ServerService } from '@/cpin-module/infrastructure/server/server.service';
 import { ProjectAuthorized, environmentContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
 import {
@@ -42,10 +42,11 @@ export class EnvironmentRouterService {
                 const projectId = requestBody.projectId;
                 const perms = await authUser(req, { id: projectId });
 
-                if (!perms.user)
+                if (!perms.user) {
                     return new Unauthorized401(
                         'Require to be requested from user not api key',
                     );
+                }
                 if (!perms.projectPermissions) return new NotFound404();
                 if (!ProjectAuthorized.ManageEnvironments(perms))
                     return new Forbidden403();
@@ -87,10 +88,11 @@ export class EnvironmentRouterService {
             }) => {
                 const { environmentId } = params;
                 const perms = await authUser(req, { environmentId });
-                if (!perms.user)
+                if (!perms.user) {
                     return new Unauthorized401(
                         'Require to be requested from user not api key',
                     );
+                }
                 if (!ProjectAuthorized.ListEnvironments(perms))
                     return new NotFound404();
                 if (!ProjectAuthorized.ManageEnvironments(perms))

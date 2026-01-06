@@ -1,4 +1,4 @@
-import { ServerService } from '@/cpin-module/infrastructure/server/server.service';
+import type { ServerService } from '@/cpin-module/infrastructure/server/server.service';
 import {
     AdminAuthorized,
     ProjectAuthorized,
@@ -31,8 +31,9 @@ export class ProjectMemberRouterService {
                 if (
                     !perms.projectPermissions &&
                     !AdminAuthorized.isAdmin(perms.adminPermissions)
-                )
+                ) {
                     return new NotFound404();
+                }
 
                 const body = await listMembers(projectId);
 
@@ -46,15 +47,17 @@ export class ProjectMemberRouterService {
                 const { projectId } = params;
                 const perms = await authUser(req, { id: projectId });
 
-                if (!perms.user)
+                if (!perms.user) {
                     return new Unauthorized401(
                         'Require to be requested from user not api key',
                     );
+                }
                 if (
                     !perms.projectPermissions &&
                     !AdminAuthorized.isAdmin(perms.adminPermissions)
-                )
+                ) {
                     return new NotFound404();
+                }
                 if (!ProjectAuthorized.ManageMembers(perms))
                     return new Forbidden403();
                 if (perms.projectLocked)
@@ -109,14 +112,16 @@ export class ProjectMemberRouterService {
                 if (
                     !perms.projectPermissions &&
                     !AdminAuthorized.isAdmin(perms.adminPermissions)
-                )
+                ) {
                     return new NotFound404();
+                }
 
                 if (
                     !ProjectAuthorized.ManageMembers(perms) &&
                     userId !== perms.user?.id
-                )
+                ) {
                     return new Forbidden403();
+                }
 
                 const resBody = await removeMember(projectId, params.userId);
 

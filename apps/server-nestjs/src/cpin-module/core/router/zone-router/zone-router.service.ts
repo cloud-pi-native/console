@@ -1,4 +1,4 @@
-import { ServerService } from '@/cpin-module/infrastructure/server/server.service';
+import type { ServerService } from '@/cpin-module/infrastructure/server/server.service';
 import { AdminAuthorized, zoneContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
 import {
@@ -33,10 +33,11 @@ export class ZoneRouterService {
                 const { user, adminPermissions } = await authUser(req);
                 if (!AdminAuthorized.isAdmin(adminPermissions))
                     return new Forbidden403();
-                if (!user)
+                if (!user) {
                     return new Unauthorized401(
                         'Require to be requested from user not api key',
                     );
+                }
 
                 const body = await createZone(data, user.id, req.id);
                 if (body instanceof ErrorResType) return body;
@@ -51,10 +52,11 @@ export class ZoneRouterService {
                 const { user, adminPermissions } = await authUser(req);
                 if (!AdminAuthorized.isAdmin(adminPermissions))
                     return new Forbidden403();
-                if (!user)
+                if (!user) {
                     return new Unauthorized401(
                         'Require to be requested from user not api key',
                     );
+                }
 
                 const zoneId = params.zoneId;
 
@@ -71,10 +73,11 @@ export class ZoneRouterService {
                 const { user, adminPermissions } = await authUser(req);
                 if (!AdminAuthorized.isAdmin(adminPermissions))
                     return new Forbidden403();
-                if (!user)
+                if (!user) {
                     return new Unauthorized401(
                         'Require to be requested from user not api key',
                     );
+                }
                 const zoneId = params.zoneId;
 
                 const body = await deleteZone(zoneId, user.id, req.id);

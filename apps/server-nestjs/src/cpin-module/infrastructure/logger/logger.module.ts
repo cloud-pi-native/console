@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PinoLoggerOptions } from 'fastify/types/logger';
+import type { PinoLoggerOptions } from 'fastify/types/logger';
 import { LoggerModule as PinoLoggerModule } from 'nestjs-pino';
 
 import { ConfigurationModule } from '../configuration/configuration.module';

@@ -43,5 +43,4 @@ export class ConfigurationService {
             : process.env.NODE_ENV === 'development'
               ? 'development'
               : 'production';
-
 }

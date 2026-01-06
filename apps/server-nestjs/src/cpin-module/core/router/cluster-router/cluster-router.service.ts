@@ -1,3 +1,4 @@
+import type { ServerService } from '@/cpin-module/infrastructure/server/server.service';
 import type { AsyncReturnType } from '@cpn-console/shared';
 import { AdminAuthorized, clusterContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
@@ -17,8 +18,6 @@ import {
     Forbidden403,
     Unauthorized401,
 } from '@old-server/utils/errors';
-
-import { ServerService } from '@/cpin-module/infrastructure/server/server.service';
 
 @Injectable()
 export class ClusterRouterService {
@@ -74,10 +73,11 @@ export class ClusterRouterService {
                 if (!AdminAuthorized.isAdmin(adminPermissions))
                     return new Forbidden403();
 
-                if (!user)
+                if (!user) {
                     return new Unauthorized401(
                         'Require to be requested from user not api key',
                     );
+                }
                 const body = await createCluster(data, user.id, req.id);
                 if (body instanceof ErrorResType) return body;
 
@@ -106,10 +106,11 @@ export class ClusterRouterService {
                 const { user, adminPermissions } = await authUser(req);
                 if (!AdminAuthorized.isAdmin(adminPermissions))
                     return new Forbidden403();
-                if (!user)
+                if (!user) {
                     return new Unauthorized401(
                         'Require to be requested from user not api key',
                     );
+                }
 
                 const clusterId = params.clusterId;
                 const body = await updateCluster(
@@ -135,10 +136,11 @@ export class ClusterRouterService {
                 const { user, adminPermissions, tokenId } = await authUser(req);
                 if (!AdminAuthorized.isAdmin(adminPermissions))
                     return new Forbidden403();
-                if (!user?.id && !tokenId)
+                if (!user?.id && !tokenId) {
                     return new Unauthorized401(
                         'Your identity has not been found',
                     );
+                }
 
                 const clusterId = params.clusterId;
                 const body = await deleteCluster({

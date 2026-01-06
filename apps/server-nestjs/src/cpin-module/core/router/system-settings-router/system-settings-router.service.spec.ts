@@ -1,18 +1,22 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+
 import { SystemSettingsRouterService } from './system-settings-router.service';
 
-describe('SystemSettingsRouterService', () => {
-  let service: SystemSettingsRouterService;
+describe('systemSettingsRouterService', () => {
+    let service: SystemSettingsRouterService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [SystemSettingsRouterService],
-    }).compile();
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [SystemSettingsRouterService],
+        }).compile();
 
-    service = module.get<SystemSettingsRouterService>(SystemSettingsRouterService);
-  });
+        service = module.get<SystemSettingsRouterService>(
+            SystemSettingsRouterService,
+        );
+    });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+    it('should be defined', () => {
+        expect(service).toBeDefined();
+    });
 });

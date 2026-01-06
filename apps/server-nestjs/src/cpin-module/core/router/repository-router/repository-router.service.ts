@@ -1,4 +1,4 @@
-import { ServerService } from '@/cpin-module/infrastructure/server/server.service';
+import type { ServerService } from '@/cpin-module/infrastructure/server/server.service';
 import {
     AdminAuthorized,
     ProjectAuthorized,
@@ -47,10 +47,11 @@ export class RepositoryRouterService {
             syncRepository: async ({ request: req, params, body }) => {
                 const { repositoryId } = params;
                 const perms = await authUser(req, { repositoryId });
-                if (!perms.user)
+                if (!perms.user) {
                     return new Unauthorized401(
                         'Require to be requested from user not api key',
                     );
+                }
                 if (!perms.projectPermissions) return new NotFound404();
                 if (!ProjectAuthorized.ManageRepositories(perms))
                     return new Forbidden403();
@@ -79,15 +80,17 @@ export class RepositoryRouterService {
                 const projectId = data.projectId;
                 const perms = await authUser(req, { id: projectId });
 
-                if (!perms.user)
+                if (!perms.user) {
                     return new Unauthorized401(
                         'Require to be requested from user not api key',
                     );
+                }
                 if (
                     !perms.projectPermissions &&
                     !AdminAuthorized.isAdmin(perms.adminPermissions)
-                )
+                ) {
                     return new NotFound404();
+                }
                 if (!ProjectAuthorized.ManageRepositories(perms))
                     return new Forbidden403();
                 if (perms.projectLocked)
@@ -113,15 +116,17 @@ export class RepositoryRouterService {
                 const repositoryId = params.repositoryId;
                 const perms = await authUser(req, { repositoryId });
 
-                if (!perms.user)
+                if (!perms.user) {
                     return new Unauthorized401(
                         'Require to be requested from user not api key',
                     );
+                }
                 if (
                     !perms.projectPermissions &&
                     !AdminAuthorized.isAdmin(perms.adminPermissions)
-                )
+                ) {
                     return new NotFound404();
+                }
                 if (!ProjectAuthorized.ManageRepositories(perms))
                     return new Forbidden403();
                 if (perms.projectLocked)
@@ -169,10 +174,11 @@ export class RepositoryRouterService {
                 const repositoryId = params.repositoryId;
                 const perms = await authUser(req, { repositoryId });
 
-                if (!perms.user)
+                if (!perms.user) {
                     return new Unauthorized401(
                         'Require to be requested from user not api key',
                     );
+                }
                 if (!perms.projectPermissions) return new NotFound404();
                 if (!ProjectAuthorized.ManageRepositories(perms))
                     return new Forbidden403();
