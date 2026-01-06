@@ -1,18 +1,20 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+
 import { UserRouterService } from './user-router.service';
 
-describe('UserRouterService', () => {
-  let service: UserRouterService;
+describe('userRouterService', () => {
+    let service: UserRouterService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [UserRouterService],
-    }).compile();
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [UserRouterService],
+        }).compile();
 
-    service = module.get<UserRouterService>(UserRouterService);
-  });
+        service = module.get<UserRouterService>(UserRouterService);
+    });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+    it('should be defined', () => {
+        expect(service).toBeDefined();
+    });
 });

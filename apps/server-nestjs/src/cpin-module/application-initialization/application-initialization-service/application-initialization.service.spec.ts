@@ -1,18 +1,22 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+
 import { ApplicationInitializationService } from './application-initialization.service';
 
-describe('ApplicationInitializationServiceService', () => {
-  let service: ApplicationInitializationService;
+describe('applicationInitializationServiceService', () => {
+    let service: ApplicationInitializationService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [ApplicationInitializationService],
-    }).compile();
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [ApplicationInitializationService],
+        }).compile();
 
-    service = module.get<ApplicationInitializationService>(ApplicationInitializationService);
-  });
+        service = module.get<ApplicationInitializationService>(
+            ApplicationInitializationService,
+        );
+    });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+    it('should be defined', () => {
+        expect(service).toBeDefined();
+    });
 });

@@ -1,4 +1,4 @@
-import { ServerService } from '@/cpin-module/infrastructure/server/server.service';
+import type { ServerService } from '@/cpin-module/infrastructure/server/server.service';
 import type { AsyncReturnType } from '@cpn-console/shared';
 import {
     AdminAuthorized,
@@ -81,10 +81,11 @@ export class ProjectRouterService {
             // Créer un projet
             createProject: async ({ request: req, body: data }) => {
                 const perms = await authUser(req);
-                if (perms.user?.type !== 'human')
+                if (perms.user?.type !== 'human') {
                     return new Unauthorized401(
                         'Cannot find requestor in database',
                     );
+                }
                 const body = await createProject(data, perms.user, req.id);
 
                 if (body instanceof ErrorResType) return body;
@@ -124,10 +125,11 @@ export class ProjectRouterService {
                 const projectId = params.projectId;
                 const perms = await authUser(req, { id: projectId });
 
-                if (!perms.user)
+                if (!perms.user) {
                     return new Unauthorized401(
                         'Cannot find requestor in database',
                     );
+                }
                 const isAdmin = AdminAuthorized.isAdmin(perms.adminPermissions);
                 const isOwner = perms.projectOwnerId === perms.user.id;
 
@@ -143,10 +145,11 @@ export class ProjectRouterService {
                 if (perms.projectLocked) {
                     if (!isAdmin)
                         return new Forbidden403('Le projet est verrouillé');
-                    if (data.locked !== false)
+                    if (data.locked !== false) {
                         return new Forbidden403(
                             'Veuillez déverrouiler le projet pour le mettre à jour',
                         );
+                    }
                 }
 
                 if (!ProjectAuthorized.Manage(perms)) return new Forbidden403();
@@ -196,10 +199,11 @@ export class ProjectRouterService {
                 const perms = await authUser(req, { id: projectId });
                 const isAdmin = AdminAuthorized.isAdmin(perms.adminPermissions);
 
-                if (!perms.user)
+                if (!perms.user) {
                     return new Unauthorized401(
                         'Cannot find requestor in database',
                     );
+                }
                 if (!perms.projectPermissions && !isAdmin)
                     return new NotFound404();
                 if (!ProjectAuthorized.Manage(perms)) return new Forbidden403();
@@ -232,10 +236,11 @@ export class ProjectRouterService {
             bulkActionProject: async ({ request: req, body }) => {
                 const perms = await authUser(req);
 
-                if (!perms.user)
+                if (!perms.user) {
                     return new Unauthorized401(
                         'Cannot find requestor in database',
                     );
+                }
                 if (!AdminAuthorized.isAdmin(perms.adminPermissions))
                     return new Forbidden403();
 

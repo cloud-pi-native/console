@@ -14,6 +14,7 @@ export class DatabaseService {
                 ? 1000
                 : 10000;
     }
+
     DELAY_BEFORE_RETRY!: number;
     closingConnections = false;
 

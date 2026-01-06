@@ -15,8 +15,7 @@
         "noImplicitAny": false,
         "outDir": "./dist",
         "paths": {
-            "@/*": ["src/*"],
-            "@old-server/*": ["src/cpin-module/old-server/src/*"]
+            "@/*": ["src/*"]
         },
         "removeComments": true,
         "resolvePackageJsonExports": true,

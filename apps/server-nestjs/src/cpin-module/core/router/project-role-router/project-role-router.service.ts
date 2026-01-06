@@ -1,4 +1,4 @@
-import { ServerService } from '@/cpin-module/infrastructure/server/server.service';
+import type { ServerService } from '@/cpin-module/infrastructure/server/server.service';
 import {
     AdminAuthorized,
     ProjectAuthorized,
@@ -32,8 +32,9 @@ export class ProjectRoleRouterService {
                 if (
                     !perms.projectPermissions &&
                     !AdminAuthorized.isAdmin(perms.adminPermissions)
-                )
+                ) {
                     return new NotFound404();
+                }
 
                 const body = await listRoles(projectId);
 
@@ -53,8 +54,9 @@ export class ProjectRoleRouterService {
                 if (
                     !perms.projectPermissions &&
                     !AdminAuthorized.isAdmin(perms.adminPermissions)
-                )
+                ) {
                     return new NotFound404();
+                }
                 if (!ProjectAuthorized.ManageRoles(perms))
                     return new Forbidden403();
                 if (perms.projectLocked)
@@ -100,8 +102,9 @@ export class ProjectRoleRouterService {
                 if (
                     !perms.projectPermissions &&
                     !AdminAuthorized.isAdmin(perms.adminPermissions)
-                )
+                ) {
                     return new NotFound404();
+                }
 
                 const resBody = await countRolesMembers(projectId);
 

@@ -1,26 +1,26 @@
-import { ServerService } from '@/cpin-module/infrastructure/server/server.service';
+import type { ServerService } from '@/cpin-module/infrastructure/server/server.service';
 import { Injectable } from '@nestjs/common';
 import type { FastifyInstance } from 'fastify';
 
-import { AdminRoleRouterService } from './admin-role-router/admin-role-router.service';
-import { AdminTokenRouterService } from './admin-token-router/admin-token-router.service';
-import { ClusterRouterService } from './cluster-router/cluster-router.service';
-import { EnvironmentRouterService } from './environment-router/environment-router.service';
-import { LogRouterService } from './log-router/log-router.service';
-import { ProjectMemberRouterService } from './project-member-router/project-member-router.service';
-import { ProjectRoleRouterService } from './project-role-router/project-role-router.service';
-import { ProjectRouterService } from './project-router/project-router.service';
-import { ProjectServiceRouterService } from './project-service-router/project-service-router.service';
-import { RepositoryRouterService } from './repository-router/repository-router.service';
-import { ServiceChainRouterService } from './service-chain-router/service-chain-router.service';
-import { ServiceMonitorRouterService } from './service-monitor-router/service-monitor-router.service';
-import { StageRouterService } from './stage-router/stage-router.service';
-import { SystemConfigRouterService } from './system-config-router/system-config-router.service';
-import { SystemRouterService } from './system-router/system-router.service';
-import { SystemSettingsRouterService } from './system-settings-router/system-settings-router.service';
-import { UserRouterService } from './user-router/user-router.service';
-import { UserTokensRouterService } from './user-tokens-router/user-tokens-router.service';
-import { ZoneRouterService } from './zone-router/zone-router.service';
+import type { AdminRoleRouterService } from './admin-role-router/admin-role-router.service';
+import type { AdminTokenRouterService } from './admin-token-router/admin-token-router.service';
+import type { ClusterRouterService } from './cluster-router/cluster-router.service';
+import type { EnvironmentRouterService } from './environment-router/environment-router.service';
+import type { LogRouterService } from './log-router/log-router.service';
+import type { ProjectMemberRouterService } from './project-member-router/project-member-router.service';
+import type { ProjectRoleRouterService } from './project-role-router/project-role-router.service';
+import type { ProjectRouterService } from './project-router/project-router.service';
+import type { ProjectServiceRouterService } from './project-service-router/project-service-router.service';
+import type { RepositoryRouterService } from './repository-router/repository-router.service';
+import type { ServiceChainRouterService } from './service-chain-router/service-chain-router.service';
+import type { ServiceMonitorRouterService } from './service-monitor-router/service-monitor-router.service';
+import type { StageRouterService } from './stage-router/stage-router.service';
+import type { SystemConfigRouterService } from './system-config-router/system-config-router.service';
+import type { SystemRouterService } from './system-router/system-router.service';
+import type { SystemSettingsRouterService } from './system-settings-router/system-settings-router.service';
+import type { UserRouterService } from './user-router/user-router.service';
+import type { UserTokensRouterService } from './user-tokens-router/user-tokens-router.service';
+import type { ZoneRouterService } from './zone-router/zone-router.service';
 
 @Injectable()
 export class RouterService {
@@ -46,6 +46,7 @@ export class RouterService {
         private readonly userTokensRouterService: UserTokensRouterService,
         private readonly zoneRouterService: ZoneRouterService,
     ) {}
+
     // relax validation schema if NO_VALIDATION env var is set to true.
     // /!\ It can lead to security leaks !!!!
     validateTrue = { responseValidation: process.env.NO_VALIDATION !== 'true' };

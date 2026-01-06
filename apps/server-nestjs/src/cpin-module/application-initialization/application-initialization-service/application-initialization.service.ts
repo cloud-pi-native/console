@@ -1,8 +1,8 @@
+import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service';
 import { DatabaseService } from '@/cpin-module/infrastructure/database/database.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { ConfigurationService } from 'src/cpin-module/infrastructure/configuration/configuration.service';
 
 import { DatabaseInitializationService } from '../database-initialization/database-initialization.service';
 import { PluginManagementService } from '../plugin-management/plugin-management.service';
@@ -11,7 +11,7 @@ import { PluginManagementService } from '../plugin-management/plugin-management.
 export class ApplicationInitializationService {
     private readonly logger = new Logger(ApplicationInitializationService.name);
     constructor(
-        private readonly config: ConfigurationService,
+        private readonly configurationService: ConfigurationService,
         private readonly pluginManagementService: PluginManagementService,
         private readonly databaseInitializationService: DatabaseInitializationService,
         private readonly databaseService: DatabaseService,
@@ -51,11 +51,15 @@ export class ApplicationInitializationService {
 
         try {
             const dataPath =
-                this.config.isProd || this.config.isInt
+                this.configurationService.isProd ||
+                this.configurationService.isInt
                     ? './init/db/imports/data'
                     : '@cpn-console/test-utils/src/imports/data';
             await this.injectDataInDatabase(dataPath);
-            if (this.config.isProd && !this.config.isDevSetup) {
+            if (
+                this.configurationService.isProd &&
+                !this.configurationService.isDevSetup
+            ) {
                 this.logger.log('Cleaning up imported data file...');
                 await rm(resolve(__dirname, dataPath));
                 this.logger.log(`Successfully deleted '${dataPath}'`);
@@ -74,11 +78,11 @@ export class ApplicationInitializationService {
         }
 
         this.logger.debug({
-            isDev: this.config.isDev,
-            isTest: this.config.isTest,
-            isCI: this.config.isCI,
-            isDevSetup: this.config.isDevSetup,
-            isProd: this.config.isProd,
+            isDev: this.configurationService.isDev,
+            isTest: this.configurationService.isTest,
+            isCI: this.configurationService.isCI,
+            isDevSetup: this.configurationService.isDevSetup,
+            isProd: this.configurationService.isProd,
         });
     }
 

@@ -7,14 +7,7 @@ import { FastifyService } from './fastify/fastify.service';
 import { RouterModule } from './router/router.module';
 
 @Module({
-    imports: [
-        ConfigurationModule,
-        RouterModule,
-        InfrastructureModule,
-    ],
-    providers: [
-        AppService,
-        FastifyService
-    ],
+    imports: [ConfigurationModule, RouterModule, InfrastructureModule],
+    providers: [AppService, FastifyService],
 })
 export class CoreModule {}

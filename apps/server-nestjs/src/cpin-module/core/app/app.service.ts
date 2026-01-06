@@ -1,24 +1,26 @@
 import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service';
-import { apiPrefix, getContract } from '@cpn-console/shared';
 import {
+    apiPrefix,
+    getContract,
     serviceContract,
     swaggerUiPath,
     systemContract,
+    tokenHeaderName,
 } from '@cpn-console/shared';
-import { tokenHeaderName } from '@cpn-console/shared';
 import fastifyCookie from '@fastify/cookie';
 import helmet from '@fastify/helmet';
-import fastifySession, { FastifySessionOptions } from '@fastify/session';
+import type { FastifySessionOptions } from '@fastify/session';
+import fastifySession from '@fastify/session';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 import { Injectable, Logger } from '@nestjs/common';
 import { generateOpenApi } from '@ts-rest/open-api';
 import fastify from 'fastify';
 import type { FastifyRequest } from 'fastify';
-import keycloak, { KeycloakOptions } from 'fastify-keycloak-adapter';
+import type { KeycloakOptions } from 'fastify-keycloak-adapter';
+import keycloak from 'fastify-keycloak-adapter';
 
 import { FastifyService } from '../fastify/fastify.service';
-import { RouterService } from '../router/router.service';
 
 interface KeycloakPayload {
     sub: string;

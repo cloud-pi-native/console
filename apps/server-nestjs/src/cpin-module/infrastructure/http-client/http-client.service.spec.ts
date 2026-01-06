@@ -1,18 +1,20 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+
 import { HttpClientService } from './http-client.service';
 
-describe('HttpClientService', () => {
-  let service: HttpClientService;
+describe('httpClientService', () => {
+    let service: HttpClientService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [HttpClientService],
-    }).compile();
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [HttpClientService],
+        }).compile();
 
-    service = module.get<HttpClientService>(HttpClientService);
-  });
+        service = module.get<HttpClientService>(HttpClientService);
+    });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+    it('should be defined', () => {
+        expect(service).toBeDefined();
+    });
 });

@@ -1,18 +1,20 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+
 import { StageRouterService } from './stage-router.service';
 
-describe('StageRouterService', () => {
-  let service: StageRouterService;
+describe('stageRouterService', () => {
+    let service: StageRouterService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [StageRouterService],
-    }).compile();
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [StageRouterService],
+        }).compile();
 
-    service = module.get<StageRouterService>(StageRouterService);
-  });
+        service = module.get<StageRouterService>(StageRouterService);
+    });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+    it('should be defined', () => {
+        expect(service).toBeDefined();
+    });
 });

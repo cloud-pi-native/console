@@ -1,4 +1,4 @@
-import { ServerService } from '@/cpin-module/infrastructure/server/server.service';
+import type { ServerService } from '@/cpin-module/infrastructure/server/server.service';
 import {
     AdminAuthorized,
     ProjectAuthorized,
@@ -30,15 +30,17 @@ export class ProjectServiceRouterService {
                     if (
                         !perms.projectPermissions &&
                         !AdminAuthorized.isAdmin(perms.adminPermissions)
-                    )
+                    ) {
                         return new NotFound404();
+                    }
                     if (
                         !AdminAuthorized.isAdmin(perms.adminPermissions) &&
                         query.permissionTarget === 'admin'
-                    )
+                    ) {
                         return new Forbidden403(
                             'Vous ne pouvez pas demander les paramètres admin',
                         );
+                    }
 
                     const body = await getProjectServices(
                         projectId,

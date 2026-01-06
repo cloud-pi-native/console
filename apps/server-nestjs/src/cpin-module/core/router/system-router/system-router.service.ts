@@ -1,5 +1,5 @@
-import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service';
-import { ServerService } from '@/cpin-module/infrastructure/server/server.service';
+import type { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service';
+import type { ServerService } from '@/cpin-module/infrastructure/server/server.service';
 import { systemContract } from '@cpn-console/shared';
 import { Injectable } from '@nestjs/common';
 

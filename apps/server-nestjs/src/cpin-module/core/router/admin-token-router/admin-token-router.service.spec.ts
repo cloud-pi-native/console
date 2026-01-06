@@ -1,18 +1,20 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+
 import { AdminTokenRouterService } from './admin-token-router.service';
 
-describe('AdminTokenRouterService', () => {
-  let service: AdminTokenRouterService;
+describe('adminTokenRouterService', () => {
+    let service: AdminTokenRouterService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [AdminTokenRouterService],
-    }).compile();
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [AdminTokenRouterService],
+        }).compile();
 
-    service = module.get<AdminTokenRouterService>(AdminTokenRouterService);
-  });
+        service = module.get<AdminTokenRouterService>(AdminTokenRouterService);
+    });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+    it('should be defined', () => {
+        expect(service).toBeDefined();
+    });
 });
