@@ -4,10 +4,9 @@ import { ConfigurationModule } from '../infrastructure/configuration/configurati
 import { InfrastructureModule } from '../infrastructure/infrastructure.module';
 import { AppService } from './app/app.service';
 import { FastifyService } from './fastify/fastify.service';
-import { RouterModule } from './router/router.module';
 
 @Module({
-    imports: [ConfigurationModule, RouterModule, InfrastructureModule],
+    imports: [ConfigurationModule, InfrastructureModule],
     providers: [AppService, FastifyService],
 })
 export class CoreModule {}

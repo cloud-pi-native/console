@@ -53,7 +53,6 @@ export class AppService {
 
     constructor(
         private readonly configurationService: ConfigurationService,
-        private readonly routerService: RouterService,
         private readonly fastifyService: FastifyService,
     ) {
         this.keycloakConf = {
@@ -117,7 +116,6 @@ export class AppService {
                 transformObject: () => openApiDocument,
             })
             .register(fastifySwaggerUi, this.fastifyService.swaggerUiConf)
-            .register(this.routerService.apiRouter())
             .addHook('onRoute', (opts) => {
                 if (opts.path === `${apiPrefix}/healthz`) {
                     opts.logLevel = 'silent';
