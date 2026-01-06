@@ -9,7 +9,10 @@ import {
 } from '@cpn-console/shared';
 import fastifyCookie from '@fastify/cookie';
 import helmet from '@fastify/helmet';
-import type { FastifySessionOptions } from '@fastify/session';
+import type {
+    FastifySessionObject,
+    FastifySessionOptions,
+} from '@fastify/session';
 import fastifySession from '@fastify/session';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
@@ -28,6 +31,10 @@ interface KeycloakPayload {
     given_name: string;
     family_name: string;
     groups: string[];
+}
+
+interface FastifySessionObjectWithUser extends FastifySessionObject {
+    user: { id: string };
 }
 
 function userPayloadMapper(userPayload: KeycloakPayload) {
@@ -136,17 +143,29 @@ export class AppService {
                 if (res.statusCode < 400) {
                     req.log.info({
                         status: res.statusCode,
-                        userId: req.session?.user?.id,
+                        userId: (
+                            req.session as
+                                | FastifySessionObjectWithUser
+                                | undefined
+                        )?.user?.id,
                     });
                 } else if (res.statusCode < 500) {
                     req.log.warn({
                         status: res.statusCode,
-                        userId: req.session?.user?.id,
+                        userId: (
+                            req.session as
+                                | FastifySessionObjectWithUser
+                                | undefined
+                        )?.user?.id,
                     });
                 } else {
                     req.log.error({
                         status: res.statusCode,
-                        userId: req.session?.user?.id,
+                        userId: (
+                            req.session as
+                                | FastifySessionObjectWithUser
+                                | undefined
+                        )?.user?.id,
                     });
                 }
             });
