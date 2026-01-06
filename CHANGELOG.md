@@ -1,5 +1,13 @@
 # Changelog
 
+## [9.11.1](https://github.com/cloud-pi-native/console/compare/v9.11.0...v9.11.1) (2026-01-06)
+
+
+### Bug Fixes
+
+* improve Keycloak error reporting in upsertProject function ([84b3773](https://github.com/cloud-pi-native/console/commit/84b37731f5b4498f925393408941d1c163e67d29))
+* **shared:** fix a rare pnpm vs typescript bug ([54ccd10](https://github.com/cloud-pi-native/console/commit/54ccd108694ed45e0fa48b1225582db4bc0ecc4d))
+
 ## [9.11.0](https://github.com/cloud-pi-native/console/compare/v9.10.2...v9.11.0) (2025-12-22)
 
 
