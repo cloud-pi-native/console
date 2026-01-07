@@ -65,7 +65,7 @@ export function getCustomK8sApi(): CustomObjectsApi {
 export async function updateZoneValues(zone: ZoneObject, apis: HookPayloadApis<ZoneObject> | HookPayloadApis<ClusterObject>) {
   const { gitlab, vault } = apis
   const values = {
-    vault: await vault.getCredentials(),
+    vault: await vault.getValues(),
     clusters: zone.clusterNames,
   }
   const zoneRepo = await gitlab.getOrCreateInfraProject(zone.slug)
