@@ -3,7 +3,11 @@ import axios from 'axios'
 import type { ProjectLite } from '@cpn-console/hooks'
 import { PluginApi } from '@cpn-console/hooks'
 import getConfig from './config.js'
-import { generateKVConfigUpdate, getAuthMethod, isAppRoleEnabled } from './utils.js'
+import {
+  generateKVConfigUpdate,
+  getAuthMethod,
+  isAppRoleEnabled,
+} from './utils.js'
 
 interface ReadOptions {
   throwIfNoEntry: boolean
@@ -31,15 +35,14 @@ export class VaultApi extends PluginApi {
 
   protected async getToken() {
     if (!this.token) {
-      this.token = (await this.axios.post('/v1/auth/token/create'))
-        .data.auth.client_token as string
+      this.token = (await this.axios.post('/v1/auth/token/create')).data.auth
+        .client_token as string
     }
     return this.token
   }
 
   protected async destroy(path: string, kvName: string) {
-    if (path.startsWith('/'))
-      path = path.slice(1)
+    if (path.startsWith('/')) path = path.slice(1)
     return await this.axios({
       method: 'delete',
       url: `/v1/${kvName}/metadata/${path}`,
@@ -73,7 +76,8 @@ export class VaultApi extends PluginApi {
             },
           },
         })
-      } else { // means 200 status
+      } else {
+        // means 200 status
         const configUpdate = generateKVConfigUpdate(kvRes.data)
         if (configUpdate) {
           await this.axios({
@@ -124,7 +128,10 @@ export class VaultApi extends PluginApi {
 
   Role = {
     upsert: async (roleName: string, policies: string[]) => {
-      const appRoleEnabled = await isAppRoleEnabled(this.axios, await this.getToken())
+      const appRoleEnabled = await isAppRoleEnabled(
+        this.axios,
+        await this.getToken(),
+      )
       if (!appRoleEnabled) return
 
       await this.axios({
@@ -143,12 +150,9 @@ export class VaultApi extends PluginApi {
       })
     },
     delete: async (roleName: string) => {
-      await this.axios.delete(
-        `/v1/auth/approle/role/${roleName}`,
-        {
-          headers: { 'X-Vault-Token': await this.getToken() },
-        },
-      )
+      await this.axios.delete(`/v1/auth/approle/role/${roleName}`, {
+        headers: { 'X-Vault-Token': await this.getToken() },
+      })
     },
     getCredentials: async (roleName: string) => {
       const { data: dataRole } = await this.axios.get(
@@ -205,8 +209,7 @@ export class VaultProjectApi extends VaultApi {
   }
 
   public async list(path: string = '/'): Promise<string[]> {
-    if (!path.startsWith('/'))
-      path = `/${path}`
+    if (!path.startsWith('/')) path = `/${path}`
 
     const listSecretPath: string[] = []
     const response = await this.axios({
@@ -221,7 +224,9 @@ export class VaultProjectApi extends VaultApi {
     if (response.status === 404) return listSecretPath
     for (const key of response.data.data.keys) {
       if (key.endsWith('/')) {
-        const subSecrets = await this.list(`${path.substring(this.basePath.length)}/${key}`)
+        const subSecrets = await this.list(
+          `${path.substring(this.basePath.length)}/${key}`,
+        )
         subSecrets.forEach((secret) => {
           listSecretPath.push(`${key}${secret}`)
         })
@@ -232,22 +237,24 @@ export class VaultProjectApi extends VaultApi {
     return listSecretPath.flat()
   }
 
-  public async read(path: string = '/', options: ReadOptions = { throwIfNoEntry: true }) {
-    if (path.startsWith('/'))
-      path = path.slice(1)
+  public async read(
+    path: string = '/',
+    options: ReadOptions = { throwIfNoEntry: true },
+  ) {
+    if (path.startsWith('/')) path = path.slice(1)
     const response = await this.axios.get(
       `/v1/${this.coreKvName}/data/${this.projectRootDir}/${this.basePath}/${path}`,
       {
         headers: { 'X-Vault-Token': await this.getToken() },
-        validateStatus: status => (options.throwIfNoEntry ? [200] : [200, 404]).includes(status),
+        validateStatus: status =>
+          (options.throwIfNoEntry ? [200] : [200, 404]).includes(status),
       },
     )
     return response.data.data
   }
 
   public async write(body: object, path: string = '/') {
-    if (path.startsWith('/'))
-      path = path.slice(1)
+    if (path.startsWith('/')) path = path.slice(1)
     const response = await this.axios.post(
       `/v1/${this.coreKvName}/data/${this.projectRootDir}/${this.basePath}/${path}`,
       {
@@ -259,9 +266,11 @@ export class VaultProjectApi extends VaultApi {
   }
 
   public async destroy(path: string = '/') {
-    if (path.startsWith('/'))
-      path = path.slice(1)
-    return super.destroy(`${this.projectRootDir}/${this.basePath}/${path}`, this.coreKvName)
+    if (path.startsWith('/')) path = path.slice(1)
+    return super.destroy(
+      `${this.projectRootDir}/${this.basePath}/${path}`,
+      this.coreKvName,
+    )
   }
 
   Project = {
@@ -276,7 +285,10 @@ export class VaultProjectApi extends VaultApi {
         `path "${this.coreKvName}/data/${this.projectRootDir}/${this.basePath}/REGISTRY/ro-robot" { capabilities = ["read"] }`,
       )
       await this.Group.upsert()
-      await this.Role.upsert(this.roleName, [this.policyName.techRO, this.policyName.appFull])
+      await this.Role.upsert(this.roleName, [
+        this.policyName.techRO,
+        this.policyName.appFull,
+      ])
     },
     delete: async () => {
       await this.Kv.delete(this.projectKvName)
@@ -286,7 +298,10 @@ export class VaultProjectApi extends VaultApi {
       await this.Role.delete(this.roleName)
     },
     getCredentials: async () => {
-      const appRoleEnabled = await isAppRoleEnabled(this.axios, await this.getToken())
+      const appRoleEnabled = await isAppRoleEnabled(
+        this.axios,
+        await this.getToken(),
+      )
       if (!appRoleEnabled) return this.defaultAppRoleCredentials
       const creds = await this.Role.getCredentials(this.roleName)
       return {
@@ -357,7 +372,10 @@ export class VaultZoneApi extends VaultApi {
 
   public async upsert() {
     await this.Kv.upsert(this.kvName)
-    await this.Policy.upsert(this.policyName, `path "${this.kvName}/*" { capabilities = ["read"] }`)
+    await this.Policy.upsert(
+      this.policyName,
+      `path "${this.kvName}/*" { capabilities = ["read"] }`,
+    )
     await this.Role.upsert(this.roleName, [this.policyName])
   }
 
@@ -368,21 +386,16 @@ export class VaultZoneApi extends VaultApi {
   }
 
   public async write(body: object, path: string = '/') {
-    if (path.startsWith('/'))
-      path = path.slice(1)
-    const response = await this.axios.post(
-      `/v1/${this.kvName}/data/${path}`,
-      {
-        headers: { 'X-Vault-Token': await this.getToken() },
-        data: body,
-      },
-    )
+    if (path.startsWith('/')) path = path.slice(1)
+    const response = await this.axios.post(`/v1/${this.kvName}/data/${path}`, {
+      headers: { 'X-Vault-Token': await this.getToken() },
+      data: body,
+    })
     return await response.data
   }
 
   public async destroy(path: string = '/') {
-    if (path.startsWith('/'))
-      path = path.slice(1)
+    if (path.startsWith('/')) path = path.slice(1)
     return super.destroy(path, this.kvName)
   }
 
