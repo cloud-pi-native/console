@@ -359,6 +359,22 @@ export class VaultProjectApi extends VaultApi {
   }
 }
 
+interface VaultValuesWithoutCredentials {
+  projectsRootDir: string
+}
+interface VaultCredentialsWithoutRole {
+  url: string
+  kvName: string
+}
+interface VaultCredentialsWithRole {
+  url: string
+  kvName: string
+  roleId: string
+  secretId: string
+}
+type VaultCredentials = VaultCredentialsWithRole | VaultCredentialsWithoutRole
+type VaultValues = VaultCredentials & VaultValuesWithoutCredentials
+
 export class VaultZoneApi extends VaultApi {
   private readonly kvName: string
   private readonly policyName: string
@@ -399,19 +415,28 @@ export class VaultZoneApi extends VaultApi {
     return super.destroy(path, this.kvName)
   }
 
-  public async getCredentials() {
-    const appRoleEnabled = await isAppRoleEnabled(this.axios, await this.getToken())
-    if (!appRoleEnabled) {
+  public async getCredentials(): Promise<VaultCredentials> {
+    const appRoleEnabled = await isAppRoleEnabled(
+      this.axios,
+      await this.getToken(),
+    )
+    if (appRoleEnabled) {
       return {
         url: getConfig().publicUrl,
         kvName: this.kvName,
-      }
+        ...(await this.Role.getCredentials(this.roleName)),
+      } as VaultCredentialsWithRole
     }
-    const creds = await this.Role.getCredentials(this.roleName)
     return {
       url: getConfig().publicUrl,
       kvName: this.kvName,
-      ...creds,
+    } as VaultCredentialsWithoutRole
+  }
+
+  public async getValues(): Promise<VaultValues> {
+    return {
+      projectsRootDir: getConfig().projectsRootDir,
+      ...(await this.getCredentials()),
     }
   }
 }
