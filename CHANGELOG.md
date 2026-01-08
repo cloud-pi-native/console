@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.11.2](https://github.com/cloud-pi-native/console/compare/v9.11.1...v9.11.2) (2026-01-08)
+
+
+### Bug Fixes
+
+* **vault/argocd:** rework how Vault values are passed to ArgoCD ([adbf9c3](https://github.com/cloud-pi-native/console/commit/adbf9c370a45412a54d4422abbac57e42282244d))
+
 ## [9.11.1](https://github.com/cloud-pi-native/console/compare/v9.11.0...v9.11.1) (2026-01-06)
 
 
