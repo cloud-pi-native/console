@@ -19,7 +19,7 @@ export interface AppRoleCredentials {
   secretId: string
 }
 
-export class VaultApi extends PluginApi {
+abstract class VaultApi extends PluginApi {
   protected readonly axios: AxiosInstance
   private token: string | undefined = undefined
 
@@ -360,6 +360,7 @@ export class VaultProjectApi extends VaultApi {
 }
 
 interface VaultValuesWithoutCredentials {
+  /** Slash-separated directory (root node of all Gitlab projects) */
   projectsRootDir: string
 }
 interface VaultCredentialsWithoutRole {
