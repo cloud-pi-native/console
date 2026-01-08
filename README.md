@@ -399,15 +399,40 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 └── README.md
 ```
 
-## Gestion du contrôle de versions
+# Workflow Git
 
-Le dépôt utilise [Release Please](https://github.com/google-github-actions/release-please-action) pour automatiquement générer les tags Git ainsi que les releases GitHub. À chaque fois que du code est poussé dans la branche `main`, une pull request est créée en analysant les messages de commits pour déterminer le numéro de version à créer.
+Une PR doit être faite à partir de la branche `main` à jour (utiliser `rebase` si besoin) avant la demande de fusion (PR). Les PR sont mergées dans `main`.
+
+## Conventions de nommage
+
+Cf. [Conventions - MIOM Fabrique Numérique](https://docs.fabrique-numerique.fr/conventions/nommage.html).
+
+Les commits doivent suivre la spécification des [Commits Conventionnels](https://www.conventionalcommits.org/en/v1.0.0/). Cette norme est utilisée pour construire la release, voir ci-après.
+
+Il est possible d'ajouter l'[extension VSCode](https://github.com/vivaxy/vscode-conventional-commits) pour faciliter la création des commits.
+
+> Les messages de commits sont rédigés en anglais.
+
+## Gestion des versions
+
+Le dépôt utilise [Release Please](https://github.com/googleapis/release-please-action) pour automatiquement générer les tags Git ainsi que les releases GitHub. À chaque fois que du code est poussé dans la branche `main`, une pull request est créée en analysant les messages de commits pour déterminer le numéro de version à créer.
 
 À chaque fois qu'une pull request de release est fusionnée, les images de conteneur du serveur et du client sont créées et hébergées dans la [registry Github associée au dépôt](https://github.com/orgs/cloud-pi-native/packages?repo_name=console).
+
+### Versioning du chart dso-console
+
+Les images de conteneurs peuvent être déployées via le Helm Chart [dso-console](https://github.com/cloud-pi-native/helm-charts/tree/main/charts/dso-console).
+La dernière étape du pipeline de release automatise la création d'une version Helm pour la mise à jour de la version des images. Exemple : https://github.com/cloud-pi-native/helm-charts/pull/204.
+
+### Versioning des modules
 
 Pour publier les versions des modules npm du dépôt un [pipeline](https://github.com/cloud-pi-native/console/actions/workflows/npm.yml) est disponible dans les GitHub Actions, il analysera les numéros de version présents dans les différents fichiers `package.json` pour déterminer si une nouvelle version du module doit être créée et publiée.
 
 > Il est possible de créer une version de pré-release d'un module npm en modifiant la clé `publishConfig.tag` dans le `package.json` avec par exemple `beta` pour générer une version beta.
+
+## Gestion des dépendances
+
+### Mise à jour des dépendances
 
 À propos du cycle de vie des dépendances, et notamment leur mise à jour, un document spécifique est disponible [ici](https://github.com/cloud-pi-native/documentation-interne-socle/blob/main/Divers/Mode-op%C3%A9ratoire-mont%C3%A9es-version-librairies.md). Ce document détaille la stratégie choisie en interne de mise à jour des dépendances de la Console CPiN.
 
@@ -417,19 +442,6 @@ Concernant la mise à jour de `browserlist` et de `caniuse-lite`, utiliser la co
 $ pnpm update caniuse-lite -r
 ```
 
-### Version des dépendances Helm
+### Dépendances Helm
 
 La console embarque une dépendance avec le Helm Chart utilisé par ArgoCD pour consommer le fichier values qu'elle construit. Afin d'assurer la compatibilité, il faut toujours que la version du Helm chart associé ait été publiée au préalable (voir [la documentation dédiée](https://github.com/cloud-pi-native/helm-charts?tab=readme-ov-file#contribution)).
-
-## Conventions
-
-Cf. [Conventions - MIOM Fabrique Numérique](https://docs.fabrique-numerique.fr/conventions/nommage.html).
-
-> Les commits restent néanmoins rédigés en anglais.
-
-## Contributions
-
-Les commits doivent suivre la spécification des [Commits Conventionnels](https://www.conventionalcommits.org/en/v1.0.0/), il est possible d'ajouter l'[extension VSCode](https://github.com/vivaxy/vscode-conventional-commits) pour faciliter la création des commits.
-
-Une PR doit être faite à partir de la branche `main` à jour (utiliser `rebase` si besoin) avant la demande de fusion (PR). Les PR sont mergées dans `main`, ce qui déclenche automatiquement une nouvelle release (tag + version) dans une PR dédiée.
-La version est publiée dès que la PR de release est fusionnée.
