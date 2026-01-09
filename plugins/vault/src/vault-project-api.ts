@@ -15,6 +15,13 @@ export interface AppRoleCredentials {
   secretId: string
 }
 
+interface VaultValuesWithoutCredentials {
+  /** Slash-separated directory (root node of all Gitlab projects) */
+  projectsRootDir: string
+}
+
+type VaultValues = AppRoleCredentials & VaultValuesWithoutCredentials
+
 export class VaultProjectApi extends VaultApi {
   private readonly basePath: string
   private readonly roleName: string
@@ -136,11 +143,17 @@ export class VaultProjectApi extends VaultApi {
       await this.Group.delete()
       await this.Role.delete(this.roleName)
     },
-    getCredentials: async () => {
+    getCredentials: async (): Promise<AppRoleCredentials> => {
       const creds = await this.Role.getCredentials(this.roleName)
       return {
         ...this.defaultAppRoleCredentials,
         ...creds,
+      }
+    },
+    getValues: async (): Promise<VaultValues> => {
+      return {
+        projectsRootDir: getConfig().projectsRootDir,
+        ...(await this.Project.getCredentials()),
       }
     },
   }
