@@ -9,11 +9,6 @@ export async function getAuthMethod(axiosInstance: AxiosInstance, token: string)
   return response.data
 }
 
-export async function isAppRoleEnabled(axiosInstance: AxiosInstance, token: string) {
-  const methods = await getAuthMethod(axiosInstance, token)
-  return Object.keys(methods).includes('approle/')
-}
-
 export const minimumConfig = {
   type: 'kv',
   options: {
