@@ -6,7 +6,6 @@ import getConfig from './config.js'
 import {
   generateKVConfigUpdate,
   getAuthMethod,
-  isAppRoleEnabled,
 } from './utils.js'
 
 interface ReadOptions {
@@ -128,12 +127,6 @@ abstract class VaultApi extends PluginApi {
 
   Role = {
     upsert: async (roleName: string, policies: string[]) => {
-      const appRoleEnabled = await isAppRoleEnabled(
-        this.axios,
-        await this.getToken(),
-      )
-      if (!appRoleEnabled) return
-
       await this.axios({
         method: 'post',
         url: `/v1/auth/approle/role/${roleName}`,
@@ -298,11 +291,6 @@ export class VaultProjectApi extends VaultApi {
       await this.Role.delete(this.roleName)
     },
     getCredentials: async () => {
-      const appRoleEnabled = await isAppRoleEnabled(
-        this.axios,
-        await this.getToken(),
-      )
-      if (!appRoleEnabled) return this.defaultAppRoleCredentials
       const creds = await this.Role.getCredentials(this.roleName)
       return {
         ...this.defaultAppRoleCredentials,
@@ -363,17 +351,12 @@ interface VaultValuesWithoutCredentials {
   /** Slash-separated directory (root node of all Gitlab projects) */
   projectsRootDir: string
 }
-interface VaultCredentialsWithoutRole {
-  url: string
-  kvName: string
-}
-interface VaultCredentialsWithRole {
+interface VaultCredentials {
   url: string
   kvName: string
   roleId: string
   secretId: string
 }
-type VaultCredentials = VaultCredentialsWithRole | VaultCredentialsWithoutRole
 type VaultValues = VaultCredentials & VaultValuesWithoutCredentials
 
 export class VaultZoneApi extends VaultApi {
@@ -417,21 +400,11 @@ export class VaultZoneApi extends VaultApi {
   }
 
   public async getCredentials(): Promise<VaultCredentials> {
-    const appRoleEnabled = await isAppRoleEnabled(
-      this.axios,
-      await this.getToken(),
-    )
-    if (appRoleEnabled) {
-      return {
-        url: getConfig().publicUrl,
-        kvName: this.kvName,
-        ...(await this.Role.getCredentials(this.roleName)),
-      } as VaultCredentialsWithRole
-    }
     return {
       url: getConfig().publicUrl,
       kvName: this.kvName,
-    } as VaultCredentialsWithoutRole
+      ...(await this.Role.getCredentials(this.roleName)),
+    } as VaultCredentials
   }
 
   public async getValues(): Promise<VaultValues> {
