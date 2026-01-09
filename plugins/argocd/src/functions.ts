@@ -2,7 +2,7 @@ import type { ClusterObject, Environment, ListMinimumResources, Project, Reposit
 import { parseError, uniqueResource } from '@cpn-console/hooks'
 import { dump } from 'js-yaml'
 import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
 import { PatchUtils } from '@kubernetes/client-node'
 import { inClusterLabel } from '@cpn-console/shared'
 import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi } from './utils.js'
