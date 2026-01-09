@@ -2,7 +2,7 @@ import type { ClusterObject, Environment, ListMinimumResources, Project, Reposit
 import { parseError, uniqueResource } from '@cpn-console/hooks'
 import { dump } from 'js-yaml'
 import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
 import { PatchUtils } from '@kubernetes/client-node'
 import { inClusterLabel } from '@cpn-console/shared'
 import { generateAppProjectName, generateApplicationName, getConfig, getCustomK8sApi } from './utils.js'
@@ -209,7 +209,7 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
   const cluster = getCluster(project, environment)
   const infraProject = await gitlabApi.getProjectById(repoId)
   const valueFilePath = getValueFilePath(project, cluster, environment)
-  const vaultCredentials = await vaultApi.Project.getCredentials()
+  const vaultValues = await vaultApi.Project.getValues()
   const repositories: ArgoRepoSource[] = await Promise.all([
     ...infraRepositories.map(async (repository) => {
       const repoURL = await gitlabApi.getPublicRepoUrl(repository.internalRepoName)
@@ -258,7 +258,7 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
         name: cluster.label,
       },
       autosync: environment.autosync,
-      vault: vaultCredentials,
+      vault: vaultValues,
       repositories,
     },
   }

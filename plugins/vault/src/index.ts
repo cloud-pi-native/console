@@ -2,7 +2,8 @@ import type { ClusterObject, DefaultArgs, Plugin, Project, ProjectLite, ZoneObje
 import { archiveDsoProject, deleteZone, deployAuth, getSecrets, upsertProject, upsertZone } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
-import { VaultProjectApi, VaultZoneApi } from './class.js'
+import { VaultProjectApi } from './vault-project-api.js'
+import { VaultZoneApi } from './vault-zone-api.js'
 
 const onlyApi = { api: (project: ProjectLite) => new VaultProjectApi(project) }
 

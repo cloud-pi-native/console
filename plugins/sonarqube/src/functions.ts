@@ -1,7 +1,7 @@
 import { adminGroupPath } from '@cpn-console/shared'
 import type { Project, StepCall } from '@cpn-console/hooks'
 import { generateProjectKey, parseError } from '@cpn-console/hooks'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/class.js'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
 import { ensureGroupExists, findGroupByName } from './group.js'
 import type { VaultSonarSecret } from './tech.js'
 import { getAxiosInstance } from './tech.js'
