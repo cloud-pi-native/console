@@ -1,17 +1,13 @@
 import getConfig from './config.js'
 import { VaultApi } from './vault-api.js'
 
-interface VaultValuesWithoutCredentials {
-  /** Slash-separated directory (root node of all Gitlab projects) */
-  projectsRootDir: string
-}
 interface VaultCredentials {
   url: string
   kvName: string
   roleId: string
   secretId: string
 }
-type VaultValues = VaultCredentials & VaultValuesWithoutCredentials
+type VaultValues = VaultCredentials
 
 export class VaultZoneApi extends VaultApi {
   private readonly kvName: string
@@ -62,9 +58,6 @@ export class VaultZoneApi extends VaultApi {
   }
 
   public async getValues(): Promise<VaultValues> {
-    return {
-      projectsRootDir: getConfig().projectsRootDir,
-      ...(await this.getCredentials()),
-    }
+    return this.getCredentials()
   }
 }
