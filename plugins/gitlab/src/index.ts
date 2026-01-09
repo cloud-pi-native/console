@@ -12,7 +12,8 @@ import {
 import { getOrCreateGroupRoot } from './utils.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
-import { GitlabProjectApi, GitlabZoneApi } from './class.js'
+import { GitlabProjectApi } from './gitlab-project-api.js'
+import { GitlabZoneApi } from './gitlab-zone-api.js'
 
 const onlyApi = { api: (project: Project | UniqueRepo) => new GitlabProjectApi(project) }
 
