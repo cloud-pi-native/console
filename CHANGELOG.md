@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.11.3](https://github.com/cloud-pi-native/console/compare/v9.11.2...v9.11.3) (2026-01-13)
+
+
+### Bug Fixes
+
+* :bug: add projectsRootDir value in the vault values of each application ([26f4aec](https://github.com/cloud-pi-native/console/commit/26f4aec66e033336843eb722afaaecbf63b39bc7))
+
 ## [9.11.2](https://github.com/cloud-pi-native/console/compare/v9.11.1...v9.11.2) (2026-01-08)
 
 
