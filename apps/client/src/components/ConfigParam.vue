@@ -3,7 +3,7 @@ import { DEFAULT, DISABLED, ENABLED } from '@cpn-console/shared'
 
 const props = defineProps<{
   options: {
-    value: Ref<string>
+    value: globalThis.Ref<string>
     description: string | undefined
     name: string
     disabled: boolean
@@ -50,7 +50,7 @@ function set(data: string) {
     :placeholder="props.options.placeholder || 'Non défini'"
     data-testid="input"
     :disabled="props.options.disabled"
-    @update:model-value="(event: string) => set(event)"
+    @update:model-value="(event: string | number | undefined) => set(event as string)"
   />
   <DsfrSegmentedSet
     v-else-if="props.options.kind === 'switch'"

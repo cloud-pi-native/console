@@ -136,7 +136,7 @@ async function saveProject() {
         :model-value="project.description"
         :project="project"
         :can-edit-description="asProfile === 'user' && ProjectAuthorized.Manage({ projectPermissions: project.myPerms })"
-        @update:model-value="(desc: string) => { project.description = desc }"
+        @update:model-value="(desc: string | undefined) => { project.description = desc }"
         @save-description="saveProject"
       />
       <ProjectAction

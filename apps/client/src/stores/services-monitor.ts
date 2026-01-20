@@ -7,17 +7,17 @@ import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export type ServicesHealth = {
   message: string
-  status: DsfrAlertType | ''
+  status: DsfrAlertType | undefined
   dotColor: 'gray' | 'red' | 'green' | 'orange' | 'blue'
 } | Record<string, never>
 
-interface ServiceHealthOption { message: string, status: DsfrAlertType | '', serviceStatus: MonitorStatus, dotColor: ServicesHealth['dotColor'] }
+interface ServiceHealthOption { message: string, status: DsfrAlertType | undefined, serviceStatus: MonitorStatus, dotColor: ServicesHealth['dotColor'] }
 
-export const alertTypeMapper: Record<MonitorStatus, DsfrAlertType | ''> = {
+export const alertTypeMapper: Record<MonitorStatus, DsfrAlertType | undefined> = {
   [MonitorStatus.OK]: 'success',
   [MonitorStatus.WARNING]: 'warning',
   [MonitorStatus.ERROR]: 'error',
-  [MonitorStatus.UNKNOW]: '',
+  [MonitorStatus.UNKNOW]: undefined,
 }
 
 const serviceHealthOptions = {
@@ -86,7 +86,7 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
       services.value = await (displayCause.value
         ? apiClient.Services.getCompleteServiceHealth()
         : apiClient.Services.getServiceHealth())
-        .then(res => extractData(res, 200))
+        .then((res: any) => extractData(res, 200))
       callStastus.value = 'ok'
     } catch (_error) {
       callStastus.value = 'error'
@@ -95,7 +95,7 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
 
   const refreshServicesHealth = async () => {
     await apiClient.Services.refreshServiceHealth()
-      .then(res => extractData(res, 200))
+      .then((res: any) => extractData(res, 200))
     return checkServicesHealth()
   }
 

@@ -457,7 +457,7 @@ async function copyToClipboard(text: string) {
         :is-project-locked="project.locked"
         :can-manage="canManageRepos"
         :repo="selectedRepo"
-        @save="(repo) => saveRepo(repo)"
+        @save="(repo: any) => saveRepo(repo)"
         @delete="deleteRepo(selectedRepo.id)"
         @cancel="selectedRepo = undefined"
       />
@@ -466,7 +466,7 @@ async function copyToClipboard(text: string) {
       v-else-if="newResource === 'repo'"
       :is-project-locked="project.locked"
       :can-manage="canManageRepos"
-      @save="(repo) => saveRepo({ projectId: project?.id, ...repo })"
+      @save="(repo: any) => saveRepo({ projectId: project?.id, ...repo })"
       @cancel="newResource = undefined"
     />
   </DsfrModal>

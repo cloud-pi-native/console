@@ -102,7 +102,7 @@ function updateProject(key: 'name' | 'description', value: string) {
             :hint="`Nom du projet dans l'offre Cloud π Native. Ne doit pas contenir d'espace, être en minuscules, faire plus de 2 et moins de ${projectNameMaxLength} caractères.`"
             placeholder="candilib"
             :disabled="buttonState.isCreating"
-            @update:model-value="updateProject('name', $event)"
+            @update:model-value="updateProject('name', $event as string)"
           />
         </div>
         <span
@@ -122,7 +122,7 @@ function updateProject(key: 'name' | 'description', value: string) {
         :hint="`Courte description expliquant la finalité du projet (${descriptionMaxLength} caractères maximum).`"
         placeholder="Application de réservation de places à l'examen du permis B."
         :disabled="buttonState.isCreating"
-        @update:model-value="updateProject('description', $event)"
+        @update:model-value="updateProject('description', $event as string)"
       />
     </DsfrFieldset>
     <ProjectSettings :project="project" />

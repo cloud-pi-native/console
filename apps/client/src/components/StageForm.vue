@@ -8,9 +8,9 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
   isNewStage: boolean
-  stage: Stage
-  allClusters: Cluster[]
-  associatedEnvironments: StageAssociatedEnvironments
+  stage?: Stage
+  allClusters?: Cluster[]
+  associatedEnvironments?: StageAssociatedEnvironments
 }>(), {
   isNewStage: false,
   stage: () => ({ name: '', clusterIds: [], id: '' }),
@@ -99,7 +99,7 @@ onBeforeMount(() => {
         :options-selected="allClusters.filter(({ id }) => localStage.clusterIds.includes(id))"
         label-key="label"
         value-key="id"
-        @update="(_c, clusterIds) => updateClusters(clusterIds)"
+        @update="(_c: any, clusterIds: any) => updateClusters(clusterIds)"
       />
     </div>
     <div

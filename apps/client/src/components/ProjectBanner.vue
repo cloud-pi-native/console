@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Project } from '@/utils/project-utils.js'
+import type { Project, ProjectOperations } from '@/utils/project-utils.js'
 import { descriptionMaxLength, projectIsLockedInfo, bts } from '@cpn-console/shared'
 import { copyContent } from '@/utils/func.js'
 
@@ -11,7 +11,7 @@ withDefaults(defineProps<{
 })
 
 const emits = defineEmits<{
-  (e: 'update:modelValue'): void
+  (e: 'update:model-value'): [value: string]
   (e: 'saveDescription'): void
 }>()
 
@@ -86,10 +86,10 @@ function saveDescription() {
             data-testid="saveDescriptionBtn"
             label="Enregistrer la description"
             secondary
-            :icon="project.operationsInProgress.includes('update')
+            :icon="(project.operationsInProgress as unknown as ProjectOperations[]).includes('update')
               ? { name: 'ri:refresh-line', animation: 'spin' }
               : 'ri:send-plane-line'"
-            :disabled="project.operationsInProgress.includes('update')"
+            :disabled="(project.operationsInProgress as unknown as ProjectOperations[]).includes('update')"
             @click="saveDescription"
           />
           <DsfrButton

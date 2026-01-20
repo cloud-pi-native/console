@@ -17,7 +17,7 @@ export const useServiceChainStore = defineStore('serviceChain', () => {
 
   const getServiceChainsList = async () => {
     serviceChains.value
-      = await apiClient.ServiceChains.listServiceChains().then(response =>
+      = await apiClient.ServiceChains.listServiceChains().then((response: any) =>
         extractData(response, 200),
       )
     return serviceChains.value
@@ -26,14 +26,14 @@ export const useServiceChainStore = defineStore('serviceChain', () => {
   const getServiceChainDetails = async (serviceChainId: ServiceChain['id']) =>
     apiClient.ServiceChains.getServiceChainDetails({
       params: { serviceChainId },
-    }).then(response =>
+    }).then((response: any) =>
       ServiceChainDetailsSchema.parse(extractData(response, 200)),
     )
 
   const getServiceChainFlows = async (serviceChainId: ServiceChain['id']) =>
     apiClient.ServiceChains.getServiceChainFlows({
       params: { serviceChainId },
-    }).then(response =>
+    }).then((response: any) =>
       ServiceChainFlowsSchema.parse(extractData(response, 200)),
     )
 
