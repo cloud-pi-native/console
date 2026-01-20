@@ -18,7 +18,7 @@ services:
       keycloak-fetch-theme:
         condition: service_completed_successfully
     ports:
-      - 8090:8080
+      - 127.0.0.1:8090:8080
     volumes:
       - ../keycloak/realms:/opt/bitnami/keycloak/data/import
       - ../keycloak/data/dev:/opt/bitnami/keycloak/data/h2
