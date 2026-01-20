@@ -1,7 +1,7 @@
 import type { ClusterObject, Environment, ListMinimumResources, Project, Repository, StepCall } from '@cpn-console/hooks'
 import { parseError, uniqueResource } from '@cpn-console/hooks'
 import { dump } from 'js-yaml'
-import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/gitlab-project-api.js'
+import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
 import { PatchUtils } from '@kubernetes/client-node'
 import { inClusterLabel } from '@cpn-console/shared'
