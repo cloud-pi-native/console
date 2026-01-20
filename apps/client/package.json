@@ -26,7 +26,7 @@
     "test:e2e": "cypress open --browser=firefox",
     "test:e2e-ci": "cypress run --browser=firefox",
     "kube:e2e-ci": "CLIENT_HOST=console.dso.local CLIENT_PORT=80 cypress run",
-    "type-check": "vue-tsc --noEmit -p tsconfig.json || exit 0"
+    "type-check": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@cpn-console/shared": "workspace:^",
