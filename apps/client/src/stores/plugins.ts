@@ -6,10 +6,10 @@ export const usePluginsConfigStore = defineStore('plugins', () => {
   const services: ProjectService[] = []
 
   const getPluginsConfig = () => apiClient.SystemPlugin.getPluginsConfig()
-    .then(response => extractData(response, 200))
+    .then((response: any) => extractData(response, 200))
 
   const updatePluginsConfig = (body: PluginsUpdateBody) => apiClient.SystemPlugin.updatePluginsConfig({ body })
-    .then(response => extractData(response, 204))
+    .then((response: any) => extractData(response, 204))
 
   return {
     services,

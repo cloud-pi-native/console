@@ -62,7 +62,7 @@ function toggleLimitless(e: boolean) {
               :required="true"
               data-testid="memoryHprodInput"
               placeholder="16"
-              @update:model-value="(value: string) => localProject.hprodMemory = localeParseFloat(value)"
+              @update:model-value="(value: string | number | undefined) => localProject.hprodMemory = localeParseFloat(value as string)"
             />
           </div>
           <div class="fr-col fr-ml-10v fr-mr-10v">
@@ -78,7 +78,7 @@ function toggleLimitless(e: boolean) {
               :required="true"
               data-testid="cpuHprodInput"
               placeholder="8"
-              @update:model-value="(value: string) => localProject.hprodCpu = localeParseFloat(value)"
+              @update:model-value="(value: string | number | undefined) => localProject.hprodCpu = localeParseFloat(value as string)"
             />
           </div>
           <div class="fr-col fr-mr-1v">
@@ -95,7 +95,7 @@ function toggleLimitless(e: boolean) {
               :required="true"
               data-testid="gpuHprodInput"
               placeholder="2"
-              @update:model-value="(value: string) => localProject.hprodGpu = localeParseFloat(value)"
+              @update:model-value="(value: string | number | undefined) => localProject.hprodGpu = localeParseFloat(value as string)"
             />
           </div>
         </div>
@@ -121,7 +121,7 @@ function toggleLimitless(e: boolean) {
               :required="true"
               data-testid="memoryProdInput"
               placeholder="16"
-              @update:model-value="(value: string) => localProject.prodMemory = parseFloat(value)"
+              @update:model-value="(value: string | number | undefined) => localProject.prodMemory = parseFloat(value as string)"
             />
           </div>
           <div class="fr-col fr-ml-10v fr-mr-10v">
@@ -137,7 +137,7 @@ function toggleLimitless(e: boolean) {
               :required="true"
               data-testid="cpuProdInput"
               placeholder="8"
-              @update:model-value="(value: string) => localProject.prodCpu = parseFloat(value)"
+              @update:model-value="(value: string | number | undefined) => localProject.prodCpu = parseFloat(value as string)"
             />
           </div>
           <div class="fr-col fr-mr-1v">
@@ -154,7 +154,7 @@ function toggleLimitless(e: boolean) {
               :required="true"
               data-testid="gpuProdInput"
               placeholder="2"
-              @update:model-value="(value: string) => localProject.prodGpu = parseFloat(value)"
+              @update:model-value="(value: string | number | undefined) => localProject.prodGpu = parseFloat(value as string)"
             />
           </div>
         </div>

@@ -29,9 +29,9 @@ function groupManifest(configItems: PluginConfigItem[] = []) {
   return configItems.reduce((acc, curr) => {
     if (!curr.section) curr.section = 'default'
     if (curr.section in acc.items) {
-      acc.items[curr.section].push(curr)
+      acc.items[curr.section].push(curr as PluginConfigItem)
     } else {
-      acc.items[curr.section] = [curr]
+      acc.items[curr.section] = [curr as PluginConfigItem]
       acc.sectionNumber++
     }
     return acc
@@ -43,7 +43,7 @@ function refTheValues(services: ProjectService[]) {
     return {
       ...service,
       manifest: {
-        project: service.manifest.project?.map(item => ({ ...item, value: ref(item.value) })),
+        project: service.manifest.project?.map(item => ({ ...item, value: ref(item.value) as unknown as string })),
         global: service.manifest.global?.map(item => ({ ...item, value: ref(item.value) })),
       },
     }
@@ -175,7 +175,7 @@ const activeAccordion = ref<number>()
                   :data-testid="`service-project-config-${service.name}`"
                 >
                   <template
-                    v-for="[title, items] in Object.entries(groupManifest(service.manifest.project).items)"
+                    v-for="[title, items] in Object.entries(groupManifest(service.manifest.project as unknown as PluginConfigItem[]).items)"
                     :key="title"
                   >
                     <template v-if="items.length">
@@ -210,7 +210,7 @@ const activeAccordion = ref<number>()
                   :data-testid="`service-global-config-${service.name}`"
                 >
                   <template
-                    v-for="[title, items] in Object.entries(groupManifest(service.manifest.global).items)"
+                    v-for="[title, items] in Object.entries(groupManifest(service.manifest.global as unknown as PluginConfigItem[]).items)"
                     :key="title"
                   >
                     <template v-if="items.length">

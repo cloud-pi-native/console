@@ -125,7 +125,7 @@ async function validateBulkAction() {
       action: selectedAction.value,
       projectIds: selectedProjects.value.map(({ id }) => id),
     },
-  }).then(res => extractData(res, 202))
+  }).then((res: any) => extractData(res, 202))
   selectedProjectIds.value = []
   snackbarStore.setMessage('Traitement en cours, en fonction du nombre de projets cela peut prendre plusieurs minutes, veuillez rafraichir dans quelques instants')
 }

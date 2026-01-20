@@ -6,7 +6,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
   isNewZone: boolean
-  zone?: Zone & { clusterIds: Cluster['id'][] }
+  zone?: Zone & { clusterIds?: Cluster['id'][] }
   allClusters: Cluster[]
   associatedClusters: Cluster[]
 }>(), {

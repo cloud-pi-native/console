@@ -118,9 +118,10 @@ function closeModal() {
   </div>
   <div>
     <DsfrTable
+      title=""
       data-testid="tokenTable"
       :headers="headers"
-      :rows="rows"
+      :rows="rows as string[][]"
     />
   </div>
   <DsfrButton

@@ -48,10 +48,11 @@ const sortOptions: { text: string, value: string, selected?: true }[] = [{
 }]
 
 const sortKey = computed<'email' | 'lastName' | 'firstName'>(() => sort.value.method.split(':')[0] as 'email' | 'lastName' | 'firstName')
-function selectSort(value: string) {
+function selectSort(value: string | number | undefined) {
+  const v = value as string
   sort.value = {
-    desc: value.endsWith(':D'),
-    method: value,
+    desc: v.endsWith(':D'),
+    method: v,
   }
 }
 
@@ -113,11 +114,11 @@ onBeforeMount(async () => {
         class="h-min w-auto"
       >
         <DsfrSelect
-          v-model="sort"
+          v-model="sort as unknown as string"
           data-testid="tableAdministrationUsersSort"
           label="Tri"
           :options="sortOptions"
-          @update:model-value="(value: string) => selectSort(value)"
+          @update:model-value="selectSort"
         />
         <DsfrInputGroup
           v-model="inputSearchText"
@@ -129,6 +130,8 @@ onBeforeMount(async () => {
         <DsfrCheckbox
           id="tableAdministrationUsersDisplayId"
           v-model="displayId"
+          value=""
+          name=""
           label="Afficher les identifiants"
           small
           @update:model-value="(value: boolean) => displayId = value"
@@ -136,6 +139,8 @@ onBeforeMount(async () => {
         <DsfrCheckbox
           id="tableAdministrationUsersHideBots"
           v-model="hideBots"
+          value=""
+          name=""
           label="Masquer les comptes techniques"
           small
           @update:model-value="(value: boolean) => hideBots = value"
