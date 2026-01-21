@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.11.4](https://github.com/cloud-pi-native/console/compare/v9.11.3...v9.11.4) (2026-01-20)
+
+
+### Bug Fixes
+
+* **gitlab:** restore gitlab-ci-dso file configuration ([8cc6d2c](https://github.com/cloud-pi-native/console/commit/8cc6d2ce7716260ef470ee0a7374f7491ffa68e6))
+
 ## [9.11.3](https://github.com/cloud-pi-native/console/compare/v9.11.2...v9.11.3) (2026-01-13)
 
 
