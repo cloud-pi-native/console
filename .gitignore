@@ -53,7 +53,6 @@ keycloak/data
 # dist
 dist
 build
-auto-imports.d.ts
 components.d.ts
 *.tsbuildinfo
 
