@@ -46,7 +46,10 @@ test.describe('Integration tests user flow: project creation', { tag: '@integ' }
     // Enable Nexus Maven plugin
     await page.getByTestId('test-tab-services').click()
     await page.getByRole('button', { name: 'Nexus' }).click()
-    await page.getByText('Activé', { exact: true }).nth(4).click()
+    await page
+      .getByRole('group', { name: /Activer le dépôt Maven/ })
+      .locator('input[value="enabled"] + label')
+      .click()
     await page.getByTestId('saveBtn').click()
     await expect(page.getByText('Paramètres sauvegardés')).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Reprovisionnement nécessaire' })).toBeVisible()
