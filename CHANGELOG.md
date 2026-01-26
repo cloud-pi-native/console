@@ -1,5 +1,15 @@
 # Changelog
 
+## [9.11.5](https://github.com/cloud-pi-native/console/compare/v9.11.4...v9.11.5) (2026-01-26)
+
+
+### Bug Fixes
+
+* avoid deleting new Application (and subresources) ([fdbead3](https://github.com/cloud-pi-native/console/commit/fdbead32aa8eb41dddb6b4bdb15b40cd4a9a3f64))
+* keycloak HTTPS required error on dev with Docker Desktop Mac ([2cc25af](https://github.com/cloud-pi-native/console/commit/2cc25af3a08d77303c41753feb67b614db35538e))
+* prisma not loading dotenv ([026b9e9](https://github.com/cloud-pi-native/console/commit/026b9e979513ea418e04fafb1b5bc412153eac04))
+* theme broke Keycloak startup ([4c6ce50](https://github.com/cloud-pi-native/console/commit/4c6ce5095ab3392a00c694d5878ae3da858b6b1b))
+
 ## [9.11.4](https://github.com/cloud-pi-native/console/compare/v9.11.3...v9.11.4) (2026-01-20)
 
 
