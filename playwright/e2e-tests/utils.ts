@@ -90,7 +90,7 @@ export async function addRandomRepositoryToProject({
   page: Page
   repositoryName?: string
   externalRepoUrlInput?: string
-  infraRepo?: bool
+  infraRepo?: boolean
 }) {
   repositoryName = repositoryName ?? faker.string.alpha(10).toLowerCase()
   await page.getByTestId('addRepoLink').click()
