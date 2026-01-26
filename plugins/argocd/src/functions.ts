@@ -146,29 +146,6 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 
     await removeInfraEnvValues(project, gitlabApi)
 
-    // then destroy what should not exist
-    // @ts-ignore
-    for (const application of applications) {
-      const appEnv = application.metadata.labels['dso/environment']
-      const appRepo = application.metadata.labels['dso/repository']
-      const env = project.environments.find(env => env.name === appEnv)
-      const repo = infraRepositories.find(repo => repo.internalRepoName === appRepo)
-      if (!env || !repo) {
-        console.log(`Application ${application.metadata.name} should not exists anymore`)
-        await customK8sApi.deleteNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', application.metadata.name)
-      }
-    }
-
-    // @ts-ignore
-    for (const appProject of appProjects) {
-      const projectEnv = appProject.metadata.labels['dso/environment']
-      const env = project.environments.find(env => env.name === projectEnv)
-      if (!env) {
-        console.log(`AppProject ${appProject.metadata.name} should not exists anymore`)
-        await customK8sApi.deleteNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProject.metadata.name)
-      }
-    }
-
     return {
       status: {
         result: 'OK',
