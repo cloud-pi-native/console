@@ -1,10 +1,10 @@
-import type { Monitor } from '@cpn-console/shared'
 import type { PluginApi } from './utils/utils.js'
 import { objectEntries } from './utils/utils.js'
 import * as hooks from './hooks/index.js'
 import { type ServiceInfos, servicesInfos } from './services.js'
 import type { HookStepsNames, StepCall } from './hooks/hook.js'
 import { addPlugin, editStrippers } from './config.js'
+import { addAdminPerms, addProjectPerms, type AdminPermsKeys, type Monitor, type PermDetails, type ProjectPermsKeys } from '@cpn-console/shared'
 
 export * from './utils/logger.js'
 
@@ -26,6 +26,10 @@ export interface Plugin {
   subscribedHooks: PluginsFunctions
   monitor?: Monitor
   start?: (options: unknown) => void
+  permissions?: {
+    project?: { perms: Record<string, bigint>, details: PermDetails<ProjectPermsKeys> }
+    admin?: { perms: Record<string, bigint>, details: PermDetails<AdminPermsKeys> }
+  }
 }
 
 export type RegisterFn = (plugin: Plugin) => void
@@ -50,6 +54,13 @@ function pluginManager(options: PluginManagerOptions): PluginManager {
   const register: RegisterFn = (plugin: Plugin) => {
     if (plugin.infos.config) {
       addPlugin(plugin.infos.name, plugin.infos.config, editStrippers)
+    }
+
+    if (plugin.permissions?.project) {
+      addProjectPerms(plugin.permissions.project.perms, plugin.permissions.project.details)
+    }
+    if (plugin.permissions?.admin) {
+      addAdminPerms(plugin.permissions.admin.perms, plugin.permissions.admin.details)
     }
 
     if (plugin.infos.to && config.mockExternalServices)

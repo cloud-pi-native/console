@@ -3,6 +3,7 @@ import { useServiceStore } from '@/stores/services-monitor.js'
 import { swaggerUiPath } from '@cpn-console/shared'
 import ReloadPrompt from './components/ReloadPrompt.vue'
 import { useAdminRoleStore } from './stores/admin-role.js'
+import { usePermissionsStore } from './stores/permissions.js'
 
 import { useProjectStore } from './stores/project.js'
 import { useSnackbarStore } from './stores/snackbar.js'
@@ -16,6 +17,7 @@ const systemStore = useSystemSettingsStore()
 const projectStore = useProjectStore()
 const userStore = useUserStore()
 const adminRoleStore = useAdminRoleStore()
+const permissionsStore = usePermissionsStore()
 
 const isLoggedIn = ref<boolean | undefined>(keycloak.authenticated)
 
@@ -46,6 +48,7 @@ onBeforeMount(async () => {
 })
 watch(userStore, async () => {
   if (userStore.isLoggedIn) {
+    await permissionsStore.fetchPermissions()
     if (!adminRoleStore.roles.length) {
       await adminRoleStore.listRoles()
     }

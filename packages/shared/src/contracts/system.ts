@@ -34,6 +34,36 @@ export const systemContract = contractInstance.router({
       500: ErrorSchema,
     },
   },
+
+  getConf: {
+    method: 'GET',
+    path: '/conf',
+    summary: 'Get configuration',
+    description: 'Retrieve system configuration including permissions.',
+    responses: {
+      200: z.object({
+        projectPermsDetails: z.array(z.object({
+          name: z.string(),
+          perms: z.array(z.object({
+            key: z.string(),
+            label: z.string(),
+            hint: z.string().optional(),
+          })),
+        })),
+        adminPermsDetails: z.array(z.object({
+          name: z.string(),
+          perms: z.array(z.object({
+            key: z.string(),
+            label: z.string(),
+            hint: z.string().optional(),
+          })),
+        })),
+        projectPerms: z.record(z.string()),
+        adminPerms: z.record(z.string()),
+      }),
+      500: ErrorSchema,
+    },
+  },
 }, {
   pathPrefix: `${apiPrefix}`,
 })

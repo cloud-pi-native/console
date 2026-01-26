@@ -43,7 +43,7 @@ function permissionsParser(a: Record<string, bigint>) {
 const bit = (position: bigint) => 1n << position
 
 // Be very careful and think to apply corresponding updates in database if you modify these values, You'll have to do binary updates in SQL, good luck !
-export const PROJECT_PERMS = { // project permissions
+export const PROJECT_PERMS: Record<string, bigint> = { // project permissions
   GUEST: bit(0n),
   MANAGE: bit(1n),
   MANAGE_MEMBERS: bit(2n),
@@ -57,12 +57,12 @@ export const PROJECT_PERMS = { // project permissions
 }
 
 // Be very careful and think to apply corresponding updates in database if you modify these values, You'll have to do binary updates in SQL, good luck !
-export const ADMIN_PERMS = { // admin permissions
+export const ADMIN_PERMS: Record<string, bigint> = { // admin permissions
   MANAGE: bit(1n),
 }
 
-export type ProjectPermsKeys = keyof typeof PROJECT_PERMS
-export type AdminPermsKeys = keyof typeof ADMIN_PERMS
+export type ProjectPermsKeys = keyof typeof PROJECT_PERMS | string
+export type AdminPermsKeys = keyof typeof ADMIN_PERMS | string
 
 permissionsParser(ADMIN_PERMS)
 permissionsParser(PROJECT_PERMS)
@@ -102,11 +102,11 @@ export const ProjectAuthorized = {
     || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.SEE_SECRETS | PROJECT_PERMS.MANAGE)),
 } as const
 
-interface ScopePerm<T extends string> {
+export interface ScopePerm<T extends string> {
   name: string
   perms: Array<{ key: T, label: string, hint?: string }>
 }
-type PermDetails<T extends string> = Array<ScopePerm<T>>
+export type PermDetails<T extends string> = Array<ScopePerm<T>>
 
 export const projectPermsDetails: PermDetails<ProjectPermsKeys> = [{
   name: 'Projet',
@@ -159,7 +159,31 @@ export const projectPermsDetails: PermDetails<ProjectPermsKeys> = [{
       hint: 'Permet de visualiser tous les dépôts et leurs configurations',
     },
   ],
-}] as const
+}, {
+  name: 'Rôles',
+  perms: [
+    {
+      key: 'REPORTER',
+      label: 'Reporter',
+      hint: 'Rôle Reporter',
+    },
+    {
+      key: 'DEVELOPER',
+      label: 'Developer',
+      hint: 'Rôle Developer',
+    },
+    {
+      key: 'MAINTAINER',
+      label: 'Maintainer',
+      hint: 'Rôle Maintainer',
+    },
+    {
+      key: 'OWNER',
+      label: 'Owner',
+      hint: 'Rôle Owner',
+    },
+  ],
+}]
 
 export const adminPermsDetails: PermDetails<AdminPermsKeys> = [{
   name: 'Global',
@@ -168,7 +192,19 @@ export const adminPermsDetails: PermDetails<AdminPermsKeys> = [{
     label: 'Administration globale',
     hint: 'Administration globale de toute la console et de ses ressources',
   }],
-}] as const
+}]
+
+export function addProjectPerms(perms: Record<string, bigint>, details: PermDetails<ProjectPermsKeys>) {
+  Object.assign(PROJECT_PERMS, perms)
+  permissionsParser(PROJECT_PERMS)
+  projectPermsDetails.push(...details)
+}
+
+export function addAdminPerms(perms: Record<string, bigint>, details: PermDetails<AdminPermsKeys>) {
+  Object.assign(ADMIN_PERMS, perms)
+  permissionsParser(ADMIN_PERMS)
+  adminPermsDetails.push(...details)
+}
 
 export function getAdminPermLabelsByValue(value: bigint | string) {
   value = typeof value === 'bigint' ? value : BigInt(value)

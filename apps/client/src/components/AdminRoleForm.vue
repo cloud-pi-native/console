@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref } from 'vue'
 import type { AdminPermsKeys, LettersQuery, SharedZodError, User } from '@cpn-console/shared'
-import { ADMIN_PERMS, RoleSchema, adminPermsDetails, shallowEqual } from '@cpn-console/shared'
+import { RoleSchema, shallowEqual } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
+import { storeToRefs } from 'pinia'
 import SuggestionInput from './SuggestionInput.vue'
 import { useUsersStore } from '@/stores/users.js'
+import { usePermissionsStore } from '@/stores/permissions.js'
 import { clickInDialog, getRandomId } from '@/utils/func.js'
 
 const props = withDefaults(defineProps<{
@@ -22,6 +24,8 @@ const emits = defineEmits<{
   cancel: []
 }>()
 const usersStore = useUsersStore()
+const permissionsStore = usePermissionsStore()
+const { adminPermsDetails, adminPerms } = storeToRefs(permissionsStore)
 const newUserInputKey = ref(getRandomId('input'))
 
 const role = ref({
@@ -51,9 +55,9 @@ const selectedTabIndex = ref(initialSelectedIndex)
 
 function updateChecked(checked: boolean, name: AdminPermsKeys) {
   if (checked) {
-    role.value.permissions |= ADMIN_PERMS[name]
+    role.value.permissions |= adminPerms.value[name]
   } else {
-    role.value.permissions &= ~ADMIN_PERMS[name]
+    role.value.permissions &= ~adminPerms.value[name]
   }
 }
 
@@ -157,12 +161,12 @@ function closeModal() {
         <DsfrCheckbox
           v-for="perm in scope.perms"
           :key="perm.key"
-          :model-value="!!(ADMIN_PERMS[perm.key] & role.permissions)"
+          :model-value="!!(adminPerms[perm.key] & role.permissions)"
           :data-testid="`${perm.key}-cbx`"
           :label="perm.label"
           :hint="perm?.hint"
           :name="perm.key"
-          :disabled="role.permissions & ADMIN_PERMS.MANAGE && perm.key !== 'MANAGE'"
+          :disabled="!!(role.permissions & adminPerms.MANAGE) && perm.key !== 'MANAGE'"
           @update:model-value="(checked: boolean) => updateChecked(checked, perm.key)"
         />
       </div>

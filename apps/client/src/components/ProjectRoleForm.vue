@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import type { Member, ProjectV2, RoleBigint } from '@cpn-console/shared'
-import { PROJECT_PERMS, projectPermsDetails, shallowEqual } from '@cpn-console/shared'
+import { shallowEqual } from '@cpn-console/shared'
+import { storeToRefs } from 'pinia'
+import { usePermissionsStore } from '@/stores/permissions.js'
 
 const props = defineProps<{
   id: string
@@ -18,6 +20,10 @@ defineEmits<{
   save: [value: Omit<RoleBigint, 'position'>]
   cancel: []
 }>()
+
+const permissionsStore = usePermissionsStore()
+const { projectPermsDetails, projectPerms } = storeToRefs(permissionsStore)
+
 const router = useRouter()
 const role = ref({
   ...props,
@@ -82,12 +88,12 @@ function updateChecked(checked: boolean, value: bigint) {
           v-for="perm in scope.perms"
           :id="`${perm.key}-cbx`"
           :key="perm.key"
-          :model-value="!!(PROJECT_PERMS[perm.key] & role.permissions)"
+          :model-value="!!(projectPerms[perm.key] & role.permissions)"
           :label="perm?.label"
           :hint="perm?.hint"
           :name="perm.key"
-          :disabled="role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE'"
-          @update:model-value="(checked: boolean) => updateChecked(checked, PROJECT_PERMS[perm.key])"
+          :disabled="!!(role.permissions & projectPerms.MANAGE) && perm.key !== 'MANAGE'"
+          @update:model-value="(checked: boolean) => updateChecked(checked, projectPerms[perm.key])"
         />
       </div>
       <DsfrButton
