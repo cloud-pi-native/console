@@ -1,7 +1,19 @@
 import type { Project } from '@cpn-console/hooks'
 import type { UserSchema } from '@gitbeaker/core'
+import { AccessLevel } from '@gitbeaker/core'
 import type { GitlabProjectApi } from './gitlab-project-api.js'
 import { upsertUser } from './user.js'
+
+function getAccessLevel(role: string | undefined): number {
+  switch (role) {
+    case 'guest': return AccessLevel.GUEST
+    case 'reporter': return AccessLevel.REPORTER
+    case 'developer': return AccessLevel.DEVELOPER
+    case 'maintainer': return AccessLevel.MAINTAINER
+    case 'owner': return AccessLevel.OWNER
+    default: return AccessLevel.DEVELOPER
+  }
+}
 
 export async function ensureMembers(gitlabApi: GitlabProjectApi, project: Project) {
   // Ensure all users exists in gitlab
@@ -21,11 +33,23 @@ export async function ensureMembers(gitlabApi: GitlabProjectApi, project: Projec
 
   // Ensure members are set
   const membersAdded = await Promise.all([
-    ...fulfilledGitlabUsers.map(gitlabUser =>
-      members.find(member => member.id === gitlabUser.value.id)
-        ? undefined
-        : gitlabApi.addGroupMember(gitlabUser.value.id),
-    ),
+    ...project.users.map((user, index) => {
+      const result = gitlabUserPromiseResults[index]
+      if (result.status === 'rejected') return undefined
+      const gitlabUser = result.value
+
+      const userRole = project.roles.find(r => r.userId === user.id)?.role
+      const accessLevel = getAccessLevel(userRole)
+      const existingMember = members.find(member => member.id === gitlabUser.id)
+
+      if (existingMember) {
+        if (existingMember.access_level !== accessLevel) {
+          return gitlabApi.editGroupMember(gitlabUser.id, accessLevel)
+        }
+        return undefined
+      }
+      return gitlabApi.addGroupMember(gitlabUser.id, accessLevel)
+    }),
     ...members.map(member =>
       (
         !member.username.match(/group_\d+_bot/)

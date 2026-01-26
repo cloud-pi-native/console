@@ -55,6 +55,31 @@ export class GitlabProjectApi extends GitlabApi {
     return this.createProjectGroup()
   }
 
+  private async getOrCreateSubGroup(parentId: number, name: string): Promise<GroupSchema> {
+    const subgroups = await this.api.Groups.allSubgroups(parentId)
+    const existingGroup = subgroups.find(group => group.name === name)
+    if (existingGroup) return existingGroup
+    return this.api.Groups.create(name, name, {
+      parentId,
+      visibility: 'internal',
+      projectCreationLevel: 'maintainer',
+      subgroupCreationLevel: 'owner',
+      defaultBranchProtection: 0,
+    })
+  }
+
+  public async ensureRightsGroups(): Promise<void> {
+    const projectGroup = await this.getOrCreateProjectGroup()
+    const consoleGroup = await this.getOrCreateSubGroup(projectGroup.id, 'console')
+
+    const envs = ['prod', 'hprod']
+    for (const env of envs) {
+      const envGroup = await this.getOrCreateSubGroup(consoleGroup.id, env)
+      await this.getOrCreateSubGroup(envGroup.id, 'RO')
+      await this.getOrCreateSubGroup(envGroup.id, 'RW')
+    }
+  }
+
   public async getPublicGroupUrl() {
     return `${config().publicUrl}/${config().projectsRootDir}/${this.project.slug}`
   }
@@ -217,6 +242,11 @@ export class GitlabProjectApi extends GitlabApi {
   public async addGroupMember(userId: number, accessLevel: AccessLevelAllowed = AccessLevel.DEVELOPER): Promise<MemberSchema> {
     const group = await this.getOrCreateProjectGroup()
     return this.api.GroupMembers.add(group.id, userId, accessLevel)
+  }
+
+  public async editGroupMember(userId: number, accessLevel: AccessLevelAllowed = AccessLevel.DEVELOPER): Promise<MemberSchema> {
+    const group = await this.getOrCreateProjectGroup()
+    return this.api.GroupMembers.edit(group.id, userId, accessLevel)
   }
 
   public async removeGroupMember(userId: number) {

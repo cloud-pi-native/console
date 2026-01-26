@@ -54,6 +54,10 @@ export const PROJECT_PERMS: Record<string, bigint> = { // project permissions
   REPLAY_HOOKS: bit(7n),
   LIST_ENVIRONMENTS: bit(8n),
   LIST_REPOSITORIES: bit(9n),
+  REPORTER: bit(10n),
+  DEVELOPER: bit(11n),
+  MAINTAINER: bit(12n),
+  OWNER: bit(13n),
 }
 
 // Be very careful and think to apply corresponding updates in database if you modify these values, You'll have to do binary updates in SQL, good luck !

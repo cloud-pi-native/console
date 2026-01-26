@@ -1,5 +1,6 @@
 import { PluginApi } from '@cpn-console/hooks'
-import { consoleGroupName } from './group.js'
+import { consoleGroupName, getGroupByName, getOrCreateChildGroup } from './group.js'
+import { getkcClient } from './client.js'
 
 interface KeycloakEnv {
   path: string
@@ -29,5 +30,14 @@ export class KeycloakProjectApi extends PluginApi {
         RW: `/${this.projectSlug}/${consoleGroupName}/${environment}/RW`,
       },
     }
+  }
+
+  public async getOrCreateProjectGroup(name: string) {
+    const kcClient = await getkcClient()
+    const projectGroup = await getGroupByName(kcClient, this.projectSlug)
+    if (!projectGroup) throw new Error(`Project group ${this.projectSlug} not found`)
+    if (!projectGroup.id) throw new Error(`Project group ${this.projectSlug} has no id`)
+
+    return getOrCreateChildGroup(kcClient, projectGroup.id, name)
   }
 }

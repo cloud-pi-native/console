@@ -10,7 +10,7 @@ export interface RepoCreds {
 
 export interface Role {
   userId: string
-  role: 'owner' | 'user'
+  role: 'owner' | 'user' | 'guest' | 'reporter' | 'developer' | 'maintainer'
 }
 
 export interface EnvironmentApis {

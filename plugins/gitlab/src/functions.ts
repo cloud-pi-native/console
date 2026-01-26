@@ -99,6 +99,7 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
     const { gitlab: gitlabApi, vault: vaultApi } = payload.apis
 
     await gitlabApi.getOrCreateProjectGroup()
+    await gitlabApi.ensureRightsGroups()
 
     const { failedInUpsertUsers } = await ensureMembers(gitlabApi, project)
     if (failedInUpsertUsers) {
