@@ -229,7 +229,7 @@ declare module '@cpn-console/hooks' {
 ```json
 // package.json
 {
-  "devDepencies": {
+  "peerDependencies": {
     "my_plugin": "1.2.3"
   }
 }
