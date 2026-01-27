@@ -1,4 +1,4 @@
-name: CI
+name: Continuous Integration
 
 on:
   pull_request:
@@ -63,7 +63,7 @@ jobs:
         run: echo "Exposing env vars"
 
   npm-check:
-    uses: ./.github/workflows/npm.yml
+    uses: ./.github/workflows/job-npm.yml
     if: ${{ github.base_ref == 'main' && needs.path-filter.outputs.packages == 'true' }}
     needs:
       - path-filter
@@ -78,14 +78,14 @@ jobs:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   lint:
-    uses: ./.github/workflows/lint.yml
+    uses: ./.github/workflows/job-lint.yml
     needs:
       - expose-vars
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
 
   unit-tests:
-    uses: ./.github/workflows/tests-unit.yml
+    uses: ./.github/workflows/job-tests-unit.yml
     if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' }}
     needs:
       - path-filter
@@ -98,7 +98,7 @@ jobs:
       SONAR_PROJECT_KEY: "${{ secrets.SONAR_PROJECT_KEY }}"
 
   component-tests:
-    uses: ./.github/workflows/tests-component.yml
+    uses: ./.github/workflows/job-tests-component.yml
     if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' }}
     needs:
       - path-filter
@@ -108,7 +108,7 @@ jobs:
       BROWSERS: "${{ github.base_ref == 'main' && 'chrome,firefox' || 'firefox' }}"
 
   build:
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/job-build.yml
     needs:
       - expose-vars
     with:
@@ -123,7 +123,7 @@ jobs:
       ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
 
   build-label:
-    uses: ./.github/workflows/label.yml
+    uses: ./.github/workflows/job-label.yml
     needs:
       - expose-vars
       - build
@@ -131,7 +131,7 @@ jobs:
       CONF_PATH: ./.github/labeler/build.yml
 
   playwright-tests:
-    uses: ./.github/workflows/playwright.yml
+    uses: ./.github/workflows/job-playwright.yml
     if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true' }}
     needs:
       - path-filter
@@ -142,7 +142,7 @@ jobs:
       TAG: pr-${{ github.event.pull_request.number || github.event.number }}
 
   cypress-tests:
-    uses: ./.github/workflows/tests-e2e.yml
+    uses: ./.github/workflows/job-tests-e2e.yml
     if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true' }}
     needs:
       - playwright-tests
@@ -155,7 +155,7 @@ jobs:
       BROWSERS: "${{ github.base_ref == 'main' && 'chrome,firefox' || 'firefox' }}"
 
   deploy-tests:
-    uses: ./.github/workflows/tests-deploy.yml
+    uses: ./.github/workflows/job-tests-deploy.yml
     if: ${{ (needs.path-filter.outputs.apps != 'true' && needs.path-filter.outputs.packages != 'true' && needs.path-filter.outputs.ci != 'true') || (!github.event.pull_request.draft && github.base_ref == 'main') }}
     needs:
       - path-filter
@@ -165,7 +165,7 @@ jobs:
       TAG: pr-${{ github.event.pull_request.number || github.event.number }}
 
   scan-vuln:
-    uses: ./.github/workflows/scan.yml
+    uses: ./.github/workflows/job-scan.yml
     needs:
       - expose-vars
       - build
