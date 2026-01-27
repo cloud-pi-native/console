@@ -1,4 +1,4 @@
-name: CD
+name: create-or-update-new-release
 
 on:
   push:
