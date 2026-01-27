@@ -13,9 +13,6 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'preview')
     runs-on: ubuntu-latest
     steps:
-      - name: Checks-out repository
-        uses: actions/checkout@v4
-
       - name: Generate app url
         id: generate-url
         run: |
