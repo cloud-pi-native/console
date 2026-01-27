@@ -6,7 +6,7 @@ import { useSnackbarStore } from '@/stores/snackbar.js'
 
 type RepoForm = Partial<Repo> & { isStandalone?: boolean }
 const props = withDefaults(defineProps<{
-  repo: RepoForm
+  repo?: RepoForm
   canManage: boolean
   isProjectLocked: boolean
 }>(), {
@@ -141,17 +141,18 @@ function toggleStandalone(e: boolean) {
             type="text"
             :required="true"
             :disabled="localRepo.id || props.isProjectLocked || !canManage"
-            :error-message="!!updatedValues.internalRepoName && errorSchema?.flatten().fieldErrors.internalRepoName"
+            :error-message="!!updatedValues.internalRepoName && errorSchema?.flatten().fieldErrors.internalRepoName || undefined"
             label="Nom du dépôt Git interne"
             label-visible
             hint="Nom du dépôt Git créé dans le Gitlab interne de la plateforme"
             placeholder="candilib"
-            @update:model-value="updateRepo('internalRepoName', $event)"
+            @update:model-value="updateRepo('internalRepoName', $event as string)"
           />
         </div>
         <DsfrCheckbox
           id="infraRepoCbx"
           v-model="localRepo.isInfra"
+          value=""
           :disabled="props.isProjectLocked || !canManage"
           label="Dépôt contenant du code d'infrastructure"
           hint="Cochez la case s'il s'agit d'un dépôt d'infrastructure (si le dépôt contient des manifestes de déploiement)"
@@ -197,7 +198,7 @@ function toggleStandalone(e: boolean) {
             hint="Un fichier par ligne, chemin relatif par rapport au répertoire à déployer. La balise <env> sera remplacée par le nom de l'environnement. L'ordre des fichiers est déterminant pour la surcharge des valeurs communes. Champ optionnel."
             placeholder="values/extra.yaml
 values-<env>/custom.yaml"
-            @update:model-value="updateRepo('helmValuesFiles', $event)"
+            @update:model-value="updateRepo('helmValuesFiles', $event as string)"
           />
         </div>
       </DsfrFieldset>
@@ -225,18 +226,19 @@ values-<env>/custom.yaml"
             type="text"
             :disabled="props.isProjectLocked || !canManage"
             :required="true"
-            :error-message="!!updatedValues.externalRepoUrl && errorSchema?.flatten().fieldErrors.externalRepoUrl"
+            :error-message="!!updatedValues.externalRepoUrl && errorSchema?.flatten().fieldErrors.externalRepoUrl || undefined"
             label="Url du dépôt Git externe"
             label-visible
             hint="Url du dépôt Git source pour la synchronisation"
             placeholder="https://github.com/cloud-pi-native/console.git"
             class="fr-mb-2w"
-            @update:model-value="updateRepo('externalRepoUrl', $event)"
+            @update:model-value="updateRepo('externalRepoUrl', $event as string)"
           />
         </div>
         <DsfrCheckbox
           id="privateRepoCbx"
           v-model="localRepo.isPrivate"
+          value=""
           :disabled="props.isProjectLocked || !canManage"
           label="Dépôt source privé"
           hint="Cochez la case si le dépôt Git source est privé"
@@ -248,7 +250,7 @@ values-<env>/custom.yaml"
         >
           <div class="fr-mb-2w">
             <DsfrInputGroup
-              :error-message="(updatedValues.externalUserName || updatedValues.externalToken) && errorSchema?.flatten().fieldErrors.credentials"
+              :error-message="(updatedValues.externalUserName || updatedValues.externalToken) && errorSchema?.flatten().fieldErrors.credentials || undefined"
             >
               <DsfrInput
                 v-model="localRepo.externalUserName"
@@ -262,7 +264,7 @@ values-<env>/custom.yaml"
                 :error-message="!!updatedValues.externalToken && errorSchema?.flatten().fieldErrors.externalUserName"
                 placeholder="this-is-tobi"
                 class="fr-mb-2w"
-                @update:model-value="updateRepo('externalUserName', $event)"
+                @update:model-value="updateRepo('externalUserName', $event as string)"
               />
               <div class="fr-mb-2w flex items-end">
                 <div
@@ -280,7 +282,7 @@ values-<env>/custom.yaml"
                     :error-message="!!updatedValues.externalToken && errorSchema?.flatten().fieldErrors.externalToken"
                     placeholder="hoqjC1vXtABzytBIWBXsdyzubmqMYkgA"
                     autocomplete="off"
-                    @update:model-value="updateRepo('externalToken', $event)"
+                    @update:model-value="updateRepo('externalToken', $event as string)"
                     @click="checkEditToken"
                   />
                 </div>

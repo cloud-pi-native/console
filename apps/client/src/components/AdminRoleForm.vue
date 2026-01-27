@@ -157,6 +157,7 @@ function closeModal() {
         <DsfrCheckbox
           v-for="perm in scope.perms"
           :key="perm.key"
+          value="!!(ADMIN_PERMS[perm.key] & role.permissions)"
           :model-value="!!(ADMIN_PERMS[perm.key] & role.permissions)"
           :data-testid="`${perm.key}-cbx`"
           :label="perm.label"
@@ -202,6 +203,8 @@ function closeModal() {
           :key="user.email"
           :label="`${user.lastName} ${user.firstName}`"
           :hint="user.email"
+          :name="`checkbox-${user.id}`"
+          value="user.adminRoleIds.includes(role.id)"
           :model-value="user.adminRoleIds.includes(role.id)"
           @update:model-value="(checked: boolean) => switchUserMembership(checked, user)"
         />

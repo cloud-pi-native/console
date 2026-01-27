@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Project } from '@/utils/project-utils.js'
+import type { Project, ProjectOperations } from '@/utils/project-utils.js'
 
 const props = defineProps<{
   project: Project
@@ -14,10 +14,19 @@ async function handleProjectLocking() {
   <DsfrButton
     data-testid="handleProjectLockingBtn"
     :label="`${project.locked ? 'Déverrouiller' : 'Verrouiller'} le projet`"
-    :icon="project.operationsInProgress.includes('lockHandling')
-      ? { name: 'ri:refresh-line', animation: 'spin' }
-      : project.locked ? 'ri:lock-unlock-line' : 'ri:lock-line'"
-    :disabled="project.operationsInProgress.includes('lockHandling') || project.status === 'archived'"
+    :icon="
+      (project.operationsInProgress as unknown as ProjectOperations[]).includes(
+        'lockHandling',
+      )
+        ? { name: 'ri:refresh-line', animation: 'spin' }
+        : project.locked
+          ? 'ri:lock-unlock-line'
+          : 'ri:lock-line'
+    "
+    :disabled="
+      (project.operationsInProgress as unknown as ProjectOperations[]).includes('lockHandling')
+        || project.status === 'archived'
+    "
     @click="handleProjectLocking"
   />
 </template>

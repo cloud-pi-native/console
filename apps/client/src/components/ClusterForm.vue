@@ -381,7 +381,7 @@ const isConnectionDetailsShown = ref(true)
       :required="true"
       data-testid="memoryInput"
       :placeholder="ONE_TENTH_STR"
-      @update:model-value="(value: string) => localCluster.memory = localeParseFloat(value)"
+      @update:model-value="(value: string | number | undefined) => localCluster.memory = localeParseFloat(value as string)"
     />
     <DsfrInputGroup
       v-model="localCluster.cpu"
@@ -394,7 +394,7 @@ const isConnectionDetailsShown = ref(true)
       :required="true"
       data-testid="cpuInput"
       :placeholder="ONE_TENTH_STR"
-      @update:model-value="(value: string) => localCluster.cpu = localeParseFloat(value)"
+      @update:model-value="(value: string | number | undefined) => localCluster.cpu = localeParseFloat(value as string)"
     />
     <DsfrInputGroup
       v-model="localCluster.gpu"
@@ -407,7 +407,7 @@ const isConnectionDetailsShown = ref(true)
       :required="true"
       data-testid="gpuInput"
       :placeholder="ONE_TENTH_STR"
-      @update:model-value="(value: string) => localCluster.gpu = localeParseFloat(value)"
+      @update:model-value="(value: string | number | undefined) => localCluster.gpu = localeParseFloat(value as string)"
     />
     <div
       v-if="localCluster.privacy === ClusterPrivacy.DEDICATED"

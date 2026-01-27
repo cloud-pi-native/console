@@ -261,7 +261,7 @@ async function clickRetry(id: ServiceChain['id']) {
         />
 
         <DsfrInputGroup
-          v-model="localServiceChainDetails.validatedBy"
+          v-model="localServiceChainDetails.validatedBy as string"
           data-testid="validatedBy"
           :disabled="false"
           label="Validé par"
@@ -271,7 +271,7 @@ async function clickRetry(id: ServiceChain['id']) {
         />
 
         <DsfrInputGroup
-          v-model="localServiceChainDetails.ref"
+          v-model="localServiceChainDetails.ref as string"
           data-testid="ref"
           :disabled="false"
           label="Chaîne de services référente"

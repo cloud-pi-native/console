@@ -1,7 +1,7 @@
 import type { ClusterObject, Environment, ListMinimumResources, Project, Repository, StepCall } from '@cpn-console/hooks'
 import { parseError, uniqueResource } from '@cpn-console/hooks'
 import { dump } from 'js-yaml'
-import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/gitlab-project-api.js'
+import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
 import { PatchUtils } from '@kubernetes/client-node'
 import { inClusterLabel } from '@cpn-console/shared'
@@ -145,29 +145,6 @@ export const upsertProject: StepCall<Project> = async (payload) => {
     ])
 
     await removeInfraEnvValues(project, gitlabApi)
-
-    // then destroy what should not exist
-    // @ts-ignore
-    for (const application of applications) {
-      const appEnv = application.metadata.labels['dso/environment']
-      const appRepo = application.metadata.labels['dso/repository']
-      const env = project.environments.find(env => env.name === appEnv)
-      const repo = infraRepositories.find(repo => repo.internalRepoName === appRepo)
-      if (!env || !repo) {
-        console.log(`Application ${application.metadata.name} should not exists anymore`)
-        await customK8sApi.deleteNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', application.metadata.name)
-      }
-    }
-
-    // @ts-ignore
-    for (const appProject of appProjects) {
-      const projectEnv = appProject.metadata.labels['dso/environment']
-      const env = project.environments.find(env => env.name === projectEnv)
-      if (!env) {
-        console.log(`AppProject ${appProject.metadata.name} should not exists anymore`)
-        await customK8sApi.deleteNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProject.metadata.name)
-      }
-    }
 
     return {
       status: {
