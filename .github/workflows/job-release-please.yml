@@ -29,11 +29,20 @@ jobs:
       - name: Checks-out repository
         uses: actions/checkout@v4
 
-      - name: Pre release new version
+      - name: Update release-please config for hotfix branches
+        if: startsWith(github.ref_name, 'hotfix/')
+        run: |
+          # Update versioning to always-bump-patch for hotfix branches
+          jq '.versioning = "always-bump-patch"' release-please-config.json > tmp.json && mv tmp.json release-please-config.json
+          echo "Updated release-please-config.json versioning to always-bump-patch"
+        shell: bash
+
+      - name: Create merge request for new release
         uses: googleapis/release-please-action@v4
         id: release
         with:
-          target-branch: main
+          config-file: release-please-config.json
+          target-branch: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Edit packages versions

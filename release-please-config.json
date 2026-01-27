@@ -1,4 +1,9 @@
 {
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "versioning": "default",
+  "pull-request-title-pattern": "chore${scope}: Release${component} v${version}",
+  "release-type": "node",
+  "changelog-type": "default",
   "packages": {
     ".": {
       "package-name": "console",
