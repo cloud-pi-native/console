@@ -1,4 +1,4 @@
-name: create-or-update-new-release
+name: Create/update next release
 
 on:
   push:
