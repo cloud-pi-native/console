@@ -23,6 +23,9 @@ function splitExtraRepositories(repos?: string): string[] {
     : []
 }
 
+const DSO_NS_CHART_VERSION = process.env.DSO_NS_CHART_VERSION ?? 'dso-ns-1.1.5'
+const DSO_ENV_CHART_VERSION = process.env.DSO_ENV_CHART_VERSION ?? 'dso-env-1.6.0'
+
 const getValueFilePath = (p: Project, c: ClusterObject, e: Environment): string => `${p.name}/${c.label}/${e.name}/values.yaml`
 
 export const upsertProject: StepCall<Project> = async (payload) => {
@@ -213,8 +216,8 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
       cluster: inClusterLabel,
       namespace: getConfig().namespace,
       project: appProjectName,
-      envChartVersion: process.env.DSO_ENV_CHART_VERSION ?? 'dso-env-1.6.0',
-      nsChartVersion: process.env.DSO_NS_CHART_VERSION ?? 'dso-ns-1.1.4',
+      envChartVersion: DSO_ENV_CHART_VERSION,
+      nsChartVersion: DSO_NS_CHART_VERSION,
     },
     environment: {
       valueFileRepository: infraProject.http_url_to_repo,
