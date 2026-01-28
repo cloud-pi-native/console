@@ -20,7 +20,7 @@ export function createRole(data: Pick<Prisma.ProjectRoleUncheckedCreateInput, 'p
   })
 }
 
-export function updateRole(id: ProjectRole['id'], data: Pick<Prisma.ProjectRoleUncheckedUpdateInput, 'permissions' | 'name' | 'position' | 'id'>) {
+export function updateRole(id: ProjectRole['id'], data: Pick<Prisma.ProjectRoleUncheckedUpdateInput, 'permissions' | 'name' | 'position' | 'id' | 'oidcGroup'>) {
   return prisma.projectRole.update({
     where: { id },
     data,
