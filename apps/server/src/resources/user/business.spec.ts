@@ -128,13 +128,13 @@ describe('test users business', () => {
     // ça ne teste pas tout mais c'est déjà bien hein
     const adminRoles = [{
       id: faker.string.uuid(),
-      name: faker.company.name(),
+      name: faker.string.alphanumeric(),
       oidcGroup: '',
       permissions: 0n,
       position: 0,
     }, {
       id: faker.string.uuid(),
-      name: faker.company.name(),
+      name: faker.string.alphanumeric(),
       oidcGroup: '/admin',
       permissions: 0n,
       position: 0,
