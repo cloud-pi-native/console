@@ -17,6 +17,21 @@
         "<node_internals>/**",
         "${workspaceFolder}/node_modules/**/*.js"
       ]
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Client: Chrome",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}/apps/client"
+    },
+    {
+      "type": "firefox",
+      "request": "launch",
+      "name": "Client: Firefox",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}/apps/client",
+      "reAttach": true
     }
   ]
 }
