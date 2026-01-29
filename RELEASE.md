@@ -7,6 +7,53 @@ Ce document décrit comment est géré le versionnement de `console`, c'est-à-d
 - Mettre à jour le chart Helm concerné
 - Publier les nouvelles versions de modules NPM concernés
 
+## Schéma récapitulatif
+
+Les sections suivantes vont expliciter ce schéma:
+
+```mermaid
+gitGraph
+    commit id: "…previous commits"
+    commit id: "Add basic features"
+
+    branch release-please-main
+    checkout release-please-main
+    commit id:"bump to v1.2.0" tag: "v1.2.0"
+
+    checkout main
+    merge  release-please-main
+    checkout  release-please-main
+    branch "hotfix/v1.2.0"
+    commit id: "Fix stuff"
+    branch release-please-hotfix_v1.2.3
+    commit id:"bump to v1.2.1" tag: "v1.2.1"
+    checkout "hotfix/v1.2.0"
+    merge release-please-hotfix_v1.2.3
+
+    checkout main
+    commit id: "Add features"
+    checkout release-please-main
+    commit id:"bump to v1.3.0" tag: "v1.3.0"
+    merge main
+    commit id:"bump to v1.3.0" tag: "v1.3.0"
+    checkout main
+    commit id: "More features"
+    checkout release-please-main
+    merge main
+    commit id:"bump to v1.3.0 (recreated)" tag: "v1.3.0 (recreated)"
+    checkout main
+    merge release-please-main
+
+    checkout main
+    merge "hotfix/v1.2.0"
+    checkout release-please-main
+    commit id:"bump to v1.4.0" tag: "v1.4.0"
+    merge main
+    commit id:"bump to v1.4.0" tag: "v1.4.0"
+    checkout main
+    merge release-please-main
+```
+
 ## Versionnement de Console
 
 Le flux de travail qui créé les nouvelles versions s'intitule `create-or-update-release` et est déclenché à chaque nouveau commit sur `main` (soit lorsqu'on fusionne une requête de fusion, soit un commit poussé en outrepassant l'interdiction de pousser sur `main`).
