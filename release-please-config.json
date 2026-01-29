@@ -1,4 +1,19 @@
 {
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "versioning": "default",
+  "pull-request-title-pattern": "chore${scope}: Release${component} v${version}",
+  "release-type": "node",
+  "changelog-type": "default",
+  "changelog-sections": [
+    { "type": "feat", "hidden": false, "section": "Features" },
+    { "type": "feature", "hidden": false, "section": "Features" },
+    { "type": "fix", "hidden": false, "section": "Bug Fixes" },
+    { "type": "chore", "hidden": false, "section": "Miscellaneous Chores" },
+    { "type": "build", "hidden": false, "section": "Miscellaneous Chores" },
+    { "type": "docs", "hidden": false, "section": "Docs" },
+    { "type": "refactor", "hidden": false, "section": "Refactoring" },
+    { "type": "revert", "hidden": false, "section": "Reverted commits" }
+  ],
   "packages": {
     ".": {
       "package-name": "console",

@@ -399,15 +399,17 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 └── README.md
 ```
 
-# Workflow Git
+# Organisation avec Git
 
-Une PR doit être faite à partir de la branche `main` à jour (utiliser `rebase` si besoin) avant la demande de fusion (PR). Les PR sont mergées dans `main`.
+Une requête de fusion ("merge request") doit être faite avec la branche `main` comme destination.
+
+La branche de base **doit** être à jour avec `origin/main` (utiliser `git pull origin/main && git rebase origin/main` ou l'option de rebasage dans l'interface Web si besoin) avant la demande de fusion (MR).
 
 ## Conventions de nommage
 
 Cf. [Conventions - MIOM Fabrique Numérique](https://docs.fabrique-numerique.fr/conventions/nommage.html).
 
-Les commits doivent suivre la spécification des [Commits Conventionnels](https://www.conventionalcommits.org/en/v1.0.0/). Cette norme est utilisée pour construire la release, voir ci-après.
+Les commits doivent suivre la spécification des [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/). Cette norme est utilisée pour construire la nouvelle version, voir ci-après.
 
 Il est possible d'ajouter l'[extension VSCode](https://github.com/vivaxy/vscode-conventional-commits) pour faciliter la création des commits.
 
@@ -415,20 +417,7 @@ Il est possible d'ajouter l'[extension VSCode](https://github.com/vivaxy/vscode-
 
 ## Gestion des versions
 
-Le dépôt utilise [Release Please](https://github.com/googleapis/release-please-action) pour automatiquement générer les tags Git ainsi que les releases GitHub. À chaque fois que du code est poussé dans la branche `main`, une pull request est créée en analysant les messages de commits pour déterminer le numéro de version à créer.
-
-À chaque fois qu'une pull request de release est fusionnée, les images de conteneur du serveur et du client sont créées et hébergées dans la [registry Github associée au dépôt](https://github.com/orgs/cloud-pi-native/packages?repo_name=console).
-
-### Versioning du chart dso-console
-
-Les images de conteneurs peuvent être déployées via le Helm Chart [dso-console](https://github.com/cloud-pi-native/helm-charts/tree/main/charts/dso-console).
-La dernière étape du pipeline de release automatise la création d'une version Helm pour la mise à jour de la version des images. Exemple : https://github.com/cloud-pi-native/helm-charts/pull/204.
-
-### Versioning des modules
-
-Pour publier les versions des modules npm du dépôt un [pipeline](https://github.com/cloud-pi-native/console/actions/workflows/npm.yml) est disponible dans les GitHub Actions, il analysera les numéros de version présents dans les différents fichiers `package.json` pour déterminer si une nouvelle version du module doit être créée et publiée.
-
-> Il est possible de créer une version de pré-release d'un module npm en modifiant la clé `publishConfig.tag` dans le `package.json` avec par exemple `beta` pour générer une version beta.
+Se référer à [./RELEASE.md](./RELEASE.md).
 
 ## Gestion des dépendances
 
