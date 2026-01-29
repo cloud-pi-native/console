@@ -25,6 +25,7 @@ export const data = {
       position: 0,
       oidcGroup: '/admin',
       name: 'Admin',
+      type: 'system',
     },
     {
       id: 'eadf604f-5f54-4744-bdfb-4793d2271e9b',
@@ -32,6 +33,7 @@ export const data = {
       position: 1,
       oidcGroup: '',
       name: 'Admin Locaux',
+      type: 'system',
     },
   ],
   kubeconfig: [
