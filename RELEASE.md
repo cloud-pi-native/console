@@ -28,3 +28,20 @@ La dernière étape du flux de travail de création de nouvelles versions (cf. s
 La publication des nouvelles versions de modules npm du dépôt est automatique et est inclus dans le flux de travail de création d'une nouvelle version. Il analyse les numéros de version présents dans les différents fichiers `package.json` pour déterminer si une nouvelle version du module doit être créée et publiée.
 
 > Il est possible de créer une version de pré-release d'un module npm en modifiant la clé `publishConfig.tag` dans le `package.json` avec par exemple `beta` pour générer une version beta.
+
+## Hotfixes
+
+Autant que faire se peut il vaut mieux privilégier le "Fix Forward" avec de nouvelles releases.
+
+Ceci étant dit, il arrivera, hélas, qu'un hotfix soit nécessaire sur une version livrée.
+
+Voici donc le processus compatible avec l'utilisation de `release-please`:
+
+- Se placer localement sur le tag de la version concernée: `$ git checkout v1.2.3` (`v1.2.3` est ici la version à hotfixer)
+- En tirer une branche dédiée au hotfix: `$ git checkout -b hotfix/my-urgent-hotfix-for-v1.2.3` (Note: Il n'est pas nécessaire de spécifier la version dans le nom de la branche, mais ça peut aider à la lecture et ainsi confirmer la version concernée)
+- Faire les modifications nécessaires, committer, etc.
+- Pousser la nouvelle branche sur le dépôt Github
+- Une fois la nouvelle branche poussée, `release-please` va être déclenché par le flux de travail Github `create-or-update-release` afin de créer une requête de fusion pour la nouvelle version hotfixée (avec comme cible la branche de hotfix). Il est d'ailleurs à noter que dans le cas d'un hotfix **on ne fait qu'une montée du "patch"** quelque soit les commits (donc même un `feat!` ne fera pas de montée majeure)
+- Valider la MR de version hotfixée (créée donc par `release-please`) à l'aide du flux de travail Github `Continuous Integration`
+- Une fois la MR de version hotfixée validée et fusionnée, la nouvelle version est créée et, comme pour les versions traditionnelles, une requête de fusion est crée dans le dépôt `helm-charts` pour avoir là aussi une version hotfixée (mais, pour le chart Helm, c'est considéré comme une version classique)
+- Il faudra ensuite faire des picorages (`git cherry-pick`) ou une MR de la branche de hotfix vers `main` afin d'intégrer le ou les commits de hotfix dans la prochaine version officielle
