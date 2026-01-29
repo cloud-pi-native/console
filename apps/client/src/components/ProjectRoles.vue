@@ -145,6 +145,7 @@ watch(props.project, reload, { immediate: true })
       :project-id="project.id"
       :is-everyone="selectedRole.isEveryone"
       :oidc-group="selectedRole.oidcGroup"
+      :type="selectedRole.type"
       :all-members="project.members"
       @delete="deleteRole(selectedRole.id)"
       @update-member-roles="(checked: boolean, userId: Member['userId']) => updateMember(checked, userId)"
