@@ -9,11 +9,16 @@ const projectId = faker.string.uuid()
 describe('test project-role business', () => {
   describe('listRoles', () => {
     it('should stringify bigint', async () => {
-      const partialRole: Partial<ProjectRole> = {
+      const dbRole: ProjectRole = {
+        id: faker.string.uuid(),
+        name: faker.string.alphanumeric(),
+        projectId,
         permissions: 4n,
+        position: 0,
+        oidcGroup: '',
       }
 
-      prisma.projectRole.findMany.mockResolvedValueOnce([partialRole])
+      prisma.projectRole.findMany.mockResolvedValueOnce([dbRole])
       const response = await listRoles(projectId)
       expect(response).toEqual([{ permissions: '4' }])
     })
@@ -21,43 +26,54 @@ describe('test project-role business', () => {
 
   describe('createRole', () => {
     it('should create role with incremented position when position 0 is the highest', async () => {
-      const dbRole: Partial<ProjectRole> = {
+      const dbRole: ProjectRole = {
+        id: faker.string.uuid(),
+        name: faker.string.alphanumeric(),
         projectId,
         permissions: 4n,
         position: 0,
+        oidcGroup: '',
       }
 
       prisma.projectRole.findFirst.mockResolvedValueOnce(dbRole)
       prisma.projectRole.findMany.mockResolvedValueOnce([dbRole])
-      prisma.projectRole.create.mockResolvedValue(null)
+      prisma.projectRole.create.mockResolvedValue(dbRole)
       await createRole(projectId, { name: 'test', permissions: '4' })
 
       expect(prisma.projectRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 4n, position: 1, projectId } })
     })
 
     it('should create role with incremented position with bigger position', async () => {
-      const dbRole: Partial<ProjectRole> = {
+      const dbRole: ProjectRole = {
+        id: faker.string.uuid(),
+        name: faker.string.alphanumeric(),
+        projectId,
         permissions: 4n,
         position: 50,
+        oidcGroup: '',
       }
 
       prisma.projectRole.findFirst.mockResolvedValueOnce(dbRole)
       prisma.projectRole.findMany.mockResolvedValueOnce([dbRole])
-      prisma.projectRole.create.mockResolvedValue(null)
+      prisma.projectRole.create.mockResolvedValue(dbRole)
       await createRole(projectId, { name: 'test', permissions: '4' })
 
       expect(prisma.projectRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 4n, position: 51, projectId } })
     })
 
     it('should create role with incremented position with no role in db', async () => {
-      const dbRole: Partial<ProjectRole> = {
+      const dbRole: ProjectRole = {
+        id: faker.string.uuid(),
+        name: faker.string.alphanumeric(),
+        projectId,
         permissions: 4n,
         position: 50,
+        oidcGroup: '',
       }
 
-      prisma.projectRole.findFirst.mockResolvedValueOnce(undefined)
+      prisma.projectRole.findFirst.mockResolvedValueOnce(null)
       prisma.projectRole.findMany.mockResolvedValueOnce([dbRole])
-      prisma.projectRole.create.mockResolvedValue(null)
+      prisma.projectRole.create.mockResolvedValue(dbRole)
       await createRole(projectId, { name: 'test', permissions: '4' })
 
       expect(prisma.projectRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 4n, position: 0, projectId } })
@@ -67,10 +83,13 @@ describe('test project-role business', () => {
   describe('deleteRole', () => {
     const roleId = faker.string.uuid()
     it('should delete role and remove id from concerned users', async () => {
-      const dbRole: Partial<ProjectRole> = {
+      const dbRole: ProjectRole = {
+        id: roleId,
+        name: faker.string.alphanumeric(),
+        projectId,
         permissions: 4n,
         position: 50,
-        id: faker.string.uuid(),
+        oidcGroup: '',
       }
       const members = [{
         userId: faker.string.uuid(),
@@ -82,6 +101,7 @@ describe('test project-role business', () => {
         roleIds: [roleId, faker.string.uuid()],
       }] as const satisfies Partial<ProjectMembers>[]
 
+      prisma.projectRole.findUnique.mockResolvedValueOnce(dbRole)
       prisma.projectMembers.findMany.mockResolvedValueOnce(members)
       prisma.projectRole.findMany.mockResolvedValueOnce([])
       prisma.projectRole.delete.mockResolvedValue(dbRole)
@@ -94,38 +114,55 @@ describe('test project-role business', () => {
   })
   describe.skip('countRolesMembers', () => {
     it('should return aggregated role member counts', async () => {
-      const partialRoles = [{
+      const roles = [{
         id: faker.string.uuid(),
+        name: faker.string.alphanumeric(),
+        projectId,
+        permissions: 4n,
+        position: 50,
+        oidcGroup: '',
       }, {
         id: faker.string.uuid(),
-      }] as const satisfies Partial<ProjectRole>[]
+        name: faker.string.alphanumeric(),
+        projectId,
+        permissions: 4n,
+        position: 50,
+        oidcGroup: '',
+      }] as const satisfies ProjectRole[]
 
-      const users = [{
-        projectRoleIds: [partialRoles[0].id, partialRoles[1].id],
+      const members = [{
+        userId: faker.string.uuid(),
+        projectId,
+        roleIds: [roles[0].id, roles[1].id],
       }, {
-        projectRoleIds: [partialRoles[1].id],
-      }] as const satisfies Partial<User>[]
-      prisma.projectRole.findMany.mockResolvedValue(partialRoles)
-      prisma.user.findMany.mockResolvedValue(users)
+        userId: faker.string.uuid(),
+        projectId,
+        roleIds: [roles[1].id],
+      }] as const satisfies ProjectMembers[]
 
-      const response = await countRolesMembers()
+      prisma.projectRole.findMany.mockResolvedValue(roles)
+      prisma.projectMembers.findMany.mockResolvedValue(members)
 
-      expect(response).toEqual({ [partialRoles[0].id]: 1, [partialRoles[1].id]: 2 })
+      const response = await countRolesMembers(projectId)
+
+      expect(response).toEqual({ [roles[0].id]: 1, [roles[1].id]: 2 })
     })
   })
   describe('patchRoles', () => {
     const dbRoles: ProjectRole[] = [{
       id: faker.string.uuid(),
-      name: faker.company.name(),
+      name: faker.string.alphanumeric(),
       permissions: faker.number.bigInt({ min: 0n, max: 50000n }),
       position: 0,
       projectId,
+      oidcGroup: 'group1',
     }, {
       id: faker.string.uuid(),
-      name: faker.company.name(),
+      name: faker.string.alphanumeric(),
       permissions: faker.number.bigInt({ min: 0n, max: 50000n }),
       position: 1,
       projectId,
+      oidcGroup: 'group2',
     }]
 
     it('should do nothing', async () => {
@@ -135,7 +172,7 @@ describe('test project-role business', () => {
     })
 
     it('should return 400 if incoherent positions', async () => {
-      const updateRoles: Pick<ProjectRole, 'id' | 'position'> = [
+      const updateRoles: Pick<ProjectRole, 'id' | 'position'>[] = [
         { id: dbRoles[0].id, position: 1 },
         { id: dbRoles[1].id, position: 1 },
       ]
@@ -148,7 +185,7 @@ describe('test project-role business', () => {
     })
 
     it('should return 400 if incoherent positions (missing)', async () => {
-      const updateRoles: Pick<ProjectRole, 'id' | 'position'> = [
+      const updateRoles: Pick<ProjectRole, 'id' | 'position'>[] = [
         { id: dbRoles[1].id, position: 1 },
       ]
       prisma.projectRole.findMany.mockResolvedValue(dbRoles)
@@ -160,7 +197,7 @@ describe('test project-role business', () => {
     })
 
     it('should update positions', async () => {
-      const updateRoles: Pick<ProjectRole, 'id' | 'position'> = [
+      const updateRoles: Pick<ProjectRole, 'id' | 'position'>[] = [
         { id: dbRoles[0].id, position: 1 },
         { id: dbRoles[1].id, position: 0 },
       ]
@@ -172,7 +209,7 @@ describe('test project-role business', () => {
     })
 
     it('should update permissions', async () => {
-      const updateRoles: Pick<ProjectRole, 'id' | 'position'> = [
+      const updateRoles: (Pick<ProjectRole, 'id'> & { permissions: string })[] = [
         { id: dbRoles[1].id, permissions: '0' },
       ]
       prisma.projectRole.findMany.mockResolvedValue(dbRoles)
@@ -185,6 +222,7 @@ describe('test project-role business', () => {
           name: dbRoles[1].name,
           permissions: 0n,
           position: 1,
+          oidcGroup: dbRoles[1].oidcGroup,
         },
         where: {
           id: dbRoles[1].id,

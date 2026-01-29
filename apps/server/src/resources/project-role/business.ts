@@ -30,6 +30,7 @@ export async function patchRoles(projectId: Project['id'], roles: typeof project
         name: matchingRole?.name ?? dbRole.name,
         permissions: matchingRole?.permissions ? BigInt(matchingRole?.permissions) : BigInt(dbRole.permissions),
         position: matchingRole?.position ?? dbRole.position,
+        oidcGroup: matchingRole?.oidcGroup ?? dbRole.oidcGroup,
       }
     })
   if (positionsAvailable.length && positionsAvailable.length !== dbRoles.length) return new BadRequest400('Les numéros de position des rôles sont incohérentes')
