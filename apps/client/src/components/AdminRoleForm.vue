@@ -12,6 +12,7 @@ const props = withDefaults(defineProps<{
   permissions: bigint
   name: string
   oidcGroup: string
+  type?: string
 }>(), {
   name: 'Nouveau rôle',
   oidcGroup: '',
@@ -139,6 +140,7 @@ function closeModal() {
         label-visible
         hint="Ne doit pas dépasser 30 caractères."
         class="mb-5"
+        :disabled="role.type === 'system'"
       />
       <p
         class="fr-h6"
@@ -174,6 +176,7 @@ function closeModal() {
         label-visible
         placeholder="/admin"
         class="mb-5"
+        :disabled="role.type === 'system'"
       />
       <DsfrButton
         data-testid="saveBtn"

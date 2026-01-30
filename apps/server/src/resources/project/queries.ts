@@ -7,6 +7,7 @@ import {
   ProjectStatus,
 } from '@prisma/client'
 import type { XOR, projectContract } from '@cpn-console/shared'
+import { PROJECT_PERMS } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 import { appVersion } from '@/utils/env.js'
 import { uuid } from '@/utils/queries-tools.js'
@@ -258,6 +259,38 @@ export function initializeProject(params: CreateProjectParams) {
       status: ProjectStatus.created,
       locked: false,
       ...params,
+      roles: {
+        create: [
+          {
+            name: 'Administrateur',
+            permissions: PROJECT_PERMS.MANAGE,
+            position: 0,
+            oidcGroup: `/${params.slug}/admin`,
+            type: 'system',
+          },
+          {
+            name: 'DevOps',
+            permissions: PROJECT_PERMS.MANAGE_ENVIRONMENTS | PROJECT_PERMS.MANAGE_REPOSITORIES | PROJECT_PERMS.REPLAY_HOOKS | PROJECT_PERMS.SEE_SECRETS | PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.LIST_REPOSITORIES,
+            position: 1,
+            oidcGroup: `/${params.slug}/devops`,
+            type: 'system',
+          },
+          {
+            name: 'Développeur',
+            permissions: PROJECT_PERMS.MANAGE_REPOSITORIES | PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.LIST_REPOSITORIES,
+            position: 2,
+            oidcGroup: `/${params.slug}/developer`,
+            type: 'system',
+          },
+          {
+            name: 'Lecture seule',
+            permissions: PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.LIST_REPOSITORIES,
+            position: 3,
+            oidcGroup: `/${params.slug}/readonly`,
+            type: 'system',
+          },
+        ],
+      },
     },
   })
 }
