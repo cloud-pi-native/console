@@ -6,15 +6,22 @@ import {
   listRoles as listRolesQuery,
   updateRole,
 } from '@/resources/queries-index.js'
-import { BadRequest400 } from '@/utils/errors.js'
+import { BadRequest400, Forbidden403, NotFound404 } from '@/utils/errors.js'
+import { hook } from '@/utils/hook-wrapper.js'
 import prisma from '@/prisma.js'
 
 export async function listRoles(projectId: Project['id']) {
-  return listRolesQuery(projectId)
-    .then(roles => roles.map(role => ({ ...role, permissions: role.permissions.toString() })))
+  const roles = await listRolesQuery(projectId)
+  return roles.map(role => ({
+    ...role,
+    permissions: role.permissions.toString(),
+    oidcGroup: role.oidcGroup ? role.oidcGroup.replace(/^\/[^/]+/, '') : role.oidcGroup,
+  }))
 }
 
 export async function patchRoles(projectId: Project['id'], roles: typeof projectRoleContract.patchProjectRoles.body._type) {
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { slug: true } })
+  if (!project) throw new NotFound404()
   const dbRoles = await listRoles(projectId)
   const positionsAvailable: number[] = []
 
@@ -25,36 +32,58 @@ export async function patchRoles(projectId: Project['id'], roles: typeof project
       if (typeof matchingRole?.position !== 'undefined' && !positionsAvailable.includes(matchingRole.position)) {
         positionsAvailable.push(matchingRole.position)
       }
+      if (dbRole.type === 'system') {
+        throw new Forbidden403('Ce rôle système ne peut pas être renommé')
+      }
+      if (matchingRole?.oidcGroup && !matchingRole.oidcGroup.startsWith('/')) {
+        throw new BadRequest400('oidcGroup doit commencer par /')
+      }
       return {
         id: matchingRole?.id ?? dbRole.id,
         name: matchingRole?.name ?? dbRole.name,
         permissions: matchingRole?.permissions ? BigInt(matchingRole?.permissions) : BigInt(dbRole.permissions),
         position: matchingRole?.position ?? dbRole.position,
+        oidcGroup: matchingRole?.oidcGroup ? `/${project.slug}${matchingRole.oidcGroup}` : dbRole.oidcGroup,
+        type: matchingRole?.type ?? dbRole.type,
       }
     })
   if (positionsAvailable.length && positionsAvailable.length !== dbRoles.length) return new BadRequest400('Les numéros de position des rôles sont incohérentes')
   for (const { id, ...role } of updatedRoles) {
     await updateRole(id, role)
+    await hook.projectRole.upsert(id)
   }
 
   return listRoles(projectId)
 }
 
 export async function createRole(projectId: Project['id'], role: typeof projectRoleContract.createProjectRole.body._type) {
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { slug: true } })
+  if (!project) throw new NotFound404()
   const dbMaxPosRole = (await prisma.projectRole.findFirst({
     where: { projectId },
     orderBy: { position: 'desc' },
     select: { position: true },
   }))?.position ?? -1
 
-  await prisma.projectRole.create({
+  if (role.type === 'system') {
+    throw new Forbidden403('Ce rôle système ne peut pas être renommé')
+  }
+
+  if (role.oidcGroup && !role.oidcGroup.startsWith('/')) {
+    throw new BadRequest400('oidcGroup doit commencer par /')
+  }
+
+  const createdRole = await prisma.projectRole.create({
     data: {
       ...role,
       projectId,
       position: dbMaxPosRole + 1,
       permissions: BigInt(role.permissions),
+      oidcGroup: role.oidcGroup ? `/${project.slug}${role.oidcGroup}` : undefined,
     },
   })
+
+  await hook.projectRole.upsert(createdRole.id)
 
   return listRoles(projectId)
 }
@@ -72,6 +101,11 @@ export async function countRolesMembers(projectId: Project['id']) {
 }
 
 export async function deleteRole(roleId: Project['id']) {
+  const role = await prisma.projectRole.findUnique({ where: { id: roleId } })
+  if (role?.type === 'system') {
+    throw new Forbidden403('Ce rôle système ne peut pas être supprimé')
+  }
+  await hook.projectRole.delete(roleId)
   await deleteRoleQuery(roleId)
   return null
 }
