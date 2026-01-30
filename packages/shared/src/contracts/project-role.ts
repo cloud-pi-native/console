@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { RoleSchema, apiPrefix, contractInstance } from '../index.js'
+import { ProjectRoleSchema, apiPrefix, contractInstance } from '../index.js'
 import { ErrorSchema, baseHeaders } from './_utils.js'
 
 export const projectRoleContract = contractInstance.router({
@@ -8,7 +8,7 @@ export const projectRoleContract = contractInstance.router({
     path: '',
     pathParams: z.object({ projectId: z.string().uuid() }),
     responses: {
-      200: RoleSchema.array(),
+      200: ProjectRoleSchema.array(),
       400: ErrorSchema,
       401: ErrorSchema,
       403: ErrorSchema,
@@ -18,11 +18,11 @@ export const projectRoleContract = contractInstance.router({
   createProjectRole: {
     method: 'POST',
     path: '',
-    body: RoleSchema.omit({ position: true, id: true }),
+    body: ProjectRoleSchema.omit({ position: true, id: true, projectId: true }),
     pathParams: z.object({ projectId: z.string().uuid() }),
     responses: {
       // 200: z.any(),
-      201: RoleSchema.array(),
+      201: ProjectRoleSchema.array(),
       400: ErrorSchema,
       401: ErrorSchema,
       403: ErrorSchema,
@@ -34,10 +34,10 @@ export const projectRoleContract = contractInstance.router({
     path: '',
     pathParams: z.object({ projectId: z.string().uuid() }),
     // body: z.any(),
-    body: RoleSchema.partial({ name: true, permissions: true, position: true }).array(),
+    body: ProjectRoleSchema.pick({ id: true }).merge(ProjectRoleSchema.omit({ id: true, projectId: true }).partial()).array(),
     responses: {
       // 200: z.any(),
-      200: RoleSchema.array(),
+      200: ProjectRoleSchema.array(),
       400: ErrorSchema,
       401: ErrorSchema,
       403: ErrorSchema,
