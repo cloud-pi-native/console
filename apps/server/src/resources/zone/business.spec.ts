@@ -17,7 +17,7 @@ vi.mock('../../utils/hook-wrapper.ts', async () => ({
 describe('test zone business', () => {
   const zones: Zone[] = [{
     id: faker.string.uuid(),
-    label: faker.company.name(),
+    label: faker.string.alphanumeric(),
     argocdUrl: faker.internet.url(),
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -25,7 +25,7 @@ describe('test zone business', () => {
     slug: faker.string.alphanumeric(5),
   }, {
     id: faker.string.uuid(),
-    label: faker.company.name(),
+    label: faker.string.alphanumeric(),
     argocdUrl: faker.internet.url(),
     createdAt: new Date(),
     updatedAt: new Date(),

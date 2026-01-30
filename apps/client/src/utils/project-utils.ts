@@ -64,7 +64,7 @@ export class Project implements ProjectV2 {
   locked: boolean
   owner: Omit<User, 'adminRoleIds'>
   ownerId: string
-  roles: { id: string, name: string, permissions: string, position: number }[]
+  roles: { id: string, name: string, permissions: string, position: number, projectId: string, oidcGroup?: string }[]
   members: ({ userId: string, firstName: string, lastName: string, email: string, roleIds: string[] } | { updatedAt: string, createdAt: string, firstName: string, lastName: string, email: string, userId: string, roleIds: string[] })[]
   createdAt: string
   updatedAt: string
