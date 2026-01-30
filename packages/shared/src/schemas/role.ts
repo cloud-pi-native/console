@@ -9,10 +9,12 @@ export const RoleSchema = z.object({
   name: RoleNameSchema,
   permissions: permissionLevelSchema,
   position: z.number().min(0),
+  type: z.string().optional(),
 })
 
 export const ProjectRoleSchema = RoleSchema.extend({
   projectId: z.string().uuid(),
+  oidcGroup: z.string().optional(),
 })
 
 export const AdminRoleSchema = RoleSchema.extend({
@@ -29,3 +31,4 @@ export type Role = Zod.infer<typeof RoleSchema>
 export type RoleBigint = Omit<Zod.infer<typeof RoleSchema>, 'permissions'> & { permissions: bigint }
 export type AdminRole = Zod.infer<typeof AdminRoleSchema>
 export type ProjectRole = Zod.infer<typeof ProjectRoleSchema>
+export type ProjectRoleBigint = Omit<Zod.infer<typeof ProjectRoleSchema>, 'permissions'> & { permissions: bigint }

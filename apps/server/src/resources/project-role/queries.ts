@@ -1,26 +1,29 @@
 import type {
   Prisma,
   Project,
-
   ProjectRole,
 } from '@prisma/client'
 
 import prisma from '@/prisma.js'
 
+export const getRole = (id: ProjectRole['id']) => prisma.projectRole.findUnique({ where: { id } })
+
 export const listRoles = (projectId: Project['id']) => prisma.projectRole.findMany({ where: { projectId }, orderBy: { position: 'asc' } })
 
-export function createRole(data: Pick<Prisma.ProjectRoleUncheckedCreateInput, 'permissions' | 'name' | 'position' | 'projectId'>) {
+export function createRole(data: Pick<Prisma.ProjectRoleUncheckedCreateInput, 'permissions' | 'name' | 'position' | 'projectId' | 'oidcGroup'>) {
   return prisma.projectRole.create({
     data: {
       name: data.name,
       permissions: 0n,
       position: data.position,
       projectId: data.projectId,
+      oidcGroup: data.oidcGroup,
+      type: 'custom',
     },
   })
 }
 
-export function updateRole(id: ProjectRole['id'], data: Pick<Prisma.ProjectRoleUncheckedUpdateInput, 'permissions' | 'name' | 'position' | 'id'>) {
+export function updateRole(id: ProjectRole['id'], data: Pick<Prisma.ProjectRoleUncheckedUpdateInput, 'permissions' | 'name' | 'position' | 'id' | 'oidcGroup'>) {
   return prisma.projectRole.update({
     where: { id },
     data,
