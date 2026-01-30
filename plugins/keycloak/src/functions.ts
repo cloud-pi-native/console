@@ -65,6 +65,7 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
     const kcClient = await getkcClient()
     const projectName = project.slug
     const projectGroup = await getOrCreateProjectGroup(kcClient, projectName)
+
     const groupMembers = await kcClient.groups.listMembers({ id: projectGroup.id })
 
     await Promise.all([
@@ -107,6 +108,14 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
 
     const promises: Promise<any>[] = []
     for (const environment of project.environments) {
+      // TODO: remove this when roles are passed to the plugin
+      await Promise.all([
+        getOrCreateChildGroup(kcClient, consoleGroup.id, "admin"),
+        getOrCreateChildGroup(kcClient, consoleGroup.id, "devops"),
+        getOrCreateChildGroup(kcClient, consoleGroup.id, "developper"),
+        getOrCreateChildGroup(kcClient, consoleGroup.id, "readonly"),
+      ])
+
       const envGroup: Required<CustomGroup> = envGroups.find(group => group.name === environment.name) as Required<CustomGroup>
         ?? await getOrCreateChildGroup(kcClient, consoleGroup.id, environment.name)
 
