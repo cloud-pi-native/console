@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Member, Role, RoleBigint } from '@cpn-console/shared'
+import type { Member, ProjectRole, ProjectRoleBigint, Role, RoleBigint } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import type { Project } from '@/utils/project-utils.js'
 
@@ -11,7 +11,7 @@ const snackbarStore = useSnackbarStore()
 
 const selectedId = ref<string>()
 
-type RoleItem = Omit<Role, 'permissions'> & { permissions: bigint, memberCounts: number, isEveryone: boolean }
+type RoleItem = Omit<ProjectRole, 'permissions'> & { permissions: bigint, memberCounts: number, isEveryone: boolean }
 
 const roleList = ref<RoleItem[]>([])
 
@@ -56,7 +56,7 @@ async function saveEveryoneRole(role: { permissions: bigint }) {
   snackbarStore.setMessage('Rôle mis à jour', 'success')
 }
 
-async function saveRole(role: Omit<RoleBigint, 'position'>) {
+async function saveRole(role: Omit<ProjectRoleBigint, 'position' | 'projectId'>) {
   if (role.id === 'everyone') {
     await saveEveryoneRole(role)
     snackbarStore.setMessage('Rôle mis à jour', 'success')
@@ -67,6 +67,7 @@ async function saveRole(role: Omit<RoleBigint, 'position'>) {
     id: selectedRole.value.id,
     permissions: role.permissions.toString(),
     name: role.name,
+    oidcGroup: role.oidcGroup,
   }])
   reload()
   snackbarStore.setMessage('Rôle mis à jour', 'success')
@@ -86,6 +87,7 @@ function reload() {
     permissions: BigInt(props.project.everyonePerms),
     position: 1000,
     isEveryone: true,
+    projectId: props.project.id,
   })
   roleList.value = roles
 }
