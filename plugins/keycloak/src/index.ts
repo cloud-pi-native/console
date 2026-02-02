@@ -1,9 +1,11 @@
 import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks'
 import {
   deleteProject,
+  deleteProjectRole,
   deleteZone,
   retrieveKeycloakUserByEmail,
   upsertProject,
+  upsertProjectRole,
   upsertZone,
 } from './functions.js'
 import infos from './infos.js'
@@ -22,11 +24,17 @@ export const plugin: Plugin = {
       api: project => new KeycloakProjectApi(project.slug),
       steps: { main: upsertProject },
     },
+    upsertProjectRole: {
+      steps: { main: upsertProjectRole },
+    },
     upsertZone: {
       steps: { main: upsertZone },
     },
     deleteZone: {
       steps: { post: deleteZone },
+    },
+    deleteProjectRole: {
+      steps: { post: deleteProjectRole },
     },
     retrieveUserByEmail: { steps: { main: retrieveKeycloakUserByEmail } },
   },
