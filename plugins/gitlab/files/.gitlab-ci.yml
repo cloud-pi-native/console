@@ -19,3 +19,4 @@ repo_pull_sync:
     - api
     - triggers
     - web
+    - schedules
