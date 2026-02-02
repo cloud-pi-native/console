@@ -53,7 +53,7 @@ describe('service Store', () => {
     expect(serviceStore.servicesHealth).toMatchObject({
       message: 'Échec lors de la dernière vérification',
       serviceStatus: 'Inconnu',
-      status: '',
+      status: undefined,
     })
     expect(serviceStore.services).toMatchObject(data)
   })

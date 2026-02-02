@@ -250,7 +250,7 @@ watch(localEnvironment.value, () => {
         :required="true"
         data-testid="memoryInput"
         :placeholder="ONE_TENTH_STR"
-        @update:model-value="(value: string) => localEnvironment.memory = localeParseFloat(value)"
+        @update:model-value="(value: string | number | undefined) => localEnvironment.memory = localeParseFloat(value as string)"
       />
       <DsfrInputGroup
         v-model="localEnvironment.cpu"
@@ -263,7 +263,7 @@ watch(localEnvironment.value, () => {
         :required="true"
         data-testid="cpuInput"
         :placeholder="ONE_TENTH_STR"
-        @update:model-value="(value: string) => localEnvironment.cpu = localeParseFloat(value)"
+        @update:model-value="(value: string | number | undefined) => localEnvironment.cpu = localeParseFloat(value as string)"
       />
       <DsfrInputGroup
         v-model="localEnvironment.gpu"
@@ -276,7 +276,7 @@ watch(localEnvironment.value, () => {
         :required="true"
         data-testid="gpuInput"
         :placeholder="ONE_TENTH_STR"
-        @update:model-value="(value: string) => localEnvironment.gpu = localeParseFloat(value)"
+        @update:model-value="(value: string | number | undefined) => localEnvironment.gpu = localeParseFloat(value as string)"
       />
       <DsfrCheckbox
         id="autosyncCbx"

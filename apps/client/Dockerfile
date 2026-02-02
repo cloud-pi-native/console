@@ -5,6 +5,7 @@ WORKDIR /app
 
 COPY --chown=node:root package.json  ./
 
+# Install pnpm version defined in package.json "packageManager" property
 RUN npm install --global corepack@latest && corepack enable && corepack enable pnpm
 
 COPY --chown=node:root pnpm-workspace.yaml pnpm-lock.yaml ./
@@ -14,9 +15,6 @@ COPY --chown=node:root packages/eslintconfig/package.json ./packages/eslintconfi
 COPY --chown=node:root packages/shared/package.json ./packages/shared/package.json
 COPY --chown=node:root packages/test-utils/package.json ./packages/test-utils/package.json
 COPY --chown=node:root packages/tsconfig/package.json ./packages/tsconfig/package.json
-
-# Install pnpm version defined in package.json "packageManager" property
-RUN npm install --global corepack@latest && corepack enable && corepack enable pnpm
 
 RUN pnpm install --ignore-scripts # --no-optional
 

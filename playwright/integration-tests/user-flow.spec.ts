@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { adminUser, secondTestUser, testUser, clientURL, signInCloudPiNative } from '../config/console'
+import { waitForAndClick } from './helper'
 
 import {
   addProject,
@@ -46,7 +47,10 @@ test.describe('Integration tests user flow: project creation', { tag: '@integ' }
     // Enable Nexus Maven plugin
     await page.getByTestId('test-tab-services').click()
     await page.getByRole('button', { name: 'Nexus' }).click()
-    await page.getByText('Activé', { exact: true }).nth(4).click()
+    await page
+      .getByRole('group', { name: /Activer le dépôt Maven/ })
+      .locator('input[value="enabled"] + label')
+      .click()
     await page.getByTestId('saveBtn').click()
     await expect(page.getByText('Paramètres sauvegardés')).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Reprovisionnement nécessaire' })).toBeVisible()
@@ -241,7 +245,18 @@ test.describe('Integration tests user flow: deployment and metrics', { tag: '@in
     const page2Promise = page1.waitForEvent('popup')
     await page1.getByRole('link', { name: `http://${repositoryName}.` }).click()
     const page2 = await page2Promise
-    await expect(page2.locator('html')).toContainText('Application is running')
+    await expect
+      .poll(
+        async () => {
+          await page2.reload({ waitUntil: 'domcontentloaded' })
+          return page2.locator('body').textContent()
+        },
+        {
+          timeout: 60_000,
+          intervals: [2_000],
+        },
+      )
+      .toContain('Application is running')
   })
 
   test('Check Grafana', { tag: '@replayable' }, async ({ page }) => {
@@ -253,12 +268,14 @@ test.describe('Integration tests user flow: deployment and metrics', { tag: '@in
     const page1Promise = page.waitForEvent('popup')
     await page.getByRole('link', { name: 'Grafana' }).click()
     const page1 = await page1Promise
-    await page1.getByRole('link', { name: 'Sign in with grafana-projects' }).click()
+    const signInLink = page1.getByRole('link', { name: 'Sign in with grafana-projects' })
+    await waitForAndClick({ locator: signInLink, page: page1 })
     await expect(page1.getByRole('link', { name: 'Grafana', exact: true })).toBeVisible()
     await page1.getByTestId('data-testid Toggle menu').click()
     await page1.getByRole('button', { name: 'Expand section Dashboards' }).click()
     await page1.getByRole('link', { name: 'Dashboards', exact: true }).click()
-    await page1.getByRole('link', { name: 'dso-grafana' }).click()
+    const dsoDashboard = page1.getByRole('link', { name: 'dso-grafana' })
+    await waitForAndClick({ locator: dsoDashboard, page: page1 })
     // Check if we can see some metrics
     await page1.getByRole('link', { name: 'Kubernetes / Views /' }).click()
     await expect(page1.getByText('0.100')).toBeVisible() // Cpu request
@@ -322,7 +339,37 @@ test.describe('Integration tests user flow: Cleanup', { tag: '@integ' }, () => {
     const page1 = await page1Promise
     await page1.getByRole('button', { name: 'Log in via Keycloak' }).click()
     await expect(
+      page1.getByRole('combobox', { name: 'Search applications...' }),
+    ).toBeVisible()
+    await expect(
       page1.locator('span').filter({ hasText: `${projectName}-integ-socle-` }),
+    ).not.toBeVisible()
+    await expect(
+      page1.locator('span').filter({ hasText: `${projectName}-cpin-app-hp-integ-root` }),
+    ).not.toBeVisible()
+  })
+
+  // This check will forever fail until we fix
+  // https://github.com/cloud-pi-native/console/issues/1853
+  test('Check Argocd root application deletion', async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: adminUser })
+    await page.getByTestId('menuAdministrationBtn').click()
+    await page.getByTestId('menuAdministrationProjects').click()
+    await page.getByLabel('Filtre rapide').selectOption('Tous')
+    await page.getByTestId('projectsSearchInput').fill(projectName)
+    await page.getByTestId('projectsSearchBtn').click()
+    await page.getByRole('cell', { name: projectName }).first().click()
+    await page.getByTestId('test-tab-services').click()
+    const page1Promise = page.waitForEvent('popup')
+    await page.getByRole('link', { name: 'ArgoCD DSO' }).click()
+    const page1 = await page1Promise
+    await page1.getByRole('button', { name: 'Log in via Keycloak' }).click()
+    await expect(
+      page1.getByRole('combobox', { name: 'Search applications...' }),
+    ).toBeVisible()
+    await expect(
+      page1.locator('span').filter({ hasText: `${projectName}-cpin-app-hp-integ-root` }),
     ).not.toBeVisible()
   })
 

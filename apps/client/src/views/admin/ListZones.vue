@@ -132,7 +132,7 @@ watch(zones, async () => {
       :associated-clusters="[]"
       class="w-full"
       :is-new-zone="true"
-      @add="(zone) => createZone(zone)"
+      @add="(zone: any) => createZone(zone)"
       @cancel="cancel()"
     />
   </div>
@@ -144,8 +144,8 @@ watch(zones, async () => {
     :is-new-zone="false"
     class="w-full"
     @cancel="cancel()"
-    @update="(zone) => updateZone(zone)"
-    @delete="(zoneId) => deleteZone(zoneId)"
+    @update="(zone: any) => updateZone(zone)"
+    @delete="(zoneId: any) => deleteZone(zoneId)"
   />
   <div
     v-else-if="zoneList.length"

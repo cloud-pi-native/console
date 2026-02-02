@@ -14,21 +14,21 @@ export const useZoneStore = defineStore('zone', () => {
 
   const getAllZones = async () => {
     zones.value = await apiClient.Zones.listZones()
-      .then(response => extractData(response, 200))
+      .then((response: any) => extractData(response, 200))
     return zones.value
   }
 
   const createZone = (body: CreateZoneBody) =>
     apiClient.Zones.createZone({ body })
-      .then(response => extractData(response, 201))
+      .then((response: any) => extractData(response, 201))
 
   const updateZone = (zoneId: Zone['id'], data: UpdateZoneBody) =>
     apiClient.Zones.updateZone({ body: data, params: { zoneId } })
-      .then(response => extractData(response, 200))
+      .then((response: any) => extractData(response, 200))
 
   const deleteZone = (zoneId: Zone['id']) =>
     apiClient.Zones.deleteZone({ params: { zoneId } })
-      .then(response => extractData(response, 204))
+      .then((response: any) => extractData(response, 204))
 
   return {
     zones,

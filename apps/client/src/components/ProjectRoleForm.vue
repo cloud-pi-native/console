@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import type { Member, ProjectV2, RoleBigint } from '@cpn-console/shared'
+import type { Member, ProjectRoleBigint, ProjectV2 } from '@cpn-console/shared'
 import { PROJECT_PERMS, projectPermsDetails, shallowEqual } from '@cpn-console/shared'
 
 const props = defineProps<{
@@ -10,12 +10,13 @@ const props = defineProps<{
   allMembers: Member[]
   projectId: ProjectV2['id']
   isEveryone: boolean
+  oidcGroup?: string
 }>()
 
 defineEmits<{
   delete: []
   updateMemberRoles: [checked: boolean, userId: Member['userId']]
-  save: [value: Omit<RoleBigint, 'position'>]
+  save: [value: Omit<ProjectRoleBigint, 'position' | 'projectId'>]
   cancel: []
 }>()
 const router = useRouter()
@@ -23,6 +24,7 @@ const role = ref({
   ...props,
   permissions: props.permissions ?? 0n,
   allMembers: props.allMembers ?? [],
+  oidcGroup: props.oidcGroup ?? '',
 })
 
 const isUpdated = computed(() => {
@@ -68,6 +70,14 @@ function updateChecked(checked: boolean, value: bigint) {
         class="mb-5"
         :disabled="role.isEveryone"
       />
+      <h6>Groupe OIDC</h6>
+      <DsfrInput
+        v-model="role.oidcGroup"
+        data-testid="roleOidcGroupInput"
+        label-visible
+        class="mb-5"
+        :disabled="role.isEveryone"
+      />
       <h6>Permissions</h6>
       <div
         v-for="scope in projectPermsDetails"
@@ -82,6 +92,7 @@ function updateChecked(checked: boolean, value: bigint) {
           v-for="perm in scope.perms"
           :id="`${perm.key}-cbx`"
           :key="perm.key"
+          value=""
           :model-value="!!(PROJECT_PERMS[perm.key] & role.permissions)"
           :label="perm?.label"
           :hint="perm?.hint"
@@ -121,6 +132,8 @@ function updateChecked(checked: boolean, value: bigint) {
           v-for="member in role.allMembers"
           :id="`${member.userId}-cbx`"
           :key="member.email"
+          value=""
+          name="'checkbox-' + member.id"
           :label="`${member.lastName} ${member.firstName}`"
           :hint="member.email"
           :disabled="isEveryone"
@@ -134,6 +147,8 @@ function updateChecked(checked: boolean, value: bigint) {
           v-for="member in role.allMembers"
           :id="`${member.userId}-cbx`"
           :key="member.email"
+          value=""
+          name="'checkbox-' + member.id"
           :label="`${member.lastName} ${member.firstName}`"
           :hint="member.email"
           :model-value="member.roleIds.includes(role.id)"
