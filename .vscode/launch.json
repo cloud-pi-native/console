@@ -5,7 +5,41 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Attach to Remote",
+      "name": "Launch Server (Integ)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "integ"
+      ],
+      "cwd": "${workspaceFolder}/apps/server",
+      "console": "integratedTerminal",
+      "restart": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
+    },
+    {
+      "name": "Launch Server (Dev)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "cwd": "${workspaceFolder}/apps/server",
+      "console": "integratedTerminal",
+      "restart": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
+    },
+    {
+      "name": "Attach Server",
       "type": "node",
       "request": "attach",
       "port": 9229,
@@ -16,6 +50,134 @@
       "skipFiles": [
         "<node_internals>/**",
         "${workspaceFolder}/node_modules/**/*.js"
+      ]
+    },
+    {
+      "name": "Serve Client (Chrome) (Integ)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "integ",
+        "--",
+        "--port",
+        "8080",
+        "--strictPort"
+      ],
+      "cwd": "${workspaceFolder}/apps/client",
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "pattern": "Local:.*(http://localhost:[0-9]+)",
+        "action": "startDebugging",
+        "name": "Launch Client (Chrome)"
+      }
+    },
+    {
+      "name": "Serve Client (Chrome) (Dev)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "8080",
+        "--strictPort"
+      ],
+      "cwd": "${workspaceFolder}/apps/client",
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "pattern": "Local:.*(http://localhost:[0-9]+)",
+        "action": "startDebugging",
+        "name": "Launch Client (Chrome)"
+      }
+    },
+    {
+      "name": "Serve Client (Firefox) (Integ)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "integ",
+        "--",
+        "--port",
+        "8080",
+        "--strictPort"
+      ],
+      "cwd": "${workspaceFolder}/apps/client",
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "pattern": "Local:.*(http://localhost:[0-9]+)",
+        "action": "startDebugging",
+        "name": "Launch Client (Firefox)"
+      }
+    },
+    {
+      "name": "Serve Client (Firefox) (Dev)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "8080",
+        "--strictPort"
+      ],
+      "cwd": "${workspaceFolder}/apps/client",
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "pattern": "Local:.*(http://localhost:[0-9]+)",
+        "action": "startDebugging",
+        "name": "Launch Client (Firefox)"
+      }
+    },
+    {
+      "name": "Launch Client (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}/apps/client"
+    },
+    {
+      "name": "Launch Client (Firefox)",
+      "type": "firefox",
+      "request": "launch",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}/apps/client"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Launch (Chrome) (Integ)",
+      "configurations": [
+        "Launch Server (Integ)",
+        "Serve Client (Chrome) (Integ)"
+      ]
+    },
+    {
+      "name": "Launch (Chrome) (Dev)",
+      "configurations": [
+        "Launch Server (Dev)",
+        "Serve Client (Chrome) (Dev)"
+      ]
+    },
+    {
+      "name": "Launch (Firefox) (Integ)",
+      "configurations": [
+        "Launch Server (Integ)",
+        "Serve Client (Firefox) (Integ)"
+      ]
+    },
+    {
+      "name": "Launch (Firefox) (Dev)",
+      "configurations": [
+        "Launch Server (Dev)",
+        "Serve Client (Firefox) (Dev)"
       ]
     }
   ]
