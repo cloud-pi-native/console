@@ -30,7 +30,7 @@ ENTRYPOINT [ "pnpm", "--filter", "client", "run", "dev" ]
 # Build stage ----------------------------------------------------------------------
 FROM dev AS build
 
-ARG APP_VERSION
+ARG VITE_APP_VERSION
 RUN pnpm --filter @cpn-console/client run build
 
 
@@ -40,6 +40,5 @@ FROM docker.io/bitnamilegacy/nginx:1.29.1 AS prod
 USER 0
 COPY --chown=1001:0 --chmod=770 --from=build /app/apps/client/dist /opt/bitnami/nginx/html/
 COPY --chown=1001:0 --chmod=660 ./apps/client/nginx/default.conf /opt/bitnami/nginx/conf/server_blocks/default.conf
-COPY --chown=1001:0 ./apps/client/nginx/entrypoint.sh /docker-entrypoint-initdb.d/load-env.sh
 USER 1001
 EXPOSE 8080

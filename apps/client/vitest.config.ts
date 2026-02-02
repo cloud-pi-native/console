@@ -3,9 +3,9 @@ import { mergeConfig } from 'vite'
 import { configDefaults, defineConfig } from 'vitest/config'
 import viteConfig from './vite.config'
 
-export default mergeConfig(
-  viteConfig,
-  defineConfig({
+export default defineConfig(env => mergeConfig(
+  viteConfig(env),
+  {
     test: {
       reporters: ['default', 'hanging-process'],
       environment: 'jsdom',
@@ -30,5 +30,5 @@ export default mergeConfig(
       root: fileURLToPath(new URL('./', import.meta.url)),
       pool: 'forks',
     },
-  }),
-)
+  },
+))

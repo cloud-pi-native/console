@@ -19,7 +19,7 @@ const adminRoleStore = useAdminRoleStore()
 
 const isLoggedIn = ref<boolean | undefined>(keycloak.authenticated)
 
-const appVersion: string = process.env.APP_VERSION ? `v${process.env.APP_VERSION}` : 'vpr-dev'
+const appVersion: string = process.env.VITE_APP_VERSION ? `v${process.env.VITE_APP_VERSION}` : 'vpr-dev'
 
 const quickLinks = computed(() => [{
   label: isLoggedIn.value ? 'Se déconnecter' : 'Se connecter',
