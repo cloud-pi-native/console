@@ -39,7 +39,7 @@ Afin de pouvoir démarrer l'application, il vous faudra également récupérer (
 - `apps/server/.env.docker`
 - `apps/server/.env.integ`
 
-En vous basant sur une infrastructure distante (comme un environnement d'intégration, cf. la section suivante) ou votre infrastructure locale si vous préférez tout héberger en local.
+Si vous ne les avez pas déjà, référez-vous à [./ENVIRONMENTS.md](./ENVIRONMENTS.md) qui est la documentation consacrée au sujet.
 
 ### Lancement rapide utilisant l'application en local et les services sur un environnement distant
 
