@@ -1,9 +1,10 @@
 import type { Project, StepCall, UserEmail, ZoneObject } from '@cpn-console/hooks'
+import type { ProjectRole } from '@cpn-console/shared'
 import { generateRandomPassword, parseError, PluginResultBuilder } from '@cpn-console/hooks'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation.js'
 import type { CustomGroup } from './group.js'
-import { consoleGroupName, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateProjectGroup } from './group.js'
+import { consoleGroupName, deleteGroup, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateProjectGroup } from './group.js'
 import { getkcClient } from './client.js'
 
 export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: { email } }) => {
@@ -65,6 +66,7 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
     const kcClient = await getkcClient()
     const projectName = project.slug
     const projectGroup = await getOrCreateProjectGroup(kcClient, projectName)
+
     const groupMembers = await kcClient.groups.listMembers({ id: projectGroup.id })
 
     await Promise.all([
@@ -216,6 +218,82 @@ export const deleteZone: StepCall<ZoneObject> = async ({ args: zone }) => {
       status: {
         result: 'KO',
         message: 'An unexpected error occured',
+      },
+    }
+  }
+}
+
+export const upsertProjectRole: StepCall<ProjectRole> = async ({ args: role }) => {
+  if (!role.oidcGroup) {
+    return {
+      status: {
+        result: 'OK',
+        message: 'No OIDC group defined',
+      },
+    }
+  }
+  try {
+    const kcClient = await getkcClient()
+    const [projectName, roleName] = role.oidcGroup.split('/').filter(Boolean)
+    if (!projectName || !roleName) throw new Error('Invalid OIDC group format')
+    const projectGroup = await getOrCreateProjectGroup(kcClient, projectName)
+    await getOrCreateChildGroup(kcClient, projectGroup.id, roleName)
+    return {
+      status: {
+        result: 'OK',
+        message: 'Synced',
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(error),
+      status: {
+        result: 'KO',
+        message: 'Failed to sync role',
+      },
+    }
+  }
+}
+
+export const deleteProjectRole: StepCall<ProjectRole> = async ({ args: role }) => {
+  if (!role.oidcGroup) {
+    return {
+      status: {
+        result: 'OK',
+        message: 'No OIDC group defined',
+      },
+    }
+  }
+  try {
+    const kcClient = await getkcClient()
+    const [projectName, roleName] = role.oidcGroup.split('/').filter(Boolean)
+    if (!projectName || !roleName) throw new Error('Invalid OIDC group format')
+    const projectGroup = await getGroupByName(kcClient, projectName)
+    if (projectGroup?.id) {
+      const subGroups = await getAllSubgroups(kcClient, projectGroup.id, 0)
+      const roleGroup = subGroups.find(g => g.name === roleName)
+      if (roleGroup?.id) {
+        await deleteGroup(kcClient, roleGroup.id)
+        return {
+          status: {
+            result: 'OK',
+            message: 'Deleted',
+          },
+        }
+      }
+    }
+    return {
+      status: {
+        result: 'OK',
+        message: 'Already Missing',
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(error),
+      status: {
+        result: 'KO',
+        message: 'Failed to delete role',
       },
     }
   }
