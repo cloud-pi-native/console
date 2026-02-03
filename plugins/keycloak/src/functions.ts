@@ -1,4 +1,4 @@
-import type { Project, StepCall, UserEmail, ZoneObject } from '@cpn-console/hooks'
+import type { AdminRole, Project, StepCall, UserEmail, ZoneObject } from '@cpn-console/hooks'
 import { generateRandomPassword, parseError, PluginResultBuilder } from '@cpn-console/hooks'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation.js'
@@ -215,9 +215,104 @@ export const deleteZone: StepCall<ZoneObject> = async ({ args: zone }) => {
       error: parseError(error),
       status: {
         result: 'KO',
-        message: 'An unexpected error occured',
+        message: 'Failed',
       },
     }
+  }
+}
+
+export const upsertAdminRole: StepCall<AdminRole> = async ({ args: role }) => {
+  if (!role.oidcGroup) return { status: { result: 'OK', message: 'No OIDC Group defined' } }
+  const pluginResult = new PluginResultBuilder('Up-to-date')
+  try {
+    const kcClient = await getkcClient()
+    let group: GroupRepresentation | undefined
+    if (role.oidcGroup.startsWith('/')) {
+      const name = role.oidcGroup.split('/').pop() || ''
+      const groups = await kcClient.groups.find({ search: name })
+      group = groups.find(g => g.path === role.oidcGroup)
+    } else {
+      const groupOrVoid = await getGroupByName(kcClient, role.oidcGroup)
+      group = groupOrVoid || undefined
+    }
+
+    if (!group) {
+      if (role.oidcGroup.startsWith('/')) {
+        return { status: { result: 'KO', message: `Group ${role.oidcGroup} not found` } }
+      }
+      const newGroup = await kcClient.groups.create({ name: role.oidcGroup })
+      group = await kcClient.groups.findOne({ id: newGroup.id })
+    }
+
+    if (!group?.id) throw new Error('Group not found or created')
+
+    const groupMembers = await kcClient.groups.listMembers({ id: group.id })
+
+    await Promise.all([
+      ...groupMembers.map((member) => {
+        if (member.id && !role.members.some(({ id }) => id === member.id)) {
+          return kcClient.users.delFromGroup({
+            id: member.id,
+            groupId: group!.id!,
+          })
+            .catch((err) => {
+              pluginResult.addKoMessage(`Can't remove ${member.email} from keycloak admin group`)
+              pluginResult.addExtra(`remove-${member.id}`, err)
+            })
+        }
+        return undefined
+      }),
+      ...role.members.map((user) => {
+        if (!groupMembers.some(({ id }) => id === user.id)) {
+          return kcClient.users.addToGroup({
+            id: user.id,
+            groupId: group!.id!,
+          })
+            .catch((err) => {
+              pluginResult.addKoMessage(`Can't add ${user.email} to keycloak admin group`)
+              pluginResult.addExtra(`add-${user.id}`, err)
+            })
+        }
+        return undefined
+      }),
+    ])
+
+    return pluginResult.getResultObject()
+  } catch (error) {
+    return pluginResult.returnUnexpectedError(error)
+  }
+}
+
+export const deleteAdminRole: StepCall<AdminRole> = async ({ args: role }) => {
+  if (!role.oidcGroup) return { status: { result: 'OK', message: 'No OIDC Group defined' } }
+  const pluginResult = new PluginResultBuilder('Deleted')
+  try {
+    const kcClient = await getkcClient()
+    let group: GroupRepresentation | undefined
+    if (role.oidcGroup.startsWith('/')) {
+      const name = role.oidcGroup.split('/').pop() || ''
+      const groups = await kcClient.groups.find({ search: name })
+      group = groups.find(g => g.path === role.oidcGroup)
+    } else {
+      const groupOrVoid = await getGroupByName(kcClient, role.oidcGroup)
+      group = groupOrVoid || undefined
+    }
+
+    if (group?.id) {
+      await Promise.all(role.members.map((user) => {
+        return kcClient.users.delFromGroup({
+          id: user.id,
+          groupId: group!.id!,
+        })
+          .catch((err) => {
+            pluginResult.addKoMessage(`Can't remove ${user.email} from keycloak admin group`)
+            pluginResult.addExtra(`remove-${user.id}`, err)
+          })
+      }))
+    }
+    return pluginResult.getResultObject()
+  } catch (error) {
+    return pluginResult.returnUnexpectedError(error)
   }
 }
 

@@ -3,6 +3,8 @@ export * from './hook-misc.js'
 export * from './hook-project.js'
 export * from './hook-user.js'
 export * from './hook-zone.js'
+export * from './hook-admin-role.js'
+export * from './hook-project-role.js'
 
 export interface PartialEnvironment { environment: string, stage: string, clusterLabel: string }
 export type InternalRepoName = string
