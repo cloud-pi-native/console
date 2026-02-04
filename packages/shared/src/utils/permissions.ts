@@ -58,6 +58,7 @@ export const PROJECT_PERMS = { // project permissions
 
 // Be very careful and think to apply corresponding updates in database if you modify these values, You'll have to do binary updates in SQL, good luck !
 export const ADMIN_PERMS = { // admin permissions
+  LIST: bit(0n),
   MANAGE: bit(1n),
 }
 
