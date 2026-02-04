@@ -20,7 +20,7 @@ export function clusterRouter() {
       const { adminPermissions, user } = await authUser(req)
 
       let body: AsyncReturnType<typeof listClusters> = []
-      if (AdminAuthorized.isAdmin(adminPermissions)) {
+      if (AdminAuthorized.ListClusters(adminPermissions)) {
         body = await listClusters()
       } else if (user) {
         body = await listClusters(user.id)
@@ -34,7 +34,7 @@ export function clusterRouter() {
 
     getClusterDetails: async ({ params, request: req }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ListClusters(perms.adminPermissions)) return new Forbidden403()
 
       const clusterId = params.clusterId
       const cluster = await getClusterDetailsBusiness(clusterId)
@@ -47,7 +47,7 @@ export function clusterRouter() {
 
     getClusterUsage: async ({ params, request: req }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ListClusters(perms.adminPermissions)) return new Forbidden403()
 
       const clusterId = params.clusterId
       const usage = await getClusterUsage(clusterId)
@@ -60,7 +60,7 @@ export function clusterRouter() {
 
     createCluster: async ({ request: req, body: data }) => {
       const { adminPermissions, user } = await authUser(req)
-      if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ManageClusters(adminPermissions)) return new Forbidden403()
 
       if (!user) return new Unauthorized401('Require to be requested from user not api key')
       const body = await createCluster(data, user.id, req.id)
@@ -74,7 +74,7 @@ export function clusterRouter() {
 
     getClusterEnvironments: async ({ request: req, params }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ListClusters(perms.adminPermissions)) return new Forbidden403()
 
       const clusterId = params.clusterId
       const environments = await getClusterAssociatedEnvironments(clusterId)
@@ -87,7 +87,7 @@ export function clusterRouter() {
 
     updateCluster: async ({ request: req, params, body: data }) => {
       const { user, adminPermissions } = await authUser(req)
-      if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ManageClusters(adminPermissions)) return new Forbidden403()
       if (!user) return new Unauthorized401('Require to be requested from user not api key')
 
       const clusterId = params.clusterId
