@@ -54,10 +54,6 @@ test.describe('Administration Roles', () => {
     // Assert
     await expect(page.getByTestId('role-list')).toContainText(newOidcRole.name)
     await page.getByTestId('test-members').click()
-    await expect(page.getByTestId('addUserSuggestionInput')).not.toBeVisible()
-    await expect(page.locator('div#members')).toContainText(
-      'Les groupes ayant une liaison OIDC ne peuvent pas gérer leurs membres.',
-    )
   })
 
   test('Should add a new non-OIDC role', { tag: '@e2e' }, async ({ page }) => {
@@ -129,6 +125,52 @@ test.describe('Administration Roles', () => {
     // Assert
     await expect(page.getByTestId(`user-${newRole.user.id}`)).toContainText(
       newRole.name,
+    )
+  })
+
+  test('Should add a user to an OIDC role', { tag: '@e2e' }, async ({ page }) => {
+    // Arrange
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: tcolinUser })
+    const newOidcRole = {
+      name: faker.string.alpha(10).toLowerCase(),
+      oidcGroupName: `/${faker.string.alpha(10).toLowerCase()}`,
+      user: {
+        id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567',
+        email: 'claire.nollet@test.com',
+      },
+    }
+
+    // Act
+    await page.getByTestId('menuAdministrationBtn').click()
+    await page.getByTestId('menuAdministrationRoles').click()
+
+    // Create OIDC role
+    await expect(page.getByTestId('role-list')).not.toContainText(
+      newOidcRole.name,
+    )
+    await page.getByTestId('addRoleBtn').click()
+    await expect(page.getByTestId('snackbar')).toContainText('Rôle ajouté')
+    await expect(page.getByTestId('saveBtn')).toBeDisabled()
+    await expect(page.getByTestId('roleNameInput')).toHaveValue('Nouveau rôle')
+    await page.getByTestId('roleNameInput').fill(newOidcRole.name)
+    await page.getByTestId('oidcGroupInput').fill(newOidcRole.oidcGroupName)
+    await page.getByTestId('saveBtn').click()
+    await expect(page.getByTestId('role-list')).toContainText(newOidcRole.name)
+
+    // Add user to role
+    await page.getByTestId('test-members').click()
+    await expect(page.getByTestId('addUserBtn')).toBeDisabled()
+    await page
+      .getByTestId('addUserSuggestionInput')
+      .locator('input')
+      .fill(`${newOidcRole.user.email}`)
+    await page.getByTestId('addUserBtn').click()
+    await page.getByTestId('menuAdministrationUsers').click()
+
+    // Assert
+    await expect(page.getByTestId(`user-${newOidcRole.user.id}`)).toContainText(
+      newOidcRole.name,
     )
   })
 
