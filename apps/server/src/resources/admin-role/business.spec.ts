@@ -1,9 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { AdminRole, User } from '@prisma/client'
 import { faker } from '@faker-js/faker'
 import prisma from '../../__mocks__/prisma.js'
+import { hook } from '../../__mocks__/utils/hook-wrapper.ts'
 import { BadRequest400 } from '../../utils/errors.ts'
 import { countRolesMembers, createRole, deleteRole, listRoles, patchRoles } from './business.ts'
+
+vi.mock('../../utils/hook-wrapper.ts', async () => ({
+  hook,
+}))
 
 describe('test admin-role business', () => {
   describe('listRoles', () => {
@@ -27,7 +32,7 @@ describe('test admin-role business', () => {
 
       prisma.adminRole.findFirst.mockResolvedValueOnce(dbRole)
       prisma.adminRole.findMany.mockResolvedValueOnce([dbRole])
-      prisma.adminRole.create.mockResolvedValue(null)
+      prisma.adminRole.create.mockResolvedValue({ id: 'test-id' })
       await createRole({ name: 'test' })
 
       expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 0n, position: 1 } })
@@ -41,7 +46,7 @@ describe('test admin-role business', () => {
 
       prisma.adminRole.findFirst.mockResolvedValueOnce(dbRole)
       prisma.adminRole.findMany.mockResolvedValueOnce([dbRole])
-      prisma.adminRole.create.mockResolvedValue(null)
+      prisma.adminRole.create.mockResolvedValue({ id: 'test-id' })
       await createRole({ name: 'test' })
 
       expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 0n, position: 51 } })
@@ -55,7 +60,7 @@ describe('test admin-role business', () => {
 
       prisma.adminRole.findFirst.mockResolvedValueOnce(undefined)
       prisma.adminRole.findMany.mockResolvedValueOnce([dbRole])
-      prisma.adminRole.create.mockResolvedValue(null)
+      prisma.adminRole.create.mockResolvedValue({ id: 'test-id' })
       await createRole({ name: 'test' })
 
       expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 0n, position: 0 } })
