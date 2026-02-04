@@ -18,10 +18,10 @@ export async function getkcClient() {
 
 export function start() {
   getkcClient().catch((error) => {
-    console.log(error)
+    console.warn(error)
     if (process.env.IGNORE_PLUGINS_START_FAIL?.includes('keycloak')) {
       return
     }
-    throw new Error('failed to start keycloak plugin')
+    console.warn('failed to start keycloak plugin')
   })
 }
