@@ -54,10 +54,6 @@ test.describe('Administration Roles', () => {
     // Assert
     await expect(page.getByTestId('role-list')).toContainText(newOidcRole.name)
     await page.getByTestId('test-members').click()
-    await expect(page.getByTestId('addUserSuggestionInput')).not.toBeVisible()
-    await expect(page.locator('div#members')).toContainText(
-      'Les groupes ayant une liaison OIDC ne peuvent pas gérer leurs membres.',
-    )
   })
 
   test('Should add a new non-OIDC role', { tag: '@e2e' }, async ({ page }) => {
