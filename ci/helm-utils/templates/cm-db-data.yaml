@@ -1,6 +1,0 @@
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: db-data-cm
-data: 
-  data.js: {{ .Values.data | quote | nindent 4 }}
