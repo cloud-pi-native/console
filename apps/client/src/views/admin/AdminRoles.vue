@@ -32,7 +32,7 @@ async function deleteRole(roleId: Role['id']) {
   selectedId.value = undefined
 }
 
-async function saveRole(role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permissions'>) {
+async function saveRole(role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permissions' | 'type'>) {
   if (!selectedRole.value) return
   await adminRoleStore.patchRoles(
     [{
@@ -40,6 +40,7 @@ async function saveRole(role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permission
       permissions: role.permissions.toString(),
       name: role.name,
       oidcGroup: role.oidcGroup,
+      type: role.type,
     }],
   )
   snackbarStore.setMessage('Rôle mis à jour', 'success')
@@ -117,6 +118,7 @@ onBeforeMount(async () => {
       :name="selectedRole.name"
       :permissions="BigInt(selectedRole.permissions)"
       :oidc-group="selectedRole.oidcGroup"
+      :type="selectedRole.type"
       @delete="deleteRole(selectedRole.id)"
       @save="(role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permissions'>) => saveRole(role)"
       @cancel="() => cancel()"

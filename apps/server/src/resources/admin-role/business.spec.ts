@@ -3,7 +3,7 @@ import type { AdminRole, User } from '@prisma/client'
 import { faker } from '@faker-js/faker'
 import prisma from '../../__mocks__/prisma.js'
 import { hook } from '../../__mocks__/utils/hook-wrapper.ts'
-import { BadRequest400 } from '../../utils/errors.ts'
+import { BadRequest400, Forbidden403 } from '../../utils/errors.ts'
 import { countRolesMembers, createRole, deleteRole, listRoles, patchRoles } from './business.ts'
 
 vi.mock('../../utils/hook-wrapper.ts', async () => ({
@@ -19,7 +19,7 @@ describe('test admin-role business', () => {
 
       prisma.adminRole.findMany.mockResolvedValueOnce([partialRole])
       const response = await listRoles()
-      expect(response).toEqual([{ permissions: '4' }])
+      expect(response).toEqual([{ permissions: '4', type: 'custom' }])
     })
   })
 
@@ -85,6 +85,19 @@ describe('test admin-role business', () => {
       expect(prisma.user.update).toHaveBeenNthCalledWith(1, { where: { id: users[0].id }, data: { adminRoleIds: [] } })
       expect(prisma.user.update).toHaveBeenNthCalledWith(2, { where: { id: users[1].id }, data: { adminRoleIds: [users[1].adminRoleIds[1]] } })
       expect(prisma.adminRole.delete).toHaveBeenCalledWith({ where: { id: roleId } })
+    })
+
+    it('should return 403 if trying to delete system role', async () => {
+      const systemRole = {
+        id: roleId,
+        type: 'system',
+      }
+      prisma.adminRole.findUnique.mockResolvedValue(systemRole as any)
+      prisma.user.findMany.mockResolvedValue([])
+
+      const response = await deleteRole(roleId)
+      expect(response).toBeInstanceOf(Forbidden403)
+      expect(prisma.adminRole.delete).not.toHaveBeenCalled()
     })
   })
   describe('countRolesMembers', () => {
@@ -183,6 +196,21 @@ describe('test admin-role business', () => {
           id: dbRoles[1].id,
         },
       })
+    })
+
+    it('should return 403 if trying to update system role', async () => {
+      const systemRole = {
+        id: faker.string.uuid(),
+        type: 'system',
+        name: 'sys',
+        permissions: 0n,
+        position: 0,
+      }
+      prisma.adminRole.findMany.mockResolvedValue([systemRole as any])
+
+      const response = await patchRoles([{ id: systemRole.id, name: 'new name' }])
+      expect(response).toBeInstanceOf(Forbidden403)
+      expect(prisma.adminRole.update).not.toHaveBeenCalled()
     })
   })
 })

@@ -212,4 +212,23 @@ test.describe('Administration Roles', () => {
     // Assert
     await expect(page.getByTestId('role-list')).not.toContainText(newRole.name)
   })
+
+  test('Should not be able to edit system roles', { tag: '@e2e' }, async ({ page }) => {
+    // Arrange
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: tcolinUser })
+
+    // Act
+    await page.getByTestId('menuAdministrationBtn').click()
+    await page.getByTestId('menuAdministrationRoles').click()
+
+    // Select system role
+    await page.getByTestId('76229c96-4716-45bc-99da-00498ec9018c-tab').click()
+
+    // Assert
+    await expect(page.getByTestId('roleNameInput')).toBeDisabled()
+    await expect(page.getByTestId('oidcGroupInput')).toBeDisabled()
+    await expect(page.getByTestId('saveBtn')).toBeHidden()
+    await expect(page.getByTestId('deleteBtn')).toBeHidden()
+  })
 })
