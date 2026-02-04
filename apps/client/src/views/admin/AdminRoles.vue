@@ -118,7 +118,7 @@ onBeforeMount(async () => {
       :permissions="BigInt(selectedRole.permissions)"
       :oidc-group="selectedRole.oidcGroup"
       @delete="deleteRole(selectedRole.id)"
-      @save="(role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permissions'>) => saveRole(role)"
+      @save="(role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permissions' | 'type'>) => saveRole(role)"
       @cancel="() => cancel()"
     />
   </div>
