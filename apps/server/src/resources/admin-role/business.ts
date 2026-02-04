@@ -5,18 +5,27 @@ import {
   listAdminRoles,
 } from '@/resources/queries-index.js'
 import type { ErrorResType } from '@/utils/errors.js'
-import { BadRequest400 } from '@/utils/errors.js'
+import { BadRequest400, Forbidden403 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
 export async function listRoles() {
   return listAdminRoles()
-    .then(roles => roles.map(role => ({ ...role, permissions: role.permissions.toString() })))
+    .then(roles => roles.map(role => ({ ...role, permissions: role.permissions.toString(), type: role.type ?? 'custom' })))
 }
 
 export async function patchRoles(roles: typeof adminRoleContract.patchAdminRoles.body._type): Promise<AdminRole[] | ErrorResType> {
   const dbRoles = await prisma.adminRole.findMany()
   const positionsAvailable: number[] = []
+
+  for (const dbRole of dbRoles) {
+    if (dbRole.type === 'system') {
+      const matchingRole = roles.find(role => role.id === dbRole.id)
+      if (matchingRole) {
+        return new Forbidden403('Impossible de modifier un rôle système')
+      }
+    }
+  }
 
   const updatedRoles: (Omit<AdminRole, 'permissions'> & { permissions: bigint })[] = dbRoles
     .filter(dbRole => roles.find(role => role.id === dbRole.id)) // filter non concerned dbRoles
@@ -31,6 +40,7 @@ export async function patchRoles(roles: typeof adminRoleContract.patchAdminRoles
         permissions: matchingRole?.permissions ? BigInt(matchingRole?.permissions) : dbRole.permissions,
         position: matchingRole?.position ?? dbRole.position,
         oidcGroup: matchingRole?.oidcGroup ?? dbRole.oidcGroup,
+        type: (dbRole as any).type,
       }
     })
 
@@ -81,6 +91,7 @@ export async function countRolesMembers() {
 export async function deleteRole(roleId: Project['id']) {
   const role = await getAdminRoleById(roleId)
   if (role) {
+    if (role.type === 'system') return new Forbidden403('Impossible de supprimer un rôle système')
     await hook.adminRole.delete(role)
   }
 
