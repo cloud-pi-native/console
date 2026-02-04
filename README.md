@@ -323,13 +323,39 @@ pnpm --filter @cpn-console/server run db:wrapper
 pnpm --filter @cpn-console/server run db:wrapper -h
 ```
 
+### Débogage avec VS Code
+
+Le projet est configuré pour être débogué directement dans VS Code via le fichier `.vscode/launch.json`.
+Rendez-vous dans l'onglet "Run and Debug" (ou `Ctrl+Shift+D`) pour voir les configurations disponibles.
+
+#### Configurations disponibles
+
+- **Launch Server** : Lance le serveur en local (hors Docker) et attache le débogueur.
+  - *Note : Assurez-vous que les bases de données (Postgres) et Keycloak sont accessibles (ex: lancés via `pnpm run dev` dans un autre terminal pour les dépendances).*
+- **Attach Server** : S'attache au processus Node.js du serveur.
+  - Utile lorsque le serveur tourne dans un conteneur Docker.
+  - Pour que cela fonctionne, le serveur doit être lancé avec le mode debug activé.
+- **Serve Client (Chrome/Firefox)** : Lance l'application client en local et ouvre une instance de navigateur dédiée au débogage.
+- **Launch (Chrome/Firefox)** : Lance simultanément le serveur et le client pour une session de débogage complète (Compound task).
+
+#### Déboguer avec d'autres outils (Chrome DevTools, WebStorm, etc.)
+
+Le serveur Node.js expose le port de débogage `9229` lorsqu'il est lancé en mode debug (ou avec l'option `--inspect`). Vous pouvez utiliser n'importe quel client de débogage compatible avec le protocole Inspector de Node.js.
+
+**Exemple avec Chrome DevTools :**
+
+1. Lancez le serveur en mode debug (voir section précédente pour Docker, ou `pnpm run debug` en local).
+2. Ouvrez Chrome et naviguez vers `chrome://inspect`.
+3. Cliquez sur "Open dedicated DevTools for Node" ou attendez que votre target apparaisse sous "Remote Target".
+4. Vous pouvez maintenant mettre des points d'arrêt, inspecter les variables, etc.
+
 ### Construction des images
 
 Ce dépôt utilise des fichiers docker-compose pour construire les images docker:
 
-- [docker-compose.dev.yml](./ci/docker/docker-compose.dev.yml) pour la construction des images docker du mode développement.
-- [docker-compose.ci.yml](./ci/docker/docker-compose.ci.yml) pour la construction des images docker utilisées dans nos pipelines d'Intégration Continue.
-- [docker-compose.prod.yml](./ci/docker/docker-compose.prod.yml) pour la construction des images docker du mode production.
+- [docker-compose.dev.yml](./docker/docker-compose.dev.yml) pour la construction des images docker du mode développement.
+- [docker-compose.ci.yml](./docker/docker-compose.ci.yml) pour la construction des images docker utilisées dans nos pipelines d'Intégration Continue.
+- [docker-compose.prod.yml](./docker/docker-compose.prod.yml) pour la construction des images docker du mode production.
 
 ## Configuration du Keycloak
 
