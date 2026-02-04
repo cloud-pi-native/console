@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Zone } from '@cpn-console/shared'
-import { zoneContract } from '@cpn-console/shared'
+import { ADMIN_PERMS, zoneContract } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
 import { getUserMockInfos } from '../../utils/mocks.js'
@@ -22,7 +22,9 @@ describe('test zoneContract', () => {
 
   describe('listZones', () => {
     it('should return list of zones', async () => {
-      const zones = []
+      const zones: any[] = []
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_ZONES)
+      authUserMock.mockResolvedValueOnce(user)
       businessListMock.mockResolvedValueOnce(zones)
 
       const response = await app.inject()
@@ -33,13 +35,25 @@ describe('test zoneContract', () => {
       expect(response.json()).toEqual(zones)
       expect(response.statusCode).toEqual(200)
     })
+
+    it('should return 403 for unauthorized user', async () => {
+      const user = getUserMockInfos(false)
+      authUserMock.mockResolvedValueOnce(user)
+
+      const response = await app.inject()
+        .get(zoneContract.listZones.path)
+        .end()
+
+      expect(businessListMock).toHaveBeenCalledTimes(0)
+      expect(response.statusCode).toEqual(403)
+    })
   })
 
   describe('createZone', () => {
     const zone = { id: faker.string.uuid(), label: faker.string.alpha({ length: 5 }), argocdUrl: faker.internet.url(), slug: faker.string.alpha({ length: 5, casing: 'lower' }), description: '' }
 
     it('should create and return zone for admin', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_ZONES)
       authUserMock.mockResolvedValueOnce(user)
 
       businessCreateMock.mockResolvedValueOnce(zone)
@@ -53,7 +67,7 @@ describe('test zoneContract', () => {
       expect(response.statusCode).toEqual(201)
     })
     it('should pass business error', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_ZONES)
       authUserMock.mockResolvedValueOnce(user)
 
       businessCreateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
@@ -83,7 +97,7 @@ describe('test zoneContract', () => {
     const zone: Omit<Zone, 'id'> = { label: faker.string.alpha({ length: 5 }), slug: faker.string.alpha({ length: 5, casing: 'lower' }), argocdUrl: faker.internet.url(), description: '' }
 
     it('should update and return zone for admin', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_ZONES)
       authUserMock.mockResolvedValueOnce(user)
 
       businessUpdateMock.mockResolvedValueOnce({ id: zoneId, ...zone })
@@ -97,7 +111,7 @@ describe('test zoneContract', () => {
       expect(response.statusCode).toEqual(200)
     })
     it('should pass business error', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_ZONES)
       authUserMock.mockResolvedValueOnce(user)
 
       businessUpdateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
@@ -124,7 +138,7 @@ describe('test zoneContract', () => {
 
   describe('deleteZone', () => {
     it('should delete zone for admin', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_ZONES)
       authUserMock.mockResolvedValueOnce(user)
 
       businessDeleteMock.mockResolvedValueOnce(null)
@@ -137,7 +151,7 @@ describe('test zoneContract', () => {
       expect(response.statusCode).toEqual(204)
     })
     it('should pass business error', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_ZONES)
       authUserMock.mockResolvedValueOnce(user)
 
       businessDeleteMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
