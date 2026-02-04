@@ -196,6 +196,81 @@ export const adminPermsDetails: PermDetails<AdminPermsKeys> = [{
     key: 'MANAGE',
     label: 'Administration globale',
     hint: 'Administration globale de toute la console et de ses ressources',
+  }, {
+    key: 'LIST',
+    label: 'Lecture seule globale',
+    hint: 'Accès en lecture seule à toute la console et ses ressources',
+  }],
+}, {
+  name: 'Gestion des utilisateurs',
+  perms: [{
+    key: 'MANAGE_USERS',
+    label: 'Gérer les utilisateurs',
+    hint: 'Permet de gérer les utilisateurs de la console',
+  }, {
+    key: 'LIST_USERS',
+    label: 'Voir les utilisateurs',
+    hint: 'Permet de voir les utilisateurs de la console',
+  }],
+}, {
+  name: 'Gestion des projets',
+  perms: [{
+    key: 'MANAGE_PROJECTS',
+    label: 'Gérer les projets',
+    hint: 'Permet de gérer les projets de la console',
+  }, {
+    key: 'LIST_PROJECTS',
+    label: 'Voir les projets',
+    hint: 'Permet de voir les projets de la console',
+  }],
+}, {
+  name: 'Gestion des rôles',
+  perms: [{
+    key: 'MANAGE_ROLES',
+    label: 'Gérer les rôles',
+    hint: 'Permet de gérer les rôles de la console',
+  }, {
+    key: 'LIST_ROLES',
+    label: 'Voir les rôles',
+    hint: 'Permet de voir les rôles de la console',
+  }],
+}, {
+  name: 'Infrastructure',
+  perms: [{
+    key: 'MANAGE_CLUSTERS',
+    label: 'Gérer les clusters',
+    hint: 'Permet de gérer les clusters de la console',
+  }, {
+    key: 'LIST_CLUSTERS',
+    label: 'Voir les clusters',
+    hint: 'Permet de voir les clusters de la console',
+  }, {
+    key: 'MANAGE_ZONES',
+    label: 'Gérer les zones',
+    hint: 'Permet de gérer les zones de la console',
+  }, {
+    key: 'LIST_ZONES',
+    label: 'Voir les zones',
+    hint: 'Permet de voir les zones de la console',
+  }, {
+    key: 'MANAGE_STAGES',
+    label: 'Gérer les types d\'environnement',
+    hint: 'Permet de gérer les types d\'environnement de la console',
+  }, {
+    key: 'LIST_STAGES',
+    label: 'Voir les types d\'environnement',
+    hint: 'Permet de voir les types d\'environnement de la console',
+  }],
+}, {
+  name: 'Système',
+  perms: [{
+    key: 'MANAGE_SYSTEM',
+    label: 'Gérer le système',
+    hint: 'Permet de gérer les configurations et logs du système',
+  }, {
+    key: 'LIST_SYSTEM',
+    label: 'Voir le système',
+    hint: 'Permet de voir les configurations et logs du système',
   }],
 }, {
   name: 'Gestion des utilisateurs',
