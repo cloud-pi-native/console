@@ -6,15 +6,21 @@ import {
   listRoles as listRolesQuery,
   updateRole,
 } from '@/resources/queries-index.js'
-import { BadRequest400 } from '@/utils/errors.js'
+import { BadRequest400, NotFound404 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
 export async function listRoles(projectId: Project['id']) {
-  return listRolesQuery(projectId)
-    .then(roles => roles.map(role => ({ ...role, permissions: role.permissions.toString() })))
+  const roles = await listRolesQuery(projectId)
+  return roles.map(role => ({
+    ...role,
+    permissions: role.permissions.toString(),
+    oidcGroup: role.oidcGroup ? role.oidcGroup.replace(/^\/[^/]+\/console/, '') : role.oidcGroup,
+  }))
 }
 
 export async function patchRoles(projectId: Project['id'], roles: typeof projectRoleContract.patchProjectRoles.body._type) {
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { slug: true } })
+  if (!project) throw new NotFound404()
   const dbRoles = await listRoles(projectId)
   const positionsAvailable: number[] = []
 
@@ -25,11 +31,16 @@ export async function patchRoles(projectId: Project['id'], roles: typeof project
       if (typeof matchingRole?.position !== 'undefined' && !positionsAvailable.includes(matchingRole.position)) {
         positionsAvailable.push(matchingRole.position)
       }
+
+      if (typeof matchingRole.position !== 'undefined' && !positionsAvailable.includes(matchingRole.position)) {
+        positionsAvailable.push(matchingRole.position)
+      }
       return {
         id: matchingRole?.id ?? dbRole.id,
         name: matchingRole?.name ?? dbRole.name,
         permissions: matchingRole?.permissions ? BigInt(matchingRole?.permissions) : BigInt(dbRole.permissions),
         position: matchingRole?.position ?? dbRole.position,
+        oidcGroup: matchingRole?.oidcGroup ? `/${project.slug}/console${matchingRole.oidcGroup}` : dbRole.oidcGroup,
       }
     })
   if (positionsAvailable.length && positionsAvailable.length !== dbRoles.length) return new BadRequest400('Les numéros de position des rôles sont incohérentes')
@@ -41,11 +52,17 @@ export async function patchRoles(projectId: Project['id'], roles: typeof project
 }
 
 export async function createRole(projectId: Project['id'], role: typeof projectRoleContract.createProjectRole.body._type) {
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { slug: true } })
+  if (!project) throw new NotFound404()
   const dbMaxPosRole = (await prisma.projectRole.findFirst({
     where: { projectId },
     orderBy: { position: 'desc' },
     select: { position: true },
   }))?.position ?? -1
+
+  if (role.oidcGroup && !role.oidcGroup.startsWith('/')) {
+    throw new BadRequest400('oidcGroup doit commencer par /')
+  }
 
   await prisma.projectRole.create({
     data: {
@@ -53,6 +70,7 @@ export async function createRole(projectId: Project['id'], role: typeof projectR
       projectId,
       position: dbMaxPosRole + 1,
       permissions: BigInt(role.permissions),
+      oidcGroup: role.oidcGroup ? `/${project.slug}/console${role.oidcGroup}` : undefined,
     },
   })
 
