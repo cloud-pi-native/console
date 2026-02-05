@@ -11,7 +11,7 @@ describe('test stage busines logic', () => {
     vi.resetAllMocks()
     stage = {
       id: faker.string.uuid(),
-      name: faker.company.name(),
+      name: faker.string.alphanumeric(),
     }
   })
   describe('createStage', () => {
