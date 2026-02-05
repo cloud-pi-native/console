@@ -1,6 +1,7 @@
 export * from './hook-cluster.js'
 export * from './hook-misc.js'
 export * from './hook-project.js'
+export * from './hook-project-role.js'
 export * from './hook-user.js'
 export * from './hook-zone.js'
 
