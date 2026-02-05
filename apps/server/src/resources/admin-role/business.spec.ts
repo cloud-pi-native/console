@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker'
 import { describe, expect, it } from 'vitest'
 import type { AdminRole, User } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
-import { BadRequest400 } from '../../utils/errors.ts'
+import { BadRequest400, Forbidden403 } from '../../utils/errors.ts'
 import { countRolesMembers, createRole, deleteRole, listRoles, patchRoles } from './business.ts'
 
 describe('test admin-role business', () => {
@@ -14,11 +14,12 @@ describe('test admin-role business', () => {
         permissions: 4n,
         position: 0,
         oidcGroup: '',
+        type: 'custom',
       }
 
       prisma.adminRole.findMany.mockResolvedValueOnce([dbRole])
       const response = await listRoles()
-      expect(response).toContainEqual(expect.objectContaining({ permissions: '4' }))
+      expect(response).toContainEqual(expect.objectContaining({ permissions: '4', type: 'custom' }))
     })
   })
 
@@ -30,6 +31,7 @@ describe('test admin-role business', () => {
         permissions: 4n,
         position: 0,
         oidcGroup: '',
+        type: 'custom',
       }
 
       prisma.adminRole.findFirst.mockResolvedValueOnce(dbRole)
@@ -47,6 +49,7 @@ describe('test admin-role business', () => {
         permissions: 4n,
         position: 50,
         oidcGroup: '',
+        type: 'custom',
       }
 
       prisma.adminRole.findFirst.mockResolvedValueOnce(dbRole)
@@ -64,6 +67,7 @@ describe('test admin-role business', () => {
         permissions: 4n,
         position: 50,
         oidcGroup: '',
+        type: 'custom',
       }
 
       prisma.adminRole.findFirst.mockResolvedValueOnce(null)
@@ -105,6 +109,7 @@ describe('test admin-role business', () => {
         permissions: 4n,
         position: 50,
         oidcGroup: '',
+        type: 'custom',
       }
 
       prisma.user.findMany.mockResolvedValueOnce(users)
@@ -126,12 +131,14 @@ describe('test admin-role business', () => {
         oidcGroup: '',
         permissions: faker.number.bigInt({ min: 0n, max: 50000n }),
         position: 0,
+        type: 'custom',
       }, {
         id: faker.string.uuid(),
         name: faker.string.alphanumeric(),
         oidcGroup: '',
         permissions: faker.number.bigInt({ min: 0n, max: 50000n }),
         position: 1,
+        type: 'custom',
       }] as const satisfies AdminRole[]
 
       const users = [{
@@ -170,13 +177,37 @@ describe('test admin-role business', () => {
       oidcGroup: '',
       permissions: faker.number.bigInt({ min: 0n, max: 50000n }),
       position: 0,
+      type: 'custom',
     }, {
       id: faker.string.uuid(),
       name: faker.string.alphanumeric(),
       oidcGroup: '',
       permissions: faker.number.bigInt({ min: 0n, max: 50000n }),
       position: 1,
+      type: 'custom',
     }]
+
+    it('should throw Forbidden403 when renaming a system role', async () => {
+      const systemRole: AdminRole = {
+        id: faker.string.uuid(),
+        name: 'Admin',
+        permissions: 10n,
+        position: 0,
+        oidcGroup: 'admin-group',
+        type: 'system',
+      }
+      prisma.adminRole.findMany.mockResolvedValue([systemRole])
+
+      const updateRoles = [{
+        id: systemRole.id,
+        name: 'New Admin Name',
+      }]
+
+      const result = await patchRoles(updateRoles)
+
+      await expect(result).toBeInstanceOf(Forbidden403)
+      expect(prisma.adminRole.update).toHaveBeenCalledTimes(0)
+    })
 
     it('should do nothing', async () => {
       prisma.adminRole.findMany.mockResolvedValue([])
@@ -233,6 +264,7 @@ describe('test admin-role business', () => {
           oidcGroup: dbRoles[1].oidcGroup,
           permissions: 0n,
           position: 1,
+          type: 'custom',
         },
         where: {
           id: dbRoles[1].id,
