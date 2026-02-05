@@ -40,6 +40,7 @@ async function saveRole(role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permission
       permissions: role.permissions.toString(),
       name: role.name,
       oidcGroup: role.oidcGroup,
+      type: role.type,
     }],
   )
   snackbarStore.setMessage('Rôle mis à jour', 'success')
