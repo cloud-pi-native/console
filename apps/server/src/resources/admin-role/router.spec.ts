@@ -22,7 +22,7 @@ describe('test adminRoleContract', () => {
 
   describe('listAdminRoles', () => {
     it('should return list of admin roles', async () => {
-      const roles = [{ id: faker.string.uuid(), name: 'Role 1', oidcGroup: '', position: 0, permissions: '1' }]
+      const roles = [{ id: faker.string.uuid(), name: 'Role 1', oidcGroup: '', position: 0, permissions: '1', type: 'custom' }]
       businessListRolesMock.mockResolvedValueOnce(roles)
 
       const response = await app.inject()
@@ -70,8 +70,8 @@ describe('test adminRoleContract', () => {
   })
 
   describe('patchAdminRoles', () => {
-    const updatedRoles = [{ id: faker.string.uuid(), name: 'Role 1', oidcGroup: '', position: 0, permissions: '1' }]
-    const rolesData = [{ id: updatedRoles[0].id, name: 'Updated Role' }]
+    const updatedRoles = [{ id: faker.string.uuid(), name: 'Role 1', oidcGroup: '', position: 0, permissions: '1', type: 'custom' }]
+    const rolesData = [{ id: updatedRoles[0].id, name: 'Updated Role', type: 'custom' }]
     it('should update roles for authorized users', async () => {
       const user = getUserMockInfos(true)
 

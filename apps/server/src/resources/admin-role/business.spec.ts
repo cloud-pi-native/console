@@ -128,7 +128,21 @@ describe('test admin-role business', () => {
       expect(prisma.user.update).toHaveBeenNthCalledWith(2, { where: { id: users[1].id }, data: { adminRoleIds: [users[1].adminRoleIds[1]] } })
       expect(prisma.adminRole.delete).toHaveBeenCalledWith({ where: { id: roleId } })
     })
+
+    it('should return 403 if trying to delete system role', async () => {
+      const systemRole = {
+        id: roleId,
+        type: 'system',
+      }
+      prisma.adminRole.findUnique.mockResolvedValue(systemRole as any)
+      prisma.user.findMany.mockResolvedValue([])
+
+      const response = await deleteRole(roleId)
+      expect(response).toBeInstanceOf(Forbidden403)
+      expect(prisma.adminRole.delete).not.toHaveBeenCalled()
+    })
   })
+
   describe('countRolesMembers', () => {
     it('should return aggregated role member counts', async () => {
       const roles = [{
@@ -276,6 +290,21 @@ describe('test admin-role business', () => {
           id: dbRoles[1].id,
         },
       })
+    })
+
+    it('should return 403 if trying to update system role', async () => {
+      const systemRole = {
+        id: faker.string.uuid(),
+        type: 'system',
+        name: 'sys',
+        permissions: 0n,
+        position: 0,
+      }
+      prisma.adminRole.findMany.mockResolvedValue([systemRole as any])
+
+      const response = await patchRoles([{ id: systemRole.id, name: 'new name' }])
+      expect(response).toBeInstanceOf(Forbidden403)
+      expect(prisma.adminRole.update).not.toHaveBeenCalled()
     })
   })
 })

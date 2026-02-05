@@ -16,10 +16,11 @@ const props = withDefaults(defineProps<{
 }>(), {
   name: 'Nouveau rôle',
   oidcGroup: '',
+  type: 'custom',
 })
 const emits = defineEmits<{
   delete: []
-  save: [{ name: string, permissions: string, oidcGroup: string }]
+  save: [{ name: string, permissions: string, oidcGroup: string, type: string }]
   cancel: []
 }>()
 const usersStore = useUsersStore()
@@ -33,6 +34,8 @@ const role = ref({
 const isUpdated = computed(() => {
   return !shallowEqual(props, role.value)
 })
+
+const isSystem = computed(() => props.type === 'system')
 
 const errorSchema = computed<SharedZodError | undefined>(() => {
   const schemaValidation = RoleSchema.partial().safeParse(role.value)
@@ -140,6 +143,7 @@ function closeModal() {
         label-visible
         hint="Ne doit pas dépasser 30 caractères."
         class="mb-5"
+        :disabled="isSystem"
       />
       <p
         class="fr-h6"
@@ -164,7 +168,7 @@ function closeModal() {
           :label="perm.label"
           :hint="perm?.hint"
           :name="perm.key"
-          :disabled="role.permissions & ADMIN_PERMS.MANAGE && perm.key !== 'MANAGE'"
+          :disabled="isSystem || (role.permissions & ADMIN_PERMS.MANAGE && perm.key !== 'MANAGE')"
           @update:model-value="(checked: boolean) => updateChecked(checked, perm.key)"
         />
       </div>
@@ -175,8 +179,10 @@ function closeModal() {
         label-visible
         placeholder="/admin"
         class="mb-5"
+        :disabled="isSystem"
       />
       <DsfrButton
+        v-if="!isSystem"
         data-testid="saveBtn"
         label="Enregistrer"
         secondary
@@ -185,6 +191,7 @@ function closeModal() {
         @click="$emit('save', { ...role, permissions: role.permissions.toString() })"
       />
       <DsfrButton
+        v-if="!isSystem"
         data-testid="deleteBtn"
         label="Supprimer"
         secondary
