@@ -55,3 +55,5 @@ export async function deleteRole(id: ProjectRole['id']) {
     })
   }
 }
+
+export const getProjectRoleById = (id: ProjectRole['id']) => prisma.projectRole.findUnique({ where: { id }, include: { project: true } })
