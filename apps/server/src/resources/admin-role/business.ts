@@ -1,6 +1,7 @@
 import type { Project, ProjectRole } from '@prisma/client'
 import type { AdminRole, adminRoleContract } from '@cpn-console/shared'
 import {
+  getAdminRoleById,
   listAdminRoles,
 } from '@/resources/queries-index.js'
 import type { ErrorResType } from '@/utils/errors.js'
