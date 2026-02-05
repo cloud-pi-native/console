@@ -4,8 +4,10 @@ import {
   deleteRole as deleteRoleQuery,
   listMembers,
   listRoles as listRolesQuery,
+  updateRole,
 } from '@/resources/queries-index.js'
 import { BadRequest400, Forbidden403, NotFound404 } from '@/utils/errors.js'
+import { hook } from '@/utils/hook-wrapper.js'
 import prisma from '@/prisma.js'
 
 export async function listRoles(projectId: Project['id']) {
@@ -52,7 +54,8 @@ export async function patchRoles(projectId: Project['id'], roles: typeof project
 
   if (positionsAvailable.length && positionsAvailable.length !== dbRoles.length) return new BadRequest400('Les numéros de position des rôles sont incohérentes')
   for (const { id, ...role } of updatedRoles) {
-    await prisma.projectRole.update({ where: { id }, data: role })
+    await updateRole(id, role)
+    await hook.projectRole.upsert(id)
   }
 
   return listRoles(projectId)
@@ -75,7 +78,7 @@ export async function createRole(projectId: Project['id'], role: typeof projectR
     throw new BadRequest400('oidcGroup doit commencer par /')
   }
 
-  await prisma.projectRole.create({
+  const createdRole = await prisma.projectRole.create({
     data: {
       ...role,
       projectId,
@@ -84,6 +87,8 @@ export async function createRole(projectId: Project['id'], role: typeof projectR
       oidcGroup: role.oidcGroup ? `/${project.slug}/console${role.oidcGroup}` : undefined,
     },
   })
+
+  await hook.projectRole.upsert(createdRole.id)
 
   return listRoles(projectId)
 }
@@ -105,6 +110,7 @@ export async function deleteRole(roleId: Project['id']) {
   if (role?.type === 'system') {
     return new Forbidden403('Ce rôle système ne peut pas être supprimé')
   }
+  await hook.projectRole.delete(roleId)
   await deleteRoleQuery(roleId)
   return null
 }
