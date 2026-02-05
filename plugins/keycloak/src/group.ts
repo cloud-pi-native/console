@@ -73,6 +73,52 @@ export async function getOrCreateProjectGroup(kcClient: KeycloakAdminClient, nam
   }
 }
 
+export async function getOrCreateGroupByName(kcClient: KeycloakAdminClient, name: string): Promise<Required<GroupRepresentation>> {
+  const group = await getGroupByName(kcClient, name)
+  if (group) return group as Required<GroupRepresentation>
+  const newGroup = await kcClient.groups.create({ name })
+  const created = await kcClient.groups.findOne({ id: newGroup.id })
+  if (!created) throw new Error(`Failed to retrieve created group: ${name}`)
+  return created as Required<GroupRepresentation>
+}
+
+export async function getOrCreateGroupByPath(kcClient: KeycloakAdminClient, path: string): Promise<Required<GroupRepresentation>> {
+  if (!path.startsWith('/')) {
+    return getOrCreateGroupByName(kcClient, path)
+  }
+
+  const name = path.split('/').pop() || ''
+  const groups = await kcClient.groups.find({ search: name })
+  const existingGroup = groups.find(g => g.path === path)
+
+  if (existingGroup) return existingGroup as Required<GroupRepresentation>
+
+  const groupNames = path.split('/').filter(Boolean)
+  let parentId: string | undefined
+
+  for (const groupName of groupNames) {
+    const subGroups = parentId
+      ? await kcClient.groups.listSubGroups({ parentId })
+      : await kcClient.groups.find({ search: groupName })
+    const existingSubGroup = subGroups.find(g => g.name === groupName)
+
+    if (existingSubGroup) {
+      parentId = existingSubGroup.id
+    } else {
+      const newGroup = parentId
+        ? await kcClient.groups.createChildGroup({ id: parentId }, { name: groupName })
+        : await kcClient.groups.create({ name: groupName })
+      parentId = newGroup.id
+    }
+  }
+
+  if (parentId) {
+    const group = await kcClient.groups.findOne({ id: parentId })
+    if (group) return group as Required<GroupRepresentation>
+  }
+  throw new Error(`Failed to create group path: ${path}`)
+}
+
 export async function deleteGroup(kcClient: KeycloakAdminClient, groupId: string) {
   await kcClient.groups.del({ id: groupId })
 }
