@@ -35,6 +35,7 @@ export function projectRoleRouter() {
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
       const resBody = await createRole(projectId, body)
+      if (resBody instanceof ErrorResType) return resBody
 
       return {
         status: 201,
@@ -80,6 +81,7 @@ export function projectRoleRouter() {
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
       const resBody = await deleteRole(roleId)
+      if (resBody instanceof ErrorResType) return resBody
 
       return {
         status: 204,
