@@ -4,16 +4,11 @@ import { adminUser, clientURL, signInCloudPiNative } from '../config/console'
 
 test.describe('Service Chains page', () => {
   test.describe('Given an Admin-level user', () => {
-    let user: Credentials
-    test.beforeEach(() => {
-      user = adminUser
-    })
-
     // @TODO These tests assume that there is at least one Service Chain present
     // in the mocked up data. Ensure that this is true at all times !
     test('should list service chains', { tag: '@e2e' }, async ({ page }) => {
       await page.goto(clientURL)
-      await signInCloudPiNative({ page, credentials: user })
+      await signInCloudPiNative({ page, credentials: adminUser })
       await page.getByTestId('menuAdministrationBtn').click()
       await page.getByTestId('menuAdministrationServiceChains').click()
       // We take the first service chain available
@@ -27,7 +22,7 @@ test.describe('Service Chains page', () => {
 
     test('should show a service chain details', { tag: '@e2e' }, async ({ page }) => {
       await page.goto(clientURL)
-      await signInCloudPiNative({ page, credentials: user })
+      await signInCloudPiNative({ page, credentials: adminUser })
       await page.getByTestId('menuAdministrationBtn').click()
       await page.getByTestId('menuAdministrationServiceChains').click()
       // We take the first service chain available
@@ -43,7 +38,7 @@ test.describe('Service Chains page', () => {
 
     test('should show a service chain flows', { tag: '@e2e' }, async ({ page }) => {
       await page.goto(clientURL)
-      await signInCloudPiNative({ page, credentials: user })
+      await signInCloudPiNative({ page, credentials: adminUser })
       await page.getByTestId('menuAdministrationBtn').click()
       await page.getByTestId('menuAdministrationServiceChains').click()
       await expect(page.getByTestId('cpin-loader')).toHaveCount(0)

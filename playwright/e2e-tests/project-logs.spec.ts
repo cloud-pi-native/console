@@ -23,7 +23,7 @@ test.describe('Project logs page', () => {
       await page.getByTestId('test-tab-logs').click()
       await expect(page.locator('#panel-logs')).toBeVisible()
       await expect(page.getByTestId('positionInfo')).toContainText(
-        '1 - 1 sur 1',
+        '1 - 5 sur 5',
       )
     },
   )
@@ -40,7 +40,7 @@ test.describe('Project logs page', () => {
       await page.getByTestId('test-tab-logs').click()
       await expect(page.locator('#panel-logs')).toBeVisible()
       await expect(page.getByTestId('positionInfo')).toContainText(
-        '1 - 1 sur 1',
+        '1 - 5 sur 5',
       )
 
       // Act
@@ -49,7 +49,7 @@ test.describe('Project logs page', () => {
       // Assert
       await expect(page.locator('#panel-logs')).toBeVisible()
       await expect(page.getByTestId('positionInfo')).toContainText(
-        '1 - 2 sur 2',
+        '1 - 5 sur 6',
       )
     },
   )
@@ -73,7 +73,7 @@ test.describe('Project logs page', () => {
       await expect(page.locator('#panel-logs')).toBeVisible()
       await page.getByTestId('replayHooksBtn').click()
       await expect(page.getByTestId('positionInfo')).toContainText(
-        '1 - 2 sur 2',
+        '1 - 5 sur 6',
       )
 
       // Assert - as Project Member
@@ -84,7 +84,7 @@ test.describe('Project logs page', () => {
       await page.getByTestId('test-tab-logs').click()
       await expect(page.locator('#panel-logs')).toBeVisible()
       await expect(page.getByTestId('positionInfo')).toContainText(
-        '1 - 2 sur 2',
+        '1 - 5 sur 6',
       )
     },
   )
