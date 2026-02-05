@@ -12,6 +12,7 @@ const props = withDefaults(defineProps<{
   permissions: bigint
   name: string
   oidcGroup: string
+  type?: string
 }>(), {
   name: 'Nouveau rôle',
   oidcGroup: '',

@@ -4,7 +4,7 @@ import {
   listAdminRoles,
 } from '@/resources/queries-index.js'
 import type { ErrorResType } from '@/utils/errors.js'
-import { BadRequest400 } from '@/utils/errors.js'
+import { BadRequest400, Forbidden403 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
 export async function listRoles() {
@@ -29,11 +29,15 @@ export async function patchRoles(roles: typeof adminRoleContract.patchAdminRoles
         permissions: matchingRole?.permissions ? BigInt(matchingRole?.permissions) : dbRole.permissions,
         position: matchingRole?.position ?? dbRole.position,
         oidcGroup: matchingRole?.oidcGroup ?? dbRole.oidcGroup,
+        type: matchingRole?.type ?? dbRole.type,
       }
     })
 
   if (positionsAvailable.length && positionsAvailable.length !== dbRoles.length) return new BadRequest400('Les numéros de position des rôles sont incohérentes')
   for (const { id, ...role } of updatedRoles) {
+    if (role.type === 'system') {
+      return new Forbidden403('Ce rôle système ne peut pas être renommé')
+    }
     await prisma.adminRole.update({ where: { id }, data: role })
   }
 
@@ -74,6 +78,10 @@ export async function countRolesMembers() {
 }
 
 export async function deleteRole(roleId: Project['id']) {
+  const role = await prisma.adminRole.findFirst({ where: { id: roleId } })
+  if (role?.type === 'system') {
+    throw new Forbidden403('Ce rôle système ne peut pas être supprimé')
+  }
   const allUsers = await prisma.user.findMany({
     where: {
       adminRoleIds: { has: roleId },
