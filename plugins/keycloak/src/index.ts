@@ -7,6 +7,8 @@ import {
   upsertProject,
   upsertProjectRole,
   upsertZone,
+  upsertAdminRole,
+  deleteAdminRole,
 } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
@@ -37,6 +39,12 @@ export const plugin: Plugin = {
       steps: { post: deleteProjectRole },
     },
     retrieveUserByEmail: { steps: { main: retrieveKeycloakUserByEmail } },
+    upsertAdminRole: {
+      steps: { main: upsertAdminRole },
+    },
+    deleteAdminRole: {
+      steps: { post: deleteAdminRole },
+    },
   },
   monitor,
   start,
