@@ -6,6 +6,8 @@ import type {
 
 import prisma from '@/prisma.js'
 
+export const getRole = (id: ProjectRole['id']) => prisma.projectRole.findUnique({ where: { id } })
+
 export const listRoles = (projectId: Project['id']) => prisma.projectRole.findMany({ where: { projectId }, orderBy: { position: 'asc' } })
 
 export function createRole(data: Pick<Prisma.ProjectRoleUncheckedCreateInput, 'permissions' | 'name' | 'position' | 'projectId' | 'oidcGroup'>) {
