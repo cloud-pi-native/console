@@ -4,7 +4,7 @@ import { longestEnvironmentName, projectStatus } from '../utils/const.js'
 import { AtDatesToStringExtend, CoerceBooleanSchema, permissionLevelSchema } from './_utils.js'
 import { RepoSchema } from './repository.js'
 import { MemberSchema, UserSchema } from './user.js'
-import { RoleSchema } from './role.js'
+import { ProjectRoleSchema } from './role.js'
 
 export const descriptionMaxLength = 280
 export const projectNameMaxLength = 20
@@ -76,7 +76,7 @@ export const ProjectSchemaV2 = z.object({
     .uuid(),
   owner: UserSchema
     .omit({ adminRoleIds: true }),
-  roles: RoleSchema
+  roles: ProjectRoleSchema
     .array(),
   everyonePerms: permissionLevelSchema,
   lastSuccessProvisionningVersion: z.string()
