@@ -5,6 +5,10 @@
       "path": "./apps/server"
     },
     {
+      "name": "@cpn-console/server-nestjs",
+      "path": "./apps/server-nestjs"
+    },
+    {
       "name": "@cpn-console/client",
       "path": "./apps/client"
     }
