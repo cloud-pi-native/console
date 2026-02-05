@@ -4,7 +4,7 @@ import { hooks } from '@cpn-console/hooks'
 import type { AsyncReturnType } from '@cpn-console/shared'
 import { ProjectAuthorized, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
 import { genericProxy } from './proxy.js'
-import { archiveProject, getAdminPlugin, getClusterByIdOrThrow, getClusterNamesByZoneId, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getRole, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '@/resources/queries-index.js'
+import { archiveProject, getAdminPlugin, getAdminRoleById, getClusterByIdOrThrow, getClusterNamesByZoneId, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '@/resources/queries-index.js'
 import type { ConfigRecords } from '@/resources/project-service/business.js'
 import { dbToObj } from '@/resources/project-service/business.js'
 
@@ -196,6 +196,20 @@ const misc = {
   },
 } as const
 
+const adminRole = {
+  upsert: async (roleId: string) => {
+    const role = await getAdminRoleById(roleId)
+    if (!role) throw new Error('Role not found')
+    const config = dbToObj(await getAdminPlugin())
+    return hooks.upsertAdminRole.execute(role, config)
+  },
+  delete: async (role: AsyncReturnType<typeof getAdminRoleById>) => {
+    if (!role) throw new Error('Role is required')
+    const config = dbToObj(await getAdminPlugin())
+    return hooks.deleteAdminRole.execute(role, config)
+  },
+} as const
+
 export const hook = {
   // @ts-ignore TODO voir comment opti la signature de la fonction
   misc: genericProxy(misc),
@@ -209,6 +223,8 @@ export const hook = {
   zone: genericProxy(zone, { delete: ['upsert'], upsert: ['delete'] }),
   // @ts-ignore TODO voir comment opti la signature de la fonction
   user: genericProxy(user, {}),
+  // @ts-ignore TODO voir comment opti la signature de la fonction
+  adminRole: genericProxy(adminRole, { delete: ['upsert'], upsert: ['delete'] }),
 }
 
 function formatClusterInfos({ kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt' | 'createdAt' | 'zoneId' | 'kubeConfigId'>

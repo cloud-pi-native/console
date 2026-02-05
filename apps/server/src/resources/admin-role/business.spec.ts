@@ -1,9 +1,14 @@
 import { faker } from '@faker-js/faker'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { AdminRole, User } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
 import { BadRequest400, Forbidden403 } from '../../utils/errors.ts'
+import { hook } from '../../__mocks__/utils/hook-wrapper.ts'
 import { countRolesMembers, createRole, deleteRole, listRoles, patchRoles } from './business.ts'
+
+vi.mock('../../utils/hook-wrapper.ts', async () => ({
+  hook,
+}))
 
 describe('test admin-role business', () => {
   describe('listRoles', () => {
@@ -112,12 +117,13 @@ describe('test admin-role business', () => {
         type: 'custom',
       }
 
-      prisma.user.findMany.mockResolvedValueOnce(users)
+      prisma.user.findMany.mockResolvedValue(users)
       prisma.adminRole.findMany.mockResolvedValueOnce([])
       prisma.adminRole.findUnique.mockResolvedValueOnce(dbRole)
       prisma.adminRole.create.mockResolvedValue(dbRole)
       await deleteRole(roleId)
 
+      expect(prisma.user.findMany).toHaveBeenCalledTimes(2)
       expect(prisma.user.update).toHaveBeenNthCalledWith(1, { where: { id: users[0].id }, data: { adminRoleIds: [] } })
       expect(prisma.user.update).toHaveBeenNthCalledWith(2, { where: { id: users[1].id }, data: { adminRoleIds: [users[1].adminRoleIds[1]] } })
       expect(prisma.adminRole.delete).toHaveBeenCalledWith({ where: { id: roleId } })
