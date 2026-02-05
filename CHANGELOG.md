@@ -1,5 +1,35 @@
 # Changelog
 
+## [9.12.0](https://github.com/cloud-pi-native/console/compare/v9.11.5...v9.12.0) (2026-02-03)
+
+
+### Features
+
+* **ci:** allow hotfixes with release-please ([52f6751](https://github.com/cloud-pi-native/console/commit/52f6751cece9d17207a60ca5355534be9e15cfbc))
+* **ci:** change release-please config and job to allow for hotfixes ([dd18790](https://github.com/cloud-pi-native/console/commit/dd187904f3a3309858bfd161fda54dddee943108))
+* **release-please:** allow chore, docs, and other commit types to trigger new releases ([cd717b8](https://github.com/cloud-pi-native/console/commit/cd717b8e47e8a4b74c25abcf9debee66f0a937bd))
+
+
+### Miscellaneous Chores
+
+* **ci:** avoid checking out the repository for create-preview-comment ([e8bb444](https://github.com/cloud-pi-native/console/commit/e8bb44428b7b2948f269e8e753289f7c57630586))
+* **ci:** move all jobs (not workflows) to dedicated directory ([7f23372](https://github.com/cloud-pi-native/console/commit/7f23372770b4481fc0bbe9bfe3dc40e2fa084e02))
+* **ci:** move release-please job file to dedicated jobs directory ([51a8621](https://github.com/cloud-pi-native/console/commit/51a86217b741de1b01a8e0840434298f32880e51))
+* **ci:** rename cd workflow to create-or-update-release ([36923f5](https://github.com/cloud-pi-native/console/commit/36923f5368f91cf082d218bbffebcbfc28a08099))
+* **ci:** rename ci to explicit continuous-integration workflow ([9841386](https://github.com/cloud-pi-native/console/commit/9841386c150c59eb6bf22fe4372b2dd8ba663a18))
+* **ci:** rename create-preview-comment to better explicit its purpose ([34c5de1](https://github.com/cloud-pi-native/console/commit/34c5de1274a91100ee7236e10969b972b04693ea))
+* **ci:** rename preview to explicit create-preview-release.yml workflow ([44c6c7d](https://github.com/cloud-pi-native/console/commit/44c6c7dcab4a66a35e42c4737ae282181828c680))
+* **ci:** rename workflows ([e15c6e5](https://github.com/cloud-pi-native/console/commit/e15c6e56ba476b2f401e55b3d9151c96749a6f12))
+* **doc:** update main README to fix/update how releases are performed ([4f4f130](https://github.com/cloud-pi-native/console/commit/4f4f130c019280535100e813255a6f8af84fa37d))
+* **server-nestjs:** add application to the version-bumpable ones ([a6b5e78](https://github.com/cloud-pi-native/console/commit/a6b5e78f9ac8bc12e809a9b11949fb2e258e4ded))
+
+
+### Docs
+
+* **README:** split release section into its own RELEASE.md file ([59a6b2f](https://github.com/cloud-pi-native/console/commit/59a6b2f2dbe31efeee16a7f79bcf57a201c6eac8))
+* **RELEASE:** add mermaidjs schema ([0b761d8](https://github.com/cloud-pi-native/console/commit/0b761d808a6cd092fa7cbd40ec10fb65718a0aaf))
+* **RELEASE:** document hotfixes creation workflow ([921de7c](https://github.com/cloud-pi-native/console/commit/921de7ca544424995e77a158b4f87290e172b24f))
+
 ## [9.11.5](https://github.com/cloud-pi-native/console/compare/v9.11.4...v9.11.5) (2026-01-26)
 
 

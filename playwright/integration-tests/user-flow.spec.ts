@@ -269,13 +269,13 @@ test.describe('Integration tests user flow: deployment and metrics', { tag: '@in
     await page.getByRole('link', { name: 'Grafana' }).click()
     const page1 = await page1Promise
     const signInLink = page1.getByRole('link', { name: 'Sign in with grafana-projects' })
-    await waitForAndClick(signInLink, page1)
+    await waitForAndClick({ locator: signInLink, page: page1 })
     await expect(page1.getByRole('link', { name: 'Grafana', exact: true })).toBeVisible()
     await page1.getByTestId('data-testid Toggle menu').click()
     await page1.getByRole('button', { name: 'Expand section Dashboards' }).click()
     await page1.getByRole('link', { name: 'Dashboards', exact: true }).click()
     const dsoDashboard = page1.getByRole('link', { name: 'dso-grafana' })
-    await waitForAndClick(dsoDashboard, page1)
+    await waitForAndClick({ locator: dsoDashboard, page: page1 })
     // Check if we can see some metrics
     await page1.getByRole('link', { name: 'Kubernetes / Views /' }).click()
     await expect(page1.getByText('0.100')).toBeVisible() // Cpu request
