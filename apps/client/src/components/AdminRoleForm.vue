@@ -20,7 +20,7 @@ const props = withDefaults(defineProps<{
 })
 const emits = defineEmits<{
   delete: []
-  save: [{ name: string, permissions: string, oidcGroup: string }]
+  save: [{ name: string, permissions: string, oidcGroup: string, type: string }]
   cancel: []
 }>()
 const usersStore = useUsersStore()
