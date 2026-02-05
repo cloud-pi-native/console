@@ -12,9 +12,11 @@ const props = withDefaults(defineProps<{
   permissions: bigint
   name: string
   oidcGroup: string
+  type?: string
 }>(), {
   name: 'Nouveau rôle',
   oidcGroup: '',
+  type: 'custom',
 })
 const emits = defineEmits<{
   delete: []
@@ -32,6 +34,8 @@ const role = ref({
 const isUpdated = computed(() => {
   return !shallowEqual(props, role.value)
 })
+
+const isSystem = computed(() => props.type === 'system')
 
 const errorSchema = computed<SharedZodError | undefined>(() => {
   const schemaValidation = RoleSchema.partial().safeParse(role.value)
@@ -139,6 +143,7 @@ function closeModal() {
         label-visible
         hint="Ne doit pas dépasser 30 caractères."
         class="mb-5"
+        :disabled="isSystem"
       />
       <p
         class="fr-h6"
@@ -163,7 +168,7 @@ function closeModal() {
           :label="perm.label"
           :hint="perm?.hint"
           :name="perm.key"
-          :disabled="role.permissions & ADMIN_PERMS.MANAGE && perm.key !== 'MANAGE'"
+          :disabled="isSystem || (role.permissions & ADMIN_PERMS.MANAGE && perm.key !== 'MANAGE')"
           @update:model-value="(checked: boolean) => updateChecked(checked, perm.key)"
         />
       </div>
@@ -174,8 +179,10 @@ function closeModal() {
         label-visible
         placeholder="/admin"
         class="mb-5"
+        :disabled="isSystem"
       />
       <DsfrButton
+        v-if="!isSystem"
         data-testid="saveBtn"
         label="Enregistrer"
         secondary
@@ -184,6 +191,7 @@ function closeModal() {
         @click="$emit('save', { ...role, permissions: role.permissions.toString() })"
       />
       <DsfrButton
+        v-if="!isSystem"
         data-testid="deleteBtn"
         label="Supprimer"
         secondary
@@ -194,63 +202,54 @@ function closeModal() {
       panel-id="members"
       tab-id="members"
     >
-      <template
-        v-if="!props.oidcGroup"
+      <DsfrCheckbox
+        v-for="user in users"
+        :id="`${user.id}-cbx`"
+        :key="user.email"
+        :label="`${user.lastName} ${user.firstName}`"
+        :hint="user.email"
+        :name="`checkbox-${user.id}`"
+        value="user.adminRoleIds.includes(role.id)"
+        :model-value="user.adminRoleIds.includes(role.id)"
+        @update:model-value="(checked: boolean) => switchUserMembership(checked, user)"
+      />
+      <DsfrNotice
+        v-if="!users.length"
+        class="mb-5"
+        data-testid="noUserNotice"
+        title="Aucun utilisateur ne dispose actuellement de ce rôle."
+      />
+      <div
+        class="w-max"
       >
-        <DsfrCheckbox
-          v-for="user in users"
-          :id="`${user.id}-cbx`"
-          :key="user.email"
-          :label="`${user.lastName} ${user.firstName}`"
-          :hint="user.email"
-          :name="`checkbox-${user.id}`"
-          value="user.adminRoleIds.includes(role.id)"
-          :model-value="user.adminRoleIds.includes(role.id)"
-          @update:model-value="(checked: boolean) => switchUserMembership(checked, user)"
+        <SuggestionInput
+          :key="newUserInputKey"
+          v-model="newUserInput"
+          data-testid="addUserSuggestionInput"
+          label="Nom, prénom ou adresse mail de l'utilisateur à rechercher"
+          label-visible
+          hint="Adresse e-mail de l'utilisateur"
+          placeholder="prenom.nom@interieur.gouv.fr"
+          :suggestions="usersToSuggest"
+          @update:model-value="(value: string) => retrieveUsersToAdd(value)"
         />
-        <DsfrNotice
-          v-if="!users.length"
-          class="mb-5"
-          data-testid="noUserNotice"
-          title="Aucun utilisateur ne dispose actuellement de ce rôle."
+        <DsfrAlert
+          v-if="isUserAlreadyInTeam"
+          data-testid="userErrorInfo"
+          description="L'utilisateur est déjà détenteur de ce rôle."
+          small
+          type="error"
+          class="w-max fr-mb-2w"
         />
-        <div
-          class="w-max"
-        >
-          <SuggestionInput
-            :key="newUserInputKey"
-            v-model="newUserInput"
-            data-testid="addUserSuggestionInput"
-            label="Nom, prénom ou adresse mail de l'utilisateur à rechercher"
-            label-visible
-            hint="Adresse e-mail de l'utilisateur"
-            placeholder="prenom.nom@interieur.gouv.fr"
-            :suggestions="usersToSuggest"
-            @update:model-value="(value: string) => retrieveUsersToAdd(value)"
-          />
-          <DsfrAlert
-            v-if="isUserAlreadyInTeam"
-            data-testid="userErrorInfo"
-            description="L'utilisateur est déjà détenteur de ce rôle."
-            small
-            type="error"
-            class="w-max fr-mb-2w"
-          />
-          <DsfrButton
-            data-testid="addUserBtn"
-            label="Ajouter l'utilisateur"
-            secondary
-            icon="ri:user-add-line"
-            :disabled="!newUserInput || isUserAlreadyInTeam || !newUser"
-            @click="() => newUser && switchUserMembership(true, newUser, true)"
-          />
-        </div>
-      </template>
-      <template
-        v-else
-      >
-        Les groupes ayant une liaison OIDC ne peuvent pas gérer leurs membres.
-      </template>
+        <DsfrButton
+          data-testid="addUserBtn"
+          label="Ajouter l'utilisateur"
+          secondary
+          icon="ri:user-add-line"
+          :disabled="!newUserInput || isUserAlreadyInTeam || !newUser"
+          @click="() => newUser && switchUserMembership(true, newUser, true)"
+        />
+      </div>
     </DsfrTabContent>
     <DsfrTabContent
       panel-id="close"

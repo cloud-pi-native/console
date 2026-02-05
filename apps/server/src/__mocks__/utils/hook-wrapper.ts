@@ -4,6 +4,10 @@ import { mockDeep, mockReset } from 'vitest-mock-extended'
 vi.mock('../utils/hook-wrapper.ts')
 
 export const hook = {
+  adminRole: {
+    delete: vi.fn(),
+    upsert: vi.fn(),
+  },
   cluster: {
     delete: vi.fn(),
     upsert: vi.fn(),
@@ -16,6 +20,10 @@ export const hook = {
     upsert: vi.fn(),
     delete: vi.fn(),
     getSecrets: vi.fn(),
+  },
+  projectRole: {
+    upsert: vi.fn(),
+    delete: vi.fn(),
   },
   user: {
     retrieveUserByEmail: vi.fn(),

@@ -6,7 +6,8 @@ import {
   listRoles as listRolesQuery,
   updateRole,
 } from '@/resources/queries-index.js'
-import { BadRequest400, NotFound404 } from '@/utils/errors.js'
+import { BadRequest400, Forbidden403, NotFound404 } from '@/utils/errors.js'
+import { hook } from '@/utils/hook-wrapper.js'
 import prisma from '@/prisma.js'
 
 export async function listRoles(projectId: Project['id']) {
@@ -21,31 +22,40 @@ export async function listRoles(projectId: Project['id']) {
 export async function patchRoles(projectId: Project['id'], roles: typeof projectRoleContract.patchProjectRoles.body._type) {
   const project = await prisma.project.findUnique({ where: { id: projectId }, select: { slug: true } })
   if (!project) throw new NotFound404()
-  const dbRoles = await listRoles(projectId)
+  const dbRoles = await listRolesQuery(projectId)
   const positionsAvailable: number[] = []
 
-  const updatedRoles = dbRoles
-    .filter(dbRole => roles.find(role => role.id === dbRole.id)) // filter non concerned dbRoles
-    .map((dbRole) => {
-      const matchingRole = roles.find(role => role.id === dbRole.id)
-      if (typeof matchingRole?.position !== 'undefined' && !positionsAvailable.includes(matchingRole.position)) {
-        positionsAvailable.push(matchingRole.position)
+  const updatedRoles: (Omit<ProjectRole, 'permissions'> & { permissions: bigint })[] = []
+
+  for (const dbRole of dbRoles) {
+    const matchingRole = roles.find(role => role.id === dbRole.id)
+    if (matchingRole) {
+      if (dbRole.type === 'system') {
+        return new Forbidden403('Ce rôle système ne peut pas être renommé')
       }
 
       if (typeof matchingRole.position !== 'undefined' && !positionsAvailable.includes(matchingRole.position)) {
         positionsAvailable.push(matchingRole.position)
       }
-      return {
-        id: matchingRole?.id ?? dbRole.id,
-        name: matchingRole?.name ?? dbRole.name,
-        permissions: matchingRole?.permissions ? BigInt(matchingRole?.permissions) : BigInt(dbRole.permissions),
-        position: matchingRole?.position ?? dbRole.position,
-        oidcGroup: matchingRole?.oidcGroup ? `/${project.slug}/console${matchingRole.oidcGroup}` : dbRole.oidcGroup,
+      if (matchingRole.oidcGroup && !matchingRole.oidcGroup.startsWith('/')) {
+        return new BadRequest400('oidcGroup doit commencer par /')
       }
-    })
+      updatedRoles.push({
+        id: dbRole.id,
+        name: matchingRole.name ?? dbRole.name,
+        permissions: matchingRole.permissions ? BigInt(matchingRole.permissions) : dbRole.permissions,
+        position: matchingRole.position ?? dbRole.position,
+        oidcGroup: matchingRole.oidcGroup ? `/${project.slug}/console${matchingRole.oidcGroup}` : dbRole.oidcGroup,
+        type: matchingRole.type ?? dbRole.type,
+        projectId: dbRole.projectId,
+      })
+    }
+  }
+
   if (positionsAvailable.length && positionsAvailable.length !== dbRoles.length) return new BadRequest400('Les numéros de position des rôles sont incohérentes')
   for (const { id, ...role } of updatedRoles) {
     await updateRole(id, role)
+    await hook.projectRole.upsert(id)
   }
 
   return listRoles(projectId)
@@ -60,11 +70,15 @@ export async function createRole(projectId: Project['id'], role: typeof projectR
     select: { position: true },
   }))?.position ?? -1
 
+  if (role.type === 'system') {
+    return new Forbidden403('Ce rôle système ne peut pas être renommé')
+  }
+
   if (role.oidcGroup && !role.oidcGroup.startsWith('/')) {
     throw new BadRequest400('oidcGroup doit commencer par /')
   }
 
-  await prisma.projectRole.create({
+  const createdRole = await prisma.projectRole.create({
     data: {
       ...role,
       projectId,
@@ -73,6 +87,8 @@ export async function createRole(projectId: Project['id'], role: typeof projectR
       oidcGroup: role.oidcGroup ? `/${project.slug}/console${role.oidcGroup}` : undefined,
     },
   })
+
+  await hook.projectRole.upsert(createdRole.id)
 
   return listRoles(projectId)
 }
@@ -90,6 +106,11 @@ export async function countRolesMembers(projectId: Project['id']) {
 }
 
 export async function deleteRole(roleId: Project['id']) {
+  const role = await prisma.projectRole.findUnique({ where: { id: roleId } })
+  if (role?.type === 'system') {
+    return new Forbidden403('Ce rôle système ne peut pas être supprimé')
+  }
+  await hook.projectRole.delete(roleId)
   await deleteRoleQuery(roleId)
   return null
 }

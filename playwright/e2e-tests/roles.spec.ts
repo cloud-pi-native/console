@@ -33,7 +33,17 @@ test.describe('Administration Roles', () => {
     await signInCloudPiNative({ page, credentials: tcolinUser })
     const newOidcRole = {
       name: faker.string.alpha(10).toLowerCase(),
-      oidcGroupName: faker.string.alpha(10).toLowerCase(),
+      oidcGroupName: `/${faker.string.alpha(10).toLowerCase()}`,
+      user: {
+        id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567',
+        firstName: 'Claire',
+        lastName: 'NOLLET',
+        email: 'claire.nollet@test.com',
+        createdAt: '2023-07-03T14:46:56.771Z',
+        updatedAt: '2023-07-03T14:46:56.771Z',
+        adminRoleIds: [],
+        type: 'human',
+      },
     }
 
     // Act
@@ -54,9 +64,17 @@ test.describe('Administration Roles', () => {
     // Assert
     await expect(page.getByTestId('role-list')).toContainText(newOidcRole.name)
     await page.getByTestId('test-members').click()
-    await expect(page.getByTestId('addUserSuggestionInput')).not.toBeVisible()
-    await expect(page.locator('div#members')).toContainText(
-      'Les groupes ayant une liaison OIDC ne peuvent pas gérer leurs membres.',
+    await expect(page.getByTestId('addUserBtn')).toBeDisabled()
+    await page
+      .getByTestId('addUserSuggestionInput')
+      .locator('input')
+      .fill(`${newOidcRole.user.email}`)
+    await page.getByTestId('addUserBtn').click()
+    await page.getByTestId('menuAdministrationUsers').click()
+
+    // Assert
+    await expect(page.getByTestId(`user-${newOidcRole.user.id}`)).toContainText(
+      newOidcRole.name,
     )
   })
 
@@ -138,7 +156,7 @@ test.describe('Administration Roles', () => {
     await signInCloudPiNative({ page, credentials: tcolinUser })
     const newOidcRole = {
       name: faker.string.alpha(10).toLowerCase(),
-      oidcGroupName: faker.string.alpha(10).toLowerCase(),
+      oidcGroupName: `/${faker.string.alpha(10).toLowerCase()}`,
     }
 
     // Act
@@ -193,5 +211,24 @@ test.describe('Administration Roles', () => {
 
     // Assert
     await expect(page.getByTestId('role-list')).not.toContainText(newRole.name)
+  })
+
+  test('Should not be able to edit system roles', { tag: '@e2e' }, async ({ page }) => {
+    // Arrange
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: tcolinUser })
+
+    // Act
+    await page.getByTestId('menuAdministrationBtn').click()
+    await page.getByTestId('menuAdministrationRoles').click()
+
+    // Select system role
+    await page.getByTestId('76229c96-4716-45bc-99da-00498ec9018c-tab').click()
+
+    // Assert
+    await expect(page.getByTestId('roleNameInput')).toBeDisabled()
+    await expect(page.getByTestId('oidcGroupInput')).toBeDisabled()
+    await expect(page.getByTestId('saveBtn')).toBeHidden()
+    await expect(page.getByTestId('deleteBtn')).toBeHidden()
   })
 })

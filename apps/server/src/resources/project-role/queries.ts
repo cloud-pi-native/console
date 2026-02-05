@@ -6,6 +6,8 @@ import type {
 
 import prisma from '@/prisma.js'
 
+export const getRole = (id: ProjectRole['id']) => prisma.projectRole.findUnique({ where: { id } })
+
 export const listRoles = (projectId: Project['id']) => prisma.projectRole.findMany({ where: { projectId }, orderBy: { position: 'asc' } })
 
 export function createRole(data: Pick<Prisma.ProjectRoleUncheckedCreateInput, 'permissions' | 'name' | 'position' | 'projectId' | 'oidcGroup'>) {
@@ -16,6 +18,7 @@ export function createRole(data: Pick<Prisma.ProjectRoleUncheckedCreateInput, 'p
       position: data.position,
       projectId: data.projectId,
       oidcGroup: data.oidcGroup,
+      type: 'custom',
     },
   })
 }
@@ -52,3 +55,5 @@ export async function deleteRole(id: ProjectRole['id']) {
     })
   }
 }
+
+export const getProjectRoleById = (id: ProjectRole['id']) => prisma.projectRole.findUnique({ where: { id }, include: { project: true } })
