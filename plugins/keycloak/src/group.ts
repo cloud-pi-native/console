@@ -72,3 +72,7 @@ export async function getOrCreateProjectGroup(kcClient: KeycloakAdminClient, nam
     name: existingGroup.name,
   }
 }
+
+export async function deleteGroup(kcClient: KeycloakAdminClient, groupId: string) {
+  await kcClient.groups.del({ id: groupId })
+}
