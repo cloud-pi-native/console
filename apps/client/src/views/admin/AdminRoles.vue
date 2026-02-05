@@ -32,7 +32,7 @@ async function deleteRole(roleId: Role['id']) {
   selectedId.value = undefined
 }
 
-async function saveRole(role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permissions'>) {
+async function saveRole(role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permissions' | 'type'>) {
   if (!selectedRole.value) return
   await adminRoleStore.patchRoles(
     [{
