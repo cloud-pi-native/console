@@ -42,7 +42,7 @@ describe('test users business', () => {
 
       await patchUsers([userUpdated])
       expect(prisma.user.update).toHaveBeenCalledTimes(1)
-      expect(prisma.user.findMany).toHaveBeenCalledTimes(1)
+      expect(prisma.user.findMany).toHaveBeenCalledTimes(2)
 
       await patchUsers([userUpdated, userUpdated])
       expect(prisma.user.update).toHaveBeenCalledTimes(3)

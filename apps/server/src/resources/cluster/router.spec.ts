@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ClusterDetails, Environment } from '@cpn-console/shared'
-import { clusterContract } from '@cpn-console/shared'
+import { ADMIN_PERMS, clusterContract } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
 import { getUserMockInfos } from '../../utils/mocks.js'
@@ -39,7 +39,7 @@ describe('test clusterContract', () => {
       expect(response.statusCode).toEqual(200)
     })
     it('as admin', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_CLUSTERS)
 
       authUserMock.mockResolvedValueOnce(user)
 
@@ -74,7 +74,7 @@ describe('test clusterContract', () => {
           user: {},
         },
       }
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_CLUSTERS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessGetDetailsMock.mockResolvedValueOnce(cluster)

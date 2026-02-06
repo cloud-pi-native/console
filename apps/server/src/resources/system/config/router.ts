@@ -9,7 +9,7 @@ export function pluginConfigRouter() {
   // Récupérer les configurations plugins
     getPluginsConfig: async ({ request: req }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ListSystem(perms.adminPermissions)) return new Forbidden403()
 
       const services = await getPluginsConfig()
 
@@ -22,7 +22,7 @@ export function pluginConfigRouter() {
     // Mettre à jour les configurations plugins
     updatePluginsConfig: async ({ request: req, body }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ManageSystem(perms.adminPermissions)) return new Forbidden403()
 
       const resBody = await updatePluginConfig(body)
       if (resBody instanceof ErrorResType) return resBody

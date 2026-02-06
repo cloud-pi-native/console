@@ -37,7 +37,7 @@ export function userRouter() {
     getAllUsers: async ({ request: req, query: { relationType, ...query } }) => {
       const perms = await authUser(req)
 
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ManageUsers(perms.adminPermissions)) return new Forbidden403()
 
       const body = await getUsers(query, relationType)
       if (body instanceof ErrorResType) return body
@@ -50,7 +50,7 @@ export function userRouter() {
 
     patchUsers: async ({ request: req, body }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ManageUsers(perms.adminPermissions)) return new Forbidden403()
 
       const users = await patchUsers(body)
 

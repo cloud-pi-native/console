@@ -17,16 +17,23 @@ export function createAdminRole(data: Pick<Prisma.AdminRoleUncheckedCreateInput,
 }
 
 export function updateAdminRole(id: AdminRole['id'], data: Pick<Prisma.AdminRoleUncheckedUpdateInput, 'permissions' | 'name' | 'position' | 'id'>) {
-  return prisma.projectRole.updateMany({
+  return prisma.adminRole.updateMany({
     where: { id },
     data,
   })
 }
 
 export function deleteAdminRole(id: AdminRole['id']) {
-  return prisma.projectRole.delete({
+  return prisma.adminRole.delete({
     where: {
       id,
     },
   })
+}
+
+export async function getAdminRoleById(id: string) {
+  const role = await prisma.adminRole.findUnique({ where: { id } })
+  if (!role) return null
+  const members = await prisma.user.findMany({ where: { adminRoleIds: { has: id } } })
+  return { ...role, members }
 }

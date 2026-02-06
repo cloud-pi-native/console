@@ -21,10 +21,11 @@ export const data = {
   adminRole: [
     {
       id: '76229c96-4716-45bc-99da-00498ec9018c',
-      permissions: '2n',
+      permissions: '3n',
       position: 0,
       oidcGroup: '/admin',
-      name: 'Admin',
+      name: 'Administrateur Plateforme',
+      type: 'system',
     },
     {
       id: 'eadf604f-5f54-4744-bdfb-4793d2271e9b',
@@ -32,6 +33,15 @@ export const data = {
       position: 1,
       oidcGroup: '',
       name: 'Admin Locaux',
+      type: 'custom',
+    },
+    {
+      id: '35848aa2-e881-4770-9844-0c5c3693e506',
+      permissions: '1n',
+      position: 2,
+      oidcGroup: '/readonly',
+      name: 'Lecture Seule Plateforme',
+      type: 'system',
     },
   ],
   kubeconfig: [

@@ -5,6 +5,7 @@ import { getMatchingUsers as getMatchingUsersQuery, getUsers as getUsersQuery } 
 import prisma from '@/prisma.js'
 import type { UserDetails } from '@/types/index.js'
 import { BadRequest400 } from '@/utils/errors.js'
+import { hook } from '@/utils/hook-wrapper.js'
 
 export async function getUsers(query: typeof userContract.getAllUsers.query._type, relationType: 'OR' | 'AND' = 'AND') {
   const whereInputs: Prisma.UserWhereInput[] = []
@@ -62,6 +63,12 @@ export async function getMatchingUsers(query: typeof userContract.getMatchingUse
 }
 
 export async function patchUsers(users: typeof userContract.patchUsers.body._type) {
+  const userIds = users.map(u => u.id)
+  const usersBefore = await prisma.user.findMany({
+    where: { id: { in: userIds } },
+    select: { id: true, adminRoleIds: true },
+  })
+
   for (const user of users) {
     await prisma.user.update({
       where: {
@@ -71,6 +78,19 @@ export async function patchUsers(users: typeof userContract.patchUsers.body._typ
         adminRoleIds: user.adminRoleIds,
       },
     })
+  }
+
+  const impactedRoleIds = new Set<string>()
+  for (const user of users) {
+    const before = usersBefore.find(u => u.id === user.id)
+    if (before) {
+      before.adminRoleIds.forEach(id => impactedRoleIds.add(id))
+    }
+    user.adminRoleIds?.forEach(id => impactedRoleIds.add(id))
+  }
+
+  for (const roleId of impactedRoleIds) {
+    await hook.adminRole.upsert(roleId)
   }
 
   return prisma.user.findMany({
@@ -104,14 +124,10 @@ export async function logViaSession({ id, email, groups, ...user }: UserTrial): 
     .filter(({ oidcGroup }) => oidcGroup && groups.includes(oidcGroup))
     .map(({ id }) => id)
 
-  const nonOidcRoleIds = matchingAdminRoles
-    .filter(({ oidcGroup, id }) => !oidcGroup && userDb.adminRoleIds.includes(id))
-    .map(({ id }) => id)
-
   // On enregistre en bdd uniquement les roles de l'utilisateur
   // qui ne viennent pas de keycloak
-  const updatedUser = await prisma.user.update({ where: { id }, data: { ...user, adminRoleIds: nonOidcRoleIds, lastLogin: (new Date()).toISOString() } })
-    .then(user => ({ ...user, adminRoleIds: [...user.adminRoleIds, ...oidcRoleIds] }))
+  const updatedUser = await prisma.user.update({ where: { id }, data: { ...user, lastLogin: (new Date()).toISOString() } })
+    .then(user => ({ ...user, adminRoleIds: [...new Set([...user.adminRoleIds, ...oidcRoleIds])] }))
   return {
     user: updatedUser,
     adminPerms: sumAdminPerms(matchingAdminRoles),

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { systemPluginContract } from '@cpn-console/shared'
+import { ADMIN_PERMS, systemPluginContract } from '@cpn-console/shared'
 import app from '../../../app.js'
 import * as utilsController from '../../../utils/controller.js'
 import { getUserMockInfos } from '../../../utils/mocks.js'
@@ -18,8 +18,8 @@ describe('test systemPluginContract', () => {
 
   describe('getPluginsConfig', () => {
     it('should return plugin configurations for authorized users', async () => {
-      const user = getUserMockInfos(true)
-      const pluginsConfig = []
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_SYSTEM)
+      const pluginsConfig: any[] = []
 
       authUserMock.mockResolvedValueOnce(user)
       businessGetPluginsConfigMock.mockResolvedValueOnce(pluginsConfig)
@@ -50,7 +50,7 @@ describe('test systemPluginContract', () => {
   describe('updatePluginsConfig', () => {
     const newConfig = { plugin1: { keyId: 'value' } }
     it('should update plugin configurations for authorized users', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_SYSTEM)
 
       authUserMock.mockResolvedValueOnce(user)
       businessUpdatePluginConfigMock.mockResolvedValueOnce(newConfig)
@@ -79,7 +79,7 @@ describe('test systemPluginContract', () => {
     })
 
     it('should return error if business logic fails', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_SYSTEM)
 
       authUserMock.mockResolvedValueOnce(user)
       businessUpdatePluginConfigMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
