@@ -9,6 +9,8 @@ import {
   upsertZone,
   upsertAdminRole,
   deleteAdminRole,
+  upsertProjectMember,
+  deleteProjectMember,
 } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
@@ -28,6 +30,12 @@ export const plugin: Plugin = {
     },
     upsertProjectRole: {
       steps: { main: upsertProjectRole },
+    },
+    upsertProjectMember: {
+      steps: { main: upsertProjectMember },
+    },
+    deleteProjectMember: {
+      steps: { post: deleteProjectMember },
     },
     upsertZone: {
       steps: { main: upsertZone },

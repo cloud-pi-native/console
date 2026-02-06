@@ -1,4 +1,3 @@
-import { adminGroupPath } from '@cpn-console/shared'
 import type { Project, StepCall } from '@cpn-console/hooks'
 import { generateProjectKey, parseError } from '@cpn-console/hooks'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
@@ -27,13 +26,17 @@ const projectPermissions = [
   'user',
 ]
 
-export async function initSonar() {
+export async function initSonar(config?: { adminGroupPath?: string }) {
+  const adminGroupPath = config?.adminGroupPath
+  if (!adminGroupPath) {
+    throw new Error('adminGroupPath is required')
+  }
   await setTemplatePermisions()
-  await createAdminGroup()
-  await setAdminPermisions()
+  await createAdminGroup(adminGroupPath)
+  await setAdminPermisions(adminGroupPath)
 }
 
-async function createAdminGroup() {
+async function createAdminGroup(adminGroupPath: string) {
   const axiosInstance = getAxiosInstance()
   const adminGroup = await findGroupByName(adminGroupPath)
   if (!adminGroup) {
@@ -48,7 +51,7 @@ async function createAdminGroup() {
   }
 }
 
-async function setAdminPermisions() {
+async function setAdminPermisions(adminGroupPath: string) {
   const axiosInstance = getAxiosInstance()
   for (const permission of globalPermissions) {
     await axiosInstance({

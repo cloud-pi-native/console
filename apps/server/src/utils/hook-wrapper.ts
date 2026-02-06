@@ -1,5 +1,5 @@
-import type { Cluster, Kubeconfig, Project, ProjectRole, Zone } from '@prisma/client'
-import type { ClusterObject, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository, Store, ZoneObject } from '@cpn-console/hooks'
+import type { Cluster, Kubeconfig, Project, ProjectRole, Zone, ProjectMembers } from '@prisma/client'
+import type { ClusterObject, HookResult, KubeCluster, KubeUser, ProjectMemberPayload, Project as ProjectPayload, RepoCreds, Repository, Store, ZoneObject } from '@cpn-console/hooks'
 import { hooks } from '@cpn-console/hooks'
 import type { AsyncReturnType } from '@cpn-console/shared'
 import { ProjectAuthorized, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
@@ -139,6 +139,65 @@ const user = {
   },
 } as const
 
+const projectMember = {
+  upsert: async (projectId: Project['id'], userId: ProjectMembers['userId']) => {
+    const project = await getHookProjectInfos(projectId)
+    const store = dbToObj(await getAdminPlugin())
+
+    const member = project.members.find(m => m.userId === userId)
+    if (!member) throw new Error('Member not found')
+
+    const memberRoles = project.roles
+      .filter(role => member.roleIds.includes(role.id))
+      .map(role => ({ ...role, oidcGroup: role.oidcGroup ?? undefined }))
+
+    const payload = {
+      userId: member.userId,
+      roleIds: member.roleIds,
+      firstName: member.user.firstName,
+      lastName: member.user.lastName,
+      email: member.user.email,
+      type: member.user.type as 'human' | 'bot' | 'ghost',
+      createdAt: member.user.createdAt.toISOString(),
+      updatedAt: member.user.updatedAt.toISOString(),
+      lastLogin: member.user.lastLogin?.toISOString(),
+      projectId: project.id,
+      roles: memberRoles,
+      project: { id: project.id, slug: project.slug },
+    } as unknown as ProjectMemberPayload
+
+    return hooks.upsertProjectMember.execute(payload, store)
+  },
+  delete: async (projectId: Project['id'], userId: ProjectMembers['userId']) => {
+    const project = await getHookProjectInfos(projectId)
+    const store = dbToObj(await getAdminPlugin())
+
+    const member = project.members.find(m => m.userId === userId)
+    if (!member) throw new Error('Member not found')
+
+    const memberRoles = project.roles
+      .filter(role => member.roleIds.includes(role.id))
+      .map(role => ({ ...role, oidcGroup: role.oidcGroup ?? undefined }))
+
+    const payload = {
+      userId: member.userId,
+      roleIds: member.roleIds,
+      firstName: member.user.firstName,
+      lastName: member.user.lastName,
+      email: member.user.email,
+      type: member.user.type as 'human' | 'bot' | 'ghost',
+      createdAt: member.user.createdAt.toISOString(),
+      updatedAt: member.user.updatedAt.toISOString(),
+      lastLogin: member.user.lastLogin?.toISOString(),
+      projectId: project.id,
+      roles: memberRoles,
+      project: { id: project.id, slug: project.slug },
+    } as unknown as ProjectMemberPayload
+
+    return hooks.deleteProjectMember.execute(payload, store)
+  },
+} as const
+
 const projectRole = {
   upsert: async (roleId: ProjectRole['id']) => {
     const role = await getRole(roleId)
@@ -217,6 +276,8 @@ export const hook = {
   project: genericProxy(project, { upsert: ['delete'], delete: ['upsert', 'delete'], getSecrets: ['delete'] }),
   // @ts-ignore TODO voir comment opti la signature de la fonction
   projectRole: genericProxy(projectRole, { delete: ['upsert', 'delete'], upsert: ['delete'] }),
+  // @ts-ignore TODO voir comment opti la signature de la fonction
+  projectMember: genericProxy(projectMember, { delete: ['upsert'], upsert: ['delete'] }),
   // @ts-ignore TODO voir comment opti la signature de la fonction
   cluster: genericProxy(cluster, { delete: ['upsert', 'delete'], upsert: ['delete'] }),
   // @ts-ignore TODO voir comment opti la signature de la fonction
