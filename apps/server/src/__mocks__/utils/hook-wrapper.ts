@@ -17,6 +17,10 @@ export const hook = {
     delete: vi.fn(),
     getSecrets: vi.fn(),
   },
+  projectRole: {
+    upsert: vi.fn(),
+    delete: vi.fn(),
+  },
   user: {
     retrieveUserByEmail: vi.fn(),
   },
