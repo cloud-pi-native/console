@@ -31,7 +31,7 @@ export const adminRoleContract = contractInstance.router({
   patchAdminRoles: {
     method: 'PATCH',
     path: '',
-    body: AdminRoleSchema.partial({ name: true, permissions: true, position: true, oidcGroup: true }).array(),
+    body: AdminRoleSchema.partial({ name: true, permissions: true, position: true, oidcGroup: true, type: true }).array(),
     responses: {
       200: AdminRoleSchema.array(),
       400: ErrorSchema,
