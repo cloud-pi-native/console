@@ -7,7 +7,7 @@
 
 * **ci:** allow hotfixes with release-please ([52f6751](https://github.com/cloud-pi-native/console/commit/52f6751cece9d17207a60ca5355534be9e15cfbc))
 * **ci:** change release-please config and job to allow for hotfixes ([dd18790](https://github.com/cloud-pi-native/console/commit/dd187904f3a3309858bfd161fda54dddee943108))
-* **release-please:** allow chore, docs, and other commit types to trigger new releases ([cd717b8](https://github.com/cloud-pi-native/console/commit/cd717b8e47e8a4b74c25abcf9debee66f0a937bd))
+* **release-please:** allow chore, docs, and other commit types to trigger new releases ([cd717b8](https://github.com/cloud-pi-native/console/commit/cd717b8e47e8a4b74c25abcf9debee66f0a937bd)) 
 
 
 ### Miscellaneous Chores
