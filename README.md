@@ -1,9 +1,9 @@
 # Console Cloud π Native
 
-La console Cloud π Native est une application web ayant pour but de piloter des services web dans un cluster Kubernetes afin de fournir une platefome cloud qui accompagne les produits numériques lors de toutes les phases de leur cycle de vie.
+La console Cloud π Native est une application web ayant pour but de piloter des services dans un cluster Kubernetes afin de fournir une plateforme cloud qui accompagne les produits numériques lors de toutes les phases de leur cycle de vie.
 
-Cette console offre une interface unifiée vers un ensemble de services tout en garantissant une cohérence globale du système avec la création automatique d'un certain nombre de ressources comme par exemple les comptes d'accès, les robots ou encore des ressources Kubernetes.
-En addition du provisionnement automatique, elle garantit aussi le contrôle d'accès aux ressources du projet à l'aide d'une gestion d'équipe, de permissions, de quotas, etc...
+Cette console offre une interface unifiée vers un ensemble de services tout en garantissant une cohérence globale du système avec la création automatique d'un certain nombre de ressources comme les comptes d'accès, les robots ou encore des ressources Kubernetes.
+En addition du provisionnement automatique, elle garantit aussi le contrôle d'accès aux ressources du projet à l'aide d'une gestion d'équipe, de permissions, de quotas, etc.
 
 <img src="./misc/images/projects.png" width="30%"></img> <img src="./misc/images/repositories.png" width="30%"></img> <img src="./misc/images/environments.png" width="30%"></img> <img src="./misc/images/services.png" width="30%"></img> <img src="./misc/images/members.png" width="30%"></img> <img src="./misc/images/status.png" width="30%"></img>
 
@@ -39,7 +39,7 @@ Afin de pouvoir démarrer l'application, il vous faudra également récupérer (
 - `apps/server/.env.docker`
 - `apps/server/.env.integ`
 
-En vous basant sur une infrastructure distante (comme un environnement d'intégration, cf. la section suivante) ou votre infrastructure locale si vous préférez tout héberger en local.
+Si vous ne les avez pas déjà, référez-vous à [./ENVIRONMENTS.md](./ENVIRONMENTS.md) qui est la documentation consacrée au sujet.
 
 ### Lancement rapide utilisant l'application en local et les services sur un environnement distant
 
@@ -68,16 +68,6 @@ Si vous voulez une vue plus approfondie du lancement de l'application, vous pouv
 Ce projet est construit avec [NodeJS](https://nodejs.org/), [VueJS](https://vuejs.org/), [Postgres](https://www.postgresql.org/) et [Keycloak](https://www.keycloak.org/).
 Le serveur et le client sont livrés sous forme d'images [Docker](https://www.docker.com/) et sont déployées à l'aide de [Helm](https://helm.sh/) dans [Kubernetes](https://kubernetes.io/).
 
-### Liste des services kubernetes
-
-| Nom du service | Github project                                                                  | Role                                      | Déployé avec le Helm Chart de production |
-| -------------- | ------------------------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------- |
-| __client__     | [VueJS](https://github.com/vuejs/vue) / [Nginx](https://github.com/nginx/nginx) | Interface graphique de l'application      | Oui                                      |
-| __server__     | [NodeJS](https://github.com/nodejs/node)                                        | API de l'application                      | Oui                                      |
-| __postgres__   | [Postgres](https://github.com/postgres/postgres)                                | Base de données de l'application          | Oui                                      |
-| __keycloak__   | [Keycloak](https://github.com/keycloak/keycloak)                                | Gestionnaire d'authentification / d'accès | -                                        |
-| __pgadmin__    | [Pgadmin](https://github.com/pgadmin-org/pgadmin4)                              | Interface d'administration de Postgres    | -                                        |
-
 ### API
 
 Le serveur est construit selon une architecture __core / plugins__ pour favoriser l'évolutivité et l'ajout de nouvelles fonctionnalités / la gestion de nouveaux services. Pour ce faire, les plugins s'enregistrent auprès de différents `hooks` (qui suivent le cycle de vie d'un projet au sein de l'application), ces derniers seront déclenchés par les contrôleurs de l'application.
@@ -100,7 +90,7 @@ Plusieurs plugins sont nativement enregistrés auprès du serveur pour assurer l
 
 ## Développement
 
-Le développement s'effectue à l'aide de Docker *(le client et le serveur peuvent tourner en local ou dans Docker)* ou encore directement dans un cluster Kubernetes à l'aide de Kind, un outil permettant de créer des noeuds Kubernetes dans des conteneurs Docker.
+Le développement s'effectue à l'aide de Docker *(le client et le serveur peuvent tourner en local ou dans Docker)*.
 
 ### Construire l'application
 
@@ -158,30 +148,7 @@ pnpm run docker:dev:clean
 pnpm run docker:dev:delete
 ```
 
-> Pour lancer le debugger nodejs sur le serveur, dans les fichiers `docker-compose` remplacer la directive  `command: ["dev"]` par `command: ["debug"]`.
-
-__Lancement de la stack complète dans un cluster Kubernetes :__
-
-Nous recommandons l'utilisation de [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) ("Kubernetes in Docker") pour créer un cluster k8s en local.
-
-Vous aurez également besoin d'installer les outils suivants pour des déploiements avancés, plus proche d'une exploitation en mode "Production" :
-
-- [Kubectl](https://kubernetes.io/fr/docs/tasks/tools/install-kubectl/) Interface en ligne de commande pour Kubernetes
-- [Helm](https://helm.sh/docs/intro/install/) Gestionnaire de ressources Kubernetes (manifestes YAML) sous la forme de "charts"
-
-```shell
-# Initialiser Kind (ajoute des noms de domaines dans /etc/hosts, le mot de passe sera demandé)
-pnpm run kube:init
-
-# Lancer l'application
-pnpm run kube:dev
-
-# Supprimer les ressources applicatives sans supprimer le cluster Kind
-pnpm run kube:clean
-
-# Supprimer entièrement le cluster et ses ressources
-pnpm run kube:delete
-```
+> Pour lancer le debugger Node.js sur le serveur, dans les fichiers `docker-compose` remplacer la directive  `command: ["dev"]` par `command: ["debug"]`.
 
 #### Intégration
 
@@ -220,22 +187,6 @@ pnpm run docker:integ:clean
 pnpm run docker:integ:delete
 ```
 
-__Lancement de la stack complète dans un cluster Kubernetes :__
-
-```shell
-# Initialiser Kind (ajoute des noms de domaines dans /etc/hosts, le mot de passe sera demandé)
-pnpm run kube:init
-
-# Lancer l'application en mode développement
-pnpm run kube:integ
-
-# Supprimer les ressources applicatives sans supprimer le cluster Kind
-pnpm run kube:clean
-
-# Supprimer entièrement le cluster et ses ressources
-pnpm run kube:delete
-```
-
 #### Utilitaires
 
 Les commandes utilitaires de l'application :
@@ -262,14 +213,14 @@ Se référer à la [documentation concernée](./playwright/README.md).
 
 ### Accès aux services
 
-Les services sont disponibles via des noms de domaines ajoutés dans le fichier `/etc/hosts` de votre système, l'ajout des domaines se fait automatiquement lors de la commande `pnpm run kube:init`.
+Les services sont disponibles via les ports suivants :
 
-| Service                                        | Url (kubernetes)               | Url (local/docker)      |
-| ---------------------------------------------- | ------------------------------ | ----------------------- |
-| Interface graphique *- (client)*               | <http://console.dso.local>     | <http://localhost:8080> |
-| Serveur *- (api)*                              | <http://console.dso.local/api> | <http://localhost:4000> |
-| Interface d'administration de base de données  | <http://pgadmin.dso.local>     | <http://localhost:8081> |
-| Interface d'administration du serveur keycloak | <http://keycloak.dso.local>    | <http://localhost:8090> |
+| Service                                        | Url (local/docker)      |
+| ---------------------------------------------- | ----------------------- |
+| Interface graphique *- (client)*               | <http://localhost:8080> |
+| Serveur *- (api)*                              | <http://localhost:4000> |
+| Interface d'administration de base de données  | <http://localhost:8081> |
+| Interface d'administration du serveur keycloak | <http://localhost:8090> |
 
 *__Notes:__ ⚠ Il est possible que le navigateur utilisé (particulièrement Brave ou Firefox) bloque les cookies utilisés entre le frontend et keycloak, il est nécessaire de désactiver les protections de ce type dans votre navigateur (ex: Brave Shield).*
 
@@ -293,23 +244,6 @@ Les comptes utilisés pendant le développement sont les suivants :
 __Local / Docker:__
 
 Les variables d'environnements sont gérées localement via des fichiers `.env` (local) / `.env.docker` (docker) dans les dossiers `./apps/server` et `./apps/client`, aux précédents fichiers s'ajoute un fichier `.env.integ` utilisé pour le mode intégration (local et docker).
-
-__Kubernetes :__
-
-Un chart Helm utilitaire est installé pour déployer les services qui ne sont pas inclus dans le chart de la console :
-
-- Pgadmin
-
-> Ces services sont personnalisables [ici](./ci/helm-utils/values.yaml).
-
-Différents fichiers de `values.yml` sont disponibles pour personnaliser le déploiement de l'application dans le cluster Kind:
-
-- Le fichier [./ci/kind/env/dso-values.yaml](./ci/kind/env/dso-values.yaml) contient les variables de base l'application.
-- Le fichier [./ci/kind/env/dso-values-dev.yaml](./ci/kind/env/dso-values-dev.yaml) contient les variables de l'application pour le mode développement.
-- Le fichier [./ci/kind/env/dso-values-int-example.yaml](./ci/kind/env/dso-values-int-example.yaml) contient les variables de l'application pour le mode intégration.
-
-> *__Notes:__*
-> - *Les values du chart de la console sont disponibles [ici](https://github.com/cloud-pi-native/helm-charts/tree/main/charts/dso-console).*
 
 ### Base de données
 

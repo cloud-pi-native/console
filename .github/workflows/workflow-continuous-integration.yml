@@ -154,16 +154,6 @@ jobs:
       TAG: pr-${{ github.event.pull_request.number || github.event.number }}
       BROWSERS: "${{ github.base_ref == 'main' && 'chrome,firefox' || 'firefox' }}"
 
-  deploy-tests:
-    uses: ./.github/workflows/job-tests-deploy.yml
-    if: ${{ (needs.path-filter.outputs.apps != 'true' && needs.path-filter.outputs.packages != 'true' && needs.path-filter.outputs.ci != 'true') || (!github.event.pull_request.draft && github.base_ref == 'main') }}
-    needs:
-      - path-filter
-      - expose-vars
-      - build
-    with:
-      TAG: pr-${{ github.event.pull_request.number || github.event.number }}
-
   scan-vuln:
     uses: ./.github/workflows/job-scan.yml
     needs:
