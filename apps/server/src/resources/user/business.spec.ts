@@ -135,7 +135,7 @@ describe('test users business', () => {
     }, {
       id: faker.string.uuid(),
       name: faker.string.alphanumeric(),
-      oidcGroup: '/admin',
+      oidcGroup: '/console/admin',
       permissions: 0n,
       position: 0,
     }]
