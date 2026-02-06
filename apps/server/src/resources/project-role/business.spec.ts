@@ -1,9 +1,26 @@
 import { faker } from '@faker-js/faker'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { Project, ProjectMembers, ProjectRole } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
 import { countRolesMembers, createRole, deleteRole, listRoles, patchRoles } from './business.ts'
 import { Forbidden403, BadRequest400 } from '@/utils/errors.js'
+
+vi.mock('../../utils/hook-wrapper.ts', () => ({
+  hook: {
+    project: {
+      upsert: vi.fn(),
+      delete: vi.fn(),
+      getSecrets: vi.fn(),
+    },
+    projectRole: {
+      upsert: vi.fn(),
+      delete: vi.fn(),
+    },
+    user: {
+      retrieveUserByEmail: vi.fn(),
+    },
+  },
+}))
 
 describe('test project-role business', () => {
   const project: Project = {
@@ -79,8 +96,8 @@ describe('test project-role business', () => {
 
       prisma.project.findUnique.mockResolvedValue(project)
       prisma.projectRole.findFirst.mockResolvedValueOnce(dbRole)
-      prisma.projectRole.findMany.mockResolvedValueOnce([dbRole])
       prisma.projectRole.create.mockResolvedValue(dbRole)
+      prisma.projectRole.findMany.mockResolvedValueOnce([dbRole])
       await createRole(projectId, { name: 'test', permissions: '4' })
 
       expect(prisma.projectRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 4n, position: 1, projectId } })
@@ -99,8 +116,8 @@ describe('test project-role business', () => {
 
       prisma.project.findUnique.mockResolvedValue(project)
       prisma.projectRole.findFirst.mockResolvedValueOnce(dbRole)
-      prisma.projectRole.findMany.mockResolvedValueOnce([dbRole])
       prisma.projectRole.create.mockResolvedValue(dbRole)
+      prisma.projectRole.findMany.mockResolvedValueOnce([dbRole])
       await createRole(projectId, { name: 'test', permissions: '4' })
 
       expect(prisma.projectRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 4n, position: 51, projectId } })
@@ -119,11 +136,11 @@ describe('test project-role business', () => {
 
       prisma.project.findUnique.mockResolvedValue(project)
       prisma.projectRole.findFirst.mockResolvedValueOnce(null)
-      prisma.projectRole.findMany.mockResolvedValueOnce([dbRole])
       prisma.projectRole.create.mockResolvedValue(dbRole)
+      prisma.projectRole.findMany.mockResolvedValueOnce([dbRole])
       prisma.projectRole.findFirst.mockResolvedValueOnce(null)
-      prisma.projectRole.findMany.mockResolvedValueOnce([dbRole])
       prisma.projectRole.create.mockResolvedValue(dbRole)
+      prisma.projectRole.findMany.mockResolvedValueOnce([dbRole])
       await createRole(projectId, { name: 'test', permissions: '4' })
 
       expect(prisma.projectRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 4n, position: 0, projectId } })
@@ -143,7 +160,6 @@ describe('test project-role business', () => {
       prisma.project.findUnique.mockResolvedValueOnce(project)
       prisma.projectRole.findFirst.mockResolvedValueOnce(dbRole)
       prisma.projectRole.create.mockResolvedValue(dbRole)
-      prisma.project.findUnique.mockResolvedValueOnce(project)
       prisma.projectRole.findMany.mockResolvedValueOnce([dbRole])
 
       await createRole(projectId, { name: 'test', permissions: '4', oidcGroup: '/admin' })
@@ -178,7 +194,7 @@ describe('test project-role business', () => {
         roleIds: [roleId, faker.string.uuid()],
       }] as const satisfies Partial<ProjectMembers>[]
 
-      prisma.projectRole.findUnique.mockResolvedValueOnce(dbRole)
+      prisma.projectRole.findUnique.mockResolvedValue(dbRole)
       prisma.projectMembers.findMany.mockResolvedValueOnce(members)
       prisma.projectRole.findMany.mockResolvedValueOnce([])
       prisma.projectRole.delete.mockResolvedValue(dbRole)
@@ -199,7 +215,7 @@ describe('test project-role business', () => {
         oidcGroup: '',
         type: 'system',
       }
-      prisma.projectRole.findUnique.mockResolvedValueOnce(dbRole)
+      prisma.projectRole.findUnique.mockResolvedValue(dbRole)
 
       const result = await deleteRole(roleId)
 
