@@ -1,6 +1,6 @@
 -- Update existing Admin role to be system role 'Legacy Administrateur Plateforme'
 UPDATE "AdminRole"
-SET 
+SET
   "name" = 'Legacy Administrateur Plateforme',
   "type" = 'system',
   "permissions" = 3, -- Assuming 3n means bit 0 and 1 (1 | 2 = 3)
@@ -15,7 +15,7 @@ VALUES (
   'Lecture Seule Plateforme',
   1, -- Assuming 1n means bit 0
   2,
-  '/readonly',
+  '/console/readonly',
   'system'
 )
 ON CONFLICT ("id") DO UPDATE
@@ -23,4 +23,4 @@ SET
   "name" = 'Lecture Seule Plateforme',
   "type" = 'system',
   "permissions" = 1,
-  "oidcGroup" = '/readonly';
+  "oidcGroup" = '/console/readonly';
