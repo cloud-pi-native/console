@@ -31,5 +31,10 @@ export const MemberSchema = z.object({
     ,
   )
 
+export const ProjectMemberSchema = MemberSchema.and(z.object({
+  projectId: z.string().uuid(),
+}))
+
 export type User = Zod.infer<typeof UserSchema>
 export type Member = Zod.infer<typeof MemberSchema>
+export type ProjectMember = Zod.infer<typeof ProjectMemberSchema>

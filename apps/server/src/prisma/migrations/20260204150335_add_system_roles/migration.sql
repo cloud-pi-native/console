@@ -1,6 +1,6 @@
 -- Update existing Admin role to be system role 'Administrateur Plateforme'
 UPDATE "AdminRole"
-SET 
+SET
   "name" = 'Administrateur Plateforme',
   "type" = 'system',
   "permissions" = 3, -- Assuming 3n means bit 0 and 1 (1 | 2 = 3)
