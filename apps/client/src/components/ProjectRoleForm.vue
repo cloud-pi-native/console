@@ -11,6 +11,7 @@ const props = defineProps<{
   projectId: ProjectV2['id']
   isEveryone: boolean
   oidcGroup?: string
+  type?: string
 }>()
 
 defineEmits<{
@@ -25,12 +26,16 @@ const role = ref({
   permissions: props.permissions ?? 0n,
   allMembers: props.allMembers ?? [],
   oidcGroup: props.oidcGroup ?? '',
+  type: props.type ?? 'custom',
 })
 
 const isUpdated = computed(() => {
   if (role.value.isEveryone) return props.permissions !== role.value.permissions
   return !shallowEqual(props, role.value)
 })
+
+const isSystem = computed(() => props.type === 'system')
+
 const tabListName = 'Liste d’onglet'
 const tabTitles = [
   { title: 'Général', icon: 'ri:checkbox-circle-line', tabId: 'general' },
@@ -68,7 +73,7 @@ function updateChecked(checked: boolean, value: bigint) {
         data-testid="roleNameInput"
         label-visible
         class="mb-5"
-        :disabled="role.isEveryone"
+        :disabled="role.isEveryone || isSystem"
       />
       <h6>Groupe OIDC</h6>
       <DsfrInput
@@ -76,7 +81,7 @@ function updateChecked(checked: boolean, value: bigint) {
         data-testid="roleOidcGroupInput"
         label-visible
         class="mb-5"
-        :disabled="role.isEveryone"
+        :disabled="role.isEveryone || isSystem"
       />
       <h6>Permissions</h6>
       <div
@@ -97,7 +102,7 @@ function updateChecked(checked: boolean, value: bigint) {
           :label="perm?.label"
           :hint="perm?.hint"
           :name="perm.key"
-          :disabled="role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE'"
+          :disabled="(role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE') || role.type === 'system'"
           @update:model-value="(checked: boolean) => updateChecked(checked, PROJECT_PERMS[perm.key])"
         />
       </div>
@@ -110,7 +115,7 @@ function updateChecked(checked: boolean, value: bigint) {
         @click="$emit('save', role)"
       />
       <DsfrButton
-        v-if="!role.isEveryone"
+        v-if="!role.isEveryone && role.type !== 'system'"
         data-testid="deleteBtn"
         label="Supprimer"
         secondary

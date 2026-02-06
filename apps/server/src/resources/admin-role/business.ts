@@ -1,39 +1,49 @@
 import type { Project, ProjectRole } from '@prisma/client'
 import type { AdminRole, adminRoleContract } from '@cpn-console/shared'
 import {
+  getAdminRoleById,
   listAdminRoles,
 } from '@/resources/queries-index.js'
 import type { ErrorResType } from '@/utils/errors.js'
-import { BadRequest400 } from '@/utils/errors.js'
+import { BadRequest400, Forbidden403 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 
 export async function listRoles() {
   return listAdminRoles()
-    .then(roles => roles.map(role => ({ ...role, permissions: role.permissions.toString() })))
+    .then(roles => roles.map(role => ({ ...role, permissions: role.permissions.toString(), type: role.type ?? 'custom' })))
 }
 
 export async function patchRoles(roles: typeof adminRoleContract.patchAdminRoles.body._type): Promise<AdminRole[] | ErrorResType> {
   const dbRoles = await prisma.adminRole.findMany()
   const positionsAvailable: number[] = []
+  const updatedRoles: (Omit<AdminRole, 'permissions'> & { permissions: bigint })[] = []
 
-  const updatedRoles: (Omit<AdminRole, 'permissions'> & { permissions: bigint })[] = dbRoles
-    .filter(dbRole => roles.find(role => role.id === dbRole.id)) // filter non concerned dbRoles
-    .map((dbRole) => {
-      const matchingRole = roles.find(role => role.id === dbRole.id)
-      if (typeof matchingRole?.position !== 'undefined' && !positionsAvailable.includes(matchingRole.position)) {
+  for (const dbRole of dbRoles) {
+    const matchingRole = roles.find(role => role.id === dbRole.id)
+    if (matchingRole) {
+      if (dbRole.type === 'system') {
+        return new Forbidden403('Impossible de modifier un rôle système')
+      }
+
+      if (typeof matchingRole.position !== 'undefined' && !positionsAvailable.includes(matchingRole.position)) {
         positionsAvailable.push(matchingRole.position)
       }
-      return {
+      updatedRoles.push({
         id: dbRole.id,
-        name: matchingRole?.name ?? dbRole.name,
-        permissions: matchingRole?.permissions ? BigInt(matchingRole?.permissions) : dbRole.permissions,
-        position: matchingRole?.position ?? dbRole.position,
-        oidcGroup: matchingRole?.oidcGroup ?? dbRole.oidcGroup,
-      }
-    })
+        name: matchingRole.name ?? dbRole.name,
+        permissions: matchingRole.permissions ? BigInt(matchingRole.permissions) : dbRole.permissions,
+        position: matchingRole.position ?? dbRole.position,
+        oidcGroup: matchingRole.oidcGroup ?? dbRole.oidcGroup,
+        type: matchingRole.type ?? dbRole.type,
+      })
+    }
+  }
 
   if (positionsAvailable.length && positionsAvailable.length !== dbRoles.length) return new BadRequest400('Les numéros de position des rôles sont incohérentes')
   for (const { id, ...role } of updatedRoles) {
+    if (role.type === 'system') {
+      return new Forbidden403('Ce rôle système ne peut pas être renommé')
+    }
     await prisma.adminRole.update({ where: { id }, data: role })
   }
 
@@ -74,6 +84,11 @@ export async function countRolesMembers() {
 }
 
 export async function deleteRole(roleId: Project['id']) {
+  const role = await getAdminRoleById(roleId)
+  if (role) {
+    if (role.type === 'system') return new Forbidden403('Impossible de supprimer un rôle système')
+  }
+
   const allUsers = await prisma.user.findMany({
     where: {
       adminRoleIds: { has: roleId },
