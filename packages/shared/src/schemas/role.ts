@@ -9,6 +9,7 @@ export const RoleSchema = z.object({
   name: RoleNameSchema,
   permissions: permissionLevelSchema,
   position: z.number().min(0),
+  type: z.string().optional(),
 })
 
 export const ProjectRoleSchema = RoleSchema.extend({
@@ -18,6 +19,7 @@ export const ProjectRoleSchema = RoleSchema.extend({
 
 export const AdminRoleSchema = RoleSchema.extend({
   oidcGroup: z.string(),
+  type: z.string().optional().default('custom'),
 })
 
 export const RoleNameCsvSchema = z.string()
