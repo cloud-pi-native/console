@@ -1,4 +1,4 @@
-export const adminGroupPath = '/admin'
+export const adminGroupPath = '/console/admin'
 export const deleteValidationInput = 'DELETE'
 export const forbiddenRepoNames = ['mirror', 'infra-apps', 'infra-observability']
 
