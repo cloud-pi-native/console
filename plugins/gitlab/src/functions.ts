@@ -232,3 +232,81 @@ export const commitFiles: StepCall<UniqueRepo | Project | ClusterObject | ZoneOb
     return returnResult
   }
 }
+
+export const upsertAdminRole: StepCall<AdminRole> = async (payload) => {
+  try {
+    const role = payload.args
+    const adminGroupPath = payload.config.gitlab?.adminGroupPath ?? '/console/admin'
+    const auditorGroupPath = payload.config.gitlab?.auditorGroupPath ?? '/console/readonly'
+
+    const isAdmin = role.oidcGroup === adminGroupPath ? true : undefined
+    const isAuditor = role.oidcGroup === auditorGroupPath ? true : undefined
+
+    if (isAdmin === undefined && isAuditor === undefined) {
+      return {
+        status: {
+          result: 'OK',
+          message: 'Not a managed role for GitLab plugin',
+        },
+      }
+    }
+
+    for (const member of role.members) {
+      await upsertUser(member, isAdmin, isAuditor)
+    }
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Members synced',
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(cleanGitlabError(error)),
+      status: {
+        result: 'KO',
+        message: 'An error occured while syncing admin role',
+      },
+    }
+  }
+}
+
+export const deleteAdminRole: StepCall<AdminRole> = async (payload) => {
+  try {
+    const role = payload.args
+    const adminGroupPath = payload.config.gitlab?.adminGroupPath ?? '/console/admin'
+    const auditorGroupPath = payload.config.gitlab?.auditorGroupPath ?? '/console/readonly'
+
+    const isAdmin = role.oidcGroup === adminGroupPath ? false : undefined
+    const isAuditor = role.oidcGroup === auditorGroupPath ? false : undefined
+
+    if (isAdmin === undefined && isAuditor === undefined) {
+      return {
+        status: {
+          result: 'OK',
+          message: 'Not a managed role for GitLab plugin',
+        },
+      }
+    }
+
+    for (const member of role.members) {
+      await upsertUser(member, isAdmin, isAuditor)
+    }
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Admin role deleted and members synced',
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(cleanGitlabError(error)),
+      status: {
+        result: 'KO',
+        message: 'An error occured while deleting admin role',
+      },
+    }
+  }
+}
