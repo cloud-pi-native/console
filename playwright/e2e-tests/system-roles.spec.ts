@@ -20,10 +20,10 @@ test.describe('System Roles at Project Creation', () => {
 
     // Assert
     const systemRoles = [
-      { name: 'Administrateur', oidcGroup: '/admin' },
-      { name: 'DevOps', oidcGroup: '/devops' },
-      { name: 'Développeur', oidcGroup: '/developer' },
-      { name: 'Lecture seule', oidcGroup: '/readonly' },
+      { name: 'Administrateur', oidcGroup: '/console/admin' },
+      { name: 'DevOps', oidcGroup: '/console/devops' },
+      { name: 'Développeur', oidcGroup: '/console/developer' },
+      { name: 'Lecture seule', oidcGroup: '/console/readonly' },
     ]
 
     for (const role of systemRoles) {
