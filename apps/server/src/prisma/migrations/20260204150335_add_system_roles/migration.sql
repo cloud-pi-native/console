@@ -1,7 +1,7 @@
--- Update existing Admin role to be system role 'Administrateur Plateforme'
+-- Update existing Admin role to be system role 'Root Plateforme'
 UPDATE "AdminRole"
 SET
-  "name" = 'Administrateur Plateforme',
+  "name" = 'Root Plateforme',
   "type" = 'system',
   "permissions" = 3, -- Assuming 3n means bit 0 and 1 (1 | 2 = 3)
   "oidcGroup" = '/admin',
