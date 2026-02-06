@@ -236,8 +236,8 @@ export const commitFiles: StepCall<UniqueRepo | Project | ClusterObject | ZoneOb
 export const upsertAdminRole: StepCall<AdminRole> = async (payload) => {
   try {
     const role = payload.args
-    const adminGroupPath = payload.config.gitlab?.adminGroupPath ?? '/admin'
-    const auditorGroupPath = payload.config.gitlab?.auditorGroupPath ?? '/readonly'
+    const adminGroupPath = payload.config.gitlab?.adminGroupPath ?? '/console/admin'
+    const auditorGroupPath = payload.config.gitlab?.auditorGroupPath ?? '/console/readonly'
 
     const isAdmin = role.oidcGroup === adminGroupPath ? true : undefined
     const isAuditor = role.oidcGroup === auditorGroupPath ? true : undefined
@@ -275,8 +275,8 @@ export const upsertAdminRole: StepCall<AdminRole> = async (payload) => {
 export const deleteAdminRole: StepCall<AdminRole> = async (payload) => {
   try {
     const role = payload.args
-    const adminGroupPath = payload.config.gitlab?.adminGroupPath ?? '/admin'
-    const auditorGroupPath = payload.config.gitlab?.auditorGroupPath ?? '/readonly'
+    const adminGroupPath = payload.config.gitlab?.adminGroupPath ?? '/console/admin'
+    const auditorGroupPath = payload.config.gitlab?.auditorGroupPath ?? '/console/readonly'
 
     const isAdmin = role.oidcGroup === adminGroupPath ? false : undefined
     const isAuditor = role.oidcGroup === auditorGroupPath ? false : undefined
