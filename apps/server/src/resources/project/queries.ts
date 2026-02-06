@@ -271,14 +271,14 @@ export function initializeProject(params: CreateProjectParams) {
             name: 'DevOps',
             permissions: PROJECT_PERMS.MANAGE_ENVIRONMENTS | PROJECT_PERMS.MANAGE_REPOSITORIES | PROJECT_PERMS.REPLAY_HOOKS | PROJECT_PERMS.SEE_SECRETS | PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.LIST_REPOSITORIES,
             position: 1,
-            oidcGroup: `/${params.slug}/console/devops`,
+            oidcGroup: `/${params.slug}/console/console/devops`,
             type: 'system',
           },
           {
             name: 'Développeur',
             permissions: PROJECT_PERMS.MANAGE_REPOSITORIES | PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.LIST_REPOSITORIES,
             position: 2,
-            oidcGroup: `/${params.slug}/console/developer`,
+            oidcGroup: `/${params.slug}/console/console/developer`,
             type: 'system',
           },
           {
