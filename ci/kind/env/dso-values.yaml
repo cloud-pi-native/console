@@ -56,7 +56,6 @@ server:
   env:
     CI: "true"
     DEV_SETUP: "true"
-    KEYCLOAK_DOMAIN: dso-cpn-keycloak
 
 client:
   image:
