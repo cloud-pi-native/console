@@ -1,7 +1,10 @@
 global:
   env:
     NODE_ENV: development
-
+  keycloak:
+    domain:
+      backend: dso-cpn-keycloak
+      frontend: dso-cpn-keycloak
 server:
   image:
     repository: dso-console/server
@@ -15,7 +18,6 @@ server:
   #   enabled: false
   env:
     CI: "false"
-    KEYCLOAK_DOMAIN: dso-cpn-keycloak
   extraVolumes:
     - name: dev-workspace
       path: /app/apps/server/src
