@@ -46,7 +46,7 @@ export async function listProjects({ status, statusIn, statusNotIn, filter = 'me
   }).then(projects => projects.map(({ clusters, ...project }) => ({
     ...project,
     clusterIds: clusters.map(({ id }) => id),
-    roles: project.roles.map(role => ({ ...role, permissions: role.permissions.toString(), oidcGroup: project.slug ? role.oidcGroup?.replace(`/${project.slug}/console`, '') : role.oidcGroup })),
+    roles: project.roles.map(role => ({ ...role, permissions: role.permissions.toString(), oidcGroup: project.slug ? role.oidcGroup?.replace(`/${project.slug}`, '') : role.oidcGroup })),
     everyonePerms: project.everyonePerms.toString(),
   })))
 }
@@ -91,7 +91,7 @@ export async function createProject(dataDto: typeof projectContract.createProjec
     ...projectInfos,
     clusterIds: projectInfos.clusters.map(({ id }) => id),
     everyonePerms: projectInfos.everyonePerms.toString(),
-    roles: projectInfos.roles.map(role => ({ ...role, permissions: role.permissions.toString(), oidcGroup: projectInfos.slug ? role.oidcGroup?.replace(`/${project.slug}/console`, '') : role.oidcGroup })),
+    roles: projectInfos.roles.map(role => ({ ...role, permissions: role.permissions.toString(), oidcGroup: projectInfos.slug ? role.oidcGroup?.replace(`/${project.slug}`, '') : role.oidcGroup })),
   }
 }
 
@@ -99,7 +99,7 @@ export async function getProject(projectId: Project['id']) {
   return getProjectOrThrow(projectId).then(({ clusters, ...project }) => ({
     ...project,
     clusterIds: clusters.map(({ id }) => id),
-    roles: project.roles.map(role => ({ ...role, permissions: role.permissions.toString(), oidcGroup: project.slug ? role.oidcGroup?.replace(`/${project.slug}/console`, '') : role.oidcGroup })),
+    roles: project.roles.map(role => ({ ...role, permissions: role.permissions.toString(), oidcGroup: project.slug ? role.oidcGroup?.replace(`/${project.slug}`, '') : role.oidcGroup })),
     everyonePerms: project.everyonePerms.toString(),
   }))
 }
@@ -156,7 +156,7 @@ export async function updateProject(
     ...projectInfos,
     clusterIds: projectInfos.clusters.map(({ id }) => id),
     everyonePerms: projectInfos.everyonePerms.toString(),
-    roles: projectInfos.roles.map(role => ({ ...role, permissions: role.permissions.toString(), oidcGroup: projectInfos.slug ? role.oidcGroup?.replace(`/${projectInfos.slug}/console`, '') : role.oidcGroup })),
+    roles: projectInfos.roles.map(role => ({ ...role, permissions: role.permissions.toString(), oidcGroup: projectInfos.slug ? role.oidcGroup?.replace(`/${projectInfos.slug}`, '') : role.oidcGroup })),
   }
 }
 
