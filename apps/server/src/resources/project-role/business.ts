@@ -15,7 +15,7 @@ export async function listRoles(projectId: Project['id']) {
   return roles.map(role => ({
     ...role,
     permissions: role.permissions.toString(),
-    oidcGroup: role.oidcGroup ? role.oidcGroup.replace(/^\/[^/]+\/console/, '') : role.oidcGroup,
+    oidcGroup: role.oidcGroup ? role.oidcGroup.replace(/^\/[^/]+/, '') : role.oidcGroup,
   }))
 }
 
@@ -45,7 +45,7 @@ export async function patchRoles(projectId: Project['id'], roles: typeof project
         name: matchingRole.name ?? dbRole.name,
         permissions: matchingRole.permissions ? BigInt(matchingRole.permissions) : dbRole.permissions,
         position: matchingRole.position ?? dbRole.position,
-        oidcGroup: matchingRole.oidcGroup ? `/${project.slug}/console${matchingRole.oidcGroup}` : dbRole.oidcGroup,
+        oidcGroup: matchingRole.oidcGroup ? `/${project.slug}${matchingRole.oidcGroup}` : dbRole.oidcGroup,
         type: matchingRole.type ?? dbRole.type,
         projectId: dbRole.projectId,
       })
@@ -84,7 +84,7 @@ export async function createRole(projectId: Project['id'], role: typeof projectR
       projectId,
       position: dbMaxPosRole + 1,
       permissions: BigInt(role.permissions),
-      oidcGroup: role.oidcGroup ? `/${project.slug}/console${role.oidcGroup}` : undefined,
+      oidcGroup: role.oidcGroup ? `/${project.slug}${role.oidcGroup}` : undefined,
     },
   })
 
