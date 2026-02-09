@@ -1,4 +1,4 @@
-import type { AdminRole, Project, StepCall, UserEmail, ZoneObject } from '@cpn-console/hooks'
+import type { AdminRole, Project, StepCall, UserEmail, ZoneObject, ProjectMemberPayload } from '@cpn-console/hooks'
 import type { ProjectRole } from '@cpn-console/shared'
 import { generateRandomPassword, parseError, PluginResultBuilder } from '@cpn-console/hooks'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
@@ -310,11 +310,7 @@ export const upsertProjectRole: StepCall<ProjectRole> = async ({ args: role }) =
   }
   try {
     const kcClient = await getkcClient()
-    const [projectName, pluginName, roleName] = role.oidcGroup.split('/').slice(1)
-    if (!projectName || !pluginName || !roleName) throw new Error('Invalid OIDC group format')
-    const projectGroup = await getOrCreateProjectGroup(kcClient, projectName)
-    const pluginGroup = await getOrCreateChildGroup(kcClient, projectGroup.id, pluginName)
-    await getOrCreateChildGroup(kcClient, pluginGroup.id, roleName)
+    await getOrCreateGroupByPath(kcClient, role.oidcGroup)
     return {
       status: {
         result: 'OK',
@@ -377,6 +373,63 @@ export const deleteProjectRole: StepCall<ProjectRole> = async ({ args: role }) =
         message: 'Failed to delete role',
       },
     }
+  }
+}
+
+export const upsertProjectMember: StepCall<ProjectMemberPayload> = async ({ args: member }) => {
+  const pluginResult = new PluginResultBuilder('Synced')
+  try {
+    const kcClient = await getkcClient()
+
+    const projectGroup = await getOrCreateProjectGroup(kcClient, member.project.slug)
+    const consoleGroup = await getOrCreateChildGroup(kcClient, projectGroup.id, consoleGroupName)
+    const allRoleGroups = await getAllSubgroups(kcClient, consoleGroup.id, 0)
+    const userGroups = await kcClient.users.listGroups({ id: member.userId })
+
+    const userRolesOidcGroups = member.roles
+      .map(r => r.oidcGroup)
+      .filter((g): g is string => !!g)
+
+    // Sync Roles
+    for (const roleGroup of allRoleGroups) {
+      if (!roleGroup.id || !roleGroup.path) continue
+      const isMember = userGroups.some(ug => ug.id === roleGroup.id)
+      const shouldBeMember = userRolesOidcGroups.includes(roleGroup.path)
+
+      if (shouldBeMember && !isMember) {
+        await kcClient.users.addToGroup({ id: member.userId, groupId: roleGroup.id })
+      } else if (!shouldBeMember && isMember) {
+        await kcClient.users.delFromGroup({ id: member.userId, groupId: roleGroup.id })
+      }
+    }
+
+    return pluginResult.getResultObject()
+  } catch (error) {
+    return pluginResult.returnUnexpectedError(error)
+  }
+}
+
+export const deleteProjectMember: StepCall<ProjectMemberPayload> = async ({ args: member }) => {
+  const pluginResult = new PluginResultBuilder('Deleted')
+  try {
+    const kcClient = await getkcClient()
+    if (!member.userId) return pluginResult.getResultObject()
+
+    const projectGroup = await getGroupByName(kcClient, member.project.slug)
+    if (!projectGroup?.id) return pluginResult.getResultObject()
+
+    const userGroups = await kcClient.users.listGroups({ id: member.userId })
+    const projectGroups = userGroups.filter(g => g.path?.startsWith(projectGroup.path!))
+
+    for (const group of projectGroups) {
+      if (group.id) {
+        await kcClient.users.delFromGroup({ id: member.userId, groupId: group.id })
+      }
+    }
+
+    return pluginResult.getResultObject()
+  } catch (error) {
+    return pluginResult.returnUnexpectedError(error)
   }
 }
 
