@@ -1,5 +1,5 @@
 import type { AdminRole, Project, StepCall, UserEmail, ZoneObject, ProjectMemberPayload } from '@cpn-console/hooks'
-import type { ProjectRole } from '@cpn-console/shared'
+import { ENABLED, type ProjectRole } from '@cpn-console/shared'
 import { generateRandomPassword, parseError, PluginResultBuilder } from '@cpn-console/hooks'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation.js'
@@ -60,31 +60,34 @@ export const deleteProject: StepCall<Project> = async ({ args: project }) => {
   }
 }
 
-export const upsertProject: StepCall<Project> = async ({ args: project }) => {
+export const upsertProject: StepCall<Project> = async (payload) => {
   const pluginResult = new PluginResultBuilder('Up-to-date')
   try {
     const kcClient = await getkcClient()
-    const projectName = project.slug
+    const projectName = payload.args.slug
+    const purgeEnabled = payload.config.argocd?.purge === ENABLED
     const projectGroup = await getOrCreateProjectGroup(kcClient, projectName)
 
     const groupMembers = await kcClient.groups.listMembers({ id: projectGroup.id })
 
     await Promise.all([
       ...groupMembers.map((member) => {
-        if (!project.users.some(({ id }) => id === member.id)) {
-          return kcClient.users.delFromGroup({
-          // @ts-ignore id is present on user, bad typing in lib
-            id: member.id,
-            groupId: projectGroup.id,
-          })
-            .catch((err) => {
-              pluginResult.addKoMessage(`Can't remove ${member.email} from keycloak project group`)
-              pluginResult.addExtra(`remove-${member.id}`, err)
+        if (!payload.args.users.some(({ id }) => id === member.id)) {
+          if (purgeEnabled) {
+            return kcClient.users.delFromGroup({
+            // @ts-ignore id is present on user, bad typing in lib
+              id: member.id,
+              groupId: projectGroup.id,
             })
+              .catch((err) => {
+                pluginResult.addKoMessage(`Can't remove ${member.email} from keycloak project group`)
+                pluginResult.addExtra(`remove-${member.id}`, err)
+              })
+          }
         }
         return undefined
       }),
-      ...project.users.map((user) => {
+      ...payload.args.users.map((user) => {
         if (!groupMembers.some(({ id }) => id === user.id)) {
           return kcClient.users.addToGroup({
             id: user.id,
@@ -108,7 +111,7 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
     const envGroups = await getAllSubgroups(kcClient, consoleGroup.id, 0) as CustomGroup[]
 
     const promises: Promise<any>[] = []
-    for (const environment of project.environments) {
+    for (const environment of payload.args.environments) {
       const envGroup: Required<CustomGroup> = envGroups.find(group => group.name === environment.name) as Required<CustomGroup>
         ?? await getOrCreateChildGroup(kcClient, consoleGroup.id, environment.name)
 
@@ -135,7 +138,7 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
     await Promise.all(promises)
 
     await Promise.all(envGroups.map((subGroup) => {
-      if (!project.environments.some(({ name }) => name === subGroup.name)) {
+      if (!payload.args.environments.some(({ name }) => name === subGroup.name)) {
         return kcClient.groups.del({ id: subGroup.id })
       }
       return undefined
