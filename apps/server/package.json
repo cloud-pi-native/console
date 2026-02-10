@@ -21,6 +21,7 @@
     "db:reset": "prisma migrate reset",
     "db:wrapper": "sh ./migrate-db.sh",
     "dev": "pnpm run db:deploy && nodemon --exec 'vite-node src/server.ts'",
+    "dev:prisma": "prisma dev",
     "debug": "pnpm run db:migrate && nodemon --exec 'NODE_OPTIONS=\"--inspect-brk=0.0.0.0\" vite-node src/server.ts'",
     "format": "eslint ./ --fix",
     "integ": "export INTEGRATION=true; pnpm run db:migrate && nodemon --exec 'vite-node src/server.ts'",
