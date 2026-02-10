@@ -1,9 +1,0 @@
-db:
-  # bind postgres port to lacalhost port
-  expose: false
-  hostPort: 5432
-
-plugins:
-  # bind local volume in dso-server pod (/plugins) to test external plugins
-  mount: false
-  localDir: /path/to/my/external/plugins/dir # should be set if mount == true and be absolute
