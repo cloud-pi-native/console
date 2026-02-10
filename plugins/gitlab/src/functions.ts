@@ -276,8 +276,14 @@ export const upsertAdminRole: StepCall<AdminRole> = async (payload) => {
 export const deleteAdminRole: StepCall<AdminRole> = async (payload) => {
   try {
     const role = payload.args
-    const adminGroupPath = payload.config.gitlab?.adminGroupPath ?? '/console/admin'
-    const auditorGroupPath = payload.config.gitlab?.auditorGroupPath ?? '/console/readonly'
+    const adminGroupPath = payload.config.gitlab?.adminGroupPath
+    if (!adminGroupPath) {
+      throw new Error('adminGroupPath is required')
+    }
+    const auditorGroupPath = payload.config.gitlab?.auditorGroupPath
+    if (!auditorGroupPath) {
+      throw new Error('auditorGroupPath is required')
+    }
 
     const isAdmin = role.oidcGroup === adminGroupPath ? false : undefined
     const isAuditor = role.oidcGroup === auditorGroupPath ? false : undefined
