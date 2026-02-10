@@ -1,4 +1,4 @@
-import type { AdminRole, Project, StepCall, UserEmail, ZoneObject, ProjectMemberPayload } from '@cpn-console/hooks'
+import type { AdminRole, Project, StepCall, UserEmail, ZoneObject, ProjectMember } from '@cpn-console/hooks'
 import { ENABLED, type ProjectRole } from '@cpn-console/shared'
 import { generateRandomPassword, parseError, PluginResultBuilder } from '@cpn-console/hooks'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
@@ -386,7 +386,7 @@ export const deleteProjectRole: StepCall<ProjectRole> = async ({ args: role }) =
   }
 }
 
-export const upsertProjectMember: StepCall<ProjectMemberPayload> = async ({ args: member, config }) => {
+export const upsertProjectMember: StepCall<ProjectMember> = async ({ args: member, config }) => {
   const pluginResult = new PluginResultBuilder('Synced')
   const purgeEnabled = config.keycloak?.purge === ENABLED
   try {
@@ -424,7 +424,7 @@ export const upsertProjectMember: StepCall<ProjectMemberPayload> = async ({ args
   }
 }
 
-export const deleteProjectMember: StepCall<ProjectMemberPayload> = async ({ args: member }) => {
+export const deleteProjectMember: StepCall<ProjectMember> = async ({ args: member }) => {
   const pluginResult = new PluginResultBuilder('Deleted')
   try {
     const kcClient = await getkcClient()
