@@ -42,6 +42,36 @@ const infos = {
       value: '/console/readonly',
       description: 'Le chemin du groupe OIDC qui donne les droits d\'auditeur GitLab',
       placeholder: '/console/readonly',
+    }, {
+      kind: 'text',
+      key: 'projectMaintainerGroupPath',
+      permissions: {
+        admin: { read: true, write: true },
+        user: { read: false, write: false },
+      },
+      title: 'Chemin du groupe OIDC Maintainer',
+      value: '/console/admin',
+      description: 'Suffixe du groupe OIDC donnant accès Maintainer',
+    }, {
+      kind: 'text',
+      key: 'projectDeveloperGroupPath',
+      permissions: {
+        admin: { read: true, write: true },
+        user: { read: false, write: false },
+      },
+      title: 'Chemin du groupe OIDC Developer',
+      value: '/console/developer',
+      description: 'Suffixe du groupe OIDC donnant accès Developer',
+    }, {
+      kind: 'text',
+      key: 'projectReporterGroupPath',
+      permissions: {
+        admin: { read: true, write: true },
+        user: { read: false, write: false },
+      },
+      title: 'Chemin du groupe OIDC Reporter',
+      value: '/console/readonly',
+      description: 'Suffixe du groupe OIDC donnant accès Reporter',
     }],
     project: [],
   },
