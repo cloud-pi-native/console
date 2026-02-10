@@ -89,3 +89,8 @@ export function cleanGitlabError<T>(error: T): T {
   }
   return error
 }
+
+export function matchRole(projectSlug: string, roleOidcGroup: string | undefined, configuredRolePath: string | undefined) {
+  if (!roleOidcGroup || !configuredRolePath) return false
+  return roleOidcGroup === `/${projectSlug}${configuredRolePath}`
+}
