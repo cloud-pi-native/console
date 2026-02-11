@@ -1,22 +1,14 @@
-import { adminGroupPath } from '@cpn-console/shared'
-import type { Project, StepCall } from '@cpn-console/hooks'
-import { generateProjectKey, parseError } from '@cpn-console/hooks'
+import type { AdminRole, Project, StepCall } from '@cpn-console/hooks'
+import { generateProjectKey, parseError, specificallyEnabled } from '@cpn-console/hooks'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
-import { ensureGroupExists, findGroupByName } from './group.js'
+import { addUserToGroup, ensureGroupExists, getGroupMembers, removeUserFromGroup } from './group.js'
 import type { VaultSonarSecret } from './tech.js'
 import { getAxiosInstance } from './tech.js'
 import type { SonarUser } from './user.js'
 import { ensureUserExists } from './user.js'
 import type { SonarPaging } from './project.js'
 import { createDsoRepository, deleteDsoRepository, ensureRepositoryConfiguration, files, findSonarProjectsForDsoProjects } from './project.js'
-
-const globalPermissions = [
-  'admin',
-  'profileadmin',
-  'gateadmin',
-  'scan',
-  'provisioning',
-]
+import { DEFAULT_ADMIN_GROUP_PATH, DEFAULT_READONLY_GROUP_PATH } from './infos.js'
 
 const projectPermissions = [
   'admin',
@@ -27,73 +19,161 @@ const projectPermissions = [
   'user',
 ]
 
-export async function initSonar() {
-  await setTemplatePermisions()
-  await createAdminGroup()
-  await setAdminPermisions()
-}
+const readonlyProjectPermissions = [
+  'codeviewer',
+  'user',
+  'scan',
+  'issueadmin',
+  'securityhotspotadmin',
+]
 
-async function createAdminGroup() {
-  const axiosInstance = getAxiosInstance()
-  const adminGroup = await findGroupByName(adminGroupPath)
-  if (!adminGroup) {
-    await axiosInstance({
-      method: 'post',
-      params: {
-        name: adminGroupPath,
-        description: 'DSO platform admins',
+export const upsertAdminRole: StepCall<AdminRole> = async (payload) => {
+  try {
+    const role = payload.args
+    const adminGroupPath = payload.config.sonarqube?.adminGroupPath ?? DEFAULT_ADMIN_GROUP_PATH
+    const readonlyGroupPath = payload.config.sonarqube?.readonlyGroupPath ?? DEFAULT_READONLY_GROUP_PATH
+    if (!readonlyGroupPath) {
+      throw new Error('readonlyGroupPath is required')
+    }
+    const purge = payload.config.sonarqube?.purge
+    if (!adminGroupPath) {
+      throw new Error('adminGroupPath is required')
+    }
+
+    let managedGroupPath: string | undefined
+
+    if (role.oidcGroup === adminGroupPath) {
+      managedGroupPath = adminGroupPath
+      await ensureAdminTemplateExists(adminGroupPath)
+      await ensureGroupExists(adminGroupPath)
+      await setTemplateGroupPermissions(adminGroupPath, projectPermissions, adminGroupPath)
+    } else if (role.oidcGroup === readonlyGroupPath) {
+      managedGroupPath = readonlyGroupPath
+      await ensureReadonlyTemplateExists(readonlyGroupPath)
+      await ensureGroupExists(readonlyGroupPath)
+      await setTemplateGroupPermissions(readonlyGroupPath, readonlyProjectPermissions, readonlyGroupPath)
+    }
+
+    if (!managedGroupPath) {
+      return {
+        status: {
+          result: 'OK',
+          message: 'Not a managed role for SonarQube plugin',
+        },
+      }
+    }
+
+    const groupMembers = await getGroupMembers(managedGroupPath)
+
+    await Promise.all([
+      ...role.members.map((member) => {
+        if (!groupMembers.includes(member.email)) {
+          return addUserToGroup(managedGroupPath, member.email)
+            .catch((error) => {
+              console.warn(`Failed to add user ${member.email} to group ${managedGroupPath}`, error)
+            })
+        }
+        return undefined
+      }),
+      ...groupMembers.map((memberEmail) => {
+        if (!role.members.some(m => m.email === memberEmail)) {
+          if (specificallyEnabled(purge)) {
+            return removeUserFromGroup(managedGroupPath, memberEmail)
+              .catch((error) => {
+                console.warn(`Failed to remove user ${memberEmail} from group ${managedGroupPath}`, error)
+              })
+          }
+        }
+        return undefined
+      }),
+    ])
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Admin role synced',
       },
-      url: 'user_groups/create',
-    })
+    }
+  } catch (error) {
+    return {
+      error: parseError(error),
+      status: {
+        result: 'KO',
+        message: 'An error occured while syncing admin role',
+      },
+    }
   }
 }
 
-async function setAdminPermisions() {
+async function setTemplateGroupPermissions(groupName: string, permissions: string[], templateName: string) {
   const axiosInstance = getAxiosInstance()
-  for (const permission of globalPermissions) {
-    await axiosInstance({
+  await Promise.all(permissions.map(permission =>
+    axiosInstance({
       method: 'post',
       params: {
-        groupName: adminGroupPath,
-        permission,
-      },
-      url: 'permissions/add_group',
-    })
-  }
-}
-
-async function setTemplatePermisions() {
-  const axiosInstance = getAxiosInstance()
-  await axiosInstance({
-    method: 'post',
-    params: { name: 'Forge Default' },
-    url: 'permissions/create_template',
-    validateStatus: code => [200, 400].includes(code),
-  })
-  for (const permission of projectPermissions) {
-    await axiosInstance({
-      method: 'post',
-      params: {
-        templateName: 'Forge Default',
-        permission,
-      },
-      url: 'permissions/add_project_creator_to_template',
-    })
-    await axiosInstance({
-
-      method: 'post',
-      params: {
-        groupName: 'sonar-administrators',
-        templateName: 'Forge Default',
+        groupName,
+        templateName,
         permission,
       },
       url: 'permissions/add_group_to_template',
-    })
-  }
+    }),
+  ))
+}
+
+async function ensureAdminTemplateExists(adminTemplateName: string) {
+  const axiosInstance = getAxiosInstance()
+
+  // Create Admin Template
+  await axiosInstance({
+    method: 'post',
+    params: { name: adminTemplateName },
+    url: 'permissions/create_template',
+    validateStatus: code => [200, 400].includes(code),
+  })
+
+  // Add Project Creator and sonar-administrators to Admin Template
+  await Promise.all(projectPermissions.map(permission =>
+    axiosInstance({
+      method: 'post',
+      params: {
+        templateName: adminTemplateName,
+        permission,
+      },
+      url: 'permissions/add_project_creator_to_template',
+    }),
+  ))
+  await setTemplateGroupPermissions('sonar-administrators', projectPermissions, adminTemplateName)
+}
+
+async function ensureReadonlyTemplateExists(readonlyTemplateName: string) {
+  const axiosInstance = getAxiosInstance()
+
+  // Create Readonly Template
+  await axiosInstance({
+    method: 'post',
+    params: { name: readonlyTemplateName },
+    url: 'permissions/create_template',
+    validateStatus: code => [200, 400].includes(code),
+  })
+
+  // Add Project Creator and sonar-administrators to Readonly Template
+  await Promise.all(projectPermissions.map(permission =>
+    axiosInstance({
+      method: 'post',
+      params: {
+        templateName: readonlyTemplateName,
+        permission,
+      },
+      url: 'permissions/add_project_creator_to_template',
+    }),
+  ))
+  await setTemplateGroupPermissions('sonar-administrators', projectPermissions, readonlyTemplateName)
+
+  // Set Readonly Template as Default
   await axiosInstance({
     method: 'post',
     params: {
-      templateName: 'Forge Default',
+      templateName: readonlyTemplateName,
     },
     url: 'permissions/set_default_template',
   })

@@ -1,14 +1,16 @@
-import type { ProjectMember, ProjectRole } from '@cpn-console/shared'
+import type { ProjectRole } from './hook-project-role.js'
+import type { Project } from './hook-project.js'
 import type { Hook } from './hook.js'
 import { createHook } from './hook.js'
 
-export type ProjectMemberPayload = ProjectMember & {
+export interface ProjectMember {
+  userId: string
+  email: string
+  firstName: string
+  lastName: string
   roles: ProjectRole[]
-  project: {
-    id: string
-    slug: string
-  }
+  project: Project
 }
 
-export const upsertProjectMember: Hook<ProjectMemberPayload> = createHook()
-export const deleteProjectMember: Hook<ProjectMemberPayload> = createHook()
+export const upsertProjectMember: Hook<ProjectMember> = createHook()
+export const deleteProjectMember: Hook<ProjectMember> = createHook()
