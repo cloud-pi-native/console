@@ -35,7 +35,6 @@ const props = withDefaults(defineProps<{
     clusterResources: false,
     privacy: ClusterPrivacy.DEDICATED,
     infos: '',
-    external: true,
     id: '',
     cpu: 0,
     gpu: 0,
@@ -311,15 +310,6 @@ const isConnectionDetailsShown = ref(true)
         hint="Ignorer le certificat TLS présenté pour contacter l'API server Kubernetes"
         name="isClusterSkipTlsVerify"
         :disabled="localCluster.label === inClusterLabel"
-      />
-
-      <DsfrCheckbox
-        id="externalClusterCbx"
-        v-model="localCluster.external"
-        value="localCluster.external"
-        label="Cluster externe"
-        hint="Activé par défaut pour un pilotage des déploiements par le ArgoCD de zone. À désactiver si la zone cible n'a pas encore migré vers ce mode de déploiement."
-        name="isExternalCluster"
       />
     </template>
     <h4
