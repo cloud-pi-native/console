@@ -1,6 +1,6 @@
 import type { AdminRole, Project, StepCall, UserEmail, ZoneObject, ProjectMemberPayload } from '@cpn-console/hooks'
-import { ENABLED, type ProjectRole } from '@cpn-console/shared'
-import { generateRandomPassword, parseError, PluginResultBuilder } from '@cpn-console/hooks'
+import type { ProjectRole } from '@cpn-console/shared'
+import { generateRandomPassword, parseError, PluginResultBuilder, specificallyEnabled } from '@cpn-console/hooks'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation.js'
 import type { CustomGroup } from './group.js'
@@ -65,7 +65,7 @@ export const upsertProject: StepCall<Project> = async ({ args: project, config }
   try {
     const kcClient = await getkcClient()
     const projectName = project.slug
-    const purgeEnabled = config.keycloak?.purge === ENABLED
+    const purge = config.keycloak?.purge
     const projectGroup = await getOrCreateProjectGroup(kcClient, projectName)
 
     const groupMembers = await kcClient.groups.listMembers({ id: projectGroup.id })
@@ -73,7 +73,7 @@ export const upsertProject: StepCall<Project> = async ({ args: project, config }
     await Promise.all([
       ...groupMembers.map((member) => {
         if (!project.users.some(({ id }) => id === member.id)) {
-          if (purgeEnabled) {
+          if (specificallyEnabled(purge)) {
             return kcClient.users.delFromGroup({
             // @ts-ignore id is present on user, bad typing in lib
               id: member.id,
@@ -231,7 +231,7 @@ export const deleteZone: StepCall<ZoneObject> = async ({ args: zone }) => {
 export const upsertAdminRole: StepCall<AdminRole> = async ({ args: role, config }) => {
   if (!role.oidcGroup) return { status: { result: 'OK', message: 'No OIDC Group defined' } }
   const pluginResult = new PluginResultBuilder('Up-to-date')
-  const purgeEnabled = config.keycloak?.purge === ENABLED
+  const purge = config.keycloak?.purge
   try {
     const kcClient = await getkcClient()
     const group = await getOrCreateGroupByPath(kcClient, role.oidcGroup)
@@ -240,7 +240,7 @@ export const upsertAdminRole: StepCall<AdminRole> = async ({ args: role, config 
     await Promise.all([
       ...groupMembers.map((member) => {
         if (member.id && !role.members.some(({ id }) => id === member.id)) {
-          if (purgeEnabled) {
+          if (specificallyEnabled(purge)) {
             return kcClient.users.delFromGroup({
               id: member.id,
               groupId: group!.id!,
@@ -388,7 +388,7 @@ export const deleteProjectRole: StepCall<ProjectRole> = async ({ args: role }) =
 
 export const upsertProjectMember: StepCall<ProjectMemberPayload> = async ({ args: member, config }) => {
   const pluginResult = new PluginResultBuilder('Synced')
-  const purgeEnabled = config.keycloak?.purge === ENABLED
+  const purge = config.keycloak?.purge
   try {
     const kcClient = await getkcClient()
 
@@ -410,7 +410,7 @@ export const upsertProjectMember: StepCall<ProjectMemberPayload> = async ({ args
       if (shouldBeMember && !isMember) {
         await kcClient.users.addToGroup({ id: member.userId, groupId: roleGroup.id })
       } else if (!shouldBeMember && isMember) {
-        if (purgeEnabled) {
+        if (specificallyEnabled(purge)) {
           await kcClient.users.delFromGroup({ id: member.userId, groupId: roleGroup.id })
         } else {
           console.warn(`User ${member.email} is not in project ${member.project.slug} anymore, but purge is disabled`)
