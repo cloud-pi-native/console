@@ -19,20 +19,7 @@ const infos: ServiceInfos = {
         description: 'Purger les utilisateurs non synchronisés de Keycloak lors de la synchronisation',
       },
     ],
-    project: [
-      {
-        kind: 'switch',
-        key: 'purge',
-        initialValue: DISABLED,
-        permissions: {
-          admin: { read: true, write: true },
-          user: { read: false, write: false },
-        },
-        title: 'Purger les utilisateurs non synchronisés',
-        value: DISABLED,
-        description: 'Purger les utilisateurs non synchronisés de Keycloak lors de la synchronisation',
-      },
-    ],
+    project: [],
   },
 }
 

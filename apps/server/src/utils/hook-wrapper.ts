@@ -142,6 +142,8 @@ const user = {
 const projectMember = {
   upsert: async (projectId: Project['id'], userId: ProjectMembers['userId']) => {
     const project = await getHookProjectInfos(projectId)
+    const projectStore = dbToObj(await getProjectStore(project.id))
+    const hookProject = transformToHookProject(project, projectStore)
     const store = dbToObj(await getAdminPlugin())
 
     const member = project.members.find(m => m.userId === userId)
@@ -149,7 +151,12 @@ const projectMember = {
 
     const memberRoles = project.roles
       .filter(role => member.roleIds.includes(role.id))
-      .map(role => ({ ...role, permissions: role.permissions.toString(), oidcGroup: role.oidcGroup ?? undefined }))
+      .map(role => ({
+        ...role,
+        permissions: role.permissions.toString(),
+        oidcGroup: role.oidcGroup ?? undefined,
+        project: hookProject,
+      }))
 
     const payload = {
       userId: member.userId,
@@ -163,16 +170,15 @@ const projectMember = {
       lastLogin: member.user.lastLogin?.toISOString(),
       projectId: project.id,
       roles: memberRoles,
-      project: {
-        id: project.id,
-        slug: project.slug,
-      },
+      project: hookProject,
     }
 
     return hooks.upsertProjectMember.execute(payload, store)
   },
   delete: async (projectId: Project['id'], userId: ProjectMembers['userId']) => {
     const project = await getHookProjectInfos(projectId)
+    const projectStore = dbToObj(await getProjectStore(project.id))
+    const hookProject = transformToHookProject(project, projectStore)
     const store = dbToObj(await getAdminPlugin())
 
     const member = project.members.find(m => m.userId === userId)
@@ -180,7 +186,12 @@ const projectMember = {
 
     const memberRoles = project.roles
       .filter(role => member.roleIds.includes(role.id))
-      .map(role => ({ ...role, permissions: role.permissions.toString(), oidcGroup: role.oidcGroup ?? undefined }))
+      .map(role => ({
+        ...role,
+        permissions: role.permissions.toString(),
+        oidcGroup: role.oidcGroup ?? undefined,
+        project: hookProject,
+      }))
 
     const payload = {
       userId: member.userId,
@@ -194,10 +205,7 @@ const projectMember = {
       lastLogin: member.user.lastLogin?.toISOString(),
       projectId: project.id,
       roles: memberRoles,
-      project: {
-        id: project.id,
-        slug: project.slug,
-      },
+      project: hookProject,
     }
 
     return hooks.deleteProjectMember.execute(payload, store)
@@ -209,9 +217,14 @@ const projectRole = {
     const role = await getRole(roleId)
     if (!role) throw new Error('Role not found')
 
+    const project = await getHookProjectInfos(role.projectId)
+    const projectStore = dbToObj(await getProjectStore(role.projectId))
+    const hookProject = transformToHookProject(project, projectStore)
+
     const rolePayload = {
       ...role,
       permissions: role.permissions.toString(),
+      project: hookProject,
     }
     const store = dbToObj(await getAdminPlugin())
     return hooks.upsertProjectRole.execute(rolePayload, store)
@@ -220,9 +233,14 @@ const projectRole = {
     const role = await getRole(roleId)
     if (!role) throw new Error('Role not found')
 
+    const project = await getHookProjectInfos(role.projectId)
+    const projectStore = dbToObj(await getProjectStore(role.projectId))
+    const hookProject = transformToHookProject(project, projectStore)
+
     const rolePayload = {
       ...role,
       permissions: role.permissions.toString(),
+      project: hookProject,
     }
     const store = dbToObj(await getAdminPlugin())
     return hooks.deleteProjectRole.execute(rolePayload, store)
