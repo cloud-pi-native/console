@@ -172,38 +172,10 @@ describe('schemas utils', () => {
       .toStrictEqual({ data: toParse, success: true })
   })
 
-  it('should validate an internal dedicated cluster details schema', () => {
+  it('should validate a public cluster details schema', () => {
     const toParse = {
       id: faker.string.uuid(),
       label: 'cluster',
-      external: false,
-      clusterResources: true,
-      infos: 'Infos du cluster',
-      privacy: ClusterPrivacy.DEDICATED,
-      cpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
-      gpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
-      memory: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
-      zoneId: faker.string.uuid(),
-      stageIds: [faker.string.uuid(), faker.string.uuid()],
-      projectIds: [faker.string.uuid(), faker.string.uuid()],
-      kubeconfig: {
-        user: {},
-        cluster: {
-          tlsServerName: 'blabla',
-        },
-      },
-    }
-
-    expect(ClusterDetailsSchema
-      .safeParse(toParse))
-      .toStrictEqual({ data: toParse, success: true })
-  })
-
-  it('should validate an external public cluster details schema', () => {
-    const toParse = {
-      id: faker.string.uuid(),
-      label: 'cluster',
-      external: true,
       clusterResources: true,
       privacy: ClusterPrivacy.PUBLIC,
       cpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),

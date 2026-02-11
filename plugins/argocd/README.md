@@ -16,80 +16,10 @@ sequenceDiagram
 
   box DSO
     participant Console as Console
-    participant Kubernetes_DSO as Kubernetes
-    participant Gitlab as Gitlab
-    participant Keycloak as Keycloak
-    participant Vault as Vault
-    participant ArgoCD_DSO as ArgoCD
-  end
-
-  box External Cluster (when applicable)
-    participant ArgoCD_EXT as ArgoCD
-    participant Kubernetes_EXT as Kubernetes
-  end
-
-  Bob ->> Console: "Please upsert project"
-
-  Console ->> Gitlab: Create "infrastructure" Zone/Environment/Project repository
-  Console ->> Keycloak: Get RO & RW Groups
-  Console ->> Vault: Retrieve Credentials
-  Console ->> Gitlab: Create values.yaml files
-
-  loop For every Zone/Environment
-    alt cluster is INTERNAL
-      Console ->> Kubernetes_DSO: Reconcile resources (Create/Update AppProject CRDs when needed)
-      ArgoCD_DSO ->> Kubernetes_DSO: Detects new/updated AppProject CRDs
-      ArgoCD_DSO ->> Kubernetes_DSO: Apply relevant changes
-    else cluster is EXTERNAL
-      ArgoCD_EXT ->> Gitlab: Detects new/updated values.yaml files
-      ArgoCD_EXT ->> Kubernetes_EXT: Apply relevant changes
-    end
-  end
-
-  Console ->> Gitlab: Remove infra values.yaml files for deleted env/zones
-```
-
-Il est à noter que ce diagramme décrit deux possibilités différentes qui se basent sur la propriété `cluster.external`.
-
-Cette propriété va un peu plus loin que son nom l'indique a priori : il s'agit véritablement d'un mode de fonctionnement alternatif qui va être progressivement déployé sur les différents projets.
-
-En effet, à l'origine, la console avait à sa charge l'intégralité de la création des ressources, dans un mode de fonctionnement qui est très proche de ce que fait ArgoCD en interne :
-
-```mermaid
-sequenceDiagram
-  actor Bob as Bob
-
-  box DSO
-    participant Console as Console
-    participant Kubernetes_DSO as Kubernetes
-    participant ArgoCD_DSO as ArgoCD
-  end
-
-  Bob ->> Console: "Please upsert project"
-
-  loop For every Zone/Environment
-    Console ->> Kubernetes_DSO: Reconcile resources (Create/Update AppProject CRDs when needed)
-    ArgoCD_DSO ->> Kubernetes_DSO: Detects new/updated AppProject CRDs
-    ArgoCD_DSO ->> Kubernetes_DSO: Apply relevant changes
-  end
-```
-
-Mais, avec l'arrivée de clusters dit "externes" (c'est-à-dire qu'ils sont hors du périmètre de DSO, et gérés de manière autonome par les projets clients), est arrivée une contrainte : On ne peut plus interagir avec l'API Kubernetes (le cluster est "air gapped", soit injoignable de l'extérieur, *a fortiori* depuis la Console).
-
-Il a donc fallu un nouveau paradigme, dans lequel c'est le cluster externe qui **vient récupérer les informations pour se mettre à jour**. Et la manière la plus efficace de faire ça, c'est de basculer en mode "GitOps", un mode dans lequel la Console créerait un fichier de configuration (typiquement un `values.yaml`) qui serait "tiré" par le cluster externe afin d'être traité par l'ArgoCD qui lui est rattaché.
-
-Le flux devient donc le suivant :
-
-```mermaid
-sequenceDiagram
-  actor Bob as Bob
-
-  box DSO
-    participant Console as Console
     participant Gitlab as Gitlab
   end
 
-  box External Cluster
+  box Project Cluster
     participant ArgoCD_EXT as ArgoCD
     participant Kubernetes_EXT as Kubernetes
   end
@@ -103,7 +33,9 @@ sequenceDiagram
   end
 ```
 
-Cette migration de l'ancien mode de fonctionnement (En mode "Impératif" d'administration du cluster Kubernetes) au nouveau mode ("GitOps", ou "Déclaratif" pour le cluster externe) va se faire progressivement, mais en attendant les deux flux doivent être maintenus. Toute la branche de code concernant des clusters "internes" finira par disparaître.
+Les clusters sont dits "externes" car ils sont hors du périmètre de DSO, et gérés de manière autonome par les projets clients, ce qui est une contrainte majeur : on ne peut pas interagir avec l'API Kubernetes (le cluster est considéré comme "air gapped", c'est-à-dire injoignable de l'extérieur, *a fortiori* depuis la Console). C'est en particulier le cas pour les clusters qui se trouvent dans une Zone DR ("Diffusion Restreinte").
+
+C'est pourquoi la Console fonctionne avec son paradigme dans lequel c'est le cluster externe qui **vient récupérer les informations pour se mettre à jour**. Et la manière la plus efficace de faire ça, c'est de fonctionner en mode "GitOps", un mode dans lequel la Console crée un fichier de configuration (typiquement un `values.yaml`) qui serait récupéré (d'où le nom de "pull", en opposition au "push" traditionnel dans lequel on va utiliser les API Kubernetes) par le cluster externe afin d'être traité par l'ArgoCD qui lui est rattaché.
 
 ## deleteProject hook
 
@@ -118,7 +50,7 @@ sequenceDiagram
     participant Kubernetes_DSO as Kubernetes
   end
 
-  box External Cluster (when relevant)
+  box Project Cluster
     participant ArgoCD_EXT as ArgoCD
     participant Kubernetes_EXT as Kubernetes
   end
@@ -127,14 +59,8 @@ sequenceDiagram
 
   loop For every zone/environment
     Console ->> Gitlab: Delete values.yaml files
-    alt cluster is INTERNAL
-      Console ->> Kubernetes_DSO: Delete Application and AppProject CRDs
-      ArgoCD_DSO ->> Kubernetes_DSO: Detects deleted AppProject CRDs
-      ArgoCD_DSO ->> Kubernetes_DSO: Apply relevant changes (delete resources)
-    else cluster is EXTERNAL
-      ArgoCD_EXT ->> Gitlab: Detects deleted values.yaml files
-      ArgoCD_EXT ->> Kubernetes_EXT: Apply relevant changes (delete resources)
-    end
+    ArgoCD_EXT ->> Gitlab: Detects deleted values.yaml files
+    ArgoCD_EXT ->> Kubernetes_EXT: Apply relevant changes (delete resources)
   end
 ```
 

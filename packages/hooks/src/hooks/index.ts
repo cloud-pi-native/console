@@ -56,7 +56,6 @@ export interface ClusterObject {
   id: string
   label: string
   privacy: 'public' | 'dedicated'
-  external: boolean
   /**
    * @deprecated Le nom aléatoire stocké ici n'est plus utilisé, au profit d'un nom caculé et déterministe.
    */
