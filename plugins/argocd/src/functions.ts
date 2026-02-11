@@ -83,7 +83,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
           vaultApi,
         )
 
-        if (cluster.label !== inClusterLabel && cluster.external) {
+        if (cluster.label !== inClusterLabel) {
           console.log(`Direct argocd API calls are disabled for cluster ${cluster.label}`)
           return undefined
         }

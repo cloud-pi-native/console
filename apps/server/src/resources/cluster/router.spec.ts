@@ -61,7 +61,6 @@ describe('test clusterContract', () => {
         id: faker.string.uuid(),
         clusterResources: true,
         infos: '',
-        external: false,
         label: faker.string.alpha(),
         privacy: 'public',
         stageIds: [],
@@ -164,7 +163,6 @@ describe('test clusterContract', () => {
       id: faker.string.uuid(),
       clusterResources: true,
       infos: '',
-      external: true,
       label: faker.string.alpha(),
       privacy: 'public',
       stageIds: [],
@@ -221,7 +219,6 @@ describe('test clusterContract', () => {
     const cluster: Omit<ClusterDetails, 'id'> = {
       clusterResources: true,
       infos: '',
-      external: false,
       label: faker.string.alpha(),
       privacy: 'public',
       stageIds: [],

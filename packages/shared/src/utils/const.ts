@@ -81,7 +81,7 @@ export const statusDict = {
       type: 'success',
       icon: 'ri:lock-unlock-line',
       wording: 'déverrouillé',
-      animation: '',
+      animation: undefined,
       color: 'var(--success-425-625)',
     },
     true: {
@@ -89,7 +89,7 @@ export const statusDict = {
       type: 'warning',
       icon: 'ri:lock-line',
       wording: 'verrouillé',
-      animation: '',
+      animation: undefined,
       color: 'var(--warning-425-625)',
     },
   },
@@ -99,7 +99,7 @@ export const statusDict = {
       type: 'success',
       icon: 'ri:check-line',
       wording: 'succès',
-      animation: '',
+      animation: undefined,
       color: 'var(--success-425-625)',
     },
     failed: {
@@ -107,7 +107,7 @@ export const statusDict = {
       type: 'error',
       icon: 'ri:close-line',
       wording: 'opérations échouées',
-      animation: '',
+      animation: undefined,
       color: 'var(--error-425-625)',
     },
     initializing: {
@@ -123,7 +123,7 @@ export const statusDict = {
       type: 'info',
       icon: 'ri:archive-line',
       wording: 'archivé',
-      animation: '',
+      animation: undefined,
       color: 'var(--text-mention-grey)',
     },
     warning: {
@@ -131,7 +131,7 @@ export const statusDict = {
       type: 'warning',
       icon: 'ri:alert-line',
       wording: 'partiellement dégradé',
-      animation: '',
+      animation: undefined,
       color: 'var(--warning-425-625)',
     },
   },
