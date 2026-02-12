@@ -1,10 +1,10 @@
-import type { Cluster, Kubeconfig, Project, ProjectRole, Zone, ProjectMembers } from '@prisma/client'
+import type { Cluster, Kubeconfig, Project, ProjectRole, Zone } from '@prisma/client'
 import type { ClusterObject, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository, Store, ZoneObject } from '@cpn-console/hooks'
 import { hooks } from '@cpn-console/hooks'
 import type { AsyncReturnType } from '@cpn-console/shared'
 import { ProjectAuthorized, getPermsByUserRoles, resourceListToDict } from '@cpn-console/shared'
 import { genericProxy } from './proxy.js'
-import { archiveProject, getAdminPlugin, getAdminRoleById, getClusterByIdOrThrow, getClusterNamesByZoneId, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getRole, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '@/resources/queries-index.js'
+import { archiveProject, getAdminPlugin, getAdminRoleById, getClusterByIdOrThrow, getClusterNamesByZoneId, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '@/resources/queries-index.js'
 import type { ConfigRecords } from '@/resources/project-service/business.js'
 import { dbToObj } from '@/resources/project-service/business.js'
 
@@ -139,114 +139,6 @@ const user = {
   },
 } as const
 
-const projectMember = {
-  upsert: async (projectId: Project['id'], userId: ProjectMembers['userId']) => {
-    const project = await getHookProjectInfos(projectId)
-    const projectStore = dbToObj(await getProjectStore(project.id))
-    const hookProject = transformToHookProject(project, projectStore)
-    const store = dbToObj(await getAdminPlugin())
-
-    const member = project.members.find(m => m.userId === userId)
-    if (!member) throw new Error('Member not found')
-
-    const memberRoles = project.roles
-      .filter(role => member.roleIds.includes(role.id))
-      .map(role => ({
-        ...role,
-        permissions: role.permissions.toString(),
-        oidcGroup: role.oidcGroup ?? undefined,
-        project: hookProject,
-      }))
-
-    const payload = {
-      userId: member.userId,
-      roleIds: member.roleIds,
-      firstName: member.user.firstName,
-      lastName: member.user.lastName,
-      email: member.user.email,
-      type: member.user.type as 'human' | 'bot' | 'ghost',
-      createdAt: member.user.createdAt.toISOString(),
-      updatedAt: member.user.updatedAt.toISOString(),
-      lastLogin: member.user.lastLogin?.toISOString(),
-      projectId: project.id,
-      roles: memberRoles,
-      project: hookProject,
-    }
-
-    return hooks.upsertProjectMember.execute(payload, store)
-  },
-  delete: async (projectId: Project['id'], userId: ProjectMembers['userId']) => {
-    const project = await getHookProjectInfos(projectId)
-    const projectStore = dbToObj(await getProjectStore(project.id))
-    const hookProject = transformToHookProject(project, projectStore)
-    const store = dbToObj(await getAdminPlugin())
-
-    const member = project.members.find(m => m.userId === userId)
-    if (!member) throw new Error('Member not found')
-
-    const memberRoles = project.roles
-      .filter(role => member.roleIds.includes(role.id))
-      .map(role => ({
-        ...role,
-        permissions: role.permissions.toString(),
-        oidcGroup: role.oidcGroup ?? undefined,
-        project: hookProject,
-      }))
-
-    const payload = {
-      userId: member.userId,
-      roleIds: member.roleIds,
-      firstName: member.user.firstName,
-      lastName: member.user.lastName,
-      email: member.user.email,
-      type: member.user.type as 'human' | 'bot' | 'ghost',
-      createdAt: member.user.createdAt.toISOString(),
-      updatedAt: member.user.updatedAt.toISOString(),
-      lastLogin: member.user.lastLogin?.toISOString(),
-      projectId: project.id,
-      roles: memberRoles,
-      project: hookProject,
-    }
-
-    return hooks.deleteProjectMember.execute(payload, store)
-  },
-} as const
-
-const projectRole = {
-  upsert: async (roleId: ProjectRole['id']) => {
-    const role = await getRole(roleId)
-    if (!role) throw new Error('Role not found')
-
-    const project = await getHookProjectInfos(role.projectId)
-    const projectStore = dbToObj(await getProjectStore(role.projectId))
-    const hookProject = transformToHookProject(project, projectStore)
-
-    const rolePayload = {
-      ...role,
-      permissions: role.permissions.toString(),
-      project: hookProject,
-    }
-    const store = dbToObj(await getAdminPlugin())
-    return hooks.upsertProjectRole.execute(rolePayload, store)
-  },
-  delete: async (roleId: ProjectRole['id']) => {
-    const role = await getRole(roleId)
-    if (!role) throw new Error('Role not found')
-
-    const project = await getHookProjectInfos(role.projectId)
-    const projectStore = dbToObj(await getProjectStore(role.projectId))
-    const hookProject = transformToHookProject(project, projectStore)
-
-    const rolePayload = {
-      ...role,
-      permissions: role.permissions.toString(),
-      project: hookProject,
-    }
-    const store = dbToObj(await getAdminPlugin())
-    return hooks.deleteProjectRole.execute(rolePayload, store)
-  },
-} as const
-
 const zone = {
   upsert: async (zoneId: Zone['id']) => {
     const zone: ZoneObject = await getZoneByIdOrThrow(zoneId)
@@ -299,10 +191,6 @@ export const hook = {
   // @ts-ignore TODO voir comment opti la signature de la fonction
   project: genericProxy(project, { upsert: ['delete'], delete: ['upsert', 'delete'], getSecrets: ['delete'] }),
   // @ts-ignore TODO voir comment opti la signature de la fonction
-  projectRole: genericProxy(projectRole, { delete: ['upsert', 'delete'], upsert: ['delete'] }),
-  // @ts-ignore TODO voir comment opti la signature de la fonction
-  projectMember: genericProxy(projectMember, { delete: ['upsert'], upsert: ['delete'] }),
-  // @ts-ignore TODO voir comment opti la signature de la fonction
   cluster: genericProxy(cluster, { delete: ['upsert', 'delete'], upsert: ['delete'] }),
   // @ts-ignore TODO voir comment opti la signature de la fonction
   zone: genericProxy(zone, { delete: ['upsert'], upsert: ['delete'] }),
@@ -349,10 +237,20 @@ export function transformToHookProject(project: ProjectInfos, store: Store, repo
     store,
     users: [project.owner, ...project.members.map(({ user }) => user)],
     roles: [
-      { userId: project.ownerId, role: 'owner' },
-      ...project.members.map(member => ({
-        userId: member.userId,
-        role: 'user' as const,
+      {
+        name: 'owner',
+        position: 0,
+        users: [project.owner],
+      },
+      ...project.roles.map(role => ({
+        name: role.name,
+        permissions: role.permissions.toString(),
+        position: role.position,
+        type: role.type ?? undefined,
+        oidcGroup: role.oidcGroup ?? undefined,
+        users: project.members
+          .filter(member => member.roleIds.includes(role.id))
+          .map(member => member.user),
       })),
     ],
   })

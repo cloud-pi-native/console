@@ -3,13 +3,11 @@ import {
   checkApi,
   commitFiles,
   deleteDsoProject,
-  deleteProjectMember,
   deleteZone,
   getDsoProjectSecrets,
   syncRepository,
   upsertAdminRole,
   upsertDsoProject,
-  upsertProjectMember,
   upsertZone,
 } from './functions.js'
 import { getOrCreateGroupRoot } from './utils.js'
@@ -80,18 +78,6 @@ export const plugin: Plugin = {
     upsertAdminRole: {
       steps: {
         main: upsertAdminRole,
-      },
-    },
-    upsertProjectMember: {
-      api: member => new GitlabProjectApi(member.project),
-      steps: {
-        main: upsertProjectMember,
-      },
-    },
-    deleteProjectMember: {
-      api: member => new GitlabProjectApi(member.project),
-      steps: {
-        post: deleteProjectMember,
       },
     },
   },
