@@ -6,6 +6,7 @@ import {
   deleteZone,
   getDsoProjectSecrets,
   syncRepository,
+  upsertAdminRole,
   upsertDsoProject,
   upsertZone,
 } from './functions.js'
@@ -72,6 +73,11 @@ export const plugin: Plugin = {
       api: () => new GitlabZoneApi(),
       steps: {
         main: deleteZone,
+      },
+    },
+    upsertAdminRole: {
+      steps: {
+        main: upsertAdminRole,
       },
     },
   },

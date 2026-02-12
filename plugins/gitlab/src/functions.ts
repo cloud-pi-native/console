@@ -1,13 +1,19 @@
-import { okStatus, parseError, specificallyDisabled } from '@cpn-console/hooks'
-import type { ClusterObject, PluginResult, Project, ProjectLite, StepCall, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
-import { insert } from '@cpn-console/shared'
+import { okStatus, parseError, specificallyDisabled, specificallyEnabled } from '@cpn-console/hooks'
+import type { AdminRole, ClusterObject, PluginResult, Project, ProjectLite, StepCall, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
+import { AccessLevel } from '@gitbeaker/core'
 import { deleteGroup } from './group.js'
-import { createUsername, getUser } from './user.js'
-import { ensureMembers } from './members.js'
+import { createUsername, getUser, upsertUser } from './user.js'
 import { ensureRepositories } from './repositories.js'
 import type { VaultSecrets } from './utils.js'
-import { cleanGitlabError } from './utils.js'
+import { cleanGitlabError, matchRole } from './utils.js'
 import config from './config.js'
+import {
+  DEFAULT_ADMIN_GROUP_PATH,
+  DEFAULT_AUDITOR_GROUP_PATH,
+  DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX,
+} from './infos.js'
 
 // Check
 export const checkApi: StepCall<Project> = async (payload) => {
@@ -100,12 +106,6 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
 
     await gitlabApi.getOrCreateProjectGroup()
 
-    const { failedInUpsertUsers } = await ensureMembers(gitlabApi, project)
-    if (failedInUpsertUsers) {
-      returnResult.status.result = 'WARNING'
-      returnResult.warnReasons = insert(returnResult.warnReasons, 'Failed to create or upsert users in Gitlab')
-    }
-
     const projectMirrorCreds = await gitlabApi.getProjectMirrorCreds(vaultApi)
     await ensureRepositories(gitlabApi, project, vaultApi, {
       botAccount: projectMirrorCreds.MIRROR_USER,
@@ -130,6 +130,77 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
     }
 
     await vaultApi.write(gitlabSecret, 'GITLAB')
+
+    // Sync members
+    const purge = payload.config.gitlab?.purge
+    const projectReporterGroupPathSuffix = payload.config.gitlab?.projectReporterGroupPathSuffix ?? DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX
+    const projectDeveloperGroupPathSuffix = payload.config.gitlab?.projectDeveloperGroupPathSuffix ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
+    const projectMaintainerGroupPathSuffix = payload.config.gitlab?.projectMaintainerGroupPathSuffix ?? DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX
+
+    const groupMembers = await gitlabApi.getGroupMembers()
+
+    // Calculate access levels for all users
+    const userAccessLevels = new Map<string, number>()
+    for (const role of project.roles) {
+      if (!role.oidcGroup) continue
+
+      let accessLevel: number | undefined
+      if (matchRole(project.slug, role.oidcGroup, projectReporterGroupPathSuffix)) {
+        accessLevel = AccessLevel.GUEST
+      } else if (matchRole(project.slug, role.oidcGroup, projectDeveloperGroupPathSuffix)) {
+        accessLevel = AccessLevel.DEVELOPER
+      } else if (matchRole(project.slug, role.oidcGroup, projectMaintainerGroupPathSuffix)) {
+        accessLevel = AccessLevel.MAINTAINER
+      }
+
+      if (accessLevel !== undefined) {
+        for (const user of role.users) {
+          const currentLevel = userAccessLevels.get(user.id)
+          if (!currentLevel || accessLevel > currentLevel) {
+            userAccessLevels.set(user.id, accessLevel)
+          }
+        }
+      }
+    }
+
+    const validGitlabIds = new Set<number>()
+
+    await Promise.all(project.users.map(async (user) => {
+      const gitlabUser = await upsertUser({
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      })
+      validGitlabIds.add(gitlabUser.id)
+
+      const accessLevel = userAccessLevels.get(user.id)
+      const existingMember = groupMembers.find(m => m.id === gitlabUser.id)
+
+      if (accessLevel !== undefined) {
+        if (existingMember) {
+          if (existingMember.access_level !== accessLevel) {
+            await gitlabApi.editGroupMember(gitlabUser.id, accessLevel)
+          }
+        } else {
+          await gitlabApi.addGroupMember(gitlabUser.id, accessLevel)
+        }
+      } else if (specificallyEnabled(purge) && existingMember) {
+        await gitlabApi.removeGroupMember(gitlabUser.id)
+      }
+    }))
+
+    if (specificallyEnabled(purge)) {
+      for (const member of groupMembers) {
+        if (!validGitlabIds.has(member.id)) {
+          try {
+            await gitlabApi.removeGroupMember(member.id)
+          } catch (error) {
+            returnResult.warning.push(`Can't remove user ${member.username} from group: ${error}`)
+          }
+        }
+      }
+    }
 
     return returnResult
   } catch (error) {
@@ -230,5 +301,83 @@ export const commitFiles: StepCall<UniqueRepo | Project | ClusterObject | ZoneOb
     returnResult.status.result = 'KO'
     returnResult.status.message = 'Failed to commit files'
     return returnResult
+  }
+}
+
+export const upsertAdminRole: StepCall<AdminRole> = async (payload) => {
+  try {
+    const role = payload.args
+    const adminGroupPath = payload.config.gitlab?.adminGroupPath ?? DEFAULT_ADMIN_GROUP_PATH
+    const auditorGroupPath = payload.config.gitlab?.auditorGroupPath ?? DEFAULT_AUDITOR_GROUP_PATH
+
+    const isAdmin = role.oidcGroup === adminGroupPath ? true : undefined
+    const isAuditor = role.oidcGroup === auditorGroupPath ? true : undefined
+
+    if (isAdmin === undefined && isAuditor === undefined) {
+      return {
+        status: {
+          result: 'OK',
+          message: 'Not a managed role for GitLab plugin',
+        },
+      }
+    }
+
+    for (const member of role.members) {
+      await upsertUser(member, isAdmin, isAuditor)
+    }
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Members synced',
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(cleanGitlabError(error)),
+      status: {
+        result: 'KO',
+        message: 'An error occured while syncing admin role',
+      },
+    }
+  }
+}
+
+export const deleteAdminRole: StepCall<AdminRole> = async (payload) => {
+  try {
+    const role = payload.args
+    const adminGroupPath = payload.config.gitlab?.adminGroupPath ?? DEFAULT_ADMIN_GROUP_PATH
+    const auditorGroupPath = payload.config.gitlab?.auditorGroupPath ?? DEFAULT_AUDITOR_GROUP_PATH
+
+    const isAdmin = role.oidcGroup === adminGroupPath ? false : undefined
+    const isAuditor = role.oidcGroup === auditorGroupPath ? false : undefined
+
+    if (isAdmin === undefined && isAuditor === undefined) {
+      return {
+        status: {
+          result: 'OK',
+          message: 'Not a managed role for GitLab plugin',
+        },
+      }
+    }
+
+    for (const member of role.members) {
+      await upsertUser(member, isAdmin, isAuditor)
+    }
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Admin role deleted and members synced',
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(cleanGitlabError(error)),
+      status: {
+        result: 'KO',
+        message: 'An error occured while deleting admin role',
+      },
+    }
   }
 }
