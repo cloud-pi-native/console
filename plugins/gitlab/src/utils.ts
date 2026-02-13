@@ -1,5 +1,5 @@
 import { Gitlab } from '@gitbeaker/rest'
-import type { Gitlab as IGitlab } from '@gitbeaker/core'
+import type { BaseRequestOptions, Gitlab as IGitlab, ShowExpanded, Sudo } from '@gitbeaker/core'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import config from './config.js'
 
@@ -13,8 +13,7 @@ export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number 
   const gitlabApi = getApi()
   const projectRootDir = config().projectsRootDir
   if (groupRootId) return groupRootId
-  const groupRootSearch = await gitlabApi.Groups.search(projectRootDir)
-  const searchId = (groupRootSearch.find(grp => grp.full_path === projectRootDir))?.id
+  const searchId = (await find(opts => gitlabApi.Groups.all(opts), grp => grp.full_path === projectRootDir, { search: projectRootDir }))?.id
   if (typeof searchId === 'undefined') {
     if (throwIfNotFound) {
       throw new Error(`Gitlab inaccessible, impossible de trouver le groupe ${projectRootDir}`)
@@ -35,18 +34,16 @@ async function createGroupRoot(): Promise<number> {
     throw new Error('No projectRootDir available')
   }
 
-  let parentGroup = (await gitlabApi.Groups.search(rootGroupPath))
-    .find(grp => grp.full_path === rootGroupPath)
-    ?? await gitlabApi.Groups.create(rootGroupPath, rootGroupPath)
+  let parentGroup = await find(opts => gitlabApi.Groups.all(opts), grp => grp.full_path === rootGroupPath, { search: rootGroupPath })
+  parentGroup ??= await gitlabApi.Groups.create(rootGroupPath, rootGroupPath)
 
   if (parentGroup.full_path === projectRootDir) {
     return parentGroup.id
   }
 
   for (const path of projectRootDirArray) {
-    const futureFullPath = `${parentGroup.full_path}/${path}`
-    parentGroup = (await gitlabApi.Groups.search(futureFullPath))
-      .find(grp => grp.full_path === futureFullPath)
+    const futureFullPath: string = `${parentGroup.full_path}/${path}`
+    parentGroup = await find(opts => gitlabApi.Groups.all(opts), grp => grp.full_path === futureFullPath, { search: futureFullPath })
       ?? await gitlabApi.Groups.create(path, path, { parentId: parentGroup.id, visibility: 'internal' })
 
     if (parentGroup.full_path === projectRootDir) {
@@ -88,4 +85,47 @@ export function cleanGitlabError<T>(error: T): T {
     error.cause.description = String(error.cause.description).replaceAll(/\/\/(.*):(.*)@/g, '//MASKED:MASKED@')
   }
   return error
+}
+
+export async function* iterator<T>(
+  request: (options?: Sudo & ShowExpanded<true>) => Promise<{ data: T[], paginationInfo: any }>,
+  options: any = {},
+): AsyncGenerator<T> {
+  let page = 1
+  let hasNext = true
+  while (hasNext) {
+    const { data, paginationInfo } = await request({ ...options, page, showExpanded: true })
+    for (const item of data) {
+      yield item
+    }
+    if (paginationInfo.next) {
+      page = paginationInfo.next
+    } else {
+      hasNext = false
+    }
+  }
+}
+
+export async function getAll<T>(
+  request: (options?: BaseRequestOptions<true>) => Promise<{ data: T[], paginationInfo: any }>,
+  options: BaseRequestOptions<true> = {},
+): Promise<T[]> {
+  const items: T[] = []
+  for await (const item of iterator(request, options)) {
+    items.push(item)
+  }
+  return items
+}
+
+export async function find<T>(
+  request: (options?: BaseRequestOptions<true>) => Promise<{ data: T[], paginationInfo: any }>,
+  predicate: (item: T) => boolean,
+  options: BaseRequestOptions<true> = {},
+): Promise<T | undefined> {
+  for await (const item of iterator(request, options)) {
+    if (predicate(item)) {
+      return item
+    }
+  }
+  return undefined
 }

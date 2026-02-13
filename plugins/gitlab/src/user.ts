@@ -1,23 +1,21 @@
 import type { UserObject } from '@cpn-console/hooks'
 import type { CreateUserOptions, SimpleUserSchema } from '@gitbeaker/rest'
-import { getApi } from './utils.js'
+import { getApi, getAll } from './utils.js'
 
 export const createUsername = (email: string) => email.replace('@', '.')
 
 export async function getUser(user: { email: string, username: string, id: string }): Promise<SimpleUserSchema | undefined> {
   const api = getApi()
 
-  let gitlabUser: SimpleUserSchema | undefined
-
   // test finding by extern_uid by searching with email
-  const usersByEmail = await api.Users.all({ search: user.email })
-  gitlabUser = usersByEmail.find(gitlabUser => gitlabUser?.externUid === user.id)
-  if (gitlabUser) return gitlabUser
+  const usersByEmail = await getAll(opts => api.Users.all(opts))
+  const userByEmail = usersByEmail.find(gitlabUser => gitlabUser?.externUid === user.id)
+  if (userByEmail) return userByEmail
 
   // if not found, test finding by extern_uid by searching with username
-  const usersByUsername = await api.Users.all({ username: user.username })
-  gitlabUser = usersByUsername.find(gitlabUser => gitlabUser?.externUid === user.id)
-  if (gitlabUser) return gitlabUser
+  const usersByUsername = await getAll(opts => api.Users.all(opts))
+  const userByUsername = usersByUsername.find(gitlabUser => gitlabUser?.externUid === user.id)
+  if (userByUsername) return userByUsername
 
   // if not found, test finding by email or username
   const allUsers = [...usersByEmail, ...usersByUsername]
