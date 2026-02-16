@@ -1,19 +1,14 @@
 import { okStatus, parseError, specificallyDisabled, specificallyEnabled } from '@cpn-console/hooks'
-import type { AdminRole, ClusterObject, PluginResult, Project, ProjectLite, StepCall, UniqueRepo, ZoneObject, ProjectMember } from '@cpn-console/hooks'
-import { AccessLevel } from '@gitbeaker/core'
+import type { AdminRole, ClusterObject, PluginResult, Project, ProjectLite, StepCall, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
 import { deleteGroup } from './group.js'
 import { createUsername, getUser, upsertUser } from './user.js'
 import { ensureRepositories } from './repositories.js'
 import type { VaultSecrets } from './utils.js'
-import { cleanGitlabError, matchRole, resolveAccessLevel } from './utils.js'
+import { cleanGitlabError, resolveAccessLevel } from './utils.js'
 import config from './config.js'
-import type { GitlabProjectApi } from './class.js'
 import {
   DEFAULT_ADMIN_GROUP_PATH,
   DEFAULT_AUDITOR_GROUP_PATH,
-  DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
-  DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX,
-  DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX,
 } from './infos.js'
 
 // Check
@@ -131,6 +126,67 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
     }
 
     await vaultApi.write(gitlabSecret, 'GITLAB')
+
+    // Sync members
+    const purge = payload.config.gitlab?.purge
+
+    const groupMembers = await gitlabApi.getGroupMembers()
+
+    // Calculate access levels for all users
+    const userAccessLevels = new Map<string, number>()
+    for (const role of project.roles) {
+      if (!role.oidcGroup) continue
+
+      const accessLevel = resolveAccessLevel(project, role, payload.config)
+
+      if (accessLevel !== undefined) {
+        for (const user of role.users) {
+          const currentLevel = userAccessLevels.get(user.id)
+          if (!currentLevel || accessLevel > currentLevel) {
+            userAccessLevels.set(user.id, accessLevel)
+          }
+        }
+      }
+    }
+
+    const validGitlabIds = new Set<number>()
+
+    await Promise.all(project.users.map(async (user) => {
+      const gitlabUser = await upsertUser({
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      })
+      validGitlabIds.add(gitlabUser.id)
+
+      const accessLevel = userAccessLevels.get(user.id)
+      const existingMember = groupMembers.find(m => m.id === gitlabUser.id)
+
+      if (accessLevel !== undefined) {
+        if (existingMember) {
+          if (existingMember.access_level !== accessLevel) {
+            await gitlabApi.editGroupMember(gitlabUser.id, accessLevel)
+          }
+        } else {
+          await gitlabApi.addGroupMember(gitlabUser.id, accessLevel)
+        }
+      } else if (specificallyEnabled(purge) && existingMember) {
+        await gitlabApi.removeGroupMember(gitlabUser.id)
+      }
+    }))
+
+    if (specificallyEnabled(purge)) {
+      for (const member of groupMembers) {
+        if (!validGitlabIds.has(member.id)) {
+          try {
+            await gitlabApi.removeGroupMember(member.id)
+          } catch (error) {
+            returnResult.warning.push(`Can't remove user ${member.username} from group: ${error}`)
+          }
+        }
+      }
+    }
 
     return returnResult
   } catch (error) {
@@ -307,110 +363,6 @@ export const deleteAdminRole: StepCall<AdminRole> = async (payload) => {
       status: {
         result: 'KO',
         message: 'An error occured while deleting admin role',
-      },
-    }
-  }
-}
-
-export const upsertProjectMember: StepCall<ProjectMember> = async (payload) => {
-  const member = payload.args
-  const { gitlab: gitlabApi } = payload.apis as { gitlab: GitlabProjectApi } // TODO: apis is never type for some resaon
-  const purge = payload.config.gitlab?.purge
-  const projectReporterGroupPathSuffix = payload.config.gitlab?.projectReporterGroupPathSuffix ?? DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX
-  const projectDeveloperGroupPathSuffix = payload.config.gitlab?.projectDeveloperGroupPathSuffix ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
-  const projectMaintainerGroupPathSuffix = payload.config.gitlab?.projectMaintainerGroupPathSuffix ?? DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX
-
-  try {
-    const gitlabUser = await upsertUser({
-      id: member.userId,
-      firstName: member.firstName,
-      lastName: member.lastName,
-      email: member.email,
-    })
-
-    let maxAccessLevel: number | undefined
-
-    if (member.roles.find(role => role.oidcGroup && matchRole(member.project.slug, role.oidcGroup, projectReporterGroupPathSuffix))) {
-      maxAccessLevel = AccessLevel.GUEST
-    } else if (member.roles.find(role => role.oidcGroup && matchRole(member.project.slug, role.oidcGroup, projectDeveloperGroupPathSuffix))) {
-      maxAccessLevel = AccessLevel.DEVELOPER
-    } else if (member.roles.find(role => role.oidcGroup && matchRole(member.project.slug, role.oidcGroup, projectMaintainerGroupPathSuffix))) {
-      maxAccessLevel = AccessLevel.MAINTAINER
-    }
-
-    const groupMembers = await gitlabApi.getGroupMembers()
-    const existingMember = groupMembers.find(m => m.id === gitlabUser.id)
-
-    if (maxAccessLevel === undefined) {
-      if (specificallyEnabled(purge)) {
-        if (existingMember) {
-          await gitlabApi.removeGroupMember(gitlabUser.id)
-        }
-        return {
-          status: {
-            result: 'OK',
-            message: 'Member has no matching roles, removed from group',
-          },
-        }
-      } else {
-        console.warn(`Member ${gitlabUser.username} has no matching roles, not synced`)
-      }
-    }
-
-    if (existingMember) {
-      if (existingMember.access_level !== maxAccessLevel) {
-        await gitlabApi.editGroupMember(gitlabUser.id, maxAccessLevel)
-      }
-    } else {
-      await gitlabApi.addGroupMember(gitlabUser.id, maxAccessLevel)
-    }
-
-    return {
-      status: {
-        result: 'OK',
-        message: 'Member synced',
-      },
-    }
-  } catch (error) {
-    return {
-      error: parseError(cleanGitlabError(error)),
-      status: {
-        result: 'KO',
-        message: 'An error happened while syncing project member',
-      },
-    }
-  }
-}
-
-export const deleteProjectMember: StepCall<ProjectMember> = async (payload) => {
-  const member = payload.args
-  const { gitlab: gitlabApi } = payload.apis as { gitlab: GitlabProjectApi } // TODO: apis is never type for some resaon
-
-  try {
-    const userInfos = await getUser({ ...member, id: member.userId, username: createUsername(member.email) })
-    if (!userInfos) {
-      return {
-        status: {
-          result: 'OK',
-          message: 'User not found in GitLab',
-        },
-      }
-    }
-
-    await gitlabApi.removeGroupMember(userInfos.id)
-
-    return {
-      status: {
-        result: 'OK',
-        message: 'Member deleted',
-      },
-    }
-  } catch (error) {
-    return {
-      error: parseError(cleanGitlabError(error)),
-      status: {
-        result: 'KO',
-        message: 'An error happened while deleting project member',
       },
     }
   }

@@ -53,8 +53,8 @@ export const upsertProject: StepCall<Project> = async (payload) => {
     const applications = uniqueResource(applicationsNew.body.items, applicationsNew2.body.items)
     const appProjects = uniqueResource(appProjectsNew.body.items, appProjectsNew2.body.items)
 
-    await Promise.all([
-      ...project.environments.map(async (environment) => {
+    await Promise.all(
+      project.environments.map(async (environment) => {
         if (!environment.apis.kubernetes) {
           return
         }
@@ -69,19 +69,17 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         const roGroup = (await keycloakApi.getEnvGroup(environment.name)).subgroups.RO
         const rwGroup = (await keycloakApi.getEnvGroup(environment.name)).subgroups.RW
 
-        await ensureInfraEnvValues(
-          project,
-          environment,
-          nsName,
+        await ensureInfraEnvValues(project, environment, {
+          appNamespace: nsName,
           roGroup,
           rwGroup,
           appProjectName,
           infraRepositories,
-          infraProject.id,
+          repoId: infraProject.id,
           sourceRepositories,
           gitlabApi,
           vaultApi,
-        )
+        })
 
         if (cluster.label !== inClusterLabel && cluster.external) {
           console.log(`Direct argocd API calls are disabled for cluster ${cluster.label}`)
@@ -145,7 +143,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
           }
         }))
       }),
-    ])
+    )
 
     await removeInfraEnvValues(project, gitlabApi)
 
@@ -185,13 +183,38 @@ interface ArgoRepoSource {
   path: string
   valueFiles: string[]
 }
-async function ensureInfraEnvValues(project: Project, environment: Environment, appNamespace: string, roGroup: string, rwGroup: string, appProjectName: string, infraRepositories: Repository[], repoId: number, sourceRepositories: string[], gitlabApi: GitlabProjectApi, vaultApi: VaultProjectApi) {
+async function ensureInfraEnvValues(
+  project: Project,
+  environment: Environment,
+  options: {
+    appNamespace: string
+    roGroup: string
+    rwGroup: string
+    appProjectName: string
+    infraRepositories: Repository[]
+    repoId: number
+    sourceRepositories: string[]
+    gitlabApi: GitlabProjectApi
+    vaultApi: VaultProjectApi
+  },
+) {
+  const {
+    appNamespace,
+    roGroup,
+    rwGroup,
+    appProjectName,
+    infraRepositories,
+    repoId,
+    sourceRepositories,
+    gitlabApi,
+    vaultApi,
+  } = options
   const cluster = getCluster(project, environment)
   const infraProject = await gitlabApi.getProjectById(repoId)
   const valueFilePath = getValueFilePath(project, cluster, environment)
   const vaultValues = await vaultApi.Project.getValues()
-  const repositories: ArgoRepoSource[] = await Promise.all([
-    ...infraRepositories.map(async (repository) => {
+  const repositories: ArgoRepoSource[] = await Promise.all(
+    infraRepositories.map(async (repository) => {
       const repoURL = await gitlabApi.getPublicRepoUrl(repository.internalRepoName)
       const valueFiles = repository.helmValuesFiles ? repository.helmValuesFiles.replaceAll('<env>', environment.name).split(',') : []
       return {
@@ -203,7 +226,7 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
         valueFiles,
       }
     }),
-  ])
+  )
   const values = {
     common: {
       'dso/project': project.name,
@@ -256,10 +279,10 @@ async function removeInfraEnvValues(project: Project, gitlabApi: GitlabProjectAp
   for (const z of getDistinctZones(project)) {
     const infraProject = await gitlabApi.getOrCreateInfraProject(z)
     const existingFiles = await gitlabApi.listFiles(infraProject.id, { path: `${project.name}/`, recursive: true })
-    const neededFiles = project.environments.map(env => getValueFilePath(project, getCluster(project, env), env))
+    const neededFiles = new Set(project.environments.map(env => getValueFilePath(project, getCluster(project, env), env)))
     const filesToDelete: string[] = []
     for (const existingFile of existingFiles) {
-      if (existingFile.name === 'values.yaml' && !neededFiles.find(f => f === existingFile.path)) {
+      if (existingFile.name === 'values.yaml' && !neededFiles.has(existingFile.path)) {
         filesToDelete.push(existingFile.path)
       }
     }

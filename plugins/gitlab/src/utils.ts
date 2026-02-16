@@ -1,7 +1,9 @@
 import { Gitlab } from '@gitbeaker/rest'
-import type { Gitlab as IGitlab } from '@gitbeaker/core'
+import { AccessLevel, type Gitlab as IGitlab } from '@gitbeaker/core'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import config from './config.js'
+import type { Config, Project, Role } from '@cpn-console/hooks'
+import { DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX } from './infos.js'
 
 let api: IGitlab | undefined
 
