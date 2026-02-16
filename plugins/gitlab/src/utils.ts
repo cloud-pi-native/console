@@ -1,5 +1,5 @@
 import { Gitlab } from '@gitbeaker/rest'
-import type { Gitlab as IGitlab } from '@gitbeaker/core'
+import type { Gitlab as IGitlab, BaseRequestOptions } from '@gitbeaker/core'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import config from './config.js'
 
@@ -13,9 +13,12 @@ export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number 
   const gitlabApi = getApi()
   const projectRootDir = config().projectsRootDir
   if (groupRootId) return groupRootId
-  const groupRootSearch = await gitlabApi.Groups.search(projectRootDir)
-  const searchId = (groupRootSearch.find(grp => grp.full_path === projectRootDir))?.id
-  if (typeof searchId === 'undefined') {
+  const searchGroup = await find(
+    iter(opts => gitlabApi.Groups.all({ ...opts, search: projectRootDir })),
+    grp => grp.full_path === projectRootDir,
+  )
+  const searchId = searchGroup?.id
+  if (searchId === undefined) {
     if (throwIfNotFound) {
       throw new Error(`Gitlab inaccessible, impossible de trouver le groupe ${projectRootDir}`)
     }
@@ -35,19 +38,21 @@ async function createGroupRoot(): Promise<number> {
     throw new Error('No projectRootDir available')
   }
 
-  let parentGroup = (await gitlabApi.Groups.search(rootGroupPath))
-    .find(grp => grp.full_path === rootGroupPath)
-    ?? await gitlabApi.Groups.create(rootGroupPath, rootGroupPath)
+  let parentGroup = await find(
+    iter(opts => gitlabApi.Groups.all({ ...opts, search: rootGroupPath })),
+    grp => grp.full_path === rootGroupPath,
+  ) ?? await gitlabApi.Groups.create(rootGroupPath, rootGroupPath)
 
   if (parentGroup.full_path === projectRootDir) {
     return parentGroup.id
   }
 
   for (const path of projectRootDirArray) {
-    const futureFullPath = `${parentGroup.full_path}/${path}`
-    parentGroup = (await gitlabApi.Groups.search(futureFullPath))
-      .find(grp => grp.full_path === futureFullPath)
-      ?? await gitlabApi.Groups.create(path, path, { parentId: parentGroup.id, visibility: 'internal' })
+    const futureFullPath: string = `${parentGroup.full_path}/${path}`
+    parentGroup = await find(
+      iter(opts => gitlabApi.Groups.all({ ...opts, search: futureFullPath })),
+      grp => grp.full_path === futureFullPath,
+    ) ?? await gitlabApi.Groups.create(path, path, { parentId: parentGroup.id, visibility: 'internal' })
 
     if (parentGroup.full_path === projectRootDir) {
       return parentGroup.id
@@ -57,17 +62,11 @@ async function createGroupRoot(): Promise<number> {
 }
 
 export async function getOrCreateGroupRoot(): Promise<number> {
-  let rootId = await getGroupRootId(false)
-  if (typeof rootId === 'undefined') {
-    rootId = await createGroupRoot()
-  }
-  return rootId
+  return await getGroupRootId(false) ?? createGroupRoot()
 }
 
 export function getApi(): IGitlab {
-  if (!api) {
-    api = new Gitlab({ token: config().token, host: config().internalUrl })
-  }
+  api ??= new Gitlab({ token: config().token, host: config().internalUrl })
   return api
 }
 
@@ -88,4 +87,44 @@ export function cleanGitlabError<T>(error: T): T {
     error.cause.description = String(error.cause.description).replaceAll(/\/\/(.*):(.*)@/g, '//MASKED:MASKED@')
   }
   return error
+}
+
+export async function* iter<T>(
+  request: (options: BaseRequestOptions<true>) => Promise<{ data: T[], paginationInfo: any }>,
+): AsyncGenerator<T> {
+  let page = 1
+  let hasNext = true
+  while (hasNext) {
+    const { data, paginationInfo } = await request({ page, showExpanded: true })
+    for (const item of data) {
+      yield item
+    }
+    if (paginationInfo.next) {
+      page = paginationInfo.next
+    } else {
+      hasNext = false
+    }
+  }
+}
+
+export async function getAll<T>(
+  iterable: AsyncIterable<T>,
+): Promise<T[]> {
+  const items: T[] = []
+  for await (const item of iterable) {
+    items.push(item)
+  }
+  return items
+}
+
+export async function find<T>(
+  iterable: AsyncIterable<T>,
+  predicate: (item: T) => boolean,
+): Promise<T | undefined> {
+  for await (const item of iterable) {
+    if (predicate(item)) {
+      return item
+    }
+  }
+  return undefined
 }
