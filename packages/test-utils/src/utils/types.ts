@@ -62,10 +62,6 @@ export interface Cluster {
   }
   privacy: string
   clusterResources: boolean
-  /**
-   * @deprecated Le nom aléatoire stocké ici n'est plus utilisé, au profit d'un nom caculé et déterministe.
-   */
-  secretName: string
   updatedAt?: Date
   createdAt?: Date
 }
