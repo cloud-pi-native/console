@@ -776,9 +776,6 @@ importers:
       '@cpn-console/keycloak-plugin':
         specifier: workspace:^
         version: link:../keycloak
-      '@cpn-console/kubernetes-plugin':
-        specifier: workspace:^
-        version: link:../kubernetes
       '@cpn-console/shared':
         specifier: workspace:^
         version: link:../../packages/shared
@@ -788,12 +785,6 @@ importers:
       '@himenon/argocd-typescript-openapi':
         specifier: ^1.2.2
         version: 1.2.2
-      '@kubernetes-models/argo-cd':
-        specifier: ^2.6.2
-        version: 2.7.2
-      '@kubernetes/client-node':
-        specifier: ^0.22.3
-        version: 0.22.3
       '@types/js-yaml':
         specifier: 4.0.9
         version: 4.0.9
@@ -803,9 +794,6 @@ importers:
       js-yaml:
         specifier: 4.1.0
         version: 4.1.0
-      kubernetes-models:
-        specifier: ^4.4.2
-        version: 4.5.1
     devDependencies:
       '@cpn-console/eslint-config':
         specifier: workspace:^
@@ -10295,16 +10283,12 @@ snapshots:
       '@cpn-console/gitlab-plugin': file:plugins/gitlab(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
       '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
       '@cpn-console/keycloak-plugin': file:plugins/keycloak(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
-      '@cpn-console/kubernetes-plugin': file:plugins/kubernetes(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
       '@cpn-console/shared': file:packages/shared(@types/node@22.19.3)
       '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
       '@himenon/argocd-typescript-openapi': 1.2.2
-      '@kubernetes-models/argo-cd': 2.7.2
-      '@kubernetes/client-node': 0.22.3
       '@types/js-yaml': 4.0.9
       axios: 1.12.2
       js-yaml: 4.1.0
-      kubernetes-models: 4.5.1
     transitivePeerDependencies:
       - '@types/node'
       - bufferutil

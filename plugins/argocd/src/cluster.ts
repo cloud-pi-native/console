@@ -1,13 +1,10 @@
-import type { V1Secret } from '@kubernetes/client-node'
 import { type ClusterObject, type StepCall, parseError } from '@cpn-console/hooks'
-import { getConfig, getK8sApi, updateZoneValues } from './utils.js'
+import { updateZoneValues } from './utils.js'
 
 export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
   try {
     const cluster = payload.args
     const { vault } = payload.apis
-    await deleteClusterSecret(cluster.secretName) // Delete old fashion named secret (random UID)
-    await createClusterSecretIfNotExist(cluster, `${cluster.label}-cluster-secret`) // Create with the new naming convention (same as Helm Chart way)
     const clusterData = {
       name: cluster.label,
       clusterResources: cluster.clusterResources.toString(),
@@ -36,8 +33,6 @@ export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
 
 export const deleteCluster: StepCall<ClusterObject> = async (payload) => {
   try {
-    const secretName = payload.args.secretName
-    await deleteClusterSecret(secretName)
     await payload.apis.vault.destroy(`clusters/cluster-${payload.args.label}/argocd-cluster-secret`)
     await updateZoneValues(payload.args.zone, payload.apis)
     return {
@@ -70,46 +65,5 @@ function convertConfig(cluster: ClusterObject) {
       ...cluster.cluster?.skipTLSVerify && { insecure: cluster.cluster.skipTLSVerify },
       serverName: cluster.cluster.tlsServerName,
     },
-  }
-}
-
-function convertClusterToSecret(cluster: ClusterObject, secretName: string): V1Secret {
-  return {
-    apiVersion: 'v1',
-    kind: 'Secret',
-    metadata: {
-      name: secretName,
-      labels: {
-        'argocd.argoproj.io/secret-type': 'cluster',
-        'dso/zone': cluster.zone.slug,
-      },
-    },
-    data: {
-      name: btoa(cluster.label),
-      clusterResources: btoa(cluster.clusterResources.toString()),
-      server: btoa(cluster.cluster.server),
-      config: btoa(JSON.stringify(convertConfig(cluster))),
-    },
-  }
-}
-
-async function createClusterSecretIfNotExist(cluster: ClusterObject, secretName: string) {
-  const k8sApi = getK8sApi()
-  try {
-    await k8sApi.readNamespacedSecret(secretName, getConfig().namespace)
-  } catch (error) {
-    // @ts-ignore add control on error
-    if (error?.response?.statusCode !== 404) throw error
-    await k8sApi.createNamespacedSecret(getConfig().namespace, convertClusterToSecret(cluster, secretName))
-  }
-}
-
-export async function deleteClusterSecret(secretName: ClusterObject['secretName']) {
-  const k8sApi = getK8sApi()
-  try {
-    await k8sApi.deleteNamespacedSecret(secretName, getConfig().namespace)
-  } catch (error) {
-    // @ts-ignore add control on error
-    if (error.response.statusCode !== 404) throw error
   }
 }

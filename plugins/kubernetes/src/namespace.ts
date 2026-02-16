@@ -1,48 +1,45 @@
 import { Namespace } from 'kubernetes-models/v1'
-import type { BareMinimumResource, Environment, ListMinimumResources, PluginResult, Project, ProjectLite, StepCall, UserObject } from '@cpn-console/hooks'
+import type {
+  BareMinimumResource,
+  Environment,
+  ListMinimumResources,
+  PluginResult,
+  Project,
+  ProjectLite,
+  StepCall,
+  UserObject,
+} from '@cpn-console/hooks'
 import { parseError, uniqueResource } from '@cpn-console/hooks'
 import { generateNamespaceName } from '@cpn-console/shared'
 import type { CoreV1Api } from '@kubernetes/client-node'
-import { createCoreV1Api } from './api.js'
 import type { V1NamespacePopulated } from './class.js'
 
-export type NamespaceProvided = Required<Namespace> & { metadata: Required<Namespace['metadata']> }
+export type NamespaceProvided = Required<Namespace> & {
+  metadata: Required<Namespace['metadata']>
+}
 
+/** @deprecated This function should not be used anymore */
 export const createNamespaces: StepCall<Project> = async (payload) => {
   const statusResult: PluginResult['status']['result'] = 'OK'
   const warnMessages: string[] = []
   try {
     const project = payload.args
 
-    await Promise.all(project.environments.map(async (env) => {
-      if (env.apis.kubernetes) {
-        await env.apis.kubernetes.getFromClusterOrCreate()
-        return env.apis.kubernetes.setQuota(env)
-      }
-    }))
-
-    for (const cluster of project.clusters) {
-      const kubeClient = createCoreV1Api(cluster)
-      if (!kubeClient) {
-        continue
-      }
-      const envsForCluster = project.environments.filter(env => env.clusterId === cluster.id)
-      const projectNamespaces = await discoverAllProjectNamespacesInCluster(project, kubeClient)
-
-      for (const namespace of projectNamespaces) {
-        const environmentName = namespace.metadata?.labels?.['dso/environment'] as string | undefined
-
-        if (!envsForCluster.find(env => env.name === environmentName)) {
-          const nsName = namespace.metadata.name
-          console.log(`Le namespace ${nsName} n'a plus rien à faire là, suppression`)
-          await kubeClient.deleteNamespace(nsName)
+    await Promise.all(
+      project.environments.map(async (env) => {
+        if (env.apis.kubernetes) {
+          await env.apis.kubernetes.getFromClusterOrCreate()
+          return env.apis.kubernetes.setQuota(env)
         }
-      }
-    }
+      }),
+    )
+
     return {
       status: {
         result: statusResult,
-        message: warnMessages.length ? warnMessages.join('; ') : 'Namespaces and quotas up-to-date',
+        message: warnMessages.length
+          ? warnMessages.join('; ')
+          : 'Namespaces and quotas up-to-date',
       },
     }
   } catch (error) {
@@ -56,41 +53,28 @@ export const createNamespaces: StepCall<Project> = async (payload) => {
   }
 }
 
-export const deleteNamespaces: StepCall<Project> = async (payload) => {
-  try {
-    const project = payload.args
-
-    for (const cluster of project.clusters) {
-      const kubeClient = createCoreV1Api(cluster)
-      if (!kubeClient) {
-        continue
-      }
-      const projectNamespaces = await discoverAllProjectNamespacesInCluster(project, kubeClient)
-      for (const namespace of projectNamespaces) {
-        const nsName = namespace.metadata.name
-        console.log(`Le namespace ${nsName} n'a plus rien à faire là, suppression`)
-        await kubeClient.deleteNamespace(nsName)
-      }
-    }
-    return {
-      status: {
-        result: 'OK',
-        message: 'Namespaces deleted',
-      },
-    }
-  } catch (error) {
-    return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        message: 'Failed to delete namespaces',
-      },
-    }
+/** @deprecated This function should not be used anymore */
+export const deleteNamespaces: StepCall<Project> = async () => {
+  return {
+    status: {
+      result: 'OK',
+      message: 'Namespaces deleted',
+    },
   }
 }
 
 // Utils
-export function getNsObject({ environment, owner, zone, project }: { environment: Environment, owner: UserObject, zone: string, project: ProjectLite }): V1NamespacePopulated {
+export function getNsObject({
+  environment,
+  owner,
+  zone,
+  project,
+}: {
+  environment: Environment
+  owner: UserObject
+  zone: string
+  project: ProjectLite
+}): V1NamespacePopulated {
   const nsObject = new Namespace({
     metadata: {
       name: generateNamespaceName(project.id, environment.id),
@@ -108,10 +92,21 @@ export function getNsObject({ environment, owner, zone, project }: { environment
   return nsObject as V1NamespacePopulated
 }
 
-const getNamespaceSelectors = (project: Project) => `dso/project.id=${project.id},app.kubernetes.io/managed-by=dso-console`
+function getNamespaceSelectors(project: Project) {
+  return `dso/project.id=${project.id},app.kubernetes.io/managed-by=dso-console`
+}
 
-export async function discoverAllProjectNamespacesInCluster(project: Project, kubeClient: CoreV1Api): Promise<BareMinimumResource[]> {
-  const projectNamespaces = await kubeClient.listNamespace(undefined, undefined, undefined, undefined, getNamespaceSelectors(project)) as ListMinimumResources
+export async function discoverAllProjectNamespacesInCluster(
+  project: Project,
+  kubeClient: CoreV1Api,
+): Promise<BareMinimumResource[]> {
+  const projectNamespaces = (await kubeClient.listNamespace(
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    getNamespaceSelectors(project),
+  )) as ListMinimumResources
 
   return uniqueResource(projectNamespaces.body.items)
 }
@@ -121,10 +116,21 @@ export interface ProjectEnvSearch {
   projectName: string
   envName: string
 }
-const getEnvNamespaceSelectors = ({ envName, projectSlug }: ProjectEnvSearch) => `dso/project.slug=${projectSlug},dso/environment=${envName},app.kubernetes.io/managed-by=dso-console`
+function getEnvNamespaceSelectors({ envName, projectSlug }: ProjectEnvSearch) {
+  return `dso/project.slug=${projectSlug},dso/environment=${envName},app.kubernetes.io/managed-by=dso-console`
+}
 
-export async function searchEnvNamespaces(project: ProjectEnvSearch, kubeClient: CoreV1Api): Promise<BareMinimumResource[]> {
-  const envNamespaces = await kubeClient.listNamespace(undefined, undefined, undefined, undefined, getEnvNamespaceSelectors(project)) as ListMinimumResources
+export async function searchEnvNamespaces(
+  project: ProjectEnvSearch,
+  kubeClient: CoreV1Api,
+): Promise<BareMinimumResource[]> {
+  const envNamespaces = (await kubeClient.listNamespace(
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    getEnvNamespaceSelectors(project),
+  )) as ListMinimumResources
 
   return uniqueResource(envNamespaces.body.items)
 }

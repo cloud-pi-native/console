@@ -3,7 +3,6 @@ import { PluginApi } from '@cpn-console/hooks'
 import type { ApisApi, CoreV1Api, V1Namespace, V1ObjectMeta } from '@kubernetes/client-node'
 import { shallowMatch } from '@cpn-console/shared'
 import { getNsObject, searchEnvNamespaces } from './namespace.js'
-import { createApisApi, createCoreV1Api, createCustomObjectApi } from './api.js'
 import { getQuotaObject } from './quota.js'
 import type { AnyObjectsApi } from './customApiClass.js'
 import { patchOptions } from './misc.js'
@@ -46,9 +45,6 @@ export class KubernetesNamespace extends PluginApi {
     super()
     this.project = project
     this.environment = environment
-    this.coreV1Api = createCoreV1Api(cluster)
-    this.apisApi = createApisApi(cluster)
-    this.anyObjectApi = createCustomObjectApi(cluster)
     this.nsObjectExpected = getNsObject({
       environment,
       owner,

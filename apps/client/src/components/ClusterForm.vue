@@ -11,7 +11,6 @@ import {
   ClusterPrivacy,
   KubeconfigSchema,
   deleteValidationInput,
-  inClusterLabel,
 } from '@cpn-console/shared'
 import { load } from 'js-yaml'
 import { JsonViewer } from 'vue3-json-viewer'
@@ -266,7 +265,6 @@ const isConnectionDetailsShown = ref(true)
         :error="kConfigError"
         hint="Uploadez le Kubeconfig du cluster."
         class="fr-mb-2w"
-        :disabled="localCluster.label === inClusterLabel"
         @change="updateKubeconfig($event)"
       />
       <DsfrSelect
@@ -275,7 +273,6 @@ const isConnectionDetailsShown = ref(true)
         select-id="selectedContextSelect"
         label="Context"
         description="Nous n'avons pas trouvé de current-context dans votre kubeconfig. Veuillez choisir un contexte."
-        :disabled="localCluster.label === inClusterLabel"
         :options="contexts"
       />
       <JsonViewer
@@ -300,7 +297,6 @@ const isConnectionDetailsShown = ref(true)
         :required="true"
         :error-message="localCluster.kubeconfig.cluster.tlsServerName && !KubeconfigSchema.pick({ cluster: true }).safeParse({ cluster: { tlsServerName: localCluster.kubeconfig.cluster.tlsServerName } }).success ? 'Le nom du serveur TLS est obligatoire' : undefined"
         hint="La valeur est extraite du kubeconfig téléversé."
-        :disabled="localCluster.label === inClusterLabel"
       />
       <DsfrCheckbox
         id="clusterSkipTLSVerifyCbx"
@@ -309,7 +305,6 @@ const isConnectionDetailsShown = ref(true)
         label="Ignorer le certificat TLS du server (risques potentiels de sécurité !)"
         hint="Ignorer le certificat TLS présenté pour contacter l'API server Kubernetes"
         name="isClusterSkipTlsVerify"
-        :disabled="localCluster.label === inClusterLabel"
       />
     </template>
     <h4
