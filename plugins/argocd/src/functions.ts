@@ -44,9 +44,6 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 
     await Promise.all([
       ...project.environments.map(async (environment) => {
-        if (!environment.apis.kubernetes) {
-          return
-        }
         const nsName = generateNamespaceName(project.id, environment.id)
         const cluster = getCluster(project, environment)
         const infraProject = await gitlabApi.getOrCreateInfraProject(

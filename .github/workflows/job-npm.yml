@@ -75,8 +75,6 @@ jobs:
               - 'plugins/harbor/src/**'
             keycloak:
               - 'plugins/keycloak/src/**'
-            kubernetes:
-              - 'plugins/kubernetes/src/**'
             nexus:
               - 'plugins/nexus/src/**'
             sonarqube:

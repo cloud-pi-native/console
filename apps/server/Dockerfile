@@ -22,7 +22,6 @@ COPY --chown=node:root plugins/argocd/package.json ./plugins/argocd/package.json
 COPY --chown=node:root plugins/gitlab/package.json ./plugins/gitlab/package.json
 COPY --chown=node:root plugins/harbor/package.json ./plugins/harbor/package.json
 COPY --chown=node:root plugins/keycloak/package.json ./plugins/keycloak/package.json
-COPY --chown=node:root plugins/kubernetes/package.json ./plugins/kubernetes/package.json
 COPY --chown=node:root plugins/nexus/package.json ./plugins/nexus/package.json
 COPY --chown=node:root plugins/sonarqube/package.json ./plugins/sonarqube/package.json
 COPY --chown=node:root plugins/vault/package.json ./plugins/vault/package.json

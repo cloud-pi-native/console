@@ -21,7 +21,6 @@
   "dependencies": {
     "@cpn-console/hooks": "workspace:^",
     "@cpn-console/shared": "workspace:^",
-    "@kubernetes/client-node": "^0.22.3",
     "axios": "1.12.2"
   },
   "devDependencies": {
