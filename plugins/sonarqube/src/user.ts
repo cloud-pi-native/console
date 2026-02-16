@@ -3,6 +3,7 @@ import { generateRandomPassword } from '@cpn-console/hooks'
 import type { VaultSonarSecret } from './tech.js'
 import { getAxiosInstance } from './tech.js'
 import type { SonarPaging } from './project.js'
+import { find, iter } from './utils.js'
 
 export interface SonarUser {
   login: string
@@ -62,13 +63,21 @@ export async function changeToken(username: string) {
 
 export async function getUser(username: string): Promise<SonarUser | undefined> {
   const axiosInstance = getAxiosInstance()
-  const users: { paging: SonarPaging, users: SonarUser[] } = (await axiosInstance({
-    url: 'users/search',
-    params: {
-      q: username,
-    },
-  }))?.data
-  return users.users.find(u => u.login === username)
+  return find<SonarUser>(iter(async (page, pageSize) => {
+    const response = await axiosInstance({
+      url: 'users/search',
+      params: {
+        q: username,
+        p: page,
+        ps: pageSize,
+      },
+    })
+    const data: { paging: SonarPaging, users: SonarUser[] } = response.data
+    return {
+      items: data.users,
+      paging: data.paging,
+    }
+  }), user => user.login === username)
 }
 
 export async function ensureUserExists(username: string, projectSlug: string, vaultUserSecret: VaultSonarSecret | undefined): Promise<VaultSonarSecret | undefined> {
