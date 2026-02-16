@@ -17,7 +17,7 @@ export function systemSettingsRouter() {
 
     upsertSystemSetting: async ({ request: req, body: data }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ManageSystem(perms.adminPermissions)) return new Forbidden403()
 
       const systemSetting = await upsertSystemSetting(data)
 
