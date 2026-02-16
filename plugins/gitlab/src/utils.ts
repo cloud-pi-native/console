@@ -89,3 +89,26 @@ export function cleanGitlabError<T>(error: T): T {
   }
   return error
 }
+
+export function matchRole(projectSlug: string, roleOidcGroup: string, configuredRolePath: string) {
+  return roleOidcGroup === `/${projectSlug}${configuredRolePath}`
+}
+
+export function resolveAccessLevel(project: Project, role: Role, config: Config) {
+  const projectReporterGroupPathSuffix = config.gitlab?.projectReporterGroupPathSuffix ?? DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX
+  const projectDeveloperGroupPathSuffix = config.gitlab?.projectDeveloperGroupPathSuffix ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
+  const projectMaintainerGroupPathSuffix = config.gitlab?.projectMaintainerGroupPathSuffix ?? DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX
+
+  if (!role.oidcGroup) return undefined
+
+  let accessLevel: number | undefined
+  if (matchRole(project.slug, role.oidcGroup, projectReporterGroupPathSuffix)) {
+    accessLevel = AccessLevel.GUEST
+  } else if (matchRole(project.slug, role.oidcGroup, projectDeveloperGroupPathSuffix)) {
+    accessLevel = AccessLevel.DEVELOPER
+  } else if (matchRole(project.slug, role.oidcGroup, projectMaintainerGroupPathSuffix)) {
+    accessLevel = AccessLevel.MAINTAINER
+  }
+
+  return accessLevel
+}
