@@ -12,7 +12,7 @@ import { useSystemSettingsStore } from '@/stores/system-settings.js'
 
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
-import { swaggerUiPath } from '@cpn-console/shared'
+import { AdminAuthorized, swaggerUiPath } from '@cpn-console/shared'
 import { uuid } from '@/utils/regex.js'
 
 const AdminCluster = () => import('@/views/admin/AdminCluster.vue')
@@ -139,6 +139,12 @@ export const routes: Readonly<RouteRecordRaw[]> = [
     path: '/create-project',
     name: 'CreateProject',
     component: CreateProject,
+    beforeEnter: () => {
+      const userStore = useUserStore()
+      if (!AdminAuthorized.ManageProjects(userStore.adminPerms)) {
+        return { name: 'Projects' }
+      }
+    },
   },
   {
     name: 'ParentAdmin',
