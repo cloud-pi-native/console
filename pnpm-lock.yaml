@@ -232,9 +232,6 @@ importers:
       '@cpn-console/keycloak-plugin':
         specifier: workspace:^
         version: link:../../plugins/keycloak
-      '@cpn-console/kubernetes-plugin':
-        specifier: workspace:^
-        version: link:../../plugins/kubernetes
       '@cpn-console/nexus-plugin':
         specifier: workspace:^
         version: link:../../plugins/nexus
@@ -383,9 +380,6 @@ importers:
       '@cpn-console/keycloak-plugin':
         specifier: workspace:^
         version: file:plugins/keycloak(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
-      '@cpn-console/kubernetes-plugin':
-        specifier: workspace:^
-        version: file:plugins/kubernetes(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
       '@cpn-console/nexus-plugin':
         specifier: workspace:^
         version: file:plugins/nexus(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
@@ -892,9 +886,6 @@ importers:
       '@cpn-console/keycloak-plugin':
         specifier: workspace:^
         version: link:../keycloak
-      '@cpn-console/kubernetes-plugin':
-        specifier: workspace:^
-        version: link:../kubernetes
       '@cpn-console/shared':
         specifier: workspace:^
         version: link:../../packages/shared
@@ -966,58 +957,6 @@ importers:
       '@cpn-console/vault-plugin':
         specifier: workspace:^
         version: link:../vault
-      '@types/node':
-        specifier: ^24.1.0
-        version: 24.10.0
-      '@vitest/coverage-v8':
-        specifier: ^2.1.8
-        version: 2.1.9(vitest@2.1.9(@types/node@24.10.0)(jsdom@25.0.1)(terser@5.44.1))
-      nodemon:
-        specifier: ^3.1.7
-        version: 3.1.10
-      rimraf:
-        specifier: ^6.0.1
-        version: 6.1.0
-      typescript:
-        specifier: ^5.7.2
-        version: 5.9.3
-      vite:
-        specifier: ^7.2.1
-        version: 7.2.1(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.1)(tsx@4.19.3)(yaml@2.8.1)
-      vitest:
-        specifier: ^2.1.8
-        version: 2.1.9(@types/node@24.10.0)(jsdom@25.0.1)(terser@5.44.1)
-
-  plugins/kubernetes:
-    dependencies:
-      '@cpn-console/hooks':
-        specifier: workspace:^
-        version: link:../../packages/hooks
-      '@cpn-console/shared':
-        specifier: workspace:^
-        version: link:../../packages/shared
-      '@kubernetes-models/argo-cd':
-        specifier: ^2.6.2
-        version: 2.7.2
-      '@kubernetes/client-node':
-        specifier: ^0.22.3
-        version: 0.22.3
-      axios:
-        specifier: 1.12.2
-        version: 1.12.2
-      kubernetes-models:
-        specifier: ^4.4.2
-        version: 4.5.1
-      request:
-        specifier: ^2.88.2
-        version: 2.88.2
-    devDependencies:
-      '@cpn-console/eslint-config':
-        specifier: workspace:^
-        version: link:../../packages/eslintconfig
-      '@cpn-console/ts-config':
-        specifier: workspace:^
-        version: link:../../packages/tsconfig
       '@types/node':
         specifier: ^24.1.0
         version: 24.10.0
@@ -1153,9 +1092,6 @@ importers:
       '@cpn-console/eslint-config':
         specifier: workspace:^
         version: link:../../packages/eslintconfig
-      '@cpn-console/kubernetes-plugin':
-        specifier: workspace:^
-        version: link:../kubernetes
       '@cpn-console/ts-config':
         specifier: workspace:^
         version: link:../../packages/tsconfig
@@ -2002,9 +1938,6 @@ packages:
 
   '@cpn-console/keycloak-plugin@file:plugins/keycloak':
     resolution: {directory: plugins/keycloak, type: directory}
-
-  '@cpn-console/kubernetes-plugin@file:plugins/kubernetes':
-    resolution: {directory: plugins/kubernetes, type: directory}
 
   '@cpn-console/nexus-plugin@file:plugins/nexus':
     resolution: {directory: plugins/nexus, type: directory}
@@ -6461,10 +6394,6 @@ packages:
   kolorist@1.8.0:
     resolution: {integrity: sha512-Y+60/zizpJ3HRH8DCss+q95yr6145JXZo46OTpFvDZWLfRCE4qChOyk1b26nMaNpfHHgxagk9dXT5OP0Tfe+dQ==}
 
-  kubernetes-models@4.5.1:
-    resolution: {integrity: sha512-M/dxDW9hLjVQkRJkMAZbYLLbIj5ZrItgL9ZLJhla2bURUHhQ1CoLAz0+2bcfvAVgu0KFwP9x0kjypYVdWYajXw==}
-    engines: {node: '>=14'}
-
   leven@3.1.0:
     resolution: {integrity: sha512-qsda+H8jTaUaN/x5vzW2rzc+8Rw4TAQ/4KjB46IwK5VH+IlVeeeje/EoZRpiXvIqjFgK84QffqPztGI3VBLG1A==}
     engines: {node: '>=6'}
@@ -10319,7 +10248,6 @@ snapshots:
     dependencies:
       '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
       '@cpn-console/keycloak-plugin': file:plugins/keycloak(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
-      '@cpn-console/kubernetes-plugin': file:plugins/kubernetes(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
       '@cpn-console/shared': file:packages/shared(@types/node@22.19.3)
       '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
       axios: 1.12.2
@@ -10354,23 +10282,6 @@ snapshots:
       - '@types/node'
       - debug
       - typescript
-      - vitest
-
-  '@cpn-console/kubernetes-plugin@file:plugins/kubernetes(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))':
-    dependencies:
-      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))
-      '@cpn-console/shared': file:packages/shared(@types/node@22.19.3)
-      '@kubernetes-models/argo-cd': 2.7.2
-      '@kubernetes/client-node': 0.22.3
-      axios: 1.12.2
-      kubernetes-models: 4.5.1
-      request: 2.88.2
-    transitivePeerDependencies:
-      - '@types/node'
-      - bufferutil
-      - debug
-      - typescript
-      - utf-8-validate
       - vitest
 
   '@cpn-console/nexus-plugin@file:plugins/nexus(@types/node@22.19.3)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@25.0.1)(terser@5.44.1))':
@@ -15687,13 +15598,6 @@ snapshots:
   known-css-properties@0.37.0: {}
 
   kolorist@1.8.0: {}
-
-  kubernetes-models@4.5.1:
-    dependencies:
-      '@kubernetes-models/apimachinery': 2.2.0
-      '@kubernetes-models/base': 5.0.1
-      '@kubernetes-models/validate': 4.0.0
-      '@swc/helpers': 0.5.17
 
   leven@3.1.0: {}
 

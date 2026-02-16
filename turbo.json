@@ -52,7 +52,6 @@
         "^@cpn-console/gitlab-plugin#build",
         "^@cpn-console/harbor-plugin#build",
         "^@cpn-console/keycloak-plugin#build",
-        "^@cpn-console/kubernetes-plugin#build",
         "^@cpn-console/nexus-plugin#build",
         "^@cpn-console/sonarqube-plugin#build",
         "^@cpn-console/vault-plugin#build"
@@ -68,7 +67,6 @@
         "^@cpn-console/gitlab-plugin#build",
         "^@cpn-console/harbor-plugin#build",
         "^@cpn-console/keycloak-plugin#build",
-        "^@cpn-console/kubernetes-plugin#build",
         "^@cpn-console/nexus-plugin#build",
         "^@cpn-console/sonarqube-plugin#build",
         "^@cpn-console/vault-plugin#build"

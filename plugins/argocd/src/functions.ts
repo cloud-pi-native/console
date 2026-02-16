@@ -9,7 +9,7 @@ import { parseError } from '@cpn-console/hooks'
 import { dump } from 'js-yaml'
 import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
-import { inClusterLabel } from '@cpn-console/shared'
+import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
 import { generateAppProjectName, getConfig } from './utils.js'
 
 function splitExtraRepositories(repos?: string): string[] {
@@ -47,7 +47,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         if (!environment.apis.kubernetes) {
           return
         }
-        const nsName = await environment.apis.kubernetes.getNsName()
+        const nsName = generateNamespaceName(project.id, environment.id)
         const cluster = getCluster(project, environment)
         const infraProject = await gitlabApi.getOrCreateInfraProject(
           cluster.zone.slug,

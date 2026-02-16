@@ -1,5 +1,5 @@
 import type { ClusterObject, DefaultArgs, Plugin, Project, ProjectLite, ZoneObject } from '@cpn-console/hooks'
-import { archiveDsoProject, deleteZone, deployAuth, getSecrets, upsertProject, upsertZone } from './functions.js'
+import { archiveDsoProject, deleteZone, getSecrets, upsertProject, upsertZone } from './functions.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
 import { VaultProjectApi } from './vault-project-api.js'
@@ -20,7 +20,6 @@ export const plugin: Plugin = {
       ...onlyApi,
       steps: {
         main: upsertProject,
-        post: deployAuth,
       },
     },
     deleteProject: {

@@ -1,7 +1,7 @@
 // @ts-ignore pas de typage disponible pour le paquet bytes
 import bytes from 'bytes'
 import { type PluginResult, type Project, type ProjectLite, type StepCall, parseError, specificallyDisabled, specificallyEnabled } from '@cpn-console/hooks'
-import { DEFAULT, ENABLED } from '@cpn-console/shared'
+import { DEFAULT, ENABLED, generateNamespaceName } from '@cpn-console/shared'
 import { getApi, getConfig, projectRobotName, roRobotName, rwRobotName } from './utils.js'
 import { createProject, deleteProject } from './project.js'
 import { addProjectGroupMember } from './permission.js'
@@ -59,7 +59,7 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
         })
       } catch (error) {
         console.log(error)
-        warnReasons.push(`Can't create / update registry-pull-secret in ${await env.apis.kubernetes?.getNsName()} for env ${env.name}`)
+        warnReasons.push(`Can't create / update registry-pull-secret in ${generateNamespaceName(project.id, env.id)} for env ${env.name}`)
       }
     }))
 
