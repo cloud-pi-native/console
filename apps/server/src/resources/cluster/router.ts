@@ -103,7 +103,7 @@ export function clusterRouter() {
 
     deleteCluster: async ({ request: req, params, query: { force } }) => {
       const { user, adminPermissions, tokenId } = await authUser(req)
-      if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ManageClusters(adminPermissions)) return new Forbidden403()
       if (!user?.id && !tokenId) return new Unauthorized401('Your identity has not been found')
 
       const clusterId = params.clusterId
