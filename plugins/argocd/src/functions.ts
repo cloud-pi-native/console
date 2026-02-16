@@ -53,99 +53,96 @@ export const upsertProject: StepCall<Project> = async (payload) => {
     const applications = uniqueResource(applicationsNew.body.items, applicationsNew2.body.items)
     const appProjects = uniqueResource(appProjectsNew.body.items, appProjectsNew2.body.items)
 
-    await Promise.all([
-      ...project.environments.map(async (environment) => {
-        if (!environment.apis.kubernetes) {
-          return
-        }
-        const nsName = await environment.apis.kubernetes.getNsName()
-        const cluster = getCluster(project, environment)
-        const infraProject = await gitlabApi.getOrCreateInfraProject(cluster.zone.slug)
-        const appProjectName = generateAppProjectName(project.slug, environment.name)
-        const destination: ArgoDestination = {
-          namespace: nsName,
-          name: cluster.label,
-        }
-        const roGroup = (await keycloakApi.getEnvGroup(environment.name)).subgroups.RO
-        const rwGroup = (await keycloakApi.getEnvGroup(environment.name)).subgroups.RW
+    await Promise.all(project.environments.map(async (environment) => {
+      if (!environment.apis.kubernetes) {
+        return
+      }
+      const nsName = await environment.apis.kubernetes.getNsName()
+      const cluster = getCluster(project, environment)
+      const infraProject = await gitlabApi.getOrCreateInfraProject(cluster.zone.slug)
+      const appProjectName = generateAppProjectName(project.slug, environment.name)
+      const destination: ArgoDestination = {
+        namespace: nsName,
+        name: cluster.label,
+      }
+      const roGroup = (await keycloakApi.getEnvGroup(environment.name)).subgroups.RO
+      const rwGroup = (await keycloakApi.getEnvGroup(environment.name)).subgroups.RW
 
-        await ensureInfraEnvValues(
-          project,
-          environment,
-          nsName,
+      await ensureInfraEnvValues(
+        project,
+        environment,
+        nsName,
+        roGroup,
+        rwGroup,
+        appProjectName,
+        infraRepositories,
+        infraProject.id,
+        sourceRepositories,
+        gitlabApi,
+        vaultApi,
+      )
+
+      if (cluster.label !== inClusterLabel && cluster.external) {
+        console.log(`Direct argocd API calls are disabled for cluster ${cluster.label}`)
+        return undefined
+      }
+
+      const appProject = findAppProject(appProjects, environment.name)
+      if (appProject) {
+        const minimalAppProject = getMinimalAppProjectPatch(
+          destination,
+          appProjectName,
+          sourceRepositories,
           roGroup,
           rwGroup,
-          appProjectName,
-          infraRepositories,
-          infraProject.id,
-          sourceRepositories,
-          gitlabApi,
-          vaultApi,
+          project,
+          environment,
         )
+        await customK8sApi.patchNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProjectName, minimalAppProject, undefined, undefined, undefined, patchOptions)
+      } else {
+        const appProjectObject = getAppProjectObject({
+          name: appProjectName,
+          sourceRepositories,
+          destination,
+          roGroup,
+          rwGroup,
+          environment,
+          project,
+        })
+        await customK8sApi.createNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProjectObject)
+      }
 
-        if (cluster.label !== inClusterLabel && cluster.external) {
-          console.log(`Direct argocd API calls are disabled for cluster ${cluster.label}`)
-          return undefined
-        }
+      // manage every infra repositories
+      return Promise.all(infraRepositories.map(async (repository) => {
+        const application = findApplication(applications, repository.internalRepoName, environment.name)
+        const applicationName = generateApplicationName(project.slug, environment.name, repository.internalRepoName)
+        const repoURL = await gitlabApi.getPublicRepoUrl(repository.internalRepoName)
 
-        // @ts-ignore
-        const appProject = findAppProject(appProjects, environment.name)
-        if (appProject) {
-          const minimalAppProject = getMinimalAppProjectPatch(
+        if (application) {
+          const minimalPatch = getMinimalApplicationObject({
+            name: applicationName,
             destination,
+            repoURL,
             appProjectName,
-            sourceRepositories,
-            roGroup,
-            rwGroup,
             project,
+            repository,
             environment,
-          )
-          await customK8sApi.patchNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProjectName, minimalAppProject, undefined, undefined, undefined, patchOptions)
-        } else {
-          const appProjectObject = getAppProjectObject({
-            name: appProjectName,
-            sourceRepositories,
-            destination,
-            roGroup,
-            rwGroup,
-            environment,
-            project,
           })
-          await customK8sApi.createNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'appprojects', appProjectObject)
+          await customK8sApi.patchNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', application.metadata.name, minimalPatch, undefined, undefined, undefined, patchOptions)
+        } else {
+          const applicationObject = getApplicationObject({
+            name: applicationName,
+            destination,
+            repoURL,
+            appProjectName,
+            project,
+            repository,
+            environment,
+          })
+          await customK8sApi.createNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', applicationObject)
         }
-
-        // manage every infra repositories
-        return Promise.all(infraRepositories.map(async (repository) => {
-          const application = findApplication(applications, repository.internalRepoName, environment.name)
-          const applicationName = generateApplicationName(project.slug, environment.name, repository.internalRepoName)
-          const repoURL = await gitlabApi.getPublicRepoUrl(repository.internalRepoName)
-
-          if (application) {
-            const minimalPatch = getMinimalApplicationObject({
-              name: applicationName,
-              destination,
-              repoURL,
-              appProjectName,
-              project,
-              repository,
-              environment,
-            })
-            await customK8sApi.patchNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', application.metadata.name, minimalPatch, undefined, undefined, undefined, patchOptions)
-          } else {
-            const applicationObject = getApplicationObject({
-              name: applicationName,
-              destination,
-              repoURL,
-              appProjectName,
-              project,
-              repository,
-              environment,
-            })
-            await customK8sApi.createNamespacedCustomObject('argoproj.io', 'v1alpha1', getConfig().namespace, 'applications', applicationObject)
-          }
-        }))
-      }),
-    ])
+      }))
+    }))
 
     await removeInfraEnvValues(project, gitlabApi)
 
@@ -190,20 +187,18 @@ async function ensureInfraEnvValues(project: Project, environment: Environment, 
   const infraProject = await gitlabApi.getProjectById(repoId)
   const valueFilePath = getValueFilePath(project, cluster, environment)
   const vaultValues = await vaultApi.Project.getValues()
-  const repositories: ArgoRepoSource[] = await Promise.all([
-    ...infraRepositories.map(async (repository) => {
-      const repoURL = await gitlabApi.getPublicRepoUrl(repository.internalRepoName)
-      const valueFiles = repository.helmValuesFiles ? repository.helmValuesFiles.replaceAll('<env>', environment.name).split(',') : []
-      return {
-        id: repository.id,
-        name: repository.internalRepoName,
-        repoURL,
-        targetRevision: repository.deployRevision || 'HEAD',
-        path: repository.deployPath || '.',
-        valueFiles,
-      }
-    }),
-  ])
+  const repositories: ArgoRepoSource[] = await Promise.all(infraRepositories.map(async (repository) => {
+    const repoURL = await gitlabApi.getPublicRepoUrl(repository.internalRepoName)
+    const valueFiles = repository.helmValuesFiles ? repository.helmValuesFiles.replaceAll('<env>', environment.name).split(',') : []
+    return {
+      id: repository.id,
+      name: repository.internalRepoName,
+      repoURL,
+      targetRevision: repository.deployRevision || 'HEAD',
+      path: repository.deployPath || '.',
+      valueFiles,
+    }
+  }))
   const values = {
     common: {
       'dso/project': project.name,
@@ -259,7 +254,7 @@ async function removeInfraEnvValues(project: Project, gitlabApi: GitlabProjectAp
     const neededFiles = project.environments.map(env => getValueFilePath(project, getCluster(project, env), env))
     const filesToDelete: string[] = []
     for (const existingFile of existingFiles) {
-      if (existingFile.name === 'values.yaml' && !neededFiles.find(f => f === existingFile.path)) {
+      if (existingFile.name === 'values.yaml' && !neededFiles.includes(existingFile.path)) {
         filesToDelete.push(existingFile.path)
       }
     }
