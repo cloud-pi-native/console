@@ -1,5 +1,19 @@
 # Changelog
 
+## [9.13.1](https://github.com/cloud-pi-native/console/compare/v9.13.0...v9.13.1) (2026-02-17)
+
+
+### Miscellaneous Chores
+
+* **argocd:** remove now useless code ([23571c2](https://github.com/cloud-pi-native/console/commit/23571c255884bcf252f8a9a674934cf74c957730))
+* bump node docker image base ([ccc9411](https://github.com/cloud-pi-native/console/commit/ccc9411c78057851677e2786a6987d4ebb021b61))
+* bump packages ([4f188ab](https://github.com/cloud-pi-native/console/commit/4f188aba67a29c613a450d47c7a1982400b05739))
+* **harbor:** remove deprecated code ([f562c41](https://github.com/cloud-pi-native/console/commit/f562c41b49ff4811e41590b3f92529bff888b088))
+* **playwright:** optimize configuration for execution duration and trace retention ([200fd10](https://github.com/cloud-pi-native/console/commit/200fd10cba850b0ed5f0a6db3b70e4004a75fa8d))
+* remove 'external' cluster property ([46d7ed8](https://github.com/cloud-pi-native/console/commit/46d7ed857024ddb39c864168fcb20496fb24759a))
+* remove every reference to kubernetes client-node dependency ([0fad63c](https://github.com/cloud-pi-native/console/commit/0fad63c184927af85a4e2aecbc3f2dd9f67cf81b))
+* remove kubernetes plugin ([9a2d928](https://github.com/cloud-pi-native/console/commit/9a2d92833b76fec92479fc609047b11701362a16))
+
 ## [9.13.0](https://github.com/cloud-pi-native/console/compare/v9.12.0...v9.13.0) (2026-02-16)
 
 
