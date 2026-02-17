@@ -133,7 +133,7 @@ export const projectPermsDetails: PermDetails<ProjectPermsKeys> = [{
     hint: 'Permet de lancer un reprovisionnage du projet',
   }],
 }, {
-  name: 'Environement',
+  name: 'Environnement',
   perms: [
     {
       key: 'MANAGE_ENVIRONMENTS',
