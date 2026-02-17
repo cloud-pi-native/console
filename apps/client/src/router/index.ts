@@ -270,53 +270,43 @@ export const routes: Readonly<RouteRecordRaw[]> = [
   },
 ]
 
-const router = createRouter({
-  history: createWebHistory(import.meta.env?.BASE_URL || ''),
-  scrollBehavior: (to) => { if (to.hash && !/^#state=/.exec(to.hash)) return ({ el: to.hash }) },
-  routes,
-})
+export function createAppRouter(base?: string) {
+  const router = createRouter({
+    history: createWebHistory(base ?? (import.meta.env?.BASE_URL || '')),
+    scrollBehavior: (to) => { if (to.hash && !/^#state=/.exec(to.hash)) return ({ el: to.hash }) },
+    routes,
+  })
+  router.beforeEach((to) => {
+    const specificTitle = to.meta.title ? `${to.meta.title} - ` : ''
+    document.title = `${specificTitle}${MAIN_TITLE}`
+  })
+  router.beforeEach(async (to, _from, next) => {
+    const validPath = new Set(['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout', 'Swagger'])
+    const userStore = useUserStore()
+    const systemStore = useSystemSettingsStore()
+    await userStore.setIsLoggedIn()
+    if (
+      !validPath.has(to.name?.toString() ?? '')
+      && !userStore.isLoggedIn
+    ) {
+      return next('/login')
+    }
+    if (to.name === 'Login' && userStore.isLoggedIn) {
+      return next('/')
+    }
+    if (
+      !validPath.has(to.name?.toString() ?? '')
+      && userStore.isLoggedIn
+    ) {
+      await systemStore.listSystemSettings('maintenance')
+      if (systemStore.systemSettingsByKey.maintenance?.value === 'on' && userStore.adminPerms === 0n) return next('/maintenance')
+    }
+    next()
+  })
+  return router
+}
 
-/**
- * Set application title
- */
-router.beforeEach((to) => { // Cf. https://github.com/vueuse/head pour des transformations avancées de Head
-  const specificTitle = to.meta.title ? `${to.meta.title} - ` : ''
-  document.title = `${specificTitle}${MAIN_TITLE}`
-})
-
-/**
- * Redirect unlogged user to login view
- */
-router.beforeEach(async (to, _from, next) => {
-  const validPath = ['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout', 'Swagger']
-  const userStore = useUserStore()
-  const systemStore = useSystemSettingsStore()
-  await userStore.setIsLoggedIn()
-
-  // Redirige sur la page login si le path le requiert et l'utilisateur n'est pas connecté
-  if (
-    !validPath.includes(to.name?.toString() ?? '')
-    && !userStore.isLoggedIn
-  ) {
-    return next('/login')
-  }
-
-  // Redirige sur l'accueil si le path est Login et que l'utilisateur est connecté
-  if (to.name === 'Login' && userStore.isLoggedIn) {
-    return next('/')
-  }
-
-  // Redirige vers la page maintenance si la maintenance est activée
-  if (
-    !validPath.includes(to.name?.toString() ?? '')
-    && userStore.isLoggedIn
-  ) {
-    await systemStore.listSystemSettings('maintenance')
-    if (systemStore.systemSettingsByKey.maintenance?.value === 'on' && userStore.adminPerms === 0n) return next('/maintenance')
-  }
-
-  next()
-})
+const router = createAppRouter()
 
 export const isInProject = computed(() => router.currentRoute.value.matched.some(route => route.name === 'Project'))
 export const selectedProjectSlug = computed<string | undefined>(() => {

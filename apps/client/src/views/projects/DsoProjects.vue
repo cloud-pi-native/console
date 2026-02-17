@@ -1,11 +1,16 @@
 <script lang="ts" setup>
 import type { ProjectV2 } from '@cpn-console/shared'
+import { AdminAuthorized } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import router from '@/router/index.js'
 import { useUserStore } from '@/stores/user.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
+
+const canCreateProject = computed(() => {
+  return AdminAuthorized.ManageProjects(userStore.adminPerms)
+})
 
 const projectList = computed(() => projectStore.myProjects
   .map(project => ({
@@ -45,6 +50,8 @@ onBeforeMount(async () => {
       tertiary
       class="fr-mt-2v <md:mb-2"
       icon="ri:add-line"
+      :disabled="!canCreateProject"
+      :title="canCreateProject ? 'Créer un nouveau projet' : 'Vous n\'avez pas les droits pour créer un projet'"
       @click="goToCreateProject()"
     />
   </div>

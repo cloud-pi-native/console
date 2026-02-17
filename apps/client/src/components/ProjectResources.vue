@@ -390,7 +390,7 @@ async function copyToClipboard(text: string) {
       :environment="selectedEnv"
       :is-editable="false"
       :is-project-locked="project.locked"
-      :can-manage="canManageEnvs || (AdminAuthorized.isAdmin(userStore.adminPerms) && asProfile === 'admin')"
+      :can-manage="canManageEnvs || (AdminAuthorized.ManageProjects(userStore.adminPerms) && asProfile === 'admin')"
       @put-environment="(environmentUpdate: UpdateEnvironmentBody) => putEnvironment(environmentUpdate, selectedEnv!.id)"
       @delete-environment="() => deleteEnvironment(selectedEnv!.id)"
       @cancel="selectedEnv = undefined"
