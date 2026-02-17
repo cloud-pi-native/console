@@ -1,5 +1,5 @@
 # Dev stage ------------------------------------------------------------------------
-FROM docker.io/node:24.12.0-bullseye-slim AS dev
+FROM docker.io/node:24.13.1-bullseye-slim AS dev
 
 WORKDIR /app
 
