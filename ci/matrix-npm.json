@@ -53,10 +53,6 @@
       "path": "./plugins/keycloak"
     },
     {
-      "name": "@cpn-console/kubernetes-plugin",
-      "path": "./plugins/kubernetes"
-    },
-    {
       "name": "@cpn-console/nexus-plugin",
       "path": "./plugins/nexus"
     },

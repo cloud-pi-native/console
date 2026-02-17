@@ -508,8 +508,6 @@ export interface ProjectReq {
    * @maxLength 255
    */
   project_name?: string;
-  /** deprecated, reserved for project creation in replication */
-  public?: boolean | null;
   /** The metadata of the project. */
   metadata?: ProjectMetadata;
   /** The CVE allowlist of the project. */
@@ -560,8 +558,6 @@ export interface Project {
   owner_name?: string;
   /** Correspond to the UI about whether the project's publicity is  updatable (for UI) */
   togglable?: boolean;
-  /** The role ID with highest permission of the current user who triggered the API (for UI).  This attribute is deprecated and will be removed in future versions. */
-  current_user_role_id?: number;
   /** The list of role ID of the current user who triggered the API (for UI) */
   current_user_role_ids?: number[];
   /** The number of the repositories under this project. */
@@ -681,8 +677,6 @@ export interface ReplicationPolicy {
   filters?: ReplicationFilter[];
   /** Whether to replicate the deletion operation. */
   replicate_deletion?: boolean;
-  /** Deprecated, use "replicate_deletion" instead. Whether to replicate the deletion operation. */
-  deletion?: boolean;
   /** Whether to override the resources on the destination registry. */
   override?: boolean;
   /** Whether the policy is enabled or not. */
@@ -2237,11 +2231,6 @@ export interface Accessory {
    * @format int64
    */
   artifact_id: number;
-  /**
-   * Going to be deprecated, use repo and digest for insteand. The subject artifact id of the accessory.
-   * @format int64
-   */
-  subject_artifact_id?: number;
   /** The subject artifact digest of the accessory */
   subject_artifact_digest: string;
   /** The subject artifact repository name of the accessory */
@@ -4724,74 +4713,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description This endpoint returns last trigger information of project webhook policy.
-     *
-     * @tags webhook
-     * @name LastTrigger
-     * @summary Get project webhook policy last trigger info
-     * @request GET:/projects/{project_name_or_id}/webhook/lasttrigger
-     * @deprecated
-     * @secure
-     */
-    lastTrigger: (projectNameOrId: string, params: RequestParams = {}) =>
-      this.request<WebhookLastTrigger[], Errors>({
-        path: `/projects/${projectNameOrId}/webhook/lasttrigger`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description This endpoint returns webhook jobs of a project.
-     *
-     * @tags webhookjob
-     * @name ListWebhookJobs
-     * @summary List project webhook jobs
-     * @request GET:/projects/{project_name_or_id}/webhook/jobs
-     * @deprecated
-     * @secure
-     */
-    listWebhookJobs: (
-      projectNameOrId: string,
-      query: {
-        /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
-        q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
-        sort?: string;
-        /**
-         * The page number
-         * @format int64
-         * @default 1
-         */
-        page?: number;
-        /**
-         * The size of per page
-         * @format int64
-         * @max 100
-         * @default 10
-         */
-        page_size?: number;
-        /**
-         * The policy ID.
-         * @format int64
-         */
-        policy_id: number;
-        /** The status of webhook job. */
-        status?: string[];
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<WebhookJob[], Errors>({
-        path: `/projects/${projectNameOrId}/webhook/jobs`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * @description Get supported event types and notify types.
      *
      * @tags webhook
@@ -5456,8 +5377,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
          * @default 10
          */
         page_size?: number;
-        /** Deprecated, use "query" instead. The policy name. */
-        name?: string;
       },
       params: RequestParams = {},
     ) =>
@@ -5783,8 +5702,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
          * @default 10
          */
         page_size?: number;
-        /** Deprecated, use `q` instead. */
-        name?: string;
       },
       params: RequestParams = {},
     ) =>
@@ -5907,24 +5824,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
 
-    /**
-     * @description Get the metrics of the latest scheduled scan all process
-     *
-     * @tags scanAll
-     * @name GetLatestScheduledScanAllMetrics
-     * @summary Get the metrics of the latest scheduled scan all process
-     * @request GET:/scans/schedule/metrics
-     * @deprecated
-     * @secure
-     */
-    getLatestScheduledScanAllMetrics: (params: RequestParams = {}) =>
-      this.request<Stats, Errors>({
-        path: `/scans/schedule/metrics`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
   };
   systeminfo = {
     /**

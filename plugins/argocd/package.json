@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/argocd-plugin",
   "type": "module",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "private": false,
   "description": "",
   "main": "dist/index.js",
@@ -22,16 +22,12 @@
     "@cpn-console/gitlab-plugin": "workspace:^",
     "@cpn-console/hooks": "workspace:^",
     "@cpn-console/keycloak-plugin": "workspace:^",
-    "@cpn-console/kubernetes-plugin": "workspace:^",
     "@cpn-console/shared": "workspace:^",
     "@cpn-console/vault-plugin": "workspace:^",
     "@himenon/argocd-typescript-openapi": "^1.2.2",
-    "@kubernetes-models/argo-cd": "^2.6.2",
-    "@kubernetes/client-node": "^0.22.3",
     "@types/js-yaml": "4.0.9",
     "axios": "1.12.2",
-    "js-yaml": "4.1.0",
-    "kubernetes-models": "^4.4.2"
+    "js-yaml": "4.1.0"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",

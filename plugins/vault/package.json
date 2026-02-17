@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/vault-plugin",
   "type": "module",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "private": false,
   "description": "",
   "main": "dist/index.js",
@@ -21,12 +21,10 @@
   "dependencies": {
     "@cpn-console/hooks": "workspace:^",
     "@cpn-console/shared": "workspace:^",
-    "@kubernetes/client-node": "^0.22.3",
     "axios": "1.12.2"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
-    "@cpn-console/kubernetes-plugin": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
     "@types/node": "^24.1.0",
     "@vitest/coverage-v8": "^2.1.8",

@@ -14,7 +14,6 @@ export const CleanedClusterSchema = z.object({
     .optional()
     .nullable()
     .transform(value => value ?? ''),
-  external: z.boolean(),
   clusterResources: z.boolean(),
   privacy: ClusterPrivacySchema,
   zoneId: z.string()
