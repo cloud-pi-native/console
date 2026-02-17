@@ -13,24 +13,30 @@ dotenv.config({
  */
 export default defineConfig({
   testDir: './e2e-tests',
+
   /* Run tests in files in parallel */
   fullyParallel: true,
+
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 3 : 1,
-  workers: 1,
+
+  retries: 3,
+
+  // workers: 1, // Default is 50% logical cores
+
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
+
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    /* Retain trace on failed tries. See https://playwright.dev/docs/trace-viewer */
+    trace: 'retain-on-failure',
   },
 
   /* All timeouts are in milliseconds */
   // Timeout for each and every `test` block
   timeout: Number(process.env.CONSOLE_GLOBAL_TIMEOUT) || 30_000,
+
   // Timeout for each and every `expect` command
   expect: {
     timeout: Number(process.env.CONSOLE_EXPECT_TIMEOUT) || 10_000,
