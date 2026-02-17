@@ -1,5 +1,39 @@
 # Changelog
 
+## [9.13.0](https://github.com/cloud-pi-native/console/compare/v9.12.0...v9.13.0) (2026-02-16)
+
+
+### Features
+
+* add OIDC group to project groups ([c57674b](https://github.com/cloud-pi-native/console/commit/c57674b441094ca0503b8298b618e3a13b202ab6))
+* add system roles on project creation ([4401519](https://github.com/cloud-pi-native/console/commit/4401519c41160befaa49d3721b475223b537f834))
+* **keycloack:** add configurable purge at upsert ([f8fb77d](https://github.com/cloud-pi-native/console/commit/f8fb77dd717529f10a2d2fdfd8b5212e009de4b4))
+* **keycloak:** add project role creation hook ([83c5194](https://github.com/cloud-pi-native/console/commit/83c5194a19a7f35cbc3d0692319f32a304612afb))
+* **keycloak:** propagate admin roles to Keycloack ([7d3c9b2](https://github.com/cloud-pi-native/console/commit/7d3c9b22b314aa298c0083326771a40c68fa5190))
+
+
+### Bug Fixes
+
+* **admin-roles:** admin conflicting with existing admin group in Keycloack ([ed321de](https://github.com/cloud-pi-native/console/commit/ed321def7a37bb612678ad329b664092508e41fd))
+* hooks config is always undefined ([dd2f405](https://github.com/cloud-pi-native/console/commit/dd2f40520c44d2ec3cd6e9309382e7d0a835e579))
+* **keycloak:** project members sync to Keycloak ([0b4383f](https://github.com/cloud-pi-native/console/commit/0b4383ffee8125e9903049b9f2981815fe312aa7))
+* **project-roles:** remove /console prefix strip ([19fbd02](https://github.com/cloud-pi-native/console/commit/19fbd02c367b452046d9d7e9e88601681a1bef29))
+* upgrade to dso-ns chart version 1.1.5 to use project slug in Vault secret path ([0fb9a4d](https://github.com/cloud-pi-native/console/commit/0fb9a4dfb96bb426b71f4f94470a1fde5ac21aa4))
+
+
+### Miscellaneous Chores
+
+* add VSCode debugging configurations ([2f96665](https://github.com/cloud-pi-native/console/commit/2f96665871ca5cec6fa302946923cc1f649ac84d))
+* **hooks:** change documentation to a sane pluging dependencies management ([41225c3](https://github.com/cloud-pi-native/console/commit/41225c3709f62788d111167084ddbe79f69f0f95))
+* **keycloak:** remove per project config ([0bf2a2a](https://github.com/cloud-pi-native/console/commit/0bf2a2a880dcc0256e525c48b7bb404dfe9459e0))
+* remove all local kubernetes cluster code ([e199ac4](https://github.com/cloud-pi-native/console/commit/e199ac4db2336d780b190a3f6b6188617c694f32))
+
+
+### Docs
+
+* add comments to .env files to clarify usage ([38a728e](https://github.com/cloud-pi-native/console/commit/38a728eb00efc936256f93b3231ef835b8c0b596))
+* split environment configuration from main README into its own ENVIRONMENTS doc ([79030e2](https://github.com/cloud-pi-native/console/commit/79030e277da5dde734e52bbc817cdc1d1748244b))
+
 ## [9.12.0](https://github.com/cloud-pi-native/console/compare/v9.11.5...v9.12.0) (2026-02-03)
 
 
