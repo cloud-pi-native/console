@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ClusterDetails, Environment } from '@cpn-console/shared'
-import { clusterContract } from '@cpn-console/shared'
+import { ADMIN_PERMS, clusterContract } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
 import { getUserMockInfos } from '../../utils/mocks.js'
@@ -24,7 +24,7 @@ describe('test clusterContract', () => {
   })
   describe('listClusters', () => {
     it('as non admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
 
       authUserMock.mockResolvedValueOnce(user)
 
@@ -39,7 +39,7 @@ describe('test clusterContract', () => {
       expect(response.statusCode).toEqual(200)
     })
     it('as admin', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_CLUSTERS)
 
       authUserMock.mockResolvedValueOnce(user)
 
@@ -74,7 +74,7 @@ describe('test clusterContract', () => {
           user: {},
         },
       }
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_CLUSTERS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessGetDetailsMock.mockResolvedValueOnce(cluster)
@@ -87,7 +87,7 @@ describe('test clusterContract', () => {
       expect(response.statusCode).toEqual(200)
     })
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -106,7 +106,7 @@ describe('test clusterContract', () => {
         gpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
         memory: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
       }
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_CLUSTERS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessGetUsageMock.mockResolvedValueOnce(resources)
@@ -119,7 +119,7 @@ describe('test clusterContract', () => {
       expect(response.statusCode).toEqual(200)
     })
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -134,7 +134,7 @@ describe('test clusterContract', () => {
   describe('getClusterEnvironments', () => {
     it('should return cluster environments', async () => {
       const envs: Environment[] = []
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_CLUSTERS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessGetEnvironmentsMock.mockResolvedValueOnce(envs)
@@ -147,7 +147,7 @@ describe('test clusterContract', () => {
       expect(response.statusCode).toEqual(200)
     })
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -179,7 +179,7 @@ describe('test clusterContract', () => {
     }
 
     it('should return created cluster', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessCreateMock.mockResolvedValueOnce(cluster)
@@ -192,7 +192,7 @@ describe('test clusterContract', () => {
       expect(response.statusCode).toEqual(201)
     })
     it('should pass business error', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessCreateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
@@ -204,7 +204,7 @@ describe('test clusterContract', () => {
       expect(response.statusCode).toEqual(400)
     })
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -236,7 +236,7 @@ describe('test clusterContract', () => {
     }
 
     it('should return created cluster', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessUpdateMock.mockResolvedValueOnce({ id: clusterId, ...cluster })
@@ -249,7 +249,7 @@ describe('test clusterContract', () => {
       expect(response.statusCode).toEqual(200)
     })
     it('should pass business error', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessUpdateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
@@ -261,7 +261,7 @@ describe('test clusterContract', () => {
       expect(response.statusCode).toEqual(400)
     })
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -275,7 +275,7 @@ describe('test clusterContract', () => {
 
   describe('deleteCluster', () => {
     it('should return empty when delete', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessDeleteMock.mockResolvedValueOnce(null)
@@ -287,7 +287,7 @@ describe('test clusterContract', () => {
       expect(response.statusCode).toEqual(204)
     })
     it('should pass business error', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessDeleteMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
@@ -298,7 +298,7 @@ describe('test clusterContract', () => {
       expect(response.statusCode).toEqual(400)
     })
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
