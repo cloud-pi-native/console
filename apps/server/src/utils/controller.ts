@@ -1,12 +1,13 @@
 import type { Cluster, Prisma, Project, ProjectMembers, ProjectRole } from '@prisma/client'
 import type { XOR } from '@cpn-console/shared'
-import { PROJECT_PERMS as PP, PROJECT_PERMS, projectIsLockedInfo, tokenHeaderName } from '@cpn-console/shared'
+import { PROJECT_PERMS as PP, PROJECT_PERMS, projectIsLockedInfo, tokenHeaderName, ADMIN_PERMS, toBigInt } from '@cpn-console/shared'
 import type { FastifyRequest } from 'fastify'
 import { Unauthorized401 } from './errors.js'
 import { uuid } from './queries-tools.js'
 import type { UserDetails } from '@/types/index.js'
 import prisma from '@/prisma.js'
 import { logViaSession, logViaToken } from '@/resources/user/business.js'
+import { getSystemSettings } from '@/resources/system/settings/business.js'
 
 export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
   Pick<T, Exclude<keyof T, Keys>>
@@ -24,6 +25,22 @@ export function getErrorMessage(...fns: ErrorMessagePredicate[]) {
       return error
     }
   }
+}
+
+// Toggle legacy default permissions (pre-fine-grained behavior)
+async function isRefinedPermissionsEnabled(): Promise<boolean> {
+  const settings = await getSystemSettings('refined-permissions')
+  const setting = settings[0]
+  return setting ? setting.value === 'off' : false
+}
+
+async function getEffectiveAdminPermissions(rawPerms: bigint): Promise<bigint> {
+  let perms = toBigInt(rawPerms)
+  const legacyDefaultEnabled = await isRefinedPermissionsEnabled()
+  if (legacyDefaultEnabled) {
+    perms |= ADMIN_PERMS.MANAGE_PROJECTS | ADMIN_PERMS.MANAGE_USERS | ADMIN_PERMS.MANAGE_STAGES | ADMIN_PERMS.LIST_ZONES
+  }
+  return perms
 }
 
 /**
@@ -105,6 +122,8 @@ export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqu
       }
     }
   }
+
+  adminPermissions = await getEffectiveAdminPermissions(adminPermissions)
 
   const baseReturnInfos = {
     user,
