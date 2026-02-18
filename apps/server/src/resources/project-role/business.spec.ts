@@ -4,6 +4,7 @@ import type { Project, ProjectMembers, ProjectRole } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
 import { countRolesMembers, createRole, deleteRole, listRoles, patchRoles } from './business.ts'
 import { Forbidden403, BadRequest400 } from '@/utils/errors.js'
+import { PROJECT_PERMS } from '@cpn-console/shared'
 
 vi.mock('../../utils/hook-wrapper.ts', () => ({
   hook: {
