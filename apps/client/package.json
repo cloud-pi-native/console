@@ -20,8 +20,8 @@
     "preview": "vite preview --port 8080",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
-    "test:ct": "NODE_ENV=test cypress open --component --browser=firefox",
-    "test:ct-ci": "NODE_ENV=test cypress run --component --browser=firefox",
+    "test:ct": "pnpm --filter @cpn-console/shared run build && pnpm --filter @cpn-console/test-utils run build && NODE_ENV=test cypress open --component --browser=firefox",
+    "test:ct-ci": "pnpm --filter @cpn-console/shared run build && pnpm --filter @cpn-console/test-utils run build && NODE_ENV=test cypress run --component --browser=firefox",
     "test:e2e": "cypress open --browser=firefox",
     "test:e2e-ci": "cypress run --browser=firefox",
     "type-check": "vue-tsc --noEmit -p tsconfig.json"
