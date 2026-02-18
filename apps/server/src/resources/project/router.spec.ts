@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ProjectV2 } from '@cpn-console/shared'
-import { PROJECT_PERMS, projectContract } from '@cpn-console/shared'
+import { ADMIN_PERMS, PROJECT_PERMS, projectContract } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
 import { getProjectMockInfos, getRandomRequestor, getUserMockInfos } from '../../utils/mocks.js'
@@ -61,7 +61,7 @@ describe('test projectContract', () => {
     // UPDATE
     it('on Update', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -76,7 +76,7 @@ describe('test projectContract', () => {
 
     it('on Update without enough perms', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.LIST_ENVIRONMENTS })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -92,7 +92,7 @@ describe('test projectContract', () => {
     // REPLAY
     it('on replay', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -107,7 +107,7 @@ describe('test projectContract', () => {
     // SECRETS
     it('on see secret', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -122,7 +122,7 @@ describe('test projectContract', () => {
     // ARCHIVE
     it('on archive', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -136,9 +136,9 @@ describe('test projectContract', () => {
   })
   describe('listProjects', () => {
     it('should return list of projects', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
       authUserMock.mockResolvedValueOnce(user)
-      const projects = []
+      const projects: any[] = []
       businessListMock.mockResolvedValueOnce(projects)
       const response = await app.inject()
         .get(projectContract.listProjects.path)
@@ -148,20 +148,53 @@ describe('test projectContract', () => {
       expect(response.json()).toEqual(projects)
       expect(response.statusCode).toEqual(200)
     })
-    it('should return 400 for non-admin with "all" filter', async () => {
-      const user = getUserMockInfos(false)
+    it('should return 200 and fallback to member filter for non-admin with "all" filter', async () => {
+      const user = getUserMockInfos(0n)
       authUserMock.mockResolvedValueOnce(user)
+      const projects: any[] = []
+      businessListMock.mockResolvedValueOnce(projects)
+
       const response = await app.inject()
-        .get(`${projectContract.listProjects.path}?filter=all`)
+        .get(projectContract.listProjects.path)
+        .query({ filter: 'all' })
         .end()
 
-      expect(response.statusCode).toEqual(400)
+      expect(businessListMock).toHaveBeenCalledTimes(1)
+      expect(response.statusCode).toEqual(200)
+    })
+
+    it('should return list of projects for admin with LIST_PROJECTS', async () => {
+      const projects: any[] = []
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_PROJECTS)
+      authUserMock.mockResolvedValueOnce(user)
+      businessListMock.mockResolvedValueOnce(projects)
+
+      const response = await app.inject()
+        .get(projectContract.listProjects.path)
+        .query({ filter: 'all' })
+        .end()
+
+      expect(businessListMock).toHaveBeenCalledTimes(1)
+      expect(response.statusCode).toEqual(200)
+    })
+
+    it('should return 403 for unauthorized user', async () => {
+      const user = getUserMockInfos(0n)
+      authUserMock.mockResolvedValueOnce(user)
+
+      const response = await app.inject()
+        .post(projectContract.createProject.path)
+        .body(project)
+        .end()
+
+      expect(businessCreateMock).toHaveBeenCalledTimes(0)
+      expect(response.statusCode).toEqual(403)
     })
   })
 
   describe('createProject', () => {
     it('should create and return project for authorized user', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_PROJECTS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessCreateMock.mockResolvedValueOnce({ id: projectId, ...project })
@@ -176,7 +209,7 @@ describe('test projectContract', () => {
     })
 
     it('should pass business error', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_PROJECTS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessCreateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
@@ -193,7 +226,7 @@ describe('test projectContract', () => {
     const projectUpdated: Partial<ProjectV2> = { description: faker.string.alpha({ length: 5 }) }
 
     it('should update and return project for authorized user', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_PROJECTS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessUpdateMock.mockResolvedValueOnce({ id: projectId, ...project, ...projectUpdated })
@@ -211,7 +244,7 @@ describe('test projectContract', () => {
       const userDetails = getRandomRequestor()
       const projectPerms = getProjectMockInfos({ projectOwnerId: faker.string.uuid(), projectPermissions: PROJECT_PERMS.MANAGE })
       const projectUpdated = { ownerId: faker.string.uuid(), description: faker.lorem.words() }
-      const user = getUserMockInfos(false, userDetails as UserDetails, projectPerms)
+      const user = getUserMockInfos(0n, userDetails as UserDetails, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessUpdateMock.mockResolvedValueOnce({ id: projectId, ...project, ...projectUpdated })
@@ -229,7 +262,7 @@ describe('test projectContract', () => {
       const requestor = getRandomRequestor()
       const projectPerms = getProjectMockInfos({ projectOwnerId: requestor.id, projectPermissions: PROJECT_PERMS.MANAGE })
       const projectUpdated = { ownerId: faker.string.uuid(), description: faker.lorem.words() }
-      const user = getUserMockInfos(false, requestor as UserDetails, projectPerms)
+      const user = getUserMockInfos(0n, requestor as UserDetails, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessUpdateMock.mockResolvedValueOnce({ id: projectId, ...project, ...projectUpdated })
@@ -244,7 +277,7 @@ describe('test projectContract', () => {
     })
 
     it('should pass business error', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_PROJECTS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessUpdateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
@@ -260,7 +293,7 @@ describe('test projectContract', () => {
 
   describe('archiveProject', () => {
     it('should archive project for authorized user', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_PROJECTS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessDeleteMock.mockResolvedValueOnce(null)
@@ -274,7 +307,7 @@ describe('test projectContract', () => {
     })
 
     it('should pass business error', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_PROJECTS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessDeleteMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
@@ -286,7 +319,7 @@ describe('test projectContract', () => {
     })
     it('should return projects data for admin', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.LIST_ENVIRONMENTS })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -301,7 +334,7 @@ describe('test projectContract', () => {
   describe('getProjectSecrets', () => {
     it('should return project secrets for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.SEE_SECRETS })
-      const user = getUserMockInfos(true, undefined, projectPerms)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_PROJECTS, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const secrets = {}
@@ -317,7 +350,7 @@ describe('test projectContract', () => {
 
     it('should pass business error', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE })
-      const user = getUserMockInfos(true, undefined, projectPerms)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_PROJECTS, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessGetSecretsMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
@@ -329,7 +362,7 @@ describe('test projectContract', () => {
     })
     it('should return 403 for unauthorized access to secrets', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.LIST_REPOSITORIES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -343,7 +376,7 @@ describe('test projectContract', () => {
   describe('replayHooksForProject', () => {
     it('should replay hooks for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE })
-      const user = getUserMockInfos(true, undefined, projectPerms)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_PROJECTS, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessSyncMock.mockResolvedValueOnce(null)
@@ -358,7 +391,7 @@ describe('test projectContract', () => {
 
     it('should pass business error', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE })
-      const user = getUserMockInfos(true, undefined, projectPerms)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_PROJECTS, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessSyncMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
@@ -370,7 +403,7 @@ describe('test projectContract', () => {
     })
     it('should return 403 for unauthorized access to replay hooks', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.LIST_ENVIRONMENTS })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
       const response = await app.inject()
         .put(projectContract.replayHooksForProject.path.replace(':projectId', projectId))
@@ -382,7 +415,7 @@ describe('test projectContract', () => {
 
   describe('getProjectsData', () => {
     it('should return projects data for admin', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_PROJECTS)
       authUserMock.mockResolvedValueOnce(user)
 
       const data = ''
@@ -397,7 +430,7 @@ describe('test projectContract', () => {
     })
 
     it('should return 403 for non-admin user', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -411,7 +444,7 @@ describe('test projectContract', () => {
   describe('bulkActionProject', () => {
     it('should executebulk for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE })
-      const user = getUserMockInfos(true, undefined, projectPerms)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessSyncMock.mockResolvedValueOnce(null)
@@ -427,7 +460,7 @@ describe('test projectContract', () => {
 
     it('should return 403 for unauthorized access to bulk update', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.LIST_ENVIRONMENTS })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
       const response = await app.inject()
         .post(projectContract.bulkActionProject.path)
