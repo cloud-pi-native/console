@@ -83,8 +83,8 @@ describe('Project roles', () => {
       cy.getByDataTestid('showSecretsBtn').should('not.exist')
 
       cy.getByDataTestid('test-tab-resources').click()
-      cy.getByDataTestid('noEnvsTr').should('exist')
-      cy.getByDataTestid('noReposTr').should('exist')
+      cy.getByDataTestid('addEnvironmentLink').should('not.exist')
+      cy.getByDataTestid('addRepoLink').should('not.exist')
       cy.getByDataTestid('test-tab-roles').should('exist')
     })
   })

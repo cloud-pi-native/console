@@ -22,7 +22,7 @@ export const useAdminRoleStore = defineStore('adminRole', () => {
     roles.value = await apiClient.AdminRoles.listAdminRoles().then((response: any) =>
       extractData(response, 200),
     )
-    if (AdminAuthorized.isAdmin(userStore.adminPerms)) {
+    if (AdminAuthorized.ListRoles(userStore.adminPerms)) {
       await countMembersRoles()
     }
     return roles.value
