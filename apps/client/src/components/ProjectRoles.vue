@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Member, ProjectRole, ProjectRoleBigint, Role, RoleBigint } from '@cpn-console/shared'
+import { PROJECT_PERMS, type Member, type ProjectRole, type ProjectRoleBigint, type Role, type RoleBigint } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import type { Project } from '@/utils/project-utils.js'
 
@@ -20,7 +20,7 @@ const selectedRole = computed(() => roleList.value.find(({ id }) => id === selec
 async function addRole() {
   const newRoles = await props.project.Roles.create({
     name: 'Nouveau rôle',
-    permissions: 0n.toString(),
+    permissions: PROJECT_PERMS.GUEST.toString(),
   })
   reload()
   snackbarStore.setMessage('Rôle ajouté', 'success')
