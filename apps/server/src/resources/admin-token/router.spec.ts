@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ExposedAdminToken } from '@cpn-console/shared'
-import { adminTokenContract } from '@cpn-console/shared'
+import { ADMIN_PERMS, adminTokenContract } from '@cpn-console/shared'
 import type { AdminToken } from '@prisma/client'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
@@ -22,7 +22,7 @@ describe('test adminTokenContract', () => {
 
   describe('listAdminTokens', () => {
     it('should return list of admin tokens', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_SYSTEM)
       authUserMock.mockResolvedValueOnce(user)
 
       const tokens: AdminToken[] = [{
@@ -46,7 +46,7 @@ describe('test adminTokenContract', () => {
     })
 
     it('should return 403 for non-admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -60,7 +60,7 @@ describe('test adminTokenContract', () => {
 
   describe('createAdminToken', () => {
     it('should create a token for authorized users', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_SYSTEM)
 
       const newToken = {
         id: faker.string.uuid(),
@@ -92,7 +92,7 @@ describe('test adminTokenContract', () => {
     })
 
     it('should return 403 for unauthorized users', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
 
       authUserMock.mockResolvedValueOnce(user)
 
@@ -110,7 +110,7 @@ describe('test adminTokenContract', () => {
     })
 
     it('should pass business error', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_SYSTEM)
 
       authUserMock.mockResolvedValueOnce(user)
       businessCreateTokenMock.mockResolvedValueOnce(new BadRequest400('Invalid date'))
@@ -132,7 +132,7 @@ describe('test adminTokenContract', () => {
   describe('deleteAdminToken', () => {
     const tokenId = faker.string.uuid()
     it('should delete a token for authorized users', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_SYSTEM)
 
       authUserMock.mockResolvedValueOnce(user)
       businessDeleteTokenMock.mockResolvedValueOnce(null)
@@ -146,7 +146,7 @@ describe('test adminTokenContract', () => {
     })
 
     it('should return 403 for unauthorized users', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
 
       authUserMock.mockResolvedValueOnce(user)
 

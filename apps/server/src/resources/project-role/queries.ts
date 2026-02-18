@@ -5,6 +5,7 @@ import type {
 } from '@prisma/client'
 
 import prisma from '@/prisma.js'
+import { PROJECT_PERMS } from '@cpn-console/shared'
 
 export const getRole = (id: ProjectRole['id']) => prisma.projectRole.findUnique({ where: { id } })
 
@@ -14,7 +15,7 @@ export function createRole(data: Pick<Prisma.ProjectRoleUncheckedCreateInput, 'p
   return prisma.projectRole.create({
     data: {
       name: data.name,
-      permissions: 0n,
+      permissions: PROJECT_PERMS.GUEST,
       position: data.position,
       projectId: data.projectId,
       oidcGroup: data.oidcGroup,
