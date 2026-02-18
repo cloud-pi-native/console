@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
+import type {
+  UpsertSystemSettingBody,
+  SystemSettings,
+  systemSettingsContract,
+} from '@cpn-console/shared'
 import {
-  type SystemSetting,
-  type SystemSettings,
-  type UpsertSystemSettingBody,
   resourceListToDictByKey,
 } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
@@ -11,8 +13,8 @@ export const useSystemSettingsStore = defineStore('systemSettings', () => {
   const systemSettings = ref<SystemSettings>([])
   const systemSettingsByKey = computed(() => resourceListToDictByKey(systemSettings.value))
 
-  const listSystemSettings = async (key?: SystemSetting['key']) => {
-    systemSettings.value = await apiClient.SystemSettings.listSystemSettings({ query: { key } })
+  const listSystemSettings = async (query: typeof systemSettingsContract.listSystemSettings.query._type = {}) => {
+    systemSettings.value = await apiClient.SystemSettings.listSystemSettings(query)
       .then((response: any) => extractData(response, 200))
   }
 
