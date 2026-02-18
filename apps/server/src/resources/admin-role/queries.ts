@@ -3,6 +3,7 @@ import type {
   Prisma,
 } from '@prisma/client'
 import prisma from '@/prisma.js'
+import { ADMIN_PERMS } from '@cpn-console/shared'
 
 export const listAdminRoles = () => prisma.adminRole.findMany({ orderBy: { position: 'asc' } })
 
@@ -10,7 +11,7 @@ export function createAdminRole(data: Pick<Prisma.AdminRoleUncheckedCreateInput,
   return prisma.adminRole.create({
     data: {
       name: data.name,
-      permissions: 0n,
+      permissions: ADMIN_PERMS.LIST,
       position: data.position,
       type: 'custom',
     },

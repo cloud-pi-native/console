@@ -49,7 +49,7 @@ onBeforeMount(async () => {
     />
     <div class="flex gap-2">
       <DsfrButton
-        v-if="AdminAuthorized.isAdmin(userStore.adminPerms)"
+        v-if="AdminAuthorized.ListSystem(userStore.adminPerms)"
         data-testid="serviceCauseBtn"
         :title="!serviceStore.displayCause ? 'Afficher les messages d\'erreur' : 'Masquer les messages d\'erreur'"
         secondary
@@ -67,7 +67,7 @@ onBeforeMount(async () => {
         @click="checkServicesHealth"
       />
       <DsfrButton
-        v-if="AdminAuthorized.isAdmin(userStore.adminPerms)"
+        v-if="AdminAuthorized.ManageSystem(userStore.adminPerms)"
         data-testid="refresh-btn"
         label="Effacer le cache"
         secondary

@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { describe, expect, it, vi } from 'vitest'
 import type { AdminRole, User } from '@prisma/client'
+import { ADMIN_PERMS } from '@cpn-console/shared'
 import prisma from '../../__mocks__/prisma.js'
 import { BadRequest400, Forbidden403 } from '../../utils/errors.ts'
 import { hook } from '../../__mocks__/utils/hook-wrapper.ts'
