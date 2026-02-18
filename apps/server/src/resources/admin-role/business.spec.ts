@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { describe, expect, it, vi } from 'vitest'
 import type { AdminRole, User } from '@prisma/client'
+import { ADMIN_PERMS } from '@cpn-console/shared'
 import prisma from '../../__mocks__/prisma.js'
 import { BadRequest400, Forbidden403 } from '../../utils/errors.ts'
 import { hook } from '../../__mocks__/utils/hook-wrapper.ts'
@@ -44,7 +45,7 @@ describe('test admin-role business', () => {
       prisma.adminRole.create.mockResolvedValue(dbRole)
       await createRole({ name: 'test' })
 
-      expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 0n, position: 1 } })
+      expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: ADMIN_PERMS.LIST, position: 1 } })
     })
 
     it('should create role with incremented position with bigger position', async () => {
@@ -62,7 +63,7 @@ describe('test admin-role business', () => {
       prisma.adminRole.create.mockResolvedValue(dbRole)
       await createRole({ name: 'test' })
 
-      expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 0n, position: 51 } })
+      expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: ADMIN_PERMS.LIST, position: 51 } })
     })
 
     it('should create role with incremented position with no role in db', async () => {
@@ -80,7 +81,7 @@ describe('test admin-role business', () => {
       prisma.adminRole.create.mockResolvedValue(dbRole)
       await createRole({ name: 'test' })
 
-      expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 0n, position: 0 } })
+      expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: ADMIN_PERMS.LIST, position: 0 } })
     })
   })
   describe('deleteRole', () => {
@@ -297,7 +298,7 @@ describe('test admin-role business', () => {
         id: faker.string.uuid(),
         type: 'system',
         name: 'sys',
-        permissions: 0n,
+        permissions: ADMIN_PERMS.LIST,
         position: 0,
       }
       prisma.adminRole.findMany.mockResolvedValue([systemRole as any])
