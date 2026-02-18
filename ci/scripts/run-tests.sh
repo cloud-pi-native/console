@@ -124,13 +124,13 @@ cd "$PROJECT_DIR"
 
 # Run lint
 if [ "$RUN_LINT" == "true" ]; then
-  npm run lint -- --cache-dir=.turbo/cache --log-order=stream
+  pnpm run lint
 fi
 
 
 # Run unit tests
 if [ "$RUN_UNIT_TESTS" == "true" ]; then
-  npm run test:cov -- --cache-dir=.turbo/cache --log-order=stream
+  pnpm run test:cov
 fi
 
 
@@ -143,7 +143,7 @@ if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
 
   [[ -n "$BROWSER" ]] && BROWSER_ARGS="-- --browser $BROWSER"
 
-  npm run test:ct-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
+  pnpm run test:ct-ci $BROWSER_ARGS
 fi
 
 
@@ -156,23 +156,23 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
 
   [[ -n "$BROWSER" ]] && BROWSER_ARGS="-- --browser $BROWSER"
 
-  npm --prefix $PROJECT_DIR/packages/shared run build
-  npm --prefix $PROJECT_DIR/packages/test-utils run build
+  pnpm --dir $PROJECT_DIR/packages/shared run build
+  pnpm --dir $PROJECT_DIR/packages/test-utils run build
 
   if [[ "$RUN_E2E_WITH_KUBE" = "true" ]]; then
-    npm run kube:init
+    pnpm run kube:init
     if [[ -n "$TAG" ]]; then
-      npm run kube:prod:run -- -t $TAG
+      pnpm run kube:prod:run -- -t $TAG
     else
-      npm run kube:prod
+      pnpm run kube:prod
     fi
-    npm run kube:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
+    pnpm run kube:e2e-ci $BROWSER_ARGS
   else
     if [[ -n "$TAG" ]]; then
       docker pull ghcr.io/cloud-pi-native/console/server:$TAG && docker tag ghcr.io/cloud-pi-native/console/server:$TAG dso-console/server:ci
       docker pull ghcr.io/cloud-pi-native/console/client:$TAG && docker tag ghcr.io/cloud-pi-native/console/client:$TAG dso-console/client:ci
     fi
-    npm run docker:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
+    pnpm run docker:e2e-ci $BROWSER_ARGS
   fi
 
   printf "\n${red}${i}.${no_color} Remove resources\n"
@@ -207,5 +207,5 @@ if [ "$RUN_STATUS_CHECK" == "true" ]; then
   printf "\n${red}${i}.${no_color} Remove resources\n"
   i=$(($i + 1))
 
-  npm run kube:delete
+  pnpm run kube:delete
 fi
