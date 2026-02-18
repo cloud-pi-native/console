@@ -4,6 +4,7 @@ import prisma from '../../__mocks__/prisma.js'
 import type { UserDetails } from '../../types/index.ts'
 import { TokenInvalidReason, getMatchingUsers, getUsers, logViaSession, logViaToken, patchUsers } from './business.ts'
 import * as queries from './queries.js'
+import { ADMIN_PERMS } from '@cpn-console/shared'
 
 const getUsersQueryMock = vi.spyOn(queries, 'getUsers')
 const getMatchingUsersQueryMock = vi.spyOn(queries, 'getMatchingUsers')

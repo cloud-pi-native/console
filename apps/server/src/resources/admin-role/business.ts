@@ -1,5 +1,6 @@
 import type { Project, ProjectRole } from '@prisma/client'
 import type { AdminRole, adminRoleContract } from '@cpn-console/shared'
+import { ADMIN_PERMS } from '@cpn-console/shared'
 import {
   getAdminRoleById,
   listAdminRoles,
@@ -62,7 +63,7 @@ export async function createRole(role: typeof adminRoleContract.createAdminRole.
     data: {
       ...role,
       position: dbMaxPosRole + 1,
-      permissions: 0n,
+      permissions: ADMIN_PERMS.LIST,
     },
   })
 
