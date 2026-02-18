@@ -42,8 +42,8 @@ export const upsertProject: StepCall<Project> = async (payload) => {
       ...splitExtraRepositories(project.store.argocd?.extraRepositories),
     ]
 
-    await Promise.all([
-      ...project.environments.map(async (environment) => {
+    await Promise.all(
+      project.environments.map(async (environment) => {
         const nsName = generateNamespaceName(project.id, environment.id)
         const cluster = getCluster(project, environment)
         const infraProject = await gitlabApi.getOrCreateInfraProject(
