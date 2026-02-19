@@ -60,6 +60,22 @@ export const PROJECT_PERMS = { // project permissions
 export const ADMIN_PERMS = { // admin permissions
   LIST: bit(0n),
   MANAGE: bit(1n),
+  MANAGE_USERS: bit(2n),
+  MANAGE_PROJECTS: bit(3n),
+  MANAGE_ROLES: bit(4n),
+  MANAGE_CLUSTERS: bit(5n),
+  MANAGE_ZONES: bit(6n),
+  MANAGE_STAGES: bit(7n),
+  MANAGE_SYSTEM: bit(8n),
+  LIST_USERS: bit(9n),
+  LIST_PROJECTS: bit(10n),
+  LIST_ROLES: bit(11n),
+  LIST_CLUSTERS: bit(12n),
+  LIST_ZONES: bit(13n),
+  LIST_STAGES: bit(14n),
+  LIST_SYSTEM: bit(15n),
+  MANAGE_ADMIN_TOKEN: bit(16n),
+  LIST_ADMIN_TOKEN: bit(17n),
 }
 
 export type ProjectPermsKeys = keyof typeof PROJECT_PERMS
@@ -73,33 +89,49 @@ interface ProjectAuthorizedParams { adminPermissions?: bigint | string | null, p
 export const toBigInt = (value?: bigint | number | string | undefined | null) => value ? BigInt(value) : 0n
 
 export const AdminAuthorized = {
-  isAdmin: (perms?: bigint | string | null) => !!(toBigInt(perms) & ADMIN_PERMS.MANAGE),
+  Manage: (perms?: bigint | string | null) => !!(toBigInt(perms) & ADMIN_PERMS.MANAGE),
+  ManageUsers: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_USERS | ADMIN_PERMS.MANAGE)),
+  ManageProjects: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_PROJECTS | ADMIN_PERMS.MANAGE)),
+  ManageRoles: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_ROLES | ADMIN_PERMS.MANAGE)),
+  ManageClusters: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_CLUSTERS | ADMIN_PERMS.MANAGE)),
+  ManageZones: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_ZONES | ADMIN_PERMS.MANAGE)),
+  ManageStages: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_STAGES | ADMIN_PERMS.MANAGE)),
+  ManageSystem: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_SYSTEM | ADMIN_PERMS.MANAGE)),
+  ManageAdminToken: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.MANAGE_ADMIN_TOKEN | ADMIN_PERMS.MANAGE)),
+  ListUsers: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.LIST_USERS | ADMIN_PERMS.MANAGE_USERS | ADMIN_PERMS.LIST | ADMIN_PERMS.MANAGE)),
+  ListProjects: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.LIST_PROJECTS | ADMIN_PERMS.MANAGE_PROJECTS | ADMIN_PERMS.LIST | ADMIN_PERMS.MANAGE)),
+  ListRoles: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.LIST_ROLES | ADMIN_PERMS.MANAGE_ROLES | ADMIN_PERMS.LIST | ADMIN_PERMS.MANAGE)),
+  ListClusters: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.LIST_CLUSTERS | ADMIN_PERMS.MANAGE_CLUSTERS | ADMIN_PERMS.LIST | ADMIN_PERMS.MANAGE)),
+  ListZones: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.LIST_ZONES | ADMIN_PERMS.MANAGE_ZONES | ADMIN_PERMS.LIST | ADMIN_PERMS.MANAGE)),
+  ListStages: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.LIST_STAGES | ADMIN_PERMS.MANAGE_STAGES | ADMIN_PERMS.LIST | ADMIN_PERMS.MANAGE)),
+  ListSystem: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.LIST_SYSTEM | ADMIN_PERMS.MANAGE_SYSTEM | ADMIN_PERMS.LIST | ADMIN_PERMS.MANAGE)),
+  ListAdminToken: (perms?: bigint | string | null) => !!(toBigInt(perms) & (ADMIN_PERMS.LIST_ADMIN_TOKEN | ADMIN_PERMS.MANAGE_ADMIN_TOKEN | ADMIN_PERMS.LIST | ADMIN_PERMS.MANAGE)),
 } as const
 
 export const ProjectAuthorized = {
-  Manage: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
+  Manage: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
     || !!(toBigInt(perms.projectPermissions) & PROJECT_PERMS.MANAGE),
 
-  ListEnvironments: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
+  ListEnvironments: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
     || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.MANAGE_ENVIRONMENTS | PROJECT_PERMS.MANAGE)),
-  ListRepositories: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
+  ListRepositories: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
     || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.LIST_REPOSITORIES | PROJECT_PERMS.MANAGE_REPOSITORIES | PROJECT_PERMS.MANAGE)),
 
-  ManageEnvironments: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
+  ManageEnvironments: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
     || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_ENVIRONMENTS | PROJECT_PERMS.MANAGE)),
-  ManageRepositories: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
+  ManageRepositories: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
     || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_REPOSITORIES | PROJECT_PERMS.MANAGE)),
 
-  ManageMembers: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
+  ManageMembers: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
     || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_MEMBERS | PROJECT_PERMS.MANAGE)),
 
-  ManageRoles: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
+  ManageRoles: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
     || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_ROLES | PROJECT_PERMS.MANAGE)),
 
-  ReplayHooks: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
+  ReplayHooks: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
     || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.REPLAY_HOOKS | PROJECT_PERMS.MANAGE)),
 
-  SeeSecrets: (perms: ProjectAuthorizedParams) => AdminAuthorized.isAdmin(perms.adminPermissions)
+  SeeSecrets: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
     || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.SEE_SECRETS | PROJECT_PERMS.MANAGE)),
 } as const
 
@@ -168,6 +200,92 @@ export const adminPermsDetails: PermDetails<AdminPermsKeys> = [{
     key: 'MANAGE',
     label: 'Administration globale',
     hint: 'Administration globale de toute la console et de ses ressources',
+  }, {
+    key: 'LIST',
+    label: 'Lecture seule globale',
+    hint: 'Accès en lecture seule à toute la console et ses ressources',
+  }],
+}, {
+  name: 'Gestion des utilisateurs',
+  perms: [{
+    key: 'MANAGE_USERS',
+    label: 'Gérer les utilisateurs',
+    hint: 'Permet de gérer les utilisateurs de la console',
+  }, {
+    key: 'LIST_USERS',
+    label: 'Voir les utilisateurs',
+    hint: 'Permet de voir les utilisateurs de la console',
+  }],
+}, {
+  name: 'Gestion des projets',
+  perms: [{
+    key: 'MANAGE_PROJECTS',
+    label: 'Gérer les projets',
+    hint: 'Permet de gérer les projets de la console',
+  }, {
+    key: 'LIST_PROJECTS',
+    label: 'Voir les projets',
+    hint: 'Permet de voir les projets de la console',
+  }],
+}, {
+  name: 'Gestion des rôles',
+  perms: [{
+    key: 'MANAGE_ROLES',
+    label: 'Gérer les rôles',
+    hint: 'Permet de gérer les rôles de la console',
+  }, {
+    key: 'LIST_ROLES',
+    label: 'Voir les rôles',
+    hint: 'Permet de voir les rôles de la console',
+  }],
+}, {
+  name: 'Infrastructure',
+  perms: [{
+    key: 'MANAGE_CLUSTERS',
+    label: 'Gérer les clusters',
+    hint: 'Permet de gérer les clusters de la console',
+  }, {
+    key: 'LIST_CLUSTERS',
+    label: 'Voir les clusters',
+    hint: 'Permet de voir les clusters de la console',
+  }, {
+    key: 'MANAGE_ZONES',
+    label: 'Gérer les zones',
+    hint: 'Permet de gérer les zones de la console',
+  }, {
+    key: 'LIST_ZONES',
+    label: 'Voir les zones',
+    hint: 'Permet de voir les zones de la console',
+  }, {
+    key: 'MANAGE_STAGES',
+    label: 'Gérer les types d\'environnement',
+    hint: 'Permet de gérer les types d\'environnement de la console',
+  }, {
+    key: 'LIST_STAGES',
+    label: 'Voir les types d\'environnement',
+    hint: 'Permet de voir les types d\'environnement de la console',
+  }],
+}, {
+  name: 'Système',
+  perms: [{
+    key: 'MANAGE_SYSTEM',
+    label: 'Gérer le système',
+    hint: 'Permet de gérer les configurations et logs du système',
+  }, {
+    key: 'LIST_SYSTEM',
+    label: 'Voir le système',
+    hint: 'Permet de voir les configurations et logs du système',
+  }],
+}, {
+  name: 'Jetons d’API',
+  perms: [{
+    key: 'MANAGE_ADMIN_TOKEN',
+    label: 'Gérer les jetons d’API',
+    hint: 'Permet de créer et révoquer des jetons d’API admin',
+  }, {
+    key: 'LIST_ADMIN_TOKEN',
+    label: 'Voir les jetons d’API',
+    hint: 'Permet de lister les jetons d’API admin',
   }],
 }] as const
 
@@ -187,4 +305,16 @@ export function getProjectPermLabelsByValue(value: bigint | string) {
     .flat()
     .filter(permDetail => PROJECT_PERMS[permDetail.key] & value)
     .map(permDetail => permDetail.label)
+}
+
+export function getEffectiveAdminPermissions(
+  rawPerms: bigint | number | string,
+  options: { refined?: boolean },
+): bigint {
+  let perms = toBigInt(rawPerms)
+  const refinedEnabled = options.refined ?? true
+  if (!refinedEnabled) {
+    perms |= ADMIN_PERMS.MANAGE_PROJECTS | ADMIN_PERMS.LIST_STAGES | ADMIN_PERMS.LIST_ZONES
+  }
+  return perms
 }

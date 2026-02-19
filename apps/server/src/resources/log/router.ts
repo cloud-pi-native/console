@@ -14,7 +14,7 @@ export function logRouter() {
         ? await authUser(req, { id: query.projectId })
         : await authUser(req)
 
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) {
+      if (!AdminAuthorized.ListSystem(perms.adminPermissions)) {
         if (!perms.projectPermissions) {
           return new Forbidden403()
         }
