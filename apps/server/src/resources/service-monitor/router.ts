@@ -18,7 +18,7 @@ export function serviceMonitorRouter() {
     getCompleteServiceHealth: async ({ request: req }) => {
       const { adminPermissions } = await authUser(req)
 
-      if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ListSystem(adminPermissions)) return new Forbidden403()
       const serviceData = checkServicesHealth()
 
       return {
@@ -29,7 +29,8 @@ export function serviceMonitorRouter() {
 
     refreshServiceHealth: async ({ request: req }) => {
       const { adminPermissions } = await authUser(req)
-      if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+
+      if (!AdminAuthorized.ManageSystem(adminPermissions)) return new Forbidden403()
 
       await refreshServicesHealth()
       const serviceData = checkServicesHealth()

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { PROJECT_PERMS, projectServiceContract } from '@cpn-console/shared'
+import { ADMIN_PERMS, PROJECT_PERMS, projectServiceContract } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
@@ -21,7 +21,7 @@ describe('projectServiceRouter tests', () => {
   describe('getServices', () => {
     it('should return services for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.GUEST })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessGetServicesMock.mockResolvedValueOnce([])
@@ -38,7 +38,7 @@ describe('projectServiceRouter tests', () => {
 
     it('should not return admin services for non admin', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.GUEST })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessGetServicesMock.mockResolvedValueOnce([])
@@ -54,7 +54,7 @@ describe('projectServiceRouter tests', () => {
 
     it('should return services for admin', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.GUEST })
-      const user = getUserMockInfos(true, undefined, projectPerms)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessGetServicesMock.mockResolvedValueOnce([])
@@ -70,7 +70,7 @@ describe('projectServiceRouter tests', () => {
 
     it('should return 404 for unauthorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -86,7 +86,7 @@ describe('projectServiceRouter tests', () => {
 
     it('should update services for project manager', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessUpdateServicesMock.mockResolvedValueOnce(null)
@@ -102,7 +102,7 @@ describe('projectServiceRouter tests', () => {
 
     it('should update services for project admin', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE })
-      const user = getUserMockInfos(true, undefined, projectPerms)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessUpdateServicesMock.mockResolvedValueOnce(null)
@@ -118,7 +118,7 @@ describe('projectServiceRouter tests', () => {
 
     it('should return 404 for unauthorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -131,7 +131,7 @@ describe('projectServiceRouter tests', () => {
 
     it('should return 403 if project is archived', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE, projectStatus: 'archived' })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -145,7 +145,7 @@ describe('projectServiceRouter tests', () => {
 
     it('should return 403 if project is locked', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE, projectLocked: true })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()

@@ -3,6 +3,7 @@ import { isInProject } from '../router/index.js'
 import { useUserStore } from '@/stores/user.js'
 import { useServiceStore } from '@/stores/services-monitor.js'
 import { openCDSEnabled } from '@/utils/env.js'
+import { AdminAuthorized } from '@cpn-console/shared'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -148,7 +149,7 @@ onMounted(() => {
 
       <!-- Onglet Administration -->
       <DsfrSideMenuListItem
-        v-if="userStore.adminPerms"
+        v-if="AdminAuthorized.Manage(userStore.adminPerms)"
         v-bind="{
           focusFirstAnchor: false,
         }"

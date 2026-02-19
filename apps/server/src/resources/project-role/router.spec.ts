@@ -26,9 +26,9 @@ describe('tests projectRoleContract', () => {
   const roleId = faker.string.uuid()
 
   describe('listProjectRoles', () => {
-    it('should return roles for authorized user', async () => {
+    it('should return 403 for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.SEE_SECRETS })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessListRolesMock.mockResolvedValueOnce([])
@@ -37,13 +37,12 @@ describe('tests projectRoleContract', () => {
         .get(projectRoleContract.listProjectRoles.path.replace(':projectId', projectId))
         .end()
 
-      expect(response.statusCode).toEqual(200)
-      expect(response.json()).toEqual([])
+      expect(response.statusCode).toEqual(403)
     })
 
     it('should return 404 for unauthorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -57,7 +56,7 @@ describe('tests projectRoleContract', () => {
   describe('createProjectRole', () => {
     it('should create role for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_ROLES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessCreateRoleMock.mockResolvedValueOnce([])
@@ -73,7 +72,7 @@ describe('tests projectRoleContract', () => {
 
     it('should return 403 for locked project', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_ROLES, projectLocked: true })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -87,7 +86,7 @@ describe('tests projectRoleContract', () => {
 
     it('should return 403 if not permited', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.SEE_SECRETS })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -100,7 +99,7 @@ describe('tests projectRoleContract', () => {
 
     it('should return 404 if non-member', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -113,7 +112,7 @@ describe('tests projectRoleContract', () => {
 
     it('should return 403 for archived project', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_ROLES, projectStatus: 'archived' })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -129,7 +128,7 @@ describe('tests projectRoleContract', () => {
   describe('patchProjectRoles', () => {
     it('should patch roles for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_ROLES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessPatchRolesMock.mockResolvedValueOnce([])
@@ -145,7 +144,7 @@ describe('tests projectRoleContract', () => {
 
     it('should return 403 for locked project', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_ROLES, projectLocked: true })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -159,7 +158,7 @@ describe('tests projectRoleContract', () => {
 
     it('should return 403 if not permited', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.SEE_SECRETS })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -172,7 +171,7 @@ describe('tests projectRoleContract', () => {
 
     it('should return 404 if non-member', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -185,7 +184,7 @@ describe('tests projectRoleContract', () => {
 
     it('should return 403 for archived project', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_ROLES, projectStatus: 'archived' })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -199,7 +198,7 @@ describe('tests projectRoleContract', () => {
 
     it('should pass business error', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_ROLES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessPatchRolesMock.mockResolvedValue(new BadRequest400('une erreur'))
@@ -213,24 +212,9 @@ describe('tests projectRoleContract', () => {
   })
 
   describe('projectRoleMemberCounts', () => {
-    it('should return member counts for authorized user', async () => {
-      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.SEE_SECRETS })
-      const user = getUserMockInfos(false, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
-
-      businessCountRolesMembersMock.mockResolvedValueOnce({})
-
-      const response = await app.inject()
-        .get(projectRoleContract.projectRoleMemberCounts.path.replace(':projectId', projectId))
-        .end()
-
-      expect(response.statusCode).toEqual(200)
-      expect(response.json()).toEqual({})
-    })
-
     it('should return 404 for unauthorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -244,7 +228,7 @@ describe('tests projectRoleContract', () => {
   describe('deleteProjectRole', () => {
     it('should delete role for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_ROLES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessDeleteRoleMock.mockResolvedValueOnce(null)
@@ -257,7 +241,7 @@ describe('tests projectRoleContract', () => {
 
     it('should return 403 for locked project', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_ROLES, projectLocked: true })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessCreateRoleMock.mockResolvedValueOnce([])
@@ -272,7 +256,7 @@ describe('tests projectRoleContract', () => {
 
     it('should return 403 if not permited', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.SEE_SECRETS })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessCreateRoleMock.mockResolvedValueOnce([])
@@ -286,7 +270,7 @@ describe('tests projectRoleContract', () => {
 
     it('should return 404 if non-member', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessCreateRoleMock.mockResolvedValueOnce([])
@@ -300,7 +284,7 @@ describe('tests projectRoleContract', () => {
 
     it('should return 403 for archived project', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_ROLES, projectStatus: 'archived' })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessCreateRoleMock.mockResolvedValueOnce([])

@@ -1,4 +1,4 @@
-import { AdminAuthorized, ProjectAuthorized, projectMemberContract } from '@cpn-console/shared'
+import { ProjectAuthorized, projectMemberContract } from '@cpn-console/shared'
 import {
   addMember,
   listMembers,
@@ -14,7 +14,8 @@ export function projectMemberRouter() {
     listMembers: async ({ request: req, params }) => {
       const { projectId } = params
       const perms = await authUser(req, { id: projectId })
-      if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
+      if (!perms.projectPermissions) return new NotFound404()
+      if (!ProjectAuthorized.ListMembers(perms)) return new Forbidden403()
 
       const body = await listMembers(projectId)
 
@@ -29,7 +30,7 @@ export function projectMemberRouter() {
       const perms = await authUser(req, { id: projectId })
 
       if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
-      if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
+      if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.ManageMembers(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
@@ -64,10 +65,9 @@ export function projectMemberRouter() {
       const { projectId, userId } = params
       const perms = await authUser(req, { id: projectId })
 
+      if (!perms.projectPermissions) return new NotFound404()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
-
-      if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
 
       if (!ProjectAuthorized.ManageMembers(perms) && userId !== perms.user?.id) return new Forbidden403()
 

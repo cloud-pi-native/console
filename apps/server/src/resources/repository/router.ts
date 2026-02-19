@@ -1,4 +1,4 @@
-import { AdminAuthorized, ProjectAuthorized, fakeToken, repositoryContract } from '@cpn-console/shared'
+import { ProjectAuthorized, fakeToken, repositoryContract } from '@cpn-console/shared'
 import {
   createRepository,
   deleteRepository,
@@ -18,10 +18,9 @@ export function repositoryRouter() {
     listRepositories: async ({ request: req, query }) => {
       const projectId = query.projectId
       const perms = await authUser(req, { id: projectId })
-
-      const body = ProjectAuthorized.ListRepositories(perms)
-        ? await getProjectRepositories(projectId)
-        : []
+      if (!perms.projectPermissions) return new NotFound404()
+      if (!ProjectAuthorized.ListRepositories(perms)) return new Forbidden403()
+      const body = await getProjectRepositories(projectId)
 
       return {
         status: 200,
@@ -55,7 +54,7 @@ export function repositoryRouter() {
       const perms = await authUser(req, { id: projectId })
 
       if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
-      if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
+      if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.ManageRepositories(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
@@ -75,7 +74,7 @@ export function repositoryRouter() {
       const perms = await authUser(req, { repositoryId })
 
       if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
-      if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
+      if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.ManageRepositories(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
