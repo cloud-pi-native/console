@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ServiceChain, ServiceChainDetails, ServiceChainFlows } from '@cpn-console/shared'
 import {
+  ADMIN_PERMS,
   ServiceChainDetailsSchema,
   ServiceChainFlowsSchema,
   ServiceChainListSchema,
@@ -34,7 +35,7 @@ describe('test ServiceChainContract', () => {
   })
   describe('listServiceChains', () => {
     it('as non admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
 
       authUserMock.mockResolvedValueOnce(user)
 
@@ -48,7 +49,7 @@ describe('test ServiceChainContract', () => {
       expect(response.statusCode).toEqual(200)
     })
     it('as admin', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_SYSTEM)
       const serviceChainList = faker.helpers.multiple<ServiceChain>(() => ({
         id: faker.string.uuid(),
         state: faker.helpers.arrayElement(serviceChainStateEnum),
@@ -108,7 +109,7 @@ describe('test ServiceChainContract', () => {
           .map(e => `${e}/32`), // We want a CIDR here
         sslOutgoing: faker.datatype.boolean(),
       }
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_SYSTEM)
       authUserMock.mockResolvedValueOnce(user)
 
       businessGetServiceChainDetailsMock.mockResolvedValueOnce(serviceChainDetails)
@@ -129,7 +130,7 @@ describe('test ServiceChainContract', () => {
       expect(businessGetServiceChainDetailsMock).toHaveBeenCalledTimes(1)
     })
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app
@@ -149,7 +150,7 @@ describe('test ServiceChainContract', () => {
 
   describe('retryServiceChain', () => {
     it('should return 204', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_SYSTEM)
       authUserMock.mockResolvedValueOnce(user)
 
       businessRetryServiceChainMock.mockResolvedValueOnce({
@@ -171,7 +172,7 @@ describe('test ServiceChainContract', () => {
       expect(response.statusCode).toEqual(204)
     })
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app
@@ -191,7 +192,7 @@ describe('test ServiceChainContract', () => {
 
   describe('validateServiceChain', () => {
     it('should return 204', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_SYSTEM)
       authUserMock.mockResolvedValueOnce(user)
 
       businessValidateServiceChainMock.mockResolvedValueOnce({
@@ -213,7 +214,7 @@ describe('test ServiceChainContract', () => {
       expect(response.statusCode).toEqual(204)
     })
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app
@@ -265,7 +266,7 @@ describe('test ServiceChainContract', () => {
           updatedAt: faker.date.recent(),
         },
       }
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_SYSTEM)
       authUserMock.mockResolvedValueOnce(user)
 
       businessGetServiceChainsFlowsMock.mockResolvedValueOnce(serviceChainFlows)
@@ -286,7 +287,7 @@ describe('test ServiceChainContract', () => {
       expect(businessGetServiceChainsFlowsMock).toHaveBeenCalledTimes(1)
     })
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app
