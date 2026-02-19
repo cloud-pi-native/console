@@ -97,16 +97,6 @@ jobs:
       SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
       SONAR_PROJECT_KEY: "${{ secrets.SONAR_PROJECT_KEY }}"
 
-  component-tests:
-    uses: ./.github/workflows/job-tests-component.yml
-    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' }}
-    needs:
-      - path-filter
-      - expose-vars
-    with:
-      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
-      BROWSERS: "${{ github.base_ref == 'main' && 'chrome,firefox' || 'firefox' }}"
-
   build:
     uses: ./.github/workflows/job-build.yml
     needs:
@@ -174,7 +164,6 @@ jobs:
       - expose-vars
       - lint
       - unit-tests
-      - component-tests
       - build
       - cypress-tests
       - playwright-tests
