@@ -117,13 +117,13 @@ cd "$PROJECT_DIR"
 
 # Run lint
 if [ "$RUN_LINT" == "true" ]; then
-  npm run lint -- --cache-dir=.turbo/cache --log-order=stream
+  npm run lint
 fi
 
 
 # Run unit tests
 if [ "$RUN_UNIT_TESTS" == "true" ]; then
-  npm run test:cov -- --cache-dir=.turbo/cache --log-order=stream
+  npm run test:cov
 fi
 
 # Run component tests
@@ -135,7 +135,7 @@ if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
 
   [[ -n "$BROWSER" ]] && BROWSER_ARGS="-- --browser $BROWSER"
 
-  npm run test:ct-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
+  npm run test:ct-ci $BROWSER_ARGS
 fi
 
 # Run e2e tests
@@ -154,7 +154,7 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
       docker pull ghcr.io/cloud-pi-native/console/server:$TAG && docker tag ghcr.io/cloud-pi-native/console/server:$TAG dso-console/server:ci
       docker pull ghcr.io/cloud-pi-native/console/client:$TAG && docker tag ghcr.io/cloud-pi-native/console/client:$TAG dso-console/client:ci
     fi
-    npm run docker:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
+    npm run docker:e2e-ci $BROWSER_ARGS
 
   printf "\n${red}${i}.${no_color} Remove resources\n"
   i=$(($i + 1))

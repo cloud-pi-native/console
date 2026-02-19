@@ -47,15 +47,6 @@ jobs:
           restore-keys: |
             node-${{ runner.os }}-${{ runner.arch }}-
 
-      - name: Cache turbo files
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./.turbo/cache
-          key: turbo-lint-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','packages/**/src/**','plugins/**/src/**') }}
-          restore-keys: |
-            turbo-lint-${{ runner.os }}-${{ runner.arch }}-
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 

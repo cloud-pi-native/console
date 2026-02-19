@@ -355,7 +355,6 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 ├── package.json
 ├── pnpm-lock.yaml
 ├── pnpm-workspace.yaml
-├── turbo.json
 └── README.md
 ```
 

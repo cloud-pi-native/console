@@ -1,8 +1,8 @@
 {
-  "**/apps/client/**/*.{vue,css}": "pnpm run lint:style --filter=@cpn-console/client --",
-  "**/apps/client/**/*": "pnpm run lint:ts --filter=@cpn-console/client --",
-  "**/apps/server/**/*": "pnpm run lint --filter=@cpn-console/server --",
-  "**/packages/**/*": "pnpm run lint --filter=./packages/* --",
-  "**/plugins/**/*": "pnpm run lint --filter=./plugins/* --",
+  "**/apps/client/**/*.{vue,css}": "pnpm --filter=@cpn-console/client run lint:style --",
+  "**/apps/client/**/*": "pnpm --filter=@cpn-console/client run lint:ts --",
+  "**/apps/server/**/*": "pnpm --filter=@cpn-console/server run lint --",
+  "**/packages/**/*": "pnpm --filter=./packages/* run lint --",
+  "**/plugins/**/*": "pnpm --filter=./plugins/* run lint --",
   "**/*": "pnpm run lint:root --"
 }
