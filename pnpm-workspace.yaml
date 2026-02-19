@@ -1,8 +1,8 @@
 autoInstallPeers: true
 injectWorkspacePackages: true
 packages:
-  - "apps/**"
   - "packages/**"
   - "plugins/**"
+  - "apps/**"
   - "!apps/server/src/plugins/external/**"
   - "playwright/**"
