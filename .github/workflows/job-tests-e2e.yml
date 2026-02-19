@@ -18,7 +18,6 @@ on:
         description: Nodejs version used to run tests
         required: true
         type: string
-        default: 22.14.0
       TAG:
         description: Image tag used to run tests
         required: true
