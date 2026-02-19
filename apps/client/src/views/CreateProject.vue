@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import type { Ref } from 'vue'
-import { computed, ref } from 'vue'
+import { computed, onBeforeMount, ref } from 'vue'
 import type {
   projectContract,
 } from '@cpn-console/shared'
 import {
+  AdminAuthorized,
   ProjectSchemaV2,
   descriptionMaxLength,
   instanciateSchema,
@@ -34,6 +35,12 @@ const project = ref<typeof projectContract.createProject.body._type>({
   prodCpu: 0,
   prodGpu: 0,
   prodMemory: 0,
+})
+
+onBeforeMount(() => {
+  if (!AdminAuthorized.ManageProjects(userStore.adminPerms)) {
+    router.replace({ name: 'Projects' })
+  }
 })
 
 const remainingCharacters = computed(() => {
