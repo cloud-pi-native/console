@@ -40,7 +40,6 @@ export default antfu(
       '**/node_modules',
       '**/prisma/migrations',
       '**/pnpm-lock.yaml',
-      '**/.turbo',
       '**/dist/',
       '**/types/',
       '**/coverage/',
