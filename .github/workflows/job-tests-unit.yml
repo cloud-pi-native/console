@@ -19,14 +19,11 @@ on:
         description: Nodejs version used to run tests
         required: true
         type: string
-        default: 22.14.0
 
 jobs:
   unit-tests:
     name: Unit tests
     runs-on: ubuntu-latest
-    outputs:
-      turbo-cache: ${{ steps.turbo-cache.outputs.TURBO_CACHE_PATHS }}
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v4
@@ -56,38 +53,14 @@ jobs:
           restore-keys: |
             node-${{ runner.os }}-${{ runner.arch }}-
 
-      - name: Get turbo cache directories
-        id: turbo-cache
-        run: |
-          TURBO_CACHE_PATHS=""
-          for pkg in $(find ./apps ./packages ./plugins -type d -mindepth 1 -maxdepth 1 -not -path "**/node_modules"); do
-            if [ -z "$TURBO_CACHE_PATHS" ]; then
-          TURBO_CACHE_PATHS="$pkg/dist
-          $pkg/types
-          $pkg/coverage"
-            else
-          TURBO_CACHE_PATHS="$TURBO_CACHE_PATHS
-          $pkg/dist
-          $pkg/types
-          $pkg/coverage"
-            fi
-          done
-          echo "TURBO_CACHE_PATHS<<EOF" >> $GITHUB_OUTPUT
-          echo "$TURBO_CACHE_PATHS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Cache turbo files
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./.turbo/cache
-            ${{ steps.turbo-cache.outputs.TURBO_CACHE_PATHS }}
-          key: turbo-unit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','packages/**/src/**','plugins/**/src/**') }}
-          restore-keys: |
-            turbo-unit-${{ runner.os }}-${{ runner.arch }}-
-
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm -r install --frozen-lockfile
+
+      - name: Build internal dependencies (packages)
+        run: pnpm --filter "./packages/**" build
+
+      - name: Build internal plugins
+        run: pnpm --filter "./plugins/**" build
 
       - name: Run unit tests
         run: |
@@ -163,16 +136,6 @@ jobs:
           key: node-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             node-${{ runner.os }}-${{ runner.arch }}-
-
-      - name: Cache turbo files
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./.turbo/cache
-            ${{ needs.unit-tests.outputs.turbo-cache }}
-          key: turbo-unit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','packages/**/src/**','plugins/**/src/**') }}
-          restore-keys: |
-            turbo-unit-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

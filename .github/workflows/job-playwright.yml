@@ -14,7 +14,6 @@ on:
         description: Nodejs version used to run tests
         required: true
         type: string
-        default: 22.14.0
       TAG:
         description: Container images version to use for console client and server
         required: true
@@ -55,6 +54,9 @@ jobs:
 
       - name: Install Node.js dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build internal dependencies
+        run: pnpm --filter "./packages/**" build
 
       - name: Get used Playwright version
         id: playwright-version

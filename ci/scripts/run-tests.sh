@@ -16,7 +16,6 @@ NODE_VERSION="$(node --version)"
 NPM_VERSION="$(npm --version)"
 DOCKER_VERSION="$(docker --version)"
 DOCKER_BUILDX_VERSION="$(docker buildx version)"
-KIND_VERSION="$(kind version)"
 
 # Default
 RUN_LINT="false"
@@ -24,7 +23,6 @@ RUN_UNIT_TESTS="false"
 RUN_COMPONENT_TESTS="false"
 RUN_E2E_TESTS="false"
 RUN_STATUS_CHECK="false"
-RUN_E2E_WITH_KUBE="false"
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to run application tests.
@@ -35,8 +33,6 @@ Following flags are available:
   -c    Run component tests
 
   -e    Run e2e tests
-
-  -k    Run e2e tests with kubernetes
 
   -l    Run lint
 
@@ -62,8 +58,6 @@ do
       RUN_COMPONENT_TESTS=true;;
     e)
       RUN_E2E_TESTS=true;;
-    k)
-      RUN_E2E_WITH_KUBE=true;;
     l)
       RUN_LINT=true;;
     s)
@@ -86,7 +80,7 @@ if [ "$RUN_LINT" == "false" ] && [ "$RUN_UNIT_TESTS" == "false" ] && [ "$RUN_E2E
   exit 1
 fi
 
-if [ "$RUN_E2E_TESTS" == "true" ] && [ "$RUN_E2E_WITH_KUBE" == "false" ] && [ -z "$TAG" ]; then
+if [ "$RUN_E2E_TESTS" == "true" ] && [ -z "$TAG" ]; then
   printf "\nArgument(s) missing, you don't specify the TAG used to pull docker images for e2e tests.\n"
   print_help
   exit 1
@@ -113,10 +107,9 @@ printf "\nScript settings:
   -> npm version: ${NPM_VERSION}
   -> docker version: ${DOCKER_VERSION}
   -> docker buildx version: ${DOCKER_BUILDX_VERSION}
-  -> kind version: ${KIND_VERSION}
   -> run unit tests: ${RUN_UNIT_TESTS}
   -> run component tests: ${RUN_COMPONENT_TESTS}
-  -> run e2e tests: ${RUN_E2E_TESTS}  (kube: ${RUN_E2E_WITH_KUBE})
+  -> run e2e tests: ${RUN_E2E_TESTS}
   -> run deploy status check: ${RUN_STATUS_CHECK}\n"
 
 
@@ -124,15 +117,14 @@ cd "$PROJECT_DIR"
 
 # Run lint
 if [ "$RUN_LINT" == "true" ]; then
-  npm run lint -- --cache-dir=.turbo/cache --log-order=stream
+  npm run lint
 fi
 
 
 # Run unit tests
 if [ "$RUN_UNIT_TESTS" == "true" ]; then
-  npm run test:cov -- --cache-dir=.turbo/cache --log-order=stream
+  npm run test:cov
 fi
-
 
 # Run component tests
 if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
@@ -143,9 +135,8 @@ if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
 
   [[ -n "$BROWSER" ]] && BROWSER_ARGS="-- --browser $BROWSER"
 
-  npm run test:ct-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
+  npm run test:ct-ci $BROWSER_ARGS
 fi
-
 
 # Run e2e tests
 if [ "$RUN_E2E_TESTS" == "true" ]; then
@@ -159,53 +150,14 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   npm --prefix $PROJECT_DIR/packages/shared run build
   npm --prefix $PROJECT_DIR/packages/test-utils run build
 
-  if [[ "$RUN_E2E_WITH_KUBE" = "true" ]]; then
-    npm run kube:init
-    if [[ -n "$TAG" ]]; then
-      npm run kube:prod:run -- -t $TAG
-    else
-      npm run kube:prod
-    fi
-    npm run kube:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
-  else
     if [[ -n "$TAG" ]]; then
       docker pull ghcr.io/cloud-pi-native/console/server:$TAG && docker tag ghcr.io/cloud-pi-native/console/server:$TAG dso-console/server:ci
       docker pull ghcr.io/cloud-pi-native/console/client:$TAG && docker tag ghcr.io/cloud-pi-native/console/client:$TAG dso-console/client:ci
     fi
-    npm run docker:e2e-ci -- --cache-dir=.turbo/cache --log-order=stream $BROWSER_ARGS
-  fi
+    npm run docker:e2e-ci $BROWSER_ARGS
 
   printf "\n${red}${i}.${no_color} Remove resources\n"
   i=$(($i + 1))
 
-  if [[ "$RUN_E2E_WITH_KUBE" = "true" ]]; then
-    npm run kube:delete
-  else
     npm run docker:e2e-ci:delete
-  fi
-fi
-
-
-# Run deployment status check
-if [ "$RUN_STATUS_CHECK" == "true" ]; then
-  checkDockerRunning
-
-  printf "\n${red}${i}.${no_color} Launch e2e tests\n"
-  i=$(($i + 1))
-
-  npm run kube:init
-  if [[ -n "$TAG" ]]; then
-    npm run kube:prod:run -- -t $TAG
-  else
-    npm run kube:prod
-  fi
-
-  for pod in $(kubectl get pod | tail --lines=+2 | awk '{print $1}'); do
-    printf "\nPod: ${pod}\n${red}Status:${no_color} $(kubectl get pod/${pod} -o jsonpath='{.status.phase}')\n"
-  done
-
-  printf "\n${red}${i}.${no_color} Remove resources\n"
-  i=$(($i + 1))
-
-  npm run kube:delete
 fi

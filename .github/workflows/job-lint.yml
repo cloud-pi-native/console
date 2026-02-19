@@ -12,7 +12,6 @@ on:
         description: Nodejs version used to run tests
         required: true
         type: string
-        default: 22.14.0
 
 jobs:
   lint:
@@ -46,15 +45,6 @@ jobs:
           key: node-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             node-${{ runner.os }}-${{ runner.arch }}-
-
-      - name: Cache turbo files
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./.turbo/cache
-          key: turbo-lint-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/**/src/**','packages/**/src/**','plugins/**/src/**') }}
-          restore-keys: |
-            turbo-lint-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

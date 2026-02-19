@@ -27,7 +27,6 @@ on:
         description: Nodejs version used
         required: true
         type: string
-        default: 22.14.0
       PUBLISH_APPS:
         description: Publish apps modules
         required: true
@@ -228,9 +227,7 @@ jobs:
       - name: Publish packages
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         run: |
-          # This line use turbo to handle build dependency graph
           pnpm run build --filter ${{ matrix.modules.name }}
-          # This line use pnpm to publish without turbo
           pnpm --filter ${{ matrix.modules.name }} publish --no-git-checks --report-summary
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
