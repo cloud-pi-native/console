@@ -18,7 +18,7 @@ export function serviceChainRouter() {
       const { adminPermissions } = await authUser(req)
 
       let body: AsyncReturnType<typeof listServiceChainsBusiness> = []
-      if (AdminAuthorized.isAdmin(adminPermissions)) {
+      if (AdminAuthorized.ListSystem(adminPermissions)) {
         body = await listServiceChainsBusiness()
       }
 
@@ -30,7 +30,8 @@ export function serviceChainRouter() {
 
     getServiceChainDetails: async ({ params, request: req }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+
+      if (!AdminAuthorized.ListSystem(perms.adminPermissions))
         return new Forbidden403()
 
       const serviceChainId = params.serviceChainId
@@ -45,7 +46,8 @@ export function serviceChainRouter() {
 
     retryServiceChain: async ({ params, request: req }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+
+      if (!AdminAuthorized.ManageSystem(perms.adminPermissions))
         return new Forbidden403()
 
       const serviceChainId = params.serviceChainId
@@ -59,7 +61,8 @@ export function serviceChainRouter() {
 
     validateServiceChain: async ({ params, request: req }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+
+      if (!AdminAuthorized.ManageSystem(perms.adminPermissions))
         return new Forbidden403()
 
       const serviceChainId = params.validationId
@@ -73,7 +76,8 @@ export function serviceChainRouter() {
 
     getServiceChainFlows: async ({ params, request: req }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions))
+
+      if (!AdminAuthorized.ListSystem(perms.adminPermissions))
         return new Forbidden403()
 
       const serviceChainId = params.serviceChainId

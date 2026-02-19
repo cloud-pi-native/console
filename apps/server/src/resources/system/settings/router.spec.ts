@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { systemSettingsContract } from '@cpn-console/shared'
+import { ADMIN_PERMS, systemSettingsContract } from '@cpn-console/shared'
 import app from '../../../app.js'
 import * as utilsController from '../../../utils/controller.js'
 import { getUserMockInfos } from '../../../utils/mocks.js'
@@ -17,8 +17,8 @@ describe('test systemSettingsContract', () => {
 
   describe('listSystemSettings', () => {
     it('should return plugin configurations for authorized users', async () => {
-      const user = getUserMockInfos(true)
-      const systemSettings = []
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_SYSTEM)
+      const systemSettings: any[] = []
 
       authUserMock.mockResolvedValueOnce(user)
       businessGetSystemSettingsMock.mockResolvedValueOnce(systemSettings)
@@ -31,12 +31,27 @@ describe('test systemSettingsContract', () => {
       expect(response.json()).toEqual(systemSettings)
       expect(response.statusCode).toEqual(200)
     })
+
+    it('should return 200 for anybody', async () => {
+      const user = getUserMockInfos(0n)
+      const systemSettings: any[] = []
+
+      authUserMock.mockResolvedValueOnce(user)
+      businessGetSystemSettingsMock.mockResolvedValueOnce(systemSettings)
+
+      const response = await app.inject()
+        .get(systemSettingsContract.listSystemSettings.path)
+        .end()
+
+      expect(businessGetSystemSettingsMock).toHaveBeenCalledTimes(1)
+      expect(response.statusCode).toEqual(200)
+    })
   })
 
   describe('upsertSystemSetting', () => {
     const newConfig = { key: 'key1', value: 'value1' }
     it('should update system setting, authorized users', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_SYSTEM)
 
       authUserMock.mockResolvedValueOnce(user)
       businessUpsertSystemSettingMock.mockResolvedValueOnce(newConfig)
@@ -51,7 +66,7 @@ describe('test systemSettingsContract', () => {
     })
 
     it('should return 403 for unauthorized users', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
 
       authUserMock.mockResolvedValueOnce(user)
 
