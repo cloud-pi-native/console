@@ -1,4 +1,4 @@
-import { AdminAuthorized, ProjectAuthorized, projectMemberContract } from '@cpn-console/shared'
+import { ProjectAuthorized, projectMemberContract } from '@cpn-console/shared'
 import {
   addMember,
   listMembers,
@@ -7,14 +7,15 @@ import {
 } from './business.js'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, NotFound404, Unauthorized401 } from '@/utils/errors.js'
+import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors.js'
 
 export function projectMemberRouter() {
   return serverInstance.router(projectMemberContract, {
     listMembers: async ({ request: req, params }) => {
       const { projectId } = params
       const perms = await authUser(req, { id: projectId })
-      if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
+      // TODO: projectPermissions can be undefined at transfert or member removal
+      if (!perms.projectPermissions && !ProjectAuthorized.ListMembers(perms)) return new Forbidden403()
 
       const body = await listMembers(projectId)
 
@@ -29,7 +30,6 @@ export function projectMemberRouter() {
       const perms = await authUser(req, { id: projectId })
 
       if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
-      if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
       if (!ProjectAuthorized.ManageMembers(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
@@ -47,7 +47,6 @@ export function projectMemberRouter() {
       const { projectId } = params
       const perms = await authUser(req, { id: projectId })
 
-      if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.ManageMembers(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
@@ -65,11 +64,8 @@ export function projectMemberRouter() {
       const perms = await authUser(req, { id: projectId })
 
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
-      if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
-
-      if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
-
       if (!ProjectAuthorized.ManageMembers(perms) && userId !== perms.user?.id) return new Forbidden403()
+      if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
 
       const resBody = await removeMember(projectId, params.userId)
 

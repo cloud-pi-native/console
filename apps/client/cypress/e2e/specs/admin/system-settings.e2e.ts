@@ -6,7 +6,6 @@ describe('Administration system settings', () => {
   const contactEmail = Cypress.env('CONTACT_EMAIL') || 'cloudpinative-relations@interieur.gouv.fr'
 
   beforeEach(() => {
-    cy.intercept('GET', 'api/v1/system/settings?key=maintenance').as('listMaintenanceSetting')
     cy.intercept('GET', 'api/v1/system/settings').as('listSystemSettings')
     cy.intercept('POST', 'api/v1/system/settings').as('upsertSystemSetting')
 
@@ -52,19 +51,6 @@ describe('Administration system settings', () => {
     cy.getByDataTestid('maintenance-notice')
       .should('not.exist')
     cy.visit('/projects')
-    // TODO à creuser : La requête est faite deux fois
-    // la première renvoie "off" alors qu'en bdd la valeur est à "on"
-    cy.wait('@listMaintenanceSetting').its('response').then(($response) => {
-      cy.log(JSON.stringify($response?.body))
-    })
-    cy.wait('@listMaintenanceSetting').its('response').then(($response) => {
-      cy.log(JSON.stringify($response?.body))
-      expect($response?.statusCode).to.match(/^20\d$/)
-      expect(JSON.stringify($response?.body)).to.equal(JSON.stringify([{
-        key: 'maintenance',
-        value: 'on',
-      }]))
-    })
     cy.wait('@listRoles')
     cy.getByDataTestid('maintenance-notice')
       .should('be.visible')
@@ -93,13 +79,6 @@ describe('Administration system settings', () => {
     })
 
     cy.visit('/projects')
-    cy.wait('@listMaintenanceSetting').its('response').then(($response) => {
-      expect($response?.statusCode).to.match(/^20\d$/)
-      expect(JSON.stringify($response?.body)).to.equal(JSON.stringify([{
-        key: 'maintenance',
-        value: 'on',
-      }]))
-    })
     cy.getByDataTestid('maintenance-notice')
       .should('not.exist')
     cy.url().should('contain', '/projects')

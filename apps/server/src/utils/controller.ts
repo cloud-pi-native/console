@@ -1,12 +1,13 @@
 import type { Cluster, Prisma, Project, ProjectMembers, ProjectRole } from '@prisma/client'
 import type { XOR } from '@cpn-console/shared'
-import { PROJECT_PERMS as PP, PROJECT_PERMS, projectIsLockedInfo, tokenHeaderName } from '@cpn-console/shared'
+import { PROJECT_PERMS as PP, PROJECT_PERMS, projectIsLockedInfo, tokenHeaderName, getEffectiveAdminPermissions } from '@cpn-console/shared'
 import type { FastifyRequest } from 'fastify'
 import { Unauthorized401 } from './errors.js'
 import { uuid } from './queries-tools.js'
 import type { UserDetails } from '@/types/index.js'
 import prisma from '@/prisma.js'
 import { logViaSession, logViaToken } from '@/resources/user/business.js'
+import { getSystemSettings } from '@/resources/system/settings/business.js'
 
 export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
   Pick<T, Exclude<keyof T, Keys>>
@@ -24,6 +25,13 @@ export function getErrorMessage(...fns: ErrorMessagePredicate[]) {
       return error
     }
   }
+}
+
+async function getEffectiveAdminPermissionsFromSettings(rawPerms: bigint): Promise<bigint> {
+  const systemSettings = await getSystemSettings('refined-permissions')
+  const setting = systemSettings[0]
+  const refinedEnabled = setting ? setting.value === 'on' : false
+  return getEffectiveAdminPermissions(rawPerms, { refined: refinedEnabled })
 }
 
 /**
@@ -105,6 +113,8 @@ export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqu
       }
     }
   }
+
+  adminPermissions = await getEffectiveAdminPermissionsFromSettings(adminPermissions)
 
   const baseReturnInfos = {
     user,
