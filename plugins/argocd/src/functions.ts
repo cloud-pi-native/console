@@ -72,7 +72,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
           vaultApi,
         )
       }),
-    ])
+    )
 
     await removeInfraEnvValues(project, gitlabApi)
 
@@ -99,6 +99,7 @@ interface ArgoRepoSource {
   path: string
   valueFiles: string[]
 }
+
 async function ensureInfraEnvValues(
   project: Project,
   environment: Environment,
