@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { PluginApi, type Project, type UniqueRepo } from '@cpn-console/hooks'
+import { PluginApi, type Project, type UniqueRepo, type ProjectMember } from '@cpn-console/hooks'
 import type { AccessTokenScopes, CommitAction, GroupSchema, MemberSchema, ProjectVariableSchema, VariableSchema } from '@gitbeaker/rest'
 import type { AllRepositoryTreesOptions, CondensedProjectSchema, Gitlab, ProjectSchema, RepositoryFileExpandedSchema } from '@gitbeaker/core'
 import { AccessLevel } from '@gitbeaker/core'
@@ -231,12 +231,12 @@ export class GitlabZoneApi extends GitlabApi {
 }
 
 export class GitlabProjectApi extends GitlabApi {
-  private project: Project | UniqueRepo
+  private project: Project | UniqueRepo | ProjectMember['project']
   private gitlabGroup: GroupSchema | undefined
   private specialRepositories: string[] = [infraAppsRepoName, internalMirrorRepoName]
   private zoneApi: GitlabZoneApi
 
-  constructor(project: Project | UniqueRepo) {
+  constructor(project: Project | UniqueRepo | ProjectMember['project']) {
     super()
     this.project = project
     this.api = getApi()
@@ -425,6 +425,11 @@ export class GitlabProjectApi extends GitlabApi {
   public async addGroupMember(userId: number, accessLevel: AccessLevelAllowed = AccessLevel.DEVELOPER): Promise<MemberSchema> {
     const group = await this.getOrCreateProjectGroup()
     return this.api.GroupMembers.add(group.id, userId, accessLevel)
+  }
+
+  public async editGroupMember(userId: number, accessLevel: AccessLevelAllowed = AccessLevel.DEVELOPER): Promise<MemberSchema> {
+    const group = await this.getOrCreateProjectGroup()
+    return this.api.GroupMembers.edit(group.id, userId, accessLevel)
   }
 
   public async removeGroupMember(userId: number) {
