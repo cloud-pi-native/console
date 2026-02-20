@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { MonitorStatus, serviceContract } from '@cpn-console/shared'
+import { ADMIN_PERMS, MonitorStatus, serviceContract } from '@cpn-console/shared'
 import type { ServiceStatus } from '@cpn-console/hooks'
 import app from '../../app.js'
 import * as business from './business.js'
@@ -17,7 +17,7 @@ describe('test serviceContract', () => {
   const servicesComplete: ServiceStatus[] = [{ cause: 'error', interval: 1, lastUpdateTimestamp: 1, message: 'OK', name: 'A service', status: MonitorStatus.OK }]
 
   it('should return complete services, with cause', async () => {
-    const user = getUserMockInfos(true)
+    const user = getUserMockInfos(ADMIN_PERMS.LIST_SYSTEM)
 
     authUserMock.mockResolvedValueOnce(user)
     businessCheckMock.mockReturnValue(servicesComplete)
@@ -30,7 +30,7 @@ describe('test serviceContract', () => {
   })
 
   it('should not return complete services, forbidden', async () => {
-    const user = getUserMockInfos(false)
+    const user = getUserMockInfos(0n)
 
     authUserMock.mockResolvedValueOnce(user)
     businessCheckMock.mockReturnValue(servicesComplete)
@@ -52,7 +52,7 @@ describe('test serviceContract', () => {
   })
 
   it('should refresh services', async () => {
-    const user = getUserMockInfos(true)
+    const user = getUserMockInfos(ADMIN_PERMS.MANAGE_SYSTEM)
 
     authUserMock.mockResolvedValueOnce(user)
     businessRefreshMock.mockResolvedValue(servicesComplete)
@@ -65,7 +65,7 @@ describe('test serviceContract', () => {
   })
 
   it('should refresh services, cause forbidden', async () => {
-    const user = getUserMockInfos(false)
+    const user = getUserMockInfos(0n)
 
     authUserMock.mockResolvedValueOnce(user)
     businessRefreshMock.mockResolvedValue(servicesComplete)
