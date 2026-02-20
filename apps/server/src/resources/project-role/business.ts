@@ -7,7 +7,6 @@ import {
   updateRole,
 } from '@/resources/queries-index.js'
 import { BadRequest400, Forbidden403, NotFound404 } from '@/utils/errors.js'
-import { hook } from '@/utils/hook-wrapper.js'
 import prisma from '@/prisma.js'
 
 export async function listRoles(projectId: Project['id']) {
