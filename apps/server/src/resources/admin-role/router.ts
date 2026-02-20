@@ -24,7 +24,8 @@ export function adminRoleRouter() {
 
     createAdminRole: async ({ request: req, body }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
+      if (!AdminAuthorized.ManageRoles(perms.adminPermissions)) return new Forbidden403()
 
       const resBody = await createRole(body)
 
@@ -36,7 +37,8 @@ export function adminRoleRouter() {
 
     patchAdminRoles: async ({ request: req, body }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
+      if (!AdminAuthorized.ManageRoles(perms.adminPermissions)) return new Forbidden403()
 
       const resBody = await patchRoles(body)
       if (resBody instanceof ErrorResType) return resBody
@@ -49,7 +51,8 @@ export function adminRoleRouter() {
 
     adminRoleMemberCounts: async ({ request: req }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
+      if (!AdminAuthorized.ManageRoles(perms.adminPermissions)) return new Forbidden403()
 
       const resBody = await countRolesMembers()
 
@@ -61,7 +64,8 @@ export function adminRoleRouter() {
 
     deleteAdminRole: async ({ request: req, params }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
+      if (!AdminAuthorized.ManageRoles(perms.adminPermissions)) return new Forbidden403()
 
       const resBody = await deleteRole(params.roleId)
       if (resBody instanceof ErrorResType) return resBody
