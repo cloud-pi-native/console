@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { logContract } from '@cpn-console/shared'
+import { ADMIN_PERMS, logContract } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
@@ -17,7 +17,7 @@ describe('test logContract', () => {
 
   describe('getLogs', () => {
     it('should return logs for admin', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_SYSTEM)
       const logs = []
       const total = 1
 
@@ -36,7 +36,7 @@ describe('test logContract', () => {
     })
 
     it('should return 403 for non-admin, no projectId', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(0n)
 
       authUserMock.mockResolvedValueOnce(user)
 
@@ -52,7 +52,7 @@ describe('test logContract', () => {
 
     it('should return logs for non-admin, with projectId', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 1n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       const projectId = faker.string.uuid()
 
       const logs = []
@@ -73,7 +73,7 @@ describe('test logContract', () => {
 
     it('should not return logs for non-admin, with projectId', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       const projectId = faker.string.uuid()
 
       const logs = []

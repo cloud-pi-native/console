@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { userContract } from '@cpn-console/shared'
+import { userContract, ADMIN_PERMS } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
@@ -20,7 +20,7 @@ describe('test userContract', () => {
 
   describe('getMatchingUsers', () => {
     it('should return matching users', async () => {
-      const usersMatching = []
+      const usersMatching: any[] = []
       businessGetMatchingMock.mockResolvedValueOnce(usersMatching)
 
       const response = await app.inject()
@@ -43,10 +43,13 @@ describe('test userContract', () => {
         updatedAt: (new Date()).toISOString(),
         email: faker.internet.email(),
         firstName: faker.person.firstName(),
-        type: 'human',
+        type: 'human' as const,
         lastName: faker.person.lastName(),
+        lastLogin: (new Date()).toISOString(),
       }
+      // @ts-ignore
       setRequestor(user)
+      // @ts-ignore
       businessLogViaSessionMock.mockResolvedValueOnce({ user, adminPerms: 0n })
 
       const response = await app.inject()
@@ -61,8 +64,8 @@ describe('test userContract', () => {
 
   describe('getAllUsers', () => {
     it('should return all users for admin', async () => {
-      const user = getUserMockInfos(true)
-      const users = []
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_USERS)
+      const users: any[] = []
       authUserMock.mockResolvedValueOnce(user)
       businessGetUsersMock.mockResolvedValueOnce(users)
 
@@ -77,7 +80,7 @@ describe('test userContract', () => {
       expect(response.statusCode).toEqual(200)
     })
     it('should return 403 for non-admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_ROLES)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -108,7 +111,7 @@ describe('test userContract', () => {
     }]
 
     it('should patch and return users for admin', async () => {
-      const user = getUserMockInfos(true)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_USERS)
       authUserMock.mockResolvedValueOnce(user)
 
       businessPatchMock.mockResolvedValueOnce(usersReturn)
@@ -123,7 +126,7 @@ describe('test userContract', () => {
       expect(response.statusCode).toEqual(200)
     })
     it('should return 403 for non-admin', async () => {
-      const user = getUserMockInfos(false)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_ROLES)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
