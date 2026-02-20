@@ -2024,7 +2024,7 @@ export const data = {
       id: 'c77a1b96-377d-4aa3-bc94-65d4415f95b5',
       name: 'bg75',
       projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
-      permissions: '2n',
+      permissions: '11n',
       position: 0,
     },
     {
@@ -2185,6 +2185,10 @@ export const data = {
   systemSetting: [
     {
       key: 'maintenance',
+      value: 'off',
+    },
+    {
+      key: 'refined-permissions',
       value: 'off',
     },
   ],

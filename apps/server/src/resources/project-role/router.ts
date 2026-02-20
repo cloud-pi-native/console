@@ -1,4 +1,4 @@
-import { AdminAuthorized, ProjectAuthorized, projectRoleContract } from '@cpn-console/shared'
+import { ProjectAuthorized, projectRoleContract } from '@cpn-console/shared'
 import {
   countRolesMembers,
   createRole,
@@ -8,7 +8,7 @@ import {
 } from './business.js'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, NotFound404 } from '@/utils/errors.js'
+import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
 
 export function projectRoleRouter() {
   return serverInstance.router(projectRoleContract, {
@@ -16,7 +16,7 @@ export function projectRoleRouter() {
     listProjectRoles: async ({ request: req, params }) => {
       const { projectId } = params
       const perms = await authUser(req, { id: projectId })
-      if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
+      if (!ProjectAuthorized.ListRoles(perms)) return new Forbidden403()
 
       const body = await listRoles(projectId)
 
@@ -29,7 +29,6 @@ export function projectRoleRouter() {
     createProjectRole: async ({ request: req, params: { projectId }, body }) => {
       const perms = await authUser(req, { id: projectId })
 
-      if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
       if (!ProjectAuthorized.ManageRoles(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
@@ -46,7 +45,6 @@ export function projectRoleRouter() {
     patchProjectRoles: async ({ request: req, params: { projectId }, body }) => {
       const perms = await authUser(req, { id: projectId })
 
-      if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.ManageRoles(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
@@ -63,7 +61,7 @@ export function projectRoleRouter() {
     projectRoleMemberCounts: async ({ request: req, params }) => {
       const { projectId } = params
       const perms = await authUser(req, { id: projectId })
-      if (!perms.projectPermissions && !AdminAuthorized.isAdmin(perms.adminPermissions)) return new NotFound404()
+      if (!ProjectAuthorized.ListRoles(perms)) return new Forbidden403()
 
       const resBody = await countRolesMembers(projectId)
 
@@ -75,7 +73,6 @@ export function projectRoleRouter() {
 
     deleteProjectRole: async ({ request: req, params: { projectId, roleId } }) => {
       const perms = await authUser(req, { id: projectId })
-      if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.ManageRoles(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
