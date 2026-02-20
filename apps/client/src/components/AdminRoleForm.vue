@@ -206,6 +206,7 @@ function closeModal() {
         v-for="user in users"
         :id="`${user.id}-cbx`"
         :key="user.email"
+        :data-testid="`user-${user.id}`"
         :label="`${user.lastName} ${user.firstName}`"
         :hint="user.email"
         :name="`checkbox-${user.id}`"
