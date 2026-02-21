@@ -207,7 +207,11 @@ describe('transformToHookProject', () => {
     expect(result.users).toEqual([project.owner])
 
     // Assert sur la transformation des rôles
-    expect(result.roles).toEqual([{ userId: project.owner.id, role: 'owner' }])
+    expect(result.roles).toEqual([{
+      name: 'owner',
+      position: 0,
+      users: [project.owner],
+    }])
 
     // Assert sur la transformation des clusters
     expect(result.clusters).toEqual([associatedCluster, nonAssociatedCluster].map(({ kubeconfig, ...cluster }) => ({
@@ -218,7 +222,7 @@ describe('transformToHookProject', () => {
     })))
 
     // Assert sur la transformation des environnements
-    expect(result.environments).toEqual(project.environments.map(({ permissions: _, stage, quota, ...environment }) => ({
+    expect(result.environments).toEqual(project.environments.map(({ permissions: _, stage, quota, ...environment }: any) => ({
       quota,
       stage: stage.name,
       permissions: [{ permissions: { rw: true, ro: true }, userId: project.ownerId }],
@@ -227,9 +231,44 @@ describe('transformToHookProject', () => {
     })))
 
     // Assert sur la transformation des repositories
-    expect(result.repositories).toEqual(project.repositories.map(repo => ({ ...repo, newCreds: mockReposCreds[repo.internalRepoName] })))
+    expect(result.repositories).toEqual(project.repositories.map((repo: any) => ({ ...repo, newCreds: mockReposCreds[repo.internalRepoName] })))
 
     // Assert sur le store
     expect(result.store).toEqual(mockStore)
+  })
+
+  it('handles members with roles correctly', () => {
+    const roleDev = { id: 'role-dev', name: 'developer', permissions: 0n, position: 0 }
+    const memberDev = {
+      userId: 'user-dev',
+      roleIds: ['role-dev'],
+      user: { id: 'user-dev', firstName: 'Dev', lastName: 'User', email: 'dev@test.com', createdAt: new Date(), updatedAt: new Date(), adminRoleIds: [] },
+      id: 'member-dev',
+      projectId: project.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+    const projectWithRoles = {
+      ...project,
+      roles: [roleDev],
+      members: [memberDev],
+    }
+
+    // @ts-ignore - limited mock
+    const result = transformToHookProject(projectWithRoles, mockStore, mockReposCreds)
+
+    expect(result.roles).toContainEqual({
+      name: 'owner',
+      position: 0,
+      users: [project.owner],
+    })
+    expect(result.roles).toContainEqual({
+      name: 'developer',
+      permissions: '0',
+      position: 0,
+      type: undefined,
+      oidcGroup: undefined,
+      users: [memberDev.user],
+    })
   })
 })
