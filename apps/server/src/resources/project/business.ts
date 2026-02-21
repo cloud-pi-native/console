@@ -82,16 +82,6 @@ export async function createProject(dataDto: typeof projectContract.createProjec
     return new Unprocessable422('Echec des services à la création du projet')
   }
 
-  for (const role of projectInfos.roles) {
-    const roleResult = await hook.projectRole.upsert(role.id)
-    await addLogs({ action: 'Upsert Project Role', data: roleResult.results, userId: requestor.id, requestId, projectId: project.id })
-  }
-
-  for (const member of projectInfos.members) {
-    const memberResult = await hook.projectMember.upsert(project.id, member.userId)
-    await addLogs({ action: 'Upsert Project Member', data: memberResult.results, userId: requestor.id, requestId, projectId: project.id })
-  }
-
   return {
     ...projectInfos,
     clusterIds: projectInfos.clusters.map(({ id }) => id),
