@@ -1,10 +1,9 @@
-import type { AdminRole, Project, StepCall, UserEmail, ZoneObject, ProjectMember } from '@cpn-console/hooks'
-import type { ProjectRole } from '@cpn-console/shared'
+import type { AdminRole, Project, StepCall, UserEmail, ZoneObject } from '@cpn-console/hooks'
 import { generateRandomPassword, parseError, PluginResultBuilder, specificallyEnabled } from '@cpn-console/hooks'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation.js'
 import type { CustomGroup } from './group.js'
-import { consoleGroupName, deleteGroup, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateGroupByPath, getOrCreateProjectGroup } from './group.js'
+import { consoleGroupName, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateGroupByPath, getOrCreateProjectGroup } from './group.js'
 import { getkcClient } from './client.js'
 
 export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: { email } }) => {
@@ -145,6 +144,52 @@ export const upsertProject: StepCall<Project> = async ({ args: project, config }
       }
       return undefined
     }))
+
+    // Sync Roles
+    for (const role of project.roles) {
+      if (!role.oidcGroup) continue
+      try {
+        const group = await getOrCreateGroupByPath(kcClient, role.oidcGroup)
+        if (!group.id) continue
+        const groupMembers = await kcClient.groups.listMembers({ id: group.id })
+
+        await Promise.all([
+          ...groupMembers.map((member) => {
+            if (!role.users.some(({ id }) => id === member.id)) {
+              if (specificallyEnabled(purge)) {
+                return kcClient.users.delFromGroup({
+                  id: member.id!,
+                  groupId: group.id!,
+                })
+                  .catch((err) => {
+                    pluginResult.addKoMessage(`Can't remove ${member.email} from keycloak role group ${role.name}`)
+                    pluginResult.addExtra(`remove-role-${role.name}-${member.id}`, err)
+                  })
+              } else {
+                console.warn(`User ${member.email} is not in role ${role.name} anymore, but purge is disabled`)
+              }
+            }
+            return undefined
+          }),
+          ...role.users.map((user) => {
+            if (!groupMembers.some(({ id }) => id === user.id)) {
+              return kcClient.users.addToGroup({
+                id: user.id,
+                groupId: group.id!,
+              })
+                .catch((err) => {
+                  pluginResult.addKoMessage(`Can't add ${user.email} to keycloak role group ${role.name}`)
+                  pluginResult.addExtra(`add-role-${role.name}-${user.id}`, err)
+                })
+            }
+            return undefined
+          }),
+        ])
+      } catch (error) {
+        pluginResult.addKoMessage(`Failed to sync role ${role.name}`)
+        pluginResult.addExtra(`role-${role.name}`, error)
+      }
+    }
 
     return pluginResult.getResultObject()
   } catch (error) {
@@ -303,145 +348,6 @@ export const deleteAdminRole: StepCall<AdminRole> = async ({ args: role }) => {
           })
       }))
     }
-    return pluginResult.getResultObject()
-  } catch (error) {
-    return pluginResult.returnUnexpectedError(error)
-  }
-}
-
-export const upsertProjectRole: StepCall<ProjectRole> = async ({ args: role }) => {
-  if (!role.oidcGroup) {
-    return {
-      status: {
-        result: 'OK',
-        message: 'No OIDC group defined',
-      },
-    }
-  }
-  try {
-    const kcClient = await getkcClient()
-    await getOrCreateGroupByPath(kcClient, role.oidcGroup)
-    return {
-      status: {
-        result: 'OK',
-        message: 'Synced',
-      },
-    }
-  } catch (error) {
-    return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        message: 'Failed to sync role',
-      },
-    }
-  }
-}
-
-export const deleteProjectRole: StepCall<ProjectRole> = async ({ args: role }) => {
-  if (!role.oidcGroup) {
-    return {
-      status: {
-        result: 'OK',
-        message: 'No OIDC group defined',
-      },
-    }
-  }
-  try {
-    const kcClient = await getkcClient()
-    const [projectName, pluginName, roleName] = role.oidcGroup.split('/').slice(1)
-    if (!projectName || !pluginName || !roleName) throw new Error('Invalid OIDC group format')
-    const projectGroup = await getGroupByName(kcClient, projectName)
-    if (projectGroup?.id) {
-      const pluginGroups = await getAllSubgroups(kcClient, projectGroup.id, 0)
-      const pluginGroup = pluginGroups.find(({ name }) => name === pluginName) as Required<GroupRepresentation> | undefined
-      if (pluginGroup?.id) {
-        const roleGroups = await getAllSubgroups(kcClient, pluginGroup.id, 0)
-        const roleGroup = roleGroups.find(({ name }) => name === roleName) as Required<GroupRepresentation> | undefined
-        if (roleGroup?.id) {
-          await deleteGroup(kcClient, roleGroup.id)
-          return {
-            status: {
-              result: 'OK',
-              message: 'Deleted',
-            },
-          }
-        }
-      }
-    }
-    return {
-      status: {
-        result: 'OK',
-        message: 'Already deleted',
-      },
-    }
-  } catch (error) {
-    return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        message: 'Failed to delete role',
-      },
-    }
-  }
-}
-
-export const upsertProjectMember: StepCall<ProjectMember> = async ({ args: member, config }) => {
-  const pluginResult = new PluginResultBuilder('Synced')
-  const purge = config.keycloak?.purge
-  try {
-    const kcClient = await getkcClient()
-
-    const projectGroup = await getOrCreateProjectGroup(kcClient, member.project.slug)
-    const consoleGroup = await getOrCreateChildGroup(kcClient, projectGroup.id, consoleGroupName)
-    const allRoleGroups = await getAllSubgroups(kcClient, consoleGroup.id, 0)
-    const userGroups = await kcClient.users.listGroups({ id: member.userId })
-
-    const userRolesOidcGroups = member.roles
-      .map(r => r.oidcGroup)
-      .filter((g): g is string => !!g)
-
-    // Sync Roles
-    for (const roleGroup of allRoleGroups) {
-      if (!roleGroup.id || !roleGroup.path) continue
-      const isMember = userGroups.some(ug => ug.id === roleGroup.id)
-      const shouldBeMember = userRolesOidcGroups.includes(roleGroup.path)
-
-      if (shouldBeMember && !isMember) {
-        await kcClient.users.addToGroup({ id: member.userId, groupId: roleGroup.id })
-      } else if (!shouldBeMember && isMember) {
-        if (specificallyEnabled(purge)) {
-          await kcClient.users.delFromGroup({ id: member.userId, groupId: roleGroup.id })
-        } else {
-          console.warn(`User ${member.email} is not in project ${member.project.slug} anymore, but purge is disabled`)
-        }
-      }
-    }
-
-    return pluginResult.getResultObject()
-  } catch (error) {
-    return pluginResult.returnUnexpectedError(error)
-  }
-}
-
-export const deleteProjectMember: StepCall<ProjectMember> = async ({ args: member }) => {
-  const pluginResult = new PluginResultBuilder('Deleted')
-  try {
-    const kcClient = await getkcClient()
-    if (!member.userId) return pluginResult.getResultObject()
-
-    const projectGroup = await getGroupByName(kcClient, member.project.slug)
-    if (!projectGroup?.id) return pluginResult.getResultObject()
-
-    const userGroups = await kcClient.users.listGroups({ id: member.userId })
-    const projectGroups = userGroups.filter(g => g.path?.startsWith(projectGroup.path!))
-
-    for (const group of projectGroups) {
-      if (group.id) {
-        await kcClient.users.delFromGroup({ id: member.userId, groupId: group.id })
-      }
-    }
-
     return pluginResult.getResultObject()
   } catch (error) {
     return pluginResult.returnUnexpectedError(error)
