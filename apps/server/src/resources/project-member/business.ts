@@ -44,20 +44,17 @@ export async function addMember(projectId: Project['id'], user: XOR<{ userId: st
   }
 
   await upsertMember({ projectId, userId: userInDb.id, roleIds: [] })
-  await hook.projectMember.upsert(projectId, userInDb.id)
   return listMembers(projectId)
 }
 
 export async function patchMembers(projectId: Project['id'], members: typeof projectMemberContract.patchMembers.body._type) {
   for (const member of members) {
     await upsertMember({ projectId, userId: member.userId, roleIds: member.roles })
-    await hook.projectMember.upsert(projectId, member.userId)
   }
   return listMembers(projectId)
 }
 
 export async function removeMember(projectId: Project['id'], userId: User['id']) {
-  await hook.projectMember.delete(projectId, userId)
   await deleteMember({ projectId, userId })
   return listMembers(projectId)
 }
