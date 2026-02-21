@@ -1,5 +1,5 @@
 import { Gitlab } from '@gitbeaker/rest'
-import type { Gitlab as IGitlab } from '@gitbeaker/core'
+import type { Gitlab as IGitlab, BaseRequestOptions, PaginationRequestOptions, OffsetPagination } from '@gitbeaker/core'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import config from './config.js'
 
@@ -57,17 +57,11 @@ async function createGroupRoot(): Promise<number> {
 }
 
 export async function getOrCreateGroupRoot(): Promise<number> {
-  let rootId = await getGroupRootId(false)
-  if (typeof rootId === 'undefined') {
-    rootId = await createGroupRoot()
-  }
-  return rootId
+  return await getGroupRootId(false) ?? createGroupRoot()
 }
 
 export function getApi(): IGitlab {
-  if (!api) {
-    api = new Gitlab({ token: config().token, host: config().internalUrl })
-  }
+  api ??= new Gitlab({ token: config().token, host: config().internalUrl })
   return api
 }
 
@@ -88,4 +82,39 @@ export function cleanGitlabError<T>(error: T): T {
     error.cause.description = String(error.cause.description).replaceAll(/\/\/(.*):(.*)@/g, '//MASKED:MASKED@')
   }
   return error
+}
+
+export async function* offsetPaginate<T>(
+  request: (options: PaginationRequestOptions<'offset'> & BaseRequestOptions<true>) => Promise<{ data: T[], paginationInfo: OffsetPagination }>,
+): AsyncGenerator<T> {
+  let page: number | null = 1
+  while (page !== null) {
+    const { data, paginationInfo } = await request({ page, showExpanded: true, pagination: 'offset' })
+    for (const item of data) {
+      yield item
+    }
+    page = paginationInfo.next
+  }
+}
+
+export async function getAll<T>(
+  iterable: AsyncIterable<T>,
+): Promise<T[]> {
+  const items: T[] = []
+  for await (const item of iterable) {
+    items.push(item)
+  }
+  return items
+}
+
+export async function find<T>(
+  iterable: AsyncIterable<T>,
+  predicate: (item: T) => boolean,
+): Promise<T | undefined> {
+  for await (const item of iterable) {
+    if (predicate(item)) {
+      return item
+    }
+  }
+  return undefined
 }
