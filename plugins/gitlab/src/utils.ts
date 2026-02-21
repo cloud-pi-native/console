@@ -1,7 +1,9 @@
 import { Gitlab } from '@gitbeaker/rest'
-import type { Gitlab as IGitlab } from '@gitbeaker/core'
+import { type Gitlab as IGitlab, type BaseRequestOptions, type PaginationRequestOptions, type OffsetPagination, AccessLevel } from '@gitbeaker/core'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import config from './config.js'
+import type { Config, Project, Role } from '@cpn-console/hooks'
+import { DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX } from './infos.js'
 
 let api: IGitlab | undefined
 
@@ -92,4 +94,60 @@ export function cleanGitlabError<T>(error: T): T {
 
 export function matchRole(projectSlug: string, roleOidcGroup: string, configuredRolePath: string) {
   return roleOidcGroup === `/${projectSlug}${configuredRolePath}`
+}
+
+export function resolveAccessLevel(project: Project, role: Role, config: Config) {
+  const projectReporterGroupPathSuffix = config.gitlab?.projectReporterGroupPathSuffix ?? DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX
+  const projectDeveloperGroupPathSuffix = config.gitlab?.projectDeveloperGroupPathSuffix ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
+  const projectMaintainerGroupPathSuffix = config.gitlab?.projectMaintainerGroupPathSuffix ?? DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX
+
+  if (!role.oidcGroup) return undefined
+
+  let accessLevel: number | undefined
+  if (role.name === 'owner') {
+    accessLevel = AccessLevel.OWNER
+  } else if (matchRole(project.slug, role.oidcGroup, projectReporterGroupPathSuffix)) {
+    accessLevel = AccessLevel.GUEST
+  } else if (matchRole(project.slug, role.oidcGroup, projectDeveloperGroupPathSuffix)) {
+    accessLevel = AccessLevel.DEVELOPER
+  } else if (matchRole(project.slug, role.oidcGroup, projectMaintainerGroupPathSuffix)) {
+    accessLevel = AccessLevel.MAINTAINER
+  }
+
+  return accessLevel
+}
+
+export async function* offsetPaginate<T>(
+  request: (options: PaginationRequestOptions<'offset'> & BaseRequestOptions<true>) => Promise<{ data: T[], paginationInfo: OffsetPagination }>,
+): AsyncGenerator<T> {
+  let page: number | null = 1
+  while (page !== null) {
+    const { data, paginationInfo } = await request({ page, showExpanded: true, pagination: 'offset' })
+    for (const item of data) {
+      yield item
+    }
+    page = paginationInfo.next
+  }
+}
+
+export async function getAll<T>(
+  iterable: AsyncIterable<T>,
+): Promise<T[]> {
+  const items: T[] = []
+  for await (const item of iterable) {
+    items.push(item)
+  }
+  return items
+}
+
+export async function find<T>(
+  iterable: AsyncIterable<T>,
+  predicate: (item: T) => boolean,
+): Promise<T | undefined> {
+  for await (const item of iterable) {
+    if (predicate(item)) {
+      return item
+    }
+  }
+  return undefined
 }
