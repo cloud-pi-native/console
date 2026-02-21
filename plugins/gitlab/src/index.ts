@@ -1,12 +1,15 @@
-import type { DeclareModuleGenerator, DefaultArgs, Plugin, Project, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
+import type { DeclareModuleGenerator, DefaultArgs, Plugin, Project, ProjectMember, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
 import {
   checkApi,
   commitFiles,
   deleteDsoProject,
+  deleteProjectMember,
   deleteZone,
   getDsoProjectSecrets,
   syncRepository,
+  upsertAdminRole,
   upsertDsoProject,
+  upsertProjectMember,
   upsertZone,
 } from './functions.js'
 import { getOrCreateGroupRoot } from './utils.js'
@@ -74,6 +77,23 @@ export const plugin: Plugin = {
         main: deleteZone,
       },
     },
+    upsertAdminRole: {
+      steps: {
+        main: upsertAdminRole,
+      },
+    },
+    upsertProjectMember: {
+      api: member => new GitlabProjectApi(member.project),
+      steps: {
+        main: upsertProjectMember,
+      },
+    },
+    deleteProjectMember: {
+      api: member => new GitlabProjectApi(member.project),
+      steps: {
+        post: deleteProjectMember,
+      },
+    },
   },
   monitor,
   start,
@@ -81,7 +101,7 @@ export const plugin: Plugin = {
 
 declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
-    gitlab: Args extends Project | UniqueRepo
+    gitlab: Args extends Project | UniqueRepo | ProjectMember['project']
       ? GitlabProjectApi
       : Args extends ZoneObject
         ? GitlabZoneApi
