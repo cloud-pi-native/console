@@ -18,8 +18,8 @@ export function getRequestor() {
 }
 
 export async function mockSessionPlugin() {
-  const sessionPlugin = (app, opt, next) => {
-    app.addHook('onRequest', (req, res, next) => {
+  const sessionPlugin = (app: any, opt: any, next: any) => {
+    app.addHook('onRequest', (req: any, res: any, next: any) => {
       req.session = { user: getRequestor() }
       next()
     })
@@ -126,11 +126,11 @@ export function getRandomRequestor(user?: Requestor): Partial<UserDetails> {
   }
 }
 
-export function getUserMockInfos(isAdmin: boolean, user?: UserDetails): utilsController.UserProfile & utilsController.ProjectPermState
-export function getUserMockInfos(isAdmin: boolean, user?: UserDetails, project?: utilsController.ProjectPermState): utilsController.UserProjectProfile & utilsController.ProjectPermState
-export function getUserMockInfos(isAdmin: boolean, user = getRandomRequestor(), project?: utilsController.ProjectPermState): utilsController.UserProfile | utilsController.UserProjectProfile {
+export function getUserMockInfos(adminPermissions?: bigint, user?: UserDetails): utilsController.UserProfile & utilsController.ProjectPermState
+export function getUserMockInfos(adminPermissions?: bigint, user?: UserDetails, project?: utilsController.ProjectPermState): utilsController.UserProjectProfile & utilsController.ProjectPermState
+export function getUserMockInfos(adminPermissions: bigint = 0n, user = getRandomRequestor(), project?: utilsController.ProjectPermState): utilsController.UserProfile | utilsController.UserProjectProfile {
   return {
-    adminPermissions: isAdmin ? 2n : 0n,
+    adminPermissions,
     user,
     ...project,
   }
