@@ -87,6 +87,7 @@ const activeAccordion = ref<number>()
           <DsfrAccordion
             :id="service.name"
             :title="service.title || service.name"
+            :data-testid="`accordion-${service.name}`"
           >
             <p
               v-if="service.description"
