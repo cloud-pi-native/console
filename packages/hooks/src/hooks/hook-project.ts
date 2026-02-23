@@ -9,8 +9,12 @@ export interface RepoCreds {
 }
 
 export interface Role {
-  userId: string
-  role: 'owner' | 'user'
+  name: string
+  permissions?: string
+  position: number
+  type?: string
+  oidcGroup?: string
+  users: UserObject[]
 }
 
 export interface EnvironmentApis {
