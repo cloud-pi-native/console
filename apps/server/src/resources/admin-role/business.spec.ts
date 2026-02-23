@@ -42,7 +42,8 @@ describe('test admin-role business', () => {
       prisma.adminRole.findFirst.mockResolvedValueOnce(dbRole)
       prisma.adminRole.findMany.mockResolvedValueOnce([dbRole])
       prisma.adminRole.create.mockResolvedValue(dbRole)
-      await createRole({ name: 'test' })
+      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} })
+      await createRole({ name: 'test' }, faker.string.uuid())
 
       expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 0n, position: 1 } })
     })
@@ -60,7 +61,8 @@ describe('test admin-role business', () => {
       prisma.adminRole.findFirst.mockResolvedValueOnce(dbRole)
       prisma.adminRole.findMany.mockResolvedValueOnce([dbRole])
       prisma.adminRole.create.mockResolvedValue(dbRole)
-      await createRole({ name: 'test' })
+      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} })
+      await createRole({ name: 'test' }, faker.string.uuid())
 
       expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 0n, position: 51 } })
     })
@@ -78,7 +80,8 @@ describe('test admin-role business', () => {
       prisma.adminRole.findFirst.mockResolvedValueOnce(null)
       prisma.adminRole.findMany.mockResolvedValueOnce([dbRole])
       prisma.adminRole.create.mockResolvedValue(dbRole)
-      await createRole({ name: 'test' })
+      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} })
+      await createRole({ name: 'test' }, faker.string.uuid())
 
       expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 0n, position: 0 } })
     })
@@ -121,7 +124,8 @@ describe('test admin-role business', () => {
       prisma.adminRole.findMany.mockResolvedValueOnce([])
       prisma.adminRole.findUnique.mockResolvedValueOnce(dbRole)
       prisma.adminRole.create.mockResolvedValue(dbRole)
-      await deleteRole(roleId)
+      hook.adminRole.delete.mockResolvedValue({ args: {}, failed: false, results: {} })
+      await deleteRole(roleId, faker.string.uuid())
 
       expect(prisma.user.findMany).toHaveBeenCalledTimes(2)
       expect(prisma.user.update).toHaveBeenNthCalledWith(1, { where: { id: users[0].id }, data: { adminRoleIds: [] } })
@@ -137,7 +141,7 @@ describe('test admin-role business', () => {
       prisma.adminRole.findUnique.mockResolvedValue(systemRole as any)
       prisma.user.findMany.mockResolvedValue([])
 
-      const response = await deleteRole(roleId)
+      const response = await deleteRole(roleId, faker.string.uuid())
       expect(response).toBeInstanceOf(Forbidden403)
       expect(prisma.adminRole.delete).not.toHaveBeenCalled()
     })
@@ -223,7 +227,7 @@ describe('test admin-role business', () => {
         name: 'New Admin Name',
       }]
 
-      const result = await patchRoles(updateRoles)
+      const result = await patchRoles(updateRoles, faker.string.uuid())
 
       await expect(result).toBeInstanceOf(Forbidden403)
       expect(prisma.adminRole.update).toHaveBeenCalledTimes(0)
@@ -231,7 +235,7 @@ describe('test admin-role business', () => {
 
     it('should do nothing', async () => {
       prisma.adminRole.findMany.mockResolvedValue([])
-      await patchRoles([])
+      await patchRoles([], faker.string.uuid())
       expect(prisma.adminRole.update).toHaveBeenCalledTimes(0)
     })
 
@@ -242,7 +246,7 @@ describe('test admin-role business', () => {
       ]
       prisma.adminRole.findMany.mockResolvedValue(dbRoles)
 
-      const response = await patchRoles(updateRoles)
+      const response = await patchRoles(updateRoles, faker.string.uuid())
 
       expect(response).instanceOf(BadRequest400)
       expect(prisma.adminRole.update).toHaveBeenCalledTimes(0)
@@ -253,7 +257,7 @@ describe('test admin-role business', () => {
       ]
       prisma.adminRole.findMany.mockResolvedValue(dbRoles)
 
-      const response = await patchRoles(updateRoles)
+      const response = await patchRoles(updateRoles, faker.string.uuid())
 
       expect(response).instanceOf(BadRequest400)
       expect(prisma.adminRole.update).toHaveBeenCalledTimes(0)
@@ -264,9 +268,8 @@ describe('test admin-role business', () => {
         { id: dbRoles[1].id, position: 0 },
       ]
       prisma.adminRole.findMany.mockResolvedValue(dbRoles)
-
-      await patchRoles(updateRoles)
-
+      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} })
+      await patchRoles(updateRoles, faker.string.uuid())
       expect(prisma.adminRole.update).toHaveBeenCalledTimes(2)
     })
     it('should update permissions', async () => {
@@ -274,9 +277,8 @@ describe('test admin-role business', () => {
         { id: dbRoles[1].id, permissions: '0' },
       ]
       prisma.adminRole.findMany.mockResolvedValue(dbRoles)
-
-      await patchRoles(updateRoles)
-
+      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} })
+      await patchRoles(updateRoles, faker.string.uuid())
       expect(prisma.adminRole.update).toHaveBeenCalledTimes(1)
       expect(prisma.adminRole.update).toHaveBeenCalledWith({
         data: {
@@ -302,7 +304,7 @@ describe('test admin-role business', () => {
       }
       prisma.adminRole.findMany.mockResolvedValue([systemRole as any])
 
-      const response = await patchRoles([{ id: systemRole.id, name: 'new name' }])
+      const response = await patchRoles([{ id: systemRole.id, name: 'new name' }], faker.string.uuid())
       expect(response).toBeInstanceOf(Forbidden403)
       expect(prisma.adminRole.update).not.toHaveBeenCalled()
     })
