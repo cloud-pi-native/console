@@ -8,7 +8,8 @@ export function adminTokenRouter() {
   return serverInstance.router(adminTokenContract, {
     listAdminTokens: async ({ request: req, query }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
+      if (!AdminAuthorized.ListAdminToken(perms.adminPermissions)) return new Forbidden403()
       const body = await listTokens(query)
 
       return {
@@ -20,7 +21,7 @@ export function adminTokenRouter() {
     createAdminToken: async ({ request: req, body: data }) => {
       const perms = await authUser(req)
 
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ManageAdminToken(perms.adminPermissions)) return new Forbidden403()
       const body = await createToken(data)
       if (body instanceof ErrorResType) return body
 
@@ -32,7 +33,8 @@ export function adminTokenRouter() {
 
     deleteAdminToken: async ({ request: req, params }) => {
       const perms = await authUser(req)
-      if (!AdminAuthorized.isAdmin(perms.adminPermissions)) return new Forbidden403()
+
+      if (!AdminAuthorized.ManageAdminToken(perms.adminPermissions)) return new Forbidden403()
       await deleteToken(params.tokenId)
 
       return {
