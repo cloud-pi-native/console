@@ -18,7 +18,8 @@ export function zoneRouter() {
 
     createZone: async ({ request: req, body: data }) => {
       const { user, adminPermissions } = await authUser(req)
-      if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+
+      if (!AdminAuthorized.ManageZones(adminPermissions)) return new Forbidden403()
       if (!user) return new Unauthorized401('Require to be requested from user not api key')
 
       const body = await createZone(data, user.id, req.id)
@@ -32,7 +33,8 @@ export function zoneRouter() {
 
     updateZone: async ({ request: req, params, body: data }) => {
       const { user, adminPermissions } = await authUser(req)
-      if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+
+      if (!AdminAuthorized.ManageZones(adminPermissions)) return new Forbidden403()
       if (!user) return new Unauthorized401('Require to be requested from user not api key')
 
       const zoneId = params.zoneId
@@ -48,7 +50,8 @@ export function zoneRouter() {
 
     deleteZone: async ({ request: req, params }) => {
       const { user, adminPermissions } = await authUser(req)
-      if (!AdminAuthorized.isAdmin(adminPermissions)) return new Forbidden403()
+
+      if (!AdminAuthorized.ManageZones(adminPermissions)) return new Forbidden403()
       if (!user) return new Unauthorized401('Require to be requested from user not api key')
       const zoneId = params.zoneId
 

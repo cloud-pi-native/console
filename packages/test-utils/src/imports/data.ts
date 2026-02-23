@@ -2187,6 +2187,10 @@ export const data = {
       key: 'maintenance',
       value: 'off',
     },
+    {
+      key: 'refined-permissions',
+      value: 'off',
+    },
   ],
   associations: [
     [
