@@ -1,5 +1,6 @@
 import { generateProjectKey } from '@cpn-console/hooks'
 import { getAxiosInstance } from './tech.js'
+import { getAll, iter } from './utils.js'
 
 export interface SonarPaging {
   pageIndex: number
@@ -133,25 +134,21 @@ function filterProjectsOwning(repos: { key: string }[], projectSlug: string): So
 
 export async function findSonarProjectsForDsoProjects(projectSlug: string) {
   const axiosInstance = getAxiosInstance()
-  let foundProjectKeys: SonarProjectResult[] = []
-
-  let page = 0
-  const pageSize = 100
-  let total = 0
-  do {
-    page++
-    const similarProjects = await axiosInstance.get('projects/search', {
+  const components = await getAll(iter(async (page, pageSize) => {
+    const response = await axiosInstance.get('projects/search', {
       params: {
         q: projectSlug,
         p: page,
         ps: pageSize,
       },
     })
-    total = similarProjects.data.paging.total
-    foundProjectKeys = [...foundProjectKeys, ...filterProjectsOwning(similarProjects.data.components, projectSlug)]
-  } while (page * pageSize < total)
-
-  return foundProjectKeys
+    const data: { paging: SonarPaging, components: { key: string }[] } = response.data
+    return {
+      items: data.components,
+      paging: data.paging,
+    }
+  }))
+  return filterProjectsOwning(components, projectSlug)
 }
 
 export const files = {
