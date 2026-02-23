@@ -2,7 +2,7 @@ import { ProjectAuthorized, environmentContract } from '@cpn-console/shared'
 import { checkEnvironmentCreate, checkEnvironmentUpdate, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.js'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
-import { BadRequest400, Forbidden403, Internal500, NotFound404, Unauthorized401 } from '@/utils/errors.js'
+import { BadRequest400, Forbidden403, Internal500, Unauthorized401 } from '@/utils/errors.js'
 
 export function environmentRouter() {
   return serverInstance.router(environmentContract, {
@@ -10,13 +10,13 @@ export function environmentRouter() {
       const projectId = query.projectId
       const perms = await authUser(req, { id: projectId })
 
-      const environments = ProjectAuthorized.ListEnvironments(perms)
+      const body = ProjectAuthorized.ListEnvironments(perms)
         ? await getProjectEnvironments(projectId)
         : []
 
       return {
         status: 200,
-        body: environments,
+        body,
       }
     },
 
@@ -25,7 +25,6 @@ export function environmentRouter() {
       const perms = await authUser(req, { id: projectId })
 
       if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
-      if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
@@ -58,7 +57,6 @@ export function environmentRouter() {
       const { environmentId } = params
       const perms = await authUser(req, { environmentId })
       if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
-      if (!ProjectAuthorized.ListEnvironments(perms)) return new NotFound404()
       if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
@@ -87,7 +85,6 @@ export function environmentRouter() {
     deleteEnvironment: async ({ request: req, params }) => {
       const { environmentId } = params
       const perms = await authUser(req, { environmentId })
-      if (!perms.projectPermissions) return new NotFound404()
       if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403()
       if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
       if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
