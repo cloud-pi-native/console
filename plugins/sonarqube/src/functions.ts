@@ -119,13 +119,13 @@ export const upsertProject: StepCall<Project> = async (payload) => {
 
       // Remove excess repositories
       ...sonarRepositories
-        .filter(sonarRepository => !project.repositories.find(repo => repo.internalRepoName === sonarRepository.repository))
+        .filter(sonarRepository => !project.repositories.some(repo => repo.internalRepoName === sonarRepository.repository))
         .map(sonarRepository => deleteDsoRepository(sonarRepository.key)),
 
       // Create or configure needed repos
       ...project.repositories.map(async (repository) => {
         const projectKey = generateProjectKey(projectSlug, repository.internalRepoName)
-        if (!sonarRepositories.find(sonarRepository => sonarRepository.repository === repository.internalRepoName)) {
+        if (!sonarRepositories.some(sonarRepository => sonarRepository.repository === repository.internalRepoName)) {
           await createDsoRepository(projectSlug, repository.internalRepoName)
         }
         await ensureRepositoryConfiguration(projectKey, username, keycloakGroupPath)
@@ -166,6 +166,7 @@ export const setVariables: StepCall<Project> = async (payload) => {
       ...project.repositories.map(async (repo) => {
         const projectKey = generateProjectKey(projectSlug, repo.internalRepoName)
         const repoId = await payload.apis.gitlab.getProjectId(repo.internalRepoName)
+        if (!repoId) return
         const listVars = await gitlabApi.getGitlabRepoVariables(repoId)
         return [
           await gitlabApi.setGitlabRepoVariable(repoId, listVars, {
@@ -193,9 +194,9 @@ export const setVariables: StepCall<Project> = async (payload) => {
             environment_scope: '*',
           }),
         ]
-      }).flat(),
+      }),
       // Sonar vars saving in CI (group)
-      await gitlabApi.setGitlabGroupVariable(listGroupVars, {
+      gitlabApi.setGitlabGroupVariable(listGroupVars, {
         key: 'SONAR_TOKEN',
         masked: true,
         protected: false,
