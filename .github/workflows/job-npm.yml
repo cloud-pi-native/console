@@ -27,7 +27,6 @@ on:
         description: Nodejs version used
         required: true
         type: string
-        default: 22.14.0
       PUBLISH_APPS:
         description: Publish apps modules
         required: true

@@ -12,7 +12,6 @@ on:
         description: Nodejs version used to run tests
         required: true
         type: string
-        default: 22.14.0
 
 jobs:
   lint:
