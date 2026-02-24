@@ -62,13 +62,25 @@ export async function changeToken(username: string) {
 
 export async function getUser(username: string): Promise<SonarUser | undefined> {
   const axiosInstance = getAxiosInstance()
-  const users: { paging: SonarPaging, users: SonarUser[] } = (await axiosInstance({
-    url: 'users/search',
-    params: {
-      q: username,
-    },
-  }))?.data
-  return users.users.find(u => u.login === username)
+  let page = 1
+  const pageSize = 100
+  while (true) {
+    const response = await axiosInstance({
+      url: 'users/search',
+      params: {
+        q: username,
+        p: page,
+        ps: pageSize,
+      },
+    })
+    const users: { paging: SonarPaging, users: SonarUser[] } = response.data
+    const found = users.users.find(user => user.login === username)
+    if (found) return found
+    if (!users.users.length || users.paging.pageIndex * users.paging.pageSize >= users.paging.total) {
+      break
+    }
+    page += 1
+  }
 }
 
 export async function ensureUserExists(username: string, projectSlug: string, vaultUserSecret: VaultSonarSecret | undefined): Promise<VaultSonarSecret | undefined> {

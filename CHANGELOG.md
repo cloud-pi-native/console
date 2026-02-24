@@ -1,5 +1,32 @@
 # Changelog
 
+## [9.13.2](https://github.com/cloud-pi-native/console/compare/v9.13.1...v9.13.2) (2026-02-24)
+
+
+### Bug Fixes
+
+* add schedule trigger on mirror ([0ae54da](https://github.com/cloud-pi-native/console/commit/0ae54daf158122d3f81a13dc8fb9342c093a1beb))
+
+
+### Miscellaneous Chores
+
+* **ci:** ensure internal dependencies are built before starting tests ([effedd7](https://github.com/cloud-pi-native/console/commit/effedd75ae38f3acd4cedb770d069ce7a7cae4ec))
+* **ci:** remove component tests from CI ([24faa75](https://github.com/cloud-pi-native/console/commit/24faa756038f5c6bfcbb5905a7d482aa4100caf8))
+* **ci:** remove component tests from CI ([928320d](https://github.com/cloud-pi-native/console/commit/928320d24c0cc794dfa0c466ba0433a89264d9ad))
+* **ci:** remove kubernetes execution context from scripts ([76de420](https://github.com/cloud-pi-native/console/commit/76de4204ea1ded0f137b0a39c3176195aa5c25ef))
+* **ci:** remove kubernetes execution context from scripts ([3cbf816](https://github.com/cloud-pi-native/console/commit/3cbf816e9cdca94a0d4ed6030b6afee0e1c14554))
+* **ci:** use node.js v24 ([2fce2b8](https://github.com/cloud-pi-native/console/commit/2fce2b81db787b36836b08b3fa1b3bc3c2eb2e47))
+* **ci:** use node.js v24 ([2e8947c](https://github.com/cloud-pi-native/console/commit/2e8947c86832636d367e54bfeb776f2567f2f4ac))
+* remove turbo ([05af332](https://github.com/cloud-pi-native/console/commit/05af332261b2dc7028004141a0a6054d70d595b8))
+* **server-nestjs:** align formatting rules on other packages ([f19091b](https://github.com/cloud-pi-native/console/commit/f19091bed9f78ff4eca3d3337c0c8b7d9cd87dce))
+* **server-nestjs:** align formatting rules on other packages ([c9eb1de](https://github.com/cloud-pi-native/console/commit/c9eb1de8b99a349fbf1701fd7317583d71873c18))
+
+
+### Docs
+
+* add AGENTS.md ([9e319fe](https://github.com/cloud-pi-native/console/commit/9e319fe37563a5161df4a25cb71fc8b1ac23f088))
+* add AGENTS.md ([e0e10f2](https://github.com/cloud-pi-native/console/commit/e0e10f2daf2798b3279e5c0e8109ec117fa02d62))
+
 ## [9.13.1](https://github.com/cloud-pi-native/console/compare/v9.13.0...v9.13.1) (2026-02-17)
 
 

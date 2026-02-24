@@ -1,28 +1,19 @@
 import type { UserObject } from '@cpn-console/hooks'
 import type { CreateUserOptions, SimpleUserSchema } from '@gitbeaker/rest'
-import { getApi } from './utils.js'
+import { getApi, find, offsetPaginate } from './utils.js'
 
 export const createUsername = (email: string) => email.replace('@', '.')
 
 export async function getUser(user: { email: string, username: string, id: string }): Promise<SimpleUserSchema | undefined> {
   const api = getApi()
 
-  let gitlabUser: SimpleUserSchema | undefined
-
-  // test finding by extern_uid by searching with email
-  const usersByEmail = await api.Users.all({ search: user.email })
-  gitlabUser = usersByEmail.find(gitlabUser => gitlabUser?.externUid === user.id)
-  if (gitlabUser) return gitlabUser
-
-  // if not found, test finding by extern_uid by searching with username
-  const usersByUsername = await api.Users.all({ username: user.username })
-  gitlabUser = usersByUsername.find(gitlabUser => gitlabUser?.externUid === user.id)
-  if (gitlabUser) return gitlabUser
-
-  // if not found, test finding by email or username
-  const allUsers = [...usersByEmail, ...usersByUsername]
-  return allUsers.find(gitlabUser => gitlabUser.email === user.email)
-    || allUsers.find(gitlabUser => gitlabUser.username === user.username)
+  return find(
+    offsetPaginate(opts => api.Users.all(opts)),
+    gitlabUser =>
+      gitlabUser?.externUid === user.id
+      || gitlabUser.email === user.email
+      || gitlabUser.username === user.username,
+  )
 }
 
 export async function upsertUser(user: UserObject): Promise<SimpleUserSchema> {
