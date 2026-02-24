@@ -27,6 +27,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   refresh: []
   leave: []
+  transfer: []
 }>()
 
 const projectStore = useProjectStore()
@@ -105,7 +106,8 @@ async function removeUserFromProject(userId: string) {
 async function transferOwnerShip() {
   if (nextOwnerId.value && props.project.members.find(member => member.userId === nextOwnerId.value)) {
     await props.project.Commands.update({ ownerId: nextOwnerId.value })
-      .finally(() => emit('refresh'))
+      .then(() => emit('transfer'))
+      .catch(() => emit('refresh'))
   }
 }
 </script>
