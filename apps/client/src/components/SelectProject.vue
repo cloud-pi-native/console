@@ -2,9 +2,14 @@
 import router, { isInProject, selectedProjectSlug } from '../router/index.js'
 import { useUserStore } from '@/stores/user.js'
 import { useProjectStore } from '@/stores/project.js'
+import { AdminAuthorized } from '@cpn-console/shared'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
+
+const canCreateProject = computed(() => {
+  return AdminAuthorized.ManageProjects(userStore.adminPerms)
+})
 
 watch(userStore, async () => {
   if (userStore.isLoggedIn && !projectStore.myProjects?.length) {
@@ -71,6 +76,7 @@ function selectProject(slug: string) {
       :icon-only="!!projectStore.myProjects.length"
       :label="!projectStore.myProjects.length ? 'Créer un nouveau projet' : ''"
       small
+      :disabled="!canCreateProject"
       @click="() => router.currentRoute.value.name !== 'CreateProject' && router.push({ name: 'CreateProject' })"
     />
   </div>
