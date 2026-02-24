@@ -1,5 +1,5 @@
 import type { Project } from '@cpn-console/hooks'
-import type { UserSchema } from '@gitbeaker/core'
+import { AccessLevel, type UserSchema } from '@gitbeaker/core'
 import type { GitlabProjectApi } from './class.js'
 import { upsertUser } from './user.js'
 
@@ -21,11 +21,13 @@ export async function ensureMembers(gitlabApi: GitlabProjectApi, project: Projec
 
   // Ensure members are set
   const membersAdded = await Promise.all([
-    ...fulfilledGitlabUsers.map(gitlabUser =>
-      members.find(member => member.id === gitlabUser.value.id)
+    ...fulfilledGitlabUsers.map((gitlabUser) => {
+      const user = project.users.find(user => user.email === gitlabUser.value.email)
+      const isOwner = project.roles.find(role => role.userId === user?.id)?.role === 'owner'
+      return members.find(member => member.id === gitlabUser.value.id)
         ? undefined
-        : gitlabApi.addGroupMember(gitlabUser.value.id),
-    ),
+        : gitlabApi.addGroupMember(gitlabUser.value.id, isOwner ? AccessLevel.OWNER : AccessLevel.DEVELOPER)
+    }),
     ...members.map(member =>
       (
         !member.username.match(/group_\d+_bot/)
