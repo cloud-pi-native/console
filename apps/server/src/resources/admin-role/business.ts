@@ -1,9 +1,6 @@
 import type { Project, ProjectRole } from '@prisma/client'
 import type { AdminRole, adminRoleContract } from '@cpn-console/shared'
-import {
-  getAdminRoleById,
-  listAdminRoles,
-} from '@/resources/queries-index.js'
+import { addLogs, getAdminRoleById, listAdminRoles } from '@/resources/queries-index.js'
 import type { ErrorResType } from '@/utils/errors.js'
 import { BadRequest400, Forbidden403 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
@@ -14,7 +11,10 @@ export async function listRoles() {
     .then(roles => roles.map(role => ({ ...role, permissions: role.permissions.toString(), type: role.type ?? 'custom' })))
 }
 
-export async function patchRoles(roles: typeof adminRoleContract.patchAdminRoles.body._type): Promise<AdminRole[] | ErrorResType> {
+export async function patchRoles(
+  roles: typeof adminRoleContract.patchAdminRoles.body._type,
+  requestId: string,
+): Promise<AdminRole[] | ErrorResType> {
   const dbRoles = await prisma.adminRole.findMany()
   const positionsAvailable: number[] = []
   const updatedRoles: (Omit<AdminRole, 'permissions'> & { permissions: bigint })[] = []
@@ -46,13 +46,17 @@ export async function patchRoles(roles: typeof adminRoleContract.patchAdminRoles
       return new Forbidden403('Ce rôle système ne peut pas être renommé')
     }
     await prisma.adminRole.update({ where: { id }, data: role })
-    await hook.adminRole.upsert(id)
+    const hookReply = await hook.adminRole.upsert(id)
+    await addLogs({ action: 'Update Admin Role', data: hookReply, requestId })
   }
 
   return listRoles()
 }
 
-export async function createRole(role: typeof adminRoleContract.createAdminRole.body._type) {
+export async function createRole(
+  role: typeof adminRoleContract.createAdminRole.body._type,
+  requestId: string,
+) {
   const dbMaxPosRole = (await prisma.adminRole.findFirst({
     orderBy: { position: 'desc' },
     select: { position: true },
@@ -66,7 +70,8 @@ export async function createRole(role: typeof adminRoleContract.createAdminRole.
     },
   })
 
-  await hook.adminRole.upsert(createdRole.id)
+  const hookReply = await hook.adminRole.upsert(createdRole.id)
+  await addLogs({ action: 'Create Admin Role', data: hookReply, requestId })
 
   return listRoles()
 }
@@ -87,11 +92,15 @@ export async function countRolesMembers() {
   return rolesCounts
 }
 
-export async function deleteRole(roleId: Project['id']) {
+export async function deleteRole(
+  roleId: Project['id'],
+  requestId: string,
+) {
   const role = await getAdminRoleById(roleId)
   if (role) {
     if (role.type === 'system') return new Forbidden403('Impossible de supprimer un rôle système')
-    await hook.adminRole.delete(role)
+    const hookReply = await hook.adminRole.delete(role)
+    await addLogs({ action: 'Delete Admin Role', data: hookReply, requestId })
   }
 
   const allUsers = await prisma.user.findMany({
