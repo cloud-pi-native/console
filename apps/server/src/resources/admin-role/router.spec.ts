@@ -49,7 +49,7 @@ describe('test adminRoleContract', () => {
         .body(roleData)
         .end()
 
-      expect(businessCreateRoleMock).toHaveBeenCalledWith(roleData)
+      expect(businessCreateRoleMock).toHaveBeenCalledWith(roleData, expect.any(String))
       expect(response.json()).toEqual(newRole)
       expect(response.statusCode).toEqual(201)
     })
@@ -83,7 +83,7 @@ describe('test adminRoleContract', () => {
         .body(rolesData)
         .end()
 
-      expect(businessPatchRolesMock).toHaveBeenCalledWith(rolesData)
+      expect(businessPatchRolesMock).toHaveBeenCalledWith(rolesData, expect.any(String))
       expect(response.json()).toEqual(updatedRoles)
       expect(response.statusCode).toEqual(200)
     })
@@ -99,7 +99,7 @@ describe('test adminRoleContract', () => {
         .body(rolesData)
         .end()
 
-      expect(businessPatchRolesMock).toHaveBeenCalledWith(rolesData)
+      expect(businessPatchRolesMock).toHaveBeenCalledWith(rolesData, expect.any(String))
       expect(response.statusCode).toEqual(400)
     })
 
@@ -161,7 +161,7 @@ describe('test adminRoleContract', () => {
         .delete(adminRoleContract.deleteAdminRole.path.replace(':roleId', roleId))
         .end()
 
-      expect(businessDeleteRoleMock).toHaveBeenCalledWith(roleId)
+      expect(businessDeleteRoleMock).toHaveBeenCalledWith(roleId, expect.any(String))
       expect(response.statusCode).toEqual(204)
     })
 
