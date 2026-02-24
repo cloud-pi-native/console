@@ -16,7 +16,7 @@ export async function getUser(user: { email: string, username: string, id: strin
   )
 }
 
-export async function upsertUser(user: UserObject): Promise<SimpleUserSchema> {
+export async function upsertUser(user: UserObject, isAdmin = false, isAuditor = false): Promise<SimpleUserSchema> {
   const api = getApi()
   const username = createUsername(user.email)
   const existingUser = await getUser({ ...user, username })
@@ -29,6 +29,8 @@ export async function upsertUser(user: UserObject): Promise<SimpleUserSchema> {
     // sso options
     externUid: user.id,
     provider: 'openid_connect',
+    admin: isAdmin,
+    auditor: isAuditor,
   }
 
   if (existingUser) {
@@ -55,7 +57,6 @@ export async function upsertUser(user: UserObject): Promise<SimpleUserSchema> {
 
   return api.Users.create({
     ...userDefinitionBase,
-    admin: false,
     canCreateGroup: false,
     forceRandomPassword: true,
     projectsLimit: 0,
