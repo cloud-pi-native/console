@@ -192,6 +192,7 @@ async function saveProject() {
             :can-transfer="asProfile === 'admin' || project.ownerId === userStore.userProfile?.id"
             @refresh="refreshMembers"
             @leave="leaveProject"
+            @transfer="unSelectProject"
           />
         </DsfrTabContent>
 

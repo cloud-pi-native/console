@@ -299,6 +299,12 @@ describe('Administration projects', () => {
       .its('response.statusCode')
       .should('match', /^20\d$/)
 
+    cy.getByDataTestid('tableAdministrationProjects').within(() => {
+      cy.get('tr').contains(project.name)
+        .click()
+    })
+    cy.getByDataTestid('test-tab-team').click()
+
     cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire')
       .should('have.length', 1)
       .parent()
@@ -316,6 +322,12 @@ describe('Administration projects', () => {
     cy.wait('@transferOwnership')
       .its('response.statusCode')
       .should('match', /^20\d$/)
+
+    cy.getByDataTestid('tableAdministrationProjects').within(() => {
+      cy.get('tr').contains(project.name)
+        .click()
+    })
+    cy.getByDataTestid('test-tab-team').click()
 
     cy.getByDataTestid('teamTable').get('tr').contains('Propriétaire')
       .should('have.length', 1)
