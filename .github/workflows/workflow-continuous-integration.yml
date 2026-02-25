@@ -60,6 +60,7 @@ jobs:
       BUILD_AMD64: ${{ env.BUILD_AMD64 }}
       BUILD_ARM64: ${{ env.BUILD_ARM64 }}
       USE_QEMU: ${{ env.USE_QEMU }}
+      TEST_STEPHANE: ${{ github.merge_group.merge_group.head_sha }}
     steps:
       - name: Exposing env vars
         run: echo "Exposing env vars"
