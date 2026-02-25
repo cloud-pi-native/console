@@ -160,7 +160,7 @@ jobs:
           echo "PUBLISH_MATRIX=$PUBLISH_MATRIX" >> $GITHUB_OUTPUT
 
   publish-npm:
-    name: Pubish on npm
+    name: Publish on npm
     if: ${{ inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES || inputs.PUBLISH_PLUGINS }}
     runs-on: ubuntu-latest
     needs:
@@ -227,7 +227,7 @@ jobs:
       - name: Publish packages
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         run: |
-          pnpm run build --filter ${{ matrix.modules.name }}
+          pnpm --filter ${{ matrix.modules.name }} run build
           pnpm --filter ${{ matrix.modules.name }} publish --no-git-checks --report-summary
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
