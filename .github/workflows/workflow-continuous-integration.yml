@@ -54,17 +54,17 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.draft }}
     outputs:
+      MERGE_GROUP_HEAD_SHA: ${{ github.event.merge_group.head_sha || 'no merge queue context for SHA' }}
+      MERGE_GROUP_HEAD_REF: ${{ github.event.merge_group.head_ref || 'no merge queue context for REF' }}
       NODE_VERSION: ${{ env.NODE_VERSION }}
       REGISTRY: ${{ env.REGISTRY }}
       NAMESPACE: ${{ env.NAMESPACE }}
       BUILD_AMD64: ${{ env.BUILD_AMD64 }}
       BUILD_ARM64: ${{ env.BUILD_ARM64 }}
       USE_QEMU: ${{ env.USE_QEMU }}
-      MERGE_GROUP_HEAD_SHA: ${{ github.event.merge_group.merge_group.head_sha }}
-      MERGE_GROUP_HEAD_REF: ${{ github.merge_group.merge_group.head_ref }}
     steps:
       - name: Exposing env vars
-        run: echo "Exposing env vars"
+        run: echo "Exposing env vars."
 
   npm-check:
     uses: ./.github/workflows/job-npm.yml
@@ -108,11 +108,11 @@ jobs:
     with:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
-      TAG: pr-${{ github.event.pull_request.number || github.event.number || github.event.merge_group.merge_group.head_sha }}
+      TAG: pr-${{ github.event.pull_request.number || github.event.number || github.event.merge_group.head_sha }}
       BUILD_AMD64: ${{ needs.expose-vars.outputs.BUILD_AMD64 == 'true' }}
       BUILD_ARM64: ${{ needs.expose-vars.outputs.BUILD_ARM64 == 'true' }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
-      PR_NUMBER: ${{ github.event.pull_request.number || github.event.number || github.event.merge_group.merge_group.head_sha }}
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.number || github.event.merge_group.head_sha }}
     secrets:
       ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
 
@@ -133,7 +133,7 @@ jobs:
       - build
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
-      TAG: pr-${{ github.event.pull_request.number || github.event.number || github.event.merge_group.merge_group.head_sha }}
+      TAG: pr-${{ github.event.pull_request.number || github.event.number || github.event.merge_group.head_sha }}
 
   cypress-tests:
     uses: ./.github/workflows/job-tests-e2e.yml
@@ -145,7 +145,7 @@ jobs:
       - build
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
-      TAG: pr-${{ github.event.pull_request.number || github.event.number || github.event.merge_group.merge_group.head_sha }}
+      TAG: pr-${{ github.event.pull_request.number || github.event.number || github.event.merge_group.head_sha }}
       BROWSERS: "${{ github.base_ref == 'main' && 'chrome,firefox' || 'firefox' }}"
 
   scan-vuln:
@@ -156,7 +156,7 @@ jobs:
     with:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
-      TAG: pr-${{ github.event.pull_request.number || github.event.number || github.event.merge_group.merge_group.head_sha }}
+      TAG: pr-${{ github.event.pull_request.number || github.event.number || github.event.merge_group.head_sha }}
 
   # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
   all-jobs-passed:
