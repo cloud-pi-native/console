@@ -31,7 +31,7 @@ on:
         required: true
         type: boolean
       PR_NUMBER:
-        required: true
+        required: false
         type: string
     secrets:
       ARGOCD_TOKEN:
@@ -65,7 +65,7 @@ on:
         default: false
       PR_NUMBER:
         description: ID number of the pull request to use for deploy preview app
-        required: true
+        required: false
         type: string
 
 jobs:
