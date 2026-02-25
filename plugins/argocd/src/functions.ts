@@ -1,5 +1,6 @@
 import type {
   ClusterObject,
+  Config,
   Environment,
   Project,
   Repository,
@@ -10,6 +11,14 @@ import { dump } from 'js-yaml'
 import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
 import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
+import {
+  DEFAULT_PLATFORM_ADMIN_GROUP_PATH,
+  DEFAULT_PLATFORM_READONLY_GROUP_PATH,
+  DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_READONLY_GROUP_PATH_SUFFIX,
+} from './infos.js'
 import { generateAppProjectName, getConfig } from './utils.js'
 
 function splitExtraRepositories(repos?: string): string[] {
@@ -70,6 +79,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
           sourceRepositories,
           gitlabApi,
           vaultApi,
+          payload.config,
         )
       }),
     ])
@@ -111,7 +121,14 @@ async function ensureInfraEnvValues(
   sourceRepositories: string[],
   gitlabApi: GitlabProjectApi,
   vaultApi: VaultProjectApi,
+  config: Config,
 ) {
+  const platformAdminGroupPath = config.argocd?.platformAdminGroupPath ?? DEFAULT_PLATFORM_ADMIN_GROUP_PATH
+  const platformReadonlyGroupPath = config.argocd?.platformReadonlyGroupPath ?? DEFAULT_PLATFORM_READONLY_GROUP_PATH
+  const projectAdminGroupSuffix = config.argocd?.projectAdminGroupPathSuffix ?? DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIX
+  const projectDevopsGroupSuffix = config.argocd?.projectDevopsGroupPathSuffix ?? DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX
+  const projectDevelopperGroupSuffix = config.argocd?.projectDevelopperGroupPathSuffix ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
+  const projectReadonlyGroupSuffix = config.argocd?.projectReadonlyGroupPathSuffix ?? DEFAULT_PROJECT_READONLY_GROUP_PATH_SUFFIX
   const cluster = getCluster(project, environment)
   const infraProject = await gitlabApi.getProjectById(repoId)
   const valueFilePath = getValueFilePath(project, cluster, environment)
@@ -157,6 +174,13 @@ async function ensureInfraEnvValues(
       valueFilePath,
       roGroup,
       rwGroup,
+      platformAdminGroup: platformAdminGroupPath,
+      platformReadonlyGroup: platformReadonlyGroupPath,
+      projectAdminGroup: `/${project.slug}${projectAdminGroupSuffix}`,
+      projectDevopsGroup: `/${project.slug}${projectDevopsGroupSuffix}`,
+      projectDevelopperGroup: `/${project.slug}${projectDevelopperGroupSuffix}`,
+      projectReadonlyGroup: `/${project.slug}${projectReadonlyGroupSuffix}`,
+      // TODO: Add support for projectSecurityGroup when available in backend
     },
     application: {
       quota: {
