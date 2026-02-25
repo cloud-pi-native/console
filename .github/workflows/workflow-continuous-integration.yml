@@ -89,6 +89,7 @@ jobs:
       - expose-vars
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
 
   unit-tests:
     uses: ./.github/workflows/job-tests-unit.yml
