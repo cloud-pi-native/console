@@ -6,18 +6,12 @@ on:
       NODE_VERSION:
         required: false
         type: string
-      PR_NUMBER:
-        required: true
-        type: number
   workflow_dispatch:
     inputs:
       NODE_VERSION:
         description: Nodejs version used to run tests
         required: true
         type: string
-      PR_NUMBER:
-        required: true
-        type: number
 
 jobs:
   lint:
