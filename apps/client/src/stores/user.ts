@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { AdminRole, User, UserProfile } from '@cpn-console/shared'
-import { getEffectiveAdminPermissions } from '@cpn-console/shared'
 import { useAdminRoleStore } from './admin-role.js'
 import { useSystemSettingsStore } from './system-settings.js'
 import { apiClient, extractData } from '@/api/xhr-client.js'
@@ -18,10 +17,12 @@ export const useUserStore = defineStore('user', () => {
 
   const adminPerms = computed(() => {
     if (!apiAuthInfos.value) return null
-    const perms = myAdminRoles.value.reduce((acc, curr) => acc | BigInt(curr.permissions), 0n)
-    const refinedRermissions = systemSettingsStore.systemSettingsByKey['refined-permissions']
-    const refinedEnabled = refinedRermissions ? refinedRermissions.value === 'on' : false
-    return getEffectiveAdminPermissions(perms, { refined: refinedEnabled })
+    let perms = myAdminRoles.value.reduce((acc, curr) => acc | BigInt(curr.permissions), 0n)
+    const globalRole = adminRoleStore.roles?.find(role => role.name === 'Tout le monde')
+    if (globalRole) {
+      perms |= BigInt(globalRole.permissions)
+    }
+    return perms
   })
 
   const setUserProfile = async () => {
