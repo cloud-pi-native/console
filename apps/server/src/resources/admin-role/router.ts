@@ -27,7 +27,7 @@ export function adminRoleRouter() {
 
       if (!AdminAuthorized.ManageRoles(perms.adminPermissions)) return new Forbidden403()
 
-      const resBody = await createRole(body)
+      const resBody = await createRole(body, req.id)
 
       return {
         status: 201,
@@ -40,7 +40,7 @@ export function adminRoleRouter() {
 
       if (!AdminAuthorized.ManageRoles(perms.adminPermissions)) return new Forbidden403()
 
-      const resBody = await patchRoles(body)
+      const resBody = await patchRoles(body, req.id)
       if (resBody instanceof ErrorResType) return resBody
 
       return {
@@ -67,7 +67,7 @@ export function adminRoleRouter() {
 
       if (!AdminAuthorized.ManageRoles(perms.adminPermissions)) return new Forbidden403()
 
-      const resBody = await deleteRole(params.roleId)
+      const resBody = await deleteRole(params.roleId, req.id)
       if (resBody instanceof ErrorResType) return resBody
 
       return {
