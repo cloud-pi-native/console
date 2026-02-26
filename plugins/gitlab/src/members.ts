@@ -1,42 +1,70 @@
-import type { Project } from '@cpn-console/hooks'
-import type { UserSchema } from '@gitbeaker/core'
+import { type UserObject, type Config, type Project, specificallyEnabled } from '@cpn-console/hooks'
+import { AccessLevel } from '@gitbeaker/core'
+import { matchRole } from './utils.js'
+import {
+  DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX,
+} from './infos.js'
 import type { GitlabProjectApi } from './class.js'
-import { upsertUser } from './user.js'
+import { createUsername, upsertUser } from './user.js'
 
-export async function ensureMembers(gitlabApi: GitlabProjectApi, project: Project) {
-  // Ensure all users exists in gitlab
-  const [gitlabUserPromiseResults, members] = await Promise.all([
-    Promise.allSettled(project.users.map(user => upsertUser(user))),
-    gitlabApi.getGroupMembers(),
-  ])
+export function getGroupAccessLevelFromProjectRole(project: Project, user: UserObject, config: Config) {
+  const projectReporterGroupPathSuffix = config.gitlab?.projectReporterGroupPathSuffix ?? DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX
+  const projectDeveloperGroupPathSuffix = config.gitlab?.projectDeveloperGroupPathSuffix ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
+  const projectMaintainerGroupPathSuffix = config.gitlab?.projectMaintainerGroupPathSuffix ?? DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX
 
-  interface FulfilledResult { status: 'fulfilled', value: UserSchema }
-  interface RejectedResult { status: 'rejected', reason: any }
+  return project.roles.reduce<number | null>((accessLevel, role) => {
+    if (role.users.some(userRole => userRole.id === user.id)) {
+      if (role.oidcGroup && matchRole(project.slug, role.oidcGroup, projectReporterGroupPathSuffix)) {
+        return AccessLevel.REPORTER
+      } else if (role.oidcGroup && matchRole(project.slug, role.oidcGroup, projectDeveloperGroupPathSuffix)) {
+        return AccessLevel.DEVELOPER
+      } else if (role.oidcGroup && matchRole(project.slug, role.oidcGroup, projectMaintainerGroupPathSuffix)) {
+        return AccessLevel.MAINTAINER
+      }
+    }
+    return accessLevel
+  }, null)
+}
 
-  const fulfilledGitlabUsers = gitlabUserPromiseResults
-    .filter<FulfilledResult>((result): result is FulfilledResult => result.status === 'fulfilled')
+export function getGroupAccessLevel(project: Project, user: UserObject, config: Config): number | null {
+  if (project.owner.id === user.id) return AccessLevel.OWNER
+  return getGroupAccessLevelFromProjectRole(project, user, config)
+}
 
-  const rejectedGitlabUsers = gitlabUserPromiseResults
-    .filter<RejectedResult>((result): result is RejectedResult => result.status === 'rejected')
+export async function ensureGroup(
+  gitlabApi: GitlabProjectApi,
+  project: Project,
+  user: UserObject,
+  config: Config,
+) {
+  const gitlabUser = await upsertUser({
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+  })
 
-  // Ensure members are set
-  const membersAdded = await Promise.all([
-    ...fulfilledGitlabUsers.map(gitlabUser =>
-      members.find(member => member.id === gitlabUser.value.id)
-        ? undefined
-        : gitlabApi.addGroupMember(gitlabUser.value.id),
-    ),
-    ...members.map(member =>
-      (
-        !member.username.match(/group_\d+_bot/)
-        && !fulfilledGitlabUsers.find(gitlabUser => member.id === gitlabUser.value.id)
-      )
-        ? gitlabApi.removeGroupMember(member.id)
-        : undefined,
-    ),
-  ])
-  return {
-    members: [...members, membersAdded.filter(member => member)],
-    failedInUpsertUsers: !!rejectedGitlabUsers.length,
+  const groupMembers = await gitlabApi.getGroupMembers()
+  const existingMember = groupMembers.find(m => m.username === createUsername(user.email))
+  const maxAccessLevel = getGroupAccessLevel(project, user, config)
+
+  if (maxAccessLevel) {
+    if (existingMember) {
+      if (existingMember.access_level !== maxAccessLevel) {
+        await gitlabApi.editGroupMember(gitlabUser.id, maxAccessLevel)
+      }
+    } else {
+      await gitlabApi.addGroupMember(gitlabUser.id, maxAccessLevel)
+    }
+  } else {
+    if (specificallyEnabled(config.gitlab?.purge)) {
+      if (existingMember) {
+        await gitlabApi.removeGroupMember(gitlabUser.id)
+      }
+    } else {
+      await gitlabApi.addGroupMember(gitlabUser.id, AccessLevel.NO_ACCESS)
+    }
   }
 }
