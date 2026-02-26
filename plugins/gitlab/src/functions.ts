@@ -1,13 +1,17 @@
 import { okStatus, parseError, specificallyDisabled } from '@cpn-console/hooks'
-import type { ClusterObject, PluginResult, Project, ProjectLite, StepCall, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
-import { insert } from '@cpn-console/shared'
+import type { AdminRole, ClusterObject, PluginResult, Project, ProjectLite, StepCall, UniqueRepo, ZoneObject, ProjectMember } from '@cpn-console/hooks'
 import { deleteGroup } from './group.js'
-import { createUsername, getUser } from './user.js'
-import { ensureMembers } from './members.js'
+import { createUsername, getUser, upsertUser } from './user.js'
+import { ensureGroup } from './members.js'
 import { ensureRepositories } from './repositories.js'
 import type { VaultSecrets } from './utils.js'
-import { cleanGitlabError } from './utils.js'
 import config from './config.js'
+import type { GitlabProjectApi } from './class.js'
+import { cleanGitlabError } from './utils.js'
+import {
+  DEFAULT_ADMIN_GROUP_PATH,
+  DEFAULT_AUDITOR_GROUP_PATH,
+} from './infos.js'
 
 // Check
 export const checkApi: StepCall<Project> = async (payload) => {
@@ -100,11 +104,9 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
 
     await gitlabApi.getOrCreateProjectGroup()
 
-    const { failedInUpsertUsers } = await ensureMembers(gitlabApi, project)
-    if (failedInUpsertUsers) {
-      returnResult.status.result = 'WARNING'
-      returnResult.warnReasons = insert(returnResult.warnReasons, 'Failed to create or upsert users in Gitlab')
-    }
+    await Promise.all(project.users.map(user =>
+      ensureGroup(gitlabApi, project, user, payload.config),
+    ))
 
     const projectMirrorCreds = await gitlabApi.getProjectMirrorCreds(vaultApi)
     await ensureRepositories(gitlabApi, project, vaultApi, {
@@ -230,5 +232,131 @@ export const commitFiles: StepCall<UniqueRepo | Project | ClusterObject | ZoneOb
     returnResult.status.result = 'KO'
     returnResult.status.message = 'Failed to commit files'
     return returnResult
+  }
+}
+
+export const upsertAdminRole: StepCall<AdminRole> = async (payload) => {
+  try {
+    const role = payload.args
+    const adminGroupPath = payload.config.gitlab?.adminGroupPath ?? DEFAULT_ADMIN_GROUP_PATH
+    const auditorGroupPath = payload.config.gitlab?.auditorGroupPath ?? DEFAULT_AUDITOR_GROUP_PATH
+
+    for (const member of role.members) {
+      await upsertUser(member, role.oidcGroup === adminGroupPath, role.oidcGroup === auditorGroupPath)
+    }
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Members synced',
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(cleanGitlabError(error)),
+      status: {
+        result: 'KO',
+        message: 'An error occured while syncing admin role',
+      },
+    }
+  }
+}
+
+export const deleteAdminRole: StepCall<AdminRole> = async (payload) => {
+  try {
+    const role = payload.args
+    const adminGroupPath = payload.config.gitlab?.adminGroupPath ?? DEFAULT_ADMIN_GROUP_PATH
+    const auditorGroupPath = payload.config.gitlab?.auditorGroupPath ?? DEFAULT_AUDITOR_GROUP_PATH
+
+    const isAdmin = role.oidcGroup === adminGroupPath ? false : undefined
+    const isAuditor = role.oidcGroup === auditorGroupPath ? false : undefined
+
+    if (isAdmin === undefined && isAuditor === undefined) {
+      return {
+        status: {
+          result: 'OK',
+          message: 'Not a managed role for GitLab plugin',
+        },
+      }
+    }
+
+    for (const member of role.members) {
+      await upsertUser(member, isAdmin, isAuditor)
+    }
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Admin role deleted and members synced',
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(cleanGitlabError(error)),
+      status: {
+        result: 'KO',
+        message: 'An error occured while deleting admin role',
+      },
+    }
+  }
+}
+
+export const upsertProjectMember: StepCall<ProjectMember> = async (payload) => {
+  const member = payload.args
+  const { gitlab: gitlabApi } = payload.apis as { gitlab: GitlabProjectApi } // TODO: apis is never type for some resaon
+
+  try {
+    await Promise.all(member.project.users.map(user =>
+      ensureGroup(gitlabApi, member.project, user, payload.config),
+    ))
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Member synced',
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(cleanGitlabError(error)),
+      status: {
+        result: 'KO',
+        message: 'An error happened while syncing project member',
+      },
+    }
+  }
+}
+
+export const deleteProjectMember: StepCall<ProjectMember> = async (payload) => {
+  const member = payload.args
+  const { gitlab: gitlabApi } = payload.apis as { gitlab: GitlabProjectApi } // TODO: apis is never type for some resaon
+
+  try {
+    const userInfos = await getUser({ ...member, id: member.userId, username: createUsername(member.email) })
+    if (!userInfos) {
+      return {
+        status: {
+          result: 'OK',
+          message: 'User not found in GitLab',
+        },
+      }
+    }
+
+    await gitlabApi.removeGroupMember(userInfos.id)
+
+    return {
+      status: {
+        result: 'OK',
+        message: 'Member deleted',
+      },
+    }
+  } catch (error) {
+    return {
+      error: parseError(cleanGitlabError(error)),
+      status: {
+        result: 'KO',
+        message: 'An error happened while deleting project member',
+      },
+    }
   }
 }
