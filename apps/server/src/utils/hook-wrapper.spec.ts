@@ -207,7 +207,11 @@ describe('transformToHookProject', () => {
     expect(result.users).toEqual([project.owner])
 
     // Assert sur la transformation des rôles
-    expect(result.roles).toEqual([{ userId: project.owner.id, role: 'owner' }])
+    expect(result.roles).toEqual([{
+      name: 'owner',
+      position: 0,
+      users: [project.owner],
+    }])
 
     // Assert sur la transformation des clusters
     expect(result.clusters).toEqual([associatedCluster, nonAssociatedCluster].map(({ kubeconfig, ...cluster }) => ({
