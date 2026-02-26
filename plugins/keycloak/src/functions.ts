@@ -1,6 +1,6 @@
 import type { AdminRole, Project, StepCall, UserEmail, ZoneObject, ProjectMemberPayload } from '@cpn-console/hooks'
 import type { ProjectRole } from '@cpn-console/shared'
-import { generateRandomPassword, parseError, PluginResultBuilder, specificallyEnabled } from '@cpn-console/hooks'
+import { generateRandomPassword, parseError, PluginResultBuilder, specificallyDisabled } from '@cpn-console/hooks'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation.js'
 import type { CustomGroup } from './group.js'
@@ -73,7 +73,7 @@ export const upsertProject: StepCall<Project> = async ({ args: project, config }
     await Promise.all([
       ...groupMembers.map((member) => {
         if (!project.users.some(({ id }) => id === member.id)) {
-          if (specificallyEnabled(purge)) {
+          if (specificallyDisabled(purge)) {
             return kcClient.users.delFromGroup({
             // @ts-ignore id is present on user, bad typing in lib
               id: member.id,
@@ -240,7 +240,7 @@ export const upsertAdminRole: StepCall<AdminRole> = async ({ args: role, config 
     await Promise.all([
       ...groupMembers.map((member) => {
         if (member.id && !role.members.some(({ id }) => id === member.id)) {
-          if (specificallyEnabled(purge)) {
+          if (specificallyDisabled(purge)) {
             return kcClient.users.delFromGroup({
               id: member.id,
               groupId: group!.id!,
@@ -410,7 +410,7 @@ export const upsertProjectMember: StepCall<ProjectMemberPayload> = async ({ args
       if (shouldBeMember && !isMember) {
         await kcClient.users.addToGroup({ id: member.userId, groupId: roleGroup.id })
       } else if (!shouldBeMember && isMember) {
-        if (specificallyEnabled(purge)) {
+        if (specificallyDisabled(purge)) {
           await kcClient.users.delFromGroup({ id: member.userId, groupId: roleGroup.id })
         } else {
           console.warn(`User ${member.email} is not in project ${member.project.slug} anymore, but purge is disabled`)
