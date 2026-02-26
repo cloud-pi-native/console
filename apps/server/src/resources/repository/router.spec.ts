@@ -35,7 +35,7 @@ describe('repositoryRouter tests', () => {
   describe('listRepositories', () => {
     it('should return repositories for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.LIST_REPOSITORIES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessGetProjectRepositoriesMock.mockResolvedValueOnce([])
@@ -50,9 +50,9 @@ describe('repositoryRouter tests', () => {
       expect(response.statusCode).toEqual(200)
     })
 
-    it('should return empty for unauthorized user', async () => {
+    it('should return 403 for unauthorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.REPLAY_HOOKS })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -61,14 +61,14 @@ describe('repositoryRouter tests', () => {
         .end()
 
       expect(businessGetProjectRepositoriesMock).toHaveBeenCalledTimes(0)
-      expect(response.json()).toEqual([])
+      expect(response.statusCode).toEqual(403)
     })
   })
 
   describe('syncRepository', () => {
     it('should synchronize repository for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_REPOSITORIES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessSyncMock.mockResolvedValueOnce(null)
@@ -84,7 +84,7 @@ describe('repositoryRouter tests', () => {
 
     it('should return 403 for forbidden sync attempt', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.SEE_SECRETS })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -97,7 +97,7 @@ describe('repositoryRouter tests', () => {
 
     it('should return 403 for archived project', async () => {
       const projectPerms = getProjectMockInfos({ projectStatus: 'archived' })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -109,9 +109,9 @@ describe('repositoryRouter tests', () => {
       expect(response.json()).toEqual({ message: 'Le projet est archivé' })
     })
 
-    it('should return 404 for non-member', async () => {
+    it('should return 403 for non-member', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -119,12 +119,12 @@ describe('repositoryRouter tests', () => {
         .body({ branchName: 'main', syncAllBranches: false })
         .end()
 
-      expect(response.statusCode).toEqual(404)
+      expect(response.statusCode).toEqual(403)
     })
 
     it('should pass business error', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_REPOSITORIES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessSyncMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
@@ -140,7 +140,7 @@ describe('repositoryRouter tests', () => {
   describe('createRepository', () => {
     it('should create repository for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_REPOSITORIES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessCreateMock.mockResolvedValueOnce({ id: repositoryId, ...repositoryData, ...atDates })
@@ -155,7 +155,7 @@ describe('repositoryRouter tests', () => {
 
     it('should return 403 if project is locked', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_REPOSITORIES, projectLocked: true })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -169,7 +169,7 @@ describe('repositoryRouter tests', () => {
 
     it('should return 403 if project is archived', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_REPOSITORIES, projectStatus: 'archived' })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -181,9 +181,9 @@ describe('repositoryRouter tests', () => {
       expect(response.statusCode).toEqual(403)
     })
 
-    it('should return 404 for non-member', async () => {
+    it('should return 403 for non-member', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -191,11 +191,11 @@ describe('repositoryRouter tests', () => {
         .body(repositoryData)
         .end()
 
-      expect(response.statusCode).toEqual(404)
+      expect(response.statusCode).toEqual(403)
     })
     it('should return 403 for insuficient permissions', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_MEMBERS })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -207,7 +207,7 @@ describe('repositoryRouter tests', () => {
     })
     it('should pass business error', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_REPOSITORIES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessCreateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
@@ -224,7 +224,7 @@ describe('repositoryRouter tests', () => {
     const repoUpdateData = { isInfra: true }
     it('should update repository for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_REPOSITORIES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessUpdateMock.mockResolvedValueOnce({ id: repositoryId, ...repositoryData, ...repoUpdateData, ...atDates })
@@ -239,7 +239,7 @@ describe('repositoryRouter tests', () => {
 
     it('should update repository and drop creds if is not private', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_REPOSITORIES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const repoUpdateData = { isPrivate: false, externalUserName: 'test' }
@@ -256,7 +256,7 @@ describe('repositoryRouter tests', () => {
 
     it('should return 403 if project is locked', async () => {
       const projectPerms = getProjectMockInfos({ projectLocked: true })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -270,7 +270,7 @@ describe('repositoryRouter tests', () => {
 
     it('should return 403 if not enough permissions', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.LIST_REPOSITORIES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -281,9 +281,9 @@ describe('repositoryRouter tests', () => {
       expect(response.statusCode).toEqual(403)
     })
 
-    it('should return 404 if non-member', async () => {
+    it('should return 403 if non-member', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -291,12 +291,12 @@ describe('repositoryRouter tests', () => {
         .body(repoUpdateData)
         .end()
 
-      expect(response.statusCode).toEqual(404)
+      expect(response.statusCode).toEqual(403)
     })
 
     it('should return 403 if project is archived', async () => {
       const projectPerms = getProjectMockInfos({ projectStatus: 'archived' })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -310,7 +310,7 @@ describe('repositoryRouter tests', () => {
 
     it('should pass business error', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_REPOSITORIES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessUpdateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
@@ -327,7 +327,7 @@ describe('repositoryRouter tests', () => {
   describe('deleteRepository', () => {
     it('should delete repository for authorized user', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_REPOSITORIES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessDeleteMock.mockResolvedValueOnce(null)
@@ -340,7 +340,7 @@ describe('repositoryRouter tests', () => {
 
     it('should return 403 if project is locked', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_REPOSITORIES, projectLocked: true })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -353,7 +353,7 @@ describe('repositoryRouter tests', () => {
 
     it('should return 403 if project is archived', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_REPOSITORIES, projectStatus: 'archived' })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -364,20 +364,9 @@ describe('repositoryRouter tests', () => {
       expect(response.statusCode).toEqual(403)
     })
 
-    it('should return 404 for non-member', async () => {
+    it('should return 403 for non-member', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(false, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
-
-      const response = await app.inject()
-        .delete(repositoryContract.deleteRepository.path.replace(':repositoryId', repositoryId))
-        .end()
-
-      expect(response.statusCode).toEqual(404)
-    })
-    it('should return 403 if not enough privilege', async () => {
-      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_MEMBERS })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       const response = await app.inject()
@@ -386,9 +375,22 @@ describe('repositoryRouter tests', () => {
 
       expect(response.statusCode).toEqual(403)
     })
+
+    it('should return 403 if not enough privilege', async () => {
+      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.LIST_MEMBERS })
+      const user = getUserMockInfos(0n, undefined, projectPerms)
+      authUserMock.mockResolvedValueOnce(user)
+
+      const response = await app.inject()
+        .delete(repositoryContract.deleteRepository.path.replace(':repositoryId', repositoryId))
+        .end()
+
+      expect(response.statusCode).toEqual(403)
+    })
+
     it('should pass business error', async () => {
       const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE_REPOSITORIES })
-      const user = getUserMockInfos(false, undefined, projectPerms)
+      const user = getUserMockInfos(0n, undefined, projectPerms)
       authUserMock.mockResolvedValueOnce(user)
 
       businessDeleteMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
