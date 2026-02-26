@@ -321,14 +321,4 @@ export function getProjectPermLabelsByValue(value: bigint | string) {
     .map(permDetail => permDetail.label)
 }
 
-export function getEffectiveAdminPermissions(
-  rawPerms: bigint | number | string,
-  options: { refined?: boolean },
-): bigint {
-  let perms = toBigInt(rawPerms)
-  const refinedEnabled = options.refined ?? true
-  if (!refinedEnabled) {
-    perms |= ADMIN_PERMS.MANAGE_PROJECTS | ADMIN_PERMS.LIST_STAGES | ADMIN_PERMS.LIST_ZONES | ADMIN_PERMS.LIST_PROJECTS
-  }
-  return perms
-}
+
