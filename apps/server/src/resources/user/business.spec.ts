@@ -181,6 +181,11 @@ describe('logViaToken', () => {
     status: 'active',
   } as const
 
+  beforeEach(() => {
+    // Mock the global roles lookup
+    prisma.adminRole.findMany.mockResolvedValue([])
+  })
+
   it('should return identity', async () => {
     prisma.adminToken.findFirst.mockResolvedValueOnce({ ...baseToken })
     const identity = await logViaToken('test')
