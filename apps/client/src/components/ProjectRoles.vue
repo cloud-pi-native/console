@@ -21,6 +21,7 @@ async function addRole() {
   const newRoles = await props.project.Roles.create({
     name: 'Nouveau rôle',
     permissions: 0n.toString(),
+    type: 'managed',
   })
   reload()
   snackbarStore.setMessage('Rôle ajouté', 'success')
@@ -68,6 +69,7 @@ async function saveRole(role: Omit<ProjectRoleBigint, 'position' | 'projectId'>)
     permissions: role.permissions.toString(),
     name: role.name,
     oidcGroup: role.oidcGroup,
+    type: role.type,
   }])
   reload()
   snackbarStore.setMessage('Rôle mis à jour', 'success')
