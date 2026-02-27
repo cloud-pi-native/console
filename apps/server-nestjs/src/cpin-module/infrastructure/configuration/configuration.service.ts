@@ -25,6 +25,7 @@ export class ConfigurationService {
   keycloakClientId = process.env.KEYCLOAK_CLIENT_ID
   keycloakClientSecret = process.env.KEYCLOAK_CLIENT_SECRET
   keycloakRedirectUri = process.env.KEYCLOAK_REDIRECT_URI
+  keycloakPurge = process.env.KEYCLOAK_PURGE === 'true'
   adminsUserId = process.env.ADMIN_KC_USER_ID
     ? process.env.ADMIN_KC_USER_ID.split(',')
     : []
