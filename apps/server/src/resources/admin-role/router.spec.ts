@@ -25,7 +25,7 @@ describe('test adminRoleContract', () => {
       const user = getUserMockInfos(ADMIN_PERMS.LIST_ROLES)
       authUserMock.mockResolvedValueOnce(user)
 
-      const roles = [{ id: faker.string.uuid(), name: 'Role 1', oidcGroup: '', position: 0, permissions: '1', type: 'custom' }]
+      const roles = [{ id: faker.string.uuid(), name: 'Role 1', oidcGroup: '', position: 0, permissions: '1', type: 'managed' }]
       businessListRolesMock.mockResolvedValueOnce(roles)
 
       const response = await app.inject()
@@ -73,8 +73,8 @@ describe('test adminRoleContract', () => {
   })
 
   describe('patchAdminRoles', () => {
-    const updatedRoles = [{ id: faker.string.uuid(), name: 'Role 1', oidcGroup: '', position: 0, permissions: '1', type: 'custom' }]
-    const rolesData = [{ id: updatedRoles[0].id, name: 'Updated Role', type: 'custom' }]
+    const updatedRoles = [{ id: faker.string.uuid(), name: 'Role 1', oidcGroup: '', position: 0, permissions: '1', type: 'managed' }]
+    const rolesData = [{ id: updatedRoles[0].id, name: 'Updated Role', type: 'managed' }]
     it('should update roles for authorized users', async () => {
       const user = getUserMockInfos(ADMIN_PERMS.MANAGE_ROLES)
 

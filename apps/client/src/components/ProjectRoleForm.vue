@@ -26,7 +26,7 @@ const role = ref({
   permissions: props.permissions ?? 0n,
   allMembers: props.allMembers ?? [],
   oidcGroup: props.oidcGroup ?? '',
-  type: props.type ?? 'custom',
+  type: props.type ?? 'managed',
 })
 
 const isUpdated = computed(() => {
@@ -34,14 +34,15 @@ const isUpdated = computed(() => {
   return !shallowEqual(props, role.value)
 })
 
-const isSystem = computed(() => props.type === 'system')
-
 const tabListName = 'Liste d’onglet'
-const tabTitles = [
+const tabTitles = computed(() => [
   { title: 'Général', icon: 'ri:checkbox-circle-line', tabId: 'general' },
-  { title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' },
+  ...(
+    role.value.type === 'managed'
+      ? [{ title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' }]
+      : []),
   { title: 'Fermer', icon: 'ri:close-line', tabId: 'close' },
-]
+])
 
 const initialSelectedIndex = 0
 
@@ -54,6 +55,11 @@ function updateChecked(checked: boolean, value: bigint) {
     role.value.permissions &= ~value
   }
 }
+
+const typeOptions = [
+  { text: 'Managed', value: 'managed' },
+  { text: 'Custom', value: 'custom' },
+]
 </script>
 
 <template>
@@ -73,7 +79,15 @@ function updateChecked(checked: boolean, value: bigint) {
         data-testid="roleNameInput"
         label-visible
         class="mb-5"
-        :disabled="role.isEveryone || isSystem"
+        :disabled="role.isEveryone"
+      />
+      <h6>Type</h6>
+      <DsfrSelect
+        v-model="role.type"
+        select-id="roleTypeSelect"
+        :options="typeOptions"
+        class="mb-5"
+        :disabled="role.isEveryone"
       />
       <h6>Groupe OIDC</h6>
       <DsfrInput
@@ -81,7 +95,7 @@ function updateChecked(checked: boolean, value: bigint) {
         data-testid="roleOidcGroupInput"
         label-visible
         class="mb-5"
-        :disabled="role.isEveryone || isSystem"
+        :disabled="role.isEveryone"
       />
       <h6>Permissions</h6>
       <div
@@ -102,7 +116,7 @@ function updateChecked(checked: boolean, value: bigint) {
           :label="perm?.label"
           :hint="perm?.hint"
           :name="perm.key"
-          :disabled="(role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE') || role.type === 'system'"
+          :disabled="(role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE') || role.type === 'managed'"
           @update:model-value="(checked: boolean) => updateChecked(checked, PROJECT_PERMS[perm.key])"
         />
       </div>
@@ -115,7 +129,7 @@ function updateChecked(checked: boolean, value: bigint) {
         @click="$emit('save', role)"
       />
       <DsfrButton
-        v-if="!role.isEveryone && role.type !== 'system'"
+        v-if="!role.isEveryone && role.type !== 'managed'"
         data-testid="deleteBtn"
         label="Supprimer"
         secondary
