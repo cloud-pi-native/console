@@ -12,7 +12,7 @@ export function createAdminRole(data: Pick<Prisma.AdminRoleUncheckedCreateInput,
       name: data.name,
       permissions: 0n,
       position: data.position,
-      type: 'custom',
+      type: 'managed',
     },
   })
 }

@@ -2,13 +2,13 @@ import type { Project, ProjectRole } from '@prisma/client'
 import type { AdminRole, adminRoleContract } from '@cpn-console/shared'
 import { addLogs, getAdminRoleById, listAdminRoles } from '@/resources/queries-index.js'
 import type { ErrorResType } from '@/utils/errors.js'
-import { BadRequest400, Forbidden403 } from '@/utils/errors.js'
+import { BadRequest400 } from '@/utils/errors.js'
 import prisma from '@/prisma.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
 export async function listRoles() {
   return listAdminRoles()
-    .then(roles => roles.map(role => ({ ...role, permissions: role.permissions.toString(), type: role.type ?? 'custom' })))
+    .then(roles => roles.map(role => ({ ...role, permissions: role.permissions.toString(), type: role.type ?? 'managed' })))
 }
 
 export async function patchRoles(
@@ -22,10 +22,6 @@ export async function patchRoles(
   for (const dbRole of dbRoles) {
     const matchingRole = roles.find(role => role.id === dbRole.id)
     if (matchingRole) {
-      if (dbRole.type === 'system') {
-        return new Forbidden403('Impossible de modifier un rôle système')
-      }
-
       if (typeof matchingRole.position !== 'undefined' && !positionsAvailable.includes(matchingRole.position)) {
         positionsAvailable.push(matchingRole.position)
       }
@@ -42,9 +38,6 @@ export async function patchRoles(
 
   if (positionsAvailable.length && positionsAvailable.length !== dbRoles.length) return new BadRequest400('Les numéros de position des rôles sont incohérentes')
   for (const { id, ...role } of updatedRoles) {
-    if (role.type === 'system') {
-      return new Forbidden403('Ce rôle système ne peut pas être renommé')
-    }
     await prisma.adminRole.update({ where: { id }, data: role })
     const hookReply = await hook.adminRole.upsert(id)
     await addLogs({ action: 'Update Admin Role', data: hookReply, requestId })
@@ -98,7 +91,6 @@ export async function deleteRole(
 ) {
   const role = await getAdminRoleById(roleId)
   if (role) {
-    if (role.type === 'system') return new Forbidden403('Impossible de supprimer un rôle système')
     const hookReply = await hook.adminRole.delete(role)
     await addLogs({ action: 'Delete Admin Role', data: hookReply, requestId })
   }

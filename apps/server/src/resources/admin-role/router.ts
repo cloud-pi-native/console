@@ -68,7 +68,6 @@ export function adminRoleRouter() {
       if (!AdminAuthorized.ManageRoles(perms.adminPermissions)) return new Forbidden403()
 
       const resBody = await deleteRole(params.roleId, req.id)
-      if (resBody instanceof ErrorResType) return resBody
 
       return {
         status: 204,
