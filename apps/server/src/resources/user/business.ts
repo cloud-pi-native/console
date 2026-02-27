@@ -117,7 +117,7 @@ export async function logViaSession({ id, email, groups, ...user }: UserTrial): 
   }
 
   const matchingAdminRoles = await prisma.adminRole.findMany({
-    where: { OR: [{ oidcGroup: { in: groups } }, { id: { in: userDb.adminRoleIds } }] },
+    where: { OR: [{ oidcGroup: { in: groups } }, { id: { in: userDb.adminRoleIds } }, { oidcGroup: '/' }] },
   })
 
   const oidcRoleIds = matchingAdminRoles
