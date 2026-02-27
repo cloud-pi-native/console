@@ -136,7 +136,7 @@ describe('test admin-role business', () => {
     it('should return 403 if trying to delete system role', async () => {
       const systemRole = {
         id: roleId,
-        type: 'system',
+        type: 'managed',
       }
       prisma.adminRole.findUnique.mockResolvedValue(systemRole as any)
       prisma.user.findMany.mockResolvedValue([])
@@ -218,7 +218,7 @@ describe('test admin-role business', () => {
         permissions: 10n,
         position: 0,
         oidcGroup: 'admin-group',
-        type: 'system',
+        type: 'managed',
       }
       prisma.adminRole.findMany.mockResolvedValue([systemRole])
 
@@ -297,7 +297,7 @@ describe('test admin-role business', () => {
     it('should return 403 if trying to update system role', async () => {
       const systemRole = {
         id: faker.string.uuid(),
-        type: 'system',
+        type: 'managed',
         name: 'sys',
         permissions: 0n,
         position: 0,

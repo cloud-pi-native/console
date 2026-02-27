@@ -117,7 +117,7 @@ export async function logViaSession({ id, email, groups, ...user }: UserTrial): 
   }
 
   const matchingAdminRoles = await prisma.adminRole.findMany({
-    where: { OR: [{ oidcGroup: { in: groups } }, { id: { in: userDb.adminRoleIds } }] },
+    where: { OR: [{ oidcGroup: { in: groups } }, { id: { in: userDb.adminRoleIds } }, { type: 'global' }] },
   })
 
   const oidcRoleIds = matchingAdminRoles
@@ -154,12 +154,16 @@ export async function logViaToken(pass: string): Promise<({ user: UserWithTokenI
     return TokenInvalidReason.NOT_FOUND
   }
 
+  const globalRoles = await prisma.adminRole.findMany({ where: { type: 'global' }, select: { permissions: true } })
+  const globalPerms = globalRoles.reduce((acc, curr) => acc | curr.permissions, 0n)
+  const adminPerms = token?.permissions ?? await getAdminRolesAndSum(token.owner.adminRoleIds)
+
   return {
     user: {
       ...token.owner,
       tokenId: token.id,
     },
-    adminPerms: token?.permissions ?? await getAdminRolesAndSum(token.owner.adminRoleIds),
+    adminPerms: globalPerms | adminPerms,
   }
 }
 
