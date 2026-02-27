@@ -51,6 +51,14 @@ export const data = {
       name: 'Lecture Seule Plateforme',
       type: 'system',
     },
+    {
+      id: '034f589f-1750-4b15-bb34-4cd995e7fcaa',
+      permissions: '25608',
+      position: 0,
+      oidcGroup: '/console',
+      name: 'Tout le monde',
+      type: 'system',
+    },
   ],
   kubeconfig: [
     {
