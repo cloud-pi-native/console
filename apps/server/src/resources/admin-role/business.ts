@@ -22,7 +22,7 @@ export async function patchRoles(
   for (const dbRole of dbRoles) {
     const matchingRole = roles.find(role => role.id === dbRole.id)
     if (matchingRole) {
-      if (dbRole.type === 'system') {
+      if (dbRole.type === 'managed') {
         return new Forbidden403('Impossible de modifier un rôle système')
       }
 
@@ -42,7 +42,7 @@ export async function patchRoles(
 
   if (positionsAvailable.length && positionsAvailable.length !== dbRoles.length) return new BadRequest400('Les numéros de position des rôles sont incohérentes')
   for (const { id, ...role } of updatedRoles) {
-    if (role.type === 'system') {
+    if (role.type === 'managed') {
       return new Forbidden403('Ce rôle système ne peut pas être renommé')
     }
     await prisma.adminRole.update({ where: { id }, data: role })
@@ -98,7 +98,7 @@ export async function deleteRole(
 ) {
   const role = await getAdminRoleById(roleId)
   if (role) {
-    if (role.type === 'system') return new Forbidden403('Impossible de supprimer un rôle système')
+    if (role.type === 'managed') return new Forbidden403('Impossible de supprimer un rôle système')
     const hookReply = await hook.adminRole.delete(role)
     await addLogs({ action: 'Delete Admin Role', data: hookReply, requestId })
   }

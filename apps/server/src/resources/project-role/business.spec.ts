@@ -213,7 +213,7 @@ describe('test project-role business', () => {
         permissions: 4n,
         position: 50,
         oidcGroup: '',
-        type: 'system',
+        type: 'managed',
       }
       prisma.projectRole.findUnique.mockResolvedValue(dbRole)
 
@@ -289,7 +289,7 @@ describe('test project-role business', () => {
         position: 0,
         projectId,
         oidcGroup: 'admin-group',
-        type: 'system',
+        type: 'managed',
       }
       prisma.project.findUnique.mockResolvedValue({ name: 'My Project', slug: 'myproject' } as any)
       prisma.projectRole.findMany.mockResolvedValue([systemRole])

@@ -30,7 +30,7 @@ export async function patchRoles(projectId: Project['id'], roles: typeof project
   for (const dbRole of dbRoles) {
     const matchingRole = roles.find(role => role.id === dbRole.id)
     if (matchingRole) {
-      if (dbRole.type === 'system') {
+      if (dbRole.type === 'managed') {
         return new Forbidden403('Ce rôle système ne peut pas être renommé')
       }
 
@@ -70,7 +70,7 @@ export async function createRole(projectId: Project['id'], role: typeof projectR
     select: { position: true },
   }))?.position ?? -1
 
-  if (role.type === 'system') {
+  if (role.type === 'managed') {
     return new Forbidden403('Ce rôle système ne peut pas être renommé')
   }
 
@@ -107,7 +107,7 @@ export async function countRolesMembers(projectId: Project['id']) {
 
 export async function deleteRole(roleId: Project['id']) {
   const role = await prisma.projectRole.findUnique({ where: { id: roleId } })
-  if (role?.type === 'system') {
+  if (role?.type === 'managed') {
     return new Forbidden403('Ce rôle système ne peut pas être supprimé')
   }
   await hook.projectRole.delete(roleId)
