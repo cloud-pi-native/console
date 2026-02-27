@@ -19,7 +19,7 @@ export const ProjectRoleSchema = RoleSchema.extend({
 
 export const AdminRoleSchema = RoleSchema.extend({
   oidcGroup: z.string(),
-  type: z.string().optional().default('custom'),
+  type: z.string().optional().default('managed'),
 })
 
 export const RoleNameCsvSchema = z.string()
