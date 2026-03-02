@@ -47,6 +47,22 @@ export class ConfigurationService {
   mockPlugins = process.env.MOCK_PLUGINS === 'true'
   projectRootDir = process.env.PROJECTS_ROOT_DIR
   pluginsDir = process.env.PLUGINS_DIR ?? '/plugins'
+
+  // gitlab
+  gitlabToken = process.env.GITLAB_TOKEN
+  gitlabUrl = process.env.GITLAB_URL
+  gitlabInternalUrl = process.env.GITLAB_INTERNAL_URL
+    ? process.env.GITLAB_INTERNAL_URL
+    : process.env.GITLAB_URL
+
+  // vault
+  vaultToken = process.env.VAULT_TOKEN
+  vaultUrl = process.env.VAULT_URL
+  vaultInternalUrl = process.env.VAULT_INTERNAL_URL
+    ? process.env.VAULT_INTERNAL_URL
+    : process.env.VAULT_URL
+  vaultKvName = process.env.VAULT_KV_NAME ?? 'forge-dso'
+
   NODE_ENV
     = process.env.NODE_ENV === 'test'
       ? 'test'
