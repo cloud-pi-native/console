@@ -410,6 +410,9 @@ importers:
       '@gitbeaker/core':
         specifier: ^40.6.0
         version: 40.6.0
+      '@gitbeaker/requester-utils':
+        specifier: ^40.6.0
+        version: 40.6.0
       '@gitbeaker/rest':
         specifier: ^40.6.0
         version: 40.6.0
@@ -10743,7 +10746,7 @@ snapshots:
   '@gitbeaker/requester-utils@40.6.0':
     dependencies:
       picomatch-browser: 2.2.6
-      qs: 6.14.0
+      qs: 6.14.1
       rate-limiter-flexible: 4.0.1
       xcase: 2.0.1
 
@@ -12760,7 +12763,7 @@ snapshots:
       http-errors: 2.0.0
       iconv-lite: 0.7.1
       on-finished: 2.4.1
-      qs: 6.14.0
+      qs: 6.14.1
       raw-body: 3.0.2
       type-is: 2.0.1
     transitivePeerDependencies:
@@ -17007,7 +17010,7 @@ snapshots:
   request-oauth@1.0.1:
     dependencies:
       oauth-sign: 0.9.0
-      qs: 6.14.0
+      qs: 6.14.1
       uuid: 8.3.2
 
   request-progress@3.0.0:
