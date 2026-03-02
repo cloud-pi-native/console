@@ -67,6 +67,44 @@ services:
     networks:
       - dso-network
 
+  server-nestjs:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: apps/server-nestjs/Dockerfile
+      target: prod
+    image: dso-console/server-nestjs:prod
+    container_name: dso-console_server-nestjs
+    depends_on:
+      postgres:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
+    env_file:
+      - ../apps/server-nestjs/.env.docker
+    environment:
+      NODE_ENV: production
+      DEV_SETUP: "true"
+    networks:
+      - dso-network
+
+  nginx-strangler:
+    restart: unless-stopped
+    build:
+      context: ../nginx
+    image: dso-console/nginx-strangler:prod
+    container_name: dso-console_nginx-strangler
+    depends_on:
+      server:
+        condition: service_started
+      server-nestjs:
+        condition: service_started
+    environment:
+      LEGACY_UPSTREAM: "server:8080"
+      NESTJS_UPSTREAM: "server-nestjs:3001"
+    networks:
+      - dso-network
+
   client:
     build:
       context: ..
@@ -75,7 +113,7 @@ services:
     image: dso-console/client:prod
     container_name: dso-console_client
     depends_on:
-      server:
+      nginx-strangler:
         condition: service_started
     ports:
       - 8080:8080
@@ -94,7 +132,6 @@ services:
     image: dso-console/opencds-mockoon:prod
     container_name: dso-opencds_mockoon
     user: root
-    depends_on:
     ports:
       - 6000:6000
     networks:
