@@ -1,0 +1,64 @@
+# =============================================================================
+# Exemple de configuration nginx-strangler pour le développement local
+# (pnpm dev — server et server-nestjs tournent nativement, hors Docker)
+#
+# Ce fichier est fourni à titre documentaire.
+# En pratique, le docker-compose.local.yml injecte directement les variables
+# d'environnement LEGACY_UPSTREAM et NESTJS_UPSTREAM dans le conteneur
+# nginx-strangler via envsubst, sans qu'il soit nécessaire de modifier ce fichier.
+#
+# Pour lancer le nginx-strangler en mode local :
+#
+#   docker compose -f docker/docker-compose.local.yml up nginx-strangler
+#
+# Les valeurs par défaut dans docker-compose.local.yml :
+#   LEGACY_UPSTREAM=host.docker.internal:4000   (server Fastify natif)
+#   NESTJS_UPSTREAM=host.docker.internal:3001   (server-nestjs natif)
+#
+# Si vos servers écoutent sur des ports différents, surcharger les variables :
+#
+#   LEGACY_UPSTREAM=host.docker.internal:4000 \
+#   NESTJS_UPSTREAM=host.docker.internal:3001 \
+#   docker compose -f docker/docker-compose.local.yml up nginx-strangler
+#
+# Le nginx-strangler est alors accessible sur http://localhost:8082
+# (le client Vue.js en dev natif doit pointer son proxy /api vers localhost:8082)
+# =============================================================================
+
+upstream server-legacy {
+    server host.docker.internal:4000;
+}
+
+upstream server-nestjs {
+    server host.docker.internal:3001;
+}
+
+server {
+    listen 8080;
+
+    # ── Routes migrées vers NestJS ────────────────────────────────────────────
+    # (vide au démarrage — toutes les routes sont en fallback sur server-legacy)
+
+    # ── Fallback : tout le reste vers le server legacy ────────────────────────
+    location /api/ {
+        proxy_pass         http://server-legacy;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Upgrade           $http_upgrade;
+        proxy_set_header   Connection        "upgrade";
+        proxy_buffering    off;
+        proxy_redirect     off;
+    }
+
+    location /swagger-ui {
+        proxy_pass         http://server-legacy;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+}
