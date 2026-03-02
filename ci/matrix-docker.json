@@ -8,6 +8,14 @@
     }
   },
   {
+    "name": "server-nestjs",
+    "build": {
+      "context": "./",
+      "dockerfile": "./apps/server-nestjs/Dockerfile",
+      "target": "prod"
+    }
+  },
+  {
     "name": "client",
     "build": {
       "context": "./",
