@@ -34,6 +34,15 @@ export class ConfigurationService {
     = process.env.CONTACT_EMAIL
       ?? 'cloudpinative-relations@interieur.gouv.fr'
 
+  // argocd
+  argoNamespace = process.env.ARGO_NAMESPACE ?? 'argocd'
+  argocdUrl = process.env.ARGOCD_URL
+  argocdExtraRepositories = process.env.ARGOCD_EXTRA_REPOSITORIES
+
+  // dso
+  dsoEnvChartVersion = process.env.DSO_ENV_CHART_VERSION ?? 'dso-env-1.6.0'
+  dsoNsChartVersion = process.env.DSO_NS_CHART_VERSION ?? 'dso-ns-1.1.5'
+
   // plugins
   mockPlugins = process.env.MOCK_PLUGINS === 'true'
   projectRootDir = process.env.PROJECTS_ROOT_DIR
