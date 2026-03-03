@@ -154,6 +154,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      packages: write
     needs:
       - matrix
     strategy:
@@ -236,4 +237,4 @@ jobs:
       - name: Publish package
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         run: |
-          pnpm --filter ${{ matrix.modules.name }} publish --no-git-checks --report-summary
+          pnpm --filter ${{ matrix.modules.name }} publish --provenance --no-git-checks --report-summary
