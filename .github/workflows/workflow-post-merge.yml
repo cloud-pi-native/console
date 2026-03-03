@@ -11,7 +11,6 @@ env:
 permissions:
   contents: read
   id-token: write
-  packages: write
 
 jobs:
   path-filter:

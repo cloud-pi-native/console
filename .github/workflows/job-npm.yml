@@ -154,7 +154,6 @@ jobs:
     permissions:
       contents: read
       id-token: write
-      packages: write
     needs:
       - matrix
     strategy:
