@@ -195,7 +195,6 @@ jobs:
         with:
           node-version: "${{ inputs.NODE_VERSION }}"
           registry-url: "https://registry.npmjs.org"
-          always-auth: true
 
       - name: Get pnpm store directory
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
@@ -238,6 +237,3 @@ jobs:
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         run: |
           pnpm --filter ${{ matrix.modules.name }} publish --no-git-checks --report-summary
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          NPM_CONFIG_PROVENANCE: true
