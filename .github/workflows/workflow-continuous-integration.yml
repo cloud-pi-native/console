@@ -68,21 +68,6 @@ jobs:
       - name: Exposing env vars
         run: echo "Exposing env vars."
 
-  npm-check:
-    uses: ./.github/workflows/job-npm.yml
-    if: ${{ github.base_ref == 'main' && needs.path-filter.outputs.packages == 'true' }}
-    needs:
-      - path-filter
-      - expose-vars
-    with:
-      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
-      PUBLISH_APPS: false
-      PUBLISH_PACKAGES: false
-      PUBLISH_PLUGINS: false
-      CHECK_CHANGES: true
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
   lint:
     uses: ./.github/workflows/job-lint.yml
     needs:

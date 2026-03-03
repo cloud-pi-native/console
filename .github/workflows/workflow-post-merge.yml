@@ -1,0 +1,79 @@
+name: Post-merge
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  NODE_VERSION: 24.13.1
+
+permissions:
+  contents: read
+
+jobs:
+  path-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.filter.outputs.apps }}
+      packages: ${{ steps.filter.outputs.packages }}
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v4
+
+      - name: Check updated files paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            apps:
+              - 'apps/**'
+            packages:
+              - 'packages/**'
+              - 'plugins/**'
+
+  expose-vars:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request.draft }}
+    outputs:
+      NODE_VERSION: ${{ env.NODE_VERSION }}
+    steps:
+      - name: Exposing env vars
+        run: echo "Exposing env vars."
+
+  npm-publish:
+    uses: ./.github/workflows/job-npm.yml
+    needs:
+      - path-filter
+      - expose-vars
+    with:
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      PUBLISH_APPS: true
+      PUBLISH_PACKAGES: true
+      PUBLISH_PLUGINS: true
+      CHECK_CHANGES: true
+
+  # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
+  all-jobs-passed:
+    name: Check jobs status
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs:
+      - path-filter
+      - expose-vars
+      - npm-publish
+    steps:
+      - name: Check status of all required jobs
+        run: |-
+          NEEDS_CONTEXT='${{ toJson(needs) }}'
+          JOB_IDS=$(echo "$NEEDS_CONTEXT" | jq -r 'keys[]')
+          for JOB_ID in $JOB_IDS; do
+            RESULT=$(echo "$NEEDS_CONTEXT" | jq -r ".[\"$JOB_ID\"].result")
+            echo "$JOB_ID job result: $RESULT"
+            if [[ $RESULT != "success" && $RESULT != "skipped" ]]; then
+              echo "***"
+              echo "Error: The $JOB_ID job did not pass."
+              exit 1
+            fi
+          done
+          echo "All jobs passed or were skipped."
