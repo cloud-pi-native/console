@@ -89,6 +89,8 @@ jobs:
     strategy:
       matrix:
         packages: ${{ fromJSON(needs.path-filter.outputs.packages) }}
+      # Allow jobs to be processed independently
+      fail-fast: false
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v4
