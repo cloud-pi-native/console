@@ -25,6 +25,7 @@ export class ConfigurationService {
   keycloakClientId = process.env.KEYCLOAK_CLIENT_ID
   keycloakClientSecret = process.env.KEYCLOAK_CLIENT_SECRET
   keycloakRedirectUri = process.env.KEYCLOAK_REDIRECT_URI
+  keycloakControllerPurgeOrphans = Boolean(process.env.KEYCLOAK_RECONCILER_PURGE_ORPHANS)
   adminsUserId = process.env.ADMIN_KC_USER_ID
     ? process.env.ADMIN_KC_USER_ID.split(',')
     : []
@@ -33,10 +34,36 @@ export class ConfigurationService {
     = process.env.CONTACT_EMAIL
       ?? 'cloudpinative-relations@interieur.gouv.fr'
 
+  // argocd
+  argoNamespace = process.env.ARGO_NAMESPACE ?? 'argocd'
+  argocdUrl = process.env.ARGOCD_URL
+  argocdExtraRepositories = process.env.ARGOCD_EXTRA_REPOSITORIES
+
+  // dso
+  dsoEnvChartVersion = process.env.DSO_ENV_CHART_VERSION ?? 'dso-env-1.6.0'
+  dsoNsChartVersion = process.env.DSO_NS_CHART_VERSION ?? 'dso-ns-1.1.5'
+
   // plugins
   mockPlugins = process.env.MOCK_PLUGINS === 'true'
   projectRootDir = process.env.PROJECTS_ROOT_DIR
   pluginsDir = process.env.PLUGINS_DIR ?? '/plugins'
+
+  // gitlab
+  gitlabToken = process.env.GITLAB_TOKEN
+  gitlabUrl = process.env.GITLAB_URL
+  gitlabInternalUrl = process.env.GITLAB_INTERNAL_URL
+    ? process.env.GITLAB_INTERNAL_URL
+    : process.env.GITLAB_URL
+
+  // vault
+  vaultToken = process.env.VAULT_TOKEN
+  vaultUrl = process.env.VAULT_URL
+  vaultInternalUrl = process.env.VAULT_INTERNAL_URL
+    ? process.env.VAULT_INTERNAL_URL
+    : process.env.VAULT_URL
+
+  vaultKvName = process.env.VAULT_KV_NAME ?? 'forge-dso'
+
   NODE_ENV
     = process.env.NODE_ENV === 'test'
       ? 'test'
