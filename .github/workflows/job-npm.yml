@@ -217,9 +217,13 @@ jobs:
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         run: pnpm install --frozen-lockfile
 
-      - name: Build internal dependencies
+      - name: Build internal dependency shared
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         run: pnpm --filter @cpn-console/shared run build
+
+      - name: Build internal dependency hooks
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        run: pnpm --filter @cpn-console/hooks run build
 
       - name: Update dependencies after building internal dependencies
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
