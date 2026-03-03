@@ -151,7 +151,7 @@ Cette modularisation est documentée dans plusieurs fichiers :
 ### Responsable modularisation
 - **Lead technique** : @stephane.trebel
 - **Canal Mattermost** : #backend-modularisation
-- **Réunions** : Hebdo modularisation (les jeudis à 10 h, 30 min)
+- **Réunions** : Hebdo modularisation (les jeudis à 10h, 30 min)
 
 ### Escalade
 - **Problème technique bloquant** : Contacter @lead-dev immédiatement

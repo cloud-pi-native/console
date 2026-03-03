@@ -69,7 +69,7 @@ npx depcruise src --output-type err
    - Objectif : Migrer le gros du trafic
 
 3. **Phase de finalisation (S9-S12)** : Modules périphériques
-   - Plugins qui doivent exister impérativement (Kubernetes, Gitlab, etc. -LISTE À DEFINIR-)
+   - Plugins qui doivent exister impérativement (Kubernetes, Gitlab, etc. -LISTE À DEFINIR-)
    - Objectif : Compléter la modularisation, suppression de `server` et renommage de `server-nestjs` en `server`
 
 ## 🔄 Gestion du passage simple singleton node.js → Injection de dépendances dans des services singleton

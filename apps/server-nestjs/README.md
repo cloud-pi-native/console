@@ -13,7 +13,6 @@ Front", à un backend qui va gérer à la fois le Front et le Back de différent
 fonctionnalités (appelée "Plugins"), et ce parfois de manière dynamique (mais
 déjà en statique, ce sera pas mal 😅).
 
-
 ## Conséquences pour apps/server
 
 On va donc passer de ça :
@@ -279,7 +278,7 @@ flowchart TD
             GitlabDTOService --> DatabaseService
             GitlabDTOService --> LoggerService
         end
-        
+
         subgraph ArgoCDModule["ArgoCDModule"]
             ArgoCDController["ArgoCDController"]
             ArgoCDBusinessService["ArgoCDBusinessService"]
@@ -291,7 +290,7 @@ flowchart TD
             ArgoCDDTOService --> DatabaseService
             ArgoCDDTOService --> LoggerService
         end
-        
+
         subgraph KubernetesModule["KubernetesModule"]
             KubernetesController["KubernetesController"]
             KubernetesBusinessService["KubernetesBusinessService"]
@@ -303,7 +302,7 @@ flowchart TD
             KubernetesDTOService --> DatabaseService
             KubernetesDTOService --> LoggerService
         end
-        
+
         subgraph AdminRoleModule["AdminRoleModule"]
             AdminRoleController["AdminRoleController"]
             AdminRoleBusinessService["AdminRoleBusinessService"]
@@ -315,7 +314,7 @@ flowchart TD
             AdminRoleDTOService --> LoggerService
             AdminRoleDTOService --> DatabaseService
         end
-        
+
         subgraph AdminTokenModule["AdminTokenModule"]
             AdminTokenController["AdminTokenController"]
             AdminTokenBusinessService["AdminTokenBusinessService"]
@@ -327,7 +326,7 @@ flowchart TD
             AdminTokenDTOService --> DatabaseService
             AdminTokenDTOService --> LoggerService
         end
-        
+
         subgraph ClusterModule["ClusterModule"]
             ClusterController["ClusterController"]
             ClusterBusinessService["ClusterBusinessService"]
@@ -389,7 +388,6 @@ de `server`. En attendant de pouvoir s'en débarrasser, et afin de s'assurer que
 leur code n'est pas utilisé dans d'autres parties du backend, on va commenter
 l'intégralité de ces fichiers (comme ça pas d'erreur d'import quand on les
 supprimera).
-
 
 Voilà donc la liste des fichiers "dépréciés" :
 
