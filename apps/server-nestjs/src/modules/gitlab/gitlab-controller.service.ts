@@ -8,6 +8,7 @@ import type { ProjectWithDetails } from './gitlab-datastore.service'
 import { GitlabService } from './gitlab.service'
 import { VaultService } from '../vault/vault.service'
 import { INFRA_APPS_REPO_NAME, INTERNAL_MIRROR_REPO_NAME } from './gitlab.constant'
+import { getAll } from './gitlab.utils'
 
 @Injectable()
 export class GitlabControllerService {
@@ -51,7 +52,6 @@ export class GitlabControllerService {
 
   private async reconcileProject(project: ProjectWithDetails) {
     try {
-      await this.gitlabService.getOrCreateProjectSubgroup(project.slug)
       await this.ensureMembers(project)
       await this.ensureRepositories(project)
     } catch (error) {
@@ -61,19 +61,15 @@ export class GitlabControllerService {
   }
 
   private async ensureMembers(project: ProjectWithDetails) {
-    const group = await this.gitlabService.getOrCreateProjectSubgroup(project.slug)
+    const group = await this.gitlabService.getOrCreateProjectSubGroup(project.slug)
     const currentMembers = await this.gitlabService.getGroupMembers(group.id)
     const projectUsers = project.members.map(m => m.user)
 
-    // Upsert users
     const gitlabUsers = await Promise.all(projectUsers.map(async (user) => {
       let gitlabUser = await this.gitlabService.findUserByEmail(user.email)
       const username = user.email.split('@')[0]
 
       if (!gitlabUser) {
-        // Create user if not found. Note: In real env, might depend on SSO.
-        // But plugin does create it.
-        // Using dummy password as in plugin logic (or service logic I added)
         try {
           gitlabUser = await this.gitlabService.createUser(user.email, username, `${user.firstName} ${user.lastName}`)
         } catch (e) {
@@ -86,29 +82,29 @@ export class GitlabControllerService {
 
     const validGitlabUsers = gitlabUsers.filter(u => u !== null)
 
-    // Add missing members
+    await this.addMissingMembers(group.id, validGitlabUsers, currentMembers)
+    await this.purgeOrphanMembers(group.id, validGitlabUsers, currentMembers)
+  }
+
+  private async addMissingMembers(groupId: number, validGitlabUsers: any[], currentMembers: any[]) {
     for (const user of validGitlabUsers) {
       if (!currentMembers.find(m => m.id === user.gitlabId)) {
-        // Access level 30 = Developer. Plugin uses Developer by default.
-        // TODO: Check permissions/roles if needed.
-        await this.gitlabService.addGroupMember(group.id, user.gitlabId, 30)
+        await this.gitlabService.addGroupMember(groupId, user.gitlabId, 30)
       }
     }
+  }
 
-    // Remove extra members
+  private async purgeOrphanMembers(groupId: number, validGitlabUsers: any[], currentMembers: any[]) {
     for (const member of currentMembers) {
-      // Ignore bots
       if (member.username.match(/group_\d+_bot/)) continue
-      // Ignore root/admin if needed? Plugin ignores root (id 1) in checkApi but ensureMembers just checks against project users.
-
       if (!validGitlabUsers.find(u => u.gitlabId === member.id)) {
-        await this.gitlabService.removeGroupMember(group.id, member.id)
+        await this.gitlabService.removeGroupMember(groupId, member.id)
       }
     }
   }
 
   private async ensureRepositories(project: ProjectWithDetails) {
-    const gitlabRepositories = await this.gitlabService.listRepositories(project.slug)
+    const gitlabRepositories = await getAll(this.gitlabService.getRepositories(project.slug))
     const projectMirrorCreds = await this.getProjectMirrorCreds(project.slug)
     await this.syncProjectRepositories(project, gitlabRepositories, projectMirrorCreds)
     await this.ensureSpecialRepositories(project, gitlabRepositories)
@@ -116,53 +112,59 @@ export class GitlabControllerService {
 
   private async syncProjectRepositories(project: ProjectWithDetails, gitlabRepositories: ProjectSchema[], projectMirrorCreds: { MIRROR_USER: string, MIRROR_TOKEN: string }) {
     for (const repo of project.repositories) {
-      let gitlabRepo = gitlabRepositories.find(r => r.name === repo.internalRepoName)
-      if (!gitlabRepo) {
-        gitlabRepo = await this.gitlabService.createEmptyProjectRepository(
-          project.slug,
-          repo.internalRepoName,
-          undefined,
-          !!repo.externalRepoUrl,
-        )
-      }
+      await this.ensureRepository(project, repo, gitlabRepositories)
 
-      // Handle Vault secrets for mirroring
       if (repo.externalRepoUrl) {
-        const vaultCredsPath = `${this.configService.projectRootPath}/${project.slug}/${repo.internalRepoName}-mirror`
-        const currentVaultSecret = await this.vaultService.read(vaultCredsPath)
-
-        const internalRepoUrl = await this.gitlabService.getPublicRepoUrl(repo.internalRepoName)
-        // Service getPublicRepoUrl returns config.gitlabUrl/...
-        // Service needs getInternalRepoUrl returning config.gitlabInternalUrl/...
-        // I should add getInternalRepoUrl to GitlabService or use config directly.
-        // But wait, GitlabService has getPublicRepoUrl.
-        // Plugin uses getInternalRepoUrl for mirroring.
-
-        // Let's assume for now we use what we have or add it.
-        // I'll add getInternalRepoUrl to GitlabService later or now.
-        // For now, let's construct it or assume public is fine for logic structure.
-
-        const externalRepoUrn = repo.externalRepoUrl.split(/:\/\/(.*)/s)[1]
-        const internalRepoUrn = internalRepoUrl.split(/:\/\/(.*)/s)[1] // Hacky
-
-        const mirrorSecretData = {
-          GIT_INPUT_URL: externalRepoUrn,
-          GIT_INPUT_USER: repo.isPrivate ? repo.externalUserName : undefined,
-          GIT_INPUT_PASSWORD: currentVaultSecret?.GIT_INPUT_PASSWORD, // Preserve existing password as it's not in DB
-          GIT_OUTPUT_URL: internalRepoUrn,
-          GIT_OUTPUT_USER: projectMirrorCreds.MIRROR_USER,
-          GIT_OUTPUT_PASSWORD: projectMirrorCreds.MIRROR_TOKEN,
-        }
-
-        // Write to vault if changed
-        // Using simplified check
-        await this.vaultService.write(mirrorSecretData, vaultCredsPath)
+        await this.configureRepositoryMirroring(project, repo, projectMirrorCreds)
       } else {
-        // If no external URL, destroy secret if exists
-        const vaultCredsPath = `${this.configService.projectRootPath}/${project.slug}/${repo.internalRepoName}-mirror`
-        await this.vaultService.destroy(vaultCredsPath)
+        await this.cleanupMirrorSecrets(project, repo)
       }
     }
+  }
+
+  private async ensureRepository(project: ProjectWithDetails, repo: any, gitlabRepositories: ProjectSchema[]) {
+    let gitlabRepo = gitlabRepositories.find(r => r.name === repo.internalRepoName)
+    if (!gitlabRepo) {
+      gitlabRepo = await this.gitlabService.createEmptyProjectRepository(
+        project.slug,
+        repo.internalRepoName,
+        undefined,
+        !!repo.externalRepoUrl,
+      )
+    }
+    return gitlabRepo
+  }
+
+  private async configureRepositoryMirroring(
+    project: ProjectWithDetails,
+    repo: any,
+    projectMirrorCreds: { MIRROR_USER: string, MIRROR_TOKEN: string },
+  ) {
+    const vaultCredsPath = `${this.configService.projectRootPath}/${project.slug}/${repo.internalRepoName}-mirror`
+    const currentVaultSecret = await this.vaultService.read(vaultCredsPath)
+
+    const internalRepoUrl = await this.gitlabService.getInternalRepoUrl(project.slug, repo.internalRepoName)
+    const externalRepoUrn = repo.externalRepoUrl.split(/:\/\/(.*)/s)[1]
+    const internalRepoUrn = internalRepoUrl.split(/:\/\/(.*)/s)[1]
+
+    const mirrorSecretData = {
+      GIT_INPUT_URL: externalRepoUrn,
+      GIT_INPUT_USER: repo.isPrivate ? repo.externalUserName : undefined,
+      GIT_INPUT_PASSWORD: currentVaultSecret?.GIT_INPUT_PASSWORD, // Preserve existing password as it's not in DB
+      GIT_OUTPUT_URL: internalRepoUrn,
+      GIT_OUTPUT_USER: projectMirrorCreds.MIRROR_USER,
+      GIT_OUTPUT_PASSWORD: projectMirrorCreds.MIRROR_TOKEN,
+    }
+
+    // Write to vault if changed
+    // Using simplified check
+    await this.vaultService.write(mirrorSecretData, vaultCredsPath)
+  }
+
+  private async cleanupMirrorSecrets(project: ProjectWithDetails, repo: any) {
+    // If no external URL, destroy secret if exists
+    const vaultCredsPath = `${this.configService.projectRootPath}/${project.slug}/${repo.internalRepoName}-mirror`
+    await this.vaultService.destroy(vaultCredsPath)
   }
 
   private async ensureSpecialRepositories(project: ProjectWithDetails, gitlabRepositories: ProjectSchema[]) {
@@ -174,7 +176,7 @@ export class GitlabControllerService {
     const mirrorRepo = gitlabRepositories.find(r => r.name === INTERNAL_MIRROR_REPO_NAME)
     if (!mirrorRepo) {
       const newMirrorRepo = await this.gitlabService.createEmptyProjectRepository(project.slug, INTERNAL_MIRROR_REPO_NAME, undefined, false)
-      await this.gitlabService.provisionMirror(newMirrorRepo.id)
+      await this.gitlabService.commitMirror(newMirrorRepo.id)
     }
 
     // Setup Trigger Token for mirror repo

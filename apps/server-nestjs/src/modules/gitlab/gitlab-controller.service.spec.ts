@@ -15,23 +15,21 @@ function createGitlabControllerServiceTestingModule() {
       {
         provide: GitlabService,
         useValue: {
-          getOrCreateProjectSubgroup: vi.fn(),
+          getOrCreateProjectSubGroup: vi.fn(),
           getGroupMembers: vi.fn(),
           addGroupMember: vi.fn(),
           removeGroupMember: vi.fn(),
           findUserByEmail: vi.fn(),
           createUser: vi.fn(),
-          listRepositories: vi.fn(),
+          getRepositories: vi.fn(),
           createEmptyProjectRepository: vi.fn(),
           getProjectToken: vi.fn(),
-          getPublicRepoUrl: vi.fn(),
-          commitCreateOrUpdate: vi.fn(),
+          getInfraGroupRepoPublicUrl: vi.fn(),
+          maybeCommitUpdate: vi.fn(),
           deleteGroup: vi.fn(),
-          provisionMirror: vi.fn(),
+          commitMirror: vi.fn(),
           getMirrorProjectTriggerToken: vi.fn(),
-          deleteRepository: vi.fn(),
           createProjectToken: vi.fn(),
-          updateProject: vi.fn(),
         } satisfies Partial<GitlabService>,
       },
       {
@@ -93,21 +91,21 @@ describe('gitlabControllerService', () => {
       } as GroupSchema
 
       // Mock implementations
-      gitlabService.getOrCreateProjectSubgroup.mockResolvedValue(group)
+      gitlabService.getOrCreateProjectSubGroup.mockResolvedValue(group)
       gitlabService.getGroupMembers.mockResolvedValue([])
-      gitlabService.listRepositories.mockResolvedValue([])
+      gitlabService.getRepositories.mockReturnValue((async function* () { })())
       gitlabService.getProjectToken.mockResolvedValue({ token: 'token' } as AccessTokenExposedSchema)
       gitlabService.createEmptyProjectRepository.mockResolvedValue({ id: 1 } as ProjectSchema)
-      gitlabService.getPublicRepoUrl.mockResolvedValue('http://gitlab/repo')
+      gitlabService.getInfraGroupRepoPublicUrl.mockResolvedValue('http://gitlab/repo')
       gitlabService.getMirrorProjectTriggerToken.mockResolvedValue({ repoId: 1, token: 'trigger-token', id: 1 })
       gitlabService.findUserByEmail.mockResolvedValue({ id: 123, username: 'user' } as SimpleUserSchema)
       vaultService.read.mockResolvedValue({ MIRROR_TOKEN: 'token' })
 
       await service.handleUpsert(project)
 
-      expect(gitlabService.getOrCreateProjectSubgroup).toHaveBeenCalledWith(project.slug)
+      expect(gitlabService.getOrCreateProjectSubGroup).toHaveBeenCalledWith(project.slug)
       expect(gitlabService.getGroupMembers).toHaveBeenCalledWith(group.id)
-      expect(gitlabService.listRepositories).toHaveBeenCalledWith(project.slug)
+      expect(gitlabService.getRepositories).toHaveBeenCalledWith(project.slug)
     })
   })
 })
