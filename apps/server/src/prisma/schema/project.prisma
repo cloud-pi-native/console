@@ -67,7 +67,7 @@ model ProjectRole {
   projectId   String  @db.Uuid
   position    Int     @db.SmallInt
   oidcGroup   String  @default("")
-  type        String  @default("custom")
+  type        String  @default("managed")
   project     Project @relation(fields: [projectId], references: [id])
 }
 

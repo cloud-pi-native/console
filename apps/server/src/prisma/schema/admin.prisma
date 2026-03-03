@@ -12,7 +12,7 @@ model AdminRole {
   permissions BigInt
   position    Int    @db.SmallInt
   oidcGroup   String @default("")
-  type        String @default("custom")
+  type        String @default("managed")
 }
 
 model SystemSetting {

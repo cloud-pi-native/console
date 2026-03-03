@@ -16,7 +16,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   name: 'Nouveau rôle',
   oidcGroup: '',
-  type: 'custom',
+  type: 'managed',
 })
 const emits = defineEmits<{
   delete: []
@@ -35,19 +35,20 @@ const isUpdated = computed(() => {
   return !shallowEqual(props, role.value)
 })
 
-const isSystem = computed(() => props.type === 'system')
-
 const errorSchema = computed<SharedZodError | undefined>(() => {
   const schemaValidation = RoleSchema.partial().safeParse(role.value)
   return schemaValidation.success ? undefined : schemaValidation.error
 })
 
 const tabListName = 'Liste d’onglet'
-const tabTitles = [
+const tabTitles = computed(() => [
   { title: 'Général', icon: 'ri:checkbox-circle-line', tabId: 'general' },
-  { title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' },
+  ...(
+    role.value.type === 'managed'
+      ? [{ title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' }]
+      : []),
   { title: 'Fermer', icon: 'ri:close-line', tabId: 'close' },
-]
+])
 
 const initialSelectedIndex = 0
 
@@ -123,6 +124,12 @@ function deleteRole(confirmed: boolean) {
 function closeModal() {
   deleteModalOpened.value = false
 }
+
+const typeOptions = [
+  { text: 'Managed', value: 'managed' },
+  { text: 'External', value: 'external' },
+  { text: 'Global', value: 'global' },
+]
 </script>
 
 <template>
@@ -143,7 +150,6 @@ function closeModal() {
         label-visible
         hint="Ne doit pas dépasser 30 caractères."
         class="mb-5"
-        :disabled="isSystem"
       />
       <p
         class="fr-h6"
@@ -168,10 +174,19 @@ function closeModal() {
           :label="perm.label"
           :hint="perm?.hint"
           :name="perm.key"
-          :disabled="isSystem || (role.permissions & ADMIN_PERMS.MANAGE && perm.key !== 'MANAGE')"
+          :disabled="role.permissions & ADMIN_PERMS.MANAGE && perm.key !== 'MANAGE'"
           @update:model-value="(checked: boolean) => updateChecked(checked, perm.key)"
         />
       </div>
+      <DsfrSelect
+        v-model="role.type"
+        data-testid="roleTypeSelect"
+        select-id="roleTypeSelect"
+        label="Type"
+        label-visible
+        :options="typeOptions"
+        class="mb-5"
+      />
       <DsfrInput
         v-model="role.oidcGroup"
         data-testid="oidcGroupInput"
@@ -179,10 +194,8 @@ function closeModal() {
         label-visible
         placeholder="/admin"
         class="mb-5"
-        :disabled="isSystem"
       />
       <DsfrButton
-        v-if="!isSystem"
         data-testid="saveBtn"
         label="Enregistrer"
         secondary
@@ -191,7 +204,6 @@ function closeModal() {
         @click="$emit('save', { ...role, permissions: role.permissions.toString() })"
       />
       <DsfrButton
-        v-if="!isSystem"
         data-testid="deleteBtn"
         label="Supprimer"
         secondary
