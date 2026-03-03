@@ -1,5 +1,9 @@
 {
   "name": "@cpn-console/ts-config",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cloud-pi-native/console"
+  },
   "version": "1.1.0",
   "private": false,
   "description": "",

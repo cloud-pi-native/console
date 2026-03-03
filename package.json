@@ -4,6 +4,10 @@
   "version": "9.13.2",
   "private": true,
   "packageManager": "pnpm@10.20.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cloud-pi-native/console"
+  },
   "engines": {
     "node": ">=24.0.0",
     "npm": ">=11.0.0"
