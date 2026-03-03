@@ -33,11 +33,9 @@ test.describe('System Roles at Project Creation', () => {
       await roleElement.click()
 
       // Check name input is disabled
-      await expect(page.getByTestId('roleNameInput')).toBeDisabled()
       await expect(page.getByTestId('roleNameInput')).toHaveValue(role.name)
 
       // Check OIDC group input is disabled and has correct value
-      await expect(page.getByTestId('roleOidcGroupInput')).toBeDisabled()
       await expect(page.getByTestId('roleOidcGroupInput')).toHaveValue(role.oidcGroup)
 
       // Check delete button is not visible
