@@ -8,6 +8,7 @@ import { ConfigurationService } from '@/cpin-module/infrastructure/configuration
 import { GitlabService } from '../gitlab/gitlab.service'
 import { VaultService } from '../vault/vault.service'
 import { valuesSchema } from './argocd.utils'
+import { ProjectSchema } from '@gitbeaker/core'
 
 function createArgoCDControllerServiceTestingModule() {
   return Test.createTestingModule({
@@ -33,11 +34,11 @@ function createArgoCDControllerServiceTestingModule() {
       {
         provide: GitlabService,
         useValue: {
-          getOrCreateInfraProject: vi.fn(),
-          getPublicGroupUrl: vi.fn(),
-          getPublicRepoUrl: vi.fn(),
-          commitCreateOrUpdate: vi.fn(),
-          commitDelete: vi.fn(),
+          getOrCreateInfraGroupRepo: vi.fn(),
+          getGroupPublicUrl: vi.fn(),
+          getInfraGroupRepoPublicUrl: vi.fn(),
+          maybeCommitUpdate: vi.fn(),
+          maybeCommitDelete: vi.fn(),
           listFiles: vi.fn(),
         } satisfies Partial<GitlabService>,
       },
@@ -95,9 +96,9 @@ describe('argoCDControllerService', () => {
       } as unknown as ProjectWithDetails
 
       datastore.getAllProjects.mockResolvedValue([mockProject])
-      gitlabService.getOrCreateInfraProject.mockResolvedValue({ id: 100, http_url_to_repo: 'http://gitlab/infra' })
-      gitlabService.getPublicGroupUrl.mockResolvedValue('http://gitlab/group')
-      gitlabService.getPublicRepoUrl.mockResolvedValue('http://gitlab/infra-repo')
+      gitlabService.getOrCreateInfraGroupRepo.mockResolvedValue({ id: 100, http_url_to_repo: 'http://gitlab/infra' } as ProjectSchema)
+      gitlabService.getGroupPublicUrl.mockResolvedValue('http://gitlab/group')
+      gitlabService.getInfraGroupRepoPublicUrl.mockResolvedValue('http://gitlab/infra-repo')
       gitlabService.listFiles.mockResolvedValue([])
       vaultService.getProjectValues.mockResolvedValue({ secret: 'value' })
 
@@ -106,13 +107,13 @@ describe('argoCDControllerService', () => {
       expect(results).toHaveLength(3) // 2 envs + 1 cleanup (1 zone)
 
       // Verify Gitlab calls
-      expect(gitlabService.commitCreateOrUpdate).toHaveBeenCalledTimes(2)
+      expect(gitlabService.maybeCommitUpdate).toHaveBeenCalledTimes(2)
 
-      const calls = gitlabService.commitCreateOrUpdate.mock.calls
-      const devCall = calls.find(c => c[2] === 'Project 1/cluster-1/dev/values.yaml')
+      const devCall = gitlabService.maybeCommitUpdate.mock.calls.find(c => c[1].some(f => f.filePath === 'Project 1/cluster-1/dev/values.yaml'))
       expect(devCall).toBeDefined()
-
-      const content = valuesSchema.parse(load(devCall![1]))
+      const devCallFiles = devCall?.at(1) as { content: string; filePath: string; }[]
+      const file = devCallFiles.find(f => f.filePath === 'Project 1/cluster-1/dev/values.yaml')
+      const content = valuesSchema.parse(load(file?.content || ''))
       expect(content).toMatchObject({
         common: {
           'dso/project': 'Project 1',
@@ -170,7 +171,7 @@ describe('argoCDControllerService', () => {
       } as unknown as ProjectWithDetails
 
       datastore.getAllProjects.mockResolvedValue([mockProject])
-      gitlabService.getOrCreateInfraProject.mockRejectedValue(new Error('Sync failed'))
+      gitlabService.getOrCreateInfraGroupRepo.mockRejectedValue(new Error('Sync failed'))
 
       const results = await service.reconcile()
 

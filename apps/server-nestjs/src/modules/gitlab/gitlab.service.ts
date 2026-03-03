@@ -1,12 +1,11 @@
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import type { AccessTokenScopes, CommitAction, GroupSchema, ProjectSchema } from '@gitbeaker/core'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
-import { createHash } from 'node:crypto'
 import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
-import { readGitlabCIConfigContent, readMirrorScriptContent } from './gitlab.utils'
+import { readGitlabCIConfigContent, readMirrorScriptContent, find, offsetPaginate, hasFileContentChanged } from './gitlab.utils'
 import { GitlabClientService } from './gitlab-client.service'
-import { INTERNAL_MIRROR_REPO_NAME } from './gitlab.constant'
-import { find, offsetPaginate } from './gitlab.utils'
+import { INFRA_GROUP_NAME, INFRA_GROUP_PATH, INTERNAL_MIRROR_REPO_NAME } from './gitlab.constant'
+import { join } from 'node:path'
 
 @Injectable()
 export class GitlabService {
@@ -18,170 +17,149 @@ export class GitlabService {
   ) {
   }
 
-  private async getOrCreateProjectGroup(): Promise<number> {
-    const projectRootPath = this.configService.projectRootPath
-    if (!projectRootPath) throw new Error('projectRootPath not configured')
-
-    const group = await find(
-      offsetPaginate(opts => this.client.Groups.all({
-        search: projectRootPath,
-        ...opts,
-      })),
-      g => g.full_path === projectRootPath,
+  async getGroupByPath(path: string) {
+    return find(
+      offsetPaginate(opts => this.client.Groups.all({ search: path, ...opts })),
+      g => g.full_path === path,
     )
-    if (group?.id) return group.id
-    return this.createGroupByPath(projectRootPath)
   }
 
-  private async createGroupByPath(path: string): Promise<number> {
+  async createGroup(path: string) {
+    return this.client.Groups.create(path, path)
+  }
+
+  async createSubGroup(parentGroup: GroupSchema, name: string) {
+    return this.client.Groups.create(name, name, { parentId: parentGroup.id })
+  }
+
+  async getOrCreateGroup(path: string) {
     const parts = path.split('/')
     const rootGroupPath = parts.shift()
     if (!rootGroupPath) throw new Error('Invalid projects root dir')
 
     // Find or create root
-    let parentGroup = await find(
-      offsetPaginate(opts => this.client.Groups.all({ search: rootGroupPath, ...opts })),
-      g => g.full_path === rootGroupPath,
-    ) ?? await this.client.Groups.create(rootGroupPath, rootGroupPath)
+    let parentGroup = await this.getGroupByPath(rootGroupPath) ?? await this.createGroup(rootGroupPath)
 
     // Recursively create subgroups
     for (const part of parts) {
       const fullPath = `${parentGroup.full_path}/${part}`
-      parentGroup = await find(
-        offsetPaginate(opts => this.client.Groups.all({ search: fullPath, ...opts })),
-        g => g.full_path === fullPath,
-      ) ?? await this.client.Groups.create(part, part, { parentId: parentGroup.id })
+      parentGroup = await this.getGroupByPath(fullPath) ?? await this.createSubGroup(parentGroup, part)
     }
 
-    return parentGroup.id
+    return parentGroup
   }
 
-  async getPublicGroupUrl(): Promise<string> {
-    const rootId = await this.getOrCreateProjectGroup()
-    const group = await this.client.Groups.show(rootId)
-    return `${this.configService.gitlabUrl}/${group.full_path}`
+  async getOrCreateProjectGroup() {
+    if (!this.configService.projectRootPath) throw new Error('projectRootPath not configured')
+    return this.getOrCreateGroup(this.configService.projectRootPath)
   }
 
-  async getPublicRepoUrl(internalRepoName: string): Promise<string> {
-    const rootId = await this.getOrCreateProjectGroup()
-    const group = await this.client.Groups.show(rootId)
-    return `${this.configService.gitlabUrl}/${group.full_path}/infra/${internalRepoName}.git`
+  async getOrCreateProjectSubGroup(subGroupPath: string) {
+    if (!this.configService.projectRootPath) throw new Error('projectRootPath not configured')
+    return this.getOrCreateGroup(`${this.configService.projectRootPath}/${subGroupPath}`)
   }
 
-  async getInternalRepoUrl(internalRepoName: string): Promise<string> {
-    const rootId = await this.getOrCreateProjectGroup()
-    const group = await this.client.Groups.show(rootId)
-    return `${this.configService.gitlabInternalUrl}/${group.full_path}/infra/${internalRepoName}.git`
+  async getGroupPublicUrl(): Promise<string> {
+    const projectGroup = await this.getOrCreateProjectGroup()
+    return `${this.configService.gitlabUrl}/${projectGroup.full_path}`
   }
 
-  async getOrCreateInfraProject(zoneSlug: string): Promise<{ id: number, http_url_to_repo: string }> {
-    const rootId = await this.getOrCreateProjectGroup()
-    const infraGroupName = 'infra'
+  async getInfraGroupRepoPublicUrl(internalRepoName: string): Promise<string> {
+    const projectGroup = await this.getOrCreateProjectGroup()
+    return `${this.configService.gitlabUrl}/${projectGroup.full_path}/${INFRA_GROUP_PATH}/${internalRepoName}.git`
+  }
 
-    // Find or create 'infra' subgroup
-    const rootGroup = await this.client.Groups.show(rootId)
-    const infraGroupPath = `${rootGroup.full_path}/${infraGroupName}`
+  async getInternalRepoUrl(projectSlug: string, internalRepoName: string): Promise<string> {
+    const projectGroup = await this.getOrCreateProjectSubGroup(projectSlug)
+    return `${this.configService.gitlabInternalUrl}/${projectGroup.full_path}/${internalRepoName}.git`
+  }
 
-    let infraGroup = await find(
-      offsetPaginate(opts => this.client.Groups.all({
-        search: infraGroupName,
-        ...opts,
-      })),
-      g => g.full_path === infraGroupPath,
-    )
-
-    if (!infraGroup) {
-      infraGroup = await this.client.Groups.create(infraGroupName, infraGroupName, {
-        parentId: rootId,
-        visibility: 'public', // Or internal? Plugin uses internal usually but let's check
-      })
-    }
-
-    // Find or create project for zone
-    const projectPath = zoneSlug
-    const projectFullPath = `${infraGroupPath}/${projectPath}`
-
-    let project = await find(
+  async getOrCreateProjectGroupRepo(path: string) {
+    if (!this.configService.projectRootPath) throw new Error('projectRootPath not configured')
+    const repo = await find(
       offsetPaginate(opts => this.client.Projects.all({
-        search: projectPath,
+        search: `${this.configService.projectRootPath}/${path}`,
         ...opts,
       })),
-      p => p.path_with_namespace === projectFullPath,
+      p => p.path_with_namespace === `${this.configService.projectRootPath}/${path}`,
     )
+    if (repo) return repo
+    const parts = path.split('/')
+    const repoName = parts.pop()
+    if (!repoName) throw new Error('Invalid repo path')
+    const parentGroup = await this.getOrCreateProjectSubGroup(parts.join('/'))
+    return this.client.Projects.create({
+      name: repoName,
+      path: repoName,
+      namespaceId: parentGroup.id,
+    })
+  }
 
-    if (!project) {
-      project = await this.client.Projects.create({
-        name: projectPath,
-        path: projectPath,
-        namespaceId: infraGroup.id,
-        visibility: 'public', // Check visibility requirements
-      })
+  async getOrCreateInfraGroupRepo(path: string) {
+    return this.getOrCreateProjectGroupRepo(join(INFRA_GROUP_PATH, path))
+  }
 
-      // Initialize with readme or empty commit?
-      // Plugin creates empty repo then first commit.
-      try {
-        await this.client.Commits.create(project.id, 'main', 'ci: 🌱 First commit', [])
-      } catch (_error) {
-        // Ignore if already exists or fails (e.g. default branch creation)
+  async getFile(repoId: number, filePath: string, ref: string = 'main') {
+    try {
+      return await this.client.RepositoryFiles.show(repoId, filePath, ref)
+    } catch (error) {
+      if (error instanceof GitbeakerRequestError && error.cause?.description?.includes('Not Found')) {
+        this.logger.debug(`File not found: ${filePath}`)
+      } else {
+        throw error
       }
-    }
-
-    return {
-      id: project.id,
-      http_url_to_repo: project.http_url_to_repo,
     }
   }
 
-  async commitCreateOrUpdate(
+  async maybeCommitUpdate(
     repoId: number,
-    content: string,
-    filePath: string,
+    files: { content: string, filePath: string }[],
     message: string = 'ci: :robot_face: Update file content',
+    ref: string = 'main',
   ): Promise<void> {
-    const branch = 'main'
-    let action: CommitAction['action'] = 'create'
-
-    try {
-      const file = await this.client.RepositoryFiles.show(repoId, filePath, branch)
-      const newContentDigest = createHash('sha256').update(content).digest('hex')
-      if (file.content_sha256 === newContentDigest) {
-        return // Already up to date
-      }
-      action = 'update'
-    } catch (_error) {
-      // File likely doesn't exist, proceed with create
+    const promises = await Promise.all(files.map(async ({content, filePath}) =>
+      this.generateCreateOrUpdateAction(repoId, ref, filePath, content)
+    ))
+    const actions = promises.filter(action => !!action)
+    if (actions.length === 0) {
+      this.logger.debug('No files to update')
+      return
     }
+    await this.client.Commits.create(repoId, ref, message, actions)
+  }
 
-    await this.client.Commits.create(repoId, branch, message, [{
-      action,
+  async generateCreateOrUpdateAction(repoId: number, ref, filePath, content: string) {
+    const file = await this.getFile(repoId, filePath, ref)
+    if (file && !hasFileContentChanged(file, content)) {
+      this.logger.debug(`File content is up to date, no need to commit: ${filePath}`)
+      return null
+    }
+    return {
+      action: file ? 'update' : 'create',
       filePath,
       content,
-    }])
+    } satisfies CommitAction
   }
 
-  async commitDelete(repoId: number, paths: string[]): Promise<void> {
-    if (paths.length === 0) return
-    const branch = 'main'
-    const actions: CommitAction[] = paths.map(path => ({
+  async maybeCommitDelete(repoId: number, paths: string[], ref: string = 'main'): Promise<void> {
+    const actions = paths.map(path => ({
       action: 'delete',
       filePath: path,
-    }))
-
-    await this.client.Commits.create(repoId, branch, 'ci: :robot_face: Delete files', actions)
+    } satisfies CommitAction))
+    if (actions.length === 0) {
+      this.logger.debug('No files to delete')
+      return
+    }
+    await this.client.Commits.create(repoId, ref, 'ci: :robot_face: Delete files', actions)
   }
 
-  async listFiles(repoId: number, options: { path?: string, recursive?: boolean } = {}): Promise<Array<{ name: string, path: string, type: string }>> {
+  async listFiles(repoId: number, options: { path?: string, recursive?: boolean, ref?: string } = {}) {
     try {
-      const files = await this.client.Repositories.allRepositoryTrees(repoId, {
+      return await this.client.Repositories.allRepositoryTrees(repoId, {
         path: options.path ?? '/',
         recursive: options.recursive ?? false,
-        ref: 'main',
+        ref: options.ref ?? 'main',
       })
-      return files.map(f => ({
-        name: f.name,
-        path: f.path,
-        type: f.type,
-      }))
     } catch (error) {
       if (error instanceof GitbeakerRequestError && error.cause?.description?.includes('Not Found')) {
         return []
@@ -193,32 +171,10 @@ export class GitlabService {
     }
   }
 
-  // --- Project Management ---
-
-  async getOrCreateProjectSubgroup(projectSlug: string): Promise<GroupSchema> {
-    const parentId = await this.getOrCreateProjectGroup()
-    const existingGroup = await find(
-      offsetPaginate(opts => this.client.Groups.all({
-        search: projectSlug,
-        ...opts,
-      })),
-      g => g.parent_id === parentId && g.name === projectSlug,
-    )
-
-    if (existingGroup) return existingGroup
-
-    return this.client.Groups.create(projectSlug, projectSlug, {
-      parentId,
-      projectCreationLevel: 'maintainer',
-      subgroupCreationLevel: 'owner',
-      defaultBranchProtection: 0,
-    })
-  }
-
   async getProjectGroup(projectSlug: string): Promise<GroupSchema | undefined> {
-    const parentId = await this.getOrCreateProjectGroup()
+    const parentGroup = await this.getOrCreateProjectGroup()
     return find(
-      offsetPaginate(opts => this.client.Groups.allSubgroups(parentId, opts)),
+      offsetPaginate(opts => this.client.Groups.allSubgroups(parentGroup.id, opts)),
       g => g.name === projectSlug,
     )
   }
@@ -241,13 +197,8 @@ export class GitlabService {
     return this.client.GroupMembers.remove(groupId, userId)
   }
 
-  async findUserByEmail(email: string) {
+  async getUserByEmail(email: string) {
     const [user] = await this.client.Users.all({ search: email })
-    return user
-  }
-
-  async findUserByUsername(username: string) {
-    const [user] = await this.client.Users.all({ username })
     return user
   }
 
@@ -264,18 +215,16 @@ export class GitlabService {
 
   // --- Repositories ---
 
-  async listRepositories(projectSlug: string) {
-    const group = await this.getOrCreateProjectSubgroup(projectSlug)
-    const generator = offsetPaginate(opts => this.client.Groups.allProjects(group.id, { simple: false, ...opts }))
-    const repositories: ProjectSchema[] = []
-    for await (const repo of generator) {
-      repositories.push(repo)
+  async *getRepositories(projectSlug: string) {
+    const group = await this.getOrCreateProjectSubGroup(projectSlug)
+    const repos = offsetPaginate(opts => this.client.Groups.allProjects(group.id, { simple: false, ...opts }))
+    for await (const repo of repos) {
+      yield repo
     }
-    return repositories
   }
 
   async createEmptyProjectRepository(projectSlug: string, repoName: string, description?: string, clone?: boolean) {
-    const group = await this.getOrCreateProjectSubgroup(projectSlug)
+    const group = await this.getOrCreateProjectSubGroup(projectSlug)
     const project = await this.client.Projects.create({
       name: repoName,
       path: repoName,
@@ -295,16 +244,8 @@ export class GitlabService {
     return project
   }
 
-  async deleteRepository(repoId: number) {
-    await this.client.Projects.remove(repoId)
-  }
-
-  async updateProject(repoId: number, data: Record<string, any>) {
-    await this.client.Projects.edit(repoId, data)
-  }
-
-  async provisionMirror(repoId: number) {
-    const mirrorFirstActions: CommitAction[] = [
+  async commitMirror(repoId: number) {
+    const actions: CommitAction[] = [
       {
         action: 'create',
         filePath: '.gitlab-ci.yml',
@@ -323,7 +264,7 @@ export class GitlabService {
       repoId,
       'main',
       'ci: :construction_worker: first mirror',
-      mirrorFirstActions,
+      actions,
     )
   }
 
@@ -346,15 +287,9 @@ export class GitlabService {
     return this.client.GroupAccessTokens.create(group.id, tokenName, scopes, expiryDate.toLocaleDateString('en-CA'))
   }
 
-  async revokeProjectToken(projectSlug: string, tokenId: number) {
-    const group = await this.getProjectGroup(projectSlug)
-    if (!group) throw new Error('Unable to retrieve gitlab project group')
-    return this.client.GroupAccessTokens.revoke(group.id, tokenId)
-  }
-
   async getMirrorProjectTriggerToken(projectSlug: string) {
     const tokenDescription = 'mirroring-from-external-repo'
-    const repositoriesGenerator = await this.listRepositories(projectSlug)
+    const repositoriesGenerator = await this.getRepositories(projectSlug)
     let mirrorRepo: ProjectSchema | undefined
     for await (const repo of repositoriesGenerator) {
       if (repo.name === INTERNAL_MIRROR_REPO_NAME) {
@@ -381,9 +316,5 @@ export class GitlabService {
 
     const triggerToken = await this.client.PipelineTriggerTokens.create(mirrorRepo.id, tokenDescription)
     return { token: triggerToken.token, repoId: mirrorRepo.id, id: triggerToken.id }
-  }
-
-  async deleteTriggerToken(repoId: number, tokenId: number) {
-    await this.client.PipelineTriggerTokens.remove(repoId, tokenId)
   }
 }

@@ -1,6 +1,15 @@
-import { PaginationRequestOptions, BaseRequestOptions, OffsetPagination } from '@gitbeaker/core'
+import type { PaginationRequestOptions, BaseRequestOptions, OffsetPagination, RepositoryFileExpandedSchema } from '@gitbeaker/core'
+import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
+
+export function digestContent(content: string) {
+  return createHash('sha256').update(content).digest('hex')
+}
+
+export function hasFileContentChanged(file: RepositoryFileExpandedSchema, content: string) {
+  return file?.content_sha256 !== digestContent(content)
+}
 
 export function readGitlabCIConfigContent() {
   return readFile(join(__dirname, './files/.gitlab-ci.yml'), 'utf-8')
@@ -8,6 +17,16 @@ export function readGitlabCIConfigContent() {
 
 export async function readMirrorScriptContent() {
   return await readFile(join(__dirname, './files/mirror.sh'), 'utf-8')
+}
+
+export async function getAll<T>(
+  iterable: AsyncIterable<T>,
+): Promise<T[]> {
+  const items: T[] = []
+  for await (const item of iterable) {
+    items.push(item)
+  }
+  return items
 }
 
 export async function find<T>(generator: AsyncGenerator<T>, predicate: (item: T) => boolean): Promise<T | undefined> {

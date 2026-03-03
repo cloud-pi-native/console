@@ -6,6 +6,7 @@ import type { MockedFunction } from 'vitest'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import type { ExpandedGroupSchema, MemberSchema, ProjectSchema, RepositoryFileExpandedSchema } from '@gitbeaker/core'
+import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 
 const gitlabMock = mockDeep<GitlabClientService>()
 
@@ -23,7 +24,7 @@ function createGitlabServiceTestingModule() {
           gitlabUrl: 'https://gitlab.internal',
           gitlabToken: 'token',
           gitlabInternalUrl: 'https://gitlab.internal',
-          projectRootPath: 'forge/console',
+          projectRootPath: 'forge',
         } satisfies Partial<ConfigurationService>,
       },
     ],
@@ -53,12 +54,12 @@ describe('gitlabService', () => {
       // Mock getGroupRootId logic
       const gitlabGroupsAllMock = gitlabMock.Groups.all as MockedFunction<typeof gitlabMock.Groups.all>
       gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: rootId, full_path: 'forge/console' }],
+        data: [{ id: rootId, full_path: 'forge' }],
         paginationInfo: { next: null },
       })
 
       // Mock Groups.show (root)
-      gitlabMock.Groups.show.mockResolvedValueOnce({ id: rootId, full_path: 'forge/console' } as ExpandedGroupSchema)
+      gitlabMock.Groups.show.mockResolvedValueOnce({ id: rootId, full_path: 'forge' } as ExpandedGroupSchema)
 
       // Mock find infra group (not found first)
       gitlabGroupsAllMock.mockResolvedValueOnce({
@@ -67,7 +68,7 @@ describe('gitlabService', () => {
       })
 
       // Mock create infra group
-      gitlabMock.Groups.create.mockResolvedValue({ id: infraGroupId, full_path: 'forge/console/infra' } as ExpandedGroupSchema)
+      gitlabMock.Groups.create.mockResolvedValue({ id: infraGroupId, full_path: 'forge/infra' } as ExpandedGroupSchema)
 
       // Mock find project (not found)
       const gitlabProjectsAllMock = gitlabMock.Projects.all as MockedFunction<typeof gitlabMock.Projects.all>
@@ -79,13 +80,17 @@ describe('gitlabService', () => {
       // Mock create project
       gitlabMock.Projects.create.mockResolvedValue({
         id: projectId,
-        path_with_namespace: 'forge/console/infra/zone-1',
+        path_with_namespace: 'forge/infra/zone-1',
         http_url_to_repo: 'http://gitlab/repo.git',
       } as ProjectSchema)
 
-      const result = await service.getOrCreateInfraProject(zoneSlug)
+      const result = await service.getOrCreateInfraGroupRepo(zoneSlug)
 
-      expect(result).toEqual({ id: projectId, http_url_to_repo: 'http://gitlab/repo.git' })
+      expect(result).toEqual({
+        id: projectId,
+        http_url_to_repo: 'http://gitlab/repo.git',
+        path_with_namespace: 'forge/infra/zone-1',
+      })
       expect(gitlabMock.Groups.create).toHaveBeenCalledWith('infra', 'infra', expect.any(Object))
       expect(gitlabMock.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
         name: zoneSlug,
@@ -102,9 +107,10 @@ describe('gitlabService', () => {
       const filePath = 'file.txt'
 
       const gitlabRepositoryFilesShowMock = gitlabMock.RepositoryFiles.show as MockedFunction<typeof gitlabMock.RepositoryFiles.show>
-      gitlabRepositoryFilesShowMock.mockRejectedValue(new Error('Not found'))
+      const notFoundError = new GitbeakerRequestError('Not Found', { cause: { description: '404 File Not Found' } } as any)
+      gitlabRepositoryFilesShowMock.mockRejectedValue(notFoundError)
 
-      await service.commitCreateOrUpdate(repoId, content, filePath)
+      await service.maybeCommitUpdate(repoId, [{ content, filePath }])
 
       expect(gitlabMock.Commits.create).toHaveBeenCalledWith(
         repoId,
@@ -125,7 +131,7 @@ describe('gitlabService', () => {
         content_sha256: oldHash,
       } as RepositoryFileExpandedSchema)
 
-      await service.commitCreateOrUpdate(repoId, content, filePath)
+      await service.maybeCommitUpdate(repoId, [{ content, filePath }])
 
       expect(gitlabMock.Commits.create).toHaveBeenCalledWith(
         repoId,
@@ -146,7 +152,7 @@ describe('gitlabService', () => {
         content_sha256: hash,
       } as RepositoryFileExpandedSchema)
 
-      await service.commitCreateOrUpdate(repoId, content, filePath)
+      await service.maybeCommitUpdate(repoId, [{ content, filePath }])
 
       expect(gitlabMock.Commits.create).not.toHaveBeenCalled()
     })
@@ -160,17 +166,17 @@ describe('gitlabService', () => {
 
       const gitlabGroupsAllMock = gitlabMock.Groups.all as MockedFunction<typeof gitlabMock.Groups.all>
       gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: rootId, full_path: 'forge/console' }],
+        data: [{ id: rootId, full_path: 'forge' }],
         paginationInfo: { next: null },
       })
-      gitlabMock.Groups.show.mockResolvedValueOnce({ id: rootId, full_path: 'forge/console' } as ExpandedGroupSchema)
+      gitlabMock.Groups.show.mockResolvedValueOnce({ id: rootId, full_path: 'forge' } as ExpandedGroupSchema)
       gitlabGroupsAllMock.mockResolvedValueOnce({
         data: [],
         paginationInfo: { next: null },
       })
       gitlabMock.Groups.create.mockResolvedValue({ id: groupId, name: projectSlug } as ExpandedGroupSchema)
 
-      const result = await service.getOrCreateProjectSubgroup(projectSlug)
+      const result = await service.getOrCreateProjectSubGroup(projectSlug)
 
       expect(result).toEqual({ id: groupId, name: projectSlug })
       expect(gitlabMock.Groups.create).toHaveBeenCalledWith(projectSlug, projectSlug, expect.objectContaining({
@@ -185,18 +191,18 @@ describe('gitlabService', () => {
 
       const gitlabGroupsAllMock = gitlabMock.Groups.all as MockedFunction<typeof gitlabMock.Groups.all>
       gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: rootId, full_path: 'forge/console' }],
+        data: [{ id: rootId, full_path: 'forge' }],
         paginationInfo: { next: null },
       })
-      gitlabMock.Groups.show.mockResolvedValueOnce({ id: rootId, full_path: 'forge/console' } as ExpandedGroupSchema)
+      gitlabMock.Groups.show.mockResolvedValueOnce({ id: rootId, full_path: 'forge' } as ExpandedGroupSchema)
       gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: groupId, name: projectSlug, parent_id: rootId }],
+        data: [{ id: groupId, name: projectSlug, parent_id: rootId, full_path: 'forge/project-1' }],
         paginationInfo: { next: null },
       })
 
-      const result = await service.getOrCreateProjectSubgroup(projectSlug)
+      const result = await service.getOrCreateProjectSubGroup(projectSlug)
 
-      expect(result).toEqual({ id: groupId, name: projectSlug, parent_id: rootId })
+      expect(result).toEqual({ id: groupId, name: projectSlug, parent_id: rootId, full_path: 'forge/project-1' })
       expect(gitlabMock.Groups.create).not.toHaveBeenCalled()
     })
   })
@@ -243,10 +249,10 @@ describe('gitlabService', () => {
       // Mock getOrCreateProjectGroup
       const gitlabGroupsAllMock = gitlabMock.Groups.all as MockedFunction<typeof gitlabMock.Groups.all>
       gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: 123, full_path: 'forge/console' }],
+        data: [{ id: 123, full_path: 'forge' }],
         paginationInfo: { next: null },
       }) // root
-      gitlabMock.Groups.show.mockResolvedValueOnce({ id: 123, full_path: 'forge/console' } as ExpandedGroupSchema)
+      gitlabMock.Groups.show.mockResolvedValueOnce({ id: 123, full_path: 'forge' } as ExpandedGroupSchema)
       gitlabGroupsAllMock.mockResolvedValueOnce({
         data: [{ id: groupId, name: projectSlug, parent_id: 123 }],
         paginationInfo: { next: null },

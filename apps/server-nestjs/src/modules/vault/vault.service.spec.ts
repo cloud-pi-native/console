@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing'
 import { VaultService } from './vault.service'
+import { VaultClientService } from './vault-client.service'
 import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
 import { describe, beforeEach, it, expect, beforeAll, afterAll, afterEach, type Mocked } from 'vitest'
 import { setupServer } from 'msw/node'
@@ -26,6 +27,7 @@ function createVaultServiceTestingModule() {
   return Test.createTestingModule({
     providers: [
       VaultService,
+      VaultClientService,
       {
         provide: ConfigurationService,
         useValue: {

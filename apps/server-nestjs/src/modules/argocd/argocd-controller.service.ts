@@ -57,7 +57,7 @@ export class ArgoCDControllerService implements OnModuleInit {
       const pResults: PromiseSettledResult<void>[] = []
 
       const ensureResults = await Promise.allSettled(
-        project.environments.map(env => this.ensureValues(project, env)),
+        project.environments.map(env => this.generateValues(project, env)),
       )
       pResults.push(...ensureResults)
 
@@ -81,7 +81,7 @@ export class ArgoCDControllerService implements OnModuleInit {
   private async cleanupStaleValues(project: ProjectWithDetails) {
     const zones = getDistinctZones(project)
     return Promise.allSettled(zones.map(async (zoneSlug) => {
-      const infraProject = await this.gitlabService.getOrCreateInfraProject(zoneSlug)
+      const infraProject = await this.gitlabService.getOrCreateInfraGroupRepo(zoneSlug)
       const existingFiles = await this.gitlabService.listFiles(infraProject.id, {
         path: `${project.name}/`,
         recursive: true,
@@ -97,23 +97,20 @@ export class ArgoCDControllerService implements OnModuleInit {
           return formatEnvironmentValuesFilePath(project, cluster, env)
         })
 
-      const filesToDelete: string[] = []
-      for (const existingFile of existingFiles) {
-        if (
-          existingFile.name === 'values.yaml'
-          && !neededFiles.includes(existingFile.path)
-        ) {
-          filesToDelete.push(existingFile.path)
-        }
-      }
+      const filesToDelete = existingFiles
+        .filter((existingFile) => {
+          return (
+            existingFile.name === 'values.yaml'
+            && !neededFiles.includes(existingFile.path)
+          )
+        })
+        .map(existingFile => existingFile.path)
 
-      if (filesToDelete.length > 0) {
-        await this.gitlabService.commitDelete(infraProject.id, filesToDelete)
-      }
+      await this.gitlabService.maybeCommitDelete(infraProject.id, filesToDelete)
     }))
   }
 
-  async ensureValues(
+  async generateValues(
     project: ProjectWithDetails,
     environment: ProjectWithDetails['environments'][number],
   ) {
@@ -121,18 +118,18 @@ export class ArgoCDControllerService implements OnModuleInit {
     const cluster = project.clusters.find(c => c.id === environment.clusterId)
     if (!cluster) throw new Error(`Cluster not found for environment ${environment.id}`)
 
-    const infraProject = await this.gitlabService.getOrCreateInfraProject(cluster.zone.slug)
+    const infraProject = await this.gitlabService.getOrCreateInfraGroupRepo(cluster.zone.slug)
     const valueFilePath = formatEnvironmentValuesFilePath(project, cluster, environment)
 
     const repo = project.repositories.find(r => r.isInfra)
     if (!repo) throw new Error(`Infra repository not found for project ${project.id}`)
-    const repoUrl = await this.gitlabService.getPublicRepoUrl(repo.internalRepoName)
+    const repoUrl = await this.gitlabService.getInfraGroupRepoPublicUrl(repo.internalRepoName)
 
     const values = formatValues({
       project,
       environment,
       cluster,
-      gitlabPublicGroupUrl: await this.gitlabService.getPublicGroupUrl(),
+      gitlabPublicGroupUrl: await this.gitlabService.getGroupPublicUrl(),
       argocdExtraRepositories: this.configService.argocdExtraRepositories,
       infraProject,
       valueFilePath,
@@ -143,6 +140,9 @@ export class ArgoCDControllerService implements OnModuleInit {
       nsChartVersion: this.configService.dsoNsChartVersion,
     })
 
-    await this.gitlabService.commitCreateOrUpdate(infraProject.id, dump(values), valueFilePath)
+    await this.gitlabService.maybeCommitUpdate(infraProject.id, [{
+      content: dump(values),
+      filePath: valueFilePath,
+    }], `ci: :robot_face: Update ${valueFilePath}`)
   }
 }
