@@ -43,6 +43,9 @@ on:
         type: boolean
         default: true
 
+permissions:
+  contents: read
+
 jobs:
   path-filter:
     if: ${{ inputs.CHECK_CHANGES }}
@@ -89,6 +92,8 @@ jobs:
     strategy:
       matrix:
         packages: ${{ fromJSON(needs.path-filter.outputs.packages) }}
+      # Allow jobs to be processed independently
+      fail-fast: false
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v4
@@ -118,18 +123,6 @@ jobs:
           else
             echo "WARNING=false" >> $GITHUB_OUTPUT
           fi
-
-      - name: Comment PR
-        uses: thollander/actions-comment-pull-request@v2
-        if: ${{ steps.check.outputs.WARNING == 'true' }}
-        with:
-          message: |
-            🤖 Hey !
-
-            The __${{ steps.check.outputs.PACKAGE_NAME }} (v${{ steps.check.outputs.PACKAGE_VERSION }})__ package already exists [on npm](https://www.npmjs.com/package/${{ steps.check.outputs.PACKAGE_NAME }}/v/${{ steps.check.outputs.PACKAGE_VERSION }}) but the source code has changed, you should consider updating the package version.
-
-            *The version update warning should be ignored in the case of modifications that do not affect the code once it has been built, such as code formatting, etc...*
-          comment_tag: npm-check-${{ matrix.packages }}
 
   matrix:
     name: Generate matrix
@@ -223,14 +216,26 @@ jobs:
           restore-keys: |
             node-${{ runner.os }}-${{ runner.arch }}-
 
-      - name: Install dependencies
+      - name: Install base dependencies
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         run: pnpm install --frozen-lockfile
 
-      - name: Publish packages
+      - name: Build internal dependencies
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        run: pnpm --filter @cpn-console/shared run build
+
+      - name: Update dependencies after building internal dependencies
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         run: |
           pnpm --filter ${{ matrix.modules.name }} run build
+
+      - name: Publish package
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        run: |
           pnpm --filter ${{ matrix.modules.name }} publish --no-git-checks --report-summary
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
