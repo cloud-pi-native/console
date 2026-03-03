@@ -163,6 +163,9 @@ jobs:
     name: Publish on npm
     if: ${{ inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES || inputs.PUBLISH_PLUGINS }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     needs:
       - matrix
     strategy:
@@ -230,4 +233,5 @@ jobs:
           pnpm --filter ${{ matrix.modules.name }} run build
           pnpm --filter ${{ matrix.modules.name }} publish --no-git-checks --report-summary
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          NPM_CONFIG_PROVENANCE: true
