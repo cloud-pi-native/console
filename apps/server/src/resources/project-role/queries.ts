@@ -18,7 +18,7 @@ export function createRole(data: Pick<Prisma.ProjectRoleUncheckedCreateInput, 'p
       position: data.position,
       projectId: data.projectId,
       oidcGroup: data.oidcGroup,
-      type: 'custom',
+      type: 'managed',
     },
   })
 }
