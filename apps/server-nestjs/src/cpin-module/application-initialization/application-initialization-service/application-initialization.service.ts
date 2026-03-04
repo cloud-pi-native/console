@@ -111,10 +111,10 @@ export class ApplicationInitializationService {
   }
 
   handleExit() {
-    process.on('exit', this.logExitCode)
-    process.on('SIGINT', this.exitGracefully)
-    process.on('SIGTERM', this.exitGracefully)
-    process.on('uncaughtException', this.exitGracefully)
-    process.on('unhandledRejection', this.logUnhandledRejection)
+    process.on('exit', this.logExitCode.bind(this))
+    process.on('SIGINT', this.exitGracefully.bind(this))
+    process.on('SIGTERM', this.exitGracefully.bind(this))
+    process.on('uncaughtException', this.exitGracefully.bind(this))
+    process.on('unhandledRejection', this.logUnhandledRejection.bind(this))
   }
 }
