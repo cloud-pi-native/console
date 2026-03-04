@@ -1,4 +1,4 @@
-import type { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
+import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
 import {
   apiPrefix,
   getContract,
@@ -16,14 +16,14 @@ import type {
 import fastifySession from '@fastify/session'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
-import { Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { generateOpenApi } from '@ts-rest/open-api'
 import fastify from 'fastify'
 import type { FastifyRequest } from 'fastify'
 import type { KeycloakOptions } from 'fastify-keycloak-adapter'
 import keycloak from 'fastify-keycloak-adapter'
 
-import type { FastifyService } from '../fastify/fastify.service'
+import { FastifyService } from '../fastify/fastify.service'
 
 interface KeycloakPayload {
   sub: string
@@ -59,8 +59,8 @@ export class AppService {
   private readonly loggerService = new Logger(AppService.name)
 
   constructor(
-    private readonly configurationService: ConfigurationService,
-    private readonly fastifyService: FastifyService,
+    @Inject(ConfigurationService) private readonly configurationService: ConfigurationService,
+    @Inject(FastifyService) private readonly fastifyService: FastifyService,
   ) {
     this.keycloakConf = {
       appOrigin:
