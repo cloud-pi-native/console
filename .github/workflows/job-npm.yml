@@ -18,9 +18,6 @@ on:
       CHECK_CHANGES:
         required: true
         type: boolean
-    secrets:
-      NPM_TOKEN:
-        required: true
   workflow_dispatch:
     inputs:
       NODE_VERSION:
@@ -42,6 +39,9 @@ on:
         required: true
         type: boolean
         default: true
+
+permissions:
+  contents: read
 
 jobs:
   path-filter:
@@ -119,18 +119,6 @@ jobs:
             echo "WARNING=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Comment PR
-        uses: thollander/actions-comment-pull-request@v2
-        if: ${{ steps.check.outputs.WARNING == 'true' }}
-        with:
-          message: |
-            🤖 Hey !
-
-            The __${{ steps.check.outputs.PACKAGE_NAME }} (v${{ steps.check.outputs.PACKAGE_VERSION }})__ package already exists [on npm](https://www.npmjs.com/package/${{ steps.check.outputs.PACKAGE_NAME }}/v/${{ steps.check.outputs.PACKAGE_VERSION }}) but the source code has changed, you should consider updating the package version.
-
-            *The version update warning should be ignored in the case of modifications that do not affect the code once it has been built, such as code formatting, etc...*
-          comment_tag: npm-check-${{ matrix.packages }}
-
   matrix:
     name: Generate matrix
     if: ${{ inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES || inputs.PUBLISH_PLUGINS }}
@@ -169,6 +157,8 @@ jobs:
     needs:
       - matrix
     strategy:
+      # Allow jobs to be processed independently of their siblings status
+      fail-fast: false
       matrix:
         modules: ${{ fromJSON(needs.matrix.outputs.publish-matrix) }}
     steps:
@@ -205,7 +195,6 @@ jobs:
         with:
           node-version: "${{ inputs.NODE_VERSION }}"
           registry-url: "https://registry.npmjs.org"
-          always-auth: true
 
       - name: Get pnpm store directory
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
@@ -223,15 +212,28 @@ jobs:
           restore-keys: |
             node-${{ runner.os }}-${{ runner.arch }}-
 
-      - name: Install dependencies
+      - name: Install base dependencies
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         run: pnpm install --frozen-lockfile
 
-      - name: Publish packages
+      - name: Build internal dependency shared
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        run: pnpm --filter @cpn-console/shared run build
+
+      - name: Build internal dependency hooks
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        run: pnpm --filter @cpn-console/hooks run build
+
+      - name: Update dependencies after building internal dependencies
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         run: |
           pnpm --filter ${{ matrix.modules.name }} run build
-          pnpm --filter ${{ matrix.modules.name }} publish --no-git-checks --report-summary
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          NPM_CONFIG_PROVENANCE: true
+
+      - name: Publish package
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        run: |
+          pnpm --filter ${{ matrix.modules.name }} publish --provenance --no-git-checks --report-summary

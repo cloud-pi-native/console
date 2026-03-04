@@ -103,7 +103,7 @@ Ce dossier contient toute la documentation nécessaire pour mener à bien la mod
 ## 📞 Contact
 
 - **Lead technique** : @stephane.trebel
-- **Canal Mattermost** : #backend-modularisation 
+- **Canal Mattermost** : #backend-modularisation
 - **Réunion hebdo** : Jeudi 10h (30min)
 
 ## 📚 Ressources externes

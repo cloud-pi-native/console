@@ -1,5 +1,9 @@
 {
   "name": "@cpn-console/eslint-config",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cloud-pi-native/console"
+  },
   "type": "module",
   "version": "1.0.2",
   "license": "ISC",

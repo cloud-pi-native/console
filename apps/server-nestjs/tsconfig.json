@@ -1,28 +1,28 @@
 {
-    "compilerOptions": {
-        "allowSyntheticDefaultImports": true,
-        "baseUrl": "./",
-        "declaration": true,
-        "emitDecoratorMetadata": true,
-        "esModuleInterop": true,
-        "experimentalDecorators": true,
-        "forceConsistentCasingInFileNames": true,
-        "incremental": true,
-        "isolatedModules": true,
-        "module": "nodenext",
-        "moduleResolution": "nodenext",
-        "noFallthroughCasesInSwitch": false,
-        "noImplicitAny": false,
-        "outDir": "./dist",
-        "paths": {
-            "@/*": ["src/*"]
-        },
-        "removeComments": true,
-        "resolvePackageJsonExports": true,
-        "skipLibCheck": true,
-        "sourceMap": true,
-        "strictBindCallApply": false,
-        "strictNullChecks": true,
-        "target": "ES2023"
-    }
+  "compilerOptions": {
+    "incremental": true,
+    "target": "ES2023",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "baseUrl": "./",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "resolvePackageJsonExports": true,
+    "strictBindCallApply": false,
+    "strictNullChecks": true,
+    "noFallthroughCasesInSwitch": false,
+    "noImplicitAny": false,
+    "declaration": true,
+    "outDir": "./dist",
+    "removeComments": true,
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  }
 }

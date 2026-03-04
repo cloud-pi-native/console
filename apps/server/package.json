@@ -3,6 +3,10 @@
   "type": "module",
   "version": "9.13.2",
   "description": "cpn-console server",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cloud-pi-native/console"
+  },
   "main": "dist/server.js",
   "module": "dist/server.js",
   "types": "types/server.d.ts",
