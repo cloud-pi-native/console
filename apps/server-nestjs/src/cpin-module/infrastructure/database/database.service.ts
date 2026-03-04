@@ -2,7 +2,8 @@ import prisma from '@/prisma'
 import { Injectable, Logger } from '@nestjs/common'
 import { setTimeout } from 'node:timers/promises'
 
-import type { ConfigurationService } from '../configuration/configuration.service'
+// eslint-disable-next-line ts/consistent-type-imports
+import { ConfigurationService } from '../configuration/configuration.service'
 
 @Injectable()
 export class DatabaseService {
