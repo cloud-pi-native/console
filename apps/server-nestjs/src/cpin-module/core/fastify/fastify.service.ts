@@ -1,15 +1,17 @@
-import type { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
+import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
 import { loggerConfiguration } from '@/cpin-module/infrastructure/logger/logger.module'
 import { swaggerUiPath } from '@cpn-console/shared'
 import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui'
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import type { generateOpenApi } from '@ts-rest/open-api'
 import type { FastifyServerOptions } from 'fastify'
 import { randomUUID } from 'node:crypto'
 
 @Injectable()
 export class FastifyService {
-  constructor(private readonly configurationService: ConfigurationService) {
+  constructor(
+    @Inject(ConfigurationService) private readonly configurationService: ConfigurationService,
+  ) {
     this.fastifyConf = {
       maxParamLength: 5000,
       logger:
