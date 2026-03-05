@@ -1,20 +1,20 @@
-import type { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
-import type { DatabaseService } from '@/cpin-module/infrastructure/database/database.service'
-import { Injectable, Logger } from '@nestjs/common'
+import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
+import { DatabaseService } from '@/cpin-module/infrastructure/database/database.service'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { rm } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
-import type { DatabaseInitializationService } from '../database-initialization/database-initialization.service'
-import type { PluginManagementService } from '../plugin-management/plugin-management.service'
+import { DatabaseInitializationService } from '../database-initialization/database-initialization.service'
+import { PluginManagementService } from '../plugin-management/plugin-management.service'
 
 @Injectable()
 export class ApplicationInitializationService {
   private readonly logger = new Logger(ApplicationInitializationService.name)
   constructor(
-    private readonly configurationService: ConfigurationService,
-    private readonly pluginManagementService: PluginManagementService,
-    private readonly databaseInitializationService: DatabaseInitializationService,
-    private readonly databaseService: DatabaseService,
+    @Inject(ConfigurationService) private readonly configurationService: ConfigurationService,
+    @Inject(PluginManagementService) private readonly pluginManagementService: PluginManagementService,
+    @Inject(DatabaseInitializationService) private readonly databaseInitializationService: DatabaseInitializationService,
+    @Inject(DatabaseService) private readonly databaseService: DatabaseService,
   ) {
     this.handleExit()
   }
