@@ -98,6 +98,7 @@ jobs:
     needs:
       - matrix
     strategy:
+      fail-fast: false
       matrix:
         runners: ${{ (inputs.BUILD_AMD64 && inputs.BUILD_ARM64 && !inputs.USE_QEMU && fromJson('["ubuntu-latest", "ARM64"]')) || (inputs.BUILD_ARM64 && !inputs.USE_QEMU && fromJson('["ARM64"]')) || fromJson('["ubuntu-latest"]') }}
         images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
@@ -166,7 +167,7 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ matrix.images.name }}-${{ (inputs.BUILD_AMD64 && inputs.BUILD_ARM64 && inputs.USE_QEMU && 'multiarch') || (inputs.BUILD_ARM64 && 'arm64') || (inputs.BUILD_AMD64 && 'amd64') }}
+          name: digests-${{ matrix.images.name }}.${{ (inputs.BUILD_AMD64 && inputs.BUILD_ARM64 && inputs.USE_QEMU && 'multiarch') || (inputs.BUILD_ARM64 && 'arm64') || (inputs.BUILD_AMD64 && 'amd64') }}.digest
           path: /tmp/digests/${{ matrix.images.name }}/*
           if-no-files-found: error
           retention-days: 1
@@ -178,13 +179,14 @@ jobs:
       - matrix
       - build
     strategy:
+      fail-fast: false
       matrix:
         images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          pattern: digests-${{ matrix.images.name }}-*
+          pattern: digests-${{ matrix.images.name }}.*.digest
           path: /tmp/digests/${{ matrix.images.name }}
           merge-multiple: true
 
