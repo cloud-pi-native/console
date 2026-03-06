@@ -49,10 +49,11 @@ jobs:
       - expose-vars
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
-      PUBLISH_APPS: true
       PUBLISH_PACKAGES: true
       PUBLISH_PLUGINS: true
       CHECK_CHANGES: true
+      # Deprecated variable: we never publish the apps on NPM registry
+      PUBLISH_APPS: false
 
   # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
   all-jobs-passed:
