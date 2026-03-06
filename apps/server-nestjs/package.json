@@ -10,7 +10,7 @@
     "url": "https://github.com/cloud-pi-native/console"
   },
   "scripts": {
-    "build": "nest build; true",
+    "build": "nest build",
     "format": "eslint ./ --fix",
     "start": "nest start",
     "start:dev": "nest start --watch",
