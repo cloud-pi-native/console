@@ -83,7 +83,7 @@ jobs:
 
   check-update:
     name: Check for package version update
-    if: ${{ needs.path-filter.outputs.packages != '' }}
+    if: ${{ fromJson(needs.path-filter.outputs.packages).include[0] }} # skip if the matrix is empty!
     runs-on: ubuntu-latest
     needs:
       - path-filter
