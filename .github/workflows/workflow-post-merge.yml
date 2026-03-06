@@ -49,32 +49,8 @@ jobs:
       - expose-vars
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
-      PUBLISH_APPS: true
       PUBLISH_PACKAGES: true
       PUBLISH_PLUGINS: true
       CHECK_CHANGES: true
-
-  # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
-  all-jobs-passed:
-    name: Check jobs status
-    runs-on: ubuntu-latest
-    if: ${{ always() }}
-    needs:
-      - path-filter
-      - expose-vars
-      - npm-publish
-    steps:
-      - name: Check status of all required jobs
-        run: |-
-          NEEDS_CONTEXT='${{ toJson(needs) }}'
-          JOB_IDS=$(echo "$NEEDS_CONTEXT" | jq -r 'keys[]')
-          for JOB_ID in $JOB_IDS; do
-            RESULT=$(echo "$NEEDS_CONTEXT" | jq -r ".[\"$JOB_ID\"].result")
-            echo "$JOB_ID job result: $RESULT"
-            if [[ $RESULT != "success" && $RESULT != "skipped" ]]; then
-              echo "***"
-              echo "Error: The $JOB_ID job did not pass."
-              exit 1
-            fi
-          done
-          echo "All jobs passed or were skipped."
+      # Deprecated variable: we never publish the apps on NPM registry
+      PUBLISH_APPS: false

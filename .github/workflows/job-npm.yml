@@ -83,6 +83,7 @@ jobs:
 
   check-update:
     name: Check for package version update
+    if: ${{ fromJson(needs.path-filter.outputs.packages).include[0] }} # skip if the matrix is empty!
     runs-on: ubuntu-latest
     needs:
       - path-filter
@@ -121,7 +122,7 @@ jobs:
 
   matrix:
     name: Generate matrix
-    if: ${{ inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES || inputs.PUBLISH_PLUGINS }}
+    if: ${{ needs.path-filter.outputs.packages != '' && (inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES || inputs.PUBLISH_PLUGINS) }}
     runs-on: ubuntu-latest
     outputs:
       publish-matrix: ${{ steps.packages-matrix.outputs.PUBLISH_MATRIX }}
@@ -149,7 +150,7 @@ jobs:
 
   publish-npm:
     name: Publish on npm
-    if: ${{ inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES || inputs.PUBLISH_PLUGINS }}
+    if: ${{ needs.path-filter.outputs.packages != '' && (inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES || inputs.PUBLISH_PLUGINS) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -216,11 +217,20 @@ jobs:
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         run: pnpm install --frozen-lockfile
 
-      # Build everything (pnpm-workspace.yaml takes care of build order)
-      - name: Build
+      - name: Build internal dependencies
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         run: |
-          pnpm run build
+          pnpm --filter "./packages/**" run build && pnpm --filter "./plugins/**" run build
+
+      - name: Update PNPM internal links with built internal dependencies
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        run: |
+          pnpm install --frozen-lockfile
+
+      - name: Build package
+        if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
+        run: |
+          pnpm --filter ${{ matrix.modules.name }} run build
 
       - name: Publish package
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
