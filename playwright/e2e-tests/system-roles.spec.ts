@@ -22,7 +22,7 @@ test.describe('System Roles at Project Creation', () => {
     const systemRoles = [
       { name: 'Administrateur', oidcGroup: '/console/admin' },
       { name: 'DevOps', oidcGroup: '/console/devops' },
-      { name: 'Développeur', oidcGroup: '/console/developer' },
+      { name: 'Développeur', oidcGroup: '/console/developer,/console/devops' },
       { name: 'Lecture seule', oidcGroup: '/console/readonly' },
     ]
 
