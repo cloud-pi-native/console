@@ -92,6 +92,10 @@ export function cleanGitlabError<T>(error: T): T {
   return error
 }
 
+export function matchRole(projectSlug: string, roleOidcGroup: string, configuredRolePath: string[]) {
+  return configuredRolePath.some(path => roleOidcGroup === `/${projectSlug}${path}`)
+}
+
 export async function* offsetPaginate<T>(
   request: (options: PaginationRequestOptions<'offset'> & BaseRequestOptions<true>) => Promise<{ data: T[], paginationInfo: OffsetPagination }>,
 ): AsyncGenerator<T> {
