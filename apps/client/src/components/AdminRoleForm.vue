@@ -126,8 +126,8 @@ function closeModal() {
 }
 
 const typeOptions = [
-  { text: 'Managed', value: 'managed' },
-  { text: 'External', value: 'external' },
+  { text: 'Manéré', value: 'managed' },
+  { text: 'Externe', value: 'external' },
   { text: 'Global', value: 'global' },
 ]
 </script>
