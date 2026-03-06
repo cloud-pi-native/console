@@ -57,8 +57,8 @@ function updateChecked(checked: boolean, value: bigint) {
 }
 
 const typeOptions = [
-  { text: 'Managed', value: 'managed' },
-  { text: 'External', value: 'external' },
+  { text: 'Managé', value: 'managed' },
+  { text: 'Externe', value: 'external' },
   { text: 'Global', value: 'global' },
 ]
 </script>
