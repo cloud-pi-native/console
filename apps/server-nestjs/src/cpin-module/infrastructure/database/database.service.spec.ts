@@ -2,12 +2,14 @@ import type { TestingModule } from '@nestjs/testing'
 import { Test } from '@nestjs/testing'
 
 import { DatabaseService } from './database.service'
+import { ConfigurationModule } from '../configuration/configuration.module'
 
 describe('databaseService', () => {
   let service: DatabaseService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [ConfigurationModule],
       providers: [DatabaseService],
     }).compile()
 
