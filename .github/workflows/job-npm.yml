@@ -1,5 +1,8 @@
 name: Publish npm
 
+permissions:
+  contents: read
+
 on:
   workflow_call:
     inputs:
@@ -39,9 +42,6 @@ on:
         required: true
         type: boolean
         default: true
-
-permissions:
-  contents: read
 
 jobs:
   path-filter:

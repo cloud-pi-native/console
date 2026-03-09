@@ -1,12 +1,12 @@
 name: Merge Queue
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   merge_group:
     types: [checks_requested]
-
-permissions:
-  contents: read
 
 env:
   NODE_VERSION: 24.13.1

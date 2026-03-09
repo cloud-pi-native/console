@@ -1,5 +1,8 @@
 name: Tests - Cypress
 
+permissions:
+  contents: read
+
 on:
   workflow_call:
     inputs:

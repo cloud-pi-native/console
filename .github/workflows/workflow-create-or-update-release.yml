@@ -1,5 +1,8 @@
 name: Create/update next release
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
