@@ -218,7 +218,7 @@ src/users/
 
 #### 6. Configuration du nginx étrangleur et déploiement (Jour 5)
 
-**Mise à jour de `nginx/routing.conf`** :
+**Mise à jour de `apps/nginx-strangler/routing.conf`** :
 
 ```nginx
 # [S5-S6] Users - 2026-02-23
@@ -246,10 +246,10 @@ entre les anciens et nouveaux services.
 
 ```bash
 # 1. Backup de la config actuelle
-cp nginx/routing.conf nginx/routing.conf.backup
+cp apps/nginx-strangler/routing.conf apps/nginx-strangler/routing.conf.backup
 
 # 2. Mise à jour de la config
-# (éditer nginx/routing.conf)
+# (éditer apps/nginx-strangler/routing.conf)
 
 # 3. Validation de la config nginx
 docker-compose exec nginx nginx -t

@@ -26,7 +26,7 @@ Pour orchestrer cette migration, un **nginx-strangler** a été introduit (ticke
 - Consultez [`MODULARISATION-STATUT.md`](apps/server-nestjs/documentation/Modularisation-de-console-server/MODULARISATION-STATUT.md) avant de développer sur un module backend, pour savoir s'il est en cours de migration (zones en feature freeze).
 - Si vous travaillez sur un module déjà migré vers `server-nestjs`, développez dans `apps/server-nestjs`, pas dans `apps/server`.
 
-Pour plus de détails sur la stratégie de migration : [`nginx/README.md`](nginx/README.md).
+Pour plus de détails sur la stratégie de migration : [`apps/nginx-strangler/README.md`](apps/nginx-strangler/README.md).
 
 ---
 
@@ -93,7 +93,7 @@ SERVER_PORT=8082   # port du nginx-strangler exposé par docker-compose.local.ym
                    # (au lieu de 4000 qui pointe directement vers server)
 ```
 
-Le `nginx-strangler` est automatiquement lancé par `pnpm dev` via `docker-compose.local.yml`. Il écoute sur `localhost:8082` et redirige vers les deux backends natifs (`server:4000` et `server-nestjs:3001`) selon la configuration de [`nginx/conf.d/routing.conf`](nginx/conf.d/routing.conf).
+Le `nginx-strangler` est automatiquement lancé par `pnpm dev` via `docker-compose.local.yml`. Il écoute sur `localhost:8082` et redirige vers les deux backends natifs (`server:4000` et `server-nestjs:3001`) selon la configuration de [`apps/nginx-strangler/conf.d/routing.conf`](apps/nginx-strangler/conf.d/routing.conf).
 
 > **Note :** si vous ne travaillez pas sur la migration NestJS, vous n'avez pas besoin de changer `SERVER_PORT` — le comportement par défaut (proxy direct vers `server:4000`) reste identique.
 

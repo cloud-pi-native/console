@@ -63,7 +63,7 @@ jobs:
           # Préparer un répertoire de test isolé avec la config substituée
           mkdir -p /tmp/nginx-test/conf.d /tmp/nginx-test/logs
           envsubst '${LEGACY_UPSTREAM} ${NESTJS_UPSTREAM}' \
-            < nginx/conf.d/routing.conf \
+            < apps/nginx-strangler/conf.d/routing.conf \
             > /tmp/nginx-test/conf.d/routing.conf
           # Adapter nginx.conf pour l'environnement CI (user www-data, paths accessibles)
           sed \
@@ -72,7 +72,7 @@ jobs:
             -e 's|error_log .*|error_log /tmp/nginx-test/logs/error.log notice;|' \
             -e 's|access_log .*|access_log /tmp/nginx-test/logs/access.log main;|' \
             -e 's|include /etc/nginx/conf\.d/\*\.conf|include /tmp/nginx-test/conf.d/*.conf|' \
-            nginx/nginx.conf > /tmp/nginx-test/nginx.conf
+            apps/nginx-strangler/nginx.conf > /tmp/nginx-test/nginx.conf
           nginx -t -c /tmp/nginx-test/nginx.conf
         env:
           LEGACY_UPSTREAM: "127.0.0.1:8080"

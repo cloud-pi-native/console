@@ -13,7 +13,7 @@
 | `server` (Fastify) | Port `8080` interne, exposé `4000` sur l'hôte |
 | Nginx actuel | Embarqué dans l'image `client`, proxifie `/api` + `/swagger-ui` vers `server:8080` — upstream changé vers `nginx-strangler:8080` |
 | `server-nestjs` | Dockerisé (port `3001`), ajouté dans tous les docker-compose |
-| `nginx-strangler` | Service dédié créé dans `nginx/`, fallback total sur `server` legacy |
+| `nginx-strangler` | Service dédié créé dans `apps/nginx-strangler/`, fallback total sur `server` legacy |
 | Envs couverts | Local dev, docker-compose (dev/prod/ci/integ) |
 
 ---
@@ -47,7 +47,7 @@
 
 | Décision | Choix |
 |---|---|
-| Emplacement du nginx-strangler | Répertoire `nginx/` à la racine du dépôt |
+| Emplacement du nginx-strangler | Répertoire `apps/nginx-strangler/` à la racine du dépôt |
 | Port interne de `nginx-strangler` | `8080` (non-root, Trivy DS002) |
 | Port interne de `server-nestjs` | `3001` (distinct du legacy sur `8080`) |
 | Envs PAX / MinInt | Couverts via docker-compose uniquement dans ce ticket |
@@ -71,10 +71,10 @@
 
 ## Phase 1 — Socle nginx-strangler ✅
 
-### Tâche 1.1 : Créer `nginx/` à la racine du dépôt ✅
+### Tâche 1.1 : Créer `apps/nginx-strangler/` ✅
 
 ```
-nginx/
+apps/nginx-strangler/
 ├── Dockerfile            # image nginx:1.27-alpine, USER nginx, HEALTHCHECK, EXPOSE 8080, envsubst entrypoint
 ├── nginx.conf            # directives globales (worker_processes, logs, include conf.d/)
 ├── conf.d/
@@ -175,7 +175,7 @@ Upstream `server:8080` → `nginx-strangler:8080`.
 
 ### Tâche 4.1 : Template de config pour le mode local ✅
 
-`nginx/conf.d/routing.local.conf.example` créé avec `host.docker.internal` comme valeurs d'exemple.
+`apps/nginx-strangler/conf.d/routing.local.conf.example` créé avec `host.docker.internal` comme valeurs d'exemple.
 
 ### Tâche 4.2 : Documentation ✅
 
@@ -208,7 +208,7 @@ Vérifier dans les tests Playwright que `/api/v1/system/health` répond correcte
 
 ### Tâche 5.3 : Procédure de rollback documentée ✅
 
-Documentée dans `nginx/README.md` :
+Documentée dans `apps/nginx-strangler/README.md` :
 
 ```bash
 # 1. Commenter la location concernée dans routing.conf
@@ -239,7 +239,7 @@ docker compose logs -f nginx-strangler | grep /api/v1/xxx
 ## Ce qui reste à faire (post-merge PR #1951)
 
 1. **Tâche 5.2** : Smoke test Playwright (optionnel pour la PR courante, recommandé avant Vague 1)
-2. **Vague 1** : Basculer les premiers modules dans `nginx/conf.d/routing.conf` :
+2. **Vague 1** : Basculer les premiers modules dans `apps/nginx-strangler/conf.d/routing.conf` :
    - `system` (health, config, settings)
    - `admin-token`
    - `user/tokens`
@@ -251,7 +251,7 @@ docker compose logs -f nginx-strangler | grep /api/v1/xxx
 ## Séquençage initial et estimation de charge
 
 ```
-Phase 1 : Créer nginx/ (structure + routing.conf)       Dev A  ~0.5j  ✅
+Phase 1 : Créer apps/nginx-strangler/ (structure + routing.conf)       Dev A  ~0.5j  ✅
 Phase 2 : Dockeriser server-nestjs (Dockerfile + port)  Dev B  ~1j    ✅
            + Modifier upstream nginx client              Dev A  ~0.5h  ✅
 Phase 3 : Mettre à jour tous les docker-compose         Dev A+B ~1j   ✅
