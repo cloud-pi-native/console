@@ -60,7 +60,7 @@
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@cpn-console/eslint-config": "workspace:^",
-    "eslint": "^9.39.1",
+    "eslint": "^9.39.4",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2"
   },
