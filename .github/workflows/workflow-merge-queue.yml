@@ -1,15 +1,9 @@
-name: Continuous Integration
+name: Merge Queue
 
 on:
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - ready_for_review
-    branches:
-      - "**"
   workflow_dispatch:
+  merge_group:
+    types: [checks_requested]
 
 permissions:
   contents: read
@@ -21,11 +15,12 @@ env:
   BUILD_AMD64: true
   BUILD_ARM64: false
   USE_QEMU: false
+  MERGE_GROUP_HEAD_SHA: "${{ github.event.merge_group.head_sha || 'no merge queue context for SHA' }}"
+  MERGE_GROUP_HEAD_REF: "${{ github.event.merge_group.head_ref || 'no merge queue context for REF' }}"
 
 jobs:
   path-filter:
     runs-on: ubuntu-latest
-    if: ${{ !github.event.pull_request.draft }}
     outputs:
       apps: ${{ steps.filter.outputs.apps }}
       packages: ${{ steps.filter.outputs.packages }}
@@ -53,7 +48,6 @@ jobs:
 
   expose-vars:
     runs-on: ubuntu-latest
-    if: ${{ !github.event.pull_request.draft }}
     outputs:
       NODE_VERSION: ${{ env.NODE_VERSION }}
       REGISTRY: ${{ env.REGISTRY }}
@@ -61,6 +55,8 @@ jobs:
       BUILD_AMD64: ${{ env.BUILD_AMD64 }}
       BUILD_ARM64: ${{ env.BUILD_ARM64 }}
       USE_QEMU: ${{ env.USE_QEMU }}
+      MERGE_GROUP_HEAD_REF: ${{ env.MERGE_GROUP_HEAD_REF }}
+      MERGE_GROUP_HEAD_SHA: ${{ env.MERGE_GROUP_HEAD_SHA }}
     steps:
       - name: Exposing env vars
         run: echo "Exposing env vars."
@@ -87,17 +83,17 @@ jobs:
 
   build:
     uses: ./.github/workflows/job-build.yml
-    if: ${{ github.event.pull_request.number && (needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true') }}
+    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true' }}
     needs:
       - expose-vars
     with:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
-      TAG: pr-${{ github.event.pull_request.number || github.event.number }}
+      TAG: pr-${{ github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
       BUILD_AMD64: ${{ needs.expose-vars.outputs.BUILD_AMD64 == 'true' }}
       BUILD_ARM64: ${{ needs.expose-vars.outputs.BUILD_ARM64 == 'true' }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
-      PR_NUMBER: ${{ github.event.pull_request.number || github.event.number }}
+      PR_NUMBER: ${{ github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
     secrets:
       ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
 
@@ -109,6 +105,30 @@ jobs:
     with:
       CONF_PATH: ./.github/labeler/build.yml
 
+  playwright-tests:
+    uses: ./.github/workflows/job-playwright.yml
+    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true' }}
+    needs:
+      - path-filter
+      - expose-vars
+      - build
+    with:
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      TAG: pr-${{ github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
+
+  cypress-tests:
+    uses: ./.github/workflows/job-tests-e2e.yml
+    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true' }}
+    needs:
+      - playwright-tests
+      - path-filter
+      - expose-vars
+      - build
+    with:
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      TAG: pr-${{ github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
+      BROWSERS: "${{ github.base_ref == 'main' && 'chrome,firefox' || 'firefox' }}"
+
   scan-vuln:
     uses: ./.github/workflows/job-scan.yml
     needs:
@@ -117,7 +137,7 @@ jobs:
     with:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
-      TAG: pr-${{ github.event.pull_request.number || github.event.number }}
+      TAG: pr-${{ github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
 
   # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
   all-jobs-passed:
@@ -130,6 +150,8 @@ jobs:
       - lint
       - unit-tests
       - build
+      - cypress-tests
+      - playwright-tests
       - scan-vuln
     steps:
       - name: Check status of all required jobs
