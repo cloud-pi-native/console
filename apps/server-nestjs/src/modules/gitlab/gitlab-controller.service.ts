@@ -2,7 +2,6 @@ import { Inject, Injectable, Logger, type OnApplicationBootstrap } from '@nestjs
 import { OnEvent } from '@nestjs/event-emitter'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { AccessLevel, type MemberSchema, type ProjectSchema, type SimpleUserSchema } from '@gitbeaker/core'
-import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
 import { GitlabDatastoreService } from './gitlab-datastore.service'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
