@@ -63,8 +63,8 @@ importers:
         specifier: ^0.7.0
         version: 0.7.0(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
       axios:
-        specifier: 1.12.2
-        version: 1.12.2
+        specifier: ^1.13.6
+        version: 1.13.6
       dotenv:
         specifier: ^16.6.1
         version: 16.6.1
@@ -272,8 +272,8 @@ importers:
         specifier: ^3.52.1
         version: 3.52.1(@ts-rest/core@3.52.1(@types/node@24.12.0)(zod@3.25.76))(zod@3.25.76)
       axios:
-        specifier: 1.12.2
-        version: 1.12.2
+        specifier: ^1.13.6
+        version: 1.13.6
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -429,8 +429,8 @@ importers:
         specifier: ^3.52.1
         version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.19.15)(zod@3.25.76))(zod@3.25.76)
       axios:
-        specifier: 1.12.2
-        version: 1.12.2
+        specifier: ^1.13.6
+        version: 1.13.6
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -476,7 +476,7 @@ importers:
         version: link:../../packages/eslintconfig
       '@cpn-console/test-utils':
         specifier: workspace:^
-        version: file:packages/test-utils(@types/node@22.19.15)
+        version: link:../../packages/test-utils
       '@cpn-console/ts-config':
         specifier: workspace:^
         version: link:../../packages/tsconfig
@@ -753,8 +753,8 @@ importers:
         specifier: 4.0.9
         version: 4.0.9
       axios:
-        specifier: 1.12.2
-        version: 1.12.2
+        specifier: ^1.13.6
+        version: 1.13.6
       js-yaml:
         specifier: 4.1.0
         version: 4.1.0
@@ -811,8 +811,8 @@ importers:
         specifier: ^40.6.0
         version: 40.6.0
       axios:
-        specifier: 1.12.2
-        version: 1.12.2
+        specifier: ^1.13.6
+        version: 1.13.6
       js-yaml:
         specifier: 4.1.0
         version: 4.1.0
@@ -863,8 +863,8 @@ importers:
         specifier: workspace:^
         version: link:../vault
       axios:
-        specifier: 1.12.2
-        version: 1.12.2
+        specifier: ^1.13.6
+        version: 1.13.6
       bytes:
         specifier: ^3.1.2
         version: 3.1.2
@@ -915,8 +915,8 @@ importers:
         specifier: ^26.5.5
         version: 26.5.5
       axios:
-        specifier: 1.12.2
-        version: 1.12.2
+        specifier: ^1.13.6
+        version: 1.13.6
     devDependencies:
       '@cpn-console/eslint-config':
         specifier: workspace:^
@@ -964,8 +964,8 @@ importers:
         specifier: workspace:^
         version: link:../vault
       axios:
-        specifier: 1.12.2
-        version: 1.12.2
+        specifier: ^1.13.6
+        version: 1.13.6
     devDependencies:
       '@cpn-console/eslint-config':
         specifier: workspace:^
@@ -1013,8 +1013,8 @@ importers:
         specifier: workspace:^
         version: link:../vault
       axios:
-        specifier: 1.12.2
-        version: 1.12.2
+        specifier: ^1.13.6
+        version: 1.13.6
     devDependencies:
       '@cpn-console/eslint-config':
         specifier: workspace:^
@@ -1053,8 +1053,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/shared
       axios:
-        specifier: 1.12.2
-        version: 1.12.2
+        specifier: ^1.13.6
+        version: 1.13.6
     devDependencies:
       '@cpn-console/eslint-config':
         specifier: workspace:^
@@ -1909,36 +1909,6 @@ packages:
   '@commitlint/types@20.4.3':
     resolution: {integrity: sha512-51OWa1Gi6ODOasPmfJPq6js4pZoomima4XLZZCrkldaH2V5Nb3bVhNXPeT6XV0gubbainSpTw4zi68NqAeCNCg==}
     engines: {node: '>=v18'}
-
-  '@cpn-console/argocd-plugin@file:plugins/argocd':
-    resolution: {directory: plugins/argocd, type: directory}
-
-  '@cpn-console/gitlab-plugin@file:plugins/gitlab':
-    resolution: {directory: plugins/gitlab, type: directory}
-
-  '@cpn-console/harbor-plugin@file:plugins/harbor':
-    resolution: {directory: plugins/harbor, type: directory}
-
-  '@cpn-console/hooks@file:packages/hooks':
-    resolution: {directory: packages/hooks, type: directory}
-
-  '@cpn-console/keycloak-plugin@file:plugins/keycloak':
-    resolution: {directory: plugins/keycloak, type: directory}
-
-  '@cpn-console/nexus-plugin@file:plugins/nexus':
-    resolution: {directory: plugins/nexus, type: directory}
-
-  '@cpn-console/shared@file:packages/shared':
-    resolution: {directory: packages/shared, type: directory}
-
-  '@cpn-console/sonarqube-plugin@file:plugins/sonarqube':
-    resolution: {directory: plugins/sonarqube, type: directory}
-
-  '@cpn-console/test-utils@file:packages/test-utils':
-    resolution: {directory: packages/test-utils, type: directory}
-
-  '@cpn-console/vault-plugin@file:plugins/vault':
-    resolution: {directory: plugins/vault, type: directory}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -4368,8 +4338,8 @@ packages:
     peerDependencies:
       axios: 0.x || 1.x
 
-  axios@1.12.2:
-    resolution: {integrity: sha512-vMJzPewAlRyOgxV2dU0Cuz2O8zzzx9VYtbJOaBgXFeLc4IV/Eg50n4LowmehOOR61S8ZMpc2K5Sa7g6A4jfkUw==}
+  axios@1.13.6:
+    resolution: {integrity: sha512-ChTCHMouEe2kn713WHbQGcuYrr6fXTBiu460OTwWrWob16g1bXn4vtz07Ope7ewMozJAnEquLk5lWQWtBig9DQ==}
 
   babel-jest@30.3.0:
     resolution: {integrity: sha512-gRpauEU2KRrCox5Z296aeVHR4jQ98BCnu0IO332D/xpHNOsIH/bgSRk9k6GbKIbBw8vFeN6ctuu6tV8WOyVfYQ==}
@@ -10373,131 +10343,6 @@ snapshots:
       conventional-commits-parser: 6.3.0
       picocolors: 1.1.1
 
-  '@cpn-console/argocd-plugin@file:plugins/argocd(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))':
-    dependencies:
-      '@cpn-console/gitlab-plugin': file:plugins/gitlab(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@cpn-console/keycloak-plugin': file:plugins/keycloak(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
-      '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@himenon/argocd-typescript-openapi': 1.2.2
-      '@types/js-yaml': 4.0.9
-      axios: 1.12.2
-      js-yaml: 4.1.0
-    transitivePeerDependencies:
-      - '@types/node'
-      - debug
-      - typescript
-      - vitest
-
-  '@cpn-console/gitlab-plugin@file:plugins/gitlab(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))':
-    dependencies:
-      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
-      '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@gitbeaker/core': 40.6.0
-      '@gitbeaker/requester-utils': 40.6.0
-      '@gitbeaker/rest': 40.6.0
-      axios: 1.12.2
-      js-yaml: 4.1.0
-    transitivePeerDependencies:
-      - '@types/node'
-      - debug
-      - typescript
-      - vitest
-
-  '@cpn-console/harbor-plugin@file:plugins/harbor(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))':
-    dependencies:
-      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@cpn-console/keycloak-plugin': file:plugins/keycloak(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
-      '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      axios: 1.12.2
-      bytes: 3.1.2
-      cron-validator: 1.4.0
-    transitivePeerDependencies:
-      - '@types/node'
-      - debug
-      - typescript
-      - vitest
-
-  '@cpn-console/hooks@file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))':
-    dependencies:
-      '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
-      json-schema: 0.4.0
-      vitest-mock-extended: 2.0.2(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - '@types/node'
-      - typescript
-      - vitest
-
-  '@cpn-console/keycloak-plugin@file:plugins/keycloak(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))':
-    dependencies:
-      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
-      '@keycloak/keycloak-admin-client': 26.5.5
-      axios: 1.12.2
-    transitivePeerDependencies:
-      - '@types/node'
-      - debug
-      - typescript
-      - vitest
-
-  '@cpn-console/nexus-plugin@file:plugins/nexus(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))':
-    dependencies:
-      '@cpn-console/gitlab-plugin': file:plugins/gitlab(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
-      '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      axios: 1.12.2
-    transitivePeerDependencies:
-      - '@types/node'
-      - debug
-      - typescript
-      - vitest
-
-  '@cpn-console/shared@file:packages/shared(@types/node@22.19.15)':
-    dependencies:
-      '@ts-rest/core': 3.52.1(@types/node@22.19.15)(zod@3.25.76)
-      short-uuid: 5.2.0
-      zod: 3.25.76
-      zod-validation-error: 3.5.4(zod@3.25.76)
-    transitivePeerDependencies:
-      - '@types/node'
-
-  '@cpn-console/sonarqube-plugin@file:plugins/sonarqube(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))':
-    dependencies:
-      '@cpn-console/gitlab-plugin': file:plugins/gitlab(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@cpn-console/keycloak-plugin': file:plugins/keycloak(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
-      '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      axios: 1.12.2
-    transitivePeerDependencies:
-      - '@types/node'
-      - debug
-      - typescript
-      - vitest
-
-  '@cpn-console/test-utils@file:packages/test-utils(@types/node@22.19.15)':
-    dependencies:
-      '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
-      '@faker-js/faker': 9.9.0
-    transitivePeerDependencies:
-      - '@types/node'
-
-  '@cpn-console/vault-plugin@file:plugins/vault(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))':
-    dependencies:
-      '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(terser@5.46.0))
-      '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
-      axios: 1.12.2
-    transitivePeerDependencies:
-      - '@types/node'
-      - debug
-      - typescript
-      - vitest
-
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
@@ -12202,8 +12047,8 @@ snapshots:
 
   '@typescript-eslint/project-service@8.56.1(typescript@5.9.3)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.57.0(typescript@5.9.3)
-      '@typescript-eslint/types': 8.57.0
+      '@typescript-eslint/tsconfig-utils': 8.56.1(typescript@5.9.3)
+      '@typescript-eslint/types': 8.56.1
       debug: 4.4.3
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -13052,12 +12897,12 @@ snapshots:
   aws4@1.13.2:
     optional: true
 
-  axios-retry@4.5.0(axios@1.12.2):
+  axios-retry@4.5.0(axios@1.13.6):
     dependencies:
-      axios: 1.12.2
+      axios: 1.13.6
       is-retry-allowed: 2.2.0
 
-  axios@1.12.2:
+  axios@1.13.6:
     dependencies:
       follow-redirects: 1.15.11
       form-data: 4.0.5
@@ -14630,8 +14475,8 @@ snapshots:
       '@fastify/cookie': 9.4.0
       '@fastify/jwt': 8.0.1
       '@fastify/session': 10.9.0
-      axios: 1.12.2
-      axios-retry: 4.5.0(axios@1.12.2)
+      axios: 1.13.6
+      axios-retry: 4.5.0(axios@1.13.6)
       fastify-plugin: 4.5.1
       fp-ts: 2.16.11
       grant: 5.4.24
