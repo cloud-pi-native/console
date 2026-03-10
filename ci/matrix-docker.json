@@ -8,6 +8,14 @@
     }
   },
   {
+    "name": "nginx-strangler",
+    "build": {
+      "context": "./",
+      "dockerfile": "./apps/nginx-strangler/Dockerfile",
+      "target": "prod"
+    }
+  },
+  {
     "name": "server-nestjs",
     "build": {
       "context": "./",
