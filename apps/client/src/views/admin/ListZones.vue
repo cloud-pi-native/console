@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { type CreateZoneBody, type UpdateZoneBody, type Zone, sortArrByObjKeyAsc } from '@cpn-console/shared'
+import { sortArrByObjKeyAsc } from '@cpn-console/shared'
+import type { CreateZoneBody, UpdateZoneBody, Zone } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { useClusterStore } from '@/stores/cluster'

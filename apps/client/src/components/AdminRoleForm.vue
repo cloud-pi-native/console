@@ -98,8 +98,8 @@ async function switchUserMembership(checked: boolean, user: User, fromSuggestion
   }
   const response = await usersStore.patchUsers([{ id: user.id, adminRoleIds: newUserAdminRoleIds }])
 
-  if (!users.value.find(({ id }) => user.id === id)) {
-    users.value = users.value.concat(response)
+  if (!users.value.some(({ id }) => user.id === id)) {
+    users.value = [...users.value, ...response]
   }
 
   if (fromSuggestion) {

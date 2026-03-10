@@ -327,6 +327,10 @@ describe('chunk function', () => {
   })
 })
 
+const slugRegexp = /-[01]$/
+const slugFourRegexp = /-4$/
+const slugEmptySpaceRegexp = /-2$/
+
 describe('generateSlug', () => {
   it('should return prefix, no array', () => {
     const prefix = faker.string.alphanumeric(5)
@@ -346,16 +350,16 @@ describe('generateSlug', () => {
   it('should return generated slug at 1 or 0, all matchs', () => {
     const prefix = faker.string.alphanumeric(5)
     const generated = generateSlug(prefix, [prefix])
-    expect(generated).match(/-[01]$/)
+    expect(generated).match(slugRegexp)
   })
   it('should return generated slug at 4, all matchs', () => {
     const prefix = faker.string.alphanumeric(5)
     const generated = generateSlug(prefix, [prefix, `${prefix}-0`, `${prefix}-1`, `${prefix}-2`, `${prefix}-3`])
-    expect(generated).match(/-4$/)
+    expect(generated).match(slugFourRegexp)
   })
   it('should fill empty space', () => {
     const prefix = faker.string.alphanumeric(5)
     const generated = generateSlug(prefix, [prefix, `${prefix}-0`, `${prefix}-1`, `${prefix}-3`])
-    expect(generated).match(/-2$/)
+    expect(generated).match(slugEmptySpaceRegexp)
   })
 })

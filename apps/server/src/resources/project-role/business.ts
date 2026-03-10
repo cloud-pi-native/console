@@ -10,12 +10,14 @@ import { BadRequest400, NotFound404 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 import prisma from '@/prisma.js'
 
+const oidcRegexp = /^\/[^/]+/
+
 export async function listRoles(projectId: Project['id']) {
   const roles = await listRolesQuery(projectId)
   return roles.map(role => ({
     ...role,
     permissions: role.permissions.toString(),
-    oidcGroup: role.oidcGroup ? role.oidcGroup.replace(/^\/[^/]+/, '') : role.oidcGroup,
+    oidcGroup: role.oidcGroup ? role.oidcGroup.replace(oidcRegexp, '') : role.oidcGroup,
   }))
 }
 

@@ -1,14 +1,12 @@
 // @ts-ignore pas de typage disponible pour le paquet bytes
 import bytes from 'bytes'
 import {
-  type PluginResult,
-  type Project,
-  type ProjectLite,
-  type StepCall,
+
   parseError,
   specificallyDisabled,
   specificallyEnabled,
 } from '@cpn-console/hooks'
+import type { PluginResult, Project, ProjectLite, StepCall } from '@cpn-console/hooks'
 import { DEFAULT, ENABLED } from '@cpn-console/shared'
 import {
   getApi,

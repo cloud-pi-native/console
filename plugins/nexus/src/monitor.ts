@@ -1,4 +1,5 @@
-import { Monitor, type MonitorInfos, MonitorStatus } from '@cpn-console/shared'
+import { Monitor, MonitorStatus } from '@cpn-console/shared'
+import type { MonitorInfos } from '@cpn-console/shared'
 import axios from 'axios'
 import { getAxiosOptions } from './functions.js'
 
@@ -31,7 +32,7 @@ type NexusRes = Record<string, {
 }>
 
 async function monitor(instance: Monitor): Promise<MonitorInfos> {
-  instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
+  instance.lastStatus.lastUpdateTimestamp = Date.now()
   try {
     const status = await axios.get('/status', {
       validateStatus: () => true,
@@ -63,7 +64,7 @@ async function monitor(instance: Monitor): Promise<MonitorInfos> {
           ? 'Des composants critiques sont en erreur'
           : 'Le service est partiellement dégradé'
 
-        instance.lastStatus.cause = `Les composants suivants sont en erreurs: ${failedCoreComponents.concat(failedAuxComponents).join(', ')}`
+        instance.lastStatus.cause = `Les composants suivants sont en erreurs: ${[...failedCoreComponents, ...failedAuxComponents].join(', ')}`
         return instance.lastStatus
       }
     }

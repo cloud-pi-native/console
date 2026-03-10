@@ -1,4 +1,5 @@
-import { type Pinia, createPinia, setActivePinia } from 'pinia'
+import { createPinia, setActivePinia } from 'pinia'
+import type { Pinia } from 'pinia'
 import { createRandomDbSetup } from '@cpn-console/test-utils'
 import { fakeToken, missingCredentials } from '@cpn-console/shared'
 

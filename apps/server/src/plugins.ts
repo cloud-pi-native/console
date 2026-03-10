@@ -1,5 +1,6 @@
 import { readdirSync, statSync } from 'node:fs'
-import { type Plugin, pluginManager } from '@cpn-console/hooks'
+import { pluginManager } from '@cpn-console/hooks'
+import type { Plugin } from '@cpn-console/hooks'
 import { plugin as argo } from '@cpn-console/argocd-plugin'
 import { plugin as gitlab } from '@cpn-console/gitlab-plugin'
 import { plugin as harbor } from '@cpn-console/harbor-plugin'

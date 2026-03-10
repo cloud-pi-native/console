@@ -32,7 +32,7 @@ test.describe('Service Chains page', () => {
         .nth(1)
         .click()
       await expect(
-        page.getByRole('heading', { name: /Chaîne de services/ }),
+        page.getByRole('heading', { name: 'Chaîne de services' }),
       ).toBeVisible()
     })
 

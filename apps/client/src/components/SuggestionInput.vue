@@ -22,7 +22,7 @@ const emit = defineEmits<{
 const localValue = ref(props.modelValue)
 
 function updateValue() {
-  if (props.suggestions.find(suggestion => suggestion.value === localValue.value)) {
+  if (props.suggestions.some(suggestion => suggestion.value === localValue.value)) {
     emit('selectSuggestion', localValue.value)
   }
   emit('update:modelValue', localValue.value)

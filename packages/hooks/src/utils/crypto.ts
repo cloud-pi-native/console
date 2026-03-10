@@ -3,8 +3,7 @@ import type { Project } from '../hooks/index.js'
 
 export function generateRandomPassword(length = 24) {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@-_#*'
-  return Array.from(crypto.getRandomValues(new Uint32Array(length)))
-    .map(x => chars[x % chars.length])
+  return Array.from(crypto.getRandomValues(new Uint32Array(length)), x => chars[x % chars.length])
     .join('')
 }
 

@@ -200,7 +200,7 @@ async function removeInfraEnvValues(
     for (const existingFile of existingFiles) {
       if (
         existingFile.name === 'values.yaml'
-        && !neededFiles.find(f => f === existingFile.path)
+        && !neededFiles.includes(existingFile.path)
       ) {
         filesToDelete.push(existingFile.path)
       }

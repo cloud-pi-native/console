@@ -51,10 +51,10 @@ export class ApplicationInitializationService {
 
     try {
       const dataPath
-                = this.configurationService.isProd
-                  || this.configurationService.isInt
-                  ? './init/db/imports/data'
-                  : '@cpn-console/test-utils/src/imports/data'
+        = this.configurationService.isProd
+          || this.configurationService.isInt
+          ? './init/db/imports/data'
+          : '@cpn-console/test-utils/src/imports/data'
       await this.injectDataInDatabase(dataPath)
       if (
         this.configurationService.isProd

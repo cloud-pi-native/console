@@ -102,7 +102,7 @@ export class AppService {
 
   async startApp() {
     const openApiDocument = generateOpenApi(
-      await getContract(),
+      await getContract() as any,
       this.fastifyService.swaggerConf,
       { setOperationId: true },
     )

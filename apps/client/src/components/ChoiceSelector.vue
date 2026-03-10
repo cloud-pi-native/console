@@ -50,9 +50,9 @@ function switchSelection(event: string) {
 type SwitchMultipleParam = 'notSelected' | 'notSelectedDisplayed' | 'selected' | 'selectedDisplayed'
 function switchMultiple(choice: SwitchMultipleParam) {
   if (choice === 'selected') {
-    selectedValues.value = selectedValues.value.filter(value => !options.selected.value.find(select => select[props.valueKey] === value))
+    selectedValues.value = selectedValues.value.filter(value => !options.selected.value.some(select => select[props.valueKey] === value))
   } else if (choice === 'selectedDisplayed') {
-    selectedValues.value = selectedValues.value.filter(value => !displayed.selected.value.find(select => select[props.valueKey] === value))
+    selectedValues.value = selectedValues.value.filter(value => !displayed.selected.value.some(select => select[props.valueKey] === value))
   } else if (choice === 'notSelected') {
     options.notSelected.value.forEach(option => selectedValues.value.push(option[props.valueKey]))
   } else if (choice === 'notSelectedDisplayed') {

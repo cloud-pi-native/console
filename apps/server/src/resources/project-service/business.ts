@@ -47,7 +47,7 @@ export async function getProjectServices(projectId: Project['id'], permissionTar
   const store = dbToObj([...projectStore, ...globalConfig])
 
   const publicClusters = await getPublicClusters()
-  project.clusters = project.clusters.concat(publicClusters)
+  project.clusters = [...project.clusters, ...publicClusters]
   const zones: Map<string, ZoneObject> = new Map() // Pour dédoublonnage des zones
   project.clusters.map(c => zones.set(c.zone.id, c.zone))
 
@@ -56,7 +56,7 @@ export async function getProjectServices(projectId: Project['id'], permissionTar
     const toResponse = to
       ? to({
           clusters: project.clusters,
-          zones: Array.from(zones.values()),
+          zones: [...zones.values()],
           environments: project.environments,
           project,
           store,

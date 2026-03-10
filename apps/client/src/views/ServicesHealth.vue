@@ -1,5 +1,6 @@
 <script  lang="ts" setup>
-import { type Ref, onBeforeMount, ref } from 'vue'
+import { onBeforeMount, ref } from 'vue'
+import type { Ref } from 'vue'
 import { alertTypeMapper, useServiceStore } from '@/stores/services-monitor.js'
 import { AdminAuthorized } from '@cpn-console/shared'
 import { useUserStore } from '@/stores/user.js'

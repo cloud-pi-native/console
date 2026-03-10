@@ -124,7 +124,7 @@ export async function updateProject(
       return new BadRequest400('Le nouveau propriétaire doit faire partie des membres actuels du projet')
     }
     if (memberCandidate.user.type !== 'human') return new BadRequest400('Seuls les comptes humains peuvent être propriétaire de projets')
-    if (!projectDb.members.find(member => member.userId === projectDb.ownerId)) {
+    if (!projectDb.members.some(member => member.userId === projectDb.ownerId)) {
       await prisma.projectMembers.create({
         data: { userId: projectDb.ownerId, projectId },
       })

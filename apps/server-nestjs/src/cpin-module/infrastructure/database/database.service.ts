@@ -9,7 +9,7 @@ export class DatabaseService {
 
   constructor(@Inject(ConfigurationService) private readonly configurationService: ConfigurationService) {
     this.DELAY_BEFORE_RETRY
-            = this.configurationService.isTest || this.configurationService.isCI
+      = this.configurationService.isTest || this.configurationService.isCI
         ? 1000
         : 10000
   }

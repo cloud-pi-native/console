@@ -117,7 +117,7 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
     const destroySecrets = (await vaultApi.list())
       .filter(path => path.endsWith('-mirror'))
       .map(path => path.slice(1, path.length - 7))
-      .filter(repoName => !project.repositories.find(projectRepo => projectRepo.internalRepoName === repoName))
+      .filter(repoName => !project.repositories.some(projectRepo => projectRepo.internalRepoName === repoName))
 
     await Promise.all(destroySecrets
       .map(repoName => vaultApi.destroy(`${repoName}-mirror`)),

@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
-import { type AchievedStatus, type ClusterDetails, ClusterPrivacy, type ProjectRoles, type Stage, type Zone, achievedStatus, logActions, projectRoles } from '@cpn-console/shared'
+import { ClusterPrivacy, achievedStatus, logActions, projectRoles } from '@cpn-console/shared'
+import type { AchievedStatus, ClusterDetails, ProjectRoles, Stage, Zone } from '@cpn-console/shared'
 import { repeatFn } from './func-utils.js'
 import type { Cluster, Environment, Log, Member, Permission, Project, Repository, Role, User } from './types.js'
 

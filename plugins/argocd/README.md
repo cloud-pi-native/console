@@ -2,7 +2,7 @@
 
 Ce document décrit le fonctionnement du plugin ArgoCD.
 
-# Hooks et Steps supportés
+## Hooks et Steps supportés
 
 Le seul step supporté est pour l'instant le step `main`. Ceci est applicable à tous les hooks de ce plugin.
 
@@ -133,7 +133,7 @@ sequenceDiagram
   Console ->> Gitlab: Create argocd-values.yaml file
 ```
 
-# Deployment as-code (declarative mode)
+## Deployment as-code (declarative mode)
 
 ```mermaid
 ---

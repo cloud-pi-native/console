@@ -27,8 +27,7 @@ export const MemberSchema = z.object({
     z.object({
       user: UserSchema,
       roleIds: z.string().uuid().array(),
-    }).transform(({ user: { adminRoleIds: _, id: userId, ...user }, roleIds }) => ({ userId, roleIds, ...user }))
-    ,
+    }).transform(({ user: { adminRoleIds: _, id: userId, ...user }, roleIds }) => ({ userId, roleIds, ...user })),
   )
 
 export const ProjectMemberSchema = MemberSchema.and(z.object({

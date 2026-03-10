@@ -1,4 +1,5 @@
-import { type ApiFetcherArgs, tsRestFetchApi } from '@ts-rest/core'
+import { tsRestFetchApi } from '@ts-rest/core'
+import type { ApiFetcherArgs } from '@ts-rest/core'
 import { apiPrefix, getApiClient } from '@cpn-console/shared'
 import { getKeycloak } from '@/utils/keycloak/keycloak.js'
 

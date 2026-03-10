@@ -26,12 +26,12 @@ type FilterWhere = XOR<{
   userId?: User['id']
   filter: 'all'
 }, {
-    userId: User['id'] | undefined
-    filter: 'owned' | 'member'
-  }>
-type ListProjectWhere = Omit<(typeof projectContract.listProjects.query._type), 'status_in' | 'status_not_in' | 'status'> &
-  Pick<Prisma.ProjectWhereInput, 'status'> &
-  FilterWhere
+  userId: User['id'] | undefined
+  filter: 'owned' | 'member'
+}>
+type ListProjectWhere = Omit<(typeof projectContract.listProjects.query._type), 'status_in' | 'status_not_in' | 'status'>
+  & Pick<Prisma.ProjectWhereInput, 'status'>
+  & FilterWhere
 export async function listProjects({
   description,
   locked,

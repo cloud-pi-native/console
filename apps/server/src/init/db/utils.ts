@@ -56,7 +56,7 @@ function sort() {
         }
         if (
           field.isList && relationField.isList
-          && !manyToManyRelation.find(test =>
+          && !manyToManyRelation.some(test =>
             (test[0] === model && test[1] === field.type) || (test[0] === field.type && test[1] === model))
         ) {
           manyToManyRelation.push([model, field.type, field.name])

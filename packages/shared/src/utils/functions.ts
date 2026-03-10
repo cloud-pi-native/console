@@ -16,7 +16,7 @@ export function calcProjectNameMaxLength() {
 
 export const getUniqueListBy = (arr: Array<Record<string, unknown>>, key: string) => [...new Map(arr.map(item => [item[key], item])).values()]
 
-export const isString = (value: any): value is string => typeof value === 'string' || value instanceof String
+export const isString = (value: any): value is string => typeof value === 'string'
 
 type ObjToSort = Record<string, unknown>
 
@@ -69,8 +69,8 @@ export function exclude<T>(result: T, keys: string[]): T {
   return newObj
 }
 
-export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
-  T extends (...args: any) => Promise<infer R> ? R : any
+export type AsyncReturnType<T extends (...args: any) => Promise<any>>
+  = T extends (...args: any) => Promise<infer R> ? R : any
 
 export function objectEntries<Obj extends Record<string, unknown>>(obj: Obj): ([keyof Obj, Obj[keyof Obj]])[] {
   return Object.entries(obj) as ([keyof Obj, Obj[keyof Obj]])[]
@@ -163,8 +163,7 @@ export function shallowMatch(objectController: Record<string, unknown> | undefin
 }
 
 export function generateRandomPassword(length = 24, chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@-_#*') {
-  return Array.from(crypto.getRandomValues(new Uint32Array(length)))
-    .map(x => chars[x % chars.length])
+  return Array.from(crypto.getRandomValues(new Uint32Array(length)), x => chars[x % chars.length])
     .join('')
 }
 
@@ -185,8 +184,8 @@ export function insert<T>(pseudoArray: T[] | undefined, element: T): T[] {
   }
 }
 
-export type ArrayElement<ArrayType extends readonly unknown[]> =
-  ArrayType extends readonly (infer ElementType)[] ? ElementType : never
+export type ArrayElement<ArrayType extends readonly unknown[]>
+  = ArrayType extends readonly (infer ElementType)[] ? ElementType : never
 
 export const bts = (v: boolean) => v ? 'true' : 'false'
 export function stb(v?: string | undefined) {

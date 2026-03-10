@@ -1,4 +1,5 @@
-import { type Pinia, createPinia, setActivePinia } from 'pinia'
+import { createPinia, setActivePinia } from 'pinia'
+import type { Pinia } from 'pinia'
 import { getRandomCluster, getRandomEnv, getRandomStage, getRandomZone, repeatFn } from '@cpn-console/test-utils'
 import { ClusterPrivacy, deleteValidationInput } from '@cpn-console/shared'
 

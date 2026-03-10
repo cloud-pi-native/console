@@ -9,15 +9,11 @@ const props = defineProps<{
 const snackbarStore = useSnackbarStore()
 const isReplaying = computed(
   () =>
-    !!(
-      props.project.operationsInProgress as unknown as ProjectOperations[]
-    ).find(ope => ope.startsWith('update')),
+    (props.project.operationsInProgress as unknown as ProjectOperations[]).some(ope => ope.startsWith('update')),
 )
 const isDeleting = computed(
   () =>
-    !!(
-      props.project.operationsInProgress as unknown as ProjectOperations[]
-    ).find(ope => ope.startsWith('delete')),
+    (props.project.operationsInProgress as unknown as ProjectOperations[]).some(ope => ope.startsWith('delete')),
 )
 
 async function replayHooks() {

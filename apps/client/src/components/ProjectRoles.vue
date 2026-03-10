@@ -25,7 +25,7 @@ async function addRole() {
   })
   reload()
   snackbarStore.setMessage('Rôle ajouté', 'success')
-  selectedId.value = newRoles[newRoles.length - 1].id
+  selectedId.value = newRoles.at(-1)?.id
 }
 
 async function deleteRole(roleId: Role['id']) {
@@ -41,7 +41,7 @@ async function updateMember(checked: boolean, userId: Member['userId']) {
   if (!matchingMember) return
 
   const newRoleList = checked
-    ? matchingMember.roleIds.concat(selectedRole.value.id)
+    ? [...matchingMember.roleIds, ...selectedRole.value.id]
     : matchingMember.roleIds.filter(id => id !== selectedRole.value?.id)
 
   await props.project.Members.patch([{ userId, roles: newRoleList }])

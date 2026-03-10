@@ -4,9 +4,9 @@ import {
   ServiceChainDetailsSchema,
   ServiceChainFlowsSchema,
   resourceListToDict,
-  type ServiceChain,
-  type ServiceChainList,
+
 } from '@cpn-console/shared'
+import type { ServiceChain, ServiceChainList } from '@cpn-console/shared'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useServiceChainStore = defineStore('serviceChain', () => {

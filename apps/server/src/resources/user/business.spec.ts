@@ -109,7 +109,7 @@ describe('test users business', () => {
       await getMatchingUsers({ letters: 'abc', notInProjectId: projectId })
 
       expect(getMatchingUsersQueryMock).toHaveBeenCalledTimes(1)
-      expect(getMatchingUsersQueryMock).toHaveBeenCalledWith({ AND: [{
+      expect(getMatchingUsersQueryMock).toHaveBeenCalledWith({ AND: [...[{
         projectMembers: {
           none: {
             projectId,
@@ -121,7 +121,7 @@ describe('test users business', () => {
             id: projectId,
           },
         },
-      }].concat(AND) })
+      }], ...AND] })
     })
   })
   describe('logViaSession', () => {
