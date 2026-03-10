@@ -16,8 +16,8 @@ describe('service Store', () => {
 
   it('should get services health by api call (healthy)', async () => {
     const data: ServiceBody = [
-      { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'OK', name: 'Keycloak', status: 'OK' },
-      { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'Service perdu', name: 'Gitlab', status: 'OK' },
+      { interval: 300000, lastUpdateTimestamp: Date.now(), message: 'OK', name: 'Keycloak', status: 'OK' },
+      { interval: 300000, lastUpdateTimestamp: Date.now(), message: 'Service perdu', name: 'Gitlab', status: 'OK' },
     ]
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const serviceStore = useServiceStore()
@@ -38,8 +38,8 @@ describe('service Store', () => {
 
   it('should get services health by api call (unhealthy)', async () => {
     const data = [
-      { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'OK', name: 'Keycloak', status: 'OK' },
-      { interval: 300000, lastUpdateTimestamp: (new Date()).getTime(), message: 'Service perdu', name: 'Gitlab', status: 'Inconnu' },
+      { interval: 300000, lastUpdateTimestamp: Date.now(), message: 'OK', name: 'Keycloak', status: 'OK' },
+      { interval: 300000, lastUpdateTimestamp: Date.now(), message: 'Service perdu', name: 'Gitlab', status: 'Inconnu' },
     ]
     apiClientGet.mockReturnValueOnce(Promise.resolve({ status: 200, body: data }))
     const serviceStore = useServiceStore()

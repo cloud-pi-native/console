@@ -1,4 +1,5 @@
-import { type ClusterObject, type StepCall, parseError } from '@cpn-console/hooks'
+import { parseError } from '@cpn-console/hooks'
+import type { ClusterObject, StepCall } from '@cpn-console/hooks'
 import { updateZoneValues } from './utils.js'
 
 export const upsertCluster: StepCall<ClusterObject> = async (payload) => {

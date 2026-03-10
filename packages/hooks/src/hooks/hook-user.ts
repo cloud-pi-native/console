@@ -1,4 +1,5 @@
-import { type Hook, createHook } from './hook.js'
+import { createHook } from './hook.js'
+import type { Hook } from './hook.js'
 import type { UserObject } from './index.js'
 
 export type UserEmail = Pick<UserObject, 'email'>

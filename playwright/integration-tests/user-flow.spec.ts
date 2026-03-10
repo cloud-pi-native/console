@@ -48,7 +48,7 @@ test.describe('Integration tests user flow: project creation', { tag: '@integ' }
     await page.getByTestId('test-tab-services').click()
     await page.getByRole('button', { name: 'Nexus' }).click()
     await page
-      .getByRole('group', { name: /Activer le dépôt Maven/ })
+      .getByRole('group', { name: 'Activer le dépôt Maven' })
       .locator('input[value="enabled"] + label')
       .click()
     await page.getByTestId('saveBtn').click()

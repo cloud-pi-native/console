@@ -1,4 +1,5 @@
-import { type Pinia, createPinia, setActivePinia } from 'pinia'
+import { createPinia, setActivePinia } from 'pinia'
+import type { Pinia } from 'pinia'
 
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'

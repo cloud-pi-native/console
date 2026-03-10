@@ -2,12 +2,12 @@ import { getApi } from './utils.js'
 import { isValidCron } from 'cron-validator'
 
 // https://github.com/goharbor/harbor/blob/main/src/server/v2.0/handler/retention.go
-export type RuleTemplate =
-  | 'always'
-  | 'latestPulledK'
-  | 'latestPushedK'
-  | 'nDaysSinceLastPull'
-  | 'nDaysSinceLastPush'
+export type RuleTemplate
+  = | 'always'
+    | 'latestPulledK'
+    | 'latestPushedK'
+    | 'nDaysSinceLastPull'
+    | 'nDaysSinceLastPush'
 
 const allowed: RuleTemplate[] = [
   'always',

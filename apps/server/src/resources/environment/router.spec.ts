@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { type Environment, PROJECT_PERMS, environmentContract } from '@cpn-console/shared'
+import { PROJECT_PERMS, environmentContract } from '@cpn-console/shared'
+import type { Environment } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
 import { atDates, getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'

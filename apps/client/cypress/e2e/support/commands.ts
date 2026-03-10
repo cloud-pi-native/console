@@ -375,7 +375,7 @@ Cypress.Commands.add('getServicesResponse', () => {
     services.map(service =>
       cy.getByDataTestid(`${service.name}-info`).should('contain', `${service.code} - ${service.message}`),
     )
-    if (services.find(service => service.code >= 400)) {
+    if (services.some(service => service.code >= 400)) {
       cy.getByDataTestid('services-health-badge').should('contain', 'Un ou plusieurs services dysfonctionnent')
     } else {
       cy.getByDataTestid('services-health-badge').should('contain', 'Tous les services fonctionnent')
@@ -423,7 +423,7 @@ Cypress.Commands.add('getSettled', (selector, opts = {}) => {
     }
 
     // Retry after a bit of a delay
-    setTimeout(() => isAttached(resolve, count), delay)
+    setTimeout(isAttached, delay, resolve, count)
   }
 
   // Wrap, so we can chain cypress commands off the result

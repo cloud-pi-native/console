@@ -96,7 +96,7 @@ test.describe('Repositories', () => {
       await expect(page.getByTestId('addRepoBtn')).toBeDisabled()
       await page
         .getByTestId('externalRepoUrlInput')
-        .fill(repo.externalRepoUrl.replace(/s/i, ''))
+        .fill(repo.externalRepoUrl.replace('https', 'http'))
       await expect(
         page
           .getByTestId('externalRepoUrlInput')

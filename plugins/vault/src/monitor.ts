@@ -1,4 +1,5 @@
-import { Monitor, type MonitorInfos, MonitorStatus } from '@cpn-console/shared'
+import { Monitor, MonitorStatus } from '@cpn-console/shared'
+import type { MonitorInfos } from '@cpn-console/shared'
 import axios from 'axios'
 import getConfig from './config.js'
 
@@ -16,7 +17,7 @@ type VaultRes = {
 } | undefined
 
 async function monitor(instance: Monitor): Promise<MonitorInfos> {
-  instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
+  instance.lastStatus.lastUpdateTimestamp = Date.now()
   try {
     const res = await axios.get(`${getConfig().internalUrl}/v1/sys/health?standbyok=true`, {
       headers: {

@@ -78,9 +78,7 @@ export const useProjectStore = defineStore('project', () => {
     }).then((response: any) => extractData(response, 200))
     for (const storedProject of myProjects.value) {
       if (
-        !res.find(
-          (responseProject: any) => responseProject.id === storedProject.id,
-        )
+        !res.some((responseProject: any) => responseProject.id === storedProject.id)
       ) {
         delete projectsBySlug.value[storedProject.slug]
       }

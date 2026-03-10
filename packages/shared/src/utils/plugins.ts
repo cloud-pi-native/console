@@ -26,7 +26,7 @@ export class Monitor {
     }
     this.lastStatus = {
       interval: this.intervalTime,
-      lastUpdateTimestamp: (new Date()).getTime(),
+      lastUpdateTimestamp: Date.now(),
       message: 'En attente d\'une première vérification',
       status: MonitorStatus.UNKNOW,
       cause: 'App just started',

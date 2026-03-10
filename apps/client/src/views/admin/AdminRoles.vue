@@ -22,7 +22,7 @@ async function addRole() {
   await adminRoleStore.createRole()
   snackbarStore.setMessage('Rôle ajouté', 'success')
 
-  selectedId.value = adminRoleStore.roles[adminRoleStore.roles.length - 1].id
+  selectedId.value = adminRoleStore.roles.at(-1)?.id
 }
 
 async function deleteRole(roleId: Role['id']) {

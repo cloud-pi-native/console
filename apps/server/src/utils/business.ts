@@ -1,4 +1,5 @@
-import { type SharedSafeParseReturnType, parseZodError } from '@cpn-console/shared'
+import { parseZodError } from '@cpn-console/shared'
+import type { SharedSafeParseReturnType } from '@cpn-console/shared'
 import { BadRequest400 } from './errors.js'
 
 export type Success<T> = Result<T>

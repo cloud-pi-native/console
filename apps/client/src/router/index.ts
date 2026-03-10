@@ -273,7 +273,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
 export function createAppRouter(base?: string) {
   const router = createRouter({
     history: createWebHistory(base ?? (import.meta.env?.BASE_URL || '')),
-    scrollBehavior: (to) => { if (to.hash && !/^#state=/.exec(to.hash)) return ({ el: to.hash }) },
+    scrollBehavior: (to) => { if (to.hash && !to.hash.startsWith('#state=')) return ({ el: to.hash }) },
     routes,
   })
   router.beforeEach((to) => {

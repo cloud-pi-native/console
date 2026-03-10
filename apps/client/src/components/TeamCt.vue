@@ -104,7 +104,7 @@ async function removeUserFromProject(userId: string) {
 }
 
 async function transferOwnerShip() {
-  if (nextOwnerId.value && props.project.members.find(member => member.userId === nextOwnerId.value)) {
+  if (nextOwnerId.value && props.project.members.some(member => member.userId === nextOwnerId.value)) {
     await props.project.Commands.update({ ownerId: nextOwnerId.value })
       .then(() => emit('transfer'))
       .catch(() => emit('refresh'))

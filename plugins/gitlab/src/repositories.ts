@@ -2,7 +2,8 @@ import type { Project, Repository } from '@cpn-console/hooks'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
 import type { CondensedProjectSchema, ProjectSchema } from '@gitbeaker/rest'
 import { shallowEqual } from '@cpn-console/shared'
-import { type GitlabProjectApi, pluginManagedTopic } from './class.js'
+import { pluginManagedTopic } from './class.js'
+import type { GitlabProjectApi } from './class.js'
 import { provisionMirror } from './project.js'
 import { infraAppsRepoName, internalMirrorRepoName } from './utils.js'
 
@@ -21,19 +22,18 @@ export async function ensureRepositories(gitlabApi: GitlabProjectApi, project: P
       .filter(gitlabRepository => (
         !specialRepos.includes(gitlabRepository.name)
         && !gitlabRepository.topics?.includes(pluginManagedTopic)
-        && !project.repositories.find(repo => repo.internalRepoName === gitlabRepository.name,
-        )))
+        && !project.repositories.some(repo => repo.internalRepoName === gitlabRepository.name)))
       .map(gitlabRepository => gitlabApi.deleteRepository(gitlabRepository.id, gitlabRepository.path_with_namespace)),
     // create missing repositories
     ...project.repositories.map(repo => ensureRepositoryExists(gitlabRepositories, repo, gitlabApi, projectMirrorCreds, vaultApi)),
   ]
 
-  if (!gitlabRepositories.find(repo => repo.name === infraAppsRepoName)) {
+  if (!gitlabRepositories.some(repo => repo.name === infraAppsRepoName)) {
     promises.push(
       gitlabApi.createEmptyProjectRepository({ repoName: infraAppsRepoName, clone: false }),
     )
   }
-  if (!gitlabRepositories.find(repo => repo.name === internalMirrorRepoName)) {
+  if (!gitlabRepositories.some(repo => repo.name === internalMirrorRepoName)) {
     promises.push(
       gitlabApi.createEmptyProjectRepository({ repoName: internalMirrorRepoName, clone: false })
         .then(mirrorRepo => provisionMirror(mirrorRepo.id)),
@@ -43,9 +43,11 @@ export async function ensureRepositories(gitlabApi: GitlabProjectApi, project: P
   await Promise.all(promises)
 }
 
+const urnRegexp = /:\/\/(.*)/s
+
 async function ensureRepositoryExists(gitlabRepositories: CondensedProjectSchema[], repository: Repository, gitlabApi: GitlabProjectApi, projectMirrorCreds: ProjectMirrorCreds, vaultApi: VaultProjectApi) {
   const gitlabRepository: CondensedProjectSchema | ProjectSchema | void = gitlabRepositories.find(gitlabRepository => gitlabRepository.name === repository.internalRepoName)
-  const externalRepoUrn = repository.externalRepoUrl.split(/:\/\/(.*)/s)[1]
+  const externalRepoUrn = repository.externalRepoUrl.split(urnRegexp)[1]
   const vaultCredsPath = `${repository.internalRepoName}-mirror`
   const currentVaultSecret = await vaultApi.read(vaultCredsPath, { throwIfNoEntry: false })
 
@@ -78,7 +80,7 @@ async function ensureRepositoryExists(gitlabRepositories: CondensedProjectSchema
     GIT_INPUT_PASSWORD: repository.isPrivate
       ? (repository.newCreds?.token || gitInputPassword)
       : undefined,
-    GIT_OUTPUT_URL: internalRepoUrl.split(/:\/\/(.*)/s)[1],
+    GIT_OUTPUT_URL: internalRepoUrl.split(urnRegexp)[1],
     GIT_OUTPUT_USER: projectMirrorCreds.botAccount,
     GIT_OUTPUT_PASSWORD: projectMirrorCreds.token,
   }

@@ -1,4 +1,5 @@
-import { Monitor, type MonitorInfos, MonitorStatus } from '@cpn-console/shared'
+import { Monitor, MonitorStatus } from '@cpn-console/shared'
+import type { MonitorInfos } from '@cpn-console/shared'
 import axios from 'axios'
 import config from './config.js'
 
@@ -10,7 +11,7 @@ type GitlabRes = Record<string, { status: HealthStatus, labels: Record<string, s
 const coreComponents = ['gitaly_check', 'master_check', 'db_check', 'sessions_check']
 
 async function monitor(instance: Monitor): Promise<MonitorInfos> {
-  instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
+  instance.lastStatus.lastUpdateTimestamp = Date.now()
   try {
     const res = await axios.get(`${config().internalUrl}/-/readiness?all=1`, {
       validateStatus: res => res === 200,

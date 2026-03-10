@@ -43,7 +43,7 @@ describe('test calls without ID passed', () => {
   // Création d'une cible de test
     const target = {
       async fetchData() {
-        return new Promise(resolve => setTimeout(() => resolve('Pending result'), 100))
+        return new Promise(resolve => setTimeout(resolve, 100, 'Pending result'))
       },
     }
 

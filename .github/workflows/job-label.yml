@@ -1,5 +1,8 @@
 name: Add labels on PR
 
+permissions:
+  contents: read
+
 on:
   workflow_call:
     inputs:

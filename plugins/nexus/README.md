@@ -2,7 +2,7 @@
 
 Ce plugin permet de déployer des dépôts à la demande sur nexus. Les seules technologies prisent en charge actuellement sont Maven et NPM.
 
-# Configuration
+## Configuration
 
 | Env var                | valeur possible | description                                                                                   |
 | ---------------------- | --------------- | --------------------------------------------------------------------------------------------- |

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import { servicePluginOrder, type PermissionTarget, type PluginConfigItem, type PluginsUpdateBody, type ProjectService } from '@cpn-console/shared'
+import { servicePluginOrder } from '@cpn-console/shared'
+import type { PermissionTarget, PluginConfigItem, PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 

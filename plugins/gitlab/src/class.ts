@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
-import { PluginApi, type Project, type UniqueRepo, type ProjectMember } from '@cpn-console/hooks'
+import { PluginApi } from '@cpn-console/hooks'
+import type { Project, UniqueRepo, ProjectMember } from '@cpn-console/hooks'
 import type { AccessTokenScopes, CommitAction, GroupSchema, MemberSchema, ProjectVariableSchema, VariableSchema, AllRepositoryTreesOptions, CondensedProjectSchema, Gitlab, ProjectSchema, RepositoryFileExpandedSchema } from '@gitbeaker/core'
 import { AccessLevel } from '@gitbeaker/core'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
@@ -23,7 +24,7 @@ interface RepoSelect {
   target?: CondensedProjectSchema
 }
 type PendingCommits = Record<number, {
-  branches: Record<string, { messages: string[], actions: CommitAction[] } >
+  branches: Record<string, { messages: string[], actions: CommitAction[] }>
 }>
 
 interface CreateEmptyRepositoryArgs {

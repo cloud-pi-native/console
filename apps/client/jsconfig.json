@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
     "target": "ESNext",
+    "jsx": "preserve",
     "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "node",
     "paths": {
       "@/*": [
         "./src/*"
       ]
     },
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "jsx": "preserve"
+    "sourceMap": true
   },
   "exclude": [
     "node_modules"

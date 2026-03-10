@@ -7,12 +7,12 @@ export interface SonarPaging {
   total: number
 }
 
-export type Qualifiers =
-  'BRC' | // - Sub - projects
-  'DIR' | // - Directories
-  'FIL' | // - Files
-  'TRK' | // - Projects
-  'UTS' // - Test Files
+export type Qualifiers
+  = 'BRC' // - Sub - projects
+    | 'DIR' // - Directories
+    | 'FIL' // - Files
+    | 'TRK' // - Projects
+    | 'UTS' // - Test Files
 
 export interface SonarProject {
   key: string // unique key name

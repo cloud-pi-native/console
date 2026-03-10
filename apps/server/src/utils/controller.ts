@@ -8,13 +8,13 @@ import type { UserDetails } from '@/types/index.js'
 import prisma from '@/prisma.js'
 import { logViaSession, logViaToken } from '@/resources/user/business.js'
 
-export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
-  Pick<T, Exclude<keyof T, Keys>>
-  & {
-    [K in Keys]-?:
-      Required<Pick<T, K>>
-      & Partial<Record<Exclude<Keys, K>, undefined>>
-  }[Keys]
+export type RequireOnlyOne<T, Keys extends keyof T = keyof T>
+  = Pick<T, Exclude<keyof T, Keys>>
+    & {
+      [K in Keys]-?:
+        Required<Pick<T, K>>
+        & Partial<Record<Exclude<Keys, K>, undefined>>
+    }[Keys]
 
 type ErrorMessagePredicate = () => string | undefined
 export function getErrorMessage(...fns: ErrorMessagePredicate[]) {
@@ -129,13 +129,13 @@ export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqu
   } else if (projectUnique.id) {
     project = uuid.test(projectUnique.id)
       ? await prisma.project.findUnique({
-        where: { id: projectUnique.id },
-        select: projectPermsSelect,
-      })
+          where: { id: projectUnique.id },
+          select: projectPermsSelect,
+        })
       : await prisma.project.findUnique({
-        where: { slug: projectUnique.id },
-        select: projectPermsSelect,
-      })
+          where: { slug: projectUnique.id },
+          select: projectPermsSelect,
+        })
   } else if (projectUnique.slug) {
     project = await prisma.project.findFirstOrThrow({
       where: { slug: projectUnique.slug },

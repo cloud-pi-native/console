@@ -2,7 +2,8 @@
 import { useClusterStore } from '@/stores/cluster.js'
 import { useZoneStore } from '@/stores/zone.js'
 import type { Project } from '@/utils/project-utils.js'
-import { privacyWording, type Cluster } from '@cpn-console/shared'
+import { privacyWording } from '@cpn-console/shared'
+import type { Cluster } from '@cpn-console/shared'
 
 const props = defineProps<{
   project: Project

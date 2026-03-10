@@ -17,7 +17,7 @@ export async function getUsers(query: typeof userContract.getAllUsers.query._typ
       ? await prisma.adminRole.findMany({ where: { name: { in: query.adminRoles } } })
       : []
 
-    const adminRoleNameNotFound = query.adminRoles?.find(nameQueried => !roles.find(({ name }) => name === nameQueried))
+    const adminRoleNameNotFound = query.adminRoles?.find(nameQueried => !roles.some(({ name }) => name === nameQueried))
     if (adminRoleNameNotFound) {
       return new BadRequest400(`Unable to find adminRole ${adminRoleNameNotFound}`)
     }

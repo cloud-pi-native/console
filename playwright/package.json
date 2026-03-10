@@ -1,6 +1,6 @@
 {
   "name": "@cpn-console/playwright",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "packageManager": "pnpm@10.20.0",
   "description": "Our Playwright automated test suite",
@@ -19,9 +19,9 @@
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
-    "@faker-js/faker": "^9.3.0",
-    "@playwright/test": "^1.56.1",
-    "@types/node": "^24.1.0",
-    "dotenv": "^16.4.7"
+    "@faker-js/faker": "^9.9.0",
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^24.12.0",
+    "dotenv": "^16.6.1"
   }
 }
