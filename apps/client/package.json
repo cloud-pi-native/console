@@ -39,7 +39,7 @@
     "@ts-rest/core": "^3.52.1",
     "@types/js-yaml": "4.0.9",
     "@vue/tsconfig": "^0.7.0",
-    "axios": "1.12.2",
+    "axios": "^1.13.6",
     "dotenv": "^16.6.1",
     "javascript-time-ago": "^2.6.4",
     "js-yaml": "^4.1.1",

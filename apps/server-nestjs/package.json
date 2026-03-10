@@ -44,7 +44,7 @@
     "@ts-rest/core": "^3.52.1",
     "@ts-rest/fastify": "^3.52.1",
     "@ts-rest/open-api": "^3.52.1",
-    "axios": "1.12.2",
+    "axios": "^1.13.6",
     "date-fns": "^4.1.0",
     "dotenv": "^16.6.1",
     "fastify": "^4.29.1",

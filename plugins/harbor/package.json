@@ -29,7 +29,7 @@
     "@cpn-console/keycloak-plugin": "workspace:^",
     "@cpn-console/shared": "workspace:^",
     "@cpn-console/vault-plugin": "workspace:^",
-    "axios": "1.12.2",
+    "axios": "^1.13.6",
     "bytes": "^3.1.2",
     "cron-validator": "^1.4.0"
   },
