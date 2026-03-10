@@ -410,6 +410,9 @@ importers:
       '@gitbeaker/core':
         specifier: ^40.6.0
         version: 40.6.0
+      '@gitbeaker/requester-utils':
+        specifier: ^40.6.0
+        version: 40.6.0
       '@gitbeaker/rest':
         specifier: ^40.6.0
         version: 40.6.0
@@ -476,9 +479,6 @@ importers:
       '@ts-rest/open-api':
         specifier: ^3.52.1
         version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.19.3)(zod@3.25.76))(zod@3.25.76)
-      axios:
-        specifier: 1.12.2
-        version: 1.12.2
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -491,6 +491,9 @@ importers:
       fastify-keycloak-adapter:
         specifier: 2.3.2
         version: 2.3.2(patch_hash=6846b953fc520dd1ca6cb2e790cf190cbc3ed9fa9ff69739100458c520293447)
+      js-yaml:
+        specifier: ^4.1.1
+        version: 4.1.1
       json-2-csv:
         specifier: ^5.5.7
         version: 5.5.10
@@ -561,6 +564,9 @@ importers:
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0
+      '@types/js-yaml':
+        specifier: 4.0.9
+        version: 4.0.9
       '@types/node':
         specifier: ^22.10.7
         version: 22.19.3
@@ -582,6 +588,9 @@ importers:
       jest:
         specifier: ^30.0.0
         version: 30.2.0(@types/node@22.19.3)(ts-node@10.9.2(@types/node@22.19.3)(typescript@5.9.3))
+      msw:
+        specifier: ^2.12.10
+        version: 2.12.10(@types/node@22.19.3)(typescript@5.9.3)
       nodemon:
         specifier: ^3.1.7
         version: 3.1.10
@@ -12164,7 +12173,6 @@ snapshots:
       is-node-process: 1.2.0
       outvariant: 1.4.3
       strict-event-emitter: 0.5.1
-    optional: true
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
@@ -12294,17 +12302,14 @@ snapshots:
     dependencies:
       consola: 3.4.2
 
-  '@open-draft/deferred-promise@2.2.0':
-    optional: true
+  '@open-draft/deferred-promise@2.2.0': {}
 
   '@open-draft/logger@0.3.0':
     dependencies:
       is-node-process: 1.2.0
       outvariant: 1.4.3
-    optional: true
 
-  '@open-draft/until@2.1.0':
-    optional: true
+  '@open-draft/until@2.1.0': {}
 
   '@opentelemetry/api-logs@0.212.0':
     dependencies:
@@ -13571,8 +13576,7 @@ snapshots:
 
   '@types/stack-utils@2.0.3': {}
 
-  '@types/statuses@2.0.6':
-    optional: true
+  '@types/statuses@2.0.6': {}
 
   '@types/superagent@8.1.9':
     dependencies:
@@ -15018,8 +15022,7 @@ snapshots:
 
   cookie@0.7.2: {}
 
-  cookie@1.1.1:
-    optional: true
+  cookie@1.1.1: {}
 
   cookiejar@2.1.4: {}
 
@@ -16241,7 +16244,7 @@ snapshots:
       escape-html: 1.0.3
       on-finished: 2.4.1
       parseurl: 1.3.3
-      statuses: 2.0.1
+      statuses: 2.0.2
     transitivePeerDependencies:
       - supports-color
 
@@ -16609,8 +16612,7 @@ snapshots:
 
   graphemer@1.4.0: {}
 
-  graphql@16.13.1:
-    optional: true
+  graphql@16.13.1: {}
 
   gzip-size@6.0.0:
     dependencies:
@@ -16662,8 +16664,7 @@ snapshots:
 
   he@1.2.0: {}
 
-  headers-polyfill@4.0.3:
-    optional: true
+  headers-polyfill@4.0.3: {}
 
   helmet@7.2.0: {}
 
@@ -16921,8 +16922,7 @@ snapshots:
 
   is-negative-zero@2.0.3: {}
 
-  is-node-process@1.2.0:
-    optional: true
+  is-node-process@1.2.0: {}
 
   is-number-object@1.1.1:
     dependencies:
@@ -18206,7 +18206,6 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - '@types/node'
-    optional: true
 
   msw@2.12.10(@types/node@24.10.0)(typescript@5.7.2):
     dependencies:
@@ -18517,8 +18516,7 @@ snapshots:
   ospath@1.2.2:
     optional: true
 
-  outvariant@1.4.3:
-    optional: true
+  outvariant@1.4.3: {}
 
   own-keys@1.0.1:
     dependencies:
@@ -18641,8 +18639,7 @@ snapshots:
       lru-cache: 11.2.2
       minipass: 7.1.2
 
-  path-to-regexp@6.3.0:
-    optional: true
+  path-to-regexp@6.3.0: {}
 
   path-to-regexp@8.3.0: {}
 
@@ -19150,8 +19147,7 @@ snapshots:
 
   ret@0.4.3: {}
 
-  rettime@0.10.1:
-    optional: true
+  rettime@0.10.1: {}
 
   reusify@1.1.0: {}
 
@@ -19582,8 +19578,7 @@ snapshots:
 
   streamsearch@1.1.0: {}
 
-  strict-event-emitter@0.5.1:
-    optional: true
+  strict-event-emitter@0.5.1: {}
 
   string-argv@0.3.2: {}
 
@@ -19875,8 +19870,7 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
 
-  tagged-tag@1.0.0:
-    optional: true
+  tagged-tag@1.0.0: {}
 
   tapable@2.3.0: {}
 
@@ -19959,8 +19953,7 @@ snapshots:
 
   tldts-core@6.1.86: {}
 
-  tldts-core@7.0.24:
-    optional: true
+  tldts-core@7.0.24: {}
 
   tldts@6.1.86:
     dependencies:
@@ -19969,7 +19962,6 @@ snapshots:
   tldts@7.0.24:
     dependencies:
       tldts-core: 7.0.24
-    optional: true
 
   tmp@0.2.5:
     optional: true
@@ -20005,7 +19997,6 @@ snapshots:
   tough-cookie@6.0.0:
     dependencies:
       tldts: 7.0.24
-    optional: true
 
   tr46@0.0.3: {}
 
@@ -20146,7 +20137,6 @@ snapshots:
   type-fest@5.4.4:
     dependencies:
       tagged-tag: 1.0.0
-    optional: true
 
   type-is@1.6.18:
     dependencies:
@@ -20399,8 +20389,7 @@ snapshots:
       '@unrs/resolver-binding-win32-ia32-msvc': 1.11.1
       '@unrs/resolver-binding-win32-x64-msvc': 1.11.1
 
-  until-async@3.0.2:
-    optional: true
+  until-async@3.0.2: {}
 
   untildify@4.0.0:
     optional: true
