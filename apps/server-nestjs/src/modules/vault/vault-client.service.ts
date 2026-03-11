@@ -1,6 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
-import { generateKVConfigUpdate } from './vault.utils'
 
 export interface VaultMetadata {
   created_time: string
@@ -28,7 +27,7 @@ export class VaultClientService {
   ) {
   }
 
-  private async request<T = any>(method: string, path: string, options: { body?: any } = {}): Promise<T | null> {
+  private async fetch<T = any>(path: string, options: { method?: string, body?: any } = {}): Promise<T | null> {
     const url = `${this.config.vaultInternalUrl}${path}`
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -36,7 +35,7 @@ export class VaultClientService {
     }
 
     const response = await fetch(url, {
-      method,
+      method: options.method,
       headers,
       body: options.body ? JSON.stringify(options.body) : undefined,
     })
@@ -53,7 +52,9 @@ export class VaultClientService {
   async read<T = any>(path: string): Promise<VaultSecret<T> | null> {
     if (path.startsWith('/')) path = path.slice(1)
     try {
-      const data = await this.request<VaultResponse<T>>('GET', `/v1/${this.config.vaultKvName}/data/${path}`)
+      const data = await this.fetch<VaultResponse<T>>(`/v1/${this.config.vaultKvName}/data/${path}`, {
+        method: 'GET',
+      })
       if (!data) return null
       return data.data
     } catch (error) {
@@ -65,7 +66,8 @@ export class VaultClientService {
   async write<T = any>(data: T, path: string): Promise<void> {
     if (path.startsWith('/')) path = path.slice(1)
     try {
-      await this.request('POST', `/v1/${this.config.vaultKvName}/data/${path}`, {
+      await this.fetch(`/v1/${this.config.vaultKvName}/data/${path}`, {
+        method: 'POST',
         body: { data },
       })
     } catch (error) {
@@ -77,10 +79,48 @@ export class VaultClientService {
   async destroy(path: string): Promise<void> {
     if (path.startsWith('/')) path = path.slice(1)
     try {
-      await this.request('DELETE', `/v1/${this.config.vaultKvName}/metadata/${path}`)
+      await this.fetch(`/v1/${this.config.vaultKvName}/metadata/${path}`, {
+        method: 'DELETE',
+      })
     } catch (error) {
       this.logger.error(`Failed to destroy vault path ${path}: ${error}`)
       throw error
     }
+  }
+
+  async upsertPolicyAcl(policyName: string, data: any) {
+    await this.fetch(`/v1/sys/policies/acl/${policyName}`, {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async createMount(name: string, data: any) {
+    this.fetch(`/v1/sys/mounts/${name}/tune`, {
+      method: 'POST',
+      body: data,
+    })
+  }
+
+  async updateMount(name: string, data: any) {
+    this.fetch(`/v1/sys/mounts/${name}/tune`, {
+      method: 'PUT',
+      body: data,
+    })
+  }
+
+  async upsertRole(roleName: string, policies: string[]) {
+    await this.fetch(`/v1/auth/approle/role/${roleName}`, {
+      method: 'POST',
+      body: {
+        secret_id_num_uses: '0',
+        secret_id_ttl: '0',
+        token_max_ttl: '0',
+        token_num_uses: '0',
+        token_ttl: '0',
+        token_type: 'batch',
+        token_policies: policies,
+      },
+    })
   }
 }
