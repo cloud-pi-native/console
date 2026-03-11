@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
-import type { Prisma } from '@prisma/client'
+import type { Prisma, ProjectSelect } from '@prisma/client'
 import { PrismaService } from '@/cpin-module/infrastructure/database/prisma.service'
 
 export const projectSelect = {
@@ -32,11 +32,13 @@ export const projectSelect = {
       name: true,
     },
   },
-} satisfies Prisma.ProjectSelect
+} satisfies ProjectSelect
 
-export type ProjectWithDetails = Prisma.ProjectGetPayload<{
-  select: typeof projectSelect
-}>
+export type ProjectWithDetails = Prisma.Result<
+  PrismaService['project'],
+  { select: typeof projectSelect },
+  'findMany'
+>[number]
 
 @Injectable()
 export class KeycloakDatastoreService {
