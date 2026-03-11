@@ -11,3 +11,7 @@ export function generateAppAdminPolicyName(project: ProjectWithDetails) {
 export function generateZoneName(name: string) {
   return `zone-${name}`
 }
+
+export function generateZoneTechnicalReadOnlyPolicyName(zoneName: string) {
+  return `tech--${generateZoneName(zoneName)}--ro`
+}
