@@ -19,6 +19,7 @@ export class ConfigurationService {
 
   // keycloak
   sessionSecret = process.env.SESSION_SECRET
+  keycloakUrl = process.env.KEYCLOAK_URL
   keycloakProtocol = process.env.KEYCLOAK_PROTOCOL
   keycloakDomain = process.env.KEYCLOAK_DOMAIN
   keycloakRealm = process.env.KEYCLOAK_REALM
