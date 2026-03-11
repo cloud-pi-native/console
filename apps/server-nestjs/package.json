@@ -16,7 +16,12 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "db:generate": "prisma generate",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
+    "test:debug": "vitest --inspect"
   },
   "dependencies": {
     "@cpn-console/argocd-plugin": "workspace:^",
@@ -34,6 +39,7 @@
     "@fastify/swagger": "^8.15.0",
     "@fastify/swagger-ui": "^4.2.0",
     "@gitbeaker/core": "^40.6.0",
+    "@gitbeaker/requester-utils": "^40.6.0",
     "@gitbeaker/rest": "^40.6.0",
     "@kubernetes-models/argo-cd": "^2.7.2",
     "@nestjs/common": "^11.1.16",
@@ -59,6 +65,7 @@
     "dotenv": "^16.6.1",
     "fastify": "^4.29.1",
     "fastify-keycloak-adapter": "2.3.2",
+    "js-yaml": "^4.1.1",
     "json-2-csv": "^5.5.10",
     "mustache": "^4.2.0",
     "nestjs-pino": "^4.6.0",
