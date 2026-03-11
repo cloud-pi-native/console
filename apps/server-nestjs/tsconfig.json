@@ -8,7 +8,9 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@cpn-console/shared": ["../../packages/shared/src/index.ts"],
+      "@cpn-console/hooks": ["../../packages/hooks/src/index.ts"]
     },
     "resolvePackageJsonExports": true,
     "strictBindCallApply": false,
