@@ -24,6 +24,16 @@ export type ProjectWithDetails = Prisma.ProjectGetPayload<{
   select: typeof projectSelect
 }>
 
+export const zoneSelect = {
+  id: true,
+  slug: true,
+  label: true,
+} satisfies Prisma.ZoneSelect
+
+export type ZoneWithDetails = Prisma.ZoneGetPayload<{
+  select: typeof zoneSelect
+}>
+
 @Injectable()
 export class VaultDatastoreService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
@@ -38,6 +48,12 @@ export class VaultDatastoreService {
     return this.prisma.project.findUnique({
       where: { id },
       select: projectSelect,
+    })
+  }
+
+  async getAllZones(): Promise<ZoneWithDetails[]> {
+    return this.prisma.zone.findMany({
+      select: zoneSelect,
     })
   }
 }
