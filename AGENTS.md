@@ -51,7 +51,6 @@ Migrations: standard Prisma Migrate. Major version data migrations in `migration
 - **Vitest**: unit tests everywhere (server, client, packages, plugins) — colocated `*.spec.ts` files
 - **Cypress 15**: component + E2E tests in `apps/client` (Firefox default)
 - **Playwright**: E2E in `playwright/` (Chromium + Firefox, parallel)
-- **Jest**: only in `apps/server-nestjs` (NestJS scaffolding)
 - Commands: `pnpm test` (all unit), `pnpm test:ct` (Cypress components), `pnpm playwright:test`
 
 ## Code quality
