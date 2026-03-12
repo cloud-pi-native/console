@@ -1,5 +1,6 @@
 import type { TestingModule } from '@nestjs/testing'
 import { Test } from '@nestjs/testing'
+import { describe, beforeEach, it, expect } from 'vitest'
 
 import { AppService } from './app.service'
 import { ConfigurationModule } from '@/cpin-module/infrastructure/configuration/configuration.module'
