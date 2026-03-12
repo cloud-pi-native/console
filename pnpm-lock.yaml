@@ -404,6 +404,9 @@ importers:
       '@gitbeaker/core':
         specifier: ^40.6.0
         version: 40.6.0
+      '@gitbeaker/requester-utils':
+        specifier: ^40.6.0
+        version: 40.6.0
       '@gitbeaker/rest':
         specifier: ^40.6.0
         version: 40.6.0
@@ -461,6 +464,9 @@ importers:
       fastify-keycloak-adapter:
         specifier: 2.3.2
         version: 2.3.2(patch_hash=6846b953fc520dd1ca6cb2e790cf190cbc3ed9fa9ff69739100458c520293447)
+      js-yaml:
+        specifier: ^4.1.1
+        version: 4.1.1
       json-2-csv:
         specifier: ^5.5.10
         version: 5.5.10
