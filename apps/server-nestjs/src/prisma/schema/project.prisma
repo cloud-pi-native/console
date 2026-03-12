@@ -5,6 +5,7 @@ model Environment {
   memory    Float    @db.Real
   cpu       Float    @db.Real
   gpu       Float    @db.Real
+  autosync  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   clusterId String   @db.Uuid
