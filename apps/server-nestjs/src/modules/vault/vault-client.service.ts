@@ -1,0 +1,327 @@
+import { Inject, Injectable, Logger } from '@nestjs/common'
+import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
+import { trace } from '@opentelemetry/api'
+import z from 'zod'
+
+interface VaultAuthMethod {
+  accessor: string
+  type: string
+  description?: string
+}
+
+interface VaultSysAuthResponse {
+  data: Record<string, VaultAuthMethod>
+}
+
+interface VaultIdentityGroupResponse {
+  data: {
+    id: string
+    name: string
+    alias?: {
+      id?: string
+      name?: string
+    }
+  }
+}
+
+export interface VaultMetadata {
+  created_time: string
+  custom_metadata: Record<string, any> | null
+  deletion_time: string
+  destroyed: boolean
+  version: number
+}
+
+export interface VaultSecret<T = any> {
+  data: T
+  metadata: VaultMetadata
+}
+
+export interface VaultResponse<T = any> {
+  data: VaultSecret<T>
+}
+
+export type VaultErrorKind
+  = | 'NotConfigured'
+    | 'NotFound'
+    | 'HttpError'
+    | 'InvalidResponse'
+    | 'ParseError'
+    | 'Unexpected'
+
+export class VaultError extends Error {
+  readonly kind: VaultErrorKind
+  readonly status?: number
+  readonly method?: string
+  readonly path?: string
+  readonly statusText?: string
+  readonly reasons?: string[]
+
+  constructor(
+    kind: VaultErrorKind,
+    message: string,
+    details: { status?: number, method?: string, path?: string, statusText?: string, reasons?: string[] } = {},
+  ) {
+    super(message)
+    this.name = 'VaultError'
+    this.kind = kind
+    this.status = details.status
+    this.method = details.method
+    this.path = details.path
+    this.statusText = details.statusText
+    this.reasons = details.reasons
+  }
+}
+
+const tracer = trace.getTracer('vault-client-service')
+
+interface VaultListResponse {
+  data: {
+    keys: string[]
+  }
+}
+
+interface VaultRoleIdResponse {
+  data: {
+    role_id: string
+  }
+}
+
+interface VaultSecretIdResponse {
+  data: {
+    secret_id: string
+  }
+}
+
+@Injectable()
+export class VaultClientService {
+  private readonly logger = new Logger(VaultClientService.name)
+
+  constructor(
+    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+  ) {
+  }
+
+  private async fetch<T = any>(
+    path: string,
+    options: { method?: string, body?: any } = {},
+  ): Promise<T | null> {
+    const method = options.method ?? 'GET'
+    return tracer.startActiveSpan('fetch', async (span) => {
+      try {
+        span.setAttribute('vault.method', method)
+        span.setAttribute('vault.path', path)
+
+        if (!this.config.vaultInternalUrl) {
+          throw new VaultError('NotConfigured', 'VAULT_INTERNAL_URL is required')
+        }
+        if (!this.config.vaultToken) {
+          throw new VaultError('NotConfigured', 'VAULT_TOKEN is required')
+        }
+
+        const url = new URL(path, this.config.vaultInternalUrl).toString()
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'X-Vault-Token': this.config.vaultToken,
+        }
+
+        let response: Response
+        try {
+          response = await fetch(url, {
+            method,
+            headers,
+            body: options.body ? JSON.stringify(options.body) : undefined,
+          })
+        } catch (error) {
+          throw new VaultError(
+            'Unexpected',
+            error instanceof Error ? error.message : String(error),
+            { method, path },
+          )
+        }
+
+        span.setAttribute('vault.http.status', response.status)
+
+        if (response.status === 404) {
+          const responseBody = await response.json()
+          const vaultErrorBody = z.object({ errors: z.array(z.string()) }).safeParse(responseBody)
+          this.logger.debug('Vault request failed', {
+            status: 404,
+            method,
+            path,
+            statusText: response.statusText,
+            reasons: vaultErrorBody.success ? vaultErrorBody.data.errors : undefined,
+          })
+
+          throw new VaultError('NotFound', 'Not Found', {
+            status: 404,
+            method,
+            path,
+            statusText: response.statusText,
+            reasons: vaultErrorBody.success ? vaultErrorBody.data.errors : undefined,
+          })
+        }
+        if (!response.ok) {
+          const responseBody = await response.json()
+          const vaultErrorBody = z.object({ errors: z.array(z.string()) }).safeParse(responseBody)
+
+          this.logger.warn('Vault request failed', {
+            status: response.status,
+            method,
+            path,
+            statusText: response.statusText,
+            reasons: vaultErrorBody.success ? vaultErrorBody.data.errors : undefined,
+          })
+
+          throw new VaultError('HttpError', 'Request failed', {
+            status: response.status,
+            method,
+            path,
+            statusText: response.statusText,
+            reasons: vaultErrorBody.success ? vaultErrorBody.data.errors : undefined,
+          })
+        }
+        if (response.status === 204) {
+          return null
+        }
+
+        return await response.json()
+      } catch (error) {
+        if (error instanceof Error) span.recordException(error)
+        throw error
+      } finally {
+        span.end()
+      }
+    })
+  }
+
+  async read<T = any>(path: string): Promise<VaultSecret<T>> {
+    return this.getKvData(this.config.vaultKvName, path)
+  }
+
+  async getKvData<T = any>(kvName: string, path: string): Promise<VaultSecret<T>> {
+    if (path.startsWith('/')) path = path.slice(1)
+    const response = await this.fetch<VaultResponse<T>>(`/v1/${kvName}/data/${path}`, { method: 'GET' })
+    if (!response?.data) {
+      throw new VaultError('InvalidResponse', 'Missing "data" field', { method: 'GET', path: `/v1/${kvName}/data/${path}` })
+    }
+    return response.data
+  }
+
+  async write<T = any>(data: T, path: string): Promise<void> {
+    return await this.upsertKvData(this.config.vaultKvName, path, { data })
+  }
+
+  async upsertKvData<T = any>(kvName: string, path: string, body: { data: T }): Promise<void> {
+    if (path.startsWith('/')) path = path.slice(1)
+    await this.fetch(`/v1/${kvName}/data/${path}`, { method: 'POST', body })
+  }
+
+  async destroy(path: string): Promise<void> {
+    return await this.deleteKvMetadata(this.config.vaultKvName, path)
+  }
+
+  async deleteKvMetadata(kvName: string, path: string): Promise<void> {
+    if (path.startsWith('/')) path = path.slice(1)
+    try {
+      await this.fetch(`/v1/${kvName}/metadata/${path}`, { method: 'DELETE' })
+    } catch (error) {
+      if (error instanceof VaultError && error.kind === 'NotFound') return
+      throw error
+    }
+  }
+
+  async listKvMetadata(kvName: string, path: string): Promise<string[]> {
+    if (path.startsWith('/')) path = path.slice(1)
+    const normalized = path.length === 0 ? '' : path.endsWith('/') ? path : `${path}/`
+    try {
+      const response = await this.fetch<VaultListResponse>(`/v1/${kvName}/metadata/${normalized}`, { method: 'LIST' })
+      if (!response?.data?.keys) {
+        throw new VaultError('InvalidResponse', 'Missing "data.keys" field', { method: 'LIST', path: `/v1/${kvName}/metadata/${normalized}` })
+      }
+      return response.data.keys
+    } catch (error) {
+      if (error instanceof VaultError && error.kind === 'NotFound') return []
+      throw error
+    }
+  }
+
+  async upsertSysPoliciesAcl(policyName: string, body: any): Promise<void> {
+    await this.fetch(`/v1/sys/policies/acl/${policyName}`, { method: 'POST', body })
+  }
+
+  async deleteSysPoliciesAcl(policyName: string): Promise<void> {
+    await this.fetch(`/v1/sys/policies/acl/${policyName}`, { method: 'DELETE' })
+  }
+
+  async createSysMount(name: string, body: any): Promise<void> {
+    await this.fetch(`/v1/sys/mounts/${name}`, { method: 'POST', body })
+  }
+
+  async tuneSysMount(name: string, body: any): Promise<void> {
+    await this.fetch(`/v1/sys/mounts/${name}/tune`, { method: 'POST', body })
+  }
+
+  async deleteSysMounts(name: string): Promise<void> {
+    await this.fetch(`/v1/sys/mounts/${name}`, { method: 'DELETE' })
+  }
+
+  async upsertAuthApproleRole(roleName: string, body: any): Promise<void> {
+    await this.fetch(`/v1/auth/approle/role/${roleName}`, {
+      method: 'POST',
+      body,
+    })
+  }
+
+  async deleteAuthApproleRole(roleName: string): Promise<void> {
+    await this.fetch(`/v1/auth/approle/role/${roleName}`, { method: 'DELETE' })
+  }
+
+  async getAuthApproleRoleRoleId(roleName: string): Promise<string> {
+    const path = `/v1/auth/approle/role/${roleName}/role-id`
+    const response = await this.fetch<VaultRoleIdResponse>(path, { method: 'GET' })
+    const roleId = response?.data?.role_id
+    if (!roleId) {
+      throw new VaultError('InvalidResponse', `Vault role-id not found for role ${roleName}`, { method: 'GET', path })
+    }
+    return roleId
+  }
+
+  async createAuthApproleRoleSecretId(roleName: string): Promise<string> {
+    const path = `/v1/auth/approle/role/${roleName}/secret-id`
+    const response = await this.fetch<VaultSecretIdResponse>(path, { method: 'POST' })
+    const secretId = response?.data?.secret_id
+    if (!secretId) {
+      throw new VaultError('InvalidResponse', `Vault secret-id not generated for role ${roleName}`, { method: 'POST', path })
+    }
+    return secretId
+  }
+
+  async getSysAuth(): Promise<Record<string, VaultAuthMethod>> {
+    const path = '/v1/sys/auth'
+    const response = await this.fetch<VaultSysAuthResponse>(path, { method: 'GET' })
+    return response?.data ?? {}
+  }
+
+  async upsertIdentityGroupName(groupName: string, body: any): Promise<void> {
+    await this.fetch(`/v1/identity/group/name/${groupName}`, {
+      method: 'POST',
+      body,
+    })
+  }
+
+  async getIdentityGroupName(groupName: string): Promise<VaultIdentityGroupResponse> {
+    const path = `/v1/identity/group/name/${groupName}`
+    const response = await this.fetch<VaultIdentityGroupResponse>(path, { method: 'GET' })
+    if (!response) throw new VaultError('InvalidResponse', 'Empty response', { method: 'GET', path })
+    return response
+  }
+
+  async deleteIdentityGroupName(groupName: string): Promise<void> {
+    await this.fetch(`/v1/identity/group/name/${groupName}`, { method: 'DELETE' })
+  }
+
+  async createIdentityGroupAlias(body: any): Promise<void> {
+    await this.fetch('/v1/identity/group-alias', { method: 'POST', body })
+  }
+}
