@@ -51,6 +51,16 @@
     "@nestjs/core": "^11.1.16",
     "@nestjs/platform-express": "^11.1.16",
     "@prisma/client": "^6.19.2",
+    "@nestjs/schedule": "^5.0.1",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.70.1",
+    "@opentelemetry/exporter-metrics-otlp-proto": "^0.213.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.213.0",
+    "@opentelemetry/instrumentation-nestjs-core": "^0.58.0",
+    "@opentelemetry/instrumentation-pino": "^0.59.0",
+    "@opentelemetry/sdk-metrics": "^2.5.1",
+    "@opentelemetry/sdk-node": "^0.212.0",
+    "@opentelemetry/sdk-trace-node": "^2.5.1",
     "@ts-rest/core": "^3.52.1",
     "@ts-rest/fastify": "^3.52.1",
     "@ts-rest/open-api": "^3.52.1",
@@ -101,23 +111,6 @@
     "vite": "^7.3.1",
     "vite-node": "^2.1.9",
     "vitest": "^2.1.9"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
   },
   "publishConfig": {
     "tag": "latest"

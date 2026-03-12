@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core'
 import { Logger } from 'nestjs-pino'
-
+import { instrument } from './instrumentation'
 import { ConfigurationService } from './cpin-module/infrastructure/configuration/configuration.service'
 import { MainModule } from './main.module'
 
@@ -11,4 +11,6 @@ async function bootstrap() {
   const config = app.get(ConfigurationService)
   await app.listen(config.port ?? 0)
 }
+
+instrument()
 bootstrap()
