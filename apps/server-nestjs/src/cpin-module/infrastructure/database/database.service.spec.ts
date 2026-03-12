@@ -1,5 +1,6 @@
 import type { TestingModule } from '@nestjs/testing'
 import { Test } from '@nestjs/testing'
+import { describe, beforeEach, it, expect } from 'vitest'
 
 import { DatabaseService } from './database.service'
 import { ConfigurationModule } from '../configuration/configuration.module'
