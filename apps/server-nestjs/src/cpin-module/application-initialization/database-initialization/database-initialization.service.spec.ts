@@ -3,13 +3,20 @@ import { Test } from '@nestjs/testing'
 import { describe, beforeEach, it, expect } from 'vitest'
 
 import { DatabaseInitializationService } from './database-initialization.service'
+import { PrismaService } from '@/cpin-module/infrastructure/database/prisma.service'
 
 describe('databaseInitializationService', () => {
   let service: DatabaseInitializationService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [DatabaseInitializationService],
+      providers: [
+        DatabaseInitializationService,
+        {
+          provide: PrismaService,
+          useValue: {},
+        },
+      ],
     }).compile()
 
     service = module.get<DatabaseInitializationService>(
