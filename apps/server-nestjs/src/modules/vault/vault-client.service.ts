@@ -2,6 +2,27 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
 import { trace } from '@opentelemetry/api'
 
+interface VaultAuthMethod {
+  accessor: string
+  type: string
+  description?: string
+}
+
+interface VaultSysAuthResponse {
+  data: Record<string, VaultAuthMethod>
+}
+
+interface VaultIdentityGroupResponse {
+  data: {
+    id: string
+    name: string
+    alias?: {
+      id?: string
+      name?: string
+    }
+  }
+}
+
 export interface VaultMetadata {
   created_time: string
   custom_metadata: Record<string, any> | null
@@ -146,8 +167,11 @@ export class VaultClientService {
   }
 
   async read<T = any>(path: string): Promise<VaultResult<VaultSecret<T>>> {
+    return this.readFromKv(this.config.vaultKvName, path)
+  }
+
+  async readFromKv<T = any>(kvName: string, path: string): Promise<VaultResult<VaultSecret<T>>> {
     if (path.startsWith('/')) path = path.slice(1)
-      const data = await this.fetch<VaultResponse<T>>(`/v1/${this.config.vaultKvName}/data/${path}`, {
     const response = await this.fetch<VaultResponse<T>>(`/v1/${kvName}/data/${path}`, { method: 'GET' })
     if (response.error) {
       if (response.error.kind !== 'NotFound') {
@@ -165,8 +189,11 @@ export class VaultClientService {
   }
 
   async write<T = any>(data: T, path: string): Promise<VaultResult<void>> {
+    return this.writeToKv(this.config.vaultKvName, data, path)
+  }
+
+  async writeToKv<T = any>(kvName: string, data: T, path: string): Promise<VaultResult<void>> {
     if (path.startsWith('/')) path = path.slice(1)
-      await this.fetch(`/v1/${this.config.vaultKvName}/data/${path}`, {
     const response = await this.fetch(`/v1/${kvName}/data/${path}`, { method: 'POST', body: { data } })
     if (response.error) {
       this.logger.error(`Failed to write vault path ${path}: ${response.error.kind}`)
@@ -176,8 +203,11 @@ export class VaultClientService {
   }
 
   async destroy(path: string): Promise<VaultResult<void>> {
+    return this.destroyInKv(this.config.vaultKvName, path)
+  }
+
+  async destroyInKv(kvName: string, path: string): Promise<VaultResult<void>> {
     if (path.startsWith('/')) path = path.slice(1)
-      await this.fetch(`/v1/${this.config.vaultKvName}/metadata/${path}`, {
     const response = await this.fetch(`/v1/${kvName}/metadata/${path}`, { method: 'DELETE' })
     if (response.error) {
       if (response.error.kind === 'NotFound') return { data: undefined, error: null }
@@ -187,23 +217,49 @@ export class VaultClientService {
     return { data: undefined, error: null }
   }
 
+  async listInKv(kvName: string, path: string): Promise<VaultResult<string[]>> {
+    if (path.startsWith('/')) path = path.slice(1)
+    const normalized = path.length === 0 ? '' : path.endsWith('/') ? path : `${path}/`
+    const response = await this.fetch<VaultListResponse>(`/v1/${kvName}/metadata/${normalized}`, { method: 'LIST' })
+    if (response.error) {
+      if (response.error.kind === 'NotFound') return { data: [], error: null }
+      return { data: null, error: response.error }
+    }
+    if (!response.data?.data?.keys) {
+      return {
+        data: null,
+        error: { kind: 'InvalidResponse', message: 'Missing "data.keys" field', method: 'LIST', path: `/v1/${kvName}/metadata/${normalized}` },
+      }
+    }
+    return { data: response.data.data.keys, error: null }
+  }
+
   async upsertPolicyAcl(policyName: string, data: any): Promise<VaultResult<void>> {
     const response = await this.fetch(`/v1/sys/policies/acl/${policyName}`, { method: 'POST', body: data })
     if (response.error) return { data: null, error: response.error }
     return { data: undefined, error: null }
   }
 
-    this.fetch(`/v1/sys/mounts/${name}/tune`, {
+  async deletePolicyAcl(policyName: string): Promise<VaultResult<void>> {
+    const response = await this.fetch(`/v1/sys/policies/acl/${policyName}`, { method: 'DELETE' })
+    if (response.error) return { data: null, error: response.error }
+    return { data: undefined, error: null }
+  }
+
   async createMount(name: string, data: any): Promise<VaultResult<void>> {
     const response = await this.fetch(`/v1/sys/mounts/${name}`, { method: 'POST', body: data })
     if (response.error) return { data: null, error: response.error }
     return { data: undefined, error: null }
   }
 
-    this.fetch(`/v1/sys/mounts/${name}/tune`, {
-      method: 'PUT',
   async updateMount(name: string, data: any): Promise<VaultResult<void>> {
     const response = await this.fetch(`/v1/sys/mounts/${name}/tune`, { method: 'POST', body: data })
+    if (response.error) return { data: null, error: response.error }
+    return { data: undefined, error: null }
+  }
+
+  async deleteMount(name: string): Promise<VaultResult<void>> {
+    const response = await this.fetch(`/v1/sys/mounts/${name}`, { method: 'DELETE' })
     if (response.error) return { data: null, error: response.error }
     return { data: undefined, error: null }
   }
@@ -219,6 +275,82 @@ export class VaultClientService {
         token_ttl: '0',
         token_type: 'batch',
         token_policies: policies,
+      },
+    })
+    if (response.error) return { data: null, error: response.error }
+    return { data: undefined, error: null }
+  }
+
+  async deleteRole(roleName: string): Promise<VaultResult<void>> {
+    const response = await this.fetch(`/v1/auth/approle/role/${roleName}`, { method: 'DELETE' })
+    if (response.error) return { data: null, error: response.error }
+    return { data: undefined, error: null }
+  }
+
+  async getRoleId(roleName: string): Promise<VaultResult<string>> {
+    const path = `/v1/auth/approle/role/${roleName}/role-id`
+    const response = await this.fetch<VaultRoleIdResponse>(path, { method: 'GET' })
+    if (response.error) return { data: null, error: response.error }
+    const roleId = response.data?.data?.role_id
+    if (!roleId) {
+      return { data: null, error: { kind: 'InvalidResponse', message: `Vault role-id not found for role ${roleName}`, method: 'GET', path } }
+    }
+    return { data: roleId, error: null }
+  }
+
+  async generateSecretId(roleName: string): Promise<VaultResult<string>> {
+    const path = `/v1/auth/approle/role/${roleName}/secret-id`
+    const response = await this.fetch<VaultSecretIdResponse>(path, { method: 'POST' })
+    if (response.error) return { data: null, error: response.error }
+    const secretId = response.data?.data?.secret_id
+    if (!secretId) {
+      return { data: null, error: { kind: 'InvalidResponse', message: `Vault secret-id not generated for role ${roleName}`, method: 'POST', path } }
+    }
+    return { data: secretId, error: null }
+  }
+
+  async getAuthMethods(): Promise<VaultResult<Record<string, VaultAuthMethod>>> {
+    const path = '/v1/sys/auth'
+    const response = await this.fetch<VaultSysAuthResponse>(path, { method: 'GET' })
+    if (response.error) return { data: null, error: response.error }
+    return { data: response.data?.data ?? {}, error: null }
+  }
+
+  async upsertIdentityGroup(groupName: string, policies: string[]): Promise<VaultResult<void>> {
+    const response = await this.fetch(`/v1/identity/group/name/${groupName}`, {
+      method: 'POST',
+      body: {
+        name: groupName,
+        type: 'external',
+        policies,
+      },
+    })
+    if (response.error) return { data: null, error: response.error }
+    return { data: undefined, error: null }
+  }
+
+  async getIdentityGroup(groupName: string): Promise<VaultResult<VaultIdentityGroupResponse>> {
+    const response = await this.fetch<VaultIdentityGroupResponse>(`/v1/identity/group/name/${groupName}`, { method: 'GET' })
+    if (response.error) return { data: null, error: response.error }
+    if (!response.data) {
+      return { data: null, error: { kind: 'InvalidResponse', message: 'Empty response', method: 'GET', path: `/v1/identity/group/name/${groupName}` } }
+    }
+    return { data: response.data, error: null }
+  }
+
+  async deleteIdentityGroup(groupName: string): Promise<VaultResult<void>> {
+    const response = await this.fetch(`/v1/identity/group/name/${groupName}`, { method: 'DELETE' })
+    if (response.error) return { data: null, error: response.error }
+    return { data: undefined, error: null }
+  }
+
+  async createGroupAlias(groupAliasName: string, mountAccessor: string, canonicalId: string): Promise<VaultResult<void>> {
+    const response = await this.fetch('/v1/identity/group-alias', {
+      method: 'POST',
+      body: {
+        name: groupAliasName,
+        mount_accessor: mountAccessor,
+        canonical_id: canonicalId,
       },
     })
     if (response.error) return { data: null, error: response.error }
