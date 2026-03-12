@@ -70,6 +70,45 @@ services:
     networks:
       - dso-network
 
+  server-nestjs:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: apps/server-nestjs/Dockerfile
+      target: prod
+    image: dso-console/server-nestjs:ci
+    container_name: dso-console_server-nestjs
+    depends_on:
+      postgres:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
+    env_file:
+      - ../apps/server-nestjs/.env.docker
+    environment:
+      NODE_ENV: production
+      CI: "true"
+      DEV_SETUP: "true"
+    networks:
+      - dso-network
+
+  nginx-strangler:
+    restart: unless-stopped
+    build:
+      context: ../apps/nginx-strangler
+    image: dso-console/nginx-strangler:ci
+    container_name: dso-console_nginx-strangler
+    depends_on:
+      server:
+        condition: service_started
+      server-nestjs:
+        condition: service_started
+    environment:
+      LEGACY_UPSTREAM: "server:8080"
+      NESTJS_UPSTREAM: "server-nestjs:3001"
+    networks:
+      - dso-network
+
   client:
     build:
       context: ..
@@ -78,7 +117,7 @@ services:
     image: dso-console/client:ci
     container_name: dso-console_client
     depends_on:
-      server:
+      nginx-strangler:
         condition: service_started
     ports:
       - 8080:8080

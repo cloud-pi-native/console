@@ -109,6 +109,72 @@ services:
       - dso-network
     attach: true
 
+  server-nestjs:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: apps/server-nestjs/Dockerfile
+      target: dev
+    image: dso-console/server-nestjs:dev
+    container_name: dso-console_server-nestjs
+    command: [start:dev]
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    env_file:
+      - ../apps/server-nestjs/.env.docker
+    develop:
+      watch:
+        - action: sync
+          path: ../apps/server-nestjs
+          target: /app/apps/server-nestjs
+          ignore:
+            - node_modules/
+            - .env
+            - .env.docker
+            - .env.integ
+            - dist/
+        - action: sync
+          path: ../packages/shared
+          target: /app/packages/shared
+          ignore:
+            - node_modules/
+        - action: sync
+          path: ../packages/hooks
+          target: /app/packages/hooks
+          ignore:
+            - node_modules/
+        - action: sync
+          path: ../plugins
+          target: /app/plugins
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ../apps/server-nestjs/package.json
+    networks:
+      - dso-network
+    attach: true
+
+  nginx-strangler:
+    restart: unless-stopped
+    build:
+      context: ../apps/nginx-strangler
+    image: dso-console/nginx-strangler:dev
+    container_name: dso-console_nginx-strangler
+    depends_on:
+      server:
+        condition: service_started
+      server-nestjs:
+        condition: service_started
+    environment:
+      LEGACY_UPSTREAM: "server:8080"
+      NESTJS_UPSTREAM: "server-nestjs:3001"
+    networks:
+      - dso-network
+    attach: false
+
   client:
     restart: unless-stopped
     build:
@@ -118,7 +184,7 @@ services:
     image: dso-console/client:dev
     container_name: dso-console_client
     depends_on:
-      server:
+      nginx-strangler:
         condition: service_started
     ports:
       - 8080:8080

@@ -55,3 +55,25 @@ jobs:
       - name: Check lint error
         run: |
           ./ci/scripts/run-tests.sh -l
+
+      - name: Validate nginx-strangler config
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends nginx gettext-base
+          # Préparer un répertoire de test isolé avec la config substituée
+          mkdir -p /tmp/nginx-test/conf.d /tmp/nginx-test/logs
+          envsubst '${LEGACY_UPSTREAM} ${NESTJS_UPSTREAM}' \
+            < apps/nginx-strangler/conf.d/routing.conf \
+            > /tmp/nginx-test/conf.d/routing.conf
+          # Adapter nginx.conf pour l'environnement CI (user www-data, paths accessibles)
+          sed \
+            -e 's|^user .*|user www-data;|' \
+            -e 's|pid .*|pid /tmp/nginx-test/nginx.pid;|' \
+            -e 's|error_log .*|error_log /tmp/nginx-test/logs/error.log notice;|' \
+            -e 's|access_log .*|access_log /tmp/nginx-test/logs/access.log main;|' \
+            -e 's|include /etc/nginx/conf\.d/\*\.conf|include /tmp/nginx-test/conf.d/*.conf|' \
+            apps/nginx-strangler/nginx.conf > /tmp/nginx-test/nginx.conf
+          nginx -t -c /tmp/nginx-test/nginx.conf
+        env:
+          LEGACY_UPSTREAM: "127.0.0.1:8080"
+          NESTJS_UPSTREAM: "127.0.0.1:3001"
