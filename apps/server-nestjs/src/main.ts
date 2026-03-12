@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core'
 import { Logger } from 'nestjs-pino'
-
+import { instrument } from './instrumentation'
 import { MainModule } from './main.module'
 
 async function bootstrap() {
@@ -9,4 +9,6 @@ async function bootstrap() {
   app.flushLogs()
   await app.listen(process.env.PORT ?? 0)
 }
+
+instrument()
 bootstrap()
