@@ -61,7 +61,7 @@ Un script permet de copier facilement les fichiers `.env*-example` en leur équi
 
 ## Configuration pour le développement entièrement en local
 
-Docker Compose utilisé : [`docker/docker-compose.local.yml`](docker/docker-compose.local.yml) (infrastructure uniquement : Keycloak, PostgreSQL, pgAdmin, OpenCDS mock, **et nginx-strangler**)
+Docker Compose utilisé : [`docker/docker-compose.local.yml`](docker/docker-compose.local.yml) (infrastructure uniquement : Keycloak, PostgreSQL, pgAdmin, OpenCDS mock, **nginx-strangler, et Jaeger**)
 
 Fichiers utilisés :
 
@@ -74,7 +74,7 @@ Les valeurs par défaut, disponibles dans les fichiers `.env-example`, sont suff
 **Commandes de lancement :**
 
 ```bash
-# Lance l'infrastructure (Keycloak, PostgreSQL, pgAdmin, OpenCDS mock, nginx-strangler)
+# Lance l'infrastructure (Keycloak, PostgreSQL, pgAdmin, OpenCDS mock, nginx-strangler, Jaeger)
 pnpm dev
 
 # Puis dans d'autres terminaux, lancer les serveurs et le client manuellement :
@@ -96,6 +96,24 @@ SERVER_PORT=8082   # port du nginx-strangler exposé par docker-compose.local.ym
 Le `nginx-strangler` est automatiquement lancé par `pnpm dev` via `docker-compose.local.yml`. Il écoute sur `localhost:8082` et redirige vers les deux backends natifs (`server:4000` et `server-nestjs:3001`) selon la configuration de [`apps/nginx-strangler/conf.d/routing.conf`](apps/nginx-strangler/conf.d/routing.conf).
 
 > **Note :** si vous ne travaillez pas sur la migration NestJS, vous n'avez pas besoin de changer `SERVER_PORT` — le comportement par défaut (proxy direct vers `server:4000`) reste identique.
+
+### Observabilité : Jaeger + OpenTelemetry (traces)
+
+Le fichier [`docker/docker-compose.local.yml`](docker/docker-compose.local.yml) démarre un service `jaeger` (image `jaegertracing/all-in-one`) pour collecter et visualiser les traces.
+
+- UI Jaeger : http://localhost:16686
+- Endpoints de collecte exposés sur la machine hôte :
+  - OTLP gRPC : `localhost:4317`
+  - OTLP HTTP (protobuf) : `http://localhost:4318`
+
+Dans `apps/server-nestjs`, l'instrumentation OpenTelemetry est initialisée au démarrage via [`src/instrumentation.ts`](apps/server-nestjs/src/instrumentation.ts) (appelée depuis `main.ts`) et exporte via OTLP.
+
+Pour vérifier rapidement :
+
+1. Démarrer l'infra : `pnpm dev` (Jaeger inclus).
+2. Démarrer `server-nestjs` : `pnpm --filter server-nestjs run start:dev`.
+3. Exécuter une requête sur une route backend (depuis le client ou un `curl`).
+4. Ouvrir http://localhost:16686 et chercher le service `cloud-pi-native-console`.
 
 ## Configuration pour le développement conteneurisé en local
 
