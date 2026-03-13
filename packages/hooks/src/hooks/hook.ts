@@ -77,16 +77,20 @@ export async function executeStep<Args extends DefaultArgs>(step: HookStep, payl
     payload.results[name].executionTime[stepName] = Date.now() - payload.results[name].executionTime[stepName]
     return fnResult
   })
-  const results = await Promise.all(fns)
+  const results = await Promise.allSettled(fns)
   names.forEach((name, index) => {
-    if (results[index].status.result === 'KO') {
+    const settled = results[index]
+    const result = settled.status === 'fulfilled'
+      ? settled.value
+      : { status: { result: 'KO', message: String(settled.reason) } } satisfies PluginResult
+    if (result.status.result === 'KO') {
       payload.failed = Array.isArray(payload.failed)
         ? [...payload.failed, name]
         : [name]
-    } else if (results[index].status.result === 'WARNING' && !payload.warning.includes(name)) {
+    } else if (result.status.result === 'WARNING' && !payload.warning.includes(name)) {
       payload.warning.push(name)
     }
-    payload.results[name] = { ...results[index], executionTime: payload.results[name].executionTime }
+    payload.results[name] = { ...result, executionTime: payload.results[name].executionTime }
   })
   return payload
 }
