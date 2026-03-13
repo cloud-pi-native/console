@@ -77,16 +77,23 @@ export async function executeStep<Args extends DefaultArgs>(step: HookStep, payl
     payload.results[name].executionTime[stepName] = Date.now() - payload.results[name].executionTime[stepName]
     return fnResult
   })
-  const results = await Promise.all(fns)
+  const results = await Promise.allSettled(fns)
   names.forEach((name, index) => {
-    if (results[index].status.result === 'KO') {
+    if (results[index].status === 'rejected') {
       payload.failed = Array.isArray(payload.failed)
         ? [...payload.failed, name]
         : [name]
-    } else if (results[index].status.result === 'WARNING' && !payload.warning.includes(name)) {
+    } else if (results[index].status === 'fulfilled' && results[index].value.status.result === 'WARNING' && !payload.warning.includes(name)) {
       payload.warning.push(name)
     }
-    payload.results[name] = { ...results[index], executionTime: payload.results[name].executionTime }
+    if (results[index].status === 'fulfilled') {
+      payload.results[name] = { ...results[index].value, executionTime: payload.results[name].executionTime }
+    } else {
+      payload.results[name] = {
+        status: { result: 'KO', message: results[index].reason?.message || results[index].reason || 'Unknown error' },
+        executionTime: payload.results[name].executionTime
+      }
+    }
   })
   return payload
 }
