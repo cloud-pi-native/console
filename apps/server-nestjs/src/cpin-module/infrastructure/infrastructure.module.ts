@@ -5,10 +5,11 @@ import { DatabaseService } from './database/database.service'
 import { HttpClientService } from './http-client/http-client.service'
 import { LoggerModule } from './logger/logger.module'
 import { ServerService } from './server/server.service'
+import { TelemetryModule } from './telemetry/telemetry.module'
 
 @Module({
   providers: [DatabaseService, HttpClientService, ServerService],
-  imports: [LoggerModule, ConfigurationModule],
+  imports: [LoggerModule, ConfigurationModule, TelemetryModule],
   exports: [DatabaseService, HttpClientService, ServerService],
 })
 export class InfrastructureModule {}
