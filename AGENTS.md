@@ -36,7 +36,6 @@ Plugins use TS module augmentation to extend `ProjectStore` and `Config` interfa
 ## Database (Prisma)
 
 Multi-file schema in `apps/server/src/prisma/schema/*.prisma` (project, user, token, admin, topography).
-Singleton PrismaClient in `apps/server/src/prisma.ts`. Queries centralized per resource, re-exported via `queries-index.ts`.
 Migrations: standard Prisma Migrate. Major version data migrations in `migrations/v9/`.
 
 ## Environment config
