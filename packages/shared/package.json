@@ -11,12 +11,9 @@
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
-      "import": "./dist/index.js"
+      "default": "./dist/index.js"
     }
   },
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "types/index.d.ts",
   "files": [
     "dist",
     "types"
