@@ -155,6 +155,24 @@
       "request": "launch",
       "url": "http://localhost:8080",
       "webRoot": "${workspaceFolder}/apps/client"
+    },
+
+    {
+      "name": "Launch Server NestJS",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "start:debug"
+      ],
+      "cwd": "${workspaceFolder}/apps/server-nestjs",
+      "console": "internalConsole",
+      "restart": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
     }
   ],
   "compounds": [
