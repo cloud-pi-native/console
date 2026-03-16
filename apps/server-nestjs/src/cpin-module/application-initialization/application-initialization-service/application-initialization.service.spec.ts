@@ -7,6 +7,7 @@ import { ConfigurationModule } from '@/cpin-module/infrastructure/configuration/
 import { PluginManagementService } from '../plugin-management/plugin-management.service'
 import { DatabaseInitializationService } from '../database-initialization/database-initialization.service'
 import { DatabaseService } from '@/cpin-module/infrastructure/database/database.service'
+import { PrismaService } from '@/cpin-module/infrastructure/database/prisma.service'
 
 describe('applicationInitializationServiceService', () => {
   let service: ApplicationInitializationService
@@ -19,6 +20,10 @@ describe('applicationInitializationServiceService', () => {
         PluginManagementService,
         DatabaseInitializationService,
         DatabaseService,
+        {
+          provide: PrismaService,
+          useValue: {},
+        },
       ],
     }).compile()
 
