@@ -6,6 +6,8 @@ import { DatabaseHealthService } from '@/cpin-module/infrastructure/database/dat
 import { ArgoCDHealthService } from '../../../modules/argocd/argocd-health.service'
 import { GitlabHealthService } from '../../../modules/gitlab/gitlab-health.service'
 import { KeycloakHealthService } from '../../../modules/keycloak/keycloak-health.service'
+import { NexusHealthService } from '../../../modules/nexus/nexus-health.service'
+import { RegistryHealthService } from '../../../modules/registry/registry-health.service'
 import { VaultHealthService } from '../../../modules/vault/vault-health.service'
 import { HealthController } from './health.controller'
 
@@ -17,6 +19,8 @@ import { HealthController } from './health.controller'
     KeycloakHealthService,
     GitlabHealthService,
     VaultHealthService,
+    NexusHealthService,
+    RegistryHealthService,
     ArgoCDHealthService,
   ],
 })
