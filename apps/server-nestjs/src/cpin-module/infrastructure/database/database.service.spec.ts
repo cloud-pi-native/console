@@ -1,9 +1,10 @@
 import type { TestingModule } from '@nestjs/testing'
 import { Test } from '@nestjs/testing'
-import { describe, beforeEach, it, expect } from 'vitest'
+import { describe, beforeEach, it, expect, vi } from 'vitest'
 
 import { DatabaseService } from './database.service'
 import { ConfigurationModule } from '../configuration/configuration.module'
+import { PrismaService } from './prisma.service'
 
 describe('databaseService', () => {
   let service: DatabaseService
@@ -11,7 +12,16 @@ describe('databaseService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [ConfigurationModule],
-      providers: [DatabaseService],
+      providers: [
+        DatabaseService,
+        {
+          provide: PrismaService,
+          useValue: {
+            $connect: vi.fn().mockResolvedValue(undefined),
+            $disconnect: vi.fn().mockResolvedValue(undefined),
+          },
+        },
+      ],
     }).compile()
 
     service = module.get<DatabaseService>(DatabaseService)
