@@ -46,6 +46,7 @@ export class GitlabApi extends PluginApi {
     groupId: number
     ciConfigPath?: string
   }) {
+    console.log(`[GITLAB] createEmptyRepository ${repoName} ${groupId}`)
     const project = await this.api.Projects.create({
       name: repoName,
       path: repoName,
@@ -67,6 +68,7 @@ export class GitlabApi extends PluginApi {
     branch: string = 'main',
     comment: string = 'ci: :robot_face: Update file content',
   ): Promise<boolean> {
+    console.log(`[GITLAB] commitCreateOrUpdate ${repoId} ${filePath} ${branch}`)
     let action: CommitAction['action'] = 'create'
 
     const existingBranch = await find(offsetPaginate(opts => this.api.Branches.all(repoId, opts)), b => b.name === branch)
@@ -109,6 +111,7 @@ export class GitlabApi extends PluginApi {
     branch: string = 'main',
     comment: string = 'ci: :robot_face: Delete files',
   ): Promise<boolean> {
+    console.log(`[GITLAB] commitDelete ${repoId} ${branch}`)
     if (files.length) {
       const commitActions: CommitAction[] = files.map((filePath) => {
         return {
@@ -138,6 +141,7 @@ export class GitlabApi extends PluginApi {
   }
 
   public async commitFiles() {
+    console.log(`[GITLAB] commitFiles`)
     let filesUpdated: number = 0
     for (const [id, repo] of objectEntries(this.pendingCommits)) {
       for (const [branch, details] of objectEntries(repo.branches)) {
@@ -153,6 +157,7 @@ export class GitlabApi extends PluginApi {
   }
 
   public async listFiles(repoId: number, options: AllRepositoryTreesOptions = {}) {
+    console.log(`[GITLAB] listFiles ${repoId}`)
     options.path = options?.path ?? '/'
     options.ref = options?.ref ?? 'main'
     options.recursive = options?.recursive ?? false
@@ -182,6 +187,7 @@ export class GitlabApi extends PluginApi {
   }
 
   public async deleteRepository(repoId: number, fullPath: string) {
+    console.log(`[GITLAB] deleteRepository ${repoId} ${fullPath}`)
     await this.api.Projects.remove(repoId) // Marks for deletion
     return this.api.Projects.remove(repoId, { permanentlyRemove: true, fullPath: `${fullPath}-deletion_scheduled-${repoId}` }) // Effective deletion
   }
@@ -197,6 +203,7 @@ export class GitlabZoneApi extends GitlabApi {
 
   // Group Infra
   public async getOrCreateInfraGroup(): Promise<GroupSchema> {
+    console.log(`[GITLAB] getOrCreateInfraGroup`)
     const rootId = await getGroupRootId()
     // Get or create projects_root_dir/infra group
     const existingParentGroup = await find(offsetPaginate(opts => this.api.Groups.all({
@@ -214,6 +221,7 @@ export class GitlabZoneApi extends GitlabApi {
   }
 
   public async getOrCreateInfraProject(zone: string): Promise<ProjectSchema> {
+    console.log(`[GITLAB] getOrCreateInfraProject ${zone}`)
     if (this.infraProjectsByZoneSlug.has(zone)) {
       return this.infraProjectsByZoneSlug.get(zone)!
     }
@@ -249,6 +257,7 @@ export class GitlabProjectApi extends GitlabApi {
 
   // Group Project
   private async createProjectGroup(): Promise<GroupSchema> {
+    console.log(`[GITLAB] createProjectGroup`)
     const parentId = await getGroupRootId()
     const existingGroup = await find(offsetPaginate(opts => this.api.Groups.all({
       search: this.project.slug,
@@ -267,28 +276,36 @@ export class GitlabProjectApi extends GitlabApi {
   }
 
   public async getProjectGroup(): Promise<GroupSchema | undefined> {
-    if (this.gitlabGroup) return this.gitlabGroup
-    const parentId = await getGroupRootId()
-    this.gitlabGroup = await find(offsetPaginate(opts => this.api.Groups.allSubgroups(parentId, opts)), group => group.name === this.project.slug)
+    console.log(`[GITLAB] getProjectGroup`)
+    if (!this.gitlabGroup) {
+      console.log(`[GITLAB] No gitlab group defined in internal state`)
+      const parentId = await getGroupRootId()
+      this.gitlabGroup = await find(offsetPaginate(opts => this.api.Groups.allSubgroups(parentId, opts)), group => group.name === this.project.slug)
+    }
+    console.log(`[GITLAB] FOUND gitlabGroup`)
     return this.gitlabGroup
   }
 
   public async getOrCreateProjectGroup(): Promise<GroupSchema> {
+    console.log(`[GITLAB] getOrCreateProjectGroup`)
     const group = await this.getProjectGroup()
     if (group) return group
     return this.createProjectGroup()
   }
 
   public async getPublicGroupUrl() {
+    console.log(`[GITLAB] getPublicGroupUrl`)
     return `${config().publicUrl}/${config().projectsRootDir}/${this.project.slug}`
   }
 
   public async getInternalGroupUrl() {
+    console.log(`[GITLAB] getInternalGroupUrl`)
     return `${config().internalUrl}/${config().projectsRootDir}/${this.project.slug}`
   }
 
   // Tokens
   public async getProjectMirrorCreds(vaultApi: VaultProjectApi): Promise<GitlabMirrorSecret> {
+    console.log(`[GITLAB] getProjectMirrorCreds`)
     const tokenName = `${this.project.slug}-bot`
     const currentToken = await this.getProjectToken(tokenName)
     const creds: GitlabMirrorSecret = {
@@ -325,6 +342,7 @@ export class GitlabProjectApi extends GitlabApi {
   }
 
   public async getProjectId(projectName: string) {
+    console.log(`[GITLAB] getProjectId ${projectName}`)
     const projectGroup = await this.getProjectGroup()
     if (!projectGroup) throw new Error(`Gitlab inaccessible, impossible de trouver le groupe ${this.project.slug}`)
 
@@ -338,20 +356,24 @@ export class GitlabProjectApi extends GitlabApi {
   }
 
   public async getProjectById(projectId: number) {
+    console.log(`[GITLAB] getProjectById ${projectId}`)
     return this.api.Projects.show(projectId)
   }
 
   public async getOrCreateInfraProject(zone: string) {
+    console.log(`[GITLAB] getOrCreateInfraGroup ${zone}`)
     return await this.zoneApi.getOrCreateInfraProject(zone)
   }
 
   public async getProjectToken(tokenName: string) {
+    console.log(`[GITLAB] getProjectToken ${tokenName}`)
     const group = await this.getProjectGroup()
     if (!group) throw new Error('Unable to retrieve gitlab project group')
     return find(offsetPaginate(opts => this.api.GroupAccessTokens.all(group.id, opts)), token => token.name === tokenName)
   }
 
   public async createProjectToken(tokenName: string, scopes: AccessTokenScopes[]) {
+    console.log(`[GITLAB] createProjectToken ${tokenName}`)
     const group = await this.getProjectGroup()
     if (!group) throw new Error('Unable to retrieve gitlab project group')
     const expiryDate = new Date()
@@ -360,6 +382,7 @@ export class GitlabProjectApi extends GitlabApi {
   }
 
   public async revokeProjectToken(tokenId: number) {
+    console.log(`[GITLAB] revokeProjectToken ${tokenId}`)
     const group = await this.getProjectGroup()
     if (!group) throw new Error('Unable to retrieve gitlab project group')
     return this.api.GroupAccessTokens.revoke(group.id, tokenId)
@@ -367,6 +390,7 @@ export class GitlabProjectApi extends GitlabApi {
 
   // Triggers
   public async getMirrorProjectTriggerToken(vaultApi: VaultProjectApi) {
+    console.log(`[GITLAB] getMirrorProjectTriggerToken`)
     const tokenDescription = 'mirroring-from-external-repo'
     const gitlabRepositories = await this.listRepositories()
     const mirrorRepo = gitlabRepositories.find(repo => repo.name === internalMirrorRepoName)
@@ -384,14 +408,17 @@ export class GitlabProjectApi extends GitlabApi {
 
   // Repositories
   public async getPublicRepoUrl(repoName: string) {
+    console.log(`[GITLAB] getPublicRepoUrl ${repoName}`)
     return `${await this.getPublicGroupUrl()}/${repoName}.git`
   }
 
   public async getInternalRepoUrl(repoName: string) {
+    console.log(`[GITLAB] getInternalRepoUrl ${repoName}`)
     return `${await this.getInternalGroupUrl()}/${repoName}.git`
   }
 
   public async listRepositories() {
+    console.log(`[GITLAB] listRepositories`)
     const group = await this.getOrCreateProjectGroup()
     const projects = await getAll(offsetPaginate(opts => this.api.Groups.allProjects(group.id, { simple: false, ...opts }))) // to refactor with https://github.com/jdalrymple/gitbeaker/pull/3624
     return Promise.all(projects.map(async (project) => {
@@ -403,6 +430,7 @@ export class GitlabProjectApi extends GitlabApi {
   }
 
   public async createEmptyProjectRepository({ repoName, description, clone }: CreateEmptyRepositoryArgs & { clone?: boolean }) {
+    console.log(`[GITLAB] createEmptyProjectRepository ${repoName}`)
     const namespaceId = (await this.getOrCreateProjectGroup()).id
     return this.createEmptyRepository({
       repoName,
@@ -415,10 +443,12 @@ export class GitlabProjectApi extends GitlabApi {
 
   // Special Repositories
   public async getSpecialRepositories(): Promise<string[]> {
+    console.log(`[GITLAB] getSpecialRepositories`)
     return this.specialRepositories
   }
 
   public async addSpecialRepositories(name: string) {
+    console.log(`[GITLAB] addSpecialRepositories ${name}`)
     if (!this.specialRepositories.includes(name)) {
       this.specialRepositories.push(name)
     }
@@ -426,32 +456,38 @@ export class GitlabProjectApi extends GitlabApi {
 
   // Group members
   public async getGroupMembers() {
+    console.log(`[GITLAB] getGroupMembers`)
     const group = await this.getOrCreateProjectGroup()
     return getAll(offsetPaginate(opts => this.api.GroupMembers.all(group.id, opts)))
   }
 
   public async addGroupMember(userId: number, accessLevel: AccessLevelAllowed = AccessLevel.DEVELOPER): Promise<MemberSchema> {
+    console.log(`[GITLAB] addGroupMember ${userId} ${accessLevel}`)
     const group = await this.getOrCreateProjectGroup()
     return this.api.GroupMembers.add(group.id, userId, accessLevel)
   }
 
   public async editGroupMember(userId: number, accessLevel: AccessLevelAllowed = AccessLevel.DEVELOPER): Promise<MemberSchema> {
+    console.log(`[GITLAB] editGroupMember ${userId} ${accessLevel}`)
     const group = await this.getOrCreateProjectGroup()
     return this.api.GroupMembers.edit(group.id, userId, accessLevel)
   }
 
   public async removeGroupMember(userId: number) {
+    console.log(`[GITLAB] removeGroupMember ${userId}`)
     const group = await this.getOrCreateProjectGroup()
     return this.api.GroupMembers.remove(group.id, userId)
   }
 
   // CI Variables
   public async getGitlabGroupVariables(): Promise<VariableSchema[]> {
+    console.log(`[GITLAB] getGitlabGroupVariables`)
     const group = await this.getOrCreateProjectGroup()
     return await getAll(offsetPaginate(opts => this.api.GroupVariables.all(group.id, opts)))
   }
 
   public async setGitlabGroupVariable(listVars: VariableSchema[], toSetVariable: VariableSchema): Promise<setVariableResult> {
+    console.log(`[GITLAB] setGitlabGroupVariable`)
     const group = await this.getOrCreateProjectGroup()
     const currentVariable = listVars.find(v => v.key === toSetVariable.key)
     if (currentVariable) {
@@ -491,10 +527,12 @@ export class GitlabProjectApi extends GitlabApi {
   }
 
   public async getGitlabRepoVariables(repoId: number): Promise<VariableSchema[]> {
+    console.log(`[GITLAB] getGitlabRepoVariables ${repoId}`)
     return await getAll(offsetPaginate(opts => this.api.ProjectVariables.all(repoId, opts)))
   }
 
   public async setGitlabRepoVariable(repoId: number, listVars: VariableSchema[], toSetVariable: ProjectVariableSchema): Promise<setVariableResult | 'repository not found'> {
+    console.log(`[GITLAB] setGitlabRepoVariables ${repoId}`)
     const currentVariable = listVars.find(v => v.key === toSetVariable.key)
     if (currentVariable) {
       if (
@@ -535,6 +573,7 @@ export class GitlabProjectApi extends GitlabApi {
 
   // Mirror
   public async triggerMirror(targetRepo: string, syncAllBranches: boolean, branchName?: string) {
+    console.log(`[GITLAB] triggerMirror ${targetRepo} ${syncAllBranches} ${branchName}`)
     if ((await this.getSpecialRepositories()).includes(targetRepo)) {
       throw new Error('User requested for invalid mirroring')
     }

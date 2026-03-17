@@ -10,18 +10,21 @@ let groupRootId: number
 export async function getGroupRootId(throwIfNotFound?: true): Promise<number>
 export async function getGroupRootId(throwIfNotFound?: false): Promise<number | undefined>
 export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number | undefined> {
+  console.log(`[GITLAB] getGroupRootId`)
   const gitlabApi = getApi()
   const projectRootDir = config().projectsRootDir
+  console.log(`[GITLAB] projectRootDir is ${projectRootDir}`)
   if (groupRootId) return groupRootId
   const groupRoot = await find(offsetPaginate(opts => gitlabApi.Groups.all({
     search: projectRootDir,
     orderBy: 'id',
     ...opts,
   })), grp => grp.full_path === projectRootDir)
+  console.log(`[GITLAB] groupRoot is ${JSON.stringify(groupRoot)}`)
   const searchId = groupRoot?.id
   if (typeof searchId === 'undefined') {
     if (throwIfNotFound) {
-      throw new Error(`Gitlab inaccessible, impossible de trouver le groupe ${projectRootDir}`)
+      throw new Error(`Gitlab inaccessible, impossible de trouver le groupe RACINE ${projectRootDir}`)
     }
     return searchId
   }
@@ -30,6 +33,7 @@ export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number 
 }
 
 async function createGroupRoot(): Promise<number> {
+  console.log(`[GITLAB] createGroupRoot`)
   const gitlabApi = getApi()
   const projectRootDir = config().projectsRootDir
   const projectRootDirArray = projectRootDir.split('/')
@@ -65,10 +69,12 @@ async function createGroupRoot(): Promise<number> {
 }
 
 export async function getOrCreateGroupRoot(): Promise<number> {
+  console.log(`[GITLAB] getOrCreateGroupRoot`)
   return await getGroupRootId(false) ?? createGroupRoot()
 }
 
 export function getApi(): IGitlab {
+  console.log(`[GITLAB] getApi`)
   api ??= new Gitlab({ token: config().token, host: config().internalUrl })
   return api
 }
