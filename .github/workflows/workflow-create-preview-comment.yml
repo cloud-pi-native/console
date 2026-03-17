@@ -1,7 +1,7 @@
 name: Add preview comment
 
 permissions:
-  contents: read
+  pull-requests: write
 
 on:
   pull_request:
