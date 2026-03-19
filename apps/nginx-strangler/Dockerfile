@@ -5,10 +5,10 @@ FROM nginx:1.27-alpine as prod
 RUN rm /etc/nginx/conf.d/default.conf
 
 # Config principale
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY apps/nginx-strangler/nginx.conf /etc/nginx/nginx.conf
 
 # Template de routing (sera substitué au démarrage)
-COPY conf.d/routing.conf /etc/nginx/templates/routing.conf.template
+COPY apps/nginx-strangler/conf.d/routing.conf /etc/nginx/templates/routing.conf.template
 
 # Donner à l'utilisateur nginx les droits d'écriture sur conf.d/ (pour envsubst au démarrage)
 # et sur les répertoires de logs/pid nécessaires en mode non-root
