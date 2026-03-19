@@ -1,16 +1,16 @@
+import type { ProjectV2 } from '@cpn-console/shared'
 import type { Pinia } from 'pinia'
+import { faker } from '@faker-js/faker'
 import { createPinia, setActivePinia } from 'pinia'
+import TeamCt from '@/components/TeamCt.vue'
+import { useProjectStore } from '@/stores/project.js'
+import { useUserStore } from '@/stores/user.js'
+import { useUsersStore } from '@/stores/users.js'
 import '@gouvminint/vue-dsfr/styles'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
-import type { ProjectV2 } from '@cpn-console/shared'
-import { faker } from '@faker-js/faker'
-import TeamCt from '@/components/TeamCt.vue'
-import { useProjectStore } from '@/stores/project.js'
-import { useUsersStore } from '@/stores/users.js'
-import { useUserStore } from '@/stores/user.js'
 
 const ownerId = faker.string.uuid()
 const props: {

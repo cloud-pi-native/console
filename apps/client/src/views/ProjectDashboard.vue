@@ -1,17 +1,17 @@
 <script lang="ts" setup>
-import { onBeforeMount, ref } from 'vue'
-import { ProjectAuthorized } from '@cpn-console/shared'
 import type { ProjectV2 } from '@cpn-console/shared'
-import { useUserStore } from '@/stores/user.js'
-import { useProjectStore } from '@/stores/project.js'
-import { useStageStore } from '@/stores/stage.js'
-import router from '@/router/index.js'
-import { useClusterStore } from '@/stores/cluster.js'
-import { useZoneStore } from '@/stores/zone.js'
+import { ProjectAuthorized } from '@cpn-console/shared'
+import { onBeforeMount, ref } from 'vue'
 import OperationPanel from '@/components/OperationPanel.vue'
 import ProjectClustersInfos from '@/components/ProjectClustersInfos.vue'
-import { getRandomId } from '@/utils/func.js'
 import ProjectSettings from '@/components/ProjectSettings.vue'
+import router from '@/router/index.js'
+import { useClusterStore } from '@/stores/cluster.js'
+import { useProjectStore } from '@/stores/project.js'
+import { useStageStore } from '@/stores/stage.js'
+import { useUserStore } from '@/stores/user.js'
+import { useZoneStore } from '@/stores/zone.js'
+import { getRandomId } from '@/utils/func.js'
 
 const props = withDefaults(defineProps<{
   projectSlug: ProjectV2['slug']

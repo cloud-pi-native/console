@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { isInProject } from '../router/index.js'
-import { useUserStore } from '@/stores/user.js'
-import { useServiceStore } from '@/stores/services-monitor.js'
-import { openCDSEnabled } from '@/utils/env.js'
 import { AdminAuthorized } from '@cpn-console/shared'
+import { useServiceStore } from '@/stores/services-monitor.js'
+import { useUserStore } from '@/stores/user.js'
+import { openCDSEnabled } from '@/utils/env.js'
+import { isInProject } from '../router/index.js'
 
 const route = useRoute()
 const userStore = useUserStore()

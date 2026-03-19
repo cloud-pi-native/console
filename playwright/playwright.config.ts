@@ -1,8 +1,8 @@
 import path from 'node:path'
 
-import dotenv from 'dotenv'
-
 import { defineConfig, devices } from '@playwright/test'
+
+import dotenv from 'dotenv'
 
 dotenv.config({
   path: path.resolve(__dirname, '..', 'apps/client', '.env.docker'),

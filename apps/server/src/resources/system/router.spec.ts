@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest'
 import { systemContract } from '@cpn-console/shared'
+import { describe, expect, it, vi } from 'vitest'
 import app from '../../app.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)

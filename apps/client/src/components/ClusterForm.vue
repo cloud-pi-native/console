@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { computed, onBeforeMount, ref, watch } from 'vue'
 import type {
   ClusterAssociatedEnvironments,
   ClusterDetails,
@@ -9,15 +8,16 @@ import type {
 import {
   ClusterDetailsSchema,
   ClusterPrivacy,
-  KubeconfigSchema,
   deleteValidationInput,
+  KubeconfigSchema,
 } from '@cpn-console/shared'
-import { load } from 'js-yaml'
-import { JsonViewer } from 'vue3-json-viewer'
-import ChoiceSelector from './ChoiceSelector.vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
 import { DsfrDataTable } from '@gouvminint/vue-dsfr'
+import { load } from 'js-yaml'
+import { computed, onBeforeMount, ref, watch } from 'vue'
+import { JsonViewer } from 'vue3-json-viewer'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import { localeParseFloat, ONE_TENTH_STR } from '@/utils/func.js'
+import ChoiceSelector from './ChoiceSelector.vue'
 
 const props = withDefaults(defineProps<{
   isNewCluster: boolean

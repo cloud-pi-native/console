@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
 import { exclude } from '@cpn-console/shared'
+import { describe, expect, it } from 'vitest'
 import { filterObjectByKeys } from './queries-tools.js'
 
 describe('queries-tools', () => {

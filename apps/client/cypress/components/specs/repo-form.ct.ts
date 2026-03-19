@@ -1,17 +1,17 @@
-import { createPinia, setActivePinia } from 'pinia'
 import type { Pinia } from 'pinia'
-import { createRandomDbSetup } from '@cpn-console/test-utils'
+import type { ComponentCustomProps } from 'vue'
 import { fakeToken, missingCredentials } from '@cpn-console/shared'
+import { createRandomDbSetup } from '@cpn-console/test-utils'
 
+import { createPinia, setActivePinia } from 'pinia'
+import RepoForm from '@/components/RepoForm.vue'
+import { useProjectStore } from '@/stores/project.js'
 import '@gouvminint/vue-dsfr/styles'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
+
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@/main.css'
-
-import RepoForm from '@/components/RepoForm.vue'
-import { useProjectStore } from '@/stores/project.js'
-import type { ComponentCustomProps } from 'vue'
 
 describe('RepoForm.vue', () => {
   let pinia: Pinia

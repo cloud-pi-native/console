@@ -1,6 +1,7 @@
 import { z } from 'zod'
-import { MemberSchema, apiPrefix, contractInstance } from '../index.js'
-import { ErrorSchema, baseHeaders } from './_utils.js'
+import { apiPrefix, contractInstance } from '../api-client.js'
+import { MemberSchema } from '../schemas/user.js'
+import { baseHeaders, ErrorSchema } from './_utils.js'
 
 export const projectMemberContract = contractInstance.router({
   listMembers: {

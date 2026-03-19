@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { onBeforeMount, ref } from 'vue'
 import type {
   ServiceChain,
   ServiceChainDetails,
@@ -13,6 +12,7 @@ import {
   DsfrStepper,
   DsfrToggleSwitch,
 } from '@gouvminint/vue-dsfr'
+import { onBeforeMount, ref } from 'vue'
 import { useServiceChainStore } from '@/stores/service-chain'
 
 const props = withDefaults(

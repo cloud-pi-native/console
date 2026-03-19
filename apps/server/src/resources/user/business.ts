@@ -1,9 +1,9 @@
-import { createHash } from 'node:crypto'
+import type { userContract, XOR } from '@cpn-console/shared'
 import type { AdminRole, AdminToken, PersonalAccessToken, Prisma, User } from '@prisma/client'
-import type { XOR, userContract } from '@cpn-console/shared'
-import { getMatchingUsers as getMatchingUsersQuery, getUsers as getUsersQuery } from '@/resources/queries-index.js'
-import prisma from '@/prisma.js'
 import type { UserDetails } from '@/types/index.js'
+import { createHash } from 'node:crypto'
+import prisma from '@/prisma.js'
+import { getMatchingUsers as getMatchingUsersQuery, getUsers as getUsersQuery } from '@/resources/queries-index.js'
 import { BadRequest400 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 

@@ -1,6 +1,6 @@
-import prisma from '@/prisma'
-import { Inject, Injectable, Logger } from '@nestjs/common'
 import { setTimeout } from 'node:timers/promises'
+import { Inject, Injectable, Logger } from '@nestjs/common'
+import prisma from '../../../prisma'
 import { ConfigurationService } from '../configuration/configuration.service'
 
 @Injectable()

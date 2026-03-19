@@ -1,13 +1,13 @@
+import type { projectContract, XOR } from '@cpn-console/shared'
 import type {
   Prisma,
   Project,
   User,
 } from '@prisma/client'
+import { PROJECT_PERMS } from '@cpn-console/shared'
 import {
   ProjectStatus,
 } from '@prisma/client'
-import type { XOR, projectContract } from '@cpn-console/shared'
-import { PROJECT_PERMS } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 import { appVersion } from '@/utils/env.js'
 import { uuid } from '@/utils/queries-tools.js'

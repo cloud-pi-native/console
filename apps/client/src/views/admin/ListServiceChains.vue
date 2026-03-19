@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
 import type { ServiceChain } from '@cpn-console/shared'
+import { onMounted, ref } from 'vue'
 import router from '@/router/index.js'
 import { useServiceChainStore } from '@/stores/service-chain.js'
 import { getRandomId } from '@/utils/func.js'

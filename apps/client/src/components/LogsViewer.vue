@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
 import type { CleanLog, Log, XOR } from '@cpn-console/shared'
+import { ref } from 'vue'
 // @ts-ignore 'vue3-json-viewer' missing types
 import { JsonViewer } from 'vue3-json-viewer'
 import router from '@/router/index.js'

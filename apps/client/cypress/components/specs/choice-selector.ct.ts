@@ -1,9 +1,9 @@
+import ChoiceSelector from '@/components/ChoiceSelector.vue'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
-import ChoiceSelector from '@/components/ChoiceSelector.vue'
 
 describe('ChoiceSelector.vue', () => {
   const options = [

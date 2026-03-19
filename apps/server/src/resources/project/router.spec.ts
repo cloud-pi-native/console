@@ -1,13 +1,13 @@
+import type { ProjectV2 } from '@cpn-console/shared'
+import type { UserDetails } from '../../types/index.js'
+import { ADMIN_PERMS, PROJECT_PERMS, projectContract } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ProjectV2 } from '@cpn-console/shared'
-import { ADMIN_PERMS, PROJECT_PERMS, projectContract } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
-import { getProjectMockInfos, getRandomRequestor, getUserMockInfos } from '../../utils/mocks.js'
 import { BadRequest400 } from '../../utils/errors.js'
+import { getProjectMockInfos, getRandomRequestor, getUserMockInfos } from '../../utils/mocks.js'
 import * as business from './business.js'
-import type { UserDetails } from '../../types/index.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
 const authUserMock = vi.spyOn(utilsController, 'authUser')

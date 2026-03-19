@@ -1,9 +1,9 @@
 import type { TestingModule } from '@nestjs/testing'
 import { Test } from '@nestjs/testing'
-import { describe, beforeEach, it, expect } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
-import { FastifyService } from './fastify.service'
 import { ConfigurationModule } from '@/cpin-module/infrastructure/configuration/configuration.module'
+import { FastifyService } from './fastify.service'
 
 describe('fastifyService', () => {
   let service: FastifyService

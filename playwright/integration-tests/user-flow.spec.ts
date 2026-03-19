@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test'
-import { adminUser, secondTestUser, testUser, clientURL, signInCloudPiNative } from '../config/console'
-import { waitForAndClick } from './helper'
-
+import { adminUser, clientURL, secondTestUser, signInCloudPiNative, testUser } from '../config/console'
 import {
   addProject,
   addRandomRepositoryToProject,
   deleteProject,
 } from '../e2e-tests/utils'
+
+import { waitForAndClick } from './helper'
 
 const projectsToDelete: string[] = []
 const projectName = 'socleprojecttest'

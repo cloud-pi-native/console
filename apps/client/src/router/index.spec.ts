@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { faker } from '@faker-js/faker'
 import type { ProjectV2 } from '@cpn-console/shared'
-import { detectProjectslug, createAppRouter } from './index.js'
-import { useUserStore } from '@/stores/user.js'
+import { faker } from '@faker-js/faker'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { useProjectStore } from '@/stores/project.js'
 import { useSystemSettingsStore } from '@/stores/system-settings.js'
+import { useUserStore } from '@/stores/user.js'
+import { createAppRouter, detectProjectslug } from './index.js'
 
 describe('router index', () => {
   beforeEach(() => {

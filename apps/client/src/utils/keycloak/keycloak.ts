@@ -1,7 +1,7 @@
-import type { KeycloakConfig, KeycloakInitOptions } from 'keycloak-js'
-import Keycloak from 'keycloak-js'
-
 import type { UserProfile } from '@cpn-console/shared'
+import type { KeycloakConfig, KeycloakInitOptions } from 'keycloak-js'
+
+import Keycloak from 'keycloak-js'
 import {
   keycloakClientId,
   keycloakDomain,

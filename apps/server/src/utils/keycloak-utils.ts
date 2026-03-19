@@ -1,5 +1,5 @@
-import { tokenHeaderName } from '@cpn-console/shared'
 import type { FastifyRequest } from 'fastify'
+import { tokenHeaderName } from '@cpn-console/shared'
 
 interface KeycloakPayload {
   sub: string

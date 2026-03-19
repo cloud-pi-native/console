@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import type Zod from 'zod'
+import { z } from 'zod'
 import { pluginsPopulatedManifests } from './config.js'
 
 export const serviceUrl = z.object({

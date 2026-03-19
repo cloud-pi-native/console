@@ -1,10 +1,10 @@
-import { describe, expect, it, vi } from 'vitest'
-import { ADMIN_PERMS, MonitorStatus, serviceContract } from '@cpn-console/shared'
 import type { ServiceStatus } from '@cpn-console/hooks'
+import { ADMIN_PERMS, MonitorStatus, serviceContract } from '@cpn-console/shared'
+import { describe, expect, it, vi } from 'vitest'
 import app from '../../app.js'
-import * as business from './business.js'
-import { getUserMockInfos } from '../../utils/mocks.js'
 import * as utilsController from '../../utils/controller.js'
+import { getUserMockInfos } from '../../utils/mocks.js'
+import * as business from './business.js'
 
 const authUserMock = vi.spyOn(utilsController, 'authUser')
 

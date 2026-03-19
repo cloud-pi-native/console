@@ -1,5 +1,5 @@
-import { DEFAULT, DISABLED, ENABLED } from '@cpn-console/shared'
 import type { ServiceInfos } from '../services.js'
+import { DEFAULT, DISABLED, ENABLED } from '@cpn-console/shared'
 
 export class PluginApi { }
 

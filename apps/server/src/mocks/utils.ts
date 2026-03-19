@@ -1,5 +1,5 @@
-import fp from 'fastify-plugin'
 import type { User } from '@cpn-console/test-utils'
+import fp from 'fastify-plugin'
 
 let requestor: User
 

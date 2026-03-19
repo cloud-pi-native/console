@@ -1,9 +1,9 @@
 import type { Project, Repository } from '@cpn-console/hooks'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
 import type { CondensedProjectSchema, ProjectSchema } from '@gitbeaker/rest'
+import type { GitlabProjectApi } from './class.js'
 import { shallowEqual } from '@cpn-console/shared'
 import { pluginManagedTopic } from './class.js'
-import type { GitlabProjectApi } from './class.js'
 import { provisionMirror } from './project.js'
 import { infraAppsRepoName, internalMirrorRepoName } from './utils.js'
 

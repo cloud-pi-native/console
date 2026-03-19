@@ -1,18 +1,18 @@
-import { createPinia, setActivePinia } from 'pinia'
 import type { Pinia } from 'pinia'
-import { getRandomCluster, getRandomEnv, getRandomStage, getRandomZone, repeatFn } from '@cpn-console/test-utils'
+import type { ComponentCustomProps } from 'vue'
 import { ClusterPrivacy, deleteValidationInput } from '@cpn-console/shared'
+import { getRandomCluster, getRandomEnv, getRandomStage, getRandomZone, repeatFn } from '@cpn-console/test-utils'
 
+import { faker } from '@faker-js/faker'
+import { createPinia, setActivePinia } from 'pinia'
+import ClusterForm from '@/components/ClusterForm.vue'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import '@gouvfr/dsfr/dist/dsfr.min.css'
+
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'
 import '@gouvfr/dsfr/dist/utility/utility.main.min.css'
 import '@gouvminint/vue-dsfr/styles'
 import '@/main.css'
-
-import ClusterForm from '@/components/ClusterForm.vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import type { ComponentCustomProps } from 'vue'
-import { faker } from '@faker-js/faker'
 
 describe('ClusterForm.vue', () => {
   let pinia: Pinia

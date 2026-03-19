@@ -1,7 +1,7 @@
-import { expect, test } from '@playwright/test'
-
-import { clientURL, signInCloudPiNative, tcolinUser } from '../config/console'
 import { faker } from '@faker-js/faker'
+
+import { expect, test } from '@playwright/test'
+import { clientURL, signInCloudPiNative, tcolinUser } from '../config/console'
 import { deleteValidationInput } from './utils'
 
 test.describe('Zone page', () => {

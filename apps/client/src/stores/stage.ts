@@ -1,10 +1,10 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import type { CreateStageBody, Stage, UpdateStageBody } from '@cpn-console/shared'
 import {
 
   resourceListToDict,
 } from '@cpn-console/shared'
-import type { CreateStageBody, Stage, UpdateStageBody } from '@cpn-console/shared'
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useStageStore = defineStore('stage', () => {
