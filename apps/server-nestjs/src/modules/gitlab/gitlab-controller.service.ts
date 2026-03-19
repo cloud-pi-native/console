@@ -491,9 +491,6 @@ function daysAgoFromNow(date: Date) {
   return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
 }
 
-import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
-import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/telemetry.decorator'
-import { getAll } from '../../utils/iterable'
 const ownedUserRegex = /group_\d+_bot/u
 
 @Injectable()
@@ -510,6 +507,7 @@ export class GitlabControllerService {
   }
 
   @OnEvent('project.upsert')
+  @Reconcile()
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -519,6 +517,7 @@ export class GitlabControllerService {
   }
 
   @OnEvent('project.delete')
+  @Reconcile()
   @StartActiveSpan()
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
