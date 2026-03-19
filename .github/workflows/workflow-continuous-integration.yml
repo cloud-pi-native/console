@@ -4,6 +4,8 @@ permissions:
   contents: read
   # Needed for build job
   packages: write
+  # Needed for build-label job
+  pull-requests: write
 
 on:
   pull_request:
