@@ -4,7 +4,7 @@ permissions:
   contents: read
   # Needed for build job
   packages: write
-  # Needed for build-label job
+  # Needed for build-label and scan-vuln jobs
   pull-requests: write
 
 on:
