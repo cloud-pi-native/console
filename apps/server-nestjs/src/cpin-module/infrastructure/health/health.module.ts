@@ -36,3 +36,15 @@ import { HealthController } from './health.controller'
   controllers: [HealthController],
 })
 export class HealthModule {}
+
+@Module({
+  imports: [
+    TerminusModule,
+    ConfigurationModule,
+    InfrastructureModule,
+    DatabaseHealthService,
+    KeycloakModule,
+  ],
+  controllers: [HealthController],
+})
+export class HealthModule {}
