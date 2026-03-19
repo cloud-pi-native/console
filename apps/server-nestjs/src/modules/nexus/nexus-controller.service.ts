@@ -1,8 +1,10 @@
-import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
+import type { ProjectWithDetails } from './nexus-datastore.service'
+import { specificallyEnabled } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
+
 import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
 import { Reconcile } from '../../cpin-module/infrastructure/reconcile/reconcile.decorator'
 import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/telemetry.decorator'
@@ -12,7 +14,6 @@ import { NexusClientService } from './nexus-client.service'
 import { NexusDatastoreService } from './nexus-datastore.service'
 import { NEXUS_CONFIG_KEYS } from './nexus.constants'
 import { generateMavenGroupPrivilegeName, generateMavenGroupRepoName, generateMavenHostedPrivilegeName, generateMavenHostedRepoName, generateNpmGroupPrivilegeName, generateNpmGroupRepoName, generateNpmHostedPrivilegeName, generateNpmHostedRepoName, generateRandomPassword, getPluginConfig, getProjectVaultPath } from './nexus.utils'
-import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/telemetry.decorator'
 
 @Injectable()
 export class NexusControllerService {
@@ -28,6 +29,7 @@ export class NexusControllerService {
   }
 
   @OnEvent('project.upsert')
+  @Reconcile()
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -37,6 +39,7 @@ export class NexusControllerService {
   }
 
   @OnEvent('project.delete')
+  @Reconcile()
   @StartActiveSpan()
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
