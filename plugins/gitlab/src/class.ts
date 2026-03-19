@@ -74,7 +74,7 @@ export class GitlabApi extends PluginApi {
       let actualFile: RepositoryFileExpandedSchema | undefined
       try {
         actualFile = await this.api.RepositoryFiles.show(repoId, filePath, branch)
-      } catch (_) {}
+      } catch {}
       if (actualFile) {
         const newContentDigest = createHash('sha256').update(fileContent).digest('hex')
         if (actualFile.content_sha256 === newContentDigest) {
