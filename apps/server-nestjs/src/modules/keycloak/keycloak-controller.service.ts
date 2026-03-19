@@ -7,6 +7,7 @@ import { OnEvent } from '@nestjs/event-emitter'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
+import { Reconcile } from '../../cpin-module/infrastructure/reconcile/reconcile.decorator'
 import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/telemetry.decorator'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
@@ -24,6 +25,7 @@ export class KeycloakControllerService {
   }
 
   @OnEvent('project.upsert')
+  @Reconcile()
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -33,6 +35,7 @@ export class KeycloakControllerService {
   }
 
   @OnEvent('project.delete')
+  @Reconcile()
   @StartActiveSpan()
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
