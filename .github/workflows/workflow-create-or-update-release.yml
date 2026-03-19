@@ -3,6 +3,8 @@ name: Create/update next release
 permissions:
   contents: write
   pull-requests: write
+  # Needed for build job
+  packages: write
 
 on:
   push:
