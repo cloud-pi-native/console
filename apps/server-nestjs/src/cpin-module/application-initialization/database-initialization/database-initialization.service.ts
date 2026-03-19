@@ -1,16 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common'
-import prisma from '../../../prisma'
+import { Inject, Injectable, Logger } from '@nestjs/common'
+import { PrismaService } from '../../infrastructure/database/prisma.service'
 
 import { modelKeys } from './utils'
 
-type ExtractKeysWithFields<T> = {
-  [K in keyof T]: T[K] extends { fields: any } ? K : never;
-}[keyof T]
-
-type Models = ExtractKeysWithFields<typeof prisma>
-
-type Imports = Partial<Record<Models, object[]>> & {
-  associations: [Models, any[]]
+type ModelKey = (typeof modelKeys)[number]
+type Imports = Partial<Record<ModelKey, object[]>> & {
+  associations: [ModelKey, any[]][]
 }
 
 @Injectable()
@@ -18,6 +13,8 @@ export class DatabaseInitializationService {
   private readonly loggerService = new Logger(
     DatabaseInitializationService.name,
   )
+
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   async initDb(data: Imports) {
     const dataStringified = JSON.stringify(data)
