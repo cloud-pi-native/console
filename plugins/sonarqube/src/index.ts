@@ -8,7 +8,7 @@ function start(_options: unknown) {
   try {
     initSonar()
     getStatus()
-  } catch (_error) {}
+  } catch {}
 }
 
 export const plugin: Plugin = {

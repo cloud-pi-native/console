@@ -57,7 +57,7 @@ for (const organizationGroup of organizationGroups) {
     try {
       const renamedGroup = await api.Groups.edit(projectGroup.id, { name: newName, path: newName })
       await api.Groups.transfer(renamedGroup.id, { groupId: groupRootId })
-    } catch (_error) {
+    } catch {
       console.log(`cant transfer ${projectGroup.id}`)
     }
   }
