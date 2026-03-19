@@ -2,7 +2,7 @@ import type { TestingModule } from '@nestjs/testing'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { ConfigurationModule } from '@/cpin-module/infrastructure/configuration/configuration.module'
+import { ConfigurationModule } from '../../infrastructure/configuration/configuration.module'
 import { FastifyService } from './fastify.service'
 
 describe('fastifyService', () => {
