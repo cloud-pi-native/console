@@ -33,12 +33,10 @@ export class DatabaseInitializationService {
     })
     this.loggerService.log('Drop tables')
     for (const modelKey of modelKeys.toReversed()) {
-      // @ts-ignore
       await prisma[modelKey].deleteMany()
     }
     this.loggerService.log('Import models')
     for (const modelKey of modelKeys) {
-      // @ts-ignore
       await prisma[modelKey].createMany({ data: dataParsed[modelKey] })
     }
     this.loggerService.log('Import associations')
