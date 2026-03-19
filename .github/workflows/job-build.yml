@@ -2,6 +2,7 @@ name: Build
 
 permissions:
   contents: read
+  packages: write
 
 on:
   workflow_call:

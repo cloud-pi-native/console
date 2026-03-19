@@ -2,6 +2,8 @@ name: Continuous Integration
 
 permissions:
   contents: read
+  # Needed for build job
+  packages: write
 
 on:
   pull_request:
@@ -89,6 +91,7 @@ jobs:
     uses: ./.github/workflows/job-build.yml
     if: ${{ github.event.pull_request.number && (needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true') }}
     needs:
+      - path-filter
       - expose-vars
     with:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}

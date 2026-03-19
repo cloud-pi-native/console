@@ -2,6 +2,8 @@ name: Merge Queue
 
 permissions:
   contents: read
+  # Needed for build job
+  packages: write
 
 on:
   workflow_dispatch:
@@ -70,7 +72,7 @@ jobs:
 
   unit-tests:
     uses: ./.github/workflows/job-tests-unit.yml
-    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' }}
+    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' || needs.path-filter.outputs.e2e == 'true' }}
     needs:
       - path-filter
       - expose-vars
@@ -83,8 +85,9 @@ jobs:
 
   build:
     uses: ./.github/workflows/job-build.yml
-    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true' }}
+    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' || needs.path-filter.outputs.e2e == 'true' }}
     needs:
+      - path-filter
       - expose-vars
     with:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
