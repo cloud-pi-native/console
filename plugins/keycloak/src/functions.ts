@@ -1,11 +1,11 @@
-import type { AdminRole, Project, StepCall, UserEmail, ZoneObject, ProjectMember } from '@cpn-console/hooks'
+import type { AdminRole, Project, ProjectMember, StepCall, UserEmail, ZoneObject } from '@cpn-console/hooks'
 import type { ProjectRole } from '@cpn-console/shared'
-import { generateRandomPassword, parseError, PluginResultBuilder } from '@cpn-console/hooks'
-import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation.js'
+import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type { CustomGroup } from './group.js'
-import { consoleGroupName, deleteGroup, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateGroupByPath, getOrCreateProjectGroup } from './group.js'
+import { generateRandomPassword, parseError, PluginResultBuilder } from '@cpn-console/hooks'
 import { getkcClient } from './client.js'
+import { consoleGroupName, deleteGroup, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateGroupByPath, getOrCreateProjectGroup } from './group.js'
 
 export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: { email } }) => {
   const kcClient = await getkcClient()

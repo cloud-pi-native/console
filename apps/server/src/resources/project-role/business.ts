@@ -1,5 +1,6 @@
 import type { projectRoleContract } from '@cpn-console/shared'
 import type { Project, ProjectRole } from '@prisma/client'
+import prisma from '@/prisma.js'
 import {
   deleteRole as deleteRoleQuery,
   listMembers,
@@ -8,7 +9,6 @@ import {
 } from '@/resources/queries-index.js'
 import { BadRequest400, NotFound404 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
-import prisma from '@/prisma.js'
 
 const oidcRegexp = /^\/[^/]+/
 

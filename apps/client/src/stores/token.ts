@@ -1,8 +1,8 @@
-import { defineStore } from 'pinia'
 import type {
   PersonalAccessToken,
   personalAccessTokenContract,
 } from '@cpn-console/shared'
+import { defineStore } from 'pinia'
 import { apiClient, extractData } from '../api/xhr-client.js'
 
 export const useTokenStore = defineStore('token', () => {

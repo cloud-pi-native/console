@@ -1,12 +1,12 @@
+import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
-  ServiceChainSchema,
   ServiceChainDetailsSchema,
   ServiceChainFlowsSchema,
+  ServiceChainSchema,
 } from '../schemas/index.js'
-import { EmptySchema, ErrorSchema, baseHeaders } from './_utils.js'
-import { ContractNoBody } from '@ts-rest/core'
+import { baseHeaders, EmptySchema, ErrorSchema } from './_utils.js'
 
 export const ServiceChainParams = z.object({
   serviceChainId: ServiceChainSchema.shape.id,

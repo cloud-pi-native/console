@@ -1,5 +1,5 @@
-import axios from 'axios'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
+import axios from 'axios'
 
 const config: {
   url?: string

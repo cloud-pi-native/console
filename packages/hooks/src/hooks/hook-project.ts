@@ -1,7 +1,7 @@
 import type { PluginApi } from '../utils/utils.js'
 import type { Hook } from './hook.js'
-import { createHook } from './hook.js'
 import type { ClusterObject, ExternalRepoUrl, InternalRepoName, IsInfra, IsPrivate, UserObject } from './index.js'
+import { createHook } from './hook.js'
 
 export interface RepoCreds {
   username: string

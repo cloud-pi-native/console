@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { localeParseFloat } from '@/utils/func.js'
 import type { ProjectV2 } from '@cpn-console/shared'
+import { localeParseFloat } from '@/utils/func.js'
 
 type ProjectSettings = Pick<ProjectV2, 'limitless' | 'hprodMemory' | 'hprodCpu' | 'hprodGpu' | 'prodMemory' | 'prodCpu' | 'prodGpu'>
 const props = defineProps<{

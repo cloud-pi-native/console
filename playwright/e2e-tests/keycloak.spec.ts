@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
-import { test, expect } from '@playwright/test'
 import { faker } from '@faker-js/faker'
+import { expect, test } from '@playwright/test'
 import { loadKeycloakConfig, signInKeycloak } from '../config/keycloak'
 
 const keycloakConfig = loadKeycloakConfig()

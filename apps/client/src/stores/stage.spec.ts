@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Stage } from '@cpn-console/shared'
 import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiClient } from '../api/xhr-client.js'
 import { useStageStore } from './stage.js'
-import type { Stage } from '@cpn-console/shared'
 
 const apiClientListStages = vi.spyOn(apiClient.Stages, 'listStages')
 const apiClientGet = vi.spyOn(apiClient.Stages, 'getStageEnvironments')

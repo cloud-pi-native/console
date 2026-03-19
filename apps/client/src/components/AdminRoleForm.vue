@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { computed, onBeforeMount, ref } from 'vue'
 import type { AdminPermsKeys, LettersQuery, SharedZodError, User } from '@cpn-console/shared'
-import { ADMIN_PERMS, RoleSchema, adminPermsDetails, shallowEqual } from '@cpn-console/shared'
+import { ADMIN_PERMS, adminPermsDetails, RoleSchema, shallowEqual } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
-import SuggestionInput from './SuggestionInput.vue'
+import { computed, onBeforeMount, ref } from 'vue'
 import { useUsersStore } from '@/stores/users.js'
 import { clickInDialog, getRandomId } from '@/utils/func.js'
+import SuggestionInput from './SuggestionInput.vue'
 
 const props = withDefaults(defineProps<{
   id: string

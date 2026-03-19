@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { contractInstance } from '../api-client.js'
-import { ProjectParams, ServiceSchema, apiPrefix, permissionTarget, pluginUpdateBody } from '../index.js'
-import { ErrorSchema, baseHeaders } from './_utils.js'
+import { apiPrefix, permissionTarget, pluginUpdateBody, ProjectParams, ServiceSchema } from '../index.js'
+import { baseHeaders, ErrorSchema } from './_utils.js'
 
 export const projectServiceContract = contractInstance.router({
   getServices: {

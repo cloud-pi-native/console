@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { computed, onBeforeMount, ref } from 'vue'
 import type { Cluster, CreateStageBody, SharedZodError, Stage, StageAssociatedEnvironments } from '@cpn-console/shared'
-import { deleteValidationInput, StageSchema } from '@cpn-console/shared'
-import { toCodeComponent } from '@/utils/func.js'
 import type { UpdateStageType } from '@/views/admin/ListStages.vue'
+import { deleteValidationInput, StageSchema } from '@cpn-console/shared'
+import { computed, onBeforeMount, ref } from 'vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { toCodeComponent } from '@/utils/func.js'
 
 const props = withDefaults(defineProps<{
   isNewStage: boolean

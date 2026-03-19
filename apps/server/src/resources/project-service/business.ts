@@ -1,11 +1,11 @@
-import type { Project, ProjectPlugin } from '@prisma/client'
+import type { ZoneObject } from '@cpn-console/hooks'
 import type {
   PermissionTarget,
   PluginsUpdateBody,
   ServiceUrl,
 } from '@cpn-console/shared'
+import type { Project, ProjectPlugin } from '@prisma/client'
 import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
-import type { ZoneObject } from '@cpn-console/hooks'
 import {
   getAdminPlugin,
   getProjectInfosByIdOrThrow,

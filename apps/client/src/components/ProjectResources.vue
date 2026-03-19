@@ -1,15 +1,15 @@
 <script setup lang="ts">
+import type { CleanedCluster, Cluster, CreateEnvironmentBody, Environment, Repo, UpdateEnvironmentBody, Zone } from '@cpn-console/shared'
+import type { Project } from '@/utils/project-utils.js'
+import { AdminAuthorized, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
+import TimeAgo from 'javascript-time-ago'
+import fr from 'javascript-time-ago/locale/fr'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useUserStore } from '@/stores/user.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { clickInDialog, getRandomId } from '@/utils/func.js'
-import type { Project } from '@/utils/project-utils.js'
-import type { UpdateEnvironmentBody, Environment, Repo, CreateEnvironmentBody, CleanedCluster, Zone, Cluster } from '@cpn-console/shared'
-import { AdminAuthorized, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
-import TimeAgo from 'javascript-time-ago'
-import fr from 'javascript-time-ago/locale/fr'
 
 type Source = 'Privée extérieure' | 'Publique extérieure' | 'Interne'
 

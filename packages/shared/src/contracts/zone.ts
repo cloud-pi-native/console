@@ -4,7 +4,7 @@ import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   ZoneSchema,
 } from '../schemas/index.js'
-import { ErrorSchema, baseHeaders } from './_utils.js'
+import { baseHeaders, ErrorSchema } from './_utils.js'
 
 export const zoneContract = contractInstance.router({
   listZones: {

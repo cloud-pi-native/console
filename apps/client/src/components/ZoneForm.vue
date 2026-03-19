@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { computed, onBeforeMount, ref } from 'vue'
 import type { Cluster, CreateZoneBody, SharedZodError, UpdateZoneBody, Zone } from '@cpn-console/shared'
 import { deleteValidationInput, ZoneSchema } from '@cpn-console/shared'
+import { computed, onBeforeMount, ref } from 'vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{

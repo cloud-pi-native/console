@@ -1,11 +1,11 @@
-import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
-import { loggerConfiguration } from '@/cpin-module/infrastructure/logger/logger.module'
-import { swaggerUiPath } from '@cpn-console/shared'
 import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui'
-import { Inject, Injectable } from '@nestjs/common'
 import type { generateOpenApi } from '@ts-rest/open-api'
 import type { FastifyServerOptions } from 'fastify'
 import { randomUUID } from 'node:crypto'
+import { swaggerUiPath } from '@cpn-console/shared'
+import { Inject, Injectable } from '@nestjs/common'
+import { ConfigurationService } from '../../infrastructure/configuration/configuration.service'
+import { loggerConfiguration } from '../../infrastructure/logger/logger.module'
 
 @Injectable()
 export class FastifyService {

@@ -1,13 +1,18 @@
-// @ts-ignore pas de typage disponible pour le paquet bytes
-import bytes from 'bytes'
+import type { PluginResult, Project, ProjectLite, StepCall } from '@cpn-console/hooks'
+import type { VaultRobotSecret } from './robot.js'
 import {
 
   parseError,
   specificallyDisabled,
   specificallyEnabled,
 } from '@cpn-console/hooks'
-import type { PluginResult, Project, ProjectLite, StepCall } from '@cpn-console/hooks'
 import { DEFAULT, ENABLED } from '@cpn-console/shared'
+// @ts-ignore pas de typage disponible pour le paquet bytes
+import bytes from 'bytes'
+import { addProjectGroupMember } from './permission.js'
+import { addRetentionPolicy } from './policy.js'
+import { createProject, deleteProject } from './project.js'
+import { deleteRobot, ensureRobot, roAccess, rwAccess } from './robot.js'
 import {
   getApi,
   getConfig,
@@ -15,11 +20,6 @@ import {
   roRobotName,
   rwRobotName,
 } from './utils.js'
-import { createProject, deleteProject } from './project.js'
-import { addProjectGroupMember } from './permission.js'
-import { addRetentionPolicy } from './policy.js'
-import type { VaultRobotSecret } from './robot.js'
-import { deleteRobot, ensureRobot, roAccess, rwAccess } from './robot.js'
 
 export const createDsoProject: StepCall<Project> = async (payload) => {
   const returnResult: PluginResult = {

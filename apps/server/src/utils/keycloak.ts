@@ -1,5 +1,5 @@
-import { serviceContract, swaggerUiPath, systemContract } from '@cpn-console/shared'
 import type { KeycloakOptions } from 'fastify-keycloak-adapter'
+import { serviceContract, swaggerUiPath, systemContract } from '@cpn-console/shared'
 import {
   keycloakClientId,
   keycloakClientSecret,

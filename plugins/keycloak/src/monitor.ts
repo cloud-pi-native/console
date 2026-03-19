@@ -1,5 +1,5 @@
-import { Monitor, MonitorStatus, requiredEnv } from '@cpn-console/shared'
 import type { MonitorInfos } from '@cpn-console/shared'
+import { Monitor, MonitorStatus, requiredEnv } from '@cpn-console/shared'
 import axios from 'axios'
 
 async function monitor(instance: Monitor): Promise<MonitorInfos> {

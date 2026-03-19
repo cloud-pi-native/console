@@ -1,11 +1,11 @@
 <script  lang="ts" setup>
-import { onBeforeMount, ref } from 'vue'
 import type { Ref } from 'vue'
-import { alertTypeMapper, useServiceStore } from '@/stores/services-monitor.js'
 import { AdminAuthorized } from '@cpn-console/shared'
-import { useUserStore } from '@/stores/user.js'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
+import { onBeforeMount, ref } from 'vue'
+import { alertTypeMapper, useServiceStore } from '@/stores/services-monitor.js'
+import { useUserStore } from '@/stores/user.js'
 
 const serviceStore = useServiceStore()
 const userStore = useUserStore()

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import router from '@/router/index.js'
-import { useServiceChainStore } from '@/stores/service-chain.js'
 import type {
   ServiceChain,
   ServiceChainDetails,
   ServiceChainFlows,
 } from '@cpn-console/shared'
+import router from '@/router/index.js'
+import { useServiceChainStore } from '@/stores/service-chain.js'
 
 const props = defineProps<{
   id: ServiceChain['id']

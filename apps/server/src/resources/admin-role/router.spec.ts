@@ -1,6 +1,6 @@
+import { ADMIN_PERMS, adminRoleContract } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { adminRoleContract, ADMIN_PERMS } from '@cpn-console/shared'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
 import { BadRequest400 } from '../../utils/errors.js'

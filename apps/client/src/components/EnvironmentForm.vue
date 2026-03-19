@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { computed, onBeforeMount, ref } from 'vue'
 import type {
   CleanedCluster,
   CreateEnvironmentBody,
@@ -13,6 +12,7 @@ import {
   parseZodError,
   projectIsLockedInfo,
 } from '@cpn-console/shared'
+import { computed, onBeforeMount, ref } from 'vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useZoneStore } from '@/stores/zone.js'

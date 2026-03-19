@@ -1,6 +1,6 @@
 import type { AxiosInstance } from 'axios'
-import axios from 'axios'
 import { PluginApi } from '@cpn-console/hooks'
+import axios from 'axios'
 import getConfig from './config.js'
 import {
   generateKVConfigUpdate,

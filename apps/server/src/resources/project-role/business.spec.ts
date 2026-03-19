@@ -1,9 +1,9 @@
+import type { Project, ProjectMembers, ProjectRole } from '@prisma/client'
 import { faker } from '@faker-js/faker'
 import { describe, expect, it, vi } from 'vitest'
-import type { Project, ProjectMembers, ProjectRole } from '@prisma/client'
+import { BadRequest400 } from '@/utils/errors.js'
 import prisma from '../../__mocks__/prisma.js'
 import { countRolesMembers, createRole, deleteRole, listRoles, patchRoles } from './business.ts'
-import { BadRequest400 } from '@/utils/errors.js'
 
 vi.mock('../../utils/hook-wrapper.ts', () => ({
   hook: {

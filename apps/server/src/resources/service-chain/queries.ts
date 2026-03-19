@@ -1,12 +1,12 @@
+import type { ServiceChain } from '@cpn-console/shared'
+import https from 'node:https'
 import {
 
   ServiceChainDetailsSchema,
   ServiceChainFlowsSchema,
   ServiceChainListSchema,
 } from '@cpn-console/shared'
-import type { ServiceChain } from '@cpn-console/shared'
 import axios from 'axios'
-import https from 'node:https'
 
 const openCDSEnvVar = 'OPENCDS_URL'
 const openCDSTargetURL = process.env[openCDSEnvVar]

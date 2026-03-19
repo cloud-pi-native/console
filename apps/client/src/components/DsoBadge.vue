@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { computed } from 'vue'
 import type { ProjectV2 } from '@cpn-console/shared'
 import { statusDict } from '@cpn-console/shared'
+import { computed } from 'vue'
 
 interface ResourceBase {
   id: ProjectV2['id']

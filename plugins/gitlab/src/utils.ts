@@ -1,6 +1,6 @@
-import { Gitlab } from '@gitbeaker/rest'
-import type { Gitlab as IGitlab, BaseRequestOptions, PaginationRequestOptions, OffsetPagination } from '@gitbeaker/core'
+import type { BaseRequestOptions, Gitlab as IGitlab, OffsetPagination, PaginationRequestOptions } from '@gitbeaker/core'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
+import { Gitlab } from '@gitbeaker/rest'
 import config from './config.js'
 
 let api: IGitlab | undefined

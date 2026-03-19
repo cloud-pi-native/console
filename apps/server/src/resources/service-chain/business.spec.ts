@@ -3,6 +3,7 @@ import type {
   ServiceChainDetails,
   ServiceChainFlows,
 } from '@cpn-console/shared'
+import type { Mock } from 'vitest'
 import {
   serviceChainEnvironmentEnum,
   serviceChainFlowStateEnum,
@@ -12,7 +13,6 @@ import {
 } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import axios from 'axios'
-import type { Mock } from 'vitest'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {

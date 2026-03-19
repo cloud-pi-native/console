@@ -1,6 +1,6 @@
+import type { ClusterObject, HookPayloadApis, ZoneObject } from '@cpn-console/hooks'
 import { createHmac } from 'node:crypto'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
-import type { ClusterObject, HookPayloadApis, ZoneObject } from '@cpn-console/hooks'
 import { dump } from 'js-yaml'
 
 export function generateAppProjectName(projectSlug: string, env: string) {

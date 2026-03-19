@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import { onBeforeMount, ref } from 'vue'
-import type { ArrayElement, ProjectV2, projectContract } from '@cpn-console/shared'
+import type { ArrayElement, projectContract, ProjectV2 } from '@cpn-console/shared'
 import { bts, statusDict } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useProjectStore } from '@/stores/project.js'
-import router from '@/router/index.js'
+import { onBeforeMount, ref } from 'vue'
 import { apiClient, extractData } from '@/api/xhr-client.js'
+import router from '@/router/index.js'
+import { useProjectStore } from '@/stores/project.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import { getRandomId } from '@/utils/func.js'
 
 const projectStore = useProjectStore()

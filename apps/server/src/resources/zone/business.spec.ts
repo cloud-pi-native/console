@@ -1,9 +1,9 @@
+import type { Cluster, Zone } from '@prisma/client'
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Cluster, Zone } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
-import { BadRequest400 } from '../../utils/errors.ts'
 import { hook } from '../../__mocks__/utils/hook-wrapper.ts'
+import { BadRequest400 } from '../../utils/errors.ts'
 import { createZone, deleteZone, listZones, updateZone } from './business.ts'
 import * as queries from './queries.js'
 

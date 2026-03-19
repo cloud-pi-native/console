@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
 import type { Repo, SharedZodError } from '@cpn-console/shared'
-import { CreateRepoFormSchema, RepoFormSchema, UpdateRepoFormSchema, deleteValidationInput, fakeToken, instanciateSchema } from '@cpn-console/shared'
+import { CreateRepoFormSchema, deleteValidationInput, fakeToken, instanciateSchema, RepoFormSchema, UpdateRepoFormSchema } from '@cpn-console/shared'
+import { computed, ref } from 'vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 type RepoForm = Partial<Repo> & { isStandalone?: boolean }

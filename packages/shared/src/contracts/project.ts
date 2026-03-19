@@ -2,10 +2,10 @@ import type { ClientInferRequest } from '@ts-rest/core'
 import { z } from 'zod'
 import { contractInstance } from '../api-client.js'
 import {
-  ProjectSchemaV2,
   apiPrefix,
+  ProjectSchemaV2,
 } from '../index.js'
-import { ErrorSchema, baseHeaders } from './_utils.js'
+import { baseHeaders, ErrorSchema } from './_utils.js'
 
 export const ProjectParams = z.object({
   projectId: z.string().regex(/[a-z0-9-]*/), // uuid or slug like

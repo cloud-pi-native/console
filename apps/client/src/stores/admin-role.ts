@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
 import type { AdminRole, adminRoleContract } from '@cpn-console/shared'
 import { AdminAuthorized } from '@cpn-console/shared'
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
 import { apiClient, extractData } from '../api/xhr-client.js'
 import { useUserStore } from './user.js'
 
