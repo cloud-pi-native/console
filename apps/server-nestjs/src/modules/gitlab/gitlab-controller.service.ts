@@ -17,9 +17,6 @@ import { INFRA_APPS_REPO_NAME, TOPIC_PLUGIN_MANAGED } from './gitlab.constants'
 import { DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX } from './gitlab.constants.js'
 import { GitlabService } from './gitlab.service'
 
-import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
-import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/telemetry.decorator'
-import { getAll } from '../../utils/iterable'
 const ownedUserRegex = /group_\d+_bot/u
 
 @Injectable()
@@ -36,6 +33,7 @@ export class GitlabControllerService {
   }
 
   @OnEvent('project.upsert')
+  @Reconcile()
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -45,6 +43,7 @@ export class GitlabControllerService {
   }
 
   @OnEvent('project.delete')
+  @Reconcile()
   @StartActiveSpan()
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
