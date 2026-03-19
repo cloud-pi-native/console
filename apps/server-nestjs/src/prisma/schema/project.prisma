@@ -5,6 +5,7 @@ model Environment {
   memory    Float    @db.Real
   cpu       Float    @db.Real
   gpu       Float    @db.Real
+  autosync  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   clusterId String   @db.Uuid
@@ -65,6 +66,8 @@ model ProjectRole {
   permissions BigInt
   projectId   String  @db.Uuid
   position    Int     @db.SmallInt
+  oidcGroup   String  @default("")
+  type        String  @default("managed")
   project     Project @relation(fields: [projectId], references: [id])
 }
 
