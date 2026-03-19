@@ -37,6 +37,8 @@ export class HealthModule {}
     KeycloakModule,
     GitlabModule,
     VaultModule,
+    NexusModule,
+    RegistryModule,
     ArgoCDModule,
   ],
   controllers: [HealthController],
