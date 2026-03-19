@@ -446,7 +446,7 @@ Cypress.Commands.add('goToAdminListUsers', () => {
   try {
     cy.getByDataTestid('menuAdministrationUsers', 100).click()
     cy.url().should('contain', '/admin/users')
-  } catch (_) {
+  } catch {
     cy.getByDataTestid('menuAdministrationBtn').click()
       .getByDataTestid('menuAdministrationUsers').click()
     cy.url().should('contain', '/admin/users')

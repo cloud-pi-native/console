@@ -21,8 +21,6 @@ export default antfu(
         'style/brace-style': ['error', '1tbs', { allowSingleLine: true }],
         'style/max-statements-per-line': ['error', { max: 2 }],
         'ts/ban-ts-comment': 'off',
-        'unused-imports/no-unused-imports': 'error',
-        'unused-imports/no-unused-vars': ['error', { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_', caughtErrors: 'all', caughtErrorsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' }],
         'vue/no-v-html': 'off',
         'vue/no-irregular-whitespace': 'off',
         'vue/script-indent': 'off',

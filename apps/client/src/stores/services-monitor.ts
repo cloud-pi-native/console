@@ -89,7 +89,7 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
         : apiClient.Services.getServiceHealth())
         .then((res: any) => extractData(res, 200))
       callStastus.value = 'ok'
-    } catch (_error) {
+    } catch {
       callStastus.value = 'error'
     }
   }

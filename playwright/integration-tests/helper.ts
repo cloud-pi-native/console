@@ -15,7 +15,7 @@ export async function waitForAndClick({
         await locator.click()
         return
       }
-    } catch (_) {
+    } catch {
       // Element not in DOM yet, ignore
     }
     await page.waitForTimeout(refreshInterval)

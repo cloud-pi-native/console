@@ -22,6 +22,6 @@ export function userPayloadMapper(userPayload: KeycloakPayload) {
 export function bypassFn(request: FastifyRequest) {
   try {
     return !!request.headers[tokenHeaderName]
-  } catch (_e) {}
+  } catch {}
   return false
 }
