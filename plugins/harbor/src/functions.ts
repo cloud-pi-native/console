@@ -22,6 +22,7 @@ import {
 } from './utils.js'
 
 export const createDsoProject: StepCall<Project> = async (payload) => {
+  console.log(`[HARBOR] createDsoProject`)
   const returnResult: PluginResult = {
     status: {
       result: 'OK',
@@ -78,6 +79,7 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
     }
     return returnResult
   } catch (error) {
+    console.log(`[HARBOR] Error while creating DSO project`)
     return {
       error: parseError(error),
       status: {
@@ -89,6 +91,7 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
 }
 
 export const deleteDsoProject: StepCall<Project> = async (payload) => {
+  console.log(`[HARBOR] deleteDsoProject`)
   try {
     const project = payload.args
     const projectName = project.slug
@@ -102,6 +105,7 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
       },
     }
   } catch (error) {
+    console.log(`[HARBOR] Error while deleting DSO project`)
     return {
       error: parseError(error),
       status: {
@@ -117,6 +121,7 @@ export const getProjectSecrets: StepCall<ProjectLite> = async ({
   apis: { vault: vaultApi },
   config,
 }) => {
+  console.log(`[HARBOR] getProjectSecrets`)
   const publishRoRobotProject = project.store.registry?.publishProjectRobot
   const publishRoRobotConfig = config.registry?.publishProjectRobot
   const projectRobotEnabled

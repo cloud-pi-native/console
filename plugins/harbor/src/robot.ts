@@ -16,6 +16,7 @@ export interface VaultRobotSecret {
 export const getRobot = async (projectName: string, robotName: string, api: HarborApi) => getRobotByName(projectName, `robot$${projectName}+${robotName}`, api)
 
 export async function ensureRobot(projectName: string, robotName: string, vaultApi: VaultProjectApi, access: Access[], api: HarborApi): Promise<VaultRobotSecret> {
+  console.log(`[HARBOR] ensureRobot ${projectName} ${robotName}`)
   const vaultPath = `REGISTRY/${robotName}`
   const robot = await getRobot(projectName, robotName, api)
   const vaultRobotSecret = await vaultApi.read(vaultPath, { throwIfNoEntry: false }) as { data: VaultRobotSecret } | undefined
@@ -35,6 +36,7 @@ export async function ensureRobot(projectName: string, robotName: string, vaultA
 }
 
 export async function deleteRobot(projectName: string, robotName: string, vaultApi: VaultProjectApi, api: HarborApi) {
+  console.log(`[HARBOR] deleteRobot ${projectName} ${robotName}`)
   const vaultPath = `REGISTRY/${robotName}`
   const robot = await getRobot(projectName, robotName, api)
   if (robot?.id) {
@@ -48,10 +50,12 @@ export async function deleteRobot(projectName: string, robotName: string, vaultA
 }
 
 export async function createRobot(projectName: string, robotName: string, access: Access[], api: HarborApi) {
+  console.log(`[HARBOR] createRobot ${projectName} ${robotName}`)
   return (await api.robots.createRobot(getRobotPermissions(projectName, robotName, access))).data
 }
 
 export async function regenerateRobot(projectName: string, robotName: string, access: Access[], api: HarborApi) {
+  console.log(`[HARBOR] regenerateRobot ${projectName} ${robotName}`)
   const robot = await getRobot(projectName, robotName, api)
   if (robot?.id)
     await api.projects.deleteRobotV1(projectName, robot.id)
@@ -59,11 +63,13 @@ export async function regenerateRobot(projectName: string, robotName: string, ac
 }
 
 export async function getRobotByName(project: string | number, robotName: string, api: HarborApi): Promise<Robot | undefined> {
+  console.log(`[HARBOR] getRobotByName ${project} ${robotName}`)
   const listRobots = await api.projects.listRobotV1(String(project))
   return listRobots.data.find(({ name }) => name === robotName)
 }
 
 function getRobotPermissions(projectName: string, robotName: string, access: Access[]) {
+  console.log(`[HARBOR] getRobotPermissions ${projectName} ${robotName}`)
   return {
     name: robotName,
     duration: -1,
