@@ -6,7 +6,6 @@ import { HttpClientService } from './http-client/http-client.service'
 import { LoggerModule } from './logger/logger.module'
 import { ServerService } from './server/server.service'
 import { TelemetryModule } from './telemetry/telemetry.module'
-import { HealthModule } from './health/health.module'
 
 @Module({
   providers: [DatabaseService, HttpClientService, ServerService],
