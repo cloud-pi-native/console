@@ -2,12 +2,16 @@ import { setTimeout } from 'node:timers/promises'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import prisma from '../../../prisma'
 import { ConfigurationService } from '../configuration/configuration.service'
+import { PrismaService } from './prisma.service'
 
 @Injectable()
 export class DatabaseService {
   private readonly loggerService = new Logger(DatabaseService.name)
 
-  constructor(@Inject(ConfigurationService) private readonly configurationService: ConfigurationService) {
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(ConfigurationService) private readonly configurationService: ConfigurationService,
+  ) {
     this.DELAY_BEFORE_RETRY
       = this.configurationService.isTest || this.configurationService.isCI
         ? 1000
@@ -33,7 +37,7 @@ export class DatabaseService {
           `Trying to connect to Postgres with: ${this.configurationService.dbUrl}`,
         )
       }
-      await prisma.$connect()
+      await this.prisma.$connect()
 
       this.loggerService.log('Connected to Postgres!')
     } catch (error) {
@@ -59,7 +63,7 @@ export class DatabaseService {
   async closeConnections() {
     this.closingConnections = true
     try {
-      await prisma.$disconnect()
+      await this.prisma.$disconnect()
     } catch (error) {
       this.loggerService.error(error)
     } finally {
