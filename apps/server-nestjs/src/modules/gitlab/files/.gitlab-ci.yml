@@ -1,0 +1,22 @@
+variables:
+  PROJECT_NAME:
+    description: Nom du dépôt (dans ce Gitlab) à synchroniser.
+  GIT_BRANCH_DEPLOY:
+    description: Nom de la branche à synchroniser.
+    value: main
+  SYNC_ALL:
+    description: Synchroniser toutes les branches.
+    value: "false"
+
+include:
+  - project: $CATALOG_PATH
+    file: mirror.yml
+    ref: main
+
+repo_pull_sync:
+  extends: .repo_pull_sync
+  only:
+    - api
+    - triggers
+    - web
+    - schedules
