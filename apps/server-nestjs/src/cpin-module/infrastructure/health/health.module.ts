@@ -35,6 +35,9 @@ export class HealthModule {}
     InfrastructureModule,
     DatabaseHealthService,
     KeycloakModule,
+    GitlabModule,
+    VaultModule,
+    ArgoCDModule,
   ],
   controllers: [HealthController],
 })
