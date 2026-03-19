@@ -44,6 +44,7 @@
     "@fastify/swagger": "^8.15.0",
     "@fastify/swagger-ui": "^4.2.0",
     "@gitbeaker/core": "^40.6.0",
+    "@gitbeaker/requester-utils": "^40.6.0",
     "@gitbeaker/rest": "^40.6.0",
     "@keycloak/keycloak-admin-client": "^24.0.0",
     "@kubernetes-models/argo-cd": "^2.7.2",
