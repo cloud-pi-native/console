@@ -9,7 +9,11 @@ import { trace } from '@opentelemetry/api'
 import { stringify } from 'yaml'
 
 import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
+import { Reconcile } from '../../cpin-module/infrastructure/reconcile/reconcile.decorator'
 import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/telemetry.decorator'
+import { GitlabService } from '../gitlab/gitlab.service'
+import { VaultService } from '../vault/vault.service'
+import { ArgoCDDatastoreService } from './argocd-datastore.service'
 
 @Injectable()
 export class ArgoCDControllerService {
@@ -25,6 +29,7 @@ export class ArgoCDControllerService {
   }
 
   @OnEvent('project.upsert')
+  @Reconcile()
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -34,6 +39,7 @@ export class ArgoCDControllerService {
   }
 
   @OnEvent('project.delete')
+  @Reconcile()
   @StartActiveSpan()
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
