@@ -1,7 +1,7 @@
 import type { AxiosInstance } from 'axios'
 import type { WritePolicy } from './utils.js'
-import { deleteIfExists } from './utils.js'
 import getConfig from './config.js'
+import { deleteIfExists } from './utils.js'
 
 // Retro-compatibilty, maven is a special case with bad name formats
 function getRepoNames(projectName: string) { // Unique function per language cause names are unique per repo

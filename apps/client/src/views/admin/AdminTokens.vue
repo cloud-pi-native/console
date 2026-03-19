@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { onMounted } from 'vue'
 import type { AdminToken } from '@cpn-console/shared'
-import { getAdminPermLabelsByValue } from '@cpn-console/shared'
-import { useAdminTokenStore } from '@/stores/admin-token.js'
 import type { SimpleToken } from '@/components/TokenForm.vue'
+import { getAdminPermLabelsByValue } from '@cpn-console/shared'
+import { onMounted } from 'vue'
+import { useAdminTokenStore } from '@/stores/admin-token.js'
 import { clickInDialog } from '@/utils/func.js'
 
 const statusWording: Record<AdminToken['status'], string> = {

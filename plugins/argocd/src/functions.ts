@@ -1,3 +1,4 @@
+import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
 import type {
   ClusterObject,
   Config,
@@ -6,11 +7,10 @@ import type {
   Repository,
   StepCall,
 } from '@cpn-console/hooks'
-import { parseError } from '@cpn-console/hooks'
-import { dump } from 'js-yaml'
-import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
+import { parseError } from '@cpn-console/hooks'
 import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
+import { dump } from 'js-yaml'
 import {
   DEFAULT_PLATFORM_ADMIN_GROUP_PATH,
   DEFAULT_PLATFORM_READONLY_GROUP_PATH,

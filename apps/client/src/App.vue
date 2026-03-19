@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useServiceStore } from '@/stores/services-monitor.js'
 import { swaggerUiPath } from '@cpn-console/shared'
+import { useServiceStore } from '@/stores/services-monitor.js'
 import ReloadPrompt from './components/ReloadPrompt.vue'
 import { useAdminRoleStore } from './stores/admin-role.js'
 

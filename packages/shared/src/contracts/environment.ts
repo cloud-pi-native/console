@@ -4,7 +4,7 @@ import { apiPrefix, contractInstance } from '../api-client.js'
 import {
   EnvironmentSchema,
 } from '../schemas/index.js'
-import { ErrorSchema, baseHeaders } from './_utils.js'
+import { baseHeaders, ErrorSchema } from './_utils.js'
 
 export const environmentContract = contractInstance.router({
   createEnvironment: {

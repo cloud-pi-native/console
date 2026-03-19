@@ -1,9 +1,10 @@
-import { z } from 'zod'
-import type Zod from 'zod'
 import type { ClientInferRequest } from '@ts-rest/core'
-import { CleanLogSchema, LogSchema, apiPrefix, contractInstance } from '../index.js'
+import type Zod from 'zod'
+import { z } from 'zod'
+import { apiPrefix, contractInstance } from '../api-client.js'
 import { CoerceBooleanSchema } from '../schemas/_utils.js'
-import { ErrorSchema, baseHeaders } from './_utils.js'
+import { CleanLogSchema, LogSchema } from '../schemas/log.js'
+import { baseHeaders, ErrorSchema } from './_utils.js'
 
 export const adminLogsQuery = z.object({
   offset: z.coerce.number(),

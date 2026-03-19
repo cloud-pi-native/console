@@ -1,5 +1,5 @@
-import prisma from '@/prisma'
 import { Injectable, Logger } from '@nestjs/common'
+import prisma from '../../../prisma'
 
 import { modelKeys } from './utils'
 

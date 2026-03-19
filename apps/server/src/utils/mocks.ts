@@ -1,11 +1,11 @@
-import fp from 'fastify-plugin'
-import type { Repository } from '@prisma/client'
 import type { PluginsManifests, RepoCreds, ServiceInfos } from '@cpn-console/hooks'
+import type { Repository } from '@prisma/client'
+import type { UserDetails } from '../types/index.js'
+import type * as utilsController from '../utils/controller.js'
 import { editStrippers, populatePluginManifests } from '@cpn-console/hooks'
 import { DEFAULT, DISABLED, PROJECT_PERMS } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
-import type { UserDetails } from '../types/index.js'
-import type * as utilsController from '../utils/controller.js'
+import fp from 'fastify-plugin'
 
 let requestor: Requestor
 

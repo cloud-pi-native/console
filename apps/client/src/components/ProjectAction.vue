@@ -1,7 +1,7 @@
 <script lang="ts" setup>
+import type { Project } from '@/utils/project-utils.js'
 import { ProjectAuthorized } from '@cpn-console/shared'
 import { useUserStore } from '@/stores/user.js'
-import type { Project } from '@/utils/project-utils.js'
 
 withDefaults(defineProps<{
   project: Project

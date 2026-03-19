@@ -1,10 +1,10 @@
+import type { Cluster, Environment, Project, ProjectMembers, ProjectRole, Stage, User } from '@prisma/client'
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Cluster, Environment, Project, ProjectMembers, ProjectRole, Stage, User } from '@prisma/client'
 import prisma from '../../__mocks__/prisma.js'
 import { hook } from '../../__mocks__/utils/hook-wrapper.ts'
-import { checkClusterResources, checkProjectResources, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.ts'
 import { Result } from '../../utils/business.js'
+import { checkClusterResources, checkProjectResources, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.ts'
 
 vi.mock('../../utils/hook-wrapper.ts', async () => ({
   hook,

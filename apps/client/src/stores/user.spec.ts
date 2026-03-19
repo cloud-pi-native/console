@@ -1,6 +1,6 @@
 import Keycloak from 'keycloak-js'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiClient } from '../api/xhr-client.js'
 import { useUserStore } from './user.js'
 

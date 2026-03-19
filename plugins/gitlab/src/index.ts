@@ -1,4 +1,5 @@
 import type { DeclareModuleGenerator, DefaultArgs, Plugin, Project, ProjectMember, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
+import { GitlabProjectApi, GitlabZoneApi } from './class.js'
 import {
   checkApi,
   commitFiles,
@@ -12,10 +13,9 @@ import {
   upsertProjectMember,
   upsertZone,
 } from './functions.js'
-import { getOrCreateGroupRoot } from './utils.js'
 import infos from './infos.js'
 import monitor from './monitor.js'
-import { GitlabProjectApi, GitlabZoneApi } from './class.js'
+import { getOrCreateGroupRoot } from './utils.js'
 
 const onlyApi = { api: (project: Project | UniqueRepo) => new GitlabProjectApi(project) }
 

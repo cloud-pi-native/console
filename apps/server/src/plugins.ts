@@ -1,15 +1,15 @@
-import { readdirSync, statSync } from 'node:fs'
-import { pluginManager } from '@cpn-console/hooks'
 import type { Plugin } from '@cpn-console/hooks'
+import { readdirSync, statSync } from 'node:fs'
 import { plugin as argo } from '@cpn-console/argocd-plugin'
 import { plugin as gitlab } from '@cpn-console/gitlab-plugin'
 import { plugin as harbor } from '@cpn-console/harbor-plugin'
+import { pluginManager } from '@cpn-console/hooks'
 import { plugin as keycloak } from '@cpn-console/keycloak-plugin'
 import { plugin as nexus } from '@cpn-console/nexus-plugin'
 import { plugin as sonarqube } from '@cpn-console/sonarqube-plugin'
 import { plugin as vault } from '@cpn-console/vault-plugin'
-import { pluginManagerOptions } from './utils/plugins.js'
 import { pluginsDir } from './utils/env.js'
+import { pluginManagerOptions } from './utils/plugins.js'
 
 export async function initPm() {
   const pm = pluginManager(pluginManagerOptions)

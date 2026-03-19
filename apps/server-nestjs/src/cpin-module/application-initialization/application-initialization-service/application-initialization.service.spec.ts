@@ -1,12 +1,12 @@
 import type { TestingModule } from '@nestjs/testing'
 import { Test } from '@nestjs/testing'
-import { describe, beforeEach, it, expect } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
-import { ApplicationInitializationService } from './application-initialization.service'
 import { ConfigurationModule } from '@/cpin-module/infrastructure/configuration/configuration.module'
-import { PluginManagementService } from '../plugin-management/plugin-management.service'
-import { DatabaseInitializationService } from '../database-initialization/database-initialization.service'
 import { DatabaseService } from '@/cpin-module/infrastructure/database/database.service'
+import { DatabaseInitializationService } from '../database-initialization/database-initialization.service'
+import { PluginManagementService } from '../plugin-management/plugin-management.service'
+import { ApplicationInitializationService } from './application-initialization.service'
 
 describe('applicationInitializationServiceService', () => {
   let service: ApplicationInitializationService

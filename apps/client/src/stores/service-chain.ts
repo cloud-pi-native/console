@@ -1,12 +1,12 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import type { ServiceChain, ServiceChainList } from '@cpn-console/shared'
 import {
+  resourceListToDict,
   ServiceChainDetailsSchema,
   ServiceChainFlowsSchema,
-  resourceListToDict,
 
 } from '@cpn-console/shared'
-import type { ServiceChain, ServiceChainList } from '@cpn-console/shared'
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
 import { apiClient, extractData } from '@/api/xhr-client.js'
 
 export const useServiceChainStore = defineStore('serviceChain', () => {

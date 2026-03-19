@@ -1,18 +1,18 @@
-import { faker } from '@faker-js/faker'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ServiceChain, ServiceChainDetails, ServiceChainFlows } from '@cpn-console/shared'
 import {
   ADMIN_PERMS,
-  ServiceChainDetailsSchema,
-  ServiceChainFlowsSchema,
-  ServiceChainListSchema,
   serviceChainContract,
+  ServiceChainDetailsSchema,
   serviceChainEnvironmentEnum,
+  ServiceChainFlowsSchema,
   serviceChainFlowStateEnum,
+  ServiceChainListSchema,
   serviceChainLocationEnum,
   serviceChainNetworkEnum,
   serviceChainStateEnum,
 } from '@cpn-console/shared'
+import { faker } from '@faker-js/faker'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import app from '../../app.js'
 import * as utilsController from '../../utils/controller.js'
 import { getUserMockInfos } from '../../utils/mocks.js'

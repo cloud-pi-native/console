@@ -1,8 +1,11 @@
-import { json2csv } from 'json-2-csv'
-import { servicesInfos } from '@cpn-console/hooks'
-import type { Project, User } from '@prisma/client'
 import type { projectContract } from '@cpn-console/shared'
+import type { Project, User } from '@prisma/client'
+import type { UserDetails } from '@/types/index.js'
+import type { ErrorResType } from '@/utils/errors.js'
+import { servicesInfos } from '@cpn-console/hooks'
 import { ProjectStatusSchema } from '@cpn-console/shared'
+import { json2csv } from 'json-2-csv'
+import prisma from '@/prisma.js'
 import {
   addLogs,
   deleteAllEnvironmentForProject,
@@ -15,13 +18,10 @@ import {
   lockProject,
   updateProject as updateProjectQuery,
 } from '@/resources/queries-index.js'
-import type { ErrorResType } from '@/utils/errors.js'
-import { BadRequest400, Forbidden403, Unprocessable422 } from '@/utils/errors.js'
 import { whereBuilder } from '@/utils/controller.js'
-import { hook } from '@/utils/hook-wrapper.js'
-import type { UserDetails } from '@/types/index.js'
-import prisma from '@/prisma.js'
 import { parallelBulkLimit } from '@/utils/env.js'
+import { BadRequest400, Forbidden403, Unprocessable422 } from '@/utils/errors.js'
+import { hook } from '@/utils/hook-wrapper.js'
 
 export function generateSlug(prefix: string, existingSlugs?: string[]) {
   if (!existingSlugs?.includes(prefix)) {

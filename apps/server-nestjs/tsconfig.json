@@ -7,9 +7,6 @@
     "baseUrl": "./",
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "paths": {
-      "@/*": ["src/*"]
-    },
     "resolvePackageJsonExports": true,
     "strictBindCallApply": false,
     "strictNullChecks": true,

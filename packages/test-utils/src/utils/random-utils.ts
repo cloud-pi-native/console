@@ -1,8 +1,8 @@
-import { faker } from '@faker-js/faker'
-import { ClusterPrivacy, achievedStatus, logActions, projectRoles } from '@cpn-console/shared'
 import type { AchievedStatus, ClusterDetails, ProjectRoles, Stage, Zone } from '@cpn-console/shared'
-import { repeatFn } from './func-utils.js'
 import type { Cluster, Environment, Log, Member, Permission, Project, Repository, Role, User } from './types.js'
+import { achievedStatus, ClusterPrivacy, logActions, projectRoles } from '@cpn-console/shared'
+import { faker } from '@faker-js/faker'
+import { repeatFn } from './func-utils.js'
 
 export function getRandomProjectName() {
   return faker.lorem.word()

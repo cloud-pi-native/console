@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
 import type {
   Cluster,
 } from '@cpn-console/shared'
-import { useZoneStore } from '@/stores/zone.js'
-import { useStageStore } from '@/stores/stage.js'
+import { DsfrDataTable } from '@gouvminint/vue-dsfr'
+import { onMounted, ref } from 'vue'
 import router from '@/router/index.js'
 import { useClusterStore } from '@/stores/cluster.js'
+import { useStageStore } from '@/stores/stage.js'
+import { useZoneStore } from '@/stores/zone.js'
 import { getRandomId } from '@/utils/func.js'
-import { DsfrDataTable } from '@gouvminint/vue-dsfr'
 
 const zoneStore = useZoneStore()
 const stageStore = useStageStore()

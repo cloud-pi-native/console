@@ -1,6 +1,7 @@
 import { z } from 'zod'
-import { ExposedPersonalAccessTokenSchema, PersonalAccessTokenSchema, apiPrefix, contractInstance } from '../index.js'
-import { ErrorSchema, baseHeaders } from './_utils.js'
+import { apiPrefix, contractInstance } from '../api-client.js'
+import { ExposedPersonalAccessTokenSchema, PersonalAccessTokenSchema } from '../schemas/token.js'
+import { baseHeaders, ErrorSchema } from './_utils.js'
 
 export const personalAccessTokenContract = contractInstance.router({
   listPersonalAccessTokens: {

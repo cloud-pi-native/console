@@ -1,8 +1,8 @@
-import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
-import { DatabaseService } from '@/cpin-module/infrastructure/database/database.service'
-import { Inject, Injectable, Logger } from '@nestjs/common'
 import { rm } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { Inject, Injectable, Logger } from '@nestjs/common'
+import { ConfigurationService } from '../../infrastructure/configuration/configuration.service'
+import { DatabaseService } from '../../infrastructure/database/database.service'
 
 import { DatabaseInitializationService } from '../database-initialization/database-initialization.service'
 import { PluginManagementService } from '../plugin-management/plugin-management.service'

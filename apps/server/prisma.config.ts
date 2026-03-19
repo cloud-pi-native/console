@@ -1,6 +1,6 @@
 import path from 'node:path'
-import { defineConfig } from 'prisma/config'
 import * as dotenv from 'dotenv'
+import { defineConfig } from 'prisma/config'
 
 if (process.env.DOCKER !== 'true') {
   dotenv.config({ path: '.env' })

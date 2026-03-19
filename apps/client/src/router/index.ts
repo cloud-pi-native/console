@@ -1,19 +1,19 @@
-import {
-  createRouter,
-  createWebHistory,
-} from 'vue-router'
 import type {
   RouteLocationNormalizedGeneric,
   RouteRecordRaw,
 } from 'vue-router'
-import { useUserStore } from '@/stores/user.js'
+import { AdminAuthorized, swaggerUiPath } from '@cpn-console/shared'
+import {
+  createRouter,
+  createWebHistory,
+} from 'vue-router'
 import { useProjectStore } from '@/stores/project.js'
 import { useSystemSettingsStore } from '@/stores/system-settings.js'
 
+import { useUserStore } from '@/stores/user.js'
+import { uuid } from '@/utils/regex.js'
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
-import { AdminAuthorized, swaggerUiPath } from '@cpn-console/shared'
-import { uuid } from '@/utils/regex.js'
 
 const AdminCluster = () => import('@/views/admin/AdminCluster.vue')
 const AdminServiceChain = () => import('@/views/admin/AdminServiceChain.vue')

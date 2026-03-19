@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch } from 'vue'
-import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import type { CreateStageBody, Stage, StageAssociatedEnvironments, UpdateStageBody } from '@cpn-console/shared'
-import { useStageStore } from '@/stores/stage.js'
+import { sortArrByObjKeyAsc } from '@cpn-console/shared'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useStageStore } from '@/stores/stage.js'
 
 const stageStore = useStageStore()
 const clusterStore = useClusterStore()

@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest'
-import { faker } from '@faker-js/faker'
-import { ZodError } from 'zod'
 import type { Log, ProjectV2 } from '../index.js'
-import { ClusterDetailsSchema, ClusterPrivacy, ClusterUsageSchema, EnvironmentSchema, LogSchema, ProjectSchemaV2, RepoSchema, StageSchema, UserSchema, descriptionMaxLength, instanciateSchema, parseZodError } from '../index.js'
+import { faker } from '@faker-js/faker'
+import { describe, expect, it } from 'vitest'
+import { ZodError } from 'zod'
+import { ClusterDetailsSchema, ClusterPrivacy, ClusterUsageSchema, descriptionMaxLength, EnvironmentSchema, instanciateSchema, LogSchema, parseZodError, ProjectSchemaV2, RepoSchema, StageSchema, UserSchema } from '../index.js'
 
 describe('schemas utils', () => {
   it('should delete config in log', () => {

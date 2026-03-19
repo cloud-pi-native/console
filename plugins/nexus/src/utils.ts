@@ -1,6 +1,6 @@
 import type { HookPayload, Project, ProjectLite } from '@cpn-console/hooks'
-import { defaultOrNullish, specificallyEnabled } from '@cpn-console/hooks'
 import type { AxiosInstance } from 'axios'
+import { defaultOrNullish, specificallyEnabled } from '@cpn-console/hooks'
 
 export async function deleteIfExists(url: string, axiosInstance: AxiosInstance) {
   const res = await axiosInstance({

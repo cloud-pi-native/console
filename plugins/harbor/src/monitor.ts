@@ -1,5 +1,5 @@
-import { Monitor, MonitorStatus } from '@cpn-console/shared'
 import type { MonitorInfos } from '@cpn-console/shared'
+import { Monitor, MonitorStatus } from '@cpn-console/shared'
 import { getApi } from './utils.js'
 
 enum HealthStatus {

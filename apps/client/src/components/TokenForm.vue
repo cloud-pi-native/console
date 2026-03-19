@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { TokenSchema, isAtLeastTomorrow } from '@cpn-console/shared'
+import { isAtLeastTomorrow, TokenSchema } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { copyContent } from '@/utils/func.js'
 

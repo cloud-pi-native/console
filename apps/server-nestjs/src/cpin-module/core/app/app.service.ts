@@ -1,4 +1,9 @@
-import { ConfigurationService } from '@/cpin-module/infrastructure/configuration/configuration.service'
+import type {
+  FastifySessionObject,
+  FastifySessionOptions,
+} from '@fastify/session'
+import type { FastifyRequest } from 'fastify'
+import type { KeycloakOptions } from 'fastify-keycloak-adapter'
 import {
   apiPrefix,
   getContract,
@@ -9,19 +14,14 @@ import {
 } from '@cpn-console/shared'
 import fastifyCookie from '@fastify/cookie'
 import helmet from '@fastify/helmet'
-import type {
-  FastifySessionObject,
-  FastifySessionOptions,
-} from '@fastify/session'
 import fastifySession from '@fastify/session'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { generateOpenApi } from '@ts-rest/open-api'
 import fastify from 'fastify'
-import type { FastifyRequest } from 'fastify'
-import type { KeycloakOptions } from 'fastify-keycloak-adapter'
 import keycloak from 'fastify-keycloak-adapter'
+import { ConfigurationService } from '../../infrastructure/configuration/configuration.service'
 
 import { FastifyService } from '../fastify/fastify.service'
 

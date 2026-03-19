@@ -3,8 +3,8 @@ import { expect, test } from '@playwright/test'
 import { adminUser, clientURL, signInCloudPiNative } from '../config/console'
 
 import {
-  addProject,
   addEnvToProject,
+  addProject,
   createCluster,
   deleteCluster,
 } from './utils'

@@ -1,8 +1,8 @@
+import type { ClusterObject, Environment, Project, Repository } from '@cpn-console/hooks'
 import { faker } from '@faker-js/faker'
+import { dump } from 'js-yaml'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { deleteProject, upsertProject } from './functions.js'
-import type { ClusterObject, Environment, Project, Repository } from '@cpn-console/hooks'
-import { dump } from 'js-yaml'
 
 vi.mock('./utils.js', () => ({
   generateAppProjectName: vi.fn(() => 'app-project-name'),

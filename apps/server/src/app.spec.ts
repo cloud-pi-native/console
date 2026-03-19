@@ -1,5 +1,5 @@
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiPrefix } from '@cpn-console/shared'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import app from './app.js'
 import { getRandomRequestor, setRequestor } from './utils/mocks.js'
 

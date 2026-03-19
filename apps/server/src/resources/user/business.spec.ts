@@ -1,8 +1,8 @@
+import type { UserDetails } from '../../types/index.ts'
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import prisma from '../../__mocks__/prisma.js'
-import type { UserDetails } from '../../types/index.ts'
-import { TokenInvalidReason, getMatchingUsers, getUsers, logViaSession, logViaToken, patchUsers } from './business.ts'
+import { getMatchingUsers, getUsers, logViaSession, logViaToken, patchUsers, TokenInvalidReason } from './business.ts'
 import * as queries from './queries.js'
 
 const getUsersQueryMock = vi.spyOn(queries, 'getUsers')

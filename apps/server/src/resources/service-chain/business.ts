@@ -1,9 +1,9 @@
 import {
   getServiceChainDetails as getServiceChainDetailsQuery,
+  getServiceChainFlows as getServiceChainFlowsQuery,
   listServiceChains as listServiceChainsQuery,
   retryServiceChain as retryServiceChainQuery,
   validateServiceChain as validateServiceChainQuery,
-  getServiceChainFlows as getServiceChainFlowsQuery,
 } from '@/resources/queries-index.js'
 
 export async function listServiceChains() {

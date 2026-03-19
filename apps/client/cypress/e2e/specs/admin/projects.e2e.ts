@@ -1,7 +1,7 @@
 import type { ProjectV2 } from '@cpn-console/shared'
+import type { Project } from '@/utils/project-utils.js'
 import { sortArrByObjKeyAsc, statusDict } from '@cpn-console/shared'
 import { getModelById } from '../../support/func.js'
-import type { Project } from '@/utils/project-utils.js'
 
 describe('Administration projects', () => {
   const admin = getModelById('user', 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566')

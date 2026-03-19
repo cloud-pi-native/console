@@ -9,8 +9,8 @@
 
 import { writeFileSync } from 'node:fs'
 import { Prisma } from '@prisma/client'
-import { associations, manyToManyRelation, modelKeys, models, resourceListToDict } from './utils.js'
 import prisma from '@/prisma.js'
+import { associations, manyToManyRelation, modelKeys, models, resourceListToDict } from './utils.js'
 
 const Models = resourceListToDict(Prisma.dmmf.datamodel.models)
 

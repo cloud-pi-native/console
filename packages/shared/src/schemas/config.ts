@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import type Zod from 'zod'
+import { z } from 'zod'
 
 const configItemBase = z.object({
   key: z.string().min(2).regex(/[a-z-]/),

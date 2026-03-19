@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import type Zod from 'zod'
+import { z } from 'zod'
 
 export const ZoneSchema = z.object({
   id: z.string()

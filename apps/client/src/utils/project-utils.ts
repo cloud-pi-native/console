@@ -1,10 +1,3 @@
-import type { Ref } from 'vue'
-import {
-  PROJECT_PERMS,
-  getPermsByUserRoles,
-  objectKeys,
-  resourceListToDict,
-} from '@cpn-console/shared'
 import type {
   CreateEnvironmentBody,
   CreateRepositoryBody,
@@ -12,6 +5,9 @@ import type {
   GetLogsQuery,
   PermissionTarget,
   PluginsUpdateBody,
+  projectContract,
+  projectMemberContract,
+  projectRoleContract,
   ProjectService,
   ProjectV2,
   Repo,
@@ -20,17 +16,21 @@ import type {
   UpdateEnvironmentBody,
   UpdateRepositoryBody,
   User,
-  projectContract,
-  projectMemberContract,
-  projectRoleContract,
+} from '@cpn-console/shared'
+import type { Ref } from 'vue'
+import {
+  getPermsByUserRoles,
+  objectKeys,
+  PROJECT_PERMS,
+  resourceListToDict,
 } from '@cpn-console/shared'
 
 import {
   apiClient,
   extractData,
 } from '@/api/xhr-client.js'
-import { useUserStore } from '@/stores/user.js'
 import { useLogStore } from '@/stores/log.js'
+import { useUserStore } from '@/stores/user.js'
 import { getRandomId } from './func.js'
 
 export type ProjectOperations = 'create'

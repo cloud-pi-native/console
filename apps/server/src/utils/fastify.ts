@@ -1,17 +1,17 @@
-import { randomUUID } from 'node:crypto'
-import type { FastifyServerOptions } from 'fastify'
+import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui'
 import type { generateOpenApi } from '@ts-rest/open-api'
+import type { FastifyServerOptions } from 'fastify'
+import { randomUUID } from 'node:crypto'
 import { swaggerUiPath } from '@cpn-console/shared'
-import { loggerConf } from './logger.js'
 import {
-  NODE_ENV,
   appVersion,
   keycloakClientId,
   keycloakClientSecret,
   keycloakRealm,
   keycloakRedirectUri,
+  NODE_ENV,
 } from './env.js'
-import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui'
+import { loggerConf } from './logger.js'
 
 export const fastifyConf: FastifyServerOptions = {
   maxParamLength: 5000,
