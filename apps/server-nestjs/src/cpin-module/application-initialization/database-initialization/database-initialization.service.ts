@@ -26,7 +26,7 @@ export class DatabaseInitializationService {
         if (['permissions', 'everyonePerms'].includes(key)) {
           return BigInt(value.slice(0, value.length - 1))
         }
-      } catch (_error) {
+      } catch {
         return value
       }
       return value

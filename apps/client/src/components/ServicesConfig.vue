@@ -89,7 +89,7 @@ async function save() {
   try {
     await props.project.Services.update(updated.value)
     snackbarStore.setMessage('Paramètres sauvegardés', 'success')
-  } catch (_error) {
+  } catch {
     snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
   }
   await reload()
