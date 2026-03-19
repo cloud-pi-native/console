@@ -20,6 +20,7 @@ describe('applicationInitializationServiceService', () => {
         PluginManagementService,
         DatabaseInitializationService,
         DatabaseService,
+        PrismaService,
       ],
     }).compile()
 
