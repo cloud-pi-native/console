@@ -33,6 +33,7 @@ export class GitlabControllerService {
   }
 
   @OnEvent('project.upsert')
+  @Reconcile()
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -42,6 +43,7 @@ export class GitlabControllerService {
   }
 
   @OnEvent('project.delete')
+  @Reconcile()
   @StartActiveSpan()
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()

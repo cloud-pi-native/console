@@ -4,8 +4,10 @@ import { OnEvent } from '@nestjs/event-emitter'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
+import { Reconcile } from '../../cpin-module/infrastructure/reconcile/reconcile.decorator'
 import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/telemetry.decorator'
 import { VaultClientService, VaultError } from './vault-client.service'
+import { VaultDatastoreService } from './vault-datastore.service'
 import { generateProjectPath } from './vault.utils'
 
 @Injectable()
@@ -21,6 +23,7 @@ export class VaultControllerService {
   }
 
   @OnEvent('project.upsert')
+  @Reconcile()
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -30,6 +33,7 @@ export class VaultControllerService {
   }
 
   @OnEvent('project.delete')
+  @Reconcile()
   @StartActiveSpan()
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -42,6 +46,7 @@ export class VaultControllerService {
   }
 
   @OnEvent('zone.upsert')
+  @Reconcile()
   @StartActiveSpan()
   async handleUpsertZone(zone: ZoneWithDetails) {
     const span = trace.getActiveSpan()
@@ -51,6 +56,7 @@ export class VaultControllerService {
   }
 
   @OnEvent('zone.delete')
+  @Reconcile()
   @StartActiveSpan()
   async handleDeleteZone(zone: ZoneWithDetails) {
     const span = trace.getActiveSpan()
