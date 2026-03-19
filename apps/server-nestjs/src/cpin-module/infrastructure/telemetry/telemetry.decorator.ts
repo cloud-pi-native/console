@@ -1,5 +1,5 @@
+import type { Span as OpenTelemetrySpan, SpanOptions } from '@opentelemetry/api'
 import { SpanStatusCode, trace } from '@opentelemetry/api'
-import type { SpanOptions, Span as OpenTelemetrySpan } from '@opentelemetry/api'
 import { TRACER_NAME } from './telemetry.constants'
 
 export type TypedMethodDecorator = <T extends (this: any, ...args: any[]) => any>(
