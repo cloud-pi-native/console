@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common'
 import type { OnApplicationShutdown, OnModuleInit } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
