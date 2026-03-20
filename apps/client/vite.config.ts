@@ -138,9 +138,6 @@ export default defineConfig({
     target: 'ESNext',
   },
   optimizeDeps: {
-    entries: [
-      './cypress/components/specs/environment-form.ct.ts',
-    ],
     include: [
       'jszip',
     ],
