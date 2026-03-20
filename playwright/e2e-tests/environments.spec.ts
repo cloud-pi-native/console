@@ -11,6 +11,38 @@ import {
 import { addEnvToProject, addProject, removeEnvFromProject } from './utils'
 
 test.describe('Environments page', { tag: '@e2e' }, () => {
+  test('should close environment modal in multiple ways', async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await addProject({ page })
+    const envName = await addEnvToProject({
+      page,
+      zone: 'publique',
+      customStageName: 'dev',
+      customClusterName: 'public1',
+    })
+
+    await page.getByTestId(`environmentTr-${envName}`).click()
+    await expect(page.getByTestId('resource-modal')).toBeVisible()
+    await page.locator('div.fr-modal__header > button.fr-btn--close').click()
+    await expect(page.getByTestId('resource-modal')).not.toBeVisible()
+
+    await page.getByTestId(`environmentTr-${envName}`).click()
+    await expect(page.getByTestId('resource-modal')).toBeVisible()
+    await page.getByTestId('cancelEnvironmentBtn').click()
+    await expect(page.getByTestId('resource-modal')).not.toBeVisible()
+
+    await page.getByTestId(`environmentTr-${envName}`).click()
+    await expect(page.getByTestId('resource-modal')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.getByTestId('resource-modal')).not.toBeVisible()
+
+    await page.getByTestId(`environmentTr-${envName}`).click()
+    await expect(page.getByTestId('resource-modal')).toBeVisible()
+    await page.locator('.fr-modal').click({ position: { x: 2, y: 2 } })
+    await expect(page.getByTestId('resource-modal')).not.toBeVisible()
+  })
+
   test('should add environments to an existing project', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })

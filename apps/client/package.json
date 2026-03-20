@@ -12,7 +12,6 @@
     "build": "run-s icons type-check build-only",
     "build-only": "vite --mode=production build",
     "build:clean": "rimraf ./dist ./tsconfig.tsbuildinfo",
-    "cypress:install": "cypress install",
     "dev": "vite --mode=development",
     "format": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' eslint ./ --fix",
     "format:style": "stylelint ./src/**/*.{css,vue} --fix",
@@ -24,10 +23,6 @@
     "preview": "vite preview --port 8080",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
-    "test:ct": "NODE_ENV=test cypress open --component --browser=firefox",
-    "test:ct-ci": "NODE_ENV=test cypress run --component --browser=firefox",
-    "test:e2e": "cypress open --browser=firefox",
-    "test:e2e-ci": "cypress run --browser=firefox",
     "type-check": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
@@ -53,11 +48,6 @@
     "vue3-json-viewer": "^2.4.1",
     "xbytes": "^1.9.1"
   },
-  "optionalDependencies": {
-    "@cypress/vue": "6.0.2",
-    "cypress": "15.6.0",
-    "cypress-vite": "1.8.0"
-  },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/test-utils": "workspace:^",
@@ -70,7 +60,6 @@
     "@vitejs/plugin-vue": "^6.0.4",
     "@vitest/coverage-v8": "^2.1.9",
     "@vue/eslint-config-typescript": "^14.7.0",
-    "eslint-plugin-cypress": "^4.3.0",
     "eslint-plugin-vue": "^10.8.0",
     "jsdom": "^25.0.1",
     "npm-run-all": "^4.1.5",

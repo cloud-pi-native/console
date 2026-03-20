@@ -4,7 +4,7 @@ import {
   signInCloudPiNative,
   tcolinUser,
   testUser,
-} from 'config/console'
+} from '../config/console'
 
 import {
   addProject,
