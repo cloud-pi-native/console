@@ -20,17 +20,12 @@ DOCKER_BUILDX_VERSION="$(docker buildx version)"
 # Default
 RUN_LINT="false"
 RUN_UNIT_TESTS="false"
-RUN_COMPONENT_TESTS="false"
 RUN_E2E_TESTS="false"
 RUN_STATUS_CHECK="false"
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to run application tests.
 Following flags are available:
-
-  -b    (Optional) Browser used for e2e components and tests
-
-  -c    Run component tests
 
   -e    Run e2e tests
 
@@ -49,13 +44,9 @@ print_help() {
 }
 
 # Parse options
-while getopts hb:ceklst:u flag
+while getopts heklst:u flag
 do
   case "${flag}" in
-    b)
-      BROWSER=${OPTARG};;
-    c)
-      RUN_COMPONENT_TESTS=true;;
     e)
       RUN_E2E_TESTS=true;;
     l)
@@ -74,7 +65,7 @@ done
 
 
 # Script condition
-if [ "$RUN_LINT" == "false" ] && [ "$RUN_UNIT_TESTS" == "false" ] && [ "$RUN_E2E_TESTS" == "false" ] && [ "$RUN_COMPONENT_TESTS" == "false" ] && [ "$RUN_STATUS_CHECK" == "false" ]; then
+if [ "$RUN_LINT" == "false" ] && [ "$RUN_UNIT_TESTS" == "false" ] && [ "$RUN_E2E_TESTS" == "false" ] && [ "$RUN_STATUS_CHECK" == "false" ]; then
   printf "\nArgument(s) missing, you don't specify any kind of test to run.\n"
   print_help
   exit 1
@@ -108,7 +99,6 @@ printf "\nScript settings:
   -> docker version: ${DOCKER_VERSION}
   -> docker buildx version: ${DOCKER_BUILDX_VERSION}
   -> run unit tests: ${RUN_UNIT_TESTS}
-  -> run component tests: ${RUN_COMPONENT_TESTS}
   -> run e2e tests: ${RUN_E2E_TESTS}
   -> run deploy status check: ${RUN_STATUS_CHECK}\n"
 
@@ -126,26 +116,12 @@ if [ "$RUN_UNIT_TESTS" == "true" ]; then
   npm run test:cov
 fi
 
-# Run component tests
-if [ "$RUN_COMPONENT_TESTS" == "true" ]; then
-  checkDockerRunning
-
-  printf "\n${red}${i}.${no_color} Launch component tests\n"
-  i=$(($i + 1))
-
-  [[ -n "$BROWSER" ]] && BROWSER_ARGS="-- --browser $BROWSER"
-
-  npm run test:ct-ci $BROWSER_ARGS
-fi
-
 # Run e2e tests
 if [ "$RUN_E2E_TESTS" == "true" ]; then
   checkDockerRunning
 
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
-
-  [[ -n "$BROWSER" ]] && BROWSER_ARGS="-- --browser $BROWSER"
 
   npm --prefix $PROJECT_DIR/packages/shared run build
   npm --prefix $PROJECT_DIR/packages/test-utils run build
@@ -157,7 +133,7 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
     docker pull ghcr.io/cloud-pi-native/console/nginx-strangler:$TAG && docker tag ghcr.io/cloud-pi-native/console/client:$TAG dso-console/nginx-strangler:ci
   fi
 
-  npm run docker:e2e-ci $BROWSER_ARGS
+  npm run docker:e2e-ci
 
   printf "\n${red}${i}.${no_color} Remove resources\n"
   i=$(($i + 1))
