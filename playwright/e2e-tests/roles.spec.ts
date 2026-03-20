@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
-import { clientURL, signInCloudPiNative, tcolinUser } from 'config/console'
+import { clientURL, signInCloudPiNative, tcolinUser } from '../config/console'
 
 test.describe('Administration Roles', () => {
   test(
