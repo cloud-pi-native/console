@@ -21,10 +21,6 @@ node_modules
 .env.codespace
 .env.docker
 
-# cypress
-screenshots
-downloads
-
 # init-db
 apps/server/src/init/db/imports/data
 

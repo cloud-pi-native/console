@@ -48,7 +48,6 @@ jobs:
               - '.github/workflows/**'
             e2e:
               - 'playwright/**'
-              - 'apps/client/cypress/**'
 
   expose-vars:
     runs-on: ubuntu-latest
@@ -121,19 +120,6 @@ jobs:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
       TAG: pr-${{ github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
 
-  cypress-tests:
-    uses: ./.github/workflows/job-tests-e2e.yml
-    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true' }}
-    needs:
-      - playwright-tests
-      - path-filter
-      - expose-vars
-      - build
-    with:
-      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
-      TAG: pr-${{ github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
-      BROWSERS: "${{ github.base_ref == 'main' && 'chrome,firefox' || 'firefox' }}"
-
   scan-vuln:
     uses: ./.github/workflows/job-scan.yml
     needs:
@@ -155,7 +141,6 @@ jobs:
       - lint
       - unit-tests
       - build
-      - cypress-tests
       - playwright-tests
       - scan-vuln
     steps:

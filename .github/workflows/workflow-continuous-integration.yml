@@ -53,7 +53,6 @@ jobs:
               - '.github/workflows/**'
             e2e:
               - 'playwright/**'
-              - 'apps/client/cypress/**'
 
   expose-vars:
     runs-on: ubuntu-latest
