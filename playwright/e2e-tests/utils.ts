@@ -80,6 +80,15 @@ export async function deleteProject(page: Page, projectName: string) {
   ).not.toBeVisible()
 }
 
+export async function deleteProjectBySlug(page: Page, slug: string) {
+  await page.getByTestId('menuMyProjects').click()
+  await page.locator(`a[href="/projects/${slug}"]`).click()
+  await page.getByRole('button', { name: 'Supprimer le projet' }).click()
+  await page.getByTestId('archiveProjectInput').fill('DELETE')
+  await page.getByTestId('confirmDeletionBtn').click()
+  await expect(page.locator(`a[href="/projects/${slug}"]`)).not.toBeVisible()
+}
+
 // Assuming we are on a given Project page, add a random repository with given name, or a generated one
 export async function addRandomRepositoryToProject({
   page,
