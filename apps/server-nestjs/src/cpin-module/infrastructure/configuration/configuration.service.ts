@@ -36,10 +36,58 @@ export class ConfigurationService {
     = process.env.CONTACT_EMAIL
       ?? 'cloudpinative-relations@interieur.gouv.fr'
 
+  // argocd
+  argoNamespace = process.env.ARGO_NAMESPACE ?? 'argocd'
+  argocdUrl = process.env.ARGOCD_URL
+  argocdExtraRepositories = process.env.ARGOCD_EXTRA_REPOSITORIES
+
+  // dso
+  dsoEnvChartVersion = process.env.DSO_ENV_CHART_VERSION ?? 'dso-env-1.6.0'
+  dsoNsChartVersion = process.env.DSO_NS_CHART_VERSION ?? 'dso-ns-1.1.5'
+
   // plugins
   mockPlugins = process.env.MOCK_PLUGINS === 'true'
-  projectRootDir = process.env.PROJECTS_ROOT_DIR
+  projectRootPath = process.env.PROJECTS_ROOT_DIR
   pluginsDir = process.env.PLUGINS_DIR ?? '/plugins'
+
+  // gitlab
+  gitlabToken = process.env.GITLAB_TOKEN
+  gitlabUrl = process.env.GITLAB_URL
+  gitlabInternalUrl = process.env.GITLAB_INTERNAL_URL
+    ? process.env.GITLAB_INTERNAL_URL
+    : process.env.GITLAB_URL
+
+  gitlabMirrorTokenExpirationDays = Number(process.env.GITLAB_MIRROR_TOKEN_EXPIRATION_DAYS ?? 180)
+  gitlabMirrorTokenRotationThresholdDays = Number(process.env.GITLAB_MIRROR_TOKEN_ROTATION_THRESHOLD_DAYS ?? 90)
+
+  // vault
+  vaultToken = process.env.VAULT_TOKEN
+  vaultUrl = process.env.VAULT_URL
+  vaultInternalUrl = process.env.VAULT_INTERNAL_URL
+    ? process.env.VAULT_INTERNAL_URL
+    : process.env.VAULT_URL
+
+  vaultKvName = process.env.VAULT_KV_NAME ?? 'forge-dso'
+
+  // registry (harbor)
+  harborUrl = process.env.HARBOR_URL
+  harborInternalUrl = process.env.HARBOR_INTERNAL_URL ?? process.env.HARBOR_URL
+  harborAdmin = process.env.HARBOR_ADMIN
+  harborAdminPassword = process.env.HARBOR_ADMIN_PASSWORD
+  harborRuleTemplate = process.env.HARBOR_RULE_TEMPLATE
+  harborRuleCount = process.env.HARBOR_RULE_COUNT
+  harborRetentionCron = process.env.HARBOR_RETENTION_CRON
+
+  // nexus
+  nexusUrl = process.env.NEXUS_URL
+  nexusInternalUrl = process.env.NEXUS_INTERNAL_URL ?? process.env.NEXUS_URL
+  nexusAdmin = process.env.NEXUS_ADMIN
+  nexusAdminPassword = process.env.NEXUS_ADMIN_PASSWORD
+  nexusSecretExposedUrl
+    = process.env.NEXUS__SECRET_EXPOSE_INTERNAL_URL === 'true'
+      ? (process.env.NEXUS_INTERNAL_URL ?? process.env.NEXUS_URL)
+      : process.env.NEXUS_URL
+
   NODE_ENV
     = process.env.NODE_ENV === 'test'
       ? 'test'
