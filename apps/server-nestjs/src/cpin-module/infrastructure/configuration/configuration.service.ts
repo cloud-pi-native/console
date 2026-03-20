@@ -45,6 +45,11 @@ export class ConfigurationService {
   dsoEnvChartVersion = process.env.DSO_ENV_CHART_VERSION ?? 'dso-env-1.6.0'
   dsoNsChartVersion = process.env.DSO_NS_CHART_VERSION ?? 'dso-ns-1.1.5'
 
+  // opencds
+  openCdsUrl = process.env.OPENCDS_URL
+  openCdsApiToken = process.env.OPENCDS_API_TOKEN
+  openCdsApiTlsRejectUnauthorized = process.env.OPENCDS_API_TLS_REJECT_UNAUTHORIZED !== 'false'
+
   // plugins
   mockPlugins = process.env.MOCK_PLUGINS === 'true'
   projectRootDir = process.env.PROJECTS_ROOT_DIR
