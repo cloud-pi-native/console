@@ -385,6 +385,9 @@ importers:
       '@gitbeaker/core':
         specifier: ^40.6.0
         version: 40.6.0
+      '@gitbeaker/requester-utils':
+        specifier: ^40.6.0
+        version: 40.6.0
       '@gitbeaker/rest':
         specifier: ^40.6.0
         version: 40.6.0
