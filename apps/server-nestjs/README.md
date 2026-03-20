@@ -370,6 +370,107 @@ flowchart TD
     ApplicationInitializationService --> LoggerService
 ```
 
+## Architecture du module ServiceChain (Vague 1)
+
+Le module ServiceChain est le **premier module métier migré** depuis le legacy
+vers server-nestjs via le pattern Strangler Fig. Il sert de proxy HTTP vers
+l'API externe OpenCDS (gestion des chaînes de service réseau).
+
+### Flux de proxying OpenCDS
+
+```
+┌──────────┐     ┌─────────────────┐     ┌──────────────────┐     ┌──────────────┐
+│  Client   │────▶│ nginx-strangler │────▶│  server-nestjs   │────▶│  API OpenCDS │
+│ (browser/ │     │                 │     │                  │     │  (externe)   │
+│  script)  │     │ /api/v1/        │     │ ServiceChain     │     │              │
+│           │◀────│ service-chains  │◀────│ Controller       │◀────│ /requests    │
+│           │     │ ──▶ nestjs      │     │  ──▶ Service     │     │ /validate    │
+└──────────┘     │                 │     │      ──▶ axios   │     │ /flows       │
+                 │ /api/* (reste)  │     └──────────────────┘     └──────────────┘
+                 │ ──▶ legacy      │
+                 └─────────────────┘
+```
+
+### Structure du module
+
+```
+src/cpin-module/
+├── infrastructure/
+│   └── auth/                           # Auth transverse (réutilisable)
+│       ├── auth.module.ts              #   Module NestJS
+│       ├── auth.service.ts             #   Lookup token SHA256 → Prisma
+│       ├── admin-permission.guard.ts   #   Guard : vérifie x-dso-token + permissions
+│       ├── admin-permission.decorator.ts  @RequireAdminPermission('ListSystem')
+│       └── admin-permission.guard.spec.ts
+│
+└── service-chain/                      # Module métier
+    ├── service-chain.module.ts         #   Imports: ConfigurationModule, AuthModule
+    ├── service-chain.controller.ts     #   5 endpoints sous /api/v1/service-chains
+    ├── service-chain.service.ts        #   Proxy axios → OpenCDS + validation Zod
+    ├── service-chain.controller.spec.ts
+    └── service-chain.service.spec.ts
+```
+
+### Authentification
+
+Seule l'**auth par token** (`x-dso-token`) est supportée pour l'instant.
+L'auth par session Keycloak sera ajoutée lors de la migration globale du
+mécanisme de session vers NestJS (les cookies de session Fastify ne sont pas
+déchiffrables par Express).
+
+```
+  Requête HTTP
+       │
+       ▼
+  ┌──────────────────────┐
+  │ AdminPermissionGuard  │
+  │                      │
+  │  1. Lire header      │
+  │     x-dso-token      │──── absent ──▶ 401 Unauthorized
+  │                      │
+  │  2. SHA256(token)    │
+  │     → Prisma lookup  │──── invalide ──▶ 401 Unauthorized
+  │     (PersonalAccess  │     (expiré, révoqué, introuvable)
+  │      Token ou Admin  │
+  │      Token)          │
+  │                      │
+  │  3. Vérifier perms   │
+  │     bitwise via      │──── insuffisant ──▶ 403 Forbidden
+  │     AdminAuthorized  │
+  │                      │
+  │  4. OK → continuer   │──────────────────▶ Controller
+  └──────────────────────┘
+```
+
+### Endpoints
+
+| Méthode | Route | Permission | Description |
+|---------|-------|------------|-------------|
+| `GET` | `/api/v1/service-chains` | `ListSystem` | Liste toutes les chaînes |
+| `GET` | `/api/v1/service-chains/:id` | `ListSystem` | Détails d'une chaîne |
+| `GET` | `/api/v1/service-chains/:id/flows` | `ListSystem` | Flux d'une chaîne |
+| `POST` | `/api/v1/service-chains/:id/retry` | `ManageSystem` | Relancer une chaîne |
+| `POST` | `/api/v1/service-chains/validate/:id` | `ManageSystem` | Valider une chaîne |
+
+### Différences avec le legacy
+
+- **403 systématique** : le legacy retournait `[]` sur `GET /` sans permission ;
+  le NestJS retourne 403 pour tous les endpoints sans permission.
+- **Pas d'auth session** : seul `x-dso-token` fonctionne (le legacy supportait
+  aussi les sessions Keycloak).
+- **Validation UUID** : les paramètres d'URL sont validés via `ParseUUIDPipe`
+  (400 si format invalide).
+
+### Variables d'environnement
+
+| Variable | Description | Défaut |
+|----------|-------------|--------|
+| `OPENCDS_URL` | URL de base de l'API OpenCDS | _(vide = désactivé)_ |
+| `OPENCDS_API_TOKEN` | Token d'API OpenCDS (header `X-API-Key`) | — |
+| `OPENCDS_API_TLS_REJECT_UNAUTHORIZED` | Vérification TLS (`true`/`false`) | `true` |
+
+---
+
 Pour mettre à jour `old-server` (après avoir rebasé sur `origin/master`, par exemple) :
 
 ```bash
