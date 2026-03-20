@@ -4,6 +4,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
+
 import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/telemetry.decorator'
 import { VaultClientService, VaultError } from '../vault/vault-client.service'
