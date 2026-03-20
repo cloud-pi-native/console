@@ -5,5 +5,6 @@ export default eslintConfigBase.append({
     'apps/',
     'packages/',
     'plugins/',
+    'pnpm-lock.yaml',
   ],
 })
