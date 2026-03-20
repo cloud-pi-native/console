@@ -103,6 +103,7 @@ services:
     restart: unless-stopped
     build:
       context: ..
+      dockerfile: apps/nginx-strangler/Dockerfile
     image: dso-console/nginx-strangler:local
     container_name: dso-console_nginx-strangler
     extra_hosts:
