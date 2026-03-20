@@ -124,6 +124,30 @@ jobs:
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
       TAG: pr-${{ github.event.pull_request.number || github.event.number }}
 
+  playwright-tests:
+    uses: ./.github/workflows/job-playwright.yml
+    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true' }}
+    needs:
+      - path-filter
+      - expose-vars
+      - build
+    with:
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      TAG: pr-${{ github.event.pull_request.number || github.event.number }}
+
+  cypress-tests:
+    uses: ./.github/workflows/job-tests-e2e.yml
+    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true' }}
+    needs:
+      - playwright-tests
+      - path-filter
+      - expose-vars
+      - build
+    with:
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      TAG: pr-${{ github.event.pull_request.number || github.event.number }}
+      BROWSERS: "${{ github.base_ref == 'main' && 'chrome,firefox' || 'firefox' }}"
+
   # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
   all-jobs-passed:
     name: Check jobs status
@@ -135,6 +159,8 @@ jobs:
       - lint
       - unit-tests
       - build
+      - playwright-tests
+      - cypress-tests
       - scan-vuln
     steps:
       - name: Check status of all required jobs
