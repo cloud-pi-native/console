@@ -101,7 +101,7 @@ jobs:
       - name: Run Cypress tests
         run: |
           ./ci/scripts/init-env.sh
-          ./ci/scripts/run-tests.sh -e -t "${{ inputs.TAG }}" -b "${{ matrix.browsers }}"
+          ./ci/scripts/run-tests.sh -e -t "${{ inputs.TAG }}"
 
       - name: Give permissions to upload logs
         if: ${{ failure() }}
