@@ -102,7 +102,7 @@ services:
     # Ports par défaut : server=4000, server-nestjs=3001 (voir .env-example de chaque app).
     restart: unless-stopped
     build:
-      context: ../apps/nginx-strangler
+      context: ..
     image: dso-console/nginx-strangler:local
     container_name: dso-console_nginx-strangler
     extra_hosts:
