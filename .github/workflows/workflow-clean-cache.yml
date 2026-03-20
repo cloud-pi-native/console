@@ -2,6 +2,10 @@ name: Clean cache
 
 permissions:
   contents: read
+  # For cache cleaning
+  actions: write
+  # For artifacts deletion
+  packages: write
 
 on:
   pull_request:
@@ -28,8 +32,6 @@ jobs:
 
       - name: Clean cache for closed branch
         run: |
-          gh extension install actions/gh-actions-cache
-
           REPO=${{ github.repository }}
           if [ -n "${{ inputs.BRANCH_NAME }}" ]; then
             BRANCH="${{ inputs.BRANCH_NAME }}"
@@ -38,13 +40,13 @@ jobs:
           fi
 
           echo "Fetching list of cache key"
-          cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH -L 100 | cut -f 1 )
+          cacheKeysForPR=$(gh cache list -R $REPO --ref $BRANCH -L 100 | cut -f 1 )
 
           ## Setting this to not fail the workflow while deleting cache keys.
           set +e
           echo "Deleting caches..."
           for cacheKey in $cacheKeysForPR; do
-            gh actions-cache delete $cacheKey -R $REPO -B $BRANCH --confirm
+            gh cache delete $cacheKey -R $REPO --ref $BRANCH --confirm
           done
           echo "Done"
         env:
@@ -71,6 +73,7 @@ jobs:
     needs:
       - matrix
     strategy:
+      fail-fast: false
       matrix:
         images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
     steps:
