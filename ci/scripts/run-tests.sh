@@ -152,7 +152,9 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
 
   if [[ -n "$TAG" ]]; then
     docker pull ghcr.io/cloud-pi-native/console/server:$TAG && docker tag ghcr.io/cloud-pi-native/console/server:$TAG dso-console/server:ci
+    docker pull ghcr.io/cloud-pi-native/console/server-nestjs:$TAG && docker tag ghcr.io/cloud-pi-native/console/server-nestjs:$TAG dso-console/server-nestjs:ci
     docker pull ghcr.io/cloud-pi-native/console/client:$TAG && docker tag ghcr.io/cloud-pi-native/console/client:$TAG dso-console/client:ci
+    docker pull ghcr.io/cloud-pi-native/console/nginx-strangler:$TAG && docker tag ghcr.io/cloud-pi-native/console/client:$TAG dso-console/nginx-strangler:ci
   fi
 
   npm run docker:e2e-ci $BROWSER_ARGS

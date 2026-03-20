@@ -24,7 +24,7 @@
     "docker:dev:clean": "docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans",
     "docker:dev:delete": "docker compose -f ./docker/docker-compose.dev.yml down -v --remove-orphans",
     "docker:e2e": "docker compose -f ./docker/docker-compose.dev.yml up ${TAG:+--no-build} -d --remove-orphans; pnpm --filter=@cpn-console/client run test:e2e; docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans",
-    "docker:e2e-ci": "docker compose -f ./docker/docker-compose.ci.yml up ${TAG:+--no-build} -d --remove-orphans; pnpm --filter=@cpn-console/client run test:e2e-ci",
+    "docker:e2e-ci": "docker compose -f ./docker/docker-compose.ci.yml up ${TAG:+--no-build} -d --remove-orphans; HOME=$PWD/.cypress-home CYPRESS_CACHE_FOLDER=$PWD/.cypress-home/.cache/Cypress pnpm --filter=@cpn-console/client run cypress:install; HOME=$PWD/.cypress-home CYPRESS_CACHE_FOLDER=$PWD/.cypress-home/.cache/Cypress pnpm --filter=@cpn-console/client run test:e2e-ci",
     "docker:e2e-ci:delete": "docker compose -f ./docker/docker-compose.ci.yml down -v --remove-orphans",
     "docker:integ": "docker compose --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml up -d; docker compose --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml watch --no-up & docker compose --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml logs server client -f",
     "docker:integ:build": "export $(cat apps/server/.env.integ | grep -v '#' | xargs) && export COMPOSE_FILE=./docker/docker-compose.integ.yml && cd $(dirname $COMPOSE_FILE) && docker buildx bake --allow=fs.read=.. --file $(basename $COMPOSE_FILE) --load && cd - > /dev/null",

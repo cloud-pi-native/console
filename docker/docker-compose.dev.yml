@@ -160,7 +160,8 @@ services:
   nginx-strangler:
     restart: unless-stopped
     build:
-      context: ../apps/nginx-strangler
+      context: ..
+      dockerfile: apps/nginx-strangler/Dockerfile
     image: dso-console/nginx-strangler:dev
     container_name: dso-console_nginx-strangler
     depends_on:
