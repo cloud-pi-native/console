@@ -1,6 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
-
 import { modelKeys } from './utils'
 
 type ModelKey = (typeof modelKeys)[number]
@@ -30,13 +29,11 @@ export class DatabaseInitializationService {
     })
     this.loggerService.log('Drop tables')
     for (const modelKey of modelKeys.toReversed()) {
-      // @ts-ignore
-      await prisma[modelKey].deleteMany()
+      await this.prisma[modelKey].deleteMany()
     }
     this.loggerService.log('Import models')
     for (const modelKey of modelKeys) {
-      // @ts-ignore
-      await prisma[modelKey].createMany({ data: dataParsed[modelKey] })
+      await this.prisma[modelKey].createMany({ data: dataParsed[modelKey] })
     }
     this.loggerService.log('Import associations')
     for (const [modelKey, rows] of dataParsed.associations) {
