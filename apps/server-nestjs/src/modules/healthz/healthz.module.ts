@@ -6,6 +6,8 @@ import { KeycloakModule } from '../keycloak/keycloak.module'
 import { VaultModule } from '../vault/vault.module'
 import { DatabaseModule } from '../../cpin-module/infrastructure/database/database.module'
 import { HealthzController } from './healthz.controller'
+import { NexusModule } from '../nexus/nexus.module'
+import { RegistryModule } from '../registry/registry.module'
 
 @Module({
   imports: [
@@ -14,8 +16,10 @@ import { HealthzController } from './healthz.controller'
     KeycloakModule,
     GitlabModule,
     VaultModule,
+    NexusModule,
+    RegistryModule,
     ArgoCDModule,
   ],
   controllers: [HealthzController],
 })
-export class HealthzModule {}
+export class HealthModule {}
