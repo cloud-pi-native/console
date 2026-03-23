@@ -1,5 +1,108 @@
 # Changelog
 
+## [9.14.0](https://github.com/cloud-pi-native/console/compare/v9.13.2...v9.14.0) (2026-03-23)
+
+
+### Features
+
+* **admin-role:** migrate role type to exposure scope ([#1956](https://github.com/cloud-pi-native/console/issues/1956)) ([747189f](https://github.com/cloud-pi-native/console/commit/747189f02135f7b0a7906abd1778f7273fc74f3d))
+* **argocd:** add well known OIDC groups from ADR14 ([#1946](https://github.com/cloud-pi-native/console/issues/1946)) ([4282772](https://github.com/cloud-pi-native/console/commit/4282772e3b6a0649558cdacfcff6aca54bcbc2b4))
+* **gitlab:** add builtin roles to GitLab ([#1910](https://github.com/cloud-pi-native/console/issues/1910)) ([25a72da](https://github.com/cloud-pi-native/console/commit/25a72daa98eaf10dd4a96ca579e5d6da7d9fd5b1))
+* **shared:** add admin role fine grained permissions ([#1896](https://github.com/cloud-pi-native/console/issues/1896)) ([58c53af](https://github.com/cloud-pi-native/console/commit/58c53afb567498e520fba9fa7ceb40fd9792c4b1))
+
+
+### Bug Fixes
+
+* add create-or-update workflow package:write permissions for build job ([72c4d27](https://github.com/cloud-pi-native/console/commit/72c4d2747240ccb2fecfb03a3343126c1a945d58))
+* attempt a better matrix check on job-npm ([fb2204d](https://github.com/cloud-pi-native/console/commit/fb2204da305a3dc190d1c5595304c7c6efaa261e))
+* avoid server-nestjs build error preventing npm publish process ([7d55944](https://github.com/cloud-pi-native/console/commit/7d55944aeb3b4162fe9e366fbb0b16b9b881174f))
+* bind "this" context in process hook ([#1968](https://github.com/cloud-pi-native/console/issues/1968)) ([0c7d8b1](https://github.com/cloud-pi-native/console/commit/0c7d8b118b67d86e657eebc7e7f87840105ebdd9))
+* buffered logs not flushed on init error ([#1975](https://github.com/cloud-pi-native/console/issues/1975)) ([67bbecb](https://github.com/cloud-pi-native/console/commit/67bbecb1e96b8dec93acf979d50b86f24673d8ad))
+* **ci:** add missing hooks build in npm publish workflow ([a357ad2](https://github.com/cloud-pi-native/console/commit/a357ad26cb564bfc5adcd091dcf1e1ad0ad403fe))
+* **ci:** avoid making PR number mandatory (issue with create-release job) ([6a7cf04](https://github.com/cloud-pi-native/console/commit/6a7cf049c9262e5eff4949340425703f0d7163c9))
+* **ci:** ensure build job is ran both from PRs and MQs ([0772105](https://github.com/cloud-pi-native/console/commit/0772105d1554cb123810d4254619e8f5baaeb721))
+* **ci:** ensure npm publish job run independently ([0ca3691](https://github.com/cloud-pi-native/console/commit/0ca36915f39afc92b839a41e58c5db0d6e866f23))
+* **ci:** fix id-token permission setup ([6d0cab4](https://github.com/cloud-pi-native/console/commit/6d0cab4a8ab4be76a938f596e8d4633f2e925d7a))
+* **ci:** fix NPM 404 error when publishing ([5e8e5af](https://github.com/cloud-pi-native/console/commit/5e8e5afbacdd11f2413c1136471768f5d7b6168c))
+* **ci:** fix NPM 404 error when publishing (attempt no. 2) ([32f67d7](https://github.com/cloud-pi-native/console/commit/32f67d76a77333230774914c711890e921e324bf))
+* **ci:** fix NPM 404 error when publishing (attempt no. 3) ([dacf45b](https://github.com/cloud-pi-native/console/commit/dacf45bba5b5ce7ad54d25acc4f4f0807bccdcbf))
+* **ci:** fix package.json files not having property required for publishing ([acbf328](https://github.com/cloud-pi-native/console/commit/acbf32832c01fa55a6d61a26dc29b0706f1a959e))
+* **ci:** remove NPM_TOKEN from required parameters ([a0221d0](https://github.com/cloud-pi-native/console/commit/a0221d00162a8abaf719e0603f3ff5b680420e88))
+* **clean-cache:** fix workflow crashing on non-built images ([c24a121](https://github.com/cloud-pi-native/console/commit/c24a121b57d54b427e73013f67f64f84b6492d7e))
+* combine create-or-update job and workflow permissions ([7271468](https://github.com/cloud-pi-native/console/commit/72714680703fd6971b0f2654a3c5f88038e9a5a1))
+* **create-release:** fix pnpm command when publishing to NPM registry ([#1941](https://github.com/cloud-pi-native/console/issues/1941)) ([641f01f](https://github.com/cloud-pi-native/console/commit/641f01fd6170c0825ee530a1622b1375a72ffb1a))
+* **cypress:** fix cypress e2e tests missing nginx-strangler and server-nestjs images ([34c5d8a](https://github.com/cloud-pi-native/console/commit/34c5d8add47350e027ac098b47f3c77040a0a76f))
+* ensure all packages are properly built before pushing to NPM registry ([1ac0264](https://github.com/cloud-pi-native/console/commit/1ac02644f3cc59454ac02cfc918b499afb177046))
+* ensure NPM publish workflow does not crash (single quote variant) ([2a885c9](https://github.com/cloud-pi-native/console/commit/2a885c9eac4996c73f8889bb0547f27587210d48))
+* ensure NPM publishing workflow does not crash when there is nothing to publish ([f927563](https://github.com/cloud-pi-native/console/commit/f92756313f96de74cd1aa56281d6c68d766a9f6a))
+* fix build job not being triggered by workflows ([31e4cd3](https://github.com/cloud-pi-native/console/commit/31e4cd3cb89e9006a73bd87306acda8cdbc151b6))
+* fix build-label job permissions ([42fa1aa](https://github.com/cloud-pi-native/console/commit/42fa1aa421adf4b2a4bcd96ca7bb101c818fb431))
+* fix create-or-update job permissions ([0624395](https://github.com/cloud-pi-native/console/commit/0624395c9daab4fb05aec84e6d003793f966294b))
+* fix create-or-update workflow permissions ([56f1da9](https://github.com/cloud-pi-native/console/commit/56f1da99cc8462c72df97661f6ab1755a675e358))
+* fix packages crashing when building during NPM publish process ([f713e6a](https://github.com/cloud-pi-native/console/commit/f713e6a878d6d53dc484dc1025a2af4600d22951))
+* fix permissions on preview workflow ([df3d342](https://github.com/cloud-pi-native/console/commit/df3d342944c8506d2259c044f0df0e18c0888671))
+* fix scan-vuln job permissions ([4eb2c06](https://github.com/cloud-pi-native/console/commit/4eb2c06ba08d981d5bd29f3120f1e79cc0372770))
+* **gitlab:** iterate over pagination ([#1918](https://github.com/cloud-pi-native/console/issues/1918)) ([9ebce61](https://github.com/cloud-pi-native/console/commit/9ebce618fe7eba1f7188b4c05a644e2cda8f3f11))
+* **hooks:** make hooks should not be fail fast ([#1998](https://github.com/cloud-pi-native/console/issues/1998)) ([1904fc7](https://github.com/cloud-pi-native/console/commit/1904fc7990efb78723af239f11c64aee22304ed7))
+* import missing health module ([1c0a82b](https://github.com/cloud-pi-native/console/commit/1c0a82b0eb5253bcb1bbd21113465d6141332612))
+* import missing Prisma mocks ([#1976](https://github.com/cloud-pi-native/console/issues/1976)) ([568cd85](https://github.com/cloud-pi-native/console/commit/568cd852d40bb8ceee6b4a418754f182f0eb579c))
+* missing opentelemetry api dep ([6593f7a](https://github.com/cloud-pi-native/console/commit/6593f7ac66291f1fe4e260ce73afc142806e7685))
+* module DI conflict with eslint ([#1966](https://github.com/cloud-pi-native/console/issues/1966)) ([460e49d](https://github.com/cloud-pi-native/console/commit/460e49d9523f5b79ee3e4fc2d295d6816f790aaa))
+* NestJS CJS and module ([#2003](https://github.com/cloud-pi-native/console/issues/2003)) ([86f0a34](https://github.com/cloud-pi-native/console/commit/86f0a3425763260e522acf05a8be21bdc174c796))
+* **nginx-strangler:** dockerfile path ([b94a99d](https://github.com/cloud-pi-native/console/commit/b94a99d7a26099eb5bbb69d233c111bc2f1fa88c))
+* **nginx-strangler:** fix context not being root directory in docker-compose files ([e74d7e4](https://github.com/cloud-pi-native/console/commit/e74d7e4ebf207ac70d9b78dc304cab6acc1d9ccc))
+* **nginx-strangler:** fix Dockerfile missing local paths ([ff61830](https://github.com/cloud-pi-native/console/commit/ff61830608ec6ab91444369f05e24d2039c91711))
+* **playwright:** fix nginx-strangler image being built instead of pulled ([7e2c12f](https://github.com/cloud-pi-native/console/commit/7e2c12f5bcffc7d1cf21cf3409bf552972d79ad9))
+* **server-nestjs:** explicit test utils import ([#1991](https://github.com/cloud-pi-native/console/issues/1991)) ([30aca3f](https://github.com/cloud-pi-native/console/commit/30aca3f3b945a89a9c8de26a11a311c0a7beb79b))
+* shared package for nodenext module resolution ([#1974](https://github.com/cloud-pi-native/console/issues/1974)) ([c3c0581](https://github.com/cloud-pi-native/console/commit/c3c0581b3552a7ba527ad0dfc26ba6f7b0ff5e87))
+
+
+### Miscellaneous Chores
+
+* add instrumentation ([#1994](https://github.com/cloud-pi-native/console/issues/1994)) ([18ff003](https://github.com/cloud-pi-native/console/commit/18ff003211c0265a488b7295f38d4fc039d1cbef))
+* **admin-role:** add logs ([#1928](https://github.com/cloud-pi-native/console/issues/1928)) ([708870b](https://github.com/cloud-pi-native/console/commit/708870bdbd08c0a3041477fea0ccb93652963e5f))
+* **argocd:** remove kubernetes ressource generation dead code ([#1945](https://github.com/cloud-pi-native/console/issues/1945)) ([95cc280](https://github.com/cloud-pi-native/console/commit/95cc28035f73517ff91811154fc72be56978dd0c))
+* bump axios to 1.13.x ([#1988](https://github.com/cloud-pi-native/console/issues/1988)) ([9f8c8cb](https://github.com/cloud-pi-native/console/commit/9f8c8cb439249fc2304f76ed5332be161f8393db))
+* **ci:** add a dedicated Merge Queue workflow ([0618d39](https://github.com/cloud-pi-native/console/commit/0618d39d35b2873ecd25a7a323557e5cacac9cf3))
+* **ci:** add debug for merge queues ([40132d2](https://github.com/cloud-pi-native/console/commit/40132d2e4ed6fdcc6330603f965a32037800a09d))
+* **ci:** add merge_group to CI worklow again ([674d8cf](https://github.com/cloud-pi-native/console/commit/674d8cfa14ea685b6520b8ec44a160676e6a20cb))
+* **ci:** enable merge queues by leveraging main CI workflow ([62c9214](https://github.com/cloud-pi-native/console/commit/62c9214d80d1bb56fae0223df4018130a9b5be25))
+* **ci:** fix sonarqube-quality-gate-action version ([21c94f9](https://github.com/cloud-pi-native/console/commit/21c94f9ac9bd4386f71e0d7b5580cc22cf007eef))
+* **ci:** fix trivy action version to avoid suppy-chain compromision ([6d153b8](https://github.com/cloud-pi-native/console/commit/6d153b83c209cf0dcc7f99ecebd082bcd30e3265))
+* **ci:** improve debug for merge queues ([1ed3eae](https://github.com/cloud-pi-native/console/commit/1ed3eae17eb88b341c947216a98f9bae7e02b012))
+* **ci:** improve debug for merge queues (add vars as reusable env vars) ([55cf78c](https://github.com/cloud-pi-native/console/commit/55cf78c39bb3e045b7c8009769789d817911b80e))
+* **ci:** improve debug for merge queues (fix event path) ([e3eba9a](https://github.com/cloud-pi-native/console/commit/e3eba9a231e863ace8af29e2c93b039bca2883a1))
+* **ci:** improve debug for merge queues (test stuff on lint and build jobs) ([ca277e0](https://github.com/cloud-pi-native/console/commit/ca277e0863407f5e0fa70ca40b475409a56ae42c))
+* **ci:** lighten non-merge queue load ([e31f2f7](https://github.com/cloud-pi-native/console/commit/e31f2f76df794fa06c7e0be264a240f50ea8694f))
+* **ci:** limit permissions by default ([d189624](https://github.com/cloud-pi-native/console/commit/d18962406aecc118219f596526bf4d3f6156a399))
+* **ci:** remove merge-group check in main workflow ([ccd4acf](https://github.com/cloud-pi-native/console/commit/ccd4acf36faa56a699b8cba23e7c69c90641ecfa))
+* **ci:** remove npm publish from create-or-update-release workflow ([006ffc4](https://github.com/cloud-pi-native/console/commit/006ffc4e2668b61ba83889b3d19a8469fb4dba33))
+* **ci:** remove unneeded token access privilege for npm publish ([0b9da31](https://github.com/cloud-pi-native/console/commit/0b9da31976482d2ff7dbcf53e7e22fab4ebd08c8))
+* **ci:** use merge-group SHA as tag to ensure the workflow can run ([1d555ee](https://github.com/cloud-pi-native/console/commit/1d555ee550e4715bc3ff15cfdcf57c3159ae1df8))
+* **ci:** use NPM Trusted Publishing OIDC instead of the old token process ([#1960](https://github.com/cloud-pi-native/console/issues/1960)) ([2842824](https://github.com/cloud-pi-native/console/commit/284282435eb67dab737df1b2f9d9f27a807ebaa6))
+* **clean-cache:** allow manual execution ([e39cf0c](https://github.com/cloud-pi-native/console/commit/e39cf0ce05f89a780a6f6d3aec4cdeb777731cb7))
+* **clean-cache:** assume there can be more than one image to delete ([24337d9](https://github.com/cloud-pi-native/console/commit/24337d9e4a6d93c002507c7b64eab2c065146d7d))
+* **clean-cache:** remove now useless flag (cache id is enough) ([35b88e1](https://github.com/cloud-pi-native/console/commit/35b88e122bc303e5e6bb47f6e2184ceaa99bb92b))
+* **clean-cache:** remove unknown flag ([7615d57](https://github.com/cloud-pi-native/console/commit/7615d5720bd7d34b9c6af7d80242ae5a82da4607))
+* fix clean cache input descriptions ([f8daa92](https://github.com/cloud-pi-native/console/commit/f8daa92a2d4003cece87fcf57801c224e2e1f858))
+* **keycloak:** migrating admin roles from disabled purge to enabled by default ([#1955](https://github.com/cloud-pi-native/console/issues/1955)) ([a2e5772](https://github.com/cloud-pi-native/console/commit/a2e5772170ab65bd92034877bf0de32a30873439))
+* prevent apps from being published on NPM registry (useless) ([173d503](https://github.com/cloud-pi-native/console/commit/173d503599723f64eb968a191355644285c2e8f9))
+* remove jest in profit to vitest ([#1986](https://github.com/cloud-pi-native/console/issues/1986)) ([f65e2e0](https://github.com/cloud-pi-native/console/commit/f65e2e07c27437b6204b18eb2f72aaafaf76ca0e))
+* remove lint rules that does nothing ([c4c5510](https://github.com/cloud-pi-native/console/commit/c4c55106681fd73cd96bc38efd3f1f6ad14aedcf))
+* remove precommit and prepush ([#1982](https://github.com/cloud-pi-native/console/issues/1982)) ([529257a](https://github.com/cloud-pi-native/console/commit/529257a997f0af7344f2f72bde45442debf5aba4))
+* remove purge option from Keycloack ([#1979](https://github.com/cloud-pi-native/console/issues/1979)) ([169fbc4](https://github.com/cloud-pi-native/console/commit/169fbc4f42acfb4dc84de6ae9f1da83751562e85))
+* remove unneeded job check in NPM publish workflow ([88011b8](https://github.com/cloud-pi-native/console/commit/88011b8a2fefb55c675726d480b6842df3b9c7d1))
+* remove useless failing tests ([#1967](https://github.com/cloud-pi-native/console/issues/1967)) ([9f7612a](https://github.com/cloud-pi-native/console/commit/9f7612a63239dcab12ec7b53ca17f8a390978b97))
+* **server-nestjs:** fix doc formatting ([0ddf0ad](https://github.com/cloud-pi-native/console/commit/0ddf0ad6730f35a73016957e91cba2cfdf2d27c9))
+* stricter imports lints ([#2007](https://github.com/cloud-pi-native/console/issues/2007)) ([9fb3f3a](https://github.com/cloud-pi-native/console/commit/9fb3f3a1a0c9875c2ec4999cda5cd86b68ddcada))
+* stricter unused args ([#2008](https://github.com/cloud-pi-native/console/issues/2008)) ([eef6dba](https://github.com/cloud-pi-native/console/commit/eef6dba9fe17e52c4984014375ffd9cd1c37eb09))
+* translate role type in French ([#1978](https://github.com/cloud-pi-native/console/issues/1978)) ([d86539a](https://github.com/cloud-pi-native/console/commit/d86539a43d2f508b9da20294e1bb1be5024e8c28))
+
+
+### Docs
+
+* **server-nestjs:** add modularization documentation ([#1936](https://github.com/cloud-pi-native/console/issues/1936)) ([aa88099](https://github.com/cloud-pi-native/console/commit/aa8809982ee15b6a68a86f82da6810ff8ecfa318))
+
 ## [9.13.2](https://github.com/cloud-pi-native/console/compare/v9.13.1...v9.13.2) (2026-02-24)
 
 
