@@ -14,11 +14,11 @@ on:
   workflow_dispatch:
     inputs:
       PR_NUMBER:
-        description: ID number of the pull request assiocited with the cache
+        description: Related pull request Id
         required: false
         type: number
       BRANCH_NAME:
-        description: Branch name assiocited with the cache
+        description: Related branch name
         required: false
         type: string
 
