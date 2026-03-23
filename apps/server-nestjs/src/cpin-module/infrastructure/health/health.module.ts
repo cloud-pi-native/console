@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { TerminusModule } from '@nestjs/terminus'
+import { KeycloakModule } from '../../../modules/keycloak/keycloak.module'
 import { DatabaseModule } from '../database/database.module'
 import { HealthController } from './health.controller'
 
@@ -7,6 +8,7 @@ import { HealthController } from './health.controller'
   imports: [
     TerminusModule,
     DatabaseModule,
+    KeycloakModule,
   ],
   controllers: [HealthController],
 })
