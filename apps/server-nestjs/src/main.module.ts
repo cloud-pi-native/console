@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common'
-
 import { CpinModule } from './cpin-module/cpin.module'
+import { HealthzModule } from './modules/healthz/healthz.module'
 
-// This module only exists to import other module.
-// « One module to rule them all, and in NestJs bind them »
 @Module({
-  imports: [CpinModule],
+  imports: [CpinModule, HealthzModule],
   controllers: [],
   providers: [],
 })
