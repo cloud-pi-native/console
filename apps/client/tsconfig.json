@@ -1,8 +1,7 @@
 {
-  // We can't extends because of Cypress incompatibility
-  // "extends": [
-  //   "@cpn-console/ts-config/tsconfig.base.json"
-  // ],
+  "extends": [
+    "@cpn-console/ts-config/tsconfig.base.json"
+  ],
   "compilerOptions": {
     "incremental": true,
     // Module

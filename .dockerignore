@@ -13,10 +13,6 @@ npm-debug.log
 .stylelintrc.js
 .stylelintrc.cjs
 
-# Cypress
-**/cypress.config.ts
-**/cypress
-
 # Tests
 .turbo/
 coverage/

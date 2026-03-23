@@ -48,9 +48,8 @@ Migrations: standard Prisma Migrate. Major version data migrations in `migration
 ## Testing
 
 - **Vitest**: unit tests everywhere (server, client, packages, plugins) — colocated `*.spec.ts` files
-- **Cypress 15**: component + E2E tests in `apps/client` (Firefox default)
 - **Playwright**: E2E in `playwright/` (Chromium + Firefox, parallel)
-- Commands: `pnpm test` (all unit), `pnpm test:ct` (Cypress components), `pnpm playwright:test`
+- Commands: `pnpm test` (all unit), `pnpm playwright:test`
 
 ## Code quality
 
@@ -63,7 +62,7 @@ Migrations: standard Prisma Migrate. Major version data migrations in `migration
 
 - Shared base: `packages/tsconfig/tsconfig.base.json` — ESNext, NodeNext, strict, `@/* -> src/*` alias
 - Server: extends shared base, uses `ts-patch`/`tspc` for path transform in emitted JS
-- Client: does NOT extend shared base (Cypress incompatibility), uses `Bundler` module resolution
+- Client: does NOT extend shared base, uses `Bundler` module resolution
 - server-nestjs: standalone config with `emitDecoratorMetadata` + `experimentalDecorators`
 
 ## Main commands

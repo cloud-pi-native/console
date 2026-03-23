@@ -33,7 +33,7 @@ export async function createGroup(page: Page, groupsToDelete: string[]) {
 }
 
 test.describe('Keycloak', () => {
-  test.beforeEach({ tag: ['@e2e', '@integ'] }, async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await signInKeycloak(page)
   })
 
@@ -53,7 +53,7 @@ test.describe('Keycloak', () => {
   })
 
   test.describe('CπN realm', () => {
-    test.beforeEach({ tag: ['@e2e', '@integ'] }, async ({ page }) => {
+    test.beforeEach(async ({ page }) => {
       await page.getByTestId('realmSelector').click()
       await page.getByRole('menuitem', { name: keycloakConfig.realm }).click()
     })
