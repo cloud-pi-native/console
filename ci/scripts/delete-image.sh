@@ -76,7 +76,6 @@ IMAGE_NAME_URL_ENCODED="$(jq -rn --arg x ${IMAGE_NAME} '$x | @uri')"
 IMAGES=$(curl -s \
   -H "Authorization: Bearer ${GITHUB_TOKEN}" \
   "https://api.github.com/orgs/${ORG}/packages/container/${IMAGE_NAME_URL_ENCODED}/versions?per_page=100")
-MAIN_IMAGE_ID=$(echo "$IMAGES" | jq -r --arg t "$TAG" '.[] | select(.metadata.container.tags[] | contains($t)) | .id')
 
 # Delete subsequent images
 while read -r SHA; do
@@ -90,10 +89,13 @@ while read -r SHA; do
     "https://api.github.com/orgs/${ORG}/packages/container/${IMAGE_NAME_URL_ENCODED}/versions/${IMAGE_ID}"
 done <<< "$(docker buildx imagetools inspect ghcr.io/${ORG}/${IMAGE_NAME}:${TAG} --raw | jq -r '.manifests[] | .digest')"
 
-# Delete main image
-printf "\n${red}[Delete ghcr image].${no_color} Deleting image '$ORG/$IMAGE_NAME:$TAG'\n"
+# Delete main images
+while read -r IMAGE_ID; do
 
-curl -s \
-  -X DELETE \
-  -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-  "https://api.github.com/orgs/${ORG}/packages/container/${IMAGE_NAME_URL_ENCODED}/versions/${MAIN_IMAGE_ID}"
+  printf "\n${red}[Delete ghcr image].${no_color} Deleting GH package version: ${IMAGE_ID}'\n"
+
+  curl -s \
+    -X DELETE \
+    -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+    "https://api.github.com/orgs/${ORG}/packages/container/${IMAGE_NAME_URL_ENCODED}/versions/${IMAGE_ID}"
+done <<< "$(echo "$IMAGES" | jq -r --arg t "$TAG" '.[] | select(.metadata.container.tags[] | contains($t)) | .id')"
