@@ -55,7 +55,6 @@ jobs:
   matrix:
     name: Generate matrix
     runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.number || github.event.number }}
     outputs:
       build-matrix: ${{ steps.build-matrix.outputs.BUILD_MATRIX }}
     steps:
