@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 
 import { ApplicationInitializationModule } from './application-initialization/application-initialization.module'
 import { CoreModule } from './core/core.module'
+import { HealthModule } from './infrastructure/health/health.module'
 import { InfrastructureModule } from './infrastructure/infrastructure.module'
 
 // This module host the old "server code" of our backend.
@@ -11,6 +12,7 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module'
   imports: [
     ApplicationInitializationModule,
     CoreModule,
+    HealthModule,
     InfrastructureModule,
   ],
 })
