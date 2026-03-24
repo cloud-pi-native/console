@@ -7,9 +7,9 @@ import {
   CleanedClusterSchema,
   ClusterDetailsSchema,
   ClusterUsageSchema,
-  EnvironmentSchema,
-  UserSchema,
-} from '../schemas/index.js'
+} from '../schemas/cluster.js'
+import { EnvironmentSchema } from '../schemas/environment.js'
+import { UserSchema } from '../schemas/user.js'
 import { baseHeaders, ErrorSchema } from './_utils.js'
 
 export const ClusterParams = z.object({
