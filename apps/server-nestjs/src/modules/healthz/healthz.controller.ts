@@ -5,7 +5,8 @@ import { GitlabHealthService } from '../gitlab/gitlab-health.service'
 import { KeycloakHealthService } from '../keycloak/keycloak-health.service'
 import { VaultHealthService } from '../vault/vault-health.service'
 import { DatabaseHealthService } from '../../cpin-module/infrastructure/database/database-health.service'
-import { KeycloakHealthService } from '../keycloak/keycloak-health.service'
+import { NexusHealthService } from '../nexus/nexus-health.service'
+import { RegistryHealthService } from '../registry/registry-health.service'
 
 @Controller('api/v1/healthz')
 export class HealthzController {
@@ -15,6 +16,8 @@ export class HealthzController {
     @Inject(KeycloakHealthService) private readonly keycloak: KeycloakHealthService,
     @Inject(GitlabHealthService) private readonly gitlab: GitlabHealthService,
     @Inject(VaultHealthService) private readonly vault: VaultHealthService,
+    @Inject(NexusHealthService) private readonly nexus: NexusHealthService,
+    @Inject(RegistryHealthService) private readonly registry: RegistryHealthService,
     @Inject(ArgoCDHealthService) private readonly argocd: ArgoCDHealthService,
   ) {}
 
@@ -26,6 +29,8 @@ export class HealthzController {
       () => this.keycloak.check('keycloak'),
       () => this.gitlab.check('gitlab'),
       () => this.vault.check('vault'),
+      () => this.nexus.check('nexus'),
+      () => this.registry.check('registry'),
       () => this.argocd.check('argocd'),
     ])
   }
