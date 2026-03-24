@@ -99,7 +99,7 @@ services:
   nginx-strangler:
     # En mode local (pnpm dev), server et server-nestjs tournent nativement sur la machine.
     # Le nginx-strangler reste en Docker et atteint les processes natifs via host.docker.internal.
-    # Ports par défaut : server=4000, server-nestjs=3001 (voir .env-example de chaque app).
+    # (voir .env-example de chaque app).
     restart: unless-stopped
     build:
       context: ..
@@ -108,8 +108,10 @@ services:
     container_name: dso-console_nginx-strangler
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    ports:
+      - 4000:8080
     environment:
-      LEGACY_UPSTREAM: "host.docker.internal:4000"
+      LEGACY_UPSTREAM: "host.docker.internal:4001"
       NESTJS_UPSTREAM: "host.docker.internal:3001"
     ports:
       - 8082:8080

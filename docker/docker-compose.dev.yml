@@ -74,7 +74,7 @@ services:
       postgres:
         condition: service_started
     ports:
-      - 4000:8080
+      - 4001:8080
       - 9229:9229
     env_file:
       - ../apps/server/.env.docker
@@ -118,6 +118,8 @@ services:
     image: dso-console/server-nestjs:dev
     container_name: dso-console_server-nestjs
     command: [start:dev]
+    ports:
+      - 3001:3001
     depends_on:
       keycloak:
         condition: service_healthy
@@ -164,6 +166,8 @@ services:
       dockerfile: apps/nginx-strangler/Dockerfile
     image: dso-console/nginx-strangler:dev
     container_name: dso-console_nginx-strangler
+    ports:
+      - 4000:8080
     depends_on:
       server:
         condition: service_started

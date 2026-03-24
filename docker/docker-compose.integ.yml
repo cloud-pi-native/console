@@ -47,7 +47,7 @@ services:
       postgres:
         condition: service_started
     ports:
-      - 4000:8080
+      - 4001:8080
       - 9229:9229
     volumes:
       - ${KUBECONFIG_HOST_PATH}:${KUBECONFIG_PATH:-/home/node/.kube/config}
@@ -98,6 +98,8 @@ services:
     depends_on:
       postgres:
         condition: service_started
+    ports:
+      - 3001:3001
     volumes:
       - ${KUBECONFIG_HOST_PATH}:${KUBECONFIG_PATH:-/home/node/.kube/config}
       - ${EXTERNAL_PLUGINS_DIR_HOST_PATH}:/plugins
@@ -148,6 +150,8 @@ services:
         condition: service_started
       server-nestjs:
         condition: service_started
+    ports:
+      - 4000:8080
     environment:
       LEGACY_UPSTREAM: "server:8080"
       NESTJS_UPSTREAM: "server-nestjs:3001"

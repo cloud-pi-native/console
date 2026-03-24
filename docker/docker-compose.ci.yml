@@ -53,9 +53,6 @@ services:
         condition: service_started
       keycloak:
         condition: service_healthy
-    ports:
-      - 4000:8080
-      - 9229:9229
     volumes:
       - ../packages/test-utils/src/imports/data.ts:/app/dist/init/db/imports/data.js
     env_file:
