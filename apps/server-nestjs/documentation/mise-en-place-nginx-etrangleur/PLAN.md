@@ -10,10 +10,10 @@
 
 | Élément | État |
 |---|---|
-| `server` (Fastify) | Port `8080` interne, exposé `4000` sur l'hôte |
+| `server` (Fastify) | Port `8080` interne, exposé `4001` sur l'hôte |
 | Nginx actuel | Embarqué dans l'image `client`, proxifie `/api` + `/swagger-ui` vers `server:8080` — upstream changé vers `nginx-strangler:8080` |
 | `server-nestjs` | Dockerisé (port `3001`), ajouté dans tous les docker-compose |
-| `nginx-strangler` | Service dédié créé dans `apps/nginx-strangler/`, fallback total sur `server` legacy |
+| `nginx-strangler` | Service dédié créé dans `apps/nginx-strangler/`, fallback total sur `server` legacy, exposé sur le port `4000` pour se "substituer" à `server` |
 | Envs couverts | Local dev, docker-compose (dev/prod/ci/integ) |
 
 ---
@@ -187,7 +187,7 @@ Variables par contexte :
 | Contexte | `LEGACY_UPSTREAM` | `NESTJS_UPSTREAM` |
 |---|---|---|
 | Docker (dev/prod/ci/integ) | `server:8080` | `server-nestjs:3001` |
-| Local (pnpm dev) | `host.docker.internal:4000` | `host.docker.internal:3001` |
+| Local (pnpm dev) | `host.docker.internal:4001` | `host.docker.internal:3001` |
 | PAX / MinInt | À adapter selon la topologie réseau |
 
 ---

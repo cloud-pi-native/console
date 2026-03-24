@@ -54,7 +54,7 @@ services:
       keycloak:
         condition: service_healthy
     ports:
-      - 4000:8080
+      - 4001:8080
       - 9229:9229
     volumes:
       - ../packages/test-utils/src/imports/data.ts:/app/dist/init/db/imports/data.js
@@ -80,6 +80,8 @@ services:
         condition: service_started
       keycloak:
         condition: service_healthy
+    ports:
+      - 3001:3001
     env_file:
       - ../apps/server-nestjs/.env.docker
     environment:
@@ -100,6 +102,8 @@ services:
         condition: service_started
       server-nestjs:
         condition: service_started
+    ports:
+      - 4000:8080
     environment:
       LEGACY_UPSTREAM: "server:8080"
       NESTJS_UPSTREAM: "server-nestjs:3001"

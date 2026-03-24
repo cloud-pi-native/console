@@ -23,7 +23,7 @@ Ticket de référence : [#1885](https://github.com/cloud-pi-native/console/issue
 
 | Variable | Description | Exemple Docker | Exemple local |
 |---|---|---|---|
-| `LEGACY_UPSTREAM` | Adresse du backend Fastify legacy | `server:8080` | `host.docker.internal:4000` |
+| `LEGACY_UPSTREAM` | Adresse du backend Fastify legacy | `server:8080` | `host.docker.internal:4001` |
 | `NESTJS_UPSTREAM` | Adresse du backend NestJS | `server-nestjs:3001` | `host.docker.internal:3001` |
 
 Ces variables sont substituées dans `conf.d/routing.conf` via `envsubst` au démarrage du conteneur.
@@ -87,7 +87,7 @@ Quand `server` et `server-nestjs` tournent nativement (hors Docker), le `nginx-s
 
 ```bash
 # Dans docker/docker-compose.local.yml, le service nginx-strangler utilise :
-# LEGACY_UPSTREAM=host.docker.internal:4000
+# LEGACY_UPSTREAM=host.docker.internal:4001
 # NESTJS_UPSTREAM=host.docker.internal:3001
 
 docker compose -f docker/docker-compose.local.yml up nginx-strangler
@@ -112,6 +112,6 @@ docker compose logs -f nginx-strangler
 
 ## Liens
 
-- Plan de mise en place : [`apps/server-nestjs/documentation/mise-en-place-nginx-etrangleur/PLAN.md`](../apps/server-nestjs/documentation/mise-en-place-nginx-etrangleur/PLAN.md)
-- Stratégie de modularisation : [`apps/server-nestjs/documentation/Modularisation-de-console-server/01-MODULARISATION-STRATEGIE.md`](../apps/server-nestjs/documentation/Modularisation-de-console-server/01-MODULARISATION-STRATEGIE.md)
-- Cartographie des modules : [`apps/server-nestjs/documentation/Modularisation-de-console-server/MODULARISATION-CARTOGRAPHIE.md`](../apps/server-nestjs/documentation/Modularisation-de-console-server/MODULARISATION-CARTOGRAPHIE.md)
+- Plan de mise en place : [`server-nestjs/documentation/mise-en-place-nginx-etrangleur/PLAN.md`](../server-nestjs/documentation/mise-en-place-nginx-etrangleur/PLAN.md)
+- Stratégie de modularisation : [`server-nestjs/documentation/Modularisation-de-console-server/01-MODULARISATION-STRATEGIE.md`](../server-nestjs/documentation/Modularisation-de-console-server/01-MODULARISATION-STRATEGIE.md)
+- Cartographie des modules : [`server-nestjs/documentation/Modularisation-de-console-server/MODULARISATION-CARTOGRAPHIE.md`](../server-nestjs/documentation/Modularisation-de-console-server/MODULARISATION-CARTOGRAPHIE.md)
