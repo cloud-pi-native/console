@@ -1,3 +1,5 @@
+shellEmulator: true
+trustPolicy: no-downgrade
 autoInstallPeers: true
 injectWorkspacePackages: true
 packages:
@@ -6,3 +8,13 @@ packages:
   - "apps/**"
   - "!apps/server/src/plugins/external/**"
   - "playwright/**"
+patchedDependencies:
+  "@gouvminint/vue-dsfr@8.15.0": patches/@gouvminint__vue-dsfr@8.15.0.patch
+  fastify-keycloak-adapter@2.3.2: patches/fastify-keycloak-adapter@2.3.2.patch
+allowUnusedPatches: true
+onlyBuiltDependencies:
+  - "@prisma/client"
+  - "@prisma/engines"
+  - esbuild
+  - prisma
+  - vue-demi
