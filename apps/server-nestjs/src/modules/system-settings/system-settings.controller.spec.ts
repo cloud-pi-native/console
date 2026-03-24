@@ -1,5 +1,7 @@
 import type { INestApplication } from '@nestjs/common'
+import { ADMIN_PERMS } from '@cpn-console/shared'
 import { ValidationPipe } from '@nestjs/common'
+import { APP_GUARD } from '@nestjs/core'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
@@ -21,9 +23,17 @@ describe('systemSettingsController (e2e)', () => {
     })
       .overrideProvider(PrismaService)
       .useValue(prismaMock)
+      .overrideProvider(APP_GUARD)
+      .useValue({ canActivate: () => true })
       .compile()
 
     app = moduleRef.createNestApplication()
+    app.use((req, _res, next) => {
+      if (req.headers['x-test-admin'] === 'true') {
+        ;(req as any).user = { adminPermissions: ADMIN_PERMS.MANAGE_SYSTEM }
+      }
+      next()
+    })
     app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }))
     await app.init()
   })
@@ -35,14 +45,23 @@ describe('systemSettingsController (e2e)', () => {
   it('rejects invalid body on PUT', async () => {
     await request(app.getHttpServer())
       .put('/api/v1/system/settings')
+      .set('x-test-admin', 'true')
       .send({ key: 'foo' })
       .expect(400)
+  })
+
+  it('rejects PUT when missing ManageSystem permission', async () => {
+    await request(app.getHttpServer())
+      .put('/api/v1/system/settings')
+      .send({ key: 'foo', value: 'bar' })
+      .expect(403)
   })
 
   it('accepts valid body on PUT and upserts', async () => {
     ;(prismaMock.systemSetting.upsert as any).mockResolvedValue({ key: 'foo', value: 'bar' })
     await request(app.getHttpServer())
       .put('/api/v1/system/settings')
+      .set('x-test-admin', 'true')
       .send({ key: 'foo', value: 'bar' })
       .expect(200)
       .expect(({ body }) => {
