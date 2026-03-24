@@ -25,7 +25,7 @@ RUN chown -R nginx:nginx \
 USER nginx
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget -qO- http://localhost:8080/api/ || exit 1
+  CMD wget -qO- http://127.0.0.1:8080/health || exit 1
 
 # Entrypoint : envsubst substitue les variables d'env dans les templates,
 # puis démarre nginx en foreground
