@@ -22,6 +22,8 @@
     "start:prod": "node dist/main"
   },
   "dependencies": {
+    "@casl/ability": "^6.8.0",
+    "@casl/prisma": "^1.6.1",
     "@cpn-console/argocd-plugin": "workspace:^",
     "@cpn-console/gitlab-plugin": "workspace:^",
     "@cpn-console/harbor-plugin": "workspace:^",
@@ -65,7 +67,9 @@
     "fastify": "^4.29.1",
     "fastify-keycloak-adapter": "2.3.2",
     "json-2-csv": "^5.5.10",
+    "keycloak-connect": "^26.1.1",
     "mustache": "^4.2.0",
+    "nest-keycloak-connect": "2.0.0-alpha.2",
     "nestjs-pino": "^4.6.0",
     "pino-http": "^11.0.0",
     "prisma": "^6.19.2",
