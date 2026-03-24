@@ -4,7 +4,9 @@ import { DatabaseModule } from '../../cpin-module/infrastructure/database/databa
 import { ArgoCDModule } from '../argocd/argocd.module'
 import { GitlabModule } from '../gitlab/gitlab.module'
 import { KeycloakModule } from '../keycloak/keycloak.module'
-import { DatabaseModule } from '../../cpin-module/infrastructure/database/database.module'
+import { NexusModule } from '../nexus/nexus.module'
+import { RegistryModule } from '../registry/registry.module'
+import { VaultModule } from '../vault/vault.module'
 import { HealthzController } from './healthz.controller'
 
 @Module({
@@ -14,8 +16,10 @@ import { HealthzController } from './healthz.controller'
     KeycloakModule,
     GitlabModule,
     VaultModule,
+    NexusModule,
+    RegistryModule,
     ArgoCDModule,
   ],
   controllers: [HealthzController],
 })
-export class HealthzModule {}
+export class HealthModule {}
