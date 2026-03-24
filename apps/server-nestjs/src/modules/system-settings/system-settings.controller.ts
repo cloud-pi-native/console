@@ -1,6 +1,7 @@
 import type { ListSystemSettingsQueryDto } from './dto/list-system-settings-query.dto'
-import type { SystemSettingDto } from './dto/system-setting.dto'
-import { Body, Controller, Get, Inject, Put, Query } from '@nestjs/common'
+import { Body, Controller, Get, Inject, Put, Query, UseGuards, ValidationPipe } from '@nestjs/common'
+import { AbilityGuard } from '../../cpin-module/infrastructure/iam/guards/ability.guard'
+import { SystemSettingDto } from './dto/system-setting.dto'
 import { SystemSettingsService } from './system-settings.service'
 
 @Controller('api/v1/system/settings')
@@ -13,7 +14,11 @@ export class SystemSettingsController {
   }
 
   @Put()
-  async upsert(@Body() body: SystemSettingDto) {
+  @UseGuards(new AbilityGuard('manage', 'SystemSetting'))
+  async upsert(
+    @Body(new ValidationPipe({ transform: true, whitelist: true, expectedType: SystemSettingDto }))
+    body: SystemSettingDto,
+  ) {
     return this.service.upsert(body)
   }
 }
