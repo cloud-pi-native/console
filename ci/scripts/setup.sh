@@ -24,6 +24,7 @@ printf "\n${red}${i}.${no_color} Generate Prisma client\n"
 i=$(($i + 1))
 
 pnpm --filter=server run db:generate
+pnpm --filter=server-nestjs run db:generate
 
 
 printf "\n${red}${i}.${no_color} Build packges\n"
