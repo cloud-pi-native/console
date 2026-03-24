@@ -17,7 +17,7 @@
     "format:style": "stylelint ./src/**/*.{css,vue} --fix",
     "icons": "vue-dsfr-icons -s scripts/icons.js -t src/icon-collections.ts",
     "integ": "vite --mode=integration",
-    "lint": "run-p lint:*",
+    "lint": "run-p lint:ts lint:style",
     "lint:style": "stylelint ./src/**/*.{css,vue}",
     "lint:ts": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' eslint ./",
     "preview": "vite preview --port 8080",
