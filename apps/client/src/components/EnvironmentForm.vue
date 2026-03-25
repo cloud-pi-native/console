@@ -13,10 +13,10 @@ import {
   projectIsLockedInfo,
 } from '@cpn-console/shared'
 import { computed, onBeforeMount, ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useStageStore } from '@/stores/stage.js'
-import { useZoneStore } from '@/stores/zone.js'
-import { copyContent, localeParseFloat, ONE_TENTH_STR } from '@/utils/func.js'
+import { useSnackbarStore } from '@/stores/snackbar.ts'
+import { useStageStore } from '@/stores/stage.ts'
+import { useZoneStore } from '@/stores/zone.ts'
+import { copyContent, localeParseFloat, ONE_TENTH_STR } from '@/utils/func.ts'
 
 interface OptionType {
   text: string

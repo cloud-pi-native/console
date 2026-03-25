@@ -4,7 +4,7 @@ import type { DsfrAlertType } from '@gouvminint/vue-dsfr'
 import { MonitorStatus } from '@cpn-console/shared'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { apiClient, extractData } from '@/api/xhr-client.js'
+import { apiClient, extractData } from '../api/xhr-client.ts'
 
 export type ServicesHealth = {
   message: string

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { Project, ProjectOperations } from '@/utils/project-utils.js'
+import type { Project, ProjectOperations } from '@/utils/project-utils.ts'
 import { bts, descriptionMaxLength, projectIsLockedInfo } from '@cpn-console/shared'
-import { copyContent } from '@/utils/func.js'
+import { copyContent } from '@/utils/func.ts'
 
 withDefaults(defineProps<{
   project: Project

@@ -1,6 +1,6 @@
 import type Zod from 'zod'
 import { z } from 'zod'
-import { configProjectItemDeclaration } from './config.js'
+import { configProjectItemDeclaration } from './config.ts'
 
 export const pluginSchema = z.object({
   description: z.string()

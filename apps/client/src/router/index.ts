@@ -7,36 +7,36 @@ import {
   createRouter,
   createWebHistory,
 } from 'vue-router'
-import { useProjectStore } from '@/stores/project.js'
-import { useSystemSettingsStore } from '@/stores/system-settings.js'
+import { useProjectStore } from '../stores/project.ts'
+import { useSystemSettingsStore } from '../stores/system-settings.ts'
 
-import { useUserStore } from '@/stores/user.js'
-import { uuid } from '@/utils/regex.js'
-import DsoHome from '@/views/DsoHome.vue'
-import NotFound from '@/views/NotFound.vue'
+import { useUserStore } from '../stores/user.ts'
+import { uuid } from '../utils/regex.ts'
+import DsoHome from '../views/DsoHome.vue'
+import NotFound from '../views/NotFound.vue'
 
-const AdminCluster = () => import('@/views/admin/AdminCluster.vue')
-const AdminServiceChain = () => import('@/views/admin/AdminServiceChain.vue')
-const ServicesHealth = () => import('@/views/ServicesHealth.vue')
-const CreateProject = () => import('@/views/CreateProject.vue')
-const ProfileWrapper = () => import('@/views/profile/ProfileWrapper.vue')
-const UserInfo = () => import('@/views/profile/UserInfo.vue')
-const PersonalAccessTokens = () => import('@/views/profile/PersonalAccessTokens.vue')
-const DsoProjects = () => import('@/views/projects/DsoProjects.vue')
-const DsoAdmin = () => import('@/views/admin/DsoAdmin.vue')
-const ListUser = () => import('@/views/admin/ListUser.vue')
-const ProjectDashboard = () => import('@/views/ProjectDashboard.vue')
-const ListProjects = () => import('@/views/admin/ListProjects.vue')
-const ListLogs = () => import('@/views/admin/ListLogs.vue')
-const AdminRoles = () => import('@/views/admin/AdminRoles.vue')
-const ListClusters = () => import('@/views/admin/ListClusters.vue')
-const ListServiceChains = () => import('@/views/admin/ListServiceChains.vue')
-const ListStages = () => import('@/views/admin/ListStages.vue')
-const ListZones = () => import('@/views/admin/ListZones.vue')
-const ListPlugins = () => import('@/views/admin/ListPlugins.vue')
-const SystemSettings = () => import('@/views/admin/SystemSettings.vue')
-const Maintenance = () => import('@/views/DsoMaintenance.vue')
-const AdminTokens = () => import('@/views/admin/AdminTokens.vue')
+const AdminCluster = () => import('../views/admin/AdminCluster.vue')
+const AdminServiceChain = () => import('../views/admin/AdminServiceChain.vue')
+const ServicesHealth = () => import('../views/ServicesHealth.vue')
+const CreateProject = () => import('../views/CreateProject.vue')
+const ProfileWrapper = () => import('../views/profile/ProfileWrapper.vue')
+const UserInfo = () => import('../views/profile/UserInfo.vue')
+const PersonalAccessTokens = () => import('../views/profile/PersonalAccessTokens.vue')
+const DsoProjects = () => import('../views/projects/DsoProjects.vue')
+const DsoAdmin = () => import('../views/admin/DsoAdmin.vue')
+const ListUser = () => import('../views/admin/ListUser.vue')
+const ProjectDashboard = () => import('../views/ProjectDashboard.vue')
+const ListProjects = () => import('../views/admin/ListProjects.vue')
+const ListLogs = () => import('../views/admin/ListLogs.vue')
+const AdminRoles = () => import('../views/admin/AdminRoles.vue')
+const ListClusters = () => import('../views/admin/ListClusters.vue')
+const ListServiceChains = () => import('../views/admin/ListServiceChains.vue')
+const ListStages = () => import('../views/admin/ListStages.vue')
+const ListZones = () => import('../views/admin/ListZones.vue')
+const ListPlugins = () => import('../views/admin/ListPlugins.vue')
+const SystemSettings = () => import('../views/admin/SystemSettings.vue')
+const Maintenance = () => import('../views/DsoMaintenance.vue')
+const AdminTokens = () => import('../views/admin/AdminTokens.vue')
 
 const MAIN_TITLE = 'Console Cloud π Native'
 

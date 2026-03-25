@@ -1,4 +1,4 @@
-import { getApi } from './utils.js'
+import { getApi } from './utils.ts'
 
 export async function deleteGroup(groupId: number, fullPath: string) {
   const api = getApi()

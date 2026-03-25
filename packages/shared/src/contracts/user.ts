@@ -1,12 +1,12 @@
 import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
 import { z } from 'zod'
-import { apiPrefix, contractInstance } from '../api-client.js'
-import { UuidOrCsvUuidSchema } from '../schemas/_utils.js'
+import { apiPrefix, contractInstance } from '../api-client.ts'
+import { UuidOrCsvUuidSchema } from '../schemas/_utils.ts'
 import {
   RoleNameCsvSchema,
   UserSchema,
-} from '../schemas/index.js'
-import { baseHeaders, ErrorSchema } from './_utils.js'
+} from '../schemas/index.ts'
+import { baseHeaders, ErrorSchema } from './_utils.ts'
 
 export const userContract = contractInstance.router({
   getMatchingUsers: {

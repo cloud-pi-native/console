@@ -4,11 +4,11 @@ import { bts, statusDict } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
 import { onBeforeMount, ref } from 'vue'
-import { apiClient, extractData } from '@/api/xhr-client.js'
-import router from '@/router/index.js'
-import { useProjectStore } from '@/stores/project.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { getRandomId } from '@/utils/func.js'
+import { apiClient, extractData } from '@/api/xhr-client.ts'
+import router from '@/router/index.ts'
+import { useProjectStore } from '@/stores/project.ts'
+import { useSnackbarStore } from '@/stores/snackbar.ts'
+import { getRandomId } from '@/utils/func.ts'
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()

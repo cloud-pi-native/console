@@ -1,7 +1,7 @@
-import { logger } from './app.js'
-import { closeConnections } from './connect.js'
-import { getPreparedApp } from './prepare-app.js'
-import { isCI, isDev, isDevSetup, isProd, isTest, port } from './utils/env.js'
+import { logger } from './app.ts'
+import { closeConnections } from './connect.ts'
+import { getPreparedApp } from './prepare-app.ts'
+import { isCI, isDev, isDevSetup, isProd, isTest, port } from './utils/env.ts'
 
 const app = await getPreparedApp()
 

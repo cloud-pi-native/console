@@ -1,7 +1,7 @@
 import type { BaseRequestOptions, Gitlab as IGitlab, OffsetPagination, PaginationRequestOptions } from '@gitbeaker/core'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { Gitlab } from '@gitbeaker/rest'
-import config from './config.js'
+import config from './config.ts'
 
 let api: IGitlab | undefined
 
@@ -91,7 +91,7 @@ export interface VaultSecrets {
 }
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking
-const keyValueRegExp = /\/\/(.*):(.*)@/g
+const keyValueRegExp = /\/\/(.*):(.*)../g
 
 export function cleanGitlabError<T>(error: T): T {
   if (error instanceof GitbeakerRequestError && error.cause?.description) {

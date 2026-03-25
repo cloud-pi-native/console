@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import type { CleanedCluster, Cluster, CreateEnvironmentBody, Environment, Repo, UpdateEnvironmentBody, Zone } from '@cpn-console/shared'
-import type { Project } from '@/utils/project-utils.js'
+import type { Project } from '@/utils/project-utils.ts'
 import { AdminAuthorized, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
-import { useClusterStore } from '@/stores/cluster.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useStageStore } from '@/stores/stage.js'
-import { useUserStore } from '@/stores/user.js'
-import { useZoneStore } from '@/stores/zone.js'
-import { clickInDialog, getRandomId } from '@/utils/func.js'
+import { useClusterStore } from '@/stores/cluster.ts'
+import { useSnackbarStore } from '@/stores/snackbar.ts'
+import { useStageStore } from '@/stores/stage.ts'
+import { useUserStore } from '@/stores/user.ts'
+import { useZoneStore } from '@/stores/zone.ts'
+import { clickInDialog, getRandomId } from '@/utils/func.ts'
 
 type Source = 'Privée extérieure' | 'Publique extérieure' | 'Interne'
 

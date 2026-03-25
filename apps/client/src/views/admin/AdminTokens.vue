@@ -3,8 +3,8 @@ import type { AdminToken } from '@cpn-console/shared'
 import type { SimpleToken } from '@/components/TokenForm.vue'
 import { getAdminPermLabelsByValue } from '@cpn-console/shared'
 import { onMounted } from 'vue'
-import { useAdminTokenStore } from '@/stores/admin-token.js'
-import { clickInDialog } from '@/utils/func.js'
+import { useAdminTokenStore } from '@/stores/admin-token.ts'
+import { clickInDialog } from '@/utils/func.ts'
 
 const statusWording: Record<AdminToken['status'], string> = {
   active: 'Actif',

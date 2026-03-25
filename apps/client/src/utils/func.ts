@@ -1,4 +1,4 @@
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useSnackbarStore } from '../stores/snackbar.ts'
 
 const LOCALE = navigator.language.slice(0, 2)
 // Get the thousands and decimal separator characters used in the locale.

@@ -1,12 +1,12 @@
 import { setTimeout } from 'node:timers/promises'
-import { logger } from './app.js'
-import prisma from './prisma.js'
+import { logger } from './app.ts'
+import prisma from './prisma.ts'
 import {
   dbUrl,
   isCI,
   isDev,
   isTest,
-} from './utils/env.js'
+} from './utils/env.ts'
 
 const DELAY_BEFORE_RETRY = isTest || isCI ? 1000 : 10000
 let closingConnections = false

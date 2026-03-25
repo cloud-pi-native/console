@@ -2,8 +2,8 @@ import type { AdminRole, adminRoleContract } from '@cpn-console/shared'
 import { AdminAuthorized } from '@cpn-console/shared'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { apiClient, extractData } from '../api/xhr-client.js'
-import { useUserStore } from './user.js'
+import { apiClient, extractData } from '../api/xhr-client.ts'
+import { useUserStore } from './user.ts'
 
 export const useAdminRoleStore = defineStore('adminRole', () => {
   const userStore = useUserStore()

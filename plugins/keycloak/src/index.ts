@@ -1,6 +1,6 @@
 import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks'
-import { KeycloakProjectApi } from './class.js'
-import { start } from './client.js'
+import { KeycloakProjectApi } from './class.ts'
+import { start } from './client.ts'
 import {
   deleteAdminRole,
   deleteProject,
@@ -13,9 +13,9 @@ import {
   upsertProjectMember,
   upsertProjectRole,
   upsertZone,
-} from './functions.js'
-import infos from './infos.js'
-import monitor from './monitor.js'
+} from './functions.ts'
+import infos from './infos.ts'
+import monitor from './monitor.ts'
 
 export const plugin: Plugin = {
   infos,

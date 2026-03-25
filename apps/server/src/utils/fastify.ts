@@ -10,8 +10,8 @@ import {
   keycloakRealm,
   keycloakRedirectUri,
   NODE_ENV,
-} from './env.js'
-import { loggerConf } from './logger.js'
+} from './env.ts'
+import { loggerConf } from './logger.ts'
 
 export const fastifyConf: FastifyServerOptions = {
   maxParamLength: 5000,

@@ -2,7 +2,7 @@
 import type { Repo, SharedZodError } from '@cpn-console/shared'
 import { CreateRepoFormSchema, deleteValidationInput, fakeToken, instanciateSchema, RepoFormSchema, UpdateRepoFormSchema } from '@cpn-console/shared'
 import { computed, ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useSnackbarStore } from '@/stores/snackbar.ts'
 
 type RepoForm = Partial<Repo> & { isStandalone?: boolean }
 const props = withDefaults(defineProps<{

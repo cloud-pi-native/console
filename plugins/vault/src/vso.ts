@@ -1,4 +1,4 @@
-import type { AppRoleCredentials } from './vault-project-api.js'
+import type { AppRoleCredentials } from './vault-project-api.ts'
 
 export function generateVsoVaultConnection(creds: AppRoleCredentials) {
   return {

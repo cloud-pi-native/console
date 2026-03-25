@@ -4,8 +4,8 @@ import type {
   ServiceChainDetails,
   ServiceChainFlows,
 } from '@cpn-console/shared'
-import router from '@/router/index.js'
-import { useServiceChainStore } from '@/stores/service-chain.js'
+import router from '@/router/index.ts'
+import { useServiceChainStore } from '@/stores/service-chain.ts'
 
 const props = defineProps<{
   id: ServiceChain['id']

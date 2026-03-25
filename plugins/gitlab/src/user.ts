@@ -1,6 +1,6 @@
 import type { UserObject } from '@cpn-console/hooks'
 import type { CreateUserOptions, SimpleUserSchema } from '@gitbeaker/rest'
-import { find, getApi, offsetPaginate } from './utils.js'
+import { find, getApi, offsetPaginate } from './utils.ts'
 
 export const createUsername = (email: string) => email.replace('@', '.')
 
