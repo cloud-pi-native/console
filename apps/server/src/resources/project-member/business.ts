@@ -1,16 +1,16 @@
 import type { projectMemberContract, XOR } from '@cpn-console/shared'
 import type { Project, User } from '@prisma/client'
 import { UserSchema } from '@cpn-console/shared'
-import prisma from '@/prisma.js'
+import prisma from '../../prisma.ts'
 import {
   addLogs,
   deleteMember,
   listMembers as listMembersQuery,
   upsertMember,
-} from '@/resources/queries-index.js'
-import { BadRequest400, NotFound404 } from '@/utils/errors.js'
-import { hook } from '@/utils/hook-wrapper.js'
-import { logViaSession } from '../user/business.js'
+} from '../queries-index.ts'
+import { BadRequest400, NotFound404 } from '../../utils/errors.ts'
+import { hook } from '../../utils/hook-wrapper.ts'
+import { logViaSession } from '../user/business.ts'
 
 export const listMembers = async (projectId: Project['id']) => listMembersQuery(projectId)
 

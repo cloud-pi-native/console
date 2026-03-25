@@ -1,5 +1,5 @@
-import type { SonarPaging } from './project.js'
-import { getAxiosInstance } from './tech.js'
+import type { SonarPaging } from './project.ts'
+import { getAxiosInstance } from './tech.ts'
 
 export interface SonarGroup {
   id: string

@@ -1,11 +1,11 @@
-export * from './hook-admin-role.js'
-export * from './hook-cluster.js'
-export * from './hook-misc.js'
-export * from './hook-project-member.js'
-export * from './hook-project-role.js'
-export * from './hook-project.js'
-export * from './hook-user.js'
-export * from './hook-zone.js'
+export * from './hook-admin-role.ts'
+export * from './hook-cluster.ts'
+export * from './hook-misc.ts'
+export * from './hook-project-member.ts'
+export * from './hook-project-role.ts'
+export * from './hook-project.ts'
+export * from './hook-user.ts'
+export * from './hook-zone.ts'
 
 export interface PartialEnvironment { environment: string, stage: string, clusterLabel: string }
 export type InternalRepoName = string

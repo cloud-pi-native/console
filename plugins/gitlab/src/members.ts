@@ -1,13 +1,13 @@
 import type { Config, Project, UserObject } from '@cpn-console/hooks'
-import type { GitlabProjectApi } from './class.js'
+import type { GitlabProjectApi } from './class.ts'
 import { AccessLevel } from '@gitbeaker/core'
 import {
   DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX,
-} from './infos.js'
-import { createUsername, upsertUser } from './user.js'
-import { matchRole } from './utils.js'
+} from './infos.ts'
+import { createUsername, upsertUser } from './user.ts'
+import { matchRole } from './utils.ts'
 
 export function getGroupAccessLevelFromProjectRole(project: Project, user: UserObject, config: Config) {
   const projectReporterGroupPathSuffixes = (config.gitlab?.projectReporterGroupPathSuffix ?? DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX).split(',')

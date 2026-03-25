@@ -1,5 +1,5 @@
-import getConfig from './config.js'
-import { VaultApi } from './vault-api.js'
+import getConfig from './config.ts'
+import { VaultApi } from './vault-api.ts'
 
 interface VaultCredentials {
   url: string

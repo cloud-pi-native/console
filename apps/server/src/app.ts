@@ -1,5 +1,5 @@
 import type { FastifyRequest } from 'fastify'
-import type { CustomLogger } from './utils/logger.js'
+import type { CustomLogger } from './utils/logger.ts'
 import { apiPrefix, getContract } from '@cpn-console/shared'
 import fastifyCookie from '@fastify/cookie'
 import helmet from '@fastify/helmet'
@@ -10,11 +10,11 @@ import { initServer } from '@ts-rest/fastify'
 import { generateOpenApi } from '@ts-rest/open-api'
 import fastify from 'fastify'
 import keycloak from 'fastify-keycloak-adapter'
-import { apiRouter } from './resources/index.js'
-import { isDev, isInt, isTest } from './utils/env.js'
-import { fastifyConf, swaggerConf, swaggerUiConf } from './utils/fastify.js'
-import { keycloakConf, sessionConf } from './utils/keycloak.js'
-import { log } from './utils/logger.js'
+import { apiRouter } from './resources/index.ts'
+import { isDev, isInt, isTest } from './utils/env.ts'
+import { fastifyConf, swaggerConf, swaggerUiConf } from './utils/fastify.ts'
+import { keycloakConf, sessionConf } from './utils/keycloak.ts'
+import { log } from './utils/logger.ts'
 
 export const serverInstance: ReturnType<typeof initServer> = initServer()
 

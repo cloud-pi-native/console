@@ -1,6 +1,6 @@
-import type { ResourceById, ResourceByKey } from './types.js'
+import type { ResourceById, ResourceByKey } from './types.ts'
 import shortUUID from 'short-uuid'
-import { longestEnvironmentName } from './const.js'
+import { longestEnvironmentName } from './const.ts'
 
 /**
  * @param {*} value Value wanted to be return as is

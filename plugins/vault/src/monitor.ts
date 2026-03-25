@@ -1,7 +1,7 @@
 import type { MonitorInfos } from '@cpn-console/shared'
 import { Monitor, MonitorStatus } from '@cpn-console/shared'
 import axios from 'axios'
-import getConfig from './config.js'
+import getConfig from './config.ts'
 
 const vaultStatusCode = [200, 429, 472, 473, 501, 503]
 

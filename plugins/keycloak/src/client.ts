@@ -1,5 +1,5 @@
 import KcAdminClient from '@keycloak/keycloak-admin-client'
-import getConfig from './config.js'
+import getConfig from './config.ts'
 
 export async function getkcClient() {
   const kcClient = new KcAdminClient({

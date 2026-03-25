@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { swaggerUiPath } from '@cpn-console/shared'
-import { useServiceStore } from '@/stores/services-monitor.js'
+import { useServiceStore } from '@/stores/services-monitor.ts'
 import ReloadPrompt from './components/ReloadPrompt.vue'
-import { useAdminRoleStore } from './stores/admin-role.js'
+import { useAdminRoleStore } from './stores/admin-role.ts'
 
-import { useProjectStore } from './stores/project.js'
-import { useSnackbarStore } from './stores/snackbar.js'
-import { useSystemSettingsStore } from './stores/system-settings.js'
-import { useUserStore } from './stores/user.js'
-import { getKeycloak } from './utils/keycloak/keycloak.js'
+import { useProjectStore } from './stores/project.ts'
+import { useSnackbarStore } from './stores/snackbar.ts'
+import { useSystemSettingsStore } from './stores/system-settings.ts'
+import { useUserStore } from './stores/user.ts'
+import { getKeycloak } from './utils/keycloak/keycloak.ts'
 
 const keycloak = getKeycloak()
 const snackbarStore = useSnackbarStore()

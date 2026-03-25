@@ -1,15 +1,15 @@
 import { AdminAuthorized, stageContract } from '@cpn-console/shared'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
+import { serverInstance } from '../../app.ts'
+import { authUser } from '../../utils/controller.ts'
 
-import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
+import { ErrorResType, Forbidden403 } from '../../utils/errors.ts'
 import {
   createStage,
   deleteStage,
   getStageAssociatedEnvironments,
   listStages,
   updateStage,
-} from './business.js'
+} from './business.ts'
 
 export function stageRouter() {
   return serverInstance.router(stageContract, {

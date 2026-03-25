@@ -1,12 +1,12 @@
 import type { ClusterObject, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository, Store, ZoneObject } from '@cpn-console/hooks'
 import type { AsyncReturnType } from '@cpn-console/shared'
 import type { Cluster, Kubeconfig, Project, ProjectMembers, ProjectRole, Zone } from '@prisma/client'
-import type { ConfigRecords } from '@/resources/project-service/business.js'
+import type { ConfigRecords } from './resources/project-service/business.ts'
 import { hooks } from '@cpn-console/hooks'
 import { getPermsByUserRoles, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
-import { dbToObj } from '@/resources/project-service/business.js'
-import { archiveProject, getAdminPlugin, getAdminRoleById, getClusterByIdOrThrow, getClusterNamesByZoneId, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getRole, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '@/resources/queries-index.js'
-import { genericProxy } from './proxy.js'
+import { dbToObj } from '../resources/project-service/business.ts'
+import { archiveProject, getAdminPlugin, getAdminRoleById, getClusterByIdOrThrow, getClusterNamesByZoneId, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getRole, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '../resources/queries-index.ts'
+import { genericProxy } from './proxy.ts'
 
 export type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
 export type ProjectInfos = AsyncReturnType<typeof getHookProjectInfos>

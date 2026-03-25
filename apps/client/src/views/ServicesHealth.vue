@@ -4,8 +4,8 @@ import { AdminAuthorized } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
 import { onBeforeMount, ref } from 'vue'
-import { alertTypeMapper, useServiceStore } from '@/stores/services-monitor.js'
-import { useUserStore } from '@/stores/user.js'
+import { alertTypeMapper, useServiceStore } from '@/stores/services-monitor.ts'
+import { useUserStore } from '@/stores/user.ts'
 
 const serviceStore = useServiceStore()
 const userStore = useUserStore()

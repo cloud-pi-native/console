@@ -7,28 +7,28 @@ export const contractInstance: ReturnType<typeof initContract> = initContract()
 
 export async function getContract() {
   return contractInstance.router({
-    AdminTokens: (await import('./contracts/index.js')).adminTokenContract,
-    AdminRoles: (await import('./contracts/index.js')).adminRoleContract,
-    Clusters: (await import('./contracts/index.js')).clusterContract,
-    ServiceChains: (await import('./contracts/index.js')).serviceChainContract,
-    Environments: (await import('./contracts/index.js')).environmentContract,
-    Logs: (await import('./contracts/index.js')).logContract,
-    PersonalAccessTokens: (await import('./contracts/index.js'))
+    AdminTokens: (await import('./contracts/index.ts')).adminTokenContract,
+    AdminRoles: (await import('./contracts/index.ts')).adminRoleContract,
+    Clusters: (await import('./contracts/index.ts')).clusterContract,
+    ServiceChains: (await import('./contracts/index.ts')).serviceChainContract,
+    Environments: (await import('./contracts/index.ts')).environmentContract,
+    Logs: (await import('./contracts/index.ts')).logContract,
+    PersonalAccessTokens: (await import('./contracts/index.ts'))
       .personalAccessTokenContract,
-    Projects: (await import('./contracts/index.js')).projectContract,
-    ProjectsMembers: (await import('./contracts/index.js'))
+    Projects: (await import('./contracts/index.ts')).projectContract,
+    ProjectsMembers: (await import('./contracts/index.ts'))
       .projectMemberContract,
-    ProjectsRoles: (await import('./contracts/index.js')).projectRoleContract,
-    ProjectServices: (await import('./contracts/index.js'))
+    ProjectsRoles: (await import('./contracts/index.ts')).projectRoleContract,
+    ProjectServices: (await import('./contracts/index.ts'))
       .projectServiceContract,
-    Repositories: (await import('./contracts/index.js')).repositoryContract,
-    Stages: (await import('./contracts/index.js')).stageContract,
-    Services: (await import('./contracts/index.js')).serviceContract,
-    Users: (await import('./contracts/index.js')).userContract,
-    Zones: (await import('./contracts/index.js')).zoneContract,
-    System: (await import('./contracts/index.js')).systemContract,
-    SystemPlugin: (await import('./contracts/index.js')).systemPluginContract,
-    SystemSettings: (await import('./contracts/index.js'))
+    Repositories: (await import('./contracts/index.ts')).repositoryContract,
+    Stages: (await import('./contracts/index.ts')).stageContract,
+    Services: (await import('./contracts/index.ts')).serviceContract,
+    Users: (await import('./contracts/index.ts')).userContract,
+    Zones: (await import('./contracts/index.ts')).zoneContract,
+    System: (await import('./contracts/index.ts')).systemContract,
+    SystemPlugin: (await import('./contracts/index.ts')).systemPluginContract,
+    SystemSettings: (await import('./contracts/index.ts'))
       .systemSettingsContract,
   })
 }

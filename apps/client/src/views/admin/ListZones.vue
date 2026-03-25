@@ -3,8 +3,8 @@ import type { CreateZoneBody, UpdateZoneBody, Zone } from '@cpn-console/shared'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useClusterStore } from '@/stores/cluster'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useZoneStore } from '@/stores/zone.js'
+import { useSnackbarStore } from '@/stores/snackbar.ts'
+import { useZoneStore } from '@/stores/zone.ts'
 
 const snackbarStore = useSnackbarStore()
 const clusterStore = useClusterStore()

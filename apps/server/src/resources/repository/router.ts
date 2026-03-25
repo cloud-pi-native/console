@@ -1,16 +1,16 @@
 import { fakeToken, ProjectAuthorized, repositoryContract } from '@cpn-console/shared'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
+import { serverInstance } from '../../app.ts'
+import { authUser } from '../../utils/controller.ts'
 
-import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors.js'
-import { filterObjectByKeys } from '@/utils/queries-tools.js'
+import { ErrorResType, Forbidden403, Unauthorized401 } from '../../utils/errors.ts'
+import { filterObjectByKeys } from '../../utils/queries-tools.ts'
 import {
   createRepository,
   deleteRepository,
   getProjectRepositories,
   syncRepository,
   updateRepository,
-} from './business.js'
+} from './business.ts'
 
 export function repositoryRouter() {
   return serverInstance.router(repositoryContract, {

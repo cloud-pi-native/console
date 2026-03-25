@@ -1,6 +1,6 @@
 import type { PluginResult } from '@cpn-console/hooks'
 import { parseError } from '@cpn-console/hooks'
-import { getAxiosInstance } from './tech.js'
+import { getAxiosInstance } from './tech.ts'
 
 let status: PluginResult
 

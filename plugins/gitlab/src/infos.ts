@@ -1,6 +1,6 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
-import config from './config.js'
+import config from './config.ts'
 
 export const DEFAULT_ADMIN_GROUP_PATH = '/console/admin'
 export const DEFAULT_AUDITOR_GROUP_PATH = '/console/readonly'

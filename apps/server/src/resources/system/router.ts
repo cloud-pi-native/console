@@ -1,6 +1,6 @@
 import { systemContract } from '@cpn-console/shared'
-import { serverInstance } from '@/app.js'
-import { appVersion } from '@/utils/env.js'
+import { serverInstance } from '../../app.ts'
+import { appVersion } from '../../utils/env.ts'
 
 export function systemRouter() {
   return serverInstance.router(systemContract, {

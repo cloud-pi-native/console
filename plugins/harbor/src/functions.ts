@@ -1,5 +1,5 @@
 import type { PluginResult, Project, ProjectLite, StepCall } from '@cpn-console/hooks'
-import type { VaultRobotSecret } from './robot.js'
+import type { VaultRobotSecret } from './robot.ts'
 import {
 
   parseError,
@@ -9,17 +9,17 @@ import {
 import { DEFAULT, ENABLED } from '@cpn-console/shared'
 // @ts-ignore pas de typage disponible pour le paquet bytes
 import bytes from 'bytes'
-import { addProjectGroupMember } from './permission.js'
-import { addRetentionPolicy } from './policy.js'
-import { createProject, deleteProject } from './project.js'
-import { deleteRobot, ensureRobot, roAccess, rwAccess } from './robot.js'
+import { addProjectGroupMember } from './permission.ts'
+import { addRetentionPolicy } from './policy.ts'
+import { createProject, deleteProject } from './project.ts'
+import { deleteRobot, ensureRobot, roAccess, rwAccess } from './robot.ts'
 import {
   getApi,
   getConfig,
   projectRobotName,
   roRobotName,
   rwRobotName,
-} from './utils.js'
+} from './utils.ts'
 
 export const createDsoProject: StepCall<Project> = async (payload) => {
   console.log(`[HARBOR] createDsoProject`)

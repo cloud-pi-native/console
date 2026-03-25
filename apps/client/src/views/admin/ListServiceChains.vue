@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import type { ServiceChain } from '@cpn-console/shared'
 import { onMounted, ref } from 'vue'
-import router from '@/router/index.js'
-import { useServiceChainStore } from '@/stores/service-chain.js'
-import { getRandomId } from '@/utils/func.js'
+import router from '@/router/index.ts'
+import { useServiceChainStore } from '@/stores/service-chain.ts'
+import { getRandomId } from '@/utils/func.ts'
 
 const serviceChainStore = useServiceChainStore()
 

@@ -1,4 +1,4 @@
-import type { Project } from '../hooks/index.js'
+import type { Project } from '../hooks/index.ts'
 import crypto, { createHmac } from 'node:crypto'
 
 export function generateRandomPassword(length = 24) {

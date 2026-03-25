@@ -1,8 +1,8 @@
 import type { ClientInferRequest } from '@ts-rest/core'
 import { z } from 'zod'
-import { apiPrefix, contractInstance } from '../api-client.js'
-import { RepoSchema } from '../schemas/repository.js'
-import { baseHeaders, ErrorSchema } from './_utils.js'
+import { apiPrefix, contractInstance } from '../api-client.ts'
+import { RepoSchema } from '../schemas/repository.ts'
+import { baseHeaders, ErrorSchema } from './_utils.ts'
 
 export const repositoryContract = contractInstance.router({
   createRepository: {

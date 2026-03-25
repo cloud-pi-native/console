@@ -1,6 +1,6 @@
-import type { Project } from './hook-project.js'
-import type { Hook } from './hook.js'
-import { createHook } from './hook.js'
+import type { Project } from './hook-project.ts'
+import type { Hook } from './hook.ts'
+import { createHook } from './hook.ts'
 
 export interface ProjectRole {
   id: string

@@ -1,10 +1,10 @@
 import type { AdminRole, adminRoleContract } from '@cpn-console/shared'
 import type { Project, ProjectRole } from '@prisma/client'
-import type { ErrorResType } from '@/utils/errors.js'
-import prisma from '@/prisma.js'
-import { addLogs, getAdminRoleById, listAdminRoles } from '@/resources/queries-index.js'
-import { BadRequest400 } from '@/utils/errors.js'
-import { hook } from '@/utils/hook-wrapper.js'
+import type { ErrorResType } from '../../utils/errors.ts'
+import prisma from '../../prisma.ts'
+import { addLogs, getAdminRoleById, listAdminRoles } from '../queries-index.ts'
+import { BadRequest400 } from '../../utils/errors.ts'
+import { hook } from '../../utils/hook-wrapper.ts'
 
 export async function listRoles() {
   return listAdminRoles()

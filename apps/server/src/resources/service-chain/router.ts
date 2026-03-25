@@ -1,16 +1,16 @@
 import type { AsyncReturnType } from '@cpn-console/shared'
 import { AdminAuthorized, serviceChainContract } from '@cpn-console/shared'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { Forbidden403 } from '@/utils/errors.js'
+import { serverInstance } from '../../app.ts'
+import { authUser } from '../../utils/controller.ts'
+import { Forbidden403 } from '../../utils/errors.ts'
 import {
   getServiceChainDetails as getServiceChainDetailsBusiness,
   getServiceChainFlows as getServiceChainFlowsBusiness,
   listServiceChains as listServiceChainsBusiness,
   retryServiceChain as retryServiceChainBusiness,
   validateServiceChain as validateServiceChainBusiness,
-} from './business.js'
-import '@/types/index.js'
+} from './business.ts'
+import '../../types/index.ts'
 
 export function serviceChainRouter() {
   return serverInstance.router(serviceChainContract, {

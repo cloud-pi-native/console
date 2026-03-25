@@ -1,17 +1,17 @@
 import type { AdminRole, ClusterObject, PluginResult, Project, ProjectLite, ProjectMember, StepCall, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
-import type { GitlabProjectApi } from './class.js'
-import type { VaultSecrets } from './utils.js'
+import type { GitlabProjectApi } from './class.ts'
+import type { VaultSecrets } from './utils.ts'
 import { okStatus, parseError, specificallyDisabled } from '@cpn-console/hooks'
-import config from './config.js'
-import { deleteGroup } from './group.js'
+import config from './config.ts'
+import { deleteGroup } from './group.ts'
 import {
   DEFAULT_ADMIN_GROUP_PATH,
   DEFAULT_AUDITOR_GROUP_PATH,
-} from './infos.js'
-import { ensureGroup } from './members.js'
-import { ensureRepositories } from './repositories.js'
-import { createUsername, getUser, upsertUser } from './user.js'
-import { cleanGitlabError } from './utils.js'
+} from './infos.ts'
+import { ensureGroup } from './members.ts'
+import { ensureRepositories } from './repositories.ts'
+import { createUsername, getUser, upsertUser } from './user.ts'
+import { cleanGitlabError } from './utils.ts'
 
 // Check
 export const checkApi: StepCall<Project> = async (payload) => {

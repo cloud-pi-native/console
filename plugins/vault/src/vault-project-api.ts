@@ -1,9 +1,9 @@
 import type { ProjectLite } from '@cpn-console/hooks'
-import getConfig from './config.js'
+import getConfig from './config.ts'
 import {
   getAuthMethod,
-} from './utils.js'
-import { VaultApi } from './vault-api.js'
+} from './utils.ts'
+import { VaultApi } from './vault-api.ts'
 
 interface ReadOptions {
   throwIfNoEntry: boolean

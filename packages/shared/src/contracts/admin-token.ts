@@ -1,8 +1,8 @@
 import { z } from 'zod'
-import { apiPrefix, contractInstance } from '../api-client.js'
-import { CoerceBooleanSchema } from '../schemas/_utils.js'
-import { AdminTokenSchema, ExposedAdminTokenSchema } from '../schemas/token.js'
-import { baseHeaders, ErrorSchema } from './_utils.js'
+import { apiPrefix, contractInstance } from '../api-client.ts'
+import { CoerceBooleanSchema } from '../schemas/_utils.ts'
+import { AdminTokenSchema, ExposedAdminTokenSchema } from '../schemas/token.ts'
+import { baseHeaders, ErrorSchema } from './_utils.ts'
 
 export const adminTokenContract = contractInstance.router({
   listAdminTokens: {

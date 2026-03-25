@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { isAtLeastTomorrow, TokenSchema } from '@cpn-console/shared'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { copyContent } from '@/utils/func.js'
+import { useSnackbarStore } from '@/stores/snackbar.ts'
+import { copyContent } from '@/utils/func.ts'
 
 export interface SimpleToken { name: string, expirationDate: string }
 const props = defineProps<{

@@ -16,7 +16,7 @@
     },
     "resolveJsonModule": true,
 
-    "allowImportingTsExtensions": false,
+    "allowImportingTsExtensions": true,
     "allowJs": true,
     // Best practices
     "strict": true,

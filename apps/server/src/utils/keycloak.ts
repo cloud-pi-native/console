@@ -8,8 +8,8 @@ import {
   keycloakRealm,
   keycloakRedirectUri,
   sessionSecret,
-} from './env.js'
-import { bypassFn, userPayloadMapper } from './keycloak-utils.js'
+} from './env.ts'
+import { bypassFn, userPayloadMapper } from './keycloak-utils.ts'
 
 export const keycloakConf = {
   appOrigin: keycloakRedirectUri ?? 'http://localhost:8080',

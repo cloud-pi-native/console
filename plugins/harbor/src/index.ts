@@ -1,7 +1,7 @@
 import type { DeclareModuleGenerator, Plugin } from '@cpn-console/hooks'
-import { createDsoProject, deleteDsoProject, getProjectSecrets } from './functions.js'
-import infos from './infos.js'
-import monitor from './monitor.js'
+import { createDsoProject, deleteDsoProject, getProjectSecrets } from './functions.ts'
+import infos from './infos.ts'
+import monitor from './monitor.ts'
 
 export const plugin: Plugin = {
   infos,

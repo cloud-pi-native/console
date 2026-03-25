@@ -12,7 +12,7 @@ import {
   getProjectStore,
   getPublicClusters,
   saveProjectStore,
-} from '@/resources/queries-index.js'
+} from '../queries-index.ts'
 
 export type ConfigRecords = {
   key: string
