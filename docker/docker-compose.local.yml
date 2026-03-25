@@ -113,8 +113,6 @@ services:
     environment:
       LEGACY_UPSTREAM: "host.docker.internal:4001"
       NESTJS_UPSTREAM: "host.docker.internal:3001"
-    ports:
-      - 8082:8080
     networks:
       - dso-network
     attach: false

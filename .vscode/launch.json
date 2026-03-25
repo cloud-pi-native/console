@@ -52,7 +52,10 @@
       "skipFiles": [
         "<node_internals>/**",
         "${workspaceFolder}/node_modules/**/*.js"
-      ]
+      ],
+      "presentation": {
+        "hidden": true
+      }
     },
     {
       "name": "Serve Client (Chrome) (Integ)",
@@ -74,6 +77,9 @@
         "pattern": "Local:.*(http://localhost:[0-9]+)",
         "action": "startDebugging",
         "name": "Launch Client (Chrome)"
+      },
+      "presentation": {
+        "hidden": true
       }
     },
     {
@@ -96,6 +102,9 @@
         "pattern": "Local:.*(http://localhost:[0-9]+)",
         "action": "startDebugging",
         "name": "Launch Client (Chrome)"
+      },
+      "presentation": {
+        "hidden": true
       }
     },
     {
@@ -118,6 +127,9 @@
         "pattern": "Local:.*(http://localhost:[0-9]+)",
         "action": "startDebugging",
         "name": "Launch Client (Firefox)"
+      },
+      "presentation": {
+        "hidden": true
       }
     },
     {
@@ -140,6 +152,9 @@
         "pattern": "Local:.*(http://localhost:[0-9]+)",
         "action": "startDebugging",
         "name": "Launch Client (Firefox)"
+      },
+      "presentation": {
+        "hidden": true
       }
     },
     {
@@ -147,14 +162,20 @@
       "type": "chrome",
       "request": "launch",
       "url": "http://localhost:8080",
-      "webRoot": "${workspaceFolder}/apps/client"
+      "webRoot": "${workspaceFolder}/apps/client",
+      "presentation": {
+        "hidden": true
+      }
     },
     {
       "name": "Launch Client (Firefox)",
       "type": "firefox",
       "request": "launch",
       "url": "http://localhost:8080",
-      "webRoot": "${workspaceFolder}/apps/client"
+      "webRoot": "${workspaceFolder}/apps/client",
+      "presentation": {
+        "hidden": true
+      }
     }
   ],
   "compounds": [

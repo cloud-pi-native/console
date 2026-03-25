@@ -1,5 +1,31 @@
 # Changelog
 
+## [9.14.1](https://github.com/cloud-pi-native/console/compare/v9.14.0...v9.14.1) (2026-03-25)
+
+
+### Bug Fixes
+
+* **docker:** fix docker compose exposed ports ([25ab1e5](https://github.com/cloud-pi-native/console/commit/25ab1e5f34d95d6d92ec44cf0ee87856c65772f5))
+* **nginx-strangler:** fix docker-compose.local having multiple ports ([1b89d4e](https://github.com/cloud-pi-native/console/commit/1b89d4e9d27f9ae6393d3db216491971a65c6163))
+
+
+### Miscellaneous Chores
+
+* add vitest ([4308f3f](https://github.com/cloud-pi-native/console/commit/4308f3fc46b075537c87d4d5edaea6d30eefcd35))
+* bump undici to 7.24.5 ([6e7c065](https://github.com/cloud-pi-native/console/commit/6e7c065075287f133e8b3be9639e560a3ce816c7))
+* drop usage of path alias ([d2fa0d4](https://github.com/cloud-pi-native/console/commit/d2fa0d4dd03727ef53c2315e57cffa6750cefd49))
+* **nginx-strangler:** fix Dockerfile casing ([2086a09](https://github.com/cloud-pi-native/console/commit/2086a092f749ce4f8c9142e4f74135206de6a968))
+* **nginx-strangler:** fix healthcheck endpoint ([696bf43](https://github.com/cloud-pi-native/console/commit/696bf434220a37a64dd70002a609f95f209eedaa))
+* **nginx-strangler:** remove useless user directive ([9a5e770](https://github.com/cloud-pi-native/console/commit/9a5e7701c14796042876fb210df26f7087bfd32c))
+* remove old duplicate health module ([2ed91fc](https://github.com/cloud-pi-native/console/commit/2ed91fcad9d45cf0d7146eff846ac5d497747e58))
+* remove useless docker-compose.prod.yml ([e74980b](https://github.com/cloud-pi-native/console/commit/e74980b0d8a4583e42b621b86a5b67f468edb2a8))
+* **version:** migrate to NestJS ([b2cf4e4](https://github.com/cloud-pi-native/console/commit/b2cf4e47d59903ede6a9dc18990a5fefe8b0c3d1))
+
+
+### Docs
+
+* update port documentation for every dev mode ([ad9b71c](https://github.com/cloud-pi-native/console/commit/ad9b71c58817f799e0b9cea00140cdbf4266386d))
+
 ## [9.14.0](https://github.com/cloud-pi-native/console/compare/v9.13.2...v9.14.0) (2026-03-23)
 
 
