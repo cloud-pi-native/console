@@ -287,9 +287,9 @@ Le serveur Node.js expose le port de débogage `9229` lorsqu'il est lancé en mo
 
 Ce dépôt utilise des fichiers docker-compose pour construire les images docker:
 
+- [docker-compose.local.yml](./docker/docker-compose.local.yml) pour le développement local (`client`/`server`/`server-nestjs` lancés localement, et une "glue" docker pour les joindre)
 - [docker-compose.dev.yml](./docker/docker-compose.dev.yml) pour la construction des images docker du mode développement.
 - [docker-compose.ci.yml](./docker/docker-compose.ci.yml) pour la construction des images docker utilisées dans nos pipelines d'Intégration Continue.
-- [docker-compose.prod.yml](./docker/docker-compose.prod.yml) pour la construction des images docker du mode production.
 
 ## Configuration du Keycloak
 
