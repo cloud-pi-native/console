@@ -1,3 +1,5 @@
+shellEmulator: true
+trustPolicy: no-downgrade
 autoInstallPeers: true
 injectWorkspacePackages: true
 packages:
@@ -6,3 +8,7 @@ packages:
   - "apps/**"
   - "!apps/server/src/plugins/external/**"
   - "playwright/**"
+patchedDependencies:
+  "@gouvminint/vue-dsfr": patches/@gouvminint__vue-dsfr.patch
+  fastify-keycloak-adapter@2.3.2: patches/fastify-keycloak-adapter@2.3.2.patch
+allowUnusedPatches: true
