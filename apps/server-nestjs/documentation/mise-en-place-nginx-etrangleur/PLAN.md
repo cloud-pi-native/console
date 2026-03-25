@@ -187,7 +187,7 @@ Variables par contexte :
 | Contexte | `LEGACY_UPSTREAM` | `NESTJS_UPSTREAM` |
 |---|---|---|
 | Docker (dev/prod/ci/integ) | `server:8080` | `server-nestjs:3001` |
-| Local (pnpm dev) | `host.docker.internal:4001` | `host.docker.internal:3001` |
+| Local (pnpm dev) | `127.0.0.1:4001` | `127.0.0.1:3001` |
 | PAX / MinInt | À adapter selon la topologie réseau |
 
 ---
