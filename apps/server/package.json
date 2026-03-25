@@ -66,7 +66,7 @@
     "json-2-csv": "^5.5.10",
     "mustache": "^4.2.0",
     "prisma": "^6.19.2",
-    "undici": "^7.22.0",
+    "undici": "^7.24.0",
     "vitest-mock-extended": "^2.0.2"
   },
   "devDependencies": {
