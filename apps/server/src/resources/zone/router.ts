@@ -1,9 +1,9 @@
 import { AdminAuthorized, zoneContract } from '@cpn-console/shared'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
+import { serverInstance } from '../../app.ts'
+import { authUser } from '../../utils/controller.ts'
 
-import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors.js'
-import { createZone, deleteZone, listZones, updateZone } from './business.js'
+import { ErrorResType, Forbidden403, Unauthorized401 } from '../../utils/errors.ts'
+import { createZone, deleteZone, listZones, updateZone } from './business.ts'
 
 export function zoneRouter() {
   return serverInstance.router(zoneContract, {

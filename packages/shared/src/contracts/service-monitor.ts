@@ -1,8 +1,8 @@
 import type { ClientInferResponseBody } from '@ts-rest/core'
 import { z } from 'zod'
-import { apiPrefix, contractInstance } from '../api-client.js'
-import { ServiceHealthSchema } from '../schemas/services.js'
-import { baseHeaders, ErrorSchema } from './_utils.js'
+import { apiPrefix, contractInstance } from '../api-client.ts'
+import { ServiceHealthSchema } from '../schemas/services.ts'
+import { baseHeaders, ErrorSchema } from './_utils.ts'
 
 export const serviceContract = contractInstance.router({
   getServiceHealth: {

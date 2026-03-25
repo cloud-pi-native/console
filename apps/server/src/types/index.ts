@@ -1,4 +1,4 @@
-import { User } from '@cpn-console/shared'
+import type { User } from '@cpn-console/shared'
 
 export type UserDetails = {
   id: string

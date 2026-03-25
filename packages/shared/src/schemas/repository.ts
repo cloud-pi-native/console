@@ -1,7 +1,7 @@
 import type Zod from 'zod'
 import { z } from 'zod'
-import { forbiddenRepoNames, invalidGitUrl, invalidInternalRepoName, missingCredentials } from '../utils/const.js'
-import { AtDatesToStringExtend } from './_utils.js'
+import { forbiddenRepoNames, invalidGitUrl, invalidInternalRepoName, missingCredentials } from '../utils/const.ts'
+import { AtDatesToStringExtend } from './_utils.ts'
 
 export const RepoSchema = z.object({
   id: z.string()

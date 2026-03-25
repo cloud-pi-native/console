@@ -1,13 +1,13 @@
 import { ProjectAuthorized, projectMemberContract } from '@cpn-console/shared'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors.js'
+import { serverInstance } from '../../app.ts'
+import { authUser } from '../../utils/controller.ts'
+import { ErrorResType, Forbidden403, Unauthorized401 } from '../../utils/errors.ts'
 import {
   addMember,
   listMembers,
   patchMembers,
   removeMember,
-} from './business.js'
+} from './business.ts'
 
 export function projectMemberRouter() {
   return serverInstance.router(projectMemberContract, {

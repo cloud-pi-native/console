@@ -1,13 +1,13 @@
 import type { Project, ProjectMember, UniqueRepo } from '@cpn-console/hooks'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.ts'
 import type { AccessTokenScopes, AllRepositoryTreesOptions, CommitAction, CondensedProjectSchema, Gitlab, GroupSchema, MemberSchema, ProjectSchema, ProjectVariableSchema, RepositoryFileExpandedSchema, VariableSchema } from '@gitbeaker/core'
 import type { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { createHash } from 'node:crypto'
 import { PluginApi } from '@cpn-console/hooks'
 import { objectEntries } from '@cpn-console/shared'
 import { AccessLevel } from '@gitbeaker/core'
-import config from './config.js'
-import { find, getAll, getApi, getGroupRootId, infraAppsRepoName, internalMirrorRepoName, offsetPaginate } from './utils.js'
+import config from './config.ts'
+import { find, getAll, getApi, getGroupRootId, infraAppsRepoName, internalMirrorRepoName, offsetPaginate } from './utils.ts'
 
 type setVariableResult = 'created' | 'updated' | 'already up-to-date'
 type AccessLevelAllowed = AccessLevel.NO_ACCESS | AccessLevel.MINIMAL_ACCESS | AccessLevel.GUEST | AccessLevel.REPORTER | AccessLevel.DEVELOPER | AccessLevel.MAINTAINER | AccessLevel.OWNER

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { AdminAuthorized } from '@cpn-console/shared'
-import { useProjectStore } from '@/stores/project.js'
-import { useUserStore } from '@/stores/user.js'
-import router, { isInProject, selectedProjectSlug } from '../router/index.js'
+import { useProjectStore } from '@/stores/project.ts'
+import { useUserStore } from '@/stores/user.ts'
+import router, { isInProject, selectedProjectSlug } from '../router/index.ts'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()

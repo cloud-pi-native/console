@@ -1,10 +1,10 @@
 import type { ClientInferRequest } from '@ts-rest/core'
 import { z } from 'zod'
-import { apiPrefix, contractInstance } from '../api-client.js'
+import { apiPrefix, contractInstance } from '../api-client.ts'
 import {
   ZoneSchema,
-} from '../schemas/index.js'
-import { baseHeaders, ErrorSchema } from './_utils.js'
+} from '../schemas/index.ts'
+import { baseHeaders, ErrorSchema } from './_utils.ts'
 
 export const zoneContract = contractInstance.router({
   listZones: {

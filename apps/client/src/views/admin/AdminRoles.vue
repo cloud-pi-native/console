@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import type { AdminRole, Role } from '@cpn-console/shared'
 import AdminRoleForm from '@/components/AdminRoleForm.vue'
-import { useAdminRoleStore } from '@/stores/admin-role.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useAdminRoleStore } from '@/stores/admin-role.ts'
+import { useSnackbarStore } from '@/stores/snackbar.ts'
 
 const adminRoleStore = useAdminRoleStore()
 const snackbarStore = useSnackbarStore()

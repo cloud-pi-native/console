@@ -15,8 +15,8 @@ import { DsfrDataTable } from '@gouvminint/vue-dsfr'
 import { load } from 'js-yaml'
 import { computed, onBeforeMount, ref, watch } from 'vue'
 import { JsonViewer } from 'vue3-json-viewer'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { localeParseFloat, ONE_TENTH_STR } from '@/utils/func.js'
+import { useSnackbarStore } from '@/stores/snackbar.ts'
+import { localeParseFloat, ONE_TENTH_STR } from '@/utils/func.ts'
 import ChoiceSelector from './ChoiceSelector.vue'
 
 const props = withDefaults(defineProps<{

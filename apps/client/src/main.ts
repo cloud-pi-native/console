@@ -4,9 +4,9 @@ import { addCollection } from '@iconify/vue'
 // @ts-ignore 'vue3-json-viewer' missing types
 import JsonViewer from 'vue3-json-viewer'
 import App from './App.vue'
-import collections from './icon-collections.js'
-import router from './router/index.js'
-import { keycloakInit } from './utils/keycloak/keycloak.js'
+import collections from './icon-collections.ts'
+import router from './router/index.ts'
+import { keycloakInit } from './utils/keycloak/keycloak.ts'
 
 import '@gouvfr/dsfr/dist/dsfr.min.css'
 import '@gouvfr/dsfr/dist/utility/icons/icons.min.css'

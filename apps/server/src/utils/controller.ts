@@ -1,12 +1,12 @@
 import type { XOR } from '@cpn-console/shared'
 import type { Cluster, Prisma, Project, ProjectMembers, ProjectRole } from '@prisma/client'
 import type { FastifyRequest } from 'fastify'
-import type { UserDetails } from '@/types/index.js'
+import type { UserDetails } from '../types/index.ts'
 import { PROJECT_PERMS as PP, PROJECT_PERMS, projectIsLockedInfo, tokenHeaderName } from '@cpn-console/shared'
-import prisma from '@/prisma.js'
-import { logViaSession, logViaToken } from '@/resources/user/business.js'
-import { Unauthorized401 } from './errors.js'
-import { uuid } from './queries-tools.js'
+import prisma from '../prisma.ts'
+import { logViaSession, logViaToken } from '../resources/user/business.ts'
+import { Unauthorized401 } from './errors.ts'
+import { uuid } from './queries-tools.ts'
 
 export type RequireOnlyOne<T, Keys extends keyof T = keyof T>
   = Pick<T, Exclude<keyof T, Keys>>

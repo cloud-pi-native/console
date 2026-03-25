@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import type { Project, ProjectOperations } from '@/utils/project-utils.js'
-import { clickInDialog, copyContent } from '@/utils/func.js'
+import type { Project, ProjectOperations } from '@/utils/project-utils.ts'
+import { clickInDialog, copyContent } from '@/utils/func.ts'
 
 const props = defineProps<{
   project: Project

@@ -1,8 +1,8 @@
 import { AdminAuthorized, adminTokenContract } from '@cpn-console/shared'
-import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403 } from '@/utils/errors.js'
-import { serverInstance } from '../../app.js'
-import { createToken, deleteToken, listTokens } from './business.js'
+import { authUser } from '../../utils/controller.ts'
+import { ErrorResType, Forbidden403 } from '../../utils/errors.ts'
+import { serverInstance } from '../.../../../app.ts'
+import { createToken, deleteToken, listTokens } from './business.ts'
 
 export function adminTokenRouter() {
   return serverInstance.router(adminTokenContract, {

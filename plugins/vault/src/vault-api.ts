@@ -1,10 +1,10 @@
 import type { AxiosInstance } from 'axios'
 import { PluginApi } from '@cpn-console/hooks'
 import axios from 'axios'
-import getConfig from './config.js'
+import getConfig from './config.ts'
 import {
   generateKVConfigUpdate,
-} from './utils.js'
+} from './utils.ts'
 
 export interface AppRoleCredentials {
   url: string

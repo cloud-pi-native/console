@@ -7,11 +7,11 @@ import {
   createRouter,
   createWebHistory,
 } from 'vue-router'
-import { useProjectStore } from '@/stores/project.js'
-import { useSystemSettingsStore } from '@/stores/system-settings.js'
+import { useProjectStore } from '@/stores/project.ts'
+import { useSystemSettingsStore } from '@/stores/system-settings.ts'
 
-import { useUserStore } from '@/stores/user.js'
-import { uuid } from '@/utils/regex.js'
+import { useUserStore } from '@/stores/user.ts'
+import { uuid } from '@/utils/regex.ts'
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
 

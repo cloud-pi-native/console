@@ -1,11 +1,11 @@
 import type { userContract, XOR } from '@cpn-console/shared'
 import type { AdminRole, AdminToken, PersonalAccessToken, Prisma, User } from '@prisma/client'
-import type { UserDetails } from '@/types/index.js'
+import type { UserDetails } from '../../types/index.ts'
 import { createHash } from 'node:crypto'
-import prisma from '@/prisma.js'
-import { getMatchingUsers as getMatchingUsersQuery, getUsers as getUsersQuery } from '@/resources/queries-index.js'
-import { BadRequest400 } from '@/utils/errors.js'
-import { hook } from '@/utils/hook-wrapper.js'
+import prisma from '../../prisma.ts'
+import { getMatchingUsers as getMatchingUsersQuery, getUsers as getUsersQuery } from '../queries-index.ts'
+import { BadRequest400 } from '../../utils/errors.ts'
+import { hook } from '../../utils/hook-wrapper.ts'
 
 export async function getUsers(query: typeof userContract.getAllUsers.query._type, relationType: 'OR' | 'AND' = 'AND') {
   const whereInputs: Prisma.UserWhereInput[] = []
@@ -100,11 +100,10 @@ export async function patchUsers(users: typeof userContract.patchUsers.body._typ
   })
 }
 
-export enum TokenInvalidReason {
-  INACTIVE = 'Not active',
-  EXPIRED = 'Expired',
-  NOT_FOUND = 'Not authenticated',
-}
+export type TokenInvalidReason =
+  | 'Not active'
+  | 'Expired'
+  | 'Not authenticated'
 
 type UserTrial = Omit<UserDetails, 'type'>
 export async function logViaSession({ id, email, groups, ...user }: UserTrial): Promise<{ user: User, adminPerms: bigint }> {
@@ -151,7 +150,7 @@ export async function logViaToken(pass: string): Promise<({ user: UserWithTokenI
     return token
   }
   if (!token) {
-    return TokenInvalidReason.NOT_FOUND
+    return "Not authenticated"
   }
 
   const globalRoles = await prisma.adminRole.findMany({ where: { type: 'global' }, select: { permissions: true } })
@@ -169,11 +168,11 @@ export async function logViaToken(pass: string): Promise<({ user: UserWithTokenI
 
 function isTokenInvalid(token: AdminToken | PersonalAccessToken): TokenInvalidReason | undefined {
   if (token.status !== 'active') {
-    return TokenInvalidReason.INACTIVE
+    return "Not active"
   }
   const currentDate = new Date()
   if (token.expirationDate && currentDate.getTime() > token.expirationDate?.getTime()) {
-    return TokenInvalidReason.EXPIRED
+    return "Expired"
   }
 }
 

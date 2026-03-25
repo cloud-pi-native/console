@@ -3,8 +3,8 @@ import type { Cluster, CreateStageBody, SharedZodError, Stage, StageAssociatedEn
 import type { UpdateStageType } from '@/views/admin/ListStages.vue'
 import { deleteValidationInput, StageSchema } from '@cpn-console/shared'
 import { computed, onBeforeMount, ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { toCodeComponent } from '@/utils/func.js'
+import { useSnackbarStore } from '@/stores/snackbar.ts'
+import { toCodeComponent } from '@/utils/func.ts'
 
 const props = withDefaults(defineProps<{
   isNewStage: boolean

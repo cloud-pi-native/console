@@ -1,5 +1,5 @@
 import type { Cluster, Zone } from '@prisma/client'
-import prisma from '@/prisma.js'
+import prisma from '../../prisma.ts'
 
 export function getZoneByIdOrThrow(id: Zone['id']) {
   return prisma.zone.findUniqueOrThrow({

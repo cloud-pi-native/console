@@ -8,9 +8,9 @@ import { PROJECT_PERMS } from '@cpn-console/shared'
 import {
   ProjectStatus,
 } from '@prisma/client'
-import prisma from '@/prisma.js'
-import { appVersion } from '@/utils/env.js'
-import { uuid } from '@/utils/queries-tools.js'
+import prisma from '../../prisma.ts'
+import { appVersion } from '../../utils/env.ts'
+import { uuid } from '../../utils/queries-tools.ts'
 
 type ProjectUpdate = Partial<Pick<Project, 'description' | 'ownerId' | 'everyonePerms' | 'locked'>>
 export function updateProject(id: Project['id'], data: ProjectUpdate) {

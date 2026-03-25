@@ -1,6 +1,6 @@
 import type { MonitorInfos } from '@cpn-console/shared'
 import { Monitor, MonitorStatus } from '@cpn-console/shared'
-import { getApi } from './utils.js'
+import { getApi } from './utils.ts'
 
 enum HealthStatus {
   healthy = 'healthy',

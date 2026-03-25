@@ -4,7 +4,7 @@ import type {
   ProjectRole,
 } from '@prisma/client'
 
-import prisma from '@/prisma.js'
+import prisma from '../../prisma.ts'
 
 export const getRole = (id: ProjectRole['id']) => prisma.projectRole.findUnique({ where: { id } })
 

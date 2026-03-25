@@ -1,6 +1,6 @@
 import type Zod from 'zod'
 import { z } from 'zod'
-import { pluginsPopulatedManifests } from './config.js'
+import { pluginsPopulatedManifests } from './config.ts'
 
 export const serviceUrl = z.object({
   to: z.string(),

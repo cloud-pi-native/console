@@ -1,9 +1,9 @@
 import type { ClusterObject, DefaultArgs, Plugin, Project, ProjectLite, ZoneObject } from '@cpn-console/hooks'
-import { archiveDsoProject, deleteZone, getSecrets, upsertProject, upsertZone } from './functions.js'
-import infos from './infos.js'
-import monitor from './monitor.js'
-import { VaultProjectApi } from './vault-project-api.js'
-import { VaultZoneApi } from './vault-zone-api.js'
+import { archiveDsoProject, deleteZone, getSecrets, upsertProject, upsertZone } from './functions.ts'
+import infos from './infos.ts'
+import monitor from './monitor.ts'
+import { VaultProjectApi } from './vault-project-api.ts'
+import { VaultZoneApi } from './vault-zone-api.ts'
 
 const onlyApi = { api: (project: ProjectLite) => new VaultProjectApi(project) }
 

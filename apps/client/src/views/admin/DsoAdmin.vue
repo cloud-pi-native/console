@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import router from '@/router/index.js'
-import { useUserStore } from '@/stores/user.js'
+import router from '@/router/index.ts'
+import { useUserStore } from '@/stores/user.ts'
 
 onMounted(() => {
   if (useUserStore().adminPerms === 0n) {

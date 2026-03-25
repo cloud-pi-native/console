@@ -23,8 +23,8 @@ Ce typage vous assurera de bien fournir toutes les clés nécessaires au bon fon
 ```ts
 // index.ts
 import type { Plugin } from '@cpn-console/hooks'
-import infos from './infos.js'
-import monitor from './monitor.js'
+import infos from './infos.ts'
+import monitor from './monitor.ts'
 
 export const plugin: Plugin = {
   infos,

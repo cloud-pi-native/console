@@ -1,4 +1,4 @@
-import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
+import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.ts'
 import type {
   ClusterObject,
   Config,
@@ -7,7 +7,7 @@ import type {
   Repository,
   StepCall,
 } from '@cpn-console/hooks'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.ts'
 import { parseError } from '@cpn-console/hooks'
 import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
 import { dump } from 'js-yaml'
@@ -18,8 +18,8 @@ import {
   DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_READONLY_GROUP_PATH_SUFFIX,
-} from './infos.js'
-import { generateAppProjectName, getConfig } from './utils.js'
+} from './infos.ts'
+import { generateAppProjectName, getConfig } from './utils.ts'
 
 function splitExtraRepositories(repos?: string): string[] {
   return repos ? repos.split(',').map(repo => repo.trim()) : []
