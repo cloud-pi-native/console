@@ -9,7 +9,7 @@
     "url": "https://github.com/cloud-pi-native/console"
   },
   "scripts": {
-    "build": "run-s icons type-check build-only",
+    "build": "pnpm run icons && pnpm run type-check && pnpm run build-only",
     "build-only": "vite --mode=production build",
     "build:clean": "rimraf ./dist ./tsconfig.tsbuildinfo",
     "dev": "vite --mode=development",
@@ -17,7 +17,7 @@
     "format:style": "stylelint ./src/**/*.{css,vue} --fix",
     "icons": "vue-dsfr-icons -s scripts/icons.js -t src/icon-collections.ts",
     "integ": "vite --mode=integration",
-    "lint": "run-p lint:*",
+    "lint": "pnpm run --parallel \"/^lint:.*/\"",
     "lint:style": "stylelint ./src/**/*.{css,vue}",
     "lint:ts": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' eslint ./",
     "preview": "vite preview --port 8080",
@@ -35,6 +35,7 @@
     "@types/js-yaml": "4.0.9",
     "@vue/tsconfig": "^0.7.0",
     "axios": "^1.13.6",
+    "chalk": "^5.6.2",
     "dotenv": "^16.6.1",
     "javascript-time-ago": "^2.6.4",
     "js-yaml": "^4.1.1",
@@ -62,7 +63,6 @@
     "@vue/eslint-config-typescript": "^14.7.0",
     "eslint-plugin-vue": "^10.8.0",
     "jsdom": "^25.0.1",
-    "npm-run-all": "^4.1.5",
     "rimraf": "^6.1.3",
     "stylelint": "^17.4.0",
     "stylelint-config-html": "^1.1.0",
