@@ -14,7 +14,7 @@
 | Nginx actuel | Embarqué dans l'image `client`, proxifie `/api` + `/swagger-ui` vers `server:8080` — upstream changé vers `nginx-strangler:8080` |
 | `server-nestjs` | Dockerisé (port `3001`), ajouté dans tous les docker-compose |
 | `nginx-strangler` | Service dédié créé dans `apps/nginx-strangler/`, fallback total sur `server` legacy, exposé sur le port `4000` pour se "substituer" à `server` |
-| Envs couverts | Local dev, docker-compose (dev/prod/ci/integ) |
+| Envs couverts | Local dev, docker-compose (dev/ci/integ) |
 
 ---
 
@@ -63,7 +63,6 @@
 - Le nginx existant dans l'image `client` proxifiait directement vers `server:8080` — upstream changé vers `nginx-strangler:8080`
 - `server-nestjs/src/main.ts` utilisait `process.env.PORT ?? 0` au lieu de `ConfigurationService.port` — corrigé
 - Le schéma Prisma de `server-nestjs` est multi-fichiers dans `src/prisma/schema/` — `prisma generate` doit pointer sur le dossier, pas sur `schema.prisma`
-- `docker-compose.prod.yml` avait un bug préexistant (`depends_on` vide sur `opencds-mockoon`) — corrigé au passage
 - En CI (`job-lint.yml`), `nginx -t` échoue si `apt-get update -qq` n'est pas exécuté avant l'install, et si les chemins `pid`/`error_log`/`access_log` ne sont pas patchés vers `/tmp/` (runner non-root)
 - En CI (`job-playwright.yml`), les images `server-nestjs:ci` et `nginx-strangler:ci` doivent être buildées localement avant le `docker compose up --no-build` (même pattern que `opencds-mockoon`)
 
