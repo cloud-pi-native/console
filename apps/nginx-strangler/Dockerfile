@@ -1,4 +1,4 @@
-FROM nginx:1.27-alpine as prod
+FROM nginx:1.27-alpine AS prod
 
 # envsubst est inclus dans nginx:alpine via le paquet gettext
 # On supprime la config par défaut
