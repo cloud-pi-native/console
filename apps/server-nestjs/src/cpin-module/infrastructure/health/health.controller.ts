@@ -1,11 +1,11 @@
 import { Controller, Get, Inject } from '@nestjs/common'
 import { HealthCheck, HealthCheckService } from '@nestjs/terminus'
 import { Public } from 'nest-keycloak-connect'
-import { DatabaseHealthService } from '../../cpin-module/infrastructure/database/database-health.service'
+import { DatabaseHealthService } from '../database/database-health.service'
 
-@Controller('api/v1/healthz')
+@Controller('/api/v1/health')
 @Public()
-export class HealthzController {
+export class HealthController {
   constructor(
     @Inject(HealthCheckService) private readonly health: HealthCheckService,
     @Inject(DatabaseHealthService) private readonly database: DatabaseHealthService,
