@@ -61,6 +61,32 @@ Un script permet de copier facilement les fichiers `.env*-example` en leur équi
 
 ## Configuration pour le développement entièrement en local
 
+Le développement entièrement en local suit cette organisation des composants:
+
+```mermaid
+---
+title: Architecture mode entièrement local
+---
+graph LR
+
+  subgraph DEV_LOCAL["DEV LOCAL"]
+    direction LR
+    NAV_L["Navigateur"]
+    NGINX_L(("nginx (client)\n:8080\nLOCAL"))
+    STRANGLER_L(("nginx-strangler\n:8080\n🐳 exposé :4000"))
+    SERVER_L(("server\n:4001\nLOCAL"))
+    NESTJS_L(("server-nestjs\n:3001\nLOCAL"))
+
+    NAV_L --> NGINX_L
+    NGINX_L -- "/api" --> STRANGLER_L
+    STRANGLER_L -- "défaut\n(pas migré)" --> SERVER_L
+    STRANGLER_L -- "migré" --> NESTJS_L
+  end
+
+  style DEV_LOCAL fill:#fff,stroke:#333,stroke-width:2px
+  style NAV_L fill:#fff,stroke:#333
+```
+
 Docker Compose utilisé : [`docker/docker-compose.local.yml`](docker/docker-compose.local.yml) (infrastructure uniquement : Keycloak, PostgreSQL, pgAdmin, OpenCDS mock, **nginx-strangler, et Jaeger**)
 
 Fichiers utilisés :
@@ -141,6 +167,49 @@ pnpm docker:dev
 ```
 
 ## Configuration pour le développement hybride avec un environnement d'intégration existant
+
+Le développement hybride branché sur l'environnement d'intégration suit cette organisation des composants:
+
+```mermaid
+---
+title: Architecture mode hybride branché sur l'environment d'intégration
+---
+graph LR
+
+  subgraph DEV_INTEG["DEV INTEG"]
+    direction LR
+    NAV_I["Navigateur"]
+    CURL_I["curl directs\n(tests)"]
+    INTEG["INTEG\n(keycloak, gitlab, etc.)"]
+
+    subgraph DOCKER_NET["🐳 Réseau Docker"]
+      direction LR
+      NGINX_I(("nginx (client)\n:8080\nexposé :8080"))
+      STRANGLER_I(("nginx-strangler\n:8080\nexposé :4000"))
+      SERVER_I(("server\n:8080\nexposé :4001"))
+      NESTJS_I(("server-nestjs\n:3001\nexposé :3001"))
+
+      NGINX_I -- "/api" --> STRANGLER_I
+      STRANGLER_I -- "pas migré" --> SERVER_I
+      STRANGLER_I -- "migré" --> NESTJS_I
+    end
+
+    NAV_I --> NGINX_I
+    SERVER_I -. "accès externe" .-> INTEG
+    NESTJS_I -. "accès externe" .-> INTEG
+
+    CURL_I -- ":8080" --> NGINX_I
+    CURL_I -- ":4000" --> STRANGLER_I
+    CURL_I -- ":4001" --> SERVER_I
+    CURL_I -- ":3001" --> NESTJS_I
+  end
+
+  style DEV_INTEG fill:#fff,stroke:#333,stroke-width:2px
+  style DOCKER_NET fill:#e6f3ff,stroke:#2196F3,stroke-width:2px
+  style NAV_I fill:#fff,stroke:#333
+  style CURL_I fill:#fff,stroke:#333
+  style INTEG fill:#fff,stroke:#333,stroke-dasharray: 5 5
+```
 
 Docker Compose utilisé : [`docker/docker-compose.integ.yml`](docker/docker-compose.integ.yml) (sans Keycloak, branché sur l'environnement d'intégration distant)
 

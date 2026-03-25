@@ -1,6 +1,7 @@
 # nginx-strangler
 
-Reverse proxy dédié à la migration progressive du backend `server` (Fastify/legacy) vers `server-nestjs` (NestJS), selon le [Strangler Fig Pattern](https://martinfowler.com/bliki/StranglerFigApplication.html).
+Reverse proxy dédié à la migration progressive du backend `server`
+(Fastify/legacy) vers `server-nestjs` (NestJS), selon le [Strangler FigPattern](https://martinfowler.com/bliki/StranglerFigApplication.html).
 
 Ticket de référence : [#1885](https://github.com/cloud-pi-native/console/issues/1885)
 
@@ -23,8 +24,8 @@ Ticket de référence : [#1885](https://github.com/cloud-pi-native/console/issue
 
 | Variable | Description | Exemple Docker | Exemple local |
 |---|---|---|---|
-| `LEGACY_UPSTREAM` | Adresse du backend Fastify legacy | `server:8080` | `host.docker.internal:4001` |
-| `NESTJS_UPSTREAM` | Adresse du backend NestJS | `server-nestjs:3001` | `host.docker.internal:3001` |
+| `LEGACY_UPSTREAM` | Adresse du backend Fastify legacy | `server:8080` | `127.0.0.1:4000` |
+| `NESTJS_UPSTREAM` | Adresse du backend NestJS | `server-nestjs:3001` | `127.0.0.1:3001` |
 
 Ces variables sont substituées dans `conf.d/routing.conf` via `envsubst` au démarrage du conteneur.
 
@@ -35,7 +36,7 @@ Ces variables sont substituées dans `conf.d/routing.conf` via `envsubst` au dé
 Éditer `conf.d/routing.conf` et ajouter un bloc `location` **avant** le bloc fallback `/api/`, en respectant le format suivant :
 
 ```nginx
-# [Vague X - nom-du-module] AAAA-MM-JJ
+# [Vague/Itération X - nom-du-module] AAAA-MM-JJ
 location = /api/v1/ma-route {
     proxy_pass         http://server-nestjs;
     proxy_http_version 1.1;
@@ -83,12 +84,14 @@ docker compose logs -f nginx-strangler | grep "/api/v1/xxx"
 
 ## Lancer en dev local (pnpm dev)
 
-Quand `server` et `server-nestjs` tournent nativement (hors Docker), le `nginx-strangler` reste lui en Docker avec des upstreams pointant vers `host.docker.internal` :
+Quand `server` et `server-nestjs` tournent nativement (hors Docker), le
+`nginx-strangler` reste lui en Docker avec des upstreams pointant vers les
+ports "locaux" des deux services:
 
 ```bash
 # Dans docker/docker-compose.local.yml, le service nginx-strangler utilise :
-# LEGACY_UPSTREAM=host.docker.internal:4001
-# NESTJS_UPSTREAM=host.docker.internal:3001
+# LEGACY_UPSTREAM=127.0.0.1:4000
+# NESTJS_UPSTREAM=127.0.0.1:3001
 
 docker compose -f docker/docker-compose.local.yml up nginx-strangler
 ```
@@ -112,6 +115,6 @@ docker compose logs -f nginx-strangler
 
 ## Liens
 
-- Plan de mise en place : [`server-nestjs/documentation/mise-en-place-nginx-etrangleur/PLAN.md`](../server-nestjs/documentation/mise-en-place-nginx-etrangleur/PLAN.md)
-- Stratégie de modularisation : [`server-nestjs/documentation/Modularisation-de-console-server/01-MODULARISATION-STRATEGIE.md`](../server-nestjs/documentation/Modularisation-de-console-server/01-MODULARISATION-STRATEGIE.md)
-- Cartographie des modules : [`server-nestjs/documentation/Modularisation-de-console-server/MODULARISATION-CARTOGRAPHIE.md`](../server-nestjs/documentation/Modularisation-de-console-server/MODULARISATION-CARTOGRAPHIE.md)
+- Plan de mise en place : [`apps/server-nestjs/documentation/mise-en-place-nginx-etrangleur/PLAN.md`](../server-nestjs/documentation/mise-en-place-nginx-etrangleur/PLAN.md)
+- Stratégie de modularisation : [`apps/server-nestjs/documentation/Modularisation-de-console-server/01-MODULARISATION-STRATEGIE.md`](../server-nestjs/documentation/Modularisation-de-console-server/01-MODULARISATION-STRATEGIE.md)
+- Cartographie des modules : [`apps/server-nestjs/documentation/Modularisation-de-console-server/MODULARISATION-CARTOGRAPHIE.md`](../server-nestjs/documentation/Modularisation-de-console-server/MODULARISATION-CARTOGRAPHIE.md)
