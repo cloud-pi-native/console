@@ -1,8 +1,8 @@
 import type { AsyncReturnType } from '@cpn-console/shared'
 import { AdminAuthorized, clusterContract } from '@cpn-console/shared'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors.js'
+import { serverInstance } from '../../app.ts'
+import { authUser } from '../../utils/controller.ts'
+import { ErrorResType, Forbidden403, Unauthorized401 } from '../../utils/errors.ts'
 import {
   createCluster,
   deleteCluster,
@@ -11,8 +11,8 @@ import {
   getClusterUsage,
   listClusters,
   updateCluster,
-} from './business.js'
-import '@/types/index.js'
+} from './business.ts'
+import '../../types/index.ts'
 
 export function clusterRouter() {
   return serverInstance.router(clusterContract, {

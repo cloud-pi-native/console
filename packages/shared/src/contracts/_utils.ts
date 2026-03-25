@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { tokenHeaderName } from '../utils/const.js'
+import { tokenHeaderName } from '../utils/const.ts'
 
 export const EmptySchema = z.object({})
 

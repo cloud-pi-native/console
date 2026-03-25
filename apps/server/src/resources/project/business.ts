@@ -1,11 +1,11 @@
 import type { projectContract } from '@cpn-console/shared'
 import type { Project, User } from '@prisma/client'
-import type { UserDetails } from '@/types/index.js'
-import type { ErrorResType } from '@/utils/errors.js'
+import type { UserDetails } from '../../types/index.ts'
+import type { ErrorResType } from '../../utils/errors.ts'
 import { servicesInfos } from '@cpn-console/hooks'
 import { ProjectStatusSchema } from '@cpn-console/shared'
 import { json2csv } from 'json-2-csv'
-import prisma from '@/prisma.js'
+import prisma from '../../prisma.ts'
 import {
   addLogs,
   deleteAllEnvironmentForProject,
@@ -17,11 +17,11 @@ import {
   listProjects as listProjectsQuery,
   lockProject,
   updateProject as updateProjectQuery,
-} from '@/resources/queries-index.js'
-import { whereBuilder } from '@/utils/controller.js'
-import { parallelBulkLimit } from '@/utils/env.js'
-import { BadRequest400, Forbidden403, Unprocessable422 } from '@/utils/errors.js'
-import { hook } from '@/utils/hook-wrapper.js'
+} from '../queries-index.ts'
+import { whereBuilder } from '../../utils/controller.ts'
+import { parallelBulkLimit } from '../../utils/env.ts'
+import { BadRequest400, Forbidden403, Unprocessable422 } from '../../utils/errors.ts'
+import { hook } from '../../utils/hook-wrapper.ts'
 
 export function generateSlug(prefix: string, existingSlugs?: string[]) {
   if (!existingSlugs?.includes(prefix)) {

@@ -28,10 +28,10 @@ import {
 import {
   apiClient,
   extractData,
-} from '@/api/xhr-client.js'
-import { useLogStore } from '@/stores/log.js'
-import { useUserStore } from '@/stores/user.js'
-import { getRandomId } from './func.js'
+} from '@/api/xhr-client.ts'
+import { useLogStore } from '@/stores/log.ts'
+import { useUserStore } from '@/stores/user.ts'
+import { getRandomId } from './func.ts'
 
 export type ProjectOperations = 'create'
   | 'delete'

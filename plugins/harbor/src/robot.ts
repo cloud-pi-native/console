@@ -1,7 +1,7 @@
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
-import type { Access, Robot, RobotCreated } from './api/Api.js'
-import type { HarborApi } from './utils.js'
-import { getConfig, toVaultSecret } from './utils.js'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.ts'
+import type { Access, Robot, RobotCreated } from './api/Api.ts'
+import type { HarborApi } from './utils.ts'
+import { getConfig, toVaultSecret } from './utils.ts'
 
 export interface VaultRobotSecret {
   // {"auths":{"registry-host.com":{"auth":"<the TOKEN>","email":""}}},

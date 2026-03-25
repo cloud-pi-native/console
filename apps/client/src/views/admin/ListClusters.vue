@@ -4,11 +4,11 @@ import type {
 } from '@cpn-console/shared'
 import { DsfrDataTable } from '@gouvminint/vue-dsfr'
 import { onMounted, ref } from 'vue'
-import router from '@/router/index.js'
-import { useClusterStore } from '@/stores/cluster.js'
-import { useStageStore } from '@/stores/stage.js'
-import { useZoneStore } from '@/stores/zone.js'
-import { getRandomId } from '@/utils/func.js'
+import router from '@/router/index.ts'
+import { useClusterStore } from '@/stores/cluster.ts'
+import { useStageStore } from '@/stores/stage.ts'
+import { useZoneStore } from '@/stores/zone.ts'
+import { getRandomId } from '@/utils/func.ts'
 
 const zoneStore = useZoneStore()
 const stageStore = useStageStore()

@@ -2,9 +2,9 @@
 import type { CreateStageBody, Stage, StageAssociatedEnvironments, UpdateStageBody } from '@cpn-console/shared'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { computed, onMounted, ref, watch } from 'vue'
-import { useClusterStore } from '@/stores/cluster.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useStageStore } from '@/stores/stage.js'
+import { useClusterStore } from '@/stores/cluster.ts'
+import { useSnackbarStore } from '@/stores/snackbar.ts'
+import { useStageStore } from '@/stores/stage.ts'
 
 const stageStore = useStageStore()
 const clusterStore = useClusterStore()

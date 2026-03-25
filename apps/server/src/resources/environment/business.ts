@@ -1,15 +1,15 @@
 import type { Cluster, Environment, Project, Stage, User } from '@prisma/client'
-import type { Resources, UserDetails } from '@/types/index.js'
-import prisma from '@/prisma.js'
+import type { Resources, UserDetails } from '../../types/index.ts'
+import prisma from '../../prisma.ts'
 import {
   addLogs,
   deleteEnvironment as deleteEnvironmentQuery,
   getEnvironmentsByProjectId,
   initializeEnvironment,
   updateEnvironment as updateEnvironmentQuery,
-} from '@/resources/queries-index.js'
-import { Result } from '@/utils/business.js'
-import { hook } from '@/utils/hook-wrapper.js'
+} from '../queries-index.ts'
+import { Result } from '../../utils/business.ts'
+import { hook } from '../../utils/hook-wrapper.ts'
 
 export function getProjectEnvironments(projectId: Project['id']) {
   return getEnvironmentsByProjectId(projectId)

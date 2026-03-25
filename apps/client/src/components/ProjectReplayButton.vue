@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import type { Project, ProjectOperations } from '@/utils/project-utils.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import type { Project, ProjectOperations } from '@/utils/project-utils.ts'
+import { useSnackbarStore } from '@/stores/snackbar.ts'
 
 const props = defineProps<{
   project: Project

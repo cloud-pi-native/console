@@ -1,14 +1,20 @@
 import type { SharedSafeParseReturnType } from '@cpn-console/shared'
 import { parseZodError } from '@cpn-console/shared'
-import { BadRequest400 } from './errors.js'
+import { BadRequest400 } from './errors.ts'
 
 export type Success<T> = Result<T>
 export type Failure = Result<never>
 export class Result<T> {
+  readonly success: boolean
+  readonly value: T | string
+
   protected constructor(
-    readonly success: boolean,
-    readonly value: T | string,
-  ) {}
+    success: boolean,
+    value: T | string,
+  ) {
+    this.success = success
+    this.value = value
+  }
 
   static succeed<T>(value: T): Success<T> {
     return new Result(true, value) as Success<T>

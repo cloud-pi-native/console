@@ -1,6 +1,6 @@
 import type { StepCall, ZoneObject } from '@cpn-console/hooks'
 import { parseError } from '@cpn-console/hooks'
-import { updateZoneValues } from './utils.js'
+import { updateZoneValues } from './utils.ts'
 
 export const upsertZone: StepCall<ZoneObject> = async (payload) => {
   try {

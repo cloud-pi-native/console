@@ -1,5 +1,5 @@
 import type { Environment, Prisma, Project } from '@prisma/client'
-import prisma from '@/prisma.js'
+import prisma from '../../prisma.ts'
 
 // SELECT
 export function getEnvironmentByIdOrThrow(id: Environment['id']) {

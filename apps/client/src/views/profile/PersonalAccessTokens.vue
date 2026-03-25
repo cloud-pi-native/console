@@ -2,8 +2,8 @@
 import type { AdminToken, PersonalAccessToken } from '@cpn-console/shared'
 import type { SimpleToken } from '@/components/TokenForm.vue'
 import { onMounted } from 'vue'
-import { useTokenStore } from '@/stores/token.js'
-import { clickInDialog } from '@/utils/func.js'
+import { useTokenStore } from '@/stores/token.ts'
+import { clickInDialog } from '@/utils/func.ts'
 
 const statusWording: Record<AdminToken['status'], string> = {
   active: 'Actif',

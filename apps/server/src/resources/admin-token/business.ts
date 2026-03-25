@@ -2,8 +2,8 @@ import type { adminTokenContract } from '@cpn-console/shared'
 import type { $Enums, AdminToken, Prisma } from '@prisma/client'
 import { createHash, randomUUID } from 'node:crypto'
 import { generateRandomPassword, isAtLeastTomorrow } from '@cpn-console/shared'
-import { BadRequest400 } from '@/utils/errors.js'
-import prisma from '../../prisma.js'
+import { BadRequest400 } from '../../utils/errors.ts'
+import prisma from '../../prisma.ts'
 
 export async function listTokens(query: typeof adminTokenContract.listAdminTokens.query._type) {
   const where = {

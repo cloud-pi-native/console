@@ -6,9 +6,9 @@ import type {
 import pDebounce from 'p-debounce'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { apiClient, extractData } from '@/api/xhr-client.js'
-import { Project } from '@/utils/project-utils.js'
-import { useUserStore } from './user.js'
+import { apiClient, extractData } from '@/api/xhr-client.ts'
+import { Project } from '@/utils/project-utils.ts'
+import { useUserStore } from './user.ts'
 
 export const useProjectStore = defineStore('project', () => {
   const userStore = useUserStore()

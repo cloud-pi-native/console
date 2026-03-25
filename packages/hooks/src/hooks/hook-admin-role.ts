@@ -1,6 +1,6 @@
-import type { Hook } from './hook.js'
-import type { UserObject } from './index.js'
-import { createHook } from './hook.js'
+import type { Hook } from './hook.ts'
+import type { UserObject } from './index.ts'
+import { createHook } from './hook.ts'
 
 export interface AdminRole {
   id: string

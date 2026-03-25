@@ -13,10 +13,10 @@ import {
 } from '@cpn-console/shared'
 import { computed, onBeforeMount, ref } from 'vue'
 import ProjectSettings from '@/components/ProjectSettings.vue'
-import router from '@/router/index.js'
-import { useProjectStore } from '@/stores/project.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useUserStore } from '@/stores/user.js'
+import router from '@/router/index.ts'
+import { useProjectStore } from '@/stores/project.ts'
+import { useSnackbarStore } from '@/stores/snackbar.ts'
+import { useUserStore } from '@/stores/user.ts'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()

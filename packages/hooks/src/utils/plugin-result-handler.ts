@@ -1,5 +1,5 @@
-import type { PluginResult, PluginResultStore, PluginResultStoreValue } from '../hooks/hook.js'
-import { parseError } from './logger.js'
+import type { PluginResult, PluginResultStore, PluginResultStoreValue } from '../hooks/hook.ts'
+import { parseError } from './logger.ts'
 
 export class PluginResultBuilder {
   private okMessages = [] as string[]

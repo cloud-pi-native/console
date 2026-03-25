@@ -3,14 +3,14 @@ import type {
   LettersQuery,
   User,
 } from '@cpn-console/shared'
-import type { Project } from '@/utils/project-utils.js'
+import type { Project } from '@/utils/project-utils.ts'
 import { useRandomId } from '@gouvminint/vue-dsfr'
 import pDebounce from 'p-debounce'
 import { computed, ref, watch } from 'vue'
-import { useProjectStore } from '@/stores/project.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useUserStore } from '@/stores/user.js'
-import { copyContent } from '@/utils/func.js'
+import { useProjectStore } from '@/stores/project.ts'
+import { useSnackbarStore } from '@/stores/snackbar.ts'
+import { useUserStore } from '@/stores/user.ts'
+import { copyContent } from '@/utils/func.ts'
 
 const props = withDefaults(
   defineProps<{

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
-import { useLogStore } from '@/stores/log.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useLogStore } from '@/stores/log.ts'
+import { useSnackbarStore } from '@/stores/snackbar.ts'
 
 const adminLogStore = useLogStore()
 const snackbarStore = useSnackbarStore()

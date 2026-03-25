@@ -1,7 +1,7 @@
 import type { BaseRequestOptions, Gitlab as IGitlab, OffsetPagination, PaginationRequestOptions } from '@gitbeaker/core'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { Gitlab } from '@gitbeaker/rest'
-import config from './config.js'
+import config from './config.ts'
 
 let api: IGitlab | undefined
 
