@@ -1,5 +1,12 @@
 shellEmulator: true
 trustPolicy: no-downgrade
+
+# Check these after each update. This list should be empty !
+trustPolicyExclude:
+  - rollup@2.80.0
+  - semver@6.3.1
+  - chokidar@4.0.3
+
 autoInstallPeers: true
 injectWorkspacePackages: true
 packages:
