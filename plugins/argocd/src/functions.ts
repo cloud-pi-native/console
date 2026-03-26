@@ -62,9 +62,9 @@ export const upsertProject: StepCall<Project> = async (payload) => {
           project.slug,
           environment.name,
         )
-        const roGroup = (await keycloakApi.getEnvGroup(environment.name))
+        const roGroup = (await (keycloakApi as any).getEnvGroup(environment.name))
           .subgroups.RO
-        const rwGroup = (await keycloakApi.getEnvGroup(environment.name))
+        const rwGroup = (await (keycloakApi as any).getEnvGroup(environment.name))
           .subgroups.RW
 
         await ensureInfraEnvValues(
