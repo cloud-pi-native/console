@@ -1,6 +1,6 @@
 # Console Cloud Pi Native
 
-pnpm monorepo (Turborepo). Node >= 24, pnpm 10.20.
+pnpm monorepo. Node >= 24, pnpm v10.33
 
 ## Structure
 
