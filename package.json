@@ -3,7 +3,7 @@
   "type": "module",
   "version": "9.14.1",
   "private": true,
-  "packageManager": "pnpm@10.20.0",
+  "packageManager": "pnpm@10.33.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/cloud-pi-native/console"
@@ -52,11 +52,11 @@
     "test:e2e-ci": "pnpm kube:prod; pnpm kube:e2e-ci"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.4.3",
-    "@commitlint/config-conventional": "^20.4.3",
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
     "@cpn-console/eslint-config": "workspace:^",
-    "eslint": "^10.0.3",
+    "eslint": "^10.1.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.3.3"
+    "lint-staged": "^16.4.0"
   }
 }
