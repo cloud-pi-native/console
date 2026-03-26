@@ -87,7 +87,7 @@ function selectProject(slug: string) {
   position: absolute;
   padding-top: 1rem;
   top: 0;
-  right: 15rem;
+  right: 20rem;
   z-index: 1000;
 }
 
