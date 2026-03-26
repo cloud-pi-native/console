@@ -1,15 +1,15 @@
 # État de la modularisation Backend → NestJS
 
 > 📋 **Ce fichier est mis à jour en temps réel**
-> Dernière mise à jour : **2026-01-07** (Sprint 0 de la modularisation)
+> Dernière mise à jour : **2026-04-09**
 
 ---
 
 ## 🎯 Progression globale
 
-![Progress](https://progress-bar.dev/0/?title=modularisation&width=400)
+![Progress](https://progress-bar.dev/7/?title=modularisation&width=400)
 
-**0%** complété (0/xxx modules migrés, xxx à déterminer)
+**~7%** complété (1/18 modules métier migrés, 5/75 routes)
 
 ---
 
@@ -17,32 +17,58 @@
 
 | Statut | Nombre de modules | % du total |
 |--------|-------------------|------------|
-| ✅ Migré | 0 | 0% |
+| ✅ Migré | 1 (ServiceChain) | ~6% |
 | 🚧 En cours | 0 | 0% |
-| 📅 Planifié | 0 | 0% |
-| ⏳ En attente de cartographie | xxx | 100% |
+| 📅 Planifié | 17 | ~94% |
+| ⏳ En attente de cartographie | 0 | 0% |
 
 ---
 
 ## ✅ Modules migrés
 
-### Aucun module migré pour le moment
+### ServiceChain (OpenCDS) — migré le 2026-04-09
 
-La modularisation commencera en sprint 3 (S3-S4) avec le module **Auth**.
+Module proxy HTTP vers l'API externe OpenCDS (gestion des chaînes de service
+réseau). Migré en avance de phase par rapport au planning initial (prévu V3/S8),
+profitant de son isolement complet vis-à-vis du reste du codebase.
+
+- **Routes** : 5 (`/api/v1/service-chains/...`)
+- **Auth** : Token uniquement (`x-dso-token`), pas de session Keycloak
+- **Nginx** : Bascule effectuée dans `nginx-strangler/conf.d/routing.conf`
+- **Tests** : Controller + Service couverts (Vitest)
+- **Différences avec le legacy** :
+  - 403 systématique si permissions insuffisantes (le legacy renvoyait `[]` sur GET /)
+  - Validation UUID sur les paramètres d'URL (400 si format invalide)
+
+| Méthode | Route | Permission |
+|---------|-------|------------|
+| `GET` | `/api/v1/service-chains` | `ListSystem` |
+| `GET` | `/api/v1/service-chains/:id` | `ListSystem` |
+| `GET` | `/api/v1/service-chains/:id/flows` | `ListSystem` |
+| `POST` | `/api/v1/service-chains/:id/retry` | `ManageSystem` |
+| `POST` | `/api/v1/service-chains/validate/:id` | `ManageSystem` |
+
+### Infrastructure transverse déployée
+
+En support de cette migration, les éléments d'infrastructure suivants ont été
+créés :
+
+- **AuthModule** (`infrastructure/auth/`) : `AuthService` (validation token
+  SHA256 via Prisma) + `AdminPermissionGuard` + décorateur
+  `@RequireAdminPermission()`
+- **Nginx strangler** : Reverse proxy configuré pour router les routes migrées
+  vers server-nestjs, le reste vers le legacy
+- **Docker** : Build order corrigé (shared avant server-nestjs)
+
+> **Limitation connue** : Seule l'auth par token (`x-dso-token`) est supportée.
+> L'auth par session Keycloak (`@CurrentUser()`) sera ajoutée lors de la
+> migration de la couche auth complète (Couche 0a de la cartographie).
 
 ---
 
 ## 🚧 En cours de modularisation
 
 ### Aucune modularisation en cours
-
-**Sprint actuel** : S1-S2 (Fondations et cartographie)
-
-**Objectifs S1-S2** :
-- Cartographie complète de l'existant
-- Setup de l'infrastructure (Docker Compose + Nginx)
-- Formation de l'équipe
-- Validation de l'approche
 
 ---
 
@@ -109,10 +135,10 @@ La modularisation commencera en sprint 3 (S3-S4) avec le module **Auth**.
 
 ### Routes par statut
 
-- **Total** : ~100 routes
-- **Migrés** : 0 (0%)
+- **Total** : ~75 routes métier
+- **Migrés** : 5 (~7%)
 - **En cours** : 0 (0%)
-- **Restants** : ~100 (100%)
+- **Restants** : ~70 (~93%)
 
 ---
 
@@ -125,6 +151,7 @@ La modularisation commencera en sprint 3 (S3-S4) avec le module **Auth**.
 | 27/01/2026 | Début modularisation Auth (S3) |
 | 09/02/2026 | Fin modularisation Auth (S4) - 20% complété |
 | 09/03/2026 | Point mi-parcours - 60% complété |
+| 26/03/2026 | Migration ServiceChain (OpenCDS) finalisée — 1er module métier migré |
 | 06/04/2026 | Fin de modularisation - 100% complété |
 
 ---
@@ -157,6 +184,13 @@ La modularisation commencera en sprint 3 (S3-S4) avec le module **Auth**.
 
 ## 🔄 Historique des changements
 
+### 2026-04-09
+- ✅ Migration du module **ServiceChain (OpenCDS)** — 5 routes, proxy HTTP vers API externe
+- ✅ Création de l'**AuthModule** (infrastructure/auth/) : auth par token `x-dso-token`
+- ✅ Configuration **nginx-strangler** pour les routes service-chain
+- ✅ Fix Docker : build order shared → server-nestjs
+- ✅ Mise à jour de ce fichier de suivi
+
 ### 2026-01-07 (S1)
 - ✅ Création du fichier de suivi
 - ✅ Initialisation de la documentation
@@ -172,5 +206,5 @@ La modularisation commencera en sprint 3 (S3-S4) avec le module **Auth**.
 
 ---
 
-**Version du fichier** : 1.0
+**Version du fichier** : 1.1
 **Responsable de mise à jour** : Lead technique backend
