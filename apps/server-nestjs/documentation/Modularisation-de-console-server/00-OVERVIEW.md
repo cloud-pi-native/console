@@ -175,6 +175,12 @@ Cette modularisation est documentée dans plusieurs fichiers :
 - **S10** : 80% migré (Plugins, comme ArgoCD, Gitlab, etc.)
 - **S12** : 100% migré
 
+### Migrations anticipées
+- **ServiceChain (OpenCDS)** : Migré le 2026-04-09 (prévu V3/S8). Ce module
+  isolé (proxy HTTP vers API externe, aucune
+  dépendance entrante) a servi de premier test de bout en bout du pipeline de
+  migration : module NestJS + AuthGuard + nginx-strangler + Docker.
+
 ## 🗓️ Dates clés
 
 - **S1-S2** : Cartographie et setup
@@ -202,6 +208,6 @@ Cette modularisation est documentée dans plusieurs fichiers :
 
 ---
 
-**Version** : 1.0
-**Dernière mise à jour** : 2026-01-07
+**Version** : 1.1
+**Dernière mise à jour** : 2026-04-09
 **Prochaine revue** : Fin S2

@@ -1,6 +1,6 @@
 # Cartographie des modules - Modularisation Backend
 
-> Derniere mise a jour : **2026-02-23** (Sprint 2 - Cartographie finalisee)
+> Derniere mise a jour : **2026-04-09** (Migration ServiceChain finalisee)
 
 ---
 
@@ -52,7 +52,7 @@ plus **5 couches transverses** et **7 plugins** a encapsuler.
 +--------------------------------------------------------------+
 | Couche 4 : Evenements (EventEmitter, remplacement hooks)     | A CREER
 +--------------------------------------------------------------+
-| Couche 3 : Securite (AuthGuard, PermissionsGuard, Filters)   | A CREER
+| Couche 3 : Securite (AuthGuard, PermissionsGuard, Filters)   | PARTIEL
 +--------------------------------------------------------------+
 | Couche 2 : Core (AppService, FastifyService)                 | FAIT
 +--------------------------------------------------------------+
@@ -60,9 +60,11 @@ plus **5 couches transverses** et **7 plugins** a encapsuler.
 +--------------------------------------------------------------+
 ```
 
-Les couches 1 et 2 sont en place. Les couches 3 et 4 sont les **pre-requis
-critiques** avant toute migration de module metier. C'est la priorite absolue
-de la Vague 0.
+Les couches 1 et 2 sont en place. La couche 3 est **partiellement** en place :
+l'auth par token (`x-dso-token`) fonctionne via `AdminPermissionGuard` +
+`AuthService`. Il reste a implementer l'auth par session Keycloak
+(`@CurrentUser()`), le `PermissionsGuard` projet, et le `GlobalExceptionFilter`.
+Les couches 4 et 5 restent a creer.
 
 ---
 
@@ -74,18 +76,26 @@ qui suivent. Les creer en premier permet que chaque migration de module soit un
 exercice de "remplissage" des couches superieures, sans reinventer
 l'infrastructure a chaque fois.
 
-### 0a. AuthGuard + decorateur @CurrentUser()
+### 0a. AuthGuard + decorateur @CurrentUser() — PARTIEL
 
 **Sprint** : S3 (Dev A)
 **Remplace** : `authUser()` dans `apps/server/src/utils/controller.ts`
 
-Fonctionnalites a porter :
+**Etat actuel (2026-04-09)** : La partie auth par token est implementee dans
+`infrastructure/auth/` :
+- ✅ `AuthService` : validation token SHA256, lookup Prisma
+  (PersonalAccessToken + AdminToken), verification status/expiration, calcul
+  permissions bitwise (y compris roles globaux)
+- ✅ `AdminPermissionGuard` : lit `x-dso-token`, verifie permissions via
+  `AdminAuthorized` de `@cpn-console/shared`
+- ✅ `@RequireAdminPermission()` : decorateur de metadata pour les permissions admin
+
+**Reste a faire** :
 - Validation de session Keycloak (`req.session.user`)
-- Fallback sur token PAT (header `x-dso-token`)
+- Fallback session → token (actuellement token uniquement)
 - Chargement optionnel du projet (par slug, id, environmentId, repositoryId)
 - Injection du profil utilisateur dans la request via `@CurrentUser()`
-
-Types a definir : `UserProfile`, `UserProjectProfile`, `ProjectPermState`
+- Types a definir : `UserProfile`, `UserProjectProfile`, `ProjectPermState`
 
 ### 0b. GlobalExceptionFilter
 
@@ -164,36 +174,36 @@ Plus le score est eleve, plus le module est prioritaire.
 
 ### Resultats ordonnes par score
 
-| Rang | Module | Type | Score | Vague | Sprint |
-|------|--------|------|-------|-------|--------|
-| 1 | vault (encapsulation) | Plugin | 8.5 | V3 | S7-S8 |
-| 2 | system (health/version) | Metier | 7.8 | V1 | S3 |
-| 3 | system/settings | Metier | 7.4 | V1 | S3 |
-| 4 | system/config | Metier | 7.4 | V1 | S3-S4 |
-| 5 | keycloak (encapsulation) | Plugin | 7.4 | V3 | S8 |
-| 6 | admin-token | Metier | 7.1 | V1 | S3-S4 |
-| 7 | user/tokens | Metier | 7.1 | V1 | S3-S4 |
-| 8 | gitlab (encapsulation) | Plugin | 6.7 | V4 | S9 |
-| 9 | service-monitor | Metier | 6.6 | V2 | S5 |
-| 10 | user | Metier | 6.6 | V2 | S5 |
-| 11 | stage | Metier | 6.5 | V2 | S5-S6 |
-| 12 | log | Metier | 6.5 | V1 | S4 |
-| 13 | zone | Metier | 6.4 | V2 | S6 |
-| 14 | environment | Metier | 6.3 | V3 | S7 |
-| 15 | admin-role | Metier | 6.1 | V2 | S5 |
-| 16 | project-core | Metier | 5.8 | V4 | S9 |
-| 17 | service-chain | Metier | 5.9 | V3 | S8 |
-| 18 | repository | Metier | 5.8 | V3 | S7-S8 |
-| 19 | cluster | Metier | 5.7 | V3 | S7 |
-| 20 | harbor (encapsulation) | Plugin | 5.6 | V4 | S9-S10 |
-| 21 | project-service | Metier | 5.6 | V3 | S8 |
-| 22 | argocd (encapsulation) | Plugin | 5.3 | V5 | S10-S11 |
-| 23 | project-role | Metier | 5.2 | V3 | S7-S8 |
-| 24 | nexus (encapsulation) | Plugin | 5.1 | V4 | S10 |
-| 25 | project-member | Metier | 4.7 | V3 | S8 |
-| 26 | project-secrets | Metier | 4.6 | V4 | S9 |
-| 27 | project-bulk | Metier | 4.2 | V4 | S9-S10 |
-| 28 | sonarqube (encapsulation) | Plugin | 4.2 | V5 | S11 |
+| Rang | Module | Type | Score | Vague | Sprint | Statut |
+|------|--------|------|-------|-------|--------|--------|
+| 1 | vault (encapsulation) | Plugin | 8.5 | V3 | S7-S8 | |
+| 2 | system (health/version) | Metier | 7.8 | V1 | S3 | |
+| 3 | system/settings | Metier | 7.4 | V1 | S3 | |
+| 4 | system/config | Metier | 7.4 | V1 | S3-S4 | |
+| 5 | keycloak (encapsulation) | Plugin | 7.4 | V3 | S8 | |
+| 6 | admin-token | Metier | 7.1 | V1 | S3-S4 | |
+| 7 | user/tokens | Metier | 7.1 | V1 | S3-S4 | |
+| 8 | gitlab (encapsulation) | Plugin | 6.7 | V4 | S9 | |
+| 9 | service-monitor | Metier | 6.6 | V2 | S5 | |
+| 10 | user | Metier | 6.6 | V2 | S5 | |
+| 11 | stage | Metier | 6.5 | V2 | S5-S6 | |
+| 12 | log | Metier | 6.5 | V1 | S4 | |
+| 13 | zone | Metier | 6.4 | V2 | S6 | |
+| 14 | environment | Metier | 6.3 | V3 | S7 | |
+| 15 | admin-role | Metier | 6.1 | V2 | S5 | |
+| 16 | project-core | Metier | 5.8 | V4 | S9 | |
+| 17 | service-chain | Metier | 5.9 | V3 | S8 | ✅ MIGRE |
+| 18 | repository | Metier | 5.8 | V3 | S7-S8 | |
+| 19 | cluster | Metier | 5.7 | V3 | S7 | |
+| 20 | harbor (encapsulation) | Plugin | 5.6 | V4 | S9-S10 | |
+| 21 | project-service | Metier | 5.6 | V3 | S8 | |
+| 22 | argocd (encapsulation) | Plugin | 5.3 | V5 | S10-S11 | |
+| 23 | project-role | Metier | 5.2 | V3 | S7-S8 | |
+| 24 | nexus (encapsulation) | Plugin | 5.1 | V4 | S10 | |
+| 25 | project-member | Metier | 4.7 | V3 | S8 | |
+| 26 | project-secrets | Metier | 4.6 | V4 | S9 | |
+| 27 | project-bulk | Metier | 4.2 | V4 | S9-S10 | |
+| 28 | sonarqube (encapsulation) | Plugin | 4.2 | V5 | S11 | |
 
 **Note** : Le score brut ne dicte pas directement l'ordre de migration.
 L'ordre reel est contraint par le graphe de dependances (bottom-up), les
@@ -707,34 +717,44 @@ NestJS injectables.
 
 ---
 
-### 18. service-chain
+### 18. service-chain — ✅ MIGRE (2026-04-09)
 
 | Attribut | Valeur |
 |----------|--------|
 | **Routes** | 5 |
 | **Score** | 5.9 |
-| **Sprint** | S8 |
-| **Dev** | B |
+| **Sprint prevu** | S8 |
+| **Migration effective** | 2026-04-09 |
+| **Dev** | @stephane.trebel |
 
-**Routes** :
-- `GET /api/v1/projects/:projectId/service-chains` - Liste des chaines de service
-- `GET /api/v1/projects/:projectId/service-chains/:chainId` - Details d'une chaine
-- `POST /api/v1/projects/:projectId/service-chains/:chainId/retry` - Relance d'une chaine
-- `POST /api/v1/projects/:projectId/service-chains/:chainId/validate` - Validation
-- `GET /api/v1/projects/:projectId/service-chains/:chainId/flows` - Flux de la chaine
+**Routes (implementation reelle)** :
+- `GET /api/v1/service-chains` - Liste des chaines de service
+- `GET /api/v1/service-chains/:id` - Details d'une chaine
+- `GET /api/v1/service-chains/:id/flows` - Flux de la chaine
+- `POST /api/v1/service-chains/:id/retry` - Relance d'une chaine
+- `POST /api/v1/service-chains/validate/:id` - Validation
 
-**Dependances sortantes** : `queries-index` (queries propres), API externe OpenCDS (HTTP via axios)
+**Dependances sortantes** : API externe OpenCDS (HTTP via axios)
 **Dependances entrantes** : Aucune
 
-**Points d'attention** :
-- Module isole du reste du codebase. Appelle une API externe (OpenCDS) via HTTP
-- Pas de hooks
-- Utilise axios directement : a remplacer par HttpClientService (HttpModule NestJS)
-- Bon candidat pour une extraction en module NestJS optionnel (ThirdPartyModule)
-  comme envisage dans le README de server-nestjs
-- Migrable a tout moment, place ici par opportunite
+**Implementation** :
+- Module place dans la catégorie `ThirdPartyModules` (futur module optionnel CPin) comme envisagé
+- Auth par token uniquement (`x-dso-token`) via `AdminPermissionGuard`
+- Validation UUID sur les parametres d'URL (`ParseUUIDPipe`)
+- Validation des reponses OpenCDS via schemas Zod de `@cpn-console/shared`
+- Telemetrie via `@StartActiveSpan()` (OpenTelemetry)
+- Utilisation d'un service dédié `OpenCdsClientService` afin de gérer les requêtes vers le service OpenCDS externe
 
-**Estimation** : 1.5 jours
+**Differences avec le legacy** :
+- 403 systematique si permissions insuffisantes (le legacy renvoyait `[]` sur GET /)
+- Pas d'auth session Keycloak (token uniquement)
+- Validation UUID stricte (400 si format invalide)
+- Client OpenCDS dédié dans server-nestjs
+
+**Fichiers** :
+- `src/cpin-module/service-chain/service-chain.*.ts`
+- `src/cpin-module/service-chain/open-cds-client.*.ts`
+- `src/cpin-module/infrastructure/auth/` (AuthModule partage)
 
 ---
 
