@@ -1,12 +1,11 @@
-import type { CanActivate, INestApplication } from '@nestjs/common'
+import type { INestApplication } from '@nestjs/common'
 import { randomUUID } from 'node:crypto'
 import { ADMIN_PERMS } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { ValidationPipe } from '@nestjs/common'
-import { APP_GUARD } from '@nestjs/core'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { PrismaService } from '../src/cpin-module/infrastructure/database/prisma.service'
 import { SystemSettingsModule } from '../src/modules/system-settings/system-settings.module'
 
@@ -33,7 +32,6 @@ describeWithSystemSettings('systemSettingsController (e2e)', () => {
     await app.init()
 
     prisma = app.get(PrismaService)
-    await prisma.$connect()
 
     testAdminRoleId = faker.string.uuid()
     testUserId = faker.string.uuid()
