@@ -46,7 +46,7 @@
     "playwright:test:ui": "pnpm --dir playwright run playwright:test:ui",
     "playwright:test:integration": "pnpm --dir playwright run playwright:test:integration",
     "prepare": "husky",
-    "test": "pnpm -r run test",
+    "test": "pnpm -r --workspace-concurrency=1 run test",
     "test:cov": "pnpm -r run test:cov",
     "test:e2e": "pnpm kube:e2e",
     "test:e2e-ci": "pnpm kube:prod; pnpm kube:e2e-ci"
