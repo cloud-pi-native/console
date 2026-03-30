@@ -117,7 +117,7 @@ const typeOptions = [
           :label="perm?.label"
           :hint="perm?.hint"
           :name="perm.key"
-          :disabled="(role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE') || role.type === 'managed'"
+          :disabled="(role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE')"
           @update:model-value="(checked: boolean) => updateChecked(checked, PROJECT_PERMS[perm.key])"
         />
       </div>
@@ -130,7 +130,7 @@ const typeOptions = [
         @click="$emit('save', role)"
       />
       <DsfrButton
-        v-if="!role.isEveryone && role.type !== 'managed'"
+        v-if="!role.isEveryone"
         data-testid="deleteBtn"
         label="Supprimer"
         secondary
