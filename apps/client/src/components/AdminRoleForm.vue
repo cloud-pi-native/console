@@ -31,6 +31,27 @@ const role = ref({
   permissions: props.permissions ?? 0n,
 })
 
+const systemTypePrefix = 'system:'
+const isSystem = computed(() => role.value.type?.startsWith(systemTypePrefix))
+const isManagedRole = computed(() => role.value.type.endsWith('managed'))
+const roleTypeForSelect = computed({
+  get() {
+    const type = role.value.type
+    if (type?.startsWith(systemTypePrefix)) return type.slice(systemTypePrefix.length)
+    return type ?? 'managed'
+  },
+  set(value) {
+    if (role.value.type?.startsWith(systemTypePrefix)) role.value.type = `${systemTypePrefix}${value}`
+    else role.value.type = value
+  },
+})
+
+const isReadOnly = computed(() => {
+  const type = role.value.type
+  if (!type?.startsWith(systemTypePrefix)) return false
+  return type !== `${systemTypePrefix}global`
+})
+
 const isUpdated = computed(() => {
   return !shallowEqual(props, role.value)
 })
@@ -44,7 +65,7 @@ const tabListName = 'Liste d’onglet'
 const tabTitles = computed(() => [
   { title: 'Général', icon: 'ri:checkbox-circle-line', tabId: 'general' },
   ...(
-    role.value.type === 'managed'
+    isManagedRole.value
       ? [{ title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' }]
       : []),
   { title: 'Fermer', icon: 'ri:close-line', tabId: 'close' },
@@ -130,6 +151,18 @@ const typeOptions = [
   { text: 'Externe', value: 'external' },
   { text: 'Global', value: 'global' },
 ]
+
+const computedTypeOptions = computed(() => {
+  const currentType = role.value.type
+  if (!currentType) return typeOptions
+
+  const strippedType = currentType.startsWith(systemTypePrefix)
+    ? currentType.slice(systemTypePrefix.length)
+    : currentType
+
+  if (typeOptions.some(opt => opt.value === strippedType)) return typeOptions
+  return [{ text: strippedType, value: strippedType }, ...typeOptions]
+})
 </script>
 
 <template>
@@ -150,6 +183,7 @@ const typeOptions = [
         label-visible
         hint="Ne doit pas dépasser 30 caractères."
         class="mb-5"
+        :disabled="isReadOnly"
       />
       <p
         class="fr-h6"
@@ -174,18 +208,19 @@ const typeOptions = [
           :label="perm.label"
           :hint="perm?.hint"
           :name="perm.key"
-          :disabled="role.permissions & ADMIN_PERMS.MANAGE && perm.key !== 'MANAGE'"
+          :disabled="isReadOnly || (role.permissions & ADMIN_PERMS.MANAGE && perm.key !== 'MANAGE')"
           @update:model-value="(checked: boolean) => updateChecked(checked, perm.key)"
         />
       </div>
       <DsfrSelect
-        v-model="role.type"
+        v-model="roleTypeForSelect"
         data-testid="roleTypeSelect"
         select-id="roleTypeSelect"
         label="Type"
         label-visible
-        :options="typeOptions"
+        :options="computedTypeOptions"
         class="mb-5"
+        :disabled="isSystem"
       />
       <DsfrInput
         v-model="role.oidcGroup"
@@ -194,16 +229,18 @@ const typeOptions = [
         label-visible
         placeholder="/admin"
         class="mb-5"
+        :disabled="isReadOnly"
       />
       <DsfrButton
         data-testid="saveBtn"
         label="Enregistrer"
         secondary
-        :disabled="!isUpdated || !!errorSchema"
+        :disabled="!isUpdated || !!errorSchema || isReadOnly"
         class="mr-5"
         @click="$emit('save', { ...role, permissions: role.permissions.toString() })"
       />
       <DsfrButton
+        v-if="!isSystem"
         data-testid="deleteBtn"
         label="Supprimer"
         secondary
@@ -223,6 +260,7 @@ const typeOptions = [
         :name="`checkbox-${user.id}`"
         value="user.adminRoleIds.includes(role.id)"
         :model-value="user.adminRoleIds.includes(role.id)"
+        :disabled="isReadOnly"
         @update:model-value="(checked: boolean) => switchUserMembership(checked, user)"
       />
       <DsfrNotice
@@ -243,6 +281,7 @@ const typeOptions = [
           hint="Adresse e-mail de l'utilisateur"
           placeholder="prenom.nom@interieur.gouv.fr"
           :suggestions="usersToSuggest"
+          :disabled="isReadOnly"
           @update:model-value="(value: string) => retrieveUsersToAdd(value)"
         />
         <DsfrAlert
@@ -258,7 +297,7 @@ const typeOptions = [
           label="Ajouter l'utilisateur"
           secondary
           icon="ri:user-add-line"
-          :disabled="!newUserInput || isUserAlreadyInTeam || !newUser"
+          :disabled="isReadOnly || !newUserInput || isUserAlreadyInTeam || !newUser"
           @click="() => newUser && switchUserMembership(true, newUser, true)"
         />
       </div>
