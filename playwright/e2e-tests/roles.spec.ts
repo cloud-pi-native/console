@@ -27,6 +27,36 @@ test.describe('Administration Roles', () => {
     },
   )
 
+  test('System admin roles should be read-only', { tag: '@e2e' }, async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: tcolinUser })
+
+    await page.getByTestId('menuAdministrationBtn').click()
+    await page.getByTestId('menuAdministrationRoles').click()
+
+    const readOnlySystemRoleIds = [
+      '76229c96-4716-45bc-99da-00498ec9018c',
+      '6bebe7b2-0f0a-456e-ab7f-b3d7640a7cbf',
+      '35848aa2-e881-4770-9844-0c5c3693e506',
+    ]
+
+    for (const roleId of readOnlySystemRoleIds) {
+      await page.getByTestId(`${roleId}-tab`).click()
+
+      await expect(page.getByTestId('roleNameInput')).toBeDisabled()
+      await expect(page.getByTestId('roleTypeSelect')).toBeDisabled()
+      await expect(page.getByTestId('oidcGroupInput')).toBeDisabled()
+      await expect(page.getByTestId('saveBtn')).toBeDisabled()
+      await expect(page.getByTestId('deleteBtn')).toBeHidden()
+
+      await expect(page.getByTestId('MANAGE-cbx').locator('input')).toBeDisabled()
+
+      await page.getByTestId('test-members').click()
+      await expect(page.getByTestId('addUserSuggestionInput').locator('input')).toBeDisabled()
+      await expect(page.getByTestId('addUserBtn')).toBeDisabled()
+    }
+  })
+
   test('Should add a new OIDC role', { tag: '@e2e' }, async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
