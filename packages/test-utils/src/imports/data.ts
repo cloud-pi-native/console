@@ -25,7 +25,7 @@ export const data = {
       position: 0,
       oidcGroup: '/admin',
       name: 'Root Administrateur Plateforme',
-      type: 'managed',
+      type: 'system:managed',
     },
     {
       id: '6bebe7b2-0f0a-456e-ab7f-b3d7640a7cbf',
@@ -33,7 +33,7 @@ export const data = {
       position: 0,
       oidcGroup: '/console/admin',
       name: 'Administrateur Plateforme',
-      type: 'managed',
+      type: 'system:managed',
     },
     {
       id: 'eadf604f-5f54-4744-bdfb-4793d2271e9b',
@@ -41,7 +41,7 @@ export const data = {
       position: 1,
       oidcGroup: '',
       name: 'Admin Locaux',
-      type: 'external',
+      type: 'managed',
     },
     {
       id: '35848aa2-e881-4770-9844-0c5c3693e506',
@@ -49,7 +49,7 @@ export const data = {
       position: 2,
       oidcGroup: '/console/readonly',
       name: 'Lecture Seule Plateforme',
-      type: 'managed',
+      type: 'system:managed',
     },
     {
       id: '034f589f-1750-4b15-bb34-4cd995e7fcaa',
