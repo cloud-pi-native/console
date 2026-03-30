@@ -41,7 +41,7 @@ async function updateMember(checked: boolean, userId: Member['userId']) {
   if (!matchingMember) return
 
   const newRoleList = checked
-    ? [...matchingMember.roleIds, ...selectedRole.value.id]
+    ? [...matchingMember.roleIds, selectedRole.value.id]
     : matchingMember.roleIds.filter(id => id !== selectedRole.value?.id)
 
   await props.project.Members.patch([{ userId, roles: newRoleList }])
