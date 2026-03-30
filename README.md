@@ -88,6 +88,20 @@ Plusieurs plugins sont nativement enregistrés auprès du serveur pour assurer l
 >   - [documentation du module hooks](./packages/hooks/README.md).
 >   - [exemple de plugin](https://github.com/cloud-pi-native/console-plugin-helloworld).
 
+### Gestion des rôles
+
+La console gère le contrôle d'accès via des rôles (administration de la console et rôles au niveau projet) composés d'un nom, d'un ensemble de permissions (bitmask) et d'un type (`type`).
+
+Les types de rôles actuels sont :
+
+- `managed` : rôle géré dans la console. Les membres du rôle sont administrés depuis l'interface (ajout/retrait) et les permissions sont définies dans la console.
+- `external` : rôle lié à un groupe OIDC/Keycloak (`oidcGroup`). L'appartenance au groupe est la source de vérité, la console s'aligne dessus.
+- `global` : rôle global côté administration (portée plateforme) destiné à porter des permissions transverses.
+
+Le préfixe `system:` est un qualifiant (pas un type à part entière) utilisé pour marquer les rôles fournis/maintenus par la plateforme, par exemple `system:managed`, `system:external`, `system:global`.
+
+Dans l'interface, un rôle dont le type commence par `system:` est considéré comme non modifiable : ses champs (nom/type/groupe/permissions) sont en lecture seule et la suppression est désactivée. Selon l'écran mais la gestion des membres reste disponible.
+
 ## Développement
 
 Le développement s'effectue à l'aide de Docker *(le client et le serveur peuvent tourner en local ou dans Docker)*.
