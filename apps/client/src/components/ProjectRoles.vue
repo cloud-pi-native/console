@@ -17,10 +17,30 @@ const roleList = ref<RoleItem[]>([])
 
 const selectedRole = computed(() => roleList.value.find(({ id }) => id === selectedId.value))
 
+const diacriticsRegexp = /[\u0300-\u036F]/g
+const nonAlphanumericRegexp = /[^a-z0-9]+/g
+const trimHyphensRegexp = /^-+|-+$/g
+
+function toKebabCase(value: string) {
+  return value
+    .normalize('NFKD')
+    .replace(diacriticsRegexp, '')
+    .toLowerCase()
+    .replace(nonAlphanumericRegexp, '-')
+    .replace(trimHyphensRegexp, '')
+}
+
+function getOidcGroupFromRoleName(roleName: string) {
+  const kebab = toKebabCase(roleName)
+  return `/console/${kebab || 'role'}`
+}
+
 async function addRole() {
+  const name = 'Nouveau rôle'
   const newRoles = await props.project.Roles.create({
-    name: 'Nouveau rôle',
+    name,
     permissions: 0n.toString(),
+    oidcGroup: getOidcGroupFromRoleName(name),
     type: 'managed',
   })
   reload()
@@ -68,8 +88,8 @@ async function saveRole(role: Omit<ProjectRoleBigint, 'position' | 'projectId'>)
     id: selectedRole.value.id,
     permissions: role.permissions.toString(),
     name: role.name,
-    oidcGroup: role.oidcGroup,
-    type: role.type,
+    oidcGroup: getOidcGroupFromRoleName(role.name),
+    type: 'managed',
   }])
   reload()
   snackbarStore.setMessage('Rôle mis à jour', 'success')
