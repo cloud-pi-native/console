@@ -1,5 +1,6 @@
 import type { projectRoleContract } from '@cpn-console/shared'
 import type { Project, ProjectRole } from '@prisma/client'
+import { isSystemRoleType } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 import {
   deleteRole as deleteRoleQuery,
@@ -32,6 +33,12 @@ export async function patchRoles(projectId: Project['id'], roles: typeof project
   for (const dbRole of dbRoles) {
     const matchingRole = roles.find(role => role.id === dbRole.id)
     if (matchingRole) {
+      if (isSystemRoleType(dbRole.type)) {
+        return new BadRequest400('Ce rôle système ne peut pas être modifié')
+      }
+      if (isSystemRoleType(matchingRole.type)) {
+        return new BadRequest400('Impossible de modifier un rôle en rôle système')
+      }
       if (typeof matchingRole?.position !== 'undefined' && !positionsAvailable.includes(matchingRole?.position)) {
         positionsAvailable.push(matchingRole.position)
       }
@@ -62,6 +69,9 @@ export async function patchRoles(projectId: Project['id'], roles: typeof project
 export async function createRole(projectId: Project['id'], role: typeof projectRoleContract.createProjectRole.body._type) {
   const project = await prisma.project.findUnique({ where: { id: projectId }, select: { slug: true } })
   if (!project) throw new NotFound404()
+  if (isSystemRoleType(role.type)) {
+    throw new BadRequest400('Impossible de créer un rôle système')
+  }
   const dbMaxPosRole = (await prisma.projectRole.findFirst({
     where: { projectId },
     orderBy: { position: 'desc' },
@@ -100,6 +110,11 @@ export async function countRolesMembers(projectId: Project['id']) {
 }
 
 export async function deleteRole(roleId: Project['id']) {
+  const role = await prisma.projectRole.findUnique({ where: { id: roleId }, select: { type: true } })
+  if (!role) throw new NotFound404()
+  if (isSystemRoleType(role.type)) {
+    throw new BadRequest400('Ce rôle système ne peut pas être supprimé')
+  }
   await hook.projectRole.delete(roleId)
   await deleteRoleQuery(roleId)
   return null
