@@ -27,13 +27,6 @@ async function assignPerms({
   perms: readonly string[]
 }) {
   await openProjectRoleByName({ page, roleName })
-  const roleTypeSelect = page.locator('#roleTypeSelect')
-  if (await roleTypeSelect.isVisible()) {
-    const currentRoleType = await roleTypeSelect.inputValue()
-    if (currentRoleType === 'managed') {
-      await roleTypeSelect.selectOption('global')
-    }
-  }
   for (const key of perms) {
     const input = page.locator(`#${key}-cbx`)
     await expect(input).toBeVisible()
