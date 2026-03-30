@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import type { Member, ProjectRoleBigint, ProjectV2 } from '@cpn-console/shared'
-import { PROJECT_PERMS, projectPermsDetails, shallowEqual } from '@cpn-console/shared'
+import { PROJECT_PERMS, projectPermsDetails } from '@cpn-console/shared'
 import { computed, ref } from 'vue'
+import { toKebabCase } from '@/utils/func.js'
 
 const props = defineProps<{
   id: string
@@ -20,27 +21,41 @@ defineEmits<{
   save: [value: Omit<ProjectRoleBigint, 'position' | 'projectId'>]
   cancel: []
 }>()
+
 const router = useRouter()
+
 const role = ref({
   ...props,
   permissions: props.permissions ?? 0n,
   allMembers: props.allMembers ?? [],
-  oidcGroup: props.oidcGroup ?? '',
   type: props.type ?? 'managed',
 })
 
+const computedOidcGroup = computed(() => {
+  const kebab = toKebabCase(role.value.name)
+  return kebab ? `/${kebab}` : undefined
+})
+
+const roleWithAutofill = computed(() => ({
+  ...role.value,
+  oidcGroup: computedOidcGroup.value,
+  type: 'managed',
+}))
+
 const isUpdated = computed(() => {
   if (role.value.isEveryone) return props.permissions !== role.value.permissions
-  return !shallowEqual(props, role.value)
+  return (
+    props.name !== role.value.name
+    || props.permissions !== role.value.permissions
+    || (props.type ?? 'managed') !== role.value.type
+    || (props.oidcGroup ?? '') !== (computedOidcGroup.value ?? '')
+  )
 })
 
 const tabListName = 'Liste d’onglet'
 const tabTitles = computed(() => [
   { title: 'Général', icon: 'ri:checkbox-circle-line', tabId: 'general' },
-  ...(
-    role.value.type === 'managed'
-      ? [{ title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' }]
-      : []),
+  { title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' },
   { title: 'Fermer', icon: 'ri:close-line', tabId: 'close' },
 ])
 
@@ -55,12 +70,6 @@ function updateChecked(checked: boolean, value: bigint) {
     role.value.permissions &= ~value
   }
 }
-
-const typeOptions = [
-  { text: 'Managé', value: 'managed' },
-  { text: 'Externe', value: 'external' },
-  { text: 'Global', value: 'global' },
-]
 </script>
 
 <template>
@@ -78,22 +87,6 @@ const typeOptions = [
       <DsfrInput
         v-model="role.name"
         data-testid="roleNameInput"
-        label-visible
-        class="mb-5"
-        :disabled="role.isEveryone"
-      />
-      <h6>Type</h6>
-      <DsfrSelect
-        v-model="role.type"
-        select-id="roleTypeSelect"
-        :options="typeOptions"
-        class="mb-5"
-        :disabled="role.isEveryone"
-      />
-      <h6>Groupe OIDC</h6>
-      <DsfrInput
-        v-model="role.oidcGroup"
-        data-testid="roleOidcGroupInput"
         label-visible
         class="mb-5"
         :disabled="role.isEveryone"
@@ -117,7 +110,7 @@ const typeOptions = [
           :label="perm?.label"
           :hint="perm?.hint"
           :name="perm.key"
-          :disabled="(role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE') || role.type === 'managed'"
+          :disabled="(role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE')"
           @update:model-value="(checked: boolean) => updateChecked(checked, PROJECT_PERMS[perm.key])"
         />
       </div>
@@ -127,10 +120,10 @@ const typeOptions = [
         secondary
         :disabled="!isUpdated"
         class="mr-5"
-        @click="$emit('save', role)"
+        @click="$emit('save', roleWithAutofill)"
       />
       <DsfrButton
-        v-if="!role.isEveryone && role.type !== 'managed'"
+        v-if="!role.isEveryone"
         data-testid="deleteBtn"
         label="Supprimer"
         secondary

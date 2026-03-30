@@ -16,6 +16,19 @@ export async function copyContent(content: string): Promise<void> {
   }
 }
 
+const diacriticsRegexp = /[\u0300-\u036F]/g
+const nonAlphanumericRegexp = /[^a-z0-9]+/g
+const trimHyphensRegexp = /^-+|-+$/g
+
+export function toKebabCase(value: string) {
+  return value
+    .normalize('NFKD')
+    .replace(diacriticsRegexp, '')
+    .toLowerCase()
+    .replace(nonAlphanumericRegexp, '-')
+    .replace(trimHyphensRegexp, '')
+}
+
 export function toCodeComponent(value: string) {
   return {
     component: 'code',
