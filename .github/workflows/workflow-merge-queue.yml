@@ -9,6 +9,11 @@ permissions:
 
 on:
   workflow_dispatch:
+    inputs:
+      PR_NUMBER:
+        description: Pull request number to run checks for
+        required: true
+        type: string
   merge_group:
     types: [checks_requested]
 
@@ -19,22 +24,23 @@ env:
   BUILD_AMD64: true
   BUILD_ARM64: false
   USE_QEMU: false
-  MERGE_GROUP_HEAD_SHA: "${{ github.event.merge_group.head_sha || 'no merge queue context for SHA' }}"
-  MERGE_GROUP_HEAD_REF: "${{ github.event.merge_group.head_ref || 'no merge queue context for REF' }}"
+  MERGE_GROUP_HEAD_SHA: "${{ github.event.merge_group.head_sha || github.sha }}"
+  MERGE_GROUP_HEAD_REF: "${{ github.event.merge_group.head_ref || github.ref_name }}"
 
 jobs:
   path-filter:
     runs-on: ubuntu-latest
     outputs:
-      apps: ${{ steps.filter.outputs.apps }}
-      packages: ${{ steps.filter.outputs.packages }}
-      e2e: ${{ steps.filter.outputs.e2e }}
-      ci: ${{ steps.filter.outputs.ci }}
+      apps: ${{ github.event_name == 'workflow_dispatch' && 'true' || steps.filter.outputs.apps }}
+      packages: ${{ github.event_name == 'workflow_dispatch' && 'true' || steps.filter.outputs.packages }}
+      e2e: ${{ github.event_name == 'workflow_dispatch' && 'true' || steps.filter.outputs.e2e }}
+      ci: ${{ github.event_name == 'workflow_dispatch' && 'true' || steps.filter.outputs.ci }}
     steps:
       - name: Checks-out repository
         uses: actions/checkout@v4
 
       - name: Check updated files paths
+        if: ${{ github.event_name != 'workflow_dispatch' }}
         uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -93,11 +99,11 @@ jobs:
     with:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
-      TAG: pr-${{ github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
+      TAG: pr-${{ github.event.inputs.PR_NUMBER || github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
       BUILD_AMD64: ${{ needs.expose-vars.outputs.BUILD_AMD64 == 'true' }}
       BUILD_ARM64: ${{ needs.expose-vars.outputs.BUILD_ARM64 == 'true' }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
-      PR_NUMBER: ${{ github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
+      PR_NUMBER: ${{ github.event.inputs.PR_NUMBER || github.event.number || '' }}
     secrets:
       ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
 
@@ -118,7 +124,7 @@ jobs:
       - build
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
-      TAG: pr-${{ github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
+      TAG: pr-${{ github.event.inputs.PR_NUMBER || github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
 
   scan-vuln:
     uses: ./.github/workflows/job-scan.yml
@@ -128,7 +134,7 @@ jobs:
     with:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
-      TAG: pr-${{ github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
+      TAG: pr-${{ github.event.inputs.PR_NUMBER || github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
 
   # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
   all-jobs-passed:
