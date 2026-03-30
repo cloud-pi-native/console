@@ -105,6 +105,17 @@ jobs:
     secrets:
       ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
 
+  playwright-tests:
+    uses: ./.github/workflows/job-playwright.yml
+    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true' }}
+    needs:
+      - path-filter
+      - expose-vars
+      - build
+    with:
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      TAG: pr-${{ github.event.number || needs.expose-vars.outputs.MERGE_GROUP_HEAD_SHA }}
+
   build-label:
     uses: ./.github/workflows/job-label.yml
     needs:
@@ -134,6 +145,7 @@ jobs:
       - lint
       - unit-tests
       - build
+      - playwright-tests
       - scan-vuln
     steps:
       - name: Check status of all required jobs
