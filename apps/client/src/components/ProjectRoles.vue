@@ -2,6 +2,7 @@
 import type { Member, ProjectRole, ProjectRoleBigint, Role, RoleBigint } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { toKebabCase } from '@/utils/func.js'
 
 const props = defineProps<{
   project: Project
@@ -18,9 +19,11 @@ const roleList = ref<RoleItem[]>([])
 const selectedRole = computed(() => roleList.value.find(({ id }) => id === selectedId.value))
 
 async function addRole() {
+  const name = 'Nouveau rôle'
   const newRoles = await props.project.Roles.create({
-    name: 'Nouveau rôle',
+    name,
     permissions: 0n.toString(),
+    oidcGroup: `/${toKebabCase(name)}`,
     type: 'managed',
   })
   reload()
@@ -68,8 +71,8 @@ async function saveRole(role: Omit<ProjectRoleBigint, 'position' | 'projectId'>)
     id: selectedRole.value.id,
     permissions: role.permissions.toString(),
     name: role.name,
-    oidcGroup: role.oidcGroup,
-    type: role.type,
+    oidcGroup: `/${toKebabCase(role.name)}`,
+    type: 'managed',
   }])
   reload()
   snackbarStore.setMessage('Rôle mis à jour', 'success')
