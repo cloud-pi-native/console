@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { AdminPermsKeys, LettersQuery, SharedZodError, User } from '@cpn-console/shared'
-import { ADMIN_PERMS, adminPermsDetails, RoleSchema, shallowEqual } from '@cpn-console/shared'
+import { ADMIN_PERMS, adminPermsDetails, isManagedRole, isSystemRole, RoleSchema, shallowEqual } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
 import { computed, onBeforeMount, ref } from 'vue'
 import { useUsersStore } from '@/stores/users.js'
@@ -31,6 +31,21 @@ const role = ref({
   permissions: props.permissions ?? 0n,
 })
 
+const systemTypePrefix = 'system:'
+const isSystem = computed(() => isSystemRole(role.value.type))
+const isManaged = computed(() => isManagedRole(role.value.type))
+const roleTypeForSelect = computed({
+  get() {
+    const type = role.value.type
+    if (type?.startsWith(systemTypePrefix)) return type.slice(systemTypePrefix.length)
+    return type ?? 'managed'
+  },
+  set(value) {
+    if (role.value.type?.startsWith(systemTypePrefix)) role.value.type = `${systemTypePrefix}${value}`
+    else role.value.type = value
+  },
+})
+
 const isUpdated = computed(() => {
   return !shallowEqual(props, role.value)
 })
@@ -44,7 +59,7 @@ const tabListName = 'Liste d’onglet'
 const tabTitles = computed(() => [
   { title: 'Général', icon: 'ri:checkbox-circle-line', tabId: 'general' },
   ...(
-    role.value.type === 'managed'
+    isManaged.value
       ? [{ title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' }]
       : []),
   { title: 'Fermer', icon: 'ri:close-line', tabId: 'close' },
@@ -150,6 +165,7 @@ const typeOptions = [
         label-visible
         hint="Ne doit pas dépasser 30 caractères."
         class="mb-5"
+        :disabled="isSystem"
       />
       <p
         class="fr-h6"
@@ -174,18 +190,19 @@ const typeOptions = [
           :label="perm.label"
           :hint="perm?.hint"
           :name="perm.key"
-          :disabled="role.permissions & ADMIN_PERMS.MANAGE && perm.key !== 'MANAGE'"
+          :disabled="isSystem || (role.permissions & ADMIN_PERMS.MANAGE && perm.key !== 'MANAGE')"
           @update:model-value="(checked: boolean) => updateChecked(checked, perm.key)"
         />
       </div>
       <DsfrSelect
-        v-model="role.type"
+        v-model="roleTypeForSelect"
         data-testid="roleTypeSelect"
         select-id="roleTypeSelect"
         label="Type"
         label-visible
         :options="typeOptions"
         class="mb-5"
+        :disabled="isSystem"
       />
       <DsfrInput
         v-model="role.oidcGroup"
@@ -194,16 +211,18 @@ const typeOptions = [
         label-visible
         placeholder="/admin"
         class="mb-5"
+        :disabled="isSystem"
       />
       <DsfrButton
         data-testid="saveBtn"
         label="Enregistrer"
         secondary
-        :disabled="!isUpdated || !!errorSchema"
+        :disabled="!isUpdated || !!errorSchema || isSystem"
         class="mr-5"
         @click="$emit('save', { ...role, permissions: role.permissions.toString() })"
       />
       <DsfrButton
+        v-if="!isSystem"
         data-testid="deleteBtn"
         label="Supprimer"
         secondary
