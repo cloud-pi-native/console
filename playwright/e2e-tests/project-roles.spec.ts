@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
-import { clientURL, cnolletUser, signInCloudPiNative, testUser } from '../config/console'
+import { clientURL, cnolletUser, signInCloudPiNative, tcolinUser, testUser } from '../config/console'
 import { addEnvToProject, addProject, addRandomRepositoryToProject, deleteProject } from './utils'
 
 async function openProjectByName({ page, projectName }: { page: Page, projectName: string }) {
@@ -154,4 +154,39 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await page.getByTestId('test-tab-roles').click()
     await expect(page.getByTestId('insuficientPermsRoles')).toBeVisible()
   })
+
+  test(
+    'Should display project logs as project manager as well as a project member',
+    { tag: '@e2e' },
+    async ({ page }) => {
+      // Arrange
+      await page.goto(clientURL)
+      await signInCloudPiNative({ page, credentials: testUser })
+
+      // Act
+      const { name: projectName } = await addProject({
+        page,
+        members: [tcolinUser],
+      })
+
+      // Assert - as Project Owner
+      await page.getByTestId('test-tab-logs').click()
+      await expect(page.locator('#panel-logs')).toBeVisible()
+      await page.getByTestId('replayHooksBtn').click()
+      await expect(page.getByTestId('positionInfo')).toContainText(
+        '1 - 5 sur 6',
+      )
+
+      // Assert - as Project Member
+      await page.getByRole('link', { name: 'Se Déconnecter' }).click()
+      await signInCloudPiNative({ page, credentials: tcolinUser })
+      await page.getByTestId('menuMyProjects').click()
+      await page.getByRole('link', { name: projectName }).click()
+      await page.getByTestId('test-tab-logs').click()
+      await expect(page.locator('#panel-logs')).toBeVisible()
+      await expect(page.getByTestId('positionInfo')).toContainText(
+        '1 - 5 sur 6',
+      )
+    },
+  )
 })
