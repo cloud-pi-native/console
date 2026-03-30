@@ -65,12 +65,7 @@
       "runtimeArgs": [
         "--filter",
         "@cpn-console/client",
-        "run",
-        "integ",
-        "--",
-        "--port",
-        "8080",
-        "--strictPort"
+        "run"
       ],
       "console": "internalConsole",
       "serverReadyAction": {
@@ -115,12 +110,7 @@
       "runtimeArgs": [
         "--filter",
         "@cpn-console/client",
-        "run",
-        "integ",
-        "--",
-        "--port",
-        "8080",
-        "--strictPort"
+        "run"
       ],
       "console": "internalConsole",
       "serverReadyAction": {
@@ -141,11 +131,7 @@
         "--filter",
         "@cpn-console/client",
         "run",
-        "dev",
-        "--",
-        "--port",
-        "8080",
-        "--strictPort"
+        "dev"
       ],
       "console": "internalConsole",
       "serverReadyAction": {
