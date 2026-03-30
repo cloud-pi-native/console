@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { Member, ProjectRoleBigint, ProjectV2 } from '@cpn-console/shared'
 import { PROJECT_PERMS, projectPermsDetails, shallowEqual } from '@cpn-console/shared'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps<{
   id: string
@@ -21,12 +21,30 @@ defineEmits<{
   cancel: []
 }>()
 const router = useRouter()
+const diacriticsRegexp = /[\u0300-\u036F]/g
+const nonAlphanumericRegexp = /[^a-z0-9]+/g
+const trimHyphensRegexp = /^-+|-+$/g
+
+function toKebabCase(value: string) {
+  return value
+    .normalize('NFKD')
+    .replace(diacriticsRegexp, '')
+    .toLowerCase()
+    .replace(nonAlphanumericRegexp, '-')
+    .replace(trimHyphensRegexp, '')
+}
+
+function getOidcGroupFromRoleName(roleName: string) {
+  const kebab = toKebabCase(roleName)
+  return `/console/${kebab || 'role'}`
+}
+
 const role = ref({
   ...props,
   permissions: props.permissions ?? 0n,
   allMembers: props.allMembers ?? [],
-  oidcGroup: props.oidcGroup ?? '',
-  type: props.type ?? 'managed',
+  oidcGroup: props.oidcGroup ?? getOidcGroupFromRoleName(props.name),
+  type: 'managed',
 })
 
 const isUpdated = computed(() => {
@@ -37,10 +55,7 @@ const isUpdated = computed(() => {
 const tabListName = 'Liste d’onglet'
 const tabTitles = computed(() => [
   { title: 'Général', icon: 'ri:checkbox-circle-line', tabId: 'general' },
-  ...(
-    role.value.type === 'managed'
-      ? [{ title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' }]
-      : []),
+  { title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' },
   { title: 'Fermer', icon: 'ri:close-line', tabId: 'close' },
 ])
 
@@ -56,11 +71,15 @@ function updateChecked(checked: boolean, value: bigint) {
   }
 }
 
-const typeOptions = [
-  { text: 'Managé', value: 'managed' },
-  { text: 'Externe', value: 'external' },
-  { text: 'Global', value: 'global' },
-]
+watch(
+  () => role.value.name,
+  (name) => {
+    if (role.value.isEveryone) return
+    role.value.oidcGroup = getOidcGroupFromRoleName(name)
+    role.value.type = 'managed'
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -78,22 +97,6 @@ const typeOptions = [
       <DsfrInput
         v-model="role.name"
         data-testid="roleNameInput"
-        label-visible
-        class="mb-5"
-        :disabled="role.isEveryone"
-      />
-      <h6>Type</h6>
-      <DsfrSelect
-        v-model="role.type"
-        select-id="roleTypeSelect"
-        :options="typeOptions"
-        class="mb-5"
-        :disabled="role.isEveryone"
-      />
-      <h6>Groupe OIDC</h6>
-      <DsfrInput
-        v-model="role.oidcGroup"
-        data-testid="roleOidcGroupInput"
         label-visible
         class="mb-5"
         :disabled="role.isEveryone"
