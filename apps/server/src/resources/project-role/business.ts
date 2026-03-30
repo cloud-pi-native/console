@@ -11,6 +11,11 @@ import { BadRequest400, NotFound404 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
 const oidcRegexp = /^\/[^/]+/
+const systemTypePrefix = 'system:'
+
+function isSystemType(type: string | null | undefined) {
+  return type?.startsWith(systemTypePrefix)
+}
 
 export async function listRoles(projectId: Project['id']) {
   const roles = await listRolesQuery(projectId)
@@ -32,6 +37,12 @@ export async function patchRoles(projectId: Project['id'], roles: typeof project
   for (const dbRole of dbRoles) {
     const matchingRole = roles.find(role => role.id === dbRole.id)
     if (matchingRole) {
+      if (isSystemType(dbRole.type)) {
+        return new BadRequest400('Ce rôle système ne peut pas être modifié')
+      }
+      if (isSystemType(matchingRole.type)) {
+        return new BadRequest400('Impossible de modifier un rôle en rôle système')
+      }
       if (typeof matchingRole?.position !== 'undefined' && !positionsAvailable.includes(matchingRole?.position)) {
         positionsAvailable.push(matchingRole.position)
       }
@@ -62,6 +73,9 @@ export async function patchRoles(projectId: Project['id'], roles: typeof project
 export async function createRole(projectId: Project['id'], role: typeof projectRoleContract.createProjectRole.body._type) {
   const project = await prisma.project.findUnique({ where: { id: projectId }, select: { slug: true } })
   if (!project) throw new NotFound404()
+  if (isSystemType(role.type)) {
+    throw new BadRequest400('Impossible de créer un rôle système')
+  }
   const dbMaxPosRole = (await prisma.projectRole.findFirst({
     where: { projectId },
     orderBy: { position: 'desc' },
@@ -100,6 +114,11 @@ export async function countRolesMembers(projectId: Project['id']) {
 }
 
 export async function deleteRole(roleId: Project['id']) {
+  const role = await prisma.projectRole.findUnique({ where: { id: roleId }, select: { type: true } })
+  if (!role) throw new NotFound404()
+  if (isSystemType(role.type)) {
+    throw new BadRequest400('Ce rôle système ne peut pas être supprimé')
+  }
   await hook.projectRole.delete(roleId)
   await deleteRoleQuery(roleId)
   return null
