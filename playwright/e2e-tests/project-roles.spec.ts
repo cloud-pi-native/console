@@ -107,6 +107,27 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await expect(page.getByTestId('test-tab-roles')).toBeVisible()
   })
 
+  test('System roles should allow member assignment but forbid edits', async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await openProjectByName({ page, projectName })
+
+    await openProjectRoleByName({ page, roleName: 'DevOps' })
+
+    await expect(page.getByTestId('roleNameInput')).toBeDisabled()
+    await expect(page.locator('#LIST_ENVIRONMENTS-cbx')).toBeDisabled()
+    await expect(page.getByTestId('saveBtn')).toBeDisabled()
+    await expect(page.getByTestId('deleteBtn')).toHaveCount(0)
+
+    await page.getByTestId('test-members').click()
+    const memberCheckbox = page.getByTestId(`input-checkbox-${cnolletUser.id}-cbx`)
+    await expect(memberCheckbox).toBeVisible()
+    await memberCheckbox.check({ force: true })
+    await expect(memberCheckbox).toBeChecked()
+    await expect(page.getByTestId('snackbar')).toContainText('Rôle mis à jour')
+    await expect(page.getByTestId('saveBtn')).toBeDisabled()
+  })
+
   test('Should assign view perms', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
