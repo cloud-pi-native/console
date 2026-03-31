@@ -232,7 +232,7 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
         v-for="project in projectWithSelection.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))"
         v-else
         :key="project.id"
-        :data-testid="`tr-${project.id}`"
+        :data-testid="`projectTr-${project.id}`"
         :selected="project.selected ? '' : null"
         class="cursor-pointer relative"
         :title="`Voir le tableau de bord du projet ${project.name}`"
