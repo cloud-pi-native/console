@@ -51,7 +51,8 @@ test.describe('Projects page', () => {
         repositoryName: firstRepositoryName,
       })
       const secondRepositoryName = await addRandomRepositoryToProject({ page })
-      await page.getByRole('cell', { name: secondRepositoryName }).click()
+      await page.getByTestId(`repoTr-${secondRepositoryName}`).click()
+      await expect(page.getByTestId('resource-modal')).toBeVisible()
       await expect(page.getByTestId('branchNameInput')).not.toHaveValue(
         branchName,
       )
@@ -68,7 +69,7 @@ test.describe('Projects page', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: adminUser })
-      const { name: projectName } = await addProject({ page })
+      const { id: projectId, name: projectName } = await addProject({ page })
 
       // Act
       await page.getByTestId('menuAdministrationBtn').click()
@@ -76,7 +77,8 @@ test.describe('Projects page', () => {
       await page.getByLabel('Filtre rapide').selectOption('Tous')
       await page.getByTestId('projectsSearchInput').fill(projectName)
       await page.getByTestId('projectsSearchBtn').click()
-      await page.getByRole('cell', { name: projectName }).first().click()
+      await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
+      await page.getByTestId(`projectTr-${projectId}`).click()
       await expect(page.locator('h1')).toContainText(projectName)
       await expect(page.getByTestId('archiveProjectInput')).not.toBeVisible()
       await page.getByTestId('showArchiveProjectBtn').click()

@@ -9,6 +9,36 @@ interface Resources {
   memory: number
 }
 
+const repoSyncApiRegex = /\/api\/.*\/repositories\/.*\/sync$/
+
+export function waitForRepoSync({
+  page,
+  timeoutMs = 60000,
+}: {
+  page: Page
+  timeoutMs?: number
+}) {
+  return page.waitForResponse((response) => {
+    const request = response.request()
+    const success = response.status() >= 200 && response.status() < 300
+    return request.method() === 'POST' && success && repoSyncApiRegex.test(response.url())
+  }, { timeout: timeoutMs })
+}
+
+export async function waitForSnackbar({
+  page,
+  text,
+  timeoutMs = 20000,
+}: {
+  page: Page
+  text: string | RegExp
+  timeoutMs?: number
+}) {
+  await expect(page.getByTestId('snackbar')).toContainText(text, {
+    timeout: timeoutMs,
+  })
+}
+
 // Assuming we are on the Home page, create a random project with given name, or a generated one
 export async function addProject({
   page,
@@ -56,7 +86,7 @@ export async function addProject({
         .fill(member.email)
       await page.getByTestId('addUserBtn').click()
       await expect(
-        page.getByRole('cell', { name: member.email }),
+        page.getByTestId('teamTable').getByText(member.email),
       ).toBeVisible()
     }
     await page.getByTestId('test-tab-resources').click()
@@ -75,9 +105,8 @@ export async function deleteProject(page: Page, projectName: string) {
   await page.getByRole('button', { name: 'Supprimer le projet' }).click()
   await page.getByTestId('archiveProjectInput').fill('DELETE')
   await page.getByTestId('confirmDeletionBtn').click()
-  await expect(
-    page.getByRole('row', { name: new RegExp(projectName) }),
-  ).not.toBeVisible()
+  await page.getByTestId('menuMyProjects').click()
+  await expect(page.getByRole('link', { name: projectName })).not.toBeVisible()
 }
 
 // Assuming we are on a given Project page, add a random repository with given name, or a generated one
@@ -126,16 +155,17 @@ export async function synchronizeBranchOnRepository({
   branchName?: string
 }) {
   branchName = branchName ?? faker.string.alpha(10).toLowerCase()
-  await page.getByRole('cell', { name: repositoryName }).click()
+  await page.getByTestId(`repoTr-${repositoryName}`).click()
+  await expect(page.getByTestId('resource-modal')).toBeVisible()
   await page.getByTestId('branchNameInput').fill(branchName)
+  const syncRequest = waitForRepoSync({ page, timeoutMs: 60000 })
   await page.getByTestId('syncRepoBtn').click()
+  await syncRequest
   await page
     .getByTestId('resource-modal')
     .getByRole('button', { name: 'Fermer' })
     .click()
-  await expect(
-    page.getByText('Travail de synchronisation lancé'),
-  ).toBeVisible()
+  await waitForSnackbar({ page, text: 'Travail de synchronisation lancé' })
   return branchName
 }
 
@@ -255,6 +285,21 @@ export async function createCluster({
   return clusterName
 }
 
+export async function waitForCluster({
+  page,
+  name,
+  timeoutMs = 60000,
+}: {
+  page: Page
+  name: string
+  timeoutMs?: number
+}) {
+  await page.getByTestId('menuAdministrationClusters').click()
+  await expect(page.getByTestId('cpin-loader')).toHaveCount(0, { timeout: timeoutMs })
+  await page.getByTestId('projectsSearchInput').fill(name)
+  await expect(page.getByRole('link', { name })).toBeVisible({ timeout: timeoutMs })
+}
+
 export async function deleteCluster(
   page: Page,
   clusterName: string,
@@ -262,8 +307,8 @@ export async function deleteCluster(
   await page.getByTestId('menuAdministrationClusters').click()
   await expect(page.getByTestId('cpin-loader')).toHaveCount(0)
   await page.getByTestId('projectsSearchInput').fill(clusterName)
-  await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-  await page.getByRole('cell', { name: clusterName }).click()
+  await expect(page.getByRole('link', { name: clusterName })).toBeVisible()
+  await page.getByRole('link', { name: clusterName }).click()
   await expect(page.getByTestId('deleteClusterZone')).toBeVisible()
   await page.getByTestId('showDeleteClusterBtn').click()
   await expect(page.getByTestId('deleteClusterBtn')).toBeVisible()

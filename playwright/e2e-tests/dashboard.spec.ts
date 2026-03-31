@@ -41,7 +41,7 @@ test.describe('Dashboard page', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { id: _projectId, name: projectName, slug: projectSlug } = await addProject({
         page,
       })
       const description1 = 'Application de prise de rendez-vous en préfécture.'
@@ -120,7 +120,7 @@ test.describe('Dashboard page', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { id: projectId, name: projectName, slug: projectSlug } = await addProject({
         page,
       })
 
@@ -131,7 +131,8 @@ test.describe('Dashboard page', () => {
       await page.getByTestId('menuAdministrationProjects').click()
       await page.getByTestId('projectsSearchInput').fill(projectName)
       await page.getByTestId('projectsSearchBtn').click()
-      await page.getByRole('cell', { name: projectName }).first().click()
+      await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
+      await page.getByTestId(`projectTr-${projectId}`).click()
       await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
       await page.getByTestId('replayHooksBtn').click()
 
@@ -153,7 +154,7 @@ test.describe('Dashboard page', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { id: projectId, name: projectName, slug: projectSlug } = await addProject({
         page,
       })
 
@@ -164,7 +165,8 @@ test.describe('Dashboard page', () => {
       await page.getByTestId('menuAdministrationProjects').click()
       await page.getByTestId('projectsSearchInput').fill(projectName)
       await page.getByTestId('projectsSearchBtn').click()
-      await page.getByRole('cell', { name: projectName }).first().click()
+      await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
+      await page.getByTestId(`projectTr-${projectId}`).click()
       await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
       await page.getByTestId('replayHooksBtn').click()
 
