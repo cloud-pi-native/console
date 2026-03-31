@@ -1,4 +1,5 @@
 shellEmulator: true
+
 trustPolicy: no-downgrade
 
 # Check these after each update. This list should be empty !
@@ -6,6 +7,10 @@ trustPolicyExclude:
   - rollup@2.80.0
   - semver@6.3.1
   - chokidar@4.0.3
+
+# minimum number of minutes that must pass after a version is published before
+# pnpm will install it. This applies to all dependencies, including transitive ones.
+minimumReleaseAge: 1440 # 1 day
 
 autoInstallPeers: true
 injectWorkspacePackages: true
