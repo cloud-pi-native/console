@@ -2,12 +2,7 @@ import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
 import { adminUser, clientURL, signInCloudPiNative } from '../config/console'
 
-import {
-  addEnvToProject,
-  addProject,
-  createCluster,
-  deleteCluster,
-} from './utils'
+import { addEnvToProject, addProject, createCluster, deleteCluster, waitForCluster } from './utils'
 
 test.describe('Clusters page', () => {
   test('should create a public cluster', { tag: '@e2e' }, async ({ page }) => {
@@ -20,8 +15,7 @@ test.describe('Clusters page', () => {
       confidentiality: 'public',
       associateStage: 'first',
     })
-    // Validate
-    await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
+    await waitForCluster({ page, name: clusterName, timeoutMs: 60000 })
     await expect(
       page.getByRole('row', { name: clusterName }).getByText('publique'),
     ).toBeVisible()
@@ -41,8 +35,8 @@ test.describe('Clusters page', () => {
       confidentiality: 'public',
     })
     // Update
-    await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-    await page.getByRole('cell', { name: clusterName }).click()
+    await expect(page.getByRole('link', { name: clusterName })).toBeVisible()
+    await page.getByRole('link', { name: clusterName }).click()
     await expect(page.getByTestId('labelInput')).toHaveValue(clusterName)
     await expect(page.getByTestId('labelInput')).toBeEnabled()
     await page.getByTestId('labelInput').fill(clusterName2)
@@ -55,9 +49,7 @@ test.describe('Clusters page', () => {
     await page.getByTestId('cpuInput').fill('1')
     await page.getByTestId('gpuInput').fill('1')
     await page.getByTestId('updateClusterBtn').click()
-    // Validate
-    await page.getByTestId('projectsSearchInput').fill(clusterName2)
-    await expect(page.getByRole('cell', { name: clusterName2 })).toBeVisible()
+    await waitForCluster({ page, name: clusterName2, timeoutMs: 60000 })
     await expect(page.getByRole('row', { name: clusterName2 })).toContainText(
       '1GiB 1CPU 1GPU',
     )
@@ -75,8 +67,7 @@ test.describe('Clusters page', () => {
         page,
         confidentiality: 'dedicated',
       })
-      // Validate
-      await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
+      await waitForCluster({ page, name: clusterName, timeoutMs: 60000 })
       await expect(page.getByRole('row', { name: clusterName })).toContainText(
         'Dédié',
       )
@@ -97,9 +88,8 @@ test.describe('Clusters page', () => {
         page,
         confidentiality: 'dedicated',
       })
-      // Update
-      await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-      await page.getByRole('cell', { name: clusterName }).click()
+      await waitForCluster({ page, name: clusterName, timeoutMs: 60000 })
+      await page.getByRole('link', { name: clusterName }).click()
       await expect(page.getByTestId('updateClusterBtn')).toBeVisible()
       await expect(page.locator('#projects-select')).toBeVisible()
       await expect(page.locator('#privacy-select option[selected]')).toHaveText(
@@ -118,9 +108,7 @@ test.describe('Clusters page', () => {
         page.locator('#projects-select .fr-tag--dismiss'),
       ).toHaveCount(1)
       await page.getByTestId('updateClusterBtn').click()
-      // Validate
-      await page.getByTestId('projectsSearchInput').fill(clusterName)
-      await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
+      await waitForCluster({ page, name: clusterName, timeoutMs: 60000 })
       await expect(page.getByRole('row', { name: clusterName })).toContainText(
         'Dédié',
       )
@@ -139,8 +127,8 @@ test.describe('Clusters page', () => {
       confidentiality: 'dedicated',
       informations,
     })
-    await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-    await page.getByRole('cell', { name: clusterName }).click()
+    await expect(page.getByRole('link', { name: clusterName })).toBeVisible()
+    await page.getByRole('link', { name: clusterName }).click()
     await expect(page.getByTestId('cpin-loader')).toHaveCount(0)
     await expect(page.getByTestId('infosInput')).toHaveValue(informations)
   })
@@ -209,8 +197,8 @@ test.describe('Clusters page', () => {
       await page.getByTestId('menuAdministrationClusters').click()
       await expect(page.getByTestId('cpin-loader')).toHaveCount(0)
       await page.getByTestId('projectsSearchInput').fill(clusterName)
-      await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-      await page.getByRole('cell', { name: clusterName }).click()
+      await expect(page.getByRole('link', { name: clusterName })).toBeVisible()
+      await page.getByRole('link', { name: clusterName }).click()
       await expect(page.getByTestId('deleteClusterZone')).not.toBeVisible()
       await expect(
         page.getByText('Le cluster ne peut être supprimé'),

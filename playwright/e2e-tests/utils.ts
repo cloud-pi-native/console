@@ -255,6 +255,21 @@ export async function createCluster({
   return clusterName
 }
 
+export async function waitForCluster({
+  page,
+  name,
+  timeoutMs = 60000,
+}: {
+  page: Page
+  name: string
+  timeoutMs?: number
+}) {
+  await page.getByTestId('menuAdministrationClusters').click()
+  await expect(page.getByTestId('cpin-loader')).toHaveCount(0, { timeout: timeoutMs })
+  await page.getByTestId('projectsSearchInput').fill(name)
+  await expect(page.getByRole('link', { name })).toBeVisible({ timeout: timeoutMs })
+}
+
 export async function deleteCluster(
   page: Page,
   clusterName: string,
@@ -262,8 +277,8 @@ export async function deleteCluster(
   await page.getByTestId('menuAdministrationClusters').click()
   await expect(page.getByTestId('cpin-loader')).toHaveCount(0)
   await page.getByTestId('projectsSearchInput').fill(clusterName)
-  await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-  await page.getByRole('cell', { name: clusterName }).click()
+  await expect(page.getByRole('link', { name: clusterName })).toBeVisible()
+  await page.getByRole('link', { name: clusterName }).click()
   await expect(page.getByTestId('deleteClusterZone')).toBeVisible()
   await page.getByTestId('showDeleteClusterBtn').click()
   await expect(page.getByTestId('deleteClusterBtn')).toBeVisible()
