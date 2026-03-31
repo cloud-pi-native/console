@@ -3,6 +3,8 @@ import type { Credentials } from 'config/console'
 import { faker } from '@faker-js/faker'
 import { expect } from '@playwright/test'
 
+const clustersApiUrlPattern = /\/api\/.*\/clusters$/
+
 interface Resources {
   cpu: number
   gpu: number
@@ -250,8 +252,20 @@ export async function createCluster({
   if (informations) {
     await page.getByTestId('infosInput').fill(informations)
   }
+  const createClusterRequest = page.waitForResponse((response) => {
+    const request = response.request()
+    if (request.method() !== 'POST') return false
+    if (response.status() !== 201) return false
+    return clustersApiUrlPattern.test(response.url())
+  })
   await page.getByTestId('addClusterBtn').click()
+  await createClusterRequest
+  await expect(page.getByTestId('projectsSearchInput')).toBeVisible()
+  await expect(page.getByTestId('cpin-loader')).toHaveCount(0)
   await page.getByTestId('projectsSearchInput').fill(clusterName)
+  await expect(page.getByRole('cell', { name: clusterName })).toBeVisible({
+    timeout: 30000,
+  })
   return clusterName
 }
 
