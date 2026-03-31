@@ -88,6 +88,20 @@ Plusieurs plugins sont nativement enregistrés auprès du serveur pour assurer l
 >   - [documentation du module hooks](./packages/hooks/README.md).
 >   - [exemple de plugin](https://github.com/cloud-pi-native/console-plugin-helloworld).
 
+### Gestion des rôles
+
+La console gère le contrôle d'accès via des rôles (administration de la console et rôles au niveau projet) composés d'un nom, d'un ensemble de permissions (bitmask) et d'un type (`type`).
+
+Chaque rôle est associé à un groupe OIDC/Keycloak (`oidcGroup`) mais la source de vérité peut varier selon le type :
+
+- `managed` : la console est source de vérité pour les membres et les permissions, puis synchronise l'appartenance avec le groupe `oidcGroup`.
+- `external` : le groupe OIDC est la source de vérité pour l'appartenance ; la console s'aligne dessus.
+- `global` : rôle d'administration destiné à porter des permissions transverses telle que le role "Tout le monde".
+
+Le préfixe `system:` est un qualifiant (pas un type à part entière) utilisé pour marquer les rôles fournis/maintenus par la plateforme, par exemple `system:managed`, `system:external`, `system:global`.
+
+Dans l'interface, un rôle dont le type commence par `system:` est considéré comme non modifiable : ses champs (nom/type/groupe/permissions) sont en lecture seule et la suppression est désactivée. Selon l'écran, la gestion des membres peut rester disponible.
+
 ## Développement
 
 Le développement s'effectue à l'aide de Docker *(le client et le serveur peuvent tourner en local ou dans Docker)*.
@@ -358,7 +372,7 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 └── README.md
 ```
 
-# Organisation avec Git
+## Organisation avec Git
 
 Une requête de fusion ("merge request") doit être faite avec la branche `main` comme destination.
 
