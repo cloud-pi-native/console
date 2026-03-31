@@ -17,6 +17,22 @@ async function openProjectRoleByName({ page, roleName }: { page: Page, roleName:
     .click()
 }
 
+async function ensureMemberNotInRole({ page, roleName, userId }: { page: Page, roleName: string, userId: string }) {
+  await page.getByTestId('test-tab-roles').click()
+  const roleTab = page.locator('[data-testid$="-tab"]').filter({ hasText: roleName })
+  if (!await roleTab.count())
+    return
+  await roleTab.click()
+  await page.getByRole('tab', { name: 'Membres' }).click({ force: true })
+  const memberCheckbox = page.getByTestId(`input-checkbox-${userId}-cbx`)
+  await expect(memberCheckbox).toBeVisible()
+  if (!await memberCheckbox.isChecked())
+    return
+  await memberCheckbox.uncheck({ force: true })
+  await expect(memberCheckbox).not.toBeChecked()
+  await expect(page.getByTestId('snackbar')).toContainText('Rôle mis à jour')
+}
+
 async function assignPerms({
   page,
   roleName,
@@ -28,17 +44,12 @@ async function assignPerms({
 }) {
   await openProjectRoleByName({ page, roleName })
   for (const key of perms) {
-    const input = page.locator(`#${key}-cbx`)
+    const input = page.getByTestId(`input-checkbox-${key}-cbx`)
     await expect(input).toBeVisible()
     await expect(input).toBeEnabled()
     if (await input.isChecked())
       continue
-    const label = page.locator(`label[for="${key}-cbx"]`)
-    if (await label.count()) {
-      await label.first().click({ force: true })
-    } else {
-      await input.check({ force: true })
-    }
+    await input.check({ force: true })
     await expect(input).toBeChecked()
   }
   await expect(page.getByTestId('saveBtn')).toBeEnabled()
@@ -77,7 +88,13 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await page.getByTestId('roleNameInput').fill(newRoleName)
     await page.getByTestId('saveBtn').click()
 
-    await page.getByTestId('test-members').click()
+    await ensureMemberNotInRole({ page, roleName: 'Administrateur', userId: cnolletUser.id })
+    await ensureMemberNotInRole({ page, roleName: 'DevOps', userId: cnolletUser.id })
+    await ensureMemberNotInRole({ page, roleName: 'Développeur', userId: cnolletUser.id })
+    await ensureMemberNotInRole({ page, roleName: 'Lecture seule', userId: cnolletUser.id })
+
+    await openProjectRoleByName({ page, roleName: newRoleName })
+    await page.getByRole('tab', { name: 'Membres' }).click({ force: true })
     await page.getByTestId(`input-checkbox-${cnolletUser.id}-cbx`).check({ force: true })
     await page.close()
   })
@@ -153,7 +170,7 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await page.getByTestId('test-tab-resources').click()
 
     await expect(page.getByTestId('noReposTr')).toHaveCount(0)
-    await expect(page.getByTestId('addRepoLink')).toHaveCount(0)
+    await expect(page.getByTestId('addRepoLink')).toBeHidden()
     await page.getByTestId(`repoTr-${repositoryName}`).click()
     await expect(page.getByTestId('syncRepoBtn')).toHaveCount(0)
     await expect(page.getByTestId('updateRepoBtn')).toHaveCount(0)
@@ -161,7 +178,7 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await page.locator('.fr-modal__header > button.fr-btn--close').click()
 
     await expect(page.getByTestId('noEnvsTr')).toHaveCount(0)
-    await expect(page.getByTestId('addEnvironmentLink')).toHaveCount(0)
+    await expect(page.getByTestId('addEnvironmentLink')).toBeHidden()
     await page.getByTestId(`environmentTr-${environmentName}`).click()
     await expect(page.getByTestId('putEnvironmentBtn')).toHaveCount(0)
     await expect(page.getByTestId('showDeleteEnvironmentBtn')).toHaveCount(0)
