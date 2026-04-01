@@ -27,25 +27,13 @@ async function assignPerms({
   perms: readonly string[]
 }) {
   await openProjectRoleByName({ page, roleName })
-  const roleTypeSelect = page.locator('#roleTypeSelect')
-  if (await roleTypeSelect.isVisible()) {
-    const currentRoleType = await roleTypeSelect.inputValue()
-    if (currentRoleType === 'managed') {
-      await roleTypeSelect.selectOption('global')
-    }
-  }
   for (const key of perms) {
-    const input = page.locator(`#${key}-cbx`)
+    const input = page.getByTestId(`input-checkbox-${key}-cbx`)
     await expect(input).toBeVisible()
     await expect(input).toBeEnabled()
     if (await input.isChecked())
       continue
-    const label = page.locator(`label[for="${key}-cbx"]`)
-    if (await label.count()) {
-      await label.first().click({ force: true })
-    } else {
-      await input.check({ force: true })
-    }
+    await input.check({ force: true })
     await expect(input).toBeChecked()
   }
   await expect(page.getByTestId('saveBtn')).toBeEnabled()
@@ -84,7 +72,8 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await page.getByTestId('roleNameInput').fill(newRoleName)
     await page.getByTestId('saveBtn').click()
 
-    await page.getByTestId('test-members').click()
+    await openProjectRoleByName({ page, roleName: newRoleName })
+    await page.getByRole('tab', { name: 'Membres' }).click({ force: true })
     await page.getByTestId(`input-checkbox-${cnolletUser.id}-cbx`).check({ force: true })
     await page.close()
   })
@@ -114,6 +103,34 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await expect(page.getByTestId('test-tab-roles')).toBeVisible()
   })
 
+  test('System roles forbid edits', async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await openProjectByName({ page, projectName })
+
+    await openProjectRoleByName({ page, roleName: 'DevOps' })
+
+    await expect(page.getByTestId('roleNameInput')).toBeDisabled()
+    await expect(page.locator('#LIST_ENVIRONMENTS-cbx')).toBeDisabled()
+    await expect(page.getByTestId('saveBtn')).toBeDisabled()
+    await expect(page.getByTestId('deleteBtn')).toHaveCount(0)
+  })
+
+  test('System roles allow member assignment', async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await openProjectByName({ page, projectName })
+    await openProjectRoleByName({ page, roleName: 'DevOps' })
+
+    await page.getByRole('tab', { name: 'Membres' }).click({ force: true })
+    const memberCheckbox = page.getByTestId(`input-checkbox-${cnolletUser.id}-cbx`)
+    await expect(memberCheckbox).toBeVisible()
+    await memberCheckbox.check({ force: true })
+    await expect(memberCheckbox).toBeChecked()
+    await expect(page.getByTestId('snackbar')).toContainText('Rôle mis à jour')
+    await expect(page.getByTestId('saveBtn')).toBeDisabled()
+  })
+
   test('Should assign view perms', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
@@ -132,7 +149,7 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await page.getByTestId('test-tab-resources').click()
 
     await expect(page.getByTestId('noReposTr')).toHaveCount(0)
-    await expect(page.getByTestId('addRepoLink')).toHaveCount(0)
+    await expect(page.getByTestId('addRepoLink')).toBeHidden()
     await page.getByTestId(`repoTr-${repositoryName}`).click()
     await expect(page.getByTestId('syncRepoBtn')).toHaveCount(0)
     await expect(page.getByTestId('updateRepoBtn')).toHaveCount(0)
@@ -140,7 +157,7 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await page.locator('.fr-modal__header > button.fr-btn--close').click()
 
     await expect(page.getByTestId('noEnvsTr')).toHaveCount(0)
-    await expect(page.getByTestId('addEnvironmentLink')).toHaveCount(0)
+    await expect(page.getByTestId('addEnvironmentLink')).toBeHidden()
     await page.getByTestId(`environmentTr-${environmentName}`).click()
     await expect(page.getByTestId('putEnvironmentBtn')).toHaveCount(0)
     await expect(page.getByTestId('showDeleteEnvironmentBtn')).toHaveCount(0)
