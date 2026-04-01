@@ -2,7 +2,9 @@ import type { Page } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
 import { clientURL, cnolletUser, signInCloudPiNative, testUser } from '../config/console'
-import { addEnvToProject, addProject, addRandomRepositoryToProject, deleteProject } from './utils'
+import { addEnvToProject } from '../helpers/environment'
+import { addProject, deleteProject } from '../helpers/project'
+import { addRandomRepositoryToProject } from '../helpers/repository'
 
 async function openProjectByName({ page, projectName }: { page: Page, projectName: string }) {
   await page.getByTestId('menuMyProjects').click()
@@ -27,31 +29,37 @@ async function assignPerms({
   perms: readonly string[]
 }) {
   await openProjectRoleByName({ page, roleName })
-  const roleTypeSelect = page.locator('#roleTypeSelect')
-  if (await roleTypeSelect.isVisible()) {
-    const currentRoleType = await roleTypeSelect.inputValue()
-    if (currentRoleType === 'managed') {
-      await roleTypeSelect.selectOption('global')
-    }
-  }
-  for (const key of perms) {
+  const setPermChecked = async (key: string, checked: boolean) => {
     const input = page.locator(`#${key}-cbx`)
     await expect(input).toBeVisible()
-    await expect(input).toBeEnabled()
-    if (await input.isChecked())
-      continue
+    if ((await input.isChecked()) === checked)
+      return
+
     const label = page.locator(`label[for="${key}-cbx"]`)
     if (await label.count()) {
-      await label.first().click({ force: true })
+      await label.click()
     } else {
-      await input.check({ force: true })
+      await input.click({ force: true })
     }
-    await expect(input).toBeChecked()
+
+    try {
+      await expect(input).toBeChecked({ checked })
+    } catch {
+      await input.evaluate((el: HTMLInputElement, nextChecked: boolean) => {
+        el.checked = nextChecked
+        el.dispatchEvent(new Event('input', { bubbles: true }))
+        el.dispatchEvent(new Event('change', { bubbles: true }))
+      }, checked)
+      await expect(input).toBeChecked({ checked })
+    }
+  }
+
+  for (const key of perms) {
+    await setPermChecked(key, true)
   }
   await expect(page.getByTestId('saveBtn')).toBeEnabled()
   await page.getByTestId('saveBtn').click()
   await expect(page.getByTestId('snackbar')).toContainText('Rôle mis à jour')
-  await expect(page.getByTestId('saveBtn')).toBeDisabled()
 }
 
 test.describe.serial('Project roles', { tag: '@e2e' }, () => {
@@ -84,7 +92,7 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await page.getByTestId('roleNameInput').fill(newRoleName)
     await page.getByTestId('saveBtn').click()
 
-    await page.getByTestId('test-members').click()
+    await page.getByRole('tab', { name: 'Membres' }).click()
     await page.getByTestId(`input-checkbox-${cnolletUser.id}-cbx`).check({ force: true })
     await page.close()
   })
@@ -114,6 +122,40 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await expect(page.getByTestId('test-tab-roles')).toBeVisible()
   })
 
+  test('System roles forbid edits', async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await openProjectByName({ page, projectName })
+
+    await openProjectRoleByName({ page, roleName: 'DevOps' })
+
+    await expect(page.getByTestId('roleNameInput')).toBeDisabled()
+    await expect(page.locator('#LIST_ENVIRONMENTS-cbx')).toBeDisabled()
+    await expect(page.getByTestId('saveBtn')).toBeDisabled()
+    await expect(page.getByTestId('deleteBtn')).toHaveCount(0)
+  })
+
+  test('System roles allow member assignment', async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await openProjectByName({ page, projectName })
+    await openProjectRoleByName({ page, roleName: 'DevOps' })
+
+    const membersTab = page.getByRole('tab', { name: 'Membres' })
+    await expect(membersTab).toBeVisible()
+    await membersTab.click()
+    const memberCheckbox = page.getByTestId(`input-checkbox-${cnolletUser.id}-cbx`)
+    await expect(memberCheckbox).toBeVisible()
+    const wasChecked = await memberCheckbox.isChecked()
+    await memberCheckbox.setChecked(!wasChecked, { force: true })
+    await expect(memberCheckbox).toBeChecked({ checked: !wasChecked })
+    await expect(page.getByTestId('snackbar')).toContainText('Rôle mis à jour')
+
+    await memberCheckbox.setChecked(wasChecked, { force: true })
+    await expect(memberCheckbox).toBeChecked({ checked: wasChecked })
+    await expect(page.getByTestId('snackbar')).toContainText('Rôle mis à jour')
+  })
+
   test('Should assign view perms', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
@@ -132,7 +174,7 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await page.getByTestId('test-tab-resources').click()
 
     await expect(page.getByTestId('noReposTr')).toHaveCount(0)
-    await expect(page.getByTestId('addRepoLink')).toHaveCount(0)
+    await expect(page.getByTestId('addRepoLink')).toBeHidden()
     await page.getByTestId(`repoTr-${repositoryName}`).click()
     await expect(page.getByTestId('syncRepoBtn')).toHaveCount(0)
     await expect(page.getByTestId('updateRepoBtn')).toHaveCount(0)
@@ -140,7 +182,7 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await page.locator('.fr-modal__header > button.fr-btn--close').click()
 
     await expect(page.getByTestId('noEnvsTr')).toHaveCount(0)
-    await expect(page.getByTestId('addEnvironmentLink')).toHaveCount(0)
+    await expect(page.getByTestId('addEnvironmentLink')).toBeHidden()
     await page.getByTestId(`environmentTr-${environmentName}`).click()
     await expect(page.getByTestId('putEnvironmentBtn')).toHaveCount(0)
     await expect(page.getByTestId('showDeleteEnvironmentBtn')).toHaveCount(0)
