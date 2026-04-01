@@ -23,7 +23,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
       cpuInput: '2',
       gpuInput: '0',
     })
-    await expect(page.getByRole('cell', { name: envName })).toBeVisible()
+    await expect(page.getByTestId(`environmentTr-${envName}`)).toBeVisible()
   })
 
   test('should not add environments to a project without enough hprod GPU', async ({
@@ -47,7 +47,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
       memoryInput: '2',
       gpuInput: '2',
     })
-    await expect(page.getByRole('cell', { name: envName })).not.toBeVisible()
+    await expect(page.getByTestId(`environmentTr-${envName}`)).not.toBeVisible()
     await expect(
       page
         .getByTestId('snackbar')
@@ -249,7 +249,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
       customStageName: 'dev',
       customClusterName: 'public1',
     })
-    await expect(page.getByRole('cell', { name: envName })).toBeVisible()
+    await expect(page.getByTestId(`environmentTr-${envName}`)).toBeVisible()
 
     // Sign off and login as another user (project member)
     await page.getByRole('link', { name: 'Se déconnecter' }).click()
@@ -258,7 +258,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     await page.getByTestId('menuMyProjects').click()
     await expect(page.getByTestId('createProjectLink')).toBeVisible()
     await page.getByRole('link', { name: projectName }).click()
-    await expect(page.getByRole('cell', { name: envName })).toBeVisible()
+    await expect(page.getByTestId(`environmentTr-${envName}`)).toBeVisible()
     // Verify absence of delete button
     await page.getByTestId(`environmentTr-${envName}`).click()
     await expect(
@@ -271,14 +271,14 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
   }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName } = await addProject({ page })
+    const { id: projectId, name: projectName } = await addProject({ page })
     const envName = await addEnvToProject({
       page,
       zone: 'publique',
       customStageName: 'dev',
       customClusterName: 'public1',
     })
-    await expect(page.getByRole('cell', { name: envName })).toBeVisible()
+    await expect(page.getByTestId(`environmentTr-${envName}`)).toBeVisible()
 
     // Sign off and login as admin to lock the project
     await page.getByRole('link', { name: 'Se déconnecter' }).click()
@@ -288,7 +288,8 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     await page.getByTestId('projectsSearchInput').click()
     await page.getByTestId('projectsSearchInput').fill(projectName)
     await page.getByTestId('projectsSearchBtn').click()
-    await page.getByRole('cell', { name: projectName }).first().click()
+    await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
+    await page.getByTestId(`projectTr-${projectId}`).click()
     await page.getByTestId('handleProjectLockingBtn').click()
 
     // Sign off and login back as user
@@ -315,7 +316,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
       customStageName: 'dev',
       customClusterName: 'public1',
     })
-    await expect(page.getByRole('cell', { name: envName })).toBeVisible()
+    await expect(page.getByTestId(`environmentTr-${envName}`)).toBeVisible()
 
     // Verify warning message
     await page.getByTestId(`environmentTr-${envName}`).click()
