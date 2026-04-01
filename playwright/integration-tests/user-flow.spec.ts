@@ -1,10 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { adminUser, clientURL, secondTestUser, signInCloudPiNative, testUser } from '../config/console'
-import {
-  addProject,
-  addRandomRepositoryToProject,
-  deleteProject,
-} from '../e2e-tests/utils'
+import { addProject, deleteProject } from '../helpers/project'
+import { addRandomRepositoryToProject } from '../helpers/repository'
 
 import { waitForAndClick } from './helper'
 
