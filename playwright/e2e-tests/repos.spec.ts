@@ -546,7 +546,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { id: projectId, name: projectName, slug: projectSlug } = await addProject({
         page,
       })
       const repo = {
@@ -584,7 +584,8 @@ test.describe('Repositories', () => {
       await page.getByTestId('menuAdministrationProjects').click()
       await page.getByTestId('projectsSearchInput').fill(projectName)
       await page.getByTestId('projectsSearchBtn').click()
-      await page.getByRole('cell', { name: projectName }).first().click()
+      await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
+      await page.getByTestId(`projectTr-${projectId}`).click()
       await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
 
       // Assert - Attempt to delete repository
@@ -606,7 +607,7 @@ test.describe('Repositories', () => {
           // Only admin users can lock projects
           tcolinUser,
       })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { id: projectId, name: projectName, slug: projectSlug } = await addProject({
         page,
       })
       const repo = {
@@ -644,7 +645,8 @@ test.describe('Repositories', () => {
       await page.getByTestId('menuAdministrationProjects').click()
       await page.getByTestId('projectsSearchInput').fill(projectName)
       await page.getByTestId('projectsSearchBtn').click()
-      await page.getByRole('cell', { name: projectName }).first().click()
+      await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
+      await page.getByTestId(`projectTr-${projectId}`).click()
       await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
       await page.getByTestId('handleProjectLockingBtn').click()
 
