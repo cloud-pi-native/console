@@ -53,14 +53,12 @@ export async function ensureGroup(
   const existingMember = groupMembers.find(m => m.username === createUsername(user.email))
   const maxAccessLevel = getGroupAccessLevel(project, user, config)
 
-  if (maxAccessLevel) {
-    if (existingMember) {
-      if (existingMember.access_level !== maxAccessLevel) {
-        await gitlabApi.editGroupMember(gitlabUser.id, maxAccessLevel)
-      }
-    } else {
-      await gitlabApi.addGroupMember(gitlabUser.id, maxAccessLevel)
+  if (existingMember && maxAccessLevel) {
+    if (existingMember.access_level !== maxAccessLevel) {
+      await gitlabApi.editGroupMember(gitlabUser.id, maxAccessLevel)
     }
+  } else if (maxAccessLevel) {
+    await gitlabApi.addGroupMember(gitlabUser.id, maxAccessLevel)
   } else {
     await gitlabApi.removeGroupMember(gitlabUser.id)
   }

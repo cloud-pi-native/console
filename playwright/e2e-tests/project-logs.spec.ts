@@ -5,7 +5,7 @@ import {
   tcolinUser,
   testUser,
 } from '../config/console'
-import { addProject } from './utils'
+import { addProject } from '../helpers/project'
 
 test.describe('Project logs page', () => {
   test(

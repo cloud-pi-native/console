@@ -1,19 +1,15 @@
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
 import { adminUser, clientURL, signInCloudPiNative } from '../config/console'
-
-import {
-  addEnvToProject,
-  addProject,
-  createCluster,
-  deleteCluster,
-} from './utils'
+import { createCluster, deleteCluster } from '../helpers/cluster'
+import { addEnvToProject } from '../helpers/environment'
+import { openClustersAdministration } from '../helpers/navigation'
+import { addProject } from '../helpers/project'
 
 test.describe('Clusters page', () => {
   test('should create a public cluster', { tag: '@e2e' }, async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
-    await page.getByTestId('menuAdministrationBtn').click()
     const clusterName = await createCluster({
       page,
       zone: 'publique',
@@ -21,28 +17,25 @@ test.describe('Clusters page', () => {
       associateStage: 'first',
     })
     // Validate
-    await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-    await expect(
-      page.getByRole('row', { name: clusterName }).getByText('publique'),
-    ).toBeVisible()
-    await expect(
-      page.getByRole('row', { name: clusterName }).getByText('Public'),
-    ).toBeVisible()
+    await expect(page.getByTestId(`clusterZone-${clusterName}`)).toContainText(
+      'publique',
+    )
+    await expect(page.getByTestId(`clusterPrivacy-${clusterName}`)).toContainText(
+      'Public',
+    )
   })
 
   test('should update a public cluster', { tag: '@e2e' }, async ({ page }) => {
     const clusterName2 = faker.string.alpha(10).toLowerCase()
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
-    await page.getByTestId('menuAdministrationBtn').click()
     // Create
     const clusterName = await createCluster({
       page,
       confidentiality: 'public',
     })
     // Update
-    await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-    await page.getByRole('cell', { name: clusterName }).click()
+    await page.getByTestId(`clusterLink-${clusterName}`).click()
     await expect(page.getByTestId('labelInput')).toHaveValue(clusterName)
     await expect(page.getByTestId('labelInput')).toBeEnabled()
     await page.getByTestId('labelInput').fill(clusterName2)
@@ -56,9 +49,7 @@ test.describe('Clusters page', () => {
     await page.getByTestId('gpuInput').fill('1')
     await page.getByTestId('updateClusterBtn').click()
     // Validate
-    await page.getByTestId('projectsSearchInput').fill(clusterName2)
-    await expect(page.getByRole('cell', { name: clusterName2 })).toBeVisible()
-    await expect(page.getByRole('row', { name: clusterName2 })).toContainText(
+    await expect(page.getByTestId(`clusterResources-${clusterName2}`)).toContainText(
       '1GiB 1CPU 1GPU',
     )
   })
@@ -69,15 +60,13 @@ test.describe('Clusters page', () => {
     async ({ page }) => {
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: adminUser })
-      await page.getByTestId('menuAdministrationBtn').click()
       // Create
       const clusterName = await createCluster({
         page,
         confidentiality: 'dedicated',
       })
       // Validate
-      await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-      await expect(page.getByRole('row', { name: clusterName })).toContainText(
+      await expect(page.getByTestId(`clusterPrivacy-${clusterName}`)).toContainText(
         'Dédié',
       )
     },
@@ -92,14 +81,12 @@ test.describe('Clusters page', () => {
       // Create a dedicated project
       const { name: projectName } = await addProject({ page })
       // Create the cluster
-      await page.getByTestId('menuAdministrationBtn').click()
       const clusterName = await createCluster({
         page,
         confidentiality: 'dedicated',
       })
-      // Update
-      await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-      await page.getByRole('cell', { name: clusterName }).click()
+      // Validate
+      await page.getByTestId(`clusterLink-${clusterName}`).click()
       await expect(page.getByTestId('updateClusterBtn')).toBeVisible()
       await expect(page.locator('#projects-select')).toBeVisible()
       await expect(page.locator('#privacy-select option[selected]')).toHaveText(
@@ -119,9 +106,7 @@ test.describe('Clusters page', () => {
       ).toHaveCount(1)
       await page.getByTestId('updateClusterBtn').click()
       // Validate
-      await page.getByTestId('projectsSearchInput').fill(clusterName)
-      await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-      await expect(page.getByRole('row', { name: clusterName })).toContainText(
+      await expect(page.getByTestId(`clusterPrivacy-${clusterName}`)).toContainText(
         'Dédié',
       )
     },
@@ -133,14 +118,13 @@ test.describe('Clusters page', () => {
     const informations = faker.string.alpha(1000).toLowerCase()
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
-    await page.getByTestId('menuAdministrationBtn').click()
     const clusterName = await createCluster({
       page,
       confidentiality: 'dedicated',
       informations,
     })
-    await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-    await page.getByRole('cell', { name: clusterName }).click()
+    // Validate
+    await page.getByTestId(`clusterLink-${clusterName}`).click()
     await expect(page.getByTestId('cpin-loader')).toHaveCount(0)
     await expect(page.getByTestId('infosInput')).toHaveValue(informations)
   })
@@ -164,7 +148,6 @@ test.describe('Clusters page', () => {
   test('should delete a cluster', { tag: '@e2e' }, async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
-    await page.getByTestId('menuAdministrationBtn').click()
     // Create
     const clusterName = await createCluster({
       page,
@@ -186,7 +169,6 @@ test.describe('Clusters page', () => {
     async ({ page }) => {
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: adminUser })
-      await page.getByTestId('menuAdministrationBtn').click()
       // Create a public cluster
       const clusterName = await createCluster({
         page,
@@ -205,12 +187,10 @@ test.describe('Clusters page', () => {
         gpuInput: '0',
       })
       // Try to delete the cluster
-      await page.getByTestId('menuAdministrationBtn').click()
-      await page.getByTestId('menuAdministrationClusters').click()
-      await expect(page.getByTestId('cpin-loader')).toHaveCount(0)
+      await expect(page.getByText('Opération en cours...')).toHaveCount(0)
+      await openClustersAdministration(page)
       await page.getByTestId('projectsSearchInput').fill(clusterName)
-      await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-      await page.getByRole('cell', { name: clusterName }).click()
+      await page.getByTestId(`clusterLink-${clusterName}`).click()
       await expect(page.getByTestId('deleteClusterZone')).not.toBeVisible()
       await expect(
         page.getByText('Le cluster ne peut être supprimé'),
@@ -218,7 +198,9 @@ test.describe('Clusters page', () => {
       await expect(
         page.getByTestId('associatedEnvironmentsTable'),
       ).toBeVisible()
-      await expect(page.getByRole('cell', { name: envName })).toBeVisible()
+      await expect(
+        page.getByTestId('associatedEnvironmentsTable').getByText(envName),
+      ).toBeVisible()
     },
   )
 
@@ -227,7 +209,6 @@ test.describe('Clusters page', () => {
   }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
-    await page.getByTestId('menuAdministrationBtn').click()
     // Create a public cluster
     const clusterName = await createCluster({
       page,
@@ -246,12 +227,10 @@ test.describe('Clusters page', () => {
       gpuInput: '0',
     })
     // Verify that cluster label is disabled
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationClusters').click()
-    await expect(page.getByTestId('cpin-loader')).toHaveCount(0)
+    await expect(page.getByText('Opération en cours...')).toHaveCount(0)
+    await openClustersAdministration(page)
     await page.getByTestId('projectsSearchInput').fill(clusterName)
-    await expect(page.getByRole('cell', { name: clusterName })).toBeVisible()
-    await page.getByRole('cell', { name: clusterName }).click()
+    await page.getByTestId(`clusterLink-${clusterName}`).click()
     await expect(page.getByTestId('labelInput')).toHaveValue(clusterName)
     await expect(page.getByTestId('labelInput')).toBeDisabled()
   })
