@@ -54,8 +54,8 @@ test.describe('Profile page', () => {
     expect(locator).toContainText('Actif')
     await locator.getByTitle('Supprimer').click()
     await page.getByTestId('confirmDeletionBtn').click()
-    await page
-      .getByRole('cell', { name: 'Aucune clé d\'api existante' })
-      .click()
+    await expect(page.getByTestId('tokenTable')).toContainText(
+      'Aucune clé d\'api existante',
+    )
   })
 })

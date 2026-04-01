@@ -136,7 +136,10 @@ test.describe('Zone page', () => {
     await page.getByTestId('addZoneBtn').click()
 
     // Assert
-    await expect(page.getByTestId('snackbar')).toContainText(`Une zone portant le nom ${zone.slug} existe déjà.`)
+    const snackbar = page
+      .getByTestId('snackbar')
+      .filter({ hasText: `Une zone portant le nom ${zone.slug} existe déjà.` })
+    await expect(snackbar).toBeVisible()
   })
 
   test('Should not delete a zone if associated clusters', { tag: '@e2e' }, async ({ page }) => {
