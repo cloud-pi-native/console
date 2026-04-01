@@ -126,27 +126,36 @@ const headers = [
         <a
           :href="`clusters/${(cell as Cluster).id}`"
           :title="`Éditer le cluster ${(cell as Cluster).label}`"
+          :data-testid="`clusterLink-${(cell as Cluster).label}`"
           @click="() => clickCluster(cell as Cluster)"
         >
           {{ (cell as Cluster).label }}
         </a>
       </template>
       <template v-else-if="colKey === 'zone'">
-        <Badge
-          type="zone"
-          :name="zoneStore.zonesById[(cell as Cluster).zoneId]?.label"
-        />
+        <span :data-testid="`clusterZone-${(cell as Cluster).label}`">
+          <Badge
+            type="zone"
+            :name="zoneStore.zonesById[(cell as Cluster).zoneId]?.label"
+          />
+        </span>
       </template>
       <template v-else-if="colKey === 'access'">
-        <v-icon v-if="(cell as Cluster).privacy === 'dedicated'" name="ri:folder-shield-2-line" />
-        <v-icon v-else name="ri:global-line" />
-        {{ privacyWording[(cell as Cluster).privacy] }}
+        <span :data-testid="`clusterPrivacy-${(cell as Cluster).label}`">
+          <v-icon v-if="(cell as Cluster).privacy === 'dedicated'" name="ri:folder-shield-2-line" />
+          <v-icon v-else name="ri:global-line" />
+          {{ privacyWording[(cell as Cluster).privacy] }}
+        </span>
       </template>
       <template v-else-if="colKey === 'resources'">
-        {{ (cell as Cluster).memory.toLocaleString() }}GiB {{ (cell as Cluster).cpu.toLocaleString() }}CPU {{ (cell as Cluster).gpu.toLocaleString() }}GPU
+        <span :data-testid="`clusterResources-${(cell as Cluster).label}`">
+          {{ (cell as Cluster).memory.toLocaleString() }}GiB {{ (cell as Cluster).cpu.toLocaleString() }}CPU {{ (cell as Cluster).gpu.toLocaleString() }}GPU
+        </span>
       </template>
       <template v-else-if="colKey === 'usage'">
-        {{ clustersUsage.find(c => c.id === (cell as Cluster).id)?.resources }}
+        <span :data-testid="`clusterUsage-${(cell as Cluster).label}`">
+          {{ clustersUsage.find(c => c.id === (cell as Cluster).id)?.resources }}
+        </span>
       </template>
       <template v-else>
         {{ cell }}

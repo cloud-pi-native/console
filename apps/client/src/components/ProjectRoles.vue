@@ -2,6 +2,7 @@
 import type { Member, ProjectRole, ProjectRoleBigint, Role, RoleBigint } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { toKebabCase } from '@/utils/func.js'
 
 const props = defineProps<{
   project: Project
@@ -18,8 +19,10 @@ const roleList = ref<RoleItem[]>([])
 const selectedRole = computed(() => roleList.value.find(({ id }) => id === selectedId.value))
 
 async function addRole() {
+  const name = 'Nouveau rôle'
   const newRoles = await props.project.Roles.create({
-    name: 'Nouveau rôle',
+    name,
+    oidcGroup: `/${toKebabCase(name)}`,
     permissions: 0n.toString(),
     type: 'managed',
   })
@@ -41,7 +44,7 @@ async function updateMember(checked: boolean, userId: Member['userId']) {
   if (!matchingMember) return
 
   const newRoleList = checked
-    ? [...matchingMember.roleIds, ...selectedRole.value.id]
+    ? [...matchingMember.roleIds, selectedRole.value.id]
     : matchingMember.roleIds.filter(id => id !== selectedRole.value?.id)
 
   await props.project.Members.patch([{ userId, roles: newRoleList }])
@@ -64,12 +67,13 @@ async function saveRole(role: Omit<ProjectRoleBigint, 'position' | 'projectId'>)
     return
   }
   if (!selectedRole.value) return
+  const slug = toKebabCase(role.name)
   await props.project.Roles.patch([{
     id: selectedRole.value.id,
     permissions: role.permissions.toString(),
     name: role.name,
-    oidcGroup: role.oidcGroup,
-    type: role.type,
+    oidcGroup: slug ? `/${slug}` : '',
+    type: 'managed',
   }])
   reload()
   snackbarStore.setMessage('Rôle mis à jour', 'success')
