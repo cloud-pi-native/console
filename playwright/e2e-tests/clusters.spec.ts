@@ -7,7 +7,6 @@ test.describe('Clusters page', () => {
   test('should create a public cluster', { tag: '@e2e' }, async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
-    await page.getByTestId('menuAdministrationBtn').click()
     const clusterName = await createCluster({
       page,
       zone: 'publique',
@@ -167,7 +166,6 @@ test.describe('Clusters page', () => {
     async ({ page }) => {
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: adminUser })
-      await page.getByTestId('menuAdministrationBtn').click()
       // Create a public cluster
       const clusterName = await createCluster({
         page,
