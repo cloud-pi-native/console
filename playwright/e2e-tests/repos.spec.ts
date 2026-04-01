@@ -4,15 +4,16 @@ import {
   signInCloudPiNative,
   tcolinUser,
   testUser,
-} from 'config/console'
+} from '../config/console'
 
+import { setCheckbox, unsetCheckbox } from '../helpers/checkbox'
 import {
-  addProject,
   deleteValidationInput,
   fakeToken,
   invalidGitUrlErrorMessage,
   invalidInternalRepoErrorMessage,
-} from './utils'
+} from '../helpers/constants'
+import { addProject } from '../helpers/project'
 
 test.describe('Repositories', () => {
   // @TODO: Rework this Cypress-inherited test (use of following-sibling is a
@@ -110,9 +111,7 @@ test.describe('Repositories', () => {
           .locator('//following-sibling::*[1]'),
       ).not.toBeVisible()
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
-      await page.getByTestId('input-checkbox-privateRepoCbx').check({
-        force: true,
-      })
+      await setCheckbox(page, 'privateRepoCbx')
       await expect(page.getByTestId('addRepoBtn')).toBeDisabled()
       await page
         .getByTestId('externalUserNameInput')
@@ -124,13 +123,9 @@ test.describe('Repositories', () => {
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
       await page.getByTestId('externalTokenInput').clear()
       await expect(page.getByTestId('addRepoBtn')).toBeDisabled()
-      await page.getByTestId('input-checkbox-privateRepoCbx').uncheck({
-        force: true,
-      })
+      await unsetCheckbox(page, 'privateRepoCbx')
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
-      await page.getByTestId('input-checkbox-infraRepoCbx').check({
-        force: true,
-      })
+      await setCheckbox(page, 'infraRepoCbx')
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
     },
   )
@@ -340,16 +335,12 @@ test.describe('Repositories', () => {
         .getByTestId('internalRepoNameInput')
         .fill(repo.internalRepoName)
       await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await page
-        .getByTestId('input-checkbox-privateRepoCbx')
-        .check({ force: true })
+      await setCheckbox(page, 'privateRepoCbx')
       await page
         .getByTestId('externalUserNameInput')
         .fill(repo.externalUserName)
       await page.getByTestId('externalTokenInput').fill(repo.externalToken)
-      await page
-        .getByTestId('input-checkbox-infraRepoCbx')
-        .check({ force: true })
+      await setCheckbox(page, 'infraRepoCbx')
       await page.getByTestId('addRepoBtn').click()
       await expect(
         page.getByTestId(`repoTr-${repo.internalRepoName}`),
@@ -546,7 +537,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { id: projectId, name: projectName, slug: projectSlug } = await addProject({
         page,
       })
       const repo = {
@@ -584,7 +575,8 @@ test.describe('Repositories', () => {
       await page.getByTestId('menuAdministrationProjects').click()
       await page.getByTestId('projectsSearchInput').fill(projectName)
       await page.getByTestId('projectsSearchBtn').click()
-      await page.getByRole('cell', { name: projectName }).first().click()
+      await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
+      await page.getByTestId(`projectTr-${projectId}`).click()
       await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
 
       // Assert - Attempt to delete repository
@@ -606,7 +598,7 @@ test.describe('Repositories', () => {
           // Only admin users can lock projects
           tcolinUser,
       })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { id: projectId, name: projectName, slug: projectSlug } = await addProject({
         page,
       })
       const repo = {
@@ -644,7 +636,8 @@ test.describe('Repositories', () => {
       await page.getByTestId('menuAdministrationProjects').click()
       await page.getByTestId('projectsSearchInput').fill(projectName)
       await page.getByTestId('projectsSearchBtn').click()
-      await page.getByRole('cell', { name: projectName }).first().click()
+      await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
+      await page.getByTestId(`projectTr-${projectId}`).click()
       await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
       await page.getByTestId('handleProjectLockingBtn').click()
 
