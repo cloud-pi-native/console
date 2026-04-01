@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker'
 
 import { expect, test } from '@playwright/test'
 import { clientURL, signInCloudPiNative, tcolinUser } from '../config/console'
-import { deleteValidationInput } from './utils'
+import { deleteValidationInput } from '../helpers/constants'
 
 test.describe('Zone page', () => {
   // @TODO: Add clusters to this test to ensure this part of the feature
@@ -136,7 +136,10 @@ test.describe('Zone page', () => {
     await page.getByTestId('addZoneBtn').click()
 
     // Assert
-    await expect(page.getByTestId('snackbar')).toContainText(`Une zone portant le nom ${zone.slug} existe déjà.`)
+    const snackbar = page
+      .getByTestId('snackbar')
+      .filter({ hasText: `Une zone portant le nom ${zone.slug} existe déjà.` })
+    await expect(snackbar).toBeVisible()
   })
 
   test('Should not delete a zone if associated clusters', { tag: '@e2e' }, async ({ page }) => {
