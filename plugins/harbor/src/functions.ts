@@ -2,13 +2,13 @@ import type { PluginResult, Project, ProjectLite, StepCall } from '@cpn-console/
 import type { VaultRobotSecret } from './robot.js'
 import {
 
-  parseError,
   specificallyDisabled,
   specificallyEnabled,
 } from '@cpn-console/hooks'
 import { DEFAULT, ENABLED } from '@cpn-console/shared'
 // @ts-ignore pas de typage disponible pour le paquet bytes
 import bytes from 'bytes'
+import { logger } from './logger.js'
 import { addProjectGroupMember } from './permission.js'
 import { addRetentionPolicy } from './policy.js'
 import { createProject, deleteProject } from './project.js'
@@ -22,7 +22,6 @@ import {
 } from './utils.js'
 
 export const createDsoProject: StepCall<Project> = async (payload) => {
-  console.log(`[HARBOR] createDsoProject`)
   const returnResult: PluginResult = {
     status: {
       result: 'OK',
@@ -32,6 +31,7 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
   try {
     const project = payload.args
     const projectName = project.slug
+    logger.info({ projectName }, 'Creating Harbor project')
     const { vault: vaultApi, keycloak: keycloakApi } = payload.apis
 
     const publishRoRobotProject = project.store.registry?.publishProjectRobot
@@ -79,9 +79,9 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
     }
     return returnResult
   } catch (error) {
-    console.log(`[HARBOR] Error while creating DSO project`)
+    logger.error({ err: error, projectName: payload.args.slug }, 'Failed to create Harbor project')
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'An unexpected error occured',
@@ -91,10 +91,10 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
 }
 
 export const deleteDsoProject: StepCall<Project> = async (payload) => {
-  console.log(`[HARBOR] deleteDsoProject`)
   try {
     const project = payload.args
     const projectName = project.slug
+    logger.info({ projectName }, 'Deleting Harbor project')
 
     await deleteProject(projectName)
 
@@ -105,9 +105,9 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
       },
     }
   } catch (error) {
-    console.log(`[HARBOR] Error while deleting DSO project`)
+    logger.error({ err: error, projectName: payload.args.slug }, 'Failed to delete Harbor project')
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'An unexpected error occured',
@@ -121,7 +121,7 @@ export const getProjectSecrets: StepCall<ProjectLite> = async ({
   apis: { vault: vaultApi },
   config,
 }) => {
-  console.log(`[HARBOR] getProjectSecrets`)
+  logger.debug({ projectName: project.slug }, 'Reading Harbor project secrets')
   const publishRoRobotProject = project.store.registry?.publishProjectRobot
   const publishRoRobotConfig = config.registry?.publishProjectRobot
   const projectRobotEnabled

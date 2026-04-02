@@ -3,7 +3,7 @@ import type { ProjectRole } from '@cpn-console/shared'
 import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation.js'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type { CustomGroup } from './group.js'
-import { generateRandomPassword, parseError, PluginResultBuilder } from '@cpn-console/hooks'
+import { generateRandomPassword, PluginResultBuilder } from '@cpn-console/hooks'
 import { getkcClient } from './client.js'
 import { consoleGroupName, deleteGroup, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateGroupByPath, getOrCreateProjectGroup } from './group.js'
 
@@ -18,7 +18,7 @@ export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
@@ -50,7 +50,7 @@ export const deleteProject: StepCall<Project> = async ({ args: project }) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
@@ -183,7 +183,7 @@ export const upsertZone: StepCall<ZoneObject> = async ({ args: zone, apis }) => 
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'Failed',
@@ -214,7 +214,7 @@ export const deleteZone: StepCall<ZoneObject> = async ({ args: zone }) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'An unexpected error occured',
@@ -319,7 +319,7 @@ export const upsertProjectRole: StepCall<ProjectRole> = async ({ args: role }) =
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'Failed to sync role',
@@ -367,7 +367,7 @@ export const deleteProjectRole: StepCall<ProjectRole> = async ({ args: role }) =
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'Failed to delete role',
