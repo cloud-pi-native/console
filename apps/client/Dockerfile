@@ -13,6 +13,7 @@ COPY --chown=node:root patches ./patches
 COPY --chown=node:root apps/client/package.json ./apps/client/package.json
 COPY --chown=node:root packages/eslintconfig/package.json ./packages/eslintconfig/package.json
 COPY --chown=node:root packages/shared/package.json ./packages/shared/package.json
+COPY --chown=node:root packages/logger/package.json ./packages/logger/package.json
 COPY --chown=node:root packages/test-utils/package.json ./packages/test-utils/package.json
 COPY --chown=node:root packages/tsconfig/package.json ./packages/tsconfig/package.json
 

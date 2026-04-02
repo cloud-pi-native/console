@@ -33,7 +33,6 @@ export async function getOrCreateChildGroup(kcClient: KeycloakAdminClient, paren
     }
   }
   subGroups = await getAllSubgroups(kcClient, parentId, 0)
-  // console.log(subGroups.map(({ name, path }) => ({ name, path })))
 
   const matchingGroup = subGroups?.find(({ name: groupName }) => groupName === name) as Required<GroupRepresentation> | undefined
   if (!matchingGroup) {
