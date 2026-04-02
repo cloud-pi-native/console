@@ -44,6 +44,7 @@
     "@cpn-console/harbor-plugin": "workspace:^",
     "@cpn-console/hooks": "workspace:^",
     "@cpn-console/keycloak-plugin": "workspace:^",
+    "@cpn-console/logger": "workspace:^",
     "@cpn-console/nexus-plugin": "workspace:^",
     "@cpn-console/shared": "workspace:^",
     "@cpn-console/sonarqube-plugin": "workspace:^",

@@ -1,4 +1,5 @@
 import type { ApiFetcherArgs } from '@ts-rest/core'
+import { logger } from '@cpn-console/logger/browser'
 import { apiPrefix, getApiClient } from '@cpn-console/shared'
 import { tsRestFetchApi } from '@ts-rest/core'
 import { getKeycloak } from '@/utils/keycloak/keycloak.js'
@@ -44,11 +45,8 @@ export function extractData<T extends { status: number, body: unknown, headers: 
   try {
     throw new Error(`Erreur lors de la requete, reçu ${response.status}, attendu ${expectedStatus}`)
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.log(error.stack)
-    } else {
-      console.log(error)
-    }
+    if (error instanceof Error) logger.error({ err: error }, 'Request failed')
+    else logger.error({ error }, 'Request failed')
     throw new Error('Erreur lors de la requete')
   }
 }
