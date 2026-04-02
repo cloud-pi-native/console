@@ -15,8 +15,11 @@
         "run",
         "integ"
       ],
-      "console": "internalConsole",
+      "console": "integratedTerminal",
       "restart": true,
+      "presentation": {
+        "hidden": true
+      },
       "skipFiles": [
         "<node_internals>/**",
         "${workspaceFolder}/node_modules/**/*.js"
@@ -33,8 +36,91 @@
         "run",
         "dev"
       ],
-      "console": "internalConsole",
+      "console": "integratedTerminal",
       "restart": true,
+      "presentation": {
+        "hidden": true
+      },
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
+    },
+    {
+      "name": "Launch Infra (Integ)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "integ"
+      ],
+      "console": "integratedTerminal",
+      "restart": true,
+      "presentation": {
+        "hidden": true
+      },
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
+    },
+    {
+      "name": "Launch Infra (Dev)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "console": "integratedTerminal",
+      "restart": true,
+      "presentation": {
+        "hidden": true
+      },
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
+    },
+    {
+      "name": "Launch Server NestJS (Integ)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@cpn-console/server-nestjs",
+        "run",
+        "start:dev"
+      ],
+      "console": "integratedTerminal",
+      "restart": true,
+      "presentation": {
+        "hidden": true
+      },
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
+    },
+    {
+      "name": "Launch Server NestJS (Dev)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@cpn-console/server-nestjs",
+        "run",
+        "start:dev"
+      ],
+      "console": "integratedTerminal",
+      "restart": true,
+      "presentation": {
+        "hidden": true
+      },
       "skipFiles": [
         "<node_internals>/**",
         "${workspaceFolder}/node_modules/**/*.js"
@@ -46,7 +132,6 @@
       "request": "attach",
       "port": 9229,
       "address": "127.0.0.1",
-      "restart": true,
       "localRoot": "${workspaceFolder}/apps/server",
       "remoteRoot": "/app/apps/server",
       "skipFiles": [
@@ -72,7 +157,8 @@
         "8080",
         "--strictPort"
       ],
-      "console": "internalConsole",
+      "console": "integratedTerminal",
+      "restart": true,
       "serverReadyAction": {
         "pattern": "Local:.*(http://localhost:[0-9]+)",
         "action": "startDebugging",
@@ -97,7 +183,8 @@
         "8080",
         "--strictPort"
       ],
-      "console": "internalConsole",
+      "console": "integratedTerminal",
+      "restart": true,
       "serverReadyAction": {
         "pattern": "Local:.*(http://localhost:[0-9]+)",
         "action": "startDebugging",
@@ -122,7 +209,8 @@
         "8080",
         "--strictPort"
       ],
-      "console": "internalConsole",
+      "console": "integratedTerminal",
+      "restart": true,
       "serverReadyAction": {
         "pattern": "Local:.*(http://localhost:[0-9]+)",
         "action": "startDebugging",
@@ -147,7 +235,8 @@
         "8080",
         "--strictPort"
       ],
-      "console": "internalConsole",
+      "console": "integratedTerminal",
+      "restart": true,
       "serverReadyAction": {
         "pattern": "Local:.*(http://localhost:[0-9]+)",
         "action": "startDebugging",
@@ -182,28 +271,36 @@
     {
       "name": "Launch (Chrome) (Integ)",
       "configurations": [
+        "Launch Infra (Integ)",
         "Launch Server (Integ)",
+        "Launch Server NestJS (Integ)",
         "Serve Client (Chrome) (Integ)"
       ]
     },
     {
       "name": "Launch (Chrome) (Dev)",
       "configurations": [
+        "Launch Infra (Dev)",
         "Launch Server (Dev)",
+        "Launch Server NestJS (Dev)",
         "Serve Client (Chrome) (Dev)"
       ]
     },
     {
       "name": "Launch (Firefox) (Integ)",
       "configurations": [
+        "Launch Infra (Integ)",
         "Launch Server (Integ)",
+        "Launch Server NestJS (Integ)",
         "Serve Client (Firefox) (Integ)"
       ]
     },
     {
       "name": "Launch (Firefox) (Dev)",
       "configurations": [
+        "Launch Infra (Dev)",
         "Launch Server (Dev)",
+        "Launch Server NestJS (Dev)",
         "Serve Client (Firefox) (Dev)"
       ]
     }
