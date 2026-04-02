@@ -20,6 +20,7 @@ COPY --chown=node:root packages/tsconfig/package.json ./packages/tsconfig/packag
 RUN pnpm install --ignore-scripts # --no-optional
 
 COPY --chown=node:root packages/ ./packages/
+RUN pnpm --filter @cpn-console/logger run build
 RUN pnpm --filter @cpn-console/shared run build
 RUN pnpm --filter @cpn-console/logger run build
 

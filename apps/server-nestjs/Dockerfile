@@ -48,6 +48,7 @@ CMD ["start:dev"]
 FROM dev AS build
 
 # Build shared (génère dist/ et types/)
+RUN pnpm --filter @cpn-console/logger run build
 RUN pnpm --filter @cpn-console/shared run build
 RUN pnpm --filter @cpn-console/logger run build
 
