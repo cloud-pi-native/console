@@ -31,7 +31,7 @@
     "lint": "eslint ./",
     "prepublishOnly": "pnpm run db:generate",
     "prestart": "npm run db:deploy",
-    "start": "node dist/server.js",
+    "start": "node --enable-source-maps dist/server.js",
     "pretest": "pnpm run db:generate",
     "test": "vitest run",
     "pretest:cov": "pnpm run db:generate",

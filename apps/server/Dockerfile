@@ -54,6 +54,7 @@ FROM docker.io/node:24.13.1-bullseye-slim AS prod
 
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
+
 VOLUME [ "/plugins" ]
 WORKDIR /app
 RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
