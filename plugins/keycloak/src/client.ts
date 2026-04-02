@@ -1,5 +1,6 @@
 import KcAdminClient from '@keycloak/keycloak-admin-client'
 import getConfig from './config.js'
+import { logger } from './logger.js'
 
 export async function getkcClient() {
   const kcClient = new KcAdminClient({
@@ -18,7 +19,7 @@ export async function getkcClient() {
 
 export function start() {
   getkcClient().catch((error) => {
-    console.log(error)
+    logger.error({ err: error }, 'Failed to start Keycloak plugin')
     if (process.env.IGNORE_PLUGINS_START_FAIL?.includes('keycloak')) {
       return
     }
