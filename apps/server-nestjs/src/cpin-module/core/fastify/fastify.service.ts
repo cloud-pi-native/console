@@ -2,10 +2,10 @@ import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui'
 import type { generateOpenApi } from '@ts-rest/open-api'
 import type { FastifyServerOptions } from 'fastify'
 import { randomUUID } from 'node:crypto'
+import { getLoggerOptions } from '@cpn-console/logger'
 import { swaggerUiPath } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { ConfigurationService } from '../../infrastructure/configuration/configuration.service'
-import { loggerConfiguration } from '../../infrastructure/logger/logger.module'
 
 @Injectable()
 export class FastifyService {
@@ -14,9 +14,7 @@ export class FastifyService {
   ) {
     this.fastifyConf = {
       maxParamLength: 5000,
-      logger:
-                loggerConfiguration[this.configurationService.NODE_ENV]
-                ?? loggerConfiguration.production,
+      logger: getLoggerOptions(),
       genReqId: () => randomUUID(),
     }
 

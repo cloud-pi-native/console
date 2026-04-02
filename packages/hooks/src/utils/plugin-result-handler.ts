@@ -1,5 +1,4 @@
 import type { PluginResult, PluginResultStore, PluginResultStoreValue } from '../hooks/hook.js'
-import { parseError } from './logger.js'
 
 export class PluginResultBuilder {
   private okMessages = [] as string[]
@@ -59,7 +58,7 @@ export class PluginResultBuilder {
 
   returnUnexpectedError(error: unknown): PluginResult {
     this.addKoMessage('UnexpectedError')
-    this.addExtra('error', parseError(error))
+    this.addExtra('error', error)
     return this.getResultObject()
   }
 
