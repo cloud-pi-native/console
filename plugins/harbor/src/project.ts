@@ -1,8 +1,11 @@
 import type { Project as HarborProject, Quota } from './api/Api.js'
+import { logger as baseLogger } from '@cpn-console/logger'
 import { getApi } from './utils.js'
 
+const logger = baseLogger.child({ plugin: 'harbor' })
+
 export async function createProject(projectName: string, storageLimit: number = -1): Promise<HarborProject> {
-  console.log(`[HARBOR] createProject`)
+  logger.debug({ projectName, storageLimit }, 'Creating Harbor project if missing')
   const api = getApi()
   const existingProject = await api.projects.getProject(projectName, {
     headers: {

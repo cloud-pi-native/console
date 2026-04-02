@@ -1,3 +1,4 @@
+import { logger as baseLogger } from '@cpn-console/logger'
 import { isValidCron } from 'cron-validator'
 import { getApi } from './utils.js'
 
@@ -16,6 +17,7 @@ const allowed: RuleTemplate[] = [
   'nDaysSinceLastPull',
   'nDaysSinceLastPush',
 ]
+const logger = baseLogger.child({ plugin: 'harbor' })
 
 export const harborRuleTemplate: RuleTemplate = allowed.includes(process.env.HARBOR_RULE_TEMPLATE as RuleTemplate)
   ? (process.env.HARBOR_RULE_TEMPLATE as RuleTemplate)
@@ -112,7 +114,7 @@ export async function addRetentionPolicy(
   } catch (err: any) {
     const payload = JSON.stringify(policy, null, 2)
     const details = err?.response?.data ?? 'Unknown error'
-    console.error('Failed to apply Harbor retention policy', {
+    logger.error('Failed to apply Harbor retention policy', {
       projectName,
       projectId: project?.data?.project_id,
       retentionId,
