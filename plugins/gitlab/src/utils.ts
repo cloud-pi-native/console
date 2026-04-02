@@ -1,4 +1,9 @@
-import type { BaseRequestOptions, Gitlab as IGitlab, OffsetPagination, PaginationRequestOptions } from '@gitbeaker/core'
+import type {
+  BaseRequestOptions,
+  Gitlab as IGitlab,
+  OffsetPagination,
+  PaginationRequestOptions,
+} from '@gitbeaker/core'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { Gitlab } from '@gitbeaker/rest'
 import config from './config.js'
@@ -9,22 +14,43 @@ let api: IGitlab | undefined
 let groupRootId: number
 
 export async function getGroupRootId(throwIfNotFound?: true): Promise<number>
-export async function getGroupRootId(throwIfNotFound?: false): Promise<number | undefined>
-export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number | undefined> {
+export async function getGroupRootId(
+  throwIfNotFound?: false,
+): Promise<number | undefined>
+export async function getGroupRootId(
+  throwIfNotFound?: boolean,
+): Promise<number | undefined> {
   const gitlabApi = getApi()
   const projectRootDir = config().projectsRootDir
-  logger.debug({ action: 'getGroupRootId', projectRootDir }, 'Resolve group root id')
+  logger.debug(
+    { action: 'getGroupRootId', projectRootDir },
+    'Resolve group root id',
+  )
   if (groupRootId) return groupRootId
-  const groupRoot = await find(offsetPaginate(opts => gitlabApi.Groups.all({
-    search: projectRootDir,
-    orderBy: 'id',
-    ...opts,
-  })), grp => grp.full_path === projectRootDir)
-  logger.debug({ action: 'getGroupRootId', groupRootId: groupRoot?.id, groupRootPath: groupRoot?.full_path }, 'Resolved group root')
+  const groupRoot = await find(
+    offsetPaginate(opts =>
+      gitlabApi.Groups.all({
+        search: projectRootDir,
+        orderBy: 'id',
+        ...opts,
+      }),
+    ),
+    grp => grp.full_path === projectRootDir,
+  )
+  logger.debug(
+    {
+      action: 'getGroupRootId',
+      groupRootId: groupRoot?.id,
+      groupRootPath: groupRoot?.full_path,
+    },
+    'Resolved group root',
+  )
   const searchId = groupRoot?.id
   if (typeof searchId === 'undefined') {
     if (throwIfNotFound) {
-      throw new Error(`Gitlab inaccessible, impossible de trouver le groupe RACINE ${projectRootDir}`)
+      throw new Error(
+        `Gitlab inaccessible, impossible de trouver le groupe RACINE ${projectRootDir}`,
+      )
     }
     return searchId
   }
@@ -33,7 +59,10 @@ export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number 
 }
 
 async function createGroupRoot(): Promise<number> {
-  logger.info({ action: 'createGroupRoot', projectRootDir: config().projectsRootDir }, 'Create group root hierarchy')
+  logger.info(
+    { action: 'createGroupRoot', projectRootDir: config().projectsRootDir },
+    'Create group root hierarchy',
+  )
   const gitlabApi = getApi()
   const projectRootDir = config().projectsRootDir
   const projectRootDirArray = projectRootDir.split('/')
@@ -43,11 +72,20 @@ async function createGroupRoot(): Promise<number> {
     throw new Error('No projectRootDir available')
   }
 
-  let parentGroup = await find(offsetPaginate(opts => gitlabApi.Groups.all({
-    search: rootGroupPath,
-    orderBy: 'id',
-    ...opts,
-  })), grp => grp.full_path === rootGroupPath) ?? await gitlabApi.Groups.create(rootGroupPath, rootGroupPath)
+  const foundGroupRoot = await find(
+    offsetPaginate(opts =>
+      gitlabApi.Groups.all({
+        search: rootGroupPath,
+        orderBy: 'id',
+        ...opts,
+      }),
+    ),
+    grp => grp.full_path === rootGroupPath,
+  )
+
+  let parentGroup
+    = foundGroupRoot
+      ?? (await gitlabApi.Groups.create(rootGroupPath, rootGroupPath))
 
   if (parentGroup.full_path === projectRootDir) {
     return parentGroup.id
@@ -55,11 +93,22 @@ async function createGroupRoot(): Promise<number> {
 
   for (const path of projectRootDirArray) {
     const futureFullPath = `${parentGroup.full_path}/${path}`
-    parentGroup = await find(offsetPaginate(opts => gitlabApi.Groups.all({
-      search: futureFullPath,
-      orderBy: 'id',
-      ...opts,
-    })), grp => grp.full_path === futureFullPath) ?? await gitlabApi.Groups.create(path, path, { parentId: parentGroup.id, visibility: 'internal' })
+    const foundParentGroup = await find(
+      offsetPaginate(opts =>
+        gitlabApi.Groups.all({
+          search: futureFullPath,
+          orderBy: 'id',
+          ...opts,
+        }),
+      ),
+      grp => grp.full_path === futureFullPath,
+    )
+    parentGroup
+      = foundParentGroup
+        ?? (await gitlabApi.Groups.create(path, path, {
+          parentId: parentGroup.id,
+          visibility: 'internal',
+        }))
 
     if (parentGroup.full_path === projectRootDir) {
       return parentGroup.id
@@ -69,7 +118,7 @@ async function createGroupRoot(): Promise<number> {
 }
 
 export async function getOrCreateGroupRoot(): Promise<number> {
-  return await getGroupRootId(false) ?? createGroupRoot()
+  return (await getGroupRootId(false)) ?? createGroupRoot()
 }
 
 export function getApi(): IGitlab {
@@ -93,27 +142,48 @@ const keyValueRegExp = /\/\/(.*):(.*)@/g
 
 export function cleanGitlabError<T>(error: T): T {
   if (error instanceof GitbeakerRequestError && error.cause?.description) {
-    error.cause.description = String(error.cause.description).replaceAll(keyValueRegExp, '//MASKED:MASKED@')
+    error.cause.description = String(error.cause.description).replaceAll(
+      keyValueRegExp,
+      '//MASKED:MASKED@',
+    )
   }
   return error
 }
 
-export function matchRole(projectSlug: string, roleOidcGroup: string, configuredRolePath: string[]) {
-  return configuredRolePath.some(path => roleOidcGroup === `/${projectSlug}${path}`)
+export function matchRole(
+  projectSlug: string,
+  roleOidcGroup: string,
+  configuredRolePath: string[],
+) {
+  return configuredRolePath.some(
+    path => roleOidcGroup === `/${projectSlug}${path}`,
+  )
 }
 
 export async function* offsetPaginate<T>(
-  request: (options: PaginationRequestOptions<'offset'> & BaseRequestOptions<true>) => Promise<{ data: T[], paginationInfo: OffsetPagination }>,
+  request: (
+    options: PaginationRequestOptions<'offset'> & BaseRequestOptions<true>,
+  ) => Promise<{ data: T[], paginationInfo: OffsetPagination }>,
 ): AsyncGenerator<T> {
   let page: number | null = 1
   let total: number = 0
   logger.debug({ action: 'offsetPaginate', page }, 'Pagination start')
   while (page !== null) {
     try {
-      const { data, paginationInfo } = await request({ page, showExpanded: true, pagination: 'offset' })
+      const { data, paginationInfo } = await request({
+        page,
+        showExpanded: true,
+        pagination: 'offset',
+      })
       total += data.length
       logger.debug(
-        { action: 'offsetPaginate', page, nextPage: paginationInfo.next, items: data.length, total },
+        {
+          action: 'offsetPaginate',
+          page,
+          nextPage: paginationInfo.next,
+          items: data.length,
+          total,
+        },
         'Pagination page fetched',
       )
       for (const item of data) {
@@ -121,16 +191,17 @@ export async function* offsetPaginate<T>(
       }
       page = paginationInfo.next
     } catch (error) {
-      logger.error({ action: 'offsetPaginate', page, err: error }, 'Pagination request failed')
+      logger.error(
+        { action: 'offsetPaginate', page, err: error },
+        'Pagination request failed',
+      )
       throw error
     }
   }
   logger.debug({ action: 'offsetPaginate', total }, 'Pagination done')
 }
 
-export async function getAll<T>(
-  iterable: AsyncIterable<T>,
-): Promise<T[]> {
+export async function getAll<T>(iterable: AsyncIterable<T>): Promise<T[]> {
   const items: T[] = []
   for await (const item of iterable) {
     items.push(item)
