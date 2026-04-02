@@ -3,7 +3,7 @@ import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-proj
 import type { SonarPaging } from './project.js'
 import type { VaultSonarSecret } from './tech.js'
 import type { SonarUser } from './user.js'
-import { generateProjectKey, parseError } from '@cpn-console/hooks'
+import { generateProjectKey } from '@cpn-console/hooks'
 import { adminGroupPath } from '@cpn-console/shared'
 import { ensureGroupExists, findGroupByName } from './group.js'
 import { createDsoRepository, deleteDsoRepository, ensureRepositoryConfiguration, files, findSonarProjectsForDsoProjects } from './project.js'
@@ -26,6 +26,10 @@ const projectPermissions = [
   'scan',
   'user',
 ]
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error)
+}
 
 export async function initSonar() {
   await setTemplatePermisions()
@@ -144,7 +148,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
         message: 'Failed to reconcile',
       },
       errors: {
-        main: parseError(error),
+        main: getErrorMessage(error),
       },
     }
   }
@@ -214,7 +218,7 @@ export const setVariables: StepCall<Project> = async (payload) => {
     returnResponse.status.message = `main message: ${payload.results.sonarqube.status.message}, post message: Failed to reconcile`
     returnResponse.errors = {
       ...returnResponse.errors,
-      post: parseError(error),
+      post: getErrorMessage(error),
     }
     return returnResponse
   }
@@ -262,7 +266,7 @@ export const deleteProject: StepCall<Project> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error: getErrorMessage(error),
       status: {
         result: 'KO',
         message: 'Failed',
