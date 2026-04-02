@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@cpn-console/hooks": "workspace:^",
+    "@cpn-console/logger": "workspace:^",
     "@cpn-console/shared": "workspace:^",
     "@keycloak/keycloak-admin-client": "^26.5.5",
     "axios": "^1.13.6"

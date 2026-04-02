@@ -15,6 +15,9 @@
  * https://discord.com/developers/docs/topics/permissions#permissions
  */
 import type { ResourceById } from './types.js'
+import { logger as baseLogger } from '@cpn-console/logger'
+
+const logger = baseLogger.child({ scope: 'utils:permissions' })
 
 export function getPermsByUserRoles(userRoles: string[] | undefined, rolesById: ResourceById<{ id: string, permissions: bigint | string }>, basePerms?: bigint | string) {
   if (!userRoles) {
@@ -22,7 +25,7 @@ export function getPermsByUserRoles(userRoles: string[] | undefined, rolesById: 
   }
   return userRoles.reduce((acc, curr) => {
     if (!rolesById[curr]) {
-      console.trace(`Unable to find role: ${curr}, database needs to be inspected`)
+      logger.warn(`Role ${curr} not found in rolesById`)
       return acc
     }
     return acc | BigInt(rolesById[curr].permissions)
