@@ -5,11 +5,14 @@ import { plugin as gitlab } from '@cpn-console/gitlab-plugin'
 import { plugin as harbor } from '@cpn-console/harbor-plugin'
 import { pluginManager } from '@cpn-console/hooks'
 import { plugin as keycloak } from '@cpn-console/keycloak-plugin'
+import { logger as baseLogger } from '@cpn-console/logger'
 import { plugin as nexus } from '@cpn-console/nexus-plugin'
 import { plugin as sonarqube } from '@cpn-console/sonarqube-plugin'
 import { plugin as vault } from '@cpn-console/vault-plugin'
 import { pluginsDir } from './utils/env.js'
 import { pluginManagerOptions } from './utils/plugins.js'
+
+const logger = baseLogger.child({ scope: 'plugin-manager' })
 
 export async function initPm() {
   const pm = pluginManager(pluginManagerOptions)
@@ -36,8 +39,7 @@ export async function initPm() {
       const { plugin } = await import(`${moduleAbsPath}/${entrypoint}`) as { plugin: Plugin }
       pm.register(plugin)
     } catch (error) {
-      console.error(`Could not import module ${moduleAbsPath}`)
-      console.error(error.stack)
+      logger.error({ err: error, moduleAbsPath }, 'Could not import external plugin module')
     }
   }
 

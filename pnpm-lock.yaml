@@ -38,6 +38,9 @@ importers:
 
   apps/client:
     dependencies:
+      '@cpn-console/logger':
+        specifier: workspace:^
+        version: link:../../packages/logger
       '@cpn-console/shared':
         specifier: workspace:^
         version: link:../../packages/shared
@@ -210,6 +213,9 @@ importers:
       '@cpn-console/keycloak-plugin':
         specifier: workspace:^
         version: link:../../plugins/keycloak
+      '@cpn-console/logger':
+        specifier: workspace:^
+        version: link:../../packages/logger
       '@cpn-console/nexus-plugin':
         specifier: workspace:^
         version: link:../../plugins/nexus
@@ -342,31 +348,34 @@ importers:
     dependencies:
       '@cpn-console/argocd-plugin':
         specifier: workspace:^
-        version: link:../../plugins/argocd
+        version: file:plugins/argocd(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
       '@cpn-console/gitlab-plugin':
         specifier: workspace:^
-        version: link:../../plugins/gitlab
+        version: file:plugins/gitlab(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
       '@cpn-console/harbor-plugin':
         specifier: workspace:^
-        version: link:../../plugins/harbor
+        version: file:plugins/harbor(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
       '@cpn-console/hooks':
         specifier: workspace:^
-        version: link:../../packages/hooks
+        version: file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
       '@cpn-console/keycloak-plugin':
         specifier: workspace:^
-        version: link:../../plugins/keycloak
+        version: file:plugins/keycloak(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
+      '@cpn-console/logger':
+        specifier: workspace:^
+        version: link:../../packages/logger
       '@cpn-console/nexus-plugin':
         specifier: workspace:^
-        version: link:../../plugins/nexus
+        version: file:plugins/nexus(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
       '@cpn-console/shared':
         specifier: workspace:^
-        version: link:../../packages/shared
+        version: file:packages/shared(@types/node@22.19.15)
       '@cpn-console/sonarqube-plugin':
         specifier: workspace:^
-        version: link:../../plugins/sonarqube
+        version: file:plugins/sonarqube(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
       '@cpn-console/vault-plugin':
         specifier: workspace:^
-        version: link:../../plugins/vault
+        version: file:plugins/vault(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
       '@fastify/cookie':
         specifier: ^9.4.0
         version: 9.4.0
@@ -611,6 +620,9 @@ importers:
 
   packages/hooks:
     dependencies:
+      '@cpn-console/logger':
+        specifier: workspace:^
+        version: link:../logger
       '@cpn-console/shared':
         specifier: workspace:^
         version: link:../shared
@@ -657,6 +669,31 @@ importers:
       vitest:
         specifier: ^2.1.9
         version: 2.1.9(@types/node@24.12.0)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(terser@5.46.0)
+
+  packages/logger:
+    dependencies:
+      pino:
+        specifier: 8.17.2
+        version: 8.17.2
+      pino-pretty:
+        specifier: ^13.1.3
+        version: 13.1.3
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+    devDependencies:
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
+        version: link:../eslintconfig
+      '@cpn-console/ts-config':
+        specifier: workspace:^
+        version: link:../tsconfig
+      '@types/node':
+        specifier: ^24.12.0
+        version: 24.12.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/shared:
     dependencies:
@@ -784,6 +821,9 @@ importers:
       js-yaml:
         specifier: 4.1.0
         version: 4.1.0
+      yaml:
+        specifier: ^2.8.2
+        version: 2.8.2
     devDependencies:
       '@cpn-console/eslint-config':
         specifier: workspace:^
@@ -821,6 +861,9 @@ importers:
       '@cpn-console/hooks':
         specifier: workspace:^
         version: link:../../packages/hooks
+      '@cpn-console/logger':
+        specifier: workspace:^
+        version: link:../../packages/logger
       '@cpn-console/shared':
         specifier: workspace:^
         version: link:../../packages/shared
@@ -882,6 +925,9 @@ importers:
       '@cpn-console/keycloak-plugin':
         specifier: workspace:^
         version: link:../keycloak
+      '@cpn-console/logger':
+        specifier: workspace:^
+        version: link:../../packages/logger
       '@cpn-console/shared':
         specifier: workspace:^
         version: link:../../packages/shared
@@ -934,6 +980,9 @@ importers:
       '@cpn-console/hooks':
         specifier: workspace:^
         version: link:../../packages/hooks
+      '@cpn-console/logger':
+        specifier: workspace:^
+        version: link:../../packages/logger
       '@cpn-console/shared':
         specifier: workspace:^
         version: link:../../packages/shared
@@ -1032,6 +1081,9 @@ importers:
       '@cpn-console/keycloak-plugin':
         specifier: workspace:^
         version: link:../keycloak
+      '@cpn-console/logger':
+        specifier: workspace:^
+        version: link:../../packages/logger
       '@cpn-console/shared':
         specifier: workspace:^
         version: link:../../packages/shared
@@ -1877,6 +1929,9 @@ packages:
 
   '@cpn-console/keycloak-plugin@file:plugins/keycloak':
     resolution: {directory: plugins/keycloak, type: directory}
+
+  '@cpn-console/logger@file:packages/logger':
+    resolution: {directory: packages/logger, type: directory}
 
   '@cpn-console/nexus-plugin@file:plugins/nexus':
     resolution: {directory: plugins/nexus, type: directory}
@@ -4370,6 +4425,10 @@ packages:
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
 
+  abort-controller@3.0.0:
+    resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
+    engines: {node: '>=6.5'}
+
   abstract-logging@2.0.1:
     resolution: {integrity: sha512-2BjRTZxTPvheOvGbBslFSYOUkr+SjPtOnrLP33f+VIWLzezQpZcqVg7ja3L4dBXmzzgwT+a029jRx5PCi3JuiA==}
 
@@ -4658,6 +4717,9 @@ packages:
 
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
+
+  buffer@6.0.3:
+    resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
 
   builtin-modules@5.0.0:
     resolution: {integrity: sha512-bkXY9WsVpY7CvMhKSR6pZilZu9Ln5WDrKVBUXf2S443etkmEO4V58heTecXcUIsNsi4Rx8JUO4NfX1IcQl4deg==}
@@ -5571,6 +5633,10 @@ packages:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
 
+  event-target-shim@5.0.1:
+    resolution: {integrity: sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==}
+    engines: {node: '>=6'}
+
   eventemitter2@6.4.9:
     resolution: {integrity: sha512-JEPTiaOt9f04oa6NOkc4aH+nVp5I3wEjpHbIPqfgCdD5v5bUzy7xQqwcVO2aDQgOWhI28da57HksMrzK9HlRxg==}
 
@@ -5630,6 +5696,10 @@ packages:
 
   fast-querystring@1.1.2:
     resolution: {integrity: sha512-g6KuKWmFXc0fID8WWH0jit4g0AGBoJhCkJMb1RmbsSEUNvQ+ZC8D6CUZ+GtF8nMzSPXnhiePyyqqipzNNEnHjg==}
+
+  fast-redact@3.5.0:
+    resolution: {integrity: sha512-dwsoQlS7h9hMeYUq1W++23NDcBLV4KqONnITDV9DjfS3q1SgDGVrBdvvTLUotWtPSD7asWDV9/CmsZPy8Hf70A==}
+    engines: {node: '>=6'}
 
   fast-safe-stringify@2.1.1:
     resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
@@ -7250,6 +7320,9 @@ packages:
       typescript:
         optional: true
 
+  pino-abstract-transport@1.1.0:
+    resolution: {integrity: sha512-lsleG3/2a/JIWUtf9Q5gUNErBqwIu1tUKTT3dUzaf5DySw9ra1wcqKjJjLX1VTY64Wk1eEOYsVGSaGfCK85ekA==}
+
   pino-abstract-transport@2.0.0:
     resolution: {integrity: sha512-F63x5tizV6WCh4R6RHyi2Ml+M70DNRXt/+HANowMflpgGFMAym/VKm6G7ZOQRjqN7XbGxK1Lg9t6ZrtzOaivMw==}
 
@@ -7263,11 +7336,18 @@ packages:
     resolution: {integrity: sha512-ttXRkkOz6WWC95KeY9+xxWL6AtImwbyMHrL1mSwqwW9u+vLp/WIElvHvCSDg0xO/Dzrggz1zv3rN5ovTRVowKg==}
     hasBin: true
 
+  pino-std-serializers@6.2.2:
+    resolution: {integrity: sha512-cHjPPsE+vhj/tnhCy/wiMh3M3z3h/j15zHQX+S9GkTBgqJuTuJzYJ4gUyACLhDaJ7kk9ba9iRDmbH2tJU03OiA==}
+
   pino-std-serializers@7.1.0:
     resolution: {integrity: sha512-BndPH67/JxGExRgiX1dX0w1FvZck5Wa4aal9198SrRhZjH3GxKQUKIBnYJTdj2HDN3UQAS06HlfcSbQj2OHmaw==}
 
   pino@10.3.1:
     resolution: {integrity: sha512-r34yH/GlQpKZbU1BvFFqOjhISRo1MNx1tWYsYvmj6KIRHSPMT2+yHOEb1SG6NMvRoHRF0a07kCOox/9yakl1vg==}
+    hasBin: true
+
+  pino@8.17.2:
+    resolution: {integrity: sha512-LA6qKgeDMLr2ux2y/YiUt47EfgQ+S9LznBWOJdN3q1dx2sv0ziDLUBeVpyVv17TEcGCBuWf0zNtg3M5m1NhhWQ==}
     hasBin: true
 
   pino@9.14.0:
@@ -7375,6 +7455,10 @@ packages:
   process-warning@5.0.0:
     resolution: {integrity: sha512-a39t9ApHNx2L4+HBnQKqxxHNs1r7KF+Intd8Q/g1bUh6q0WIp9voPXJ/x0j+ZL45KF1pJd9+q2jLIRMfvEshkA==}
 
+  process@0.11.10:
+    resolution: {integrity: sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==}
+    engines: {node: '>= 0.6.0'}
+
   protobufjs@7.5.4:
     resolution: {integrity: sha512-CvexbZtbov6jW2eXAvLukXjXUW1TzFaivC46BpWc/3BpcCysb5Vffu+B3XHMm8lVEuy2Mm4XGex8hBSg1yapPg==}
     engines: {node: '>=12.0.0'}
@@ -7457,6 +7541,10 @@ packages:
   readable-stream@3.6.2:
     resolution: {integrity: sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==}
     engines: {node: '>= 6'}
+
+  readable-stream@4.7.0:
+    resolution: {integrity: sha512-oIGGmcpTLwPga8Bn6/Z75SVaH1z5dUut2ibSyAMVhmUggWpmDn2dapB0n7f8nwaSiRtepAsfJyfXIO5DCVAODg==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   readdirp@3.6.0:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
@@ -7812,6 +7900,9 @@ packages:
     resolution: {integrity: sha512-Gz11jbNU0plrReU9Sj7fmshSBxxJ9ShdD2q4ktHIHo/rpTH6lFyQoYHYKINPJtPe8aHFnsbtW46Ls0tCCBsIZg==}
     engines: {node: '>=0.10'}
 
+  sonic-boom@3.8.1:
+    resolution: {integrity: sha512-y4Z8LCDBuum+PBP3lSV7RHrXscqksve/bi0as7mhwVnBW+/wUqKT/2Kb7um8yqcFy0duYbbPxzt89Zy2nOCaxg==}
+
   sonic-boom@4.2.1:
     resolution: {integrity: sha512-w6AxtubXa2wTXAUsZMMWERrsIRAdrK0Sc+FUytWvYAhBJLyuI4llrMIC1DtlNSdI99EI86KZum2MMq3EAZlF9Q==}
 
@@ -8104,6 +8195,9 @@ packages:
   test-exclude@7.0.2:
     resolution: {integrity: sha512-u9E6A+ZDYdp7a4WnarkXPZOx8Ilz46+kby6p1yZ8zsGTz9gYa6FIS7lj2oezzNKmtdyyJNNmmXDppga5GB7kSw==}
     engines: {node: '>=18'}
+
+  thread-stream@2.7.0:
+    resolution: {integrity: sha512-qQiRWsU/wvNolI6tbbCKd9iKaTnCXsTwVxhhKM6nctPdujTyztjlbUkUTUymidWcMnZ5pWR0ej4a0tjsW021vw==}
 
   thread-stream@3.1.0:
     resolution: {integrity: sha512-OqyPZ9u96VohAyMfJykzmivOrY2wfMSf3C5TtFJVgN+Hm6aj+voFhlK+kZEIv2FBh1X6Xp3DlnCOfEQ3B2J86A==}
@@ -9939,6 +10033,7 @@ snapshots:
       '@types/js-yaml': 4.0.9
       axios: 1.13.6
       js-yaml: 4.1.0
+      yaml: 2.8.2
     transitivePeerDependencies:
       - '@types/node'
       - debug
@@ -9948,6 +10043,7 @@ snapshots:
   '@cpn-console/gitlab-plugin@file:plugins/gitlab(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))':
     dependencies:
       '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
+      '@cpn-console/logger': file:packages/logger
       '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
       '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
       '@gitbeaker/core': 40.6.0
@@ -9965,6 +10061,7 @@ snapshots:
     dependencies:
       '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
       '@cpn-console/keycloak-plugin': file:plugins/keycloak(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
+      '@cpn-console/logger': file:packages/logger
       '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
       '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
       axios: 1.13.6
@@ -9978,6 +10075,7 @@ snapshots:
 
   '@cpn-console/hooks@file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))':
     dependencies:
+      '@cpn-console/logger': file:packages/logger
       '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
       json-schema: 0.4.0
       vitest-mock-extended: 2.0.2(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
@@ -9990,6 +10088,7 @@ snapshots:
   '@cpn-console/keycloak-plugin@file:plugins/keycloak(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))':
     dependencies:
       '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
+      '@cpn-console/logger': file:packages/logger
       '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
       '@keycloak/keycloak-admin-client': 26.5.5
       axios: 1.13.6
@@ -9998,6 +10097,12 @@ snapshots:
       - debug
       - typescript
       - vitest
+
+  '@cpn-console/logger@file:packages/logger':
+    dependencies:
+      pino: 8.17.2
+      pino-pretty: 13.1.3
+      zod: 3.25.76
 
   '@cpn-console/nexus-plugin@file:plugins/nexus(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))':
     dependencies:
@@ -10026,6 +10131,7 @@ snapshots:
       '@cpn-console/gitlab-plugin': file:plugins/gitlab(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
       '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
       '@cpn-console/keycloak-plugin': file:plugins/keycloak(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
+      '@cpn-console/logger': file:packages/logger
       '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
       '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
       axios: 1.13.6
@@ -12160,7 +12266,7 @@ snapshots:
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 22.19.15
+      '@types/node': 24.12.0
 
   '@types/bunyan@1.8.11':
     dependencies:
@@ -12168,7 +12274,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 22.19.15
+      '@types/node': 24.12.0
 
   '@types/cookiejar@2.1.5': {}
 
@@ -12194,7 +12300,7 @@ snapshots:
 
   '@types/express-serve-static-core@5.1.1':
     dependencies:
-      '@types/node': 22.19.15
+      '@types/node': 24.12.0
       '@types/qs': 6.15.0
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.1
@@ -12265,12 +12371,12 @@ snapshots:
 
   '@types/send@1.2.1':
     dependencies:
-      '@types/node': 22.19.15
+      '@types/node': 24.12.0
 
   '@types/serve-static@2.2.0':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 22.19.15
+      '@types/node': 24.12.0
 
   '@types/statuses@2.0.6': {}
 
@@ -12278,7 +12384,7 @@ snapshots:
     dependencies:
       '@types/cookiejar': 2.1.5
       '@types/methods': 1.1.4
-      '@types/node': 22.19.15
+      '@types/node': 24.12.0
       form-data: 4.0.5
 
   '@types/supertest@6.0.3':
@@ -12961,6 +13067,10 @@ snapshots:
 
   '@xtuc/long@4.2.2': {}
 
+  abort-controller@3.0.0:
+    dependencies:
+      event-target-shim: 5.0.1
+
   abstract-logging@2.0.1: {}
 
   accepts@2.0.0:
@@ -13254,6 +13364,11 @@ snapshots:
   buffer-from@1.1.2: {}
 
   buffer@5.7.1:
+    dependencies:
+      base64-js: 1.5.1
+      ieee754: 1.2.1
+
+  buffer@6.0.3:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
@@ -14361,6 +14476,8 @@ snapshots:
 
   etag@1.8.1: {}
 
+  event-target-shim@5.0.1: {}
+
   eventemitter2@6.4.9: {}
 
   eventemitter3@5.0.4: {}
@@ -14450,6 +14567,8 @@ snapshots:
   fast-querystring@1.1.2:
     dependencies:
       fast-decode-uri-component: 1.0.1
+
+  fast-redact@3.5.0: {}
 
   fast-safe-stringify@2.1.1: {}
 
@@ -15256,7 +15375,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 22.19.15
+      '@types/node': 24.12.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -16374,6 +16493,11 @@ snapshots:
     transitivePeerDependencies:
       - '@vue/composition-api'
 
+  pino-abstract-transport@1.1.0:
+    dependencies:
+      readable-stream: 4.7.0
+      split2: 4.2.0
+
   pino-abstract-transport@2.0.0:
     dependencies:
       split2: 4.2.0
@@ -16405,6 +16529,8 @@ snapshots:
       sonic-boom: 4.2.1
       strip-json-comments: 5.0.3
 
+  pino-std-serializers@6.2.2: {}
+
   pino-std-serializers@7.1.0: {}
 
   pino@10.3.1:
@@ -16420,6 +16546,20 @@ snapshots:
       safe-stable-stringify: 2.5.0
       sonic-boom: 4.2.1
       thread-stream: 4.0.0
+
+  pino@8.17.2:
+    dependencies:
+      atomic-sleep: 1.0.0
+      fast-redact: 3.5.0
+      on-exit-leak-free: 2.1.2
+      pino-abstract-transport: 1.1.0
+      pino-std-serializers: 6.2.2
+      process-warning: 3.0.0
+      quick-format-unescaped: 4.0.4
+      real-require: 0.2.0
+      safe-stable-stringify: 2.5.0
+      sonic-boom: 3.8.1
+      thread-stream: 2.7.0
 
   pino@9.14.0:
     dependencies:
@@ -16521,6 +16661,8 @@ snapshots:
   process-warning@3.0.0: {}
 
   process-warning@5.0.0: {}
+
+  process@0.11.10: {}
 
   protobufjs@7.5.4:
     dependencies:
@@ -16631,6 +16773,14 @@ snapshots:
       inherits: 2.0.4
       string_decoder: 1.3.0
       util-deprecate: 1.0.2
+
+  readable-stream@4.7.0:
+    dependencies:
+      abort-controller: 3.0.0
+      buffer: 6.0.3
+      events: 3.3.0
+      process: 0.11.10
+      string_decoder: 1.3.0
 
   readdirp@3.6.0:
     dependencies:
@@ -17053,6 +17203,10 @@ snapshots:
     dependencies:
       nearley: 2.20.1
 
+  sonic-boom@3.8.1:
+    dependencies:
+      atomic-sleep: 1.0.0
+
   sonic-boom@4.2.1:
     dependencies:
       atomic-sleep: 1.0.0
@@ -17424,6 +17578,10 @@ snapshots:
       '@istanbuljs/schema': 0.1.3
       glob: 10.5.0
       minimatch: 10.2.4
+
+  thread-stream@2.7.0:
+    dependencies:
+      real-require: 0.2.0
 
   thread-stream@3.1.0:
     dependencies:

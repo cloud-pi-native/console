@@ -1,6 +1,6 @@
 import type { Project, ProjectLite, StepCall } from '@cpn-console/hooks'
 import type { WritePolicy } from './utils.js'
-import { generateRandomPassword, parseError, specificallyDisabled } from '@cpn-console/hooks'
+import { generateRandomPassword, specificallyDisabled } from '@cpn-console/hooks'
 import axios from 'axios'
 import { getAxiosOptions } from './functions.js'
 import { createMavenRepo, deleteMavenRepo, getMavenUrls } from './maven.js'
@@ -38,7 +38,7 @@ export const deleteNexusProject: StepCall<Project> = async ({ args: project }) =
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
@@ -190,7 +190,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
           result: 'WARNING',
           message: failed.map(({ message }) => message).join('; '),
         },
-        errors: failed.map(({ error }) => parseError(error)),
+        errors: failed.map(({ error }) => error),
       }
     }
 
@@ -203,7 +203,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'Fail Create repositories',
