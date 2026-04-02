@@ -1,4 +1,5 @@
 import { generateProjectKey } from '@cpn-console/hooks'
+import { logger } from './logger.js'
 import { getAxiosInstance } from './tech.js'
 
 export interface SonarPaging {
@@ -125,7 +126,7 @@ function filterProjectsOwning(repos: { key: string }[], projectSlug: string): So
       }
     }
     if (isOrphan) {
-      console.warn('/!\\ Orphan Project:', sonarKey)
+      logger.warn({ sonarKey, projectSlug }, 'Orphan SonarQube project key does not match expected pattern')
     }
     return acc
   }, [] as SonarProjectResult[])

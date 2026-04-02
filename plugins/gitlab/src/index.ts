@@ -14,6 +14,7 @@ import {
   upsertZone,
 } from './functions.js'
 import infos from './infos.js'
+import { logger } from './logger.js'
 import monitor from './monitor.js'
 import { getOrCreateGroupRoot } from './utils.js'
 
@@ -21,7 +22,7 @@ const onlyApi = { api: (project: Project | UniqueRepo) => new GitlabProjectApi(p
 
 function start() {
   getOrCreateGroupRoot().catch((error) => {
-    console.log(error)
+    logger.error({ err: error }, 'GitLab plugin failed to initialize group root')
     throw new Error('Error at gitlab plugin start')
   })
 }
