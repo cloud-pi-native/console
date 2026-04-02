@@ -1,6 +1,7 @@
 import type { adminTokenContract } from '@cpn-console/shared'
 import type { $Enums, AdminToken, Prisma } from '@prisma/client'
 import { createHash, randomUUID } from 'node:crypto'
+import { logger as baseLogger } from '@cpn-console/logger'
 import { generateRandomPassword, isAtLeastTomorrow } from '@cpn-console/shared'
 import { logger as baseLogger } from '@cpn-console/logger'
 import { BadRequest400 } from '@/utils/errors.js'
