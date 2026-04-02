@@ -1,3 +1,5 @@
+import { logger } from '@cpn-console/logger'
+
 export function parseError(error: unknown) {
   // @ts-ignore
   if (error?.config?.auth?.username) error.config.auth.username = 'MASKED'
@@ -26,7 +28,7 @@ export function parseError(error: unknown) {
   try {
     return JSON.stringify(error)
   } catch (parseError) {
-    console.log(parseError)
+    logger.error({ err: parseError }, 'Failed to stringify error')
     if (error instanceof Error && error.stack) {
       return `Can't parse error \n${error.stack}`
     }
