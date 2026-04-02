@@ -1,6 +1,7 @@
 import type { UserProfile } from '@cpn-console/shared'
 import type { KeycloakConfig, KeycloakInitOptions } from 'keycloak-js'
 
+import { logger } from '@cpn-console/logger/browser'
 import Keycloak from 'keycloak-js'
 import {
   keycloakClientId,
@@ -31,7 +32,7 @@ export function getKeycloak() {
       if (!(keycloak.refreshTokenParsed?.exp && keycloak.tokenParsed?.exp && keycloak.refreshTokenParsed.exp > keycloak.tokenParsed.exp)) {
         return
       }
-      console.warn('Keycloak misconfiguration : refreshToken should not expire before token.')
+      logger.warn('Keycloak misconfiguration: refreshToken should not expire before token')
       const refreshTokenDelay = (keycloak.tokenParsed.exp * 1000 - Date.now()) / 2
       setTimeout(() => {
         keycloak.updateToken()
