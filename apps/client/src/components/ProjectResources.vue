@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CleanedCluster, Cluster, CreateEnvironmentBody, Environment, Repo, UpdateEnvironmentBody, Zone } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
+import { logger } from '@cpn-console/logger/browser'
 import { AdminAuthorized, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
@@ -174,7 +175,7 @@ async function reload() {
     },
   )
 
-  console.log(props.project.environments)
+  logger.debug({ projectSlug: props.project.slug, environmentsCount: props.project.environments?.value?.length }, 'Loaded project resources')
 }
 onMounted(reload)
 
@@ -194,7 +195,7 @@ async function copyToClipboard(text: string) {
     copiedText.value = text
     setTimeout(() => (copiedText.value = ''), MILLISECONDS_UNTIL_CLIPBOARD_CLEAR)
   } catch (err) {
-    console.error('Erreur de copie :', err)
+    logger.error({ err }, 'Clipboard write failed')
   }
 }
 </script>

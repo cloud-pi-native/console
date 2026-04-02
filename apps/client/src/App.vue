@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@cpn-console/logger/browser'
 import { swaggerUiPath } from '@cpn-console/shared'
 import { useServiceStore } from '@/stores/services-monitor.js'
 import ReloadPrompt from './components/ReloadPrompt.vue'
@@ -30,7 +31,7 @@ const quickLinks = computed(() => [{
 
 onErrorCaptured((error) => {
   if (error instanceof Error) {
-    console.trace(error)
+    logger.error({ err: error }, 'Unhandled Vue error')
     snackbarStore.setMessage(error?.message, 'error')
   } else {
     snackbarStore.setMessage('Une erreur inconnue est survenue.', 'error')
