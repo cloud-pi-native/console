@@ -31,6 +31,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@cpn-console/logger": "workspace:*",
     "@ts-rest/core": "^3.52.1",
     "short-uuid": "^5.2.0",
     "zod": "^3.25.76",
