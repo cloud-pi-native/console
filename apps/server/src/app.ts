@@ -1,5 +1,4 @@
 import type { FastifyRequest } from 'fastify'
-import type { CustomLogger } from './utils/logger.js'
 import { apiPrefix, getContract } from '@cpn-console/shared'
 import fastifyCookie from '@fastify/cookie'
 import helmet from '@fastify/helmet'
@@ -14,7 +13,6 @@ import { apiRouter } from './resources/index.js'
 import { isDev, isInt, isTest } from './utils/env.js'
 import { fastifyConf, swaggerConf, swaggerUiConf } from './utils/fastify.js'
 import { keycloakConf, sessionConf } from './utils/keycloak.js'
-import { log } from './utils/logger.js'
 
 export const serverInstance: ReturnType<typeof initServer> = initServer()
 
@@ -41,7 +39,7 @@ const app = fastify(fastifyConf)
     // @ts-ignore vérifier l'objet
     const message = error.description || error.message
     reply.status(statusCode).send({ status: statusCode, error: message, stack: error.stack })
-    log('info', { reqId: req.id, error })
+    req.log.error({ err: error, reqId: req.id }, 'Unhandled request error')
   })
   .addHook('onResponse', (req, res) => {
     if (res.statusCode < 400) {
@@ -55,5 +53,4 @@ const app = fastify(fastifyConf)
 
 await app.ready()
 
-export const logger = app.log as CustomLogger
 export default app
