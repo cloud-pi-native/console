@@ -452,7 +452,7 @@ export class GitlabProjectApi extends GitlabApi {
   public async addGroupMember(userId: number, accessLevel: AccessLevelAllowed = AccessLevel.DEVELOPER): Promise<MemberSchema> {
     logger.info({ action: 'addGroupMember', accessLevel, projectSlug: this.project.slug }, 'Add group member')
     const group = await this.getOrCreateProjectGroup()
-    return this.api.GroupMembers.add(group.id, userId, accessLevel)
+    return this.api.GroupMembers.add(group.id, userId, accessLevel as any)
   }
 
   public async editGroupMember(userId: number, accessLevel: AccessLevelAllowed = AccessLevel.DEVELOPER): Promise<MemberSchema> {
