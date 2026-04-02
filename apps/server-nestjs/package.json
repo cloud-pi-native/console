@@ -33,6 +33,7 @@
     "@cpn-console/harbor-plugin": "workspace:^",
     "@cpn-console/hooks": "workspace:^",
     "@cpn-console/keycloak-plugin": "workspace:^",
+    "@cpn-console/logger": "workspace:^",
     "@cpn-console/nexus-plugin": "workspace:^",
     "@cpn-console/shared": "workspace:^",
     "@cpn-console/sonarqube-plugin": "workspace:^",
@@ -80,7 +81,6 @@
     "rxjs": "^7.8.2",
     "undici": "^7.24.0",
     "vitest-mock-extended": "^2.0.2",
-    "yaml": "^2.8.2",
     "zod": "^3.25.76"
   },
   "devDependencies": {
