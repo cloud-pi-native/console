@@ -7,6 +7,8 @@ const logger = baseLogger.child({ scope: 'migration:v9' })
 
 const logger = baseLogger.child({ scope: 'migration:v9' })
 
+const logger = baseLogger.child({ scope: 'migration:v9' })
+
 export function removeTrailingSlash(url) {
   return url?.endsWith('/')
     ? url.slice(0, -1)
