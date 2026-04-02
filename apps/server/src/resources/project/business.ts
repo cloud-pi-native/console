@@ -3,6 +3,7 @@ import type { Project, User } from '@prisma/client'
 import type { UserDetails } from '@/types/index.js'
 import type { ErrorResType } from '@/utils/errors.js'
 import { servicesInfos } from '@cpn-console/hooks'
+import { logger as baseLogger } from '@cpn-console/logger'
 import { ProjectStatusSchema } from '@cpn-console/shared'
 import { json2csv } from 'json-2-csv'
 import prisma from '@/prisma.js'
@@ -22,6 +23,8 @@ import { whereBuilder } from '@/utils/controller.js'
 import { parallelBulkLimit } from '@/utils/env.js'
 import { BadRequest400, Forbidden403, Unprocessable422 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
+
+const logger = baseLogger.child({ scope: 'resource:project' })
 
 export function generateSlug(prefix: string, existingSlugs?: string[]) {
   if (!existingSlugs?.includes(prefix)) {
@@ -70,14 +73,21 @@ export async function createProject(dataDto: typeof projectContract.createProjec
   if (requestor.type !== 'human') return new BadRequest400('Seuls les comptes humains peuvent créer des projets')
 
   let slug = dataDto.name
+  logger.info({ requestId, userId: requestor.id, slugPrefix: slug }, 'Create project started')
   const projectsWithSamePrefix = await getSlugs(slug)
   slug = generateSlug(slug, projectsWithSamePrefix?.map(project => project.slug))
 
   // Actions
   const project = await initializeProject({ ...dataDto, slug, ownerId: requestor.id })
+  logger.info({ requestId, userId: requestor.id, projectId: project.id, slug }, 'Project initialized')
 
   const { results, project: projectInfos } = await hook.project.upsert(project.id)
   await addLogs({ action: 'Create Project', data: results, userId: requestor.id, requestId, projectId: project.id })
+  if (results.failed) {
+    logger.error({ requestId, userId: requestor.id, projectId: project.id, slug }, 'Create project failed during upsert hooks')
+  } else {
+    logger.info({ requestId, userId: requestor.id, projectId: project.id, slug }, 'Create project upsert hooks completed')
+  }
   if (results.failed) {
     return new Unprocessable422('Echec des services à la création du projet')
   }
@@ -87,6 +97,7 @@ export async function createProject(dataDto: typeof projectContract.createProjec
     await addLogs({ action: 'Upsert Project Role', data: roleResult.results, userId: requestor.id, requestId, projectId: project.id })
   }
 
+  logger.info({ requestId, userId: requestor.id, projectId: project.id, slug }, 'Create project completed')
   return {
     ...projectInfos,
     clusterIds: projectInfos.clusters.map(({ id }) => id),
@@ -110,6 +121,15 @@ export async function updateProject(
   requestor: UserDetails,
   requestId: string,
 ) {
+  const changedFields = Object.entries({
+    ...data,
+    description,
+    locked,
+    ownerId: ownerIdCandidate,
+    everyonePerms,
+  }).filter(([, value]) => typeof value !== 'undefined').map(([key]) => key)
+  logger.info({ requestId, userId: requestor.id, projectId, changedFields }, 'Update project started')
+
   // Actions
   const projectDb = await prisma.project.findUniqueOrThrow({
     where: { id: projectId },
@@ -149,9 +169,15 @@ export async function updateProject(
   const { results, project: projectInfos } = await hook.project.upsert(projectId)
   await addLogs({ action: 'Update Project', data: results, userId: requestor.id, requestId, projectId: projectInfos.id })
   if (results.failed) {
+    logger.error({ requestId, userId: requestor.id, projectId }, 'Update project failed during upsert hooks')
+  } else {
+    logger.info({ requestId, userId: requestor.id, projectId }, 'Update project upsert hooks completed')
+  }
+  if (results.failed) {
     return new Unprocessable422('Echec des services à la mise à jour du projet')
   }
 
+  logger.info({ requestId, userId: requestor.id, projectId }, 'Update project completed')
   return {
     ...projectInfos,
     clusterIds: projectInfos.clusters.map(({ id }) => id),
@@ -166,6 +192,7 @@ interface ReplayHooksArgs {
   requestId: string
 }
 export async function replayHooks({ projectId, userId, requestId }: ReplayHooksArgs): Promise<ErrorResType | null> {
+  logger.info({ requestId, userId, projectId }, 'Replay project hooks started')
   const projectDb = await prisma.project.findUniqueOrThrow({
     where: { id: projectId },
     include: { members: { include: { user: true } } },
@@ -176,12 +203,18 @@ export async function replayHooks({ projectId, userId, requestId }: ReplayHooksA
   const { results } = await hook.project.upsert(projectId)
   await addLogs({ action: 'Replay hooks for Project', data: results, userId, requestId, projectId })
   if (results.failed) {
+    logger.error({ requestId, userId, projectId }, 'Replay project hooks failed')
+  } else {
+    logger.info({ requestId, userId, projectId }, 'Replay project hooks completed')
+  }
+  if (results.failed) {
     return new Unprocessable422('Echec des services au reprovisionnement du projet')
   }
   return null
 }
 
 export async function archiveProject(projectId: Project['id'], requestor: UserDetails, requestId: string): Promise<ErrorResType | null> {
+  logger.info({ requestId, userId: requestor.id, projectId }, 'Archive project started')
   // Actions
   // Empty the project first
   const [projectDb, ..._] = await Promise.all([
@@ -200,6 +233,11 @@ export async function archiveProject(projectId: Project['id'], requestor: UserDe
   // -- début - Suppression projet --
   const { results, project } = await hook.project.delete(projectId)
   await addLogs({ action: 'Delete all project resources', data: results, userId: requestor.id, requestId, projectId })
+  if (results.failed) {
+    logger.error({ requestId, userId: requestor.id, projectId }, 'Archive project failed during delete hooks')
+  } else {
+    logger.info({ requestId, userId: requestor.id, projectId, status: project.status }, 'Archive project delete hooks completed')
+  }
   if (project.status !== 'archived' && !projectDb.locked) {
     await prisma.project.update({ where: { id: projectId }, data: { locked: false } })
   }
@@ -216,6 +254,7 @@ export async function archiveProject(projectId: Project['id'], requestor: UserDe
   })
 
   // -- fin - Suppression projet --
+  logger.info({ requestId, userId: requestor.id, projectId }, 'Archive project completed')
   return null
 }
 

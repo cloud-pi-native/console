@@ -6,6 +6,7 @@ import type {
 } from '@cpn-console/shared'
 import type { Project, ProjectPlugin } from '@prisma/client'
 import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
+import { logger as baseLogger } from '@cpn-console/logger'
 import {
   getAdminPlugin,
   getProjectInfosByIdOrThrow,
@@ -13,6 +14,8 @@ import {
   getPublicClusters,
   saveProjectStore,
 } from '@/resources/queries-index.js'
+
+const logger = baseLogger.child({ scope: 'resource:project-service' })
 
 export type ConfigRecords = {
   key: string
@@ -86,10 +89,15 @@ export async function getProjectServices(projectId: Project['id'], permissionTar
 }
 
 export async function updateProjectServices(projectId: Project['id'], data: PluginsUpdateBody, stripperRoles: Array<'user' | 'admin'>) {
+  const pluginKeysCount = Object.fromEntries(
+    Object.entries(data).map(([pluginName, values]) => [pluginName, Object.keys(values).length]),
+  )
+  logger.info({ projectId, pluginCount: Object.keys(data).length, pluginKeysCount, stripperRoles }, 'Update project services started')
   for (const role of stripperRoles) {
     const parsedData = editStrippers.project[role].safeParse(data)
     if (!parsedData.success) continue
     await saveProjectStore(objToDb(parsedData.data), projectId)
   }
+  logger.info({ projectId }, 'Update project services completed')
   return null
 }

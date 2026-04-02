@@ -2,13 +2,13 @@ import type { PluginResult, Project, ProjectLite, StepCall } from '@cpn-console/
 import type { VaultRobotSecret } from './robot.js'
 import {
 
-  parseError,
   specificallyDisabled,
   specificallyEnabled,
 } from '@cpn-console/hooks'
 import { DEFAULT, ENABLED } from '@cpn-console/shared'
 // @ts-ignore pas de typage disponible pour le paquet bytes
 import bytes from 'bytes'
+import { logger } from './logger.js'
 import { addProjectGroupMember } from './permission.js'
 import { addRetentionPolicy } from './policy.js'
 import { createProject, deleteProject } from './project.js'
@@ -22,97 +22,75 @@ import {
 } from './utils.js'
 
 export const createDsoProject: StepCall<Project> = async (payload) => {
-  console.log(`[HARBOR] createDsoProject`)
   const returnResult: PluginResult = {
     status: {
       result: 'OK',
     },
   }
   const warnReasons: string[] = []
-  try {
-    const project = payload.args
-    const projectName = project.slug
-    const { vault: vaultApi, keycloak: keycloakApi } = payload.apis
+  const project = payload.args
+  const projectName = project.slug
+  logger.info({ projectName }, 'Creating Harbor project')
+  const { vault: vaultApi, keycloak: keycloakApi } = payload.apis
 
-    const publishRoRobotProject = project.store.registry?.publishProjectRobot
-    const publishRoRobotConfig = payload.config.registry?.publishProjectRobot
-    const createProjectRobot
-      = specificallyEnabled(publishRoRobotProject)
-        || (specificallyEnabled(publishRoRobotConfig)
-          && !specificallyDisabled(publishRoRobotProject))
+  const publishRoRobotProject = project.store.registry?.publishProjectRobot
+  const publishRoRobotConfig = payload.config.registry?.publishProjectRobot
+  const createProjectRobot
+    = specificallyEnabled(publishRoRobotProject)
+      || (specificallyEnabled(publishRoRobotConfig)
+        && !specificallyDisabled(publishRoRobotProject))
 
-    const quotaHardLimit
-      = project.store.registry?.quotaHardLimit
-        || payload.config.registry?.quotaHardLimit
-    const quotaHardLimitBytes = quotaHardLimit
-      ? bytes.parse(quotaHardLimit)
-      : undefined
+  const quotaHardLimit
+    = project.store.registry?.quotaHardLimit
+      || payload.config.registry?.quotaHardLimit
+  const quotaHardLimitBytes = quotaHardLimit
+    ? bytes.parse(quotaHardLimit)
+    : undefined
 
-    const [projectCreated, oidcGroup] = await Promise.all([
-      createProject(
-        projectName,
-        quotaHardLimitBytes === 1 ? undefined : quotaHardLimitBytes,
-      ),
-      keycloakApi.getProjectGroupPath(),
-    ])
-    const api = getApi()
+  const [projectCreated, oidcGroup] = await Promise.all([
+    createProject(
+      projectName,
+      quotaHardLimitBytes === 1 ? undefined : quotaHardLimitBytes,
+    ),
+    keycloakApi.getProjectGroupPath(),
+  ])
+  const api = getApi()
 
-    await Promise.all([
-      ensureRobot(projectName, roRobotName, vaultApi, roAccess, api), // cette ligne en premier sinon ça foire au dessus
-      ensureRobot(projectName, rwRobotName, vaultApi, rwAccess, api),
-      addProjectGroupMember(projectName, oidcGroup),
-      addRetentionPolicy(projectName, projectCreated.project_id as number),
-      createProjectRobot
-        ? ensureRobot(projectName, projectRobotName, vaultApi, roAccess, api)
-        : deleteRobot(projectName, projectRobotName, vaultApi, api),
-    ])
+  await Promise.all([
+    ensureRobot(projectName, roRobotName, vaultApi, roAccess, api),
+    ensureRobot(projectName, rwRobotName, vaultApi, rwAccess, api),
+    addProjectGroupMember(projectName, oidcGroup),
+    addRetentionPolicy(projectName, projectCreated.project_id as number),
+    createProjectRobot
+      ? ensureRobot(projectName, projectRobotName, vaultApi, roAccess, api)
+      : deleteRobot(projectName, projectRobotName, vaultApi, api),
+  ])
 
-    if (!projectCreated.project_id)
-      throw new Error('Unable to retrieve project_id')
-    returnResult.status.message = `Created${createProjectRobot ? ' , with project robot' : ''}`
-    returnResult.store = {
-      projectId: projectCreated.project_id,
-    }
-    if (warnReasons.length) {
-      returnResult.status.result = 'WARNING'
-      returnResult.status.message = warnReasons.join(', ')
-    }
-    return returnResult
-  } catch (error) {
-    console.log(`[HARBOR] Error while creating DSO project`)
-    return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        message: 'An unexpected error occured',
-      },
-    }
+  if (!projectCreated.project_id)
+    throw new Error('Unable to retrieve project_id')
+  returnResult.status.message = `Created${createProjectRobot ? ' , with project robot' : ''}`
+  returnResult.store = {
+    projectId: projectCreated.project_id,
   }
+  if (warnReasons.length) {
+    returnResult.status.result = 'WARNING'
+    returnResult.status.message = warnReasons.join(', ')
+  }
+  return returnResult
 }
 
 export const deleteDsoProject: StepCall<Project> = async (payload) => {
-  console.log(`[HARBOR] deleteDsoProject`)
-  try {
-    const project = payload.args
-    const projectName = project.slug
+  const project = payload.args
+  const projectName = project.slug
+  logger.info({ projectName }, 'Deleting Harbor project')
 
-    await deleteProject(projectName)
+  await deleteProject(projectName)
 
-    return {
-      status: {
-        result: 'OK',
-        message: 'Deleted',
-      },
-    }
-  } catch (error) {
-    console.log(`[HARBOR] Error while deleting DSO project`)
-    return {
-      error: parseError(error),
-      status: {
-        result: 'KO',
-        message: 'An unexpected error occured',
-      },
-    }
+  return {
+    status: {
+      result: 'OK',
+      message: 'Deleted',
+    },
   }
 }
 
@@ -121,7 +99,7 @@ export const getProjectSecrets: StepCall<ProjectLite> = async ({
   apis: { vault: vaultApi },
   config,
 }) => {
-  console.log(`[HARBOR] getProjectSecrets`)
+  logger.debug({ projectName: project.slug }, 'Reading Harbor project secrets')
   const publishRoRobotProject = project.store.registry?.publishProjectRobot
   const publishRoRobotConfig = config.registry?.publishProjectRobot
   const projectRobotEnabled
