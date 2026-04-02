@@ -1,5 +1,7 @@
+import { logger as baseLogger } from '@cpn-console/logger/hooks'
 import { Gitlab } from '@gitbeaker/rest'
-import axios from 'axios'
+
+const logger = baseLogger.child({ scope: 'migration:v9' })
 
 export function removeTrailingSlash(url) {
   return url?.endsWith('/')
@@ -23,12 +25,34 @@ const gitlabInternalUrl = process.env.GITLAB_INTERNAL_URL
 
 const vaultPublicUrl = removeTrailingSlash(requiredEnv('VAULT_URL'))
 
-const axiosInstance = axios.create({
-  baseURL: vaultPublicUrl,
-  headers: {
-    'X-Vault-Token': requiredEnv('VAULT_TOKEN'),
-  },
-})
+const vaultAdminToken = requiredEnv('VAULT_TOKEN')
+
+async function vaultRequest({ method, path, token, body, allowedStatus = [200] }) {
+  const response = await fetch(`${vaultPublicUrl}${path}`, {
+    method,
+    headers: {
+      ...(body ? { 'Content-Type': 'application/json' } : {}),
+      'X-Vault-Token': token,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  })
+
+  if (!allowedStatus.includes(response.status)) {
+    const err = new Error(`Vault request failed: ${method} ${path} (${response.status})`)
+    err.response = {
+      status: response.status,
+    }
+    throw err
+  }
+
+  if (response.status === 204) {
+    return { status: response.status, data: null }
+  }
+
+  const text = await response.text()
+  const data = text ? JSON.parse(text) : null
+  return { status: response.status, data }
+}
 
 const api = new Gitlab({ token: gitlabToken, host: gitlabInternalUrl })
 
@@ -37,14 +61,14 @@ const groupRootId = (groupRootSearch.find(grp => grp.full_path === projectsRootD
 
 const organizationGroups = await api.Groups.allDescendantGroups(groupRootId, { perPage: 300 })
 
-console.log(organizationGroups.length)
+logger.info({ organizationGroupsCount: organizationGroups.length }, 'Loaded organization groups')
 if (organizationGroups.length > 300) {
   throw new Error('increase perPage, you could miss some results')
 }
 
 for (const organizationGroup of organizationGroups) {
   if (organizationGroup.name === 'Infra') continue
-  console.log(organizationGroup)
+  logger.info({ organizationGroupId: organizationGroup.id, organizationGroupName: organizationGroup.name }, 'Processing organization group')
   const projectGroups = await api.Groups.allDescendantGroups(organizationGroup.id, { perPage: 300 })
   if (projectGroups.length > 300) {
     throw new Error('increase perPage, you could miss some projects group results')
@@ -52,21 +76,24 @@ for (const organizationGroup of organizationGroups) {
 
   for (const projectGroup of projectGroups) {
     const newName = `${organizationGroup.name}-${projectGroup.name}`
-    console.log(newName)
+    logger.info({ projectGroupId: projectGroup.id, newName }, 'Renaming and transferring project group')
 
     try {
       const renamedGroup = await api.Groups.edit(projectGroup.id, { name: newName, path: newName })
       await api.Groups.transfer(renamedGroup.id, { groupId: groupRootId })
-    } catch {
-      console.log(`cant transfer ${projectGroup.id}`)
+    } catch (error) {
+      logger.warn({ err: error, projectGroupId: projectGroup.id, organizationGroupId: organizationGroup.id }, 'Could not rename/transfer project group')
     }
   }
 }
 
 const coreKvName = 'forge-dso'
 
-const vaultToken = (await axiosInstance.post('/v1/auth/token/create'))
-  .data.auth.client_token
+const vaultToken = (await vaultRequest({
+  method: 'POST',
+  path: '/v1/auth/token/create',
+  token: vaultAdminToken,
+})).data.auth.client_token
 
 function transformPath(path) {
   if (!path.startsWith('/')) {
@@ -80,13 +107,11 @@ const secretsMapper = {}
 async function list(path = '/') {
   if (!path.startsWith('/'))
     path = `/${path}`
-  const response = await axiosInstance({
-    url: `/v1/${coreKvName}/metadata/${projectsRootDir}${path}`,
-    headers: {
-      'X-Vault-Token': vaultToken,
-    },
-    method: 'list',
-    validateStatus: code => [200, 404].includes(code),
+  const response = await vaultRequest({
+    method: 'LIST',
+    path: `/v1/${coreKvName}/metadata/${projectsRootDir}${path}`,
+    token: vaultToken,
+    allowedStatus: [200, 404],
   })
 
   if (response.status === 404) return []
@@ -101,39 +126,37 @@ async function list(path = '/') {
 
 try {
   await list()
-  console.log(secretsMapper)
+  logger.info({ secretsCount: Object.keys(secretsMapper).length }, 'Collected secrets mapping')
 } catch (error) {
-  console.log(error.message)
+  logger.error({ err: error }, 'Failed while collecting secrets mapping')
 }
 
 for (const [source, destination] of Object.entries(secretsMapper)) {
-  const secretContent = await axiosInstance({
-    url: `/v1/${coreKvName}/data/${projectsRootDir}${source}`,
-    headers: {
-      'X-Vault-Token': vaultToken,
-    },
-    method: 'get',
-    validateStatus: code => [200, 404].includes(code),
+  const secretContent = await vaultRequest({
+    method: 'GET',
+    path: `/v1/${coreKvName}/data/${projectsRootDir}${source}`,
+    token: vaultToken,
+    allowedStatus: [200, 404],
   })
+  if (secretContent.status === 404) {
+    logger.warn({ source, destination }, 'Secret not found, skipping')
+    continue
+  }
   const data = secretContent.data.data.data
 
   try {
-    await axiosInstance({
+    await vaultRequest({
       method: 'POST',
-      url: `/v1/${coreKvName}/data/${projectsRootDir}${destination}`,
-      headers: {
-        'X-Vault-Token': vaultToken,
-      },
-      data: { data },
+      path: `/v1/${coreKvName}/data/${projectsRootDir}${destination}`,
+      token: vaultToken,
+      body: { data },
     })
-    await axiosInstance({
-      method: 'delete',
-      url: `/v1/${coreKvName}/metadata/${projectsRootDir}${source}`,
-      headers: {
-        'X-Vault-Token': vaultToken,
-      },
+    await vaultRequest({
+      method: 'DELETE',
+      path: `/v1/${coreKvName}/metadata/${projectsRootDir}${source}`,
+      token: vaultToken,
     })
   } catch (error) {
-    console.log(error.response.data)
+    logger.error({ err: error, source, destination }, 'Failed while moving secret')
   }
 }
