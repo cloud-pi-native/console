@@ -1,7 +1,8 @@
+import { logger } from '@cpn-console/logger'
 import { PrismaClientInitializationError } from '@prisma/client/runtime/library.js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import prisma from './__mocks__/prisma.js'
-import app, { logger } from './app.js'
+import app from './app.js'
 import { getConnection } from './connect.js'
 
 vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin)

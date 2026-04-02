@@ -1,5 +1,5 @@
 import { setTimeout } from 'node:timers/promises'
-import { logger } from './app.js'
+import { logger } from '@cpn-console/logger'
 import prisma from './prisma.js'
 import {
   dbUrl,
@@ -56,7 +56,7 @@ export async function closeConnections() {
   try {
     await prisma.$disconnect()
   } catch (error) {
-    logger.error(error)
+    logger.error({ err: error }, 'Could not disconnect from Postgres')
   } finally {
     closingConnections = false
   }
