@@ -2,6 +2,7 @@ import type { BaseRequestOptions, Gitlab as IGitlab, OffsetPagination, Paginatio
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { Gitlab } from '@gitbeaker/rest'
 import config from './config.js'
+import { logger } from './logger.js'
 
 let api: IGitlab | undefined
 
@@ -10,17 +11,16 @@ let groupRootId: number
 export async function getGroupRootId(throwIfNotFound?: true): Promise<number>
 export async function getGroupRootId(throwIfNotFound?: false): Promise<number | undefined>
 export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number | undefined> {
-  console.log(`[GITLAB] getGroupRootId`)
   const gitlabApi = getApi()
   const projectRootDir = config().projectsRootDir
-  console.log(`[GITLAB] projectRootDir is ${projectRootDir}`)
+  logger.debug({ projectRootDir }, 'Resolving GitLab group root id')
   if (groupRootId) return groupRootId
   const groupRoot = await find(offsetPaginate(opts => gitlabApi.Groups.all({
     search: projectRootDir,
     orderBy: 'id',
     ...opts,
   })), grp => grp.full_path === projectRootDir)
-  console.log(`[GITLAB] groupRoot is ${JSON.stringify(groupRoot)}`)
+  logger.debug({ groupRootId: groupRoot?.id, groupRootPath: groupRoot?.full_path }, 'Resolved GitLab group root')
   const searchId = groupRoot?.id
   if (typeof searchId === 'undefined') {
     if (throwIfNotFound) {
@@ -33,7 +33,7 @@ export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number 
 }
 
 async function createGroupRoot(): Promise<number> {
-  console.log(`[GITLAB] createGroupRoot`)
+  logger.info({ projectRootDir: config().projectsRootDir }, 'Creating GitLab group root hierarchy')
   const gitlabApi = getApi()
   const projectRootDir = config().projectsRootDir
   const projectRootDirArray = projectRootDir.split('/')
@@ -69,12 +69,10 @@ async function createGroupRoot(): Promise<number> {
 }
 
 export async function getOrCreateGroupRoot(): Promise<number> {
-  console.log(`[GITLAB] getOrCreateGroupRoot`)
   return await getGroupRootId(false) ?? createGroupRoot()
 }
 
 export function getApi(): IGitlab {
-  console.log(`[GITLAB] getApi`)
   api ??= new Gitlab({ token: config().token, host: config().internalUrl })
   return api
 }

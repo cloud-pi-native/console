@@ -22,8 +22,7 @@ describe('server', () => {
   })
 
   it('should getConnection', async () => {
-    // const port = Math.round(Math.random() * 10000) + 1024
-    await getPreparedApp().catch(err => console.warn(err))
+    await getPreparedApp()
 
     expect(getConnection).toHaveBeenCalledTimes(1)
     expect(initDb.mock.calls).toHaveLength(1)
