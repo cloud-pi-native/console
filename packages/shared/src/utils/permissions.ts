@@ -22,7 +22,6 @@ export function getPermsByUserRoles(userRoles: string[] | undefined, rolesById: 
   }
   return userRoles.reduce((acc, curr) => {
     if (!rolesById[curr]) {
-      console.trace(`Unable to find role: ${curr}, database needs to be inspected`)
       return acc
     }
     return acc | BigInt(rolesById[curr].permissions)

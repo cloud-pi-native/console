@@ -1,3 +1,4 @@
+import { logger as baseLogger } from '@cpn-console/logger'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import app, { logger } from './app.js'
 import { getConnection } from './connect.js'
@@ -23,7 +24,9 @@ describe('server', () => {
 
   it('should getConnection', async () => {
     // const port = Math.round(Math.random() * 10000) + 1024
-    await getPreparedApp().catch(err => console.warn(err))
+    await getPreparedApp().catch((err) => {
+      baseLogger.warn({ err }, 'getPreparedApp failed during test')
+    })
 
     expect(getConnection).toHaveBeenCalledTimes(1)
     expect(initDb.mock.calls).toHaveLength(1)
