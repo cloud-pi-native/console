@@ -13,6 +13,7 @@
     "module": "Preserve",
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
+    "types": ["node"],
     "allowImportingTsExtensions": false,
     "allowJs": true,
     "strict": true,
@@ -35,6 +36,6 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["./e2e-tests/**/*.ts"],
+  "include": ["./config/**/*.ts", "./e2e-tests/**/*.ts", "./helpers/**/*.ts", "./integration-tests/**/*.ts"],
   "exclude": []
 }

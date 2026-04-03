@@ -54,7 +54,9 @@ test.describe('Administration Roles', () => {
       newOidcRole.name,
     )
     await page.getByTestId('addRoleBtn').click()
-    await expect(page.getByTestId('snackbar')).toContainText('Rôle ajouté')
+    await expect(
+      page.getByTestId('snackbar').filter({ hasText: 'Rôle ajouté' }).first(),
+    ).toBeVisible()
     await expect(page.getByTestId('saveBtn')).toBeDisabled()
     await expect(page.getByTestId('roleNameInput')).toHaveValue('Nouveau rôle')
     await page.getByTestId('roleNameInput').fill(newOidcRole.name)
@@ -70,12 +72,13 @@ test.describe('Administration Roles', () => {
       .locator('input')
       .fill(`${newOidcRole.user.email}`)
     await page.getByTestId('addUserBtn').click()
-    await page.getByTestId('menuAdministrationUsers').click()
 
     // Assert
-    await expect(page.getByTestId(`user-${newOidcRole.user.id}`)).toContainText(
-      newOidcRole.name,
+    const membershipCheckbox = page.getByTestId(
+      `input-checkbox-${newOidcRole.user.id}-cbx`,
     )
+    await expect(membershipCheckbox).toBeVisible()
+    await expect(membershipCheckbox).toBeChecked()
   })
 
   test('Should add a new non-OIDC role', { tag: '@e2e' }, async ({ page }) => {
@@ -92,7 +95,9 @@ test.describe('Administration Roles', () => {
 
     await expect(page.getByTestId('role-list')).not.toContainText(newRole.name)
     await page.getByTestId('addRoleBtn').click()
-    await expect(page.getByTestId('snackbar')).toContainText('Rôle ajouté')
+    await expect(
+      page.getByTestId('snackbar').filter({ hasText: 'Rôle ajouté' }).first(),
+    ).toBeVisible()
     await expect(page.getByTestId('saveBtn')).toBeDisabled()
     await expect(page.getByTestId('roleNameInput')).toHaveValue('Nouveau rôle')
     await page.getByTestId('roleNameInput').fill(newRole.name)
@@ -127,7 +132,9 @@ test.describe('Administration Roles', () => {
     // Create non-OIDC role
     await expect(page.getByTestId('role-list')).not.toContainText(newRole.name)
     await page.getByTestId('addRoleBtn').click()
-    await expect(page.getByTestId('snackbar')).toContainText('Rôle ajouté')
+    await expect(
+      page.getByTestId('snackbar').filter({ hasText: 'Rôle ajouté' }).first(),
+    ).toBeVisible()
     await expect(page.getByTestId('saveBtn')).toBeDisabled()
     await expect(page.getByTestId('roleNameInput')).toHaveValue('Nouveau rôle')
     await page.getByTestId('roleNameInput').fill(newRole.name)
@@ -142,12 +149,13 @@ test.describe('Administration Roles', () => {
       .locator('input')
       .fill(`${newRole.user.email}`)
     await page.getByTestId('addUserBtn').click()
-    await page.getByTestId('menuAdministrationUsers').click()
 
     // Assert
-    await expect(page.getByTestId(`user-${newRole.user.id}`)).toContainText(
-      newRole.name,
+    const membershipCheckbox = page.getByTestId(
+      `input-checkbox-${newRole.user.id}-cbx`,
     )
+    await expect(membershipCheckbox).toBeVisible()
+    await expect(membershipCheckbox).toBeChecked()
   })
 
   test('Should remove OIDC role', { tag: '@e2e' }, async ({ page }) => {
@@ -167,7 +175,9 @@ test.describe('Administration Roles', () => {
       newOidcRole.name,
     )
     await page.getByTestId('addRoleBtn').click()
-    await expect(page.getByTestId('snackbar')).toContainText('Rôle ajouté')
+    await expect(
+      page.getByTestId('snackbar').filter({ hasText: 'Rôle ajouté' }).first(),
+    ).toBeVisible()
     await expect(page.getByTestId('saveBtn')).toBeDisabled()
     await expect(page.getByTestId('roleNameInput')).toHaveValue('Nouveau rôle')
     await page.getByTestId('roleNameInput').fill(newOidcRole.name)
@@ -198,7 +208,9 @@ test.describe('Administration Roles', () => {
     // Create OIDC role
     await expect(page.getByTestId('role-list')).not.toContainText(newRole.name)
     await page.getByTestId('addRoleBtn').click()
-    await expect(page.getByTestId('snackbar')).toContainText('Rôle ajouté')
+    await expect(
+      page.getByTestId('snackbar').filter({ hasText: 'Rôle ajouté' }).first(),
+    ).toBeVisible()
     await expect(page.getByTestId('saveBtn')).toBeDisabled()
     await expect(page.getByTestId('roleNameInput')).toHaveValue('Nouveau rôle')
     await page.getByTestId('roleNameInput').fill(newRole.name)
