@@ -26,6 +26,7 @@
     "type-check": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@cpn-console/logger": "workspace:^",
     "@cpn-console/shared": "workspace:^",
     "@gouvfr/dsfr": "^1.14.4",
     "@gouvminint/vue-dsfr": "^8.15.0",
