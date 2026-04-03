@@ -4,7 +4,7 @@ import type {
   StepCall,
   ZoneObject,
 } from '@cpn-console/hooks'
-import { okStatus, parseError } from '@cpn-console/hooks'
+import { okStatus } from '@cpn-console/hooks'
 
 export const upsertProject: StepCall<Project> = async (payload) => {
   try {
@@ -19,7 +19,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'An unexpected error occured',
@@ -46,7 +46,7 @@ export const archiveDsoProject: StepCall<Project> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'An unexpected error occured',
@@ -75,7 +75,7 @@ export const upsertZone: StepCall<ZoneObject> = async (payload) => {
     return okStatus
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'An unexpected error occured',
@@ -92,7 +92,7 @@ export const deleteZone: StepCall<ZoneObject> = async (payload) => {
     return okStatus
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'An unexpected error occured',
