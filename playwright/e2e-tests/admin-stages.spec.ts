@@ -2,11 +2,8 @@ import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
 import { adminUser, clientURL, signInCloudPiNative, testUser } from '../config/console'
 
-import {
-  addProject,
-  createStage,
-  deleteStage,
-} from './utils'
+import { addProject } from '../helpers/project'
+import { createStage, deleteStage } from '../helpers/stage'
 
 test.describe('Stages administration page', { tag: '@e2e' }, () => {
   test('should display default stages list', async ({ page }) => {
@@ -43,7 +40,7 @@ test.describe('Stages administration page', { tag: '@e2e' }, () => {
     await page.getByTestId('cpuInput').fill('2')
     await page.getByTestId('gpuInput').fill('0')
     await page.getByTestId('addEnvironmentBtn').click()
-    await expect(page.getByRole('cell', { name: envName })).toBeVisible()
+    await expect(page.getByTestId(`environmentTr-${envName}`)).toBeVisible()
   })
 
   test('should update a custom stage', async ({ page }) => {
@@ -117,7 +114,7 @@ test.describe('Stages administration page', { tag: '@e2e' }, () => {
     await page.getByTestId('cpuInput').fill('2')
     await page.getByTestId('gpuInput').fill('0')
     await page.getByTestId('addEnvironmentBtn').click()
-    await expect(page.getByRole('cell', { name: envName })).toBeVisible()
+    await expect(page.getByTestId(`environmentTr-${envName}`)).toBeVisible()
 
     // Check custom stage in admin view
     await page.getByTestId('menuAdministrationBtn').click()
@@ -127,6 +124,8 @@ test.describe('Stages administration page', { tag: '@e2e' }, () => {
     await expect(page.getByTestId('associatedEnvironmentsZone')).toBeVisible()
     await expect(page.getByTestId('associatedEnvironmentsZone')).toContainText('Le type d\'environnement ne peut être supprimé')
     await expect(page.getByTestId('associatedEnvironmentsTable')).toBeVisible()
-    await expect(page.getByRole('cell', { name: envName })).toBeVisible()
+    await expect(
+      page.getByTestId('associatedEnvironmentsTable').getByText(envName),
+    ).toBeVisible()
   })
 })

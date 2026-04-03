@@ -1,14 +1,9 @@
 import { test } from '@playwright/test'
 import { adminUser, clientURL, signInCloudPiNative } from '../config/console'
 
-import {
-  createCluster,
-  createStage,
-  createZone,
-  deleteCluster,
-  deleteStage,
-  deleteZone,
-} from '../e2e-tests/utils'
+import { createCluster, deleteCluster } from '../helpers/cluster'
+import { createStage, deleteStage } from '../helpers/stage'
+import { createZone, deleteZone } from '../helpers/zone'
 
 const zonesToDelete: string[] = []
 const stagesToDelete: string[] = []
@@ -25,11 +20,11 @@ test.describe('Integration tests for admin', { tag: '@integ' }, () => {
     zonesToDelete.push(zoneName)
     // we need to attains 7 stages to be able to use associateStageNames argument in createCluster
     await page.getByRole('link', { name: 'Console Cloud π Native' }).click()
-    const customStageName1 = await createStage({ page, check: true, stagesToDelete })
+    const customStageName1 = await createStage({ page, associateToCluster: 'none' })
     await page.getByRole('link', { name: 'Console Cloud π Native' }).click()
-    const customStageName2 = await createStage({ page, check: true, stagesToDelete })
+    const customStageName2 = await createStage({ page, associateToCluster: 'none' })
     await page.getByRole('link', { name: 'Console Cloud π Native' }).click()
-    const customStageName3 = await createStage({ page, check: true, stagesToDelete })
+    const customStageName3 = await createStage({ page, associateToCluster: 'none' })
     stagesToDelete.push(customStageName1)
     stagesToDelete.push(customStageName2)
     stagesToDelete.push(customStageName3)

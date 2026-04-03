@@ -63,6 +63,16 @@ export function getRandomId(suffix?: string, prefix?: string) {
   return (prefix ? (`${prefix}-`) : '') + randomId() + (suffix ? (`-${suffix}`) : '')
 }
 
+export function toKebabCase(value: string) {
+  return value
+    .trim()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 /**
  * Replace current locale separators occurences before parsing a floating Number.
  * See https://stackoverflow.com/a/59679285
