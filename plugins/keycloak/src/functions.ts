@@ -3,22 +3,25 @@ import type { ProjectRole } from '@cpn-console/shared'
 import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation.js'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type { CustomGroup } from './group.js'
-import { generateRandomPassword, parseError, PluginResultBuilder } from '@cpn-console/hooks'
+import { generateRandomPassword, PluginResultBuilder } from '@cpn-console/hooks'
 import { getkcClient } from './client.js'
 import { consoleGroupName, deleteGroup, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateGroupByPath, getOrCreateProjectGroup } from './group.js'
+import { logger } from './logger.js'
 
 export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: { email } }) => {
   const kcClient = await getkcClient()
   try {
     const user = (await kcClient.users.find({ email }))[0]
+    logger.debug({ action: 'retrieveKeycloakUserByEmail', found: Boolean(user) }, 'Hook done')
 
     return {
       status: { result: 'OK' },
       user,
     }
   } catch (error) {
+    logger.error({ action: 'retrieveKeycloakUserByEmail', err: error }, 'Hook failed')
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
@@ -29,12 +32,13 @@ export const retrieveKeycloakUserByEmail: StepCall<UserEmail> = async ({ args: {
 }
 
 export const deleteProject: StepCall<Project> = async ({ args: project }) => {
+  const projectSlug = project.slug
   try {
     const kcClient = await getkcClient()
-    const projectName = project.slug
-    const group = await getGroupByName(kcClient, projectName)
+    const group = await getGroupByName(kcClient, projectSlug)
     if (group?.id) {
       await kcClient.groups.del({ id: group.id })
+      logger.info({ action: 'deleteProject', projectSlug, outcome: 'deleted' }, 'Hook done')
       return {
         status: {
           result: 'OK',
@@ -42,6 +46,7 @@ export const deleteProject: StepCall<Project> = async ({ args: project }) => {
         },
       }
     }
+    logger.info({ action: 'deleteProject', projectSlug, outcome: 'already-missing' }, 'Hook done')
     return {
       status: {
         result: 'OK',
@@ -49,8 +54,9 @@ export const deleteProject: StepCall<Project> = async ({ args: project }) => {
       },
     }
   } catch (error) {
+    logger.error({ action: 'deleteProject', projectSlug, err: error }, 'Hook failed')
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
@@ -61,16 +67,16 @@ export const deleteProject: StepCall<Project> = async ({ args: project }) => {
 }
 
 export const upsertProject: StepCall<Project> = async ({ args: project }) => {
+  const projectSlug = project.slug
   const pluginResult = new PluginResultBuilder('Up-to-date')
   try {
     const kcClient = await getkcClient()
-    const projectName = project.slug
-    const projectGroup = await getOrCreateProjectGroup(kcClient, projectName)
+    const projectGroup = await getOrCreateProjectGroup(kcClient, projectSlug)
 
     const groupMembers = await kcClient.groups.listMembers({ id: projectGroup.id })
 
     await Promise.all([
-      ...groupMembers.map((member) => {
+      ...groupMembers.map((member, index) => {
         if (!project.users.some(({ id }) => id === member.id)) {
           return kcClient.users.delFromGroup({
             // @ts-ignore id is present on user, bad typing in lib
@@ -78,21 +84,21 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
             groupId: projectGroup.id,
           })
             .catch((err) => {
-              pluginResult.addKoMessage(`Can't remove ${member.email} from keycloak project group`)
-              pluginResult.addExtra(`remove-${member.id}`, err)
+              pluginResult.addKoMessage('Can\'t remove user from keycloak project group')
+              pluginResult.addExtra(`remove-${index}`, err)
             })
         }
         return undefined
       }),
-      ...project.users.map((user) => {
+      ...project.users.map((user, index) => {
         if (!groupMembers.some(({ id }) => id === user.id)) {
           return kcClient.users.addToGroup({
             id: user.id,
             groupId: projectGroup.id,
           })
             .catch((err) => {
-              pluginResult.addKoMessage(`Can't add ${user.email} to keycloak project group`)
-              pluginResult.addExtra(`add-${user.id}`, err)
+              pluginResult.addKoMessage('Can\'t add user to keycloak project group')
+              pluginResult.addExtra(`add-${index}`, err)
             })
         }
         return undefined
@@ -134,20 +140,24 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
 
     await Promise.all(promises)
 
-    await Promise.all(envGroups.map((subGroup) => {
-      if (!project.environments.some(({ name }) => name === subGroup.name)) {
-        return kcClient.groups.del({ id: subGroup.id })
-      }
-      return undefined
-    }))
+    const envGroupIdsToDelete = envGroups
+      .filter(subGroup => !project.environments.some(({ name }) => name === subGroup.name))
+      .map(subGroup => subGroup.id)
+      .filter((id): id is string => !!id)
+    if (envGroupIdsToDelete.length) {
+      await Promise.all(envGroupIdsToDelete.map(id => kcClient.groups.del({ id })))
+    }
 
+    logger.info({ action: 'upsertProject', projectSlug }, 'Hook done')
     return pluginResult.getResultObject()
   } catch (error) {
+    logger.error({ action: 'upsertProject', projectSlug, err: error }, 'Hook failed')
     return pluginResult.returnUnexpectedError(error)
   }
 }
 
 export const upsertZone: StepCall<ZoneObject> = async ({ args: zone, apis }) => {
+  const zoneSlug = zone.slug
   try {
     const kcClient = await getkcClient()
     const argocdUrl = zone.argocdUrl
@@ -165,8 +175,10 @@ export const upsertZone: StepCall<ZoneObject> = async ({ args: zone, apis }) => 
       baseUrl: '/applications',
     }
     const result = await kcClient.clients.find({ clientId, max: 1 })
+    let outcome: 'updated' | 'created'
     if (result.length > 0 && result[0].id) {
       await kcClient.clients.update({ id: result[0].id }, client)
+      outcome = 'updated'
     } else {
       const password = generateRandomPassword(30)
       await apis.vault.write({ clientSecret: password }, 'keycloak')
@@ -174,7 +186,9 @@ export const upsertZone: StepCall<ZoneObject> = async ({ args: zone, apis }) => 
         secret: password,
         ...client,
       })
+      outcome = 'created'
     }
+    logger.info({ action: 'upsertZone', zoneSlug, clientId, outcome }, 'Hook done')
     return {
       status: {
         result: 'OK',
@@ -182,8 +196,9 @@ export const upsertZone: StepCall<ZoneObject> = async ({ args: zone, apis }) => 
       },
     }
   } catch (error) {
+    logger.error({ action: 'upsertZone', zoneSlug, err: error }, 'Hook failed')
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'Failed',
@@ -193,12 +208,14 @@ export const upsertZone: StepCall<ZoneObject> = async ({ args: zone, apis }) => 
 }
 
 export const deleteZone: StepCall<ZoneObject> = async ({ args: zone }) => {
+  const zoneSlug = zone.slug
   try {
     const kcClient = await getkcClient()
     const clientId = getClientZoneId(zone)
     const result = await kcClient.clients.find({ clientId, max: 1 })
     if (result.length > 0 && result[0].id) {
       await kcClient.clients.del({ id: result[0].id })
+      logger.info({ action: 'deleteZone', zoneSlug, clientId, outcome: 'deleted' }, 'Hook done')
       return {
         status: {
           result: 'OK',
@@ -206,6 +223,7 @@ export const deleteZone: StepCall<ZoneObject> = async ({ args: zone }) => {
         },
       }
     }
+    logger.info({ action: 'deleteZone', zoneSlug, clientId, outcome: 'already-missing' }, 'Hook done')
     return {
       status: {
         result: 'OK',
@@ -213,8 +231,9 @@ export const deleteZone: StepCall<ZoneObject> = async ({ args: zone }) => {
       },
     }
   } catch (error) {
+    logger.error({ action: 'deleteZone', zoneSlug, clientId: getClientZoneId(zone), err: error }, 'Hook failed')
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'An unexpected error occured',
@@ -232,36 +251,38 @@ export const upsertAdminRole: StepCall<AdminRole> = async ({ args: role }) => {
     const groupMembers = await kcClient.groups.listMembers({ id: group.id })
 
     await Promise.all([
-      ...groupMembers.map((member) => {
+      ...groupMembers.map((member, index) => {
         if (member.id && !role.members.some(({ id }) => id === member.id)) {
           return kcClient.users.delFromGroup({
             id: member.id,
             groupId: group!.id!,
           })
             .catch((err) => {
-              pluginResult.addKoMessage(`Can't remove ${member.email} from keycloak admin group`)
-              pluginResult.addExtra(`remove-${member.id}`, err)
+              pluginResult.addKoMessage('Can\'t remove user from keycloak admin group')
+              pluginResult.addExtra(`remove-${index}`, err)
             })
         }
         return undefined
       }),
-      ...role.members.map((user) => {
+      ...role.members.map((user, index) => {
         if (!groupMembers.some(({ id }) => id === user.id)) {
           return kcClient.users.addToGroup({
             id: user.id,
             groupId: group!.id!,
           })
             .catch((err) => {
-              pluginResult.addKoMessage(`Can't add ${user.email} to keycloak admin group`)
-              pluginResult.addExtra(`add-${user.id}`, err)
+              pluginResult.addKoMessage('Can\'t add user to keycloak admin group')
+              pluginResult.addExtra(`add-${index}`, err)
             })
         }
         return undefined
       }),
     ])
 
+    logger.info({ action: 'upsertAdminRole', roleId: role.id, oidcGroup: role.oidcGroup }, 'Hook done')
     return pluginResult.getResultObject()
   } catch (error) {
+    logger.error({ action: 'upsertAdminRole', roleId: role.id, oidcGroup: role.oidcGroup, err: error }, 'Hook failed')
     return pluginResult.returnUnexpectedError(error)
   }
 }
@@ -282,19 +303,21 @@ export const deleteAdminRole: StepCall<AdminRole> = async ({ args: role }) => {
     }
 
     if (group?.id) {
-      await Promise.all(role.members.map((user) => {
+      await Promise.all(role.members.map((user, index) => {
         return kcClient.users.delFromGroup({
           id: user.id,
           groupId: group!.id!,
         })
           .catch((err) => {
-            pluginResult.addKoMessage(`Can't remove ${user.email} from keycloak admin group`)
-            pluginResult.addExtra(`remove-${user.id}`, err)
+            pluginResult.addKoMessage('Can\'t remove user from keycloak admin group')
+            pluginResult.addExtra(`remove-${index}`, err)
           })
       }))
     }
+    logger.info({ action: 'deleteAdminRole', roleId: role.id, oidcGroup: role.oidcGroup }, 'Hook done')
     return pluginResult.getResultObject()
   } catch (error) {
+    logger.error({ action: 'deleteAdminRole', roleId: role.id, oidcGroup: role.oidcGroup, err: error }, 'Hook failed')
     return pluginResult.returnUnexpectedError(error)
   }
 }
@@ -311,6 +334,7 @@ export const upsertProjectRole: StepCall<ProjectRole> = async ({ args: role }) =
   try {
     const kcClient = await getkcClient()
     await getOrCreateGroupByPath(kcClient, role.oidcGroup)
+    logger.info({ action: 'upsertProjectRole', roleId: role.id, oidcGroup: role.oidcGroup }, 'Hook done')
     return {
       status: {
         result: 'OK',
@@ -318,8 +342,9 @@ export const upsertProjectRole: StepCall<ProjectRole> = async ({ args: role }) =
       },
     }
   } catch (error) {
+    logger.error({ action: 'upsertProjectRole', roleId: role.id, oidcGroup: role.oidcGroup, err: error }, 'Hook failed')
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'Failed to sync role',
@@ -350,6 +375,7 @@ export const deleteProjectRole: StepCall<ProjectRole> = async ({ args: role }) =
         const roleGroup = roleGroups.find(({ name }) => name === roleName) as Required<GroupRepresentation> | undefined
         if (roleGroup?.id) {
           await deleteGroup(kcClient, roleGroup.id)
+          logger.info({ action: 'deleteProjectRole', roleId: role.id, oidcGroup: role.oidcGroup, outcome: 'deleted' }, 'Hook done')
           return {
             status: {
               result: 'OK',
@@ -359,6 +385,7 @@ export const deleteProjectRole: StepCall<ProjectRole> = async ({ args: role }) =
         }
       }
     }
+    logger.info({ action: 'deleteProjectRole', roleId: role.id, oidcGroup: role.oidcGroup, outcome: 'already-deleted' }, 'Hook done')
     return {
       status: {
         result: 'OK',
@@ -366,8 +393,9 @@ export const deleteProjectRole: StepCall<ProjectRole> = async ({ args: role }) =
       },
     }
   } catch (error) {
+    logger.error({ action: 'deleteProjectRole', roleId: role.id, oidcGroup: role.oidcGroup, err: error }, 'Hook failed')
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'Failed to delete role',
@@ -391,20 +419,25 @@ export const upsertProjectMember: StepCall<ProjectMember> = async ({ args: membe
       .filter((g): g is string => !!g)
 
     // Sync Roles
+    let groupMembershipChanges = 0
     for (const roleGroup of allRoleGroups) {
       if (!roleGroup.id || !roleGroup.path) continue
       const isMember = userGroups.some(ug => ug.id === roleGroup.id)
       const shouldBeMember = userRolesOidcGroups.includes(roleGroup.path)
 
       if (shouldBeMember && !isMember) {
+        groupMembershipChanges += 1
         await kcClient.users.addToGroup({ id: member.userId, groupId: roleGroup.id })
       } else if (!shouldBeMember && isMember) {
+        groupMembershipChanges += 1
         await kcClient.users.delFromGroup({ id: member.userId, groupId: roleGroup.id })
       }
     }
 
+    logger.info({ action: 'upsertProjectMember', projectSlug: member.project.slug, groupMembershipChanges }, 'Hook done')
     return pluginResult.getResultObject()
   } catch (error) {
+    logger.error({ action: 'upsertProjectMember', projectSlug: member.project.slug, err: error }, 'Hook failed')
     return pluginResult.returnUnexpectedError(error)
   }
 }
@@ -421,14 +454,18 @@ export const deleteProjectMember: StepCall<ProjectMember> = async ({ args: membe
     const userGroups = await kcClient.users.listGroups({ id: member.userId })
     const projectGroups = userGroups.filter(g => g.path?.startsWith(projectGroup.path!))
 
+    let removedCount = 0
     for (const group of projectGroups) {
       if (group.id) {
         await kcClient.users.delFromGroup({ id: member.userId, groupId: group.id })
+        removedCount += 1
       }
     }
 
+    logger.info({ action: 'deleteProjectMember', projectSlug: member.project.slug, removedCount }, 'Hook done')
     return pluginResult.getResultObject()
   } catch (error) {
+    logger.error({ action: 'deleteProjectMember', projectSlug: member.project.slug, err: error }, 'Hook failed')
     return pluginResult.returnUnexpectedError(error)
   }
 }
