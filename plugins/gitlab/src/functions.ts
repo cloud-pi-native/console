@@ -1,7 +1,7 @@
 import type { AdminRole, ClusterObject, PluginResult, Project, ProjectLite, ProjectMember, StepCall, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
 import type { GitlabProjectApi } from './class.js'
 import type { VaultSecrets } from './utils.js'
-import { okStatus, parseError, specificallyDisabled } from '@cpn-console/hooks'
+import { okStatus, specificallyDisabled } from '@cpn-console/hooks'
 import config from './config.js'
 import { deleteGroup } from './group.js'
 import {
@@ -36,7 +36,7 @@ export const checkApi: StepCall<Project> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(cleanGitlabError(error)),
+      error: cleanGitlabError(error),
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
@@ -83,7 +83,7 @@ export const getDsoProjectSecrets: StepCall<ProjectLite> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(cleanGitlabError(error)),
+      error: cleanGitlabError(error),
       status: {
         result: 'OK',
         message: 'No secrets found for this project',
@@ -135,7 +135,7 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
 
     return returnResult
   } catch (error) {
-    returnResult.error = parseError(cleanGitlabError(error))
+    returnResult.error = cleanGitlabError(error)
     returnResult.status.result = 'KO'
     returnResult.status.message = 'Can\'t reconcile please inspect logs'
     return returnResult
@@ -155,7 +155,7 @@ export const deleteDsoProject: StepCall<Project> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(cleanGitlabError(error)),
+      error: cleanGitlabError(error),
       status: {
         result: 'KO',
         message: 'Failed',
@@ -177,7 +177,7 @@ export const syncRepository: StepCall<UniqueRepo> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(cleanGitlabError(error)),
+      error: cleanGitlabError(error),
       status: {
         result: 'KO',
         message: 'Failed to trigger sync',
@@ -193,7 +193,7 @@ export const upsertZone: StepCall<ZoneObject> = async (payload) => {
     await gitlabApi.getOrCreateInfraProject(payload.args.slug)
     return returnResult
   } catch (error) {
-    returnResult.error = parseError(cleanGitlabError(error))
+    returnResult.error = cleanGitlabError(error)
     returnResult.status.result = 'KO'
     returnResult.status.message = 'Can\'t reconcile please inspect logs'
     return returnResult
@@ -213,7 +213,7 @@ export const deleteZone: StepCall<ZoneObject> = async (payload) => {
     await gitlabApi.deleteRepository(zoneRepo.id, zoneRepo.path_with_namespace)
     return returnResult
   } catch (error) {
-    returnResult.error = parseError(cleanGitlabError(error))
+    returnResult.error = cleanGitlabError(error)
     returnResult.status.result = 'KO'
     returnResult.status.message = 'Can\'t reconcile please inspect logs'
     return returnResult
@@ -228,7 +228,7 @@ export const commitFiles: StepCall<UniqueRepo | Project | ClusterObject | ZoneOb
     returnResult.status.message = `${filesUpdated} file${filesUpdated > 1 ? 's' : ''} updated`
     return returnResult
   } catch (error) {
-    returnResult.error = parseError(cleanGitlabError(error))
+    returnResult.error = cleanGitlabError(error)
     returnResult.status.result = 'KO'
     returnResult.status.message = 'Failed to commit files'
     return returnResult
@@ -265,7 +265,7 @@ export const upsertAdminRole: StepCall<AdminRole> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(cleanGitlabError(error)),
+      error: cleanGitlabError(error),
       status: {
         result: 'KO',
         message: 'An error occured while syncing admin role',
@@ -304,7 +304,7 @@ export const deleteAdminRole: StepCall<AdminRole> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(cleanGitlabError(error)),
+      error: cleanGitlabError(error),
       status: {
         result: 'KO',
         message: 'An error occured while deleting admin role',
@@ -330,7 +330,7 @@ export const upsertProjectMember: StepCall<ProjectMember> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(cleanGitlabError(error)),
+      error: cleanGitlabError(error),
       status: {
         result: 'KO',
         message: 'An error happened while syncing project member',
@@ -364,7 +364,7 @@ export const deleteProjectMember: StepCall<ProjectMember> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(cleanGitlabError(error)),
+      error: cleanGitlabError(error),
       status: {
         result: 'KO',
         message: 'An error happened while deleting project member',

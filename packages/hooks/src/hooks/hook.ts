@@ -1,5 +1,6 @@
 import type { PluginApi } from '../utils/utils.js'
 import type * as hooks from './index.js'
+import { logger } from '@cpn-console/logger/hooks'
 
 export type DefaultArgs = Record<any, any>
 export type PluginResultStoreValue = string | number | null
@@ -62,6 +63,58 @@ function generateMessageResume<Args extends DefaultArgs>(payload: HookPayload<Ar
   }
   return messageResume || undefined
 }
+
+function handleRejectedStepResult<Args extends DefaultArgs>(
+  reason: any,
+  name: string,
+  stepName: string,
+  payload: HookPayload<Args>,
+): PluginResult {
+  logger.error({ plugin: name, step: stepName, err: reason }, 'Hook step failed')
+  const result: PluginResult = {
+    status: {
+      result: 'KO',
+      message: reason instanceof Error ? reason.message : String(reason),
+    },
+  }
+  payload.failed = Array.isArray(payload.failed)
+    ? [...payload.failed, name]
+    : [name]
+  return result
+}
+
+function handleFulfilledStepResult<Args extends DefaultArgs>(
+  value: PluginResult,
+  name: string,
+  stepName: string,
+  payload: HookPayload<Args>,
+): PluginResult {
+  if (value.status.result === 'KO') {
+    payload.failed = Array.isArray(payload.failed)
+      ? [...payload.failed, name]
+      : [name]
+    logger.error({ plugin: name, step: stepName, err: value.status.message, status: value.status.result, message: value.status.message }, 'Hook step failed')
+  } else if (value.status.result === 'WARNING' && !payload.warning.includes(name)) {
+    payload.warning.push(name)
+    logger.warn({ plugin: name, step: stepName, err: value.status.message, status: value.status.result, message: value.status.message }, 'Hook step warning')
+  } else {
+    logger.trace({ plugin: name, step: stepName, status: value.status.result }, 'Hook step fulfilled')
+  }
+  return value
+}
+
+function handleStepResult<Args extends DefaultArgs>(
+  settled: PromiseSettledResult<PluginResult>,
+  name: string,
+  stepName: string,
+  payload: HookPayload<Args>,
+): PluginResult {
+  const result = settled.status === 'fulfilled'
+    ? handleFulfilledStepResult(settled.value, name, stepName, payload)
+    : handleRejectedStepResult(settled.reason, name, stepName, payload)
+  return { ...result, executionTime: payload.results[name].executionTime }
+}
+
 export async function executeStep<Args extends DefaultArgs>(step: HookStep, payload: HookPayload<Args>, stepName: string) {
   const names = Object.keys(step)
   const fns = names.map(async (name) => {
@@ -79,22 +132,10 @@ export async function executeStep<Args extends DefaultArgs>(step: HookStep, payl
   })
   const results = await Promise.allSettled(fns)
   names.forEach((name, index) => {
-    const settled = results[index]
-    const result = settled.status === 'fulfilled'
-      ? settled.value
-      : { status: { result: 'KO', message: String(settled.reason) } } satisfies PluginResult
-    if (result.status.result === 'KO') {
-      payload.failed = Array.isArray(payload.failed)
-        ? [...payload.failed, name]
-        : [name]
-    } else if (result.status.result === 'WARNING' && !payload.warning.includes(name)) {
-      payload.warning.push(name)
-    }
-    payload.results[name] = { ...result, executionTime: payload.results[name].executionTime }
+    payload.results[name] = handleStepResult(results[index], name, stepName, payload)
   })
   return payload
 }
-
 export function createHook<E extends DefaultArgs>(unique = false) {
   const steps: Record<HookStepsNames, HookStep> = {
     check: {},

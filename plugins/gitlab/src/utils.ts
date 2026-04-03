@@ -2,6 +2,7 @@ import type { BaseRequestOptions, Gitlab as IGitlab, OffsetPagination, Paginatio
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { Gitlab } from '@gitbeaker/rest'
 import config from './config.js'
+import { logger } from './logger.js'
 
 let api: IGitlab | undefined
 
@@ -10,17 +11,16 @@ let groupRootId: number
 export async function getGroupRootId(throwIfNotFound?: true): Promise<number>
 export async function getGroupRootId(throwIfNotFound?: false): Promise<number | undefined>
 export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number | undefined> {
-  console.log(`[GITLAB] getGroupRootId`)
   const gitlabApi = getApi()
   const projectRootDir = config().projectsRootDir
-  console.log(`[GITLAB] projectRootDir is ${projectRootDir}`)
+  logger.debug({ action: 'getGroupRootId', projectRootDir }, 'Resolve group root id')
   if (groupRootId) return groupRootId
   const groupRoot = await find(offsetPaginate(opts => gitlabApi.Groups.all({
     search: projectRootDir,
     orderBy: 'id',
     ...opts,
   })), grp => grp.full_path === projectRootDir)
-  console.log(`[GITLAB] groupRoot is ${JSON.stringify(groupRoot)}`)
+  logger.debug({ action: 'getGroupRootId', groupRootId: groupRoot?.id, groupRootPath: groupRoot?.full_path }, 'Resolved group root')
   const searchId = groupRoot?.id
   if (typeof searchId === 'undefined') {
     if (throwIfNotFound) {
@@ -33,7 +33,7 @@ export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number 
 }
 
 async function createGroupRoot(): Promise<number> {
-  console.log(`[GITLAB] createGroupRoot`)
+  logger.info({ action: 'createGroupRoot', projectRootDir: config().projectsRootDir }, 'Create group root hierarchy')
   const gitlabApi = getApi()
   const projectRootDir = config().projectsRootDir
   const projectRootDirArray = projectRootDir.split('/')
@@ -69,12 +69,10 @@ async function createGroupRoot(): Promise<number> {
 }
 
 export async function getOrCreateGroupRoot(): Promise<number> {
-  console.log(`[GITLAB] getOrCreateGroupRoot`)
   return await getGroupRootId(false) ?? createGroupRoot()
 }
 
 export function getApi(): IGitlab {
-  console.log(`[GITLAB] getApi`)
   api ??= new Gitlab({ token: config().token, host: config().internalUrl })
   return api
 }
@@ -108,13 +106,26 @@ export async function* offsetPaginate<T>(
   request: (options: PaginationRequestOptions<'offset'> & BaseRequestOptions<true>) => Promise<{ data: T[], paginationInfo: OffsetPagination }>,
 ): AsyncGenerator<T> {
   let page: number | null = 1
+  let total: number = 0
+  logger.debug({ action: 'offsetPaginate', page }, 'Pagination start')
   while (page !== null) {
-    const { data, paginationInfo } = await request({ page, showExpanded: true, pagination: 'offset' })
-    for (const item of data) {
-      yield item
+    try {
+      const { data, paginationInfo } = await request({ page, showExpanded: true, pagination: 'offset' })
+      total += data.length
+      logger.debug(
+        { action: 'offsetPaginate', page, nextPage: paginationInfo.next, items: data.length, total },
+        'Pagination page fetched',
+      )
+      for (const item of data) {
+        yield item
+      }
+      page = paginationInfo.next
+    } catch (error) {
+      logger.error({ action: 'offsetPaginate', page, err: error }, 'Pagination request failed')
+      throw error
     }
-    page = paginationInfo.next
   }
+  logger.debug({ action: 'offsetPaginate', total }, 'Pagination done')
 }
 
 export async function getAll<T>(
