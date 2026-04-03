@@ -1,5 +1,6 @@
 import type { UserObject } from '@cpn-console/hooks'
 import type { CreateUserOptions, SimpleUserSchema } from '@gitbeaker/rest'
+import { logger } from './logger.js'
 import { find, getApi, offsetPaginate } from './utils.js'
 
 export const createUsername = (email: string) => email.replace('@', '.')
@@ -46,14 +47,11 @@ export async function upsertUser(user: UserObject, isAdmin?: boolean, isAuditor?
     }, [] as { key: string, curr: any, new: any }[])
 
     if (incorrectProps.length) {
-      if (process.env.LOG_LEVEL === 'debug') {
-        console.log(`Gitlab plugin: Updating user: ${user.email}`)
-        console.log(incorrectProps)
-      }
+      logger.debug({ email: user.email, changes: incorrectProps }, 'GitLab user properties differ from expected')
       try {
         await api.Users.edit(existingUser.id, userDefinitionBase)
       } catch (err) {
-        console.error(`Gitlab plugin: Failed to update user: ${user.email} for ${err}`)
+        logger.error({ err, email: user.email, userId: user.id }, 'Failed to update GitLab user')
       }
     }
     return existingUser

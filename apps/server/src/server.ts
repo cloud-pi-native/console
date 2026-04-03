@@ -1,4 +1,4 @@
-import { logger } from './app.js'
+import { logger } from '@cpn-console/logger'
 import { closeConnections } from './connect.js'
 import { getPreparedApp } from './prepare-app.js'
 import { isCI, isDev, isDevSetup, isProd, isTest, port } from './utils/env.js'
@@ -8,7 +8,7 @@ const app = await getPreparedApp()
 try {
   await app.listen({ host: '0.0.0.0', port: +(port ?? 8080) })
 } catch (error) {
-  logger.error(error)
+  logger.error({ err: error }, 'Failed to start server')
   process.exit(1)
 }
 
@@ -30,7 +30,7 @@ function logExitCode(code: number) {
 }
 
 function logUnhandledRejection(reason: unknown, promise: Promise<unknown>) {
-  logger.error({ message: 'Unhandled Rejection', promise, reason })
+  logger.error({ promise, err: reason }, 'Unhandled Rejection')
 }
 
 export function handleExit() {
