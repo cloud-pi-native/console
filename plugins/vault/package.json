@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@cpn-console/hooks": "workspace:^",
+    "@cpn-console/logger": "workspace:^",
     "@cpn-console/shared": "workspace:^",
     "axios": "^1.13.6"
   },
