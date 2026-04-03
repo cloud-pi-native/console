@@ -871,14 +871,14 @@ importers:
         specifier: workspace:^
         version: link:../vault
       '@gitbeaker/core':
-        specifier: ^43.8.0
-        version: 43.8.0
+        specifier: ^40.6.0
+        version: 40.6.0
       '@gitbeaker/requester-utils':
-        specifier: ^43.8.0
-        version: 43.8.0
+        specifier: ^40.6.0
+        version: 40.6.0
       '@gitbeaker/rest':
-        specifier: ^43.8.0
-        version: 43.8.0
+        specifier: ^40.6.0
+        version: 40.6.0
       axios:
         specifier: ^1.13.6
         version: 1.13.6
@@ -2475,24 +2475,12 @@ packages:
     resolution: {integrity: sha512-tVVm8ZPrS9YCHEcuPV8vD1IcEf9POpdygWo+kPvkK7LcC36EERVcXagb8snEaGgGLfUaVQh8qP4iDZgPnP3YBQ==}
     engines: {node: '>=18.20.0'}
 
-  '@gitbeaker/core@43.8.0':
-    resolution: {integrity: sha512-H+LfKuf4dExBinb79c+CXViRBvTVQNf5BYLNSizm2SiqdED5JruhKX88payefleY0szp7G/mySlFSXPyGRH1dQ==}
-    engines: {node: '>=18.20.0'}
-
   '@gitbeaker/requester-utils@40.6.0':
     resolution: {integrity: sha512-DQu2l3iXtB+8e1Ye2ekeUHABt4mGMRTLtuVWtFqf74sqJnerHNOxVOjPn19qu/nKdvKR3ZLwSRTtPzEsxgcShg==}
     engines: {node: '>=18.20.0'}
 
-  '@gitbeaker/requester-utils@43.8.0':
-    resolution: {integrity: sha512-d/SiJdxijc+aH5ZBQOw83XLxNSXqsBZNm5k3nPu1EHxGxK0fajXmxdMl0/vNXbKRggnIquFCxURkrQSEzfjqxQ==}
-    engines: {node: '>=18.20.0'}
-
   '@gitbeaker/rest@40.6.0':
     resolution: {integrity: sha512-sAwYJclU3NlB/gdxqhH6Hnmy5LWzvW7D3W33eShQEnxMhM0VjnFHPHcgJLQCIux3hMiub1uGtTw1hBJTxDc2mQ==}
-    engines: {node: '>=18.20.0'}
-
-  '@gitbeaker/rest@43.8.0':
-    resolution: {integrity: sha512-xxqsNsUXaFang9b2e/NTIgqUeuUlifA2Opy1mOVqTDuJZZNIOTgUNyziwBJoleBhMC0XuvY3JNVMWthufcVjRw==}
     engines: {node: '>=18.20.0'}
 
   '@gouvfr/dsfr@1.14.4':
@@ -7513,9 +7501,6 @@ packages:
   rate-limiter-flexible@4.0.1:
     resolution: {integrity: sha512-2/dGHpDFpeA0+755oUkW+EKyklqLS9lu0go9pDsbhqQjZcxfRyJ6LA4JI0+HAdZ2bemD/oOjUeZQB2lCZqXQfQ==}
 
-  rate-limiter-flexible@8.3.0:
-    resolution: {integrity: sha512-mzwlfipDLlRinPgELqVDJetke6Snq26nL565m8nLWXIcWgosYSeNRgqwh7ZrZ4MfYs8CNfmLvR5SBVz3rISQsQ==}
-
   raw-body@3.0.2:
     resolution: {integrity: sha512-K5zQjDllxWkf7Z5xJdV0/B0WTNqx6vxG70zJE4N0kBs4LovmEYWJzQGxC9bS9RAKu3bgM40lrd5zoLJ12MQ5BA==}
     engines: {node: '>= 0.10'}
@@ -10027,9 +10012,9 @@ snapshots:
       '@cpn-console/logger': file:packages/logger
       '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
       '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
-      '@gitbeaker/core': 43.8.0
-      '@gitbeaker/requester-utils': 43.8.0
-      '@gitbeaker/rest': 43.8.0
+      '@gitbeaker/core': 40.6.0
+      '@gitbeaker/requester-utils': 40.6.0
+      '@gitbeaker/rest': 40.6.0
       axios: 1.13.6
       js-yaml: 4.1.0
     transitivePeerDependencies:
@@ -10563,12 +10548,6 @@ snapshots:
       qs: 6.15.0
       xcase: 2.0.1
 
-  '@gitbeaker/core@43.8.0':
-    dependencies:
-      '@gitbeaker/requester-utils': 43.8.0
-      qs: 6.15.0
-      xcase: 2.0.1
-
   '@gitbeaker/requester-utils@40.6.0':
     dependencies:
       picomatch-browser: 2.2.6
@@ -10576,22 +10555,10 @@ snapshots:
       rate-limiter-flexible: 4.0.1
       xcase: 2.0.1
 
-  '@gitbeaker/requester-utils@43.8.0':
-    dependencies:
-      picomatch-browser: 2.2.6
-      qs: 6.15.0
-      rate-limiter-flexible: 8.3.0
-      xcase: 2.0.1
-
   '@gitbeaker/rest@40.6.0':
     dependencies:
       '@gitbeaker/core': 40.6.0
       '@gitbeaker/requester-utils': 40.6.0
-
-  '@gitbeaker/rest@43.8.0':
-    dependencies:
-      '@gitbeaker/core': 43.8.0
-      '@gitbeaker/requester-utils': 43.8.0
 
   '@gouvfr/dsfr@1.14.4': {}
 
@@ -16708,8 +16675,6 @@ snapshots:
   range-parser@1.2.1: {}
 
   rate-limiter-flexible@4.0.1: {}
-
-  rate-limiter-flexible@8.3.0: {}
 
   raw-body@3.0.2:
     dependencies:
