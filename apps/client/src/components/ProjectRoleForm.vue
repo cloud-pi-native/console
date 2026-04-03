@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { Member, ProjectRoleBigint, ProjectV2 } from '@cpn-console/shared'
-import { PROJECT_PERMS, projectPermsDetails, shallowEqual } from '@cpn-console/shared'
+import { isManagedRoleType, isSystemRoleType, PROJECT_PERMS, projectPermsDetails, shallowEqual } from '@cpn-console/shared'
 import { computed, ref } from 'vue'
 
 const props = defineProps<{
@@ -29,6 +29,9 @@ const role = ref({
   type: props.type ?? 'managed',
 })
 
+const isSystem = computed(() => isSystemRoleType(role.value.type))
+const isManaged = computed(() => isManagedRoleType(role.value.type))
+
 const isUpdated = computed(() => {
   if (role.value.isEveryone) return props.permissions !== role.value.permissions
   return !shallowEqual(props, role.value)
@@ -38,7 +41,7 @@ const tabListName = 'Liste d’onglet'
 const tabTitles = computed(() => [
   { title: 'Général', icon: 'ri:checkbox-circle-line', tabId: 'general' },
   ...(
-    role.value.type === 'managed'
+    isManaged.value
       ? [{ title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' }]
       : []),
   { title: 'Fermer', icon: 'ri:close-line', tabId: 'close' },
@@ -55,12 +58,6 @@ function updateChecked(checked: boolean, value: bigint) {
     role.value.permissions &= ~value
   }
 }
-
-const typeOptions = [
-  { text: 'Managé', value: 'managed' },
-  { text: 'Externe', value: 'external' },
-  { text: 'Global', value: 'global' },
-]
 </script>
 
 <template>
@@ -80,23 +77,7 @@ const typeOptions = [
         data-testid="roleNameInput"
         label-visible
         class="mb-5"
-        :disabled="role.isEveryone"
-      />
-      <h6>Type</h6>
-      <DsfrSelect
-        v-model="role.type"
-        select-id="roleTypeSelect"
-        :options="typeOptions"
-        class="mb-5"
-        :disabled="role.isEveryone"
-      />
-      <h6>Groupe OIDC</h6>
-      <DsfrInput
-        v-model="role.oidcGroup"
-        data-testid="roleOidcGroupInput"
-        label-visible
-        class="mb-5"
-        :disabled="role.isEveryone"
+        :disabled="role.isEveryone || isSystem"
       />
       <h6>Permissions</h6>
       <div
@@ -117,7 +98,7 @@ const typeOptions = [
           :label="perm?.label"
           :hint="perm?.hint"
           :name="perm.key"
-          :disabled="(role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE') || role.type === 'managed'"
+          :disabled="isSystem || (role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE')"
           @update:model-value="(checked: boolean) => updateChecked(checked, PROJECT_PERMS[perm.key])"
         />
       </div>
@@ -130,7 +111,7 @@ const typeOptions = [
         @click="$emit('save', role)"
       />
       <DsfrButton
-        v-if="!role.isEveryone && role.type !== 'managed'"
+        v-if="!role.isEveryone && !isSystem"
         data-testid="deleteBtn"
         label="Supprimer"
         secondary
