@@ -3,9 +3,10 @@ import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-proj
 import type { SonarPaging } from './project.js'
 import type { VaultSonarSecret } from './tech.js'
 import type { SonarUser } from './user.js'
-import { generateProjectKey, parseError } from '@cpn-console/hooks'
+import { generateProjectKey } from '@cpn-console/hooks'
 import { adminGroupPath } from '@cpn-console/shared'
 import { ensureGroupExists, findGroupByName } from './group.js'
+import { logger } from './logger.js'
 import { createDsoRepository, deleteDsoRepository, ensureRepositoryConfiguration, files, findSonarProjectsForDsoProjects } from './project.js'
 import { getAxiosInstance } from './tech.js'
 import { ensureUserExists } from './user.js'
@@ -28,9 +29,15 @@ const projectPermissions = [
 ]
 
 export async function initSonar() {
-  await setTemplatePermisions()
-  await createAdminGroup()
-  await setAdminPermisions()
+  try {
+    await setTemplatePermisions()
+    await createAdminGroup()
+    await setAdminPermisions()
+    logger.info({ action: 'initSonar' }, 'Hook done')
+  } catch (error) {
+    logger.error({ action: 'initSonar', err: error }, 'Hook failed')
+    throw error
+  }
 }
 
 async function createAdminGroup() {
@@ -132,19 +139,21 @@ export const upsertProject: StepCall<Project> = async (payload) => {
       }),
     ])
 
+    logger.info({ action: 'upsertProject', projectSlug }, 'Hook done')
     return {
       status: {
         result: 'OK',
       },
     }
   } catch (error) {
+    logger.error({ action: 'upsertProject', projectSlug: payload.args.slug, err: error }, 'Hook failed')
     return {
       status: {
         result: 'WARNING',
         message: 'Failed to reconcile',
       },
       errors: {
-        main: parseError(error),
+        main: error,
       },
     }
   }
@@ -208,14 +217,16 @@ export const setVariables: StepCall<Project> = async (payload) => {
     if (payload.results.sonarqube.status.result === 'WARNING') {
       returnResponse.status.message = `main message: ${payload.results.sonarqube.status.message}, post message: OK`
     }
+    logger.info({ action: 'setVariables', projectSlug }, 'Hook done')
     return returnResponse
   } catch (error) {
     returnResponse.status.result = 'WARNING'
     returnResponse.status.message = `main message: ${payload.results.sonarqube.status.message}, post message: Failed to reconcile`
     returnResponse.errors = {
       ...returnResponse.errors,
-      post: parseError(error),
+      post: error,
     }
+    logger.error({ action: 'setVariables', projectSlug: payload.args.slug, err: error }, 'Hook failed')
     return returnResponse
   }
 }
@@ -254,6 +265,7 @@ export const deleteProject: StepCall<Project> = async (payload) => {
       },
       method: 'post',
     })
+    logger.info({ action: 'deleteProject', projectSlug, outcome: 'user-anonymized' }, 'Hook done')
     return {
       status: {
         result: 'OK',
@@ -261,8 +273,9 @@ export const deleteProject: StepCall<Project> = async (payload) => {
       },
     }
   } catch (error) {
+    logger.error({ action: 'deleteProject', projectSlug, err: error }, 'Hook failed')
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'Failed',

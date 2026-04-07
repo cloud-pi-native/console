@@ -1,5 +1,4 @@
 import type { ClusterObject, StepCall } from '@cpn-console/hooks'
-import { parseError } from '@cpn-console/hooks'
 import { updateZoneValues } from './utils.js'
 
 export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
@@ -23,7 +22,7 @@ export const upsertCluster: StepCall<ClusterObject> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'Failed create/update cluster secret',
@@ -44,7 +43,7 @@ export const deleteCluster: StepCall<ClusterObject> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'Failed to delete cluster secret',

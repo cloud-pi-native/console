@@ -1,5 +1,8 @@
+import { logger as baseLogger } from '@cpn-console/logger/hooks'
 import { Gitlab } from '@gitbeaker/rest'
 import axios from 'axios'
+
+const logger = baseLogger.child({ scope: 'migration:v9' })
 
 export function removeTrailingSlash(url) {
   return url?.endsWith('/')
@@ -37,14 +40,14 @@ const groupRootId = (groupRootSearch.find(grp => grp.full_path === projectsRootD
 
 const organizationGroups = await api.Groups.allDescendantGroups(groupRootId, { perPage: 300 })
 
-console.log(organizationGroups.length)
+logger.info({ organizationGroupsCount: organizationGroups.length }, 'Loaded organization groups')
 if (organizationGroups.length > 300) {
   throw new Error('increase perPage, you could miss some results')
 }
 
 for (const organizationGroup of organizationGroups) {
   if (organizationGroup.name === 'Infra') continue
-  console.log(organizationGroup)
+  logger.info({ organizationGroupId: organizationGroup.id, organizationGroupName: organizationGroup.name }, 'Processing organization group')
   const projectGroups = await api.Groups.allDescendantGroups(organizationGroup.id, { perPage: 300 })
   if (projectGroups.length > 300) {
     throw new Error('increase perPage, you could miss some projects group results')
@@ -52,13 +55,13 @@ for (const organizationGroup of organizationGroups) {
 
   for (const projectGroup of projectGroups) {
     const newName = `${organizationGroup.name}-${projectGroup.name}`
-    console.log(newName)
+    logger.info({ projectGroupId: projectGroup.id, newName }, 'Renaming and transferring project group')
 
     try {
       const renamedGroup = await api.Groups.edit(projectGroup.id, { name: newName, path: newName })
       await api.Groups.transfer(renamedGroup.id, { groupId: groupRootId })
-    } catch {
-      console.log(`cant transfer ${projectGroup.id}`)
+    } catch (error) {
+      logger.warn({ err: error, projectGroupId: projectGroup.id, organizationGroupId: organizationGroup.id }, 'Could not rename/transfer project group')
     }
   }
 }
@@ -101,9 +104,9 @@ async function list(path = '/') {
 
 try {
   await list()
-  console.log(secretsMapper)
+  logger.info({ secretsCount: Object.keys(secretsMapper).length }, 'Collected secrets mapping')
 } catch (error) {
-  console.log(error.message)
+  logger.error({ err: error }, 'Failed while collecting secrets mapping')
 }
 
 for (const [source, destination] of Object.entries(secretsMapper)) {
@@ -134,6 +137,6 @@ for (const [source, destination] of Object.entries(secretsMapper)) {
       },
     })
   } catch (error) {
-    console.log(error.response.data)
+    logger.error({ err: error, source, destination }, 'Failed while moving secret')
   }
 }
