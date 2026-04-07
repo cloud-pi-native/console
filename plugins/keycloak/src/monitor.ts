@@ -1,13 +1,10 @@
 import type { MonitorInfos } from '@cpn-console/shared'
 import { Monitor, MonitorStatus, requiredEnv } from '@cpn-console/shared'
-import axios from 'axios'
 
 async function monitor(instance: Monitor): Promise<MonitorInfos> {
   instance.lastStatus.lastUpdateTimestamp = Date.now()
   try {
-    const res = await axios.get(requiredEnv('KEYCLOAK_URL'), {
-      validateStatus: res => res === 200,
-    })
+    const res = await fetch(requiredEnv('KEYCLOAK_URL'))
     if (res.status === 200) { // 200 only means api responds
       instance.lastStatus.status = MonitorStatus.OK
       instance.lastStatus.message = MonitorStatus.OK

@@ -1,6 +1,5 @@
 import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks'
 import { KeycloakProjectApi } from './class.js'
-import { start } from './client.js'
 import {
   deleteAdminRole,
   deleteProject,
@@ -55,7 +54,6 @@ export const plugin: Plugin = {
     },
   },
   monitor,
-  start,
 }
 
 declare module '@cpn-console/hooks' {
