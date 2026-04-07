@@ -50,7 +50,7 @@ async function createGroupRoot(): Promise<number> {
     search: rootGroupPath,
     orderBy: 'path',
     ...opts,
-  })), grp => grp.full_path === rootGroupPath) ?? await gitlabApi.Groups.create(rootGroupPath, rootGroupPath)
+  }), { perPage: 100 }), grp => grp.full_path === rootGroupPath) ?? await gitlabApi.Groups.create(rootGroupPath, rootGroupPath)
 
   if (parentGroup.full_path === projectRootDir) {
     return parentGroup.id
@@ -62,7 +62,7 @@ async function createGroupRoot(): Promise<number> {
       search: futureFullPath,
       orderBy: 'path',
       ...opts,
-    })), grp => grp.full_path === futureFullPath) ?? await gitlabApi.Groups.create(path, path, { parentId: parentGroup.id, visibility: 'internal' })
+    }), { perPage: 100 }), grp => grp.full_path === futureFullPath) ?? await gitlabApi.Groups.create(path, path, { parentId: parentGroup.id, visibility: 'internal' })
 
     if (parentGroup.full_path === projectRootDir) {
       return parentGroup.id

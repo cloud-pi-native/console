@@ -73,7 +73,7 @@ export class GitlabApi extends PluginApi {
     logger.debug({ action: 'commitCreateOrUpdate', repoId, filePath, branch }, 'Schedule commit create/update')
     let action: CommitAction['action'] = 'create'
 
-    const existingBranch = await find(offsetPaginate(opts => this.api.Branches.all(repoId, opts)), b => b.name === branch)
+    const existingBranch = await find(offsetPaginate(opts => this.api.Branches.all(repoId, opts), { perPage: 100 }), b => b.name === branch)
     if (existingBranch) {
       let actualFile: RepositoryFileExpandedSchema | undefined
       try {
@@ -209,7 +209,7 @@ export class GitlabZoneApi extends GitlabApi {
       search: infraGroupName,
       orderBy: 'path',
       ...opts,
-    })), group => group.parent_id === rootId && group.name === infraGroupName)
+    }), { perPage: 100 }), group => group.parent_id === rootId && group.name === infraGroupName)
     return existingParentGroup || await this.api.Groups.create(infraGroupName, infraGroupPath, {
       parentId: rootId,
       projectCreationLevel: 'maintainer',
@@ -231,7 +231,7 @@ export class GitlabZoneApi extends GitlabApi {
       simple: true,
       orderBy: 'path',
       ...opts,
-    })), repo => repo.name === zone) ?? await this.createEmptyRepository({
+    }), { perPage: 100 }), repo => repo.name === zone) ?? await this.createEmptyRepository({
       repoName: zone,
       groupId: infraGroup.id,
       description: 'Repository hosting deployment files for this zone.',
@@ -263,7 +263,7 @@ export class GitlabProjectApi extends GitlabApi {
       search: this.project.slug,
       orderBy: 'path',
       ...opts,
-    })), group => group.parent_id === parentId && group.name === this.project.slug)
+    }), { perPage: 100 }), group => group.parent_id === parentId && group.name === this.project.slug)
 
     if (existingGroup) return existingGroup
 
@@ -350,7 +350,7 @@ export class GitlabProjectApi extends GitlabApi {
       search: projectName,
       simple: true,
       ...opts,
-    })), repo => repo.name === projectName)
+    }), { perPage: 100 }), repo => repo.name === projectName)
 
     return project?.id
   }
@@ -366,7 +366,7 @@ export class GitlabProjectApi extends GitlabApi {
   public async getProjectToken(tokenName: string) {
     const group = await this.getProjectGroup()
     if (!group) throw new Error('Unable to retrieve gitlab project group')
-    return find(offsetPaginate(opts => this.api.GroupAccessTokens.all(group.id, opts)), token => token.name === tokenName)
+    return find(offsetPaginate(opts => this.api.GroupAccessTokens.all(group.id, opts), { perPage: 100 }), token => token.name === tokenName)
   }
 
   public async createProjectToken(tokenName: string, scopes: AccessTokenScopes[]) {
@@ -392,7 +392,7 @@ export class GitlabProjectApi extends GitlabApi {
     const gitlabRepositories = await this.listRepositories()
     const mirrorRepo = gitlabRepositories.find(repo => repo.name === internalMirrorRepoName)
     if (!mirrorRepo) throw new Error('Don\'t know how mirror repo could not exist')
-    const currentTriggerToken = await find(offsetPaginate(opts => this.api.PipelineTriggerTokens.all(mirrorRepo.id, opts)), token => token.description === tokenDescription)
+    const currentTriggerToken = await find(offsetPaginate(opts => this.api.PipelineTriggerTokens.all(mirrorRepo.id, opts), { perPage: 100 }), token => token.description === tokenDescription)
 
     const tokenVaultSecret = await vaultApi.read('GITLAB', { throwIfNoEntry: false })
 
@@ -414,7 +414,7 @@ export class GitlabProjectApi extends GitlabApi {
 
   public async listRepositories() {
     const group = await this.getOrCreateProjectGroup()
-    const projects = await getAll(offsetPaginate(opts => this.api.Groups.allProjects(group.id, { simple: false, ...opts }))) // to refactor with https://github.com/jdalrymple/gitbeaker/pull/3624
+    const projects = await getAll(offsetPaginate(opts => this.api.Groups.allProjects(group.id, { simple: false, ...opts }), { perPage: 100 })) // to refactor with https://github.com/jdalrymple/gitbeaker/pull/3624
     return Promise.all(projects.map(async (project) => {
       if (this.specialRepositories.includes(project.name) && (!project.topics || !project.topics.includes(pluginManagedTopic))) {
         return this.api.Projects.edit(project.id, { topics: project.topics ? [...project.topics, pluginManagedTopic] : [pluginManagedTopic] })
@@ -450,7 +450,7 @@ export class GitlabProjectApi extends GitlabApi {
   // Group members
   public async getGroupMembers() {
     const group = await this.getOrCreateProjectGroup()
-    return getAll(offsetPaginate(opts => this.api.GroupMembers.all(group.id, opts)))
+    return getAll(offsetPaginate(opts => this.api.GroupMembers.all(group.id, opts), { perPage: 100 }))
   }
 
   public async addGroupMember(userId: number, accessLevel: AccessLevelAllowed = AccessLevel.DEVELOPER): Promise<MemberSchema> {
@@ -474,7 +474,7 @@ export class GitlabProjectApi extends GitlabApi {
   // CI Variables
   public async getGitlabGroupVariables(): Promise<VariableSchema[]> {
     const group = await this.getOrCreateProjectGroup()
-    return await getAll(offsetPaginate(opts => this.api.GroupVariables.all(group.id, opts)))
+    return await getAll(offsetPaginate(opts => this.api.GroupVariables.all(group.id, opts), { perPage: 100 }))
   }
 
   public async setGitlabGroupVariable(listVars: VariableSchema[], toSetVariable: VariableSchema): Promise<setVariableResult> {
@@ -517,7 +517,7 @@ export class GitlabProjectApi extends GitlabApi {
   }
 
   public async getGitlabRepoVariables(repoId: number): Promise<VariableSchema[]> {
-    return await getAll(offsetPaginate(opts => this.api.ProjectVariables.all(repoId, opts)))
+    return await getAll(offsetPaginate(opts => this.api.ProjectVariables.all(repoId, opts), { perPage: 100 }))
   }
 
   public async setGitlabRepoVariable(repoId: number, listVars: VariableSchema[], toSetVariable: ProjectVariableSchema): Promise<setVariableResult | 'repository not found'> {
