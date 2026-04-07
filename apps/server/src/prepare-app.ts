@@ -1,7 +1,8 @@
 import { rm } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import app, { logger } from './app.js'
+import { logger } from '@cpn-console/logger'
+import app from './app.js'
 import { getConnection } from './connect.js'
 import { initDb } from './init/db/index.js'
 import { initPm } from './plugins.js'
@@ -29,8 +30,8 @@ export async function startServer(defaultPort: number = (port ? +port : 8080)) {
   try {
     await getConnection()
   } catch (error) {
+    logger.error({ err: error }, 'Database connection failed')
     if (!(error instanceof Error)) return
-    logger.error(error.message)
     throw error
   }
 
@@ -50,19 +51,19 @@ export async function startServer(defaultPort: number = (port ? +port : 8080)) {
       await rm(resolve(__dirname, dataPath))
       logger.info(`Successfully deleted '${dataPath}'`)
     }
-  } catch (error) {
-    if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.includes('Failed to load') || error.message.includes('Cannot find module')) {
+  } catch (err) {
+    if (err?.code === 'ERR_MODULE_NOT_FOUND' || err?.message?.includes('Failed to load') || err?.message?.includes('Cannot find module')) {
       logger.info('No initDb file, skipping')
     } else {
-      logger.warn(error.message)
-      throw error
+      logger.warn({ err }, 'Init DB failed')
+      throw err
     }
   }
 
   try {
     await app.listen({ host: '0.0.0.0', port: defaultPort ?? 8080 })
   } catch (error) {
-    logger.error(error)
+    logger.error({ err: error }, 'Failed to start HTTP server')
     process.exit(1)
   }
   logger.debug({ isDev, isTest, isCI, isDevSetup, isProd })
@@ -72,7 +73,7 @@ export async function getPreparedApp() {
   try {
     await getConnection()
   } catch (error) {
-    logger.error(error.message)
+    logger.error({ err: error }, 'Database connection failed')
     throw error
   }
 
@@ -92,12 +93,12 @@ export async function getPreparedApp() {
       await rm(resolve(__dirname, dataPath))
       logger.info(`Successfully deleted '${dataPath}'`)
     }
-  } catch (error) {
-    if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message.includes('Failed to load') || error.message.includes('Cannot find module')) {
+  } catch (err) {
+    if (err?.code === 'ERR_MODULE_NOT_FOUND' || err?.message?.includes('Failed to load') || err?.message?.includes('Cannot find module')) {
       logger.info('No initDb file, skipping')
     } else {
-      logger.warn(error.message)
-      throw error
+      logger.warn({ err }, 'Init DB failed')
+      throw err
     }
   }
 
