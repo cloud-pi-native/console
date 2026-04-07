@@ -207,7 +207,7 @@ export class GitlabZoneApi extends GitlabApi {
     // Get or create projects_root_dir/infra group
     const existingParentGroup = await find(offsetPaginate(opts => this.api.Groups.all({
       search: infraGroupName,
-      orderBy: 'id',
+      orderBy: 'path',
       ...opts,
     })), group => group.parent_id === rootId && group.name === infraGroupName)
     return existingParentGroup || await this.api.Groups.create(infraGroupName, infraGroupPath, {
@@ -229,6 +229,7 @@ export class GitlabZoneApi extends GitlabApi {
     const project = await find(offsetPaginate(opts => this.api.Groups.allProjects(infraGroup.id, {
       search: zone,
       simple: true,
+      orderBy: 'path',
       ...opts,
     })), repo => repo.name === zone) ?? await this.createEmptyRepository({
       repoName: zone,
@@ -260,7 +261,7 @@ export class GitlabProjectApi extends GitlabApi {
     const parentId = await getGroupRootId()
     const existingGroup = await find(offsetPaginate(opts => this.api.Groups.all({
       search: this.project.slug,
-      orderBy: 'id',
+      orderBy: 'path',
       ...opts,
     })), group => group.parent_id === parentId && group.name === this.project.slug)
 
@@ -279,7 +280,10 @@ export class GitlabProjectApi extends GitlabApi {
     if (!this.gitlabGroup) {
       logger.debug({ action: 'getProjectGroup', projectSlug: this.project.slug }, 'Search project group')
       const parentId = await getGroupRootId()
-      this.gitlabGroup = await find(offsetPaginate(opts => this.api.Groups.allSubgroups(parentId, opts)), group => group.name === this.project.slug)
+      this.gitlabGroup = await find(offsetPaginate(opts => this.api.Groups.allSubgroups(parentId, {
+        ...opts,
+        orderBy: 'name',
+      }), { perPage: 100 }), group => group.name === this.project.slug)
     }
     return this.gitlabGroup
   }
