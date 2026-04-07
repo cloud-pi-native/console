@@ -17,6 +17,7 @@ COPY --chown=node:root apps/server-nestjs/package.json           ./apps/server-n
 
 COPY --chown=node:root packages/eslintconfig/package.json        ./packages/eslintconfig/package.json
 COPY --chown=node:root packages/shared/package.json              ./packages/shared/package.json
+COPY --chown=node:root packages/logger/package.json              ./packages/logger/package.json
 COPY --chown=node:root packages/hooks/package.json               ./packages/hooks/package.json
 COPY --chown=node:root packages/test-utils/package.json          ./packages/test-utils/package.json
 COPY --chown=node:root packages/tsconfig/package.json            ./packages/tsconfig/package.json
@@ -47,6 +48,7 @@ CMD ["start:dev"]
 FROM dev AS build
 
 # Build shared (génère dist/ et types/)
+RUN pnpm --filter @cpn-console/logger run build
 RUN pnpm --filter @cpn-console/shared run build
 
 # Réinjecter shared buildé dans node_modules (injectWorkspacePackages copie au moment de l'install)
