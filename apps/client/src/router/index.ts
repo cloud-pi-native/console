@@ -2,6 +2,7 @@ import type {
   RouteLocationNormalizedGeneric,
   RouteRecordRaw,
 } from 'vue-router'
+import { logger } from '@cpn-console/logger/browser'
 import { AdminAuthorized, swaggerUiPath } from '@cpn-console/shared'
 import {
   createRouter,
@@ -117,7 +118,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
           }
           if (!(to.params.slug in useProjectStore().projectsBySlug)) {
             await useProjectStore().getProject(to.params.slug).catch(async () => {
-              console.log(`Unable to find project information, redirect to /projects`)
+              logger.warn({ slug: to.params.slug }, 'Unable to find project information, redirecting to /projects')
               return next({ name: 'Projects' })
             })
           }
