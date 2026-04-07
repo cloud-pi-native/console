@@ -43,7 +43,12 @@ export function removeTrailingSlash(url: string) {
     : url
 }
 
-// Exclude keys from an object
+/**
+ * Exclude keys from an object (trampoline-style iterative deep clone)
+ * Uses an explicit stack instead of native recursion to avoid call-stack limits
+ * on very large/deep objects. Traverses arrays & plain objects, skips keys in
+ * the provided blacklist, and preserves string arrays without further descent.
+ */
 export function exclude<T>(result: T, keys: string[]): T {
   const stack: {
     value: unknown
