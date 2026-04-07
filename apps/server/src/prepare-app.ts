@@ -8,17 +8,6 @@ import { initDb } from './init/db/index.js'
 import { initPm } from './plugins.js'
 import { isCI, isDev, isDevSetup, isInt, isProd, isTest, port } from './utils/env.js'
 
-// Workaround because fetch isn't using http_proxy variables
-// See. https://github.com/gajus/global-agent/issues/52#issuecomment-1134525621
-if (process.env.HTTP_PROXY) {
-  const Undici = await import('undici')
-  const ProxyAgent = Undici.ProxyAgent
-  const setGlobalDispatcher = Undici.setGlobalDispatcher
-  setGlobalDispatcher(
-    new ProxyAgent(process.env.HTTP_PROXY),
-  )
-}
-
 async function initializeDB(path: string) {
   logger.info('Starting init DB...')
   const { data } = await import(path)

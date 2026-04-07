@@ -43,30 +43,63 @@ export function removeTrailingSlash(url: string) {
     : url
 }
 
-// Exclude keys from an object
+/**
+ * Exclude keys from an object (trampoline-style iterative deep clone)
+ * Uses an explicit stack instead of native recursion to avoid call-stack limits
+ * on very large/deep objects. Traverses arrays & plain objects, skips keys in
+ * the provided blacklist, and preserves string arrays without further descent.
+ */
 export function exclude<T>(result: T, keys: string[]): T {
-  // @ts-ignore
-  if (Array.isArray(result)) return result.map(item => exclude(item, keys))
-  const newObj: Record<string, unknown> = {}
-  // @ts-ignore
-  Object.entries(result).forEach(([key, value]) => {
-    if (keys.includes(key)) return
-    if (Array.isArray(value) && typeof value[0] === 'string') {
-      newObj[key] = value
-      return
-    }
+  const stack: {
+    value: unknown
+    parent: Record<string, unknown> | unknown[]
+    key?: string | number
+  }[] = [{ value: result, parent: [] as unknown[], key: 0 }]
+  const root: unknown[] = []
+
+  while (stack.length) {
+    const { value, parent, key } = stack.pop()!
     if (Array.isArray(value)) {
-      newObj[key] = value.map(val => exclude(val, keys))
-      return
+      const arr: unknown[] = []
+      if (parent === root) {
+        root.push(arr)
+      } else if (Array.isArray(parent)) {
+        parent[key as number] = arr
+      } else if (parent && typeof key === 'string') {
+        ;(parent as Record<string, unknown>)[key] = arr
+      }
+      for (let i = value.length - 1; i >= 0; i--) {
+        stack.push({ value: value[i], parent: arr, key: i })
+      }
+    } else if (value && typeof value === 'object') {
+      const obj: Record<string, unknown> = {}
+      if (parent === root) {
+        root.push(obj)
+      } else if (Array.isArray(parent)) {
+        parent[key as number] = obj
+      } else if (parent && typeof key === 'string') {
+        ;(parent as Record<string, unknown>)[key] = obj
+      }
+      const entries = Object.entries(value).filter(([k]) => !keys.includes(k))
+      for (let i = entries.length - 1; i >= 0; i--) {
+        const [k, v] = entries[i]
+        if (Array.isArray(v) && typeof v[0] === 'string') {
+          obj[k] = v
+        } else {
+          stack.push({ value: v, parent: obj, key: k })
+        }
+      }
+    } else {
+      if (parent === root) {
+        root.push(value)
+      } else if (Array.isArray(parent)) {
+        parent[key as number] = value
+      } else if (parent && typeof key === 'string') {
+        ;(parent as Record<string, unknown>)[key] = value
+      }
     }
-    if (value instanceof Object) {
-      newObj[key] = exclude(value, keys)
-      return
-    }
-    newObj[key] = value
-  })
-  // @ts-ignore
-  return newObj
+  }
+  return (Array.isArray(result) ? root[0] : root[0]) as T
 }
 
 export type AsyncReturnType<T extends (...args: any) => Promise<any>>
