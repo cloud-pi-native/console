@@ -17,7 +17,7 @@ export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number 
   if (groupRootId) return groupRootId
   const groupRoot = await find(offsetPaginate(opts => gitlabApi.Groups.all({
     search: projectRootDir,
-    orderBy: 'id',
+    orderBy: 'path',
     ...opts,
   })), grp => grp.full_path === projectRootDir)
   logger.debug({ action: 'getGroupRootId', groupRootId: groupRoot?.id, groupRootPath: groupRoot?.full_path }, 'Resolved group root')
@@ -45,7 +45,7 @@ async function createGroupRoot(): Promise<number> {
 
   let parentGroup = await find(offsetPaginate(opts => gitlabApi.Groups.all({
     search: rootGroupPath,
-    orderBy: 'id',
+    orderBy: 'path',
     ...opts,
   })), grp => grp.full_path === rootGroupPath) ?? await gitlabApi.Groups.create(rootGroupPath, rootGroupPath)
 
@@ -57,7 +57,7 @@ async function createGroupRoot(): Promise<number> {
     const futureFullPath = `${parentGroup.full_path}/${path}`
     parentGroup = await find(offsetPaginate(opts => gitlabApi.Groups.all({
       search: futureFullPath,
-      orderBy: 'id',
+      orderBy: 'path',
       ...opts,
     })), grp => grp.full_path === futureFullPath) ?? await gitlabApi.Groups.create(path, path, { parentId: parentGroup.id, visibility: 'internal' })
 
