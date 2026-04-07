@@ -1,4 +1,5 @@
 import { isValidCron } from 'cron-validator'
+import { logger } from './logger.js'
 import { getApi } from './utils.js'
 
 // https://github.com/goharbor/harbor/blob/main/src/server/v2.0/handler/retention.go
@@ -112,14 +113,19 @@ export async function addRetentionPolicy(
   } catch (err: any) {
     const payload = JSON.stringify(policy, null, 2)
     const details = err?.response?.data ?? 'Unknown error'
-    console.error('Failed to apply Harbor retention policy', {
-      projectName,
-      projectId: project?.data?.project_id,
-      retentionId,
-      payload,
-      details,
-      error: err,
-    })
+    logger.error(
+      {
+        action: 'addRetentionPolicy',
+        projectSlug: projectName,
+        projectName,
+        projectId: project?.data?.project_id,
+        retentionId,
+        payload,
+        details,
+        err,
+      },
+      'Failed to apply Harbor retention policy',
+    )
     throw new Error(
       `Retention policy failed for project "${projectName}": ${
         typeof details === 'string' ? details : JSON.stringify(details)
