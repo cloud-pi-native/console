@@ -2,6 +2,7 @@ import type { Monitor } from '@cpn-console/shared'
 import type { HookStepsNames, StepCall } from './hooks/hook.js'
 import type { ServiceInfos } from './services.js'
 import type { PluginApi } from './utils/utils.js'
+import { logger } from '@cpn-console/logger/hooks'
 import { addPlugin, editStrippers } from './config.js'
 import * as hooks from './hooks/index.js'
 import { servicesInfos } from './services.js'
@@ -73,9 +74,7 @@ function pluginManager(options: PluginManagerOptions): PluginManager {
     if (!config.mockHooks) {
       for (const [hook, functions] of objectEntries(subscribedHooks)) {
         if (!(hook in hooks)) {
-          console.warn({
-            message: `Plugin ${name} tried to register on an unknown hook ${hook}`,
-          })
+          logger.warn({ plugin: name, hook }, 'Tried to register on an unknown hook')
           continue
         }
         if (functions?.api) {
@@ -85,14 +84,12 @@ function pluginManager(options: PluginManagerOptions): PluginManager {
           if (fn === undefined)
             continue
           if (hook === 'checkServices' && step !== 'check') {
-            console.warn({
-              message: `Plugin ${name} tried to register on 'checkServices' hook at ${step} which is invalid`,
-            })
+            logger.warn({ plugin: name, hook, step }, 'Tried to register an invalid step for checkServices hook')
             continue
           }
 
           if ('uniquePlugin' in hooks[hook] && hooks[hook]?.uniquePlugin !== '' && hooks[hook]?.uniquePlugin !== name) {
-            console.warn({ message: `Plugin ${name} cannot register on '${hook}', hook is already registered on by ${hooks[hook].uniquePlugin}` })
+            logger.warn({ plugin: name, hook, registeredBy: hooks[hook].uniquePlugin }, 'Hook is already registered by another plugin')
             continue
           }
           // @ts-ignore
@@ -102,7 +99,7 @@ function pluginManager(options: PluginManagerOptions): PluginManager {
       }
     }
     if (process.env.NODE_ENV !== 'test') {
-      console.warn(`Plugin ${name} registered${message.length ? ' at ' : ''}${message.join(' ')}`)
+      logger.info({ plugin: name, registrations: message }, 'Plugin registered')
     }
   }
 
@@ -134,6 +131,5 @@ export * from './hooks/hook.js'
 export * from './hooks/index.js'
 export * from './services.js'
 export * from './utils/crypto.js'
-export * from './utils/logger.js'
 export * from './utils/plugin-result-handler.js'
 export * from './utils/utils.js'

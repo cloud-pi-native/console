@@ -1,4 +1,4 @@
-import { logger } from '@/app.js'
+import { logger } from '@cpn-console/logger'
 import prisma from '@/prisma.js'
 import { modelKeys } from './utils.js'
 
