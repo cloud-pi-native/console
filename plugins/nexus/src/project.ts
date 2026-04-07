@@ -1,8 +1,9 @@
 import type { Project, ProjectLite, StepCall } from '@cpn-console/hooks'
 import type { WritePolicy } from './utils.js'
-import { generateRandomPassword, parseError, specificallyDisabled } from '@cpn-console/hooks'
+import { generateRandomPassword, specificallyDisabled } from '@cpn-console/hooks'
 import axios from 'axios'
 import { getAxiosOptions } from './functions.js'
+import { logger } from './logger.js'
 import { createMavenRepo, deleteMavenRepo, getMavenUrls } from './maven.js'
 import { createNpmRepo, deleteNpmRepo, getNpmUrls } from './npm.js'
 import { deleteIfExists, getTechUsed, parseProjectOptions, updateStore } from './utils.js'
@@ -26,6 +27,7 @@ export const deleteNexusProject: StepCall<Project> = async ({ args: project }) =
       }),
     ])
 
+    logger.info({ action: 'deleteNexusProject', projectSlug: project.slug, outcome: 'deleted' }, 'Hook done')
     return {
       status: {
         result: 'OK',
@@ -37,8 +39,9 @@ export const deleteNexusProject: StepCall<Project> = async ({ args: project }) =
       },
     }
   } catch (error) {
+    logger.error({ action: 'deleteNexusProject', projectSlug: project.slug, err: error }, 'Hook failed')
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         // @ts-ignore prévoir une fonction générique
@@ -51,6 +54,7 @@ export const deleteNexusProject: StepCall<Project> = async ({ args: project }) =
 export const createNexusProject: StepCall<Project> = async (payload) => {
   try {
     if (specificallyDisabled(payload.config.nexus?.enablePlugin)) {
+      logger.info({ action: 'createNexusProject', projectSlug: payload.args.slug, outcome: 'disabled' }, 'Hook done')
       return {
         status: {
           result: 'OK',
@@ -69,6 +73,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
     const techUsed = getTechUsed(payload)
 
     if (options.keysInError.length) {
+      logger.info({ action: 'createNexusProject', projectSlug: payload.args.slug, outcome: 'invalid-config', invalidKeyCount: options.keysInError.length }, 'Hook done')
       return {
         status: {
           result: 'WARNING',
@@ -185,15 +190,17 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
 
     if (Object.keys(failedProvisionning).length) {
       const failed = Object.values(failedProvisionning)
+      logger.info({ action: 'createNexusProject', projectSlug: payload.args.slug, outcome: 'partial-failure', failedProvisionCount: failed.length }, 'Hook done')
       return {
         status: {
           result: 'WARNING',
           message: failed.map(({ message }) => message).join('; '),
         },
-        errors: failed.map(({ error }) => parseError(error)),
+        errors: failed.map(({ error }) => error),
       }
     }
 
+    logger.info({ action: 'createNexusProject', projectSlug: payload.args.slug, outcome: 'up-to-date' }, 'Hook done')
     return {
       status: {
         result: 'OK',
@@ -202,8 +209,9 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
       store: updateStore(payload.args.store.nexus),
     }
   } catch (error) {
+    logger.error({ action: 'createNexusProject', projectSlug: payload.args.slug, err: error }, 'Hook failed')
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'Fail Create repositories',
@@ -214,6 +222,7 @@ export const createNexusProject: StepCall<Project> = async (payload) => {
 
 export const getSecrets: StepCall<ProjectLite> = async (payload) => {
   if (specificallyDisabled(payload.config.nexus?.enablePlugin)) {
+    logger.debug({ action: 'getSecrets', projectSlug: payload.args.slug, outcome: 'disabled' }, 'Hook done')
     return {
       status: {
         result: 'OK',
@@ -223,6 +232,7 @@ export const getSecrets: StepCall<ProjectLite> = async (payload) => {
   const projectName = payload.args.slug
   const techUsed = getTechUsed(payload)
 
+  logger.debug({ action: 'getSecrets', projectSlug: payload.args.slug }, 'Hook done')
   return {
     status: {
       result: 'OK',
