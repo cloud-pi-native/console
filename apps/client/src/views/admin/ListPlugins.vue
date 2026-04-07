@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { PluginConfigItem, PluginSchema } from '@cpn-console/shared'
+import { logger } from '@cpn-console/logger/browser'
 import { ref } from 'vue'
 import { usePluginsConfigStore } from '@/stores/plugins.js'
 import { useSnackbarStore } from '@/stores/snackbar'
@@ -41,7 +42,7 @@ async function save() {
     await pluginsStore.updatePluginsConfig(updated.value)
     snackbarStore.setMessage('Paramètres sauvegardés', 'success')
   } catch (error) {
-    console.log(error)
+    logger.error({ err: error }, 'Failed to save plugins configuration')
     snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
   }
   await reload()
