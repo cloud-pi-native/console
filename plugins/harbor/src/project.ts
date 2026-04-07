@@ -1,8 +1,9 @@
 import type { Project as HarborProject, Quota } from './api/Api.js'
+import { logger } from './logger.js'
 import { getApi } from './utils.js'
 
 export async function createProject(projectName: string, storageLimit: number = -1): Promise<HarborProject> {
-  console.log(`[HARBOR] createProject`)
+  logger.debug({ action: 'createProject', projectSlug: projectName, storageLimit }, 'Creating Harbor project if missing')
   const api = getApi()
   const existingProject = await api.projects.getProject(projectName, {
     headers: {

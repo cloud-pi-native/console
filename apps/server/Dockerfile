@@ -14,6 +14,7 @@ COPY --chown=node:root apps/server/package.json ./apps/server/package.json
 
 COPY --chown=node:root packages/eslintconfig/package.json ./packages/eslintconfig/package.json
 COPY --chown=node:root packages/shared/package.json ./packages/shared/package.json
+COPY --chown=node:root packages/logger/package.json ./packages/logger/package.json
 COPY --chown=node:root packages/hooks/package.json ./packages/hooks/package.json
 COPY --chown=node:root packages/test-utils/package.json ./packages/test-utils/package.json
 COPY --chown=node:root packages/tsconfig/package.json ./packages/tsconfig/package.json
@@ -53,6 +54,7 @@ FROM docker.io/node:24.13.1-bullseye-slim AS prod
 
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
+
 VOLUME [ "/plugins" ]
 WORKDIR /app
 RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \

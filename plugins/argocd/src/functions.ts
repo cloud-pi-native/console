@@ -8,7 +8,6 @@ import type {
   StepCall,
 } from '@cpn-console/hooks'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
-import { parseError } from '@cpn-console/hooks'
 import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
 import { dump } from 'js-yaml'
 import {
@@ -94,7 +93,7 @@ export const upsertProject: StepCall<Project> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'Failed',
@@ -263,7 +262,7 @@ export const deleteProject: StepCall<Project> = async (payload) => {
     }
   } catch (error) {
     return {
-      error: parseError(error),
+      error,
       status: {
         result: 'KO',
         message: 'Failed',
