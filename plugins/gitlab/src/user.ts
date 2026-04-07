@@ -9,7 +9,12 @@ export async function getUser(user: { email: string, username: string, id: strin
   const api = getApi()
 
   return find(
-    offsetPaginate(opts => api.Users.all({ ...opts, asAdmin: true })),
+    offsetPaginate(opts => api.Users.all({
+      search: user.username,
+      orderBy: 'username',
+      asAdmin: true,
+      ...opts,
+    })),
     gitlabUser =>
       gitlabUser?.externUid === user.id
       || gitlabUser.email === user.email
