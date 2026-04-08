@@ -1,5 +1,4 @@
 import type { Log, Prisma, Project, User } from '@prisma/client'
-import { exclude } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 
 // SELECT
@@ -38,7 +37,7 @@ export function addLogs({ action, data, requestId, userId = null, projectId }: A
     data: {
       action,
       userId,
-      data: exclude(data, ['cluster', 'user', 'newCreds', 'apis']),
+      data: JSON.stringify(data),
       requestId,
       projectId,
     },
