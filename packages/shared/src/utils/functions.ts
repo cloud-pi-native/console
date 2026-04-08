@@ -43,32 +43,6 @@ export function removeTrailingSlash(url: string) {
     : url
 }
 
-// Exclude keys from an object
-export function exclude<T>(result: T, keys: string[]): T {
-  // @ts-ignore
-  if (Array.isArray(result)) return result.map(item => exclude(item, keys))
-  const newObj: Record<string, unknown> = {}
-  // @ts-ignore
-  Object.entries(result).forEach(([key, value]) => {
-    if (keys.includes(key)) return
-    if (Array.isArray(value) && typeof value[0] === 'string') {
-      newObj[key] = value
-      return
-    }
-    if (Array.isArray(value)) {
-      newObj[key] = value.map(val => exclude(val, keys))
-      return
-    }
-    if (value instanceof Object) {
-      newObj[key] = exclude(value, keys)
-      return
-    }
-    newObj[key] = value
-  })
-  // @ts-ignore
-  return newObj
-}
-
 export type AsyncReturnType<T extends (...args: any) => Promise<any>>
   = T extends (...args: any) => Promise<infer R> ? R : any
 
