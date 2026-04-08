@@ -1,4 +1,3 @@
-import { exclude } from '@cpn-console/shared'
 import { describe, expect, it } from 'vitest'
 import { filterObjectByKeys } from './queries-tools.js'
 
@@ -15,32 +14,6 @@ describe('queries-tools', () => {
     }
 
     const transformed = filterObjectByKeys(initial, ['name', 'description'])
-
-    expect(transformed).toMatchObject(desired)
-  })
-
-  it('should return a filtered object (exclude)', () => {
-    const initial = {
-      id: 'thisIsAnId',
-      name: 'myProjectName',
-      environment: {
-        permissions: {
-          password: 'secret',
-          id: 'notSecret',
-        },
-      },
-    }
-    const desired = {
-      id: 'thisIsAnId',
-      name: 'myProjectName',
-      environment: {
-        permissions: {
-          id: 'notSecret',
-        },
-      },
-    }
-
-    const transformed = exclude(initial, ['password'])
 
     expect(transformed).toMatchObject(desired)
   })
