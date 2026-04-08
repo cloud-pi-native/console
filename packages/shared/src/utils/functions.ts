@@ -43,30 +43,109 @@ export function removeTrailingSlash(url: string) {
     : url
 }
 
+function excludeCircular(value: unknown, keys: string[], inPath: WeakSet<object>, inArray: boolean): unknown {
+  if (value === null) return null
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value
+  if (typeof value === 'bigint') return value.toString()
+  if (typeof value === 'undefined') return inArray ? null : undefined
+  if (typeof value === 'function') return inArray ? null : undefined
+  if (typeof value === 'symbol') return value.toString()
+  if (typeof value === 'object') {
+    if (inPath.has(value)) return '[Circular]'
+    inPath.add(value)
+
+    if (Array.isArray(value)) return value.map(v => excludeCircular(v, keys, inPath, true))
+
+    if (value instanceof Date) {
+      inPath.delete(value)
+      return value.toISOString()
+    }
+
+    if (value instanceof Error) {
+      inPath.delete(value)
+      return {
+        name: value.name,
+        message: value.message,
+        stack: value.stack,
+      }
+    }
+
+    if (value instanceof Map) {
+      const obj: Record<string, unknown> = {}
+      for (const [k, v] of value.entries()) {
+        const key = typeof k === 'string' ? k : String(k)
+        obj[key] = excludeCircular(v, keys, inPath, false)
+      }
+      inPath.delete(value)
+      return obj
+    }
+
+    if (value instanceof Set) {
+      const out = Array.from(value.values(), v => excludeCircular(v, keys, inPath, true))
+      inPath.delete(value)
+      return out
+    }
+
+    if (value instanceof RegExp) {
+      inPath.delete(value)
+      return value.toString()
+    }
+
+    if (value instanceof URL) {
+      inPath.delete(value)
+      return value.toString()
+    }
+
+    if (value instanceof URLSearchParams) {
+      inPath.delete(value)
+      return value.toString()
+    }
+
+    if ('toJSON' in value && typeof value.toJSON === 'function') {
+      try {
+        const serialized = value.toJSON()
+        const out = excludeCircular(serialized, keys, inPath, inArray)
+        inPath.delete(value)
+        return out
+      } catch {
+        inPath.delete(value)
+        return '[Unserializable]'
+      }
+    }
+
+    const proto = Object.getPrototypeOf(value)
+    if (proto !== Object.prototype && proto !== null) {
+      const ctorName = (value as any)?.constructor?.name
+      const tag = typeof ctorName === 'string' && ctorName.length ? ctorName : 'Object'
+      try {
+        const s = String(value)
+        const out = s === '[object Object]' ? `[${tag}]` : s
+        inPath.delete(value)
+        return out
+      } catch {
+        inPath.delete(value)
+        return `[${tag}]`
+      }
+    }
+
+    const obj = value as Record<string, unknown>
+    const newObj: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(obj)) {
+      if (keys.includes(k)) continue
+      const next = excludeCircular(v, keys, inPath, false)
+      if (typeof next === 'undefined') continue
+      newObj[k] = next
+    }
+    inPath.delete(value)
+    return newObj
+  }
+  return String(value)
+}
+
 // Exclude keys from an object
 export function exclude<T>(result: T, keys: string[]): T {
-  // @ts-ignore
-  if (Array.isArray(result)) return result.map(item => exclude(item, keys))
-  const newObj: Record<string, unknown> = {}
-  // @ts-ignore
-  Object.entries(result).forEach(([key, value]) => {
-    if (keys.includes(key)) return
-    if (Array.isArray(value) && typeof value[0] === 'string') {
-      newObj[key] = value
-      return
-    }
-    if (Array.isArray(value)) {
-      newObj[key] = value.map(val => exclude(val, keys))
-      return
-    }
-    if (value instanceof Object) {
-      newObj[key] = exclude(value, keys)
-      return
-    }
-    newObj[key] = value
-  })
-  // @ts-ignore
-  return newObj
+  const inPath = new WeakSet<object>()
+  return excludeCircular(result, keys, inPath, false) as T
 }
 
 export type AsyncReturnType<T extends (...args: any) => Promise<any>>

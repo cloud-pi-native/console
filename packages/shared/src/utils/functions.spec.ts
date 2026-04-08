@@ -43,6 +43,28 @@ describe('function utils: exclude', () => {
     exclude(simpleInput, ['hello'])
     expect(simpleInput).toStrictEqual(simpleInput)
   })
+
+  it('should stringify Error and not traverse non-serializable objects', () => {
+    class NotSerializable {
+      public value = 'secret'
+    }
+
+    const input = {
+      err: new Error('boom'),
+      big: 896n,
+      date: new Date('2026-04-08T14:32:26.773Z'),
+      instance: new NotSerializable(),
+    }
+
+    const transformed = exclude(input, [])
+    expect(transformed).toMatchObject({
+      big: '896',
+      date: '2026-04-08T14:32:26.773Z',
+      instance: '[NotSerializable]',
+    })
+    expect(typeof (transformed as any).err).toBe('string')
+    expect((transformed as any).err).toContain('boom')
+  })
 })
 
 describe('function utils: calcProjectNameMaxLength', () => {

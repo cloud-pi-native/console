@@ -13,6 +13,34 @@ const customLevels = {
   audit: 25,
 }
 
+const redact: LoggerOptions['redact'] = {
+  paths: [
+    'password',
+    '*.password',
+    'passwd',
+    '*.passwd',
+    'secret',
+    '*.secret',
+    'token',
+    '*.token',
+    'access_token',
+    '*.access_token',
+    'refresh_token',
+    '*.refresh_token',
+    'client_secret',
+    '*.client_secret',
+    'authorization',
+    '*.authorization',
+    'headers.authorization',
+    'headers.cookie',
+    'req.headers.authorization',
+    'req.headers.cookie',
+    'request.headers.authorization',
+    'request.headers.cookie',
+  ],
+  remove: true,
+}
+
 export function getLoggerOptions(env: Env, level: LogLevel): LoggerOptions {
   switch (env) {
     case 'development':
@@ -28,6 +56,7 @@ export function getLoggerOptions(env: Env, level: LogLevel): LoggerOptions {
         },
         customLevels,
         level,
+        redact,
         serializers: {
           err: stdSerializers.errWithCause,
         },
@@ -36,6 +65,7 @@ export function getLoggerOptions(env: Env, level: LogLevel): LoggerOptions {
       return {
         customLevels,
         level,
+        redact,
         serializers: {
           err: stdSerializers.errWithCause,
         },
