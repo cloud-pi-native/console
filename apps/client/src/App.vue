@@ -112,7 +112,7 @@ watch(userStore, async () => {
 </template>
 
 <style>
-.fr-container {
+.fr-header .fr-container {
   max-width: 100%;
 }
 
