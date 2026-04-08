@@ -8,8 +8,9 @@
       "name": "Launch Server (Integ)",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "corepack",
       "runtimeArgs": [
+        "pnpm",
         "--filter",
         "@cpn-console/server",
         "run",
@@ -29,8 +30,9 @@
       "name": "Launch Server (Dev)",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "corepack",
       "runtimeArgs": [
+        "pnpm",
         "--filter",
         "@cpn-console/server",
         "run",
@@ -50,8 +52,9 @@
       "name": "Launch Infra (Integ)",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "corepack",
       "runtimeArgs": [
+        "pnpm",
         "run",
         "integ"
       ],
@@ -69,8 +72,9 @@
       "name": "Launch Infra (Dev)",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "corepack",
       "runtimeArgs": [
+        "pnpm",
         "run",
         "dev"
       ],
@@ -88,8 +92,9 @@
       "name": "Launch Server NestJS (Integ)",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "corepack",
       "runtimeArgs": [
+        "pnpm",
         "--filter",
         "@cpn-console/server-nestjs",
         "run",
@@ -109,8 +114,9 @@
       "name": "Launch Server NestJS (Dev)",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "corepack",
       "runtimeArgs": [
+        "pnpm",
         "--filter",
         "@cpn-console/server-nestjs",
         "run",
@@ -146,8 +152,9 @@
       "name": "Serve Client (Chrome) (Integ)",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "corepack",
       "runtimeArgs": [
+        "pnpm",
         "--filter",
         "@cpn-console/client",
         "run",
@@ -164,6 +171,9 @@
         "action": "startDebugging",
         "name": "Launch Client (Chrome)"
       },
+      "env": {
+        "SERVER_PORT": "4001"
+      },
       "presentation": {
         "hidden": true
       }
@@ -172,8 +182,9 @@
       "name": "Serve Client (Chrome) (Dev)",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "corepack",
       "runtimeArgs": [
+        "pnpm",
         "--filter",
         "@cpn-console/client",
         "run",
@@ -198,8 +209,9 @@
       "name": "Serve Client (Firefox) (Integ)",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "corepack",
       "runtimeArgs": [
+        "pnpm",
         "--filter",
         "@cpn-console/client",
         "run",
@@ -224,8 +236,9 @@
       "name": "Serve Client (Firefox) (Dev)",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "corepack",
       "runtimeArgs": [
+        "pnpm",
         "--filter",
         "@cpn-console/client",
         "run",
