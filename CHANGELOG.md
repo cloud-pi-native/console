@@ -1,5 +1,41 @@
 # Changelog
 
+## [9.15.0](https://github.com/cloud-pi-native/console/compare/v9.14.1...v9.15.0) (2026-04-09)
+
+
+### Features
+
+* add otel ([9f6e14e](https://github.com/cloud-pi-native/console/commit/9f6e14e34489476a4fa41ca20e5941f6b7bfe591))
+* **github:** fix workflow dispatch for running merge queue workflow for testing purpose ([b1a3993](https://github.com/cloud-pi-native/console/commit/b1a39933ebcc54f7e8fa9f18e1379e49271b487a))
+* improve transverse logging ([3e3b7ff](https://github.com/cloud-pi-native/console/commit/3e3b7ffc83e1945775c6889ce47ad4579c38d49a))
+
+
+### Bug Fixes
+
+* **argocd-plugin:** fix a weird type error that blocks server build ([822dea9](https://github.com/cloud-pi-native/console/commit/822dea9bec4af0a712533f110ff802a9a3cfa222))
+* **client:** writable permissions on managed roles ([2f83256](https://github.com/cloud-pi-native/console/commit/2f83256c780dab665c7f4fb973f82862df9af7b6))
+* create project button position ([bcf95c5](https://github.com/cloud-pi-native/console/commit/bcf95c5042fafbc694a51d16444141009103ad60))
+* header width fix ([ea9a588](https://github.com/cloud-pi-native/console/commit/ea9a588deb9c2e6d70abfce2b7d29b03561f07c2))
+* improve pagination search ([55153d5](https://github.com/cloud-pi-native/console/commit/55153d545128d232cae893d56853a1c49f0e8b9b))
+* missing nestjs server on vscode coumpounds launch ([28eeefb](https://github.com/cloud-pi-native/console/commit/28eeefb4f91cb7d40a2324392a0a89bb768601c4))
+* nginx fails on non-bash style shell ([ca37314](https://github.com/cloud-pi-native/console/commit/ca373141986110be2215e319474d5bb4003294ba))
+
+
+### Miscellaneous Chores
+
+* bump dependencies after changing pnpm-workspace configuration ([0f7aca8](https://github.com/cloud-pi-native/console/commit/0f7aca82155efcaffd2880b7f540fdd756265e32))
+* ensure we don't pull dependencies that are less than one day old ([c16b237](https://github.com/cloud-pi-native/console/commit/c16b237f233b84dea568e4f50e4883c7121e2550))
+* hide noisy vscode launch configs ([eb7283c](https://github.com/cloud-pi-native/console/commit/eb7283cf429c62e78a3012777b5c9c0118ac1373))
+* **pnpm:** bump to 10.33 ([33ad275](https://github.com/cloud-pi-native/console/commit/33ad275253db3bb9e4b03f3cb02d0ff7101e1f1c))
+* refactor launch to use corepack ([57159c0](https://github.com/cloud-pi-native/console/commit/57159c0664e8cd67d07e6d235bcd39908180b0b3))
+* **server-nestjs:** fix pnpm-lock internal deps ([4967d51](https://github.com/cloud-pi-native/console/commit/4967d5141a60176181df37ffa6d9f2755feaef0c))
+* whitelist some false positives for pnpm trust policy ([10bb5e3](https://github.com/cloud-pi-native/console/commit/10bb5e3239b6372fb303b9dbf27d785d75fe4433))
+
+
+### Refactoring
+
+* **keycloak:** migrate Keycloak plugin to NestJS ([76fe58a](https://github.com/cloud-pi-native/console/commit/76fe58aee4b4de35a379ced300f11f493eebaa51))
+
 ## [9.14.1](https://github.com/cloud-pi-native/console/compare/v9.14.0...v9.14.1) (2026-03-25)
 
 

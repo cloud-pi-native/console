@@ -7,7 +7,7 @@ export const CleanLogSchema = z.object({
     failed: z.boolean().or(z.array(z.string())).optional(),
     warning: z.string().array().optional(),
     totalExecutionTime: z.number().optional(),
-    messageResume: z.string().optional(),
+    messageResume: z.string().nullable().optional(),
   }).strip(),
   action: z.string(),
   userId: z.string().nullable(),
@@ -22,7 +22,7 @@ export const LogSchema = z.object({
     warning: z.string().array().optional(),
     results: z.any(),
     totalExecutionTime: z.number().optional(),
-    messageResume: z.string().optional(),
+    messageResume: z.string().nullable().optional(),
   })
     .passthrough()
     .transform((data) => {
