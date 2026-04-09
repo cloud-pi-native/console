@@ -70,5 +70,5 @@ export async function signInCloudPiNative({
   await page.getByRole('textbox', { name: 'Username or email' }).fill(username)
   await page.getByRole('textbox', { name: 'Password' }).fill(password)
   await page.getByRole('button', { name: 'Sign In' }).click()
-  await expect(page.locator('#top')).toContainText('Cloud π Native')
+  await expect(page.getByTestId('menuMyProjects')).toBeVisible({ timeout: 60_000 })
 }

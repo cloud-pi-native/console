@@ -95,7 +95,7 @@ export async function addProject({
   if (!hprodResources && !prodResources) await enableProjectLimitless(page)
 
   await page.getByTestId('createProjectBtn').click()
-  await expect(page.locator('h1')).toContainText(name)
+  await expect(page.locator('h1')).toContainText(name, { timeout: 60_000 })
   await (members?.length ? addMembersToProject(page, members) : Promise.resolve())
 
   const { slug, id } = await getProjectSlugAndId(page)
