@@ -1,7 +1,8 @@
-import type { BaseRequestOptions, Gitlab as IGitlab, OffsetPagination, PaginationRequestOptions } from '@gitbeaker/core'
+import type { BaseRequestOptions, GroupSchema, Gitlab as IGitlab, OffsetPagination, PaginationRequestOptions } from '@gitbeaker/core'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { Gitlab } from '@gitbeaker/rest'
 import config from './config.js'
+import { customAttributesFilter, groupRootCustomAttributeKey, managedByConsoleCustomAttributeKey, upsertCustomAttribute } from './custom-attributes.js'
 import { logger } from './logger.js'
 
 let api: IGitlab | undefined
@@ -15,11 +16,20 @@ export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number 
   const projectRootDir = config().projectsRootDir
   logger.debug({ action: 'getGroupRootId', projectRootDir }, 'Resolve group root id')
   if (groupRootId) return groupRootId
-  const groupRoot = await find(offsetPaginate(opts => gitlabApi.Groups.all({
-    search: projectRootDir,
-    orderBy: 'id',
-    ...opts,
-  })), grp => grp.full_path === projectRootDir)
+  const fast = await find(
+    offsetPaginate<GroupSchema>(opts => gitlabApi.Groups.all({
+      ...customAttributesFilter(groupRootCustomAttributeKey, projectRootDir),
+      ...opts,
+    })),
+    grp => grp.full_path === projectRootDir,
+  )
+  const groupRoot = fast ?? await find(
+    offsetPaginate(opts => gitlabApi.Groups.all({
+      search: projectRootDir,
+      ...opts,
+    })),
+    grp => grp.full_path === projectRootDir,
+  )
   logger.debug({ action: 'getGroupRootId', groupRootId: groupRoot?.id, groupRootPath: groupRoot?.full_path }, 'Resolved group root')
   const searchId = groupRoot?.id
   if (typeof searchId === 'undefined') {
@@ -29,6 +39,12 @@ export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number 
     return searchId
   }
   groupRootId = searchId
+  try {
+    await upsertCustomAttribute('groups', groupRootId, groupRootCustomAttributeKey, projectRootDir)
+    await upsertCustomAttribute('groups', groupRootId, managedByConsoleCustomAttributeKey, 'true')
+  } catch (err) {
+    logger.debug({ action: 'getGroupRootId', groupRootId, err }, 'Failed to upsert group root custom attribute')
+  }
   return groupRootId
 }
 
@@ -45,11 +61,16 @@ async function createGroupRoot(): Promise<number> {
 
   let parentGroup = await find(offsetPaginate(opts => gitlabApi.Groups.all({
     search: rootGroupPath,
-    orderBy: 'id',
     ...opts,
-  })), grp => grp.full_path === rootGroupPath) ?? await gitlabApi.Groups.create(rootGroupPath, rootGroupPath)
+  }), { perPage: 100 }), grp => grp.full_path === rootGroupPath) ?? await gitlabApi.Groups.create(rootGroupPath, rootGroupPath)
 
   if (parentGroup.full_path === projectRootDir) {
+    try {
+      await upsertCustomAttribute('groups', parentGroup.id, groupRootCustomAttributeKey, projectRootDir)
+      await upsertCustomAttribute('groups', parentGroup.id, managedByConsoleCustomAttributeKey, 'true')
+    } catch (err) {
+      logger.debug({ action: 'createGroupRoot', groupRootId: parentGroup.id, err }, 'Failed to upsert group root custom attribute')
+    }
     return parentGroup.id
   }
 
@@ -57,11 +78,16 @@ async function createGroupRoot(): Promise<number> {
     const futureFullPath = `${parentGroup.full_path}/${path}`
     parentGroup = await find(offsetPaginate(opts => gitlabApi.Groups.all({
       search: futureFullPath,
-      orderBy: 'id',
       ...opts,
-    })), grp => grp.full_path === futureFullPath) ?? await gitlabApi.Groups.create(path, path, { parentId: parentGroup.id, visibility: 'internal' })
+    }), { perPage: 100 }), grp => grp.full_path === futureFullPath) ?? await gitlabApi.Groups.create(path, path, { parentId: parentGroup.id, visibility: 'internal' })
 
     if (parentGroup.full_path === projectRootDir) {
+      try {
+        await upsertCustomAttribute('groups', parentGroup.id, groupRootCustomAttributeKey, projectRootDir)
+        await upsertCustomAttribute('groups', parentGroup.id, managedByConsoleCustomAttributeKey, 'true')
+      } catch (err) {
+        logger.debug({ action: 'createGroupRoot', groupRootId: parentGroup.id, err }, 'Failed to upsert group root custom attribute')
+      }
       return parentGroup.id
     }
   }
@@ -102,15 +128,34 @@ export function matchRole(projectSlug: string, roleOidcGroup: string, configured
   return configuredRolePath.some(path => roleOidcGroup === `/${projectSlug}${path}`)
 }
 
+export interface OffsetPaginateOptions {
+  startPage?: number
+  perPage?: number
+  maxPages?: number
+}
+
 export async function* offsetPaginate<T>(
   request: (options: PaginationRequestOptions<'offset'> & BaseRequestOptions<true>) => Promise<{ data: T[], paginationInfo: OffsetPagination }>,
+  options?: OffsetPaginateOptions,
 ): AsyncGenerator<T> {
-  let page: number | null = 1
+  let page: number | null = options?.startPage ?? 1
+  let pagesFetched = 0
   let total: number = 0
   logger.debug({ action: 'offsetPaginate', page }, 'Pagination start')
   while (page !== null) {
+    if (options?.maxPages && pagesFetched >= options.maxPages) {
+      page = null
+      continue
+    }
     try {
-      const { data, paginationInfo } = await request({ page, showExpanded: true, pagination: 'offset' })
+      const { data, paginationInfo } = await request({
+        page,
+        perPage: options?.perPage,
+        maxPages: options?.maxPages,
+        showExpanded: true,
+        pagination: 'offset',
+      })
+      pagesFetched += 1
       total += data.length
       logger.debug(
         { action: 'offsetPaginate', page, nextPage: paginationInfo.next, items: data.length, total },
