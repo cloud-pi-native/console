@@ -1,5 +1,6 @@
 import type { UserObject } from '@cpn-console/hooks'
 import type { CreateUserOptions, SimpleUserSchema } from '@gitbeaker/rest'
+import { upsertCustomAttribute, userIdCustomAttributeKey } from './custom-attributes.js'
 import { logger } from './logger.js'
 import { find, getApi, offsetPaginate } from './utils.js'
 
@@ -9,7 +10,12 @@ export async function getUser(user: { email: string, username: string, id: strin
   const api = getApi()
 
   return find(
-    offsetPaginate(opts => api.Users.all({ ...opts, asAdmin: true })),
+    offsetPaginate(opts => api.Users.all({
+      username: user.username,
+      orderBy: 'username',
+      asAdmin: true,
+      ...opts,
+    }), { perPage: 100 }),
     gitlabUser =>
       gitlabUser?.externUid === user.id
       || gitlabUser.email === user.email
@@ -54,14 +60,25 @@ export async function upsertUser(user: UserObject, isAdmin?: boolean, isAuditor?
         logger.error({ action: 'upsertUser', err }, 'Failed to update user')
       }
     }
+    try {
+      await upsertCustomAttribute('users', existingUser.id, userIdCustomAttributeKey, user.id)
+    } catch (err) {
+      logger.debug({ action: 'upsertUser', userId: existingUser.id, err }, 'Failed to upsert user custom attribute')
+    }
     return existingUser
   }
 
-  return api.Users.create({
+  const created = await api.Users.create({
     ...userDefinitionBase,
     canCreateGroup: false,
     forceRandomPassword: true,
     projectsLimit: 0,
     skipConfirmation: true,
   })
+  try {
+    await upsertCustomAttribute('users', created.id, userIdCustomAttributeKey, user.id)
+  } catch (err) {
+    logger.debug({ action: 'upsertUser', userId: created.id, err }, 'Failed to upsert user custom attribute')
+  }
+  return created
 }

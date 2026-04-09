@@ -7,8 +7,23 @@ import { PluginApi } from '@cpn-console/hooks'
 import { objectEntries } from '@cpn-console/shared'
 import { AccessLevel } from '@gitbeaker/core'
 import config from './config.js'
+import {
+  customAttributesFilter,
+  infraGroupCustomAttributeKey,
+  managedByConsoleCustomAttributeKey,
+  projectGroupCustomAttributeKey,
+  upsertCustomAttribute,
+} from './custom-attributes.js'
 import { logger } from './logger.js'
-import { find, getAll, getApi, getGroupRootId, infraAppsRepoName, internalMirrorRepoName, offsetPaginate } from './utils.js'
+import {
+  find,
+  getAll,
+  getApi,
+  getGroupRootId,
+  infraAppsRepoName,
+  internalMirrorRepoName,
+  offsetPaginate,
+} from './utils.js'
 
 type setVariableResult = 'created' | 'updated' | 'already up-to-date'
 type AccessLevelAllowed = AccessLevel.NO_ACCESS | AccessLevel.MINIMAL_ACCESS | AccessLevel.GUEST | AccessLevel.REPORTER | AccessLevel.DEVELOPER | AccessLevel.MAINTAINER | AccessLevel.OWNER
@@ -56,6 +71,11 @@ export class GitlabApi extends PluginApi {
       namespaceId: groupId,
       description,
     })
+    try {
+      await upsertCustomAttribute('projects', project.id, managedByConsoleCustomAttributeKey, 'true')
+    } catch (err) {
+      logger.debug({ action: 'createEmptyRepository', projectId: project.id, err }, 'Failed to upsert project custom attribute')
+    }
     // Dépôt tout juste créé, zéro branche => pas d'erreur (filesTree undefined)
     if (createFirstCommit) {
       await this.api.Commits.create(project.id, 'main', 'ci: 🌱 First commit', [])
@@ -73,7 +93,7 @@ export class GitlabApi extends PluginApi {
     logger.debug({ action: 'commitCreateOrUpdate', repoId, filePath, branch }, 'Schedule commit create/update')
     let action: CommitAction['action'] = 'create'
 
-    const existingBranch = await find(offsetPaginate(opts => this.api.Branches.all(repoId, opts)), b => b.name === branch)
+    const existingBranch = await find(offsetPaginate(opts => this.api.Branches.all(repoId, opts), { perPage: 100 }), b => b.name === branch)
     if (existingBranch) {
       let actualFile: RepositoryFileExpandedSchema | undefined
       try {
@@ -205,18 +225,36 @@ export class GitlabZoneApi extends GitlabApi {
     logger.debug({ action: 'getOrCreateInfraGroup', infraGroupName }, 'Get/create infra group')
     const rootId = await getGroupRootId()
     // Get or create projects_root_dir/infra group
-    const existingParentGroup = await find(offsetPaginate(opts => this.api.Groups.all({
-      search: infraGroupName,
-      orderBy: 'id',
-      ...opts,
-    })), group => group.parent_id === rootId && group.name === infraGroupName)
-    return existingParentGroup || await this.api.Groups.create(infraGroupName, infraGroupPath, {
+    const fast = await find(
+      offsetPaginate(opts => this.api.Groups.all({
+        ...customAttributesFilter(infraGroupCustomAttributeKey, 'true'),
+        ...opts,
+      })),
+      group => group.parent_id === rootId,
+    )
+
+    const existingParentGroup = fast ?? await find(
+      offsetPaginate(opts => this.api.Groups.all({
+        search: infraGroupName,
+        ...opts,
+      })),
+      group => group.parent_id === rootId && group.name === infraGroupName,
+    )
+
+    const group = existingParentGroup || await this.api.Groups.create(infraGroupName, infraGroupPath, {
       parentId: rootId,
       projectCreationLevel: 'maintainer',
       subgroupCreationLevel: 'owner',
       defaultBranchProtection: 0,
       description: 'Group that hosts infrastructure-as-code repositories for all zones (ArgoCD pull targets).',
     })
+    try {
+      await upsertCustomAttribute('groups', group.id, infraGroupCustomAttributeKey, 'true')
+      await upsertCustomAttribute('groups', group.id, managedByConsoleCustomAttributeKey, 'true')
+    } catch (err) {
+      logger.debug({ action: 'getOrCreateInfraGroup', groupId: group.id, err }, 'Failed to upsert infra group custom attribute')
+    }
+    return group
   }
 
   public async getOrCreateInfraProject(zone: string): Promise<ProjectSchema> {
@@ -226,11 +264,23 @@ export class GitlabZoneApi extends GitlabApi {
     }
     const infraGroup = await this.getOrCreateInfraGroup()
     // Get or create projects_root_dir/infra/zone
-    const project = await find(offsetPaginate(opts => this.api.Groups.allProjects(infraGroup.id, {
-      search: zone,
-      simple: true,
-      ...opts,
-    })), repo => repo.name === zone) ?? await this.createEmptyRepository({
+    const fast = await find(
+      offsetPaginate(opts => this.api.Groups.allProjects(infraGroup.id, {
+        ...customAttributesFilter(managedByConsoleCustomAttributeKey, 'true'),
+        search: zone,
+        simple: true,
+        ...opts,
+      })),
+      repo => repo.name === zone,
+    )
+    const project = fast ?? await find(
+      offsetPaginate(opts => this.api.Groups.allProjects(infraGroup.id, {
+        search: zone,
+        simple: true,
+        ...opts,
+      })),
+      repo => repo.name === zone,
+    ) ?? await this.createEmptyRepository({
       repoName: zone,
       groupId: infraGroup.id,
       description: 'Repository hosting deployment files for this zone.',
@@ -260,18 +310,24 @@ export class GitlabProjectApi extends GitlabApi {
     const parentId = await getGroupRootId()
     const existingGroup = await find(offsetPaginate(opts => this.api.Groups.all({
       search: this.project.slug,
-      orderBy: 'id',
       ...opts,
-    })), group => group.parent_id === parentId && group.name === this.project.slug)
+    }), { perPage: 100 }), group => group.parent_id === parentId && group.name === this.project.slug)
 
     if (existingGroup) return existingGroup
 
-    return this.api.Groups.create(this.project.slug, this.project.slug, {
+    const group = await this.api.Groups.create(this.project.slug, this.project.slug, {
       parentId,
       projectCreationLevel: 'maintainer',
       subgroupCreationLevel: 'owner',
       defaultBranchProtection: 0,
     })
+    try {
+      await upsertCustomAttribute('groups', group.id, projectGroupCustomAttributeKey, this.project.slug)
+      await upsertCustomAttribute('groups', group.id, managedByConsoleCustomAttributeKey, 'true')
+    } catch (err) {
+      logger.debug({ action: 'createProjectGroup', groupId: group.id, err }, 'Failed to upsert project group custom attribute')
+    }
+    return group
   }
 
   public async getProjectGroup(): Promise<GroupSchema | undefined> {
@@ -279,7 +335,30 @@ export class GitlabProjectApi extends GitlabApi {
     if (!this.gitlabGroup) {
       logger.debug({ action: 'getProjectGroup', projectSlug: this.project.slug }, 'Search project group')
       const parentId = await getGroupRootId()
-      this.gitlabGroup = await find(offsetPaginate(opts => this.api.Groups.allSubgroups(parentId, opts)), group => group.name === this.project.slug)
+      const fast = await find(
+        offsetPaginate(opts => this.api.Groups.allSubgroups(parentId, {
+          ...customAttributesFilter(projectGroupCustomAttributeKey, this.project.slug),
+          ...opts,
+        })),
+        group => group.name === this.project.slug,
+      )
+
+      this.gitlabGroup = fast ?? await find(
+        offsetPaginate(opts => this.api.Groups.allSubgroups(parentId, {
+          search: this.project.slug,
+          ...opts,
+        })),
+        group => group.name === this.project.slug,
+      )
+
+      if (this.gitlabGroup) {
+        try {
+          await upsertCustomAttribute('groups', this.gitlabGroup.id, projectGroupCustomAttributeKey, this.project.slug)
+          await upsertCustomAttribute('groups', this.gitlabGroup.id, managedByConsoleCustomAttributeKey, 'true')
+        } catch (err) {
+          logger.debug({ action: 'getProjectGroup', groupId: this.gitlabGroup.id, err }, 'Failed to upsert project group custom attribute')
+        }
+      }
     }
     return this.gitlabGroup
   }
@@ -342,11 +421,24 @@ export class GitlabProjectApi extends GitlabApi {
     const projectGroup = await this.getProjectGroup()
     if (!projectGroup) throw new Error(`Gitlab inaccessible, impossible de trouver le groupe ${this.project.slug}`)
 
-    const project = await find(offsetPaginate(opts => this.api.Groups.allProjects(projectGroup.id, {
-      search: projectName,
-      simple: true,
-      ...opts,
-    })), repo => repo.name === projectName)
+    const fast = await find(
+      offsetPaginate(opts => this.api.Groups.allProjects(projectGroup.id, {
+        ...customAttributesFilter(managedByConsoleCustomAttributeKey, 'true'),
+        search: projectName,
+        simple: true,
+        ...opts,
+      })),
+      repo => repo.name === projectName,
+    )
+
+    const project = fast ?? await find(
+      offsetPaginate(opts => this.api.Groups.allProjects(projectGroup.id, {
+        search: projectName,
+        simple: true,
+        ...opts,
+      })),
+      repo => repo.name === projectName,
+    )
 
     return project?.id
   }
@@ -362,7 +454,7 @@ export class GitlabProjectApi extends GitlabApi {
   public async getProjectToken(tokenName: string) {
     const group = await this.getProjectGroup()
     if (!group) throw new Error('Unable to retrieve gitlab project group')
-    return find(offsetPaginate(opts => this.api.GroupAccessTokens.all(group.id, opts)), token => token.name === tokenName)
+    return find(offsetPaginate(opts => this.api.GroupAccessTokens.all(group.id, opts), { perPage: 100 }), token => token.name === tokenName)
   }
 
   public async createProjectToken(tokenName: string, scopes: AccessTokenScopes[]) {
@@ -388,7 +480,7 @@ export class GitlabProjectApi extends GitlabApi {
     const gitlabRepositories = await this.listRepositories()
     const mirrorRepo = gitlabRepositories.find(repo => repo.name === internalMirrorRepoName)
     if (!mirrorRepo) throw new Error('Don\'t know how mirror repo could not exist')
-    const currentTriggerToken = await find(offsetPaginate(opts => this.api.PipelineTriggerTokens.all(mirrorRepo.id, opts)), token => token.description === tokenDescription)
+    const currentTriggerToken = await find(offsetPaginate(opts => this.api.PipelineTriggerTokens.all(mirrorRepo.id, opts), { perPage: 100 }), token => token.description === tokenDescription)
 
     const tokenVaultSecret = await vaultApi.read('GITLAB', { throwIfNoEntry: false })
 
@@ -410,7 +502,7 @@ export class GitlabProjectApi extends GitlabApi {
 
   public async listRepositories() {
     const group = await this.getOrCreateProjectGroup()
-    const projects = await getAll(offsetPaginate(opts => this.api.Groups.allProjects(group.id, { simple: false, ...opts }))) // to refactor with https://github.com/jdalrymple/gitbeaker/pull/3624
+    const projects = await getAll(offsetPaginate(opts => this.api.Groups.allProjects(group.id, { simple: false, ...opts }), { perPage: 100 })) // to refactor with https://github.com/jdalrymple/gitbeaker/pull/3624
     return Promise.all(projects.map(async (project) => {
       if (this.specialRepositories.includes(project.name) && (!project.topics || !project.topics.includes(pluginManagedTopic))) {
         return this.api.Projects.edit(project.id, { topics: project.topics ? [...project.topics, pluginManagedTopic] : [pluginManagedTopic] })
@@ -446,7 +538,7 @@ export class GitlabProjectApi extends GitlabApi {
   // Group members
   public async getGroupMembers() {
     const group = await this.getOrCreateProjectGroup()
-    return getAll(offsetPaginate(opts => this.api.GroupMembers.all(group.id, opts)))
+    return getAll(offsetPaginate(opts => this.api.GroupMembers.all(group.id, opts), { perPage: 100 }))
   }
 
   public async addGroupMember(userId: number, accessLevel: AccessLevelAllowed = AccessLevel.DEVELOPER): Promise<MemberSchema> {
@@ -470,7 +562,7 @@ export class GitlabProjectApi extends GitlabApi {
   // CI Variables
   public async getGitlabGroupVariables(): Promise<VariableSchema[]> {
     const group = await this.getOrCreateProjectGroup()
-    return await getAll(offsetPaginate(opts => this.api.GroupVariables.all(group.id, opts)))
+    return await getAll(offsetPaginate(opts => this.api.GroupVariables.all(group.id, opts), { perPage: 100 }))
   }
 
   public async setGitlabGroupVariable(listVars: VariableSchema[], toSetVariable: VariableSchema): Promise<setVariableResult> {
@@ -513,7 +605,7 @@ export class GitlabProjectApi extends GitlabApi {
   }
 
   public async getGitlabRepoVariables(repoId: number): Promise<VariableSchema[]> {
-    return await getAll(offsetPaginate(opts => this.api.ProjectVariables.all(repoId, opts)))
+    return await getAll(offsetPaginate(opts => this.api.ProjectVariables.all(repoId, opts), { perPage: 100 }))
   }
 
   public async setGitlabRepoVariable(repoId: number, listVars: VariableSchema[], toSetVariable: ProjectVariableSchema): Promise<setVariableResult | 'repository not found'> {
