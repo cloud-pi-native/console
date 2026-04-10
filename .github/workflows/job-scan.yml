@@ -133,4 +133,4 @@ jobs:
             🤖 Hey !
 
             The security scan report for the current pull request is available [here](https://github.com/${{ github.repository }}/security/code-scanning?query=is%3Aopen+branch%3Amain+pr%3A${{ github.event.pull_request.number || github.event.number }}).
-          comment_tag: vuln-scan
+          comment-tag: vuln-scan
