@@ -31,7 +31,7 @@ jobs:
       patch-tag: ${{ steps.release.outputs.patch }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Update release-please config for hotfix branches
         if: startsWith(github.ref_name, 'hotfix/')
@@ -42,7 +42,7 @@ jobs:
         shell: bash
 
       - name: Create merge request for new release
-        uses: googleapis/release-please-action@v4
+        uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
         id: release
         with:
           config-file: release-please-config.json

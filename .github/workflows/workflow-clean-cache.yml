@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Clean cache for closed branch
         run: |
@@ -59,7 +59,7 @@ jobs:
       build-matrix: ${{ steps.build-matrix.outputs.BUILD_MATRIX }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Generate matrix
         id: build-matrix
@@ -77,7 +77,7 @@ jobs:
         images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Get repository owner and name
         id: image-infos

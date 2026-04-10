@@ -42,7 +42,7 @@ jobs:
       build-matrix: ${{ steps.build-matrix.outputs.BUILD_MATRIX }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Generate matrix
         id: build-matrix
@@ -59,10 +59,10 @@ jobs:
         images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Run Trivy vulnerability scanner on images
-        uses: aquasecurity/trivy-action@v0.35.0
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
           image-ref: "${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }}:${{ inputs.TAG }}"
           format: template
@@ -74,7 +74,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@5c8a8a642e79153f5d047b10ec1cba1d1cc65699 # v3.35.1
         with:
           sarif_file: trivy-results.sarif
         continue-on-error: true
@@ -91,10 +91,10 @@ jobs:
       - matrix
     steps:
       - name: Checks-out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Run Trivy vulnerability scanner on config files
-        uses: aquasecurity/trivy-action@v0.35.0
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
           scan-ref: .
           scan-type: config
@@ -107,7 +107,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@5c8a8a642e79153f5d047b10ec1cba1d1cc65699 # v3.35.1
         with:
           sarif_file: trivy-results.sarif
         continue-on-error: true
@@ -127,7 +127,7 @@ jobs:
     if: ${{ github.event_name == 'pull_request' }}
     steps:
       - name: Comment PR
-        uses: thollander/actions-comment-pull-request@v2
+        uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # v2.5.0
         with:
           message: |
             🤖 Hey !
