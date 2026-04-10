@@ -230,13 +230,13 @@ export class KeycloakClientService implements OnModuleInit {
       this.logger.fatal('Keycloak admin or admin password not configured')
       return
     }
-    this.client.setConfig({ realmName: this.config.keycloakRealm })
     await this.client.auth({
       clientId: 'admin-cli',
       grantType: 'password',
       username: this.config.keycloakAdmin,
       password: this.config.keycloakAdminPassword,
     })
+    this.client.setConfig({ realmName: this.config.keycloakRealm })
     this.logger.log('Keycloak Admin Client authenticated')
   }
 }
