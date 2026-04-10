@@ -4,6 +4,9 @@ import { faker } from '@faker-js/faker'
 import { expect } from '@playwright/test'
 import { openMyProjects } from './navigation'
 
+const projectUrlRegexp = /\/projects\/[^/]+$/
+const projectSlugPrefixRegexp = /^slug\s*:\s*/i
+
 interface Resources {
   cpu: number
   gpu: number
@@ -67,11 +70,9 @@ async function addMembersToProject(page: Page, members: Credentials[]) {
 }
 
 async function getProjectSlugAndId(page: Page) {
-  const slug = (
-    (await page.getByTestId('project-slug').textContent()) || 'no-slug'
-  ).replace('slug: ', '')
-  const id
-    = (await page.getByTestId('project-id').getAttribute('title')) || 'no-id'
+  const rawSlugText = (await page.getByTestId('project-slug').textContent()) ?? 'no-slug'
+  const slug = rawSlugText?.replace(projectSlugPrefixRegexp, '').trim()
+  const id = (await page.getByTestId('project-id').getAttribute('title')) ?? 'no-id'
   return { slug, id }
 }
 
@@ -95,7 +96,8 @@ export async function addProject({
   if (!hprodResources && !prodResources) await enableProjectLimitless(page)
 
   await page.getByTestId('createProjectBtn').click()
-  await expect(page.locator('h1')).toContainText(name)
+  await expect(page).toHaveURL(projectUrlRegexp, { timeout: 300_000 })
+  await expect(page.getByTestId('project-slug')).toBeVisible({ timeout: 300_000 })
   await (members?.length ? addMembersToProject(page, members) : Promise.resolve())
 
   const { slug, id } = await getProjectSlugAndId(page)
