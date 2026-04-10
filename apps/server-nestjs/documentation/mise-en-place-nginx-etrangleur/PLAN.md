@@ -62,7 +62,7 @@
 
 - Le nginx existant dans l'image `client` proxifiait directement vers `server:8080` — upstream changé vers `nginx-strangler:8080`
 - `server-nestjs/src/main.ts` utilisait `process.env.PORT ?? 0` au lieu de `ConfigurationService.port` — corrigé
-- Le schéma Prisma de `server-nestjs` est multi-fichiers dans `src/prisma/schema/` — `prisma generate` doit pointer sur le dossier, pas sur `schema.prisma`
+- Le schéma Prisma est multi-fichiers dans `packages/database/prisma/schema/` — `prisma generate` doit pointer sur le dossier, pas sur `schema.prisma`
 - En CI (`job-lint.yml`), `nginx -t` échoue si `apt-get update -qq` n'est pas exécuté avant l'install, et si les chemins `pid`/`error_log`/`access_log` ne sont pas patchés vers `/tmp/` (runner non-root)
 - En CI (`job-playwright.yml`), les images `server-nestjs:ci` et `nginx-strangler:ci` doivent être buildées localement avant le `docker compose up --no-build` (même pattern que `opencds-mockoon`)
 
@@ -134,7 +134,7 @@ location = /api/v1/system/health {
 
 ### Tâche 2.2 : Créer `apps/server-nestjs/Dockerfile` ✅
 
-Multi-stage : `base` → `deps` → `build` → `prod`. `prisma generate --schema=src/prisma/schema` (dossier multi-fichiers). `USER node`, `HEALTHCHECK`, `EXPOSE 3001`.
+Multi-stage : `base` → `deps` → `build` → `prod`. `pnpm --filter @cpn-console/database run db:generate` (schéma multi-fichiers). `USER node`, `HEALTHCHECK`, `EXPOSE 3001`.
 
 ### Tâche 2.3 : `apps/server-nestjs/.env.docker-example` ✅
 
