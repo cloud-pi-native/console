@@ -37,9 +37,8 @@ COPY --chown=node:root plugins/  ./plugins/
 COPY --chown=node:root packages/ ./packages/
 COPY --chown=node:root apps/server-nestjs/ ./apps/server-nestjs/
 
-# Générer le client Prisma (schéma multi-fichiers : pointer sur le dossier)
-RUN pnpm --filter @cpn-console/server-nestjs exec prisma generate \
-      --schema=src/prisma/schema
+# Générer le client Prisma depuis le package partagé
+RUN pnpm --filter @cpn-console/database run db:generate
 
 ENTRYPOINT ["pnpm", "--filter", "server-nestjs", "run"]
 CMD ["start:dev"]
@@ -79,8 +78,6 @@ COPY --chown=node:root --from=build /app/apps/server-nestjs/dist ./dist
 # COPY --chown=node:root --from=build /app/build/node_modules ./node_modules
 
 # Regénérer le client Prisma dans l'image de production
-RUN npm run db:generate
-
 USER node
 EXPOSE 3001
 

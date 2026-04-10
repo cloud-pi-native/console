@@ -1,0 +1,46 @@
+{
+  "name": "@cpn-console/database",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cloud-pi-native/console"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "prisma",
+    "prisma.config.ts",
+    "types"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
+    "db:deploy": "prisma migrate deploy",
+    "db:diff": "prisma migrate diff",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev --name dso",
+    "db:reset": "prisma migrate reset",
+    "db:studio": "prisma studio",
+    "format": "eslint ./ --fix",
+    "lint": "eslint ./"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.2",
+    "dotenv": "^16.6.1"
+  },
+  "devDependencies": {
+    "@cpn-console/eslint-config": "workspace:^",
+    "@cpn-console/ts-config": "workspace:^",
+    "@types/node": "^24.12.0",
+    "prisma": "^6.19.2",
+    "rimraf": "^6.1.3",
+    "typescript": "^5.9.3"
+  }
+}

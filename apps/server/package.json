@@ -12,17 +12,16 @@
   "types": "types/bootstrap.d.ts",
   "files": [
     "dist",
-    "prisma.config.ts",
     "src"
   ],
   "scripts": {
     "build": "tspc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
-    "db:deploy": "prisma migrate deploy",
-    "db:diff": "prisma migrate diff",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev --name dso",
-    "db:reset": "prisma migrate reset",
+    "db:deploy": "pnpm --filter @cpn-console/database run db:deploy",
+    "db:diff": "pnpm --filter @cpn-console/database run db:diff",
+    "db:generate": "pnpm --filter @cpn-console/database run db:generate",
+    "db:migrate": "pnpm --filter @cpn-console/database run db:migrate",
+    "db:reset": "pnpm --filter @cpn-console/database run db:reset",
     "db:wrapper": "sh ./migrate-db.sh",
     "predev": "pnpm run db:deploy",
     "dev": "nodemon --exec 'vite-node src/bootstrap.ts'",
@@ -35,9 +34,7 @@
     "prepublishOnly": "pnpm run db:generate",
     "prestart": "npm run db:deploy",
     "start": "node --enable-source-maps dist/bootstrap.js",
-    "pretest": "pnpm run db:generate",
     "test": "vitest run",
-    "pretest:cov": "pnpm run db:generate",
     "test:cov": "vitest run --coverage",
     "test:e2e": "pnpm run dev",
     "test:e2e-ci": "pnpm run start"
