@@ -1,3 +1,4 @@
+import { ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { Logger } from 'nestjs-pino'
 import { ConfigurationService } from './cpin-module/infrastructure/configuration/configuration.service'
@@ -6,6 +7,7 @@ import { MainModule } from './main.module'
 async function bootstrap() {
   const app = await NestFactory.create(MainModule, { bufferLogs: true })
   app.useLogger(app.get(Logger))
+  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }))
   app.flushLogs()
   app.enableShutdownHooks()
   const config = app.get(ConfigurationService)
