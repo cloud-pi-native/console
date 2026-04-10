@@ -1,5 +1,28 @@
 # Changelog
 
+## [9.16.0](https://github.com/cloud-pi-native/console/compare/v9.15.0...v9.16.0) (2026-04-10)
+
+
+### Features
+
+* **ci:** add @cpn-console/logger to NPM publish step ([b3ccdf8](https://github.com/cloud-pi-native/console/commit/b3ccdf871c89642f5a8d7912ab3c4725ab38debb))
+
+
+### Bug Fixes
+
+* admin auth on master realm ([f3d323e](https://github.com/cloud-pi-native/console/commit/f3d323efa0f447ed3a8ddfb4b021ab49478d6e49))
+* **ci:** add missing needs property to NPM publish workflow ([62a76f9](https://github.com/cloud-pi-native/console/commit/62a76f9f43a4b50504497409fd765cd4350d92cf))
+
+
+### Miscellaneous Chores
+
+* **ci:** add missing parameter to NPM publish job ([3b4907a](https://github.com/cloud-pi-native/console/commit/3b4907a6b547a06c14ee160fc181b4e4db028e8c))
+* **logger:** add package to NPM publish matrix ([f186b12](https://github.com/cloud-pi-native/console/commit/f186b1245f5b47aa0634bee8c3301e1e623aaf8a))
+* **logger:** bump version to 1.0.1 to test GHA NPM publish ([8109fe8](https://github.com/cloud-pi-native/console/commit/8109fe8a71a80d868703f6ac4e3bc8090fcfdfb9))
+* **logger:** update description to trigger NPM publish ([6419b83](https://github.com/cloud-pi-native/console/commit/6419b8376f48c653be6f28280b01f865f8fe3895))
+* **logger:** update description to trigger NPM publish ([f43ef92](https://github.com/cloud-pi-native/console/commit/f43ef92256942f300ea3fca747a31dbaa867eb22))
+* **logger:** update description to trigger NPM publish ([c400376](https://github.com/cloud-pi-native/console/commit/c400376842d5ec97a193efee9bf6be34a6ccb118))
+
 ## [9.15.0](https://github.com/cloud-pi-native/console/compare/v9.14.1...v9.15.0) (2026-04-09)
 
 
