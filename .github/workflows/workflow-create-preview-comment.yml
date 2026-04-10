@@ -22,7 +22,7 @@ jobs:
           echo "CONSOLE_URL=$(echo "${{ vars.ARGOCD_CONSOLE_URL_TEMPLATE }}" | sed 's|<pr_number>|${{ github.event.number }}|g')" >> $GITHUB_OUTPUT
 
       - name: Comment PR
-        uses: thollander/actions-comment-pull-request@v2
+        uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # v2.5.0
         with:
           message: |
             🤖 Hey !
