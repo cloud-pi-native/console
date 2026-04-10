@@ -71,6 +71,7 @@ jobs:
           ignore-unfixed: true
           output: trivy-results.sarif
           github-pat: ${{ secrets.GITHUB_TOKEN }}
+          cache: "false"
         continue-on-error: true
 
       - name: Upload Trivy scan results to GitHub Security tab
@@ -104,6 +105,7 @@ jobs:
           ignore-unfixed: true
           output: trivy-results.sarif
           github-pat: ${{ secrets.GITHUB_TOKEN }}
+          cache: "false"
         continue-on-error: true
 
       - name: Upload Trivy scan results to GitHub Security tab
