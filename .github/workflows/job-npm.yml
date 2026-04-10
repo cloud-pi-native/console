@@ -127,7 +127,9 @@ jobs:
           fi
 
   matrix:
-    name: Generate matrix
+    name: Generate publish matrix
+    needs:
+      - path-filter
     if: ${{ needs.path-filter.outputs.packages != '' && (inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES || inputs.PUBLISH_PLUGINS) }}
     runs-on: ubuntu-latest
     outputs:
@@ -162,6 +164,7 @@ jobs:
       contents: read
       id-token: write
     needs:
+      - path-filter
       - matrix
     strategy:
       # Allow jobs to be processed independently of their siblings status
