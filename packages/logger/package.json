@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.0.0",
   "private": false,
-  "description": "",
+  "description": "CPIN internal logger for legacy code",
   "repository": {
     "type": "git",
     "url": "https://github.com/cloud-pi-native/console"

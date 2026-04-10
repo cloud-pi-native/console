@@ -23,6 +23,10 @@
       "path": "./packages/hooks"
     },
     {
+      "name": "@cpn-console/logger",
+      "path": "./packages/logger"
+    },
+    {
       "name": "@cpn-console/test-utils",
       "path": "./packages/test-utils"
     },
