@@ -66,6 +66,8 @@ jobs:
               - 'packages/hooks/src/**'
             ts-config:
               - 'packages/tsconfig/**'
+            logger:
+              - 'packages/logger/**'
             argocd:
               - 'plugins/argocd/src/**'
             gitlab:
