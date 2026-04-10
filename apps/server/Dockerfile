@@ -61,7 +61,6 @@ RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
   && mkdir -p /home/node/.npm && chmod 770 -R /home/node/.npm \
   && chown node:root /app
 COPY --chown=node:root --from=build /app/build .
-RUN npm run db:generate
 USER node
 EXPOSE 8080
 ENTRYPOINT ["npm", "start"]
