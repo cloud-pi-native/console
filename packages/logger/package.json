@@ -1,9 +1,9 @@
 {
   "name": "@cpn-console/logger",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
-  "description": "CPIN internal logger for legacy code",
+  "description": "Cloud PI Native internal logger for legacy code",
   "repository": {
     "type": "git",
     "url": "https://github.com/cloud-pi-native/console"
