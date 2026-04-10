@@ -42,6 +42,10 @@ on:
         required: true
         type: boolean
         default: true
+      CHECK_CHANGES:
+        required: true
+        type: boolean
+        default: true
 
 jobs:
   path-filter:
