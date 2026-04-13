@@ -1,8 +1,7 @@
 import type { UserObject } from '@cpn-console/hooks'
 import type { CreateUserOptions, SimpleUserSchema } from '@gitbeaker/rest'
-import { upsertCustomAttribute, userIdCustomAttributeKey } from './custom-attributes.js'
 import { logger } from './logger.js'
-import { find, getApi, MAX_PAGINATION_PER_PAGE, offsetPaginate } from './utils.js'
+import { find, getApi, offsetPaginate } from './utils.js'
 
 export function createUsername(email: string) {
   const parts = email.split('@')
