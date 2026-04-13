@@ -82,25 +82,14 @@ export async function upsertUser(user: UserObject, isAdmin?: boolean, isAuditor?
         logger.error({ action: 'upsertUser', err }, 'Failed to update user')
       }
     }
-    try {
-      await upsertCustomAttribute('users', existingUser.id, userIdCustomAttributeKey, user.id)
-    } catch (err) {
-      logger.debug({ action: 'upsertUser', userId: existingUser.id, err }, 'Failed to upsert user custom attribute')
-    }
     return existingUser
   }
 
-  const created = await api.Users.create({
+  return api.Users.create({
     ...userDefinitionBase,
     canCreateGroup: false,
     forceRandomPassword: true,
     projectsLimit: 0,
     skipConfirmation: true,
   })
-  try {
-    await upsertCustomAttribute('users', created.id, userIdCustomAttributeKey, user.id)
-  } catch (err) {
-    logger.debug({ action: 'upsertUser', userId: created.id, err }, 'Failed to upsert user custom attribute')
-  }
-  return created
 }
