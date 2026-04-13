@@ -259,18 +259,6 @@ __Local / Docker:__
 
 Les variables d'environnements sont gérées localement via des fichiers `.env` (local) / `.env.docker` (docker) dans les dossiers `./apps/server` et `./apps/client`, aux précédents fichiers s'ajoute un fichier `.env.integ` utilisé pour le mode intégration (local et docker).
 
-### Base de données
-
-Pour faciliter les opérations de migrations de base de données via [Prisma](https://www.prisma.io/), un script est disponible :
-
-```shell
-# Lancer le script
-pnpm --filter @cpn-console/server run db:wrapper
-
-# Voir l'aide du script
-pnpm --filter @cpn-console/server run db:wrapper -h
-```
-
 ### Débogage avec VS Code
 
 Le projet est configuré pour être débogué directement dans VS Code via le fichier `.vscode/launch.json`.
