@@ -15,7 +15,6 @@
   "scripts": {
     "build": "pnpm -r run build",
     "build:clean": "pnpm -r run build:clean",
-    "db:generate": "pnpm -r run db:generate",
     "dev": "docker compose -f ./docker/docker-compose.local.yml up -d --remove-orphans && echo '\nStart server and client with commands:\n\n  pnpm --filter @cpn-console/server run dev\n  pnpm --filter @cpn-console/client run dev\n\nMake sure you provide env variables in `.env` files.'",
     "dev:clean": "docker compose -f ./docker/docker-compose.local.yml down --remove-orphans",
     "dev:delete": "docker compose -f ./docker/docker-compose.local.yml down -v --remove-orphans",

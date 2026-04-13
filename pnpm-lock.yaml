@@ -201,6 +201,9 @@ importers:
       '@cpn-console/argocd-plugin':
         specifier: workspace:^
         version: link:../../plugins/argocd
+      '@cpn-console/database':
+        specifier: workspace:^
+        version: link:../../packages/database
       '@cpn-console/gitlab-plugin':
         specifier: workspace:^
         version: link:../../plugins/gitlab
@@ -270,9 +273,6 @@ importers:
       '@opentelemetry/sdk-node':
         specifier: ^0.212.0
         version: 0.212.0(@opentelemetry/api@1.9.0)
-      '@prisma/client':
-        specifier: ^6.19.2
-        version: 6.19.2(prisma@6.19.2(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
       '@ts-rest/core':
         specifier: ^3.52.1
         version: 3.52.1(@types/node@24.12.0)(zod@3.25.76)
@@ -303,9 +303,6 @@ importers:
       mustache:
         specifier: ^4.2.0
         version: 4.2.0
-      prisma:
-        specifier: ^6.19.2
-        version: 6.19.2(magicast@0.3.5)(typescript@5.9.3)
       undici:
         specifier: ^7.24.0
         version: 7.24.5
@@ -367,6 +364,9 @@ importers:
       '@cpn-console/argocd-plugin':
         specifier: workspace:^
         version: file:plugins/argocd(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
+      '@cpn-console/database':
+        specifier: workspace:^
+        version: link:../../packages/database
       '@cpn-console/gitlab-plugin':
         specifier: workspace:^
         version: file:plugins/gitlab(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
@@ -469,9 +469,6 @@ importers:
       '@opentelemetry/sdk-trace-node':
         specifier: ^2.5.1
         version: 2.6.0(@opentelemetry/api@1.9.0)
-      '@prisma/client':
-        specifier: ^6.19.2
-        version: 6.19.2(prisma@6.19.2(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
       '@ts-rest/core':
         specifier: ^3.52.1
         version: 3.52.1(@types/node@22.19.15)(zod@3.25.76)
@@ -508,9 +505,6 @@ importers:
       pino-http:
         specifier: ^11.0.0
         version: 11.0.0
-      prisma:
-        specifier: ^6.19.2
-        version: 6.19.2(magicast@0.3.5)(typescript@5.9.3)
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -623,6 +617,31 @@ importers:
       vitest:
         specifier: ^2.1.9
         version: 2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0)
+
+  packages/database:
+    dependencies:
+      '@prisma/client':
+        specifier: ^6.19.2
+        version: 6.19.2(prisma@6.19.2(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
+    devDependencies:
+      '@cpn-console/eslint-config':
+        specifier: workspace:^
+        version: link:../eslintconfig
+      '@cpn-console/ts-config':
+        specifier: workspace:^
+        version: link:../tsconfig
+      '@types/node':
+        specifier: ^24.12.0
+        version: 24.12.0
+      prisma:
+        specifier: ^6.19.2
+        version: 6.19.2(magicast@0.3.5)(typescript@5.9.3)
+      rimraf:
+        specifier: ^6.1.3
+        version: 6.1.3
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/eslintconfig:
     devDependencies:
