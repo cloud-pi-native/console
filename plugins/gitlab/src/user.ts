@@ -9,7 +9,12 @@ export const createUsername = (email: string) => email.replace('@', '.')
 export async function getUser(user: { email: string, username: string, id: string }): Promise<SimpleUserSchema | undefined> {
   const api = getApi()
 
-  return find(
+  const isUser = (gitlabUser: SimpleUserSchema) =>
+    gitlabUser?.externUid === user.id
+    || gitlabUser.email === user.email
+    || gitlabUser.username === user.username
+
+  const fast = await find(
     offsetPaginate(opts => api.Users.all({
       externUid: user.id,
       provider: 'openid_connect',
@@ -17,10 +22,20 @@ export async function getUser(user: { email: string, username: string, id: strin
       asAdmin: true,
       ...opts,
     }), { perPage: MAX_PAGINATION_PER_PAGE }),
-    gitlabUser =>
-      gitlabUser?.externUid === user.id
-      || gitlabUser.email === user.email
-      || gitlabUser.username === user.username,
+    isUser,
+  )
+
+  if (!fast) {
+    logger.debug({ action: 'getUser', user }, 'User not found in fast search')
+  }
+
+  return fast ?? await find(
+    offsetPaginate(opts => api.Users.all({
+      search: user.username,
+      asAdmin: true,
+      ...opts,
+    }), { perPage: MAX_PAGINATION_PER_PAGE }),
+    isUser,
   )
 }
 
