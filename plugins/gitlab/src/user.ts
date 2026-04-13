@@ -4,22 +4,44 @@ import { upsertCustomAttribute, userIdCustomAttributeKey } from './custom-attrib
 import { logger } from './logger.js'
 import { find, getApi, MAX_PAGINATION_PER_PAGE, offsetPaginate } from './utils.js'
 
-export const createUsername = (email: string) => email.replace('@', '.')
+export function createUsername(email: string) {
+  const parts = email.split('@')
+  if (parts.length > 0) {
+    return parts[0]
+  }
+  return email
+}
 
 export async function getUser(user: { email: string, username: string, id: string }): Promise<SimpleUserSchema | undefined> {
   const api = getApi()
 
-  return find(
+  const isUser = (gitlabUser: SimpleUserSchema) =>
+    gitlabUser?.externUid === user.id
+    || gitlabUser.email === user.email
+    || gitlabUser.username === user.username
+
+  const fast = await find(
     offsetPaginate(opts => api.Users.all({
-      username: user.username,
+      externUid: user.id,
+      provider: 'openid_connect',
       orderBy: 'username',
       asAdmin: true,
       ...opts,
     }), { perPage: MAX_PAGINATION_PER_PAGE }),
-    gitlabUser =>
-      gitlabUser?.externUid === user.id
-      || gitlabUser.email === user.email
-      || gitlabUser.username === user.username,
+    isUser,
+  )
+
+  if (!fast) {
+    logger.debug({ action: 'getUser', user }, 'User not found in fast search')
+  }
+
+  return fast ?? await find(
+    offsetPaginate(opts => api.Users.all({
+      search: user.username,
+      asAdmin: true,
+      ...opts,
+    }), { perPage: MAX_PAGINATION_PER_PAGE }),
+    isUser,
   )
 }
 
