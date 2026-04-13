@@ -11,7 +11,8 @@ export async function getUser(user: { email: string, username: string, id: strin
 
   return find(
     offsetPaginate(opts => api.Users.all({
-      username: user.username,
+      externUid: user.id,
+      provider: 'openid_connect',
       orderBy: 'username',
       asAdmin: true,
       ...opts,
