@@ -4,7 +4,13 @@ import { upsertCustomAttribute, userIdCustomAttributeKey } from './custom-attrib
 import { logger } from './logger.js'
 import { find, getApi, MAX_PAGINATION_PER_PAGE, offsetPaginate } from './utils.js'
 
-export const createUsername = (email: string) => email.replace('@', '.')
+export function createUsername(email: string) {
+  const parts = email.split('@')
+  if (parts.length > 0) {
+    return parts[0]
+  }
+  return email
+}
 
 export async function getUser(user: { email: string, username: string, id: string }): Promise<SimpleUserSchema | undefined> {
   const api = getApi()
