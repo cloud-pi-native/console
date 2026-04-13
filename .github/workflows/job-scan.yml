@@ -127,12 +127,22 @@ jobs:
       - images-scan
       - config-scan
     if: ${{ github.event_name == 'pull_request' }}
-    steps:
-      - name: Comment PR
-        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
-        with:
-          message: |
-            🤖 Hey !
+    env:
+      MERGE_REQUEST_ID: ${{ github.event.pull_request.number }}
+      COMMENT: |
+        🤖 Hey !
 
-            The security scan report for the current pull request is available [here](https://github.com/${{ github.repository }}/security/code-scanning?query=is%3Aopen+branch%3Amain+pr%3A${{ github.event.pull_request.number || github.event.number }}).
-          comment-tag: vuln-scan
+        The security scan report for the current pull request is available [here](https://github.com/${{ github.repository }}/security/code-scanning?query=is%3Aopen+branch%3Amain+pr%3A${{ github.event.pull_request.number || github.event.number }}).
+    steps:
+      - name: Add comment on Merge Request
+        id: add-comment-on-merge-request
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: process.env.MERGE_REQUEST_ID,
+              body: process.env.COMMENT,
+            });
