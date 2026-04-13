@@ -1,5 +1,26 @@
 # Changelog
 
+## [9.16.1](https://github.com/cloud-pi-native/console/compare/v9.16.0...v9.16.1) (2026-04-13)
+
+
+### Bug Fixes
+
+* **ci:** fix merge request comment job ([16cc398](https://github.com/cloud-pi-native/console/commit/16cc398f1b8b8388604ac3bd8997f4fbdbd41217))
+* **ci:** fix preview comment workflow not having correct env vars ([48169af](https://github.com/cloud-pi-native/console/commit/48169afdcc3dea972938d53fd7072be533f3ec81))
+* missmatch between direct login and console username generation ([5e51770](https://github.com/cloud-pi-native/console/commit/5e5177017b1f9c5ae8f253e991ea43dd16da0e82))
+
+
+### Miscellaneous Chores
+
+* **ci:** add a dedicated workflow for commenting on merge requests ([f49a2e8](https://github.com/cloud-pi-native/console/commit/f49a2e83b335f0e61f29861ab56c48aa85d0f434))
+* **ci:** add pinact configuration to pin GHAs to their SHA ([490b308](https://github.com/cloud-pi-native/console/commit/490b308720763813bb9f7c41191326046bfeb33f))
+* **ci:** disable trivy cache to avoid using action-cache version that is in Node.js v20 ([050abbb](https://github.com/cloud-pi-native/console/commit/050abbbe7d24e3d04c0515fd0010289c39b73e3d))
+* **ci:** pin EVERY GitHub action to their SHA ([f201192](https://github.com/cloud-pi-native/console/commit/f2011921ea3e04e14dec6b5b97caa06df47292e3))
+* **ci:** replace old and unmaintained GHA job for MR comments with our own job ([e66d8ab](https://github.com/cloud-pi-native/console/commit/e66d8ab5202e8476b86a782cc53c3b367982719f))
+* **ci:** update merge request comment action to use appropriate property following the GHA upgrade ([46727c0](https://github.com/cloud-pi-native/console/commit/46727c090ce2f88d50af0ffdbf52b9deb7358d8a))
+* **ci:** upgrade EVERY GitHub action to their latest SHA version ([c50ccda](https://github.com/cloud-pi-native/console/commit/c50ccda531b42548b75cda770bd3baa93977f7d6))
+* remove unused migrate local database scripts ([98093ad](https://github.com/cloud-pi-native/console/commit/98093ad0bc4cf3cca0fae36ccf8d36f8c7810ec5))
+
 ## [9.16.0](https://github.com/cloud-pi-native/console/compare/v9.15.0...v9.16.0) (2026-04-10)
 
 

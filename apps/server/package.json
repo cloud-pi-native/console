@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/server",
   "type": "module",
-  "version": "9.16.0",
+  "version": "9.16.1",
   "description": "cpn-console server",
   "repository": {
     "type": "git",
