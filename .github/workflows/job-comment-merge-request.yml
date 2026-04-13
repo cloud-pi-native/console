@@ -1,0 +1,41 @@
+name: Comment on Merge Request
+
+permissions:
+  pull-request: write
+
+on:
+  workflow_call:
+    inputs:
+      MESSAGE:
+        description: Comment to add on the Merge request
+        required: true
+        type: string
+      MERGE_REQUEST_ID:
+        description: MR identifier (as seen in the GitHub UI) # github.event.pull_request.number
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      MESSAGE:
+        description: Nodejs version used
+        required: true
+        type: string
+        default: "ℹ️ This is a test message ℹ️"
+      MERGE_REQUEST_ID:
+        description: MR identifier (as seen in the GitHub UI) # github.event.pull_request.number
+        required: true
+        type: string
+
+jobs:
+  comment-on-merge-request:
+  - name: Comment on MR
+    uses: actions/github-script@v6
+    with:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+      script: |
+        await github.rest.issues.createComment({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          issue_number: ${MERGE_REQUEST_ID},
+          body: ${MESSAGE},
+        });
