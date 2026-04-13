@@ -15,14 +15,6 @@ jobs:
     name: Add comment with preview infos
     if: contains(github.event.pull_request.labels.*.name, 'preview')
     runs-on: ubuntu-latest
-    env:
-      MERGE_REQUEST_ID: ${{ github.event.pull_request.number }}
-      COMMENT: |
-        🤖 Hey !
-
-        A preview of the application is available at : ${{ steps.generate-url.outputs.CONSOLE_URL }}
-
-        *Please be patient, deployment may take a few minutes.*
     steps:
       - name: Generate app url
         id: generate-url
@@ -32,6 +24,14 @@ jobs:
       - name: Add comment on Merge Request
         id: add-comment-on-merge-request
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          MERGE_REQUEST_ID: ${{ github.event.pull_request.number }}
+          COMMENT: |
+            🤖 Hey !
+
+            A preview of the application is available at : ${{ steps.generate-url.outputs.CONSOLE_URL }}
+
+            *Please be patient, deployment may take a few minutes.*
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
