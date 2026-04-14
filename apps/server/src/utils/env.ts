@@ -1,16 +1,10 @@
-import * as dotenv from 'dotenv'
+import fs from 'node:fs'
 
-if (process.env.DOCKER !== 'true') {
-  dotenv.config({ path: '.env' })
-}
+if (process.env.INTEGRATION === 'true' && fs.existsSync('.env.integ'))
+  process.loadEnvFile('.env.integ')
 
-if (process.env.INTEGRATION === 'true') {
-  const envInteg = dotenv.config({ path: '.env.integ' })
-  process.env = {
-    ...process.env,
-    ...(envInteg?.parsed ?? {}),
-  }
-}
+if (process.env.DOCKER !== 'true' && fs.existsSync('.env'))
+  process.loadEnvFile('.env')
 
 // application mode
 export const isDev = process.env.NODE_ENV === 'development'

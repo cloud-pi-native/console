@@ -1,18 +1,15 @@
 import path from 'node:path'
-
 import { defineConfig, devices } from '@playwright/test'
 
-import dotenv from 'dotenv'
+process.loadEnvFile(path.resolve(__dirname, '..', 'apps/client', '.env.docker'))
 
-dotenv.config({
-  path: path.resolve(__dirname, '..', 'apps/client', '.env.docker'),
-})
+const isIntegration = process.env.INTEGRATION === 'true'
 
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: './e2e-tests',
+  testDir: isIntegration ? './integration-tests' : './e2e-tests',
 
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -48,7 +45,6 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
