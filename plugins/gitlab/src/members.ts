@@ -1,12 +1,10 @@
 import type { Config, Project, UserObject } from '@cpn-console/hooks'
-import type { GitlabProjectApi } from './class.js'
-import { AccessLevel } from '@gitbeaker/core'
+import { AccessLevel } from '@cpn-console/miracle'
 import {
   DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX,
 } from './infos.js'
-import { createUsername, upsertUser } from './user.js'
 import { matchRole } from './utils.js'
 
 export function getGroupAccessLevelFromProjectRole(project: Project, user: UserObject, config: Config) {
@@ -34,32 +32,4 @@ export function getGroupAccessLevelFromProjectRole(project: Project, user: UserO
 export function getGroupAccessLevel(project: Project, user: UserObject, config: Config): number | null {
   if (project.owner.id === user.id) return AccessLevel.OWNER
   return getGroupAccessLevelFromProjectRole(project, user, config)
-}
-
-export async function ensureGroup(
-  gitlabApi: GitlabProjectApi,
-  project: Project,
-  user: UserObject,
-  config: Config,
-) {
-  const gitlabUser = await upsertUser({
-    id: user.id,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-  })
-
-  const groupMembers = await gitlabApi.getGroupMembers()
-  const existingMember = groupMembers.find(m => m.username === createUsername(user.email))
-  const maxAccessLevel = getGroupAccessLevel(project, user, config)
-
-  if (existingMember && maxAccessLevel) {
-    if (existingMember.access_level !== maxAccessLevel) {
-      await gitlabApi.editGroupMember(gitlabUser.id, maxAccessLevel)
-    }
-  } else if (maxAccessLevel) {
-    await gitlabApi.addGroupMember(gitlabUser.id, maxAccessLevel)
-  } else if (existingMember) {
-    await gitlabApi.removeGroupMember(gitlabUser.id)
-  }
 }
