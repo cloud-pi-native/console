@@ -36,6 +36,6 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["./config/**/*.ts", "./e2e-tests/**/*.ts", "./helpers/**/*.ts", "./integration-tests/**/*.ts"],
+  "include": ["./playwright.config.ts", "./config/**/*.ts", "./e2e-tests/**/*.ts", "./helpers/**/*.ts", "./integration-tests/**/*.ts"],
   "exclude": []
 }

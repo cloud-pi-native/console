@@ -1,27 +1,21 @@
+import fs from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 import {
   vueDsfrAutoimportPreset,
   vueDsfrComponentResolver,
 } from '@gouvminint/vue-dsfr/meta'
 import vue from '@vitejs/plugin-vue'
-import * as dotenv from 'dotenv'
 import UnoCSS from 'unocss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-if (process.env.DOCKER !== 'true') {
-  dotenv.config({ path: '.env' })
-}
+if (process.env.INTEGRATION === 'true' && fs.existsSync('.env.integ'))
+  process.loadEnvFile('.env.integ')
 
-if (process.env.INTEGRATION === 'true') {
-  const envInteg = dotenv.config({ path: '.env.integ' })
-  process.env = {
-    ...process.env,
-    ...(envInteg?.parsed ?? {}),
-  }
-}
+if (process.env.DOCKER !== 'true' && fs.existsSync('.env'))
+  process.loadEnvFile('.env')
 
 const serverHost = process.env.SERVER_HOST ?? 'localhost'
 const serverPort = process.env.SERVER_PORT ?? 4000

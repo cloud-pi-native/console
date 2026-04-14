@@ -1,26 +1,25 @@
 import path from 'node:path'
-
 import { defineConfig, devices } from '@playwright/test'
 
-import dotenv from 'dotenv'
+process.loadEnvFile(path.resolve(__dirname, '..', 'apps/client', '.env.docker'))
 
-dotenv.config({
-  path: path.resolve(__dirname, '..', 'apps/client', '.env.docker'),
-})
+const isIntegration = process.env.INTEGRATION === 'true'
 
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: './e2e-tests',
+  testDir: isIntegration ? './integration-tests' : './e2e-tests',
 
   /* Run tests in files in parallel */
-  fullyParallel: true,
+  fullyParallel: !isIntegration,
 
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
 
-  retries: 3,
+  retries: isIntegration ? (process.env.CI ? 3 : 1) : 3,
+
+  workers: isIntegration ? 1 : undefined,
 
   // workers: 1, // Default is 50% logical cores
 
@@ -30,7 +29,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Retain trace on failed tries. See https://playwright.dev/docs/trace-viewer */
-    trace: 'retain-on-failure',
+    trace: isIntegration ? 'on-first-retry' : 'retain-on-failure',
   },
 
   /* All timeouts are in milliseconds */
@@ -48,7 +47,6 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
