@@ -1,6 +1,5 @@
 import type { MonitorInfos } from '@cpn-console/shared'
 import { Monitor, MonitorStatus } from '@cpn-console/shared'
-import axios from 'axios'
 import config from './config.js'
 
 enum HealthStatus {
@@ -13,11 +12,9 @@ const coreComponents = ['gitaly_check', 'master_check', 'db_check', 'sessions_ch
 async function monitor(instance: Monitor): Promise<MonitorInfos> {
   instance.lastStatus.lastUpdateTimestamp = Date.now()
   try {
-    const res = await axios.get(`${config().internalUrl}/-/readiness?all=1`, {
-      validateStatus: res => res === 200,
-    })
+    const res = await fetch(`${config().internalUrl}/-/readiness?all=1`)
     if (res.status === 200) { // 200 only means api responds
-      const data = res.data as GitlabRes
+      const data = await res.json() as GitlabRes
       const failedComponents = Object.entries(data)
         .reduce((acc, [name, value]) => {
           if (value.status === HealthStatus.failed) return [...acc, name]

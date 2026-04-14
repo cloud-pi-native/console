@@ -8,10 +8,10 @@ import {
   DEFAULT_ADMIN_GROUP_PATH,
   DEFAULT_AUDITOR_GROUP_PATH,
 } from './infos.js'
-import { ensureGroup } from './members.js'
 import { ensureRepositories } from './repositories.js'
+import { runGitlabProjectStack } from './stack.js'
 import { createUsername, getUser, upsertUser } from './user.js'
-import { cleanGitlabError } from './utils.js'
+import { cleanGitlabError, getClient } from './utils.js'
 
 // Check
 export const checkApi: StepCall<Project> = async (payload) => {
@@ -102,11 +102,7 @@ export const upsertDsoProject: StepCall<Project> = async (payload) => {
     const project = payload.args
     const { gitlab: gitlabApi, vault: vaultApi } = payload.apis
 
-    await gitlabApi.getOrCreateProjectGroup()
-
-    await Promise.all(project.users.map(user =>
-      ensureGroup(gitlabApi, project, user, payload.config),
-    ))
+    await runGitlabProjectStack(getClient(), project, payload.config)
 
     const projectMirrorCreds = await gitlabApi.getProjectMirrorCreds(vaultApi)
     await ensureRepositories(gitlabApi, project, vaultApi, {
@@ -315,12 +311,10 @@ export const deleteAdminRole: StepCall<AdminRole> = async (payload) => {
 
 export const upsertProjectMember: StepCall<ProjectMember> = async (payload) => {
   const member = payload.args
-  const { gitlab: gitlabApi } = payload.apis as { gitlab: GitlabProjectApi } // TODO: apis is never type for some resaon
+  const { gitlab: _gitlabApi } = payload.apis as { gitlab: GitlabProjectApi } // TODO: apis is never type for some resaon
 
   try {
-    await Promise.all(member.project.users.map(user =>
-      ensureGroup(gitlabApi, member.project, user, payload.config),
-    ))
+    await runGitlabProjectStack(getClient(), member.project, payload.config)
 
     return {
       status: {

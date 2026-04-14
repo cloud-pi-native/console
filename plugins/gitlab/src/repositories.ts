@@ -1,6 +1,6 @@
 import type { Project, Repository } from '@cpn-console/hooks'
+import type { CondensedProjectSchema, ProjectSchema } from '@cpn-console/miracle'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
-import type { CondensedProjectSchema, ProjectSchema } from '@gitbeaker/rest'
 import type { GitlabProjectApi } from './class.js'
 import { shallowEqual } from '@cpn-console/shared'
 import { pluginManagedTopic } from './class.js'
