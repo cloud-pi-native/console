@@ -19,3 +19,12 @@ model Log {
   project   Project? @relation(fields: [projectId], references: [id])
   user      User?    @relation(fields: [userId], references: [id])
 }
+
+model AlchemyState {
+  scope     String   @db.Text
+  key       String   @db.Text
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@id([scope, key])
+}

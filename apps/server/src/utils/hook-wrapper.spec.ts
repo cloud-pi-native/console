@@ -222,18 +222,148 @@ describe('transformToHookProject', () => {
     })))
 
     // Assert sur la transformation des environnements
-    expect(result.environments).toEqual(project.environments.map(({ permissions: _, stage, quota, ...environment }) => ({
-      quota,
-      stage: stage.name,
-      permissions: [{ permissions: { rw: true, ro: true }, userId: project.ownerId }],
-      ...environment,
-      apis: {},
-    })))
+    expect(result.environments).toEqual(project.environments.map((env: any) => {
+      const { permissions: _permissions, stage, quota, ...environment } = env
+      return {
+        quota,
+        stage: stage.name,
+        permissions: [{ permissions: { rw: true, ro: true }, userId: project.ownerId }],
+        ...environment,
+        apis: {},
+      }
+    }))
 
     // Assert sur la transformation des repositories
-    expect(result.repositories).toEqual(project.repositories.map(repo => ({ ...repo, newCreds: mockReposCreds[repo.internalRepoName] })))
+    expect(result.repositories).toEqual(project.repositories.map((repo: any) => ({ ...repo, newCreds: mockReposCreds[repo.internalRepoName] })))
 
     // Assert sur le store
     expect(result.store).toEqual(mockStore)
+  })
+})
+
+describe('hook.project.upsert retry policy', () => {
+  it('does not retry when HOOK_UPSERT_PROJECT_MAX_ATTEMPTS=1', async () => {
+    const previous = process.env.HOOK_UPSERT_PROJECT_MAX_ATTEMPTS
+    process.env.HOOK_UPSERT_PROJECT_MAX_ATTEMPTS = '1'
+
+    const { vi } = await import('vitest')
+    vi.resetModules()
+    vi.doMock('@cpn-console/hooks', () => ({
+      hooks: {
+        upsertProject: {
+          execute: vi.fn().mockResolvedValue({
+            args: {},
+            results: {},
+            failed: ['observability'],
+            warning: [],
+            totalExecutionTime: 1,
+            config: {},
+            messageResume: 'Errors:\nobservability: failed;',
+          }),
+        },
+        deleteProject: { execute: vi.fn() },
+        getProjectSecrets: { execute: vi.fn() },
+        upsertProjectMember: { execute: vi.fn() },
+        deleteProjectMember: { execute: vi.fn() },
+        upsertProjectRole: { execute: vi.fn() },
+        deleteProjectRole: { execute: vi.fn() },
+        upsertCluster: { execute: vi.fn() },
+        deleteCluster: { execute: vi.fn() },
+        upsertZone: { execute: vi.fn() },
+        deleteZone: { execute: vi.fn() },
+        checkServices: { execute: vi.fn() },
+        syncRepository: { execute: vi.fn() },
+        retrieveUserByEmail: { execute: vi.fn() },
+        upsertAdminRole: { execute: vi.fn() },
+        deleteAdminRole: { execute: vi.fn() },
+      },
+    }))
+
+    vi.doMock('@/resources/project-service/business.js', () => ({
+      dbToObj: (v: any) => v ?? {},
+    }))
+
+    vi.doMock('@/resources/queries-index.js', () => {
+      const projectId = 'p1'
+      return {
+        archiveProject: vi.fn(),
+        getAdminPlugin: vi.fn().mockResolvedValue({}),
+        getAdminRoleById: vi.fn(),
+        getClusterByIdOrThrow: vi.fn(),
+        getClusterNamesByZoneId: vi.fn(),
+        getClustersAssociatedWithProject: vi.fn().mockResolvedValue([]),
+        getHookProjectInfos: vi.fn().mockResolvedValue({
+          id: projectId,
+          slug: 'fpdafpdfa',
+          name: 'infra-observability',
+          description: null,
+          status: 'initializing',
+          locked: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          everyonePerms: 0n,
+          ownerId: 'u1',
+          members: [],
+          environments: [
+            {
+              id: 'e1',
+              name: 'dev',
+              projectId,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              clusterId: 'c1',
+              quotaId: 'q1',
+              stageId: 's1',
+              quota: { id: 'q1', memory: '1Gi', cpu: 1, name: 'small', isPrivate: false },
+              stage: { id: 's1', name: 'dev' },
+              cluster: {
+                id: 'c1',
+                infos: null,
+                label: 'cluster',
+                privacy: 'dedicated',
+                secretName: 'sn1',
+                kubeconfig: { id: 'k1', user: {}, cluster: {} },
+                clusterResources: false,
+                zone: { id: 'z1', slug: 'default' },
+              },
+            },
+          ],
+          repositories: [],
+          plugins: [],
+          owner: {
+            id: 'u1',
+            firstName: 'Jean',
+            lastName: 'Dupont',
+            email: 'jean@example.com',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            adminRoleIds: [],
+          },
+          roles: [],
+          clusters: [],
+        }),
+        getHookRepository: vi.fn(),
+        getProjectStore: vi.fn().mockResolvedValue({}),
+        getRole: vi.fn(),
+        getZoneByIdOrThrow: vi.fn(),
+        saveProjectStore: vi.fn(),
+        updateProjectClusterHistory: vi.fn(),
+        updateProjectCreated: vi.fn().mockResolvedValue({ id: projectId }),
+        updateProjectFailed: vi.fn().mockResolvedValue({ id: projectId }),
+        updateProjectWarning: vi.fn().mockResolvedValue({ id: projectId }),
+      }
+    })
+
+    const { hook } = await import('./hook-wrapper.ts')
+    await hook.project.upsert('p1')
+
+    const { hooks } = await import('@cpn-console/hooks')
+    expect((hooks.upsertProject.execute as any).mock.calls).toHaveLength(1)
+
+    if (previous === undefined) {
+      delete process.env.HOOK_UPSERT_PROJECT_MAX_ATTEMPTS
+    } else {
+      process.env.HOOK_UPSERT_PROJECT_MAX_ATTEMPTS = previous
+    }
   })
 })
