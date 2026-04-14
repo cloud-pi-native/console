@@ -68,9 +68,6 @@ importers:
       axios:
         specifier: ^1.13.6
         version: 1.13.6
-      dotenv:
-        specifier: ^16.6.1
-        version: 16.6.1
       javascript-time-ago:
         specifier: ^2.6.4
         version: 2.6.4
@@ -288,9 +285,6 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
-      dotenv:
-        specifier: ^16.6.1
-        version: 16.6.1
       fastify:
         specifier: ^4.29.1
         version: 4.29.1
@@ -487,9 +481,6 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
-      dotenv:
-        specifier: ^16.6.1
-        version: 16.6.1
       fastify:
         specifier: ^4.29.1
         version: 4.29.1
@@ -809,9 +800,6 @@ importers:
       '@types/node':
         specifier: ^24.12.0
         version: 24.12.0
-      dotenv:
-        specifier: ^16.6.1
-        version: 16.6.1
 
   plugins/argocd:
     dependencies:
