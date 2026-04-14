@@ -13,7 +13,8 @@
   "scripts": {
     "playwright:test": "pnpm exec playwright test",
     "playwright:test:ui": "pnpm exec playwright test --ui",
-    "playwright:test:integration": "pnpm exec playwright test -c playwright.config.integration.ts",
+    "integ:playwright:test": "INTEGRATION=true pnpm exec playwright test",
+    "integ:playwright:test:ui": "INTEGRATION=true pnpm exec playwright test --ui",
     "format": "eslint ./ --fix"
   },
   "devDependencies": {
@@ -21,7 +22,6 @@
     "@cpn-console/ts-config": "workspace:^",
     "@faker-js/faker": "^9.9.0",
     "@playwright/test": "^1.58.2",
-    "@types/node": "^24.12.0",
-    "dotenv": "^16.6.1"
+    "@types/node": "^24.12.0"
   }
 }
