@@ -69,7 +69,6 @@
     "@ts-rest/open-api": "^3.52.1",
     "axios": "^1.13.6",
     "date-fns": "^4.1.0",
-    "dotenv": "^16.6.1",
     "fastify": "^4.29.1",
     "fastify-keycloak-adapter": "2.3.2",
     "json-2-csv": "^5.5.10",
