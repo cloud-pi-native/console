@@ -3,6 +3,7 @@ import type { AsyncReturnType } from '@cpn-console/shared'
 import type { Cluster, Kubeconfig, Project, ProjectMembers, ProjectRole, Zone } from '@prisma/client'
 import type { ConfigRecords } from '@/resources/project-service/business.js'
 import { hooks } from '@cpn-console/hooks'
+import { logger as baseLogger } from '@cpn-console/logger'
 import { getPermsByUserRoles, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
 import { dbToObj } from '@/resources/project-service/business.js'
 import { archiveProject, getAdminPlugin, getAdminRoleById, getClusterByIdOrThrow, getClusterNamesByZoneId, getClustersAssociatedWithProject, getHookProjectInfos, getHookRepository, getProjectStore, getRole, getZoneByIdOrThrow, saveProjectStore, updateProjectClusterHistory, updateProjectCreated, updateProjectFailed, updateProjectWarning } from '@/resources/queries-index.js'
@@ -10,6 +11,30 @@ import { genericProxy } from './proxy.js'
 
 export type ReposCreds = Record<Repository['internalRepoName'], RepoCreds>
 export type ProjectInfos = AsyncReturnType<typeof getHookProjectInfos>
+
+const logger = baseLogger.child({ scope: 'utils:hook-wrapper' })
+
+function summarizeHookResultForLogs(hookResult: HookResult<any>) {
+  const nonOkResults = Object.fromEntries(
+    Object.entries(hookResult.results ?? {})
+      .filter(([_pluginName, result]) => result?.status?.result !== 'OK')
+      .map(([pluginName, result]) => [
+        pluginName,
+        {
+          result: result.status.result,
+          message: result.status.result === 'OK' ? undefined : result.status.message,
+        },
+      ]),
+  )
+
+  return {
+    failed: hookResult.failed,
+    warning: hookResult.warning,
+    messageResume: hookResult.messageResume,
+    totalExecutionTime: hookResult.totalExecutionTime,
+    nonOkResults,
+  }
+}
 
 async function getProjectPayload(projectId: Project['id'], reposCreds?: ReposCreds) {
   const [
@@ -52,9 +77,34 @@ async function upsertProject(projectId: Project['id'], reposCreds?: ReposCreds) 
 }
 const project = {
   upsert: async (projectId: Project['id'], reposCreds?: ReposCreds) => {
-    const results = await upsertProject(projectId, reposCreds)
-    // automatically retry one time if it fails
-    return results.results.failed ? upsertProject(projectId, reposCreds) : results
+    const first = await upsertProject(projectId, reposCreds)
+    if (!first.results.failed) {
+      return first
+    }
+
+    logger.warn({
+      action: 'upsertProject',
+      projectId,
+      attempt: 1,
+      maxAttempts: 2,
+      ...summarizeHookResultForLogs(first.results),
+    }, 'Hook upsertProject failed, retrying once')
+
+    const second = await upsertProject(projectId, reposCreds)
+    const logPayload = {
+      action: 'upsertProject',
+      projectId,
+      attempt: 2,
+      maxAttempts: 2,
+      ...summarizeHookResultForLogs(second.results),
+    }
+    if (second.results.failed) {
+      logger.error(logPayload, 'Hook upsertProject retry failed')
+    } else {
+      logger.info(logPayload, 'Hook upsertProject retry succeeded')
+    }
+
+    return second
   },
   delete: async (projectId: Project['id']) => {
     const [payload, config] = await Promise.all([
