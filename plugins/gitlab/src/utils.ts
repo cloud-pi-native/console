@@ -1,35 +1,31 @@
-import type { BaseRequestOptions, Gitlab as IGitlab, OffsetPagination, PaginationRequestOptions } from '@gitbeaker/core'
-import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
-import { Gitlab } from '@gitbeaker/rest'
+import type { GitlabClient as IGitlabClient } from '@cpn-console/miracle'
+import { alchemy, find, GitlabClient, GitlabGroup, GitlabGroupCustomAttribute, offsetPaginate, prismaStateStore } from '@cpn-console/miracle'
 import config from './config.js'
-import { customAttributesFilter, groupRootCustomAttributeKey, managedByConsoleCustomAttributeKey, upsertCustomAttribute } from './custom-attributes.js'
+import { customAttributesFilter, groupRootCustomAttributeKey, managedByConsoleCustomAttributeKey } from './custom-attributes.js'
 import { logger } from './logger.js'
 
-let api: IGitlab | undefined
+let client: IGitlabClient | undefined
 
-let groupRootId: number
+let groupRootId: number | undefined
 
 export const MAX_PAGINATION_PER_PAGE = 100
 
 export async function getGroupRootId(throwIfNotFound?: true): Promise<number>
 export async function getGroupRootId(throwIfNotFound?: false): Promise<number | undefined>
 export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number | undefined> {
-  const gitlabApi = getApi()
   const projectRootDir = config().projectsRootDir
   logger.debug({ action: 'getGroupRootId', projectRootDir }, 'Resolve group root id')
   if (groupRootId) return groupRootId
   const fast = await find(
-    offsetPaginate(opts => gitlabApi.Groups.all({
+    offsetPaginate(opts => getClient().groupsAll({
       ...customAttributesFilter(groupRootCustomAttributeKey, projectRootDir),
-      ...opts,
-    })),
+    }, opts.page, opts.perPage), { perPage: MAX_PAGINATION_PER_PAGE }),
     grp => grp.full_path === projectRootDir,
   )
   const groupRoot = fast ?? await find(
-    offsetPaginate(opts => gitlabApi.Groups.all({
+    offsetPaginate(opts => getClient().groupsAll({
       search: projectRootDir,
-      ...opts,
-    })),
+    }, opts.page, opts.perPage), { perPage: MAX_PAGINATION_PER_PAGE }),
     grp => grp.full_path === projectRootDir,
   )
   logger.debug({ action: 'getGroupRootId', groupRootId: groupRoot?.id, groupRootPath: groupRoot?.full_path }, 'Resolved group root')
@@ -41,68 +37,67 @@ export async function getGroupRootId(throwIfNotFound?: boolean): Promise<number 
     return searchId
   }
   groupRootId = searchId
-  try {
-    await upsertCustomAttribute('groups', groupRootId, groupRootCustomAttributeKey, projectRootDir)
-    await upsertCustomAttribute('groups', groupRootId, managedByConsoleCustomAttributeKey, 'true')
-  } catch (err) {
-    logger.debug({ action: 'getGroupRootId', groupRootId, err }, 'Failed to upsert group root custom attribute')
-  }
   return groupRootId
 }
 
 async function createGroupRoot(): Promise<number> {
-  logger.info({ action: 'createGroupRoot', projectRootDir: config().projectsRootDir }, 'Create group root hierarchy')
-  const gitlabApi = getApi()
   const projectRootDir = config().projectsRootDir
-  const projectRootDirArray = projectRootDir.split('/')
+  logger.info({ action: 'createGroupRoot', projectRootDir }, 'Create group root hierarchy')
 
-  const rootGroupPath = projectRootDirArray.shift()
-  if (!rootGroupPath) {
-    throw new Error('No projectRootDir available')
-  }
+  const parts = projectRootDir.split('/').filter(Boolean)
+  if (parts.length === 0) throw new Error('No projectRootDir available')
 
-  let parentGroup = await find(offsetPaginate(opts => gitlabApi.Groups.all({
-    search: rootGroupPath,
-    ...opts,
-  }), { perPage: MAX_PAGINATION_PER_PAGE }), grp => grp.full_path === rootGroupPath) ?? await gitlabApi.Groups.create(rootGroupPath, rootGroupPath)
+  const client = getClient()
 
-  if (parentGroup.full_path === projectRootDir) {
-    try {
-      await upsertCustomAttribute('groups', parentGroup.id, groupRootCustomAttributeKey, projectRootDir)
-      await upsertCustomAttribute('groups', parentGroup.id, managedByConsoleCustomAttributeKey, 'true')
-    } catch (err) {
-      logger.debug({ action: 'createGroupRoot', groupRootId: parentGroup.id, err }, 'Failed to upsert group root custom attribute')
-    }
-    return parentGroup.id
-  }
+  return alchemy.run(`group-root-${projectRootDir}`, { phase: 'up', stateStore: prismaStateStore() }, async () => {
+    let parentId: number | undefined
+    let fullPath = ''
 
-  for (const path of projectRootDirArray) {
-    const futureFullPath = `${parentGroup.full_path}/${path}`
-    parentGroup = await find(offsetPaginate(opts => gitlabApi.Groups.all({
-      search: futureFullPath,
-      ...opts,
-    }), { perPage: MAX_PAGINATION_PER_PAGE }), grp => grp.full_path === futureFullPath) ?? await gitlabApi.Groups.create(path, path, { parentId: parentGroup.id, visibility: 'internal' })
+    for (const [idx, part] of parts.entries()) {
+      const id = parts.slice(0, idx + 1).join('-')
+      const groupResource = await GitlabGroup(`group-root-${id}`, {
+        client,
+        name: part,
+        path: part,
+        parentId,
+        createArgs: parentId ? { visibility: 'internal' } : undefined,
+      })
+      assertHasOutput<{ id: number }>(groupResource, 'GitlabGroup(groupRoot)')
+      parentId = groupResource.output.id
+      fullPath = fullPath ? `${fullPath}/${part}` : part
 
-    if (parentGroup.full_path === projectRootDir) {
-      try {
-        await upsertCustomAttribute('groups', parentGroup.id, groupRootCustomAttributeKey, projectRootDir)
-        await upsertCustomAttribute('groups', parentGroup.id, managedByConsoleCustomAttributeKey, 'true')
-      } catch (err) {
-        logger.debug({ action: 'createGroupRoot', groupRootId: parentGroup.id, err }, 'Failed to upsert group root custom attribute')
+      if (fullPath === projectRootDir) {
+        await GitlabGroupCustomAttribute(`group-root-dir-${projectRootDir}`, {
+          client,
+          groupId: parentId,
+          key: groupRootCustomAttributeKey,
+          value: projectRootDir,
+        })
+        await GitlabGroupCustomAttribute(`group-root-managed-${projectRootDir}`, {
+          client,
+          groupId: parentId,
+          key: managedByConsoleCustomAttributeKey,
+          value: 'true',
+        })
+        groupRootId = parentId
+        return parentId
       }
-      return parentGroup.id
     }
-  }
-  throw new Error('No projectRootDir available or is malformed')
+
+    throw new Error('No projectRootDir available or is malformed')
+  })
 }
 
 export async function getOrCreateGroupRoot(): Promise<number> {
   return await getGroupRootId(false) ?? createGroupRoot()
 }
 
-export function getApi(): IGitlab {
-  api ??= new Gitlab({ token: config().token, host: config().internalUrl })
-  return api
+export function getClient(): IGitlabClient {
+  client ??= new GitlabClient({
+    host: config().internalUrl,
+    token: config().token,
+  })
+  return client
 }
 
 export const infraAppsRepoName = 'infra-apps'
@@ -116,12 +111,22 @@ export interface VaultSecrets {
   }
 }
 
-// eslint-disable-next-line regexp/no-super-linear-backtracking
-const keyValueRegExp = /\/\/(.*):(.*)@/g
+const keyValueRegExp = /\/\/[^/@][^/:@]*:[^/@]*@/g
 
 export function cleanGitlabError<T>(error: T): T {
-  if (error instanceof GitbeakerRequestError && error.cause?.description) {
-    error.cause.description = String(error.cause.description).replaceAll(keyValueRegExp, '//MASKED:MASKED@')
+  if (error instanceof Error) {
+    error.message = error.message.replace(keyValueRegExp, '//MASKED:MASKED@')
+    const cause = (error as Error & { cause?: unknown }).cause
+    if (cause && typeof cause === 'object') {
+      const maybeDescription = (cause as { description?: unknown }).description
+      if (typeof maybeDescription === 'string') {
+        ;(cause as { description: string }).description = maybeDescription.replace(keyValueRegExp, '//MASKED:MASKED@')
+      }
+      const maybeUrl = (cause as { url?: unknown }).url
+      if (typeof maybeUrl === 'string') {
+        ;(cause as { url: string }).url = maybeUrl.replace(keyValueRegExp, '//MASKED:MASKED@')
+      }
+    }
   }
   return error
 }
@@ -130,69 +135,12 @@ export function matchRole(projectSlug: string, roleOidcGroup: string, configured
   return configuredRolePath.some(path => roleOidcGroup === `/${projectSlug}${path}`)
 }
 
-export interface OffsetPaginateOptions {
-  startPage?: number
-  perPage?: number
-  maxPages?: number
-}
+export { find } from '@cpn-console/miracle'
+export { getAll } from '@cpn-console/miracle'
+export { offsetPaginate } from '@cpn-console/miracle'
 
-export async function* offsetPaginate<T>(
-  request: (options: PaginationRequestOptions<'offset'> & BaseRequestOptions<true>) => Promise<{ data: T[], paginationInfo: OffsetPagination }>,
-  options?: OffsetPaginateOptions,
-): AsyncGenerator<T> {
-  let page: number | null = options?.startPage ?? 1
-  let pagesFetched = 0
-  let total: number = 0
-  logger.debug({ action: 'offsetPaginate', page }, 'Pagination start')
-  while (page !== null) {
-    if (options?.maxPages && pagesFetched >= options.maxPages) {
-      page = null
-      continue
-    }
-    try {
-      const { data, paginationInfo } = await request({
-        page,
-        perPage: options?.perPage,
-        maxPages: options?.maxPages,
-        showExpanded: true,
-        pagination: 'offset',
-      })
-      pagesFetched += 1
-      total += data.length
-      logger.debug(
-        { action: 'offsetPaginate', page, nextPage: paginationInfo.next, items: data.length, total },
-        'Pagination page fetched',
-      )
-      for (const item of data) {
-        yield item
-      }
-      page = paginationInfo.next
-    } catch (error) {
-      logger.error({ action: 'offsetPaginate', page, err: error }, 'Pagination request failed')
-      throw error
-    }
+function assertHasOutput<T>(resource: unknown, name: string): asserts resource is { output: T } {
+  if (typeof resource !== 'object' || resource === null || !('output' in resource)) {
+    throw new Error(`${name} did not return an output-bearing resource`)
   }
-  logger.debug({ action: 'offsetPaginate', total }, 'Pagination done')
-}
-
-export async function getAll<T>(
-  iterable: AsyncIterable<T>,
-): Promise<T[]> {
-  const items: T[] = []
-  for await (const item of iterable) {
-    items.push(item)
-  }
-  return items
-}
-
-export async function find<T>(
-  iterable: AsyncIterable<T>,
-  predicate: (item: T) => boolean,
-): Promise<T | undefined> {
-  for await (const item of iterable) {
-    if (predicate(item)) {
-      return item
-    }
-  }
-  return undefined
 }
