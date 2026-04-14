@@ -75,10 +75,29 @@ async function upsertProject(projectId: Project['id'], reposCreds?: ReposCreds) 
     project,
   }
 }
+
+function getUpsertProjectMaxAttempts() {
+  const raw = process.env.HOOK_UPSERT_PROJECT_MAX_ATTEMPTS
+  const parsed = raw === undefined ? 2 : Number(raw)
+  const safe = Number.isFinite(parsed) ? Math.trunc(parsed) : 2
+  return Math.min(2, Math.max(1, safe))
+}
 const project = {
   upsert: async (projectId: Project['id'], reposCreds?: ReposCreds) => {
+    const maxAttempts = getUpsertProjectMaxAttempts()
     const first = await upsertProject(projectId, reposCreds)
     if (!first.results.failed) {
+      return first
+    }
+
+    if (maxAttempts <= 1) {
+      logger.warn({
+        action: 'upsertProject',
+        projectId,
+        attempt: 1,
+        maxAttempts,
+        ...summarizeHookResultForLogs(first.results),
+      }, 'Hook upsertProject failed, no retry configured')
       return first
     }
 
@@ -86,7 +105,7 @@ const project = {
       action: 'upsertProject',
       projectId,
       attempt: 1,
-      maxAttempts: 2,
+      maxAttempts,
       ...summarizeHookResultForLogs(first.results),
     }, 'Hook upsertProject failed, retrying once')
 
@@ -95,7 +114,7 @@ const project = {
       action: 'upsertProject',
       projectId,
       attempt: 2,
-      maxAttempts: 2,
+      maxAttempts,
       ...summarizeHookResultForLogs(second.results),
     }
     if (second.results.failed) {

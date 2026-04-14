@@ -1,43 +1,45 @@
 {
-  "name": "@cpn-console/gitlab-plugin",
+  "name": "@cpn-console/miracle",
   "type": "module",
-  "version": "3.3.1",
+  "version": "0.1.0",
   "private": false,
-  "description": "",
+  "description": "Alchemy-based wrappers for external service APIs",
   "repository": {
     "type": "git",
     "url": "https://github.com/cloud-pi-native/console"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
   },
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "types/index.d.ts",
   "files": [
     "dist",
-    "files",
     "types"
   ],
   "scripts": {
     "build": "tsc",
     "build:clean": "node --input-type=module -e \"import { rm } from 'node:fs/promises'; await rm('./dist', { recursive: true, force: true }); await rm('./types', { recursive: true, force: true }); await rm('./tsconfig.tsbuildinfo', { force: true });\"",
-    "dev": "nodemon --watch src --ext .ts --exec 'pnpm run build'",
     "format": "eslint ./ --fix",
-    "lint": "eslint ./"
+    "lint": "eslint ./",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "@cpn-console/hooks": "workspace:^",
-    "@cpn-console/logger": "workspace:^",
-    "@cpn-console/miracle": "workspace:^",
-    "@cpn-console/shared": "workspace:^",
-    "@cpn-console/vault-plugin": "workspace:^"
+    "@gitbeaker/core": "^40.6.0",
+    "@gitbeaker/rest": "^40.6.0",
+    "@prisma/client": "6.19.2",
+    "alchemy": "^0.23.0"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
     "@types/node": "^24.12.0",
-    "@vitest/coverage-v8": "^2.1.9",
-    "nodemon": "^3.1.14",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1",
     "vitest": "^2.1.9"
   },
   "publishConfig": {
