@@ -1,16 +1,8 @@
-import * as dotenv from 'dotenv'
+if (process.env.INTEGRATION === 'true')
+  process.loadEnvFile('.env.integ')
 
-if (process.env.DOCKER !== 'true') {
-  dotenv.config({ path: '.env' })
-}
-
-if (process.env.INTEGRATION === 'true') {
-  const envInteg = dotenv.config({ path: '.env.integ' })
-  process.env = {
-    ...process.env,
-    ...(envInteg?.parsed ?? {}),
-  }
-}
+if (process.env.DOCKER !== 'true')
+  process.loadEnvFile('.env')
 
 // application mode
 export const isDev = process.env.NODE_ENV === 'development'
