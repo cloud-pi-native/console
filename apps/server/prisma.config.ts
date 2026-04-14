@@ -1,22 +1,19 @@
-import path from 'node:path'
-import * as dotenv from 'dotenv'
-import { defineConfig } from 'prisma/config'
+import { defineConfig, env } from 'prisma/config'
 
 if (process.env.DOCKER !== 'true') {
-  dotenv.config({ path: '.env' })
+  process.loadEnvFile('.env')
 }
 
 if (process.env.INTEGRATION === 'true') {
-  const envInteg = dotenv.config({ path: '.env.integ' })
-  process.env = {
-    ...process.env,
-    ...(envInteg?.parsed ?? {}),
-  }
+  process.loadEnvFile('.env.integ')
 }
 
 export default defineConfig({
-  schema: path.join('src', 'prisma', 'schema'),
+  schema: 'src/prisma/schema',
   migrations: {
-    path: path.join('src', 'prisma', 'migrations'),
+    path: 'src/prisma/migrations',
+  },
+  datasource: {
+    url: env('DB_URL'),
   },
 })
