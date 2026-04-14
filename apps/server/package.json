@@ -34,7 +34,7 @@
     "prepublishOnly": "pnpm run db:generate",
     "prestart": "npm run db:deploy",
     "start": "node --enable-source-maps dist/bootstrap.js",
-    "pretest": "pnpm run db:generate",
+    "pretest": "pnpm --filter @cpn-console/miracle run build && pnpm run db:generate",
     "test": "vitest run",
     "pretest:cov": "pnpm run db:generate",
     "test:cov": "vitest run --coverage",

@@ -1,6 +1,7 @@
 import type { Config, Project, UserObject } from '@cpn-console/hooks'
+import type { MemberSchema } from '@cpn-console/miracle'
 import type { GitlabProjectApi } from './class.js'
-import { AccessLevel } from '@gitbeaker/core'
+import { AccessLevel } from '@cpn-console/miracle'
 import {
   DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX,
@@ -50,7 +51,7 @@ export async function ensureGroup(
   })
 
   const groupMembers = await gitlabApi.getGroupMembers()
-  const existingMember = groupMembers.find(m => m.username === createUsername(user.email))
+  const existingMember = groupMembers.find((m: MemberSchema) => m.username === createUsername(user.email))
   const maxAccessLevel = getGroupAccessLevel(project, user, config)
 
   if (existingMember && maxAccessLevel) {
