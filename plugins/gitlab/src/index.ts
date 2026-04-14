@@ -1,8 +1,6 @@
-import type { DeclareModuleGenerator, DefaultArgs, Plugin, Project, ProjectMember, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
-import { GitlabProjectApi, GitlabZoneApi } from './class.js'
+import type { DeclareModuleGenerator, Plugin } from '@cpn-console/hooks'
 import {
   checkApi,
-  commitFiles,
   deleteDsoProject,
   deleteProjectMember,
   deleteZone,
@@ -18,8 +16,6 @@ import { logger } from './logger.js'
 import monitor from './monitor.js'
 import { getOrCreateGroupRoot } from './utils.js'
 
-const onlyApi = { api: (project: Project | UniqueRepo) => new GitlabProjectApi(project) }
-
 function start() {
   getOrCreateGroupRoot().catch((error) => {
     logger.error({ action: 'start', err: error }, 'Hook failed')
@@ -31,49 +27,34 @@ export const plugin: Plugin = {
   infos,
   subscribedHooks: {
     deleteProject: {
-      ...onlyApi,
       steps: {
         main: deleteDsoProject,
-        post: commitFiles,
       },
     },
     upsertProject: {
-      ...onlyApi,
       steps: {
         check: checkApi,
         main: upsertDsoProject,
-        post: commitFiles,
       },
     },
     getProjectSecrets: { steps: { main: getDsoProjectSecrets } },
     syncRepository: {
-      ...onlyApi,
       steps: {
         main: syncRepository,
-        post: commitFiles,
       },
     },
     upsertCluster: {
-      api: () => new GitlabZoneApi(),
-      steps: {
-        post: commitFiles,
-      },
+      steps: {},
     },
     deleteCluster: {
-      api: () => new GitlabZoneApi(),
-      steps: {
-        post: commitFiles,
-      },
+      steps: {},
     },
     upsertZone: {
-      api: () => new GitlabZoneApi(),
       steps: {
         pre: upsertZone,
-        post: commitFiles,
       },
     },
     deleteZone: {
-      api: () => new GitlabZoneApi(),
       steps: {
         main: deleteZone,
       },
@@ -84,13 +65,11 @@ export const plugin: Plugin = {
       },
     },
     upsertProjectMember: {
-      api: member => new GitlabProjectApi(member.project),
       steps: {
         main: upsertProjectMember,
       },
     },
     deleteProjectMember: {
-      api: member => new GitlabProjectApi(member.project),
       steps: {
         post: deleteProjectMember,
       },
@@ -101,13 +80,6 @@ export const plugin: Plugin = {
 }
 
 declare module '@cpn-console/hooks' {
-  interface HookPayloadApis<Args extends DefaultArgs> {
-    gitlab: Args extends Project | UniqueRepo | ProjectMember['project']
-      ? GitlabProjectApi
-      : Args extends ZoneObject
-        ? GitlabZoneApi
-        : never
-  }
   interface ProjectStore extends DeclareModuleGenerator<typeof infos, 'project'> {}
   interface Config extends DeclareModuleGenerator<typeof infos, 'global'> {}
   interface PluginResult {
