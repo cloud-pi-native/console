@@ -12,9 +12,9 @@ import {
   KubeconfigSchema,
 } from '@cpn-console/shared'
 import { DsfrDataTable } from '@gouvminint/vue-dsfr'
-import { load } from 'js-yaml'
 import { computed, onBeforeMount, ref, watch } from 'vue'
 import { JsonViewer } from 'vue3-json-viewer'
+import { parse } from 'yaml'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { localeParseFloat, ONE_TENTH_STR } from '@/utils/func.js'
 import ChoiceSelector from './ChoiceSelector.vue'
@@ -99,7 +99,7 @@ function updateKubeconfig(files: FileList) {
     const reader = new FileReader()
     reader.onload = (evt) => {
       // Retrieve YAML kubeconfig, turn it to JSON object.
-      if (evt.target) jsonKConfig.value = load(evt.target.result as string) as object
+      if (evt.target) jsonKConfig.value = parse(evt.target.result as string) as object
       // Retrieve context.
       let context
       if (!jsonKConfig.value.contexts) throw new Error('Pas de contexts spécifiés dans le kubeconfig.')

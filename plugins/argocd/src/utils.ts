@@ -1,7 +1,8 @@
+import type { GitlabZoneApi } from '@cpn-console/gitlab-plugin/types/class.js'
 import type { ClusterObject, HookPayloadApis, ZoneObject } from '@cpn-console/hooks'
 import { createHmac } from 'node:crypto'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
-import { dump } from 'js-yaml'
+import { stringify } from 'yaml'
 
 export function generateAppProjectName(projectSlug: string, env: string) {
   const envHash = createHmac('sha256', '')
@@ -33,13 +34,14 @@ export function getConfig(): Required<typeof config> {
 }
 
 export async function updateZoneValues(zone: ZoneObject, apis: HookPayloadApis<ZoneObject> | HookPayloadApis<ClusterObject>) {
-  const { gitlab, vault } = apis
+  const gitlab = apis.gitlab as unknown as GitlabZoneApi
+  const vault = apis.vault as any
   const values = {
     vault: await vault.getValues(),
     clusters: zone.clusterNames,
   }
   const zoneRepo = await gitlab.getOrCreateInfraProject(zone.slug)
-  await gitlab.commitCreateOrUpdate(zoneRepo.id, dump(values), 'argocd-values.yaml')
+  await gitlab.commitCreateOrUpdate(zoneRepo.id, stringify(values), 'argocd-values.yaml')
   return {
     status: {
       result: 'OK',
