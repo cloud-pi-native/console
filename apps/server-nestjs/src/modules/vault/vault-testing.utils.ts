@@ -1,4 +1,4 @@
-import type { VaultSecret } from './vault-client.service.js'
+import type { VaultSecret } from './vault-client.service'
 import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
 import { faker } from '@faker-js/faker'
 

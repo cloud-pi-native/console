@@ -1,4 +1,4 @@
-import type { ProjectWithDetails } from './registry-datastore.service.js'
+import type { ProjectWithDetails } from './registry-datastore.service'
 import { removeTrailingSlash } from '@cpn-console/shared'
 
 const protocolPrefixRegex = /^https?:\/\//u

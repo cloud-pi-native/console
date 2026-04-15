@@ -11,7 +11,7 @@ import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultClientService } from '../vault/vault-client.service'
-import { VaultError } from '../vault/vault-http-client.service.js'
+import { VaultError } from '../vault/vault-http-client.service'
 import { NexusClientService } from './nexus-client.service'
 import { NexusDatastoreService } from './nexus-datastore.service'
 import {

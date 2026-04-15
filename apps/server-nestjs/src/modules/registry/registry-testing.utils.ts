@@ -1,5 +1,5 @@
 import type { ProjectWithDetails } from './registry-datastore.service'
-import type { RegistryResponse } from './registry-http-client.service.js'
+import type { RegistryResponse } from './registry-http-client.service'
 import { faker } from '@faker-js/faker'
 
 export function makeOkResponse<T>(data: T): RegistryResponse<T> {

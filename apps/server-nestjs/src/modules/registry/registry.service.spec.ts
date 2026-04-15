@@ -4,10 +4,10 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from '../vault/vault-client.service'
-import { makeVaultSecret } from '../vault/vault-testing.utils.js'
+import { makeVaultSecret } from '../vault/vault-testing.utils'
 import { projectRobotName, RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
-import { makeCreatedResponse, makeNoContent, makeOkResponse, makeProjectWithDetails } from './registry-testing.utils.js'
+import { makeCreatedResponse, makeNoContent, makeOkResponse, makeProjectWithDetails } from './registry-testing.utils'
 import {
   REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT,
   REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT,
