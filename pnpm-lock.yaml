@@ -59,9 +59,6 @@ importers:
       '@ts-rest/core':
         specifier: ^3.52.1
         version: 3.52.1(@types/node@24.12.0)(zod@3.25.76)
-      '@types/js-yaml':
-        specifier: 4.0.9
-        version: 4.0.9
       '@vue/tsconfig':
         specifier: ^0.7.0
         version: 0.7.0(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
@@ -71,9 +68,6 @@ importers:
       javascript-time-ago:
         specifier: ^2.6.4
         version: 2.6.4
-      js-yaml:
-        specifier: ^4.1.1
-        version: 4.1.1
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
@@ -101,6 +95,9 @@ importers:
       xbytes:
         specifier: ^1.9.1
         version: 1.9.1
+      yaml:
+        specifier: ^2.7.1
+        version: 2.8.2
     devDependencies:
       '@cpn-console/eslint-config':
         specifier: workspace:^
@@ -821,15 +818,12 @@ importers:
       '@himenon/argocd-typescript-openapi':
         specifier: ^1.2.2
         version: 1.2.2
-      '@types/js-yaml':
-        specifier: 4.0.9
-        version: 4.0.9
       axios:
         specifier: ^1.13.6
         version: 1.13.6
-      js-yaml:
-        specifier: 4.1.0
-        version: 4.1.0
+      yaml:
+        specifier: ^2.7.1
+        version: 2.8.2
     devDependencies:
       '@cpn-console/eslint-config':
         specifier: workspace:^
@@ -888,9 +882,6 @@ importers:
       axios:
         specifier: ^1.13.6
         version: 1.13.6
-      js-yaml:
-        specifier: 4.1.0
-        version: 4.1.0
     devDependencies:
       '@cpn-console/eslint-config':
         specifier: workspace:^
@@ -898,9 +889,6 @@ importers:
       '@cpn-console/ts-config':
         specifier: workspace:^
         version: link:../../packages/tsconfig
-      '@types/js-yaml':
-        specifier: 4.0.9
-        version: 4.0.9
       '@types/node':
         specifier: ^24.12.0
         version: 24.12.0
@@ -4044,9 +4032,6 @@ packages:
   '@types/http-errors@2.0.5':
     resolution: {integrity: sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==}
 
-  '@types/js-yaml@4.0.9':
-    resolution: {integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==}
-
   '@types/jsdom@21.1.7':
     resolution: {integrity: sha512-yOriVnggzrnQ3a9OKOCxaVuSug3w3/SbOj5i7VwXWZEyUNl3bLF9V3MfxGbZKuwqJOQyRfqXyROBB1CoZLFWzA==}
 
@@ -6491,10 +6476,6 @@ packages:
 
   js-tokens@9.0.1:
     resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
-
-  js-yaml@4.1.0:
-    resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
-    hasBin: true
 
   js-yaml@4.1.1:
     resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
@@ -10028,9 +10009,8 @@ snapshots:
       '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
       '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.15)(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
       '@himenon/argocd-typescript-openapi': 1.2.2
-      '@types/js-yaml': 4.0.9
       axios: 1.13.6
-      js-yaml: 4.1.0
+      yaml: 2.8.2
     transitivePeerDependencies:
       - '@types/node'
       - debug
@@ -10047,7 +10027,6 @@ snapshots:
       '@gitbeaker/requester-utils': 40.6.0
       '@gitbeaker/rest': 40.6.0
       axios: 1.13.6
-      js-yaml: 4.1.0
     transitivePeerDependencies:
       - '@types/node'
       - debug
@@ -12335,8 +12314,6 @@ snapshots:
       '@types/serve-static': 2.2.0
 
   '@types/http-errors@2.0.5': {}
-
-  '@types/js-yaml@4.0.9': {}
 
   '@types/jsdom@21.1.7':
     dependencies:
@@ -15405,10 +15382,6 @@ snapshots:
   js-tokens@4.0.0: {}
 
   js-tokens@9.0.1: {}
-
-  js-yaml@4.1.0:
-    dependencies:
-      argparse: 2.0.1
 
   js-yaml@4.1.1:
     dependencies:
