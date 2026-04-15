@@ -1,7 +1,7 @@
 import type { ClusterObject, Environment, Project, Repository } from '@cpn-console/hooks'
 import { faker } from '@faker-js/faker'
-import { dump } from 'js-yaml'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { stringify } from 'yaml'
 import { deleteProject, upsertProject } from './functions.js'
 
 vi.mock('./utils.js', () => ({
@@ -176,7 +176,7 @@ describe('argocd functions', () => {
 
     expect(mockGitlabApi.commitCreateOrUpdate).toHaveBeenCalledWith(
       infraProjectId,
-      dump(expectedValues),
+      stringify(expectedValues),
       `${mockProject.name}/${mockCluster.label}/${mockEnvironment.name}/values.yaml`,
     )
     expect(mockGitlabApi.commitDelete).toHaveBeenCalledWith(infraProjectId, [])

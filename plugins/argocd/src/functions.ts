@@ -11,6 +11,8 @@ import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-proj
 import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
 import { dump } from 'js-yaml'
 import {
+  DEFAULT_DSO_ENV_CHART_VERSION,
+  DEFAULT_DSO_NS_CHART_VERSION,
   DEFAULT_PLATFORM_ADMIN_GROUP_PATH,
   DEFAULT_PLATFORM_READONLY_GROUP_PATH,
   DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIX,
@@ -24,10 +26,6 @@ function splitExtraRepositories(repos?: string): string[] {
   return repos ? repos.split(',').map(repo => repo.trim()) : []
 }
 
-const DSO_NS_CHART_VERSION = process.env.DSO_NS_CHART_VERSION ?? 'dso-ns-1.1.5'
-const DSO_ENV_CHART_VERSION
-  = process.env.DSO_ENV_CHART_VERSION ?? 'dso-env-1.6.0'
-
 function getValueFilePath(p: Project, c: ClusterObject, e: Environment): string {
   return `${p.name}/${c.label}/${e.name}/values.yaml`
 }
@@ -35,11 +33,9 @@ function getValueFilePath(p: Project, c: ClusterObject, e: Environment): string 
 export const upsertProject: StepCall<Project> = async (payload) => {
   try {
     const project = payload.args
-    const {
-      gitlab: gitlabApi,
-      keycloak: keycloakApi,
-      vault: vaultApi,
-    } = payload.apis
+    const gitlabApi = payload.apis.gitlab as unknown as GitlabProjectApi
+    const keycloakApi = payload.apis.keycloak as any
+    const vaultApi = payload.apis.vault as unknown as VaultProjectApi
 
     const infraRepositories = project.repositories.filter(
       repo => repo.isInfra,
@@ -128,6 +124,8 @@ async function ensureInfraEnvValues(
   const projectDevopsGroupSuffix = config.argocd?.projectDevopsGroupPathSuffix ?? DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX
   const projectDevelopperGroupSuffix = config.argocd?.projectDevelopperGroupPathSuffix ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
   const projectReadonlyGroupSuffix = config.argocd?.projectReadonlyGroupPathSuffix ?? DEFAULT_PROJECT_READONLY_GROUP_PATH_SUFFIX
+  const dsoEnvChartVersion = config.argocd?.dsoEnvChartVersion ?? DEFAULT_DSO_ENV_CHART_VERSION
+  const dsoNsChartVersion = config.argocd?.dsoNsChartVersion ?? DEFAULT_DSO_NS_CHART_VERSION
   const cluster = getCluster(project, environment)
   const infraProject = await gitlabApi.getProjectById(repoId)
   const valueFilePath = getValueFilePath(project, cluster, environment)
@@ -164,8 +162,8 @@ async function ensureInfraEnvValues(
       cluster: inClusterLabel,
       namespace: getConfig().namespace,
       project: appProjectName,
-      envChartVersion: DSO_ENV_CHART_VERSION,
-      nsChartVersion: DSO_NS_CHART_VERSION,
+      envChartVersion: dsoEnvChartVersion,
+      nsChartVersion: dsoNsChartVersion,
     },
     environment: {
       valueFileRepository: infraProject.http_url_to_repo,
@@ -240,7 +238,7 @@ function getDistinctZones(project: Project) {
 export const deleteProject: StepCall<Project> = async (payload) => {
   try {
     const project = payload.args
-    const { gitlab: gitlabApi } = payload.apis
+    const gitlabApi = payload.apis.gitlab as unknown as GitlabProjectApi
 
     for (const z of getDistinctZones(project)) {
       const infraProject = await gitlabApi.getOrCreateInfraProject(z)
