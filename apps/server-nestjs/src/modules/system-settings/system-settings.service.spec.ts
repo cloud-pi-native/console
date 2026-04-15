@@ -5,7 +5,7 @@ import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { PrismaService } from '../infrastructure/database/prisma.service.js'
+import { PrismaService } from '../infrastructure/database/prisma.service'
 import { makeSystemSetting, makeSystemSettings } from './system-settings-testing.utils'
 import { SystemSettingsService } from './system-settings.service'
 

@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
-import { makeProjectWithDetails, makeVaultSecret, makeZoneWithDetails } from './vault-testing.utils.js'
+import { makeProjectWithDetails, makeVaultSecret, makeZoneWithDetails } from './vault-testing.utils'
 import { VaultService } from './vault.service'
 
 const projectRoleGroupNameRegex = /^project-(.*)-(admin|devops|developer|readonly|security)$/

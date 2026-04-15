@@ -17,7 +17,7 @@ import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultClientService } from '../vault/vault-client.service'
-import { VaultError } from '../vault/vault-http-client.service.js'
+import { VaultError } from '../vault/vault-http-client.service'
 import { projectRobotName, RegistryClientService, roAccess, roRobotName, rwAccess, rwRobotName } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
 import {

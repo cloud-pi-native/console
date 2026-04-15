@@ -1,7 +1,7 @@
 import type { SystemSetting } from '@cpn-console/shared'
 import { SystemSettingSchema } from '@cpn-console/shared'
 import { Body, Controller, Get, Inject, Put, Query } from '@nestjs/common'
-import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe.js'
+import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { SystemSettingsService } from './system-settings.service'
 
 @Controller('api/v1/system/settings')
