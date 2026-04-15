@@ -9,7 +9,7 @@ import type {
 } from '@cpn-console/hooks'
 import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
 import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
-import { dump } from 'js-yaml'
+import { stringify } from 'yaml'
 import {
   DEFAULT_PLATFORM_ADMIN_GROUP_PATH,
   DEFAULT_PLATFORM_READONLY_GROUP_PATH,
@@ -196,7 +196,7 @@ async function ensureInfraEnvValues(
       repositories,
     },
   }
-  await gitlabApi.commitCreateOrUpdate(repoId, dump(values), valueFilePath)
+  await gitlabApi.commitCreateOrUpdate(repoId, stringify(values), valueFilePath)
 }
 
 function getCluster(p: Project, e: Environment): ClusterObject {

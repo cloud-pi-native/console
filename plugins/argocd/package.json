@@ -29,9 +29,8 @@
     "@cpn-console/shared": "workspace:^",
     "@cpn-console/vault-plugin": "workspace:^",
     "@himenon/argocd-typescript-openapi": "^1.2.2",
-    "@types/js-yaml": "4.0.9",
     "axios": "^1.13.6",
-    "js-yaml": "4.1.0"
+    "yaml": "^2.7.1"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
