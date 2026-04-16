@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test'
 import { faker } from '@faker-js/faker'
+import { deleteValidationInput } from './constants'
 import { openZonesAdministration } from './navigation'
 
 async function openZoneCreateForm(page: Page) {
@@ -17,20 +18,17 @@ async function fillZoneCreateForm(page: Page, zoneName: string) {
 
 export async function createZone({ page }: { page: Page }): Promise<string> {
   const zoneName = faker.string.alpha(10).toLowerCase()
-  await openZonesAdministration(page)
+  await openZonesAdministration({ page })
   await openZoneCreateForm(page)
   await fillZoneCreateForm(page, zoneName)
   await page.getByTestId('addZoneBtn').click()
   return zoneName
 }
 
-export async function deleteZone(
-  page: Page,
-  zoneName: string,
-) {
-  await openZonesAdministration(page)
+export async function deleteZone({ page, zoneName }: { page: Page, zoneName: string }) {
+  await openZonesAdministration({ page })
   await page.getByRole('link', { name: zoneName }).click()
   await page.getByTestId('showDeleteZoneBtn').click()
-  await page.getByTestId('deleteZoneInput').fill('DELETE')
+  await page.getByTestId('deleteZoneInput').fill(deleteValidationInput)
   await page.getByTestId('deleteZoneBtn').click()
 }
