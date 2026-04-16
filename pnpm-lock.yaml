@@ -403,6 +403,9 @@ importers:
       '@gitbeaker/core':
         specifier: ^40.6.0
         version: 40.6.0
+      '@gitbeaker/requester-utils':
+        specifier: ^40.6.0
+        version: 40.6.0
       '@gitbeaker/rest':
         specifier: ^40.6.0
         version: 40.6.0
@@ -511,6 +514,9 @@ importers:
       vitest-mock-extended:
         specifier: ^2.0.2
         version: 2.0.2(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.15)(jsdom@25.0.1)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0))
+      yaml:
+        specifier: ^2.7.1
+        version: 2.8.2
       zod:
         specifier: ^3.25.76
         version: 3.25.76
