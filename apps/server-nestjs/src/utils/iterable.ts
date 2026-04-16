@@ -17,3 +17,10 @@ export async function getAll<T>(
   }
   return items
 }
+
+export async function find<T>(generator: AsyncGenerator<T>, predicate: (item: T) => boolean): Promise<T | undefined> {
+  for await (const item of generator) {
+    if (predicate(item)) return item
+  }
+  return undefined
+}
