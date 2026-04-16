@@ -12,10 +12,10 @@ async function setCheckboxValue(page: Page, name: string, checked: boolean) {
   await expect(input).toBeChecked({ checked })
 }
 
-export async function setCheckbox(page: Page, name: string) {
+export async function setCheckbox({ page, name }: { page: Page, name: string }) {
   await setCheckboxValue(page, name, true)
 }
 
-export async function unsetCheckbox(page: Page, name: string) {
+export async function unsetCheckbox({ page, name }: { page: Page, name: string }) {
   await setCheckboxValue(page, name, false)
 }
