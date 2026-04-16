@@ -2,9 +2,9 @@ import type { Page } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
 import { clientURL, cnolletUser, signInCloudPiNative, testUser } from '../config/console'
-import { addEnvToProject } from '../helpers/environment'
-import { addProject, deleteProject } from '../helpers/project'
-import { addRandomRepositoryToProject } from '../helpers/repository'
+import { createEnvironment } from '../helpers/environment'
+import { createProject, deleteProject } from '../helpers/project'
+import { createRepository } from '../helpers/repository'
 
 async function openProjectByName({ page, projectName }: { page: Page, projectName: string }) {
   await page.getByTestId('menuMyProjects').click()
@@ -73,11 +73,11 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
 
-    const project = await addProject({ page, members: [cnolletUser] })
+    const project = await createProject({ page, members: [cnolletUser] })
     projectName = project.name
 
-    repositoryName = await addRandomRepositoryToProject({ page })
-    environmentName = await addEnvToProject({
+    repositoryName = await createRepository({ page })
+    environmentName = await createEnvironment({
       page,
       zone: 'publique',
       customStageName: 'dev',
@@ -104,7 +104,7 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     try {
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      await deleteProject(page, projectName)
+      await deleteProject({ page, projectName })
     } finally {
       await page.close()
     }

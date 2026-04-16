@@ -5,7 +5,7 @@ import {
   tcolinUser,
   testUser,
 } from '../config/console'
-import { addProject } from '../helpers/project'
+import { createProject } from '../helpers/project'
 
 test.describe('Project logs page', () => {
   test(
@@ -17,7 +17,7 @@ test.describe('Project logs page', () => {
       await signInCloudPiNative({ page, credentials: testUser })
 
       // Act
-      await addProject({ page })
+      await createProject({ page })
 
       // Assert
       await page.getByTestId('test-tab-logs').click()
@@ -35,7 +35,7 @@ test.describe('Project logs page', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      await addProject({ page })
+      await createProject({ page })
 
       await page.getByTestId('test-tab-logs').click()
       await expect(page.locator('#panel-logs')).toBeVisible()
@@ -63,7 +63,7 @@ test.describe('Project logs page', () => {
       await signInCloudPiNative({ page, credentials: testUser })
 
       // Act
-      const { name: projectName } = await addProject({
+      const { name: projectName } = await createProject({
         page,
         members: [tcolinUser],
       })

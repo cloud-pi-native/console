@@ -8,15 +8,15 @@ import {
   testUser,
 } from '../config/console'
 
-import { addEnvToProject, removeEnvFromProject } from '../helpers/environment'
-import { addProject } from '../helpers/project'
+import { createEnvironment, deleteEnvironment } from '../helpers/environment'
+import { createProject } from '../helpers/project'
 
 test.describe('Environments page', { tag: '@e2e' }, () => {
   test('should add environments to an existing project', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    await addProject({ page })
-    const envName = await addEnvToProject({
+    await createProject({ page })
+    const envName = await createEnvironment({
       page,
       zone: 'publique',
       customStageName: 'dev',
@@ -32,7 +32,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
   }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    await addProject({
+    await createProject({
       page,
       hprodResources: {
         cpu: 10,
@@ -40,7 +40,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
         gpu: 1,
       },
     })
-    const envName = await addEnvToProject({
+    const envName = await createEnvironment({
       page,
       zone: 'publique',
       customStageName: 'dev',
@@ -62,7 +62,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     const envName = faker.string.alpha(10).toLowerCase()
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    await addProject({ page })
+    await createProject({ page })
     await page.getByTestId('addEnvironmentLink').click()
 
     // Incorrect input
@@ -74,7 +74,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
 
     // Valid input
     await page.getByTestId('cancelEnvironmentBtn').click()
-    await addEnvToProject({
+    await createEnvironment({
       page,
       envName,
       zone: 'publique',
@@ -83,7 +83,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     })
 
     // Second try with same name (invalid)
-    await addEnvToProject({
+    await createEnvironment({
       page,
       envName,
       zone: 'publique',
@@ -101,7 +101,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     const envName = faker.string.alpha(10).toLowerCase()
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    await addProject({ page })
+    await createProject({ page })
     await page.getByTestId('addEnvironmentLink').click()
     await page.getByTestId('environmentNameInput').fill(envName)
     await page
@@ -124,7 +124,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     const envName = faker.string.alpha(10).toLowerCase()
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    await addProject({ page })
+    await createProject({ page })
     await page.getByTestId('addEnvironmentLink').click()
     await page.getByTestId('environmentNameInput').fill(envName)
     await page
@@ -144,8 +144,8 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
   test('should update environment resources', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    await addProject({ page })
-    const envName = await addEnvToProject({
+    await createProject({ page })
+    const envName = await createEnvironment({
       page,
       zone: 'publique',
       customStageName: 'dev',
@@ -183,8 +183,8 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
   }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    await addProject({ page })
-    const envName = await addEnvToProject({
+    await createProject({ page })
+    const envName = await createEnvironment({
       page,
       zone: 'publique',
       customStageName: 'dev',
@@ -224,15 +224,15 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
   test('should delete an environment', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName } = await addProject({ page })
-    const envName = await addEnvToProject({
+    const { name: projectName } = await createProject({ page })
+    const envName = await createEnvironment({
       page,
       zone: 'publique',
       customStageName: 'dev',
       customClusterName: 'public1',
     })
 
-    await removeEnvFromProject(page, projectName, envName)
+    await deleteEnvironment({ page, projectName, envName })
   })
 
   test('should not be able to delete an environment if not owner', async ({
@@ -240,11 +240,11 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
   }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName } = await addProject({
+    const { name: projectName } = await createProject({
       page,
       members: [cnolletUser],
     })
-    const envName = await addEnvToProject({
+    const envName = await createEnvironment({
       page,
       zone: 'publique',
       customStageName: 'dev',
@@ -272,8 +272,8 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
   }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const { id: projectId, name: projectName } = await addProject({ page })
-    const envName = await addEnvToProject({
+    const { id: projectId, name: projectName } = await createProject({ page })
+    const envName = await createEnvironment({
       page,
       zone: 'publique',
       customStageName: 'dev',
@@ -310,8 +310,8 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
   }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    await addProject({ page })
-    const envName = await addEnvToProject({
+    await createProject({ page })
+    const envName = await createEnvironment({
       page,
       zone: 'publique',
       customStageName: 'dev',
