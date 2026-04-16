@@ -5,7 +5,7 @@ import {
   signInCloudPiNative,
   testUser,
 } from '../config/console'
-import { addProject } from '../helpers/project'
+import { createProject } from '../helpers/project'
 
 test.describe('Dashboard page', () => {
   test(
@@ -19,7 +19,7 @@ test.describe('Dashboard page', () => {
         name: projectName,
         id: projectId,
         slug: projectSlug,
-      } = await addProject({ page })
+      } = await createProject({ page })
 
       // Act
       await page.getByTestId('menuMyProjects').click()
@@ -41,7 +41,7 @@ test.describe('Dashboard page', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const description1 = 'Application de prise de rendez-vous en préfécture.'
@@ -79,7 +79,7 @@ test.describe('Dashboard page', () => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName, slug: projectSlug } = await addProject({ page })
+    const { name: projectName, slug: projectSlug } = await createProject({ page })
 
     // Act
     await page.getByTestId('menuMyProjects').click()
@@ -99,7 +99,7 @@ test.describe('Dashboard page', () => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName, slug: projectSlug } = await addProject({ page })
+    const { name: projectName, slug: projectSlug } = await createProject({ page })
 
     // Act
     await page.getByTestId('menuMyProjects').click()
@@ -120,7 +120,7 @@ test.describe('Dashboard page', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { id: projectId, name: projectName, slug: projectSlug } = await addProject({
+      const { id: projectId, name: projectName, slug: projectSlug } = await createProject({
         page,
       })
 
@@ -154,7 +154,7 @@ test.describe('Dashboard page', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { id: projectId, name: projectName, slug: projectSlug } = await addProject({
+      const { id: projectId, name: projectName, slug: projectSlug } = await createProject({
         page,
       })
 

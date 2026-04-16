@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
 import { adminUser, clientURL, signInCloudPiNative, testUser } from '../config/console'
 
-import { addProject } from '../helpers/project'
+import { createProject } from '../helpers/project'
 import { createStage, deleteStage } from '../helpers/stage'
 
 test.describe('Stages administration page', { tag: '@e2e' }, () => {
@@ -28,7 +28,7 @@ test.describe('Stages administration page', { tag: '@e2e' }, () => {
     // Check stage availability in environment form
     await page.getByRole('link', { name: 'Se déconnecter' }).click()
     await signInCloudPiNative({ page, credentials: testUser })
-    await addProject({ page })
+    await createProject({ page })
     const envName = faker.string.alpha(10).toLowerCase()
     await page.getByTestId('addEnvironmentLink').click()
     await page.getByTestId('environmentNameInput').fill(envName)
@@ -89,7 +89,7 @@ test.describe('Stages administration page', { tag: '@e2e' }, () => {
     await expect(page.getByTestId(`stageTile-${stageName}`)).toBeVisible()
 
     // Delete custom stage
-    await deleteStage(page, stageName)
+    await deleteStage({ page, stageName })
     await expect(page.getByTestId(`stageTile-${stageName}`)).not.toBeVisible()
   })
 
@@ -102,7 +102,7 @@ test.describe('Stages administration page', { tag: '@e2e' }, () => {
     await expect(page.getByTestId(`stageTile-${stageName}`)).toBeVisible()
 
     // Use custom stage in an environment
-    await addProject({ page })
+    await createProject({ page })
     const envName = faker.string.alpha(10).toLowerCase()
     await page.getByTestId('addEnvironmentLink').click()
     await page.getByTestId('environmentNameInput').fill(envName)
