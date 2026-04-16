@@ -51,6 +51,9 @@ FROM dev AS build
 RUN pnpm --filter @cpn-console/logger run build
 RUN pnpm --filter @cpn-console/shared run build
 
+# Build hooks (génère dist/ et types/ nécessaires aux imports)
+RUN pnpm --filter @cpn-console/hooks run build
+
 # Réinjecter shared buildé dans node_modules (injectWorkspacePackages copie au moment de l'install)
 RUN pnpm --filter @cpn-console/server-nestjs install --frozen-lockfile
 

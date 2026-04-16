@@ -28,8 +28,9 @@ export class KeycloakService {
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
-    this.logger.log(`Handling project upsert for ${project.slug}`)
+    this.logger.log(`Handling a project upsert event for ${project.slug}`)
     await this.ensureProjectGroups([project])
+    this.logger.log(`Keycloak sync completed for project ${project.slug}`)
   }
 
   @OnEvent('project.delete')
@@ -37,8 +38,9 @@ export class KeycloakService {
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
-    this.logger.log(`Handling project delete for ${project.slug}`)
+    this.logger.log(`Handling a project delete event for ${project.slug}`)
     await this.purgeOrphanGroups([project])
+    this.logger.log(`Keycloak cleanup completed for project ${project.slug}`)
   }
 
   @Cron(CronExpression.EVERY_HOUR)
@@ -48,15 +50,17 @@ export class KeycloakService {
     this.logger.log('Starting periodic Keycloak reconciliation')
     const projects = await this.keycloakDatastore.getAllProjects()
     span?.setAttribute('keycloak.projects.count', projects.length)
-    this.logger.debug(`Reconciling ${projects.length} projects`)
+    this.logger.debug(`Reconciling Keycloak projects (count=${projects.length})`)
     await this.ensureProjectGroups(projects)
     await this.purgeOrphanGroups(projects)
+    this.logger.log(`Keycloak reconciliation completed (${projects.length})`)
   }
 
   @StartActiveSpan()
   private async ensureProjectGroups(projects: ProjectWithDetails[]) {
     const span = trace.getActiveSpan()
     span?.setAttribute('keycloak.projects.count', projects.length)
+    this.logger.verbose(`Reconciling Keycloak project groups (${projects.length})`)
     await Promise.all(projects.map(project => this.ensureProjectGroup(project)))
   }
 
@@ -69,6 +73,7 @@ export class KeycloakService {
       'project.roles.count': project.roles.length,
       'project.environments.count': project.environments.length,
     })
+    this.logger.verbose(`Reconciling Keycloak project group (${project.slug}): members=${project.members.length} roles=${project.roles.length}`)
 
     const projectGroup = z.object({
       id: z.string(),
@@ -81,6 +86,7 @@ export class KeycloakService {
       this.ensureProjectGroupMembers(project, projectGroup),
       this.ensureConsoleGroup(project, projectGroup),
     ])
+    this.logger.verbose(`Keycloak project group reconciled (${project.slug}): groupId=${projectGroup.id}`)
   }
 
   @StartActiveSpan()
@@ -91,6 +97,7 @@ export class KeycloakService {
       id: z.string(),
       name: z.string(),
     }).parse(await this.keycloak.getOrCreateConsoleGroup(group))
+    this.logger.verbose(`Reconciling Keycloak console group (${project.slug}): projectGroupId=${group.id} consoleGroupId=${consoleGroup.id}`)
     await Promise.all([
       this.ensureRoleGroups(project, consoleGroup),
       this.ensureEnvironmentGroups(project, consoleGroup),
@@ -109,13 +116,14 @@ export class KeycloakService {
       }).parse(group)
     })
     const projectSlugs = new Set(projects.map(p => p.slug))
+    this.logger.verbose(`Scanning Keycloak groups for orphan cleanup (projects=${projects.length})`)
     const promises: Promise<void>[] = []
     let purgedCount = 0
 
     for await (const group of groups) {
       if (!projectSlugs.has(group.name)) {
         if (this.isOwnedProjectGroup(group)) {
-          this.logger.log(`Deleting orphan Keycloak group: ${group.name}`)
+          this.logger.log(`Deleting an orphan Keycloak group (groupId=${group.id}, groupName=${group.name})`)
           purgedCount++
           promises.push(this.keycloak.deleteGroup(group.id))
         }
@@ -123,6 +131,7 @@ export class KeycloakService {
     }
     span?.setAttribute('purged.count', purgedCount)
     await Promise.all(promises)
+    this.logger.log(`Orphan Keycloak group cleanup completed (purged=${purgedCount})`)
   }
 
   private isOwnedProjectGroup(group: GroupRepresentationWith<'subGroups'>) {
@@ -135,12 +144,12 @@ export class KeycloakService {
   private async maybeAddUserToGroup(userId: string, groupId: string, groupName: string) {
     try {
       await this.keycloak.addUserToGroup(userId, groupId)
-      this.logger.log(`Added ${userId} to keycloak group ${groupName}`)
+      this.logger.log(`Added user to Keycloak group: userId=${userId} groupId=${groupId} groupName=${groupName}`)
     } catch (e) {
       if (e.response?.status === 404) {
-        this.logger.warn(`User ${userId} not found in Keycloak, skipping addition to group ${groupName}`)
+        this.logger.warn(`User not found in Keycloak, skipping addition: userId=${userId} groupId=${groupId} groupName=${groupName}`)
       } else if (e.response?.status === 409) {
-        this.logger.debug(`User ${userId} is already a member of keycloak group ${groupName}`)
+        this.logger.verbose(`User already a member of Keycloak group: userId=${userId} groupId=${groupId} groupName=${groupName}`)
       } else {
         throw e
       }
@@ -150,10 +159,10 @@ export class KeycloakService {
   private async maybeRemoveUserFromGroup(userId: string, groupId: string, groupName: string) {
     try {
       await this.keycloak.removeUserFromGroup(userId, groupId)
-      this.logger.log(`Removed ${userId} from keycloak group ${groupName}`)
+      this.logger.log(`Removed user from Keycloak group: userId=${userId} groupId=${groupId} groupName=${groupName}`)
     } catch (e) {
       if (e.response?.status === 404) {
-        this.logger.warn(`User ${userId} not found in Keycloak, skipping removal from group ${groupName}`)
+        this.logger.warn(`User not found in Keycloak, skipping removal: userId=${userId} groupId=${groupId} groupName=${groupName}`)
       } else {
         throw e
       }
@@ -398,6 +407,7 @@ export class KeycloakService {
     span?.setAttribute('keycloak.env_group.rw.id', rwGroup.id)
     span?.setAttribute('keycloak.env_group.ro.members.current', roMembers.length)
     span?.setAttribute('keycloak.env_group.rw.members.current', rwMembers.length)
+    this.logger.verbose(`Reconciling Keycloak environment group members: project=${project.slug} env=${environment.name} roMembers=${roMembers.length} rwMembers=${rwMembers.length}`)
 
     const projectUserIds = new Set([project.ownerId, ...project.members.map(m => m.user.id)])
     span?.setAttribute('project.users.count', projectUserIds.size)
@@ -433,6 +443,7 @@ export class KeycloakService {
     span?.setAttribute('keycloak.env_group.ro.members.removed', roRemoved)
     span?.setAttribute('keycloak.env_group.rw.members.added', rwAdded)
     span?.setAttribute('keycloak.env_group.rw.members.removed', rwRemoved)
+    this.logger.verbose(`Keycloak environment group members reconciled: project=${project.slug} env=${environment.name} roAdded=${roAdded} roRemoved=${roRemoved} rwAdded=${rwAdded} rwRemoved=${rwRemoved}`)
   }
 
   @StartActiveSpan()
@@ -452,6 +463,7 @@ export class KeycloakService {
     span?.setAttribute('keycloak.env_group.rw.id', rwGroup.id)
     span?.setAttribute('keycloak.env_group.ro.members.current', roMembers.length)
     span?.setAttribute('keycloak.env_group.rw.members.current', rwMembers.length)
+    this.logger.verbose(`Purging orphan Keycloak environment group members: project=${project.slug} env=${environment.name} roMembers=${roMembers.length} rwMembers=${rwMembers.length}`)
 
     const projectUserIds = new Set([project.ownerId, ...project.members.map(m => m.user.id)])
     span?.setAttribute('project.users.count', projectUserIds.size)
@@ -482,6 +494,7 @@ export class KeycloakService {
 
     span?.setAttribute('keycloak.env_group.ro.members.removed', roRemoved)
     span?.setAttribute('keycloak.env_group.rw.members.removed', rwRemoved)
+    this.logger.log(`Orphan Keycloak environment group member cleanup completed: project=${project.slug} env=${environment.name} roRemoved=${roRemoved} rwRemoved=${rwRemoved}`)
   }
 
   @StartActiveSpan()
@@ -493,6 +506,7 @@ export class KeycloakService {
     span?.setAttribute('project.slug', project.slug)
     span?.setAttribute('keycloak.group.id', group.id)
     span?.setAttribute('keycloak.group.name', group.name)
+    this.logger.verbose(`Scanning Keycloak environment groups for orphan cleanup: project=${project.slug} groupId=${group.id} groupName=${group.name}`)
 
     const envGroups = map(this.keycloak.getSubGroups(group.id), envGroup => z.object({
       id: z.string(),
@@ -512,16 +526,17 @@ export class KeycloakService {
 
       if (this.isEnvironmentGroup(subGroups) && !this.isOwnedEnvironmentGroup(project, envGroup)) {
         orphanCount++
-        this.logger.log(`Deleting orphan environment group ${envGroup.name} for project ${project.slug}`)
+        this.logger.log(`Deleting orphan Keycloak environment group: project=${project.slug} envGroupId=${envGroup.id} envGroupName=${envGroup.name}`)
         promises.push(
           this.keycloak.deleteGroup(envGroup.id)
-            .catch(e => this.logger.warn(`Failed to delete environment group ${envGroup.name} for project ${project.slug}`, e)),
+            .catch(err => this.logger.warn(`Failed to delete orphan Keycloak environment group: project=${project.slug} envGroupId=${envGroup.id} envGroupName=${envGroup.name} err=${err instanceof Error ? err.message : String(err)}`)),
         )
       }
     }
 
     span?.setAttribute('keycloak.env_groups.orphan.count', orphanCount)
     await Promise.all(promises)
+    this.logger.log(`Orphan Keycloak environment group cleanup completed: project=${project.slug} groupId=${group.id} orphanCount=${orphanCount}`)
   }
 
   private isEnvironmentGroup(
