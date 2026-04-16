@@ -19,7 +19,7 @@ export class KeycloakHealthService {
     const baseUrl = `${protocol}://${domain}`
     const url = new URL(`/realms/${encodeURIComponent(realm)}/.well-known/openid-configuration`, baseUrl).toString()
     try {
-      const response = await fetch(url, { method: 'GET' })
+      const response = await fetch(url)
       if (response.status < 500) return indicator.up({ httpStatus: response.status })
       return indicator.down({ httpStatus: response.status })
     } catch (error) {
