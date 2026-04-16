@@ -44,6 +44,8 @@ function createGitlabControllerServiceTestingModule() {
         provide: GitlabDatastoreService,
         useValue: {
           getAllProjects: vi.fn(),
+          getAdminPluginConfig: vi.fn(),
+          getAdminRolesByOidcGroups: vi.fn(),
         } satisfies Partial<GitlabDatastoreService>,
       },
       {
@@ -89,6 +91,8 @@ describe('gitlabService', () => {
     vault.writeMirrorTriggerToken.mockResolvedValue(undefined)
     vault.readTechnReadOnlyCreds.mockResolvedValue(null)
     vault.readGitlabMirrorCreds.mockResolvedValue(null)
+    gitlabDatastore.getAdminPluginConfig.mockResolvedValue(null)
+    gitlabDatastore.getAdminRolesByOidcGroups.mockResolvedValue([])
   })
 
   it('should be defined', () => {
@@ -262,8 +266,122 @@ describe('gitlabService', () => {
 
       expect(gitlab.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ email: 'new@example.com' }))
       expect(gitlab.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ email: 'owner@example.com' }))
-      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 999, AccessLevel.GUEST)
+      expect(gitlab.addGroupMember).not.toHaveBeenCalledWith(group, 999, expect.anything())
       expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 998, AccessLevel.OWNER)
+    })
+
+    it('should map roles to access levels and apply highest level', async () => {
+      const project = makeProjectWithDetails({
+        roles: [
+          { id: 'r-reporter', oidcGroup: '/project-1/console/readonly' },
+          { id: 'r-developer', oidcGroup: '/project-1/console/developer' },
+          { id: 'r-maintainer', oidcGroup: '/project-1/console/admin' },
+          { id: 'r-unknown', oidcGroup: '/other/group' },
+        ],
+        members: [
+          { user: { id: 'u1', email: 'reporter@example.com', firstName: 'Rep', lastName: 'User', adminRoleIds: [] }, roleIds: ['r-reporter'] },
+          { user: { id: 'u2', email: 'developer@example.com', firstName: 'Dev', lastName: 'User', adminRoleIds: [] }, roleIds: ['r-developer'] },
+          { user: { id: 'u3', email: 'maintainer@example.com', firstName: 'Main', lastName: 'User', adminRoleIds: [] }, roleIds: ['r-maintainer'] },
+          { user: { id: 'u4', email: 'mixed@example.com', firstName: 'Mixed', lastName: 'User', adminRoleIds: [] }, roleIds: ['r-reporter', 'r-developer'] },
+        ],
+      })
+      const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+
+      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.upsertUser.mockImplementation(async (user) => {
+        const idByEmail: Record<string, number> = {
+          'reporter@example.com': 101,
+          'developer@example.com': 102,
+          'maintainer@example.com': 103,
+          'mixed@example.com': 104,
+          'owner@example.com': 100,
+        }
+        return makeExpandedUserSchema({
+          id: idByEmail[user.email] ?? 999,
+          email: user.email,
+          username: user.email.split('@')[0] ?? user.email,
+          name: `${user.firstName} ${user.lastName}`,
+        })
+      })
+      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+
+      await service.handleUpsert(project)
+
+      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 101, AccessLevel.REPORTER)
+      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 102, AccessLevel.DEVELOPER)
+      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 103, AccessLevel.MAINTAINER)
+      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 104, AccessLevel.DEVELOPER)
+    })
+
+    it('should remove existing member when mapped access level is no access', async () => {
+      const project = makeProjectWithDetails({
+        roles: [{ id: 'r-unknown', oidcGroup: '/other/group' }],
+        members: [{ user: { id: 'u1', email: 'no-access@example.com', firstName: 'No', lastName: 'Access', adminRoleIds: [] }, roleIds: ['r-unknown'] }],
+      })
+      const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+
+      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([makeMemberSchema({ id: 105, username: 'no-access', access_level: AccessLevel.REPORTER })])
+      gitlab.upsertUser.mockImplementation(async (user) => {
+        return makeExpandedUserSchema({
+          id: user.email === 'no-access@example.com' ? 105 : 100,
+          email: user.email,
+          username: user.email.split('@')[0] ?? user.email,
+          name: `${user.firstName} ${user.lastName}`,
+        })
+      })
+      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+
+      await service.handleUpsert(project)
+
+      expect(gitlab.removeGroupMember).toHaveBeenCalledWith(group, 105)
+      expect(gitlab.addGroupMember).not.toHaveBeenCalledWith(group, 105, expect.any(Number))
+    })
+
+    it('should bind builtin roles (admin/auditor) when role ids are resolved', async () => {
+      const project = makeProjectWithDetails({
+        owner: { id: 'o1', email: 'owner@example.com', firstName: 'Owner', lastName: 'User', adminRoleIds: ['admin-role-id'] },
+        members: [
+          { user: { id: 'u1', email: 'admin@example.com', firstName: 'Admin', lastName: 'User', adminRoleIds: ['admin-role-id'] }, roleIds: [] },
+          { user: { id: 'u2', email: 'auditor@example.com', firstName: 'Auditor', lastName: 'User', adminRoleIds: ['auditor-role-id'] }, roleIds: [] },
+        ],
+      })
+      const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+
+      gitlabDatastore.getAdminPluginConfig.mockImplementation(async (_pluginName: string, key: string) => {
+        if (key === 'adminGroupPath') return '/console/admin'
+        if (key === 'auditorGroupPath') return '/console/readonly'
+        return null
+      })
+      gitlabDatastore.getAdminRolesByOidcGroups.mockResolvedValue([
+        { id: 'admin-role-id', oidcGroup: '/console/admin' },
+        { id: 'auditor-role-id', oidcGroup: '/console/readonly' },
+      ])
+
+      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.upsertUser.mockImplementation(async (user) => {
+        return makeExpandedUserSchema({
+          id: user.email === 'admin@example.com' ? 999 : user.email === 'auditor@example.com' ? 997 : 998,
+          email: user.email,
+          username: user.email.split('@')[0] ?? user.email,
+          name: `${user.firstName} ${user.lastName}`,
+        })
+      })
+      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+
+      await service.handleUpsert(project)
+
+      expect(gitlab.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ email: 'admin@example.com' }), expect.objectContaining({ isAdmin: true, isAuditor: false }))
+      expect(gitlab.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ email: 'auditor@example.com' }), expect.objectContaining({ isAdmin: false, isAuditor: true }))
+      expect(gitlab.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ email: 'owner@example.com' }), expect.objectContaining({ isAdmin: true, isAuditor: false }))
     })
 
     it('should configure repository mirroring if external url is present', async () => {

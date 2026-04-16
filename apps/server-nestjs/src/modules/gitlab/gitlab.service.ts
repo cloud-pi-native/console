@@ -13,8 +13,21 @@ import { getAll } from '../../utils/iterable'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
 import { GitlabDatastoreService } from './gitlab-datastore.service'
-import { INFRA_APPS_REPO_NAME, TOPIC_PLUGIN_MANAGED } from './gitlab.constants'
-import { DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX } from './gitlab.constants.js'
+import {
+  ADMIN_GROUP_PATH_PLUGIN_KEY,
+  AUDITOR_GROUP_PATH_PLUGIN_KEY,
+  DEFAULT_ADMIN_GROUP_PATH,
+  DEFAULT_AUDITOR_GROUP_PATH,
+  DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX,
+  INFRA_APPS_REPO_NAME,
+  PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
+  PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
+  PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
+  PURGE_PLUGIN_KEY,
+  TOPIC_PLUGIN_MANAGED,
+} from './gitlab.constants'
 import { generateUsernameCandidates } from './gitlab.utils'
 
 const ownedUserRegex = /group_\d+_bot/u
@@ -97,8 +110,9 @@ export class GitlabService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.verbose(`Reconciling GitLab group members for project ${project.slug} (groupId=${group.id}, members=${members.length})`)
-    await this.addMissingMembers(project, group, members)
-    await this.addMissingOwnerMember(project, group, members)
+    const { adminRoleId, auditorRoleId } = await this.getAdminRoleIds(project)
+    await this.addMissingMembers(project, group, members, adminRoleId, auditorRoleId)
+    await this.addMissingOwnerMember(project, group, members, adminRoleId, auditorRoleId)
     await this.purgeOrphanMembers(project, group, members)
   }
 
@@ -106,12 +120,19 @@ export class GitlabService {
     project: ProjectWithDetails,
     group: CondensedGroupSchema,
     members: MemberSchema[],
+    adminRoleId?: string,
+    auditorRoleId?: string,
   ) {
     const membersById = new Map(members.map(m => [m.id, m]))
-    const accessLevelByUserId = generateAccessLevelMapping(project)
+    const groupPaths = await this.getProjectRoleGroupPaths(project)
+    const accessLevelByUserId = generateAccessLevelMapping(project, groupPaths)
 
     await Promise.all(project.members.map(async ({ user }) => {
-      const gitlabUser = await this.gitlab.upsertUser(user)
+      const isAdmin = adminRoleId ? user.adminRoleIds?.includes(adminRoleId) : undefined
+      const isAuditor = auditorRoleId ? user.adminRoleIds?.includes(auditorRoleId) : undefined
+      const gitlabUser = (isAdmin === undefined && isAuditor === undefined)
+        ? await this.gitlab.upsertUser(user)
+        : await this.gitlab.upsertUser(user, { isAdmin, isAuditor })
       if (!gitlabUser) {
         this.logger.warn(`Unable to resolve a GitLab user for a project member (project=${project.slug}, userId=${user.id}, email=${user.email})`)
         return
@@ -150,14 +171,77 @@ export class GitlabService {
     project: ProjectWithDetails,
     group: CondensedGroupSchema,
     members: MemberSchema[],
+    adminRoleId?: string,
+    auditorRoleId?: string,
   ) {
-    const gitlabUser = await this.gitlab.upsertUser(project.owner)
+    const isAdmin = adminRoleId ? project.owner.adminRoleIds?.includes(adminRoleId) : undefined
+    const isAuditor = auditorRoleId ? project.owner.adminRoleIds?.includes(auditorRoleId) : undefined
+    const gitlabUser = (isAdmin === undefined && isAuditor === undefined)
+      ? await this.gitlab.upsertUser(project.owner)
+      : await this.gitlab.upsertUser(project.owner, { isAdmin, isAuditor })
     if (!gitlabUser) {
       this.logger.warn(`Unable to resolve the GitLab owner account (project=${project.slug}, ownerId=${project.owner.id}, email=${project.owner.email})`)
       return
     }
     const membersById = new Map(members.map(m => [m.id, m]))
     await this.ensureGroupMemberAccessLevel(group, gitlabUser.id, AccessLevel.OWNER, membersById)
+  }
+
+  private async getAdminRoleIds(project: ProjectWithDetails): Promise<{ adminRoleId?: string, auditorRoleId?: string }> {
+    const adminGroupPath = await this.getAdminGroupPath(project)
+    const auditorGroupPath = await this.getAuditorGroupPath(project)
+    const roles = await this.gitlabDatastore.getAdminRolesByOidcGroups([adminGroupPath, auditorGroupPath])
+    return generateAdminRoleMapping(roles, adminGroupPath, auditorGroupPath)
+  }
+
+  private async getAdminGroupPath(project: ProjectWithDetails): Promise<string> {
+    return await this.getAdminOrProjectPluginConfig(project, ADMIN_GROUP_PATH_PLUGIN_KEY) ?? DEFAULT_ADMIN_GROUP_PATH
+  }
+
+  private async getAuditorGroupPath(project: ProjectWithDetails): Promise<string> {
+    return await this.getAdminOrProjectPluginConfig(project, AUDITOR_GROUP_PATH_PLUGIN_KEY) ?? DEFAULT_AUDITOR_GROUP_PATH
+  }
+
+  private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
+    const adminPluginConfig = await this.gitlabDatastore.getAdminPluginConfig('gitlab', key)
+    if (adminPluginConfig) return adminPluginConfig
+    if (!project) return undefined
+    return getProjectPluginConfig(project, key) ?? undefined
+  }
+
+  private async getProjectRoleGroupPaths(project: ProjectWithDetails): Promise<{ reporter: string[], developer: string[], maintainer: string[] }> {
+    const [reporter, developer, maintainer] = await Promise.all([
+      this.getProjectReporterGroupPaths(project),
+      this.getProjectDeveloperGroupPaths(project),
+      this.getProjectMaintainerGroupPaths(project),
+    ])
+
+    return {
+      reporter,
+      developer,
+      maintainer,
+    }
+  }
+
+  private async getProjectReporterGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+    const projectConfig = getProjectPluginConfig(project, PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
+    const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
+    const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX
+    return generateProjectRoleGroupPath(project.slug, raw)
+  }
+
+  private async getProjectDeveloperGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+    const projectConfig = getProjectPluginConfig(project, PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
+    const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
+    const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
+    return generateProjectRoleGroupPath(project.slug, raw)
+  }
+
+  private async getProjectMaintainerGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+    const projectConfig = getProjectPluginConfig(project, PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
+    const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
+    const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX
+    return generateProjectRoleGroupPath(project.slug, raw)
   }
 
   @StartActiveSpan()
@@ -172,7 +256,7 @@ export class GitlabService {
       'group.id': group.id,
       'members.total': members.length,
     })
-    const purgeConfig = getPluginConfig(project, 'purge')
+    const purgeConfig = getProjectPluginConfig(project, PURGE_PLUGIN_KEY)
     const usernames = new Set([
       ...generateUsernameCandidates(project.owner.email),
       ...project.members.flatMap(m => generateUsernameCandidates(m.user.email)),
@@ -255,7 +339,7 @@ export class GitlabService {
     const orphanRepos = gitlabRepositories.filter(r => isOwnedRepo(r) && !isSystemRepo(project, r))
     span?.setAttribute('orphan.repositories.count', orphanRepos.length)
 
-    if (specificallyEnabled(getPluginConfig(project, 'purge'))) {
+    if (specificallyEnabled(getProjectPluginConfig(project, PURGE_PLUGIN_KEY))) {
       span?.setAttribute('purge.enabled', true)
       let removedCount = 0
       await Promise.all(orphanRepos.map(async (orphan) => {
@@ -424,26 +508,39 @@ function isSystemRepo(project: ProjectWithDetails, repo: ProjectSchema) {
   return project.repositories.some(r => r.internalRepoName === repo.name)
 }
 
-function getPluginConfig(project: ProjectWithDetails, key: string) {
+function getProjectPluginConfig(project: ProjectWithDetails, key: string) {
   return project.plugins?.find(p => p.key === key)?.value
 }
 
-function getGroupPathSuffixes(project: ProjectWithDetails, key: string) {
-  const value = getPluginConfig(project, key)
-  if (!value) return null
-  return value.split(',').map(path => `/${project.slug}${path}`)
+function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes: string) {
+  return rawGroupPathSuffixes
+    .split(',')
+    .map(path => path.trim())
+    .filter(Boolean)
+    .map(path => `/${projectSlug}${path}`)
 }
 
-function generateAccessLevelMapping(project: ProjectWithDetails) {
-  const projectReporterGroupPathSuffixes = getProjectReporterGroupPaths(project)
-  const projectDeveloperGroupPathSuffixes = getProjectDeveloperGroupPaths(project)
-  const projectMaintainerGroupPathSuffixes = getProjectMaintainerGroupPaths(project)
+function generateAdminRoleMapping(
+  roles: ProjectWithDetails['roles'],
+  adminGroupPath: string,
+  auditorGroupPath: string,
+) {
+  const roleIdByOidcGroup = new Map(roles.map(r => [r.oidcGroup, r.id] as const))
+  return {
+    adminRoleId: roleIdByOidcGroup.get(adminGroupPath),
+    auditorRoleId: roleIdByOidcGroup.get(auditorGroupPath),
+  }
+}
 
+function generateAccessLevelMapping(
+  project: ProjectWithDetails,
+  groupPaths: { reporter: string[], developer: string[], maintainer: string[] },
+) {
   const getAccessLevelFromOidcGroup = (oidcGroup: string | null) => {
     if (!oidcGroup) return null
-    if (projectReporterGroupPathSuffixes.includes(oidcGroup)) return AccessLevel.REPORTER
-    if (projectDeveloperGroupPathSuffixes.includes(oidcGroup)) return AccessLevel.DEVELOPER
-    if (projectMaintainerGroupPathSuffixes.includes(oidcGroup)) return AccessLevel.MAINTAINER
+    if (groupPaths.reporter.includes(oidcGroup)) return AccessLevel.REPORTER
+    if (groupPaths.developer.includes(oidcGroup)) return AccessLevel.DEVELOPER
+    if (groupPaths.maintainer.includes(oidcGroup)) return AccessLevel.MAINTAINER
     return null
   }
 
@@ -452,28 +549,13 @@ function generateAccessLevelMapping(project: ProjectWithDetails) {
   )
 
   return new Map(project.members.map((membership) => {
-    let highest = AccessLevel.GUEST
+    let highest: AccessLevel | null = null
     for (const roleId of membership.roleIds) {
       const level = roleAccessLevelById.get(roleId)
-      if (level !== null && level !== undefined && level > highest) highest = level
+      if (level !== null && level !== undefined && (highest === null || level > highest)) highest = level
     }
-    return [membership.user.id, highest] as const
+    return [membership.user.id, highest ?? AccessLevel.NO_ACCESS] as const
   }))
-}
-
-function getProjectMaintainerGroupPaths(project: ProjectWithDetails) {
-  return getGroupPathSuffixes(project, 'projectMaintainerGroupPathSuffix')
-    ?? DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX.split(',').map(path => `/${project.slug}${path}`)
-}
-
-function getProjectDeveloperGroupPaths(project: ProjectWithDetails) {
-  return getGroupPathSuffixes(project, 'projectDeveloperGroupPathSuffix')
-    ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX.split(',').map(path => `/${project.slug}${path}`)
-}
-
-function getProjectReporterGroupPaths(project: ProjectWithDetails) {
-  return getGroupPathSuffixes(project, 'projectReporterGroupPathSuffix')
-    ?? DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX.split(',').map(path => `/${project.slug}${path}`)
 }
 
 function daysAgoFromNow(date: Date) {
