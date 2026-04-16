@@ -2,9 +2,9 @@ import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
 import { adminUser, clientURL, signInCloudPiNative } from '../config/console'
 import { createCluster, deleteCluster } from '../helpers/cluster'
-import { addEnvToProject } from '../helpers/environment'
+import { createEnvironmentOnProject } from '../helpers/environment'
 import { openClustersAdministration } from '../helpers/navigation'
-import { addProject } from '../helpers/project'
+import { createProject } from '../helpers/project'
 
 test.describe('Clusters page', () => {
   test('should create a public cluster', { tag: '@e2e' }, async ({ page }) => {
@@ -79,7 +79,7 @@ test.describe('Clusters page', () => {
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: adminUser })
       // Create a dedicated project
-      const { name: projectName } = await addProject({ page })
+      const { name: projectName } = await createProject({ page })
       // Create the cluster
       const clusterName = await createCluster({
         page,
@@ -154,7 +154,7 @@ test.describe('Clusters page', () => {
       confidentiality: 'dedicated',
     })
     // Delete
-    await deleteCluster(page, clusterName)
+    await deleteCluster({ page, clusterName })
     // Validate
     await page.getByTestId('projectsSearchInput').fill(clusterName)
     await expect(page.getByTestId('noClusterMsg')).toBeVisible()
@@ -177,8 +177,8 @@ test.describe('Clusters page', () => {
         associateStage: 'all',
       })
       // Create a project and an environment using this cluster
-      await addProject({ page })
-      const envName = await addEnvToProject({
+      await createProject({ page })
+      const envName = await createEnvironmentOnProject({
         page,
         zone: 'publique',
         customStageName: 'dev',
@@ -188,7 +188,7 @@ test.describe('Clusters page', () => {
       })
       // Try to delete the cluster
       await expect(page.getByText('Opération en cours...')).toHaveCount(0)
-      await openClustersAdministration(page)
+      await openClustersAdministration({ page })
       await page.getByTestId('projectsSearchInput').fill(clusterName)
       await page.getByTestId(`clusterLink-${clusterName}`).click()
       await expect(page.getByTestId('deleteClusterZone')).not.toBeVisible()
@@ -217,8 +217,8 @@ test.describe('Clusters page', () => {
       associateStage: 'all',
     })
     // Create a project and an environment using this cluster
-    await addProject({ page })
-    await addEnvToProject({
+    await createProject({ page })
+    await createEnvironmentOnProject({
       page,
       zone: 'publique',
       customStageName: 'dev',
@@ -228,7 +228,7 @@ test.describe('Clusters page', () => {
     })
     // Verify that cluster label is disabled
     await expect(page.getByText('Opération en cours...')).toHaveCount(0)
-    await openClustersAdministration(page)
+    await openClustersAdministration({ page })
     await page.getByTestId('projectsSearchInput').fill(clusterName)
     await page.getByTestId(`clusterLink-${clusterName}`).click()
     await expect(page.getByTestId('labelInput')).toHaveValue(clusterName)

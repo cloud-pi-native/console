@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test'
 import { adminUser, clientURL, secondTestUser, signInCloudPiNative, testUser } from '../config/console'
-import { addProject, deleteProject } from '../helpers/project'
-import { addRandomRepositoryToProject } from '../helpers/repository'
+import { pollingFastIntervalMs, repoSyncTimeoutMs } from '../helpers/constants'
+import { createProject, deleteProject } from '../helpers/project'
+import { createRepositoryOnProject } from '../helpers/repository'
 
 import { waitForAndClick } from './helper'
 
@@ -40,7 +41,7 @@ test.describe('Integration tests user flow: project creation', { tag: '@integ' }
   test('Project creation and configuration', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    await addProject({ page, projectName })
+    await createProject({ page, projectName })
     // Enable Nexus Maven plugin
     await page.getByTestId('test-tab-services').click()
     await page.getByRole('button', { name: 'Nexus' }).click()
@@ -57,7 +58,7 @@ test.describe('Integration tests user flow: project creation', { tag: '@integ' }
     await expect(page.getByText('Le projet a été reprovisionn')).toBeVisible()
     // Add repository to project
     await page.getByTestId('test-tab-resources').click()
-    await addRandomRepositoryToProject({
+    await createRepositoryOnProject({
       page,
       repositoryName,
       externalRepoUrlInput: 'https://github.com/cloud-pi-native/socle-project-test.git',
@@ -249,8 +250,8 @@ test.describe('Integration tests user flow: deployment and metrics', { tag: '@in
           return page2.locator('body').textContent()
         },
         {
-          timeout: 60_000,
-          intervals: [2_000],
+          timeout: repoSyncTimeoutMs,
+          intervals: [pollingFastIntervalMs],
         },
       )
       .toContain('Application is running')
@@ -383,7 +384,7 @@ test.describe('Integration tests user flow: Cleanup', { tag: '@integ' }, () => {
     await page.getByRole('heading', { name: 'Opération en cours...' }).click()
     await expect(page.getByRole('cell', { name: 'Aucun dépôt existant' })).toBeVisible()
     for (const projectName of projectsToDelete) {
-      await deleteProject(page, projectName)
+      await deleteProject({ page, projectName })
     }
   })
 })
