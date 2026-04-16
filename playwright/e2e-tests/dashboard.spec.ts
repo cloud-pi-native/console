@@ -5,7 +5,7 @@ import {
   signInCloudPiNative,
   testUser,
 } from '../config/console'
-import { addProject } from '../helpers/project'
+import { createProject, projectSlugTextRegexp } from '../helpers/project'
 
 test.describe('Dashboard page', () => {
   test(
@@ -19,14 +19,16 @@ test.describe('Dashboard page', () => {
         name: projectName,
         id: projectId,
         slug: projectSlug,
-      } = await addProject({ page })
+      } = await createProject({ page })
 
       // Act
       await page.getByTestId('menuMyProjects').click()
       await page.getByRole('link', { name: projectName }).click()
 
       // Assert
-      await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+      await expect(page.getByTestId('project-slug')).toHaveText(
+        projectSlugTextRegexp(projectSlug),
+      )
       expect(await page.getByTestId('project-id').getAttribute('title')).toBe(
         projectId,
       )
@@ -41,7 +43,7 @@ test.describe('Dashboard page', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const description1 = 'Application de prise de rendez-vous en préfécture.'
@@ -51,7 +53,9 @@ test.describe('Dashboard page', () => {
       // Act 1
       await page.getByTestId('menuMyProjects').click()
       await page.getByRole('link', { name: projectName }).click()
-      await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+      await expect(page.getByTestId('project-slug')).toHaveText(
+        projectSlugTextRegexp(projectSlug),
+      )
       await page.getByTestId('setDescriptionBtn').click()
       // Yep, we need that for now...
       // @TODO Ensure setDescriptionBtn is properly chained to descriptionInput
@@ -79,12 +83,14 @@ test.describe('Dashboard page', () => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName, slug: projectSlug } = await addProject({ page })
+    const { name: projectName, slug: projectSlug } = await createProject({ page })
 
     // Act
     await page.getByTestId('menuMyProjects').click()
     await page.getByRole('link', { name: projectName }).click()
-    await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+    await expect(page.getByTestId('project-slug')).toHaveText(
+      projectSlugTextRegexp(projectSlug),
+    )
     await expect(page.getByTestId('projectSecretsZone')).not.toBeVisible()
     await page.getByTestId('showSecretsBtn').click()
 
@@ -99,12 +105,14 @@ test.describe('Dashboard page', () => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName, slug: projectSlug } = await addProject({ page })
+    const { name: projectName, slug: projectSlug } = await createProject({ page })
 
     // Act
     await page.getByTestId('menuMyProjects').click()
     await page.getByRole('link', { name: projectName }).click()
-    await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+    await expect(page.getByTestId('project-slug')).toHaveText(
+      projectSlugTextRegexp(projectSlug),
+    )
     await page.getByTestId('replayHooksBtn').click()
 
     // Assert
@@ -120,7 +128,7 @@ test.describe('Dashboard page', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { id: projectId, name: projectName, slug: projectSlug } = await addProject({
+      const { id: projectId, name: projectName, slug: projectSlug } = await createProject({
         page,
       })
 
@@ -133,7 +141,9 @@ test.describe('Dashboard page', () => {
       await page.getByTestId('projectsSearchBtn').click()
       await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
       await page.getByTestId(`projectTr-${projectId}`).click()
-      await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+      await expect(page.getByTestId('project-slug')).toHaveText(
+        projectSlugTextRegexp(projectSlug),
+      )
       await page.getByTestId('replayHooksBtn').click()
 
       // Assert
@@ -154,7 +164,7 @@ test.describe('Dashboard page', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { id: projectId, name: projectName, slug: projectSlug } = await addProject({
+      const { id: projectId, name: projectName, slug: projectSlug } = await createProject({
         page,
       })
 
@@ -167,7 +177,9 @@ test.describe('Dashboard page', () => {
       await page.getByTestId('projectsSearchBtn').click()
       await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
       await page.getByTestId(`projectTr-${projectId}`).click()
-      await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+      await expect(page.getByTestId('project-slug')).toHaveText(
+        projectSlugTextRegexp(projectSlug),
+      )
       await page.getByTestId('replayHooksBtn').click()
 
       // Assert

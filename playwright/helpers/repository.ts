@@ -1,13 +1,14 @@
 import type { Page } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import { expect } from '@playwright/test'
+import { repoSyncTimeoutMs } from './constants'
 import { waitForSnackbar } from './snackbar'
 
 const repoSyncApiRegex = /\/api\/.*\/repositories\/.*\/sync$/
 
 export function waitForRepoSync({
   page,
-  timeoutMs = 60000,
+  timeoutMs = repoSyncTimeoutMs,
 }: {
   page: Page
   timeoutMs?: number
@@ -35,7 +36,7 @@ async function closeResourceModal(page: Page) {
     .click()
 }
 
-export async function addRandomRepositoryToProject({
+export async function createRepository({
   page,
   repositoryName,
   externalRepoUrlInput,
@@ -50,7 +51,8 @@ export async function addRandomRepositoryToProject({
   await openAddRepositoryForm(page)
   await page.getByTestId('internalRepoNameInput').fill(repositoryName)
   await fillRepositoryUrl(page, externalRepoUrlInput)
-  await (infraRepo ? page.getByText('Dépôt contenant du code d\'').click() : Promise.resolve())
+  if (infraRepo)
+    await page.getByText('Dépôt contenant du code d\'').click()
   await page.getByTestId('addRepoBtn').click()
   await expect(page.getByTestId(`repoTr-${repositoryName}`)).toContainText(
     repositoryName,
@@ -71,7 +73,7 @@ export async function synchronizeBranchOnRepository({
   await page.getByTestId(`repoTr-${repositoryName}`).click()
   await expect(page.getByTestId('resource-modal')).toBeVisible()
   await page.getByTestId('branchNameInput').fill(branchName)
-  const syncRequest = waitForRepoSync({ page, timeoutMs: 60000 })
+  const syncRequest = waitForRepoSync({ page, timeoutMs: repoSyncTimeoutMs })
   await page.getByTestId('syncRepoBtn').click()
   await syncRequest
   await closeResourceModal(page)
