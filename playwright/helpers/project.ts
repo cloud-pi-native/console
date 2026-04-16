@@ -2,7 +2,11 @@ import type { Page } from '@playwright/test'
 import type { Credentials } from '../config/console'
 import { faker } from '@faker-js/faker'
 import { expect } from '@playwright/test'
+import { deleteValidationInput, uiReadinessTimeoutMs } from './constants'
 import { openMyProjects } from './navigation'
+
+const projectUrlRegexp = /\/projects\/[^/]+$/
+const projectSlugPrefixRegexp = /^slug\s*:\s*/i
 
 interface Resources {
   cpu: number
@@ -44,8 +48,10 @@ async function fillProjectResources({
       .fill(resources.memory.toString())
   }
 
-  await (hprodResources ? fillHprod(hprodResources) : Promise.resolve())
-  await (prodResources ? fillProd(prodResources) : Promise.resolve())
+  if (hprodResources)
+    await fillHprod(hprodResources)
+  if (prodResources)
+    await fillProd(prodResources)
 }
 
 async function enableProjectLimitless(page: Page) {
@@ -67,11 +73,9 @@ async function addMembersToProject(page: Page, members: Credentials[]) {
 }
 
 async function getProjectSlugAndId(page: Page) {
-  const slug = (
-    (await page.getByTestId('project-slug').textContent()) || 'no-slug'
-  ).replace('slug: ', '')
-  const id
-    = (await page.getByTestId('project-id').getAttribute('title')) || 'no-id'
+  const rawSlugText = (await page.getByTestId('project-slug').textContent()) ?? 'no-slug'
+  const slug = rawSlugText?.replace(projectSlugPrefixRegexp, '').trim()
+  const id = (await page.getByTestId('project-id').getAttribute('title')) ?? 'no-id'
   return { slug, id }
 }
 
@@ -95,8 +99,10 @@ export async function addProject({
   if (!hprodResources && !prodResources) await enableProjectLimitless(page)
 
   await page.getByTestId('createProjectBtn').click()
-  await expect(page.locator('h1')).toContainText(name)
-  await (members?.length ? addMembersToProject(page, members) : Promise.resolve())
+  await expect(page).toHaveURL(projectUrlRegexp, { timeout: uiReadinessTimeoutMs })
+  await expect(page.getByTestId('project-slug')).toBeVisible({ timeout: uiReadinessTimeoutMs })
+  if (members?.length)
+    await addMembersToProject(page, members)
 
   const { slug, id } = await getProjectSlugAndId(page)
   return { name, slug, id }
@@ -106,7 +112,7 @@ export async function deleteProject(page: Page, projectName: string) {
   await openMyProjects(page)
   await page.getByRole('link', { name: projectName }).click()
   await page.getByRole('button', { name: 'Supprimer le projet' }).click()
-  await page.getByTestId('archiveProjectInput').fill('DELETE')
+  await page.getByTestId('archiveProjectInput').fill(deleteValidationInput)
   await page.getByTestId('confirmDeletionBtn').click()
   await openMyProjects(page)
   await expect(page.getByRole('link', { name: projectName })).not.toBeVisible()

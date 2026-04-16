@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { adminUser, clientURL, secondTestUser, signInCloudPiNative, testUser } from '../config/console'
+import { pollingFastIntervalMs, repoSyncTimeoutMs } from '../helpers/constants'
 import { addProject, deleteProject } from '../helpers/project'
 import { addRandomRepositoryToProject } from '../helpers/repository'
 
@@ -249,8 +250,8 @@ test.describe('Integration tests user flow: deployment and metrics', { tag: '@in
           return page2.locator('body').textContent()
         },
         {
-          timeout: 60_000,
-          intervals: [2_000],
+          timeout: repoSyncTimeoutMs,
+          intervals: [pollingFastIntervalMs],
         },
       )
       .toContain('Application is running')

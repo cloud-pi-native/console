@@ -7,11 +7,8 @@ export async function openMyProjects(page: Page) {
 
 async function ensureAdminMenuVisible(page: Page, menuTestId: string) {
   const menuItem = page.getByTestId(menuTestId)
-  await menuItem
-    .isVisible()
-    .then(visible =>
-      visible ? Promise.resolve() : page.getByTestId('menuAdministrationBtn').click(),
-    )
+  if (!(await menuItem.isVisible()))
+    await page.getByTestId('menuAdministrationBtn').click()
 }
 
 export async function openClustersAdministration(page: Page) {

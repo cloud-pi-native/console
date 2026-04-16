@@ -1,9 +1,10 @@
 import type { Page } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import { expect } from '@playwright/test'
+import { deleteValidationInput } from './constants'
 import { openClustersAdministration } from './navigation'
 
-type ClusterZone = 'publique' | 'Zone privée'
+type ClusterZone = string
 type ClusterConfidentiality = 'public' | 'dedicated'
 type ClusterAssociateStage = 'first' | 'all' | 'none'
 
@@ -66,7 +67,7 @@ async function confirmClusterDeletion(page: Page) {
   await page.getByTestId('showDeleteClusterBtn').click()
   await expect(page.getByTestId('deleteClusterBtn')).toBeVisible()
   await expect(page.getByTestId('deleteClusterBtn')).toBeDisabled()
-  await page.getByTestId('deleteClusterInput').fill('DELETE')
+  await page.getByTestId('deleteClusterInput').fill(deleteValidationInput)
   await expect(page.getByTestId('deleteClusterBtn')).toBeEnabled()
   await page.getByTestId('deleteClusterBtn').click()
 }
@@ -90,18 +91,25 @@ export async function createCluster({
   await openClustersAdministration(page)
   await page.getByTestId('addClusterLink').click()
   await page.getByTestId('labelInput').fill(clusterName)
-  await (zone ? selectClusterZone(page, zone) : Promise.resolve())
+  if (zone)
+    await selectClusterZone(page, zone)
   await selectClusterConfidentiality(page, confidentiality)
-  await (associateStageNames?.length ? addStagesToClusterAssociationByNames(page, associateStageNames) : Promise.resolve())
+  if (associateStageNames?.length)
+    await addStagesToClusterAssociationByNames(page, associateStageNames)
 
-  const assocActions: Record<ClusterAssociateStage, () => Promise<void>> = {
-    first: () => addFirstStageToClusterAssociation(page),
-    all: () => addAllStagesToClusterAssociation(page),
-    none: () => Promise.resolve(),
+  switch (associateStage ?? 'none') {
+    case 'first':
+      await addFirstStageToClusterAssociation(page)
+      break
+    case 'all':
+      await addAllStagesToClusterAssociation(page)
+      break
+    case 'none':
+      break
   }
-  await assocActions[associateStage ?? 'none']()
 
-  await (informations ? fillClusterInformations(page, informations) : Promise.resolve())
+  if (informations)
+    await fillClusterInformations(page, informations)
   await page.getByTestId('addClusterBtn').click()
   await expect(page.getByTestId('cpin-loader')).toHaveCount(0)
   await searchCluster(page, clusterName)

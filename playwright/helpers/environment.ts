@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import { expect } from '@playwright/test'
+import { deleteValidationInput } from './constants'
 import { openMyProjects } from './navigation'
 
 type EnvironmentZone = 'publique' | 'Zone privée'
@@ -86,7 +87,7 @@ export async function removeEnvFromProject(
   await page.getByTestId(`environmentTr-${envName}`).click()
   await page.getByTestId('showDeleteEnvironmentBtn').click()
   await expect(page.getByTestId('deleteEnvironmentZone')).toBeVisible()
-  await page.getByTestId('deleteEnvironmentInput').fill('DELETE')
+  await page.getByTestId('deleteEnvironmentInput').fill(deleteValidationInput)
   await page.getByTestId('deleteEnvironmentBtn').click()
   await expect(page.getByTestId(`environmentTr-${envName}`)).not.toBeVisible()
 }
