@@ -27,6 +27,7 @@ export class KeycloakClientService implements OnModuleInit {
     let first = 0
     while (true) {
       const fetched = await this.client.groups.find({ first, max: SUBGROUPS_PAGINATE_QUERY_MAX, briefRepresentation: false })
+      this.logger.verbose(`Loaded a Keycloak groups page (first=${first}, count=${fetched.length})`)
       if (fetched.length === 0) break
       for (const group of fetched) {
         yield group
@@ -46,15 +47,21 @@ export class KeycloakClientService implements OnModuleInit {
 
   async getGroupByPath(path: string): Promise<GroupRepresentation | undefined> {
     const parts = path.split('/').filter(Boolean)
+    this.logger.verbose(`Resolving Keycloak group path ${path} (depth=${parts.length})`)
     let current: GroupRepresentationWith<'id'> | undefined
+    if (parts.length === 0) return undefined
 
     for (const name of parts) {
       current = current
         ? await this.getSubGroupByName(current.id, name)
         : await this.getRootGroupByName(name)
 
-      if (!current) return undefined
+      if (!current) {
+        this.logger.verbose(`Keycloak group path segment was not found (path=${path}, missing=${name})`)
+        return undefined
+      }
     }
+    this.logger.verbose(`Keycloak group path resolved (path=${path}, groupId=${current?.id})`)
     return current
   }
 
@@ -78,6 +85,7 @@ export class KeycloakClientService implements OnModuleInit {
   async deleteGroup(id: string): Promise<void> {
     const span = trace.getActiveSpan()
     span?.setAttribute('keycloak.group.id', id)
+    this.logger.log(`Deleting Keycloak group (groupId=${id})`)
     await this.client.groups.del({ id })
   }
 
@@ -85,6 +93,7 @@ export class KeycloakClientService implements OnModuleInit {
     const span = trace.getActiveSpan()
     span?.setAttribute('keycloak.group.id', groupId)
     const members = await this.client.groups.listMembers({ id: groupId })
+    this.logger.verbose(`Loaded Keycloak group members (groupId=${groupId}, count=${members?.length ?? 0})`)
     return members || []
   }
 
@@ -92,7 +101,7 @@ export class KeycloakClientService implements OnModuleInit {
   async createGroup(name: string) {
     const span = trace.getActiveSpan()
     span?.setAttribute('group.name', name)
-    this.logger.debug(`Creating Keycloak group: ${name}`)
+    this.logger.debug(`Creating Keycloak group ${name}`)
     const result = await this.client.groups.create({ name })
     return { ...result, name } as GroupRepresentation
   }
@@ -100,12 +109,14 @@ export class KeycloakClientService implements OnModuleInit {
   async addUserToGroup(userId: string, groupId: string) {
     const span = trace.getActiveSpan()
     span?.setAttribute('keycloak.group.id', groupId)
+    this.logger.verbose(`Adding user to Keycloak group (userId=${userId}, groupId=${groupId})`)
     return this.client.users.addToGroup({ id: userId, groupId })
   }
 
   async removeUserFromGroup(userId: string, groupId: string) {
     const span = trace.getActiveSpan()
     span?.setAttribute('keycloak.group.id', groupId)
+    this.logger.verbose(`Removing user from Keycloak group (userId=${userId}, groupId=${groupId})`)
     return this.client.users.delFromGroup({ id: userId, groupId })
   }
 
@@ -118,6 +129,7 @@ export class KeycloakClientService implements OnModuleInit {
         max: SUBGROUPS_PAGINATE_QUERY_MAX,
         first,
       })
+      this.logger.verbose(`Loaded a Keycloak subgroups page (parentId=${parentId}, first=${first}, count=${page.length})`)
       if (page.length === 0) break
       for (const subgroup of page) {
         yield subgroup
@@ -130,8 +142,12 @@ export class KeycloakClientService implements OnModuleInit {
   async getOrCreateGroupByPath(path: string) {
     const span = trace.getActiveSpan()
     span?.setAttribute('group.path.depth', path.split('/').filter(Boolean).length)
+    this.logger.verbose(`Ensuring Keycloak group path exists: ${path}`)
     const existingGroup = await this.getGroupByPath(path)
-    if (existingGroup) return existingGroup
+    if (existingGroup) {
+      this.logger.verbose(`Keycloak group already exists at path ${path}`)
+      return existingGroup
+    }
 
     const parts = path.split('/').filter(Boolean)
     let parentId: string | undefined
@@ -149,6 +165,9 @@ export class KeycloakClientService implements OnModuleInit {
       parentId = current?.id
     }
 
+    if (current) {
+      this.logger.log(`Created Keycloak group path ${path} (groupId=${current.id})`)
+    }
     return { ...current, path } as GroupRepresentation
   }
 
@@ -162,7 +181,7 @@ export class KeycloakClientService implements OnModuleInit {
         return subgroup
       }
     }
-    this.logger.debug(`Creating SubGroup ${name} under parent ${parentId}`)
+    this.logger.debug(`Creating Keycloak subgroup ${name} under parentId=${parentId}`)
     const createdGroup = await this.client.groups.createChildGroup({ id: parentId }, { name })
     return { id: createdGroup.id, name } satisfies GroupRepresentation
   }
@@ -170,6 +189,7 @@ export class KeycloakClientService implements OnModuleInit {
   async getOrCreateConsoleGroup(projectGroup: GroupRepresentationWith<'id'>) {
     const span = trace.getActiveSpan()
     span?.setAttribute('keycloak.group.id', projectGroup.id)
+    this.logger.verbose(`Ensuring Keycloak console group exists (projectGroupId=${projectGroup.id})`)
     return this.getOrCreateSubGroupByName(projectGroup.id, CONSOLE_GROUP_NAME)
   }
 
@@ -218,19 +238,21 @@ export class KeycloakClientService implements OnModuleInit {
       this.getOrCreateSubGroupByName(envGroup.id, 'RO'),
       this.getOrCreateSubGroupByName(envGroup.id, 'RW'),
     ])
+    this.logger.verbose(`Resolved Keycloak environment groups (consoleGroupId=${consoleGroup.id}, env=${environment.name}, envGroupId=${envGroup.id})`)
     return { roGroup, rwGroup }
   }
 
   async onModuleInit() {
     if (!this.config.keycloakRealm) {
-      this.logger.fatal('Keycloak realm not configured')
+      this.logger.fatal('Keycloak realm is not configured')
       return
     }
     if (!this.config.keycloakAdmin || !this.config.keycloakAdminPassword) {
-      this.logger.fatal('Keycloak admin or admin password not configured')
+      this.logger.fatal('Keycloak admin username or password is not configured')
       return
     }
     try {
+      this.logger.log(`Authenticating Keycloak admin client (realm=${this.config.keycloakRealm})`)
       await this.client.auth({
         clientId: 'admin-cli',
         grantType: 'password',
@@ -238,10 +260,14 @@ export class KeycloakClientService implements OnModuleInit {
         password: this.config.keycloakAdminPassword,
       })
     } catch (err) {
-      this.logger.error({ err }, 'Keycloak Admin Client authentication failed')
+      if (err instanceof Error) {
+        this.logger.error(`Keycloak Admin Client authentication failed: ${err.message}`, err.stack)
+      } else {
+        this.logger.error(`Keycloak Admin Client authentication failed: ${String(err)}`)
+      }
       throw err
     }
     this.client.setConfig({ realmName: this.config.keycloakRealm })
-    this.logger.log('Keycloak Admin Client authenticated')
+    this.logger.log(`Keycloak Admin Client authenticated (realm=${this.config.keycloakRealm})`)
   }
 }
