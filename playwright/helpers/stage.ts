@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import { expect } from '@playwright/test'
+import { deleteValidationInput } from './constants'
 import { openStagesAdministration } from './navigation'
 
 async function assertStageCreateForm(page: Page) {
@@ -44,12 +45,16 @@ export async function createStage({
   await expect(page.getByTestId('addStageBtn')).toBeEnabled()
   await expect(page.locator('.fr-tag--dismiss')).toHaveCount(0)
 
-  const assocActions: Record<'first' | 'all' | 'none', () => Promise<void>> = {
-    first: () => addFirstClusterAssociation(page),
-    all: () => addAllClusterAssociations(page),
-    none: () => Promise.resolve(),
+  switch (associateToCluster) {
+    case 'first':
+      await addFirstClusterAssociation(page)
+      break
+    case 'all':
+      await addAllClusterAssociations(page)
+      break
+    case 'none':
+      break
   }
-  await assocActions[associateToCluster]()
 
   await page.getByTestId('addStageBtn').click()
   return stageName
@@ -66,6 +71,6 @@ export async function deleteStage(page: Page, stageName: string) {
     page.getByTestId('associatedEnvironmentsTable'),
   ).not.toBeVisible()
   await page.getByTestId('showDeleteStageBtn').click()
-  await page.getByTestId('deleteStageInput').fill('DELETE')
+  await page.getByTestId('deleteStageInput').fill(deleteValidationInput)
   await page.getByTestId('deleteStageBtn').click()
 }

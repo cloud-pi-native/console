@@ -51,11 +51,20 @@ export const tcolinUser: Credentials = {
 // User for integration test
 export const secondTestUser: Credentials = {
   id: 'test',
-  username: process.env.CONSOLE_SECOND_TEST_USERNAME?.trim() || 'anothertest',
-  password: process.env.CONSOLE_SECOND_TEST_PASSWORD?.trim() || 'anothertest',
+  username: process.env.CONSOLE_SECOND_TEST_USERNAME?.trim() || 'secondtestuser',
+  password: process.env.CONSOLE_SECOND_TEST_PASSWORD?.trim() || 'secondtestuser',
   firstName: 'test',
   lastName: 'test',
-  email: process.env.CONSOLE_SECOND_TEST_EMAIL?.trim() || 'anothertest@test.com',
+  email: process.env.CONSOLE_SECOND_TEST_EMAIL?.trim() || 'secondtestuser@example.com',
+}
+
+export const currentUser: Credentials = {
+  id: 'current',
+  username: process.env.CONSOLE_CURRENT_TEST_USERNAME?.trim() || 'currentuser',
+  password: process.env.CONSOLE_CURRENT_TEST_PASSWORD?.trim() || 'currentuser',
+  firstName: 'test',
+  lastName: 'test',
+  email: process.env.CONSOLE_CURRENT_TEST_EMAIL?.trim() || 'currentuser@example.com',
 }
 
 export async function signInCloudPiNative({
