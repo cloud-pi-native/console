@@ -31,23 +31,27 @@ export class ApplicationInitializationService {
   }
 
   async injectDataInDatabase(path: string) {
-    this.logger.log('Starting init DB...')
+    this.logger.log(`Starting database initialization using data from ${path}`)
     const { data } = await import(path)
     await this.databaseInitializationService.initDb(data)
-    this.logger.log('initDb invoked successfully')
+    this.logger.log('Database initialization completed successfully')
   }
 
   async initApp() {
     try {
       await this.databaseService.getConnection()
     } catch (error) {
-      this.logger.error(error.message)
+      if (error instanceof Error) {
+        this.logger.error(`Database connection failed: ${error.message}`, error.stack)
+      } else {
+        this.logger.error(`Database connection failed: ${String(error)}`)
+      }
       throw error
     }
 
     this.pluginManagementService.initPm()
 
-    this.logger.log('Reading init database file')
+    this.logger.log('Loading database initialization data')
 
     try {
       const dataPath
@@ -60,35 +64,36 @@ export class ApplicationInitializationService {
         this.configurationService.isProd
         && !this.configurationService.isDevSetup
       ) {
-        this.logger.log('Cleaning up imported data file...')
+        this.logger.log(`Cleaning up imported data module at ${dataPath}`)
         await rm(resolve(__dirname, dataPath))
-        this.logger.log(`Successfully deleted '${dataPath}'`)
+        this.logger.log(`Deleted imported data module at ${dataPath}`)
       }
     } catch (error) {
-      if (
-        error.code === 'ERR_MODULE_NOT_FOUND'
-        || error.message.includes('Failed to load')
-        || error.message.includes('Cannot find module')
-      ) {
-        this.logger.log('No initDb file, skipping')
+      if (error instanceof Error) {
+        const errno = error as NodeJS.ErrnoException
+        const errorCode = typeof errno.code === 'string' ? errno.code : undefined
+        if (
+          errorCode === 'ERR_MODULE_NOT_FOUND'
+          || error.message.includes('Failed to load')
+          || error.message.includes('Cannot find module')
+        ) {
+          this.logger.log('No database initialization data module was found, so initialization was skipped')
+        } else {
+          this.logger.warn(`Database initialization failed: ${error.message}`)
+          throw error
+        }
       } else {
-        this.logger.warn(error.message)
+        this.logger.warn(`Database initialization failed: ${String(error)}`)
         throw error
       }
     }
 
-    this.logger.debug({
-      isDev: this.configurationService.isDev,
-      isTest: this.configurationService.isTest,
-      isCI: this.configurationService.isCI,
-      isDevSetup: this.configurationService.isDevSetup,
-      isProd: this.configurationService.isProd,
-    })
+    this.logger.debug(`Runtime environment flags: isDev=${this.configurationService.isDev} isTest=${this.configurationService.isTest} isCI=${this.configurationService.isCI} isDevSetup=${this.configurationService.isDevSetup} isProd=${this.configurationService.isProd}`)
   }
 
   async exitGracefully(error?: Error) {
     if (error instanceof Error) {
-      this.logger.fatal(error)
+      this.logger.fatal(`Exiting due to an unhandled error: ${error.message}`)
     }
     // @TODO Determine if it is necessary, or if we would rather plug ourselves
     // onto NestJS lifecycle, or even if all this is actually necessary
@@ -96,18 +101,23 @@ export class ApplicationInitializationService {
     //
     // await app.close();
 
-    this.logger.log('Closing connections...')
+    this.logger.log('Closing connections')
     await this.databaseService.closeConnections()
-    this.logger.log('Exiting...')
+    this.logger.log('Exiting')
     process.exit(error instanceof Error ? 1 : 0)
   }
 
   logExitCode(code: number) {
-    this.logger.warn(`received signal: ${code}`)
+    this.logger.warn(`Process is exiting with code ${code}`)
   }
 
   logUnhandledRejection(reason: unknown, promise: Promise<unknown>) {
-    this.logger.error({ message: 'Unhandled Rejection', promise, reason })
+    void promise
+    if (reason instanceof Error) {
+      this.logger.error(`Unhandled Promise rejection: ${reason.message}`, reason.stack)
+      return
+    }
+    this.logger.error(`Unhandled Promise rejection: ${String(reason)}`)
   }
 
   handleExit() {
