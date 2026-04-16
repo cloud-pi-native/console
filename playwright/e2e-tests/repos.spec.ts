@@ -13,7 +13,7 @@ import {
   invalidGitUrlErrorMessage,
   invalidInternalRepoErrorMessage,
 } from '../helpers/constants'
-import { addProject } from '../helpers/project'
+import { createProject } from '../helpers/project'
 
 test.describe('Repositories', () => {
   // @TODO: Rework this Cypress-inherited test (use of following-sibling is a
@@ -25,7 +25,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -111,7 +111,7 @@ test.describe('Repositories', () => {
           .locator('//following-sibling::*[1]'),
       ).not.toBeVisible()
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
-      await setCheckbox(page, 'privateRepoCbx')
+      await setCheckbox({ page, name: 'privateRepoCbx' })
       await expect(page.getByTestId('addRepoBtn')).toBeDisabled()
       await page
         .getByTestId('externalUserNameInput')
@@ -123,9 +123,9 @@ test.describe('Repositories', () => {
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
       await page.getByTestId('externalTokenInput').clear()
       await expect(page.getByTestId('addRepoBtn')).toBeDisabled()
-      await unsetCheckbox(page, 'privateRepoCbx')
+      await unsetCheckbox({ page, name: 'privateRepoCbx' })
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
-      await setCheckbox(page, 'infraRepoCbx')
+      await setCheckbox({ page, name: 'infraRepoCbx' })
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
     },
   )
@@ -137,7 +137,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -178,7 +178,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -219,7 +219,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -264,7 +264,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -308,7 +308,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -335,12 +335,12 @@ test.describe('Repositories', () => {
         .getByTestId('internalRepoNameInput')
         .fill(repo.internalRepoName)
       await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await setCheckbox(page, 'privateRepoCbx')
+      await setCheckbox({ page, name: 'privateRepoCbx' })
       await page
         .getByTestId('externalUserNameInput')
         .fill(repo.externalUserName)
       await page.getByTestId('externalTokenInput').fill(repo.externalToken)
-      await setCheckbox(page, 'infraRepoCbx')
+      await setCheckbox({ page, name: 'infraRepoCbx' })
       await page.getByTestId('addRepoBtn').click()
       await expect(
         page.getByTestId(`repoTr-${repo.internalRepoName}`),
@@ -352,7 +352,7 @@ test.describe('Repositories', () => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName, slug: projectSlug } = await addProject({
+    const { name: projectName, slug: projectSlug } = await createProject({
       page,
     })
     const repo = {
@@ -415,7 +415,7 @@ test.describe('Repositories', () => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName, slug: projectSlug } = await addProject({
+    const { name: projectName, slug: projectSlug } = await createProject({
       page,
     })
     const repo = {
@@ -482,7 +482,7 @@ test.describe('Repositories', () => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName, slug: projectSlug } = await addProject({
+    const { name: projectName, slug: projectSlug } = await createProject({
       page,
     })
     const repo = {
@@ -537,7 +537,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { id: projectId, name: projectName, slug: projectSlug } = await addProject({
+      const { id: projectId, name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -598,7 +598,7 @@ test.describe('Repositories', () => {
           // Only admin users can lock projects
           tcolinUser,
       })
-      const { id: projectId, name: projectName, slug: projectSlug } = await addProject({
+      const { id: projectId, name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
