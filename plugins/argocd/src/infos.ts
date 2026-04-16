@@ -8,6 +8,8 @@ export const DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIX = '/console/admin'
 export const DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX = '/console/devops'
 export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX = '/console/developer'
 export const DEFAULT_PROJECT_READONLY_GROUP_PATH_SUFFIX = '/console/readonly'
+export const DEFAULT_DSO_ENV_CHART_VERSION = 'dso-env-1.6.0'
+export const DEFAULT_DSO_NS_CHART_VERSION = 'dso-ns-1.1.5'
 
 const infos = {
   name: 'argocd',
@@ -90,6 +92,28 @@ const infos = {
       title: 'Project Readonly Group Path Suffix',
       value: DEFAULT_PROJECT_READONLY_GROUP_PATH_SUFFIX,
       description: 'Suffixe du chemin du groupe lecture seule de projet',
+    }, {
+      key: 'dsoEnvChartVersion',
+      kind: 'text',
+      permissions: {
+        admin: { read: true, write: true },
+        user: { read: false, write: false },
+      },
+      title: 'DSO Env Chart Version',
+      value: DEFAULT_DSO_ENV_CHART_VERSION,
+      description: 'Version du chart Helm dso-env',
+      placeholder: DEFAULT_DSO_ENV_CHART_VERSION,
+    }, {
+      key: 'dsoNsChartVersion',
+      kind: 'text',
+      permissions: {
+        admin: { read: true, write: true },
+        user: { read: false, write: false },
+      },
+      title: 'DSO Namespace Chart Version',
+      value: DEFAULT_DSO_NS_CHART_VERSION,
+      description: 'Version du chart Helm dso-ns',
+      placeholder: DEFAULT_DSO_NS_CHART_VERSION,
     }],
     project: [{
       key: 'extraRepositories',
