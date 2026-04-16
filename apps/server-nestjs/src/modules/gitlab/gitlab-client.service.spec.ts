@@ -297,6 +297,14 @@ describe('gitlab-client', () => {
         const result = await service.upsertUser(consoleUser)
 
         expect(result).toEqual(expect.objectContaining({ id: 999, email: consoleUser.email }))
+        expect(gitlabMock.Users.create).toHaveBeenCalledWith(expect.objectContaining({
+          email: 'new@example.com',
+          username: 'new',
+          name: 'New User',
+          externUid: 'new@example.com',
+          provider: 'openid_connect',
+          skipConfirmation: true,
+        }))
         expect(gitlabMock.UserCustomAttributes.set).toHaveBeenCalledWith(999, USER_ID_CUSTOM_ATTRIBUTE_KEY, consoleUser.id)
       })
 
@@ -308,8 +316,34 @@ describe('gitlab-client', () => {
         const result = await service.upsertUser(consoleUser)
 
         expect(result).toEqual(expect.objectContaining({ id: 1000, email: consoleUser.email }))
+        expect(gitlabMock.Users.edit).toHaveBeenCalledWith(1000, expect.objectContaining({
+          email: 'existing@example.com',
+          username: 'existing',
+          name: 'Existing User',
+          externUid: 'existing@example.com',
+          provider: 'openid_connect',
+        }))
         expect(gitlabMock.UserCustomAttributes.set).toHaveBeenCalledWith(1000, USER_ID_CUSTOM_ATTRIBUTE_KEY, consoleUser.id)
         expect(gitlabMock.Users.create).not.toHaveBeenCalled()
+      })
+
+      it('should set admin flag when provided', async () => {
+        const consoleUser = { id: 'u1', email: 'admin@example.com', firstName: 'Admin', lastName: 'User' }
+        const gitlabUsersAllMock = gitlabMock.Users.all as MockedFunction<typeof gitlabMock.Users.all>
+        gitlabUsersAllMock.mockResolvedValue([])
+        gitlabMock.Users.create.mockResolvedValue(makeExpandedUserSchema({ id: 999, email: consoleUser.email }))
+
+        await service.upsertUser({ ...consoleUser, isAdmin: true })
+
+        expect(gitlabMock.Users.create).toHaveBeenCalledWith(expect.objectContaining({
+          email: 'admin@example.com',
+          username: 'admin',
+          name: 'Admin User',
+          externUid: 'admin@example.com',
+          provider: 'openid_connect',
+          admin: true,
+          skipConfirmation: true,
+        }))
       })
     })
 
@@ -568,7 +602,7 @@ describe('gitlab-client', () => {
 
       gitlabMock.Users.create.mockResolvedValue(user)
 
-      const result = await service.createUser(email, username, name)
+      const result = await service.createUser({ email, username, name })
 
       expect(result).toEqual(user)
       expect(gitlabMock.Users.create).toHaveBeenCalledWith(expect.objectContaining({
