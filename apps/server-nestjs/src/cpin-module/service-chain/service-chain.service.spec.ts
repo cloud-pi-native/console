@@ -1,3 +1,4 @@
+import type { ServiceChain, ServiceChainDetails, ServiceChainFlows } from '@cpn-console/shared'
 import type { TestingModule } from '@nestjs/testing'
 import type { MockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
@@ -26,14 +27,43 @@ describe('serviceChainService', () => {
 
   const uuid = '550e8400-e29b-41d4-a716-446655440000'
 
-  const mockServiceChain = {
+  const mockServiceChain: ServiceChain = {
     id: uuid,
     state: 'opened',
     commonName: 'test.example.com',
     pai: 'test-pai',
     network: 'RIE',
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z',
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+  }
+  const mockServiceChainDetails: ServiceChainDetails = {
+    ...mockServiceChain,
+    validationId: uuid,
+    validatedBy: null,
+    ref: null,
+    location: 'SIR',
+    targetAddress: '10.0.0.1',
+    projectId: uuid,
+    env: 'INT',
+    subjectAlternativeName: [],
+    redirect: false,
+    antivirus: null,
+    websocket: false,
+    ipWhiteList: [],
+    sslOutgoing: false,
+  }
+  const flowDetails: NonNullable<ServiceChainFlows['reserve_ip']> = {
+    state: 'success',
+    input: {},
+    output: {},
+    updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+  }
+  const mockServiceChainFlows: ServiceChainFlows = {
+    reserve_ip: flowDetails,
+    create_cert: null,
+    call_exec: flowDetails,
+    activate_ip: flowDetails,
+    dns_request: flowDetails,
   }
 
   describe('list', () => {
@@ -50,23 +80,7 @@ describe('serviceChainService', () => {
 
   describe('getDetails', () => {
     it('should call GET /requests/:id and parse response', async () => {
-      const detailsData = {
-        ...mockServiceChain,
-        validationId: uuid,
-        validatedBy: null,
-        ref: null,
-        location: 'SIR',
-        targetAddress: '10.0.0.1',
-        projectId: uuid,
-        env: 'INT',
-        subjectAlternativeName: [],
-        redirect: false,
-        antivirus: null,
-        websocket: false,
-        ipWhiteList: [],
-        sslOutgoing: false,
-      }
-      openCdsClient.get.mockResolvedValue(detailsData)
+      openCdsClient.get.mockResolvedValue(mockServiceChainDetails)
 
       const result = await service.getDetails(uuid)
 
@@ -98,20 +112,7 @@ describe('serviceChainService', () => {
 
   describe('getFlows', () => {
     it('should call GET /requests/:id/flows and parse response', async () => {
-      const flowDetails = {
-        state: 'success',
-        input: '{}',
-        output: '{}',
-        updatedAt: '2026-01-01T00:00:00.000Z',
-      }
-      const flowsData = {
-        reserve_ip: flowDetails,
-        create_cert: null,
-        call_exec: flowDetails,
-        activate_ip: flowDetails,
-        dns_request: flowDetails,
-      }
-      openCdsClient.get.mockResolvedValue(flowsData)
+      openCdsClient.get.mockResolvedValue(mockServiceChainFlows)
 
       const result = await service.getFlows(uuid)
 
