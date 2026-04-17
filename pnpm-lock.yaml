@@ -475,9 +475,6 @@ importers:
       '@ts-rest/open-api':
         specifier: ^3.52.1
         version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.19.15)(zod@3.25.76))(zod@3.25.76)
-      axios:
-        specifier: ^1.13.6
-        version: 1.13.6
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
