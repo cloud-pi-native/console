@@ -1,0 +1,22 @@
+export const INFRA_GROUP_NAME = 'Infra'
+export const INFRA_GROUP_PATH = 'infra'
+export const INFRA_APPS_REPO_NAME = 'infra-apps'
+export const MIRROR_REPO_NAME = 'mirror'
+export const TOPIC_PLUGIN_MANAGED = 'plugin-managed'
+export const TOKEN_DESCRIPTION = 'mirroring-from-external-repo'
+
+export const DEFAULT_ADMIN_GROUP_PATH = '/console/admin'
+export const DEFAULT_AUDITOR_GROUP_PATH = '/console/readonly'
+export const DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX = '/console/admin'
+export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX = '/console/developer,/console/devops'
+export const DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX = '/console/readonly'
+
+export const GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY = 'cpn_projects_root_dir'
+export const INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY = 'cpn_infra_group'
+export const PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY = 'cpn_project_slug'
+export const USER_ID_CUSTOM_ATTRIBUTE_KEY = 'cpn_user_id'
+export const MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY = 'cpn_managed_by_console'
+
+export function customAttributesFilter(key: string, value: string) {
+  return { [`custom_attributes[${key}]`]: value } as Record<string, string>
+}
