@@ -11,6 +11,13 @@ export const DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX = '/console/admin'
 export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX = '/console/developer,/console/devops'
 export const DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX = '/console/readonly'
 
+export const ADMIN_GROUP_PATH_PLUGIN_KEY = 'adminGroupPath'
+export const AUDITOR_GROUP_PATH_PLUGIN_KEY = 'auditorGroupPath'
+export const PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectReporterGroupPathSuffix'
+export const PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectDeveloperGroupPathSuffix'
+export const PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectMaintainerGroupPathSuffix'
+export const PURGE_PLUGIN_KEY = 'purge'
+
 export const GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY = 'cpn_projects_root_dir'
 export const INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY = 'cpn_infra_group'
 export const PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY = 'cpn_project_slug'
