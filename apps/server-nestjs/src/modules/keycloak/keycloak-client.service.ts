@@ -9,7 +9,8 @@ import { ConfigurationService } from '../../cpin-module/infrastructure/configura
 import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/telemetry.decorator'
 import { CONSOLE_GROUP_NAME, SUBGROUPS_PAGINATE_QUERY_MAX } from './keycloak.constants'
 
-export type GroupRepresentationWith<T extends keyof GroupRepresentation> = GroupRepresentation & Required<Pick<GroupRepresentation, T>>
+type With<T, K extends keyof T> = T & Required<Pick<T, K>>
+export type GroupRepresentationWith<T extends keyof GroupRepresentation> = With<GroupRepresentation, T>
 
 export const KEYCLOAK_ADMIN_CLIENT = Symbol('KEYCLOAK_ADMIN_CLIENT')
 
