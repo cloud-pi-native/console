@@ -1,9 +1,11 @@
 import type {
+  AccessLevel,
   AccessTokenScopes,
   BaseRequestOptions,
   CommitAction,
   CondensedGroupSchema,
   CondensedProjectSchema,
+  ExpandedUserSchema,
   Gitlab,
   GroupSchema,
   OffsetPagination,
@@ -308,12 +310,12 @@ export class GitlabClientService {
     return this.client.GroupMembers.all(group.id)
   }
 
-  async addGroupMember(group: CondensedGroupSchema, userId: number, accessLevel: number) {
+  async addGroupMember(group: CondensedGroupSchema, userId: number, accessLevel: Exclude<AccessLevel, AccessLevel.ADMIN>) {
     this.logger.verbose(`Adding a GitLab group member (groupId=${group.id}, userId=${userId}, accessLevel=${accessLevel})`)
     return this.client.GroupMembers.add(group.id, userId, accessLevel)
   }
 
-  async editGroupMember(group: CondensedGroupSchema, userId: number, accessLevel: number) {
+  async editGroupMember(group: CondensedGroupSchema, userId: number, accessLevel: Exclude<AccessLevel, AccessLevel.ADMIN>) {
     this.logger.verbose(`Editing a GitLab group member (groupId=${group.id}, userId=${userId}, accessLevel=${accessLevel})`)
     return this.client.GroupMembers.edit(group.id, userId, accessLevel)
   }
@@ -329,21 +331,62 @@ export class GitlabClientService {
     return users[0]
   }
 
-  async createUser(email: string, username: string, name: string) {
-    this.logger.log(`Creating a GitLab user (email=${email}, username=${username})`)
+  async createUser(user: {
+    email: string
+    username: string
+    name: string
+    externUid?: string
+    provider?: string
+    admin?: boolean
+    auditor?: boolean
+  }) {
+    this.logger.log(`Creating a GitLab user (email=${user.email}, username=${user.username})`)
     return await this.client.Users.create({
-      email,
-      username,
-      name,
+      email: user.email,
+      username: user.username,
+      name: user.name,
+      externUid: user.externUid,
+      provider: user.provider,
+      admin: user.admin,
+      auditor: user.auditor,
       skipConfirmation: true,
     })
   }
 
-  async upsertUser(user: { id: string, email: string, firstName: string, lastName: string }) {
+  async upsertUser(
+    user: { id: string, email: string, firstName: string, lastName: string, isAdmin?: boolean, isAuditor?: boolean },
+  ) {
     const existing = await this.getUserByEmail(user.email)
     const username = generateUsername(user.email)
     const name = `${user.firstName} ${user.lastName}`.trim()
-    const gitlabUser = existing ?? await this.createUser(user.email, username, name)
+    const userDefinition = {
+      name,
+      username,
+      email: user.email,
+      externUid: user.email,
+      provider: 'openid_connect',
+      admin: user.isAdmin,
+      auditor: user.isAuditor,
+    } satisfies Partial<ExpandedUserSchema>
+
+    const gitlabUser = existing ?? await this.createUser({
+      email: user.email,
+      username,
+      name,
+      externUid: userDefinition.externUid,
+      provider: userDefinition.provider,
+      admin: userDefinition.admin,
+      auditor: userDefinition.auditor,
+    }) satisfies ExpandedUserSchema
+
+    if (existing) {
+      const hasDiff = Object.entries(userDefinition).some(([key, value]) => {
+        return (existing as Record<string, unknown>)[key] !== value
+      })
+      if (hasDiff) {
+        await this.client.Users.edit(gitlabUser.id, userDefinition as any)
+      }
+    }
     await this.upsertUserCustomAttribute(gitlabUser.id, USER_ID_CUSTOM_ATTRIBUTE_KEY, user.id)
     return gitlabUser
   }
