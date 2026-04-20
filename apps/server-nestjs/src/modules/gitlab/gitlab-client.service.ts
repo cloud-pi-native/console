@@ -1,14 +1,19 @@
 import type {
+  AccessLevel,
   AccessTokenScopes,
   BaseRequestOptions,
   CommitAction,
   CondensedGroupSchema,
   CondensedProjectSchema,
+  EditUserOptions,
+
+  ExpandedUserSchema,
   Gitlab,
   GroupSchema,
   OffsetPagination,
   PaginationRequestOptions,
   PipelineTriggerTokenSchema,
+  SimpleUserSchema,
 } from '@gitbeaker/core'
 import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
@@ -28,9 +33,14 @@ import {
   TOPIC_PLUGIN_MANAGED,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
-import { generateUsername } from './gitlab.utils.js'
 
 export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
+
+type With<T, K extends keyof T> = T & Required<Pick<T, K>>
+export type CondensedGroupSchemaWith<T extends keyof CondensedGroupSchema> = With<CondensedGroupSchema, T>
+export type CondensedProjectSchemaWith<T extends keyof CondensedProjectSchema> = With<CondensedProjectSchema, T>
+export type EditUserOptionsWith<T extends keyof EditUserOptions> = With<EditUserOptions, T>
+type UserSchema = SimpleUserSchema | ExpandedUserSchema
 
 export interface OffsetPaginateOptions {
   startPage?: number
@@ -75,17 +85,37 @@ export class GitlabClientService {
     }
   }
 
-  private async setManagedGroupAttributes(group: CondensedGroupSchema, opts: { isRoot?: boolean, isInfra?: boolean, projectSlug?: string } = {}) {
-    await this.upsertGroupCustomAttribute(group.id, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
-    if (opts.isRoot && this.config.projectRootDir) {
-      await this.upsertGroupCustomAttribute(group.id, GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY, this.config.projectRootDir)
-    }
-    if (opts.isInfra) {
-      await this.upsertGroupCustomAttribute(group.id, INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY, 'true')
-    }
-    if (opts.projectSlug) {
-      await this.upsertGroupCustomAttribute(group.id, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, opts.projectSlug)
-    }
+  private async setManagedUserAttributes(userId: number, cpnUserId: string) {
+    await this.upsertUserCustomAttribute(userId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+    await this.upsertUserCustomAttribute(userId, USER_ID_CUSTOM_ATTRIBUTE_KEY, cpnUserId)
+  }
+
+  private async setManagedInfraProjectAttributes(projectId: number) {
+    await this.upsertProjectCustomAttribute(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+  }
+
+  private async setManagedProjectAttributes(projectId: number, projectSlug: string) {
+    await this.upsertProjectCustomAttribute(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+    await this.upsertProjectCustomAttribute(projectId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, projectSlug)
+  }
+
+  private async setManagedGroupAttributes(groupId: number) {
+    await this.upsertGroupCustomAttribute(groupId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+  }
+
+  private async setManagedRootGroupAttributes(groupId: number) {
+    await this.setManagedGroupAttributes(groupId)
+    await this.upsertGroupCustomAttribute(groupId, GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY, 'true')
+  }
+
+  private async setManagedInfraGroupAttributes(groupId: number) {
+    await this.setManagedGroupAttributes(groupId)
+    await this.upsertGroupCustomAttribute(groupId, INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY, 'true')
+  }
+
+  private async setManagedProjectGroupAttributes(groupId: number, projectSlug: string) {
+    await this.setManagedGroupAttributes(groupId)
+    await this.upsertGroupCustomAttribute(groupId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, projectSlug)
   }
 
   async getGroupByPath(path: string) {
@@ -100,25 +130,25 @@ export class GitlabClientService {
     this.logger.log(`Creating a GitLab group at path ${path}`)
     const created = await this.client.Groups.create(path, path)
     if (this.config.projectRootDir && created.full_path === this.config.projectRootDir) {
-      await this.setManagedGroupAttributes(created, { isRoot: true })
+      await this.setManagedRootGroupAttributes(created.id)
     }
     if (this.config.projectRootDir && created.full_path === `${this.config.projectRootDir}/${INFRA_GROUP_PATH}`) {
-      await this.setManagedGroupAttributes(created, { isInfra: true })
+      await this.setManagedInfraGroupAttributes(created.id)
     }
     return created
   }
 
-  async createSubGroup(parentGroup: CondensedGroupSchema, name: string, fullPath: string) {
+  async createSubGroup(parentGroup: CondensedGroupSchemaWith<'id' | 'full_path'>, name: string, fullPath: string) {
     this.logger.log(`Creating a GitLab subgroup ${fullPath} (parentId=${parentGroup.id})`)
     const created = await this.client.Groups.create(name, name, { parentId: parentGroup.id })
     if (this.config.projectRootDir && fullPath === this.config.projectRootDir) {
-      await this.setManagedGroupAttributes(created, { isRoot: true })
+      await this.setManagedRootGroupAttributes(created.id)
     } else if (this.config.projectRootDir && fullPath === `${this.config.projectRootDir}/${INFRA_GROUP_PATH}`) {
-      await this.setManagedGroupAttributes(created, { isInfra: true })
+      await this.setManagedInfraGroupAttributes(created.id)
     } else if (this.config.projectRootDir && fullPath.startsWith(`${this.config.projectRootDir}/`) && !fullPath.slice(this.config.projectRootDir.length + 1).includes('/')) {
       const projectSlug = fullPath.slice(this.config.projectRootDir.length + 1)
       if (projectSlug && projectSlug !== INFRA_GROUP_PATH) {
-        await this.setManagedGroupAttributes(created, { projectSlug })
+        await this.setManagedProjectGroupAttributes(created.id, projectSlug)
       }
     }
     return created
@@ -131,6 +161,9 @@ export class GitlabClientService {
 
     this.logger.verbose(`Resolving GitLab group path ${path} (depth=${1 + parts.length})`)
     let parentGroup = await this.getGroupByPath(rootGroupPath) ?? await this.createGroup(rootGroupPath)
+    if (this.config.projectRootDir && parentGroup.full_path === this.config.projectRootDir) {
+      await this.setManagedRootGroupAttributes(parentGroup.id)
+    }
 
     let currentFullPath: string
     for (const part of parts) {
@@ -171,7 +204,7 @@ export class GitlabClientService {
     return `${urlBase}/${projectGroup.full_path}/${repoName}.git`
   }
 
-  async getOrCreateProjectGroupRepo(subGroupPath: string) {
+  private async getOrCreateRepo(subGroupPath: string) {
     const fullPath = this.config.projectRootDir
       ? `${this.config.projectRootDir}/${subGroupPath}`
       : subGroupPath
@@ -215,17 +248,27 @@ export class GitlabClientService {
     } catch (error) {
       if (error instanceof GitbeakerRequestError && error.cause?.description?.includes('has already been taken')) {
         this.logger.warn(`GitLab project repository already exists (race); reloading ${fullPath}`)
-        return this.client.Projects.show(fullPath)
+        const reloaded = await this.client.Projects.show(fullPath)
+        return reloaded
       }
       throw error
     }
   }
 
-  async getOrCreateInfraGroupRepo(path: string) {
-    return this.getOrCreateProjectGroupRepo(join(INFRA_GROUP_PATH, path))
+  async getOrCreateProjectGroupRepo(projectSlug: string, subGroupPath: string) {
+    const repo = await this.getOrCreateRepo(subGroupPath)
+    await this.setManagedProjectAttributes(repo.id, projectSlug)
+    return repo
   }
 
-  async getFile(repo: CondensedProjectSchema, filePath: string, ref: string = 'main') {
+  async getOrCreateInfraGroupRepo(path: string) {
+    const fullPath = join(INFRA_GROUP_PATH, path)
+    const repo = await this.getOrCreateRepo(fullPath)
+    await this.setManagedInfraProjectAttributes(repo.id)
+    return repo
+  }
+
+  async getFile(repo: CondensedProjectSchemaWith<'id'>, filePath: string, ref: string = 'main') {
     try {
       return await this.client.RepositoryFiles.show(repo.id, filePath, ref)
     } catch (error) {
@@ -238,7 +281,7 @@ export class GitlabClientService {
   }
 
   async maybeCreateCommit(
-    repo: CondensedProjectSchema,
+    repo: CondensedProjectSchemaWith<'id'>,
     message: string,
     actions: CommitAction[],
     ref: string = 'main',
@@ -252,7 +295,7 @@ export class GitlabClientService {
     this.logger.verbose(`GitLab commit created (repoId=${repo.id}, ref=${ref}, actions=${actions.length})`)
   }
 
-  async generateCreateOrUpdateAction(repo: CondensedProjectSchema, ref: string, filePath: string, content: string) {
+  async generateCreateOrUpdateAction(repo: CondensedProjectSchemaWith<'id'>, ref: string, filePath: string, content: string) {
     const file = await this.getFile(repo, filePath, ref)
     if (file && !hasFileContentChanged(file, content)) {
       this.logger.debug(`GitLab file is up to date; skipping commit action (repoId=${repo.id}, ref=${ref}, filePath=${filePath})`)
@@ -266,7 +309,7 @@ export class GitlabClientService {
     } satisfies CommitAction
   }
 
-  async listFiles(repo: CondensedProjectSchema, options: { path?: string, recursive?: boolean, ref?: string } = {}) {
+  async listFiles(repo: CondensedProjectSchemaWith<'id'>, options: { path?: string, recursive?: boolean, ref?: string } = {}) {
     try {
       const path = options.path ?? '/'
       const recursive = options.recursive ?? false
@@ -298,53 +341,68 @@ export class GitlabClientService {
     )
   }
 
-  async deleteGroup(group: CondensedGroupSchema): Promise<void> {
+  async deleteGroup(group: CondensedGroupSchemaWith<'id' | 'full_path'>): Promise<void> {
     this.logger.verbose(`Deleting GitLab group ${group.full_path} (groupId=${group.id})`)
     await this.client.Groups.remove(group.id)
   }
 
-  async getGroupMembers(group: CondensedGroupSchema) {
+  async getGroupMembers(group: CondensedGroupSchemaWith<'id'>) {
     this.logger.verbose(`Loading GitLab group members (groupId=${group.id})`)
     return this.client.GroupMembers.all(group.id)
   }
 
-  async addGroupMember(group: CondensedGroupSchema, userId: number, accessLevel: number) {
+  async addGroupMember(group: CondensedGroupSchemaWith<'id'>, userId: number, accessLevel: Exclude<AccessLevel, AccessLevel.ADMIN>) {
     this.logger.verbose(`Adding a GitLab group member (groupId=${group.id}, userId=${userId}, accessLevel=${accessLevel})`)
     return this.client.GroupMembers.add(group.id, userId, accessLevel)
   }
 
-  async editGroupMember(group: CondensedGroupSchema, userId: number, accessLevel: number) {
+  async editGroupMember(group: CondensedGroupSchemaWith<'id'>, userId: number, accessLevel: Exclude<AccessLevel, AccessLevel.ADMIN>) {
     this.logger.verbose(`Editing a GitLab group member (groupId=${group.id}, userId=${userId}, accessLevel=${accessLevel})`)
     return this.client.GroupMembers.edit(group.id, userId, accessLevel)
   }
 
-  async removeGroupMember(group: CondensedGroupSchema, userId: number) {
+  async removeGroupMember(group: CondensedGroupSchemaWith<'id'>, userId: number) {
     this.logger.verbose(`Removing a GitLab group member (groupId=${group.id}, userId=${userId})`)
     return this.client.GroupMembers.remove(group.id, userId)
   }
 
-  async getUserByEmail(email: string) {
+  async getUserByEmail(email: string): Promise<UserSchema | null> {
     const users = await this.client.Users.all({ search: email, orderBy: 'username' })
     if (users.length === 0) return null
-    return users[0]
+    return users[0] as UserSchema
   }
 
-  async createUser(email: string, username: string, name: string) {
-    this.logger.log(`Creating a GitLab user (email=${email}, username=${username})`)
+  async createUser(user: EditUserOptions): Promise<UserSchema> {
+    this.logger.log(`Creating a GitLab user (email=${user.email}, username=${user.username})`)
     return await this.client.Users.create({
-      email,
-      username,
-      name,
+      ...user,
       skipConfirmation: true,
-    })
+    }) as UserSchema
   }
 
-  async upsertUser(user: { id: string, email: string, firstName: string, lastName: string }) {
-    const existing = await this.getUserByEmail(user.email)
-    const username = generateUsername(user.email)
-    const name = `${user.firstName} ${user.lastName}`.trim()
-    const gitlabUser = existing ?? await this.createUser(user.email, username, name)
-    await this.upsertUserCustomAttribute(gitlabUser.id, USER_ID_CUSTOM_ATTRIBUTE_KEY, user.id)
+  async upsertUser(
+    user: Omit<EditUserOptionsWith<'email' | 'username' | 'name'>, 'externUid' | 'provider'>,
+    options: { cpnUserId: string },
+  ): Promise<UserSchema> {
+    const existing: UserSchema | null = await this.getUserByEmail(user.email)
+
+    const editOptions: EditUserOptions = {
+      ...user,
+      externUid: user.email,
+      provider: 'openid_connect',
+    }
+    const gitlabUser: UserSchema = existing ?? await this.createUser(editOptions)
+
+    if (existing) {
+      const hasDiff = Object.entries(editOptions).some(([key, value]) => {
+        if (value === undefined) return false
+        return (existing as Record<string, unknown>)[key] !== value
+      })
+      if (hasDiff) {
+        await this.client.Users.edit(gitlabUser.id, editOptions)
+      }
+    }
+    await this.setManagedUserAttributes(gitlabUser.id, options.cpnUserId)
     return gitlabUser
   }
 
@@ -357,19 +415,20 @@ export class GitlabClientService {
   }
 
   async upsertProjectGroupRepo(projectSlug: string, repoName: string, description?: string) {
-    const repo = await this.getOrCreateProjectGroupRepo(`${projectSlug}/${repoName}`)
+    const fullPath = `${projectSlug}/${repoName}`
+    const repo = await this.getOrCreateProjectGroupRepo(projectSlug, fullPath)
     const updated = await this.client.Projects.edit(repo.id, {
       name: repoName,
       path: repoName,
       topics: [TOPIC_PLUGIN_MANAGED],
       description,
     })
-    await this.upsertProjectCustomAttribute(repo.id, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
     return updated
   }
 
   async deleteProjectGroupRepo(projectSlug: string, repoName: string) {
-    const repo = await this.getOrCreateProjectGroupRepo(`${projectSlug}/${repoName}`)
+    const fullPath = `${projectSlug}/${repoName}`
+    const repo = await this.getOrCreateProjectGroupRepo(projectSlug, fullPath)
     return this.client.Projects.remove(repo.id)
   }
 

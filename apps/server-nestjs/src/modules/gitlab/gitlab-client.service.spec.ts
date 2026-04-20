@@ -21,6 +21,7 @@ import {
   makeRepositoryTreeSchema,
 } from './gitlab-testing.utils'
 import {
+  GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY,
   INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY,
   MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY,
   PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY,
@@ -107,6 +108,7 @@ describe('gitlab-client', () => {
         path_with_namespace: 'forge/infra/zone-1',
       })
       expect(gitlabMock.Groups.create).toHaveBeenCalledWith('infra', 'infra', expect.any(Object))
+      expect(gitlabMock.GroupCustomAttributes.set).toHaveBeenCalledWith(rootId, GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY, 'true')
       expect(gitlabMock.GroupCustomAttributes.set).toHaveBeenCalledWith(infraGroupId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
       expect(gitlabMock.GroupCustomAttributes.set).toHaveBeenCalledWith(infraGroupId, INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY, 'true')
       expect(gitlabMock.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
@@ -114,6 +116,7 @@ describe('gitlab-client', () => {
         path: zoneSlug,
         namespaceId: infraGroupId,
       }))
+      expect(gitlabMock.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
     })
   })
 
@@ -290,26 +293,111 @@ describe('gitlab-client', () => {
     describe('upsertUser', () => {
       it('should create user and set custom attribute if not exists', async () => {
         const consoleUser = { id: 'u1', email: 'new@example.com', firstName: 'New', lastName: 'User' }
+        const gitlabUser = {
+          email: consoleUser.email,
+          username: 'new',
+          name: 'New User',
+        }
         const gitlabUsersAllMock = gitlabMock.Users.all as MockedFunction<typeof gitlabMock.Users.all>
         gitlabUsersAllMock.mockResolvedValue([])
         gitlabMock.Users.create.mockResolvedValue(makeExpandedUserSchema({ id: 999, email: consoleUser.email }))
 
-        const result = await service.upsertUser(consoleUser)
+        const result = await service.upsertUser(gitlabUser, { cpnUserId: consoleUser.id })
 
         expect(result).toEqual(expect.objectContaining({ id: 999, email: consoleUser.email }))
+        expect(gitlabMock.Users.create).toHaveBeenCalledWith(expect.objectContaining({
+          email: 'new@example.com',
+          username: 'new',
+          name: 'New User',
+          externUid: 'new@example.com',
+          provider: 'openid_connect',
+          skipConfirmation: true,
+        }))
         expect(gitlabMock.UserCustomAttributes.set).toHaveBeenCalledWith(999, USER_ID_CUSTOM_ATTRIBUTE_KEY, consoleUser.id)
+        expect(gitlabMock.UserCustomAttributes.set).toHaveBeenCalledWith(999, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
       })
 
       it('should set custom attribute if user exists', async () => {
         const consoleUser = { id: 'u1', email: 'existing@example.com', firstName: 'Existing', lastName: 'User' }
+        const gitlabUser = {
+          email: consoleUser.email,
+          username: 'existing',
+          name: 'Existing User',
+        }
         const gitlabUsersAllMock = gitlabMock.Users.all as MockedFunction<typeof gitlabMock.Users.all>
         gitlabUsersAllMock.mockResolvedValue([makeExpandedUserSchema({ id: 1000, email: consoleUser.email })])
 
-        const result = await service.upsertUser(consoleUser)
+        const result = await service.upsertUser(gitlabUser, { cpnUserId: consoleUser.id })
 
         expect(result).toEqual(expect.objectContaining({ id: 1000, email: consoleUser.email }))
+        expect(gitlabMock.Users.edit).toHaveBeenCalledWith(1000, expect.objectContaining({
+          email: 'existing@example.com',
+          username: 'existing',
+          name: 'Existing User',
+          externUid: 'existing@example.com',
+          provider: 'openid_connect',
+        }))
         expect(gitlabMock.UserCustomAttributes.set).toHaveBeenCalledWith(1000, USER_ID_CUSTOM_ATTRIBUTE_KEY, consoleUser.id)
+        expect(gitlabMock.UserCustomAttributes.set).toHaveBeenCalledWith(1000, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
         expect(gitlabMock.Users.create).not.toHaveBeenCalled()
+      })
+
+      it('should set admin flag when provided', async () => {
+        const consoleUser = { id: 'u1', email: 'admin@example.com', firstName: 'Admin', lastName: 'User' }
+        const gitlabUser = {
+          email: consoleUser.email,
+          username: 'admin',
+          name: 'Admin User',
+        }
+        const gitlabUsersAllMock = gitlabMock.Users.all as MockedFunction<typeof gitlabMock.Users.all>
+        gitlabUsersAllMock.mockResolvedValue([])
+        gitlabMock.Users.create.mockResolvedValue(makeExpandedUserSchema({ id: 999, email: consoleUser.email }))
+
+        await service.upsertUser({ ...gitlabUser, admin: true }, { cpnUserId: consoleUser.id })
+
+        expect(gitlabMock.Users.create).toHaveBeenCalledWith(expect.objectContaining({
+          email: 'admin@example.com',
+          username: 'admin',
+          name: 'Admin User',
+          externUid: 'admin@example.com',
+          provider: 'openid_connect',
+          admin: true,
+          skipConfirmation: true,
+        }))
+      })
+
+      it('should not disable existing admin flag when enabling auditor flag', async () => {
+        const consoleUser = { id: 'u1', email: 'admin-auditor@example.com', firstName: 'Admin', lastName: 'Auditor' }
+        const gitlabUser = {
+          email: consoleUser.email,
+          username: 'admin-auditor',
+          name: 'Admin Auditor',
+        }
+        const gitlabUsersAllMock = gitlabMock.Users.all as MockedFunction<typeof gitlabMock.Users.all>
+        gitlabUsersAllMock.mockResolvedValue([makeExpandedUserSchema({ id: 1000, email: consoleUser.email, is_admin: true })])
+
+        await service.upsertUser({ ...gitlabUser, auditor: true }, { cpnUserId: consoleUser.id })
+
+        expect(gitlabMock.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
+          admin: true,
+        }))
+      })
+
+      it('should not disable existing auditor flag when enabling admin flag', async () => {
+        const consoleUser = { id: 'u1', email: 'auditor-admin@example.com', firstName: 'Auditor', lastName: 'Admin' }
+        const gitlabUser = {
+          email: consoleUser.email,
+          username: 'auditor-admin',
+          name: 'Auditor Admin',
+        }
+        const gitlabUsersAllMock = gitlabMock.Users.all as MockedFunction<typeof gitlabMock.Users.all>
+        gitlabUsersAllMock.mockResolvedValue([makeExpandedUserSchema({ id: 1000, email: consoleUser.email, ...({ is_auditor: true } as any) })])
+
+        await service.upsertUser({ ...gitlabUser, admin: true }, { cpnUserId: consoleUser.id })
+
+        expect(gitlabMock.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
+          auditor: true,
+        }))
       })
     })
 
@@ -422,9 +510,11 @@ describe('gitlab-client', () => {
         paginationInfo: { next: null },
       })
 
-      const result = await service.getOrCreateProjectGroupRepo(fullPath)
+      const result = await service.getOrCreateProjectGroupRepo(subGroupPath, fullPath)
 
       expect(result).toEqual(expect.objectContaining({ id: projectId }))
+      expect(gitlabMock.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabMock.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, 'project-1')
     })
 
     it('should create repo if not exists', async () => {
@@ -454,7 +544,7 @@ describe('gitlab-client', () => {
 
       gitlabMock.Projects.create.mockResolvedValue({ id: projectId, name: repoName } as ProjectSchema)
 
-      const result = await service.getOrCreateProjectGroupRepo(fullPath)
+      const result = await service.getOrCreateProjectGroupRepo(subGroupPath, fullPath)
 
       expect(result).toEqual(expect.objectContaining({ id: projectId }))
       expect(gitlabMock.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
@@ -462,6 +552,8 @@ describe('gitlab-client', () => {
         path: repoName,
         namespaceId: groupId,
       }))
+      expect(gitlabMock.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabMock.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, 'project-1')
     })
   })
 
@@ -568,7 +660,7 @@ describe('gitlab-client', () => {
 
       gitlabMock.Users.create.mockResolvedValue(user)
 
-      const result = await service.createUser(email, username, name)
+      const result = await service.createUser({ email, username, name })
 
       expect(result).toEqual(user)
       expect(gitlabMock.Users.create).toHaveBeenCalledWith(expect.objectContaining({
