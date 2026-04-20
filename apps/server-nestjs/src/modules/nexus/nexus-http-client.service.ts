@@ -79,7 +79,7 @@ export class NexusHttpClientService {
     if (!this.config.nexusInternalUrl) {
       throw new NexusError('NotConfigured', 'NEXUS_INTERNAL_URL is required')
     }
-    return new URL('service/rest/v1/', this.config.nexusInternalUrl).toString()
+    return this.config.nexusInternalUrl
   }
 
   private get basicAuth() {
