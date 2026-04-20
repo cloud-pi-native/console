@@ -22,6 +22,8 @@ function createNexusControllerServiceTestingModule() {
           createRepositoriesMavenHosted: vi.fn(),
           updateRepositoriesMavenHosted: vi.fn(),
           createRepositoriesMavenGroup: vi.fn(),
+          updateRepositoriesMavenGroup: vi.fn(),
+          getRepositoriesMavenGroup: vi.fn(),
           getRepositoriesNpmHosted: vi.fn(),
           createRepositoriesNpmHosted: vi.fn(),
           updateRepositoriesNpmHosted: vi.fn(),
@@ -81,6 +83,7 @@ describe('nexusService', () => {
     vault = moduleRef.get(VaultClientService)
 
     client.getRepositoriesMavenHosted.mockResolvedValue(null)
+    client.getRepositoriesMavenGroup.mockResolvedValue(null)
     client.getRepositoriesNpmHosted.mockResolvedValue(null)
     client.getRepositoriesNpmGroup.mockResolvedValue(null)
     client.getSecurityPrivileges.mockResolvedValue(null)
