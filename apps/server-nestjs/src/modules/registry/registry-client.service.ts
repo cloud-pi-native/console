@@ -1,3 +1,4 @@
+import type { RegistryResponse } from './registry-http-client.service'
 import type { VaultRobotSecret } from './registry.utils'
 import { Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
@@ -74,15 +75,15 @@ export class RegistryClientService {
     @Inject(RegistryHttpClientService) private readonly http: RegistryHttpClientService,
   ) {}
 
-  async getProjectByName(projectName: string) {
-    return this.http.fetch(`/projects/${encodeURIComponent(projectName)}`, {
+  async getProjectByName(projectName: string): Promise<RegistryResponse<HarborProject>> {
+    return this.http.fetch<HarborProject>(`/api/v2.0/projects/${encodeURIComponent(projectName)}`, {
       method: 'GET',
       headers: { 'X-Is-Resource-Name': 'true' },
     })
   }
 
   async createProject(projectName: string, storageLimit: number) {
-    return this.http.fetch('/projects', {
+    return this.http.fetch('/api/v2.0/projects', {
       method: 'POST',
       body: {
         project_name: projectName,
@@ -93,20 +94,20 @@ export class RegistryClientService {
   }
 
   async deleteProjectByName(projectName: string) {
-    return this.http.fetch(`/projects/${encodeURIComponent(projectName)}`, {
+    return this.http.fetch(`/api/v2.0/projects/${encodeURIComponent(projectName)}`, {
       method: 'DELETE',
       headers: { 'X-Is-Resource-Name': 'true' },
     })
   }
 
   async listQuotas(projectId: number) {
-    return this.http.fetch(`/quotas?reference_id=${encodeURIComponent(String(projectId))}`, {
+    return this.http.fetch(`/api/v2.0/quotas?reference_id=${encodeURIComponent(String(projectId))}`, {
       method: 'GET',
     })
   }
 
   async updateQuota(projectId: number, storageLimit: number) {
-    return this.http.fetch(`/quotas/${encodeURIComponent(String(projectId))}`, {
+    return this.http.fetch(`/api/v2.0/quotas/${encodeURIComponent(String(projectId))}`, {
       method: 'PUT',
       body: {
         hard: {
@@ -117,14 +118,14 @@ export class RegistryClientService {
   }
 
   async getGroupMembers(projectName: string) {
-    return this.http.fetch(`/projects/${encodeURIComponent(projectName)}/members`, {
+    return this.http.fetch(`/api/v2.0/projects/${encodeURIComponent(projectName)}/members`, {
       method: 'GET',
       headers: { 'X-Is-Resource-Name': 'true' },
     })
   }
 
   async addGroupMember(projectName: string, body: any) {
-    return this.http.fetch(`/projects/${encodeURIComponent(projectName)}/members`, {
+    return this.http.fetch(`/api/v2.0/projects/${encodeURIComponent(projectName)}/members`, {
       method: 'POST',
       headers: { 'X-Is-Resource-Name': 'true' },
       body,
@@ -132,33 +133,33 @@ export class RegistryClientService {
   }
 
   async removeGroupMember(projectName: string, memberId: number) {
-    return this.http.fetch(`/projects/${encodeURIComponent(projectName)}/members/${encodeURIComponent(String(memberId))}`, {
+    return this.http.fetch(`/api/v2.0/projects/${encodeURIComponent(projectName)}/members/${encodeURIComponent(String(memberId))}`, {
       method: 'DELETE',
       headers: { 'X-Is-Resource-Name': 'true' },
     })
   }
 
   async getProjectRobots(projectName: string) {
-    return this.http.fetch(`/projects/${encodeURIComponent(projectName)}/robots`, {
+    return this.http.fetch(`/api/v2.0/projects/${encodeURIComponent(projectName)}/robots`, {
       method: 'GET',
       headers: { 'X-Is-Resource-Name': 'true' },
     })
   }
 
   async createRobot(body: any) {
-    return this.http.fetch('/robots', {
+    return this.http.fetch('/api/v2.0/robots', {
       method: 'POST',
       body,
     })
   }
 
   async deleteRobot(projectName: string, robotId: number) {
-    const direct = await this.http.fetch(`/robots/${encodeURIComponent(String(robotId))}`, {
+    const direct = await this.http.fetch(`/api/v2.0/robots/${encodeURIComponent(String(robotId))}`, {
       method: 'DELETE',
     })
     if (direct.status < 300 || direct.status === 404) return direct
 
-    return this.http.fetch(`/projects/${encodeURIComponent(projectName)}/robots/${encodeURIComponent(String(robotId))}`, {
+    return this.http.fetch(`/api/v2.0/projects/${encodeURIComponent(projectName)}/robots/${encodeURIComponent(String(robotId))}`, {
       method: 'DELETE',
       headers: { 'X-Is-Resource-Name': 'true' },
     })
@@ -172,14 +173,14 @@ export class RegistryClientService {
   }
 
   async createRetention(body: any) {
-    return this.http.fetch('/retentions', {
+    return this.http.fetch('/api/v2.0/retentions', {
       method: 'POST',
       body,
     })
   }
 
   async updateRetention(retentionId: number, body: any) {
-    return this.http.fetch(`/retentions/${encodeURIComponent(String(retentionId))}`, {
+    return this.http.fetch(`/api/v2.0/retentions/${encodeURIComponent(String(retentionId))}`, {
       method: 'PUT',
       body,
     })
@@ -317,9 +318,8 @@ export class RegistryClientService {
     })
     const existing = await this.getProjectByName(projectSlug)
     if (existing.status === 200 && existing.data) {
-      const project = existing.data as HarborProject
-      const projectId = Number(project.project_id)
-      if (!Number.isFinite(projectId)) return project
+      const projectId = Number(existing.data.project_id)
+      if (!Number.isFinite(projectId)) return existing.data
 
       const quotas = await this.listQuotas(projectId)
       if (quotas.status === 200 && quotas.data) {
@@ -329,7 +329,7 @@ export class RegistryClientService {
           span?.setAttribute('registry.quota.updated', true)
         }
       }
-      return project
+      return existing.data
     }
 
     const created = await this.createProject(projectSlug, storageLimit)
@@ -342,7 +342,7 @@ export class RegistryClientService {
     if (fetched.status !== 200 || !fetched.data) {
       throw new Error(`Harbor get project failed (${fetched.status})`)
     }
-    return fetched.data as HarborProject
+    return fetched.data
   }
 
   private getRetentionPolicy(projectId: number) {
