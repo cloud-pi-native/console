@@ -1,5 +1,6 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { Mocked } from 'vitest'
+import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
@@ -64,31 +65,59 @@ describe('vaultService', () => {
     expect(service).toBeDefined()
   })
   it('should reconcile on cron', async () => {
-    datastore.getAllProjects.mockResolvedValue([{ slug: 'p1' }, { slug: 'p2' }] as any)
-    datastore.getAllZones.mockResolvedValue([{ slug: 'z1' }] as any)
+    const mockProjects = [
+      {
+        slug: 'project-1',
+        name: 'Project 1',
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        description: '',
+        environments: [],
+      },
+      {
+        slug: 'project-2',
+        name: 'Project 2',
+        id: '660e8400-e29b-41d4-a716-446655440001',
+        description: '',
+        environments: [],
+      },
+    ] satisfies ProjectWithDetails[]
+    const mockZones = [
+      { slug: 'zone-z1', id: 'zone-z1' },
+    ] satisfies ZoneWithDetails[]
+
+    datastore.getAllProjects.mockResolvedValue(mockProjects)
+    datastore.getAllZones.mockResolvedValue(mockZones as any)
 
     await service.handleCron()
 
     expect(datastore.getAllProjects).toHaveBeenCalled()
     expect(datastore.getAllZones).toHaveBeenCalled()
     expect(client.createSysMount).toHaveBeenCalledTimes(3)
-    expect(client.createSysMount).toHaveBeenCalledWith('p1', expect.any(Object))
-    expect(client.createSysMount).toHaveBeenCalledWith('p2', expect.any(Object))
+    expect(client.createSysMount).toHaveBeenCalledWith('project-1', expect.any(Object))
+    expect(client.createSysMount).toHaveBeenCalledWith('project-2', expect.any(Object))
     expect(client.createSysMount).toHaveBeenCalledWith('zone-z1', expect.any(Object))
   })
 
   it('should upsert project on event', async () => {
-    await service.handleUpsert({ slug: 'p1' } as any)
+    await service.handleUpsert({ slug: 'project-1' } as any)
     expect(client.createSysMount).toHaveBeenCalledWith('p1', expect.any(Object))
   })
 
   it('should delete project and destroy secrets on event', async () => {
-    client.listKvMetadata.mockResolvedValue([])
-    await service.handleDelete({ slug: 'p1' } as any)
-    expect(client.deleteSysMounts).toHaveBeenCalledWith('p1')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('app--p1--admin')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('tech--p1--ro')
-    expect(client.deleteAuthApproleRole).toHaveBeenCalledWith('p1')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('p1')
+    const mockProject = {
+      slug: 'project-1',
+      name: 'Project 1',
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      description: '',
+      environments: [],
+    } satisfies ProjectWithDetails
+
+    await service.handleDelete(mockProject)
+
+    expect(client.deleteSysMounts).toHaveBeenCalledWith('project-1')
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('app--project-1--admin')
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('tech--project-1--ro')
+    expect(client.deleteAuthApproleRole).toHaveBeenCalledWith('project-1')
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-1')
   })
 })
