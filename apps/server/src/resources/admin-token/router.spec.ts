@@ -1,5 +1,5 @@
+import type { AdminToken } from '@cpn-console/database'
 import type { ExposedAdminToken } from '@cpn-console/shared'
-import type { AdminToken } from '@prisma/client'
 import { ADMIN_PERMS, adminTokenContract } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'

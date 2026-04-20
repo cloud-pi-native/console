@@ -15,6 +15,7 @@ COPY --chown=node:root apps/server/package.json ./apps/server/package.json
 COPY --chown=node:root packages/eslintconfig/package.json ./packages/eslintconfig/package.json
 COPY --chown=node:root packages/shared/package.json ./packages/shared/package.json
 COPY --chown=node:root packages/logger/package.json ./packages/logger/package.json
+COPY --chown=node:root packages/database/package.json ./packages/database/package.json
 COPY --chown=node:root packages/hooks/package.json ./packages/hooks/package.json
 COPY --chown=node:root packages/test-utils/package.json ./packages/test-utils/package.json
 COPY --chown=node:root packages/tsconfig/package.json ./packages/tsconfig/package.json
@@ -33,8 +34,8 @@ COPY --chown=node:root packages/ ./packages/
 
 COPY --chown=node:root apps/server/ ./apps/server/
 # Generate Prisma client
-RUN pnpm --filter server run db:generate
-ENTRYPOINT [ "pnpm", "--filter", "server", "run" ]
+RUN pnpm --filter @cpn-console/server run db:generate
+ENTRYPOINT [ "pnpm", "--filter", "@cpn-console/server", "run" ]
 CMD [ "dev" ]
 
 
@@ -47,6 +48,7 @@ RUN pnpm run build
 RUN pnpm --filter @cpn-console/server run build
 # Export @cpn-console/server to target build directory
 RUN pnpm --filter @cpn-console/server --prod deploy build
+RUN cd /app/build && /app/packages/database/node_modules/.bin/prisma generate --schema=node_modules/@cpn-console/database/prisma/schema
 
 
 # Prod stage -----------------------------------------------------------------------
@@ -61,7 +63,6 @@ RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
   && mkdir -p /home/node/.npm && chmod 770 -R /home/node/.npm \
   && chown node:root /app
 COPY --chown=node:root --from=build /app/build .
-RUN npm run db:generate
 USER node
 EXPOSE 8080
 ENTRYPOINT ["npm", "start"]
