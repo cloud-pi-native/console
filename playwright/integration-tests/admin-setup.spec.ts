@@ -42,13 +42,13 @@ test.describe('Integration tests for admin', { tag: '@integ' }, () => {
     await signInCloudPiNative({ page, credentials: adminUser })
     await page.getByTestId('menuAdministrationBtn').click()
     for (const stageName of stagesToDelete) {
-      await deleteStage(page, stageName)
+      await deleteStage({ page, stageName })
     }
     for (const clusterName of clustersToDelete) {
-      await deleteCluster(page, clusterName)
+      await deleteCluster({ page, clusterName })
     }
     for (const zoneName of zonesToDelete) {
-      await deleteZone(page, zoneName)
+      await deleteZone({ page, zoneName })
     }
   })
 })

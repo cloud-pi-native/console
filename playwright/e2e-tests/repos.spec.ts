@@ -13,7 +13,7 @@ import {
   invalidGitUrlErrorMessage,
   invalidInternalRepoErrorMessage,
 } from '../helpers/constants'
-import { addProject } from '../helpers/project'
+import { createProject, projectSlugTextRegexp } from '../helpers/project'
 
 test.describe('Repositories', () => {
   // @TODO: Rework this Cypress-inherited test (use of following-sibling is a
@@ -25,7 +25,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -41,7 +41,9 @@ test.describe('Repositories', () => {
       await expect(page.locator('h1')).toContainText(projectName)
 
       // Assert
-      await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+      await expect(page.getByTestId('project-slug')).toHaveText(
+        projectSlugTextRegexp(projectSlug),
+      )
 
       await page.getByTestId('addRepoLink').click()
       await expect(page.locator('h2')).toContainText(
@@ -111,7 +113,7 @@ test.describe('Repositories', () => {
           .locator('//following-sibling::*[1]'),
       ).not.toBeVisible()
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
-      await setCheckbox(page, 'privateRepoCbx')
+      await setCheckbox({ page, name: 'privateRepoCbx' })
       await expect(page.getByTestId('addRepoBtn')).toBeDisabled()
       await page
         .getByTestId('externalUserNameInput')
@@ -123,9 +125,9 @@ test.describe('Repositories', () => {
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
       await page.getByTestId('externalTokenInput').clear()
       await expect(page.getByTestId('addRepoBtn')).toBeDisabled()
-      await unsetCheckbox(page, 'privateRepoCbx')
+      await unsetCheckbox({ page, name: 'privateRepoCbx' })
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
-      await setCheckbox(page, 'infraRepoCbx')
+      await setCheckbox({ page, name: 'infraRepoCbx' })
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
     },
   )
@@ -137,7 +139,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -151,7 +153,9 @@ test.describe('Repositories', () => {
       await expect(page.locator('h1')).toContainText(projectName)
 
       // Assert
-      await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+      await expect(page.getByTestId('project-slug')).toHaveText(
+        projectSlugTextRegexp(projectSlug),
+      )
       await page.getByTestId('addRepoLink').click()
       await expect(page.locator('h2')).toContainText(
         'Ajouter un dépôt au projet',
@@ -178,7 +182,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -196,7 +200,9 @@ test.describe('Repositories', () => {
       await expect(page.locator('h1')).toContainText(projectName)
 
       // Assert
-      await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+      await expect(page.getByTestId('project-slug')).toHaveText(
+        projectSlugTextRegexp(projectSlug),
+      )
       await page.getByTestId('addRepoLink').click()
       await expect(page.locator('h2')).toContainText(
         'Ajouter un dépôt au projet',
@@ -219,7 +225,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -237,7 +243,9 @@ test.describe('Repositories', () => {
       await expect(page.locator('h1')).toContainText(projectName)
 
       // Assert
-      await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+      await expect(page.getByTestId('project-slug')).toHaveText(
+        projectSlugTextRegexp(projectSlug),
+      )
       await page.getByTestId('addRepoLink').click()
       await expect(page.locator('h2')).toContainText(
         'Ajouter un dépôt au projet',
@@ -264,7 +272,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -282,7 +290,9 @@ test.describe('Repositories', () => {
       await expect(page.locator('h1')).toContainText(projectName)
 
       // Assert
-      await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+      await expect(page.getByTestId('project-slug')).toHaveText(
+        projectSlugTextRegexp(projectSlug),
+      )
       await page.getByTestId('addRepoLink').click()
       await expect(page.locator('h2')).toContainText(
         'Ajouter un dépôt au projet',
@@ -308,7 +318,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await addProject({
+      const { name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -326,7 +336,9 @@ test.describe('Repositories', () => {
       await expect(page.locator('h1')).toContainText(projectName)
 
       // Assert
-      await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+      await expect(page.getByTestId('project-slug')).toHaveText(
+        projectSlugTextRegexp(projectSlug),
+      )
       await page.getByTestId('addRepoLink').click()
       await expect(page.locator('h2')).toContainText(
         'Ajouter un dépôt au projet',
@@ -335,12 +347,12 @@ test.describe('Repositories', () => {
         .getByTestId('internalRepoNameInput')
         .fill(repo.internalRepoName)
       await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await setCheckbox(page, 'privateRepoCbx')
+      await setCheckbox({ page, name: 'privateRepoCbx' })
       await page
         .getByTestId('externalUserNameInput')
         .fill(repo.externalUserName)
       await page.getByTestId('externalTokenInput').fill(repo.externalToken)
-      await setCheckbox(page, 'infraRepoCbx')
+      await setCheckbox({ page, name: 'infraRepoCbx' })
       await page.getByTestId('addRepoBtn').click()
       await expect(
         page.getByTestId(`repoTr-${repo.internalRepoName}`),
@@ -352,7 +364,7 @@ test.describe('Repositories', () => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName, slug: projectSlug } = await addProject({
+    const { name: projectName, slug: projectSlug } = await createProject({
       page,
     })
     const repo = {
@@ -368,7 +380,9 @@ test.describe('Repositories', () => {
     await page.getByTestId('menuMyProjects').click()
     await page.getByRole('link', { name: projectName }).click()
     await expect(page.locator('h1')).toContainText(projectName)
-    await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+    await expect(page.getByTestId('project-slug')).toHaveText(
+      projectSlugTextRegexp(projectSlug),
+    )
     await page.getByTestId('addRepoLink').click()
     await expect(page.locator('h2')).toContainText(
       'Ajouter un dépôt au projet',
@@ -415,7 +429,7 @@ test.describe('Repositories', () => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName, slug: projectSlug } = await addProject({
+    const { name: projectName, slug: projectSlug } = await createProject({
       page,
     })
     const repo = {
@@ -431,7 +445,9 @@ test.describe('Repositories', () => {
     await page.getByTestId('menuMyProjects').click()
     await page.getByRole('link', { name: projectName }).click()
     await expect(page.locator('h1')).toContainText(projectName)
-    await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+    await expect(page.getByTestId('project-slug')).toHaveText(
+      projectSlugTextRegexp(projectSlug),
+    )
     await page.getByTestId('addRepoLink').click()
     await expect(page.locator('h2')).toContainText(
       'Ajouter un dépôt au projet',
@@ -482,7 +498,7 @@ test.describe('Repositories', () => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName, slug: projectSlug } = await addProject({
+    const { name: projectName, slug: projectSlug } = await createProject({
       page,
     })
     const repo = {
@@ -498,7 +514,9 @@ test.describe('Repositories', () => {
     await page.getByTestId('menuMyProjects').click()
     await page.getByRole('link', { name: projectName }).click()
     await expect(page.locator('h1')).toContainText(projectName)
-    await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+    await expect(page.getByTestId('project-slug')).toHaveText(
+      projectSlugTextRegexp(projectSlug),
+    )
     await page.getByTestId('addRepoLink').click()
     await expect(page.locator('h2')).toContainText(
       'Ajouter un dépôt au projet',
@@ -537,7 +555,7 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { id: projectId, name: projectName, slug: projectSlug } = await addProject({
+      const { id: projectId, name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -553,7 +571,9 @@ test.describe('Repositories', () => {
       await page.getByTestId('menuMyProjects').click()
       await page.getByRole('link', { name: projectName }).click()
       await expect(page.locator('h1')).toContainText(projectName)
-      await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+      await expect(page.getByTestId('project-slug')).toHaveText(
+        projectSlugTextRegexp(projectSlug),
+      )
       await page.getByTestId('addRepoLink').click()
       await expect(page.locator('h2')).toContainText(
         'Ajouter un dépôt au projet',
@@ -577,7 +597,9 @@ test.describe('Repositories', () => {
       await page.getByTestId('projectsSearchBtn').click()
       await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
       await page.getByTestId(`projectTr-${projectId}`).click()
-      await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+      await expect(page.getByTestId('project-slug')).toHaveText(
+        projectSlugTextRegexp(projectSlug),
+      )
 
       // Assert - Attempt to delete repository
       await page.getByTestId(`repoTr-${repo.internalRepoName}`).click()
@@ -598,7 +620,7 @@ test.describe('Repositories', () => {
           // Only admin users can lock projects
           tcolinUser,
       })
-      const { id: projectId, name: projectName, slug: projectSlug } = await addProject({
+      const { id: projectId, name: projectName, slug: projectSlug } = await createProject({
         page,
       })
       const repo = {
@@ -614,7 +636,9 @@ test.describe('Repositories', () => {
       await page.getByTestId('menuMyProjects').click()
       await page.getByRole('link', { name: projectName }).click()
       await expect(page.locator('h1')).toContainText(projectName)
-      await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+      await expect(page.getByTestId('project-slug')).toHaveText(
+        projectSlugTextRegexp(projectSlug),
+      )
       await page.getByTestId('addRepoLink').click()
       await expect(page.locator('h2')).toContainText(
         'Ajouter un dépôt au projet',
@@ -638,7 +662,9 @@ test.describe('Repositories', () => {
       await page.getByTestId('projectsSearchBtn').click()
       await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
       await page.getByTestId(`projectTr-${projectId}`).click()
-      await expect(page.getByTestId('project-slug')).toHaveText(projectSlug)
+      await expect(page.getByTestId('project-slug')).toHaveText(
+        projectSlugTextRegexp(projectSlug),
+      )
       await page.getByTestId('handleProjectLockingBtn').click()
 
       // Assert - Attempt to delete repository

@@ -7,8 +7,8 @@ import {
   testUser,
 } from '../config/console'
 import { deleteValidationInput } from '../helpers/constants'
-import { addProject } from '../helpers/project'
-import { addRandomRepositoryToProject, synchronizeBranchOnRepository } from '../helpers/repository'
+import { createProject } from '../helpers/project'
+import { createRepository, synchronizeBranchOnRepository } from '../helpers/repository'
 
 test.describe('Projects page', () => {
   test(
@@ -18,7 +18,7 @@ test.describe('Projects page', () => {
       // Create a project as one user
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName } = await addProject({ page })
+      const { name: projectName } = await createProject({ page })
 
       // Sign off and login as another user
       await page.getByRole('link', { name: 'Se déconnecter' }).click()
@@ -39,15 +39,15 @@ test.describe('Projects page', () => {
     async ({ page }) => {
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      await addProject({ page })
+      await createProject({ page })
       // Adding a project directly puts us on the newly created project page,
       // so no need to add navigation steps to go there
-      const firstRepositoryName = await addRandomRepositoryToProject({ page })
+      const firstRepositoryName = await createRepository({ page })
       const branchName = await synchronizeBranchOnRepository({
         page,
         repositoryName: firstRepositoryName,
       })
-      const secondRepositoryName = await addRandomRepositoryToProject({ page })
+      const secondRepositoryName = await createRepository({ page })
       await page.getByTestId(`repoTr-${secondRepositoryName}`).click()
       await expect(page.getByTestId('resource-modal')).toBeVisible()
       await expect(page.getByTestId('branchNameInput')).not.toHaveValue(
@@ -66,7 +66,7 @@ test.describe('Projects page', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: adminUser })
-      const { id: projectId, name: projectName } = await addProject({ page })
+      const { id: projectId, name: projectName } = await createProject({ page })
 
       // Act
       await page.getByTestId('menuAdministrationBtn').click()
