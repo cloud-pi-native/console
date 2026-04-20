@@ -1,5 +1,5 @@
+import type { Project, User } from '@cpn-console/database'
 import type { projectMemberContract, XOR } from '@cpn-console/shared'
-import type { Project, User } from '@prisma/client'
 import { logger as baseLogger } from '@cpn-console/logger'
 import { UserSchema } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
