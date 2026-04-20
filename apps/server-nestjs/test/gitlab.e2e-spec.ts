@@ -78,6 +78,31 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
         type: 'human',
       },
     })
+
+    await prisma.project.create({
+      data: {
+        id: testProjectId,
+        slug: testProjectSlug,
+        name: testProjectSlug,
+        ownerId,
+        description: 'E2E Test Project',
+        hprodCpu: 0,
+        hprodGpu: 0,
+        hprodMemory: 0,
+        prodCpu: 0,
+        prodGpu: 0,
+        prodMemory: 0,
+      },
+    })
+
+    await prisma.repository.create({
+      data: {
+        projectId: testProjectId,
+        internalRepoName: 'app',
+        externalRepoUrl: 'https://example.com/example.git',
+        isPrivate: false,
+      },
+    })
   })
 
   afterAll(async () => {
@@ -104,6 +129,10 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
       await prisma.user.deleteMany({ where: { id: ownerId } }).catch(() => {})
     }
 
+    if (ownerUser?.id) {
+      await gitlabClient.Users.remove(ownerUser.id).catch(() => {})
+    }
+
     await moduleRef.close()
 
     vi.restoreAllMocks()
@@ -111,32 +140,6 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
   })
 
   it('should reconcile and create project group in GitLab and Vault secrets', async () => {
-    // Create Project in DB
-    await prisma.project.create({
-      data: {
-        id: testProjectId,
-        slug: testProjectSlug,
-        name: testProjectSlug,
-        ownerId,
-        description: 'E2E Test Project',
-        hprodCpu: 0,
-        hprodGpu: 0,
-        hprodMemory: 0,
-        prodCpu: 0,
-        prodGpu: 0,
-        prodMemory: 0,
-      },
-    })
-
-    await prisma.repository.create({
-      data: {
-        projectId: testProjectId,
-        internalRepoName: 'app',
-        externalRepoUrl: 'https://example.com/example.git',
-        isPrivate: false,
-      },
-    })
-
     const project = await prisma.project.findUniqueOrThrow({
       where: { id: testProjectId },
       select: projectSelect,
@@ -166,58 +169,68 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
     expect(repoSecret?.data?.GIT_OUTPUT_PASSWORD).toBeTruthy()
   }, 72000)
 
-  it('should add member to GitLab group when added in DB', async () => {
-    // Create user in GitLab
-    const newUserId = faker.string.uuid()
-    const newUser = await gitlabClient.Users.create({
-      email: faker.internet.email().toLowerCase(),
-      username: faker.internet.username(),
-      name: `${faker.person.firstName()} ${faker.person.lastName()}`,
-      password: faker.internet.password({ length: 24 }),
-      skipConfirmation: true,
+  describe('project members', () => {
+    let newUserId: string | undefined
+    let newUserGitlabId: number | undefined
+
+    beforeAll(async () => {
+      newUserId = faker.string.uuid()
+      const newUser = await gitlabClient.Users.create({
+        email: faker.internet.email().toLowerCase(),
+        username: faker.internet.username(),
+        name: `${faker.person.firstName()} ${faker.person.lastName()}`,
+        password: faker.internet.password({ length: 24 }),
+        skipConfirmation: true,
+      })
+      newUserGitlabId = newUser.id
+
+      await prisma.user.create({
+        data: {
+          id: newUserId,
+          email: newUser.email,
+          firstName: 'Test',
+          lastName: 'User',
+          type: 'human',
+        },
+      })
+
+      await prisma.projectMembers.create({
+        data: {
+          projectId: testProjectId,
+          userId: newUserId,
+          roleIds: [],
+        },
+      })
     })
 
-    // Create user in DB
-    await prisma.user.create({
-      data: {
-        id: newUserId,
-        email: newUser.email,
-        firstName: 'Test',
-        lastName: 'User',
-        type: 'human',
-      },
+    afterAll(async () => {
+      if (newUserGitlabId) {
+        await gitlabClient.Users.remove(newUserGitlabId).catch(() => {})
+      }
+      if (prisma && newUserId) {
+        await prisma.projectMembers.deleteMany({ where: { userId: newUserId } }).catch(() => {})
+        await prisma.user.deleteMany({ where: { id: newUserId } }).catch(() => {})
+      }
     })
 
-    // Add member to project in DB
-    await prisma.projectMembers.create({
-      data: {
-        projectId: testProjectId,
-        userId: newUserId,
-        roleIds: [], // No roles for now
-      },
-    })
+    it('should add member to GitLab group when added in DB', async () => {
+      const project = await prisma.project.findUniqueOrThrow({
+        where: { id: testProjectId },
+        select: projectSelect,
+      })
 
-    const project = await prisma.project.findUniqueOrThrow({
-      where: { id: testProjectId },
-      select: projectSelect,
-    })
+      await gitlabController.handleUpsert(project)
 
-    // Act
-    await gitlabController.handleUpsert(project)
+      const groupPath = `${config.projectRootDir}/${testProjectSlug}`
+      const group = z.object({
+        id: z.number(),
+        name: z.string(),
+        web_url: z.string(),
+      }).parse(await gitlabService.getGroupByPath(groupPath))
 
-    // Assert
-    const groupPath = `${config.projectRootDir}/${testProjectSlug}`
-    const group = z.object({
-      id: z.number(),
-      name: z.string(),
-      web_url: z.string(),
-    }).parse(await gitlabService.getGroupByPath(groupPath))
-
-    const members = await gitlabService.getGroupMembers(group)
-    const isNewMemberPresent = members.some(m => m.id === newUser.id)
-    expect(isNewMemberPresent).toBe(true)
-
-    await prisma.projectMembers.deleteMany({ where: { userId: newUserId } }).catch(() => {})
-    await prisma.user.delete({ where: { id: newUserId } }).catch(() => {})
-  }, 72000)
+      const members = await gitlabService.getGroupMembers(group)
+      const isNewMemberPresent = members.some(m => m.id === newUserGitlabId)
+      expect(isNewMemberPresent).toBe(true)
+    }, 72000)
+  })
 })
