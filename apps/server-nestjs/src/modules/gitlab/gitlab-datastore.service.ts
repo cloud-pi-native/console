@@ -93,6 +93,35 @@ export class GitlabDatastoreService {
     })
   }
 
+  async getAdminPluginConfig(pluginName: string, key: string): Promise<string | null> {
+    const result = await this.prisma.adminPlugin.findUnique({
+      where: {
+        pluginName_key: {
+          pluginName,
+          key,
+        },
+      },
+      select: {
+        value: true,
+      },
+    })
+    return result?.value ?? null
+  }
+
+  async getAdminRolesByOidcGroups(oidcGroups: string[]): Promise<{ id: string, oidcGroup: string }[]> {
+    return this.prisma.adminRole.findMany({
+      where: {
+        oidcGroup: {
+          in: oidcGroups,
+        },
+      },
+      select: {
+        id: true,
+        oidcGroup: true,
+      },
+    })
+  }
+
   async getUser(id: string) {
     return this.prisma.user.findUnique({
       where: {
