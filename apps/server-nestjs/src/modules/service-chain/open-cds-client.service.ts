@@ -1,9 +1,10 @@
 import type { Dispatcher, HeadersInit, Response } from 'undici'
-import { Inject, Injectable } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Agent, fetch, Headers, ProxyAgent } from 'undici'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
 
-const openCdsDisabledMessage = 'OpenCDS is disabled, please set OPENCDS_URL in your relevant .env file. See .env-example'
+const openCdsDisabledMessage
+  = 'OpenCDS is disabled, please set OPENCDS_URL in your relevant .env file. See .env-example'
 
 const URL_REGEX = /^https?:\/\//
 const START_SLASHES_REGEX = /^\/+/
@@ -28,22 +29,35 @@ export class OpenCdsClientError extends Error {
 
 @Injectable()
 export class OpenCdsClientService {
-  constructor(@Inject(ConfigurationService) private readonly config: ConfigurationService) {}
+  constructor(
+    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+  ) {}
+
+  private readonly logger = new Logger(OpenCdsClientService.name)
 
   async get<T>(path: string, options?: OpenCdsRequestOptions): Promise<T> {
-    const response = await fetch(this.buildUrl(path, options?.query), {
+    const url = this.buildUrl(path, options?.query)
+    this.logger.debug(`Retrieving data from URL: ${url}`)
+
+    const headers = this.buildHeaders(options?.headers)
+
+    const response = await fetch(url, {
       dispatcher: this.buildDispatcher(),
-      headers: this.buildHeaders(options?.headers),
+      headers,
       method: 'GET',
       signal: options?.signal,
     })
 
     await this.throwIfNotOk(response)
 
-    return await response.json() as T
+    return (await response.json()) as T
   }
 
-  async post<TBody = void>(path: string, body?: TBody, options?: OpenCdsRequestOptions): Promise<void> {
+  async post<TBody = void>(
+    path: string,
+    body?: TBody,
+    options?: OpenCdsRequestOptions,
+  ): Promise<void> {
     const hasBody = body !== undefined
 
     const response = await fetch(this.buildUrl(path, options?.query), {
@@ -57,7 +71,10 @@ export class OpenCdsClientService {
     await this.throwIfNotOk(response)
   }
 
-  private buildUrl(path: string, query?: OpenCdsRequestOptions['query']): string {
+  private buildUrl(
+    path: string,
+    query?: OpenCdsRequestOptions['query'],
+  ): string {
     if (!this.config.openCdsUrl) {
       throw new Error(openCdsDisabledMessage)
     }
@@ -77,7 +94,10 @@ export class OpenCdsClientService {
     return url.toString()
   }
 
-  private buildHeaders(headers?: OpenCdsRequestOptions['headers'], hasJsonBody = false): Headers {
+  private buildHeaders(
+    headers?: OpenCdsRequestOptions['headers'],
+    hasJsonBody = false,
+  ): Headers {
     const mergedHeaders = new Headers(headers)
     mergedHeaders.set('X-API-Key', this.config.openCdsApiToken ?? '')
 
@@ -112,6 +132,10 @@ export class OpenCdsClientService {
 
     const body = await response.text()
 
-    throw new OpenCdsClientError(response.status, response.statusText, body || undefined)
+    throw new OpenCdsClientError(
+      response.status,
+      response.statusText,
+      body || undefined,
+    )
   }
 }

@@ -5,7 +5,7 @@ import {
   ServiceChainListSchema,
 } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
-import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/telemetry.decorator'
 import { OpenCdsClientService } from './open-cds-client.service'
 
 @Injectable()
