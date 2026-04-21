@@ -252,7 +252,7 @@ export class GitlabClientService {
     this.logger.verbose(`GitLab commit created (repoId=${repo.id}, ref=${ref}, actions=${actions.length})`)
   }
 
-  async generateCreateOrUpdateAction(repo: CondensedProjectSchema, ref: string, filePath: string, content: string) {
+  async generateCreateOrUpdateAction(repo: CondensedProjectSchema, ref: string, filePath: string, content: string): Promise<CommitAction | null> {
     const file = await this.getFile(repo, filePath, ref)
     if (file && !hasFileContentChanged(file, content)) {
       this.logger.debug(`GitLab file is up to date; skipping commit action (repoId=${repo.id}, ref=${ref}, filePath=${filePath})`)
@@ -263,7 +263,7 @@ export class GitlabClientService {
       action: file ? 'update' : 'create',
       filePath,
       content,
-    } satisfies CommitAction
+    }
   }
 
   async listFiles(repo: CondensedProjectSchema, options: { path?: string, recursive?: boolean, ref?: string } = {}) {
