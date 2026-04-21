@@ -23,7 +23,7 @@ function createVaultControllerServiceTestingModule() {
           upsertAuthApproleRole: vi.fn().mockResolvedValue(undefined),
           deleteAuthApproleRole: vi.fn().mockResolvedValue(undefined),
           upsertIdentityGroupName: vi.fn().mockResolvedValue(undefined),
-          getIdentityGroupName: vi.fn().mockResolvedValue({ data: { id: 'gid', name: 'p1', alias: { name: '/p1' } } }),
+          getIdentityGroupName: vi.fn().mockImplementation(async (groupName: string) => ({ data: { id: 'gid', name: groupName, alias: { name: `/${groupName}` } } })),
           deleteIdentityGroupName: vi.fn().mockResolvedValue(undefined),
           getSysAuth: vi.fn().mockResolvedValue({ 'oidc/': { accessor: 'oidc-accessor', type: 'oidc' } }),
           createIdentityGroupAlias: vi.fn().mockResolvedValue(undefined),
@@ -117,7 +117,15 @@ describe('vaultService', () => {
     expect(client.deleteSysMounts).toHaveBeenCalledWith('project-1')
     expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('app--project-1--admin')
     expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('tech--project-1--ro')
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--devops')
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--developer')
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--readonly')
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--security')
     expect(client.deleteAuthApproleRole).toHaveBeenCalledWith('project-1')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-1')
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-admin')
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-devops')
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-developer')
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-readonly')
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-security')
   })
 })
