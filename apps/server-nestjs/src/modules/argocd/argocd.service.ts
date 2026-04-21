@@ -1,4 +1,4 @@
-import type { CommitAction, CondensedProjectSchema, SimpleProjectSchema } from '@gitbeaker/core'
+import type { CommitAction, CondensedProjectSchema, ProjectSchema, SimpleProjectSchema } from '@gitbeaker/core'
 import type { ProjectWithDetails } from './argocd-datastore.service'
 import { createHmac } from 'node:crypto'
 import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
@@ -12,6 +12,17 @@ import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/tele
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { ArgoCDDatastoreService } from './argocd-datastore.service'
+import {
+  CONSOLE_ADMIN_GROUP_PATH,
+  PLATFORM_ADMIN_GROUP_PATH,
+  PLATFORM_READONLY_GROUP_PATH,
+  PLATFORM_SECURITY_GROUP_PATH,
+  PROJECT_ADMIN_GROUP_PATH_SUFFIX,
+  PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
+  PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
+  PROJECT_READONLY_GROUP_PATH_SUFFIX,
+  PROJECT_SECURITY_GROUP_PATH_SUFFIX,
+} from './argocd.constant'
 
 @Injectable()
 export class ArgoCDService {
@@ -102,6 +113,23 @@ export class ArgoCDService {
     })
     this.logger.verbose(`Reconciling ArgoCD zone for project ${project.slug} in zone ${zoneSlug} (repoId=${infraProject.id})`)
 
+    const actions = await this.generateEnvironmentActions(project, infraProject, zoneSlug)
+
+    span?.setAttribute('argocd.repo.actions.count', actions.length)
+    if (actions.length === 0) {
+      this.logger.verbose(`No ArgoCD changes need to be committed for project ${project.slug} in zone ${zoneSlug}`)
+      return
+    }
+
+    this.logger.log(`Applying ArgoCD changes for project ${project.slug} in zone ${zoneSlug} (actions=${actions.length})`)
+    await this.gitlab.maybeCreateCommit(infraProject, `ci: :robot_face: Sync ${project.slug}`, actions)
+  }
+
+  private async generateEnvironmentActions(
+    project: ProjectWithDetails,
+    infraProject: ProjectSchema,
+    zoneSlug: string,
+  ) {
     const environmentActions = await this.generateEnvironmentsUpdateActions(
       project,
       project.environments,
@@ -113,18 +141,10 @@ export class ArgoCDService {
       infraProject,
       zoneSlug,
     )
-    const actions: CommitAction[] = [
+    return [
       ...environmentActions,
       ...purgeEnvironmentActions,
-    ]
-
-    span?.setAttribute('argocd.repo.actions.count', actions.length)
-    if (actions.length === 0) {
-      this.logger.verbose(`No ArgoCD changes need to be committed for project ${project.slug} in zone ${zoneSlug}`)
-    } else {
-      this.logger.log(`Applying ArgoCD changes for project ${project.slug} in zone ${zoneSlug} (actions=${actions.length})`)
-    }
-    await this.gitlab.maybeCreateCommit(infraProject, `ci: :robot_face: Sync ${project.slug}`, actions)
+    ] satisfies CommitAction[]
   }
 
   private async generatePurgeEnvironmentActions(
@@ -262,6 +282,15 @@ interface ValuesSchema {
     valueFilePath: string
     roGroup: string
     rwGroup: string
+    consoleAdminGroup: string
+    platformAdminGroup: string
+    platformReadonlyGroup: string
+    platformSecurityGroup: string
+    projectAdminGroup: string
+    projectDevopsGroup: string
+    projectDevelopperGroup: string
+    projectSecurityGroup: string
+    projectReadonlyGroup: string
   }
   application: {
     quota: {
@@ -283,14 +312,27 @@ interface ValuesSchema {
       valueFiles: string[]
     }[]
   }
+  features: {
+    fineGrainedRoles: {
+      enabled: boolean
+    }
+  }
 }
 
 function formatReadOnlyGroupName(projectSlug: string, environmentName: string) {
-  return `/project-${projectSlug}/console/${environmentName}/RO`
+  return generateEnvironmentConsoleGroupPath(projectSlug, environmentName, 'RO')
 }
 
 function formatReadWriteGroupName(projectSlug: string, environmentName: string) {
-  return `/project-${projectSlug}/console/${environmentName}/RW`
+  return generateEnvironmentConsoleGroupPath(projectSlug, environmentName, 'RW')
+}
+
+function generateEnvironmentConsoleGroupPath(projectSlug: string, environmentName: string, access: 'RO' | 'RW') {
+  return `/${projectSlug}/console/${environmentName}/${access}`
+}
+
+function generateProjectConsoleGroupPath(projectSlug: string, suffix: string) {
+  return `/${projectSlug}${suffix}`
 }
 
 function formatAppProjectName(projectSlug: string, env: string) {
@@ -335,6 +377,7 @@ function formatRepositoriesValues(
 }
 
 function formatEnvironmentValues(
+  project: ProjectWithDetails,
   infraProject: SimpleProjectSchema,
   valueFilePath: string,
   roGroup: string,
@@ -346,6 +389,15 @@ function formatEnvironmentValues(
     valueFilePath,
     roGroup,
     rwGroup,
+    consoleAdminGroup: CONSOLE_ADMIN_GROUP_PATH,
+    platformAdminGroup: PLATFORM_ADMIN_GROUP_PATH,
+    platformReadonlyGroup: PLATFORM_READONLY_GROUP_PATH,
+    platformSecurityGroup: PLATFORM_SECURITY_GROUP_PATH,
+    projectAdminGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_ADMIN_GROUP_PATH_SUFFIX),
+    projectDevopsGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_DEVOPS_GROUP_PATH_SUFFIX),
+    projectDevelopperGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_DEVELOPER_GROUP_PATH_SUFFIX),
+    projectSecurityGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_SECURITY_GROUP_PATH_SUFFIX),
+    projectReadonlyGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_READONLY_GROUP_PATH_SUFFIX),
   } satisfies ValuesSchema['environment']
 }
 
@@ -442,6 +494,7 @@ function formatValues({
       nsChartVersion,
     }),
     environment: formatEnvironmentValues(
+      project,
       infraProject,
       valueFilePath,
       formatReadOnlyGroupName(project.slug, environment.name),
@@ -469,6 +522,11 @@ function formatValues({
         repoUrl,
         environment.name,
       ),
+    },
+    features: {
+      fineGrainedRoles: {
+        enabled: true,
+      },
     },
   } satisfies ValuesSchema
 }
