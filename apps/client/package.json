@@ -9,7 +9,7 @@
     "url": "https://github.com/cloud-pi-native/console"
   },
   "scripts": {
-    "build": "pnpm run icons && pnpm run type-check && pnpm run build-only",
+    "build": "corepack pnpm run icons && pnpm run type-check && pnpm run build-only",
     "build-only": "vite --mode=production build",
     "build:clean": "rimraf ./dist ./tsconfig.tsbuildinfo",
     "dev": "vite --mode=development",
@@ -17,12 +17,11 @@
     "format:style": "stylelint ./src/**/*.{css,vue} --fix",
     "icons": "vue-dsfr-icons -s scripts/icons.js -t src/icon-collections.ts",
     "integ": "vite --mode=integration",
-    "lint": "pnpm run --parallel \"/^lint:.*/\"",
+    "lint": "corepack pnpm run --parallel \"/^lint:.*/\"",
     "lint:style": "stylelint ./src/**/*.{css,vue}",
     "lint:ts": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' eslint ./",
     "preview": "vite preview --port 8080",
     "test": "vitest run",
-    "test:cov": "vitest run --coverage",
     "type-check": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
