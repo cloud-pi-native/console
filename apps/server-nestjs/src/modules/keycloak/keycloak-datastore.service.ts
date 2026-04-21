@@ -38,6 +38,24 @@ export type ProjectWithDetails = Prisma.ProjectGetPayload<{
   select: typeof projectSelect
 }>
 
+export const adminRoleSelect = {
+  id: true,
+  oidcGroup: true,
+} satisfies Prisma.AdminRoleSelect
+
+export type AdminRoleWithDetails = Prisma.AdminRoleGetPayload<{
+  select: typeof adminRoleSelect
+}>
+
+export const userAdminRoleSelect = {
+  id: true,
+  adminRoleIds: true,
+} satisfies Prisma.UserSelect
+
+export type UserWithAdminRoles = Prisma.UserGetPayload<{
+  select: typeof userAdminRoleSelect
+}>
+
 @Injectable()
 export class KeycloakDatastoreService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
@@ -45,6 +63,18 @@ export class KeycloakDatastoreService {
   async getAllProjects(): Promise<ProjectWithDetails[]> {
     return this.prisma.project.findMany({
       select: projectSelect,
+    })
+  }
+
+  async getAllAdminRoles(): Promise<AdminRoleWithDetails[]> {
+    return this.prisma.adminRole.findMany({
+      select: adminRoleSelect,
+    })
+  }
+
+  async getAllUsersWithAdminRoleIds(): Promise<UserWithAdminRoles[]> {
+    return this.prisma.user.findMany({
+      select: userAdminRoleSelect,
     })
   }
 }

@@ -1,5 +1,5 @@
 import type { Mocked } from 'vitest'
-import type { ProjectWithDetails } from './keycloak-datastore.service'
+import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
@@ -43,6 +43,8 @@ function createKeycloakControllerServiceTestingModule() {
         provide: KeycloakDatastoreService,
         useValue: {
           getAllProjects: vi.fn().mockResolvedValue([]),
+          getAllAdminRoles: vi.fn().mockResolvedValue([]),
+          getAllUsersWithAdminRoleIds: vi.fn().mockResolvedValue([]),
         } satisfies Partial<KeycloakDatastoreService>,
       },
       {
@@ -77,6 +79,32 @@ describe('keycloakService', () => {
       slug: 'test-project',
       ownerId: 'owner-id',
       everyonePerms: 0n,
+    })
+
+    it('should sync admin role groups', async () => {
+      const adminRoles: AdminRoleWithDetails[] = [
+        { id: 'admin-role-id', oidcGroup: '/console/admin' },
+      ]
+      const users: UserWithAdminRoles[] = [
+        { id: 'user-1', adminRoleIds: ['admin-role-id'] },
+        { id: 'user-2', adminRoleIds: [] },
+      ]
+      keycloakDatastore.getAllProjects.mockResolvedValue([])
+      keycloakDatastore.getAllAdminRoles.mockResolvedValue(adminRoles)
+      keycloakDatastore.getAllUsersWithAdminRoleIds.mockResolvedValue(users)
+
+      const adminGroup = makeGroupRepresentation({ id: 'kc-group-id', name: 'admin', path: '/console/admin' })
+      keycloak.getOrCreateGroupByPath.mockResolvedValue(adminGroup)
+
+      keycloak.getGroupMembers.mockResolvedValue([
+        makeUserRepresentation({ id: 'user-2' }),
+      ])
+
+      await service.handleCron()
+
+      expect(keycloak.getOrCreateGroupByPath).toHaveBeenCalledWith('/console/admin')
+      expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'kc-group-id')
+      expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-2', 'kc-group-id')
     })
 
     it('should purge orphans', async () => {
