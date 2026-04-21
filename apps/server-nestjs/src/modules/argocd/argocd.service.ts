@@ -121,9 +121,9 @@ export class ArgoCDService {
     span?.setAttribute('argocd.repo.actions.count', actions.length)
     if (actions.length === 0) {
       this.logger.verbose(`No ArgoCD changes need to be committed for project ${project.slug} in zone ${zoneSlug}`)
-    } else {
-      this.logger.log(`Applying ArgoCD changes for project ${project.slug} in zone ${zoneSlug} (actions=${actions.length})`)
+      return
     }
+    this.logger.log(`Applying ArgoCD changes for project ${project.slug} in zone ${zoneSlug} (actions=${actions.length})`)
     await this.gitlab.maybeCreateCommit(infraProject, `ci: :robot_face: Sync ${project.slug}`, actions)
   }
 
@@ -262,6 +262,15 @@ interface ValuesSchema {
     valueFilePath: string
     roGroup: string
     rwGroup: string
+    consoleAdminGroup: string
+    platformAdminGroup: string
+    platformReadonlyGroup: string
+    platformSecurityGroup: string
+    projectAdminGroup: string
+    projectDevopsGroup: string
+    projectDevelopperGroup: string
+    projectSecurityGroup: string
+    projectReadonlyGroup: string
   }
   application: {
     quota: {
@@ -282,6 +291,11 @@ interface ValuesSchema {
       path: string
       valueFiles: string[]
     }[]
+  }
+  features: {
+    fineGrainedRoles: {
+      enabled: boolean
+    }
   }
 }
 
@@ -335,10 +349,11 @@ function formatRepositoriesValues(
 }
 
 function formatEnvironmentValues(
+  project: ProjectWithDetails,
   infraProject: SimpleProjectSchema,
   valueFilePath: string,
-  roGroup: string,
   rwGroup: string,
+  roGroup: string,
 ) {
   return {
     valueFileRepository: infraProject.http_url_to_repo,
@@ -346,6 +361,15 @@ function formatEnvironmentValues(
     valueFilePath,
     roGroup,
     rwGroup,
+    consoleAdminGroup: '/console-admin',
+    platformAdminGroup: '/platform-admin',
+    platformReadonlyGroup: '/platform-readonly',
+    platformSecurityGroup: '/platform-security',
+    projectAdminGroup: `/project-${project.name}-admin`,
+    projectDevopsGroup: `/project-${project.name}-devops`,
+    projectDevelopperGroup: `/project-${project.name}-developer`,
+    projectSecurityGroup: `/project-${project.name}-security`,
+    projectReadonlyGroup: `/project-${project.name}-readonly`,
   } satisfies ValuesSchema['environment']
 }
 
@@ -442,6 +466,7 @@ function formatValues({
       nsChartVersion,
     }),
     environment: formatEnvironmentValues(
+      project,
       infraProject,
       valueFilePath,
       formatReadOnlyGroupName(project.slug, environment.name),
@@ -469,6 +494,11 @@ function formatValues({
         repoUrl,
         environment.name,
       ),
+    },
+    features: {
+      fineGrainedRoles: {
+        enabled: true,
+      },
     },
   } satisfies ValuesSchema
 }
