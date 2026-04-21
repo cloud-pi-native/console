@@ -115,22 +115,14 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  private async fetch<T = any>(
-    path: string,
-    options: VaultFetchOptions = {},
-  ): Promise<T | null> {
-    return this.http.fetch(path, options)
-  }
-
-  @StartActiveSpan()
   async getKvData<T = any>(kvName: string, path: string): Promise<VaultSecret<T>> {
     const span = trace.getActiveSpan()
     span?.setAttribute('vault.kv.name', kvName)
     span?.setAttribute('vault.kv.path', path)
     this.logger.verbose(`Reading Vault KV data (kvName=${kvName}, path=${path})`)
-    const response = await this.fetch<VaultResponse<T>>(`/v1/${kvName}/data/${path}`)
+    const response = await this.http.fetch<VaultResponse<T>>(`${kvName}/data/${path}`)
     if (!response?.data) {
-      throw new VaultError('InvalidResponse', 'Missing "data" field', { method: 'GET', path: `/v1/${kvName}/data/${path}` })
+      throw new VaultError('InvalidResponse', 'Missing "data" field', { method: 'GET', path: `${kvName}/data/${path}` })
     }
     return response.data
   }
@@ -141,7 +133,7 @@ export class VaultClientService {
     span?.setAttribute('vault.kv.name', kvName)
     span?.setAttribute('vault.kv.path', path)
     this.logger.verbose(`Writing Vault KV data (kvName=${kvName}, path=${path})`)
-    await this.fetch(`/v1/${kvName}/data/${path}`, { method: 'POST', body })
+    await this.http.fetch(`${kvName}/data/${path}`, { method: 'POST', body })
   }
 
   @StartActiveSpan()
@@ -259,7 +251,7 @@ export class VaultClientService {
     span?.setAttribute('vault.kv.name', kvName)
     span?.setAttribute('vault.kv.path', path)
     try {
-      await this.fetch(`/v1/${kvName}/metadata/${path}`, { method: 'DELETE' })
+      await this.http.fetch(`${kvName}/metadata/${path}`, { method: 'DELETE' })
     } catch (error) {
       if (error instanceof VaultError && error.kind === 'NotFound') return
       throw error
@@ -273,9 +265,9 @@ export class VaultClientService {
       span?.setAttribute('vault.kv.name', kvName)
       span?.setAttribute('vault.kv.path', path)
       this.logger.verbose(`Listing Vault KV metadata (kvName=${kvName}, path=${path})`)
-      const response = await this.fetch<VaultListResponse>(`/v1/${kvName}/metadata/${path}`, { method: 'LIST' })
+      const response = await this.http.fetch<VaultListResponse>(`${kvName}/metadata/${path}`, { method: 'LIST' })
       if (!response?.data?.keys) {
-        throw new VaultError('InvalidResponse', 'Missing "data.keys" field', { method: 'LIST', path: `/v1/${kvName}/metadata/${path}` })
+        throw new VaultError('InvalidResponse', 'Missing "data.keys" field', { method: 'LIST', path: `${kvName}/metadata/${path}` })
       }
       return response.data.keys
     } catch (error) {
@@ -287,37 +279,37 @@ export class VaultClientService {
   @StartActiveSpan()
   async upsertSysPoliciesAcl(policyName: string, body: VaultSysPoliciesAclUpsertRequest): Promise<void> {
     this.logger.verbose(`Upserting Vault ACL policy ${policyName}`)
-    await this.fetch(`/v1/sys/policies/acl/${policyName}`, { method: 'POST', body })
+    await this.http.fetch(`sys/policies/acl/${policyName}`, { method: 'POST', body })
   }
 
   @StartActiveSpan()
   async deleteSysPoliciesAcl(policyName: string): Promise<void> {
     this.logger.verbose(`Deleting Vault ACL policy ${policyName}`)
-    await this.fetch(`/v1/sys/policies/acl/${policyName}`, { method: 'DELETE' })
+    await this.http.fetch(`sys/policies/acl/${policyName}`, { method: 'DELETE' })
   }
 
   @StartActiveSpan()
   async createSysMount(name: string, body: VaultSysMountCreateRequest): Promise<void> {
     this.logger.verbose(`Creating Vault mount ${name} (version=${body.options.version})`)
-    await this.fetch(`/v1/sys/mounts/${name}`, { method: 'POST', body })
+    await this.http.fetch(`sys/mounts/${name}`, { method: 'POST', body })
   }
 
   @StartActiveSpan()
   async tuneSysMount(name: string, body: VaultSysMountTuneRequest): Promise<void> {
     this.logger.verbose(`Tuning Vault mount ${name} (version=${body.options.version})`)
-    await this.fetch(`/v1/sys/mounts/${name}/tune`, { method: 'POST', body })
+    await this.http.fetch(`sys/mounts/${name}/tune`, { method: 'POST', body })
   }
 
   @StartActiveSpan()
   async deleteSysMounts(name: string): Promise<void> {
     this.logger.verbose(`Deleting Vault mount ${name}`)
-    await this.fetch(`/v1/sys/mounts/${name}`, { method: 'DELETE' })
+    await this.http.fetch(`sys/mounts/${name}`, { method: 'DELETE' })
   }
 
   @StartActiveSpan()
   async upsertAuthApproleRole(roleName: string, body: VaultAuthApproleRoleUpsertRequest): Promise<void> {
     this.logger.verbose(`Upserting Vault AppRole ${roleName} (policies=${body.token_policies.length})`)
-    await this.fetch(`/v1/auth/approle/role/${roleName}`, {
+    await this.http.fetch(`auth/approle/role/${roleName}`, {
       method: 'POST',
       body,
     })
@@ -326,13 +318,13 @@ export class VaultClientService {
   @StartActiveSpan()
   async deleteAuthApproleRole(roleName: string): Promise<void> {
     this.logger.verbose(`Deleting Vault AppRole ${roleName}`)
-    await this.fetch(`/v1/auth/approle/role/${roleName}`, { method: 'DELETE' })
+    await this.http.fetch(`auth/approle/role/${roleName}`, { method: 'DELETE' })
   }
 
   async getAuthApproleRoleRoleId(roleName: string): Promise<string> {
-    const path = `/v1/auth/approle/role/${roleName}/role-id`
+    const path = `auth/approle/role/${roleName}/role-id`
     this.logger.verbose(`Reading Vault AppRole role-id for ${roleName}`)
-    const response = await this.fetch<VaultRoleIdResponse>(path)
+    const response = await this.http.fetch<VaultRoleIdResponse>(path)
     const roleId = response?.data?.role_id
     if (!roleId) {
       throw new VaultError('InvalidResponse', `Vault role-id not found for role ${roleName}`, { method: 'GET', path })
@@ -342,9 +334,9 @@ export class VaultClientService {
 
   @StartActiveSpan()
   async createAuthApproleRoleSecretId(roleName: string): Promise<string> {
-    const path = `/v1/auth/approle/role/${roleName}/secret-id`
+    const path = `auth/approle/role/${roleName}/secret-id`
     this.logger.verbose(`Creating Vault AppRole secret-id for ${roleName}`)
-    const response = await this.fetch<VaultSecretIdResponse>(path, { method: 'POST' })
+    const response = await this.http.fetch<VaultSecretIdResponse>(path, { method: 'POST' })
     const secretId = response?.data?.secret_id
     if (!secretId) {
       throw new VaultError('InvalidResponse', `Vault secret-id not generated for role ${roleName}`, { method: 'POST', path })
@@ -353,16 +345,16 @@ export class VaultClientService {
   }
 
   async getSysAuth(): Promise<Record<string, VaultAuthMethod>> {
-    const path = '/v1/sys/auth'
+    const path = 'sys/auth'
     this.logger.verbose('Listing Vault auth methods')
-    const response = await this.fetch<VaultSysAuthResponse>(path)
+    const response = await this.http.fetch<VaultSysAuthResponse>(path)
     return response?.data ?? {}
   }
 
   @StartActiveSpan()
   async upsertIdentityGroupName(groupName: string, body: VaultIdentityGroupUpsertRequest): Promise<void> {
     this.logger.verbose(`Upserting Vault identity group ${groupName} (policies=${body.policies.length})`)
-    await this.fetch(`/v1/identity/group/name/${groupName}`, {
+    await this.http.fetch(`identity/group/name/${groupName}`, {
       method: 'POST',
       body,
     })
@@ -372,8 +364,8 @@ export class VaultClientService {
   async getIdentityGroupName(groupName: string): Promise<VaultIdentityGroupResponse> {
     const span = trace.getActiveSpan()
     span?.setAttribute('vault.identity.group.name', groupName)
-    const path = `/v1/identity/group/name/${groupName}`
-    const response = await this.fetch<VaultIdentityGroupResponse>(path)
+    const path = `identity/group/name/${groupName}`
+    const response = await this.http.fetch<VaultIdentityGroupResponse>(path)
     if (!response) throw new VaultError('InvalidResponse', 'Empty response', { method: 'GET', path })
     return response
   }
@@ -383,7 +375,7 @@ export class VaultClientService {
     const span = trace.getActiveSpan()
     span?.setAttribute('vault.identity.group.name', groupName)
     this.logger.verbose(`Deleting Vault identity group ${groupName}`)
-    await this.fetch(`/v1/identity/group/name/${groupName}`, { method: 'DELETE' })
+    await this.http.fetch(`identity/group/name/${groupName}`, { method: 'DELETE' })
   }
 
   @StartActiveSpan()
@@ -391,6 +383,6 @@ export class VaultClientService {
     const span = trace.getActiveSpan()
     span?.setAttribute('vault.identity.group.alias', body.name)
     this.logger.verbose(`Creating Vault identity group alias (aliasName=${body.name}, canonicalId=${body.canonical_id})`)
-    await this.fetch('/v1/identity/group-alias', { method: 'POST', body })
+    await this.http.fetch('identity/group-alias', { method: 'POST', body })
   }
 }
