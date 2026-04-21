@@ -61,7 +61,7 @@ services:
       NODE_ENV: production
       CI: "true"
       DEV_SETUP: "true"
-      OPENCDS_URL: "http://dso-opencds_mockoon:6000/api/v1"
+      OPENCDS_URL: "http://dso-opencds_mockoon:3100/api/v1"
       OPENCDS_API_TOKEN: token
       OPENCDS_API_TLS_REJECT_UNAUTHORIZED: "false"
     networks:
@@ -137,7 +137,7 @@ services:
     container_name: dso-opencds_mockoon
     user: root
     ports:
-      - 6000:6000
+      - 3100:3100
     networks:
       - dso-network
 

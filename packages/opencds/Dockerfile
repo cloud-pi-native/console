@@ -13,8 +13,8 @@ RUN chown -R mockoon ./opencds_api.json
 
 USER mockoon
 
-EXPOSE 6000
+EXPOSE 3100
 
-ENTRYPOINT ["mockoon-cli","start","--disable-log-to-file","--data","./opencds_api.json","--port","6000"]
+ENTRYPOINT ["mockoon-cli","start","--disable-log-to-file","--data","./opencds_api.json","--port","3100"]
 
-# Usage: docker run -p <host_port>:6000 mockoon-test
+# Usage: docker run -p <host_port>:3100 mockoon-test

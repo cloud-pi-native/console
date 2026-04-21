@@ -225,7 +225,7 @@ services:
     container_name: dso-opencds_mockoon
     user: root
     ports:
-      - 6000:6000
+      - 3100:3100
     networks:
       - dso-network
 
