@@ -1,4 +1,3 @@
-import type { VaultFetchOptions } from './vault-http-client.service'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
