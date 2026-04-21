@@ -23,7 +23,7 @@ function createVaultControllerServiceTestingModule() {
           upsertAuthApproleRole: vi.fn().mockResolvedValue(undefined),
           deleteAuthApproleRole: vi.fn().mockResolvedValue(undefined),
           upsertIdentityGroupName: vi.fn().mockResolvedValue(undefined),
-          getIdentityGroupName: vi.fn().mockResolvedValue({ data: { id: 'gid', name: 'p1', alias: { name: '/p1' } } }),
+          getIdentityGroupName: vi.fn().mockImplementation(async (groupName: string) => ({ data: { id: 'gid', name: groupName, alias: { name: `/${groupName}` } } })),
           deleteIdentityGroupName: vi.fn().mockResolvedValue(undefined),
           getSysAuth: vi.fn().mockResolvedValue({ 'oidc/': { accessor: 'oidc-accessor', type: 'oidc' } }),
           createIdentityGroupAlias: vi.fn().mockResolvedValue(undefined),
@@ -64,6 +64,7 @@ describe('vaultService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined()
   })
+
   it('should reconcile on cron', async () => {
     const mockProjects = [
       {
@@ -101,6 +102,25 @@ describe('vaultService', () => {
   it('should upsert project on event', async () => {
     await service.handleUpsert({ slug: 'project-1' } as any)
     expect(client.createSysMount).toHaveBeenCalledWith('project-1', expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('app--project-1--admin', expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('tech--project-1--ro', expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--devops', expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--developer', expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--readonly', expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--security', expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--admin', expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--readonly', expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--security', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-admin', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('platform-admin', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('platform-readonly', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('platform-security', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-admin', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-devops', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-developer', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-readonly', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-security', expect.any(Object))
+    expect(client.createIdentityGroupAlias).not.toHaveBeenCalled()
   })
 
   it('should delete project and destroy secrets on event', async () => {
@@ -117,7 +137,15 @@ describe('vaultService', () => {
     expect(client.deleteSysMounts).toHaveBeenCalledWith('project-1')
     expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('app--project-1--admin')
     expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('tech--project-1--ro')
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--devops')
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--developer')
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--readonly')
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--security')
     expect(client.deleteAuthApproleRole).toHaveBeenCalledWith('project-1')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-1')
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-admin')
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-devops')
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-developer')
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-readonly')
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-security')
   })
 })
