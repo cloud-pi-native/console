@@ -8,6 +8,31 @@ import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/tele
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
 import { VaultError } from './vault-http-client.service'
+import {
+  ADMIN_GROUP_PATH_PLUGIN_KEY,
+  AUDITOR_GROUP_PATH_PLUGIN_KEY,
+  CONSOLE_ADMIN_GROUP_NAME,
+  CONSOLE_READONLY_GROUP_NAME,
+  CONSOLE_SECURITY_GROUP_NAME,
+  DEFAULT_ADMIN_GROUP_PATH,
+  DEFAULT_AUDITOR_GROUP_PATH,
+  DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_SECURITY_GROUP_PATH_SUFFIX,
+  DEFAULT_SECURITY_GROUP_PATH,
+  PLATFORM_ADMIN_POLICY_NAME,
+  PLATFORM_READONLY_POLICY_NAME,
+  PLATFORM_SECURITY_POLICY_NAME,
+  PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
+  PROJECT_DEVOPS_GROUP_PATH_SUFFIX_PLUGIN_KEY,
+  PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
+  PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
+  PROJECT_SECURITY_GROUP_PATH_SUFFIX_PLUGIN_KEY,
+  SECURITY_GROUP_PATH_PLUGIN_KEY,
+  VAULT_PLUGIN_NAME,
+} from './vault.constant'
 import { generateProjectPath } from './vault.utils'
 
 @Injectable()
@@ -101,6 +126,44 @@ export class VaultService {
     span?.setAttribute('project.slug', project.slug)
     this.logger.verbose(`Reconciling Vault project ${project.slug}`)
     await this.upsertProject(project)
+  }
+
+  private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
+    const adminPluginConfig = await this.vaultDatastore.getAdminPluginConfig(VAULT_PLUGIN_NAME, key)
+    if (adminPluginConfig) return adminPluginConfig
+    return project.plugins?.find(p => p.pluginName === VAULT_PLUGIN_NAME && p.key === key)?.value
+  }
+
+  private async getAdminGroupPath(project: ProjectWithDetails): Promise<string> {
+    return (await this.getAdminOrProjectPluginConfig(project, ADMIN_GROUP_PATH_PLUGIN_KEY)) ?? DEFAULT_ADMIN_GROUP_PATH
+  }
+
+  private async getAuditorGroupPath(project: ProjectWithDetails): Promise<string> {
+    return (await this.getAdminOrProjectPluginConfig(project, AUDITOR_GROUP_PATH_PLUGIN_KEY)) ?? DEFAULT_AUDITOR_GROUP_PATH
+  }
+
+  private async getSecurityGroupPath(project: ProjectWithDetails): Promise<string> {
+    return (await this.getAdminOrProjectPluginConfig(project, SECURITY_GROUP_PATH_PLUGIN_KEY)) ?? DEFAULT_SECURITY_GROUP_PATH
+  }
+
+  private async getProjectMaintainerGroupPathSuffix(project: ProjectWithDetails): Promise<string> {
+    return (await this.getAdminOrProjectPluginConfig(project, PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY)) ?? DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX
+  }
+
+  private async getProjectDevopsGroupPathSuffix(project: ProjectWithDetails): Promise<string> {
+    return (await this.getAdminOrProjectPluginConfig(project, PROJECT_DEVOPS_GROUP_PATH_SUFFIX_PLUGIN_KEY)) ?? DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX
+  }
+
+  private async getProjectDeveloperGroupPathSuffix(project: ProjectWithDetails): Promise<string> {
+    return (await this.getAdminOrProjectPluginConfig(project, PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY)) ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
+  }
+
+  private async getProjectReporterGroupPathSuffix(project: ProjectWithDetails): Promise<string> {
+    return (await this.getAdminOrProjectPluginConfig(project, PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY)) ?? DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX
+  }
+
+  private async getProjectSecurityGroupPathSuffix(project: ProjectWithDetails): Promise<string> {
+    return (await this.getAdminOrProjectPluginConfig(project, PROJECT_SECURITY_GROUP_PATH_SUFFIX_PLUGIN_KEY)) ?? DEFAULT_PROJECT_SECURITY_GROUP_PATH_SUFFIX
   }
 
   @StartActiveSpan()
@@ -206,11 +269,61 @@ export class VaultService {
     span?.setAttribute('vault.kv.name', project.slug)
     const appPolicyName = generateAppAdminPolicyName(project)
     const techPolicyName = generateTechReadOnlyPolicyName(project)
+    const projectDevopsPolicyName = generateProjectDevopsPolicyName(project)
+    const projectDeveloperPolicyName = generateProjectDeveloperPolicyName(project)
+    const projectReadOnlyPolicyName = generateProjectReadOnlyPolicyName(project)
+    const projectSecurityPolicyName = generateProjectSecurityPolicyName(project)
     await this.upsertMount(project.slug)
+
+    const [
+      adminGroupPath,
+      auditorGroupPath,
+      securityGroupPath,
+      maintainerGroupPathSuffix,
+      devopsGroupPathSuffix,
+      developerGroupPathSuffix,
+      reporterGroupPathSuffix,
+      securityGroupPathSuffix,
+    ] = await Promise.all([
+      this.getAdminGroupPath(project),
+      this.getAuditorGroupPath(project),
+      this.getSecurityGroupPath(project),
+      this.getProjectMaintainerGroupPathSuffix(project),
+      this.getProjectDevopsGroupPathSuffix(project),
+      this.getProjectDeveloperGroupPathSuffix(project),
+      this.getProjectReporterGroupPathSuffix(project),
+      this.getProjectSecurityGroupPathSuffix(project),
+    ])
+
+    const projectAdminGroupPaths = generateProjectRoleGroupPaths(project.slug, maintainerGroupPathSuffix)
+    const projectDevopsGroupPaths = generateProjectRoleGroupPaths(project.slug, devopsGroupPathSuffix)
+    const projectDeveloperGroupPaths = generateProjectRoleGroupPaths(project.slug, developerGroupPathSuffix)
+    const projectReadOnlyGroupPaths = generateProjectRoleGroupPaths(project.slug, reporterGroupPathSuffix)
+    const projectSecurityGroupPaths = generateProjectRoleGroupPaths(project.slug, securityGroupPathSuffix)
+
     await Promise.all([
       this.createAppAdminPolicy(appPolicyName, project.slug),
       this.createTechReadOnlyPolicy(techPolicyName, project.slug),
-      this.ensureProjectGroup(project.slug, appPolicyName),
+      this.createProjectDevopsPolicy(projectDevopsPolicyName, project.slug),
+      this.createProjectDeveloperPolicy(projectDeveloperPolicyName, project.slug),
+      this.createProjectReadOnlyPolicy(projectReadOnlyPolicyName, project.slug),
+      this.createProjectSecurityPolicy(projectSecurityPolicyName, project.slug),
+      this.createPlatformAdminPolicy(PLATFORM_ADMIN_POLICY_NAME),
+      this.createPlatformReadOnlyPolicy(PLATFORM_READONLY_POLICY_NAME),
+      this.createPlatformSecurityPolicy(PLATFORM_SECURITY_POLICY_NAME),
+      this.ensureIdentityGroup(CONSOLE_ADMIN_GROUP_NAME, [PLATFORM_ADMIN_POLICY_NAME], adminGroupPath),
+      this.ensureIdentityGroup(CONSOLE_READONLY_GROUP_NAME, [PLATFORM_READONLY_POLICY_NAME], auditorGroupPath),
+      this.ensureIdentityGroup(CONSOLE_SECURITY_GROUP_NAME, [PLATFORM_SECURITY_POLICY_NAME], securityGroupPath),
+      ...projectAdminGroupPaths.map(groupPath =>
+        this.ensureIdentityGroup(generateProjectAdminGroupName(project.slug), [appPolicyName], groupPath)),
+      ...projectDevopsGroupPaths.map(groupPath =>
+        this.ensureIdentityGroup(generateProjectDevopsGroupName(project.slug), [projectDevopsPolicyName], groupPath)),
+      ...projectDeveloperGroupPaths.map(groupPath =>
+        this.ensureIdentityGroup(generateProjectDeveloperGroupName(project.slug), [projectDeveloperPolicyName], groupPath)),
+      ...projectReadOnlyGroupPaths.map(groupPath =>
+        this.ensureIdentityGroup(generateProjectReadOnlyGroupName(project.slug), [projectReadOnlyPolicyName], groupPath)),
+      ...projectSecurityGroupPaths.map(groupPath =>
+        this.ensureIdentityGroup(generateProjectSecurityGroupName(project.slug), [projectSecurityPolicyName], groupPath)),
       this.client.upsertAuthApproleRole(project.slug, generateApproleRoleBody([techPolicyName, appPolicyName])),
     ])
   }
@@ -222,14 +335,26 @@ export class VaultService {
     span?.setAttribute('vault.kv.name', projectSlug)
     const appPolicyName = generateAppAdminPolicyName({ slug: projectSlug } as ProjectWithDetails)
     const techPolicyName = generateTechReadOnlyPolicyName({ slug: projectSlug } as ProjectWithDetails)
+    const projectDevopsPolicyName = generateProjectDevopsPolicyName({ slug: projectSlug } as ProjectWithDetails)
+    const projectDeveloperPolicyName = generateProjectDeveloperPolicyName({ slug: projectSlug } as ProjectWithDetails)
+    const projectReadOnlyPolicyName = generateProjectReadOnlyPolicyName({ slug: projectSlug } as ProjectWithDetails)
+    const projectSecurityPolicyName = generateProjectSecurityPolicyName({ slug: projectSlug } as ProjectWithDetails)
 
     await this.deleteMount(projectSlug)
 
     const settled = await Promise.allSettled([
       this.client.deleteSysPoliciesAcl(appPolicyName),
       this.client.deleteSysPoliciesAcl(techPolicyName),
+      this.client.deleteSysPoliciesAcl(projectDevopsPolicyName),
+      this.client.deleteSysPoliciesAcl(projectDeveloperPolicyName),
+      this.client.deleteSysPoliciesAcl(projectReadOnlyPolicyName),
+      this.client.deleteSysPoliciesAcl(projectSecurityPolicyName),
       this.client.deleteAuthApproleRole(projectSlug),
-      this.client.deleteIdentityGroupName(projectSlug),
+      this.client.deleteIdentityGroupName(generateProjectAdminGroupName(projectSlug)),
+      this.client.deleteIdentityGroupName(generateProjectDevopsGroupName(projectSlug)),
+      this.client.deleteIdentityGroupName(generateProjectDeveloperGroupName(projectSlug)),
+      this.client.deleteIdentityGroupName(generateProjectReadOnlyGroupName(projectSlug)),
+      this.client.deleteIdentityGroupName(generateProjectSecurityGroupName(projectSlug)),
     ])
     for (const result of settled) {
       if (result.status !== 'rejected') continue
@@ -240,16 +365,16 @@ export class VaultService {
   }
 
   @StartActiveSpan()
-  private async ensureProjectGroup(groupName: string, policyName: string): Promise<void> {
+  private async ensureIdentityGroup(groupName: string, policies: string[], groupAliasName: string): Promise<void> {
     const span = trace.getActiveSpan()
     span?.setAttributes({
       'vault.group.name': groupName,
-      'vault.policy.name': policyName,
+      'vault.policies.count': policies.length,
     })
     await this.client.upsertIdentityGroupName(groupName, {
       name: groupName,
       type: 'external',
-      policies: [policyName],
+      policies,
     })
 
     const groupResult = await this.client.getIdentityGroupName(groupName)
@@ -257,8 +382,8 @@ export class VaultService {
       throw new VaultError('InvalidResponse', `Vault group not found after upsert: ${groupName}`, { method: 'GET', path: `/v1/identity/group/name/${groupName}` })
     }
 
-    const groupAliasName = `/${groupName}`
-    if (groupResult.data.alias?.name === groupAliasName) return
+    const normalizedAliasName = groupAliasName.startsWith('/') ? groupAliasName : `/${groupAliasName}`
+    if (groupResult.data.alias?.name === normalizedAliasName) return
 
     const methods = await this.client.getSysAuth()
     const oidc = methods['oidc/']
@@ -267,11 +392,11 @@ export class VaultService {
     }
     try {
       span?.setAttributes({
-        'vault.group.alias.name': groupAliasName,
+        'vault.group.alias.name': normalizedAliasName,
         'vault.oidc.accessor': oidc.accessor,
       })
       await this.client.createIdentityGroupAlias({
-        name: groupAliasName,
+        name: normalizedAliasName,
         mount_accessor: oidc.accessor,
         canonical_id: groupResult.data.id,
       })
@@ -284,6 +409,73 @@ export class VaultService {
   async createAppAdminPolicy(name: string, projectSlug: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
       policy: `path "${projectSlug}/*" { capabilities = ["create", "read", "update", "delete", "list"] }`,
+    })
+  }
+
+  async createProjectDevopsPolicy(name: string, projectSlug: string): Promise<void> {
+    await this.client.upsertSysPoliciesAcl(name, {
+      policy: [
+        `path "${projectSlug}/data/*" { capabilities = ["create", "read", "update", "delete", "list"] }`,
+        `path "${projectSlug}/metadata/*" { capabilities = ["read", "list"] }`,
+        `path "${projectSlug}/delete/*" { capabilities = ["update"] }`,
+        `path "${projectSlug}/undelete/*" { capabilities = ["update"] }`,
+        `path "${projectSlug}/destroy/*" { capabilities = ["update"] }`,
+      ].join('\n'),
+    })
+  }
+
+  async createProjectDeveloperPolicy(name: string, projectSlug: string): Promise<void> {
+    await this.client.upsertSysPoliciesAcl(name, {
+      policy: [
+        `path "${projectSlug}/data/*" { capabilities = ["read"] }`,
+        `path "${projectSlug}/metadata/*" { capabilities = ["read", "list"] }`,
+      ].join('\n'),
+    })
+  }
+
+  async createProjectReadOnlyPolicy(name: string, projectSlug: string): Promise<void> {
+    await this.client.upsertSysPoliciesAcl(name, {
+      policy: [
+        `path "${projectSlug}/data/*" { capabilities = ["read"] }`,
+        `path "${projectSlug}/metadata/*" { capabilities = ["read", "list"] }`,
+      ].join('\n'),
+    })
+  }
+
+  async createProjectSecurityPolicy(name: string, projectSlug: string): Promise<void> {
+    await this.client.upsertSysPoliciesAcl(name, {
+      policy: `path "${projectSlug}/metadata/*" { capabilities = ["read", "list"] }`,
+    })
+  }
+
+  async createPlatformAdminPolicy(name: string): Promise<void> {
+    await this.client.upsertSysPoliciesAcl(name, {
+      policy: `path "sys/*" { capabilities = ["create", "read", "update", "delete", "list", "sudo"] }`,
+    })
+  }
+
+  async createPlatformReadOnlyPolicy(name: string): Promise<void> {
+    await this.client.upsertSysPoliciesAcl(name, {
+      policy: [
+        `path "sys/health" { capabilities = ["read"] }`,
+        `path "sys/mounts" { capabilities = ["read"] }`,
+        `path "sys/mounts/*" { capabilities = ["read"] }`,
+        `path "sys/auth" { capabilities = ["read"] }`,
+        `path "sys/auth/*" { capabilities = ["read"] }`,
+        `path "sys/policies/*" { capabilities = ["read", "list"] }`,
+      ].join('\n'),
+    })
+  }
+
+  async createPlatformSecurityPolicy(name: string): Promise<void> {
+    await this.client.upsertSysPoliciesAcl(name, {
+      policy: [
+        `path "sys/audit" { capabilities = ["read", "list"] }`,
+        `path "sys/audit/*" { capabilities = ["read", "list"] }`,
+        `path "sys/policies/*" { capabilities = ["read", "list"] }`,
+        `path "sys/auth" { capabilities = ["read"] }`,
+        `path "sys/auth/*" { capabilities = ["read"] }`,
+      ].join('\n'),
     })
   }
 
@@ -349,6 +541,50 @@ function generateTechReadOnlyPolicyName(project: ProjectWithDetails) {
 
 function generateAppAdminPolicyName(project: ProjectWithDetails) {
   return `app--${project.slug}--admin`
+}
+
+function generateProjectDevopsPolicyName(project: ProjectWithDetails) {
+  return `project--${project.slug}--devops`
+}
+
+function generateProjectDeveloperPolicyName(project: ProjectWithDetails) {
+  return `project--${project.slug}--developer`
+}
+
+function generateProjectReadOnlyPolicyName(project: ProjectWithDetails) {
+  return `project--${project.slug}--readonly`
+}
+
+function generateProjectSecurityPolicyName(project: ProjectWithDetails) {
+  return `project--${project.slug}--security`
+}
+
+function generateProjectAdminGroupName(projectSlug: string) {
+  return `project-${projectSlug}-admin`
+}
+
+function generateProjectDevopsGroupName(projectSlug: string) {
+  return `project-${projectSlug}-devops`
+}
+
+function generateProjectDeveloperGroupName(projectSlug: string) {
+  return `project-${projectSlug}-developer`
+}
+
+function generateProjectReadOnlyGroupName(projectSlug: string) {
+  return `project-${projectSlug}-readonly`
+}
+
+function generateProjectSecurityGroupName(projectSlug: string) {
+  return `project-${projectSlug}-security`
+}
+
+function generateProjectRoleGroupPaths(projectSlug: string, rawGroupPathSuffixes: string) {
+  return rawGroupPathSuffixes
+    .split(',')
+    .map(path => path.trim())
+    .filter(Boolean)
+    .map(path => `/${projectSlug}${path}`)
 }
 
 function generateZoneName(name: string) {
