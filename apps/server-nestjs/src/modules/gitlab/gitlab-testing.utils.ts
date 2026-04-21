@@ -1,6 +1,7 @@
 import type {
   AccessTokenExposedSchema,
   AccessTokenSchema,
+  CommitAction,
   ExpandedGroupSchema,
   ExpandedUserSchema,
   GroupSchema,
@@ -354,4 +355,13 @@ export function makeGitbeakerRequestError(params: { message?: string, status?: n
       response,
     },
   })
+}
+
+export function makeCommitAction(overrides: Partial<CommitAction> = {}) {
+  return {
+    action: 'create',
+    filePath: 'file.txt',
+    content: 'content',
+    ...overrides,
+  } satisfies CommitAction
 }
