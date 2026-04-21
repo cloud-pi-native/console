@@ -19,7 +19,7 @@ export default defineConfig({
 
   retries: 3,
 
-  // workers: 1, // Default is 50% logical cores
+  workers: process.env.CI ? 1 : undefined,// Default is 50% logical cores
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
