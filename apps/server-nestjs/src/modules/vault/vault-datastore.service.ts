@@ -7,6 +7,13 @@ export const projectSelect = {
   name: true,
   slug: true,
   description: true,
+  plugins: {
+    select: {
+      pluginName: true,
+      key: true,
+      value: true,
+    },
+  },
   environments: {
     select: {
       id: true,
@@ -48,6 +55,21 @@ export class VaultDatastoreService {
       where: { id },
       select: projectSelect,
     })
+  }
+
+  async getAdminPluginConfig(pluginName: string, key: string): Promise<string | null> {
+    const result = await this.prisma.adminPlugin.findUnique({
+      where: {
+        pluginName_key: {
+          pluginName,
+          key,
+        },
+      },
+      select: {
+        value: true,
+      },
+    })
+    return result?.value ?? null
   }
 
   async getAllZones(): Promise<ZoneWithDetails[]> {
