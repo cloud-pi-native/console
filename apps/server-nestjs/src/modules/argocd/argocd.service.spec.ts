@@ -139,6 +139,15 @@ describe('argoCDService', () => {
               valueFilePath: 'Project 1/cluster-1/dev/values.yaml',
               roGroup: '/project-project-1/console/dev/RO',
               rwGroup: '/project-project-1/console/dev/RW',
+              consoleAdminGroup: '/console-admin',
+              platformAdminGroup: '/platform-admin',
+              platformReadonlyGroup: '/platform-readonly',
+              platformSecurityGroup: '/platform-security',
+              projectAdminGroup: '/project-project-1-admin',
+              projectDevopsGroup: '/project-project-1-devops',
+              projectDevelopperGroup: '/project-project-1-developer',
+              projectSecurityGroup: '/project-project-1-security',
+              projectReadonlyGroup: '/project-project-1-readonly',
             },
             application: {
               quota: {
@@ -166,6 +175,11 @@ describe('argoCDService', () => {
                 },
               ],
             },
+            features: {
+              fineGrainedRoles: {
+                enabled: true,
+              },
+            },
           }),
           filePath: 'Project 1/cluster-1/dev/values.yaml',
         },
@@ -192,6 +206,15 @@ describe('argoCDService', () => {
               valueFilePath: 'Project 1/cluster-1/prod/values.yaml',
               roGroup: '/project-project-1/console/prod/RO',
               rwGroup: '/project-project-1/console/prod/RW',
+              consoleAdminGroup: '/console-admin',
+              platformAdminGroup: '/platform-admin',
+              platformReadonlyGroup: '/platform-readonly',
+              platformSecurityGroup: '/platform-security',
+              projectAdminGroup: '/project-project-1-admin',
+              projectDevopsGroup: '/project-project-1-devops',
+              projectDevelopperGroup: '/project-project-1-developer',
+              projectSecurityGroup: '/project-project-1-security',
+              projectReadonlyGroup: '/project-project-1-readonly',
             },
             application: {
               quota: {
@@ -218,6 +241,11 @@ describe('argoCDService', () => {
                   valueFiles: [],
                 },
               ],
+            },
+            features: {
+              fineGrainedRoles: {
+                enabled: true,
+              },
             },
           }),
           filePath: 'Project 1/cluster-1/prod/values.yaml',
@@ -294,5 +322,44 @@ describe('argoCDService', () => {
     )
 
     expect(gitlab.generateCreateOrUpdateAction).toHaveBeenCalledTimes(1)
+  })
+
+  it('should not commit when there is no diff', async () => {
+    const mockProject = {
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      slug: 'project-1',
+      name: 'Project 1',
+      environments: [
+        { id: '123e4567-e89b-12d3-a456-426614174001', name: 'dev', clusterId: 'c1', cpu: 1, gpu: 0, memory: 1, autosync: true },
+      ],
+      clusters: [
+        { id: 'c1', label: 'cluster-1', zone: { slug: 'zone-1' } },
+      ],
+      repositories: [
+        {
+          id: 'repo-1',
+          internalRepoName: 'infra-repo',
+          isInfra: true,
+          deployRevision: 'HEAD',
+          deployPath: '.',
+          helmValuesFiles: '',
+        },
+      ],
+      plugins: [],
+    } satisfies ProjectWithDetails
+
+    const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
+    datastore.getAllProjects.mockResolvedValue([mockProject])
+    gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
+    gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+    gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+    gitlab.listFiles.mockResolvedValue([])
+    vault.readProjectValues.mockResolvedValue({ secret: 'value' })
+
+    gitlab.generateCreateOrUpdateAction.mockResolvedValue(null as any)
+
+    await expect(service.handleCron()).resolves.not.toThrow()
+
+    expect(gitlab.maybeCreateCommit).not.toHaveBeenCalled()
   })
 })
