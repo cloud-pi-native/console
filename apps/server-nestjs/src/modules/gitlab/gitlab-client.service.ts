@@ -366,13 +366,13 @@ export class GitlabClientService {
     return this.client.GroupMembers.remove(group.id, userId)
   }
 
-  async getUserByEmail(email: string): Promise<UserSchema | null> {
+  async getUserByEmail(email: string) {
     const users = await this.client.Users.all({ search: email, orderBy: 'username' })
     if (users.length === 0) return null
     return users[0] as UserSchema
   }
 
-  async createUser(user: EditUserOptions): Promise<UserSchema> {
+  async createUser(user: EditUserOptions) {
     this.logger.log(`Creating a GitLab user (email=${user.email}, username=${user.username})`)
     return await this.client.Users.create({
       ...user,
@@ -383,15 +383,15 @@ export class GitlabClientService {
   async upsertUser(
     user: Omit<EditUserOptionsWith<'email' | 'username' | 'name'>, 'externUid' | 'provider'>,
     options: { cpnUserId: string },
-  ): Promise<UserSchema> {
-    const existing: UserSchema | null = await this.getUserByEmail(user.email)
+  ) {
+    const existing = await this.getUserByEmail(user.email)
 
     const editOptions: EditUserOptions = {
       ...user,
       externUid: user.email,
       provider: 'openid_connect',
     }
-    const gitlabUser: UserSchema = existing ?? await this.createUser(editOptions)
+    const gitlabUser = existing ?? await this.createUser(editOptions)
 
     if (existing) {
       const hasDiff = Object.entries(editOptions).some(([key, value]) => {
