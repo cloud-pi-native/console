@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common'
 
-import { ApplicationInitializationModule } from './application-initialization/application-initialization.module'
 import { CoreModule } from './core/core.module'
 import { InfrastructureModule } from './infrastructure/infrastructure.module'
 
@@ -9,7 +8,6 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module'
 // as many modules as possible !
 @Module({
   imports: [
-    ApplicationInitializationModule,
     CoreModule,
     InfrastructureModule,
   ],
