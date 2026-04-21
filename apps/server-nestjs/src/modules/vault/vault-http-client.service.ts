@@ -90,6 +90,10 @@ export class VaultHttpClientService {
     return baseUrl
   }
 
+  private get apiBaseUrl() {
+    return new URL('v1', this.baseUrl).toString()
+  }
+
   private get token() {
     if (!this.config.vaultToken) {
       this.logger.warn('Vault token is not configured (VAULT_TOKEN is missing)')
@@ -99,7 +103,7 @@ export class VaultHttpClientService {
   }
 
   private createRequest(path: string, method: string, body?: unknown): Request {
-    const url = new URL(path, this.baseUrl).toString()
+    const url = new URL(path, this.apiBaseUrl).toString()
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'X-Vault-Token': this.token,
