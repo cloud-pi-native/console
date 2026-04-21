@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { stringify } from 'yaml'
 import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
-import { makeProjectSchema } from '../gitlab/gitlab-testing.utils'
+import { makeCommitAction, makeProjectSchema, makeRepositoryTreeSchema } from '../gitlab/gitlab-testing.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { ArgoCDDatastoreService } from './argocd-datastore.service'
 import { ArgoCDService } from './argocd.service'
@@ -105,7 +105,7 @@ describe('argoCDService', () => {
     gitlab.listFiles.mockResolvedValue([])
     vault.readProjectValues.mockResolvedValue({ secret: 'value' })
     gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
-      return { action: 'create', filePath, content } as any
+      return makeCommitAction({ filePath, content })
     })
 
     await expect(service.handleCron()).resolves.not.toThrow()
@@ -263,12 +263,16 @@ describe('argoCDService', () => {
     gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
     gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([
-      { name: 'values.yaml', path: 'Project 1/cluster-1/dev/values.yaml' },
-      { name: 'values.yaml', path: 'Project 1/cluster-1/prod/values.yaml' },
-    ] as any)
+      makeRepositoryTreeSchema(
+        { name: 'values.yaml', path: 'Project 1/cluster-1/dev/values.yaml' },
+      ),
+      makeRepositoryTreeSchema(
+        { name: 'values.yaml', path: 'Project 1/cluster-1/prod/values.yaml' },
+      ),
+    ])
     vault.readProjectValues.mockResolvedValue({ secret: 'value' })
     gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
-      return { action: 'create', filePath, content } as any
+      return makeCommitAction({ filePath, content })
     })
 
     await expect(service.handleCron()).resolves.not.toThrow()
