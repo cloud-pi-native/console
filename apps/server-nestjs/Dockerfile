@@ -30,12 +30,23 @@ COPY --chown=node:root plugins/nexus/package.json                ./plugins/nexus
 COPY --chown=node:root plugins/sonarqube/package.json            ./plugins/sonarqube/package.json
 COPY --chown=node:root plugins/vault/package.json                ./plugins/vault/package.json
 
+# Installer toutes les dépendances afin de permettre le build des libs partagées
 RUN pnpm install --frozen-lockfile
 
 # Copier les sources des packages workspace
 COPY --chown=node:root plugins/  ./plugins/
 COPY --chown=node:root packages/ ./packages/
 COPY --chown=node:root apps/server-nestjs/ ./apps/server-nestjs/
+
+# Build des libs partagées (génère dist/ et types/)
+RUN pnpm --filter @cpn-console/logger run build
+RUN pnpm --filter @cpn-console/shared run build
+
+# Build hooks (génère dist/ et types/ nécessaires aux imports)
+RUN pnpm --filter @cpn-console/hooks run build
+
+# Réinjecter les libs buildées dans node_modules (injectWorkspacePackages copie au moment de l'install)
+RUN pnpm --filter @cpn-console/server-nestjs install --frozen-lockfile
 
 # Générer le client Prisma (schéma multi-fichiers : pointer sur le dossier)
 RUN pnpm --filter @cpn-console/server-nestjs exec prisma generate \
@@ -60,7 +71,7 @@ RUN pnpm --filter @cpn-console/server-nestjs install --frozen-lockfile
 # Build server-nestjs
 RUN pnpm --filter @cpn-console/server-nestjs run build
 
-# Export @cpn-console/server to target build directory
+# Export @cpn-console/server-nestjs to target build directory
 RUN pnpm --filter @cpn-console/server-nestjs --prod deploy build
 
 # Prod stage -----------------------------------------------------------------------
