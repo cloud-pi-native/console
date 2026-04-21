@@ -85,8 +85,8 @@ describeWithKeycloak('KeycloakController (e2e)', () => {
     try {
       // Clean Keycloak
       const group = await keycloak.getGroupByPath(`/${testProjectSlug}`)
-      if (group) {
-        await keycloak.deleteGroup(group.id!)
+      if (group?.id) {
+        await keycloak.deleteGroup(group.id)
       }
 
       // Clean owner user
