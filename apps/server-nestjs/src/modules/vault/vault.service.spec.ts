@@ -86,7 +86,7 @@ describe('vaultService', () => {
     ] satisfies ZoneWithDetails[]
 
     datastore.getAllProjects.mockResolvedValue(mockProjects)
-    datastore.getAllZones.mockResolvedValue(mockZones as any)
+    datastore.getAllZones.mockResolvedValue(mockZones)
 
     await service.handleCron()
 
