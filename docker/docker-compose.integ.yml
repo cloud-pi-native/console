@@ -15,25 +15,6 @@ services:
       - dso-network
     attach: false
 
-  pgadmin:
-    restart: unless-stopped
-    image: docker.io/dpage/pgadmin4:latest
-    container_name: dso-console_pgadmin
-    depends_on:
-      postgres:
-        condition: service_started
-    volumes:
-      - ../pgadmin/servers-docker.json:/pgadmin4/servers.json
-      - dso-pgadmin-data-integ:/var/lib/pgadmin
-    ports:
-      - 8081:80
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@dso.fr
-      PGADMIN_DEFAULT_PASSWORD: admin
-    networks:
-      - dso-network
-    attach: false
-
   server:
     restart: unless-stopped
     build:
@@ -94,7 +75,7 @@ services:
       target: dev
     image: dso-console/server-nestjs:dev
     container_name: dso-console_server-nestjs
-    command: [start:dev]
+    command: [dev]
     depends_on:
       postgres:
         condition: service_started
@@ -201,5 +182,4 @@ networks:
     driver: bridge
 
 volumes:
-  dso-pgadmin-data-integ:
   dso-postgres-data-integ:
