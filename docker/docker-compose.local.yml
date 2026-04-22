@@ -77,25 +77,6 @@ services:
     networks:
       - dso-network
 
-  pgadmin:
-    restart: unless-stopped
-    image: docker.io/dpage/pgadmin4:latest
-    container_name: dso-console_pgadmin
-    depends_on:
-      postgres:
-        condition: service_started
-    volumes:
-      - ../pgadmin/servers-docker.json:/pgadmin4/servers.json
-      - dso-pgadmin-data-local:/var/lib/pgadmin
-    ports:
-      - 8081:80
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@dso.fr
-      PGADMIN_DEFAULT_PASSWORD: admin
-    networks:
-      - dso-network
-    attach: false
-
   nginx-strangler:
     # En mode local (pnpm dev), server et server-nestjs tournent nativement sur la machine.
     # Le nginx-strangler reste en Docker et atteint les processes natifs via host.docker.internal.
@@ -142,5 +123,4 @@ networks:
 volumes:
   dso-keycloak-dsfr-theme:
   dso-keycloak-data-local:
-  dso-pgadmin-data-local:
   dso-postgres-data-local:
