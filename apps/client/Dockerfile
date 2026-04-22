@@ -37,11 +37,23 @@ RUN pnpm --filter @cpn-console/client run build
 
 
 # Prod stage -----------------------------------------------------------------------
-FROM docker.io/bitnamilegacy/nginx:1.29.1 AS prod
+FROM nginx:1.27-alpine AS prod
 
-USER 0
-COPY --chown=1001:0 --chmod=770 --from=build /app/apps/client/dist /opt/bitnami/nginx/html/
-COPY --chown=1001:0 --chmod=660 ./apps/client/nginx/default.conf /opt/bitnami/nginx/conf/server_blocks/default.conf
-COPY --chown=1001:0 ./apps/client/nginx/entrypoint.sh /docker-entrypoint-initdb.d/load-env.sh
-USER 1001
+COPY --from=build /app/apps/client/dist /etc/nginx/html/
+COPY ./apps/client/nginx/default.conf   /etc/nginx/conf.d/default.conf
+COPY ./apps/client/nginx/entrypoint.sh  /entrypoint.sh
+
+RUN chown -R nginx:nginx \
+      /entrypoint.sh \
+      /etc/nginx/nginx.conf \
+      /etc/nginx/conf.d \
+      /etc/nginx/mime.types \
+      /var/cache/nginx \
+      /var/log/nginx \
+    && touch /var/run/nginx.pid \
+    && chown nginx:nginx /var/run/nginx.pid
+
+USER nginx
+ENTRYPOINT [ "/entrypoint.sh" ]
+
 EXPOSE 8080

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-ROOT_DIR=/opt/bitnami/nginx/html
+ROOT_DIR=/etc/nginx/html
 
 populate () {
   KEY=$(echo "dso-$1" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
