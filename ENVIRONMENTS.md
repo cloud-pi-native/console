@@ -87,7 +87,7 @@ graph LR
   style NAV_L fill:#fff,stroke:#333
 ```
 
-Docker Compose utilisé : [`docker/docker-compose.local.yml`](docker/docker-compose.local.yml) (infrastructure uniquement : Keycloak, PostgreSQL, pgAdmin, OpenCDS mock, **nginx-strangler, et Jaeger**)
+Docker Compose utilisé : [`docker/docker-compose.local.yml`](docker/docker-compose.local.yml) (infrastructure uniquement : Keycloak, PostgreSQL, OpenCDS mock, **nginx-strangler, et Jaeger**)
 
 Fichiers utilisés :
 
@@ -100,12 +100,12 @@ Les valeurs par défaut, disponibles dans les fichiers `.env-example`, sont suff
 **Commandes de lancement :**
 
 ```bash
-# Lance l'infrastructure (Keycloak, PostgreSQL, pgAdmin, OpenCDS mock, nginx-strangler, Jaeger)
+# Lance l'infrastructure (Keycloak, PostgreSQL, OpenCDS mock, nginx-strangler, Jaeger)
 pnpm dev
 
 # Puis dans d'autres terminaux, lancer les serveurs et le client manuellement :
 pnpm --filter server run dev
-pnpm --filter server-nestjs run start:dev  # nouveau backend NestJS
+pnpm --filter server-nestjs run dev  # nouveau backend NestJS
 pnpm --filter client run dev
 ```
 
@@ -137,7 +137,7 @@ Dans `apps/server-nestjs`, l'instrumentation OpenTelemetry est initialisée au d
 Pour vérifier rapidement :
 
 1. Démarrer l'infra : `pnpm dev` (Jaeger inclus).
-2. Démarrer `server-nestjs` : `pnpm --filter server-nestjs run start:dev`.
+2. Démarrer `server-nestjs` : `pnpm --filter server-nestjs run dev`.
 3. Exécuter une requête sur une route backend (depuis le client ou un `curl`).
 4. Ouvrir http://localhost:16686 et chercher le service `cloud-pi-native-console`.
 
@@ -154,7 +154,7 @@ Fichiers utilisés :
 - `apps/server-nestjs/.env`
 - `apps/server-nestjs/.env.docker`
 
-Cette configuration est déjà plus intéressante, car elle s'appuie sur les conteneurs définis dans [ce docker-compose](docker/docker-compose.dev.yml), qui lance notamment une base de données PostreSQL (ainsi qu'un `pgadmin`), et un serveur Keycloak préchargé avec un royaume qui contient un jeu de données. Le docker-compose contient des instructions `develop` qui permettent soit de synchroniser certains fichiers, soit de carrément reconstruire l'image et de relancer le service concerné. De cette manière vous pouvez développer en laissant les conteneurs tourner. C'est un peu moins performant qu'un travail totalement en local, mais ça a le mérite d'être plus proche du déploiement cible.
+Cette configuration est déjà plus intéressante, car elle s'appuie sur les conteneurs définis dans [ce docker-compose](docker/docker-compose.dev.yml), qui lance notamment une base de données PostreSQL et un serveur Keycloak préchargé avec un royaume qui contient un jeu de données. Le docker-compose contient des instructions `develop` qui permettent soit de synchroniser certains fichiers, soit de carrément reconstruire l'image et de relancer le service concerné. De cette manière vous pouvez développer en laissant les conteneurs tourner. C'est un peu moins performant qu'un travail totalement en local, mais ça a le mérite d'être plus proche du déploiement cible.
 
 Le `nginx-strangler` et `server-nestjs` sont inclus dans ce docker-compose et démarrent automatiquement. Le `client` pointe vers `nginx-strangler` — le routage API est donc toujours actif, même si aucune route n'est encore basculée vers NestJS (tout passe par `server` en fallback).
 
@@ -162,7 +162,7 @@ Le `nginx-strangler` et `server-nestjs` sont inclus dans ce docker-compose et d�
 
 ```bash
 # Lance l'ensemble des conteneurs (client, server, server-nestjs, nginx-strangler,
-# keycloak, postgres, pgadmin, opencds mock) avec Docker Compose Watch
+# keycloak, postgres, opencds mock) avec Docker Compose Watch
 pnpm docker:dev
 ```
 
@@ -235,10 +235,10 @@ Le `nginx-strangler` et `server-nestjs` sont également inclus dans ce docker-co
 # Option 1 : Tout conteneurisé, branché sur l'environnement d'intégration
 pnpm docker:integ
 
-# Option 2 : Seulement l'infra en Docker (postgres, pgadmin), server et client en local avec mode integ
+# Option 2 : Seulement l'infra en Docker postgres, server et client en local avec mode integ
 pnpm integ
 # Puis dans d'autres terminaux :
 pnpm --filter server run dev
-pnpm --filter server-nestjs run start:dev
+pnpm --filter server-nestjs run dev
 pnpm --filter client run dev
 ```
