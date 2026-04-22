@@ -50,6 +50,7 @@ function createNexusControllerServiceTestingModule() {
         provide: NexusDatastoreService,
         useValue: {
           getAllProjects: vi.fn(),
+          getAdminPluginConfig: vi.fn(),
         } satisfies Partial<NexusDatastoreService>,
       },
       {
@@ -83,6 +84,9 @@ describe('nexusService', () => {
     nexusDatastore = moduleRef.get(NexusDatastoreService)
     vault = moduleRef.get(VaultClientService)
 
+    nexusDatastore.getAllProjects.mockResolvedValue([])
+    nexusDatastore.getAdminPluginConfig.mockResolvedValue(null)
+
     client.getRepositoriesMavenHosted.mockResolvedValue(null)
     client.getRepositoriesMavenGroup.mockResolvedValue(null)
     client.getRepositoriesNpmHosted.mockResolvedValue(null)
@@ -100,7 +104,7 @@ describe('nexusService', () => {
   it('handleUpsert should reconcile based on computed flags', async () => {
     const project = makeProjectWithDetails({
       slug: 'project-1',
-      owner: { email: 'owner@example.com' },
+      owner: { email: 'owner@example.com', firstName: 'Owner', lastName: 'User' },
       plugins: [
         { key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED },
         { key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: 'disabled' },
