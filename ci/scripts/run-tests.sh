@@ -13,7 +13,6 @@ PROJECT_DIR="$(git rev-parse --show-toplevel)"
 
 # Get versions
 NODE_VERSION="$(node --version)"
-NPM_VERSION="$(npm --version)"
 DOCKER_VERSION="$(docker --version)"
 DOCKER_BUILDX_VERSION="$(docker buildx version)"
 
@@ -95,7 +94,6 @@ checkBuildxPlugin () {
 # Settings
 printf "\nScript settings:
   -> node version: ${NODE_VERSION}
-  -> npm version: ${NPM_VERSION}
   -> docker version: ${DOCKER_VERSION}
   -> docker buildx version: ${DOCKER_BUILDX_VERSION}
   -> run unit tests: ${RUN_UNIT_TESTS}
@@ -107,13 +105,13 @@ cd "$PROJECT_DIR"
 
 # Run lint
 if [ "$RUN_LINT" == "true" ]; then
-  npm run lint
+    pnpm run lint
 fi
 
 
 # Run unit tests
 if [ "$RUN_UNIT_TESTS" == "true" ]; then
-  npm run test:cov
+    pnpm run test:cov
 fi
 
 # Run e2e tests
@@ -123,8 +121,8 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   printf "\n${red}${i}.${no_color} Launch e2e tests\n"
   i=$(($i + 1))
 
-  npm --prefix $PROJECT_DIR/packages/shared run build
-  npm --prefix $PROJECT_DIR/packages/test-utils run build
+    pnpm --prefix $PROJECT_DIR/packages/shared run build
+    pnpm --prefix $PROJECT_DIR/packages/test-utils run build
 
   if [[ -n "$TAG" ]]; then
     docker pull ghcr.io/cloud-pi-native/console/server:$TAG && docker tag ghcr.io/cloud-pi-native/console/server:$TAG dso-console/server:ci
@@ -133,10 +131,10 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
     docker pull ghcr.io/cloud-pi-native/console/nginx-strangler:$TAG && docker tag ghcr.io/cloud-pi-native/console/client:$TAG dso-console/nginx-strangler:ci
   fi
 
-  npm run docker:e2e-ci
+    pnpm run docker:e2e-ci
 
   printf "\n${red}${i}.${no_color} Remove resources\n"
   i=$(($i + 1))
 
-  npm run docker:e2e-ci:delete
+    pnpm run docker:e2e-ci:delete
 fi
