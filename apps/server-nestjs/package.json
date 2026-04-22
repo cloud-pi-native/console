@@ -11,21 +11,19 @@
   },
   "scripts": {
     "build": "nest build",
+    "build:clean": "rimraf ./dist ./tsconfig.tsbuildinfo",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev --name dso",
     "db:reset": "prisma migrate reset",
-    "format": "eslint ./ --fix",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "start": "nest start",
-    "start:debug": "nest start --debug --watch",
-    "start:dev": "nest start --watch",
-    "start:prod": "node dist/main",
+    "debug": "nest start --debug --watch",
+    "dev": "nest start --watch",
+    "format": "eslint . --fix",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "start": "node dist/main",
     "pretest": "pnpm run db:generate",
     "test": "vitest run",
-    "test:watch": "vitest",
     "pretest:cov": "pnpm run db:generate",
-    "test:cov": "vitest run --coverage",
-    "test:debug": "vitest --inspect"
+    "test:cov": "vitest run --coverage"
   },
   "dependencies": {
     "@cpn-console/argocd-plugin": "workspace:^",

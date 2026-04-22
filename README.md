@@ -131,7 +131,7 @@ L'application peut se lancer de plusieurs manières, à savoir :
 __Déploiement local du client et du serveur de la console, le reste dans des conteneurs :__
 
 ```shell
-# Lancer keycloak, postgres et pgadmin dans des conteneurs
+# Lancer keycloak et postgres dans des conteneurs
 pnpm run dev
 
 # Lancer le serveur dans un shell (la commande va afficher les logs)
@@ -142,10 +142,10 @@ pnpm --filter @cpn-console/client run dev
 
 # …une fois que vous terminé d'utiliser l'application:
 
-# Supprimer les conteneurs keycloak, postgres et pgadmin
+# Supprimer les conteneurs keycloak et postgres
 pnpm run dev:clean
 
-# Supprimer les conteneurs keycloak, postgres et pgadmin (supprime les volumes docker)
+# Supprimer les conteneurs keycloak et postgres (supprime les volumes docker)
 pnpm run dev:delete
 ```
 
@@ -171,7 +171,7 @@ L'application peut se lancer de plusieurs manières, à savoir :
 __Déploiement local du client et du serveur de la console, le reste dans des conteneurs :__
 
 ```shell
-# Lancer postgres et pgadmin dans des conteneurs
+# Lancer postgres dans des conteneurs
 # (le keycloak utilisé devra être configuré dans les .env.integ)
 pnpm run integ
 
@@ -181,10 +181,10 @@ pnpm --filter @cpn-console/server run integ
 # Lancer le client
 pnpm --filter @cpn-console/client run integ
 
-# Supprimer les conteneurs postgres et pgadmin
+# Supprimer les conteneurs postgres
 pnpm run integ:clean
 
-# Supprimer les conteneurs postgres et pgadmin (supprime les volumes docker)
+# Supprimer les conteneurs postgres (supprime les volumes docker)
 pnpm run integ:delete
 ```
 
@@ -233,7 +233,6 @@ Les services sont disponibles via les ports suivants :
 | ---------------------------------------------- | ----------------------- |
 | Interface graphique *- (client)*               | <http://localhost:8080> |
 | Serveur *- (api)*                              | <http://localhost:4000> |
-| Interface d'administration de base de données  | <http://localhost:8081> |
 | Interface d'administration du serveur keycloak | <http://localhost:8090> |
 
 *__Notes:__ ⚠ Il est possible que le navigateur utilisé (particulièrement Brave ou Firefox) bloque les cookies utilisés entre le frontend et keycloak, il est nécessaire de désactiver les protections de ce type dans votre navigateur (ex: Brave Shield).*
@@ -246,8 +245,7 @@ Les comptes utilisés pendant le développement sont les suivants :
 | ------------------ | ----------------- | ------------ |
 | Keycloak *(admin)* | `admin`           | `admin`      |
 | Keycloak *(user)*  | `test`            | `test`       |
-| PgAdmin            | `admin@dso.fr`    | `admin`      |
-| Postgres           | `admin@dso.fr`    | `admin`      |
+| Postgres           | `admin`           | `admin`      |
 
 > La liste complète des comptes Keycloak pré-créés est disponible [ici](./keycloak/realms/realm-dev.json).
 

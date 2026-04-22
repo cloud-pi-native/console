@@ -19,8 +19,8 @@
     "build": "tsc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
     "dev": "nodemon --watch src --ext .ts --exec 'pnpm run build'",
-    "format": "eslint ./ --fix",
-    "lint": "eslint ./"
+    "format": "eslint . --fix",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@cpn-console/gitlab-plugin": "workspace:^",
