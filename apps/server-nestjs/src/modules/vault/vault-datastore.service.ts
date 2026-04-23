@@ -7,13 +7,6 @@ export const projectSelect = {
   name: true,
   slug: true,
   description: true,
-  plugins: {
-    select: {
-      pluginName: true,
-      key: true,
-      value: true,
-    },
-  },
   environments: {
     select: {
       id: true,
