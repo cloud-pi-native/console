@@ -1,9 +1,14 @@
-import type { TestingModule } from '@nestjs/testing'
 import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { http, HttpResponse } from 'msw'
+import { setupServer } from 'msw/node'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
 import { NexusClientService } from './nexus-client.service'
 import { NexusHttpClientService } from './nexus-http-client.service'
+
+const nexusUrl = 'https://nexus.internal'
+
+const server = setupServer()
 
 function createNexusServiceTestingModule() {
   return Test.createTestingModule({
@@ -14,6 +19,9 @@ function createNexusServiceTestingModule() {
         provide: ConfigurationService,
         useValue: {
           nexusSecretExposedUrl: 'https://nexus.example',
+          nexusInternalUrl: nexusUrl,
+          nexusAdmin: 'admin',
+          nexusAdminPassword: 'password',
           projectRootDir: 'forge',
         } satisfies Partial<ConfigurationService>,
       },
@@ -23,13 +31,46 @@ function createNexusServiceTestingModule() {
 
 describe('nexusClientService', () => {
   let service: NexusClientService
+  const basicAuth = `Basic ${Buffer.from('admin:password', 'utf8').toString('base64')}`
+
+  beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 
   beforeEach(async () => {
-    const module: TestingModule = await createNexusServiceTestingModule().compile()
+    const module = await createNexusServiceTestingModule().compile()
     service = module.get(NexusClientService)
   })
 
+  afterEach(() => server.resetHandlers())
+  afterAll(() => server.close())
+
   it('should be defined', () => {
     expect(service).toBeDefined()
+  })
+
+  it('should return null on 404 (getRepositoriesMavenHosted)', async () => {
+    server.use(
+      http.get(`${nexusUrl}/service/rest/v1/repositories/maven/hosted/:name`, ({ request }) => {
+        expect(request.headers.get('authorization')).toBe(basicAuth)
+        return HttpResponse.json({}, { status: 404 })
+      }),
+    )
+
+    await expect(service.getRepositoriesMavenHosted('missing')).resolves.toBeNull()
+  })
+
+  it('should send basic auth and plain text body on change-password', async () => {
+    server.use(
+      http.put(`${nexusUrl}/service/rest/v1/security/users/:userId/change-password`, async ({ request, params }) => {
+        expect(request.method).toBe('PUT')
+        expect(request.url).toBe(`${nexusUrl}/service/rest/v1/security/users/u1/change-password`)
+        expect(params.userId).toBe('u1')
+        expect(request.headers.get('authorization')).toBe(basicAuth)
+        expect(request.headers.get('content-type')).toContain('text/plain')
+        expect(await request.text()).toBe('pw123')
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+
+    await service.updateSecurityUsersChangePassword('u1', 'pw123')
   })
 })
