@@ -1,4 +1,5 @@
 import type { VaultMetadata, VaultSecret } from '../vault/vault-client.service.js'
+import type { ProjectWithDetails } from './registry-datastore.service'
 import type { RegistryResponse } from './registry-http-client.service.js'
 
 export function makeOkResponse<T>(data: T): RegistryResponse<T> {
@@ -22,4 +23,11 @@ export function makeVaultSecret<T>(data: T): VaultSecret<T> {
     version: 1,
   }
   return { data, metadata }
+}
+
+export function makeProjectWithDetails(input: { slug: string, plugins?: Array<{ key: string, value: string }> }) {
+  return {
+    slug: input.slug,
+    plugins: input.plugins ?? [],
+  } as unknown as ProjectWithDetails
 }
