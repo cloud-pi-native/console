@@ -9,7 +9,14 @@ import { VaultError } from '../vault/vault-http-client.service.js'
 import { NexusClientService } from './nexus-client.service'
 import { NexusDatastoreService } from './nexus-datastore.service'
 import { makeProjectWithDetails } from './nexus-testing.utils'
-import { NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO } from './nexus.constants'
+import {
+  NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO,
+  NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO,
+  PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY,
+  PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY,
+  PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
+  PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
+} from './nexus.constants'
 import { NexusService } from './nexus.service'
 
 function createNexusControllerServiceTestingModule() {
@@ -50,6 +57,7 @@ function createNexusControllerServiceTestingModule() {
         provide: NexusDatastoreService,
         useValue: {
           getAllProjects: vi.fn(),
+          getAdminPluginConfig: vi.fn(),
         } satisfies Partial<NexusDatastoreService>,
       },
       {
@@ -83,6 +91,9 @@ describe('nexusService', () => {
     nexusDatastore = moduleRef.get(NexusDatastoreService)
     vault = moduleRef.get(VaultClientService)
 
+    nexusDatastore.getAllProjects.mockResolvedValue([])
+    nexusDatastore.getAdminPluginConfig.mockResolvedValue(null)
+
     client.getRepositoriesMavenHosted.mockResolvedValue(null)
     client.getRepositoriesMavenGroup.mockResolvedValue(null)
     client.getRepositoriesNpmHosted.mockResolvedValue(null)
@@ -100,7 +111,7 @@ describe('nexusService', () => {
   it('handleUpsert should reconcile based on computed flags', async () => {
     const project = makeProjectWithDetails({
       slug: 'project-1',
-      owner: { email: 'owner@example.com' },
+      owner: { email: 'owner@example.com', firstName: 'Owner', lastName: 'User' },
       plugins: [
         { key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED },
         { key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: 'disabled' },
@@ -139,5 +150,56 @@ describe('nexusService', () => {
     await service.handleCron()
 
     expect(client.createSecurityUsers).toHaveBeenCalledTimes(2)
+  })
+
+  it('reuses existing vault password and does not rotate Nexus user password', async () => {
+    const project = makeProjectWithDetails({
+      slug: 'project-1',
+      owner: { email: 'owner@example.com', firstName: 'Owner', lastName: 'User' },
+      plugins: [{ key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED }],
+    })
+
+    nexusDatastore.getAdminPluginConfig.mockImplementation(async (_plugin, key) => {
+      if (key === PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY) return ' '
+      if (key === PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY) return ' '
+      return null
+    })
+
+    vault.read.mockResolvedValue({ data: { NEXUS_PASSWORD: 'existing' } } as any)
+    client.getSecurityUsers.mockResolvedValue([{ userId: 'project-1' } as any])
+
+    await service.handleUpsert(project)
+
+    expect(client.updateSecurityUsersChangePassword).not.toHaveBeenCalled()
+    expect(client.createSecurityUsers).not.toHaveBeenCalled()
+    expect(vault.write).toHaveBeenCalledWith(expect.objectContaining({
+      NEXUS_USERNAME: 'project-1',
+      NEXUS_PASSWORD: 'existing',
+    }), 'forge/project-1/tech/NEXUS')
+  })
+
+  it('dedupes project group roles by role id and keeps the highest privileges', async () => {
+    const project = makeProjectWithDetails({
+      slug: 'project-1',
+      owner: { email: 'owner@example.com', firstName: 'Owner', lastName: 'User' },
+      plugins: [
+        { key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED },
+        { key: PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY, value: '/console/devops' },
+        { key: PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY, value: '/console/devops' },
+      ],
+    })
+
+    nexusDatastore.getAdminPluginConfig.mockImplementation(async (_plugin, key) => {
+      if (key === PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY) return ' '
+      if (key === PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY) return ' '
+      return null
+    })
+
+    await service.handleUpsert(project)
+
+    expect(client.createSecurityRoles).toHaveBeenCalledWith(expect.objectContaining({
+      id: 'project-1-console-devops',
+      privileges: expect.arrayContaining(['project-1-privilege-group']),
+    }))
   })
 })
