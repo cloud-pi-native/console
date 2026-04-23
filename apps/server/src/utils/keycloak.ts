@@ -26,7 +26,7 @@ export const keycloakConf = {
     systemContract.getVersion.path,
     systemContract.getHealth.path,
     serviceContract.getServiceHealth.path,
-    `${swaggerUiPath}/**`,
+    `${swaggerUiPath}-server/**`,
   ],
   bypassFn,
 } as const satisfies KeycloakOptions

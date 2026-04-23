@@ -258,8 +258,15 @@ export const routes: Readonly<RouteRecordRaw[]> = [
     ],
   },
   {
-    path: swaggerUiPath,
-    name: 'Swagger',
+    path: `${swaggerUiPath}-server`,
+    name: 'Swagger-server',
+    // no component, swagger plugin
+    components: {},
+    strict: false,
+  },
+  {
+    path: `${swaggerUiPath}-server-nestjs`,
+    name: 'Swagger-server-nestjs',
     // no component, swagger plugin
     components: {},
     strict: false,
@@ -282,7 +289,7 @@ export function createAppRouter(base?: string) {
     document.title = `${specificTitle}${MAIN_TITLE}`
   })
   router.beforeEach(async (to, _from, next) => {
-    const validPath = new Set(['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout', 'Swagger'])
+    const validPath = new Set(['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout', 'Swagger-server', 'Swagger-server-nestjs'])
     const userStore = useUserStore()
     const systemStore = useSystemSettingsStore()
     await userStore.setIsLoggedIn()
