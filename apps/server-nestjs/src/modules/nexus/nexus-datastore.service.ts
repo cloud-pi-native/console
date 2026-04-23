@@ -50,4 +50,19 @@ export class NexusDatastoreService {
       select: projectSelect,
     })
   }
+
+  async getAdminPluginConfig(pluginName: string, key: string): Promise<string | null> {
+    const result = await this.prisma.adminPlugin.findUnique({
+      where: {
+        pluginName_key: {
+          pluginName,
+          key,
+        },
+      },
+      select: {
+        value: true,
+      },
+    })
+    return result?.value ?? null
+  }
 }
