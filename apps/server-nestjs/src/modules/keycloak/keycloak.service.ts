@@ -1,6 +1,6 @@
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
 import type { GroupRepresentationWith } from './keycloak-client.service'
-import type { ProjectWithDetails } from './keycloak-datastore.service'
+import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
 import { getPermsByUserRoles, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
@@ -48,12 +48,23 @@ export class KeycloakService {
   async handleCron() {
     const span = trace.getActiveSpan()
     this.logger.log('Starting periodic Keycloak reconciliation')
-    const projects = await this.keycloakDatastore.getAllProjects()
-    span?.setAttribute('keycloak.projects.count', projects.length)
-    this.logger.debug(`Reconciling Keycloak projects (count=${projects.length})`)
-    await this.ensureProjectGroups(projects)
+    const [projects, adminRoles, users] = await Promise.all([
+      this.keycloakDatastore.getAllProjects(),
+      this.keycloakDatastore.getAllAdminRoles(),
+      this.keycloakDatastore.getAllUsersWithAdminRoleIds(),
+    ])
+    span?.setAttributes({
+      'keycloak.projects.count': projects.length,
+      'keycloak.admin_roles.count': adminRoles.length,
+      'keycloak.users.count': users.length,
+    })
+    this.logger.debug(`Reconciling Keycloak state (projects=${projects.length}, adminRoles=${adminRoles.length}, users=${users.length})`)
+    await Promise.all([
+      this.ensureAdminRoleGroups(adminRoles, users),
+      this.ensureProjectGroups(projects),
+    ])
     await this.purgeOrphanGroups(projects)
-    this.logger.log(`Keycloak reconciliation completed (${projects.length})`)
+    this.logger.log(`Keycloak reconciliation completed (projects=${projects.length}, adminRoles=${adminRoles.length})`)
   }
 
   @StartActiveSpan()
@@ -103,6 +114,70 @@ export class KeycloakService {
       this.ensureEnvironmentGroups(project, consoleGroup),
       this.purgeOrphanEnvironmentGroups(project, consoleGroup),
     ])
+  }
+
+  @StartActiveSpan()
+  private async ensureAdminRoleGroups(
+    adminRoles: AdminRoleWithDetails[],
+    users: UserWithAdminRoles[],
+  ) {
+    const span = trace.getActiveSpan()
+    span?.setAttributes({
+      'keycloak.admin_roles.count': adminRoles.length,
+      'keycloak.users.count': users.length,
+    })
+    const rolesWithOidcGroup = adminRoles.filter(r => isNonEmptyGroupPath(r.oidcGroup))
+    span?.setAttribute('keycloak.admin_roles.oidc_group.count', rolesWithOidcGroup.length)
+    await Promise.all(rolesWithOidcGroup.map(role => this.ensureAdminRoleGroup(role, users)))
+  }
+
+  @StartActiveSpan()
+  private async ensureAdminRoleGroup(
+    role: AdminRoleWithDetails,
+    users: UserWithAdminRoles[],
+  ) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('admin_role.id', role.id)
+    span?.setAttribute('admin_role.oidc_group.present', isNonEmptyGroupPath(role.oidcGroup))
+    const roleGroupPath = normalizeGroupPath(role.oidcGroup)
+    if (!roleGroupPath) return
+
+    span?.setAttribute('keycloak.group.path', roleGroupPath)
+    const roleGroup = z.object({
+      id: z.string(),
+      name: z.string(),
+    }).parse(await this.keycloak.getOrCreateGroupByPath(roleGroupPath))
+    span?.setAttribute('keycloak.group.id', roleGroup.id)
+
+    const groupMembers = await this.keycloak.getGroupMembers(roleGroup.id)
+
+    const desiredUserIds = new Set(
+      users
+        .filter(u => u.adminRoleIds.includes(role.id))
+        .map(u => u.id),
+    )
+    span?.setAttribute('keycloak.group.members.desired', desiredUserIds.size)
+
+    let addedCount = 0
+    let removedCount = 0
+
+    await Promise.all([
+      ...Array.from(desiredUserIds, async (userId) => {
+        if (!groupMembers.some(m => m.id === userId)) {
+          addedCount++
+          await this.maybeAddUserToGroup(userId, roleGroup.id, roleGroup.name)
+        }
+      }),
+      ...groupMembers.map(async (member) => {
+        if (member.id && !desiredUserIds.has(member.id)) {
+          removedCount++
+          await this.maybeRemoveUserFromGroup(member.id, roleGroup.id, roleGroup.name)
+        }
+      }),
+    ])
+
+    span?.setAttribute('keycloak.group.members.added', addedCount)
+    span?.setAttribute('keycloak.group.members.removed', removedCount)
   }
 
   @StartActiveSpan()
@@ -218,10 +293,10 @@ export class KeycloakService {
       'project.roles.count': project.roles.length,
     })
 
-    const rolesWithOidcGroup = project.roles.filter(r => !!r.oidcGroup).length
-    span?.setAttribute('project.roles.oidc_group.count', rolesWithOidcGroup)
+    const rolesWithOidcGroup = project.roles.filter(r => isNonEmptyGroupPath(r.oidcGroup))
+    span?.setAttribute('project.roles.oidc_group.count', rolesWithOidcGroup.length)
 
-    await Promise.all(project.roles.map(role => this.ensureRoleGroup(project, role, group)))
+    await Promise.all(rolesWithOidcGroup.map(role => this.ensureRoleGroup(project, role, group)))
   }
 
   @StartActiveSpan()
@@ -234,10 +309,10 @@ export class KeycloakService {
     span?.setAttribute('project.slug', project.slug)
     span?.setAttribute('role.id', role.id)
     span?.setAttribute('role.type', role.type)
-    span?.setAttribute('role.oidc_group.present', !!role.oidcGroup)
-    if (role.oidcGroup) {
-      span?.setAttribute('role.oidc_group.depth', role.oidcGroup.split('/').filter(Boolean).length)
-    }
+    span?.setAttribute('role.oidc_group.present', isNonEmptyGroupPath(role.oidcGroup))
+    if (!isNonEmptyGroupPath(role.oidcGroup)) return
+
+    span?.setAttribute('role.oidc_group.depth', role.oidcGroup.split('/').filter(Boolean).length)
 
     const roleGroup = await this.keycloak.getOrCreateRoleGroup(group, role.oidcGroup)
     span?.setAttribute('keycloak.group.id', roleGroup.id)
@@ -572,6 +647,16 @@ export class KeycloakService {
 
 export function isMember(project: ProjectWithDetails, member: UserRepresentation) {
   return project.members.some(m => m.user.id === member.id) || project.ownerId === member.id
+}
+
+function isNonEmptyGroupPath(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0
+}
+
+function normalizeGroupPath(value: unknown) {
+  if (!isNonEmptyGroupPath(value)) return undefined
+  const trimmed = value.trim()
+  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`
 }
 
 async function* map<T, U>(
