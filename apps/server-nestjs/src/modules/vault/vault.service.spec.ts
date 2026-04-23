@@ -2,37 +2,136 @@ import type { TestingModule } from '@nestjs/testing'
 import type { Mocked } from 'vitest'
 import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
 import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { http, HttpResponse } from 'msw'
+import { setupServer } from 'msw/node'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
+import { VaultHttpClientService } from './vault-http-client.service'
 import { VaultService } from './vault.service'
 
 const projectRoleGroupNameRegex = /^project-(.*)-(admin|devops|developer|readonly|security)$/
+
+const vaultBaseUrl = 'http://vault.test'
+
+interface VaultRequestLogEntry {
+  method: string
+  url: string
+  path: string
+  body: unknown
+  token: string | null
+}
+
+const requestLog: VaultRequestLogEntry[] = []
+
+function vaultRequestLogEntry(request: Request, path: string, body: unknown): VaultRequestLogEntry {
+  return {
+    method: request.method,
+    url: request.url,
+    path,
+    body,
+    token: request.headers.get('x-vault-token'),
+  }
+}
+
+function vaultIdentityGroupResponse(groupName: string) {
+  const projectRoleMatch = groupName.match(projectRoleGroupNameRegex)
+  if (projectRoleMatch) {
+    const projectSlug = projectRoleMatch[1]
+    const role = projectRoleMatch[2]
+    return { data: { id: 'gid', name: groupName, alias: { name: `/${projectSlug}/console/${role}` } } }
+  }
+
+  if (groupName === 'console-admin') return { data: { id: 'gid', name: groupName, alias: { name: '/console/admin' } } }
+  if (groupName === 'console-readonly') return { data: { id: 'gid', name: groupName, alias: { name: '/console/readonly' } } }
+  if (groupName === 'console-security') return { data: { id: 'gid', name: groupName, alias: { name: '/console/security' } } }
+
+  return { data: { id: 'gid', name: groupName } }
+}
+
+const server = setupServer(
+  http.post(`${vaultBaseUrl}/v1/sys/mounts/:name`, async ({ params, request }) => {
+    const body = await request.json().catch(() => undefined)
+    requestLog.push(vaultRequestLogEntry(request, `/v1/sys/mounts/${params.name}`, body))
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.post(`${vaultBaseUrl}/v1/sys/mounts/:name/tune`, async ({ params, request }) => {
+    const body = await request.json().catch(() => undefined)
+    requestLog.push(vaultRequestLogEntry(request, `/v1/sys/mounts/${params.name}/tune`, body))
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.delete(`${vaultBaseUrl}/v1/sys/mounts/:name`, ({ params, request }) => {
+    requestLog.push(vaultRequestLogEntry(request, `/v1/sys/mounts/${params.name}`, undefined))
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.post(`${vaultBaseUrl}/v1/sys/policies/acl/:policyName`, async ({ params, request }) => {
+    const body = await request.json().catch(() => undefined)
+    requestLog.push(vaultRequestLogEntry(request, `/v1/sys/policies/acl/${params.policyName}`, body))
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.delete(`${vaultBaseUrl}/v1/sys/policies/acl/:policyName`, ({ params, request }) => {
+    requestLog.push(vaultRequestLogEntry(request, `/v1/sys/policies/acl/${params.policyName}`, undefined))
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.post(`${vaultBaseUrl}/v1/auth/approle/role/:roleName`, async ({ params, request }) => {
+    const body = await request.json().catch(() => undefined)
+    requestLog.push(vaultRequestLogEntry(request, `/v1/auth/approle/role/${params.roleName}`, body))
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.delete(`${vaultBaseUrl}/v1/auth/approle/role/:roleName`, ({ params, request }) => {
+    requestLog.push(vaultRequestLogEntry(request, `/v1/auth/approle/role/${params.roleName}`, undefined))
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.post(`${vaultBaseUrl}/v1/identity/group/name/:groupName`, async ({ params, request }) => {
+    const body = await request.json().catch(() => undefined)
+    requestLog.push(vaultRequestLogEntry(request, `/v1/identity/group/name/${params.groupName}`, body))
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.get(`${vaultBaseUrl}/v1/identity/group/name/:groupName`, ({ params, request }) => {
+    requestLog.push(vaultRequestLogEntry(request, `/v1/identity/group/name/${params.groupName}`, undefined))
+    return HttpResponse.json(vaultIdentityGroupResponse(String(params.groupName)))
+  }),
+  http.delete(`${vaultBaseUrl}/v1/identity/group/name/:groupName`, ({ params, request }) => {
+    requestLog.push(vaultRequestLogEntry(request, `/v1/identity/group/name/${params.groupName}`, undefined))
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.get(`${vaultBaseUrl}/v1/sys/auth`, ({ request }) => {
+    requestLog.push(vaultRequestLogEntry(request, '/v1/sys/auth', undefined))
+    return HttpResponse.json({
+      data: {
+        'oidc/': { accessor: 'oidc-accessor', type: 'oidc' },
+      },
+    })
+  }),
+  http.post(`${vaultBaseUrl}/v1/identity/group-alias`, async ({ request }) => {
+    const body = await request.json().catch(() => undefined)
+    requestLog.push(vaultRequestLogEntry(request, '/v1/identity/group-alias', body))
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.all(`${vaultBaseUrl}/v1/:kvName/metadata/:path*`, async ({ params, request }) => {
+    let relPath = ''
+    if (typeof params.path === 'string') relPath = params.path
+    else if (Array.isArray(params.path)) relPath = params.path.join('/')
+
+    requestLog.push(vaultRequestLogEntry(request, `/v1/${params.kvName}/metadata/${relPath}`, undefined))
+
+    if (request.method === 'LIST') {
+      return HttpResponse.json({ data: { keys: [] } })
+    }
+    if (request.method === 'DELETE') {
+      return HttpResponse.text('', { status: 204 })
+    }
+    return HttpResponse.text('Unhandled', { status: 500 })
+  }),
+)
 
 function createVaultControllerServiceTestingModule() {
   return Test.createTestingModule({
     providers: [
       VaultService,
-      {
-        provide: VaultClientService,
-        useValue: {
-          createSysMount: vi.fn(),
-          tuneSysMount: vi.fn(),
-          deleteSysMounts: vi.fn(),
-          upsertSysPoliciesAcl: vi.fn(),
-          deleteSysPoliciesAcl: vi.fn(),
-          upsertAuthApproleRole: vi.fn(),
-          deleteAuthApproleRole: vi.fn(),
-          upsertIdentityGroupName: vi.fn(),
-          getIdentityGroupName: vi.fn(),
-          deleteIdentityGroupName: vi.fn(),
-          getSysAuth: vi.fn(),
-          createIdentityGroupAlias: vi.fn(),
-          listKvMetadata: vi.fn(),
-          delete: vi.fn(),
-        } satisfies Partial<VaultClientService>,
-      },
+      VaultClientService,
+      VaultHttpClientService,
       {
         provide: VaultDatastoreService,
         useValue: {
@@ -44,8 +143,11 @@ function createVaultControllerServiceTestingModule() {
       {
         provide: ConfigurationService,
         useValue: {
+          vaultToken: 'test-token',
+          vaultUrl: vaultBaseUrl,
           projectRootDir: 'forge',
           vaultKvName: 'kv',
+          getInternalOrPublicVaultUrl: () => vaultBaseUrl,
         } satisfies Partial<ConfigurationService>,
       },
     ],
@@ -55,29 +157,26 @@ function createVaultControllerServiceTestingModule() {
 describe('vaultService', () => {
   let service: VaultService
   let datastore: Mocked<VaultDatastoreService>
-  let client: Mocked<VaultClientService>
+
+  beforeAll(() => {
+    server.listen({ onUnhandledRequest: 'error' })
+  })
 
   beforeEach(async () => {
+    requestLog.length = 0
     const module: TestingModule = await createVaultControllerServiceTestingModule().compile()
     service = module.get(VaultService)
     datastore = module.get(VaultDatastoreService)
-    client = module.get(VaultClientService)
 
     datastore.getAdminPluginConfig.mockResolvedValue(null)
-    client.createSysMount.mockResolvedValue(undefined)
-    client.tuneSysMount.mockResolvedValue(undefined)
-    client.deleteSysMounts.mockResolvedValue(undefined)
-    client.upsertSysPoliciesAcl.mockResolvedValue(undefined)
-    client.deleteSysPoliciesAcl.mockResolvedValue(undefined)
-    client.upsertAuthApproleRole.mockResolvedValue(undefined)
-    client.deleteAuthApproleRole.mockResolvedValue(undefined)
-    client.upsertIdentityGroupName.mockResolvedValue(undefined)
-    client.getIdentityGroupName.mockImplementation(async (groupName: string) => ({ data: { id: 'gid', name: groupName } } as any))
-    client.deleteIdentityGroupName.mockResolvedValue(undefined)
-    client.getSysAuth.mockResolvedValue({ 'oidc/': { accessor: 'oidc-accessor', type: 'oidc' } } as any)
-    client.createIdentityGroupAlias.mockResolvedValue(undefined)
-    client.listKvMetadata.mockResolvedValue([])
-    client.delete.mockResolvedValue(undefined)
+  })
+
+  afterEach(() => {
+    server.resetHandlers()
+  })
+
+  afterAll(() => {
+    server.close()
   })
 
   it('should be defined', () => {
@@ -114,48 +213,59 @@ describe('vaultService', () => {
 
     expect(datastore.getAllProjects).toHaveBeenCalled()
     expect(datastore.getAllZones).toHaveBeenCalled()
-    expect(client.createSysMount).toHaveBeenCalledTimes(3)
-    expect(client.createSysMount).toHaveBeenCalledWith('project-1', expect.any(Object))
-    expect(client.createSysMount).toHaveBeenCalledWith('project-2', expect.any(Object))
-    expect(client.createSysMount).toHaveBeenCalledWith('zone-z1', expect.any(Object))
+
+    const createMountRequests = requestLog.filter(r => r.method === 'POST' && r.path.startsWith('/v1/sys/mounts/') && !r.path.endsWith('/tune'))
+    expect(createMountRequests).toHaveLength(3)
+    expect(createMountRequests.map(r => r.path)).toEqual(expect.arrayContaining([
+      '/v1/sys/mounts/project-1',
+      '/v1/sys/mounts/project-2',
+      '/v1/sys/mounts/zone-z1',
+    ]))
+    for (const req of createMountRequests) {
+      expect(req.token).toBe('test-token')
+      expect(req.body).toEqual({
+        type: 'kv',
+        config: { force_no_cache: true },
+        options: { version: 2 },
+      })
+    }
   })
 
   it('should upsert project on event', async () => {
-    client.getIdentityGroupName.mockImplementation(async (groupName: string) => {
-      const projectRoleMatch = groupName.match(projectRoleGroupNameRegex)
-      if (projectRoleMatch) {
-        const projectSlug = projectRoleMatch[1]
-        const role = projectRoleMatch[2]
-        return { data: { id: 'gid', name: groupName, alias: { name: `/${projectSlug}/console/${role}` } } }
-      }
-
-      if (groupName === 'console-admin') return { data: { id: 'gid', name: groupName, alias: { name: '/console/admin' } } }
-      if (groupName === 'console-readonly') return { data: { id: 'gid', name: groupName, alias: { name: '/console/readonly' } } }
-      if (groupName === 'console-security') return { data: { id: 'gid', name: groupName, alias: { name: '/console/security' } } }
-
-      return { data: { id: 'gid', name: groupName } }
-    })
-
     await service.handleUpsert({ slug: 'project-1' } as any)
-    expect(client.createSysMount).toHaveBeenCalledWith('project-1', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('app--project-1--admin', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('tech--project-1--ro', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--devops', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--developer', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--readonly', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--security', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--admin', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--readonly', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--security', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-admin', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-readonly', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-security', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-admin', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-devops', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-developer', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-readonly', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-security', expect.any(Object))
-    expect(client.createIdentityGroupAlias).not.toHaveBeenCalled()
+
+    expect(requestLog.some(r => r.method === 'POST' && r.path === '/v1/sys/mounts/project-1')).toBe(true)
+
+    const expectedPolicyUpserts = [
+      'app--project-1--admin',
+      'tech--project-1--ro',
+      'project--project-1--devops',
+      'project--project-1--developer',
+      'project--project-1--readonly',
+      'project--project-1--security',
+      'platform--admin',
+      'platform--readonly',
+      'platform--security',
+    ]
+    for (const policyName of expectedPolicyUpserts) {
+      expect(requestLog.some(r => r.method === 'POST' && r.path === `/v1/sys/policies/acl/${policyName}`)).toBe(true)
+    }
+
+    const expectedGroupUpserts = [
+      'console-admin',
+      'console-readonly',
+      'console-security',
+      'project-project-1-admin',
+      'project-project-1-devops',
+      'project-project-1-developer',
+      'project-project-1-readonly',
+      'project-project-1-security',
+    ]
+    for (const groupName of expectedGroupUpserts) {
+      expect(requestLog.some(r => r.method === 'POST' && r.path === `/v1/identity/group/name/${groupName}`)).toBe(true)
+    }
+
+    expect(requestLog.some(r => r.method === 'POST' && r.path === '/v1/identity/group-alias')).toBe(false)
   })
 
   it('should delete project and destroy secrets on event', async () => {
@@ -170,18 +280,22 @@ describe('vaultService', () => {
 
     await service.handleDelete(mockProject)
 
-    expect(client.deleteSysMounts).toHaveBeenCalledWith('project-1')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('app--project-1--admin')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('tech--project-1--ro')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--devops')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--developer')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--readonly')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--security')
-    expect(client.deleteAuthApproleRole).toHaveBeenCalledWith('project-1')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-admin')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-devops')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-developer')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-readonly')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-security')
+    const deletePaths = requestLog.filter(r => r.method === 'DELETE').map(r => r.path)
+
+    expect(deletePaths).toEqual(expect.arrayContaining([
+      '/v1/sys/mounts/project-1',
+      '/v1/sys/policies/acl/app--project-1--admin',
+      '/v1/sys/policies/acl/tech--project-1--ro',
+      '/v1/sys/policies/acl/project--project-1--devops',
+      '/v1/sys/policies/acl/project--project-1--developer',
+      '/v1/sys/policies/acl/project--project-1--readonly',
+      '/v1/sys/policies/acl/project--project-1--security',
+      '/v1/auth/approle/role/project-1',
+      '/v1/identity/group/name/project-project-1-admin',
+      '/v1/identity/group/name/project-project-1-devops',
+      '/v1/identity/group/name/project-project-1-developer',
+      '/v1/identity/group/name/project-project-1-readonly',
+      '/v1/identity/group/name/project-project-1-security',
+    ]))
   })
 })
