@@ -8,6 +8,7 @@ export function makeProjectWithDetails(overrides: Partial<ProjectWithDetails> = 
     name: faker.company.name(),
     description: '',
     environments: [],
+    plugins: [],
     ...overrides,
   } satisfies ProjectWithDetails
 }
