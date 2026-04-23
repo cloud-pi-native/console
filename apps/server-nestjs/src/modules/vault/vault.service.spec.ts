@@ -2,37 +2,89 @@ import type { TestingModule } from '@nestjs/testing'
 import type { Mocked } from 'vitest'
 import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
 import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { http, HttpResponse } from 'msw'
+import { setupServer } from 'msw/node'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
+import { VaultHttpClientService } from './vault-http-client.service'
 import { VaultService } from './vault.service'
 
+const vaultBaseUrl = 'http://vault.test'
+
 const projectRoleGroupNameRegex = /^project-(.*)-(admin|devops|developer|readonly|security)$/
+
+const server = setupServer(
+  http.post(`${vaultBaseUrl}/v1/sys/mounts/:name`, () => {
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.post(`${vaultBaseUrl}/v1/sys/mounts/:name/tune`, () => {
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.delete(`${vaultBaseUrl}/v1/sys/mounts/:name`, () => {
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.post(`${vaultBaseUrl}/v1/sys/policies/acl/:policyName`, () => {
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.delete(`${vaultBaseUrl}/v1/sys/policies/acl/:policyName`, () => {
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.post(`${vaultBaseUrl}/v1/auth/approle/role/:roleName`, () => {
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.delete(`${vaultBaseUrl}/v1/auth/approle/role/:roleName`, () => {
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.post(`${vaultBaseUrl}/v1/identity/group/name/:groupName`, () => {
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.get(`${vaultBaseUrl}/v1/identity/group/name/:groupName`, ({ params }) => {
+    const groupName = String(params.groupName)
+    const projectRoleMatch = projectRoleGroupNameRegex.exec(groupName)
+    if (projectRoleMatch) {
+      const projectSlug = projectRoleMatch[1]
+      const role = projectRoleMatch[2]
+      return HttpResponse.json({ data: { id: 'gid', name: groupName, alias: { name: `/${projectSlug}/console/${role}` } } })
+    }
+
+    if (groupName === 'console-admin') return HttpResponse.json({ data: { id: 'gid', name: groupName, alias: { name: '/console/admin' } } })
+    if (groupName === 'console-readonly') return HttpResponse.json({ data: { id: 'gid', name: groupName, alias: { name: '/console/readonly' } } })
+    if (groupName === 'console-security') return HttpResponse.json({ data: { id: 'gid', name: groupName, alias: { name: '/console/security' } } })
+
+    return HttpResponse.json({ data: { id: 'gid', name: groupName } })
+  }),
+  http.delete(`${vaultBaseUrl}/v1/identity/group/name/:groupName`, () => {
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.get(`${vaultBaseUrl}/v1/sys/auth`, () => {
+    return HttpResponse.json({
+      data: {
+        'oidc/': { accessor: 'oidc-accessor', type: 'oidc' },
+      },
+    })
+  }),
+  http.post(`${vaultBaseUrl}/v1/identity/group-alias`, () => {
+    return HttpResponse.text('', { status: 204 })
+  }),
+  http.all(`${vaultBaseUrl}/v1/:kvName/metadata/:path*`, ({ request }) => {
+    if (request.method === 'LIST') {
+      return HttpResponse.json({ data: { keys: [] } })
+    }
+    if (request.method === 'DELETE') {
+      return HttpResponse.text('', { status: 204 })
+    }
+    return HttpResponse.text('Unhandled', { status: 500 })
+  }),
+)
 
 function createVaultControllerServiceTestingModule() {
   return Test.createTestingModule({
     providers: [
       VaultService,
-      {
-        provide: VaultClientService,
-        useValue: {
-          createSysMount: vi.fn(),
-          tuneSysMount: vi.fn(),
-          deleteSysMounts: vi.fn(),
-          upsertSysPoliciesAcl: vi.fn(),
-          deleteSysPoliciesAcl: vi.fn(),
-          upsertAuthApproleRole: vi.fn(),
-          deleteAuthApproleRole: vi.fn(),
-          upsertIdentityGroupName: vi.fn(),
-          getIdentityGroupName: vi.fn(),
-          deleteIdentityGroupName: vi.fn(),
-          getSysAuth: vi.fn(),
-          createIdentityGroupAlias: vi.fn(),
-          listKvMetadata: vi.fn(),
-          delete: vi.fn(),
-        } satisfies Partial<VaultClientService>,
-      },
+      VaultClientService,
+      VaultHttpClientService,
       {
         provide: VaultDatastoreService,
         useValue: {
@@ -44,8 +96,11 @@ function createVaultControllerServiceTestingModule() {
       {
         provide: ConfigurationService,
         useValue: {
+          vaultToken: 'test-token',
+          vaultUrl: vaultBaseUrl,
           projectRootDir: 'forge',
           vaultKvName: 'kv',
+          getInternalOrPublicVaultUrl: () => vaultBaseUrl,
         } satisfies Partial<ConfigurationService>,
       },
     ],
@@ -55,29 +110,25 @@ function createVaultControllerServiceTestingModule() {
 describe('vaultService', () => {
   let service: VaultService
   let datastore: Mocked<VaultDatastoreService>
-  let client: Mocked<VaultClientService>
+
+  beforeAll(() => {
+    server.listen({ onUnhandledRequest: 'error' })
+  })
 
   beforeEach(async () => {
     const module: TestingModule = await createVaultControllerServiceTestingModule().compile()
     service = module.get(VaultService)
     datastore = module.get(VaultDatastoreService)
-    client = module.get(VaultClientService)
 
     datastore.getAdminPluginConfig.mockResolvedValue(null)
-    client.createSysMount.mockResolvedValue(undefined)
-    client.tuneSysMount.mockResolvedValue(undefined)
-    client.deleteSysMounts.mockResolvedValue(undefined)
-    client.upsertSysPoliciesAcl.mockResolvedValue(undefined)
-    client.deleteSysPoliciesAcl.mockResolvedValue(undefined)
-    client.upsertAuthApproleRole.mockResolvedValue(undefined)
-    client.deleteAuthApproleRole.mockResolvedValue(undefined)
-    client.upsertIdentityGroupName.mockResolvedValue(undefined)
-    client.getIdentityGroupName.mockImplementation(async (groupName: string) => ({ data: { id: 'gid', name: groupName } } as any))
-    client.deleteIdentityGroupName.mockResolvedValue(undefined)
-    client.getSysAuth.mockResolvedValue({ 'oidc/': { accessor: 'oidc-accessor', type: 'oidc' } } as any)
-    client.createIdentityGroupAlias.mockResolvedValue(undefined)
-    client.listKvMetadata.mockResolvedValue([])
-    client.delete.mockResolvedValue(undefined)
+  })
+
+  afterEach(() => {
+    server.resetHandlers()
+  })
+
+  afterAll(() => {
+    server.close()
   })
 
   it('should be defined', () => {
@@ -110,52 +161,94 @@ describe('vaultService', () => {
     datastore.getAllProjects.mockResolvedValue(mockProjects)
     datastore.getAllZones.mockResolvedValue(mockZones as any)
 
+    const createSysMountSpy = vi.fn()
+    server.use(
+      http.post(`${vaultBaseUrl}/v1/sys/mounts/:name`, async ({ params, request }) => {
+        expect(request.headers.get('x-vault-token')).toBe('test-token')
+        expect(await request.json()).toEqual({
+          type: 'kv',
+          config: { force_no_cache: true },
+          options: { version: 2 },
+        })
+        createSysMountSpy(String(params.name))
+        return HttpResponse.text('', { status: 204 })
+      }),
+    )
+
     await service.handleCron()
 
     expect(datastore.getAllProjects).toHaveBeenCalled()
     expect(datastore.getAllZones).toHaveBeenCalled()
-    expect(client.createSysMount).toHaveBeenCalledTimes(3)
-    expect(client.createSysMount).toHaveBeenCalledWith('project-1', expect.any(Object))
-    expect(client.createSysMount).toHaveBeenCalledWith('project-2', expect.any(Object))
-    expect(client.createSysMount).toHaveBeenCalledWith('zone-z1', expect.any(Object))
+
+    expect(createSysMountSpy).toHaveBeenCalledTimes(3)
+    expect(createSysMountSpy).toHaveBeenCalledWith('project-1')
+    expect(createSysMountSpy).toHaveBeenCalledWith('project-2')
+    expect(createSysMountSpy).toHaveBeenCalledWith('zone-z1')
   })
 
   it('should upsert project on event', async () => {
-    client.getIdentityGroupName.mockImplementation(async (groupName: string) => {
-      const projectRoleMatch = groupName.match(projectRoleGroupNameRegex)
-      if (projectRoleMatch) {
-        const projectSlug = projectRoleMatch[1]
-        const role = projectRoleMatch[2]
-        return { data: { id: 'gid', name: groupName, alias: { name: `/${projectSlug}/console/${role}` } } }
-      }
+    const createSysMountSpy = vi.fn()
+    const upsertPolicySpy = vi.fn()
+    const upsertGroupSpy = vi.fn()
+    const createGroupAliasSpy = vi.fn()
 
-      if (groupName === 'console-admin') return { data: { id: 'gid', name: groupName, alias: { name: '/console/admin' } } }
-      if (groupName === 'console-readonly') return { data: { id: 'gid', name: groupName, alias: { name: '/console/readonly' } } }
-      if (groupName === 'console-security') return { data: { id: 'gid', name: groupName, alias: { name: '/console/security' } } }
-
-      return { data: { id: 'gid', name: groupName } }
-    })
+    server.use(
+      http.post(`${vaultBaseUrl}/v1/sys/mounts/:name`, async ({ params, request }) => {
+        expect(request.headers.get('x-vault-token')).toBe('test-token')
+        createSysMountSpy(String(params.name))
+        return HttpResponse.text('', { status: 204 })
+      }),
+      http.post(`${vaultBaseUrl}/v1/sys/policies/acl/:policyName`, async ({ params, request }) => {
+        expect(request.headers.get('x-vault-token')).toBe('test-token')
+        upsertPolicySpy(String(params.policyName))
+        return HttpResponse.text('', { status: 204 })
+      }),
+      http.post(`${vaultBaseUrl}/v1/identity/group/name/:groupName`, async ({ params, request }) => {
+        expect(request.headers.get('x-vault-token')).toBe('test-token')
+        upsertGroupSpy(String(params.groupName))
+        return HttpResponse.text('', { status: 204 })
+      }),
+      http.post(`${vaultBaseUrl}/v1/identity/group-alias`, async ({ request }) => {
+        expect(request.headers.get('x-vault-token')).toBe('test-token')
+        createGroupAliasSpy()
+        return HttpResponse.text('', { status: 204 })
+      }),
+    )
 
     await service.handleUpsert({ slug: 'project-1' } as any)
-    expect(client.createSysMount).toHaveBeenCalledWith('project-1', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('app--project-1--admin', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('tech--project-1--ro', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--devops', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--developer', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--readonly', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--security', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--admin', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--readonly', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--security', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-admin', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-readonly', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-security', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-admin', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-devops', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-developer', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-readonly', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-security', expect.any(Object))
-    expect(client.createIdentityGroupAlias).not.toHaveBeenCalled()
+
+    expect(createSysMountSpy).toHaveBeenCalledWith('project-1')
+
+    const expectedPolicyUpserts = [
+      'app--project-1--admin',
+      'tech--project-1--ro',
+      'project--project-1--devops',
+      'project--project-1--developer',
+      'project--project-1--readonly',
+      'project--project-1--security',
+      'platform--admin',
+      'platform--readonly',
+      'platform--security',
+    ]
+    for (const policyName of expectedPolicyUpserts) {
+      expect(upsertPolicySpy).toHaveBeenCalledWith(policyName)
+    }
+
+    const expectedGroupUpserts = [
+      'console-admin',
+      'console-readonly',
+      'console-security',
+      'project-project-1-admin',
+      'project-project-1-devops',
+      'project-project-1-developer',
+      'project-project-1-readonly',
+      'project-project-1-security',
+    ]
+    for (const groupName of expectedGroupUpserts) {
+      expect(upsertGroupSpy).toHaveBeenCalledWith(groupName)
+    }
+
+    expect(createGroupAliasSpy).not.toHaveBeenCalled()
   })
 
   it('should delete project and destroy secrets on event', async () => {
@@ -168,20 +261,62 @@ describe('vaultService', () => {
       environments: [],
     } satisfies ProjectWithDetails
 
+    const deleteSysMountSpy = vi.fn()
+    const deleteSysPolicySpy = vi.fn()
+    const deleteApproleSpy = vi.fn()
+    const deleteIdentityGroupSpy = vi.fn()
+    const listKvMetadataSpy = vi.fn()
+
+    server.use(
+      http.delete(`${vaultBaseUrl}/v1/sys/mounts/:name`, async ({ params, request }) => {
+        expect(request.headers.get('x-vault-token')).toBe('test-token')
+        deleteSysMountSpy(String(params.name))
+        return HttpResponse.text('', { status: 204 })
+      }),
+      http.delete(`${vaultBaseUrl}/v1/sys/policies/acl/:policyName`, async ({ params, request }) => {
+        expect(request.headers.get('x-vault-token')).toBe('test-token')
+        deleteSysPolicySpy(String(params.policyName))
+        return HttpResponse.text('', { status: 204 })
+      }),
+      http.delete(`${vaultBaseUrl}/v1/auth/approle/role/:roleName`, async ({ params, request }) => {
+        expect(request.headers.get('x-vault-token')).toBe('test-token')
+        deleteApproleSpy(String(params.roleName))
+        return HttpResponse.text('', { status: 204 })
+      }),
+      http.delete(`${vaultBaseUrl}/v1/identity/group/name/:groupName`, async ({ params, request }) => {
+        expect(request.headers.get('x-vault-token')).toBe('test-token')
+        deleteIdentityGroupSpy(String(params.groupName))
+        return HttpResponse.text('', { status: 204 })
+      }),
+      http.all(`${vaultBaseUrl}/v1/:kvName/metadata/:path*`, async ({ params, request }) => {
+        let relPath = ''
+        if (typeof params.path === 'string') relPath = params.path
+        else if (Array.isArray(params.path)) relPath = params.path.join('/')
+
+        if (request.method === 'LIST') {
+          listKvMetadataSpy(String(params.kvName), relPath)
+          return HttpResponse.json({ data: { keys: [] } })
+        }
+        if (request.method === 'DELETE') return HttpResponse.text('', { status: 204 })
+        return HttpResponse.text('Unhandled', { status: 500 })
+      }),
+    )
+
     await service.handleDelete(mockProject)
 
-    expect(client.deleteSysMounts).toHaveBeenCalledWith('project-1')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('app--project-1--admin')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('tech--project-1--ro')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--devops')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--developer')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--readonly')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--security')
-    expect(client.deleteAuthApproleRole).toHaveBeenCalledWith('project-1')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-admin')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-devops')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-developer')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-readonly')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-security')
+    expect(deleteSysMountSpy).toHaveBeenCalledWith('project-1')
+    expect(deleteSysPolicySpy).toHaveBeenCalledWith('app--project-1--admin')
+    expect(deleteSysPolicySpy).toHaveBeenCalledWith('tech--project-1--ro')
+    expect(deleteSysPolicySpy).toHaveBeenCalledWith('project--project-1--devops')
+    expect(deleteSysPolicySpy).toHaveBeenCalledWith('project--project-1--developer')
+    expect(deleteSysPolicySpy).toHaveBeenCalledWith('project--project-1--readonly')
+    expect(deleteSysPolicySpy).toHaveBeenCalledWith('project--project-1--security')
+    expect(deleteApproleSpy).toHaveBeenCalledWith('project-1')
+    expect(deleteIdentityGroupSpy).toHaveBeenCalledWith('project-project-1-admin')
+    expect(deleteIdentityGroupSpy).toHaveBeenCalledWith('project-project-1-devops')
+    expect(deleteIdentityGroupSpy).toHaveBeenCalledWith('project-project-1-developer')
+    expect(deleteIdentityGroupSpy).toHaveBeenCalledWith('project-project-1-readonly')
+    expect(deleteIdentityGroupSpy).toHaveBeenCalledWith('project-project-1-security')
+    expect(listKvMetadataSpy).toHaveBeenCalledWith('kv', 'forge/project-1')
   })
 })

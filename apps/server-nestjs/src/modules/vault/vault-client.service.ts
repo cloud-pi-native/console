@@ -5,11 +5,11 @@ import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/tele
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
 import { generateGitlabMirrorCredPath, generateProjectPath, generateTechReadOnlyCredPath } from './vault.utils'
 
-interface VaultSysPoliciesAclUpsertRequest {
+export interface VaultSysPoliciesAclUpsertRequest {
   policy: string
 }
 
-interface VaultSysMountCreateRequest {
+export interface VaultSysMountCreateRequest {
   type: string
   config: {
     force_no_cache: boolean
@@ -19,13 +19,13 @@ interface VaultSysMountCreateRequest {
   }
 }
 
-interface VaultSysMountTuneRequest {
+export interface VaultSysMountTuneRequest {
   options: {
     version: number
   }
 }
 
-interface VaultAuthApproleRoleUpsertRequest {
+export interface VaultAuthApproleRoleUpsertRequest {
   secret_id_num_uses: string
   secret_id_ttl: string
   token_max_ttl: string
@@ -35,29 +35,29 @@ interface VaultAuthApproleRoleUpsertRequest {
   token_policies: string[]
 }
 
-interface VaultIdentityGroupUpsertRequest {
+export interface VaultIdentityGroupUpsertRequest {
   name: string
   type: string
   policies: string[]
 }
 
-interface VaultIdentityGroupAliasCreateRequest {
+export interface VaultIdentityGroupAliasCreateRequest {
   name: string
   mount_accessor: string
   canonical_id: string
 }
 
-interface VaultAuthMethod {
+export interface VaultAuthMethod {
   accessor: string
   type: string
   description?: string
 }
 
-interface VaultSysAuthResponse {
+export interface VaultSysAuthResponse {
   data: Record<string, VaultAuthMethod>
 }
 
-interface VaultIdentityGroupResponse {
+export interface VaultIdentityGroupResponse {
   data: {
     id: string
     name: string
