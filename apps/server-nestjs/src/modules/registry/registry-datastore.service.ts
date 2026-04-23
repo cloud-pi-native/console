@@ -1,21 +1,17 @@
 import type { Prisma } from '@prisma/client'
 import { Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from '../../cpin-module/infrastructure/database/prisma.service'
+import { REGISTRY_PLUGIN_NAME } from './registry.constants'
 
 export const projectSelect = {
-  id: true,
-  name: true,
   slug: true,
-  description: true,
-  environments: {
+  plugins: {
+    where: {
+      pluginName: REGISTRY_PLUGIN_NAME,
+    },
     select: {
-      id: true,
-      name: true,
-      clusterId: true,
-      cpu: true,
-      gpu: true,
-      memory: true,
-      autosync: true,
+      key: true,
+      value: true,
     },
   },
 } satisfies Prisma.ProjectSelect
@@ -24,27 +20,25 @@ export type ProjectWithDetails = Prisma.ProjectGetPayload<{
   select: typeof projectSelect
 }>
 
-export const zoneSelect = {
-  id: true,
-  slug: true,
-} satisfies Prisma.ZoneSelect
-
-export type ZoneWithDetails = Prisma.ZoneGetPayload<{
-  select: typeof zoneSelect
-}>
-
 @Injectable()
-export class VaultDatastoreService {
+export class RegistryDatastoreService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   async getAllProjects(): Promise<ProjectWithDetails[]> {
-    return this.prisma.project.findMany({
+    return await this.prisma.project.findMany({
       select: projectSelect,
+      where: {
+        plugins: {
+          some: {
+            pluginName: REGISTRY_PLUGIN_NAME,
+          },
+        },
+      },
     })
   }
 
   async getProject(id: string): Promise<ProjectWithDetails | null> {
-    return this.prisma.project.findUnique({
+    return await this.prisma.project.findUnique({
       where: { id },
       select: projectSelect,
     })
@@ -63,11 +57,5 @@ export class VaultDatastoreService {
       },
     })
     return result?.value ?? null
-  }
-
-  async getAllZones(): Promise<ZoneWithDetails[]> {
-    return this.prisma.zone.findMany({
-      select: zoneSelect,
-    })
   }
 }
