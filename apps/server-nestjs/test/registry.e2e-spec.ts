@@ -75,7 +75,7 @@ describeWithRegistry('RegistryService (e2e)', () => {
   it('should provision project in Harbor and write robot secrets to Vault', async () => {
     await registry.deleteProject(projectSlug).catch(() => {})
 
-    const result = await registry.ensureProject(projectSlug, { publishProjectRobot: true })
+    const result = await registry.ensureProject({ slug: projectSlug, plugins: [] }, { publishProjectRobot: true })
     expect(result.basePath).toBe(`${getHostFromUrl(config.harborUrl!)}/${projectSlug}/`)
 
     const project = await client.getProjectByName(projectSlug)
