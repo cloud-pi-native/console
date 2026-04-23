@@ -19,7 +19,26 @@ import { VaultClientService } from '../vault/vault-client.service'
 import { VaultError } from '../vault/vault-http-client.service.js'
 import { projectRobotName, RegistryClientService, roAccess, roRobotName, rwAccess, rwRobotName } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
-import { REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT, REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT } from './registry.constants'
+import {
+  DEFAULT_ADMIN_GROUP_PATH_SUFFIXES,
+  DEFAULT_DEVELOPER_GROUP_PATH_SUFFIXES,
+  DEFAULT_GUEST_GROUP_PATH_SUFFIXES,
+  DEFAULT_MAINTAINER_GROUP_PATH_SUFFIXES,
+  HARBOR_ROLE_DEVELOPER,
+  HARBOR_ROLE_GUEST,
+  HARBOR_ROLE_LIMITED_GUEST,
+  HARBOR_ROLE_MAINTAINER,
+  HARBOR_ROLE_PROJECT_ADMIN,
+  PLATFORM_ADMIN_GROUP_PATH_PLUGIN_KEY,
+  PLATFORM_GUEST_GROUP_PATHS_PLUGIN_KEY,
+  PROJECT_ADMIN_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
+  PROJECT_DEVELOPER_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
+  PROJECT_GUEST_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
+  PROJECT_MAINTAINER_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
+  REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT,
+  REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT,
+  REGISTRY_PLUGIN_NAME,
+} from './registry.constants'
 import { generateVaultRobotSecret, getHostFromUrl, getProjectVaultPath, parseBytes } from './registry.utils'
 
 const allowedRuleTemplates = [
@@ -118,23 +137,24 @@ export class RegistryService {
     return secret
   }
 
-  private async ensureProjectGroupMember(projectSlug: string, groupName: string, accessLevel: number = 3) {
+  private async ensureProjectGroupMember(
+    projectSlug: string,
+    groupName: string,
+    accessLevel: number,
+    membersByName: Map<string, HarborMember>,
+  ) {
     const span = trace.getActiveSpan()
     span?.setAttributes({
       'project.slug': projectSlug,
       'registry.group.name': groupName,
       'registry.group.access_level': accessLevel,
     })
-    const members = await this.client.getGroupMembers(projectSlug)
-    if (members.status !== 200 || !members.data) {
-      throw new Error(`Harbor list members failed (${members.status})`)
-    }
-    const list: HarborMember[] = members.data
-    const existing = list.find(m => m?.entity_name === groupName)
+    const existing = membersByName.get(groupName)
 
     if (existing?.id) {
       if (existing.role_id !== accessLevel || existing.entity_type !== 'g') {
         await this.client.removeGroupMember(projectSlug, Number(existing.id))
+        membersByName.delete(groupName)
       } else {
         span?.setAttribute('registry.member.exists', true)
         return
@@ -153,6 +173,32 @@ export class RegistryService {
       throw new Error(`Harbor create member failed (${created.status})`)
     }
     span?.setAttribute('registry.member.created', true)
+  }
+
+  private async ensureProjectGroupMembers(project: ProjectWithDetails) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+
+    const members = await this.client.getGroupMembers(project.slug)
+    if (members.status !== 200 || !members.data) {
+      throw new Error(`Harbor list members failed (${members.status})`)
+    }
+
+    const membersByName = new Map<string, HarborMember>()
+    for (const member of members.data) {
+      const name = member?.entity_name
+      if (name) membersByName.set(name, member)
+    }
+
+    const desired = await this.getDesiredGroupMembers(project)
+    for (const entry of desired) {
+      await this.ensureProjectGroupMember(
+        project.slug,
+        entry.groupName,
+        entry.accessLevel,
+        membersByName,
+      )
+    }
   }
 
   private async ensureProjectQuota(projectSlug: string, storageLimit: number) {
@@ -212,31 +258,29 @@ export class RegistryService {
   }
 
   @StartActiveSpan()
-  async ensureProject(projectSlug: string, options: { storageLimitBytes?: number, publishProjectRobot?: boolean } = {}) {
+  async ensureProject(project: ProjectWithDetails, options: { storageLimitBytes?: number, publishProjectRobot?: boolean } = {}) {
     const span = trace.getActiveSpan()
     span?.setAttributes({
-      'project.slug': projectSlug,
+      'project.slug': project.slug,
       'registry.publish_project_robot': !!options.publishProjectRobot,
     })
     const storageLimit = options.storageLimitBytes ?? -1
-    const project = await this.ensureProjectQuota(projectSlug, storageLimit)
-    const projectId = Number(project.project_id)
-
-    const groupName = `/${projectSlug}`
+    const harborProject = await this.ensureProjectQuota(project.slug, storageLimit)
+    const projectId = Number(harborProject.project_id)
 
     await Promise.all([
-      this.ensureRobotSecret(projectSlug, roRobotName, roAccess),
-      this.ensureRobotSecret(projectSlug, rwRobotName, rwAccess),
-      this.ensureProjectGroupMember(projectSlug, groupName),
-      Number.isFinite(projectId) ? this.ensureRetentionPolicy(projectSlug, projectId) : Promise.resolve(),
+      this.ensureRobotSecret(project.slug, roRobotName, roAccess),
+      this.ensureRobotSecret(project.slug, rwRobotName, rwAccess),
+      this.ensureProjectGroupMembers(project),
+      Number.isFinite(projectId) ? this.ensureRetentionPolicy(project.slug, projectId) : Promise.resolve(),
       options.publishProjectRobot
-        ? this.ensureRobotSecret(projectSlug, projectRobotName, roAccess)
+        ? this.ensureRobotSecret(project.slug, projectRobotName, roAccess)
         : Promise.resolve(),
     ])
 
     return {
       projectId: Number.isFinite(projectId) ? projectId : undefined,
-      basePath: `${this.host}/${projectSlug}/`,
+      basePath: `${this.host}/${project.slug}/`,
     }
   }
 
@@ -266,7 +310,7 @@ export class RegistryService {
     const parsedQuota = quotaConfigRaw ? parseBytes(String(quotaConfigRaw)) : undefined
     const storageLimitBytes = parsedQuota ?? -1
     const publishProjectRobot = specificallyEnabled(publishConfig)
-    await this.ensureProject(project.slug, { storageLimitBytes, publishProjectRobot })
+    await this.ensureProject(project, { storageLimitBytes, publishProjectRobot })
   }
 
   @OnEvent('project.delete')
@@ -285,12 +329,108 @@ export class RegistryService {
     this.logger.log('Starting Registry reconciliation')
     const projects = await this.registryDatastore.getAllProjects()
     span?.setAttribute('registry.projects.count', projects.length)
-    await Promise.all(projects.map(p => this.handleUpsert(p)))
+    await Promise.all(projects.map(p => this.ensureProject(p)))
+  }
+
+  private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
+    const adminPluginConfig = await this.registryDatastore.getAdminPluginConfig(REGISTRY_PLUGIN_NAME, key)
+    if (adminPluginConfig) return adminPluginConfig
+    return getPluginConfig(project, key) ?? undefined
+  }
+
+  private parseGroupPaths(raw: string): string[] {
+    return raw
+      .split(',')
+      .map(path => path.trim())
+      .filter(Boolean)
+  }
+
+  private async getPlatformGuestGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+    const raw = await this.getAdminOrProjectPluginConfig(project, PLATFORM_GUEST_GROUP_PATHS_PLUGIN_KEY) ?? DEFAULT_GUEST_GROUP_PATH_SUFFIXES
+    return this.parseGroupPaths(raw)
+  }
+
+  private async getPlatformAdminGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+    const raw = await this.getAdminOrProjectPluginConfig(project, PLATFORM_ADMIN_GROUP_PATH_PLUGIN_KEY) ?? DEFAULT_ADMIN_GROUP_PATH_SUFFIXES
+    return this.parseGroupPaths(raw)
+  }
+
+  private async getProjectAdminGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+    const raw = await this.getAdminOrProjectPluginConfig(project, PROJECT_ADMIN_GROUP_PATH_SUFFIXES_PLUGIN_KEY) ?? DEFAULT_ADMIN_GROUP_PATH_SUFFIXES
+    return generateProjectRoleGroupPath(project.slug, raw)
+  }
+
+  private async getProjectMaintainerGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+    const raw = await this.getAdminOrProjectPluginConfig(project, PROJECT_MAINTAINER_GROUP_PATH_SUFFIXES_PLUGIN_KEY) ?? DEFAULT_MAINTAINER_GROUP_PATH_SUFFIXES
+    return generateProjectRoleGroupPath(project.slug, raw)
+  }
+
+  private async getProjectDeveloperGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+    const raw = await this.getAdminOrProjectPluginConfig(project, PROJECT_DEVELOPER_GROUP_PATH_SUFFIXES_PLUGIN_KEY) ?? DEFAULT_DEVELOPER_GROUP_PATH_SUFFIXES
+    return generateProjectRoleGroupPath(project.slug, raw)
+  }
+
+  private async getProjectGuestGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+    const raw = await this.getAdminOrProjectPluginConfig(project, PROJECT_GUEST_GROUP_PATH_SUFFIXES_PLUGIN_KEY) ?? DEFAULT_GUEST_GROUP_PATH_SUFFIXES
+    return generateProjectRoleGroupPath(project.slug, raw)
+  }
+
+  private async getDesiredGroupMembers(project: ProjectWithDetails): Promise<Array<{ groupName: string, accessLevel: number }>> {
+    const [
+      platformGuestGroupPaths,
+      platformAdminGroupPaths,
+      projectAdminGroupPaths,
+      projectMaintainerGroupPaths,
+      projectDeveloperGroupPaths,
+      projectGuestGroupPaths,
+    ] = await Promise.all([
+      this.getPlatformGuestGroupPaths(project),
+      this.getPlatformAdminGroupPaths(project),
+      this.getProjectAdminGroupPaths(project),
+      this.getProjectMaintainerGroupPaths(project),
+      this.getProjectDeveloperGroupPaths(project),
+      this.getProjectGuestGroupPaths(project),
+    ])
+
+    const entries: Array<{ groupName: string, accessLevel: number }> = []
+
+    entries.push({ groupName: `/${project.slug}`, accessLevel: HARBOR_ROLE_LIMITED_GUEST })
+
+    for (const groupName of platformGuestGroupPaths) entries.push({ groupName, accessLevel: HARBOR_ROLE_GUEST })
+    for (const groupName of projectGuestGroupPaths) entries.push({ groupName, accessLevel: HARBOR_ROLE_GUEST })
+
+    for (const groupName of projectDeveloperGroupPaths) entries.push({ groupName, accessLevel: HARBOR_ROLE_DEVELOPER })
+    for (const groupName of projectMaintainerGroupPaths) entries.push({ groupName, accessLevel: HARBOR_ROLE_MAINTAINER })
+    for (const groupName of projectAdminGroupPaths) entries.push({ groupName, accessLevel: HARBOR_ROLE_PROJECT_ADMIN })
+    for (const groupName of platformAdminGroupPaths) entries.push({ groupName, accessLevel: HARBOR_ROLE_PROJECT_ADMIN })
+
+    const orderByGroupName = new Map<string, number>()
+    const deduped: Array<{ groupName: string, accessLevel: number }> = []
+    for (const entry of entries) {
+      if (!entry.groupName) continue
+      const existingIndex = orderByGroupName.get(entry.groupName)
+      if (existingIndex === undefined) {
+        orderByGroupName.set(entry.groupName, deduped.length)
+        deduped.push(entry)
+      } else {
+        deduped[existingIndex] = entry
+      }
+    }
+
+    return deduped
   }
 }
 
 function getPluginConfig(project: ProjectWithDetails, key: string) {
   return project.plugins?.find(p => p.key === key)?.value
+}
+
+function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes: string) {
+  return rawGroupPathSuffixes
+    .split(',')
+    .map(path => path.trim())
+    .filter(Boolean)
+    .map(path => `/${projectSlug}${path}`)
 }
 
 function generateRobotFullName(projectSlug: string, robotName: string) {
