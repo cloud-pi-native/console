@@ -329,7 +329,7 @@ export class RegistryService {
     this.logger.log('Starting Registry reconciliation')
     const projects = await this.registryDatastore.getAllProjects()
     span?.setAttribute('registry.projects.count', projects.length)
-    await Promise.all(projects.map(p => this.handleUpsert(p)))
+    await Promise.all(projects.map(p => this.ensureProject(p)))
   }
 
   private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
