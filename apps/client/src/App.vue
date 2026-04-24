@@ -91,11 +91,19 @@ watch(userStore, async () => {
         >
           <a
             data-testid="swaggerUrl"
-            :href="swaggerUiPath"
+            :href="`${swaggerUiPath}-server-nestjs`"
             target="_blank"
-            title="accéder au swagger"
+            title="accéder au swagger UI"
           >
             swagger
+          </a>
+          <a
+            data-testid="swaggerUrl-legacy"
+            :href="`${swaggerUiPath}-server`"
+            target="_blank"
+            title="accéder au swagger UI (legacy)"
+          >
+            swagger (legacy)
           </a>
           <a
             data-testid="appVersionUrl"

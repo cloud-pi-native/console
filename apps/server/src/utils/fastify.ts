@@ -39,7 +39,7 @@ export const swaggerConf: Parameters<typeof generateOpenApi>[1] = {
 }
 
 export const swaggerUiConf: FastifySwaggerUiOptions = {
-  routePrefix: swaggerUiPath,
+  routePrefix: `${swaggerUiPath}-server`,
   uiConfig: {
     docExpansion: 'list',
     deepLinking: false,

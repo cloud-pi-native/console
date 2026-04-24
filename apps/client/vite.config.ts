@@ -36,7 +36,12 @@ export default defineConfig({
         changeOrigin: true,
         ws: true,
       },
-      '^/swagger-ui': {
+      '^/swagger-ui-server': {
+        target: `http://${serverHost}:${serverPort}`,
+        changeOrigin: true,
+        ws: true,
+      },
+      '^/swagger-ui-server-nestjs': {
         target: `http://${serverHost}:${serverPort}`,
         changeOrigin: true,
         ws: true,
@@ -97,7 +102,8 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         navigateFallbackDenylist: [
           /^\/api/,
-          /^\/swagger-ui/,
+          /^\/swagger-ui-server/,
+          /^\/swagger-ui-server-nestjs/,
         ],
       },
       devOptions: {
