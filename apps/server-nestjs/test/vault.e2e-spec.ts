@@ -7,6 +7,7 @@ import { PrismaService } from '../src/cpin-module/infrastructure/database/prisma
 import { InfrastructureModule } from '../src/cpin-module/infrastructure/infrastructure.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { projectSelect } from '../src/modules/vault/vault-datastore.service'
+import { makeProjectWithDetails } from '../src/modules/vault/vault-testing.utils'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { VaultService } from '../src/modules/vault/vault.service'
 
@@ -56,7 +57,7 @@ describeWithVault('VaultController (e2e)', () => {
 
   afterAll(async () => {
     if (testProjectSlug) {
-      await vaultController.handleDelete({ slug: testProjectSlug } as any).catch(() => {})
+      await vaultController.handleDelete(makeProjectWithDetails({ slug: testProjectSlug })).catch(() => {})
     }
 
     if (prisma) {
