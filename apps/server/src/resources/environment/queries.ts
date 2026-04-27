@@ -1,4 +1,4 @@
-import type { Environment, Prisma, Project } from '@prisma/client'
+import type { Environment, Prisma, Project } from '@cpn-console/database'
 import prisma from '@/prisma.js'
 
 // SELECT
