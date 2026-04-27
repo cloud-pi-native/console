@@ -754,7 +754,7 @@ NestJS injectables.
 **Fichiers** :
 - `src/cpin-module/service-chain/service-chain.*.ts`
 - `src/cpin-module/service-chain/open-cds-client.*.ts`
-- `src/cpin-module/infrastructure/auth/` (AuthModule partage)
+- `src/modules/infrastructure/auth/` (AuthModule partage)
 
 ---
 
