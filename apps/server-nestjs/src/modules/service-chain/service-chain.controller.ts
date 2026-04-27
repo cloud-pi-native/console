@@ -8,8 +8,8 @@ import {
   Post,
   // UseGuards,
 } from '@nestjs/common'
-// import { RequireAdminPermission } from '../../cpin-module/infrastructure/auth/admin-permission.decorator'
-// import { AdminPermissionGuard } from '../../cpin-module/infrastructure/auth/admin-permission.guard'
+// import { RequireAdminPermission } from '../infrastructure/auth/admin-permission.decorator'
+// import { AdminPermissionGuard } from '../infrastructure/auth/admin-permission.guard'
 import { ServiceChainService } from './service-chain.service'
 
 @Controller('api/v1/service-chains')

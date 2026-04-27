@@ -20,8 +20,8 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
 import { find } from '../../utils/iterable'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import {
   GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY,
   INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY,

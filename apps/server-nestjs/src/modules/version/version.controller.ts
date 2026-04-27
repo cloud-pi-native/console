@@ -1,5 +1,5 @@
 import { Controller, Get, Inject } from '@nestjs/common'
-import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 
 @Controller('api/v1/version')
 export class VersionController {

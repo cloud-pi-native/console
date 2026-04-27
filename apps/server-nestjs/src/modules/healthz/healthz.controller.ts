@@ -1,8 +1,8 @@
 import { Controller, Get, Inject } from '@nestjs/common'
 import { HealthCheck, HealthCheckService } from '@nestjs/terminus'
-import { DatabaseHealthService } from '../../cpin-module/infrastructure/database/database-health.service'
 import { ArgoCDHealthService } from '../argocd/argocd-health.service'
 import { GitlabHealthService } from '../gitlab/gitlab-health.service'
+import { DatabaseHealthService } from '../infrastructure/database/database-health.service'
 import { KeycloakHealthService } from '../keycloak/keycloak-health.service'
 import { VaultHealthService } from '../vault/vault-health.service'
 

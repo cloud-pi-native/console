@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 
 @Injectable()
 export class ArgoCDHealthService {

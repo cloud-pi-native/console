@@ -2,7 +2,7 @@ import type { Mocked } from 'vitest'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import {
   makeGroupRepresentation,
   makeProjectEnvironment,

@@ -1,6 +1,6 @@
 import type { Prisma } from '@prisma/client'
 import { Inject, Injectable } from '@nestjs/common'
-import { PrismaService } from '../../cpin-module/infrastructure/database/prisma.service'
+import { PrismaService } from '../infrastructure/database/prisma.service'
 
 export const projectSelect = {
   id: true,
