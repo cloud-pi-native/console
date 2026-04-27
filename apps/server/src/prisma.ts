@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@cpn-console/database'
 
 const prisma = new PrismaClient()
 

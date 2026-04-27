@@ -26,8 +26,6 @@
     "kube:e2e-ci": "echo 'check cache'",
     "lint": "eslint ./",
     "test": "vitest run",
-    "test:cov": "vitest run --coverage",
-    "test:e2e-ci": "echo 'check cache'",
     "test:watch": "vitest"
   },
   "dependencies": {
