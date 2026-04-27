@@ -1,5 +1,5 @@
+import type { AdminRole, AdminToken, PersonalAccessToken, Prisma, User } from '@cpn-console/database'
 import type { userContract, XOR } from '@cpn-console/shared'
-import type { AdminRole, AdminToken, PersonalAccessToken, Prisma, User } from '@prisma/client'
 import type { UserDetails } from '@/types/index.js'
 import { createHash } from 'node:crypto'
 import prisma from '@/prisma.js'
