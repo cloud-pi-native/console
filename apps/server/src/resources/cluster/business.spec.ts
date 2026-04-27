@@ -1,4 +1,4 @@
-import type { Cluster, Environment } from '@prisma/client'
+import type { Cluster, Environment } from '@cpn-console/database'
 import { faker } from '@faker-js/faker'
 import { describe, expect, it, vi } from 'vitest'
 import prisma from '../../__mocks__/prisma.js'
