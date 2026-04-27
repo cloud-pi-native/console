@@ -1,4 +1,4 @@
-import type { Prisma, User } from '@prisma/client'
+import type { Prisma, User } from '@cpn-console/database'
 import prisma from '@/prisma.js'
 
 type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>
