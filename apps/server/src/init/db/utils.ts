@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Prisma } from '@prisma/client'
+import { Prisma } from '@cpn-console/database'
 
 // eslint-disable-next-line no-extend-native
 BigInt.prototype.toJSON = function () {

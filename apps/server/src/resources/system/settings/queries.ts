@@ -1,4 +1,4 @@
-import type { Prisma, SystemSetting } from '@prisma/client'
+import type { Prisma, SystemSetting } from '@cpn-console/database'
 import prisma from '@/prisma.js'
 
 export function upsertSystemSetting(newSystemSetting: SystemSetting) {
