@@ -1,6 +1,28 @@
+packages:
+  - "packages/**"
+  - "plugins/**"
+  - "apps/**"
+  - "!apps/server/src/plugins/external/**"
+  - "playwright/**"
+allowBuilds:
+  '@nestjs/core': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  esbuild: true
+  msw: true
+  prisma: true
+  protobufjs: true
+  vue-demi: true
+allowUnusedPatches: true
+
+autoInstallPeers: true
+injectWorkspacePackages: true
 # minimum number of minutes that must pass after a version is published before
 # pnpm will install it. This applies to all dependencies, including transitive ones.
 minimumReleaseAge: 1440 # 1 day
+patchedDependencies:
+  "@gouvminint/vue-dsfr": patches/@gouvminint__vue-dsfr.patch
+  fastify-keycloak-adapter@2.3.2: patches/fastify-keycloak-adapter@2.3.2.patch
 
 shellEmulator: true
 
@@ -12,16 +34,3 @@ trustPolicyExclude:
   - semver@6.3.1
   - chokidar@4.0.3
   - pino@9.14.0
-
-autoInstallPeers: true
-injectWorkspacePackages: true
-packages:
-  - "packages/**"
-  - "plugins/**"
-  - "apps/**"
-  - "!apps/server/src/plugins/external/**"
-  - "playwright/**"
-patchedDependencies:
-  "@gouvminint/vue-dsfr": patches/@gouvminint__vue-dsfr.patch
-  fastify-keycloak-adapter@2.3.2: patches/fastify-keycloak-adapter@2.3.2.patch
-allowUnusedPatches: true
