@@ -1,5 +1,62 @@
 # Changelog
 
+## [9.17.0](https://github.com/cloud-pi-native/console/compare/v9.16.1...v9.17.0) (2026-04-27)
+
+
+### Features
+
+* add ArgCD support for fined grained permissions ([db253d7](https://github.com/cloud-pi-native/console/commit/db253d79a0b5d15ad677060704c68f669b4d221a))
+* add Keycloak support for fined grained permissions ([0b9efdb](https://github.com/cloud-pi-native/console/commit/0b9efdb5e88651834472e6d7133198f60b3d59cd))
+* add Vault support for fined grained permissions ([15ba94e](https://github.com/cloud-pi-native/console/commit/15ba94e00f042f6711ee60ed56869338b72d15aa))
+* **gitlab:** upstream support for role binding on NestJS ([2b1d524](https://github.com/cloud-pi-native/console/commit/2b1d524b50b996f791b5e9f6df1af6271086a190))
+* **server-nestjs:** add new ServiceChain (OpenCDS) module ([8903ed7](https://github.com/cloud-pi-native/console/commit/8903ed79b0c9076776d2627c944bcfb61b5b42f0))
+* **server-nestjs:** expose swagger-ui on client UI ([3dc75b0](https://github.com/cloud-pi-native/console/commit/3dc75b023ff0374b56071d82829bbde321dd6fc4))
+
+
+### Bug Fixes
+
+* dotenv doesn't overload existing env var ([7d4e0f0](https://github.com/cloud-pi-native/console/commit/7d4e0f006bd7c3c42fff5761dd59589f9ff3abcd))
+* GitLab integration test leaking undeleted users ([3a6644f](https://github.com/cloud-pi-native/console/commit/3a6644ff976507e08c3886002b7119a9e90e6925))
+* root admin role should be externally managed ([4dbd4ed](https://github.com/cloud-pi-native/console/commit/4dbd4ed6caf74016577a4f3f40457e5f1b06071e))
+* **server-nestjs:** migrate opencds client from Axios to undici ([ae0aa31](https://github.com/cloud-pi-native/console/commit/ae0aa312336430490e717b61bc3b8b82febe1ed2))
+
+
+### Miscellaneous Chores
+
+* add GitLab e2e test ([d0edff4](https://github.com/cloud-pi-native/console/commit/d0edff4f8b7562cecf546f450a940dc1e1a176dd))
+* add hook wrapper second retry logging ([1a99fb2](https://github.com/cloud-pi-native/console/commit/1a99fb255dad2e3d15fa15739fe476eaab4f18ad))
+* **client:** migrate from bitnamylegacy docker image ([927c838](https://github.com/cloud-pi-native/console/commit/927c83895ebedb58d7cab2bbbb9542e913987917))
+* enfore stricter testing type checking ([8482472](https://github.com/cloud-pi-native/console/commit/84824727fbdc5eb8ab087e90763761efe6198568))
+* fix Sonarlint keep trying to change connectionId ([6738c84](https://github.com/cloud-pi-native/console/commit/6738c84374d55e3bd24cd0471695559d5c05bc39))
+* **nginx-strangler:** change service-chain routing from server to server-nestjs ([75d03bc](https://github.com/cloud-pi-native/console/commit/75d03bce16f8acfad63d6b18a60ac60687b60295))
+* **opencds:** use 3100 instead of 6000 for exposed port ([8272c76](https://github.com/cloud-pi-native/console/commit/8272c76828f2ee02066e9fc39a84e4d48138b9ee))
+* **playwright:** bump to 1.59.1 ([a83d246](https://github.com/cloud-pi-native/console/commit/a83d246e0daba8440f8ca4399b0182e505b2463f))
+* **playwright:** switch back to only one worker in CI ([29a659f](https://github.com/cloud-pi-native/console/commit/29a659f6bc6e6aec18975cf4dd6d28b8ee8b7810))
+* remove dotenv dep ([0383fa7](https://github.com/cloud-pi-native/console/commit/0383fa7bc2be1db645779ed5dda716e689830cce))
+* remove duplicate admin config in example ([66a4036](https://github.com/cloud-pi-native/console/commit/66a403622b20472d9b963a5f63e0e8951501aa89))
+* remove js-yaml e18e warning ([bc7fc12](https://github.com/cloud-pi-native/console/commit/bc7fc12550270dce6d3d38f031307178dd9da58e))
+* **server-nestjs:** disable auth guard on service-chain (waiting on keycloak module implem) ([28ce0d7](https://github.com/cloud-pi-native/console/commit/28ce0d7b82a2e812dd87bc7ce3b3d394300e1b86))
+* **server-nestjs:** move infrastructure modules from cpin-module to modules directory ([275df7c](https://github.com/cloud-pi-native/console/commit/275df7c6194281abf06885223e0cfcaf4754cc8d))
+* **server-nestjs:** move module to final modules directory ([2191ef7](https://github.com/cloud-pi-native/console/commit/2191ef7fe93e33d970bd85df64a2519165fffae5))
+* **server-nestjs:** remove useless ApplicationInitializationService ([f47e6ae](https://github.com/cloud-pi-native/console/commit/f47e6ae195662841ff84d57b8887393a469d8e98))
+* **server-nestjs:** remove useless CpinModule core modules ([ec6c582](https://github.com/cloud-pi-native/console/commit/ec6c582a95868edafd4f9cb45e115bf9da804036))
+* **server-nestjs:** remove useless HttpClientService ([8bf627b](https://github.com/cloud-pi-native/console/commit/8bf627baf2b17263ce8a8e8544be89c07933c400))
+* **server-nestjs:** remove useless ServerService service ([f50f0e5](https://github.com/cloud-pi-native/console/commit/f50f0e5b59a661d065d448196af14955b9fde9a0))
+* **server-nestjs:** rework Dockerfile for dev mode ([8c634fc](https://github.com/cloud-pi-native/console/commit/8c634fc4dde0051e989750deafb85d230ba689f7))
+* **service-chain:** fix env vars not being coherent between legacy and nestjs backends ([fe796a2](https://github.com/cloud-pi-native/console/commit/fe796a25f2b7b76c5cd797a1f3c6cb5c1f346751))
+* update dev commands in package.json to account for server-nestjs ([7314511](https://github.com/cloud-pi-native/console/commit/731451137a16feb12fd064acaad092e6274d9d9b))
+* upstream static env var to infos ([f2c3e6c](https://github.com/cloud-pi-native/console/commit/f2c3e6c21ad4ab5fed76e1572ebb65019f0c54ad))
+
+
+### Docs
+
+* **server-nestjs:** update modularization documents ([d97c54b](https://github.com/cloud-pi-native/console/commit/d97c54bd8477a2e9ff7c8a0a276c2010b62991b1))
+
+
+### Refactoring
+
+* **argocd:** migrate ArgoCD to NestJS ([2926bb9](https://github.com/cloud-pi-native/console/commit/2926bb92abe3474dbe356ba388fbdfa5f1f8765d))
+
 ## [9.16.1](https://github.com/cloud-pi-native/console/compare/v9.16.0...v9.16.1) (2026-04-13)
 
 
