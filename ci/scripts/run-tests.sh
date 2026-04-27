@@ -113,7 +113,7 @@ fi
 
 # Run unit tests
 if [ "$RUN_UNIT_TESTS" == "true" ]; then
-  npm run test:cov
+  npm run test -- --coverage
 fi
 
 # Run e2e tests
