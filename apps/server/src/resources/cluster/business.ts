@@ -1,5 +1,5 @@
+import type { Prisma, Project, User } from '@cpn-console/database'
 import type { Cluster, clusterContract, ClusterDetails, Kubeconfig } from '@cpn-console/shared'
-import type { Prisma, Project, User } from '@prisma/client'
 import type { Resources } from '@/types/index.js'
 import { ClusterDetailsSchema, ClusterPrivacy } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
