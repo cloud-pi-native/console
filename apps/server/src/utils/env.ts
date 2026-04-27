@@ -1,10 +1,18 @@
 import fs from 'node:fs'
+import path from 'node:path'
+import { parseEnv } from 'node:util'
 
-if (process.env.INTEGRATION === 'true' && fs.existsSync('.env.integ'))
-  process.loadEnvFile('.env.integ')
+if (process.env.DOCKER !== 'true' && fs.existsSync('.env')) {
+  for (const [key, value] of Object.entries(parseEnv(fs.readFileSync(path.resolve('.env'), 'utf-8')))) {
+    if (value) process.env[key] = value
+  }
+}
 
-if (process.env.DOCKER !== 'true' && fs.existsSync('.env'))
-  process.loadEnvFile('.env')
+if (process.env.INTEGRATION === 'true' && fs.existsSync('.env.integ')) {
+  for (const [key, value] of Object.entries(parseEnv(fs.readFileSync(path.resolve('.env.integ'), 'utf-8')))) {
+    if (value) process.env[key] = value
+  }
+}
 
 // application mode
 export const isDev = process.env.NODE_ENV === 'development'
