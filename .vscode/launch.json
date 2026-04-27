@@ -17,6 +17,7 @@
         "integ"
       ],
       "console": "integratedTerminal",
+      "envFile": "apps/server/.env.integ",
       "restart": true,
       "presentation": {
         "hidden": true
@@ -100,6 +101,7 @@
         "run",
         "start:dev"
       ],
+      "envFile": "apps/server-nestjs/.env.integ",
       "console": "integratedTerminal",
       "restart": true,
       "presentation": {
