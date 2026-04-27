@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
-import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/telemetry.decorator'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
 import { generateGitlabMirrorCredPath, generateProjectPath, generateTechReadOnlyCredPath } from './vault.utils'
 

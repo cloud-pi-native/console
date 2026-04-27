@@ -1,8 +1,8 @@
 import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { Logger } from 'nestjs-pino'
-import { ConfigurationService } from './cpin-module/infrastructure/configuration/configuration.service'
 import { MainModule } from './main.module'
+import { ConfigurationService } from './modules/infrastructure/configuration/configuration.service'
 
 async function bootstrap() {
   const app = await NestFactory.create(MainModule, { bufferLogs: true })

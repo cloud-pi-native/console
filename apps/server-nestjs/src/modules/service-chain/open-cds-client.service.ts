@@ -1,7 +1,7 @@
 import type { Dispatcher, HeadersInit, Response } from 'undici'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Agent, fetch, Headers, ProxyAgent } from 'undici'
-import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 
 const openCdsDisabledMessage
   = 'OpenCDS is disabled, please set OPENCDS_URL in your relevant .env file. See .env-example'

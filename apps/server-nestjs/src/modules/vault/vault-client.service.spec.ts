@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from './vault-client.service'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
 

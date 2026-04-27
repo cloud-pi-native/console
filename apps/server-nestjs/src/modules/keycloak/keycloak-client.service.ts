@@ -5,8 +5,8 @@ import type { ProjectWithDetails } from './keycloak-datastore.service'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
-import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
-import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/telemetry.decorator'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { CONSOLE_GROUP_NAME, SUBGROUPS_PAGINATE_QUERY_MAX } from './keycloak.constants'
 
 type With<T, K extends keyof T> = T & Required<Pick<T, K>>

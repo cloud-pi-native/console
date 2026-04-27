@@ -1,8 +1,8 @@
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
-import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
-import { StartActiveSpan } from '../../cpin-module/infrastructure/telemetry/telemetry.decorator'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 
 export interface VaultFetchOptions {
   method?: string

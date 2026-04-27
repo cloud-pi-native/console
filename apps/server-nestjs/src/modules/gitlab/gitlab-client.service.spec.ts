@@ -4,7 +4,7 @@ import type { MockedFunction } from 'vitest'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep, mockReset } from 'vitest-mock-extended'
-import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { GITLAB_REST_CLIENT, GitlabClientService } from './gitlab-client.service'
 import {
   makeAccessTokenExposedSchema,

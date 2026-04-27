@@ -3,7 +3,7 @@ import type { Dispatcher, RequestInit } from 'undici'
 import { Test } from '@nestjs/testing'
 import { Agent, fetch, Headers, ProxyAgent, Response } from 'undici'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ConfigurationService } from '../../cpin-module/infrastructure/configuration/configuration.service'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { OpenCdsClientError, OpenCdsClientService } from './open-cds-client.service'
 
 vi.mock('undici', async (importOriginal) => {
