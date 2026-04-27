@@ -159,10 +159,6 @@
         "@cpn-console/client",
         "run",
         "integ",
-        "--",
-        "--port",
-        "8080",
-        "--strictPort"
       ],
       "console": "integratedTerminal",
       "restart": true,
@@ -189,10 +185,6 @@
         "@cpn-console/client",
         "run",
         "dev",
-        "--",
-        "--port",
-        "8080",
-        "--strictPort"
       ],
       "console": "integratedTerminal",
       "restart": true,
@@ -216,10 +208,6 @@
         "@cpn-console/client",
         "run",
         "integ",
-        "--",
-        "--port",
-        "8080",
-        "--strictPort"
       ],
       "console": "integratedTerminal",
       "restart": true,
@@ -243,10 +231,6 @@
         "@cpn-console/client",
         "run",
         "dev",
-        "--",
-        "--port",
-        "8080",
-        "--strictPort"
       ],
       "console": "integratedTerminal",
       "restart": true,
