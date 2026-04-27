@@ -1,4 +1,4 @@
-import type { Project, ProjectMembers, ProjectRole } from '@prisma/client'
+import type { Project, ProjectMembers, ProjectRole } from '@cpn-console/database'
 import { faker } from '@faker-js/faker'
 import { describe, expect, it, vi } from 'vitest'
 import { BadRequest400 } from '@/utils/errors.js'
