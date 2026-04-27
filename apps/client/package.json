@@ -22,7 +22,6 @@
     "lint:ts": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' eslint ./",
     "preview": "vite preview --port 8080",
     "test": "vitest run",
-    "test:cov": "vitest run --coverage",
     "type-check": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
