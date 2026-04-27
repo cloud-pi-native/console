@@ -21,6 +21,9 @@
       "presentation": {
         "hidden": true
       },
+      "env": {
+        "INTEGRATION": "true"
+      },
       "skipFiles": [
         "<node_internals>/**",
         "${workspaceFolder}/node_modules/**/*.js"
@@ -105,6 +108,9 @@
       "presentation": {
         "hidden": true
       },
+      "env": {
+        "INTEGRATION": "true"
+      },
       "skipFiles": [
         "<node_internals>/**",
         "${workspaceFolder}/node_modules/**/*.js"
@@ -159,10 +165,6 @@
         "@cpn-console/client",
         "run",
         "integ",
-        "--",
-        "--port",
-        "8080",
-        "--strictPort"
       ],
       "console": "integratedTerminal",
       "restart": true,
@@ -189,10 +191,6 @@
         "@cpn-console/client",
         "run",
         "dev",
-        "--",
-        "--port",
-        "8080",
-        "--strictPort"
       ],
       "console": "integratedTerminal",
       "restart": true,
@@ -216,10 +214,6 @@
         "@cpn-console/client",
         "run",
         "integ",
-        "--",
-        "--port",
-        "8080",
-        "--strictPort"
       ],
       "console": "integratedTerminal",
       "restart": true,
@@ -243,10 +237,6 @@
         "@cpn-console/client",
         "run",
         "dev",
-        "--",
-        "--port",
-        "8080",
-        "--strictPort"
       ],
       "console": "integratedTerminal",
       "restart": true,
