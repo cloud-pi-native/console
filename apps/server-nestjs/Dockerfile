@@ -60,6 +60,7 @@ FROM dev AS build
 
 # Build shared (génère dist/ et types/)
 RUN pnpm --filter @cpn-console/logger run build
+RUN pnpm --filter @cpn-console/database run build
 RUN pnpm --filter @cpn-console/shared run build
 
 # Build hooks (génère dist/ et types/ nécessaires aux imports)
@@ -69,6 +70,7 @@ RUN pnpm --filter @cpn-console/hooks run build
 RUN pnpm --filter @cpn-console/server-nestjs install --frozen-lockfile
 
 # Build server-nestjs
+RUN pnpm --filter @cpn-console/database run generate
 RUN pnpm --filter @cpn-console/server-nestjs run build
 
 # Export @cpn-console/server-nestjs to target build directory
