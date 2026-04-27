@@ -2,7 +2,7 @@ import type {
   Prisma,
   Project,
   ProjectRole,
-} from '@prisma/client'
+} from '@cpn-console/database'
 
 import prisma from '@/prisma.js'
 
