@@ -26,9 +26,8 @@
     "kube:e2e-ci": "echo 'check cache'",
     "lint": "eslint ./",
     "test": "vitest run",
-    "test:cov": "vitest run --coverage",
-    "test:e2e-ci": "echo 'check cache'",
-    "test:watch": "vitest"
+    "test:cov": "pnpm run test --coverage",
+    "test:watch": "pnpm run test --watch"
   },
   "dependencies": {
     "@cpn-console/logger": "workspace:*",
