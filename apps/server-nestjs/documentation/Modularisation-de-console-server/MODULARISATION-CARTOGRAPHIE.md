@@ -195,11 +195,11 @@ Plus le score est eleve, plus le module est prioritaire.
 | 17 | service-chain | Metier | 5.9 | V3 | S8 | ✅ MIGRE |
 | 18 | repository | Metier | 5.8 | V3 | S7-S8 | |
 | 19 | cluster | Metier | 5.7 | V3 | S7 | |
-| 20 | harbor (encapsulation) | Plugin | 5.6 | V4 | S9-S10 | |
+| 20 | harbor (encapsulation) | Plugin | 5.6 | V4 | S9-S10 | ✅ MIGRE |
 | 21 | project-service | Metier | 5.6 | V3 | S8 | |
 | 22 | argocd (encapsulation) | Plugin | 5.3 | V5 | S10-S11 | ✅ MIGRE |
 | 23 | project-role | Metier | 5.2 | V3 | S7-S8 | |
-| 24 | nexus (encapsulation) | Plugin | 5.1 | V4 | S10 | |
+| 24 | nexus (encapsulation) | Plugin | 5.1 | V4 | S10 | ✅ MIGRE |
 | 25 | project-member | Metier | 4.7 | V3 | S8 | |
 | 26 | project-secrets | Metier | 4.6 | V4 | S9 | |
 | 27 | project-bulk | Metier | 4.2 | V4 | S9-S10 | |
@@ -754,7 +754,7 @@ NestJS injectables.
 **Fichiers** :
 - `src/cpin-module/service-chain/service-chain.*.ts`
 - `src/cpin-module/service-chain/open-cds-client.*.ts`
-- `src/cpin-module/infrastructure/auth/` (AuthModule partage)
+- `src/modules/infrastructure/auth/` (AuthModule partage)
 
 ---
 
