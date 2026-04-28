@@ -30,5 +30,13 @@
       "dockerfile": "./apps/client/Dockerfile",
       "target": "prod"
     }
+  },
+  {
+    "name": "opencds-mockoon",
+    "build": {
+      "context": "./",
+      "dockerfile": "./packages/opencds/Dockerfile",
+      "target": "prod"
+    }
   }
 ]
