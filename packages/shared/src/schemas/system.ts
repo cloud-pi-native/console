@@ -18,3 +18,5 @@ export const SystemSettingSchema = z.object({
   key: z.string(),
   value: z.string(),
 })
+
+export type SystemSetting = Zod.infer<typeof SystemSettingSchema>
