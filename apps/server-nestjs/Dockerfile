@@ -6,7 +6,7 @@ WORKDIR /app
 COPY --chown=node:root package.json ./
 
 # Activer pnpm via corepack (version définie dans package.json "packageManager")
-RUN npm install --global corepack@latest && corepack enable && corepack enable pnpm
+RUN corepack enable
 
 # Copier les manifestes workspace (nécessaires pour que pnpm résolve les dépendances)
 COPY --chown=node:root pnpm-workspace.yaml pnpm-lock.yaml ./
@@ -53,7 +53,7 @@ RUN pnpm --filter @cpn-console/server-nestjs exec prisma generate \
       --schema=src/prisma/schema
 
 ENTRYPOINT ["pnpm", "--filter", "server-nestjs", "run"]
-CMD ["start:dev"]
+CMD ["dev"]
 
 # Build stage ----------------------------------------------------------------------
 FROM dev AS build
