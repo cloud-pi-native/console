@@ -6,7 +6,7 @@ WORKDIR /app
 COPY --chown=node:root package.json  ./
 
 # Install pnpm version defined in package.json "packageManager" property
-RUN npm install --global corepack@latest && corepack enable && corepack enable pnpm
+RUN corepack enable
 
 COPY --chown=node:root pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY --chown=node:root patches ./patches
@@ -24,7 +24,6 @@ RUN pnpm --filter @cpn-console/logger run build
 RUN pnpm --filter @cpn-console/shared run build
 
 COPY --chown=node:root apps/client/ ./apps/client/
-RUN pnpm --filter client run icons
 
 ENTRYPOINT [ "pnpm", "--filter", "client", "run", "dev" ]
 
