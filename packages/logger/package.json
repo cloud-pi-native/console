@@ -30,8 +30,8 @@
   "scripts": {
     "build": "tsc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
-    "format": "eslint ./ --fix",
-    "lint": "eslint ./"
+    "format": "eslint . --fix",
+    "lint": "eslint ."
   },
   "dependencies": {
     "pino": "9.14.0",
