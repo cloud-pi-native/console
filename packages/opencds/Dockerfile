@@ -1,12 +1,9 @@
 FROM node:18-alpine
 
-RUN npm install -g @mockoon/cli@9.3.0
-
-# Install curl for healthcheck and tzdata for timezone support.
-RUN apk --no-cache add curl tzdata
-
-# Do not run as root.
-RUN adduser --shell /bin/sh --disabled-password --gecos "" mockoon
+# Install mockoon-cli and dependencies.
+RUN corepack install -g @mockoon/cli@9.3.0 && \
+    apk --no-cache add curl tzdata && \
+    adduser --shell /bin/sh --disabled-password --gecos "" mockoon
 
 COPY ./opencds_api.json ./opencds_api.json
 RUN chown -R mockoon ./opencds_api.json
