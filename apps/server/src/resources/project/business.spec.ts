@@ -1,4 +1,4 @@
-import type { Cluster, Project, ProjectMembers, ProjectRole, User } from '@prisma/client'
+import type { Cluster, Project, ProjectMembers, ProjectRole, User } from '@cpn-console/database'
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import prisma from '../../__mocks__/prisma.js'
