@@ -178,7 +178,7 @@ Plus le score est eleve, plus le module est prioritaire.
 |------|--------|------|-------|-------|--------|--------|
 | 1 | vault (encapsulation) | Plugin | 8.5 | V3 | S7-S8 | |
 | 2 | system (health/version) | Metier | 7.8 | V1 | S3 | |
-| 3 | system/settings | Metier | 7.4 | V1 | S3 | |
+| 3 | system/settings | Metier | 7.4 | V1 | S3 | ✅ MIGRE |
 | 4 | system/config | Metier | 7.4 | V1 | S3-S4 | |
 | 5 | keycloak (encapsulation) | Plugin | 7.4 | V3 | S8 | |
 | 6 | admin-token | Metier | 7.1 | V1 | S3-S4 | |
