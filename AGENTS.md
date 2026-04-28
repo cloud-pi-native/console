@@ -67,7 +67,7 @@ Migrations: standard Prisma Migrate. Major version data migrations in `migration
 
 ## Main commands
 
-- `pnpm dev` : local Docker infra (keycloak, postgres, pgadmin) + server/client
+- `pnpm dev` : local Docker infra (keycloak, postgres) + server/client
 - `pnpm docker:dev` : fully containerized with Docker Compose Watch
 - `pnpm docker:integ` / `pnpm integ` : integration mode (remote env)
 - `pnpm fullsetup` : full install (deps, prisma generate, build, Docker images)
