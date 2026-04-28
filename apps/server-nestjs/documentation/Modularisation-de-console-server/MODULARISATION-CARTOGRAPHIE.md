@@ -246,7 +246,7 @@ les premiers modules via Nginx.
 
 ---
 
-### 2. system/settings
+### 2. system/settings — ✅ MIGRE (2026-04-28)
 
 | Attribut | Valeur |
 |----------|--------|
