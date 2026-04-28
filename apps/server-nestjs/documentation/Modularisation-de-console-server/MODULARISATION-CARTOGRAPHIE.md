@@ -176,14 +176,14 @@ Plus le score est eleve, plus le module est prioritaire.
 
 | Rang | Module | Type | Score | Vague | Sprint | Statut |
 |------|--------|------|-------|-------|--------|--------|
-| 1 | vault (encapsulation) | Plugin | 8.5 | V3 | S7-S8 | |
-| 2 | system (health/version) | Metier | 7.8 | V1 | S3 | |
+| 1 | vault (encapsulation) | Plugin | 8.5 | V3 | S7-S8 | ✅ MIGRE |
+| 2 | system (health/version) | Metier | 7.8 | V1 | S3 | ✅ MIGRE |
 | 3 | system/settings | Metier | 7.4 | V1 | S3 | |
 | 4 | system/config | Metier | 7.4 | V1 | S3-S4 | |
-| 5 | keycloak (encapsulation) | Plugin | 7.4 | V3 | S8 | |
+| 5 | keycloak (encapsulation) | Plugin | 7.4 | V3 | S8 | ✅ MIGRE |
 | 6 | admin-token | Metier | 7.1 | V1 | S3-S4 | |
 | 7 | user/tokens | Metier | 7.1 | V1 | S3-S4 | |
-| 8 | gitlab (encapsulation) | Plugin | 6.7 | V4 | S9 | |
+| 8 | gitlab (encapsulation) | Plugin | 6.7 | V4 | S9 | ✅ MIGRE |
 | 9 | service-monitor | Metier | 6.6 | V2 | S5 | |
 | 10 | user | Metier | 6.6 | V2 | S5 | |
 | 11 | stage | Metier | 6.5 | V2 | S5-S6 | |
@@ -197,7 +197,7 @@ Plus le score est eleve, plus le module est prioritaire.
 | 19 | cluster | Metier | 5.7 | V3 | S7 | |
 | 20 | harbor (encapsulation) | Plugin | 5.6 | V4 | S9-S10 | |
 | 21 | project-service | Metier | 5.6 | V3 | S8 | |
-| 22 | argocd (encapsulation) | Plugin | 5.3 | V5 | S10-S11 | |
+| 22 | argocd (encapsulation) | Plugin | 5.3 | V5 | S10-S11 | ✅ MIGRE |
 | 23 | project-role | Metier | 5.2 | V3 | S7-S8 | |
 | 24 | nexus (encapsulation) | Plugin | 5.1 | V4 | S10 | |
 | 25 | project-member | Metier | 4.7 | V3 | S8 | |
