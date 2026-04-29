@@ -1,11 +1,13 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { Mocked } from 'vitest'
-import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
+import type { ZoneWithDetails } from './vault-datastore.service'
+import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
+import { makeProjectWithDetails, makeVaultSecret, makeZoneWithDetails } from './vault-testing.utils.js'
 import { VaultService } from './vault.service'
 
 const projectRoleGroupNameRegex = /^project-(.*)-(admin|devops|developer|readonly|security)$/
@@ -72,9 +74,9 @@ describe('vaultService', () => {
     client.upsertAuthApproleRole.mockResolvedValue(undefined)
     client.deleteAuthApproleRole.mockResolvedValue(undefined)
     client.upsertIdentityGroupName.mockResolvedValue(undefined)
-    client.getIdentityGroupName.mockImplementation(async (groupName: string) => ({ data: { id: 'gid', name: groupName } } as any))
+    client.getIdentityGroupName.mockImplementation(async (groupName: string) => makeVaultSecret({ data: { id: 'gid', name: groupName } }))
     client.deleteIdentityGroupName.mockResolvedValue(undefined)
-    client.getSysAuth.mockResolvedValue({ 'oidc/': { accessor: 'oidc-accessor', type: 'oidc' } } as any)
+    client.getSysAuth.mockResolvedValue({ 'oidc/': { accessor: 'oidc-accessor', type: 'oidc' } })
     client.createIdentityGroupAlias.mockResolvedValue(undefined)
     client.listKvMetadata.mockResolvedValue([])
     client.delete.mockResolvedValue(undefined)
@@ -85,42 +87,28 @@ describe('vaultService', () => {
   })
 
   it('should reconcile on cron', async () => {
-    const mockProjects = [
-      {
-        slug: 'project-1',
-        name: 'Project 1',
-        id: '550e8400-e29b-41d4-a716-446655440000',
-        description: '',
-        plugins: [],
-        environments: [],
-      },
-      {
-        slug: 'project-2',
-        name: 'Project 2',
-        id: '660e8400-e29b-41d4-a716-446655440001',
-        description: '',
-        plugins: [],
-        environments: [],
-      },
-    ] satisfies ProjectWithDetails[]
-    const mockZones = [
-      { slug: 'z1', id: 'z1' },
-    ] satisfies ZoneWithDetails[]
+    const projects = faker.helpers.multiple(() => makeProjectWithDetails())
+    const zones = faker.helpers.multiple(() => makeZoneWithDetails())
 
-    datastore.getAllProjects.mockResolvedValue(mockProjects)
-    datastore.getAllZones.mockResolvedValue(mockZones)
+    datastore.getAllProjects.mockResolvedValue(projects)
+    datastore.getAllZones.mockResolvedValue(zones)
 
     await service.handleCron()
 
     expect(datastore.getAllProjects).toHaveBeenCalled()
     expect(datastore.getAllZones).toHaveBeenCalled()
-    expect(client.createSysMount).toHaveBeenCalledTimes(3)
-    expect(client.createSysMount).toHaveBeenCalledWith('project-1', expect.any(Object))
-    expect(client.createSysMount).toHaveBeenCalledWith('project-2', expect.any(Object))
-    expect(client.createSysMount).toHaveBeenCalledWith('zone-z1', expect.any(Object))
+    expect(client.createSysMount).toHaveBeenCalledTimes(projects.length + zones.length)
+    projects.forEach((project) => {
+      expect(client.createSysMount).toHaveBeenCalledWith(project.slug, expect.any(Object))
+    })
+    zones.forEach((zone) => {
+      expect(client.createSysMount).toHaveBeenCalledWith(`zone-${zone.slug}`, expect.any(Object))
+    })
   })
 
   it('should upsert project on event', async () => {
+    const project = makeProjectWithDetails()
+
     client.getIdentityGroupName.mockImplementation(async (groupName: string) => {
       const projectRoleMatch = groupName.match(projectRoleGroupNameRegex)
       if (projectRoleMatch) {
@@ -136,52 +124,46 @@ describe('vaultService', () => {
       return { data: { id: 'gid', name: groupName } }
     })
 
-    await service.handleUpsert({ slug: 'project-1' } as any)
-    expect(client.createSysMount).toHaveBeenCalledWith('project-1', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('app--project-1--admin', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('tech--project-1--ro', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--devops', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--developer', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--readonly', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--security', expect.any(Object))
+    await service.handleUpsert(project)
+
+    expect(client.createSysMount).toHaveBeenCalledWith(project.slug, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`app--${project.slug}--admin`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`tech--${project.slug}--ro`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--devops`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--readonly`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--security`, expect.any(Object))
     expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--admin', expect.any(Object))
     expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--readonly', expect.any(Object))
     expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--security', expect.any(Object))
     expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-admin', expect.any(Object))
     expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-readonly', expect.any(Object))
     expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-security', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-admin', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-devops', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-developer', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-readonly', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('project-project-1-security', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-admin`, expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-devops`, expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`, expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`, expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`, expect.any(Object))
     expect(client.createIdentityGroupAlias).not.toHaveBeenCalled()
   })
 
   it('should delete project and destroy secrets on event', async () => {
-    const mockProject = {
-      slug: 'project-1',
-      name: 'Project 1',
-      id: '550e8400-e29b-41d4-a716-446655440000',
-      description: '',
-      plugins: [],
-      environments: [],
-    } satisfies ProjectWithDetails
+    const project = makeProjectWithDetails()
 
-    await service.handleDelete(mockProject)
+    await service.handleDelete(project)
 
-    expect(client.deleteSysMounts).toHaveBeenCalledWith('project-1')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('app--project-1--admin')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('tech--project-1--ro')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--devops')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--developer')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--readonly')
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('project--project-1--security')
-    expect(client.deleteAuthApproleRole).toHaveBeenCalledWith('project-1')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-admin')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-devops')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-developer')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-readonly')
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith('project-project-1-security')
+    expect(client.deleteSysMounts).toHaveBeenCalledWith(project.slug)
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`app--${project.slug}--admin`)
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`tech--${project.slug}--ro`)
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--devops`)
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`)
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--readonly`)
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--security`)
+    expect(client.deleteAuthApproleRole).toHaveBeenCalledWith(project.slug)
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-admin`)
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-devops`)
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`)
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`)
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`)
   })
 })
