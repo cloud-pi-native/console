@@ -374,7 +374,9 @@ describe('gitlab-client', () => {
           name: 'Admin Auditor',
         }
         const gitlabUsersAllMock = gitlabMock.Users.all as MockedFunction<typeof gitlabMock.Users.all>
-        gitlabUsersAllMock.mockResolvedValue([makeExpandedUserSchema({ id: 1000, email: consoleUser.email, is_admin: true })])
+        gitlabUsersAllMock.mockResolvedValue([
+          makeExpandedUserSchema({ id: 1000, email: consoleUser.email, is_admin: true }),
+        ])
 
         await service.upsertUser({ ...gitlabUser, auditor: true }, { cpnUserId: consoleUser.id })
 
@@ -391,7 +393,9 @@ describe('gitlab-client', () => {
           name: 'Auditor Admin',
         }
         const gitlabUsersAllMock = gitlabMock.Users.all as MockedFunction<typeof gitlabMock.Users.all>
-        gitlabUsersAllMock.mockResolvedValue([makeExpandedUserSchema({ id: 1000, email: consoleUser.email, ...({ is_auditor: true } as any) })])
+        gitlabUsersAllMock.mockResolvedValue([
+          makeExpandedUserSchema({ id: 1000, email: consoleUser.email, is_auditor: true }),
+        ])
 
         await service.upsertUser({ ...gitlabUser, admin: true }, { cpnUserId: consoleUser.id })
 
