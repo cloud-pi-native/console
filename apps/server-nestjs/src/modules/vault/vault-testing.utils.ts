@@ -1,5 +1,5 @@
 import type { VaultSecret } from './vault-client.service.js'
-import type { ProjectWithDetails } from './vault-datastore.service'
+import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
 import { faker } from '@faker-js/faker'
 
 export function makeProjectWithDetails(overrides: Partial<ProjectWithDetails> = {}): ProjectWithDetails {
@@ -12,6 +12,14 @@ export function makeProjectWithDetails(overrides: Partial<ProjectWithDetails> = 
     plugins: [],
     ...overrides,
   } satisfies ProjectWithDetails
+}
+
+export function makeZoneWithDetails(overrides: Partial<ZoneWithDetails> = {}): ZoneWithDetails {
+  return {
+    id: faker.string.uuid(),
+    slug: faker.helpers.slugify(`test-zone-${faker.string.uuid()}`),
+    ...overrides,
+  } satisfies ZoneWithDetails
 }
 
 export function makeVaultSecret(overrides: Partial<VaultSecret> = {}): VaultSecret {

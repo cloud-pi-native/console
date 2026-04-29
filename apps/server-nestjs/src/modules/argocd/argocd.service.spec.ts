@@ -356,7 +356,7 @@ describe('argoCDService', () => {
     gitlab.listFiles.mockResolvedValue([])
     vault.readProjectValues.mockResolvedValue({ secret: 'value' })
 
-    gitlab.generateCreateOrUpdateAction.mockResolvedValue(null as any)
+    gitlab.generateCreateOrUpdateAction.mockResolvedValue(null)
 
     await expect(service.handleCron()).resolves.not.toThrow()
 
