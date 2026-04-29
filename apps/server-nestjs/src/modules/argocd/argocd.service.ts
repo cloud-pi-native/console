@@ -136,13 +136,18 @@ export class ArgoCDService {
       infraProject,
       zoneSlug,
     )
+    const deploymentActions = await this.generateDeploymentsUpdateActions(
+      project,
+      infraProject,
+      zoneSlug,
+    )
     const purgeEnvironmentActions = await this.generatePurgeEnvironmentActions(
       project,
       infraProject,
       zoneSlug,
     )
     return [
-      ...environmentActions,
+      ...(deploymentActions.length ? deploymentActions : environmentActions),
       ...purgeEnvironmentActions,
     ] satisfies CommitAction[]
   }
@@ -154,15 +159,14 @@ export class ArgoCDService {
   ): Promise<CommitAction[]> {
     const neededFiles = new Set<string>()
     const clusterLabelsInZone = new Set(
-      project.clusters
-        .filter(c => c.zone.slug === zoneSlug)
-        .map(c => c.label),
+      project.environments
+        .filter(e => e.cluster.zone.slug === zoneSlug)
+        .map(e => e.cluster.label),
     )
 
     project.environments.forEach((env) => {
-      const cluster = project.clusters.find(c => c.id === env.clusterId)
-      if (cluster?.zone.slug !== zoneSlug) return
-      neededFiles.add(formatEnvironmentValuesFilePath(project, cluster, env))
+      if (env.cluster?.zone.slug !== zoneSlug) return
+      neededFiles.add(formatEnvironmentValuesFilePath(project, env.cluster, env))
     })
 
     const existingFiles = await this.gitlab.listFiles(infraProject, {
@@ -198,13 +202,10 @@ export class ArgoCDService {
     this.logger.verbose(`Computing ArgoCD environment actions for project ${project.slug} in zone ${zoneSlug} (environments=${environments.length})`)
     const actions = await Promise.all(
       environments
-        .filter((env) => {
-          const cluster = project.clusters.find(c => c.id === env.clusterId)
-          return cluster?.zone.slug === zoneSlug
-        })
+        .filter(env => env.cluster?.zone.slug === zoneSlug)
         .map(env => this.generateEnvironmentUpdateAction(project, env, infraProject)),
     )
-    const filteredActions = actions.filter(a => !!a) as CommitAction[]
+    const filteredActions: CommitAction[] = actions.filter(a => !!a)
     this.logger.verbose(`Computed ArgoCD environment actions for project ${project.slug} in zone ${zoneSlug} (actions=${filteredActions.length})`)
     return filteredActions
   }
@@ -221,7 +222,7 @@ export class ArgoCDService {
       'environment.name': environment.name,
     })
     const vaultValues = await this.vault.readProjectValues(project.id) ?? {}
-    const cluster = project.clusters.find(c => c.id === environment.clusterId)
+    const cluster = environment.cluster
     if (!cluster) {
       this.logger.warn(`Cluster not found for environment ${environment.id} in project ${project.slug}`)
       throw new Error(`Cluster not found for environment ${environment.id}`)
@@ -233,23 +234,95 @@ export class ArgoCDService {
     const repo = project.repositories.find(r => r.isInfra)
     if (!repo) {
       this.logger.warn(`Infrastructure repository not found for project ${project.slug} (projectId=${project.id})`)
-      throw new Error(`Infra repository not found for project ${project.id}`)
+      return null
     }
-    const repoUrl = await this.gitlab.getOrCreateInfraGroupRepoPublicUrl(repo.internalRepoName)
+    const gitlabPublicProjectUrl = `${(await this.gitlab.getOrCreateProjectGroupPublicUrl())}/${project.slug}`
 
     const values = formatValues({
       project,
       environment,
       cluster,
-      gitlabPublicGroupUrl: await this.gitlab.getOrCreateProjectGroupPublicUrl(),
+      gitlabPublicProjectUrl,
       argocdExtraRepositories: this.config.argocdExtraRepositories,
       infraProject,
       valueFilePath,
-      repoUrl,
       vaultValues,
       argoNamespace: this.config.argoNamespace,
       envChartVersion: this.config.dsoEnvChartVersion,
       nsChartVersion: this.config.dsoNsChartVersion,
+    })
+
+    return this.gitlab.generateCreateOrUpdateAction(
+      infraProject,
+      'main',
+      valueFilePath,
+      stringify(values),
+    )
+  }
+
+  private async generateDeploymentsUpdateActions(
+    project: ProjectWithDetails,
+    infraProject: SimpleProjectSchema,
+    zoneSlug: string,
+  ): Promise<CommitAction[]> {
+    this.logger.verbose(`Computing ArgoCD deployment actions for project ${project.slug} in zone ${zoneSlug} (environments=${project.deployments.length})`)
+    const environments = project.deployments.reduce<
+      Record<string, { environment: ProjectWithDetails['environments'][number], deployments: ProjectWithDetails['deployments'][number][] }>
+    >((acc, deployment) => {
+      const environment = deployment.environment
+      if (acc[environment.id]) acc[environment.id].deployments.push(deployment)
+      else acc[environment.id] = { environment, deployments: [deployment] }
+      return acc
+    }, {})
+
+    const actions = await Promise.all(
+      Object.values(environments)
+        .filter(({ environment }) => environment.cluster?.zone.slug === zoneSlug)
+        .map(({ environment, deployments }) => this.generateEnvironmentWithDeploymentsUpdateAction(project, environment, deployments, infraProject)),
+    )
+
+    const filteredActions: CommitAction[] = actions.filter(a => !!a)
+    this.logger.verbose(`Computed ArgoCD deployment actions for project ${project.slug} in zone ${zoneSlug} (actions=${filteredActions.length})`)
+    return filteredActions
+  }
+
+  private async generateEnvironmentWithDeploymentsUpdateAction(
+    project: ProjectWithDetails,
+    environment: ProjectWithDetails['environments'][number],
+    deployments: ProjectWithDetails['deployments'][number][],
+    infraProject: SimpleProjectSchema,
+  ): Promise<CommitAction | null> {
+    const span = trace.getActiveSpan()
+    span?.setAttributes({
+      'project.slug': project.slug,
+      'environment.id': environment.id,
+      'environment.name': environment.name,
+    })
+    const vaultValues = await this.vault.readProjectValues(project.id) ?? {}
+    const cluster = environment.cluster
+    if (!cluster) {
+      this.logger.warn(`Cluster not found for environment ${environment.id} in project ${project.slug}`)
+      throw new Error(`Cluster not found for environment ${environment.id}`)
+    }
+    span?.setAttribute('zone.slug', cluster.zone.slug)
+
+    const valueFilePath = formatEnvironmentValuesFilePath(project, cluster, environment)
+
+    const gitlabPublicProjectUrl = `${(await this.gitlab.getOrCreateProjectGroupPublicUrl())}/${project.slug}`
+
+    const values = formatValues({
+      project,
+      environment,
+      cluster,
+      gitlabPublicProjectUrl,
+      argocdExtraRepositories: this.config.argocdExtraRepositories,
+      infraProject,
+      valueFilePath,
+      vaultValues,
+      argoNamespace: this.config.argoNamespace,
+      envChartVersion: this.config.dsoEnvChartVersion,
+      nsChartVersion: this.config.dsoNsChartVersion,
+      deployments,
     })
 
     return this.gitlab.generateCreateOrUpdateAction(
@@ -306,6 +379,8 @@ interface ValuesSchema {
     autosync: boolean
     vault: Record<string, any>
     repositories: {
+      name: string
+      id: string
       repoURL: string
       targetRevision: string
       path: string
@@ -349,7 +424,7 @@ function formatEnvironmentValuesFilePath(project: { name: string }, cluster: { l
 
 function getDistinctZones(project: ProjectWithDetails) {
   const zones = new Set<string>()
-  project.clusters.forEach(c => zones.add(c.zone.slug))
+  project.environments.forEach(e => zones.add(e.cluster.zone.slug))
   return [...zones]
 }
 
@@ -360,7 +435,7 @@ function splitExtraRepositories(extraRepositories: string | undefined): string[]
 
 function formatRepositoriesValues(
   repositories: ProjectWithDetails['repositories'],
-  repoUrl: string,
+  gitlabPublicProjectUrl: string,
   envName: string,
 ) {
   return repositories
@@ -368,12 +443,35 @@ function formatRepositoriesValues(
     .map((repository) => {
       const valueFiles = splitExtraRepositories(repository.helmValuesFiles?.replaceAll('<env>', envName))
       return {
-        repoURL: repoUrl,
+        id: repository.id,
+        name: repository.internalRepoName,
+        repoURL: `${gitlabPublicProjectUrl}/${repository.internalRepoName}.git`,
         targetRevision: repository.deployRevision || 'HEAD',
         path: repository.deployPath || '.',
         valueFiles,
       } satisfies ValuesSchema['application']['repositories'][number]
     })
+}
+
+function formatRepositoriesValuesFromDeployments(
+  deployments: ProjectWithDetails['deployments'][number][],
+  gitlabPublicProjectUrl: string,
+  envName: string,
+) {
+  return deployments.map(deployment =>
+    deployment.deploymentSources
+      .map((source) => {
+        const valueFiles = splitExtraRepositories(source.helmValuesFiles?.replaceAll('<env>', envName))
+        return {
+          name: source.repository.internalRepoName,
+          id: source.repository.id,
+          repoURL: `${gitlabPublicProjectUrl}/${source.repository.internalRepoName}.git`,
+          targetRevision: source.targetRevision || 'HEAD',
+          path: source.path || '.',
+          valueFiles,
+        } satisfies ValuesSchema['application']['repositories'][number]
+      }),
+  ).flat()
 }
 
 function formatEnvironmentValues(
@@ -402,13 +500,13 @@ function formatEnvironmentValues(
 }
 
 interface FormatSourceRepositoriesValuesOptions {
-  gitlabPublicGroupUrl: string
+  gitlabPublicProjectUrl: string
   argocdExtraRepositories?: string
   projectPlugins?: ProjectWithDetails['plugins']
 }
 
 function formatSourceRepositoriesValues(
-  { gitlabPublicGroupUrl, argocdExtraRepositories, projectPlugins }: FormatSourceRepositoriesValuesOptions,
+  { gitlabPublicProjectUrl, argocdExtraRepositories, projectPlugins }: FormatSourceRepositoriesValuesOptions,
 ): string[] {
   let projectExtraRepositories = ''
   if (projectPlugins) {
@@ -417,7 +515,7 @@ function formatSourceRepositoriesValues(
   }
 
   return [
-    `${gitlabPublicGroupUrl}/**`,
+    `${gitlabPublicProjectUrl}/**`,
     ...splitExtraRepositories(argocdExtraRepositories),
     ...splitExtraRepositories(projectExtraRepositories),
   ]
@@ -459,31 +557,31 @@ function formatArgoCDValues(options: FormatArgoCDValuesOptions) {
 interface FormatValuesOptions {
   project: ProjectWithDetails
   environment: ProjectWithDetails['environments'][number]
-  cluster: ProjectWithDetails['clusters'][number]
-  gitlabPublicGroupUrl: string
+  cluster: ProjectWithDetails['environments'][number]['cluster']
+  gitlabPublicProjectUrl: string
   argocdExtraRepositories?: string
   vaultValues: Record<string, any>
   infraProject: SimpleProjectSchema
   valueFilePath: string
-  repoUrl: string
   argoNamespace: string
   envChartVersion: string
   nsChartVersion: string
+  deployments?: ProjectWithDetails['deployments'][number][]
 }
 
 function formatValues({
   project,
   environment,
   cluster,
-  gitlabPublicGroupUrl,
+  gitlabPublicProjectUrl,
   argocdExtraRepositories,
   vaultValues,
   infraProject,
   valueFilePath,
-  repoUrl,
   argoNamespace,
   envChartVersion,
   nsChartVersion,
+  deployments,
 }: FormatValuesOptions) {
   return {
     common: formatCommon({ project, environment }),
@@ -507,7 +605,7 @@ function formatValues({
         memory: `${environment.memory}Gi`,
       },
       sourceRepositories: formatSourceRepositoriesValues({
-        gitlabPublicGroupUrl,
+        gitlabPublicProjectUrl,
         argocdExtraRepositories,
         projectPlugins: project.plugins,
       }),
@@ -517,11 +615,13 @@ function formatValues({
       },
       autosync: environment.autosync,
       vault: vaultValues,
-      repositories: formatRepositoriesValues(
-        project.repositories,
-        repoUrl,
-        environment.name,
-      ),
+      repositories: deployments
+        ? formatRepositoriesValuesFromDeployments(deployments, gitlabPublicProjectUrl, environment.name)
+        : formatRepositoriesValues(
+            project.repositories,
+            gitlabPublicProjectUrl,
+            environment.name,
+          ),
     },
     features: {
       fineGrainedRoles: {

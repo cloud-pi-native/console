@@ -1,8 +1,8 @@
 import type { Prisma } from '@prisma/client'
 import { Inject, Injectable } from '@nestjs/common'
-import { PrismaService } from '../infrastructure/database/prisma.service'
+import { PrismaService } from '../infrastructure/database/prisma.service.js'
 
-export const projectSelect = {
+const projectSelect = {
   id: true,
   name: true,
   slug: true,
@@ -88,17 +88,11 @@ export const projectSelect = {
   },
 } satisfies Prisma.ProjectSelect
 
-export type ProjectWithDetails = Prisma.ProjectGetPayload<{
-  select: typeof projectSelect
-}>
-
 @Injectable()
-export class ArgoCDDatastoreService {
+export class ProjectDatastoreService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  async getAllProjects(): Promise<ProjectWithDetails[]> {
-    return this.prisma.project.findMany({
-      select: projectSelect,
-    })
+  getProjectWithDetails(projectId: string) {
+    return this.prisma.project.findUnique({ where: { id: projectId }, select: projectSelect })
   }
 }
