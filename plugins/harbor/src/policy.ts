@@ -94,11 +94,11 @@ export function makeDefaultPolicy(projectId: number): Policy {
 
 export async function addRetentionPolicy(
   projectName: string,
-  projectId: number,
+  harborProjectId: number,
 ): Promise<void> {
   const api = getApi()
-  const ref = Number(projectId)
-  if (Number.isNaN(ref)) throw new Error(`Invalid projectId: ${projectId}`)
+  const ref = Number(harborProjectId)
+  if (Number.isNaN(ref)) throw new Error(`Invalid projectId: ${harborProjectId}`)
 
   const policy: Policy = makeDefaultPolicy(ref)
   const project = await api.projects.getProject(projectName)
