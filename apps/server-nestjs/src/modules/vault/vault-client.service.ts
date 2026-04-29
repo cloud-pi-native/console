@@ -3,7 +3,7 @@ import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
-import { generateGitlabMirrorCredPath, generateProjectPath, generateTechReadOnlyCredPath } from './vault.utils'
+import { generateGitlabMirrorCredPath, generateProjectPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath } from './vault.utils'
 
 interface VaultSysPoliciesAclUpsertRequest {
   policy: string
@@ -66,6 +66,12 @@ interface VaultIdentityGroupResponse {
       name?: string
     }
   }
+}
+
+export interface SonarqubeUserSecret {
+  SONAR_USERNAME: string
+  SONAR_PASSWORD: string
+  SONAR_TOKEN: string
 }
 
 export interface VaultMetadata {
@@ -235,6 +241,48 @@ export class VaultClientService {
       'vault.kv.path': vaultPath,
     })
     await this.write(creds, vaultPath)
+  }
+
+  @StartActiveSpan()
+  async readSonarqubeUser(projectSlug: string): Promise<VaultSecret<SonarqubeUserSecret> | null> {
+    const vaultPath = generateSonarqubeCredPath(this.config.projectRootDir, projectSlug)
+    const span = trace.getActiveSpan()
+    span?.setAttributes({
+      'project.slug': projectSlug,
+      'vault.kv.path': vaultPath,
+    })
+    this.logger.verbose(`Reading Vault SonarQube user credentials (projectSlug=${projectSlug})`)
+    return await this.read<SonarqubeUserSecret>(vaultPath).catch((error) => {
+      if (error instanceof VaultError && error.kind === 'NotFound') return null
+      throw error
+    })
+  }
+
+  @StartActiveSpan()
+  async writeSonarqubeUser(projectSlug: string, secret: SonarqubeUserSecret): Promise<void> {
+    const vaultPath = generateSonarqubeCredPath(this.config.projectRootDir, projectSlug)
+    const span = trace.getActiveSpan()
+    span?.setAttributes({
+      'project.slug': projectSlug,
+      'vault.kv.path': vaultPath,
+    })
+    this.logger.verbose(`Writing Vault SonarQube user credentials (projectSlug=${projectSlug})`)
+    await this.write(secret, vaultPath)
+  }
+
+  @StartActiveSpan()
+  async deleteSonarqubeUser(projectSlug: string): Promise<void> {
+    const vaultPath = generateSonarqubeCredPath(this.config.projectRootDir, projectSlug)
+    const span = trace.getActiveSpan()
+    span?.setAttributes({
+      'project.slug': projectSlug,
+      'vault.kv.path': vaultPath,
+    })
+    this.logger.verbose(`Deleting Vault SonarQube user credentials (projectSlug=${projectSlug})`)
+    await this.delete(vaultPath).catch((error) => {
+      if (error instanceof VaultError && error.kind === 'NotFound') return
+      throw error
+    })
   }
 
   @StartActiveSpan()
