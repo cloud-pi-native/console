@@ -206,7 +206,7 @@ describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
         namespaceId: infraGroup.id,
         initializeWithReadme: true,
         defaultBranch: 'main',
-      } as any)
+      })
       infraRepoId = created.id
     }
 
