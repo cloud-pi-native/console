@@ -1,4 +1,4 @@
-import type { Cluster, Stage } from '@prisma/client'
+import type { Cluster, Stage } from '@cpn-console/database'
 import prisma from '@/prisma.js'
 
 export function listStages() {

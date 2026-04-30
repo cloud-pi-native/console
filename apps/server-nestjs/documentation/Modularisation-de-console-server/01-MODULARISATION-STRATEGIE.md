@@ -114,7 +114,7 @@ module.exports = { findById, create };
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { User } from '@prisma/client';
+import { User } from '@cpn-console/database';
 
 @Injectable()
 export class UsersService {

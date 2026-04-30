@@ -17,6 +17,7 @@
         "integ"
       ],
       "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/apps/server/.env.integ",
       "restart": true,
       "presentation": {
         "hidden": true
@@ -39,6 +40,7 @@
         "dev"
       ],
       "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/apps/server/.env",
       "restart": true,
       "presentation": {
         "hidden": true
@@ -100,6 +102,7 @@
         "run",
         "start:dev"
       ],
+      "envFile": "${workspaceFolder}/apps/server-nestjs/.env.integ",
       "console": "integratedTerminal",
       "restart": true,
       "presentation": {
@@ -123,6 +126,7 @@
         "start:dev"
       ],
       "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/apps/server-nestjs/.env",
       "restart": true,
       "presentation": {
         "hidden": true

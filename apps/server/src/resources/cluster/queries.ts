@@ -1,4 +1,4 @@
-import type { Cluster, Environment, Kubeconfig, Prisma, Project, Stage } from '@prisma/client'
+import type { Cluster, Environment, Kubeconfig, Prisma, Project, Stage } from '@cpn-console/database'
 import prisma from '@/prisma.js'
 
 export async function getClustersAssociatedWithProject(projectId: Project['id']) {

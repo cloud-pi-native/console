@@ -1,5 +1,5 @@
+import type { Project, ProjectRole } from '@cpn-console/database'
 import type { projectRoleContract } from '@cpn-console/shared'
-import type { Project, ProjectRole } from '@prisma/client'
 import { isSystemRoleType } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 import {

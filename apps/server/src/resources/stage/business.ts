@@ -1,5 +1,5 @@
+import type { Cluster, Stage } from '@cpn-console/database'
 import type { CreateStageBody, UpdateStageBody } from '@cpn-console/shared'
-import type { Cluster, Stage } from '@prisma/client'
 import prisma from '@/prisma.js'
 import {
   createStage as createStageQuery,

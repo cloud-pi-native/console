@@ -1,4 +1,4 @@
-import type { Cluster, Environment, Project, Stage, User } from '@prisma/client'
+import type { Cluster, Environment, Project, Stage, User } from '@cpn-console/database'
 import type { Resources, UserDetails } from '@/types/index.js'
 import prisma from '@/prisma.js'
 import {
