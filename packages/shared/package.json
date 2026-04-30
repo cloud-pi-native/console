@@ -22,13 +22,10 @@
     "build": "tsc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
     "dev": "nodemon --watch src --ext .ts --exec 'pnpm run build'",
-    "format": "eslint ./ --fix",
-    "kube:e2e-ci": "echo 'check cache'",
-    "lint": "eslint ./",
+    "format": "eslint . --fix",
+    "lint": "eslint .",
     "test": "vitest run",
-    "test:cov": "vitest run --coverage",
-    "test:e2e-ci": "echo 'check cache'",
-    "test:watch": "vitest"
+    "test:cov": "vitest run --coverage"
   },
   "dependencies": {
     "@cpn-console/logger": "workspace:*",

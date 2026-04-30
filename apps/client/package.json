@@ -9,21 +9,21 @@
     "url": "https://github.com/cloud-pi-native/console"
   },
   "scripts": {
-    "build": "pnpm run icons && pnpm run type-check && pnpm run build-only",
-    "build-only": "vite --mode=production build",
+    "check": "vue-tsc --noEmit -p tsconfig.json",
+    "prebuild": "pnpm run build:icons",
+    "build": "vite --mode=production build",
+    "build:icons": "vue-dsfr-icons -s scripts/icons.js -t src/icon-collections.ts",
     "build:clean": "rimraf ./dist ./tsconfig.tsbuildinfo",
     "dev": "vite --mode=development",
-    "format": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' eslint ./ --fix",
-    "format:style": "stylelint ./src/**/*.{css,vue} --fix",
-    "icons": "vue-dsfr-icons -s scripts/icons.js -t src/icon-collections.ts",
+    "format": "pnpm --filter @cpn-console/client run \"/^format:.*/\"",
+    "format:eslint": "eslint . --fix",
+    "format:stylelint": "stylelint ./src/**/*.{css,vue} --fix",
     "integ": "vite --mode=integration",
-    "lint": "pnpm run --parallel \"/^lint:.*/\"",
-    "lint:style": "stylelint ./src/**/*.{css,vue}",
-    "lint:ts": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' eslint ./",
-    "preview": "vite preview --port 8080",
+    "lint": "pnpm --filter @cpn-console/client run \"/^lint:.*/\"",
+    "lint:eslint": "eslint .",
+    "lint:stylelint": "stylelint ./src/**/*.{css,vue}",
     "test": "vitest run",
-    "test:cov": "vitest run --coverage",
-    "type-check": "vue-tsc --noEmit -p tsconfig.json"
+    "test:cov": "vitest run --coverage"
   },
   "dependencies": {
     "@cpn-console/logger": "workspace:^",
