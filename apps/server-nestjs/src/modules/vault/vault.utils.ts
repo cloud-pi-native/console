@@ -15,3 +15,9 @@ export function generateTechReadOnlyCredPath(projectRootDir: string | undefined,
     ? `${generateProjectPath(projectRootDir, projectSlug)}/tech/GITLAB_MIRROR`
     : `${projectSlug}/tech/GITLAB_MIRROR`
 }
+
+export function generateSonarqubeCredPath(projectRootDir: string | undefined, projectSlug: string) {
+  return projectRootDir
+    ? `${generateProjectPath(projectRootDir, projectSlug)}/SONAR`
+    : `${projectSlug}/SONAR`
+}
