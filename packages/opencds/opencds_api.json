@@ -451,6 +451,37 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "1055fe07-2f29-4dec-8412-2066fb330b3c",
+      "type": "http",
+      "documentation": "OpenCDS Mockoon healthcheck",
+      "method": "get",
+      "endpoint": "health",
+      "responses": [
+        {
+          "uuid": "0d7f2acf-8006-4995-a5e5-39d8ba1858ef",
+          "body": "{\"status\":\"OK\"}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -473,6 +504,10 @@
     {
       "type": "route",
       "uuid": "bb61c12f-8185-43fe-9498-22b6661e998c"
+    },
+    {
+      "type": "route",
+      "uuid": "1055fe07-2f29-4dec-8412-2066fb330b3c"
     }
   ],
   "proxyMode": false,

@@ -96,7 +96,8 @@ jobs:
           docker tag ghcr.io/cloud-pi-native/console/server-nestjs:${{ inputs.TAG }} dso-console/server-nestjs:ci
           docker pull ghcr.io/cloud-pi-native/console/client:${{ inputs.TAG }}
           docker tag ghcr.io/cloud-pi-native/console/client:${{ inputs.TAG }} dso-console/client:ci
-          docker buildx build -t dso-console/opencds-mockoon:ci packages/opencds/
+          docker pull ghcr.io/cloud-pi-native/console/opencds-mockoon:${{ inputs.TAG }}
+          docker tag ghcr.io/cloud-pi-native/console/opencds-mockoon:${{ inputs.TAG }} dso-console/opencds-mockoon:ci
           docker compose -f ./docker/docker-compose.ci.yml up --no-build -d --remove-orphans
 
       - name: Run Playwright tests

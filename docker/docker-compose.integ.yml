@@ -196,6 +196,19 @@ services:
       - dso-network
     attach: true
 
+  opencds-mockoon:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: packages/opencds/Dockerfile
+    image: dso-console/opencds-mockoon:dev
+    container_name: dso-opencds_mockoon
+    user: root
+    ports:
+      - 3100:3100
+    networks:
+      - dso-network
+
 networks:
   dso-network:
     driver: bridge

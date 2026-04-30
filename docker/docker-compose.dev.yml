@@ -219,8 +219,8 @@ services:
   opencds-mockoon:
     restart: unless-stopped
     build:
-      context: ../packages/opencds
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: packages/opencds/Dockerfile
     image: dso-console/opencds-mockoon:dev
     container_name: dso-opencds_mockoon
     user: root
