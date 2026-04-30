@@ -90,6 +90,11 @@ export class ConfigurationService {
       ? process.env.NEXUS_INTERNAL_URL
       : process.env.NEXUS_URL
 
+  // sonarqube
+  sonarqubeUrl = process.env.SONARQUBE_URL
+  sonarqubeInternalUrl = process.env.SONARQUBE_INTERNAL_URL
+  sonarApiToken = process.env.SONAR_API_TOKEN
+
   getInternalOrPublicGitlabUrl() {
     return this.gitlabInternalUrl ?? this.gitlabUrl
   }
@@ -104,6 +109,10 @@ export class ConfigurationService {
 
   getInternalOrPublicNexusUrl() {
     return this.nexusInternalUrl ?? this.nexusUrl
+  }
+
+  getInternalOrPublicSonarqubeUrl() {
+    return this.sonarqubeInternalUrl ?? this.sonarqubeUrl
   }
 
   NODE_ENV
