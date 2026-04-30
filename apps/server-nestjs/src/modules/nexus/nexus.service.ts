@@ -19,6 +19,8 @@ import {
   DEFAULT_MAVEN_SNAPSHOT_WRITE_POLICY,
   DEFAULT_NPM_WRITE_POLICY,
   DEFAULT_PLATFORM_READ_GROUP_PATHS,
+  DEFAULT_PLATFORM_READONLY_GROUP_PATH,
+  DEFAULT_PLATFORM_SECURITY_GROUP_PATH,
   DEFAULT_PLATFORM_WRITE_GROUP_PATHS,
   DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES,
   DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES,
@@ -28,7 +30,10 @@ import {
   NEXUS_CONFIG_KEY_MAVEN_SNAPSHOT_WRITE_POLICY,
   NEXUS_CONFIG_KEY_NPM_WRITE_POLICY,
   NEXUS_PLUGIN_NAME,
+  PLATFORM_ADMIN_GROUP_PATH_PLUGIN_KEY,
   PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY,
+  PLATFORM_READONLY_GROUP_PATH_PLUGIN_KEY,
+  PLATFORM_SECURITY_GROUP_PATH_PLUGIN_KEY,
   PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY,
   PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
@@ -489,8 +494,8 @@ export class NexusService {
     const rawReadSuffixes = await this.getOptionalConfigValue(project, PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY)
       ?? DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES
 
-    const writeGroupPaths = generateProjectRoleGroupPath(project, rawWriteSuffixes || DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES)
-    const readGroupPaths = generateProjectRoleGroupPath(project, rawReadSuffixes || DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES)
+    const writeGroupPaths = generateProjectRoleGroupPath(project.slug, rawWriteSuffixes || DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES)
+    const readGroupPaths = generateProjectRoleGroupPath(project.slug, rawReadSuffixes || DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES)
 
     const byId = generateRolePrivilegesMapping({
       readGroupPaths,
@@ -504,9 +509,14 @@ export class NexusService {
 
   private async ensurePlatformRoles(projects: ProjectWithDetails[]) {
     const rawWriteGroupPaths = await this.nexusDatastore.getAdminPluginConfig(NEXUS_PLUGIN_NAME, PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY)
+      ?? await this.nexusDatastore.getAdminPluginConfig(NEXUS_PLUGIN_NAME, PLATFORM_ADMIN_GROUP_PATH_PLUGIN_KEY)
       ?? DEFAULT_PLATFORM_WRITE_GROUP_PATHS
 
     const rawReadGroupPaths = await this.nexusDatastore.getAdminPluginConfig(NEXUS_PLUGIN_NAME, PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY)
+      ?? [
+        await this.nexusDatastore.getAdminPluginConfig(NEXUS_PLUGIN_NAME, PLATFORM_READONLY_GROUP_PATH_PLUGIN_KEY) ?? DEFAULT_PLATFORM_READONLY_GROUP_PATH,
+        await this.nexusDatastore.getAdminPluginConfig(NEXUS_PLUGIN_NAME, PLATFORM_SECURITY_GROUP_PATH_PLUGIN_KEY) ?? DEFAULT_PLATFORM_SECURITY_GROUP_PATH,
+      ].join(',')
       ?? DEFAULT_PLATFORM_READ_GROUP_PATHS
 
     const readonlyPrivileges = new Set<string>()
@@ -535,8 +545,8 @@ export class NexusService {
       ?? DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES
 
     const groupPaths = [
-      ...generateProjectRoleGroupPath(project, rawWriteSuffixes || DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES),
-      ...generateProjectRoleGroupPath(project, rawReadSuffixes || DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES),
+      ...generateProjectRoleGroupPath(project.slug, rawWriteSuffixes || DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES),
+      ...generateProjectRoleGroupPath(project.slug, rawReadSuffixes || DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES),
     ]
 
     const ids = [...new Set(groupPaths.map(generateRoleId))]
@@ -608,12 +618,12 @@ function generateNpmGroupPrivilegeNameReadonly(project: ProjectWithDetails) {
   return `${generateNpmGroupPrivilegeName(project)}-ro`
 }
 
-function generateProjectRoleGroupPath(project: ProjectWithDetails, rawGroupPathSuffixes: string) {
+function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes: string) {
   return rawGroupPathSuffixes
     .split(',')
     .map(path => path.trim())
     .filter(Boolean)
-    .map(path => `/${project.slug}${path}`)
+    .map(path => `/${projectSlug}${path}`)
 }
 
 function parseOidcGroupPaths(rawGroupPaths: string) {
