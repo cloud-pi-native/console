@@ -114,20 +114,15 @@ export class RegistryService {
       throw new Error('PROJECTS_ROOT_DIR is required')
     }
     const relativeVaultPath = `REGISTRY/${robotName}`
-    const vaultPath = getProjectVaultPath(project, this.config.projectRootDir, relativeVaultPath)
-    const vaultRobotSecret = await this.vault.read<VaultRobotSecret>(vaultPath).catch((error) => {
-      if (error instanceof VaultError && error.kind === 'NotFound') return null
-      throw error
-    })
-
-    const expiring = vaultRobotSecret
-      ? this.isRobotSecretExpiring(vaultRobotSecret)
-      : false
-
-    span?.setAttributes({
-      'vault.secret.exists': !!vaultRobotSecret,
-      'registry.robot.secret.expiring': expiring,
-    })
+    const vaultPath = getProjectVaultPath(this.config.projectRootDir, project.slug, relativeVaultPath)
+    let vaultRobotSecret: VaultRobotSecret | null = null
+    try {
+      vaultRobotSecret = await this.vault.read<VaultRobotSecret>(vaultPath).then(s => s.data)
+    } catch (error) {
+      if (!(error instanceof VaultError && error.kind === 'NotFound')) {
+        throw error
+      }
+    }
 
     if (vaultRobotSecret?.data?.HOST === this.host && !expiring) {
       span?.setAttribute('vault.secret.reused', true)
@@ -160,16 +155,21 @@ export class RegistryService {
   ) {
     const span = trace.getActiveSpan()
     span?.setAttributes({
-      'project.slug': projectSlug,
+      'project.slug': project.slug,
       'registry.group.name': groupName,
       'registry.group.access_level': accessLevel,
     })
     const existing = membersByName.get(groupName)
+    const members = await this.client.getGroupMembers(project.slug)
+    if (members.status !== 200 || !members.data) {
+      throw new Error(`Harbor list members failed (${members.status})`)
+    }
+    const list: HarborMember[] = members.data
+    const existing = list.find(m => m?.entity_name === groupName)
 
     if (existing?.id) {
       if (existing.role_id !== accessLevel || existing.entity_type !== 'g') {
-        await this.client.removeGroupMember(projectSlug, Number(existing.id))
-        membersByName.delete(groupName)
+        await this.client.removeGroupMember(project.slug, Number(existing.id))
       } else {
         span?.setAttribute('registry.member.exists', true)
         return
@@ -183,7 +183,7 @@ export class RegistryService {
         group_type: 3,
       },
     }
-    const created = await this.client.addGroupMember(projectSlug, body)
+    const created = await this.client.addGroupMember(project.slug, body)
     if (created.status >= 300) {
       throw new Error(`Harbor create member failed (${created.status})`)
     }
@@ -217,7 +217,7 @@ export class RegistryService {
     )
   }
 
-  private async ensureProjectQuota(project: ProjectWithDetails, storageLimit: number) {
+  private async getOrCreateProjectQuota(project: ProjectWithDetails, storageLimit: number) {
     const span = trace.getActiveSpan()
     span?.setAttributes({
       'project.slug': project.slug,
@@ -281,14 +281,14 @@ export class RegistryService {
       'registry.publish_project_robot': !!options.publishProjectRobot,
     })
     const storageLimit = options.storageLimitBytes ?? -1
-    const harborProject = await this.ensureProjectQuota(project, storageLimit)
-    const harborProjectId = Number(harborProject.project_id)
+    const hardProject = await this.getOrCreateProjectQuota(project, storageLimit)
+    const projectId = Number(hardProject.project_id)
 
     await Promise.all([
       this.ensureRobotSecret(project, roRobotName, roAccess),
       this.ensureRobotSecret(project, rwRobotName, rwAccess),
-      this.ensureProjectGroupMembers(project),
-      Number.isFinite(harborProjectId) ? this.ensureRetentionPolicy(project, harborProjectId) : Promise.resolve(),
+      this.ensureProjectGroupMember(project, `/${project.slug}`),
+      Number.isFinite(projectId) ? this.ensureRetentionPolicy(project, projectId) : Promise.resolve(),
       options.publishProjectRobot
         ? this.ensureRobotSecret(project, projectRobotName, roAccess)
         : Promise.resolve(),
@@ -301,15 +301,15 @@ export class RegistryService {
   }
 
   @StartActiveSpan()
-  async deleteProject(projectSlug: string) {
+  async deleteProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
-    span?.setAttribute('project.slug', projectSlug)
-    const existing = await this.client.getProjectByName(projectSlug)
+    span?.setAttribute('project.slug', project.slug)
+    const existing = await this.client.getProjectByName(project.slug)
     if (existing.status === 404) {
       span?.setAttribute('registry.project.exists', false)
       return
     }
-    const deleted = await this.client.deleteProjectByName(projectSlug)
+    const deleted = await this.client.deleteProjectByName(project.slug)
     if (deleted.status >= 300 && deleted.status !== 404) {
       throw new Error(`Harbor delete project failed (${deleted.status})`)
     }
@@ -335,7 +335,7 @@ export class RegistryService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling project delete for ${project.slug}`)
-    await this.deleteProject(project.slug)
+    await this.deleteProject(project)
   }
 
   @Cron(CronExpression.EVERY_HOUR)
@@ -470,7 +470,7 @@ function generateRobotPermissions(project: ProjectWithDetails, robotName: string
 }
 
 function generateRetentionPolicy(
-  projectId: number,
+  harborProjectId: number,
   options: {
     harborRuleTemplate?: string
     harborRuleCount?: string
@@ -494,7 +494,7 @@ function generateRetentionPolicy(
 
   return {
     algorithm: 'or',
-    scope: { level: 'project', ref: projectId },
+    scope: { level: 'project', ref: harborProjectId },
     rules: [
       {
         disabled: false,
