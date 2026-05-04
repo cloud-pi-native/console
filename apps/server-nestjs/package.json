@@ -10,6 +10,7 @@
     "url": "https://github.com/cloud-pi-native/console"
   },
   "scripts": {
+    "prebuild": "pnpm i --frozen-lockfile",
     "build": "nest build",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev --name dso",

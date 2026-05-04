@@ -16,6 +16,7 @@
     "src"
   ],
   "scripts": {
+    "prebuild": "pnpm i --frozen-lockfile",
     "build": "tspc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
     "db:deploy": "prisma migrate deploy",
