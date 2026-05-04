@@ -92,7 +92,6 @@ RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
 COPY --chown=node:root --from=build /app/build .
 COPY --chown=node:root --from=build /app/apps/server-nestjs/dist ./dist
 
-# Regénérer le client Prisma dans l'image de production
 USER node
 EXPOSE 3001
 
