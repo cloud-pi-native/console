@@ -21,6 +21,11 @@ export default defineConfig({
 
   workers: process.env.CI ? 1 : undefined, // Default is 50% logical cores
 
+  // The maximum number of test failures forthe whole test suite run.
+  // After reaching this number, testing will stop and exit with an error.
+  // Setting to zero (default) disables this behavior.
+  maxFailures: 1,
+
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
 
