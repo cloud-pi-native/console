@@ -92,9 +92,9 @@ RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
 COPY --chown=node:root --from=build /app/build .
 COPY --chown=node:root --from=build /app/apps/server-nestjs/dist ./dist
 
-WORKDIR /app/node_modules/@cpn-console/database
-RUN npm run deploy
-WORKDIR /app
+# WORKDIR /app/node_modules/@cpn-console/database
+# RUN npm run deploy
+# WORKDIR /app
 
 USER node
 EXPOSE 3001

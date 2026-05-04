@@ -62,9 +62,9 @@ RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
   && chown node:root /app
 COPY --chown=node:root --from=build /app/build .
 
-WORKDIR /app/node_modules/@cpn-console/database
-RUN npm run deploy
-WORKDIR /app
+# WORKDIR /app/node_modules/@cpn-console/database
+# RUN npm run deploy
+# WORKDIR /app
 
 USER node
 EXPOSE 8080
