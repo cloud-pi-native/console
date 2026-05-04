@@ -12,9 +12,9 @@
   "scripts": {
     "prebuild": "pnpm --filter @cpn-console/database run generate",
     "build": "nest build",
+    "database:deploy": "pnpm --filter @cpn-console/database run migrate",
     "format": "eslint ./ --fix",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "prestart": "pnpm --filter @cpn-console/database run migrate",
     "start": "nest start",
     "start:debug": "pnpm run start --debug --watch",
     "start:dev": "pnpm run start --watch",
