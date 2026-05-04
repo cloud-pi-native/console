@@ -10,7 +10,7 @@
     "url": "https://github.com/cloud-pi-native/console"
   },
   "scripts": {
-    "prebuild": "pnpm --filter @cpn-console/database run generate",
+    "prebuild": "pnpm i --frozen-lockfile && pnpm --filter @cpn-console/database run generate",
     "build": "nest build",
     "database:deploy": "pnpm --filter @cpn-console/database run migrate",
     "format": "eslint ./ --fix",

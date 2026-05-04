@@ -15,7 +15,7 @@
     "src"
   ],
   "scripts": {
-    "prebuild": "pnpm --filter @cpn-console/database run generate",
+    "prebuild": "pnpm i --frozen-lockfile && pnpm --filter @cpn-console/database run generate",
     "build": "tspc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
     "database:deploy": "pnpm --filter @cpn-console/database run deploy",
