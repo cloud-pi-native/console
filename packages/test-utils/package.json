@@ -20,8 +20,7 @@
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
     "format": "eslint ./ --fix",
     "kube:e2e-ci": "echo 'check cache'",
-    "lint": "eslint ./",
-    "test:e2e-ci": "echo 'check cache'"
+    "lint": "eslint ./"
   },
   "dependencies": {
     "@cpn-console/shared": "workspace:^",
