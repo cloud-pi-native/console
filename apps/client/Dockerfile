@@ -48,6 +48,7 @@ RUN chown -R nginx:nginx \
       /etc/nginx/nginx.conf \
       /etc/nginx/conf.d \
       /etc/nginx/mime.types \
+      /etc/nginx/html \
       /var/cache/nginx \
       /var/log/nginx \
     && touch /var/run/nginx.pid \
