@@ -18,6 +18,7 @@ COPY --chown=node:root apps/server-nestjs/package.json           ./apps/server-n
 COPY --chown=node:root packages/eslintconfig/package.json        ./packages/eslintconfig/package.json
 COPY --chown=node:root packages/shared/package.json              ./packages/shared/package.json
 COPY --chown=node:root packages/logger/package.json              ./packages/logger/package.json
+COPY --chown=node:root packages/database/package.json            ./packages/database/package.json
 COPY --chown=node:root packages/hooks/package.json               ./packages/hooks/package.json
 COPY --chown=node:root packages/test-utils/package.json          ./packages/test-utils/package.json
 COPY --chown=node:root packages/tsconfig/package.json            ./packages/tsconfig/package.json
@@ -48,11 +49,10 @@ RUN pnpm --filter @cpn-console/hooks run build
 # Réinjecter les libs buildées dans node_modules (injectWorkspacePackages copie au moment de l'install)
 RUN pnpm --filter @cpn-console/server-nestjs install --frozen-lockfile
 
-# Générer le client Prisma (schéma multi-fichiers : pointer sur le dossier)
-RUN pnpm --filter @cpn-console/server-nestjs exec prisma generate \
-      --schema=src/prisma/schema
+# Générer le client Prisma depuis le package partagé
+RUN pnpm --filter @cpn-console/database run generate
 
-ENTRYPOINT ["pnpm", "--filter", "server-nestjs", "run"]
+ENTRYPOINT ["pnpm", "--filter", "@cpn-console/server-nestjs", "run"]
 CMD ["start:dev"]
 
 # Build stage ----------------------------------------------------------------------
@@ -60,6 +60,7 @@ FROM dev AS build
 
 # Build shared (génère dist/ et types/)
 RUN pnpm --filter @cpn-console/logger run build
+RUN pnpm --filter @cpn-console/database run build
 RUN pnpm --filter @cpn-console/shared run build
 
 # Build hooks (génère dist/ et types/ nécessaires aux imports)
@@ -90,10 +91,10 @@ RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
 # Copier l'artefact de build et les node_modules de production
 COPY --chown=node:root --from=build /app/build .
 COPY --chown=node:root --from=build /app/apps/server-nestjs/dist ./dist
-# COPY --chown=node:root --from=build /app/build/node_modules ./node_modules
 
-# Regénérer le client Prisma dans l'image de production
-RUN npm run db:generate
+# WORKDIR /app/node_modules/@cpn-console/database
+# RUN npm run deploy
+# WORKDIR /app
 
 USER node
 EXPOSE 3001
