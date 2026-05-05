@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.17.1](https://github.com/cloud-pi-native/console/compare/v9.17.0...v9.17.1) (2026-05-05)
+
+
+### Bug Fixes
+
+* **client:** fix permissions in nginx docker image ([0807c2a](https://github.com/cloud-pi-native/console/commit/0807c2a7ca6939b519efdfbef80da2b83d436950))
+
 ## [9.17.0](https://github.com/cloud-pi-native/console/compare/v9.16.1...v9.17.0) (2026-04-30)
 
 
