@@ -1,5 +1,18 @@
 # Changelog
 
+## [9.18.0](https://github.com/cloud-pi-native/console/compare/v9.17.1...v9.18.0) (2026-05-06)
+
+
+### Features
+
+* add deployment model ([38f768b](https://github.com/cloud-pi-native/console/commit/38f768bc68e2ea8a8ebeabf80eb35844bdca9aba))
+
+
+### Miscellaneous Chores
+
+* ensure dependencies are correctly linked for server builds ([b582c95](https://github.com/cloud-pi-native/console/commit/b582c959b11547dd98f7c4573feee81c7eddedba))
+* **playwright:** limit time wasted in merge queues by failing fast ([a0176d3](https://github.com/cloud-pi-native/console/commit/a0176d339f8f1644366a6382fc35abccfe08e393))
+
 ## [9.17.1](https://github.com/cloud-pi-native/console/compare/v9.17.0...v9.17.1) (2026-05-05)
 
 
