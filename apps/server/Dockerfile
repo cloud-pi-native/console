@@ -33,7 +33,6 @@ COPY --chown=node:root plugins/ ./plugins/
 COPY --chown=node:root packages/ ./packages/
 
 COPY --chown=node:root apps/server/ ./apps/server/
-# Generate Prisma client
 RUN pnpm --filter @cpn-console/database run generate
 ENTRYPOINT [ "pnpm", "--filter", "@cpn-console/server", "run" ]
 CMD [ "dev" ]
@@ -44,6 +43,7 @@ FROM dev AS build
 
 # Build @cpn-console/server console-related dependencies
 RUN pnpm run build
+RUN pnpm --filter @cpn-console/database run generate
 # Build @cpn-console/server
 RUN pnpm --filter @cpn-console/server run build
 # Export @cpn-console/server to target build directory
@@ -61,6 +61,10 @@ RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
   && mkdir -p /home/node/.npm && chmod 770 -R /home/node/.npm \
   && chown node:root /app
 COPY --chown=node:root --from=build /app/build .
+
+# Copier le client Prisma généré par @cpn-console/database
+COPY --chown=node:root --from=build /app/node_modules/.pnpm/\@prisma+client\@6.19.2_prisma\@6.19.2_magicast\@0.3.5_typescript\@5.9.3__typescript\@5.9.3/node_modules/.prisma/client ./node_modules/.prisma/client
+COPY --chown=node:root --from=build /app/node_modules/.pnpm/\@prisma+client\@6.19.2_prisma\@6.19.2_magicast\@0.3.5_typescript\@5.9.3__typescript\@5.9.3/node_modules/@prisma/client ./node_modules/@prisma/client
 
 USER node
 EXPOSE 8080

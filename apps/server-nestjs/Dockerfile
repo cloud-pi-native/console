@@ -69,6 +69,9 @@ RUN pnpm --filter @cpn-console/hooks run build
 # Réinjecter shared buildé dans node_modules (injectWorkspacePackages copie au moment de l'install)
 RUN pnpm --filter @cpn-console/server-nestjs install --frozen-lockfile
 
+# Générer le client Prisma depuis le package partagé
+RUN pnpm --filter @cpn-console/database run generate
+
 # Build server-nestjs
 RUN pnpm --filter @cpn-console/server-nestjs run build
 
@@ -92,6 +95,10 @@ RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
 COPY --chown=node:root --from=build /app/build .
 COPY --chown=node:root --from=build /app/apps/server-nestjs/dist ./dist
 
+# Copier le client Prisma généré par @cpn-console/database
+COPY --chown=node:root --from=build /app/node_modules/.pnpm/\@prisma+client\@6.19.2_prisma\@6.19.2_magicast\@0.3.5_typescript\@5.9.3__typescript\@5.9.3/node_modules/.prisma/client ./node_modules/.prisma/client
+COPY --chown=node:root --from=build /app/node_modules/.pnpm/\@prisma+client\@6.19.2_prisma\@6.19.2_magicast\@0.3.5_typescript\@5.9.3__typescript\@5.9.3/node_modules/@prisma/client ./node_modules/@prisma/client
+
 USER node
 EXPOSE 3001
 
@@ -99,3 +106,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/api/v1/system/healthz', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
 
 ENTRYPOINT ["node", "dist/src/main"]
+# ENTRYPOINT ["sleep", "3600"]
