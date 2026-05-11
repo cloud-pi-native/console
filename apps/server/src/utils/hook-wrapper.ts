@@ -1,6 +1,6 @@
+import type { Cluster, Kubeconfig, Project, ProjectMembers, ProjectRole, Zone } from '@cpn-console/database'
 import type { ClusterObject, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository, Store, ZoneObject } from '@cpn-console/hooks'
 import type { AsyncReturnType } from '@cpn-console/shared'
-import type { Cluster, Kubeconfig, Project, ProjectMembers, ProjectRole, Zone } from '@prisma/client'
 import type { ConfigRecords } from '@/resources/project-service/business.js'
 import { hooks } from '@cpn-console/hooks'
 import { logger as baseLogger } from '@cpn-console/logger'

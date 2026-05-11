@@ -1,4 +1,4 @@
-import type { Project } from '@prisma/client'
+import type { Project } from '@cpn-console/database'
 import type { ConfigRecords } from './business.js'
 import prisma from '@/prisma.js'
 

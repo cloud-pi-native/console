@@ -11,10 +11,10 @@
   ],
   "main": "playwright.config.ts",
   "scripts": {
-    "playwright:test": "pnpm exec playwright test",
-    "playwright:test:ui": "pnpm exec playwright test --ui",
-    "integ:playwright:test": "INTEGRATION=true pnpm exec playwright test",
-    "integ:playwright:test:ui": "INTEGRATION=true pnpm exec playwright test --ui",
+    "playwright:test": "playwright test",
+    "playwright:test:ui": "playwright test --ui",
+    "integ:playwright:test": "INTEGRATION=true playwright test",
+    "integ:playwright:test:ui": "INTEGRATION=true playwright test --ui",
     "format": "eslint ./ --fix"
   },
   "devDependencies": {

@@ -8,7 +8,7 @@
  */
 
 import { writeFileSync } from 'node:fs'
-import { Prisma } from '@prisma/client'
+import { Prisma } from '@cpn-console/database'
 import prisma from '@/prisma.js'
 import { associations, manyToManyRelation, modelKeys, models, resourceListToDict } from './utils.js'
 

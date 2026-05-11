@@ -1,5 +1,5 @@
+import type { AdminToken, User } from '@cpn-console/database'
 import type { personalAccessTokenContract } from '@cpn-console/shared'
-import type { AdminToken, User } from '@prisma/client'
 import { createHash } from 'node:crypto'
 import { generateRandomPassword, isAtLeastTomorrow } from '@cpn-console/shared'
 import { BadRequest400 } from '@/utils/errors.js'

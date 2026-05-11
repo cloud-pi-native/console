@@ -1,4 +1,4 @@
-import type { Log, Prisma, Project, User } from '@prisma/client'
+import type { Log, Prisma, Project, User } from '@cpn-console/database'
 import { exclude } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
 

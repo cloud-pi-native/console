@@ -1,4 +1,4 @@
-import type { Environment, Stage } from '@prisma/client'
+import type { Environment, Stage } from '@cpn-console/database'
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import prisma from '../../__mocks__/prisma.js'

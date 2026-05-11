@@ -1,5 +1,5 @@
+import type { Cluster, Prisma, Project, ProjectMembers, ProjectRole } from '@cpn-console/database'
 import type { XOR } from '@cpn-console/shared'
-import type { Cluster, Prisma, Project, ProjectMembers, ProjectRole } from '@prisma/client'
 import type { FastifyRequest } from 'fastify'
 import type { UserDetails } from '@/types/index.js'
 import { PROJECT_PERMS as PP, PROJECT_PERMS, projectIsLockedInfo, tokenHeaderName } from '@cpn-console/shared'

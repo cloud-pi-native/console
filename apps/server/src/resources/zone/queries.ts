@@ -1,4 +1,4 @@
-import type { Cluster, Zone } from '@prisma/client'
+import type { Cluster, Zone } from '@cpn-console/database'
 import prisma from '@/prisma.js'
 
 export function getZoneByIdOrThrow(id: Zone['id']) {

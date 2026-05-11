@@ -1,4 +1,4 @@
-import type { AdminRole, User } from '@prisma/client'
+import type { AdminRole, User } from '@cpn-console/database'
 import { faker } from '@faker-js/faker'
 import { describe, expect, it, vi } from 'vitest'
 import prisma from '../../__mocks__/prisma.js'

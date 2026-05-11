@@ -49,9 +49,6 @@ Maintenant que vous avez les prérequis projets (prérequis techniques et de con
 # Installer toutes les dépendances
 $ pnpm install
 
-# Initialiser la base de données PostgreSQL lancée localement
-$ pnpm db:generate
-
 # Construire les applications client et server
 $ pnpm build
 
@@ -116,9 +113,6 @@ pnpm install
 
 # Créer les fichiers d'environnement exemples
 ./ci/scripts/init-env.sh
-
-# Générer le client Prisma côté serveur
-pnpm --filter @cpn-console/server run db:generate
 
 # Construire tous les paquets applicatifs
 pnpm build

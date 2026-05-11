@@ -1,5 +1,5 @@
+import { PrismaClientInitializationError } from '@cpn-console/database'
 import { logger } from '@cpn-console/logger'
-import { PrismaClientInitializationError } from '@prisma/client/runtime/library.js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import prisma from './__mocks__/prisma.js'
 import app from './app.js'

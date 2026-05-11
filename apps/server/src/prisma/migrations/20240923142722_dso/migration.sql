@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Log" ALTER COLUMN "requestId" SET DATA TYPE VARCHAR(36);

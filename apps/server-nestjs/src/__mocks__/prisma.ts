@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client'
+import type { PrismaClient } from '@cpn-console/database'
 import { beforeEach, vi } from 'vitest'
 import { mockDeep, mockReset } from 'vitest-mock-extended'
 

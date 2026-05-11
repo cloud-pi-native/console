@@ -35,7 +35,7 @@ Plugins use TS module augmentation to extend `ProjectStore` and `Config` interfa
 
 ## Database (Prisma)
 
-Multi-file schema in `apps/server/src/prisma/schema/*.prisma` (project, user, token, admin, topography).
+Multi-file schema in `packages/database/prisma/schema/*.prisma` (project, user, token, admin, topography).
 Migrations: standard Prisma Migrate. Major version data migrations in `migrations/v9/`.
 
 ## Environment config

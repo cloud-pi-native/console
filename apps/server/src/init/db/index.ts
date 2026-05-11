@@ -24,12 +24,12 @@ export async function initDb(data: Imports) {
     }
     return value
   })
-  logger.info('Drop tables')
+  logger.info('Delete all records in tables')
   for (const modelKey of modelKeys.toReversed()) {
     // @ts-ignore
     await prisma[modelKey].deleteMany()
   }
-  logger.info('Import models')
+  logger.info('Import models row')
   for (const modelKey of modelKeys) {
     // @ts-ignore
     await prisma[modelKey].createMany({ data: dataParsed[modelKey] })

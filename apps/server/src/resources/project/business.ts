@@ -1,5 +1,5 @@
+import type { Project, User } from '@cpn-console/database'
 import type { projectContract } from '@cpn-console/shared'
-import type { Project, User } from '@prisma/client'
 import type { UserDetails } from '@/types/index.js'
 import type { ErrorResType } from '@/utils/errors.js'
 import { servicesInfos } from '@cpn-console/hooks'
