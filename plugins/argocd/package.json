@@ -29,7 +29,7 @@
     "@cpn-console/shared": "workspace:^",
     "@cpn-console/vault-plugin": "workspace:^",
     "@himenon/argocd-typescript-openapi": "^1.2.2",
-    "axios": "^1.13.6",
+    "axios": "^1.15.1",
     "yaml": "^2.7.1"
   },
   "devDependencies": {
@@ -37,12 +37,12 @@
     "@cpn-console/ts-config": "workspace:^",
     "@faker-js/faker": "^9.9.0",
     "@types/node": "^24.12.0",
-    "@vitest/coverage-v8": "^2.1.9",
+    "@vitest/coverage-v8": "^4.1.5",
     "nodemon": "^3.1.14",
     "rimraf": "^6.1.3",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1",
-    "vitest": "^2.1.9"
+    "vite": "^7.3.2",
+    "vitest": "^4.1.5"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
