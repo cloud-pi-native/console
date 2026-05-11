@@ -40,8 +40,16 @@ describe('openCdsClientService', () => {
     tlsDispatcher = { dispatch: vi.fn() }
     proxyDispatcher = { dispatch: vi.fn() }
 
-    vi.mocked(Agent).mockImplementation(() => tlsDispatcher as never)
-    vi.mocked(ProxyAgent).mockImplementation(() => proxyDispatcher as never)
+    class MockAgent {
+      dispatch = tlsDispatcher
+    };
+
+    class ProxyMockAgent {
+      dispatch = proxyDispatcher
+    };
+
+    vi.mocked(Agent).mockImplementation(MockAgent as any)
+    vi.mocked(ProxyAgent).mockImplementation(ProxyMockAgent as any)
 
     config = {
       openCdsUrl: 'https://opencds.example.com/root/api/',
@@ -76,7 +84,7 @@ describe('openCdsClientService', () => {
     })
     const [url, init] = getLastFetchCall()
     expect(url).toBe('https://opencds.example.com/root/api/requests')
-    expect(init.dispatcher).toBe(tlsDispatcher)
+    expect(init.dispatcher?.dispatch).toBe(tlsDispatcher)
     expect(init.method).toBe('GET')
     expect(init.signal).toBeUndefined()
     expect(new Headers(init.headers).get('X-API-Key')).toBe('test-token')
@@ -102,7 +110,7 @@ describe('openCdsClientService', () => {
     })
     const [url, init] = getLastFetchCall()
     expect(url).toBe('https://opencds.example.com/root/api/requests')
-    expect(init.dispatcher).toBe(proxyDispatcher)
+    expect(init.dispatcher?.dispatch).toBe(proxyDispatcher)
     expect(init.method).toBe('GET')
     expect(init.signal).toBeUndefined()
     expect(new Headers(init.headers).get('X-API-Key')).toBe('test-token')
@@ -136,7 +144,7 @@ describe('openCdsClientService', () => {
 
     const [url, init] = getLastFetchCall()
     expect(url).toBe('https://opencds.example.com/root/api/validate/id')
-    expect(init.dispatcher).toBe(tlsDispatcher)
+    expect(init.dispatcher?.dispatch).toBe(tlsDispatcher)
     expect(init.method).toBe('POST')
     expect(init.signal).toBeUndefined()
     expect(init.body).toBeUndefined()
@@ -158,7 +166,7 @@ describe('openCdsClientService', () => {
       requestId: '123',
       enabled: true,
     }))
-    expect(init.dispatcher).toBe(tlsDispatcher)
+    expect(init.dispatcher?.dispatch).toBe(tlsDispatcher)
     expect(init.method).toBe('POST')
     expect(init.signal).toBeUndefined()
     expect(new Headers(init.headers).get('X-API-Key')).toBe('test-token')
