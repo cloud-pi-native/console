@@ -52,12 +52,16 @@
     "test": "pnpm -r run test",
     "test:cov": "pnpm -r run test:cov"
   },
+  "dependencies": {
+    "@prisma/client": "^6.19.2"
+  },
   "devDependencies": {
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
     "@cpn-console/eslint-config": "workspace:^",
     "eslint": "^10.1.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0"
+    "lint-staged": "^16.4.0",
+    "prisma": "^6.19.2"
   }
 }

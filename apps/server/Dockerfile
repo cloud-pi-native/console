@@ -62,9 +62,8 @@ RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
   && chown node:root /app
 COPY --chown=node:root --from=build /app/build .
 
-# Copier le client Prisma généré par @cpn-console/database
-COPY --chown=node:root --from=build /app/node_modules/.pnpm/\@prisma+client\@6.19.2_prisma\@6.19.2_magicast\@0.3.5_typescript\@5.9.3__typescript\@5.9.3/node_modules/.prisma/client ./node_modules/.prisma/client
-COPY --chown=node:root --from=build /app/node_modules/.pnpm/\@prisma+client\@6.19.2_prisma\@6.19.2_magicast\@0.3.5_typescript\@5.9.3__typescript\@5.9.3/node_modules/@prisma/client ./node_modules/@prisma/client
+# Regénérer le client Prisma généré par @cpn-console/database
+RUN npx prisma generate
 
 USER node
 EXPOSE 8080

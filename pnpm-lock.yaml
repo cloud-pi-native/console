@@ -16,6 +16,10 @@ patchedDependencies:
 importers:
 
   .:
+    dependencies:
+      '@prisma/client':
+        specifier: ^6.19.2
+        version: 6.19.2(prisma@6.19.2(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
     devDependencies:
       '@commitlint/cli':
         specifier: ^20.5.0
@@ -35,6 +39,9 @@ importers:
       lint-staged:
         specifier: ^16.4.0
         version: 16.4.0
+      prisma:
+        specifier: ^6.19.2
+        version: 6.19.2(magicast@0.3.5)(typescript@5.9.3)
 
   apps/client:
     dependencies:
@@ -18530,7 +18537,7 @@ snapshots:
       fast-json-stable-stringify: 2.1.0
       fs-extra: 9.1.0
       glob: 11.1.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       pretty-bytes: 5.6.0
       rollup: 2.80.0
       source-map: 0.8.0-beta.0
