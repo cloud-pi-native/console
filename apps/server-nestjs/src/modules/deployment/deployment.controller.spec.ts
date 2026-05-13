@@ -1,9 +1,12 @@
 import type { CreateDeployment, UpdateDeployment } from '@cpn-console/shared'
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { ProjectExecutionContext } from '../infrastructure/permission/project/project-context.decorator'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { ProjectGuard } from '../infrastructure/permission/project/project.guard'
+import { makeDeployment, makeDeploymentWithRelations } from './deployment-testing.utils'
 import { DeploymentController } from './deployment.controller'
 import { DeploymentService } from './deployment.service'
 
@@ -12,18 +15,11 @@ describe('deploymentController', () => {
   let controller: DeploymentController
   let service: DeepMockProxy<DeploymentService>
 
-  beforeEach(async () => {
-    service = mockDeep<DeploymentService>()
-
-    module = await Test.createTestingModule({
-      controllers: [DeploymentController],
-      providers: [
-        { provide: DeploymentService, useValue: service },
-      ],
-    }).compile()
-
-    controller = module.get<DeploymentController>(DeploymentController)
-  })
+  const projectCtx: ProjectExecutionContext = {
+    projectId: '11111111-1111-1111-1111-111111111111',
+    userId: 'user-uuid-1234',
+    requestId: 'request-uuid-5678',
+  }
 
   const validCreateDeployment = {
     name: 'dev',
@@ -54,12 +50,17 @@ describe('deploymentController', () => {
   } satisfies UpdateDeployment
 
   beforeEach(async () => {
+    service = mockDeep<DeploymentService>()
+
     module = await Test.createTestingModule({
       controllers: [DeploymentController],
       providers: [
         { provide: DeploymentService, useValue: service },
       ],
-    }).compile()
+    })
+      .overrideGuard(ProjectGuard)
+      .useValue({ canActivate: () => true })
+      .compile()
 
     controller = module.get<DeploymentController>(DeploymentController)
   })
@@ -71,7 +72,7 @@ describe('deploymentController', () => {
   describe('list', () => {
     it('should call deploymentService.listByProjectId with projectId', async () => {
       const projectId = '11111111-1111-1111-1111-111111111111'
-      const expectedResult = [{ id: 'deployment-1' }]
+      const expectedResult = [makeDeploymentWithRelations({ projectId })]
 
       service.listByProjectId.mockResolvedValue(expectedResult)
 
@@ -84,14 +85,14 @@ describe('deploymentController', () => {
 
   describe('create', () => {
     it('should validate body and call deploymentService.createDeployment', async () => {
-      const expectedResult = { id: 'new-deployment-id' }
+      const expectedResult = makeDeployment()
 
       service.createDeployment.mockResolvedValue(expectedResult)
 
-      const result = await controller.create(validCreateDeployment)
+      const result = await controller.create(validCreateDeployment, projectCtx)
 
       expect(service.createDeployment).toHaveBeenCalledWith(
-        validCreateDeployment.projectId,
+        projectCtx,
         validCreateDeployment,
       )
       expect(result).toEqual(expectedResult)
@@ -101,13 +102,14 @@ describe('deploymentController', () => {
   describe('update', () => {
     it('should validate body and call deploymentService.updateDeployment', async () => {
       const deploymentId = '55555555-5555-5555-5555-555555555555'
-      const expectedResult = { id: deploymentId }
+      const expectedResult = makeDeployment({ id: deploymentId })
 
       service.updateDeployment.mockResolvedValue(expectedResult)
 
-      const result = await controller.update(deploymentId, validUpdateDeployment)
+      const result = await controller.update(deploymentId, validUpdateDeployment, projectCtx)
 
       expect(service.updateDeployment).toHaveBeenCalledWith(
+        projectCtx,
         deploymentId,
         validUpdateDeployment,
       )
@@ -121,9 +123,9 @@ describe('deploymentController', () => {
 
       service.deleteDeployment.mockResolvedValue(undefined)
 
-      const result = await controller.delete(deploymentId)
+      const result = await controller.delete(deploymentId, projectCtx)
 
-      expect(service.deleteDeployment).toHaveBeenCalledWith(deploymentId)
+      expect(service.deleteDeployment).toHaveBeenCalledWith(projectCtx, deploymentId)
       expect(result).toBeUndefined()
     })
   })

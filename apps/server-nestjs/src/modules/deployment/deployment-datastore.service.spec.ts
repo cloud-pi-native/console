@@ -74,6 +74,7 @@ describe('deploymentDatastoreService', () => {
             include: { repository: true },
           },
         },
+        orderBy: { createdAt: 'asc' },
       })
       expect(result).toEqual(deployments)
     })

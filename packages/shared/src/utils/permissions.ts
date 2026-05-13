@@ -59,6 +59,8 @@ export const PROJECT_PERMS = { // project permissions
   LIST_REPOSITORIES: bit(9n),
   LIST_MEMBERS: bit(10n),
   LIST_ROLES: bit(11n),
+  MANAGE_DEPLOYMENTS: bit(12n),
+  LIST_DEPLOYMENTS: bit(13n),
 }
 
 // Be very careful and think to apply corresponding updates in database if you modify these values, You'll have to do binary updates in SQL, good luck !
@@ -142,6 +144,10 @@ export const ProjectAuthorized = {
 
   SeeSecrets: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
     || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.SEE_SECRETS | PROJECT_PERMS.MANAGE)),
+  ManageDeployments: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
+    || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_DEPLOYMENTS | PROJECT_PERMS.MANAGE)),
+  ListDeployments: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
+    || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.LIST_DEPLOYMENTS | PROJECT_PERMS.MANAGE)),
 } as const
 
 interface ScopePerm<T extends string> {
@@ -207,6 +213,20 @@ export const projectPermsDetails: PermDetails<ProjectPermsKeys> = [{
       key: 'LIST_REPOSITORIES',
       label: 'Voir les dépôts',
       hint: 'Permet de visualiser tous les dépôts et leurs configurations',
+    },
+  ],
+}, {
+  name: 'Déploiements',
+  perms: [
+    {
+      key: 'MANAGE_DEPLOYMENTS',
+      label: 'Gérer les déploiements',
+      hint: 'Permet de créer, éditer, supprimer des déploiements',
+    },
+    {
+      key: 'LIST_DEPLOYMENTS',
+      label: 'Voir les déploiements',
+      hint: 'Permet de visualiser tous les déploiements et leurs configurations',
     },
   ],
 }] as const

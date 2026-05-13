@@ -1,22 +1,42 @@
 import type { CreateDeployment, UpdateDeployment } from '@cpn-console/shared'
-import { Inject, Injectable } from '@nestjs/common'
+import type { InputJsonValue } from '@prisma/client/runtime/library'
+import type { ProjectExecutionContext } from '../infrastructure/permission/project/project-context.decorator'
+import type { RequiredServiceResult } from '../plugin/plugin.utils'
+import { Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
+import { LogService } from '../log/log.service'
+import { getFailedServices, mergeServiceResults } from '../plugin/plugin.utils'
 import { ProjectService } from '../project/project.service'
 import { DeploymentDatastoreService } from './deployment-datastore.service'
 
+type DeploymentAction = 'Create Deployment'
+  | 'Update Deployment'
+  | 'Delete Deployment'
+
+interface UpdateArgoCDProjectOptions {
+  projectId: string
+  userId: string
+  requestId: string
+  action: DeploymentAction
+}
+
 @Injectable()
 export class DeploymentService {
+  private readonly logger = new Logger(DeploymentService.name)
+
   constructor(
     @Inject(DeploymentDatastoreService) private readonly deploymentDatastoreService: DeploymentDatastoreService,
     @Inject(ProjectService) private readonly projectService: ProjectService,
     @Inject(EventEmitter2) private readonly eventEmitter: EventEmitter2,
+    @Inject(LogService) private readonly logService: LogService,
   ) {}
 
   async listByProjectId(projectId: string) {
     return this.deploymentDatastoreService.getDeploymentsByProjectId(projectId)
   }
 
-  async createDeployment(projectId: string, deploymentToCreate: CreateDeployment) {
+  async createDeployment(projectCtx: ProjectExecutionContext, deploymentToCreate: CreateDeployment) {
+    const { projectId, userId, requestId } = projectCtx
     const deployment = await this.deploymentDatastoreService.createDeployment({
       name: deploymentToCreate.name,
       project: { connect: { id: projectId } },
@@ -35,12 +55,17 @@ export class DeploymentService {
       },
     })
 
-    await this.upsertProject(projectId)
-    // TODO handle result and add logs
+    await this.updateArgoCDProject({
+      projectId,
+      userId,
+      requestId,
+      action: 'Create Deployment',
+    })
     return deployment
   }
 
-  async updateDeployment(deploymentId: string, deploymentToUpdate: UpdateDeployment) {
+  async updateDeployment(projectCtx: ProjectExecutionContext, deploymentId: string, deploymentToUpdate: UpdateDeployment) {
+    const { projectId, userId, requestId } = projectCtx
     const existing = await this.deploymentDatastoreService.getDeploymentById(deploymentId)
     if (!existing) throw new Error(`Deployment with id ${deploymentId} not found`)
 
@@ -81,26 +106,54 @@ export class DeploymentService {
         })),
       },
     })
-    await this.upsertProject(deploymentToUpdate.projectId)
-    // TODO handle result and add logs
+    await this.updateArgoCDProject({
+      projectId,
+      userId,
+      requestId,
+      action: 'Update Deployment',
+    })
     return deployment
   }
 
-  async deleteDeployment(deploymentId: string) {
-    const deployment = await this.deploymentDatastoreService.deleteDeployment(deploymentId)
-    await this.upsertProject(deployment.projectId)
-    // TODO handle result and add logs
+  async deleteDeployment(projectCtx: ProjectExecutionContext, deploymentId: string) {
+    const { projectId, userId, requestId } = projectCtx
+    await this.deploymentDatastoreService.deleteDeployment(deploymentId)
+    await this.updateArgoCDProject({
+      projectId,
+      userId,
+      requestId,
+      action: 'Delete Deployment',
+    })
   }
 
-  async deleteAllDeploymentsByProjectId(projectId: string) {
-    await this.deploymentDatastoreService.deleteAllDeploymentsByProjectId(projectId)
-    await this.upsertProject(projectId)
-    // TODO handle result and add logs
-  }
-
-  private async upsertProject(projectId: string) {
+  private async updateArgoCDProject(args: UpdateArgoCDProjectOptions) {
+    const { projectId, userId, requestId, action } = args
     const projectWithDetails = await this.projectService.get(projectId)
 
-    await this.eventEmitter.emitAsync('project.upsert', projectWithDetails)
+    this.logger.log(`project.argocd.update started (projectId=${projectId})`)
+    const eventResults: RequiredServiceResult<'argocd'>[] = await this.eventEmitter.emitAsync('project.argocd.update', projectWithDetails)
+    const results = mergeServiceResults(eventResults)
+    const failed = getFailedServices(results)
+
+    await this.logService.addLog({
+      action,
+      data: {
+        args: {
+          ...projectWithDetails,
+        },
+        failed: failed.length > 0 ? failed : undefined,
+        results: results as InputJsonValue,
+      },
+      userId,
+      requestId,
+      projectId,
+    })
+
+    if (failed.length > 0) {
+      this.logger.error(`project.argocd.update failed (projectId=${projectId})`)
+      throw new InternalServerErrorException('Synchronization Argo CD Failed')
+    }
+
+    this.logger.log(`project.argocd.update completed (projectId=${projectId})`)
   }
 }

@@ -1,4 +1,5 @@
 import type { CommitAction, CondensedProjectSchema, ProjectSchema, SimpleProjectSchema } from '@gitbeaker/core'
+import type { RequiredServiceResult } from '../plugin/plugin.utils'
 import type { ProjectWithDetails } from './argocd-datastore.service'
 import { createHmac } from 'node:crypto'
 import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
@@ -34,6 +35,40 @@ export class ArgoCDService {
     @Inject(VaultClientService) private readonly vault: VaultClientService,
   ) {
     this.logger.log('ArgoCDService initialized')
+  }
+
+  @OnEvent('project.argocd.update')
+  @StartActiveSpan()
+  async handleArgoCDProjectUpdate(project: ProjectWithDetails): Promise<RequiredServiceResult<'argocd'>> {
+    const start = process.hrtime.bigint()
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    this.logger.log(`Handling a argocd project update event for ${project.slug}`)
+    try {
+      await this.ensureProject(project)
+      const end = process.hrtime.bigint()
+      const executionTime = Number(end - start) / 1_000_000
+      this.logger.log(`ArgoCD sync completed for project ${project.slug}`)
+      return {
+        argocd: {
+          status: 'OK',
+          message: 'Up to date',
+          executionTime,
+        },
+      }
+    } catch (error: unknown) {
+      const end = process.hrtime.bigint()
+      const executionTime = Number(end - start) / 1_000_000
+      this.logger.error(`ArgoCD sync failed for project ${project.slug}`, error)
+      return {
+        argocd: {
+          error,
+          status: 'KO',
+          message: error instanceof Error ? error.message : 'Erreur inconnue',
+          executionTime,
+        },
+      }
+    }
   }
 
   @OnEvent('project.upsert')
@@ -220,7 +255,7 @@ export class ArgoCDService {
       'environment.id': environment.id,
       'environment.name': environment.name,
     })
-    const vaultValues = await this.vault.readProjectValues(project.id) ?? {}
+    const vaultValues = await this.vault.readProjectValues(project.slug) ?? {}
     const cluster = environment.cluster
     if (!cluster) {
       this.logger.warn(`Cluster not found for environment ${environment.id} in project ${project.slug}`)
@@ -230,11 +265,6 @@ export class ArgoCDService {
 
     const valueFilePath = formatEnvironmentValuesFilePath(project, cluster, environment)
 
-    const repo = project.repositories.find(r => r.isInfra)
-    if (!repo) {
-      this.logger.warn(`Infrastructure repository not found for project ${project.slug} (projectId=${project.id})`)
-      return null
-    }
     const gitlabPublicProjectUrl = `${(await this.gitlab.getOrCreateProjectGroupPublicUrl())}/${project.slug}`
 
     const values = formatValues({
@@ -297,7 +327,7 @@ export class ArgoCDService {
       'environment.id': environment.id,
       'environment.name': environment.name,
     })
-    const vaultValues = await this.vault.readProjectValues(project.id) ?? {}
+    const vaultValues = await this.vault.readProjectValues(project.slug) ?? {}
     const cluster = environment.cluster
     if (!cluster) {
       this.logger.warn(`Cluster not found for environment ${environment.id} in project ${project.slug}`)

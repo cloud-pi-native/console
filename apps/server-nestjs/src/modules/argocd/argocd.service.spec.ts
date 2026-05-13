@@ -72,6 +72,63 @@ describe('argoCDService', () => {
     expect(service).toBeDefined()
   })
 
+  describe('handleArgoCDProjectUpdate', () => {
+    it('should return OK result when ensureProject succeeds', async () => {
+      const mockProject = makeProjectWithDetails({
+        slug: 'project-1',
+        name: 'Project 1',
+        environments: [],
+        repositories: [],
+        deployments: [],
+      })
+
+      const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
+      gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
+      gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+      gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+      gitlab.listFiles.mockResolvedValue([])
+      vault.readProjectValues.mockResolvedValue({})
+      gitlab.generateCreateOrUpdateAction.mockResolvedValue(null)
+      gitlab.maybeCreateCommit.mockResolvedValue(undefined)
+
+      const result = await service.handleArgoCDProjectUpdate(mockProject)
+
+      expect(result).toEqual({
+        argocd: expect.objectContaining({
+          status: 'OK',
+          message: 'Up to date',
+          executionTime: expect.any(Number),
+        }),
+      })
+    })
+
+    it('should return KO result when ensureProject throws', async () => {
+      const mockProject = makeProjectWithDetails({
+        slug: 'project-1',
+        name: 'Project 1',
+        environments: [
+          makeProjectEnvironment({ name: 'dev', cluster: { id: 'c1', label: 'cluster-1', zone: { slug: 'zone-1' } } }),
+        ],
+        repositories: [makeProjectRepository({ internalRepoName: 'infra-repo', isInfra: true })],
+        deployments: [],
+      })
+
+      const error = new Error('GitLab unreachable')
+      gitlab.getOrCreateInfraGroupRepo.mockRejectedValue(error)
+
+      const result = await service.handleArgoCDProjectUpdate(mockProject)
+
+      expect(result).toEqual({
+        argocd: expect.objectContaining({
+          status: 'KO',
+          message: 'GitLab unreachable',
+          executionTime: expect.any(Number),
+          error,
+        }),
+      })
+    })
+  })
+
   it('should sync project environments', async () => {
     const mockProject = makeProjectWithDetails({
       slug: 'project-1',

@@ -1,13 +1,13 @@
 import type Zod from 'zod'
 import { z } from 'zod'
-import { longestEnvironmentName } from '../utils/const.js'
+import { longestDeploymentName } from '../utils/const.js'
 import { AtDatesToStringExtend } from './_utils.js'
 import { EnvironmentSchema } from './environment.js'
 import { RepoSchema } from './repository.js'
 
 const DeploymentSourceType = z.enum(['git', 'oci'])
 
-const DeploymentSourceSchema = z.object({
+export const DeploymentSourceSchema = z.object({
   id: z.string()
     .uuid(),
   deploymentId: z.string()
@@ -28,7 +28,7 @@ export const DeploymentSchema = z.object({
   name: z.string()
     .regex(/^[a-z0-9]+$/)
     .min(2)
-    .max(longestEnvironmentName),
+    .max(longestDeploymentName),
   projectId: z.string()
     .uuid(),
   environmentId: z.string()

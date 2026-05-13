@@ -42,6 +42,7 @@ body,
 .fr-fieldset {
   margin: 1rem 0 0;
   align-items: flex-start;
+  min-width: 0;
 }
 
 .fr-checkbox-group {
@@ -70,6 +71,10 @@ body,
 
 .fr-alert {
   background-color: var(--background-alt-grey);
+}
+
+.fr-alert pre {
+  white-space: normal;
 }
 
 .log-panel, .log-btn {
