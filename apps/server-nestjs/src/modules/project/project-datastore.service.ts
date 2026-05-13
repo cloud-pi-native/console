@@ -6,11 +6,41 @@ const projectSelect = {
   id: true,
   name: true,
   slug: true,
+  description: true,
+  owner: {
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      adminRoleIds: true,
+    },
+  },
   plugins: {
     select: {
       pluginName: true,
       key: true,
       value: true,
+    },
+  },
+  roles: {
+    select: {
+      id: true,
+      oidcGroup: true,
+    },
+  },
+  members: {
+    select: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          adminRoleIds: true,
+        },
+      },
+      roleIds: true,
     },
   },
   repositories: {
@@ -21,6 +51,20 @@ const projectSelect = {
       helmValuesFiles: true,
       deployRevision: true,
       deployPath: true,
+      isPrivate: true,
+      externalRepoUrl: true,
+      externalUserName: true,
+    },
+  },
+  clusters: {
+    select: {
+      id: true,
+      label: true,
+      zone: {
+        select: {
+          slug: true,
+        },
+      },
     },
   },
   environments: {

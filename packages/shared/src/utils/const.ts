@@ -26,6 +26,7 @@ export const projectRoles = [
 export type ProjectRoles = typeof projectRoles[number]
 
 export const longestEnvironmentName = 11 as const
+export const longestDeploymentName = 11 as const
 
 export const allStatus = [
   'initializing',

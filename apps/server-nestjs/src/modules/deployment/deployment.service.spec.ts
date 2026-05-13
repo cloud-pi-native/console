@@ -1,8 +1,11 @@
 import type { CreateDeployment, UpdateDeployment } from '@cpn-console/shared'
 import type { TestingModule } from '@nestjs/testing'
+import type { ProjectExecutionContext } from '../infrastructure/permission/project/project-context.decorator'
+import { InternalServerErrorException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { LogService } from '../log/log.service'
 import { ProjectService } from '../project/project.service'
 import { DeploymentDatastoreService } from './deployment-datastore.service'
 import { DeploymentService } from './deployment.service'
@@ -24,17 +27,28 @@ const mockEventEmitter = {
   emitAsync: vi.fn(),
 }
 
+const mockLogService = {
+  addLog: vi.fn(),
+}
+
 describe('deploymentService', () => {
   let module: TestingModule
   let service: DeploymentService
 
   const projectId = '11111111-1111-1111-1111-111111111111'
+  const userId = 'user-uuid-1234'
+  const requestId = 'request-uuid-5678'
   const deploymentId = '22222222-2222-2222-2222-222222222222'
+
+  const projectCtx: ProjectExecutionContext = { projectId, userId, requestId }
 
   const mockProject = {
     id: projectId,
     name: 'Test Project',
   }
+
+  const okArgoCDResult = [{ argocd: { status: 'OK', message: 'Up to date', executionTime: 10 } }]
+  const koArgoCDResult = [{ argocd: { status: 'KO', message: 'Failed', executionTime: 10, error: new Error('sync error') } }]
 
   const validCreateDeployment = {
     name: 'mydeployment',
@@ -84,6 +98,10 @@ describe('deploymentService', () => {
           provide: EventEmitter2,
           useValue: mockEventEmitter,
         },
+        {
+          provide: LogService,
+          useValue: mockLogService,
+        },
       ],
     }).compile()
 
@@ -107,14 +125,15 @@ describe('deploymentService', () => {
   })
 
   describe('createDeployment', () => {
-    it('should create deployment and upsert project', async () => {
+    it('should create deployment and trigger argocd update', async () => {
       const createdDeployment = { id: deploymentId }
 
       mockDeploymentDatastoreService.createDeployment.mockResolvedValue(createdDeployment)
       mockProjectService.getProjectWithDetails.mockResolvedValue(mockProject)
-      mockEventEmitter.emitAsync.mockResolvedValue([])
+      mockEventEmitter.emitAsync.mockResolvedValue(okArgoCDResult)
+      mockLogService.addLog.mockResolvedValue(undefined)
 
-      const result = await service.createDeployment(projectId, validCreateDeployment)
+      const result = await service.createDeployment(projectCtx, validCreateDeployment)
 
       expect(mockDeploymentDatastoreService.createDeployment).toHaveBeenCalledWith({
         name: validCreateDeployment.name,
@@ -135,13 +154,31 @@ describe('deploymentService', () => {
       })
 
       expect(mockProjectService.getProjectWithDetails).toHaveBeenCalledWith(projectId)
-      expect(mockEventEmitter.emitAsync).toHaveBeenCalledWith('project.upsert', mockProject)
+      expect(mockEventEmitter.emitAsync).toHaveBeenCalledWith('project.argocd.update', mockProject)
+      expect(mockLogService.addLog).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'Create Deployment',
+        userId,
+        requestId,
+        projectId,
+      }))
       expect(result).toEqual(createdDeployment)
+    })
+
+    it('should throw InternalServerErrorException when argocd sync fails', async () => {
+      mockDeploymentDatastoreService.createDeployment.mockResolvedValue({ id: deploymentId })
+      mockProjectService.getProjectWithDetails.mockResolvedValue(mockProject)
+      mockEventEmitter.emitAsync.mockResolvedValue(koArgoCDResult)
+      mockLogService.addLog.mockResolvedValue(undefined)
+
+      await expect(service.createDeployment(projectCtx, validCreateDeployment))
+        .rejects.toThrow(InternalServerErrorException)
+
+      expect(mockLogService.addLog).toHaveBeenCalled()
     })
   })
 
   describe('updateDeployment', () => {
-    it('should update deployment and upsert project', async () => {
+    it('should update deployment and trigger argocd update', async () => {
       const existingDeployment = {
         id: deploymentId,
         deploymentSources: [
@@ -155,9 +192,10 @@ describe('deploymentService', () => {
       mockDeploymentDatastoreService.getDeploymentById.mockResolvedValue(existingDeployment)
       mockDeploymentDatastoreService.updateDeployment.mockResolvedValue(updatedDeployment)
       mockProjectService.getProjectWithDetails.mockResolvedValue(mockProject)
-      mockEventEmitter.emitAsync.mockResolvedValue([])
+      mockEventEmitter.emitAsync.mockResolvedValue(okArgoCDResult)
+      mockLogService.addLog.mockResolvedValue(undefined)
 
-      const result = await service.updateDeployment(deploymentId, validUpdateDeployment)
+      const result = await service.updateDeployment(projectCtx, deploymentId, validUpdateDeployment)
 
       expect(mockDeploymentDatastoreService.updateDeployment).toHaveBeenCalledWith(
         deploymentId,
@@ -173,7 +211,13 @@ describe('deploymentService', () => {
       )
 
       expect(mockProjectService.getProjectWithDetails).toHaveBeenCalledWith(projectId)
-      expect(mockEventEmitter.emitAsync).toHaveBeenCalledWith('project.upsert', mockProject)
+      expect(mockEventEmitter.emitAsync).toHaveBeenCalledWith('project.argocd.update', mockProject)
+      expect(mockLogService.addLog).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'Update Deployment',
+        userId,
+        requestId,
+        projectId,
+      }))
       expect(result).toEqual(updatedDeployment)
     })
 
@@ -181,41 +225,56 @@ describe('deploymentService', () => {
       mockDeploymentDatastoreService.getDeploymentById.mockResolvedValue(null)
 
       await expect(
-        service.updateDeployment(deploymentId, validUpdateDeployment),
+        service.updateDeployment(projectCtx, deploymentId, validUpdateDeployment),
       ).rejects.toThrow(`Deployment with id ${deploymentId} not found`)
 
       expect(mockDeploymentDatastoreService.updateDeployment).not.toHaveBeenCalled()
     })
-  })
 
-  describe('deleteDeployment', () => {
-    it('should delete deployment and upsert project', async () => {
-      mockDeploymentDatastoreService.deleteDeployment.mockResolvedValue({
+    it('should throw InternalServerErrorException when argocd sync fails', async () => {
+      const existingDeployment = {
         id: deploymentId,
-        projectId,
-      })
+        deploymentSources: [{ id: '55555555-5555-5555-5555-555555555555' }],
+      }
+      mockDeploymentDatastoreService.getDeploymentById.mockResolvedValue(existingDeployment)
+      mockDeploymentDatastoreService.updateDeployment.mockResolvedValue({ id: deploymentId })
       mockProjectService.getProjectWithDetails.mockResolvedValue(mockProject)
-      mockEventEmitter.emitAsync.mockResolvedValue([])
+      mockEventEmitter.emitAsync.mockResolvedValue(koArgoCDResult)
+      mockLogService.addLog.mockResolvedValue(undefined)
 
-      await service.deleteDeployment(deploymentId)
-
-      expect(mockDeploymentDatastoreService.deleteDeployment).toHaveBeenCalledWith(deploymentId)
-      expect(mockProjectService.getProjectWithDetails).toHaveBeenCalledWith(projectId)
-      expect(mockEventEmitter.emitAsync).toHaveBeenCalledWith('project.upsert', mockProject)
+      await expect(service.updateDeployment(projectCtx, deploymentId, validUpdateDeployment))
+        .rejects.toThrow(InternalServerErrorException)
     })
   })
 
-  describe('deleteAllDeploymentsByProjectId', () => {
-    it('should delete all deployments and upsert project', async () => {
-      mockDeploymentDatastoreService.deleteAllDeploymentsByProjectId.mockResolvedValue(undefined)
+  describe('deleteDeployment', () => {
+    it('should delete deployment and trigger argocd update', async () => {
+      mockDeploymentDatastoreService.deleteDeployment.mockResolvedValue(undefined)
       mockProjectService.getProjectWithDetails.mockResolvedValue(mockProject)
-      mockEventEmitter.emitAsync.mockResolvedValue([])
+      mockEventEmitter.emitAsync.mockResolvedValue(okArgoCDResult)
+      mockLogService.addLog.mockResolvedValue(undefined)
 
-      await service.deleteAllDeploymentsByProjectId(projectId)
+      await service.deleteDeployment(projectCtx, deploymentId)
 
-      expect(mockDeploymentDatastoreService.deleteAllDeploymentsByProjectId).toHaveBeenCalledWith(projectId)
+      expect(mockDeploymentDatastoreService.deleteDeployment).toHaveBeenCalledWith(deploymentId)
       expect(mockProjectService.getProjectWithDetails).toHaveBeenCalledWith(projectId)
-      expect(mockEventEmitter.emitAsync).toHaveBeenCalledWith('project.upsert', mockProject)
+      expect(mockEventEmitter.emitAsync).toHaveBeenCalledWith('project.argocd.update', mockProject)
+      expect(mockLogService.addLog).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'Delete Deployment',
+        userId,
+        requestId,
+        projectId,
+      }))
+    })
+
+    it('should throw InternalServerErrorException when argocd sync fails', async () => {
+      mockDeploymentDatastoreService.deleteDeployment.mockResolvedValue(undefined)
+      mockProjectService.getProjectWithDetails.mockResolvedValue(mockProject)
+      mockEventEmitter.emitAsync.mockResolvedValue(koArgoCDResult)
+      mockLogService.addLog.mockResolvedValue(undefined)
+
+      await expect(service.deleteDeployment(projectCtx, deploymentId))
+        .rejects.toThrow(InternalServerErrorException)
     })
   })
 })

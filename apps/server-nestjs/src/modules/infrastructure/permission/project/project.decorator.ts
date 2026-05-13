@@ -1,6 +1,6 @@
 import type { ExecutionContext } from '@nestjs/common'
 import type { FastifyRequest } from 'fastify'
-import type { ProjectContext } from './project.guard.js'
+import type { ProjectContext } from './project.guard'
 import { createParamDecorator } from '@nestjs/common'
 
 export const Project = createParamDecorator(

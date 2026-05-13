@@ -23,7 +23,7 @@ const server = setupServer(
   }),
 )
 
-function createVaultServiceTestingModule() {
+function createVaultServiceTestingModule(config: Partial<ConfigurationService> = {}) {
   return Test.createTestingModule({
     providers: [
       VaultClientService,
@@ -35,7 +35,10 @@ function createVaultServiceTestingModule() {
           vaultUrl,
           vaultInternalUrl: vaultUrl,
           vaultKvName: 'kv',
+          projectRootDir: 'forge',
+          deployVaultConnectionInNamespaces: false,
           getInternalOrPublicVaultUrl: () => vaultUrl,
+          ...config,
         } satisfies Partial<ConfigurationService>,
       },
     ],
@@ -54,20 +57,44 @@ describe('vault', () => {
   afterAll(() => server.close())
 
   describe('getProjectValues', () => {
-    it('should get project values', async () => {
-      const result = await service.readProjectValues('project-id')
-      expect(result).toEqual({ secret: 'value' })
-    })
-
-    it('should return empty object if undefined', async () => {
+    it('should get project values without AppRole credentials if role does not exist', async () => {
       server.use(
-        http.get(`${vaultUrl}/v1/kv/data/:path`, () => {
+        http.get(`${vaultUrl}/v1/auth/approle/role/:roleName/role-id`, () => {
           return HttpResponse.json({}, { status: 404 })
         }),
       )
 
       const result = await service.readProjectValues('project-id')
-      expect(result).toEqual(undefined)
+      expect(result).toEqual({
+        projectsRootDir: 'forge',
+        url: '',
+        coreKvName: 'kv',
+        roleId: 'none',
+        secretId: 'none',
+      })
+    })
+
+    it('should get project values with AppRole credentials', async () => {
+      server.use(
+        http.get(`${vaultUrl}/v1/auth/approle/role/:roleName/role-id`, () => {
+          return HttpResponse.json({ data: { role_id: 'role-id' } })
+        }),
+        http.post(`${vaultUrl}/v1/auth/approle/role/:roleName/secret-id`, () => {
+          return HttpResponse.json({ data: { secret_id: 'secret-id' } })
+        }),
+      )
+
+      const module = await createVaultServiceTestingModule({ deployVaultConnectionInNamespaces: true }).compile()
+      service = module.get(VaultClientService)
+
+      const result = await service.readProjectValues('project-id')
+      expect(result).toEqual({
+        projectsRootDir: 'forge',
+        url: vaultUrl,
+        coreKvName: 'kv',
+        roleId: 'role-id',
+        secretId: 'secret-id',
+      })
     })
   })
 

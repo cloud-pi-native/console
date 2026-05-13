@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CleanedCluster, Cluster, CreateEnvironmentBody, Environment, Repo, UpdateEnvironmentBody, Zone } from '@cpn-console/shared'
+import type { CleanedCluster, Cluster, CreateEnvironmentBody, Environment, Repo, Stage, UpdateEnvironmentBody, Zone } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
 import { logger } from '@cpn-console/logger/browser'
 import { AdminAuthorized, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
@@ -25,8 +25,8 @@ const snackbarStore = useSnackbarStore()
 const stageStore = useStageStore()
 const userStore = useUserStore()
 
-const environments = ref<(Environment & { cluster?: Cluster, zone?: Zone })[]>()
-const repositories = ref<(Repo & { source: Source })[]>()
+const environments = ref<(Environment & { cluster?: Cluster, zone?: Zone, stage?: Stage })[]>([])
+const repositories = ref<(Repo & { source: Source })[]>([])
 const projectUsage = ref<({
   hprod: { cpu: number, gpu: number, memory: number }
   prod: { cpu: number, gpu: number, memory: number }
@@ -62,6 +62,7 @@ const projectClusters = computed(() => ([
 
 const canManageEnvs = computed(() => !props.project.locked && props.asProfile === 'user' && ProjectAuthorized.ManageEnvironments({ projectPermissions: props.project.myPerms }))
 const canManageRepos = computed(() => !props.project.locked && props.asProfile === 'user' && ProjectAuthorized.ManageRepositories({ projectPermissions: props.project.myPerms }))
+const canListDeploy = computed(() => ProjectAuthorized.ListDeployments({ projectPermissions: props.project.myPerms }))
 
 watch(selectedRepo, async () => {
   branchName.value = defaultBranchName
@@ -135,10 +136,12 @@ async function reload() {
     .then(envs => envs.map((environment: Environment) => {
       const cluster = clusterStore.clusters.find(cluster => cluster.id === environment.clusterId)
       const zone = zoneStore.zones.find(zone => zone.id === cluster?.zoneId)
+      const stage = stageStore.stages.find(stage => stage.id === environment.stageId)
       return {
         ...environment,
         cluster,
         zone,
+        stage,
       }
     }))
   repositories.value = await props.project.Repositories.list()
@@ -201,6 +204,7 @@ async function copyToClipboard(text: string) {
 </script>
 
 <template>
+  <DeploymentResources v-if="canListDeploy" :as-profile="props.asProfile" :environments :repositories :project />
   <div
     class="grow"
   >

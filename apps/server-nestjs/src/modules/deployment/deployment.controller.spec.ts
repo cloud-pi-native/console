@@ -1,7 +1,9 @@
 import type { CreateDeployment, UpdateDeployment } from '@cpn-console/shared'
 import type { TestingModule } from '@nestjs/testing'
+import type { ProjectExecutionContext } from '../infrastructure/permission/project/project-context.decorator'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ProjectGuard } from '../infrastructure/permission/project/project.guard'
 import { DeploymentController } from './deployment.controller'
 import { DeploymentService } from './deployment.service'
 
@@ -17,13 +19,16 @@ describe('deploymentController', () => {
   let module: TestingModule
   let controller: DeploymentController
 
+  const projectCtx: ProjectExecutionContext = {
+    projectId: '11111111-1111-1111-1111-111111111111',
+    userId: 'user-uuid-1234',
+    requestId: 'request-uuid-5678',
+  }
+
   const validCreateDeployment = {
     name: 'dev',
     projectId: '11111111-1111-1111-1111-111111111111',
     environmentId: '22222222-2222-2222-2222-222222222222',
-    cpu: 1,
-    gpu: 0,
-    memory: 512,
     autosync: true,
     deploymentSources: [
       {
@@ -59,7 +64,10 @@ describe('deploymentController', () => {
           useValue: mockDeploymentService,
         },
       ],
-    }).compile()
+    })
+      .overrideGuard(ProjectGuard)
+      .useValue({ canActivate: () => true })
+      .compile()
 
     controller = module.get<DeploymentController>(DeploymentController)
   })
@@ -88,10 +96,10 @@ describe('deploymentController', () => {
 
       mockDeploymentService.createDeployment.mockResolvedValue(expectedResult)
 
-      const result = await controller.create(validCreateDeployment)
+      const result = await controller.create(validCreateDeployment, projectCtx)
 
       expect(mockDeploymentService.createDeployment).toHaveBeenCalledWith(
-        validCreateDeployment.projectId,
+        projectCtx,
         validCreateDeployment,
       )
       expect(result).toEqual(expectedResult)
@@ -105,9 +113,10 @@ describe('deploymentController', () => {
 
       mockDeploymentService.updateDeployment.mockResolvedValue(expectedResult)
 
-      const result = await controller.update(deploymentId, validUpdateDeployment)
+      const result = await controller.update(deploymentId, validUpdateDeployment, projectCtx)
 
       expect(mockDeploymentService.updateDeployment).toHaveBeenCalledWith(
+        projectCtx,
         deploymentId,
         validUpdateDeployment,
       )
@@ -121,9 +130,9 @@ describe('deploymentController', () => {
 
       mockDeploymentService.deleteDeployment.mockResolvedValue(undefined)
 
-      const result = await controller.delete(deploymentId)
+      const result = await controller.delete(deploymentId, projectCtx)
 
-      expect(mockDeploymentService.deleteDeployment).toHaveBeenCalledWith(deploymentId)
+      expect(mockDeploymentService.deleteDeployment).toHaveBeenCalledWith(projectCtx, deploymentId)
       expect(result).toBeUndefined()
     })
   })

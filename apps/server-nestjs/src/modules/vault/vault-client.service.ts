@@ -162,15 +162,15 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  async readProjectValues(projectId: string): Promise<Record<string, any> | undefined> {
-    const path = generateProjectPath(this.config.projectRootDir, projectId)
-    this.logger.debug(`Reading Vault project values (projectId=${projectId}, path=${path})`)
-    this.logger.verbose(`Reading Vault project values for projectId=${projectId}`)
-    const secret = await this.read<Record<string, any>>(path).catch((error) => {
-      if (error instanceof VaultError && error.kind === 'NotFound') return null
-      throw error
-    })
-    return secret?.data
+  async readProjectValues(projectSlug: string): Promise<Record<string, any> | undefined> {
+    this.logger.verbose(`Reading Vault project values for projectSlug=${projectSlug}`)
+    return {
+      projectsRootDir: this.config.projectRootDir,
+      url: this.config.deployVaultConnectionInNamespaces ? this.config.vaultUrl : '',
+      coreKvName: this.config.vaultKvName,
+      roleId: (await this.getAuthApproleRoleRoleId(projectSlug).catch(() => undefined)) ?? 'none',
+      secretId: (await this.createAuthApproleRoleSecretId(projectSlug).catch(() => undefined)) ?? 'none',
+    }
   }
 
   @StartActiveSpan()
