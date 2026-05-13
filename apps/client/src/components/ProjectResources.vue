@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CleanedCluster, Cluster, CreateEnvironmentBody, Environment, Repo, UpdateEnvironmentBody, Zone } from '@cpn-console/shared'
+import type { CleanedCluster, Cluster, CreateEnvironmentBody, Deployment, Environment, Repo, Stage, UpdateEnvironmentBody, Zone } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
 import { logger } from '@cpn-console/logger/browser'
 import { AdminAuthorized, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
@@ -25,8 +25,8 @@ const snackbarStore = useSnackbarStore()
 const stageStore = useStageStore()
 const userStore = useUserStore()
 
-const environments = ref<(Environment & { cluster?: Cluster, zone?: Zone })[]>()
-const repositories = ref<(Repo & { source: Source })[]>()
+const environments = ref<(Environment & { cluster?: Cluster, zone?: Zone, stage?: Stage })[]>([])
+const repositories = ref<(Repo & { source: Source })[]>([])
 const projectUsage = ref<({
   hprod: { cpu: number, gpu: number, memory: number }
   prod: { cpu: number, gpu: number, memory: number }
@@ -135,10 +135,12 @@ async function reload() {
     .then(envs => envs.map((environment: Environment) => {
       const cluster = clusterStore.clusters.find(cluster => cluster.id === environment.clusterId)
       const zone = zoneStore.zones.find(zone => zone.id === cluster?.zoneId)
+      const stage = stageStore.stages.find(stage => stage.id === environment.stageId)
       return {
         ...environment,
         cluster,
         zone,
+        stage,
       }
     }))
   repositories.value = await props.project.Repositories.list()
@@ -201,6 +203,7 @@ async function copyToClipboard(text: string) {
 </script>
 
 <template>
+  <DeploymentResources :environments :repositories :project />
   <div
     class="grow"
   >
