@@ -194,7 +194,7 @@ importers:
     dependencies:
       '@cpn-console/argocd-plugin':
         specifier: workspace:^
-        version: file:plugins/argocd(@types/node@24.12.0)(typescript@5.9.3)(vitest@4.1.5)
+        version: link:../../plugins/argocd
       '@cpn-console/gitlab-plugin':
         specifier: workspace:^
         version: link:../../plugins/gitlab
@@ -206,7 +206,7 @@ importers:
         version: link:../../packages/hooks
       '@cpn-console/keycloak-plugin':
         specifier: workspace:^
-        version: file:plugins/keycloak(@types/node@24.12.0)(typescript@5.9.3)(vitest@4.1.5)
+        version: link:../../plugins/keycloak
       '@cpn-console/logger':
         specifier: workspace:^
         version: link:../../packages/logger
@@ -357,34 +357,34 @@ importers:
     dependencies:
       '@cpn-console/argocd-plugin':
         specifier: workspace:^
-        version: file:plugins/argocd(@types/node@22.19.15)(typescript@5.9.3)(vitest@4.1.5)
+        version: link:../../plugins/argocd
       '@cpn-console/gitlab-plugin':
         specifier: workspace:^
-        version: file:plugins/gitlab(@types/node@22.19.15)(typescript@5.9.3)(vitest@4.1.5)
+        version: link:../../plugins/gitlab
       '@cpn-console/harbor-plugin':
         specifier: workspace:^
-        version: file:plugins/harbor(@types/node@22.19.15)(typescript@5.9.3)(vitest@4.1.5)
+        version: link:../../plugins/harbor
       '@cpn-console/hooks':
         specifier: workspace:^
-        version: file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@4.1.5)
+        version: link:../../packages/hooks
       '@cpn-console/keycloak-plugin':
         specifier: workspace:^
-        version: file:plugins/keycloak(@types/node@22.19.15)(typescript@5.9.3)(vitest@4.1.5)
+        version: link:../../plugins/keycloak
       '@cpn-console/logger':
         specifier: workspace:^
         version: link:../../packages/logger
       '@cpn-console/nexus-plugin':
         specifier: workspace:^
-        version: file:plugins/nexus(@types/node@22.19.15)(typescript@5.9.3)(vitest@4.1.5)
+        version: link:../../plugins/nexus
       '@cpn-console/shared':
         specifier: workspace:^
-        version: file:packages/shared(@types/node@22.19.15)
+        version: link:../../packages/shared
       '@cpn-console/sonarqube-plugin':
         specifier: workspace:^
-        version: file:plugins/sonarqube(@types/node@22.19.15)(typescript@5.9.3)(vitest@4.1.5)
+        version: link:../../plugins/sonarqube
       '@cpn-console/vault-plugin':
         specifier: workspace:^
-        version: file:plugins/vault(@types/node@22.19.15)(typescript@5.9.3)(vitest@4.1.5)
+        version: link:../../plugins/vault
       '@fastify/cookie':
         specifier: ^9.4.0
         version: 9.4.0
@@ -814,7 +814,7 @@ importers:
         version: link:../../packages/hooks
       '@cpn-console/keycloak-plugin':
         specifier: workspace:^
-        version: file:plugins/keycloak(@types/node@24.12.0)(typescript@5.9.3)(vitest@4.1.5)
+        version: link:../keycloak
       '@cpn-console/shared':
         specifier: workspace:^
         version: link:../../packages/shared
@@ -924,7 +924,7 @@ importers:
         version: link:../../packages/hooks
       '@cpn-console/keycloak-plugin':
         specifier: workspace:^
-        version: file:plugins/keycloak(@types/node@24.12.0)(typescript@5.9.3)(vitest@4.1.5)
+        version: link:../keycloak
       '@cpn-console/logger':
         specifier: workspace:^
         version: link:../../packages/logger
@@ -1083,7 +1083,7 @@ importers:
         version: link:../../packages/hooks
       '@cpn-console/keycloak-plugin':
         specifier: workspace:^
-        version: file:plugins/keycloak(@types/node@24.12.0)(typescript@5.9.3)(vitest@4.1.5)
+        version: link:../keycloak
       '@cpn-console/logger':
         specifier: workspace:^
         version: link:../../packages/logger
