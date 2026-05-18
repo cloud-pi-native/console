@@ -16,7 +16,9 @@ import { keycloakConf, sessionConf } from './utils/keycloak.js'
 
 export const serverInstance: ReturnType<typeof initServer> = initServer()
 
-const openApiDocument = generateOpenApi(await getContract(), swaggerConf, { setOperationId: true })
+const openApiDocument = generateOpenApi(await getContract(), swaggerConf, {
+  setOperationId: true,
+})
 
 const app = fastify(fastifyConf)
   .register(helmet, () => ({
@@ -38,16 +40,21 @@ const app = fastify(fastifyConf)
     const statusCode = 500
     // @ts-ignore vérifier l'objet
     const message = err.description || err.message
-    reply.status(statusCode).send({ status: statusCode, error: message, stack: err.stack })
+    reply
+      .status(statusCode)
+      .send({ status: statusCode, error: message, stack: err.stack })
     req.log.error({ err, reqId: req.id }, 'Unhandled request error')
   })
   .addHook('onResponse', (req, res) => {
+    const user = req.session?.user as {
+      id: string
+    }
     if (res.statusCode < 400) {
-      req.log.info({ status: res.statusCode, userId: req.session?.user?.id })
+      req.log.info({ status: res.statusCode, userId: user?.id })
     } else if (res.statusCode < 500) {
-      req.log.warn({ status: res.statusCode, userId: req.session?.user?.id })
+      req.log.warn({ status: res.statusCode, userId: user?.id })
     } else {
-      req.log.error({ status: res.statusCode, userId: req.session?.user?.id })
+      req.log.error({ status: res.statusCode, userId: user?.id })
     }
   })
 
