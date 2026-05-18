@@ -106,7 +106,7 @@ export enum TokenInvalidReason {
   NOT_FOUND = 'Not authenticated',
 }
 
-type UserTrial = Omit<UserDetails, 'type'>
+export type UserTrial = Omit<UserDetails, 'type'>
 export async function logViaSession({ id, email, groups, ...user }: UserTrial): Promise<{ user: User, adminPerms: bigint }> {
   let userDb = await prisma.user.findUnique({
     where: { id },

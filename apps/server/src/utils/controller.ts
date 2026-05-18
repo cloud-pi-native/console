@@ -1,6 +1,7 @@
 import type { XOR } from '@cpn-console/shared'
 import type { Cluster, Prisma, Project, ProjectMembers, ProjectRole } from '@prisma/client'
 import type { FastifyRequest } from 'fastify'
+import type { UserTrial } from '@/resources/user/business.js'
 import type { UserDetails } from '@/types/index.js'
 import { PROJECT_PERMS as PP, PROJECT_PERMS, projectIsLockedInfo, tokenHeaderName } from '@cpn-console/shared'
 import prisma from '@/prisma.js'
@@ -82,13 +83,14 @@ export async function authUser(req: FastifyRequest, projectUnique: ProjectUnique
 export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqueFinder): Promise<UserProfile | UserProjectProfile> {
   let adminPermissions: bigint = 0n
   let tokenId: string | undefined
+  const reqUser: UserTrial = req.session.user as unknown as UserTrial
   let user: UserDetails | undefined
 
   if (req.session.user) {
-    const loginResult = await logViaSession(req.session.user)
+    const loginResult = await logViaSession(reqUser)
     user = {
       ...loginResult.user,
-      groups: req.session.user.groups,
+      groups: reqUser.groups,
     }
     adminPermissions = loginResult.adminPerms
   } else {

@@ -1,3 +1,6 @@
+import type {
+  UserTrial,
+} from './business.js'
 import { AdminAuthorized, userContract } from '@cpn-console/shared'
 import { serverInstance } from '@/app.js'
 import { authUser } from '@/utils/controller.js'
@@ -26,7 +29,7 @@ export function userRouter() {
 
       if (!user) return new Unauthorized401()
 
-      const { user: body } = await logViaSession(user)
+      const { user: body } = await logViaSession(user as unknown as UserTrial)
 
       return {
         status: 200,
@@ -34,10 +37,14 @@ export function userRouter() {
       }
     },
 
-    getAllUsers: async ({ request: req, query: { relationType, ...query } }) => {
+    getAllUsers: async ({
+      request: req,
+      query: { relationType, ...query },
+    }) => {
       const perms = await authUser(req)
 
-      if (!AdminAuthorized.ManageUsers(perms.adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ManageUsers(perms.adminPermissions))
+        return new Forbidden403()
 
       const body = await getUsers(query, relationType)
       if (body instanceof ErrorResType) return body
@@ -51,7 +58,8 @@ export function userRouter() {
     patchUsers: async ({ request: req, body }) => {
       const perms = await authUser(req)
 
-      if (!AdminAuthorized.ManageUsers(perms.adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ManageUsers(perms.adminPermissions))
+        return new Forbidden403()
 
       const users = await patchUsers(body)
 
