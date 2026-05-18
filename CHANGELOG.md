@@ -1,5 +1,28 @@
 # Changelog
 
+## [9.18.0](https://github.com/cloud-pi-native/console/compare/v9.17.1...v9.18.0) (2026-05-18)
+
+
+### Features
+
+* add deployment model ([38f768b](https://github.com/cloud-pi-native/console/commit/38f768bc68e2ea8a8ebeabf80eb35844bdca9aba))
+
+
+### Bug Fixes
+
+* **sonarqube:** fix a weird type error ([fe22da3](https://github.com/cloud-pi-native/console/commit/fe22da3775a8d8a4796c9b1171dcb125c52521c2))
+
+
+### Miscellaneous Chores
+
+* bump dependencies to avoid dependabot security issues ([50bc6f5](https://github.com/cloud-pi-native/console/commit/50bc6f504eb98c3ba4e1217d1717c817eed14830))
+* **ci:** improve build for unit tests ([7cd49fb](https://github.com/cloud-pi-native/console/commit/7cd49fbcedf0f6afa712e9eb62abe2aaa8163a33))
+* do no bail when launching all tests ([d3a3182](https://github.com/cloud-pi-native/console/commit/d3a3182d8338bf2e1d9b6030686c7ea2d60cd7b0))
+* ensure dependencies are correctly linked for server builds ([b582c95](https://github.com/cloud-pi-native/console/commit/b582c959b11547dd98f7c4573feee81c7eddedba))
+* fix linting errors ([1a3917e](https://github.com/cloud-pi-native/console/commit/1a3917e866063ad55bb512c04156d6ccec23a261))
+* **playwright:** limit time wasted in merge queues by failing fast ([a0176d3](https://github.com/cloud-pi-native/console/commit/a0176d339f8f1644366a6382fc35abccfe08e393))
+* **server:** fix too many dependency issues ([3aee443](https://github.com/cloud-pi-native/console/commit/3aee4434ed1d8d48bab449e50e73f94510503218))
+
 ## [9.17.1](https://github.com/cloud-pi-native/console/compare/v9.17.0...v9.17.1) (2026-05-05)
 
 
