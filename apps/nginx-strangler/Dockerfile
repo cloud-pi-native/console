@@ -1,36 +1,13 @@
-FROM nginx:1.27-alpine AS prod
+FROM docker.io/bitnamilegacy/nginx:1.29.1 AS prod
 
-# envsubst est inclus dans nginx:alpine via le paquet gettext
-# On supprime la config par défaut
-RUN rm /etc/nginx/conf.d/default.conf
-
-# Config principale
-COPY apps/nginx-strangler/nginx.conf /etc/nginx/nginx.conf
+USER 0
 
 # Template de routing (sera substitué au démarrage)
-COPY apps/nginx-strangler/conf.d/routing.conf /etc/nginx/templates/routing.conf.template
+COPY --chown=1001:0 --chmod=660 apps/nginx-strangler/conf.d/routing.conf /opt/bitnami/nginx/conf/server_blocks/routing.conf.template
 
-# Donner à l'utilisateur nginx les droits d'écriture sur conf.d/ (pour envsubst au démarrage)
-# et sur les répertoires de logs/pid nécessaires en mode non-root
-RUN chown -R nginx:nginx \
-      /etc/nginx/nginx.conf \
-      /etc/nginx/conf.d \
-      /etc/nginx/templates \
-      /etc/nginx/mime.types \
-      /var/cache/nginx \
-      /var/log/nginx \
-    && touch /var/run/nginx.pid \
-    && chown nginx:nginx /var/run/nginx.pid
+# Script d'entrypoint pour substitution des variables
+COPY --chown=1001:0 --chmod=770 apps/nginx-strangler/entrypoint.sh /docker-entrypoint-initdb.d/load-routing.sh
 
-USER nginx
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:8080/health || exit 1
-
-# Entrypoint : envsubst substitue les variables d'env dans les templates,
-# puis démarre nginx en foreground
-# Les variables substituées : LEGACY_UPSTREAM, NESTJS_UPSTREAM
-CMD ["/bin/sh", "-c", \
-  "envsubst '${LEGACY_UPSTREAM} ${NESTJS_UPSTREAM}' < /etc/nginx/templates/routing.conf.template > /etc/nginx/conf.d/routing.conf && nginx -t && nginx -g 'daemon off;'"]
+USER 1001
 
 EXPOSE 8080
