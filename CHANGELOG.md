@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.18.1](https://github.com/cloud-pi-native/console/compare/v9.18.0...v9.18.1) (2026-05-20)
+
+
+### Bug Fixes
+
+* use bitnami image for strangler ([6ed431b](https://github.com/cloud-pi-native/console/commit/6ed431bd218fad529d7fdd5b051ea53462e8a024))
+
 ## [9.18.0](https://github.com/cloud-pi-native/console/compare/v9.17.1...v9.18.0) (2026-05-18)
 
 
