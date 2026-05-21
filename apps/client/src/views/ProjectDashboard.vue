@@ -13,14 +13,17 @@ import { useUserStore } from '@/stores/user.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { getRandomId } from '@/utils/func.js'
 
-const props = withDefaults(defineProps<{
-  projectSlug: ProjectV2['slug']
-  parentRoute: string
-  asProfile: 'user' | 'admin'
-  tab?: DashboardPanelTabs
-}>(), {
-  tab: 'resources',
-})
+const props = withDefaults(
+  defineProps<{
+    projectSlug: ProjectV2['slug']
+    parentRoute: string
+    asProfile: 'user' | 'admin'
+    tab?: DashboardPanelTabs
+  }>(),
+  {
+    tab: 'resources',
+  },
+)
 
 const projectStore = useProjectStore()
 const zoneStore = useZoneStore()
@@ -51,16 +54,63 @@ onBeforeMount(async () => {
 
 const tabListName = 'Liste d’onglet'
 
-type DashboardPanelTabs = 'resources' | 'services' | 'team' | 'roles' | 'logs' | 'clusters' | 'configuration'
-interface TabTitle { title: string, icon: `${string}:${string}`, tabId: `tab-${DashboardPanelTabs}`, panelId: `panel-${DashboardPanelTabs}` }
+type DashboardPanelTabs
+  = | 'resources'
+    | 'services'
+    | 'team'
+    | 'roles'
+    | 'logs'
+    | 'clusters'
+    | 'configuration'
+interface TabTitle {
+  title: string
+  icon: `${string}:${string}`
+  tabId: `tab-${DashboardPanelTabs}`
+  panelId: `panel-${DashboardPanelTabs}`
+}
 
-const resourcesTitle: TabTitle = { title: 'Ressources', icon: 'ri:shapes-line', tabId: 'tab-resources', panelId: 'panel-resources' }
-const servicesTitle: TabTitle = { title: 'Services externes', icon: 'ri:flow-chart', tabId: 'tab-services', panelId: 'panel-services' }
-const teamTitle: TabTitle = { title: 'Équipe', icon: 'ri:team-line', tabId: 'tab-team', panelId: 'panel-team' }
-const rolesTitle: TabTitle = { title: 'Rôles', icon: 'ri:admin-line', tabId: 'tab-roles', panelId: 'panel-roles' }
-const logsTitle: TabTitle = { title: 'Journaux', icon: 'ri:newspaper-line', tabId: 'tab-logs', panelId: 'panel-logs' }
-const clustersTitle: TabTitle = { title: 'Clusters', icon: 'ri:server-line', tabId: 'tab-clusters', panelId: 'panel-clusters' }
-const configurationTitle: TabTitle = { title: 'Configuration', icon: 'ri:settings-5-line', tabId: 'tab-configuration', panelId: 'panel-configuration' }
+const resourcesTitle: TabTitle = {
+  title: 'Ressources',
+  icon: 'ri:shapes-line',
+  tabId: 'tab-resources',
+  panelId: 'panel-resources',
+}
+const servicesTitle: TabTitle = {
+  title: 'Services externes',
+  icon: 'ri:flow-chart',
+  tabId: 'tab-services',
+  panelId: 'panel-services',
+}
+const teamTitle: TabTitle = {
+  title: 'Équipe',
+  icon: 'ri:team-line',
+  tabId: 'tab-team',
+  panelId: 'panel-team',
+}
+const rolesTitle: TabTitle = {
+  title: 'Rôles',
+  icon: 'ri:admin-line',
+  tabId: 'tab-roles',
+  panelId: 'panel-roles',
+}
+const logsTitle: TabTitle = {
+  title: 'Journaux',
+  icon: 'ri:newspaper-line',
+  tabId: 'tab-logs',
+  panelId: 'panel-logs',
+}
+const clustersTitle: TabTitle = {
+  title: 'Clusters',
+  icon: 'ri:server-line',
+  tabId: 'tab-clusters',
+  panelId: 'panel-clusters',
+}
+const configurationTitle: TabTitle = {
+  title: 'Configuration',
+  icon: 'ri:settings-5-line',
+  tabId: 'tab-configuration',
+  panelId: 'panel-configuration',
+}
 const tabTitles: TabTitle[] = [
   resourcesTitle,
   servicesTitle,
@@ -71,10 +121,20 @@ const tabTitles: TabTitle[] = [
   configurationTitle,
 ]
 
-const activeTab = ref(Math.max(tabTitles.findIndex(tab => `tab-${router.currentRoute.value.query?.tab}` === tab.tabId), 0))
+function findTab() {
+  return Math.max(
+    tabTitles.findIndex(
+      tab => `tab-${router.currentRoute.value.query?.tab}` === tab.tabId,
+    ),
+    0,
+  )
+}
+
+const activeTab = ref(findTab())
 const saveProjectState = ref({
   isProcessing: false,
 })
+const currentRoute = useRoute()
 
 async function refreshMembers() {
   await project.value.Members.list()
@@ -87,6 +147,10 @@ async function leaveProject() {
   }
   await refreshMembers()
 }
+
+watch(currentRoute, () => {
+  activeTab.value = findTab()
+})
 
 watch(activeTab, (tabIndex) => {
   const tabId = tabTitles[tabIndex].tabId
@@ -117,9 +181,7 @@ async function saveProject() {
 </script>
 
 <template>
-  <div
-    class="w-full flex gap-4 justify-end fr-mb-1w"
-  >
+  <div class="w-full flex gap-4 justify-end fr-mb-1w">
     <DsfrButton
       v-if="project"
       title="Revenir à la liste des projets"
@@ -135,15 +197,33 @@ async function saveProject() {
       <ProjectBanner
         :model-value="project.description"
         :project="project"
-        :can-edit-description="asProfile === 'user' && ProjectAuthorized.Manage({ projectPermissions: project.myPerms })"
-        @update:model-value="(desc: string | undefined) => { project.description = desc }"
+        :can-edit-description="
+          asProfile === 'user'
+            && ProjectAuthorized.Manage({ projectPermissions: project.myPerms })
+        "
+        @update:model-value="
+          (desc: string | undefined) => {
+            project.description = desc;
+          }
+        "
         @save-description="saveProject"
       />
       <ProjectAction
         :project="project"
-        :hide-replay="asProfile === 'user' && !ProjectAuthorized.ReplayHooks({ projectPermissions: project.myPerms })"
-        :hide-archive="asProfile === 'user' && !ProjectAuthorized.Manage({ projectPermissions: project.myPerms })"
-        :hide-secrets="asProfile === 'user' && !ProjectAuthorized.SeeSecrets({ projectPermissions: project.myPerms })"
+        :hide-replay="
+          asProfile === 'user'
+            && !ProjectAuthorized.ReplayHooks({
+              projectPermissions: project.myPerms,
+            })
+        "
+        :hide-archive="
+          asProfile === 'user'
+            && !ProjectAuthorized.Manage({ projectPermissions: project.myPerms })
+        "
+        :hide-secrets="
+          asProfile === 'user'
+            && !ProjectAuthorized.SeeSecrets({ projectPermissions: project.myPerms })
+        "
         :hide-lock="asProfile === 'user'"
         class="px-4"
         @archive="archive"
@@ -175,21 +255,29 @@ async function saveProject() {
             :project="project"
             :permission-target="asProfile"
             :display-global="asProfile !== 'admin'"
-            :disabled="asProfile === 'user' && !ProjectAuthorized.Manage({ projectPermissions: project.myPerms })"
+            :disabled="
+              asProfile === 'user'
+                && !ProjectAuthorized.Manage({ projectPermissions: project.myPerms })
+            "
           />
         </DsfrTabContent>
 
-        <DsfrTabContent
-          :panel-id="teamTitle.panelId"
-          :tab-id="teamTitle.tabId"
-        >
+        <DsfrTabContent :panel-id="teamTitle.panelId" :tab-id="teamTitle.tabId">
           <TeamCt
             :key="project.id + teamId"
             :user-profile="userStore.userProfile"
             :project="project"
             :members="project.members"
-            :can-manage="asProfile === 'admin' || ProjectAuthorized.ManageMembers({ projectPermissions: project.myPerms })"
-            :can-transfer="asProfile === 'admin' || project.ownerId === userStore.userProfile?.id"
+            :can-manage="
+              asProfile === 'admin'
+                || ProjectAuthorized.ManageMembers({
+                  projectPermissions: project.myPerms,
+                })
+            "
+            :can-transfer="
+              asProfile === 'admin'
+                || project.ownerId === userStore.userProfile?.id
+            "
             @refresh="refreshMembers"
             @leave="leaveProject"
             @transfer="unSelectProject"
@@ -202,26 +290,22 @@ async function saveProject() {
         >
           <div>
             <template
-              v-if="asProfile === 'admin' || ProjectAuthorized.ManageRoles({ projectPermissions: project.myPerms })"
+              v-if="
+                asProfile === 'admin'
+                  || ProjectAuthorized.ManageRoles({
+                    projectPermissions: project.myPerms,
+                  })
+              "
             >
-              <ProjectRoles
-                :key="project.id"
-                :project="project"
-              />
+              <ProjectRoles :key="project.id" :project="project" />
             </template>
-            <p
-              v-else
-              data-testid="insuficientPermsRoles"
-            >
+            <p v-else data-testid="insuficientPermsRoles">
               Vous n'avez pas les permissions pour afficher ces ressources
             </p>
           </div>
         </DsfrTabContent>
 
-        <DsfrTabContent
-          :panel-id="logsTitle.panelId"
-          :tab-id="logsTitle.tabId"
-        >
+        <DsfrTabContent :panel-id="logsTitle.panelId" :tab-id="logsTitle.tabId">
           <ProjectLogsViewer
             :key="project.id"
             :project="project"
@@ -232,10 +316,7 @@ async function saveProject() {
           :panel-id="clustersTitle.panelId"
           :tab-id="clustersTitle.tabId"
         >
-          <ProjectClustersInfos
-            :key="project.id"
-            :project="project"
-          />
+          <ProjectClustersInfos :key="project.id" :project="project" />
         </DsfrTabContent>
         <DsfrTabContent
           :panel-id="configurationTitle.panelId"
@@ -248,16 +329,16 @@ async function saveProject() {
             primary
             class="fr-mt-2w"
             :disabled="saveProjectState.isProcessing"
-            :icon="saveProjectState.isProcessing
-              ? { name: 'ri:refresh-line', animation: 'spin' }
-              : 'ri:send-plane-line'"
+            :icon="
+              saveProjectState.isProcessing
+                ? { name: 'ri:refresh-line', animation: 'spin' }
+                : 'ri:send-plane-line'
+            "
             @click="saveProject()"
           />
         </DsfrTabContent>
       </DsfrTabs>
-      <OperationPanel
-        :project="project"
-      />
+      <OperationPanel :project="project" />
     </div>
   </template>
 </template>

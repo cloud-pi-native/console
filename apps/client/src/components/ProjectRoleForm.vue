@@ -1,6 +1,12 @@
 <script lang="ts" setup>
 import type { Member, ProjectRoleBigint, ProjectV2 } from '@cpn-console/shared'
-import { isManagedRoleType, isSystemRoleType, PROJECT_PERMS, projectPermsDetails, shallowEqual } from '@cpn-console/shared'
+import {
+  isManagedRoleType,
+  isSystemRoleType,
+  PROJECT_PERMS,
+  projectPermsDetails,
+  shallowEqual,
+} from '@cpn-console/shared'
 import { computed, ref } from 'vue'
 
 const props = defineProps<{
@@ -33,17 +39,17 @@ const isSystem = computed(() => isSystemRoleType(role.value.type))
 const isManaged = computed(() => isManagedRoleType(role.value.type))
 
 const isUpdated = computed(() => {
-  if (role.value.isEveryone) return props.permissions !== role.value.permissions
+  if (role.value.isEveryone)
+    return props.permissions !== role.value.permissions
   return !shallowEqual(props, role.value)
 })
 
 const tabListName = 'Liste d’onglet'
 const tabTitles = computed(() => [
   { title: 'Général', icon: 'ri:checkbox-circle-line', tabId: 'general' },
-  ...(
-    isManaged.value
-      ? [{ title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' }]
-      : []),
+  ...(isManaged.value
+    ? [{ title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' }]
+    : []),
   { title: 'Fermer', icon: 'ri:close-line', tabId: 'close' },
 ])
 
@@ -67,10 +73,14 @@ function updateChecked(checked: boolean, value: bigint) {
     :tab-titles="tabTitles"
     class="mb-5"
   >
-    <DsfrTabContent
-      panel-id="general"
-      tab-id="general"
-    >
+    <DsfrTabContent panel-id="general" tab-id="general">
+      <DsfrNotice
+        v-if="!role.isEveryone && !isSystem"
+        class="mb-5"
+        style="width: fit-content"
+        title="Les rôles personnalisés d'un projet ne concernent que la Console, pas les services externes !"
+        type="warning"
+      />
       <h6>Nom du rôle</h6>
       <DsfrInput
         v-model="role.name"
@@ -79,14 +89,9 @@ function updateChecked(checked: boolean, value: bigint) {
         class="mb-5"
         :disabled="role.isEveryone || isSystem"
       />
-      <h6>Permissions</h6>
-      <div
-        v-for="scope in projectPermsDetails"
-        :key="scope.name"
-      >
-        <p
-          class="mb-3 ml-2 font-bold font-underline"
-        >
+      <h6>Permissions de la Console</h6>
+      <div v-for="scope in projectPermsDetails" :key="scope.name">
+        <p class="mb-3 ml-2 font-bold font-underline">
           {{ scope.name }}
         </p>
         <DsfrCheckbox
@@ -98,8 +103,14 @@ function updateChecked(checked: boolean, value: bigint) {
           :label="perm?.label"
           :hint="perm?.hint"
           :name="perm.key"
-          :disabled="isSystem || (role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE')"
-          @update:model-value="(checked: boolean) => updateChecked(checked, PROJECT_PERMS[perm.key])"
+          :disabled="
+            isSystem
+              || (role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE')
+          "
+          @update:model-value="
+            (checked: boolean) =>
+              updateChecked(checked, PROJECT_PERMS[perm.key])
+          "
         />
       </div>
       <DsfrButton
@@ -118,15 +129,11 @@ function updateChecked(checked: boolean, value: bigint) {
         @click="$emit('delete')"
       />
     </DsfrTabContent>
-    <DsfrTabContent
-      panel-id="members"
-      tab-id="members"
-    >
-      <template
-        v-if="props.isEveryone"
-      >
+    <DsfrTabContent panel-id="members" tab-id="members">
+      <template v-if="props.isEveryone">
         <DsfrNotice
           class="mb-5"
+          style="width: fit-content"
           title="Le rôle par défaut 'Tout le monde' inclut tous les utilisateurs de l'équipe"
         />
         <DsfrCheckbox
@@ -141,9 +148,7 @@ function updateChecked(checked: boolean, value: bigint) {
           :model-value="true"
         />
       </template>
-      <template
-        v-else
-      >
+      <template v-else>
         <DsfrCheckbox
           v-for="member in role.allMembers"
           :id="`${member.userId}-cbx`"
@@ -153,25 +158,29 @@ function updateChecked(checked: boolean, value: bigint) {
           :label="`${member.lastName} ${member.firstName}`"
           :hint="member.email"
           :model-value="member.roleIds.includes(role.id)"
-          @update:model-value="(checked: boolean) => $emit('updateMemberRoles', checked, member.userId)"
+          @update:model-value="
+            (checked: boolean) =>
+              $emit('updateMemberRoles', checked, member.userId)
+          "
         />
       </template>
-      <template
-        v-if="!role.allMembers.length"
-      >
-        <div>
-          Vous n'avez pas d'utilisateur dans votre projet
-        </div>
+      <template v-if="!role.allMembers.length">
+        <div>Vous n'avez pas d'utilisateur dans votre projet</div>
         <DsfrButton
           label="Gérer l'équipe"
           class="mt-5"
-          @click="router.push({ name: 'Team' })"
+          @click="
+            router.push({
+              name: 'Project',
+              query: { tab: 'team' },
+              replace: true,
+              force: true,
+            })
+          "
         />
       </template>
     </DsfrTabContent>
-    <div
-      class="ms-8"
-    >
+    <div class="ms-8">
       <DsfrTabContent
         panel-id="close"
         tab-id="close"
