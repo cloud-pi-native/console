@@ -1,5 +1,13 @@
 # Changelog
 
+## [9.16.3](https://github.com/cloud-pi-native/console/compare/v9.16.2...v9.16.3) (2026-05-21)
+
+
+### Miscellaneous Chores
+
+* **client:** explicitely add eslint as a devDep ([804c7d4](https://github.com/cloud-pi-native/console/commit/804c7d4058854bc3a53a0af570e07805434a7df3))
+* **client:** fix custom role management ([918e9cc](https://github.com/cloud-pi-native/console/commit/918e9ccb2e622d2fb6d8fb7cee48dac43aef3cb0))
+
 ## [9.16.2](https://github.com/cloud-pi-native/console/compare/v9.16.1...v9.16.2) (2026-05-20)
 
 
