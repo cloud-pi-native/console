@@ -1,4 +1,4 @@
-# Console Cloud π Native
+# Console Cloud π (PI) Native
 
 La console Cloud π Native est une application web ayant pour but de piloter des services dans un cluster Kubernetes afin de fournir une plateforme cloud qui accompagne les produits numériques lors de toutes les phases de leur cycle de vie.
 
