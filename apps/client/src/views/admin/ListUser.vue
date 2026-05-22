@@ -21,34 +21,45 @@ const sort = ref<{ method: string, desc: boolean }>({
   desc: true,
 })
 
-const sortOptions: { text: string, value: string, selected?: true }[] = [{
-  text: 'Date de création \u2B06\uFE0F',
-  value: 'createdAt',
-}, {
-  text: 'Date de création \u2B07\uFE0F',
-  value: 'createdAt:D',
-  selected: true,
-}, {
-  text: 'Prénom, alphabétique \u2B06\uFE0F',
-  value: 'firstName',
-}, {
-  text: 'Prénom, alphabétique \u2B07\uFE0F',
-  value: 'firstName:D',
-}, {
-  text: 'Nom, alphabétique \u2B06\uFE0F',
-  value: 'lastName',
-}, {
-  text: 'Nom, alphabétique \u2B07\uFE0F',
-  value: 'lastName:D',
-}, {
-  text: 'Email, alphabétique \u2B06\uFE0F',
-  value: 'email',
-}, {
-  text: 'Email, alphabétique \u2B07\uFE0F',
-  value: 'email:D',
-}]
+const sortOptions: { text: string, value: string, selected?: true }[] = [
+  {
+    text: 'Date de création \u2B06\uFE0F',
+    value: 'createdAt',
+  },
+  {
+    text: 'Date de création \u2B07\uFE0F',
+    value: 'createdAt:D',
+    selected: true,
+  },
+  {
+    text: 'Prénom, alphabétique \u2B06\uFE0F',
+    value: 'firstName',
+  },
+  {
+    text: 'Prénom, alphabétique \u2B07\uFE0F',
+    value: 'firstName:D',
+  },
+  {
+    text: 'Nom, alphabétique \u2B06\uFE0F',
+    value: 'lastName',
+  },
+  {
+    text: 'Nom, alphabétique \u2B07\uFE0F',
+    value: 'lastName:D',
+  },
+  {
+    text: 'Email, alphabétique \u2B06\uFE0F',
+    value: 'email',
+  },
+  {
+    text: 'Email, alphabétique \u2B07\uFE0F',
+    value: 'email:D',
+  },
+]
 
-const sortKey = computed<'email' | 'lastName' | 'firstName'>(() => sort.value.method.split(':')[0] as 'email' | 'lastName' | 'firstName')
+const sortKey = computed<'email' | 'lastName' | 'firstName'>(
+  () => sort.value.method.split(':')[0] as 'email' | 'lastName' | 'firstName',
+)
 function selectSort(value: string | number | undefined) {
   const v = value as string
   sort.value = {
@@ -65,16 +76,17 @@ const userRows = computed(() => {
   if (hideBots.value) {
     users = users.filter(user => user.type === 'human')
   }
-  let userRows = users
-    .map((user) => {
-      const fullName = `${user.firstName} ${user.lastName}`
-      return {
-        ...user,
-        fullName,
-        roleNames: adminRoleStore.roles.filter(({ id }) => user.adminRoleIds.includes(id)).map(({ name }) => name),
-        bgColor: textToHSL(fullName),
-      }
-    })
+  let userRows = users.map((user) => {
+    const fullName = `${user.firstName} ${user.lastName}`
+    return {
+      ...user,
+      fullName,
+      roleNames: adminRoleStore.roles
+        .filter(({ id }) => user.adminRoleIds.includes(id))
+        .map(({ name }) => name),
+      bgColor: textToHSL(fullName),
+    }
+  })
 
   if (!inputSearchText.value) return userRows
   const input = inputSearchText.value.toLowerCase()
@@ -92,7 +104,11 @@ const userRows = computed(() => {
 })
 
 function textToHSL(text: string): string {
-  const hue = (text.charCodeAt(Math.min(text.length - 1, 2)) * text.charCodeAt(Math.min(text.length - 1)) * text.charCodeAt(Math.min(text.length - 1, 5))) % 255
+  const hue
+    = (text.charCodeAt(Math.min(text.length - 1, 2))
+      * text.charCodeAt(Math.min(text.length - 1))
+      * text.charCodeAt(Math.min(text.length - 1, 5)))
+    % 255
   return `hsl(${hue} 80% 40%)`
 }
 
@@ -108,12 +124,8 @@ onBeforeMount(async () => {
 <template>
   <div class="relative">
     <h2>Liste des utilisateurs</h2>
-    <div
-      class="flex <xl:flex-col flex-row gap-2 w-full gap-5"
-    >
-      <DsfrCallout
-        class="h-min w-auto"
-      >
+    <div class="flex <xl:flex-col flex-row gap-2 w-full gap-5">
+      <DsfrCallout class="h-min w-auto">
         <DsfrSelect
           v-model="sort as unknown as string"
           data-testid="tableAdministrationUsersSort"
@@ -135,7 +147,7 @@ onBeforeMount(async () => {
           name=""
           label="Afficher les identifiants"
           small
-          @update:model-value="(value: boolean) => displayId = value"
+          @update:model-value="(value: boolean) => (displayId = value)"
         />
         <DsfrCheckbox
           id="tableAdministrationUsersHideBots"
@@ -144,12 +156,10 @@ onBeforeMount(async () => {
           name=""
           label="Masquer les comptes techniques"
           small
-          @update:model-value="(value: boolean) => hideBots = value"
+          @update:model-value="(value: boolean) => (hideBots = value)"
         />
       </DsfrCallout>
-      <div
-        class="relative"
-      >
+      <div class="relative">
         <DsfrTable
           data-testid="tableAdministrationUsers"
           class="w-max my-0"
@@ -158,26 +168,32 @@ onBeforeMount(async () => {
         >
           <template #header>
             <tr>
-              <th scope="col" colspan="2">
+              <th scope="col" />
+              <th scope="col">
+                Identifiant
+              </th>
+              <th scope="col">
                 Rôles
               </th>
               <th scope="col">
                 Type
               </th>
-              <th
-                scope="col"
-              >
+              <th scope="col">
                 Date de création
               </th>
-              <th
-                scope="col"
-              >
+              <th scope="col">
                 Dernière connexion
               </th>
             </tr>
           </template>
           <tr
-            v-for="user in userRows.toSorted((a, b) => a[sortKey].toLowerCase().localeCompare(b[sortKey].toLowerCase()) * (sort.desc ? -1 : 1))"
+            v-for="user in userRows.toSorted(
+              (a, b) =>
+                a[sortKey]
+                  .toLowerCase()
+                  .localeCompare(b[sortKey].toLowerCase())
+                * (sort.desc ? -1 : 1),
+            )"
             :key="user.id"
             :data-testid="`user-${user.id}`"
           >
@@ -186,12 +202,13 @@ onBeforeMount(async () => {
                 class="rounded-full h-10 w-10 text-center content-center font-extrabold text-lg text-slate-100 self-start"
                 :style="`background-color: ${user.bgColor};`"
               >
-                {{ user.firstName[0].toUpperCase() + user.lastName[0].toUpperCase() }}
+                {{
+                  user.firstName[0].toUpperCase()
+                    + user.lastName[0].toUpperCase()
+                }}
               </div>
             </td>
-            <td
-              class="grid w-max gap-3"
-            >
+            <td class="grid w-max gap-3">
               <div>
                 <span class="text-xl">{{ user.fullName }}</span>
               </div>
@@ -200,8 +217,7 @@ onBeforeMount(async () => {
                 class="fr-text-default--info text-xs cursor-pointer"
                 :onClick="() => copyContent(user.email)"
               >
-                {{ user.email }}
-              </code><br>
+                {{ user.email }} </code><br>
               <code
                 v-if="displayId"
                 title="Copier l'id"
@@ -211,9 +227,7 @@ onBeforeMount(async () => {
                 {{ user.id }}
               </code>
             </td>
-            <td
-              :data-testid="`${user.id}-roles`"
-            >
+            <td :data-testid="`${user.id}-roles`">
               <DsfrTag
                 v-for="role in user.roleNames"
                 :key="role"
@@ -221,34 +235,26 @@ onBeforeMount(async () => {
               />
             </td>
             <td>
-              <DsfrTag
-                v-if="user.type !== 'human'"
-                :label="user.type"
-              />
+              <DsfrTag v-if="user.type !== 'human'" :label="user.type" />
             </td>
-            <td
-              :title="(new Date(user.createdAt)).toLocaleString()"
-            >
+            <td :title="new Date(user.createdAt).toLocaleString()">
               {{ formatDate(user.createdAt) }}
             </td>
             <td
-              :title="user.lastLogin ? (new Date(user.createdAt)).toLocaleString() : ''"
+              :title="
+                user.lastLogin ? new Date(user.createdAt).toLocaleString() : ''
+              "
             >
               {{ user.lastLogin ? formatDate(user.lastLogin) : 'Jamais' }}
             </td>
           </tr>
-          <tr
-            v-if="userRows.length === 0"
-          >
+          <tr v-if="userRows.length === 0">
             <td colspan="10">
               Aucun utilisateur ne correspond à votre recherche
             </td>
           </tr>
         </DsfrTable>
-        <Loader
-          v-if="isLoading"
-          cover
-        />
+        <Loader v-if="isLoading" cover />
       </div>
     </div>
   </div>
