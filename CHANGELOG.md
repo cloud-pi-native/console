@@ -1,5 +1,29 @@
 # Changelog
 
+## [9.18.2](https://github.com/cloud-pi-native/console/compare/v9.18.1...v9.18.2) (2026-05-22)
+
+
+### Bug Fixes
+
+* **client:** fix admin user list table headers not being aligned with its content ([c929ce4](https://github.com/cloud-pi-native/console/commit/c929ce42fa1c88023c2acdd9795b3e196eef2036))
+
+
+### Miscellaneous Chores
+
+* **client:** explicitely add eslint as a devDep ([b6b2240](https://github.com/cloud-pi-native/console/commit/b6b2240bee5385410cd8fcdecb8d19ff4428fd8e))
+* **client:** fix custom role management ([c6da4b8](https://github.com/cloud-pi-native/console/commit/c6da4b89c8b71691e10948ffdc08a2840de9ec12))
+* forbid commit message body not leading with a blank line ([5376e78](https://github.com/cloud-pi-native/console/commit/5376e784c6a835fd6b17473282aa5f9cb6dd83f5))
+
+
+### Docs
+
+* document why a preview on a hotfix needs a dedicated branch/MR ([14fd5c8](https://github.com/cloud-pi-native/console/commit/14fd5c864ceac51b5f50691371df20bd2997c514))
+
+
+### Refactoring
+
+* **server-nestjs:** migrate Sonarqube to NestJS ([b3784df](https://github.com/cloud-pi-native/console/commit/b3784df94f3f8f085dd0fd1315b3ca3f97f08ab7))
+
 ## [9.18.1](https://github.com/cloud-pi-native/console/compare/v9.18.0...v9.18.1) (2026-05-20)
 
 
