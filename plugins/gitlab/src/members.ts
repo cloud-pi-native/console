@@ -15,7 +15,9 @@ export function getGroupAccessLevelFromProjectRole(project: Project, user: UserO
   const projectMaintainerGroupPathSuffixes = (config.gitlab?.projectMaintainerGroupPathSuffix ?? DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX).split(',')
 
   const getAccessLevel = (role: any): number | null => {
-    if (!role.oidcGroup) return null
+    // TODO: update to AccessLevel.GUEST once we migrated pre-fine grained
+    // projects members to developer access level via database migrations
+    if (!role.oidcGroup) return AccessLevel.DEVELOPER
     if (matchRole(project.slug, role.oidcGroup, projectReporterGroupPathSuffixes)) return AccessLevel.REPORTER
     if (matchRole(project.slug, role.oidcGroup, projectDeveloperGroupPathSuffixes)) return AccessLevel.DEVELOPER
     if (matchRole(project.slug, role.oidcGroup, projectMaintainerGroupPathSuffixes)) return AccessLevel.MAINTAINER
