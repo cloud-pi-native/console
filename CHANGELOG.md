@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.16.4](https://github.com/cloud-pi-native/console/compare/v9.16.3...v9.16.4) (2026-05-27)
+
+
+### Bug Fixes
+
+* revert GitLab default role to developper as backward compat ([86fe60a](https://github.com/cloud-pi-native/console/commit/86fe60ae1d16843b7db86d285061f6c5f9a1f415))
+
 ## [9.16.3](https://github.com/cloud-pi-native/console/compare/v9.16.2...v9.16.3) (2026-05-21)
 
 
