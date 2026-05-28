@@ -1,4 +1,5 @@
 import type { TestingModule } from '@nestjs/testing'
+import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { PrismaService } from '../infrastructure/database/prisma.service'
@@ -13,8 +14,6 @@ const mockPrismaService = {
 describe('projectDatastoreService', () => {
   let module: TestingModule
   let service: ProjectDatastoreService
-
-  const projectId = '11111111-1111-1111-1111-111111111111'
 
   beforeEach(async () => {
     vi.clearAllMocks()
@@ -38,10 +37,11 @@ describe('projectDatastoreService', () => {
 
   describe('getProjectWithDetails', () => {
     it('should call prisma.project.findUnique with correct project id and selection', async () => {
+      const projectId = faker.string.uuid()
       const mockProject = {
         id: projectId,
-        name: 'Test Project',
-        slug: 'test-project',
+        name: faker.company.name(),
+        slug: faker.string.alphanumeric({ length: 10 }).toLowerCase(),
         plugins: [],
         repositories: [],
         environments: [],
@@ -72,6 +72,8 @@ describe('projectDatastoreService', () => {
     })
 
     it('should return null if project is not found', async () => {
+      const projectId = faker.string.uuid()
+
       mockPrismaService.project.findUnique.mockResolvedValue(null)
 
       const result = await service.getProjectWithDetails(projectId)
