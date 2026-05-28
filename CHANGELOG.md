@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.16.5](https://github.com/cloud-pi-native/console/compare/v9.16.4...v9.16.5) (2026-05-28)
+
+
+### Bug Fixes
+
+* role always return null ([d67c15f](https://github.com/cloud-pi-native/console/commit/d67c15f887d9395311ed04820c4c76da092fccfc))
+
 ## [9.16.4](https://github.com/cloud-pi-native/console/compare/v9.16.3...v9.16.4) (2026-05-27)
 
 
