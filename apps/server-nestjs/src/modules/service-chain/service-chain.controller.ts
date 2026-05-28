@@ -21,21 +21,21 @@ export class ServiceChainController {
 
   @Post('validate/:validationId')
   @HttpCode(204)
-  // @UseGuards(AdminPermissionGuard)
+  // @UseGuards(AuthenticatedGuard, AdminPermissionGuard)
   // @RequireAdminPermission('ManageSystem')
   async validate(@Param('validationId', ParseUUIDPipe) validationId: string) {
     await this.serviceChainService.validate(validationId)
   }
 
   @Get()
-  // @UseGuards(AdminPermissionGuard)
+  // @UseGuards(AuthenticatedGuard, AdminPermissionGuard)
   // @RequireAdminPermission('ListSystem')
   async list() {
     return this.serviceChainService.list()
   }
 
   @Get(':serviceChainId')
-  // @UseGuards(AdminPermissionGuard)
+  // @UseGuards(AuthenticatedGuard, AdminPermissionGuard)
   // @RequireAdminPermission('ListSystem')
   async getDetails(@Param('serviceChainId', ParseUUIDPipe) id: string) {
     return this.serviceChainService.getDetails(id)
@@ -43,14 +43,14 @@ export class ServiceChainController {
 
   @Post(':serviceChainId/retry')
   @HttpCode(204)
-  // @UseGuards(AdminPermissionGuard)
+  // @UseGuards(AuthenticatedGuard, AdminPermissionGuard)
   // @RequireAdminPermission('ManageSystem')
   async retry(@Param('serviceChainId', ParseUUIDPipe) id: string) {
     await this.serviceChainService.retry(id)
   }
 
   @Get(':serviceChainId/flows')
-  // @UseGuards(AdminPermissionGuard)
+  // @UseGuards(AuthenticatedGuard, AdminPermissionGuard)
   // @RequireAdminPermission('ListSystem')
   async getFlows(@Param('serviceChainId', ParseUUIDPipe) id: string) {
     return this.serviceChainService.getFlows(id)
