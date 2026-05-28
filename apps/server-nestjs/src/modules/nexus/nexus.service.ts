@@ -81,7 +81,7 @@ export class NexusService {
     await this.ensurePlatformRoles(projects)
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  // @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
     const span = trace.getActiveSpan()

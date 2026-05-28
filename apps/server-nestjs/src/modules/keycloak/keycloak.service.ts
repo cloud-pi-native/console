@@ -43,7 +43,7 @@ export class KeycloakService {
     this.logger.log(`Keycloak cleanup completed for project ${project.slug}`)
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  // @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
     const span = trace.getActiveSpan()
