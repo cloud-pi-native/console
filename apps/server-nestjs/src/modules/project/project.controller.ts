@@ -23,13 +23,75 @@ export class ProjectController {
     @Inject(ProjectService) private readonly projectService: ProjectService,
   ) {}
 
+  @Get('/data')
+  @UseGuards(UserGuard, AdminPermissionGuard)
+  @RequireAdminPermission('Manage')
+  async getProjectsData(
+    @User() user: UserContext,
+  ): Promise<string> {
+    return this.projectService.getProjectsData(user.adminPermissions)
+  }
+
+  @Get('')
+  @UseGuards(UserGuard)
+  async listProjects(
+    @Query(new ZodValidationPipe(projectContract.listProjects.query)) query: typeof projectContract.listProjects.query._type,
+    @User() user: UserContext,
+  ): Promise<ProjectV2[]> {
+    return this.projectService.listProjects(query, user.id, user.adminPermissions)
+  }
+
   @Post('')
   @HttpCode(201)
-  @UseGuards(AuthenticatedGuard, AdminPermissionGuard, UserTypeGuard)
+  @UseGuards(UserGuard, AdminPermissionGuard, UserTypeGuard)
   @RequireAdminPermission('ManageProjects')
   @RequireUserType('human')
   async createProject(
     @Body(new ZodValidationPipe(projectContract.createProject.body)) data: typeof projectContract.createProject.body._type,
+    @User() user: UserContext,
+  ): Promise<ProjectV2> {
+    return this.projectService.createProject(data, user.id)
+  }
+
+  @Post('-bulk')
+  @HttpCode(202)
+  @UseGuards(UserGuard, AdminPermissionGuard)
+  @RequireAdminPermission('Manage')
+  async bulkActionProject(
+    @Body(new ZodValidationPipe(projectContract.bulkActionProject.body)) body: typeof projectContract.bulkActionProject.body._type,
+    @User() user: UserContext,
+  ): Promise<null> {
+    await this.projectService.bulkActionProject(body, user.id, user.adminPermissions)
+    return null
+  }
+
+  @Get('/:projectId')
+  @UseGuards(UserGuard, ProjectContextGuard, ProjectStatusGuard, ProjectLockedGuard)
+  async getProject(
+    @Project() project: ProjectContext,
+    @User() user: UserContext,
+  ): Promise<ProjectV2> {
+    return this.projectService.getProject(project.id, user.id, user.adminPermissions)
+  }
+
+  @Get('/:projectId/secrets')
+  @UseGuards(UserGuard, ProjectContextGuard, ProjectStatusGuard, ProjectLockedGuard)
+  @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
+  async getProjectSecrets(
+    @Project() project: ProjectContext,
+    @User() user: UserContext,
+  ): Promise<Record<string, Record<string, string>>> {
+    return this.projectService.getProjectSecrets(project.id, user.id, user.adminPermissions)
+  }
+
+  @Put('/:projectId')
+  @HttpCode(200)
+  @UseGuards(UserGuard, ProjectContextGuard, ProjectStatusGuard, ProjectLockedGuard)
+  @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
+  async updateProject(
+    @Body(new ZodValidationPipe(projectContract.updateProject.body)) data: typeof projectContract.updateProject.body._type,
+    @Project() project: ProjectContext,
+    @User() user: UserContext,
   ): Promise<ProjectV2> {
     return this.projectService.updateProject(data, project.id, user.id, user.adminPermissions)
   }
