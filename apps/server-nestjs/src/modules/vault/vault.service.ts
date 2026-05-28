@@ -92,7 +92,7 @@ export class VaultService {
     this.logger.log(`Vault zone cleanup completed for ${zone.slug}`)
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  // @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
     const span = trace.getActiveSpan()

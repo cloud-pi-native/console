@@ -66,7 +66,7 @@ export class GitlabService {
     this.logger.log(`GitLab sync completed for project ${project.slug}`)
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  // @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
     const span = trace.getActiveSpan()
