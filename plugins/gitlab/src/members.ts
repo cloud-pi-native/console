@@ -1,4 +1,4 @@
-import type { Config, Project, UserObject } from '@cpn-console/hooks'
+import type { Config, Project, Role, UserObject } from '@cpn-console/hooks'
 import type { GitlabProjectApi } from './class.js'
 import { AccessLevel } from '@gitbeaker/core'
 import {
@@ -14,7 +14,7 @@ export function getGroupAccessLevelFromProjectRole(project: Project, user: UserO
   const projectDeveloperGroupPathSuffixes = (config.gitlab?.projectDeveloperGroupPathSuffix ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX).split(',')
   const projectMaintainerGroupPathSuffixes = (config.gitlab?.projectMaintainerGroupPathSuffix ?? DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX).split(',')
 
-  const getAccessLevel = (role: any): number | null => {
+  const getAccessLevel = (role: Role): number | null => {
     if (!role.oidcGroup) return null
     if (matchRole(project.slug, role.oidcGroup, projectReporterGroupPathSuffixes)) return AccessLevel.REPORTER
     if (matchRole(project.slug, role.oidcGroup, projectDeveloperGroupPathSuffixes)) return AccessLevel.DEVELOPER
@@ -22,13 +22,15 @@ export function getGroupAccessLevelFromProjectRole(project: Project, user: UserO
     return null
   }
 
+  // TODO: update to AccessLevel.GUEST once we migrated pre-fine grained
+  // projects members to developer access level via database migrations
   return project.roles.reduce<number | null>((highestAccessLevel, role) => {
     if (role.users.some(userRole => userRole.id === user.id)) {
       const level = getAccessLevel(role)
       if (level && level > (highestAccessLevel ?? 0)) return level
     }
     return highestAccessLevel
-  }, null)
+  }, AccessLevel.DEVELOPER)
 }
 
 export function getGroupAccessLevel(project: Project, user: UserObject, config: Config): number | null {
