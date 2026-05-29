@@ -31,7 +31,7 @@ Lotissement des évolutions:
 
 = Architecture
 
-L'architecture retenue est celle consistant à utiliser le serveur ("Back for Front") de la console comme d'un Proxy pour OpenCDS. Ceci permet de réutiliser toute la mécanique d'authentification en SSO par Keycloak, la sérialisation/désérialisation entre `client` et `server` (le Frontend et son BFF), ainsi que la génération des types TypeScript (à travers l'utilisation de schémas et de contrats `zod`). De cette manière, l'implémentation des ressources OpenCDS (`service-chains` et `flows`) peut se faire de la même manière que les autres ressources existantes (`cluster`, `projet`, etc.), avec le même niveau de qualité (tests unitaires avec vitest, et E2E avec Playwright).
+L'architecture retenue est celle consistant à utiliser le serveur ("Back for Front") de la console comme d'un Proxy pour OpenCDS. Ceci permet de réutiliser toute la mécanique d'authentification en SSO par Keycloak, la sérialisation/désérialisation entre `client` et `server-nestjs` (le Frontend et son BFF), ainsi que la génération des types TypeScript (à travers l'utilisation de schémas et de contrats `zod`). De cette manière, l'implémentation des ressources OpenCDS (`service-chains` et `flows`) peut se faire de la même manière que les autres ressources existantes (`cluster`, `projet`, etc.), avec le même niveau de qualité (tests unitaires avec vitest, et E2E avec Playwright).
 
 = Contraintes
 
@@ -40,19 +40,19 @@ L'architecture retenue est celle consistant à utiliser le serveur ("Back for Fr
 
 = Jeu de données
 
-Afin de pouvoir avancer sans forcément dépendre du backend OpenCDS, un https://mockoon.com/[Mockoon] sera utilisé (./opencds_api.json) pour simuler cette partie. Lors de la convergence entre les développements de la console et ceux côté OpenCDS, une version d'"intégration" de celle-ci sera déployée sur notre environnement `sdid-hp` afin d'effectuer une recette dédiée.
+Afin de pouvoir avancer sans forcément dépendre du backend OpenCDS, un https://mockoon.com/[Mockoon] sera utilisé (./opencds_api.json) pour simuler cette partie. Lors de la convergence entre les développements de la console et ceux côté OpenCDS, une version d'"intégration" de celle-ci sera déployée sur nos environnements PAX (`cpin-hp`, `formation`, et `pax-prod`) afin d'effectuer une recette dédiée.
 
 = Mise en place
 
 Utilisation de varables d'environnements qui vont nous servir de moyen d'activer la fonctionnalité:
   - Côté `apps/client`:
-    - `OPENCDS_ENABLE`: active ou non la fonctionnalité côté Front (cette activation est indépendante de `apps/server`, donc il faut que cette variable d'environnement soit activée pour que la console affiche les écrans concernés par OpenCDS)
-  - Côté `apps/server`:
-    - `OPENCDS_URL`: Adresse du service OpenCDS distant
+    - `OPENCDS_ENABLED`: active ou non la fonctionnalité côté Front (cette activation est indépendante de `apps/server-nestjs`, donc il faut que cette variable d'environnement soit activée pour que la console affiche les écrans concernés par OpenCDS)
+  - Côté `apps/server-nestjs`:
+    - `OPENCDS_URL`: Chemin complet (URL + path) du service OpenCDS distant
     - `OPENCDS_API_TOKEN`: Définit le token d'authentification au service OpenCDS qui sera utilisé pour chaque requête effectuée
     - `OPENCDS_API_TLS_REJECT_UNAUTHORIZED`: Indique si on accepte les certificats non-validés (par exemple les certificats auto-signés, ou signés par une Autorité de Certification inconnue). Cette fonctionnalié permet d'intéragir facilement avec des services OpenCDS de "test"
 
 = Notes
 
 - Sachant qu'il n'est pas trivial de lancer des services docker-compose de manière conditionnelle, le service `opencds-mockoon` est systématiquement lancé dans les docker-compose concernés (développement local, tests en CI, etc.)
-- Les documentations de link:../../apps/client/README.md[la console] et link:../../apps/server/README.md[son backend] ont été amendées pour référencer cette documentation, de manière à centraliser ici tous les aspects concernant OpenCDS.
+- Les documentations de link:../../apps/client/README.md[la console] et link:../../apps/server-nestjs/README.md[son backend] ont été amendées pour référencer cette documentation, de manière à centraliser ici tous les aspects concernant OpenCDS.
