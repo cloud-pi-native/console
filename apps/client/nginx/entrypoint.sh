@@ -1,26 +1,34 @@
 #!/bin/sh
 
-ROOT_DIR=/etc/nginx/html
+ASSETS_DIR=/etc/nginx/html/assets
 
-populate () {
-  KEY=$(echo "dso-$1" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
-  VALUE=$(eval "echo \${$1}")
-  sed -i 's|'${KEY}'|'${VALUE}'|g' $2
+make_envsubst_vars() {
+  fmt=
+  for name do
+    fmt="${fmt}${fmt:+ }\${$name}"
+  done
+
+  printf '%s\n' "$fmt"
 }
 
+ENV_VARS=$(make_envsubst_vars \
+  SERVER_HOST \
+  SERVER_PORT \
+  OPENCDS_ENABLED \
+  KEYCLOAK_PROTOCOL \
+  KEYCLOAK_DOMAIN \
+  KEYCLOAK_REALM \
+  KEYCLOAK_CLIENT_ID \
+  KEYCLOAK_REDIRECT_URI \
+  CONTACT_EMAIL \
+)
 
-echo "Replacing env constants in JS"
-for file in $ROOT_DIR/assets/*.js; do
+echo "Replacing env variables in JavaScript asset files..."
+for file in $ASSETS_DIR/*.js; do
   echo "Processing $file ...";
-
-  populate SERVER_HOST $file
-  populate SERVER_PORT $file
-  populate OPENCDS_ENABLED $file
-  populate KEYCLOAK_PROTOCOL $file
-  populate KEYCLOAK_DOMAIN $file
-  populate KEYCLOAK_REALM $file
-  populate KEYCLOAK_CLIENT_ID $file
-  populate KEYCLOAK_REDIRECT_URI $file
+  envsubst "${ENV_VARS}" \
+    < $file \
+    > $file-out && \
+    mv $file-out $file
 done
-
-nginx -g 'daemon off;'
+echo "Done !"

@@ -37,24 +37,12 @@ RUN pnpm --filter @cpn-console/client run build
 
 
 # Prod stage -----------------------------------------------------------------------
-FROM nginx:1.27-alpine AS prod
+FROM nginxinc/nginx-unprivileged:1.31-alpine AS prod
 
-COPY --from=build /app/apps/client/dist /etc/nginx/html/
-COPY ./apps/client/nginx/default.conf   /etc/nginx/conf.d/default.conf
-COPY ./apps/client/nginx/entrypoint.sh  /entrypoint.sh
+COPY --chown=nginx:root --from=build /app/apps/client/dist /etc/nginx/html/
+COPY --chown=nginx:root --chmod=660 ./apps/client/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY --chown=nginx:root --chmod=750 ./apps/client/nginx/entrypoint.sh /docker-entrypoint.d/99-envsubst-js-assets.sh
 
-RUN chown -R nginx:nginx \
-      /entrypoint.sh \
-      /etc/nginx/nginx.conf \
-      /etc/nginx/conf.d \
-      /etc/nginx/mime.types \
-      /etc/nginx/html \
-      /var/cache/nginx \
-      /var/log/nginx \
-    && touch /var/run/nginx.pid \
-    && chown nginx:nginx /var/run/nginx.pid
-
-USER nginx
-ENTRYPOINT [ "/entrypoint.sh" ]
+RUN chmod -R g=u /etc/nginx/html
 
 EXPOSE 8080
