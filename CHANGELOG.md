@@ -1,5 +1,19 @@
 # Changelog
 
+## [9.18.3](https://github.com/cloud-pi-native/console/compare/v9.18.2...v9.18.3) (2026-06-01)
+
+
+### Bug Fixes
+
+* repo and source url trailing slash ([71f9b98](https://github.com/cloud-pi-native/console/commit/71f9b98aa214e1d3165d70b9ddbbb4ff88916ee6))
+* revert GitLab default role to developper as backward compat ([d67f96a](https://github.com/cloud-pi-native/console/commit/d67f96a0e01d313611881e166f038b70f41dea3e))
+* role always return null ([1f1fabd](https://github.com/cloud-pi-native/console/commit/1f1fabdebe602ae74d694771cefbe5c99cd1b9d4))
+
+
+### Docs
+
+* **opencds:** fix doc mentionning the wrong backend ([36befb2](https://github.com/cloud-pi-native/console/commit/36befb279d45269e0bb3b9a2714cd4477b54a58a))
+
 ## [9.18.2](https://github.com/cloud-pi-native/console/compare/v9.18.1...v9.18.2) (2026-05-22)
 
 
