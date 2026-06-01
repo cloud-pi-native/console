@@ -372,11 +372,11 @@ export class GitlabProjectApi extends GitlabApi {
   }
 
   public async getPublicGroupUrl() {
-    return `${config().publicUrl}/${config().projectsRootDir}/${this.project.slug}`
+    return new URL(`/${config().projectsRootDir}/${this.project.slug}`, config().publicUrl)
   }
 
   public async getInternalGroupUrl() {
-    return `${config().internalUrl}/${config().projectsRootDir}/${this.project.slug}`
+    return new URL(`/${config().projectsRootDir}/${this.project.slug}`, config().internalUrl)
   }
 
   // Tokens
