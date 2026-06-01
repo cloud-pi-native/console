@@ -18,6 +18,6 @@ import { VaultService } from './vault.service'
     VaultService,
     VaultDatastoreService,
   ],
-  exports: [VaultClientService, VaultHealthService],
+  exports: [VaultClientService, VaultHealthService, VaultService],
 })
 export class VaultModule {}
