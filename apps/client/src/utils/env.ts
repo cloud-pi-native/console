@@ -1,19 +1,20 @@
-export const serverHost: string = process.env.SERVER_HOST ?? 'dso-server-host'
+/* eslint-disable no-template-curly-in-string */
+export const serverHost: string = process.env.SERVER_HOST ?? '${SERVER_HOST}'
 
-export const serverPort: string = process.env.SERVER_PORT ?? 'dso-server-port'
+export const serverPort: string = process.env.SERVER_PORT ?? '${SERVER_PORT}'
 
-export const clientPort: string = process.env.CLIENT_PORT ?? 'dso-client-port'
+export const clientPort: string = process.env.CLIENT_PORT ?? '${CLIENT_PORT}'
 
-export const keycloakProtocol: string = process.env.KEYCLOAK_PROTOCOL ?? 'dso-keycloak-protocol'
+export const keycloakProtocol: string = process.env.KEYCLOAK_PROTOCOL ?? '${KEYCLOAK_PROTOCOL}'
 
-export const keycloakDomain: string = process.env.KEYCLOAK_DOMAIN ?? 'dso-keycloak-domain'
+export const keycloakDomain: string = process.env.KEYCLOAK_DOMAIN ?? '${KEYCLOAK_DOMAIN}'
 
-export const keycloakRealm: string = process.env.KEYCLOAK_REALM ?? 'dso-keycloak-realm'
+export const keycloakRealm: string = process.env.KEYCLOAK_REALM ?? '${KEYCLOAK_REALM}'
 
-export const keycloakClientId: string = process.env.KEYCLOAK_CLIENT_ID ?? 'dso-keycloak-client-id'
+export const keycloakClientId: string = process.env.KEYCLOAK_CLIENT_ID ?? '${KEYCLOAK_CLIENT_ID}'
 
-export const keycloakRedirectUri: string = process.env.KEYCLOAK_REDIRECT_URI ?? 'dso-keycloak-redirect-uri'
+export const keycloakRedirectUri: string = process.env.KEYCLOAK_REDIRECT_URI ?? '${KEYCLOAK_REDIRECT_URI}'
 
-export const contactEmail: string = process.env.CONTACT_EMAIL ?? 'cloudpinative-relations@interieur.gouv.fr'
+export const contactEmail: string = process.env.CONTACT_EMAIL ?? '${CONTACT_EMAIL}'
 
-export const openCDSEnabled: string = process.env.OPENCDS_ENABLED ?? 'dso-opencds-enabled'
+export const openCDSEnabled: string = process.env.OPENCDS_ENABLED ?? '${OPENCDS_ENABLED}'
