@@ -1,13 +1,32 @@
-FROM docker.io/bitnamilegacy/nginx:1.29.1 AS prod
+FROM nginxinc/nginx-unprivileged:1.31-alpine AS prod
 
-USER 0
+USER root
+
+# On supprime la config par défaut
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Config principale
+COPY apps/nginx-strangler/nginx.conf /etc/nginx/nginx.conf
 
 # Template de routing (sera substitué au démarrage)
-COPY --chown=1001:0 --chmod=660 apps/nginx-strangler/conf.d/routing.conf /opt/bitnami/nginx/conf/server_blocks/routing.conf.template
+COPY apps/nginx-strangler/conf.d/routing.conf /etc/nginx/templates/routing.conf.template
 
-# Script d'entrypoint pour substitution des variables
-COPY --chown=1001:0 --chmod=770 apps/nginx-strangler/entrypoint.sh /docker-entrypoint-initdb.d/load-routing.sh
+# Donner à l'utilisateur nginx et au groupe root les droits d'écriture sur conf.d/ (pour subst au démarrage)
+# et sur les répertoires de logs/pid nécessaires en mode non-root
+# OpenShift exécute les conteneurs avec un UID arbitraire appartenant au groupe root.
+RUN chown -R nginx:root \
+      /etc/nginx/nginx.conf \
+      /etc/nginx/conf.d \
+      /etc/nginx/templates \
+      /etc/nginx/mime.types \
+      /var/cache/nginx \
+      /var/log/nginx \
+    && touch /var/run/nginx.pid \
+    && chown nginx:root /var/run/nginx.pid && chmod g+w /var/run/nginx.pid
 
-USER 1001
+USER nginx
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:8080/health || exit 1
 
 EXPOSE 8080
