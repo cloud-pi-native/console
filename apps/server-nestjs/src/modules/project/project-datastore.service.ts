@@ -2,10 +2,56 @@ import type { Prisma } from '@prisma/client'
 import { Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 
-const projectSelect = {
+export const projectSelect = {
   id: true,
   name: true,
   slug: true,
+  description: true,
+  status: true,
+  locked: true,
+  limitless: true,
+  hprodCpu: true,
+  hprodGpu: true,
+  hprodMemory: true,
+  prodCpu: true,
+  prodGpu: true,
+  prodMemory: true,
+  everyonePerms: true,
+  ownerId: true,
+  createdAt: true,
+  updatedAt: true,
+  lastSuccessProvisionningVersion: true,
+  owner: {
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      adminRoleIds: true,
+      type: true,
+      createdAt: true,
+      updatedAt: true,
+      lastLogin: true,
+    },
+  },
+  members: {
+    select: {
+      roleIds: true,
+      user: {
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          adminRoleIds: true,
+          type: true,
+          createdAt: true,
+          updatedAt: true,
+          lastLogin: true,
+        },
+      },
+    },
+  },
   plugins: {
     select: {
       pluginName: true,
@@ -13,14 +59,30 @@ const projectSelect = {
       value: true,
     },
   },
+  roles: {
+    select: {
+      id: true,
+      name: true,
+      permissions: true,
+      position: true,
+      oidcGroup: true,
+      type: true,
+      projectId: true,
+    },
+  },
   repositories: {
     select: {
       id: true,
       internalRepoName: true,
       isInfra: true,
+      isPrivate: true,
+      externalRepoUrl: true,
+      externalUserName: true,
       helmValuesFiles: true,
       deployRevision: true,
       deployPath: true,
+      createdAt: true,
+      updatedAt: true,
     },
   },
   environments: {
@@ -31,6 +93,8 @@ const projectSelect = {
       gpu: true,
       memory: true,
       autosync: true,
+      clusterId: true,
+      stageId: true,
       cluster: {
         select: {
           id: true,
@@ -49,6 +113,8 @@ const projectSelect = {
       id: true,
       name: true,
       autosync: true,
+      createdAt: true,
+      updatedAt: true,
       environment: {
         select: {
           id: true,
@@ -72,6 +138,7 @@ const projectSelect = {
       },
       deploymentSources: {
         select: {
+          id: true,
           type: true,
           path: true,
           targetRevision: true,
@@ -86,7 +153,22 @@ const projectSelect = {
       },
     },
   },
+  clusters: {
+    select: {
+      id: true,
+      label: true,
+      zone: {
+        select: {
+          slug: true,
+        },
+      },
+    },
+  },
 } satisfies Prisma.ProjectSelect
+
+export type ProjectWithDetails = Prisma.ProjectGetPayload<{
+  select: typeof projectSelect
+}>
 
 @Injectable()
 export class ProjectDatastoreService {
@@ -94,5 +176,12 @@ export class ProjectDatastoreService {
 
   getProjectWithDetails(projectId: string) {
     return this.prisma.project.findUnique({ where: { id: projectId }, select: projectSelect })
+  }
+
+  createProject(data: Prisma.ProjectCreateInput) {
+    return this.prisma.project.create({
+      data,
+      select: { id: true },
+    })
   }
 }
