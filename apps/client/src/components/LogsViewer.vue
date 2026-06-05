@@ -161,6 +161,12 @@ async function showLogs(index: number) {
             />
           </div>
         </div>
+        <div
+          v-if="!hideLogs && log.data.messageResume"
+          class="mt-2 text-sm opacity-80"
+        >
+          {{ log.data.messageResume }}
+        </div>
         <template
           v-if="hideLogs"
         >
