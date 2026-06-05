@@ -1,3 +1,4 @@
+import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
@@ -19,7 +20,7 @@ const server = setupServer(
     return HttpResponse.json({})
   }),
   http.delete(`${vaultUrl}/v1/kv/metadata/:path`, () => {
-    return new HttpResponse(null, { status: 204 })
+    return new HttpResponse(null, { status: HttpStatus.NO_CONTENT })
   }),
 )
 
@@ -62,7 +63,7 @@ describe('vault', () => {
     it('should return empty object if undefined', async () => {
       server.use(
         http.get(`${vaultUrl}/v1/kv/data/:path`, () => {
-          return HttpResponse.json({}, { status: 404 })
+          return HttpResponse.json({}, { status: HttpStatus.NOT_FOUND })
         }),
       )
 
@@ -83,12 +84,12 @@ describe('vault', () => {
     it('should throw if 404', async () => {
       server.use(
         http.get(`${vaultUrl}/v1/kv/data/:path`, () => {
-          return HttpResponse.json({}, { status: 404 })
+          return HttpResponse.json({}, { status: HttpStatus.NOT_FOUND })
         }),
       )
 
       await expect(service.read('path')).rejects.toBeInstanceOf(VaultError)
-      await expect(service.read('path')).rejects.toMatchObject({ kind: 'NotFound', status: 404 })
+      await expect(service.read('path')).rejects.toMatchObject({ kind: 'NotFound', status: HttpStatus.NOT_FOUND })
     })
   })
 
@@ -100,14 +101,14 @@ describe('vault', () => {
     it('should expose reasons on error', async () => {
       server.use(
         http.post(`${vaultUrl}/v1/kv/data/:path`, () => {
-          return HttpResponse.json({ errors: ['No secret engine mount at test-project/'] }, { status: 400 })
+          return HttpResponse.json({ errors: ['No secret engine mount at test-project/'] }, { status: HttpStatus.BAD_REQUEST })
         }),
       )
 
       await expect(service.write({ secret: 'value' }, 'path')).rejects.toBeInstanceOf(VaultError)
       await expect(service.write({ secret: 'value' }, 'path')).rejects.toMatchObject({
         kind: 'HttpError',
-        status: 400,
+        status: HttpStatus.BAD_REQUEST,
         reasons: ['No secret engine mount at test-project/'],
       })
       await expect(service.write({ secret: 'value' }, 'path')).rejects.toThrow('Request failed')

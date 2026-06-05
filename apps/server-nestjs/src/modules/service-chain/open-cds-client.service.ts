@@ -1,7 +1,8 @@
-import type { Dispatcher, HeadersInit, Response } from 'undici'
+import type { Dispatcher, HeadersInit } from 'undici'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Agent, fetch, Headers, ProxyAgent } from 'undici'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { throwIfNotOk } from './service-chain.utils'
 
 const openCdsDisabledMessage
   = 'OpenCDS is disabled, please set OPENCDS_URL in your relevant .env file. See .env-example'
@@ -48,7 +49,7 @@ export class OpenCdsClientService {
       signal: options?.signal,
     })
 
-    await this.throwIfNotOk(response)
+    await throwIfNotOk(response)
 
     return (await response.json()) as T
   }
@@ -68,7 +69,7 @@ export class OpenCdsClientService {
       signal: options?.signal,
     })
 
-    await this.throwIfNotOk(response)
+    await throwIfNotOk(response)
   }
 
   private buildUrl(
@@ -123,19 +124,5 @@ export class OpenCdsClientService {
         rejectUnauthorized: this.config.openCdsApiTlsRejectUnauthorized,
       },
     })
-  }
-
-  private async throwIfNotOk(response: Response): Promise<void> {
-    if (response.ok) {
-      return
-    }
-
-    const body = await response.text()
-
-    throw new OpenCdsClientError(
-      response.status,
-      response.statusText,
-      body || undefined,
-    )
   }
 }

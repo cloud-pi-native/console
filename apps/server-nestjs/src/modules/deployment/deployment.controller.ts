@@ -1,6 +1,6 @@
 import type { CreateDeployment, UpdateDeployment } from '@cpn-console/shared'
 import { CreateDeploymentSchema, UpdateDeploymentSchema } from '@cpn-console/shared'
-import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Put, Query } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, Post, Put, Query } from '@nestjs/common'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { DeploymentService } from './deployment.service'
 
@@ -15,7 +15,7 @@ export class DeploymentController {
   }
 
   @Post('')
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   create(
     @Body(new ZodValidationPipe(CreateDeploymentSchema)) data: CreateDeployment,
   ) {
@@ -24,7 +24,7 @@ export class DeploymentController {
   }
 
   @Put('/:deploymentId')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   update(
     @Param('deploymentId') deploymentId: string, @Body(new ZodValidationPipe(UpdateDeploymentSchema))
     data: UpdateDeployment,
@@ -33,7 +33,7 @@ export class DeploymentController {
   }
 
   @Delete('/:deploymentId')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   delete(@Param('deploymentId') deploymentId: string) {
     return this.deploymentService.deleteDeployment(deploymentId)
   }

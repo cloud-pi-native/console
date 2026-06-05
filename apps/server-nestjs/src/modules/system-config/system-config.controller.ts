@@ -1,5 +1,5 @@
 import type { PluginsUpdateBody } from '@cpn-console/shared'
-import { Body, Controller, Get, HttpCode, Inject, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Post, UseGuards } from '@nestjs/common'
 import { RequireAdminPermission } from '../infrastructure/permission/user/user-admin-permission.decorator'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
@@ -17,7 +17,7 @@ export class SystemConfigController {
   }
 
   @Post()
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(UserGuard)
   @RequireAdminPermission('ManageSystem')
   async update(@Body(new ZodValidationPipe(null as any)) body: PluginsUpdateBody) {

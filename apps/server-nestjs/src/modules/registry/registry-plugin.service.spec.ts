@@ -1,6 +1,7 @@
 import type { Cache } from 'cache-manager'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
+import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
@@ -43,7 +44,7 @@ describe('registryPluginService', () => {
   it('uses the stored Harbor project id when available', async () => {
     cache.get.mockResolvedValue('dulei')
     registryClient.getProjectByName.mockResolvedValue({
-      status: 200,
+      status: HttpStatus.OK,
       data: { project_id: 144, metadata: {} },
     })
     const infos = await service.infos('dulei')
@@ -61,7 +62,7 @@ describe('registryPluginService', () => {
     cache.get.mockResolvedValue(undefined)
     registryDatastore.getProject.mockResolvedValue(makeProjectWithDetails({ slug: 'dulei' }))
     registryClient.getProjectByName.mockResolvedValue({
-      status: 200,
+      status: HttpStatus.OK,
       data: { project_id: 144, metadata: {} },
     })
 

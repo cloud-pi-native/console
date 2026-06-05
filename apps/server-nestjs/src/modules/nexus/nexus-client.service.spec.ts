@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
@@ -53,7 +54,7 @@ describe('nexusClientService', () => {
     server.use(
       http.get(`${nexusUrl}/service/rest/v1/repositories/maven/hosted/:name`, ({ request }) => {
         expect(request.headers.get('authorization')).toBe(basicAuth)
-        return HttpResponse.json({}, { status: 404 })
+        return HttpResponse.json({}, { status: HttpStatus.NOT_FOUND })
       }),
     )
 
@@ -69,7 +70,7 @@ describe('nexusClientService', () => {
         expect(request.headers.get('authorization')).toBe(basicAuth)
         expect(request.headers.get('content-type')).toContain('text/plain')
         expect(await request.text()).toBe('pw123')
-        return new HttpResponse(null, { status: 204 })
+        return new HttpResponse(null, { status: HttpStatus.NO_CONTENT })
       }),
     )
 
