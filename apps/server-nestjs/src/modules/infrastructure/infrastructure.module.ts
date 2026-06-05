@@ -8,6 +8,6 @@ import { TelemetryModule } from './telemetry/telemetry.module'
 @Module({
   providers: [],
   imports: [DatabaseModule, LoggerModule, ConfigurationModule, TelemetryModule],
-  exports: [DatabaseModule],
+  exports: [DatabaseModule, ConfigurationModule],
 })
 export class InfrastructureModule {}
