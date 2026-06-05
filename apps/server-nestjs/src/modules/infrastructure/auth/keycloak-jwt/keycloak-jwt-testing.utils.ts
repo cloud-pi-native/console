@@ -61,8 +61,7 @@ export function makeMockAdminRole(overrides: Partial<{
 
 export function makeJwksResponse(kid: string): Response {
   const { publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 })
-  const jwk = publicKey.export({ format: 'jwk' }) as { n: string, e: string }
-
+  const jwk = publicKey.export({ format: 'jwk' })
   return new Response(JSON.stringify({
     keys: [
       {

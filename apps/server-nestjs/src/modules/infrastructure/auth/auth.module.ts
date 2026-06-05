@@ -1,12 +1,13 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 import { ConfigurationModule } from '../configuration/configuration.module'
 import { ConfigurationService } from '../configuration/configuration.service'
 import { DatabaseModule } from '../database/database.module'
-import { AdminPermissionGuard } from './admin-permission.guard'
+import { AdminModule } from './admin/admin.module'
 import { AuthService } from './auth.service'
 import { KeycloakJwtModule } from './keycloak-jwt/keycloak-jwt.module'
 import { KeycloakJwtService } from './keycloak-jwt/keycloak-jwt.service'
+import { ProjectModule } from './project/project.module'
 
 const JwtModuleConfig = JwtModule.registerAsync({
   imports: [ConfigurationModule, KeycloakJwtModule],
@@ -29,6 +30,8 @@ const JwtModuleConfig = JwtModule.registerAsync({
 
 @Module({
   imports: [
+    forwardRef(() => AdminModule),
+    ProjectModule,
     ConfigurationModule,
     DatabaseModule,
     JwtModuleConfig,
@@ -36,12 +39,12 @@ const JwtModuleConfig = JwtModule.registerAsync({
   ],
   providers: [
     AuthService,
-    AdminPermissionGuard,
   ],
   exports: [
-    AdminPermissionGuard,
     AuthService,
     JwtModuleConfig,
+    AdminModule,
+    ProjectModule,
   ],
 })
 export class AuthModule {}

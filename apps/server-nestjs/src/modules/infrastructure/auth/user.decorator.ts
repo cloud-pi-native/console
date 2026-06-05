@@ -9,6 +9,7 @@ export const User = createParamDecorator(
     return {
       userId: request.userId,
       adminPermissions: request.adminPermissions,
+      userType: request.userType,
     }
   },
 )

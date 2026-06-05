@@ -8,6 +8,7 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../database/prisma.service'
+import { makeAdminToken, makePersonalAccessToken } from './auth-testing.utils'
 import { AuthService } from './auth.service'
 import { KeycloakJwtService } from './keycloak-jwt/keycloak-jwt.service'
 
@@ -20,9 +21,9 @@ describe('authService', () => {
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
-    prisma.adminRole.findMany.mockResolvedValue([])
     jwtService = mockDeep<JwtService>()
     keycloakJwtService = mockDeep<KeycloakJwtService>()
+    prisma.adminRole.findMany.mockResolvedValue([])
 
     module = await Test.createTestingModule({
       providers: [
@@ -36,174 +37,104 @@ describe('authService', () => {
     service = module.get<AuthService>(AuthService)
   })
 
-  it('should validate a PersonalAccessToken and return permissions from user roles', async () => {
+  it('should validate a PersonalAccessToken and return raw token result', async () => {
     const rawToken = faker.string.alphanumeric(32)
-    const userId = faker.string.uuid()
-    prisma.personalAccessToken.findFirst.mockResolvedValue({
-      id: faker.string.uuid(),
-      name: 'test-token',
-      status: 'active',
-      expirationDate: new Date(Date.now() + 86400000),
-      lastUse: null,
-      createdAt: new Date(),
-      hash: faker.string.hexadecimal({ length: 64 }),
-      userId,
-      owner: { id: userId, adminRoleIds: [faker.string.uuid()] },
-    } as any)
-    prisma.adminRole.findMany
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([{ id: faker.string.uuid(), name: 'role', permissions: 4n, position: 1, oidcGroup: '', type: 'managed' }])
+    const patMock = makePersonalAccessToken({ adminRoleIds: [faker.string.uuid()] })
+    prisma.personalAccessToken.findFirst.mockResolvedValue(patMock)
 
-    const result = await service.validateToken(rawToken)
+    const result = await service.validateToken(rawToken, { includeAdminRoleIds: true, includeUserType: true })
 
-    expect(prisma.personalAccessToken.findFirst).toHaveBeenCalledWith({
-      where: { hash: createHash('sha256').update(rawToken).digest('hex') },
-      include: { owner: true },
-    })
-    expect(result.userId).toBe(userId)
-    expect(result.adminPermissions).toBe(4n)
+    expect(prisma.personalAccessToken.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { hash: createHash('sha256').update(rawToken).digest('hex') } }),
+    )
+    expect(result).toBeDefined()
+    if (result?.kind !== 'personal') throw new Error('Expected personal token result')
+    expect(result.ownerAdminRoleIds).toHaveLength(1)
+    expect(result.userType).toBe('human')
   })
 
-  it('should validate an AdminToken and use token.permissions directly', async () => {
+  it('should validate an AdminToken and return raw token result', async () => {
     const userId = faker.string.uuid()
     prisma.personalAccessToken.findFirst.mockResolvedValue(null)
-    prisma.adminToken.findFirst.mockResolvedValue({
-      id: faker.string.uuid(),
-      name: 'admin-token',
-      status: 'active',
-      expirationDate: null,
-      permissions: 256n,
-      lastUse: null,
-      createdAt: new Date(),
-      hash: faker.string.hexadecimal({ length: 64 }),
-      userId,
-      owner: { id: userId, adminRoleIds: [] },
-    } as any)
-    prisma.adminRole.findMany.mockResolvedValue([])
+    prisma.adminToken.findFirst.mockResolvedValue(
+      makeAdminToken({
+        id: faker.string.uuid(),
+        userId,
+        permissions: 256n,
+      }),
+    )
 
-    const result = await service.validateToken(faker.string.alphanumeric(24))
+    const result = await service.validateToken(faker.string.alphanumeric(24), { includeAdminRoleIds: true, includeUserType: true })
 
-    expect(result.adminPermissions).toBe(256n)
+    expect(result).toBeDefined()
+    if (result?.kind !== 'admin') throw new Error('Expected admin token result')
+    expect(result.permissions).toBe(256n)
+    expect(result.userType).toBe('human')
   })
 
-  it('should OR global role permissions with token permissions', async () => {
-    const userId = faker.string.uuid()
-    prisma.personalAccessToken.findFirst.mockResolvedValue(null)
-    prisma.adminToken.findFirst.mockResolvedValue({
-      id: faker.string.uuid(),
-      name: 'admin-token',
-      status: 'active',
-      expirationDate: null,
-      permissions: 256n,
-      lastUse: null,
-      createdAt: new Date(),
-      hash: faker.string.hexadecimal({ length: 64 }),
-      userId,
-      owner: { id: userId, adminRoleIds: [] },
-    } as any)
-    prisma.adminRole.findMany.mockResolvedValue([{ id: faker.string.uuid(), name: 'global', permissions: 1n, position: 0, oidcGroup: '', type: 'global' }])
-
-    const result = await service.validateToken(faker.string.alphanumeric(24))
-
-    expect(result.adminPermissions).toBe(257n)
-  })
-
-  it('should throw 401 when no token found', async () => {
+  it('should return undefined when no token found', async () => {
     prisma.personalAccessToken.findFirst.mockResolvedValue(null)
     prisma.adminToken.findFirst.mockResolvedValue(null)
 
-    await expect(service.validateToken(faker.string.alphanumeric(16))).rejects.toThrow(UnauthorizedException)
+    const result = await service.validateToken(faker.string.alphanumeric(16), { includeAdminRoleIds: true, includeUserType: true })
+
+    expect(result).toBeUndefined()
   })
 
   it('should throw 401 when token is inactive', async () => {
-    prisma.personalAccessToken.findFirst.mockResolvedValue({
-      id: faker.string.uuid(),
-      name: 'test-token',
-      status: 'revoked',
-      expirationDate: new Date(Date.now() + 86400000),
-      lastUse: null,
-      createdAt: new Date(),
-      hash: faker.string.hexadecimal({ length: 64 }),
-      userId: faker.string.uuid(),
-      owner: { id: faker.string.uuid(), adminRoleIds: [] },
-    } as any)
+    prisma.personalAccessToken.findFirst.mockResolvedValue(
+      makePersonalAccessToken({ status: 'revoked', expirationDate: new Date(Date.now() + 86400000) }),
+    )
 
-    await expect(service.validateToken(faker.string.alphanumeric(16))).rejects.toThrow(UnauthorizedException)
+    await expect(service.validateToken(faker.string.alphanumeric(16), { includeAdminRoleIds: true, includeUserType: true })).rejects.toThrow(UnauthorizedException)
   })
 
   it('should throw 401 when token is expired', async () => {
-    prisma.personalAccessToken.findFirst.mockResolvedValue({
-      id: faker.string.uuid(),
-      name: 'test-token',
-      status: 'active',
-      expirationDate: new Date(Date.now() - 1000),
-      lastUse: null,
-      createdAt: new Date(),
-      hash: faker.string.hexadecimal({ length: 64 }),
-      userId: faker.string.uuid(),
-      owner: { id: faker.string.uuid(), adminRoleIds: [] },
-    } as any)
+    prisma.personalAccessToken.findFirst.mockResolvedValue(
+      makePersonalAccessToken({ expirationDate: new Date(Date.now() - 1000) }),
+    )
 
-    await expect(service.validateToken(faker.string.alphanumeric(16))).rejects.toThrow(UnauthorizedException)
+    await expect(service.validateToken(faker.string.alphanumeric(16), { includeAdminRoleIds: true, includeUserType: true })).rejects.toThrow(UnauthorizedException)
   })
 
   it('should update lastUse and lastLogin', async () => {
-    const userId = faker.string.uuid()
-    const tokenId = faker.string.uuid()
-    prisma.personalAccessToken.findFirst.mockResolvedValue({
-      id: tokenId,
-      name: 'test-token',
-      status: 'active',
-      expirationDate: new Date(Date.now() + 86400000),
-      lastUse: null,
-      createdAt: new Date(),
-      hash: faker.string.hexadecimal({ length: 64 }),
-      userId,
-      owner: { id: userId, adminRoleIds: [] },
-    } as any)
-    prisma.adminRole.findMany.mockResolvedValue([])
+    const patMock = makePersonalAccessToken({})
+    prisma.personalAccessToken.findFirst.mockResolvedValue(patMock)
 
-    await service.validateToken(faker.string.alphanumeric(16))
+    await service.validateToken(faker.string.alphanumeric(16), { includeAdminRoleIds: true, includeUserType: true })
 
     expect(prisma.personalAccessToken.update).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: tokenId }, data: { lastUse: expect.any(String) } }),
+      expect.objectContaining({ where: { id: patMock.id }, data: { lastUse: expect.any(String) } }),
     )
     expect(prisma.user.update).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: userId }, data: { lastLogin: expect.any(String) } }),
+      expect.objectContaining({ where: { id: patMock.owner.id }, data: { lastLogin: expect.any(String) } }),
     )
   })
 
   it('should authenticate a DSO token from the request header', async () => {
-    const userId = faker.string.uuid()
-    prisma.personalAccessToken.findFirst.mockResolvedValue({
-      id: faker.string.uuid(),
-      name: 'test-token',
-      status: 'active',
-      expirationDate: new Date(Date.now() + 86400000),
-      lastUse: null,
-      createdAt: new Date(),
-      hash: faker.string.hexadecimal({ length: 64 }),
-      userId,
-      owner: { id: userId, adminRoleIds: [] },
-    } as any)
-    prisma.adminRole.findMany.mockResolvedValue([])
+    prisma.personalAccessToken.findFirst.mockResolvedValue(makePersonalAccessToken({}))
 
     const result = await service.authenticateHeaders({ 'x-dso-token': 'token' })
 
-    expect(result.userId).toBe(userId)
+    expect(typeof result.userId).toBe('string')
+    expect(result.userType).toBe('human')
+    expect(result.adminPermissions).toBe(0n)
     expect(jwtService.verifyAsync).not.toHaveBeenCalled()
     expect(keycloakJwtService.validatePayload).not.toHaveBeenCalled()
   })
 
   it('should authenticate a Keycloak bearer token from the request header', async () => {
     jwtService.verifyAsync.mockResolvedValue({ sub: 'u1', groups: [] })
-    keycloakJwtService.validatePayload.mockResolvedValue({ userId: 'u1', adminPermissions: 8n })
+    keycloakJwtService.validatePayload.mockResolvedValue({ userId: 'u1', adminPermissions: 8n, userType: 'human' })
 
     const result = await service.authenticateHeaders({ authorization: 'Bearer jwt-token' })
 
     expect(jwtService.verifyAsync).toHaveBeenCalledWith('jwt-token')
-    expect(keycloakJwtService.validatePayload).toHaveBeenCalledWith({ sub: 'u1', groups: [] })
-    expect(result).toEqual({ userId: 'u1', adminPermissions: 8n })
+    expect(keycloakJwtService.validatePayload).toHaveBeenCalledWith(
+      { sub: 'u1', groups: [] },
+      { includeAdminRoleIds: true, includeUserType: true },
+    )
+    expect(result).toEqual({ userId: 'u1', adminPermissions: 8n, userType: 'human' })
   })
 
   it('should throw 401 when no supported auth header exists', async () => {

@@ -137,6 +137,7 @@ describe('keycloakJwtService', () => {
       expect(result).toEqual({
         userId: payload.sub,
         adminPermissions: 52n,
+        userType: 'human',
       })
     })
 
@@ -154,6 +155,41 @@ describe('keycloakJwtService', () => {
       await expect(service.validatePayload(payload)).rejects.toBeInstanceOf(UnauthorizedException)
       expect(prisma.adminRole.findMany).not.toHaveBeenCalled()
       expect(prisma.user.update).not.toHaveBeenCalled()
+    })
+
+    it('should skip admin role resolution when permissions are not required', async () => {
+      const payload = {
+        sub: faker.string.uuid(),
+        email: faker.internet.email().toLowerCase(),
+        given_name: faker.person.firstName(),
+        family_name: faker.person.lastName(),
+        groups: ['/current-group'],
+      }
+
+      prisma.user.findUnique.mockResolvedValue(
+        makeMockUser({
+          id: payload.sub,
+          type: 'human',
+        }),
+      )
+
+      const result = await service.validatePayload(
+        payload,
+        { includeAdminRoleIds: false, includeUserType: true },
+      )
+
+      expect(prisma.adminRole.findMany).not.toHaveBeenCalled()
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: payload.sub },
+        data: {
+          lastLogin: expect.any(String),
+        },
+      })
+      expect(result).toEqual({
+        userId: payload.sub,
+        adminPermissions: undefined,
+        userType: 'human',
+      })
     })
   })
 
