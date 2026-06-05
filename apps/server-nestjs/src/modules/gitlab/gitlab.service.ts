@@ -27,7 +27,14 @@ import {
   PURGE_PLUGIN_KEY,
   TOPIC_PLUGIN_MANAGED,
 } from './gitlab.constants'
-import { generateName, generateUsername, generateUsernameCandidates } from './gitlab.utils'
+import {
+  generateAccessLevelMapping,
+  generateAdminRoleMapping,
+  generateName,
+  generateProjectRoleGroupPath,
+  generateUsername,
+  generateUsernameCandidates,
+} from './gitlab.utils'
 
 const ownedUserRegex = /group_\d+_bot/u
 type ProjectAccessLevel = Exclude<AccessLevel, (typeof AccessLevel)['ADMIN']>
@@ -518,52 +525,6 @@ function isSystemRepo(project: ProjectWithDetails, repo: ProjectSchema) {
 
 function getProjectPluginConfig(project: ProjectWithDetails, key: string) {
   return project.plugins?.find(p => p.key === key)?.value
-}
-
-function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes: string) {
-  return rawGroupPathSuffixes
-    .split(',')
-    .map(path => path.trim())
-    .filter(Boolean)
-    .map(path => `/${projectSlug}${path}`)
-}
-
-function generateAdminRoleMapping(
-  roles: ProjectWithDetails['roles'],
-  adminGroupPath: string,
-  auditorGroupPath: string,
-): { adminRoleId?: string, auditorRoleId?: string } {
-  const roleIdByOidcGroup = new Map<string | null, string>(roles.map(r => [r.oidcGroup, r.id] as [string | null, string]))
-  return {
-    adminRoleId: roleIdByOidcGroup.get(adminGroupPath),
-    auditorRoleId: roleIdByOidcGroup.get(auditorGroupPath),
-  }
-}
-
-function generateAccessLevelMapping(
-  project: ProjectWithDetails,
-  groupPaths: { reporter: string[], developer: string[], maintainer: string[] },
-) {
-  const getAccessLevelFromOidcGroup = (oidcGroup: string | null): ProjectAccessLevel | null => {
-    if (!oidcGroup) return null
-    if (groupPaths.reporter.includes(oidcGroup)) return AccessLevel.REPORTER
-    if (groupPaths.developer.includes(oidcGroup)) return AccessLevel.DEVELOPER
-    if (groupPaths.maintainer.includes(oidcGroup)) return AccessLevel.MAINTAINER
-    return null
-  }
-
-  const roleAccessLevelById = new Map<string, ProjectAccessLevel | null>(
-    project.roles.map(role => [role.id, getAccessLevelFromOidcGroup(role.oidcGroup)]),
-  )
-
-  return new Map<string, ProjectAccessLevel>(project.members.map((membership) => {
-    let highest: ProjectAccessLevel | null = null
-    for (const roleId of membership.roleIds) {
-      const level = roleAccessLevelById.get(roleId)
-      if (level !== null && level !== undefined && (highest === null || level > highest)) highest = level
-    }
-    return [membership.user.id, highest ?? AccessLevel.GUEST] as const
-  }))
 }
 
 function daysAgoFromNow(date: Date) {

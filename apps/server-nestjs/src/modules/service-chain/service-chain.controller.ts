@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpStatus,
   Inject,
   Param,
   ParseUUIDPipe,
@@ -20,7 +21,7 @@ export class ServiceChainController {
   ) {}
 
   @Post('validate/:validationId')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(UserGuard)
   @RequireAdminPermission('ManageSystem')
   async validate(@Param('validationId', ParseUUIDPipe) validationId: string) {
@@ -42,7 +43,7 @@ export class ServiceChainController {
   }
 
   @Post(':serviceChainId/retry')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(UserGuard)
   @RequireAdminPermission('ManageSystem')
   async retry(@Param('serviceChainId', ParseUUIDPipe) id: string) {

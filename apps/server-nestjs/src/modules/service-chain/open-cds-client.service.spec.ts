@@ -1,5 +1,6 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { Dispatcher, RequestInit } from 'undici'
+import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { Agent, fetch, Headers, ProxyAgent, Response } from 'undici'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -69,7 +70,7 @@ describe('openCdsClientService', () => {
 
   it('builds GET requests with an Axios-compatible URL, API key header and TLS-aware dispatcher', async () => {
     mockFetchResponse(new Response(JSON.stringify({ ok: true }), {
-      status: 200,
+      status: HttpStatus.OK,
       headers: {
         'content-type': 'application/json',
       },
@@ -94,7 +95,7 @@ describe('openCdsClientService', () => {
   it('uses ProxyAgent when HTTP_PROXY is configured and preserves TLS settings for the upstream request', async () => {
     vi.stubEnv('HTTP_PROXY', 'http://proxy.internal:3128')
     mockFetchResponse(new Response(JSON.stringify({ ok: true }), {
-      status: 200,
+      status: HttpStatus.OK,
       headers: {
         'content-type': 'application/json',
       },
@@ -118,7 +119,7 @@ describe('openCdsClientService', () => {
 
   it('applies query parameters and omits undefined values on GET', async () => {
     mockFetchResponse(new Response(JSON.stringify({ ok: true }), {
-      status: 200,
+      status: HttpStatus.OK,
       headers: {
         'content-type': 'application/json',
       },
@@ -138,7 +139,7 @@ describe('openCdsClientService', () => {
   })
 
   it('sends POST<void> without body and without forcing JSON content type', async () => {
-    mockFetchResponse(new Response(null, { status: 204 }))
+    mockFetchResponse(new Response(null, { status: HttpStatus.NO_CONTENT }))
 
     await service.post<void>('/validate/id')
 
@@ -153,7 +154,7 @@ describe('openCdsClientService', () => {
   })
 
   it('serializes POST bodies as JSON and sets the content type', async () => {
-    mockFetchResponse(new Response(null, { status: 204 }))
+    mockFetchResponse(new Response(null, { status: HttpStatus.NO_CONTENT }))
 
     await service.post('/validate/id', {
       requestId: '123',
@@ -181,7 +182,7 @@ describe('openCdsClientService', () => {
 
   it('throws a dedicated error with HTTP status context for non-OK responses', async () => {
     mockFetchResponse(new Response('upstream failure', {
-      status: 502,
+      status: HttpStatus.BAD_GATEWAY,
       statusText: 'Bad Gateway',
     }))
 
@@ -189,7 +190,7 @@ describe('openCdsClientService', () => {
       body: 'upstream failure',
       message: 'OpenCDS request failed with 502 Bad Gateway',
       name: OpenCdsClientError.name,
-      status: 502,
+      status: HttpStatus.BAD_GATEWAY,
       statusText: 'Bad Gateway',
     })
   })

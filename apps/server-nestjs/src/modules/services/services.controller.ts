@@ -2,7 +2,7 @@ import type { PermissionTarget, PluginsUpdateBody } from '@cpn-console/shared'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import type { ProjectContext } from '../infrastructure/permission/project/project.guard'
 import { AdminAuthorized, projectServiceContract } from '@cpn-console/shared'
-import { Body, Controller, ForbiddenException, Get, HttpCode, Inject, Post, Query, UseGuards } from '@nestjs/common'
+import { Body, Controller, ForbiddenException, Get, HttpCode, HttpStatus, Inject, Post, Query, UseGuards } from '@nestjs/common'
 import { AuthUser } from '../infrastructure/auth/auth-user.decorator'
 import { RequireProjectLocked } from '../infrastructure/permission/project/project-locked.decorator'
 import { RequireProjectPermission } from '../infrastructure/permission/project/project-permission.decorator'
@@ -34,7 +34,7 @@ export class ServicesController {
   }
 
   @Post()
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @RequireProjectPermission('ManageEnvironments')
   @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
   @RequireProjectLocked(false)

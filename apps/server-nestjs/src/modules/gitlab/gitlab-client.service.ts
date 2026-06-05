@@ -6,7 +6,6 @@ import type {
   CondensedGroupSchema,
   CondensedProjectSchema,
   EditUserOptions,
-
   ExpandedUserSchema,
   Gitlab,
   GroupSchema,
@@ -15,8 +14,6 @@ import type {
   PipelineTriggerTokenSchema,
   SimpleUserSchema,
 } from '@gitbeaker/core'
-import { createHash } from 'node:crypto'
-import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
@@ -33,6 +30,7 @@ import {
   TOPIC_PLUGIN_MANAGED,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
+import { hasFileContentChanged, readGitlabCIConfigContent, readMirrorScriptContent } from './gitlab.utils'
 
 export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
 
@@ -552,20 +550,4 @@ export class GitlabClientService {
 
     this.logger.debug(`Pagination done (total=${total})`)
   }
-}
-
-function hasFileContentChanged(file: { content_sha256?: string } | null | undefined, content: string) {
-  return file?.content_sha256 !== digestContent(content)
-}
-
-function digestContent(content: string) {
-  return createHash('sha256').update(content).digest('hex')
-}
-
-function readGitlabCIConfigContent() {
-  return readFile(join(__dirname, './files/.gitlab-ci.yml'), 'utf-8')
-}
-
-function readMirrorScriptContent() {
-  return readFile(join(__dirname, './files/mirror.sh'), 'utf-8')
 }

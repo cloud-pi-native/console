@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
@@ -70,7 +71,7 @@ describe('registryService', () => {
           metadata: { auto_scan: 'true' },
           storage_limit: -1,
         })
-        return HttpResponse.json({}, { status: 201 })
+        return HttpResponse.json({}, { status: HttpStatus.CREATED })
       }),
     )
 
@@ -90,6 +91,6 @@ describe('registryService', () => {
 
     const res = await service.getProjectByName('myproj')
 
-    expect(res).toMatchObject({ status: 200, data: { project_id: 123 } })
+    expect(res).toMatchObject({ status: HttpStatus.OK, data: { project_id: 123 } })
   })
 })

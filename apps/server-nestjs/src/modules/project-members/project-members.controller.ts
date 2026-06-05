@@ -2,7 +2,7 @@ import type { Member } from '@cpn-console/shared'
 import type { ProjectContext } from '../infrastructure/permission/project/project.guard'
 import type { AddMemberInput, PatchMembersInput } from './project-members-queries.utils'
 import { projectMemberContract } from '@cpn-console/shared'
-import { Body, Controller, Delete, Get, HttpCode, Inject, Logger, Param, Patch, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Logger, Param, Patch, Post, UseGuards } from '@nestjs/common'
 import { RequireProjectLocked } from '../infrastructure/permission/project/project-locked.decorator'
 import { RequireProjectPermission } from '../infrastructure/permission/project/project-permission.decorator'
 import { RequireProjectStatus } from '../infrastructure/permission/project/project-status.decorator'
@@ -30,7 +30,7 @@ export class ProjectMembersController {
   }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
   @RequireProjectLocked(false)
   @RequireProjectPermission('ManageMembers')
@@ -44,7 +44,7 @@ export class ProjectMembersController {
   }
 
   @Patch()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
   @RequireProjectLocked(false)
   @RequireProjectPermission('ManageMembers')
@@ -58,7 +58,7 @@ export class ProjectMembersController {
   }
 
   @Delete('/:userId')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
   @RequireProjectLocked(false)
   @RequireProjectPermission('ManageMembers')
