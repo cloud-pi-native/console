@@ -2,13 +2,13 @@ import { Controller, Get, Inject } from '@nestjs/common'
 import { HealthCheck, HealthCheckService } from '@nestjs/terminus'
 import { ArgoCDHealthService } from '../argocd/argocd-health.service'
 import { GitlabHealthService } from '../gitlab/gitlab-health.service'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { DatabaseHealthService } from '../infrastructure/database/database-health.service'
 import { KeycloakHealthService } from '../keycloak/keycloak-health.service'
 import { NexusHealthService } from '../nexus/nexus-health.service'
 import { OpenCdsHealthService } from '../opencds/opencds-health.service'
 import { RegistryHealthService } from '../registry/registry-health.service'
 import { VaultHealthService } from '../vault/vault-health.service'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 
 @Controller('api/v1/healthz')
 export class HealthzController {

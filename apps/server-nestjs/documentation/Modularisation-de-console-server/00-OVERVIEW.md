@@ -179,7 +179,8 @@ Cette modularisation est documentée dans plusieurs fichiers :
 - **ServiceChain (OpenCDS)** : Migré le 2026-04-09 (prévu V3/S8). Ce module
   isolé (proxy HTTP vers API externe, aucune
   dépendance entrante) a servi de premier test de bout en bout du pipeline de
-  migration : module NestJS + AuthGuard + nginx-strangler + Docker.
+  migration : module NestJS + `InfrastructureModule` + `UserGuard` +
+  nginx-strangler + Docker.
 
 ## 🗓️ Dates clés
 
@@ -208,6 +209,6 @@ Cette modularisation est documentée dans plusieurs fichiers :
 
 ---
 
-**Version** : 1.1
-**Dernière mise à jour** : 2026-04-09
+**Version** : 1.2
+**Dernière mise à jour** : 2026-06-16
 **Prochaine revue** : Fin S2

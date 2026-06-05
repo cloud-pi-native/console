@@ -3,6 +3,8 @@ import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { UnauthorizedException } from '@nestjs/common'
+import { ModuleRef } from '@nestjs/core'
+import { JwtService } from '@nestjs/jwt'
 import { Test } from '@nestjs/testing'
 import { createCache } from 'cache-manager'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -19,6 +21,8 @@ describe('keycloakJwtService', () => {
   let config: DeepMockProxy<ConfigurationService>
   let prisma: DeepMockProxy<PrismaService>
   let client: DeepMockProxy<KeycloakJwtClientService>
+  let jwtService: DeepMockProxy<JwtService>
+  let moduleRef: DeepMockProxy<ModuleRef>
   let cache: ReturnType<typeof createCache>
 
   beforeEach(async () => {
@@ -36,6 +40,9 @@ describe('keycloakJwtService', () => {
     )
     prisma = mockDeep<PrismaService>()
     client = mockDeep<KeycloakJwtClientService>()
+    jwtService = mockDeep<JwtService>()
+    moduleRef = mockDeep<ModuleRef>()
+    moduleRef.get.mockReturnValue(jwtService)
     cache = createCache()
 
     module = await Test.createTestingModule({
@@ -45,6 +52,8 @@ describe('keycloakJwtService', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: CACHE_MANAGER, useValue: cache },
         { provide: KeycloakJwtClientService, useValue: client },
+        { provide: JwtService, useValue: jwtService },
+        { provide: ModuleRef, useValue: moduleRef },
       ],
     }).compile()
 
@@ -137,6 +146,7 @@ describe('keycloakJwtService', () => {
       expect(result).toEqual({
         userId: payload.sub,
         adminPermissions: 52n,
+        userType: 'human',
       })
     })
 
@@ -154,6 +164,56 @@ describe('keycloakJwtService', () => {
       await expect(service.validatePayload(payload)).rejects.toBeInstanceOf(UnauthorizedException)
       expect(prisma.adminRole.findMany).not.toHaveBeenCalled()
       expect(prisma.user.update).not.toHaveBeenCalled()
+    })
+
+    it('should skip admin role resolution when permissions are not required', async () => {
+      const payload = {
+        sub: faker.string.uuid(),
+        email: faker.internet.email().toLowerCase(),
+        given_name: faker.person.firstName(),
+        family_name: faker.person.lastName(),
+        groups: ['/current-group'],
+      }
+
+      prisma.user.findUnique.mockResolvedValue(
+        makeMockUser({
+          id: payload.sub,
+          type: 'human',
+        }),
+      )
+
+      const result = await service.validatePayload(
+        payload,
+        { includeAdminRoleIds: false, includeUserType: true },
+      )
+
+      expect(prisma.adminRole.findMany).not.toHaveBeenCalled()
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: payload.sub },
+        data: {
+          lastLogin: expect.any(String),
+        },
+      })
+      expect(result).toEqual({
+        userId: payload.sub,
+        adminPermissions: undefined,
+        userType: 'human',
+      })
+    })
+  })
+
+  describe('authenticate', () => {
+    it('should authenticate a bearer token from the request', async () => {
+      jwtService.verifyAsync.mockResolvedValue({ sub: faker.string.uuid(), groups: [] })
+      prisma.user.findUnique.mockResolvedValue(makeMockUser({}))
+      prisma.adminRole.findMany.mockResolvedValue([])
+
+      const result = await service.authenticate(
+        { headers: { authorization: 'Bearer jwt-token' } } as Parameters<KeycloakJwtService['authenticate']>[0],
+      )
+
+      expect(jwtService.verifyAsync).toHaveBeenCalledWith('jwt-token')
+      expect(result?.userId).toBeDefined()
     })
   })
 

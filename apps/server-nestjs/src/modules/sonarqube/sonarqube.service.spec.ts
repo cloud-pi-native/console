@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from '../vault/vault-client.service'
-import { makeVaultSecret } from '../vault/vault-testing.utils.js'
+import { makeVaultSecret } from '../vault/vault-testing.utils'
 import { SONARQUBE_PROJECT_QUALIFIER_PROJECT, SonarqubeClientService } from './sonarqube-client.service'
 import { SonarqubeDatastoreService } from './sonarqube-datastore.service'
 import {

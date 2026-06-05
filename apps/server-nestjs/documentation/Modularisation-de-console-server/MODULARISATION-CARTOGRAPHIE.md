@@ -1,6 +1,6 @@
 # Cartographie des modules - Modularisation Backend
 
-> Derniere mise a jour : **2026-04-09** (Migration ServiceChain finalisee)
+> Derniere mise a jour : **2026-06-16** (refonte Infrastructure/Auth/Permission)
 
 ---
 
@@ -52,7 +52,7 @@ plus **5 couches transverses** et **7 plugins** a encapsuler.
 +--------------------------------------------------------------+
 | Couche 4 : Evenements (EventEmitter, remplacement hooks)     | A CREER
 +--------------------------------------------------------------+
-| Couche 3 : Securite (AuthGuard, PermissionsGuard, Filters)   | PARTIEL
+| Couche 3 : Securite (AuthService, UserGuard, ProjectGuard, Filters)   | PARTIEL
 +--------------------------------------------------------------+
 | Couche 2 : Core (AppService, FastifyService)                 | FAIT
 +--------------------------------------------------------------+
@@ -61,9 +61,12 @@ plus **5 couches transverses** et **7 plugins** a encapsuler.
 ```
 
 Les couches 1 et 2 sont en place. La couche 3 est **partiellement** en place :
-l'auth par token (`x-dso-token`) fonctionne via `AdminPermissionGuard` +
-`AuthService`. Il reste a implementer l'auth par session Keycloak
-(`@CurrentUser()`), le `PermissionsGuard` projet, et le `GlobalExceptionFilter`.
+l'auth par token (`x-dso-token`) et le bearer JWT Keycloak passent désormais
+par `AuthService`. La couche de permissions est structurée autour de
+`InfrastructureModule -> PermissionModule -> UserModule / ProjectModule`
+avec `UserGuard`, `ProjectGuard`, `UserService` et `ProjectService`.
+Il reste a homogénéiser les usages des decorateurs de contexte utilisateur
+(`@AuthUser()`), et le `GlobalExceptionFilter`.
 Les couches 4 et 5 restent a creer.
 
 ---
@@ -76,7 +79,7 @@ qui suivent. Les creer en premier permet que chaque migration de module soit un
 exercice de "remplissage" des couches superieures, sans reinventer
 l'infrastructure a chaque fois.
 
-### 0a. AuthGuard + decorateur @CurrentUser() — PARTIEL
+### 0a. AuthService + decorateur @AuthUser() — PARTIEL
 
 **Sprint** : S3 (Dev A)
 **Remplace** : `authUser()` dans `apps/server/src/utils/controller.ts`
@@ -86,16 +89,18 @@ l'infrastructure a chaque fois.
 - ✅ `AuthService` : validation token SHA256, lookup Prisma
   (PersonalAccessToken + AdminToken), verification status/expiration, calcul
   permissions bitwise (y compris roles globaux)
-- ✅ `AdminPermissionGuard` : lit `x-dso-token`, verifie permissions via
-  `AdminAuthorized` de `@cpn-console/shared`
-- ✅ `@RequireAdminPermission()` : decorateur de metadata pour les permissions admin
+- ✅ `AuthService` : route `x-dso-token` et bearer JWT Keycloak vers
+  `DsoTokenService` / `KeycloakJwtService`
+- ✅ `UserGuard` : applique les requirements de permission et injecte le
+  contexte utilisateur dans la request
+- ✅ `@AuthUser()` : decorateur de parametre pour le contexte utilisateur
+- ✅ `@RequireAdminPermission()` / `@RequireProjectPermission()` : metadata
+  de permissions admin et projet
 
 **Reste a faire** :
-- Validation de session Keycloak (`req.session.user`)
-- Fallback session → token (actuellement token uniquement)
+- Harmonisation des controles d'accès entre modules restants
 - Chargement optionnel du projet (par slug, id, environmentId, repositoryId)
-- Injection du profil utilisateur dans la request via `@CurrentUser()`
-- Types a definir : `UserProfile`, `UserProjectProfile`, `ProjectPermState`
+- Formalisation des types de contexte utilisateur/projet partages
 
 ### 0b. GlobalExceptionFilter
 
@@ -116,14 +121,14 @@ Mapping des erreurs :
 Le filtre global intercepte les `HttpException` NestJS et les formate dans le
 schema de reponse attendu par le client (`{ status, body: { message } }`).
 
-### 0c. PermissionsGuard + decorateur @Permissions()
+### 0c. PermissionModule + decorateurs de permissions
 
 **Sprint** : S3-S4 (Dev A)
 **Remplace** : `getProjectPermissions`, `AdminAuthorized`, `ProjectAuthorized` dans `utils/controller.ts`
 
 Fonctionnalites :
-- Decorateur `@Permissions(permission)` a poser sur les methodes de controller
-- Guard qui verifie les bitmasks de permissions (admin et projet)
+- Decorateurs `@RequireAdminPermission()` et `@RequireProjectPermission()` sur les methodes de controller
+- Guard `UserGuard` qui verifie les bitmasks de permissions admin et projet
 - Support des deux niveaux : `AdminRole` (global) et `ProjectRole` (scope projet)
 
 ### 0d. ValidationPipe global
@@ -457,7 +462,7 @@ et `user` sont des pre-requis pour la Vague 3 (cluster, project-member).
 
 **Points d'attention** :
 - Valide le pattern hooks + EventEmitter dans un contexte admin
-- Permissions admin (bitmask) : valide le PermissionsGuard
+- Permissions admin (bitmask) : valide `UserGuard`
 - Queries a internaliser dans le module
 
 **Estimation** : 1.5 jours
@@ -594,7 +599,7 @@ NestJS injectables.
 **Points d'attention** :
 - Utilise le pattern `Result<T>` (monad Success/Failure) de `utils/business.ts`.
   A decider si on conserve ce pattern dans NestJS ou si on passe aux exceptions
-- Scope projet : necessite le PermissionsGuard avec `ProjectAuthorized`
+- Scope projet : necessite `ProjectGuard` avec `ProjectAuthorized`
 - Hooks environnement declenchent des operations dans les plugins
 
 **Estimation** : 2 jours
@@ -623,7 +628,7 @@ NestJS injectables.
 **Points d'attention** :
 - Le hook `misc.syncRepository` est specifique a ce module (declenchement de
   pipeline miroir GitLab)
-- Scope projet : PermissionsGuard requis
+- Scope projet : `ProjectGuard` requis
 - Gestion des credentials de miroir (donnees sensibles dans Vault)
 
 **Estimation** : 2 jours
@@ -739,7 +744,7 @@ NestJS injectables.
 
 **Implementation** :
 - Module place dans la catégorie `ThirdPartyModules` (futur module optionnel CPin) comme envisagé
-- Auth par token uniquement (`x-dso-token`) via `AdminPermissionGuard`
+- Auth par token et bearer JWT via `AuthService` et `UserGuard`
 - Validation UUID sur les parametres d'URL (`ParseUUIDPipe`)
 - Validation des reponses OpenCDS via schemas Zod de `@cpn-console/shared`
 - Telemetrie via `@StartActiveSpan()` (OpenTelemetry)
@@ -1060,9 +1065,9 @@ npx madge --image dependency-graph.png --extensions js,ts apps/server/src
 ```mermaid
 flowchart TD
     subgraph Transverse["Couche 0 : Socle transverse"]
-        AuthGuard["AuthGuard + @CurrentUser()"]
+        AuthGuard["AuthService + @AuthUser()"]
         ExceptionFilter["GlobalExceptionFilter"]
-        PermissionsGuard["PermissionsGuard + @Permissions()"]
+        PermissionsGuard["UserGuard + ProjectGuard"]
         ValidationPipe["ValidationPipe global"]
         EventEmitter["EventEmitterModule"]
     end
@@ -1153,8 +1158,8 @@ flowchart TD
 | Module source | Importe depuis | Fonction | Resolution NestJS |
 |---------------|----------------|----------|-------------------|
 | cluster | stage/business | `linkClusterToStages` | ClusterModule importe StageModule |
-| project-member | user/business | `logViaSession` | Resolu par AuthGuard (Couche 0) |
-| utils/controller | user/business | `logViaSession`, `logViaToken` | Resolu par AuthGuard (Couche 0) |
+| project-member | user/business | `logViaSession` | Resolu par AuthService / AuthUser (Couche 0) |
+| utils/controller | user/business | `logViaSession`, `logViaToken` | Resolu par AuthService / AuthUser (Couche 0) |
 | utils/hook-wrapper | project-service/business | `ConfigRecords`, `dbToObj` | Types partages ou ProjectServiceModule exporte |
 
 ### Dependances inter-plugins

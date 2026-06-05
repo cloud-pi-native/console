@@ -3,8 +3,8 @@ import { JwtModule } from '@nestjs/jwt'
 import { ConfigurationModule } from '../configuration/configuration.module'
 import { ConfigurationService } from '../configuration/configuration.service'
 import { DatabaseModule } from '../database/database.module'
-import { AdminPermissionGuard } from './admin-permission.guard'
 import { AuthService } from './auth.service'
+import { DsoTokenModule } from './dso-token/dso-token.module'
 import { KeycloakJwtModule } from './keycloak-jwt/keycloak-jwt.module'
 import { KeycloakJwtService } from './keycloak-jwt/keycloak-jwt.service'
 
@@ -29,6 +29,7 @@ const JwtModuleConfig = JwtModule.registerAsync({
 
 @Module({
   imports: [
+    DsoTokenModule,
     ConfigurationModule,
     DatabaseModule,
     JwtModuleConfig,
@@ -36,10 +37,8 @@ const JwtModuleConfig = JwtModule.registerAsync({
   ],
   providers: [
     AuthService,
-    AdminPermissionGuard,
   ],
   exports: [
-    AdminPermissionGuard,
     AuthService,
     JwtModuleConfig,
   ],
