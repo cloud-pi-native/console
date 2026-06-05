@@ -17,6 +17,8 @@ import {
 import infos from './infos.js'
 import monitor from './monitor.js'
 
+export { KeycloakProjectApi }
+
 export const plugin: Plugin = {
   infos,
   subscribedHooks: {

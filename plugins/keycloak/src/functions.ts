@@ -1,5 +1,6 @@
 import type { AdminRole, Project, ProjectMember, StepCall, UserEmail, ZoneObject } from '@cpn-console/hooks'
 import type { ProjectRole } from '@cpn-console/shared'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin'
 import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation.js'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type { CustomGroup } from './group.js'
@@ -158,6 +159,7 @@ export const upsertProject: StepCall<Project> = async ({ args: project }) => {
 
 export const upsertZone: StepCall<ZoneObject> = async ({ args: zone, apis }) => {
   const zoneSlug = zone.slug
+  const vaultApi = apis.vault as unknown as VaultProjectApi
   try {
     const kcClient = await getkcClient()
     const argocdUrl = zone.argocdUrl
@@ -181,7 +183,7 @@ export const upsertZone: StepCall<ZoneObject> = async ({ args: zone, apis }) => 
       outcome = 'updated'
     } else {
       const password = generateRandomPassword(30)
-      await apis.vault.write({ clientSecret: password }, 'keycloak')
+      await vaultApi.write({ clientSecret: password }, 'keycloak')
       await kcClient.clients.create({
         secret: password,
         ...client,

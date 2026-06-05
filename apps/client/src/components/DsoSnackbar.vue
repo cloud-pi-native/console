@@ -31,9 +31,7 @@ watch(routePath, () => {
       closeable
       @close="closeSnackbar()"
     >
-      <span
-        style="white-space: pre-wrap;"
-      >
+      <span class="whitespace-pre-wrap">
         {{ message }}
       </span>
     </DsfrAlert>

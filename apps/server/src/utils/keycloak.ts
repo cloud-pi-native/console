@@ -28,7 +28,8 @@ export const keycloakConf = {
     serviceContract.getServiceHealth.path,
     `${swaggerUiPath}-server/**`,
   ],
-  bypassFn,
+  // @ts-ignore - fastify-keycloak-adapter uses Fastify 4 types, bypassFn signature differs
+  bypassFn: bypassFn as any,
 } as const satisfies KeycloakOptions
 
 export const sessionConf = {

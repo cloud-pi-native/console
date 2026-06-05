@@ -21,14 +21,19 @@ const openApiDocument = generateOpenApi(await getContract(), swaggerConf, {
 })
 
 const app = fastify(fastifyConf)
+  // @ts-ignore - @fastify/helmet@13 type incompatibility with fastify@5.8.5
   .register(helmet, () => ({
     contentSecurityPolicy: !(isInt || isDev || isTest),
   }))
+  // @ts-ignore - @fastify/cookie@11 type incompatibility with fastify@5.8.5
   .register(fastifyCookie)
+  // @ts-ignore - @fastify/session@11 type incompatibility with fastify@5.8.5
   .register(fastifySession, sessionConf)
   // @ts-ignore
   .register(keycloak, keycloakConf)
+  // @ts-ignore - @fastify/swagger@9 type incompatibility with fastify@5.8.5
   .register(fastifySwagger, { transformObject: () => openApiDocument })
+  // @ts-ignore
   .register(fastifySwaggerUi, swaggerUiConf)
   .register(apiRouter())
   .addHook('onRoute', (opts) => {

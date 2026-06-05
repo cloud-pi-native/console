@@ -5,6 +5,8 @@ import monitor from './monitor.js'
 import { VaultProjectApi } from './vault-project-api.js'
 import { VaultZoneApi } from './vault-zone-api.js'
 
+export { VaultProjectApi, VaultZoneApi }
+
 const onlyApi = { api: (project: ProjectLite) => new VaultProjectApi(project) }
 
 export const plugin: Plugin = {

@@ -135,7 +135,13 @@ export default defineConfig({
     dedupe: ['vue'],
   },
   build: {
-    target: 'ESNext',
+    target: 'esnext',
+  },
+  // DSFR ships IE hacks like @media (min-width: 0\0) that LightningCSS rejects.
+  css: {
+    lightningcss: {
+      errorRecovery: true,
+    },
   },
   optimizeDeps: {
     include: [

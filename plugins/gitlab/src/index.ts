@@ -18,6 +18,8 @@ import { logger } from './logger.js'
 import monitor from './monitor.js'
 import { getOrCreateGroupRoot } from './utils.js'
 
+export { GitlabProjectApi, GitlabZoneApi }
+
 const onlyApi = { api: (project: Project | UniqueRepo) => new GitlabProjectApi(project) }
 
 function start() {

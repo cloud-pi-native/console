@@ -13,7 +13,9 @@ import {
 } from './env.js'
 
 export const fastifyConf: FastifyServerOptions = {
-  maxParamLength: 5000,
+  routerOptions: {
+    maxParamLength: 5000,
+  },
   logger: getLoggerOptionsFromEnv(),
   genReqId: () => randomUUID(),
 }

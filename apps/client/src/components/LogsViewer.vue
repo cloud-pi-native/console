@@ -168,7 +168,7 @@ async function showLogs(index: number) {
             v-if="log.data.messageResume"
             :data-testid="`${log.id}-json`"
             copyable
-            style="white-space: pre-wrap; "
+            class="whitespace-pre-wrap"
           >{{ log.data.messageResume.trim() }}</pre>
         </template>
         <JsonViewer
@@ -179,8 +179,7 @@ async function showLogs(index: number) {
           copyable
         />
         <div
-          style="display: none;"
-          class="flex flex-wrap justify-between"
+          class="flex flex-wrap justify-between hidden"
         >
           <DsfrBadge
             :label="`Log ID: ${log.id}`"

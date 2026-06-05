@@ -19,7 +19,7 @@ export function userPayloadMapper(userPayload: KeycloakPayload) {
   }
 }
 
-export function bypassFn(request: FastifyRequest) {
+export function bypassFn(request: FastifyRequest): boolean | Promise<boolean> {
   try {
     return !!request.headers[tokenHeaderName]
   } catch {}

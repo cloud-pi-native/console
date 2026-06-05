@@ -1,6 +1,6 @@
 import type { Project, StepCall } from '@cpn-console/hooks'
-import type { KeycloakProjectApi } from '@cpn-console/keycloak-plugin/types/class.js'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
+import type { KeycloakProjectApi } from '@cpn-console/keycloak-plugin'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin'
 import type { SonarPaging } from './project.js'
 import type { VaultSonarSecret } from './tech.js'
 import type { SonarUser } from './user.js'

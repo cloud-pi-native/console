@@ -1,4 +1,4 @@
-import type { GitlabZoneApi } from '@cpn-console/gitlab-plugin/types/class.js'
+import type { GitlabZoneApi } from '@cpn-console/gitlab-plugin'
 import type { ClusterObject, HookPayloadApis, ZoneObject } from '@cpn-console/hooks'
 import { createHmac } from 'node:crypto'
 import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'

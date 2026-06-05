@@ -13,7 +13,7 @@ export default mergeConfig(
       coverage: {
         provider: 'v8',
         reporter: ['text', 'lcov'],
-        include: ['src/**'],
+        include: ['src/**/*.ts'],
         exclude: [
           '**/types',
           '**/mocks',
@@ -25,7 +25,7 @@ export default mergeConfig(
         ],
       },
       include: ['src/**/*.spec.{ts,js}'],
-      exclude: [...configDefaults.exclude, 'e2e/*'],
+      exclude: [...configDefaults.exclude, 'e2e/*', '**/prisma/migrations/**/*.sql'],
       setupFiles: ['./vitest-init.ts'],
       root: fileURLToPath(new URL('./', import.meta.url)),
       pool: 'forks',

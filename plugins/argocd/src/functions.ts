@@ -1,4 +1,4 @@
-import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
+import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin'
 import type {
   ClusterObject,
   Config,
@@ -7,7 +7,7 @@ import type {
   Repository,
   StepCall,
 } from '@cpn-console/hooks'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin'
 import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
 import { stringify } from 'yaml'
 import {

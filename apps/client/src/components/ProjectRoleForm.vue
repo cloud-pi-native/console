@@ -76,8 +76,7 @@ function updateChecked(checked: boolean, value: bigint) {
     <DsfrTabContent panel-id="general" tab-id="general">
       <DsfrNotice
         v-if="!role.isEveryone && !isSystem"
-        class="mb-5"
-        style="width: fit-content"
+        class="mb-5 w-fit"
         title="Les rôles personnalisés d'un projet ne concernent que la Console, pas les services externes !"
         type="warning"
       />
@@ -132,8 +131,7 @@ function updateChecked(checked: boolean, value: bigint) {
     <DsfrTabContent panel-id="members" tab-id="members">
       <template v-if="props.isEveryone">
         <DsfrNotice
-          class="mb-5"
-          style="width: fit-content"
+          class="mb-5 w-fit"
           title="Le rôle par défaut 'Tout le monde' inclut tous les utilisateurs de l'équipe"
         />
         <DsfrCheckbox

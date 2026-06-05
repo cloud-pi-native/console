@@ -1,5 +1,5 @@
 import type { Project, ProjectMember, UniqueRepo } from '@cpn-console/hooks'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin'
 import type { AccessTokenScopes, AllRepositoryTreesOptions, CommitAction, CondensedProjectSchema, Gitlab, GroupSchema, MemberSchema, ProjectSchema, ProjectVariableSchema, RepositoryFileExpandedSchema, VariableSchema } from '@gitbeaker/core'
 import type { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { createHash } from 'node:crypto'

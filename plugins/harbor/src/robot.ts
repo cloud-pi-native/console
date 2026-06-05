@@ -1,4 +1,4 @@
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
+import type { VaultProjectApi } from '@cpn-console/vault-plugin'
 import type { Access, Robot, RobotCreated } from './api/Api.js'
 import type { HarborApi } from './utils.js'
 import { logger } from './logger.js'

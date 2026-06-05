@@ -65,8 +65,7 @@ function clickServiceChain(id: ServiceChain['id']) {
         common-name-visible
         placeholder="Recherche textuelle (Common Name)"
         common-name="Recherche"
-        class="mb-0"
-        style="field-sizing: content"
+        class="mb-0 field-sizing-content"
       />
     </div>
   </div>
