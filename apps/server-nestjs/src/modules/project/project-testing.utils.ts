@@ -1,7 +1,7 @@
 import type { projectContract } from '@cpn-console/shared'
 import type { Prisma, ProjectMembers, User } from '@prisma/client'
 import type { ProjectContext } from '../infrastructure/permission/project/project.guard.js'
-import type { ProjectDetails } from './project-queries.utils.js'
+import type { ProjectDetails, projectSelect } from './project-queries.utils.js'
 import { randomUUID } from 'node:crypto'
 import { PROJECT_PERMS } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
@@ -83,7 +83,7 @@ export function makeProjectContext(overrides: Partial<ProjectContext> = {}): Pro
   }
 }
 
-type ProjectSelect = Prisma.ProjectGetPayload<{ select: typeof import('./project-queries.utils.js').projectSelect }>
+type ProjectSelect = Prisma.ProjectGetPayload<{ select: typeof projectSelect }>
 
 export function makeProject(overrides: Partial<ProjectSelect> = {}): ProjectSelect {
   const id = overrides.id ?? faker.string.uuid()
