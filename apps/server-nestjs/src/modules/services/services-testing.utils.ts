@@ -1,7 +1,7 @@
 import type { Plugin } from '@cpn-console/hooks'
 import type { PluginsUpdateBody } from '@cpn-console/shared'
 import type { Prisma } from '@prisma/client'
-import type { projectServicesProjectSelect } from './services.utils.js'
+import type { projectServicesProjectSelect } from './services.utils'
 import { DEFAULT } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 

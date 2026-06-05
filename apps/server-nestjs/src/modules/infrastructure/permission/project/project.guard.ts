@@ -1,7 +1,7 @@
 import type { CanActivate, ExecutionContext } from '@nestjs/common'
 import type { Project } from '@prisma/client'
 import type { FastifyRequest } from 'fastify'
-import type { UserContext } from '../../auth/auth.service'
+import type { UserContext } from '../../auth/auth-user.decorator'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { AuthService } from '../../auth/auth.service'
 import { ProjectLoaderService } from './project-loader.service'

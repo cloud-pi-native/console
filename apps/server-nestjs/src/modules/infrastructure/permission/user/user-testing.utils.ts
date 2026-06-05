@@ -1,4 +1,4 @@
-import type { UserContext } from '../../auth/auth.service'
+import type { UserContext } from '../../auth/auth-user.decorator'
 import type { UserPolicyConfig } from './user-policy.service'
 
 export function makeUserPolicy(overrides: Partial<UserPolicyConfig> = {}): UserPolicyConfig {

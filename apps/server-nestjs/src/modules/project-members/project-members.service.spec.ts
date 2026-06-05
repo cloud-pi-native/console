@@ -8,7 +8,7 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { KeycloakClientService } from '../keycloak/keycloak-client.service.js'
+import { KeycloakClientService } from '../keycloak/keycloak-client.service'
 import {
   makeProject,
   makeProjectMembers,

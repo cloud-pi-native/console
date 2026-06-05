@@ -1,8 +1,8 @@
-import type { logContract } from '@cpn-console/shared'
+import type { AdminLogsQuery } from '@cpn-console/shared'
 import type { Prisma } from '@prisma/client'
 import { CleanLogSchema, exclude } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
-import { PrismaService } from '../infrastructure/database/prisma.service.js'
+import { PrismaService } from '../infrastructure/database/prisma.service'
 
 interface AddLogArgs {
   action: string
@@ -18,20 +18,20 @@ export class LogService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
   ) {}
 
-  async getLogs({ offset, limit, projectId, clean }: typeof logContract.getLogs.query._type) {
+  async getLogs(params: AdminLogsQuery) {
     const [total, logs] = await this.prisma.$transaction([
-      this.prisma.log.count({ where: { projectId } }),
+      this.prisma.log.count({ where: { projectId: params.projectId } }),
       this.prisma.log.findMany({
         orderBy: { createdAt: 'desc' },
-        skip: offset,
-        take: limit,
-        where: { projectId },
+        skip: params.offset,
+        take: params.limit,
+        where: { projectId: params.projectId },
       }),
     ])
 
     return {
       total,
-      logs: clean
+      logs: params.clean
         ? logs.map(log => CleanLogSchema.parse(log))
         : logs,
     }

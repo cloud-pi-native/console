@@ -1,38 +1,15 @@
-import type { AdminToken, Prisma, User } from '@prisma/client'
 import type { FastifyRequest } from 'fastify'
+import type { UserContext } from '../auth-user.decorator'
+import type { AuthProvider, AuthRequirements } from '../auth.utils'
+import type { AdminTokenWithOwner, AuthToken, PersonalAccessTokenWithOwner } from './dso-token.utils'
 import { createHash } from 'node:crypto'
 import { tokenHeaderName } from '@cpn-console/shared'
-import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { PrismaService } from '../../database/prisma.service'
-
-export interface UserContext {
-  userId: string
-  adminPermissions?: bigint
-  userType?: User['type']
-}
-
-export interface AuthRequirements {
-  includeAdminRoleIds?: boolean
-  includeUserType?: boolean
-}
-
-export type AuthToken
-  = | { kind: 'admin', userId: string, permissions: bigint, userType?: User['type'] }
-    | { kind: 'personal', userId: string, ownerAdminRoleIds?: string[], userType?: User['type'] }
-
-interface PersonalAccessTokenWithOwner {
-  id: string
-  status: AdminToken['status']
-  expirationDate: Date | null
-  owner: {
-    id: string
-    adminRoleIds?: string[] | null
-    type?: User['type'] | null
-  }
-}
+import { makeAdminTokenSelect, makePersonalAccessTokenSelect, validateToken } from './dso-token.utils'
 
 @Injectable()
-export class DsoTokenService {
+export class DsoTokenService implements AuthProvider {
   private readonly logger = new Logger(DsoTokenService.name)
 
   constructor(
@@ -105,9 +82,9 @@ export class DsoTokenService {
     const pat = await this.prisma.personalAccessToken.findFirst({
       select: makePersonalAccessTokenSelect(requirements),
       where: { hash },
-    }) as PersonalAccessTokenWithOwner | null
+    }) satisfies PersonalAccessTokenWithOwner | null
     if (pat) {
-      this.assertTokenValid(pat)
+      validateToken(pat)
       await this.updateLastUse('personalAccessToken', pat.id, pat.owner.id)
       return {
         kind: 'personal' as const,
@@ -124,9 +101,9 @@ export class DsoTokenService {
     const adminToken = await this.prisma.adminToken.findFirst({
       select: makeAdminTokenSelect(requirements),
       where: { hash },
-    })
+    }) satisfies AdminTokenWithOwner | null
     if (adminToken) {
-      this.assertTokenValid(adminToken)
+      validateToken(adminToken)
       await this.updateLastUse('adminToken', adminToken.id, adminToken.owner.id)
       return {
         kind: 'admin' as const,
@@ -137,15 +114,6 @@ export class DsoTokenService {
     }
 
     return undefined
-  }
-
-  private assertTokenValid(token: Pick<AdminToken | PersonalAccessTokenWithOwner, 'status' | 'expirationDate'>) {
-    if (token.status !== 'active') {
-      throw new UnauthorizedException('Not active')
-    }
-    if (token.expirationDate && Date.now() > token.expirationDate.getTime()) {
-      throw new UnauthorizedException('Expired')
-    }
   }
 
   private async updateLastUse(model: 'personalAccessToken' | 'adminToken', tokenId: string, userId: string) {
@@ -179,35 +147,4 @@ export class DsoTokenService {
     const tokenPerms = roles.reduce((acc, curr) => acc | curr.permissions, 0n)
     return globalPerms | tokenPerms
   }
-}
-
-function makeAdminTokenSelect(requirements: Required<AuthRequirements>): Prisma.AdminTokenSelect {
-  return {
-    id: true,
-    permissions: true,
-    status: true,
-    expirationDate: true,
-    owner: {
-      select: {
-        id: true,
-        ...(requirements.includeAdminRoleIds ? { adminRoleIds: true } : {}),
-        ...(requirements.includeUserType ? { type: true } : {}),
-      },
-    },
-  } satisfies Prisma.AdminTokenSelect
-}
-
-function makePersonalAccessTokenSelect(requirements: Required<AuthRequirements>): Prisma.PersonalAccessTokenSelect {
-  return {
-    id: true,
-    status: true,
-    expirationDate: true,
-    owner: {
-      select: {
-        id: true,
-        ...(requirements.includeAdminRoleIds ? { adminRoleIds: true } : {}),
-        ...(requirements.includeUserType ? { type: true } : {}),
-      },
-    },
-  } satisfies Prisma.PersonalAccessTokenSelect
 }

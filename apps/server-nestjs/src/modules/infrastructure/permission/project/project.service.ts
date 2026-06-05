@@ -1,5 +1,5 @@
 import type { ProjectStatus, User } from '@prisma/client'
-import type { UserContext } from '../../auth/auth.service.js'
+import type { UserContext } from '../../auth/auth-user.decorator'
 import type { ProjectContext } from './project.guard'
 import type { ProjectPolicyConfig } from './project.policy'
 import { AdminAuthorized, ProjectAuthorized } from '@cpn-console/shared'

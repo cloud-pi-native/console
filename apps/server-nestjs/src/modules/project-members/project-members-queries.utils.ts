@@ -1,4 +1,3 @@
-import type { projectMemberContract } from '@cpn-console/shared'
 import type { Prisma } from '@prisma/client'
 
 export const projectMemberWithUser = {
@@ -24,6 +23,10 @@ export type ProjectOwnerId = Prisma.ProjectGetPayload<{
   select: typeof projectOwnerIdSelect
 }>
 
+export type AddMemberInput = { email: string } | { userId: string }
+export interface PatchMemberInput { userId: string, roles: string[] }
+export type PatchMembersInput = PatchMemberInput[]
+
 export function listProjectMembersWithUser(db: Prisma.TransactionClient, projectId: string) {
   return db.projectMembers.findMany({
     where: { projectId },
@@ -34,7 +37,7 @@ export function listProjectMembersWithUser(db: Prisma.TransactionClient, project
 export function upsertProjectMember(
   tx: Prisma.TransactionClient,
   projectId: string,
-  member: typeof projectMemberContract.patchMembers.body._type[number],
+  member: PatchMemberInput,
 ) {
   const { userId, roles } = member
   return tx.projectMembers.upsert({
