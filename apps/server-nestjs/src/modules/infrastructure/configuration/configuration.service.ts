@@ -129,23 +129,23 @@ export class ConfigurationService {
   }
 
   getInternalOrPublicGitlabUrl() {
-    return this.getInternalOrPublicUrl("GitLab", this.gitlabUrl, this.gitlabInternalUrl)
+    return this.getInternalOrPublicUrl('GitLab', this.gitlabUrl, this.gitlabInternalUrl)
   }
 
   getInternalOrPublicVaultUrl() {
-    return this.getInternalOrPublicUrl("Vault", this.vaultUrl, this.vaultInternalUrl)
+    return this.getInternalOrPublicUrl('Vault', this.vaultUrl, this.vaultInternalUrl)
   }
 
   getInternalOrPublicHarborUrl() {
-    return this.getInternalOrPublicUrl("Harbor", this.harborUrl, this.harborInternalUrl)
+    return this.getInternalOrPublicUrl('Harbor', this.harborUrl, this.harborInternalUrl)
   }
 
   getInternalOrPublicNexusUrl() {
-    return this.getInternalOrPublicUrl("Nexus", this.nexusUrl, this.nexusInternalUrl)
+    return this.getInternalOrPublicUrl('Nexus', this.nexusUrl, this.nexusInternalUrl)
   }
 
   getInternalOrPublicSonarqubeUrl() {
-    return this.getInternalOrPublicUrl("SonarQube", this.sonarqubeUrl, this.sonarqubeInternalUrl)
+    return this.getInternalOrPublicUrl('SonarQube', this.sonarqubeUrl, this.sonarqubeInternalUrl)
   }
 
   getInternalOrPublicUrl(name: string, publicUrl: string | undefined, internalUrl: string | undefined): string | undefined {

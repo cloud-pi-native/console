@@ -56,7 +56,7 @@ export class ProjectService {
 
     if (filter === 'all' && !AdminAuthorized.Manage(user.adminPermissions)) {
       this.logger.warn(`project.list forbidden (requestorUserId=${user.userId}, filter=${filter})`)
-      throw new ForbiddenException("Seuls les admins avec les droits de visionnage des projets peuvent utiliser le filtre 'all'")
+      throw new ForbiddenException('Seuls les admins avec les droits de visionnage des projets peuvent utiliser le filtre \'all\'')
     }
 
     const whereAnd = generateProjectWhereInput({

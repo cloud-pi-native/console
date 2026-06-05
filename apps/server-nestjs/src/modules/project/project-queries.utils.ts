@@ -267,13 +267,6 @@ export function getProjectContext(tx: Prisma.TransactionClient, projectId: strin
   return tx.project.findUnique({ where: { id: projectId }, select: projectContextSelect })
 }
 
-export function listProjectIdsNotArchived(tx: Prisma.TransactionClient) {
-  return tx.project.findMany({
-    select: projectIdSelect,
-    where: { status: { not: 'archived' } },
-  })
-}
-
 export function listProjectsForDataExport(tx: Prisma.TransactionClient) {
   return tx.project.findMany({
     select: projectForDataSelect,
