@@ -1,5 +1,5 @@
 import type { User as PrismaUser } from '@prisma/client'
-import type { UserContext } from '../../auth/auth.service'
+import type { UserContext } from '../../auth/auth-user.decorator'
 import type { UserPolicyConfig } from './user-policy.service'
 import { AdminAuthorized } from '@cpn-console/shared'
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common'

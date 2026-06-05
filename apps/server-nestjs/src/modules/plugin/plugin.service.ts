@@ -1,12 +1,12 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { ArgoCDPluginService } from '../argocd/argocd-plugin.service.js'
-import { GitlabPluginService } from '../gitlab/gitlab-plugin.service.js'
-import { KeycloakPluginService } from '../keycloak/keycloak-plugin.service.js'
-import { NexusPluginService } from '../nexus/nexus-plugin.service.js'
-import { RegistryPluginService } from '../registry/registry-plugin.service.js'
-import { SonarqubePluginService } from '../sonarqube/sonarqube-plugin.service.js'
-import { VaultPluginService } from '../vault/vault-plugin.service.js'
+import { ArgoCDPluginService } from '../argocd/argocd-plugin.service'
+import { GitlabPluginService } from '../gitlab/gitlab-plugin.service'
+import { KeycloakPluginService } from '../keycloak/keycloak-plugin.service'
+import { NexusPluginService } from '../nexus/nexus-plugin.service'
+import { RegistryPluginService } from '../registry/registry-plugin.service'
+import { SonarqubePluginService } from '../sonarqube/sonarqube-plugin.service'
+import { VaultPluginService } from '../vault/vault-plugin.service'
 
 @Injectable()
 export class PluginService {

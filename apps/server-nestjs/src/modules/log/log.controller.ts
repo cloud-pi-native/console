@@ -1,9 +1,10 @@
-import type { UserContext } from '../infrastructure/auth/auth.service.js'
+import type { AdminLogsQuery } from '@cpn-console/shared'
+import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import { AdminAuthorized, logContract } from '@cpn-console/shared'
 import { Controller, ForbiddenException, Get, Inject, Query, UseGuards } from '@nestjs/common'
-import { AuthUser } from '../infrastructure/auth/auth-user.decorator.js'
-import { ProjectLoaderService } from '../infrastructure/permission/project/project-loader.service.js'
-import { UserGuard } from '../infrastructure/permission/user/user.guard.js'
+import { AuthUser } from '../infrastructure/auth/auth-user.decorator'
+import { ProjectLoaderService } from '../infrastructure/permission/project/project-loader.service'
+import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { LogService } from './log.service'
 
@@ -17,7 +18,7 @@ export class LogController {
 
   @Get('')
   async getLogs(
-    @Query(new ZodValidationPipe(logContract.getLogs.query)) query: typeof logContract.getLogs.query._type,
+    @Query(new ZodValidationPipe(logContract.getLogs.query)) query: AdminLogsQuery,
     @AuthUser() user: UserContext,
   ) {
     const isSystemAdmin = AdminAuthorized.ListSystem(user.adminPermissions ?? 0n)

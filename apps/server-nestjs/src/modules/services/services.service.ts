@@ -2,7 +2,7 @@ import type { ZoneObject } from '@cpn-console/hooks'
 import type { PermissionTarget, PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { PluginService } from '../plugin/plugin.service.js'
+import { PluginService } from '../plugin/plugin.service'
 import {
   buildProjectEditStrippers,
   generatePluginsUpdateBody,

@@ -1,12 +1,13 @@
 import type { Member } from '@cpn-console/shared'
-import type { ProjectContext } from '../infrastructure/permission/project/project.guard.js'
+import type { ProjectContext } from '../infrastructure/permission/project/project.guard'
+import type { AddMemberInput, PatchMembersInput } from './project-members-queries.utils'
 import { projectMemberContract } from '@cpn-console/shared'
 import { Body, Controller, Delete, Get, HttpCode, Inject, Logger, Param, Patch, Post, UseGuards } from '@nestjs/common'
-import { RequireProjectLocked } from '../infrastructure/permission/project/project-locked.decorator.js'
-import { RequireProjectPermission } from '../infrastructure/permission/project/project-permission.decorator.js'
-import { RequireProjectStatus } from '../infrastructure/permission/project/project-status.decorator.js'
-import { Project } from '../infrastructure/permission/project/project.decorator.js'
-import { ProjectGuard } from '../infrastructure/permission/project/project.guard.js'
+import { RequireProjectLocked } from '../infrastructure/permission/project/project-locked.decorator'
+import { RequireProjectPermission } from '../infrastructure/permission/project/project-permission.decorator'
+import { RequireProjectStatus } from '../infrastructure/permission/project/project-status.decorator'
+import { Project } from '../infrastructure/permission/project/project.decorator'
+import { ProjectGuard } from '../infrastructure/permission/project/project.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { ProjectMembersService } from './project-members.service'
 import { generateProjectMember } from './project-members.utils'
@@ -34,7 +35,7 @@ export class ProjectMembersController {
   @RequireProjectLocked(false)
   @RequireProjectPermission('ManageMembers')
   async addMember(
-    @Body(new ZodValidationPipe(projectMemberContract.addMember.body)) body: typeof projectMemberContract.addMember.body._type,
+    @Body(new ZodValidationPipe(projectMemberContract.addMember.body)) body: AddMemberInput,
     @Project() project: ProjectContext,
   ): Promise<Member[]> {
     const members = await this.projectMembers.addMember(project.id, body)
@@ -48,7 +49,7 @@ export class ProjectMembersController {
   @RequireProjectLocked(false)
   @RequireProjectPermission('ManageMembers')
   async patchMembers(
-    @Body(new ZodValidationPipe(projectMemberContract.patchMembers.body)) body: typeof projectMemberContract.patchMembers.body._type,
+    @Body(new ZodValidationPipe(projectMemberContract.patchMembers.body)) body: PatchMembersInput,
     @Project() project: ProjectContext,
   ): Promise<Member[]> {
     const members = await this.projectMembers.patchMembers(project.id, body)

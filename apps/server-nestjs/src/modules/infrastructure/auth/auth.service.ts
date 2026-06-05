@@ -1,10 +1,9 @@
 import type { FastifyRequest } from 'fastify'
-import type { AuthRequirements, UserContext } from './dso-token/dso-token.service'
+import type { UserContext } from './auth-user.decorator'
+import type { AuthRequirements } from './auth.utils'
 import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common'
 import { DsoTokenService } from './dso-token/dso-token.service'
 import { KeycloakJwtService } from './keycloak-jwt/keycloak-jwt.service'
-
-export type { AuthRequirements, AuthToken, UserContext } from './dso-token/dso-token.service'
 
 @Injectable()
 export class AuthService {

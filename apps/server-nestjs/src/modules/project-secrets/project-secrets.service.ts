@@ -1,12 +1,12 @@
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { z } from 'zod'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service.js'
-import { PrismaService } from '../infrastructure/database/prisma.service.js'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
-import { VaultClientService } from '../vault/vault-client.service.js'
-import { VaultService } from '../vault/vault.service.js'
-import { generateProjectPath } from '../vault/vault.utils.js'
+import { VaultClientService } from '../vault/vault-client.service'
+import { VaultService } from '../vault/vault.service'
+import { generateProjectPath } from '../vault/vault.utils'
 
 const SecretValueSchema = z.union([
   z.string(),

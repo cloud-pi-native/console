@@ -1,6 +1,6 @@
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
-import type { GroupRepresentationWith } from './keycloak-client.service'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
+import type { GroupRepresentationWith } from './keycloak.utils'
 import { getPermsByUserRoles, isExternalRoleType, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
@@ -9,7 +9,7 @@ import z from 'zod'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
-import { CONSOLE_GROUP_NAME } from './keycloak.constants'
+import { isMember, isNonEmptyGroupPath, isOwnedProjectGroup, normalizeGroupPath } from './keycloak.utils'
 
 @Injectable()
 export class KeycloakService {
@@ -196,7 +196,7 @@ export class KeycloakService {
 
     for await (const group of groups) {
       if (!projectSlugs.has(group.name)) {
-        if (this.isOwnedProjectGroup(group)) {
+        if (isOwnedProjectGroup(group)) {
           this.logger.log(`Deleting an orphan Keycloak group (groupId=${group.id}, groupName=${group.name})`)
           purgedCount++
           promises.push(this.keycloak.deleteGroup(group.id))
@@ -206,13 +206,6 @@ export class KeycloakService {
     span?.setAttribute('purged.count', purgedCount)
     await Promise.all(promises)
     this.logger.log(`Orphan Keycloak group cleanup completed (purged=${purgedCount})`)
-  }
-
-  private isOwnedProjectGroup(group: GroupRepresentationWith<'subGroups'>) {
-    // Safety check: Only delete if it looks like a project group (has 'console' subgroup)
-    // or if we can be sure it's not a system group.
-    // For now, we rely on the 'console' subgroup heuristic as it's created by us.
-    return !!group.subGroups.some(sg => sg.name === CONSOLE_GROUP_NAME)
   }
 
   private async maybeAddUserToGroup(userId: string, groupId: string, groupName: string) {
@@ -642,20 +635,6 @@ export class KeycloakService {
       rw: ProjectAuthorized.ManageEnvironments({ adminPermissions: 0n, projectPermissions }),
     }
   }
-}
-
-export function isMember(project: ProjectWithDetails, member: UserRepresentation) {
-  return project.members.some(m => m.user.id === member.id) || project.ownerId === member.id
-}
-
-function isNonEmptyGroupPath(value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0
-}
-
-function normalizeGroupPath(value: unknown) {
-  if (!isNonEmptyGroupPath(value)) return undefined
-  const trimmed = value.trim()
-  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`
 }
 
 async function* map<T, U>(

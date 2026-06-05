@@ -3,15 +3,13 @@ import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/g
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
 import type { OnModuleInit } from '@nestjs/common'
 import type { ProjectWithDetails } from './keycloak-datastore.service'
+import type { GroupRepresentationWith } from './keycloak.utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { CONSOLE_GROUP_NAME, SUBGROUPS_PAGINATE_QUERY_MAX } from './keycloak.constants'
-
-type With<T, K extends keyof T> = T & Required<Pick<T, K>>
-export type GroupRepresentationWith<T extends keyof GroupRepresentation> = With<GroupRepresentation, T>
 
 export const KEYCLOAK_ADMIN_CLIENT = Symbol('KEYCLOAK_ADMIN_CLIENT')
 

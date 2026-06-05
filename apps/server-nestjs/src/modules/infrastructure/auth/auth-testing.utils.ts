@@ -3,7 +3,7 @@ import type { HttpArgumentsHost } from '@nestjs/common/interfaces'
 import type { AdminToken, PersonalAccessToken, User } from '@prisma/client'
 import type { FastifyRequest } from 'fastify'
 import type { DeepMockProxy } from 'vitest-mock-extended'
-import type { UserContext } from './auth.service'
+import type { UserContext } from './auth-user.decorator'
 import { mockDeep } from 'vitest-mock-extended'
 
 export function makeExecutionContext(headers: FastifyRequest['headers'] = {}): DeepMockProxy<ExecutionContext> {

@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client'
 import type { FastifyRequest } from 'fastify'
-import type { AuthRequirements, UserContext } from '../auth.service'
+import type { UserContext } from '../auth-user.decorator'
+import type { AuthProvider, AuthRequirements } from '../auth.utils'
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { PrismaService } from '../../database/prisma.service'
@@ -14,7 +15,7 @@ interface KeycloakPayload {
 }
 
 @Injectable()
-export class KeycloakJwtService {
+export class KeycloakJwtService implements AuthProvider {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(JwtService) private readonly jwtService: JwtService,

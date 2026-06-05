@@ -7,7 +7,7 @@ import { Test } from '@nestjs/testing'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { PluginService } from '../plugin/plugin.service.js'
+import { PluginService } from '../plugin/plugin.service'
 import {
   makeServicesCluster,
   makeServicesEnvironment,

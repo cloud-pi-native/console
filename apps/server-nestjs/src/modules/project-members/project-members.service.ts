@@ -1,11 +1,11 @@
-import type { projectMemberContract } from '@cpn-console/shared'
+import type { AddMemberInput, PatchMembersInput } from './project-members-queries.utils'
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
-import { PrismaService } from '../infrastructure/database/prisma.service.js'
+import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
-import { KeycloakClientService } from '../keycloak/keycloak-client.service.js'
-import { deleteProjectMember, getHumanUser, getProjectOwnerId, listProjectMembersWithUser, upsertProjectMember, upsertProjectMemberIfMissing } from './project-members-queries.utils.js'
+import { KeycloakClientService } from '../keycloak/keycloak-client.service'
+import { deleteProjectMember, getHumanUser, getProjectOwnerId, listProjectMembersWithUser, upsertProjectMember, upsertProjectMemberIfMissing } from './project-members-queries.utils'
 
 @Injectable()
 export class ProjectMembersService {
@@ -31,7 +31,7 @@ export class ProjectMembersService {
   @StartActiveSpan()
   async addMember(
     projectId: string,
-    body: typeof projectMemberContract.addMember.body._type,
+    body: AddMemberInput,
   ) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.id', projectId)
@@ -110,7 +110,7 @@ export class ProjectMembersService {
   @StartActiveSpan()
   async patchMembers(
     projectId: string,
-    body: typeof projectMemberContract.patchMembers.body._type,
+    body: PatchMembersInput,
   ) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.id', projectId)

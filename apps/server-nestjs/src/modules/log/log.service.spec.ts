@@ -3,7 +3,7 @@ import type { DeepMockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { PrismaService } from '../infrastructure/database/prisma.service.js'
+import { PrismaService } from '../infrastructure/database/prisma.service'
 import { LogService } from './log.service'
 import { makeLog } from './log.testing.utils'
 
