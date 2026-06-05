@@ -30,7 +30,7 @@ import {
   TOPIC_PLUGIN_MANAGED,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
-import { hasFileContentChanged, generateGitlabCIConfigContent, generateMirrorScriptContent } from './gitlab.utils'
+import { generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged } from './gitlab.utils'
 
 export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
 

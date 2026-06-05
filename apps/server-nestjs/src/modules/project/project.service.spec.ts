@@ -52,14 +52,14 @@ describe('projectService', () => {
       ],
     }).compile()
 
-     service = module.get<ProjectService>(ProjectService)
-   })
+    service = module.get<ProjectService>(ProjectService)
+  })
 
-   it('should be defined', () => {
-     expect(service).toBeDefined()
-   })
+  it('should be defined', () => {
+    expect(service).toBeDefined()
+  })
 
-   describe('create', () => {
+  describe('create', () => {
     it('generates slug, creates project, emits event, returns ProjectV2', async () => {
       const userId = faker.string.uuid()
       const body = makeCreateProjectBody()
