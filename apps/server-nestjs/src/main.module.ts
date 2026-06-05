@@ -4,6 +4,7 @@ import { DeploymentModule } from './modules/deployment/deployment.module'
 import { HealthzModule } from './modules/healthz/healthz.module'
 import { KeycloakModule } from './modules/keycloak/keycloak.module'
 import { LogModule } from './modules/log/log.module'
+import { ProjectBulkModule } from './modules/project-bulk/project-bulk.module'
 import { ProjectHooksModule } from './modules/project-hooks/project-hooks.module'
 import { ProjectMembersModule } from './modules/project-members/project-members.module'
 import { ProjectRolesModule } from './modules/project-roles/project-roles.module'
@@ -25,6 +26,7 @@ import { VersionModule } from './modules/version/version.module'
     ProjectHooksModule,
     ProjectSecretsModule,
     ServicesModule,
+    ProjectBulkModule,
     ProjectMembersModule,
     ProjectRolesModule,
     LogModule,
