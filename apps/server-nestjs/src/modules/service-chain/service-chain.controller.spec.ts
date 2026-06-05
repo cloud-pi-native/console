@@ -4,7 +4,7 @@ import type { MockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mock } from 'vitest-mock-extended'
-import { AdminPermissionGuard } from '../infrastructure/auth/admin-permission.guard'
+import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ServiceChainController } from './service-chain.controller'
 import { ServiceChainService } from './service-chain.service'
 
@@ -57,7 +57,7 @@ describe('serviceChainController', () => {
         { provide: ServiceChainService, useValue: service },
       ],
     })
-      .overrideGuard(AdminPermissionGuard)
+      .overrideGuard(UserGuard)
       .useValue({ canActivate: () => true })
       .compile()
 

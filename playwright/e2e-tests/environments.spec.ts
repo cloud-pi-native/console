@@ -8,9 +8,9 @@ import {
   testUser,
 } from '../config/console'
 
+import { unsetCheckbox } from '../helpers/checkbox'
 import { createEnvironment, deleteEnvironment } from '../helpers/environment'
 import { createProject } from '../helpers/project'
-import { unsetCheckbox } from '../helpers/checkbox'
 
 test.describe('Environments page', { tag: '@e2e' }, () => {
   test('should add environments to an existing project', async ({ page }) => {
