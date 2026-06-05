@@ -47,10 +47,7 @@ export class ProjectGuard implements CanActivate {
     if (typeof userId !== 'string') {
       throw new UnauthorizedException('User ID not available')
     }
-    const adminPermissions = request.adminPermissions
-    if (typeof adminPermissions !== 'bigint') {
-      throw new UnauthorizedException('Admin permissions not available')
-    }
+    const adminPermissions = request.adminPermissions ?? 0n
 
     const requirements = makeProjectRequirements(policy)
     request.project = await this.loader.load(request, userId, requirements)

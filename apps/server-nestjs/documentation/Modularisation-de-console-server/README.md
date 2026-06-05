@@ -117,4 +117,4 @@ Ce dossier contient toute la documentation nécessaire pour mener à bien la mod
 
 **Bonne modularisation ! 🚀**
 
-*Version 1.0 - Dernière mise à jour : 2026-01-07*
+*Version 1.0 - Dernière mise à jour : 2026-05-28*

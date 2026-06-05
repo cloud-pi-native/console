@@ -1,5 +1,6 @@
 import type KcAdminClient from '@keycloak/keycloak-admin-client'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation'
+import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
 import type { OnModuleInit } from '@nestjs/common'
 import type { ProjectWithDetails } from './keycloak-datastore.service'
 import { Inject, Injectable, Logger } from '@nestjs/common'
@@ -96,6 +97,15 @@ export class KeycloakClientService implements OnModuleInit {
     const members = await this.client.groups.listMembers({ id: groupId })
     this.logger.verbose(`Loaded Keycloak group members (groupId=${groupId}, count=${members?.length ?? 0})`)
     return members || []
+  }
+
+  async getUserByEmail(email: string): Promise<UserRepresentation | undefined> {
+    const users = await this.client.users.find({
+      email,
+      exact: true,
+      max: 1,
+    })
+    return users[0]
   }
 
   @StartActiveSpan()
