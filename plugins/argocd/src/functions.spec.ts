@@ -186,9 +186,8 @@ describe('argocd functions', () => {
     const infraProjectId = faker.number.int()
     mockGitlabApi.getOrCreateInfraProject.mockResolvedValue({ id: infraProjectId })
     mockGitlabApi.listFiles.mockResolvedValue([
-      { type: 'blob', path: 'path/to/file1' },
-      { type: 'tree', path: 'path/to/dir' },
-      { type: 'blob', path: 'path/to/file2' },
+      { name: 'values.yaml', path: `${mockProject.name}/${mockCluster.label}/${mockEnvironment.name}/values.yaml`, type: 'blob' },
+      { name: 'values.yaml', path: `${mockProject.name}/${mockCluster.label}/old-env/values.yaml`, type: 'blob' },
     ])
 
     const payload = {
@@ -201,6 +200,13 @@ describe('argocd functions', () => {
     const result = await deleteProject(payload)
 
     expect(result.status.result).toBe('OK')
-    expect(mockGitlabApi.commitDelete).toHaveBeenCalledWith(infraProjectId, ['path/to/file1', 'path/to/file2'])
+    expect(mockGitlabApi.listFiles).toHaveBeenCalledWith(infraProjectId, {
+      path: `${mockProject.name}/`,
+      recursive: true,
+    })
+    // Only the stale env file should be deleted (not in project.environments)
+    expect(mockGitlabApi.commitDelete).toHaveBeenCalledWith(infraProjectId, [
+      `${mockProject.name}/${mockCluster.label}/old-env/values.yaml`,
+    ])
   })
 })
