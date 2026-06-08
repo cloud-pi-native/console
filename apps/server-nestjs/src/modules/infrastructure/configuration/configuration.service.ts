@@ -28,6 +28,11 @@ export class ConfigurationService {
   keycloakAdminPassword = process.env.KEYCLOAK_ADMIN_PASSWORD
   keycloakRedirectUri = process.env.KEYCLOAK_REDIRECT_URI
 
+  // JWKS cache TTL in ms (default 5 min); Keycloak rotates keys periodically
+  keycloakJwksCacheTtlMs = Number(process.env.KEYCLOAK_JWKS_CACHE_TTL_MS ?? 300_000)
+  // JWKS fetch timeout in ms (default 1 s); avoids hanging on cache misses
+  keycloakJwksTimeoutMs = Number(process.env.KEYCLOAK_JWKS_TIMEOUT_MS ?? 1_000)
+
   adminsUserId = process.env.ADMIN_KC_USER_ID
     ? process.env.ADMIN_KC_USER_ID.split(',')
     : []
@@ -94,6 +99,14 @@ export class ConfigurationService {
   sonarqubeUrl = process.env.SONARQUBE_URL
   sonarqubeInternalUrl = process.env.SONARQUBE_INTERNAL_URL
   sonarApiToken = process.env.SONAR_API_TOKEN
+
+  getKeycloakIssuer() {
+    return `${this.keycloakProtocol}://${this.keycloakDomain}/realms/${this.keycloakRealm}`
+  }
+
+  getKeycloakCertsUrl() {
+    return `${this.getKeycloakIssuer()}/protocol/openid-connect/certs`
+  }
 
   getInternalOrPublicGitlabUrl() {
     return this.gitlabInternalUrl ?? this.gitlabUrl

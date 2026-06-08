@@ -18,4 +18,13 @@ describe('configurationService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined()
   })
+
+  it('should derive Keycloak issuer and certs URL from configuration', () => {
+    expect(service.getKeycloakIssuer()).toBe(
+      `${service.keycloakProtocol}://${service.keycloakDomain}/realms/${service.keycloakRealm}`,
+    )
+    expect(service.getKeycloakCertsUrl()).toBe(
+      `${service.getKeycloakIssuer()}/protocol/openid-connect/certs`,
+    )
+  })
 })
