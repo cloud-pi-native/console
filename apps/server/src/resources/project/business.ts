@@ -216,13 +216,8 @@ export async function replayHooks({ projectId, userId, requestId }: ReplayHooksA
 export async function archiveProject(projectId: Project['id'], requestor: UserDetails, requestId: string): Promise<ErrorResType | null> {
   logger.info({ requestId, userId: requestor.id, projectId }, 'Archive project started')
   // Actions
-  // Empty the project first
-  const [projectDb, ..._] = await Promise.all([
-    // get initial project state
-    prisma.project.findUniqueOrThrow({ where: { id: projectId } }),
-    deleteAllRepositoryForProject(projectId),
-    deleteAllEnvironmentForProject(projectId),
-  ])
+  // Fetch project state before hook so plugins see repos and environments
+  const projectDb = await prisma.project.findUniqueOrThrow({ where: { id: projectId }, include: { members: { include: { user: true } } } })
 
   if (projectDb.locked) return new Forbidden403('Le projet est verrouillé')
   if (projectDb.status === 'archived') return new BadRequest400('Le projet est archivé')
@@ -244,6 +239,12 @@ export async function archiveProject(projectId: Project['id'], requestor: UserDe
   if (results.failed) {
     return new Unprocessable422('Echec des services à la suppression du projet')
   }
+
+  // Empty the project after successful hooks so plugins still have access to repos and environments
+  await Promise.all([
+    deleteAllRepositoryForProject(projectId),
+    deleteAllEnvironmentForProject(projectId),
+  ])
 
   // Retrait clusters --
   await prisma.project.update({

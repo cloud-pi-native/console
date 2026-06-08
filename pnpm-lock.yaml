@@ -818,6 +818,9 @@ importers:
       '@cpn-console/keycloak-plugin':
         specifier: workspace:^
         version: link:../keycloak
+      '@cpn-console/logger':
+        specifier: workspace:^
+        version: link:../../packages/logger
       '@cpn-console/shared':
         specifier: workspace:^
         version: link:../../packages/shared
@@ -10405,6 +10408,7 @@ snapshots:
       '@cpn-console/gitlab-plugin': file:plugins/gitlab(@types/node@22.19.15)(typescript@5.9.3)(vitest@4.1.5)
       '@cpn-console/hooks': file:packages/hooks(@types/node@22.19.15)(typescript@5.9.3)(vitest@4.1.5)
       '@cpn-console/keycloak-plugin': file:plugins/keycloak(@types/node@22.19.15)(typescript@5.9.3)(vitest@4.1.5)
+      '@cpn-console/logger': file:packages/logger
       '@cpn-console/shared': file:packages/shared(@types/node@22.19.15)
       '@cpn-console/vault-plugin': file:plugins/vault(@types/node@22.19.15)(typescript@5.9.3)(vitest@4.1.5)
       '@himenon/argocd-typescript-openapi': 1.2.2
