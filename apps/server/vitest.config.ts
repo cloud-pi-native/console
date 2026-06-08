@@ -22,6 +22,7 @@ export default mergeConfig(
           '**/*.vue',
           '**/queries.ts',
           '**/mocks.ts',
+          '**/*.sql',
         ],
       },
       include: ['src/**/*.spec.{ts,js}'],

@@ -1,23 +1,72 @@
+import type { FastifyRequest } from 'fastify'
 import { createHash } from 'node:crypto'
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
+import { tokenHeaderName } from '@cpn-console/shared'
+import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
 import { PrismaService } from '../database/prisma.service'
+import { KeycloakJwtService } from './keycloak-jwt/keycloak-jwt.service'
 
-export interface TokenValidationResult {
+export interface UserContext {
   userId: string
   adminPermissions: bigint
 }
 
 @Injectable()
 export class AuthService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(AuthService.name)
 
-  async validateToken(rawToken: string): Promise<TokenValidationResult> {
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(JwtService) private readonly jwtService: JwtService,
+    @Inject(KeycloakJwtService) private readonly keycloakJwtService: KeycloakJwtService,
+  ) {}
+
+  async authenticateHeaders(headers: FastifyRequest['headers']): Promise<UserContext> {
+    const dsoTokenResult = await this.authenticateDsoToken(headers)
+    if (dsoTokenResult) {
+      return dsoTokenResult
+    }
+
+    const bearerTokenResult = await this.authenticateBearerToken(headers)
+    if (bearerTokenResult) {
+      return bearerTokenResult
+    }
+
+    throw new UnauthorizedException()
+  }
+
+  private async authenticateDsoToken(headers: FastifyRequest['headers']): Promise<UserContext | undefined> {
+    const tokenValue = headers[tokenHeaderName]
+    if (typeof tokenValue !== 'string') {
+      return undefined
+    }
+    return this.validateToken(tokenValue)
+  }
+
+  private async authenticateBearerToken(headers: FastifyRequest['headers']): Promise<UserContext | undefined> {
+    const authHeader = headers.authorization
+    if (typeof authHeader !== 'string' || !authHeader.startsWith('Bearer ')) {
+      return undefined
+    }
+
+    try {
+      const jwt = authHeader.slice(7)
+      const payload = await this.jwtService.verifyAsync(jwt)
+      return this.keycloakJwtService.validatePayload(payload)
+    } catch {
+      throw new UnauthorizedException()
+    }
+  }
+
+  async validateToken(rawToken: string): Promise<UserContext> {
+    this.logger.debug(`validateToken started`)
     const hash = createHash('sha256').update(rawToken).digest('hex')
-
     const result = await this.findAndValidateToken(hash)
     if (!result) {
+      this.logger.warn(`validateToken token not found`)
       throw new UnauthorizedException('Not authenticated')
     }
+    this.logger.debug(`validateToken token found, resolving permissions`)
 
     const globalRoles = await this.prisma.adminRole.findMany({
       where: { type: 'global' },
@@ -27,6 +76,8 @@ export class AuthService {
 
     const tokenPerms = await this.resolveTokenPermissions(result)
 
+    this.logger.debug(`validateToken completed (userId=${result.userId})`)
+
     return {
       userId: result.userId,
       adminPermissions: globalPerms | tokenPerms,
@@ -34,7 +85,6 @@ export class AuthService {
   }
 
   private async findAndValidateToken(hash: string) {
-    // Try PersonalAccessToken first, then AdminToken
     const pat = await this.prisma.personalAccessToken.findFirst({
       where: { hash },
       include: { owner: true },
