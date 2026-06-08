@@ -1,0 +1,6 @@
+[providers]
+pass = {type="password-store", prefix="fnox/"}
+
+[secrets]
+DATABASE_URL= { provider = "pass", value = "DATABASE_URL" }
+DB_PASSWORD = { provider = "pass", value = "database/production" }
