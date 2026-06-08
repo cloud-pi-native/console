@@ -1,29 +1,29 @@
 import type { CanActivate, ExecutionContext } from '@nestjs/common'
 import type { FastifyRequest } from 'fastify'
-import { AdminAuthorized, tokenHeaderName } from '@cpn-console/shared'
-import { ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common'
+import { AdminAuthorized } from '@cpn-console/shared'
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { ADMIN_PERMISSIONS_KEY } from './admin-permission.decorator'
 import { AuthService } from './auth.service'
 
+type RequestWithPermissions = FastifyRequest & {
+  userId?: string
+  adminPermissions?: bigint
+}
+
 @Injectable()
 export class AdminPermissionGuard implements CanActivate {
   constructor(
-    @Inject(AuthService)
-    private readonly authService: AuthService,
-    @Inject(Reflector)
-    private readonly reflector: Reflector,
+    @Inject(AuthService) private readonly authService: AuthService,
+    @Inject(Reflector) private readonly reflector: Reflector,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<FastifyRequest>()
-    const tokenValue = request.headers[tokenHeaderName]
+    const request = context.switchToHttp().getRequest<RequestWithPermissions>()
+    const user = await this.authService.authenticateHeaders(request.headers)
 
-    if (typeof tokenValue !== 'string') {
-      throw new UnauthorizedException()
-    }
-
-    const { adminPermissions } = await this.authService.validateToken(tokenValue)
+    request.userId = user.userId
+    request.adminPermissions = user.adminPermissions
 
     const requiredPermissions = this.reflector.get<(keyof typeof AdminAuthorized)[]>(
       ADMIN_PERMISSIONS_KEY,
@@ -35,7 +35,7 @@ export class AdminPermissionGuard implements CanActivate {
     }
 
     const hasPermission = requiredPermissions.every(
-      permName => AdminAuthorized[permName](adminPermissions),
+      permName => AdminAuthorized[permName](request.adminPermissions),
     )
 
     if (!hasPermission) {

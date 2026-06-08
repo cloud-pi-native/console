@@ -408,6 +408,9 @@ importers:
       "@kubernetes-models/argo-cd":
         specifier: ^2.7.2
         version: 2.7.2
+      '@nestjs/cache-manager':
+        specifier: ^3.1.2
+        version: 3.1.2(@nestjs/common@11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.16)(cache-manager@7.2.8)(keyv@5.6.0)(rxjs@7.8.2)
       "@nestjs/common":
         specifier: ^11.1.16
         version: 11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -471,6 +474,9 @@ importers:
       "@ts-rest/open-api":
         specifier: ^3.52.1
         version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.19.15)(zod@3.25.76))(zod@3.25.76)
+      cache-manager:
+        specifier: ^7.2.8
+        version: 7.2.8
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -3533,6 +3539,15 @@ packages:
     peerDependencies:
       "@emnapi/core": ^1.7.1
       "@emnapi/runtime": ^1.7.1
+
+  '@nestjs/cache-manager@3.1.2':
+    resolution: {integrity: sha512-Eglt8lUzC3Q3OZ2hFt4vLZ190M94YSJXUiKo67K/zlUgZQGtvxL0AYeKbG96x8+1gJTF7QhFpYw/RkQ28416Mw==}
+    peerDependencies:
+      '@nestjs/common': ^9.0.0 || ^10.0.0 || ^11.0.0
+      '@nestjs/core': ^9.0.0 || ^10.0.0 || ^11.0.0
+      cache-manager: '>=6'
+      keyv: '>=5'
+      rxjs: ^7.8.1
 
   "@nestjs/cli@11.0.16":
     resolution:
@@ -6999,6 +7014,9 @@ packages:
         integrity: sha512-tixWYgm5ZoOD+3g6UTea91eow5z6AAHaho3g0V9CNSNb45gM8SmflpAc+GRd1InC4AqN/07Unrgp56Y94N9hJQ==,
       }
     engines: { node: ">=20.19.0" }
+
+  cache-manager@7.2.8:
+    resolution: {integrity: sha512-0HDaDLBBY/maa/LmUVAr70XUOwsiQD+jyzCBjmUErYZUKdMS9dT59PqW59PpVqfGM7ve6H0J6307JTpkCYefHQ==}
 
   cacheable@2.3.3:
     resolution:
@@ -16544,6 +16562,14 @@ snapshots:
       "@tybys/wasm-util": 0.10.1
     optional: true
 
+  '@nestjs/cache-manager@3.1.2(@nestjs/common@11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.16)(cache-manager@7.2.8)(keyv@5.6.0)(rxjs@7.8.2)':
+    dependencies:
+      '@nestjs/common': 11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core': 11.1.16(@nestjs/common@11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.16)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      cache-manager: 7.2.8
+      keyv: 5.6.0
+      rxjs: 7.8.2
+
   "@nestjs/cli@11.0.16(@types/node@22.19.15)(esbuild@0.27.3)":
     dependencies:
       "@angular-devkit/core": 19.2.19(chokidar@4.0.3)
@@ -19929,6 +19955,11 @@ snapshots:
   cac@6.7.14: {}
 
   cac@7.0.0: {}
+
+  cache-manager@7.2.8:
+    dependencies:
+      '@cacheable/utils': 2.4.0
+      keyv: 5.6.0
 
   cacheable@2.3.3:
     dependencies:
