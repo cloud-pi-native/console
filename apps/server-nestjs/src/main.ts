@@ -1,15 +1,47 @@
+import type { NestFastifyApplication } from '@nestjs/platform-fastify'
 import { NestFactory } from '@nestjs/core'
+import { FastifyAdapter } from '@nestjs/platform-fastify'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
+import { NodeSDK, resources } from '@opentelemetry/sdk-node'
 import { Logger } from 'nestjs-pino'
 import { MainModule } from './main.module'
 import { ConfigurationService } from './modules/infrastructure/configuration/configuration.service'
 
+const SERVICE_NAME = 'console-pi-native-console'
+
+const telemetry = new NodeSDK({
+  traceExporter: new OTLPTraceExporter({}),
+  metricReader: new PeriodicExportingMetricReader({
+    exporter: new OTLPMetricExporter(),
+  }),
+  instrumentations: [
+    getNodeAutoInstrumentations({
+      '@opentelemetry/instrumentation-nestjs-core': { enabled: true },
+      '@opentelemetry/instrumentation-pino': { enabled: true },
+    }),
+  ],
+  resource: resources.resourceFromAttributes({
+    'service.name': SERVICE_NAME,
+  }),
+})
+
 async function bootstrap() {
-  const app = await NestFactory.create(MainModule, { bufferLogs: true })
+  telemetry.start()
+
+  const app = await NestFactory.create<NestFastifyApplication>(MainModule, new FastifyAdapter(), {
+    bufferLogs: true,
+  })
 
   app.useLogger(app.get(Logger))
   app.flushLogs()
   app.enableShutdownHooks()
+  app.getHttpAdapter().getInstance().addHook('onClose', async () => {
+    await telemetry.shutdown()
+  })
 
   const config = app.get(ConfigurationService)
 
@@ -26,4 +58,4 @@ async function bootstrap() {
   await app.listen(config.port ?? 0)
 }
 
-bootstrap()
+void bootstrap()
