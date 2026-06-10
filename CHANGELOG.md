@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.16.7](https://github.com/cloud-pi-native/console/compare/v9.16.6...v9.16.7) (2026-06-10)
+
+
+### Bug Fixes
+
+* ArgoCD wrongly resolved merge conflicts ([55f84e0](https://github.com/cloud-pi-native/console/commit/55f84e0e90726abc54ba096a69f66a492e5595b2))
+
 ## [9.16.6](https://github.com/cloud-pi-native/console/compare/v9.16.5...v9.16.6) (2026-06-10)
 
 
