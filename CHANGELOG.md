@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.18.4](https://github.com/cloud-pi-native/console/compare/v9.18.3...v9.18.4) (2026-06-10)
+
+
+### Bug Fixes
+
+* ArgoCD not cleaning up environment on project deletion ([e2026a2](https://github.com/cloud-pi-native/console/commit/e2026a232823e89fb0ca2090ff51ab46495865f1))
+
 ## [9.18.3](https://github.com/cloud-pi-native/console/compare/v9.18.2...v9.18.3) (2026-06-01)
 
 
