@@ -40,8 +40,11 @@ npm run build
 npm run preview
 ```
 
-## Récupérer toutes les icones du projets
-`grep -r -oh "ri:[a-z0-9-]*" . | sort | uniq | cut -d ':' -f 2 | awk NF | awk '{print "  \047" $1 "\047,"}'`
+## Import des icones
+
+Utiliser `npm run icons` pour générer icon-collections.ts à partir des icônes utilisées dans le projet. Cette commande utilise un script qui recherche les icônes utilisées dans le projet et génère un fichier de collections d'icônes.
+
+Commiter les changements des deux fichiers
 
 ## Activation OpenCDS
 
