@@ -242,9 +242,6 @@ async function cleanupProjectInfra(
   project: Project,
   gitlabApi: GitlabProjectApi,
 ) {
-  const project = payload.args
-  const gitlabApi = payload.apis.gitlab as unknown as GitlabProjectApi
-
   for (const z of getDistinctZones(project)) {
     const infraProject = await gitlabApi.getOrCreateInfraProject(z)
     const existingFiles = await gitlabApi.listFiles(infraProject.id, {
