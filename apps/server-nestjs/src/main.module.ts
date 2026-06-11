@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { ScheduleModule } from '@nestjs/schedule'
+import { AdminRoleModule } from './modules/admin-role/admin-role.module'
 import { DeploymentModule } from './modules/deployment/deployment.module'
 import { EnvironmentModule } from './modules/environment/environment.module'
 import { HealthzModule } from './modules/healthz/healthz.module'
@@ -19,6 +20,7 @@ import { VersionModule } from './modules/version/version.module'
 
 @Module({
   imports: [
+    AdminRoleModule,
     InfrastructureModule,
     HealthzModule,
     KeycloakModule,
