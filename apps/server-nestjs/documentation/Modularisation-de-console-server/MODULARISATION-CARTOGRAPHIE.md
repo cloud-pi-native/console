@@ -427,14 +427,14 @@ et `user` sont des pre-requis pour la Vague 3 (cluster, project-member).
 - `GET /api/v1/admin/users` - Liste complete des utilisateurs (admin)
 - `PATCH /api/v1/admin/users` - Modification utilisateurs (admin)
 
-**Dependances sortantes** : `queries-index` (getMatchingUsers, getUsers), hooks (adminRole.upsert)
+**Dependances sortantes** : `queries-index` (getMatchingUsers, getUsers), EventEmitter (`adminRole.upsert`)
 **Dependances entrantes** : `project-member` (importe `logViaSession`), `utils/controller.ts` (importe `logViaSession`, `logViaToken`)
 
 **Points d'attention** :
 - Module critique : `logViaSession` et `logViaToken` sont consommes par le
   systeme d'auth. Ces fonctions auront ete portees dans l'AuthGuard (Couche 0),
   donc la dependance entrante est deja resolue
-- Hooks utilises (adminRole.upsert) : necessite l'EventEmitter
+- Evenement utilise (`adminRole.upsert`) : necessite `@nestjs/event-emitter`
 - Pre-requis pour `project-member` (Vague 3)
 
 **Estimation** : 2 jours
@@ -457,11 +457,11 @@ et `user` sont des pre-requis pour la Vague 3 (cluster, project-member).
 - `GET /api/v1/admin/roles/member-counts` - Comptage des membres par role
 - `DELETE /api/v1/admin/roles/:roleId` - Suppression d'un role
 
-**Dependances sortantes** : `queries-index` (getAdminRoleById, listAdminRoles), hooks (adminRole.upsert, adminRole.delete)
+**Dependances sortantes** : `queries-index` (getAdminRoleById, listAdminRoles), EventEmitter (`adminRole.upsert`, `adminRole.delete`)
 **Dependances entrantes** : Aucune
 
 **Points d'attention** :
-- Valide le pattern hooks + EventEmitter dans un contexte admin
+- Valide le pattern EventEmitter dans un contexte admin
 - Permissions admin (bitmask) : valide `UserGuard`
 - Queries a internaliser dans le module
 
