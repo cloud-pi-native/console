@@ -3,10 +3,12 @@ import { ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
 import { TerminusModule } from '@nestjs/terminus'
 import { baseConfigFactory } from './config/base.config'
+import { AdminRoleModule } from './modules/admin-role/admin-role.module'
 import { DeploymentModule } from './modules/deployment/deployment.module'
 import { EnvironmentModule } from './modules/environment/environment.module'
 import { HealthzModule } from './modules/healthz/healthz.module'
 import { InfrastructureModule } from './modules/infrastructure/infrastructure.module'
+import { KeycloakModule } from './modules/keycloak/keycloak.module'
 import { LogModule } from './modules/log/log.module'
 import { PluginModule } from './modules/plugin/plugin.module'
 import { ProjectBulkModule } from './modules/project-bulk/project-bulk.module'
@@ -18,6 +20,7 @@ import { ProjectServicesModule } from './modules/project-services/project-servic
 import { ProjectModule } from './modules/project/project.module'
 import { RepositoryModule } from './modules/repository/repository.module'
 import { SystemConfigModule } from './modules/system-config/system-config.module'
+import { ServiceChainModule } from './modules/service-chain/service-chain.module'
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module'
 import { VersionModule } from './modules/version/version.module'
 import { getDotenvPaths } from './utils/dotenv.utils'
@@ -34,6 +37,7 @@ import { getDotenvPaths } from './utils/dotenv.utils'
     EnvironmentModule,
     HealthzModule,
     InfrastructureModule,
+    KeycloakModule,
     LogModule,
     PluginModule,
     ProjectBulkModule,
@@ -46,6 +50,7 @@ import { getDotenvPaths } from './utils/dotenv.utils'
     RepositoryModule,
     ScheduleModule.forRoot(),
     SystemConfigModule,
+    ServiceChainModule,
     SystemSettingsModule,
     VersionModule,
   ],
