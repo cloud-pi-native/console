@@ -17,7 +17,7 @@
 
 | Statut | Nombre de modules | % du total |
 |--------|-------------------|------------|
-| ✅ Migré | 1 (ServiceChain) | ~6% |
+|| ✅ Migré | 4 (ServiceChain, SystemSettings, Project, AdminRole) | ~22% ||
 | 🚧 En cours | 0 | 0% |
 | 📅 Planifié | 17 | ~94% |
 | ⏳ En attente de cartographie | 0 | 0% |
@@ -48,9 +48,28 @@ profitant de son isolement complet vis-à-vis du reste du codebase.
 | `POST` | `/api/v1/service-chains/:id/retry` | `ManageSystem` |
 | `POST` | `/api/v1/service-chains/validate/:id` | `ManageSystem` |
 
-### Infrastructure transverse déployée
+### SystemSettings — migré le 2026-05-28
 
-En support de cette migration, les éléments d'infrastructure suivants ont été
+Module de gestion des paramètres système.
+
+- **Routes** : 2 (`/api/v1/system/settings/...`)
+- **Auth** : Token (`x-dso-token`) + décorateur `@RequireAdminPermission()`
+- **Validation** : Schéma Zod `SystemSettingSchema` de `@cpn-console/shared`
+- **Tests** : Controller + Service couverts (Vitest)
+
+### SystemConfig — migré le 2026-06-12
+
+Module de gestion de la configuration des plugins (lecture/écriture de la table
+`adminPlugin`). Dédié aux routes `/api/v1/system/plugins/...`.
+
+- **Routes** : 2 (`/api/v1/system/plugins`)
+- **Auth** : Guards admin (`AdminGuard`) + décorateur `@RequireAdminPermission()`
+- **Validation** : Contrats Zod via `pluginUpdateBody` / `pluginSchema` de `@cpn-console/shared`
+- **Tests** : Service couvert (Vitest)
+
+### Project — migré le 2026-05-28
+
+Module cœur de gestion des projets (CRUD de base).
 créés :
 
 - **AuthModule** (`infrastructure/auth/`) : `AuthService` (validation token
@@ -136,9 +155,9 @@ créés :
 ### Routes par statut
 
 - **Total** : ~75 routes métier
-- **Migrés** : 5 (~7%)
+- **Migrés** : 16 (~24%)
 - **En cours** : 0 (0%)
-- **Restants** : ~70 (~93%)
+- **Restants** : ~59 (~76%)
 
 ---
 
@@ -184,7 +203,14 @@ créés :
 
 ## 🔄 Historique des changements
 
-### 2026-04-09
+### 2026-06-12
+- ✅ Migration du module **SystemConfig** — 2 routes : configuration des plugins (list, update)
+- ✅ Migration du module **AdminRole** — 5 routes : gestion des rôles admin
+- ✅ Mise à jour du contrôleur admin-role pour utiliser `AdminGuard` + `@RequireAdminPermission()`
+- ✅ Ajout des utilitaires de mapping `AdminRole` Prisma → `@cpn-console/shared`
+
+### 2026-05-28
+- ✅ Migration du module **Project**
 - ✅ Migration du module **ServiceChain (OpenCDS)** — 5 routes, proxy HTTP vers API externe
 - ✅ Création de l'**AuthModule** (infrastructure/auth/) : auth par token `x-dso-token`
 - ✅ Configuration **nginx-strangler** pour les routes service-chain
