@@ -2,7 +2,7 @@
   "name": "@cpn-console/argocd-plugin",
   "type": "module",
   "version": "2.4.0",
-  "private": false,
+  "private": true,
   "description": "",
   "repository": {
     "type": "git",

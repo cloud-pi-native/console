@@ -2,7 +2,7 @@
   "name": "@cpn-console/gitlab-plugin",
   "type": "module",
   "version": "3.3.1",
-  "private": false,
+  "private": true,
   "description": "",
   "repository": {
     "type": "git",

@@ -2,7 +2,7 @@
   "name": "@cpn-console/harbor-plugin",
   "type": "module",
   "version": "2.3.0",
-  "private": false,
+  "private": true,
   "description": "",
   "repository": {
     "type": "git",

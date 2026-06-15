@@ -1,4 +1,4 @@
-import type { ClusterObject, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository, Store, ZoneObject } from '@cpn-console/hooks'
+import type { ClusterObject, HookResult, KubeCluster, KubeUser, Project as ProjectPayload, RepoCreds, Repository, Store, UserObject, ZoneObject } from '@cpn-console/hooks'
 import type { AsyncReturnType } from '@cpn-console/shared'
 import type { Cluster, Kubeconfig, Project, ProjectMembers, ProjectRole, Zone } from '@prisma/client'
 import type { ConfigRecords } from '@/resources/project-service/business.js'
@@ -373,47 +373,100 @@ function formatClusterInfos({ kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt
 }
 export type RolesById = Record<ProjectRole['id'], ProjectRole['permissions']>
 
-export function transformToHookProject(project: ProjectInfos, store: Store, reposCreds: ReposCreds = {}): ProjectPayload {
-  const clusters = project.clusters.map(cluster => formatClusterInfos(cluster))
-  const rolesById = resourceListToDict(project.roles)
+interface ProjectForHook {
+  id: string
+  name: string
+  description: string | null
+  status: string
+  slug: string
+  ownerId: string
+  everyonePerms: bigint
+  clusters: Array<{ kubeconfig: Kubeconfig; zone: Pick<Zone, 'id' | 'slug' | 'label' | 'argocdUrl'> }>
+  environments: Array<{ id: string; name: string; clusterId: string; cpu: number; gpu: number; memory: number; stage: { name: string }; autosync: boolean }>
+  members: Array<{ userId: string; roleIds: string[]; user: { id: string; firstName: string; lastName: string; email: string } }>
+  repositories: Array<{ id: string; internalRepoName: string; externalRepoUrl: string | null; isPrivate: boolean; isInfra: boolean; deployRevision: string | null; deployPath: string | null; helmValuesFiles: string | null }>
+  roles: Array<{ id: string; name: string; permissions: bigint; position: number; type: string; oidcGroup?: string }>
+  owner: { id: string; firstName: string; lastName: string; email: string }
+}
 
-  return ({
-    ...project,
-    clusters,
-    environments: project.environments.map(({ stage, ...environment }) => ({
-      stage: stage.name,
-      permissions: [
-        { permissions: { rw: true, ro: true }, userId: project.ownerId },
-        ...project.members.map(member => ({
-          userId: member.userId,
-          permissions: {
-            ro: ProjectAuthorized.ListEnvironments({ adminPermissions: 0n, projectPermissions: getPermsByUserRoles(member.roleIds, rolesById, project.everyonePerms) }),
-            rw: ProjectAuthorized.ManageEnvironments({ adminPermissions: 0n, projectPermissions: getPermsByUserRoles(member.roleIds, rolesById, project.everyonePerms) }),
-          },
-        })),
-      ],
-      ...environment,
-      apis: {},
-    })),
-    repositories: project.repositories.map(repo => ({ ...repo, newCreds: reposCreds[repo.internalRepoName] })),
-    store,
-    users: [project.owner, ...project.members.map(({ user }) => user)],
-    roles: [
-      {
-        name: 'owner',
-        position: 0,
-        users: [project.owner],
-      },
-      ...project.roles.map(role => ({
-        name: role.name,
-        permissions: role.permissions.toString(),
-        position: role.position,
-        type: role.type,
-        oidcGroup: role.oidcGroup,
-        users: project.members
-          .filter(member => member.roleIds.includes(role.id))
-          .map(member => member.user),
+export function transformToHookProject(project: ProjectInfos, store: Store, reposCreds: ReposCreds = {}): ProjectPayload {
+  const proj = project as unknown as ProjectForHook
+  const clusters = proj.clusters.map((cluster: typeof proj.clusters[number]) => formatClusterInfos(cluster as unknown as Omit<Cluster, 'updatedAt' | 'createdAt' | 'zoneId' | 'kubeConfigId'> & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug' | 'label' | 'argocdUrl'> }))
+  const rolesById = resourceListToDict(proj.roles)
+
+  const environments = proj.environments.map(({ stage, ...environment }) => ({
+    ...environment,
+    id: environment.id,
+    name: environment.name,
+    clusterId: environment.clusterId,
+    cpu: environment.cpu,
+    gpu: environment.gpu,
+    memory: environment.memory,
+    stage: stage.name,
+    autosync: environment.autosync,
+    permissions: [
+      { permissions: { rw: true, ro: true }, userId: proj.ownerId },
+      ...proj.members.map(member => ({
+        userId: member.userId,
+        permissions: {
+          ro: ProjectAuthorized.ListEnvironments({ adminPermissions: 0n, projectPermissions: getPermsByUserRoles(member.roleIds, rolesById, proj.everyonePerms) }),
+          rw: ProjectAuthorized.ManageEnvironments({ adminPermissions: 0n, projectPermissions: getPermsByUserRoles(member.roleIds, rolesById, proj.everyonePerms) }),
+        },
       })),
     ],
-  })
+    apis: {},
+  }))
+
+  const repositories = proj.repositories.map(repo => ({
+    id: repo.id,
+    internalRepoName: repo.internalRepoName,
+    newCreds: reposCreds[repo.internalRepoName],
+    externalRepoUrl: repo.externalRepoUrl ?? '',
+    isPrivate: repo.isPrivate,
+    isInfra: repo.isInfra,
+    deployRevision: repo.deployRevision ?? null,
+    deployPath: repo.deployPath ?? null,
+    helmValuesFiles: repo.helmValuesFiles ?? null,
+  }))
+
+  const users: UserObject[] = [
+    { id: proj.owner.id, firstName: proj.owner.firstName, lastName: proj.owner.lastName, email: proj.owner.email },
+    ...proj.members.map(({ user }) => ({ id: user.id, firstName: user.firstName, lastName: user.lastName, email: user.email })),
+  ]
+
+  const roles = [
+    {
+      name: 'owner',
+      permissions: '0',
+      position: 0,
+      type: 'owner',
+      oidcGroup: undefined,
+      users: [{ id: proj.owner.id, firstName: proj.owner.firstName, lastName: proj.owner.lastName, email: proj.owner.email }],
+    },
+    ...proj.roles.map(role => ({
+      name: role.name,
+      permissions: role.permissions.toString(),
+      position: role.position,
+      type: role.type,
+      oidcGroup: role.oidcGroup,
+      users: proj.members
+        .filter(member => member.roleIds.includes(role.id))
+        .map(member => ({ id: member.user.id, firstName: member.user.firstName, lastName: member.user.lastName, email: member.user.email })),
+    })),
+  ]
+
+  return {
+    id: proj.id,
+    description: proj.description,
+    name: proj.name,
+    status: proj.status,
+    clusters,
+    slug: proj.slug,
+    environments,
+    repositories,
+    users,
+    roles,
+    store,
+    owner: { id: proj.owner.id, firstName: proj.owner.firstName, lastName: proj.owner.lastName, email: proj.owner.email },
+  }
 }

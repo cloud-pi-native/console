@@ -41,6 +41,9 @@ CMD [ "dev" ]
 # Build stage ----------------------------------------------------------------------
 FROM dev AS build
 
+# Generate Prisma client for server (required for tspc compilation)
+RUN pnpm --filter @cpn-console/server run db:generate
+
 # Build @cpn-console/server console-related dependencies
 RUN pnpm run build
 # Build @cpn-console/server

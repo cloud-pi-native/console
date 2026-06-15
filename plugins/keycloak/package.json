@@ -2,7 +2,7 @@
   "name": "@cpn-console/keycloak-plugin",
   "type": "module",
   "version": "2.1.0",
-  "private": false,
+  "private": true,
   "description": "",
   "repository": {
     "type": "git",
