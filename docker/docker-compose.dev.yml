@@ -1,5 +1,4 @@
 services:
-
   keycloak:
     restart: unless-stopped
     image: docker.io/bitnamilegacy/keycloak:26.1.3-debian-12-r0
@@ -172,7 +171,7 @@ services:
       server:
         condition: service_started
       server-nestjs:
-        condition: service_started
+        condition: service_healthy
     environment:
       LEGACY_UPSTREAM: "server:8080"
       NESTJS_UPSTREAM: "server-nestjs:3001"

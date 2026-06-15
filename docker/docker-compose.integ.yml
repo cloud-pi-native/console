@@ -149,7 +149,7 @@ services:
       server:
         condition: service_started
       server-nestjs:
-        condition: service_started
+        condition: service_healthy
     ports:
       - 4000:8080
     environment:
