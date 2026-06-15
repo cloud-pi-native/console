@@ -125,6 +125,8 @@ services:
         condition: service_healthy
       postgres:
         condition: service_started
+      opencds-mockoon:
+        condition: service_healthy
     env_file:
       - ../apps/server-nestjs/.env.docker
     develop:

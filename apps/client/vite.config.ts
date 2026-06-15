@@ -136,6 +136,12 @@ export default defineConfig({
   },
   build: {
     target: 'ESNext',
+    cssTarget: 'chrome111',
+  },
+  css: {
+    lightningcss: {
+      errorRecovery: true,
+    },
   },
   optimizeDeps: {
     include: [

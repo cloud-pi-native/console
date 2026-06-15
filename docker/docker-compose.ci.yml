@@ -77,6 +77,8 @@ services:
         condition: service_started
       keycloak:
         condition: service_healthy
+      opencds-mockoon:
+        condition: service_healthy
     env_file:
       - ../apps/server-nestjs/.env.docker
     environment:

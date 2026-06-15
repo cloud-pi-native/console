@@ -5,6 +5,7 @@ import { GitlabModule } from '../gitlab/gitlab.module'
 import { DatabaseModule } from '../infrastructure/database/database.module'
 import { KeycloakModule } from '../keycloak/keycloak.module'
 import { NexusModule } from '../nexus/nexus.module'
+import { OpenCdsModule } from '../opencds/opencds.module'
 import { RegistryModule } from '../registry/registry.module'
 import { VaultModule } from '../vault/vault.module'
 import { HealthzController } from './healthz.controller'
@@ -19,6 +20,7 @@ import { HealthzController } from './healthz.controller'
     NexusModule,
     RegistryModule,
     ArgoCDModule,
+    OpenCdsModule,
   ],
   controllers: [HealthzController],
 })
