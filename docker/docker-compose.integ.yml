@@ -98,6 +98,8 @@ services:
     depends_on:
       postgres:
         condition: service_started
+      opencds-mockoon:
+        condition: service_healthy
     ports:
       - 3001:3001
     volumes:
