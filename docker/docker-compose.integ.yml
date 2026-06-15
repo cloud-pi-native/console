@@ -98,6 +98,8 @@ services:
     depends_on:
       postgres:
         condition: service_started
+      opencds-mockoon:
+        condition: service_healthy
     ports:
       - 3001:3001
     volumes:
@@ -149,7 +151,7 @@ services:
       server:
         condition: service_started
       server-nestjs:
-        condition: service_started
+        condition: service_healthy
     ports:
       - 4000:8080
     environment:
