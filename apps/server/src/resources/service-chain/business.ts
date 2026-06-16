@@ -4,24 +4,24 @@ import {
   listServiceChains as listServiceChainsQuery,
   retryServiceChain as retryServiceChainQuery,
   validateServiceChain as validateServiceChainQuery,
-} from '@/resources/queries-index.js'
+} from '@/resources/queries-index.js';
 
 export async function listServiceChains() {
-  return listServiceChainsQuery()
+  return listServiceChainsQuery();
 }
 
 export async function getServiceChainDetails(serviceChainId: string) {
-  return getServiceChainDetailsQuery(serviceChainId)
+  return getServiceChainDetailsQuery(serviceChainId);
 }
 
 export async function retryServiceChain(serviceChainId: string) {
-  return retryServiceChainQuery(serviceChainId)
+  return retryServiceChainQuery(serviceChainId);
 }
 
 export async function validateServiceChain(validationId: string) {
-  return validateServiceChainQuery(validationId)
+  return validateServiceChainQuery(validationId);
 }
 
 export async function getServiceChainFlows(serviceChainId: string) {
-  return getServiceChainFlowsQuery(serviceChainId)
+  return getServiceChainFlowsQuery(serviceChainId);
 }

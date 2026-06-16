@@ -10,9 +10,7 @@
 
     // Base
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     },
     "resolveJsonModule": true,
 

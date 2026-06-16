@@ -1,7 +1,5 @@
 {
-  "extends": [
-    "@cpn-console/ts-config/tsconfig.base.json"
-  ],
+  "extends": ["@cpn-console/ts-config/tsconfig.base.json"],
   "compilerOptions": {
     "baseUrl": "./",
     "rootDir": "./src",
@@ -11,12 +9,6 @@
     "declarationDir": "./types",
     "outDir": "./dist"
   },
-  "include": [
-    "./src/**/*.ts",
-    "./src/**/*.js"
-  ],
-  "exclude": [
-    "./src/**/*.spec.ts",
-    "./src/**/__mocks__"
-  ]
+  "include": ["./src/**/*.ts", "./src/**/*.js"],
+  "exclude": ["./src/**/*.spec.ts", "./src/**/__mocks__"]
 }

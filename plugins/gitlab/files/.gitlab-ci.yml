@@ -6,7 +6,7 @@ variables:
     value: main
   SYNC_ALL:
     description: Synchroniser toutes les branches.
-    value: "false"
+    value: 'false'
 
 include:
   - project: $CATALOG_PATH

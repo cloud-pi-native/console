@@ -6,37 +6,39 @@ export enum MonitorStatus {
 }
 
 export interface MonitorInfos {
-  lastUpdateTimestamp: number
-  interval: number
-  message: string
-  status: MonitorStatus
-  cause?: any // should be deserved to admins only
+  lastUpdateTimestamp: number;
+  interval: number;
+  message: string;
+  status: MonitorStatus;
+  cause?: any; // should be deserved to admins only
 }
 export class Monitor {
-  private intervalTime: number
-  public monitorFn: (instance: any) => Promise<MonitorInfos>
-  private intervalID: NodeJS.Timeout | undefined
-  public lastStatus: MonitorInfos
+  private intervalTime: number;
+  public monitorFn: (instance: any) => Promise<MonitorInfos>;
+  private intervalID: NodeJS.Timeout | undefined;
+  public lastStatus: MonitorInfos;
 
-  constructor(callback: (instance: Monitor) => Promise<MonitorInfos>, interval: number = 5 * 60 * 1000) {
-    this.intervalTime = interval
+  constructor(
+    callback: (instance: Monitor) => Promise<MonitorInfos>,
+    interval: number = 5 * 60 * 1000,
+  ) {
+    this.intervalTime = interval;
     this.monitorFn = () => {
-      this.lastStatus.cause = undefined
-      return callback(this)
-    }
+      this.lastStatus.cause = undefined;
+      return callback(this);
+    };
     this.lastStatus = {
       interval: this.intervalTime,
       lastUpdateTimestamp: Date.now(),
-      message: 'En attente d\'une première vérification',
+      message: "En attente d'une première vérification",
       status: MonitorStatus.UNKNOW,
       cause: 'App just started',
-    }
+    };
   }
 
   async refresh() {
-    if (this.intervalID)
-      clearInterval(this.intervalID)
-    this.intervalID = setInterval(() => this.monitorFn(this), this.intervalTime)
-    return this.monitorFn(this)
+    if (this.intervalID) clearInterval(this.intervalID);
+    this.intervalID = setInterval(() => this.monitorFn(this), this.intervalTime);
+    return this.monitorFn(this);
   }
 }

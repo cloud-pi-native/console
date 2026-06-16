@@ -1,47 +1,43 @@
-<script  lang="ts" setup>
-import type { Ref } from 'vue'
-import { AdminAuthorized } from '@cpn-console/shared'
-import TimeAgo from 'javascript-time-ago'
-import fr from 'javascript-time-ago/locale/fr'
-import { onBeforeMount, ref } from 'vue'
-import { alertTypeMapper, useServiceStore } from '@/stores/services-monitor.js'
-import { useUserStore } from '@/stores/user.js'
+<script lang="ts" setup>
+import type { Ref } from 'vue';
+import { AdminAuthorized } from '@cpn-console/shared';
+import TimeAgo from 'javascript-time-ago';
+import fr from 'javascript-time-ago/locale/fr';
+import { onBeforeMount, ref } from 'vue';
+import { alertTypeMapper, useServiceStore } from '@/stores/services-monitor.js';
+import { useUserStore } from '@/stores/user.js';
 
-const serviceStore = useServiceStore()
-const userStore = useUserStore()
+const serviceStore = useServiceStore();
+const userStore = useUserStore();
 
-const isUpdating: Ref<boolean> = ref(true)
+const isUpdating: Ref<boolean> = ref(true);
 // Add locale-specific relative date/time formatting rules.
-TimeAgo.addLocale(fr)
+TimeAgo.addLocale(fr);
 
 // Create relative date/time formatter.
-const timeAgo = new TimeAgo('fr-FR', { })
+const timeAgo = new TimeAgo('fr-FR', {});
 
 async function checkServicesHealth() {
-  isUpdating.value = true
+  isUpdating.value = true;
   await serviceStore.checkServicesHealth().finally(() => {
-    isUpdating.value = false
-  })
+    isUpdating.value = false;
+  });
 }
 
 async function refreshServicesHealth() {
-  isUpdating.value = true
+  isUpdating.value = true;
   await serviceStore.refreshServicesHealth().finally(() => {
-    isUpdating.value = false
-  })
+    isUpdating.value = false;
+  });
 }
 
 onBeforeMount(async () => {
-  await checkServicesHealth()
-})
+  await checkServicesHealth();
+});
 </script>
 
 <template>
-  <h1
-    class="fr-h3"
-  >
-    Status des services de la plateforme DSO
-  </h1>
+  <h1 class="fr-h3">Status des services de la plateforme DSO</h1>
   <div class="flex justify-between">
     <DsfrBadge
       data-testid="services-health-badge"
@@ -52,7 +48,11 @@ onBeforeMount(async () => {
       <DsfrButton
         v-if="AdminAuthorized.ListSystem(userStore.adminPerms)"
         data-testid="serviceCauseBtn"
-        :title="!serviceStore.displayCause ? 'Afficher les messages d\'erreur' : 'Masquer les messages d\'erreur'"
+        :title="
+          !serviceStore.displayCause
+            ? 'Afficher les messages d\'erreur'
+            : 'Masquer les messages d\'erreur'
+        "
         secondary
         icon-only
         :icon="!serviceStore.displayCause ? 'ri:filter-off-line' : 'ri:filter-line'"
@@ -77,10 +77,7 @@ onBeforeMount(async () => {
       />
     </div>
   </div>
-  <div
-    class="md:grid md:grid-cols-3 md:gap-3 items-center justify-between"
-    data-testid="box-info"
-  >
+  <div class="md:grid md:grid-cols-3 md:gap-3 items-center justify-between" data-testid="box-info">
     <DsfrAlert
       v-for="service in serviceStore.services"
       :key="service.name"
@@ -97,9 +94,7 @@ onBeforeMount(async () => {
         :title="service.cause"
         class="ml-2 inline"
       >
-        <v-icon
-          name="ri:question-line"
-        />
+        <v-icon name="ri:question-line" />
       </div>
       <div>{{ timeAgo.format(new Date(service.lastUpdateTimestamp), 'round') }}</div>
     </DsfrAlert>

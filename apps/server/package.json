@@ -1,20 +1,25 @@
 {
   "name": "@cpn-console/server",
-  "type": "module",
   "version": "9.18.4",
   "description": "cpn-console server",
   "repository": {
     "type": "git",
     "url": "https://github.com/cloud-pi-native/console"
   },
-  "main": "dist/bootstrap.js",
-  "module": "dist/bootstrap.js",
-  "types": "types/bootstrap.d.ts",
   "files": [
     "dist",
     "prisma.config.ts",
     "src"
   ],
+  "type": "module",
+  "main": "dist/bootstrap.js",
+  "module": "dist/bootstrap.js",
+  "types": "types/bootstrap.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest"
+  },
   "scripts": {
     "prebuild": "pnpm i --frozen-lockfile",
     "build": "tspc",
@@ -100,10 +105,5 @@
     "vite": "^7.3.2",
     "vite-node": "^6.0.0",
     "vitest": "^4.1.5"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public",
-    "tag": "latest"
   }
 }

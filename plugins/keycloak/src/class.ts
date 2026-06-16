@@ -1,24 +1,25 @@
-import { PluginApi } from '@cpn-console/hooks'
-import { consoleGroupName } from './group.js'
+import { PluginApi } from '@cpn-console/hooks';
+import { consoleGroupName } from './group.js';
 
 interface KeycloakEnv {
-  path: string
-  subgroups: { // Key is the group name, value is the full path
-    RO: string
-    RW: string
-  }
+  path: string;
+  subgroups: {
+    // Key is the group name, value is the full path
+    RO: string;
+    RW: string;
+  };
 }
 
 export class KeycloakProjectApi extends PluginApi {
-  private readonly projectSlug: string
+  private readonly projectSlug: string;
 
   constructor(projectSlug: string) {
-    super()
-    this.projectSlug = projectSlug
+    super();
+    this.projectSlug = projectSlug;
   }
 
   public async getProjectGroupPath(): Promise<string> {
-    return `/${this.projectSlug}`
+    return `/${this.projectSlug}`;
   }
 
   public async getEnvGroup(environment: string): Promise<KeycloakEnv> {
@@ -28,6 +29,6 @@ export class KeycloakProjectApi extends PluginApi {
         RO: `/${this.projectSlug}/${consoleGroupName}/${environment}/RO`,
         RW: `/${this.projectSlug}/${consoleGroupName}/${environment}/RW`,
       },
-    }
+    };
   }
 }

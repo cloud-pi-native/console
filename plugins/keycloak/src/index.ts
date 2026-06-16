@@ -1,6 +1,6 @@
-import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks'
-import { KeycloakProjectApi } from './class.js'
-import { start } from './client.js'
+import type { DefaultArgs, Plugin, Project, ProjectLite } from '@cpn-console/hooks';
+import { KeycloakProjectApi } from './class.js';
+import { start } from './client.js';
 import {
   deleteAdminRole,
   deleteProject,
@@ -13,19 +13,19 @@ import {
   upsertProjectMember,
   upsertProjectRole,
   upsertZone,
-} from './functions.js'
-import infos from './infos.js'
-import monitor from './monitor.js'
+} from './functions.js';
+import infos from './infos.js';
+import monitor from './monitor.js';
 
 export const plugin: Plugin = {
   infos,
   subscribedHooks: {
     deleteProject: {
-      api: project => new KeycloakProjectApi(project.slug),
+      api: (project) => new KeycloakProjectApi(project.slug),
       steps: { post: deleteProject },
     },
     upsertProject: {
-      api: project => new KeycloakProjectApi(project.slug),
+      api: (project) => new KeycloakProjectApi(project.slug),
       steps: { main: upsertProject },
     },
     upsertProjectRole: {
@@ -56,12 +56,10 @@ export const plugin: Plugin = {
   },
   monitor,
   start,
-}
+};
 
 declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
-    keycloak: Args extends (ProjectLite | Project)
-      ? KeycloakProjectApi
-      : undefined
+    keycloak: Args extends ProjectLite | Project ? KeycloakProjectApi : undefined;
   }
 }

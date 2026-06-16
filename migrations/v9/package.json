@@ -2,8 +2,8 @@
   "name": "dso-v9-migration",
   "version": "1.0.0",
   "description": "",
-  "author": "Cloud Pi Native",
   "license": "ISC",
+  "author": "Cloud Pi Native",
   "main": "index.js",
   "scripts": {
     "start": "node migrate.js"

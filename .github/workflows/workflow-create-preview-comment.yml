@@ -8,7 +8,7 @@ on:
     types:
       - labeled
     branches:
-      - "**"
+      - '**'
 
 jobs:
   preview-comment:

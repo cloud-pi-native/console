@@ -1,29 +1,36 @@
-import type { ServiceBody } from '@cpn-console/shared'
+import type { ServiceBody } from '@cpn-console/shared';
 // @ts-ignore '@gouvminint/vue-dsfr' missing types
-import type { DsfrAlertType } from '@gouvminint/vue-dsfr'
-import { MonitorStatus } from '@cpn-console/shared'
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { apiClient, extractData } from '@/api/xhr-client.js'
+import type { DsfrAlertType } from '@gouvminint/vue-dsfr';
+import { MonitorStatus } from '@cpn-console/shared';
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
+import { apiClient, extractData } from '@/api/xhr-client.js';
 
-export type ServicesHealth = {
-  message: string
-  status: DsfrAlertType | undefined
-  dotColor: 'gray' | 'red' | 'green' | 'orange' | 'blue'
-} | Record<string, never>
+export type ServicesHealth =
+  | {
+      message: string;
+      status: DsfrAlertType | undefined;
+      dotColor: 'gray' | 'red' | 'green' | 'orange' | 'blue';
+    }
+  | Record<string, never>;
 
-interface ServiceHealthOption { message: string, status: DsfrAlertType | undefined, serviceStatus: MonitorStatus, dotColor: ServicesHealth['dotColor'] }
+interface ServiceHealthOption {
+  message: string;
+  status: DsfrAlertType | undefined;
+  serviceStatus: MonitorStatus;
+  dotColor: ServicesHealth['dotColor'];
+}
 
 export const alertTypeMapper: Record<MonitorStatus, DsfrAlertType | undefined> = {
   [MonitorStatus.OK]: 'success',
   [MonitorStatus.WARNING]: 'warning',
   [MonitorStatus.ERROR]: 'error',
   [MonitorStatus.UNKNOW]: undefined,
-}
+};
 
 const serviceHealthOptions = {
   fetching: {
-    message: 'Vérification de l\'état des services...',
+    message: "Vérification de l'état des services...",
     status: 'info',
     serviceStatus: MonitorStatus.UNKNOW,
     dotColor: 'blue',
@@ -52,65 +59,67 @@ const serviceHealthOptions = {
     serviceStatus: MonitorStatus.OK,
     dotColor: 'green',
   },
-} as const satisfies Record<string, ServiceHealthOption>
+} as const satisfies Record<string, ServiceHealthOption>;
 
 export const useServiceStore = defineStore('serviceMonitor', () => {
-  const callStastus = ref<'ok' | 'fetching' | 'error'>('fetching')
+  const callStastus = ref<'ok' | 'fetching' | 'error'>('fetching');
 
-  const displayCause = ref(false)
-  const services = ref<ServiceBody>([])
+  const displayCause = ref(false);
+  const services = ref<ServiceBody>([]);
 
   const serviceHealthIndex = computed<keyof typeof serviceHealthOptions>(() => {
     if (callStastus.value === 'fetching') {
-      return 'fetching'
+      return 'fetching';
     }
     if (services.value.some(({ status }) => status === 'Dégradé')) {
-      return 'warn'
+      return 'warn';
     }
     if (services.value.some(({ status }) => status === 'En échec')) {
-      return 'error'
+      return 'error';
     }
     if (services.value.some(({ status }) => status === 'Inconnu')) {
-      return 'fetchError'
+      return 'fetchError';
     }
-    return 'ok'
-  })
+    return 'ok';
+  });
 
-  const servicesHealth = computed<ServicesHealth>(() => serviceHealthOptions[serviceHealthIndex.value])
-  let interval: NodeJS.Timeout
+  const servicesHealth = computed<ServicesHealth>(
+    () => serviceHealthOptions[serviceHealthIndex.value],
+  );
+  let interval: NodeJS.Timeout;
 
-  const clear = () => interval && clearInterval(interval)
+  const clear = () => interval && clearInterval(interval);
 
   const checkServicesHealth = async () => {
-    callStastus.value = 'fetching'
+    callStastus.value = 'fetching';
     try {
-      services.value = await (displayCause.value
-        ? apiClient.Services.getCompleteServiceHealth()
-        : apiClient.Services.getServiceHealth())
-        .then((res: any) => extractData(res, 200))
-      callStastus.value = 'ok'
+      services.value = await (
+        displayCause.value
+          ? apiClient.Services.getCompleteServiceHealth()
+          : apiClient.Services.getServiceHealth()
+      ).then((res: any) => extractData(res, 200));
+      callStastus.value = 'ok';
     } catch {
-      callStastus.value = 'error'
+      callStastus.value = 'error';
     }
-  }
+  };
 
   const refreshServicesHealth = async () => {
-    await apiClient.Services.refreshServiceHealth()
-      .then((res: any) => extractData(res, 200))
-    return checkServicesHealth()
-  }
+    await apiClient.Services.refreshServiceHealth().then((res: any) => extractData(res, 200));
+    return checkServicesHealth();
+  };
 
   const startHealthPolling = async () => {
-    if (!interval) return
+    if (!interval) return;
 
-    clear()
-    await checkServicesHealth()
-    interval = setInterval(checkServicesHealth, 300_000_000)
-  }
+    clear();
+    await checkServicesHealth();
+    interval = setInterval(checkServicesHealth, 300_000_000);
+  };
 
   async function toggleDisplayCause() {
-    displayCause.value = !displayCause.value
-    await checkServicesHealth()
+    displayCause.value = !displayCause.value;
+    await checkServicesHealth();
   }
 
   return {
@@ -121,5 +130,5 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
     refreshServicesHealth,
     toggleDisplayCause,
     startHealthPolling,
-  }
-})
+  };
+});

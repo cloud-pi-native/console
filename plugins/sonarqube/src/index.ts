@@ -1,13 +1,13 @@
-import type { HookStepsNames, Plugin } from '@cpn-console/hooks'
-import { getStatus } from './check.js'
-import { deleteProject, initSonar, setVariables, upsertProject } from './functions.js'
-import infos from './infos.js'
-import monitor from './monitor.js'
+import type { HookStepsNames, Plugin } from '@cpn-console/hooks';
+import { getStatus } from './check.js';
+import { deleteProject, initSonar, setVariables, upsertProject } from './functions.js';
+import infos from './infos.js';
+import monitor from './monitor.js';
 
 function start(_options: unknown) {
   try {
-    initSonar()
-    getStatus()
+    initSonar();
+    getStatus();
   } catch {}
 }
 
@@ -28,10 +28,10 @@ export const plugin: Plugin = {
   },
   start,
   monitor,
-}
+};
 
 declare module '@cpn-console/hooks' {
   interface PluginResult {
-    errors?: Partial<Record<HookStepsNames, unknown>>
+    errors?: Partial<Record<HookStepsNames, unknown>>;
   }
 }

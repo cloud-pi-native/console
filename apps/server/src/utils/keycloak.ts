@@ -1,5 +1,5 @@
-import type { KeycloakOptions } from 'fastify-keycloak-adapter'
-import { serviceContract, swaggerUiPath, systemContract } from '@cpn-console/shared'
+import type { KeycloakOptions } from 'fastify-keycloak-adapter';
+import { serviceContract, swaggerUiPath, systemContract } from '@cpn-console/shared';
 import {
   keycloakClientId,
   keycloakClientSecret,
@@ -8,8 +8,8 @@ import {
   keycloakRealm,
   keycloakRedirectUri,
   sessionSecret,
-} from './env.js'
-import { bypassFn, userPayloadMapper } from './keycloak-utils.js'
+} from './env.js';
+import { bypassFn, userPayloadMapper } from './keycloak-utils.js';
 
 export const keycloakConf = {
   appOrigin: keycloakRedirectUri ?? 'http://localhost:8080',
@@ -29,7 +29,7 @@ export const keycloakConf = {
     `${swaggerUiPath}-server/**`,
   ],
   bypassFn,
-} as const satisfies KeycloakOptions
+} as const satisfies KeycloakOptions;
 
 export const sessionConf = {
   cookieName: 'sessionId',
@@ -39,4 +39,4 @@ export const sessionConf = {
     secure: true,
   },
   expires: 1_800_000,
-}
+};

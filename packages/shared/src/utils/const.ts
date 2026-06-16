@@ -1,63 +1,44 @@
-export const adminGroupPath = '/admin'
-export const deleteValidationInput = 'DELETE'
-export const forbiddenRepoNames = ['mirror', 'infra-apps', 'infra-observability']
+export const adminGroupPath = '/admin';
+export const deleteValidationInput = 'DELETE';
+export const forbiddenRepoNames = ['mirror', 'infra-apps', 'infra-observability'];
 
-export const inClusterLabel = 'in-cluster' as const
-export const projectIsLockedInfo = 'Le projet est verrouillé, pas d\'action possible'
-export const missingCredentials = 'Si le dépôt est privé, vous devez renseigner au moins le nom d\'utilisateur ou le token'
-export const invalidGitUrl = 'L\'adresse doit commencer par https et se terminer par .git'
-export const invalidInternalRepoName = 'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique'
+export const inClusterLabel = 'in-cluster' as const;
+export const projectIsLockedInfo = "Le projet est verrouillé, pas d'action possible";
+export const missingCredentials =
+  "Si le dépôt est privé, vous devez renseigner au moins le nom d'utilisateur ou le token";
+export const invalidGitUrl = "L'adresse doit commencer par https et se terminer par .git";
+export const invalidInternalRepoName =
+  "Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d'union, et doit commencer et se terminer par un caractère alphanumérique";
 
-export const fakeToken = 'fakeToken'
-export const tokenHeaderName = 'x-dso-token'
-export const swaggerUiPath = '/swagger-ui'
+export const fakeToken = 'fakeToken';
+export const tokenHeaderName = 'x-dso-token';
+export const swaggerUiPath = '/swagger-ui';
 
-export const levels = [
-  'r',
-  'rw',
-  'rwd',
-] as const
-export type PermissionLevels = typeof levels[number]
+export const levels = ['r', 'rw', 'rwd'] as const;
+export type PermissionLevels = (typeof levels)[number];
 
-export const projectRoles = [
-  'owner',
-  'user',
-] as const
-export type ProjectRoles = typeof projectRoles[number]
+export const projectRoles = ['owner', 'user'] as const;
+export type ProjectRoles = (typeof projectRoles)[number];
 
-export const longestEnvironmentName = 11 as const
+export const longestEnvironmentName = 11 as const;
 
-export const allStatus = [
-  'initializing',
-  'created',
-  'failed',
-  'deleting',
-] as const
+export const allStatus = ['initializing', 'created', 'failed', 'deleting'] as const;
 
-export const projectStatus = [
-  'initializing',
-  'created',
-  'failed',
-  'archived',
-  'warning',
-] as const
+export const projectStatus = ['initializing', 'created', 'failed', 'archived', 'warning'] as const;
 
-export const achievedStatus = [
-  'created',
-  'failed',
-] as const
+export const achievedStatus = ['created', 'failed'] as const;
 
-export type AchievedStatus = typeof achievedStatus[number]
+export type AchievedStatus = (typeof achievedStatus)[number];
 
 export enum ClusterPrivacy {
   PUBLIC = 'public',
   DEDICATED = 'dedicated',
 }
 
-export const privacyWording: Record<ClusterPrivacy, { text: string, icon: string }> = {
+export const privacyWording: Record<ClusterPrivacy, { text: string; icon: string }> = {
   dedicated: { text: 'dédié', icon: 'ri:shield-keyhole-line' },
   public: { text: 'public', icon: 'ri:door-open-line' },
-}
+};
 
 export enum AllStatus {
   CREATED = 'created',
@@ -72,7 +53,7 @@ export const logActions = [
   'Delete Project',
   'Delete Repository',
   'Delete Environment',
-]
+];
 
 export const statusDict = {
   locked: {
@@ -135,12 +116,6 @@ export const statusDict = {
       color: 'var(--warning-425-625)',
     },
   },
-} as const
+} as const;
 
-export const servicePluginOrder = [
-  'argocd',
-  'gitlab',
-  'registry',
-  'sonarqube',
-  'vault',
-]
+export const servicePluginOrder = ['argocd', 'gitlab', 'registry', 'sonarqube', 'vault'];

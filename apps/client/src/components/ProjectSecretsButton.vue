@@ -1,28 +1,28 @@
 <script lang="ts" setup>
-import type { Project, ProjectOperations } from '@/utils/project-utils.js'
-import { clickInDialog, copyContent } from '@/utils/func.js'
+import type { Project, ProjectOperations } from '@/utils/project-utils.js';
+import { clickInDialog, copyContent } from '@/utils/func.js';
 
 const props = defineProps<{
-  project: Project
-}>()
+  project: Project;
+}>();
 
-const isSecretShown = ref(false)
-const projectSecrets = ref<Record<string, Record<string, string>> | null>(null)
+const isSecretShown = ref(false);
+const projectSecrets = ref<Record<string, Record<string, string>> | null>(null);
 
 async function handleSecretDisplay() {
-  isSecretShown.value = !isSecretShown.value
+  isSecretShown.value = !isSecretShown.value;
   if (isSecretShown.value && projectSecrets.value == null) {
-    projectSecrets.value = await props.project.Services.getSecrets()
+    projectSecrets.value = await props.project.Services.getSecrets();
   }
 }
 
 function closeModal(e?: MouseEvent | TouchEvent) {
   // @ts-ignore
   if (e && e.target?.tagName !== 'DIALOG') {
-    return
+    return;
   }
-  isSecretShown.value = false
-  projectSecrets.value = null
+  isSecretShown.value = false;
+  projectSecrets.value = null;
 }
 </script>
 
@@ -31,17 +31,15 @@ function closeModal(e?: MouseEvent | TouchEvent) {
     data-testid="showSecretsBtn"
     :label="`${isSecretShown ? 'Cacher' : 'Afficher'} les secrets des services`"
     :icon="
-      (project.operationsInProgress as unknown as ProjectOperations[]).includes(
-        'searchSecret',
-      )
+      (project.operationsInProgress as unknown as ProjectOperations[]).includes('searchSecret')
         ? { name: 'ri:refresh-line', animation: 'spin' }
         : isSecretShown
           ? 'ri:eye-off-line'
           : 'ri:eye-line'
     "
     :disabled="
-      project.locked
-        || (project.operationsInProgress as unknown as ProjectOperations[]).includes('searchSecret')
+      project.locked ||
+      (project.operationsInProgress as unknown as ProjectOperations[]).includes('searchSecret')
     "
     @click="handleSecretDisplay"
   />
@@ -56,35 +54,21 @@ function closeModal(e?: MouseEvent | TouchEvent) {
     <p v-if="projectSecrets == null">
       <Loader />
     </p>
-    <p
-      v-else-if="!Object.entries(projectSecrets).length"
-      data-testid="noProjectSecretsP"
-    >
+    <p v-else-if="!Object.entries(projectSecrets).length" data-testid="noProjectSecretsP">
       Aucun secret à afficher
     </p>
-    <div
-      v-for="[service, secrets] of Object.entries(projectSecrets)"
-      v-else
-      :key="service"
-    >
+    <div v-for="[service, secrets] of Object.entries(projectSecrets)" v-else :key="service">
       <h6 class="fr-mb-1w fr-mt-3w">
         {{ service }}
       </h6>
-      <DsfrTable
-        class="horizontal-table"
-        :headers="Object.keys(projectSecrets[service])"
-        title=""
-      >
-        <tr
-          v-for="secret in Object.values(secrets)"
-          :key="secret"
-          @click="copyContent(secret)"
-        >
+      <DsfrTable class="horizontal-table" :headers="Object.keys(projectSecrets[service])" title="">
+        <tr v-for="secret in Object.values(secrets)" :key="secret" @click="copyContent(secret)">
           <td>
             <pre
               title="Copier la valeur"
               class="fr-text-default--info text-xs cursor-pointer m-1"
-            >{{ secret }}</pre>
+              >{{ secret }}</pre
+            >
           </td>
         </tr>
       </DsfrTable>

@@ -1,4 +1,4 @@
-import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js'
+import type { GitlabProjectApi } from '@cpn-console/gitlab-plugin/types/class.js';
 import type {
   ClusterObject,
   Config,
@@ -6,10 +6,10 @@ import type {
   Project,
   Repository,
   StepCall,
-} from '@cpn-console/hooks'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
-import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
-import { stringify } from 'yaml'
+} from '@cpn-console/hooks';
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js';
+import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared';
+import { stringify } from 'yaml';
 import {
   DEFAULT_DSO_ENV_CHART_VERSION,
   DEFAULT_DSO_NS_CHART_VERSION,
@@ -19,43 +19,41 @@ import {
   DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_READONLY_GROUP_PATH_SUFFIX,
-} from './infos.js'
-import { logger } from './logger.js'
-import { generateAppProjectName, getConfig } from './utils.js'
+} from './infos.js';
+import { logger } from './logger.js';
+import { generateAppProjectName, getConfig } from './utils.js';
 
 function splitExtraRepositories(repos?: string): string[] {
-  return repos ? repos.split(',').map(repo => repo.trim()) : []
+  return repos ? repos.split(',').map((repo) => repo.trim()) : [];
 }
 
 function getValueFilePath(p: Project, c: ClusterObject, e: Environment): string {
-  return `${p.name}/${c.label}/${e.name}/values.yaml`
+  return `${p.name}/${c.label}/${e.name}/values.yaml`;
 }
 
 export const upsertProject: StepCall<Project> = async (payload) => {
-  const project = payload.args
-  const gitlabApi = payload.apis.gitlab as unknown as GitlabProjectApi
-  const keycloakApi = payload.apis.keycloak as any
-  const vaultApi = payload.apis.vault as unknown as VaultProjectApi
+  const project = payload.args;
+  const gitlabApi = payload.apis.gitlab as unknown as GitlabProjectApi;
+  const keycloakApi = payload.apis.keycloak as any;
+  const vaultApi = payload.apis.vault as unknown as VaultProjectApi;
 
   try {
-    const infraRepositories = project.repositories.filter(
-      repo => repo.isInfra,
-    )
+    const infraRepositories = project.repositories.filter((repo) => repo.isInfra);
     const sourceRepositories = [
       `${await gitlabApi.getPublicGroupUrl()}/**`,
       ...splitExtraRepositories(payload.config.argocd?.extraRepositories),
       ...splitExtraRepositories(project.store.argocd?.extraRepositories),
-    ]
+    ];
 
     await Promise.all(
       project.environments.map(async (environment) => {
-        const appNamespace = generateNamespaceName(project.id, environment.id)
-        const cluster = getCluster(project, environment)
-        const infraProject = await gitlabApi.getOrCreateInfraProject(cluster.zone.slug)
-        const appProjectName = generateAppProjectName(project.slug, environment.name)
-        const envGroup = await (keycloakApi as any).getEnvGroup(environment.name)
-        const roGroup = envGroup.subgroups.RO
-        const rwGroup = envGroup.subgroups.RW
+        const appNamespace = generateNamespaceName(project.id, environment.id);
+        const cluster = getCluster(project, environment);
+        const infraProject = await gitlabApi.getOrCreateInfraProject(cluster.zone.slug);
+        const appProjectName = generateAppProjectName(project.slug, environment.name);
+        const envGroup = await (keycloakApi as any).getEnvGroup(environment.name);
+        const roGroup = envGroup.subgroups.RO;
+        const rwGroup = envGroup.subgroups.RW;
 
         await ensureInfraEnvValues(
           project,
@@ -70,37 +68,37 @@ export const upsertProject: StepCall<Project> = async (payload) => {
           gitlabApi,
           vaultApi,
           payload.config,
-        )
+        );
       }),
-    )
+    );
 
-    await removeInfraEnvValues(project, gitlabApi)
+    await removeInfraEnvValues(project, gitlabApi);
 
-    logger.info({ action: 'upsertProject', projectSlug: project.slug }, 'Hook done')
+    logger.info({ action: 'upsertProject', projectSlug: project.slug }, 'Hook done');
 
     return {
       status: {
         result: 'OK',
         message: 'Up-to-date',
       },
-    }
+    };
   } catch (error) {
-    logger.error({ action: 'upsertProject', projectSlug: project.slug, err: error }, 'Hook failed')
+    logger.error({ action: 'upsertProject', projectSlug: project.slug, err: error }, 'Hook failed');
     return {
       error,
       status: {
         result: 'KO',
         message: 'Failed',
       },
-    }
+    };
   }
-}
+};
 
 interface ArgoRepoSource {
-  repoURL: string
-  targetRevision: string
-  path: string
-  valueFiles: string[]
+  repoURL: string;
+  targetRevision: string;
+  path: string;
+  valueFiles: string[];
 }
 
 async function ensureInfraEnvValues(
@@ -117,28 +115,30 @@ async function ensureInfraEnvValues(
   vaultApi: VaultProjectApi,
   config: Config,
 ) {
-  const platformAdminGroupPath = config.argocd?.platformAdminGroupPath ?? DEFAULT_PLATFORM_ADMIN_GROUP_PATH
-  const platformReadonlyGroupPath = config.argocd?.platformReadonlyGroupPath ?? DEFAULT_PLATFORM_READONLY_GROUP_PATH
-  const projectAdminGroupSuffix = config.argocd?.projectAdminGroupPathSuffix ?? DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIX
-  const projectDevopsGroupSuffix = config.argocd?.projectDevopsGroupPathSuffix ?? DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX
-  const projectDevelopperGroupSuffix = config.argocd?.projectDevelopperGroupPathSuffix ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
-  const projectReadonlyGroupSuffix = config.argocd?.projectReadonlyGroupPathSuffix ?? DEFAULT_PROJECT_READONLY_GROUP_PATH_SUFFIX
-  const dsoEnvChartVersion = config.argocd?.dsoEnvChartVersion ?? DEFAULT_DSO_ENV_CHART_VERSION
-  const dsoNsChartVersion = config.argocd?.dsoNsChartVersion ?? DEFAULT_DSO_NS_CHART_VERSION
-  const cluster = getCluster(project, environment)
-  const infraProject = await gitlabApi.getProjectById(repoId)
-  const valueFilePath = getValueFilePath(project, cluster, environment)
-  const vaultValues = await vaultApi.Project.getValues()
+  const platformAdminGroupPath =
+    config.argocd?.platformAdminGroupPath ?? DEFAULT_PLATFORM_ADMIN_GROUP_PATH;
+  const platformReadonlyGroupPath =
+    config.argocd?.platformReadonlyGroupPath ?? DEFAULT_PLATFORM_READONLY_GROUP_PATH;
+  const projectAdminGroupSuffix =
+    config.argocd?.projectAdminGroupPathSuffix ?? DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIX;
+  const projectDevopsGroupSuffix =
+    config.argocd?.projectDevopsGroupPathSuffix ?? DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX;
+  const projectDevelopperGroupSuffix =
+    config.argocd?.projectDevelopperGroupPathSuffix ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX;
+  const projectReadonlyGroupSuffix =
+    config.argocd?.projectReadonlyGroupPathSuffix ?? DEFAULT_PROJECT_READONLY_GROUP_PATH_SUFFIX;
+  const dsoEnvChartVersion = config.argocd?.dsoEnvChartVersion ?? DEFAULT_DSO_ENV_CHART_VERSION;
+  const dsoNsChartVersion = config.argocd?.dsoNsChartVersion ?? DEFAULT_DSO_NS_CHART_VERSION;
+  const cluster = getCluster(project, environment);
+  const infraProject = await gitlabApi.getProjectById(repoId);
+  const valueFilePath = getValueFilePath(project, cluster, environment);
+  const vaultValues = await vaultApi.Project.getValues();
   const repositories: ArgoRepoSource[] = await Promise.all(
     infraRepositories.map(async (repository) => {
-      const repoURL = await gitlabApi.getPublicRepoUrl(
-        repository.internalRepoName,
-      )
+      const repoURL = await gitlabApi.getPublicRepoUrl(repository.internalRepoName);
       const valueFiles = repository.helmValuesFiles
-        ? repository.helmValuesFiles
-            .replaceAll('<env>', environment.name)
-            .split(',')
-        : []
+        ? repository.helmValuesFiles.replaceAll('<env>', environment.name).split(',')
+        : [];
       return {
         id: repository.id,
         name: repository.internalRepoName,
@@ -146,9 +146,9 @@ async function ensureInfraEnvValues(
         targetRevision: repository.deployRevision || 'HEAD',
         path: repository.deployPath || '.',
         valueFiles,
-      }
+      };
     }),
-  )
+  );
 
   const values = {
     common: {
@@ -193,89 +193,78 @@ async function ensureInfraEnvValues(
       vault: vaultValues,
       repositories,
     },
-  }
+  };
 
-  await gitlabApi.commitCreateOrUpdate(repoId, stringify(values), valueFilePath)
+  await gitlabApi.commitCreateOrUpdate(repoId, stringify(values), valueFilePath);
 }
 
 function getCluster(p: Project, e: Environment): ClusterObject {
-  const c = p.clusters.find(c => c.id === e.clusterId)
-  if (!c) throw new Error(`Unable to find cluster ${e.id} for env ${e.name}`)
-  return c
+  const c = p.clusters.find((c) => c.id === e.clusterId);
+  if (!c) throw new Error(`Unable to find cluster ${e.id} for env ${e.name}`);
+  return c;
 }
 
-async function removeInfraEnvValues(
-  project: Project,
-  gitlabApi: GitlabProjectApi,
-) {
+async function removeInfraEnvValues(project: Project, gitlabApi: GitlabProjectApi) {
   for (const z of getDistinctZones(project)) {
-    const infraProject = await gitlabApi.getOrCreateInfraProject(z)
+    const infraProject = await gitlabApi.getOrCreateInfraProject(z);
     const existingFiles = await gitlabApi.listFiles(infraProject.id, {
       path: `${project.name}/`,
       recursive: true,
-    })
-    const neededFiles = project.environments.map(env =>
+    });
+    const neededFiles = project.environments.map((env) =>
       getValueFilePath(project, getCluster(project, env), env),
-    )
-    const filesToDelete: string[] = []
+    );
+    const filesToDelete: string[] = [];
     for (const existingFile of existingFiles) {
-      if (
-        existingFile.name === 'values.yaml'
-        && !neededFiles.includes(existingFile.path)
-      ) {
-        filesToDelete.push(existingFile.path)
+      if (existingFile.name === 'values.yaml' && !neededFiles.includes(existingFile.path)) {
+        filesToDelete.push(existingFile.path);
       }
     }
-    await gitlabApi.commitDelete(infraProject.id, filesToDelete)
+    await gitlabApi.commitDelete(infraProject.id, filesToDelete);
   }
 }
 
 function getDistinctZones(project: Project) {
-  const zones: Set<string> = new Set()
-  project.clusters.forEach(c => zones.add(c.zone.slug))
-  return zones
+  const zones: Set<string> = new Set();
+  project.clusters.forEach((c) => zones.add(c.zone.slug));
+  return zones;
 }
 
-async function cleanupProjectInfra(
-  project: Project,
-  gitlabApi: GitlabProjectApi,
-) {
+async function cleanupProjectInfra(project: Project, gitlabApi: GitlabProjectApi) {
   for (const z of getDistinctZones(project)) {
-    const infraProject = await gitlabApi.getOrCreateInfraProject(z)
+    const infraProject = await gitlabApi.getOrCreateInfraProject(z);
     const existingFiles = await gitlabApi.listFiles(infraProject.id, {
       path: `${project.name}/`,
       recursive: true,
-    })
-    const filesToDelete = existingFiles
-      .filter(f => f.name === 'values.yaml')
-      .map(f => f.path)
-    await gitlabApi.commitDelete(infraProject.id, filesToDelete)
+    });
+    const filesToDelete = existingFiles.filter((f) => f.name === 'values.yaml').map((f) => f.path);
+    await gitlabApi.commitDelete(infraProject.id, filesToDelete);
   }
 }
 
 export const deleteProject: StepCall<Project> = async (payload) => {
-  const project = payload.args
-  const gitlabApi = payload.apis.gitlab as unknown as GitlabProjectApi
+  const project = payload.args;
+  const gitlabApi = payload.apis.gitlab as unknown as GitlabProjectApi;
 
   try {
-    await cleanupProjectInfra(project, gitlabApi)
+    await cleanupProjectInfra(project, gitlabApi);
 
-    logger.info({ action: 'deleteProject', projectSlug: project.slug }, 'Hook done')
+    logger.info({ action: 'deleteProject', projectSlug: project.slug }, 'Hook done');
 
     return {
       status: {
         result: 'OK',
         message: 'Up-to-date',
       },
-    }
+    };
   } catch (error) {
-    logger.error({ action: 'deleteProject', projectSlug: project.slug, err: error }, 'Hook failed')
+    logger.error({ action: 'deleteProject', projectSlug: project.slug, err: error }, 'Hook failed');
     return {
       error,
       status: {
         result: 'KO',
         message: 'Failed',
       },
-    }
+    };
   }
-}
+};

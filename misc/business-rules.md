@@ -40,11 +40,11 @@
 ### Permissions d'environnement
 
 Trois niveaux de permissions différents,
-| Valeur en base | Description dans le front | Niveaux       |
+| Valeur en base | Description dans le front | Niveaux |
 | -------------- | ------------------------- | ------------- |
-| 0              | r                         | Lecture       |
-| 1              | rw                        | + Ecriture    |
-| 2              | rwd                       | + Suppression |
+| 0 | r | Lecture |
+| 1 | rw | + Ecriture |
+| 2 | rwd | + Suppression |
 
 ## Points d'API
 

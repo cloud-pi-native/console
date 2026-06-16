@@ -1,47 +1,44 @@
 <script lang="ts" setup>
-import type { Project, ProjectOperations } from '@/utils/project-utils.js'
-import { bts, descriptionMaxLength, projectIsLockedInfo } from '@cpn-console/shared'
-import { copyContent } from '@/utils/func.js'
+import type { Project, ProjectOperations } from '@/utils/project-utils.js';
+import { bts, descriptionMaxLength, projectIsLockedInfo } from '@cpn-console/shared';
+import { copyContent } from '@/utils/func.js';
 
-withDefaults(defineProps<{
-  project: Project
-  canEditDescription?: boolean
-}>(), {
-  canEditDescription: false,
-})
+withDefaults(
+  defineProps<{
+    project: Project;
+    canEditDescription?: boolean;
+  }>(),
+  {
+    canEditDescription: false,
+  },
+);
 
 const emits = defineEmits<{
-  (e: 'update:model-value'): [value: string]
-  (e: 'saveDescription'): void
-}>()
+  (e: 'update:model-value'): [value: string];
+  (e: 'saveDescription'): void;
+}>();
 
-const isEditingDescription = ref(false)
+const isEditingDescription = ref(false);
 
 function getDynamicTitle(locked?: Project['locked'], description?: Project['description']) {
-  if (locked) return projectIsLockedInfo
-  if (description) return 'Editer la description'
-  return 'Ajouter une description'
+  if (locked) return projectIsLockedInfo;
+  if (description) return 'Editer la description';
+  return 'Ajouter une description';
 }
-const modelValue = defineModel<string>()
+const modelValue = defineModel<string>();
 
 function saveDescription() {
-  emits('saveDescription')
-  isEditingDescription.value = false
+  emits('saveDescription');
+  isEditingDescription.value = false;
 }
 </script>
 
 <template>
-  <div
-    class="fr-callout flex flex-row"
-  >
-    <div
-      class="grow"
-    >
+  <div class="fr-callout flex flex-row">
+    <div class="grow">
       <div class="flex flex-row items-center gap-3">
         <!-- Section nom -->
-        <h1
-          class="fr-callout__title inline"
-        >
+        <h1 class="fr-callout__title inline">
           {{ project.name }}
         </h1>
         <div class="flex flex-row gap-2">
@@ -66,9 +63,7 @@ function saveDescription() {
       </div>
 
       <!-- Section description -->
-      <div
-        v-if="isEditingDescription"
-      >
+      <div v-if="isEditingDescription">
         <DsfrInput
           v-model="modelValue"
           data-testid="descriptionInput"
@@ -79,41 +74,29 @@ function saveDescription() {
           :hint="`Courte description expliquant la finalité du projet (${descriptionMaxLength} caractères maximum).`"
           placeholder="Application de réservation de places à l'examen du permis B."
         />
-        <div
-          class="flex justify-between"
-        >
+        <div class="flex justify-between">
           <DsfrButton
             data-testid="saveDescriptionBtn"
             label="Enregistrer la description"
             secondary
-            :icon="(project.operationsInProgress as unknown as ProjectOperations[]).includes('update')
-              ? { name: 'ri:refresh-line', animation: 'spin' }
-              : 'ri:send-plane-line'"
-            :disabled="(project.operationsInProgress as unknown as ProjectOperations[]).includes('update')"
+            :icon="
+              (project.operationsInProgress as unknown as ProjectOperations[]).includes('update')
+                ? { name: 'ri:refresh-line', animation: 'spin' }
+                : 'ri:send-plane-line'
+            "
+            :disabled="
+              (project.operationsInProgress as unknown as ProjectOperations[]).includes('update')
+            "
             @click="saveDescription"
           />
-          <DsfrButton
-            label="Annuler"
-            primary
-            @click="isEditingDescription = false"
-          />
+          <DsfrButton label="Annuler" primary @click="isEditingDescription = false" />
         </div>
       </div>
-      <div
-        v-else
-        class="flex gap-4 items-center"
-      >
-        <p
-          v-if="project.description"
-          data-testid="descriptionP"
-        >
+      <div v-else class="flex gap-4 items-center">
+        <p v-if="project.description" data-testid="descriptionP">
           {{ project.description }}
         </p>
-        <p
-          v-else
-          data-testid="descriptionP"
-          class="disabled"
-        >
+        <p v-else data-testid="descriptionP" class="disabled">
           Aucune description pour le moment...
         </p>
         <DsfrButton
@@ -136,14 +119,10 @@ function saveDescription() {
           class="fr-text-default--info text-sm"
           data-testid="project-slug"
           @click="copyContent(project.slug)"
-        >slug:&nbsp;{{ project.slug }}</code>
-        <div
-          title="Slug du projet, nom technique garantissant l'unicité"
-          class="ml-2 inline"
+          >slug:&nbsp;{{ project.slug }}</code
         >
-          <v-icon
-            name="ri:question-line"
-          />
+        <div title="Slug du projet, nom technique garantissant l'unicité" class="ml-2 inline">
+          <v-icon name="ri:question-line" />
         </div>
       </div>
       <div class="flex flex-row">
@@ -152,32 +131,23 @@ function saveDescription() {
           :title="project.id"
           data-testid="project-id"
           @click="copyContent(project.id)"
-        >Id:&nbsp;...{{ project.id.slice(-5) }}</code>
-        <div
-          title="Id du projet, uuid"
-          class="ml-2 inline"
+          >Id:&nbsp;...{{ project.id.slice(-5) }}</code
         >
-          <v-icon
-            name="ri:question-line"
-          />
+        <div title="Id du projet, uuid" class="ml-2 inline">
+          <v-icon name="ri:question-line" />
         </div>
       </div>
-      <div
-        v-if="project.lastSuccessProvisionningVersion"
-        class="flex flex-row"
-      >
+      <div v-if="project.lastSuccessProvisionningVersion" class="flex flex-row">
         <code
           class="fr-text-default--info text-sm"
           @click="copyContent(project.lastSuccessProvisionningVersion)"
-        >Version:&nbsp;{{ project.lastSuccessProvisionningVersion }}
+          >Version:&nbsp;{{ project.lastSuccessProvisionningVersion }}
         </code>
         <div
           title="Version de la console lors du dernier provisionnement réussi du projet"
           class="ml-2 inline"
         >
-          <v-icon
-            name="ri:question-line"
-          />
+          <v-icon name="ri:question-line" />
         </div>
       </div>
     </div>

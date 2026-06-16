@@ -1,6 +1,6 @@
 name: 💡 Demande de fonctionnalité
 description: Créer un ticket pour demander une nouvelle fonctionnalité.
-title: "💡 [REQUEST] - <title>"
+title: '💡 [REQUEST] - <title>'
 labels: [enhancement]
 body:
   - type: textarea
@@ -17,7 +17,7 @@ body:
     attributes:
       label: PRs liées
       description: Pull request qui répond à la fonctionnalité.
-      placeholder: "#Pull Request ID"
+      placeholder: '#Pull Request ID'
     validations:
       required: false
 
@@ -26,7 +26,7 @@ body:
     attributes:
       label: Issues liées
       description: Issues associée à cette demande de fonctionnalité.
-      placeholder: "#Issues IDs"
+      placeholder: '#Issues IDs'
     validations:
       required: false
 

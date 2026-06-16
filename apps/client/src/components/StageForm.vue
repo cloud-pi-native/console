@@ -1,82 +1,90 @@
 <script lang="ts" setup>
-import type { Cluster, CreateStageBody, SharedZodError, Stage, StageAssociatedEnvironments } from '@cpn-console/shared'
-import type { UpdateStageType } from '@/views/admin/ListStages.vue'
-import { deleteValidationInput, StageSchema } from '@cpn-console/shared'
-import { computed, onBeforeMount, ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { toCodeComponent } from '@/utils/func.js'
+import type {
+  Cluster,
+  CreateStageBody,
+  SharedZodError,
+  Stage,
+  StageAssociatedEnvironments,
+} from '@cpn-console/shared';
+import type { UpdateStageType } from '@/views/admin/ListStages.vue';
+import { deleteValidationInput, StageSchema } from '@cpn-console/shared';
+import { computed, onBeforeMount, ref } from 'vue';
+import { useSnackbarStore } from '@/stores/snackbar.js';
+import { toCodeComponent } from '@/utils/func.js';
 
-const props = withDefaults(defineProps<{
-  isNewStage: boolean
-  stage?: Stage
-  allClusters?: Cluster[]
-  associatedEnvironments?: StageAssociatedEnvironments
-}>(), {
-  isNewStage: false,
-  stage: () => ({ name: '', clusterIds: [], id: '' }),
-  allClusters: () => [],
-  associatedEnvironments: () => [],
-})
+const props = withDefaults(
+  defineProps<{
+    isNewStage: boolean;
+    stage?: Stage;
+    allClusters?: Cluster[];
+    associatedEnvironments?: StageAssociatedEnvironments;
+  }>(),
+  {
+    isNewStage: false,
+    stage: () => ({ name: '', clusterIds: [], id: '' }),
+    allClusters: () => [],
+    associatedEnvironments: () => [],
+  },
+);
 
 const emit = defineEmits<{
-  add: [value: CreateStageBody]
-  update: [value: UpdateStageType]
-  cancel: []
-  delete: [value: Stage['id']]
-}>()
+  add: [value: CreateStageBody];
+  update: [value: UpdateStageType];
+  cancel: [];
+  delete: [value: Stage['id']];
+}>();
 
-const localStage = ref(props.stage)
+const localStage = ref(props.stage);
 
-const isDeletingStage = ref(false)
-const stageToDelete = ref('')
+const isDeletingStage = ref(false);
+const stageToDelete = ref('');
 
 const errorSchema = computed<SharedZodError | undefined>(() => {
-  let schemaValidation
+  let schemaValidation;
   if (localStage.value.id) {
-    schemaValidation = StageSchema.safeParse(localStage.value)
+    schemaValidation = StageSchema.safeParse(localStage.value);
   } else {
-    schemaValidation = StageSchema.omit({ id: true }).safeParse(localStage.value)
+    schemaValidation = StageSchema.omit({ id: true }).safeParse(localStage.value);
   }
-  return schemaValidation.success ? undefined : schemaValidation.error
-})
-const isStageValid = computed(() => !errorSchema.value)
+  return schemaValidation.success ? undefined : schemaValidation.error;
+});
+const isStageValid = computed(() => !errorSchema.value);
 
 function updateClusters(value: string[]) {
-  localStage.value.clusterIds = value
+  localStage.value.clusterIds = value;
 }
 
 function addStage() {
-  if (isStageValid.value) emit('add', localStage.value)
+  if (isStageValid.value) emit('add', localStage.value);
 }
 
 function updateStage() {
-  if (isStageValid.value) emit('update', localStage.value)
+  if (isStageValid.value) emit('update', localStage.value);
 }
 
 function cancel() {
-  emit('cancel')
+  emit('cancel');
 }
 
 function getRows(associatedEnvironments: StageAssociatedEnvironments) {
-  return associatedEnvironments
-    .map(associatedEnvironment => ([
-      toCodeComponent(associatedEnvironment.project),
-      toCodeComponent(associatedEnvironment.name),
-      toCodeComponent(associatedEnvironment.cluster),
-      toCodeComponent(associatedEnvironment.owner ?? ''),
-    ]))
+  return associatedEnvironments.map((associatedEnvironment) => [
+    toCodeComponent(associatedEnvironment.project),
+    toCodeComponent(associatedEnvironment.name),
+    toCodeComponent(associatedEnvironment.cluster),
+    toCodeComponent(associatedEnvironment.owner ?? ''),
+  ]);
 }
 
 onBeforeMount(() => {
-  localStage.value = props.stage
-})
+  localStage.value = props.stage;
+});
 </script>
 
 <template>
-  <div
-    class="relative"
-  >
-    <h1>Informations du type d'environnement <code v-if="localStage.name">{{ localStage.name }}</code></h1>
+  <div class="relative">
+    <h1>
+      Informations du type d'environnement <code v-if="localStage.name">{{ localStage.name }}</code>
+    </h1>
     <DsfrInputGroup
       v-model="localStage.name"
       label="Nom du type d'environnement"
@@ -87,9 +95,7 @@ onBeforeMount(() => {
       :disabled="!isNewStage"
       placeholder="dev"
     />
-    <div
-      class="fr-mb-2w"
-    >
+    <div class="fr-mb-2w">
       <ChoiceSelector
         id="clusters-select"
         :wrapped="false"
@@ -102,9 +108,7 @@ onBeforeMount(() => {
         @update="(_c: any, clusterIds: any) => updateClusters(clusterIds)"
       />
     </div>
-    <div
-      class="flex space-x-10 mt-5"
-    >
+    <div class="flex space-x-10 mt-5">
       <DsfrButton
         v-if="isNewStage"
         label="Ajouter le type d'environnement"
@@ -140,9 +144,7 @@ onBeforeMount(() => {
         description="Le type d'environnement ne peut être supprimé, car les environnements ci-dessous y ont souscrit."
         small
       />
-      <div
-        class="flex flex-row flex-wrap gap-4 w-full"
-      >
+      <div class="flex flex-row flex-wrap gap-4 w-full">
         <DsfrTable
           title=""
           data-testid="associatedEnvironmentsTable"
@@ -172,10 +174,7 @@ onBeforeMount(() => {
           small
         />
       </div>
-      <div
-        v-if="isDeletingStage"
-        class="fr-mt-4w"
-      >
+      <div v-if="isDeletingStage" class="fr-mt-4w">
         <DsfrInput
           v-model="stageToDelete"
           data-testid="deleteStageInput"
@@ -184,9 +183,7 @@ onBeforeMount(() => {
           :placeholder="deleteValidationInput"
           class="fr-mb-2w"
         />
-        <div
-          class="flex justify-between"
-        >
+        <div class="flex justify-between">
           <DsfrButton
             data-testid="deleteStageBtn"
             :label="`Supprimer définitivement le type d'environnement ${localStage.name}`"
@@ -196,11 +193,7 @@ onBeforeMount(() => {
             icon="ri:delete-bin-7-line"
             @click="$emit('delete', localStage.id)"
           />
-          <DsfrButton
-            label="Annuler"
-            primary
-            @click="isDeletingStage = false"
-          />
+          <DsfrButton label="Annuler" primary @click="isDeletingStage = false" />
         </div>
       </div>
     </div>

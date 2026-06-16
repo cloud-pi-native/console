@@ -1,67 +1,74 @@
-import type { PluginApi } from '../utils/utils.js'
-import type * as hooks from './index.js'
-import { logger } from '@cpn-console/logger/hooks'
+import type { PluginApi } from '../utils/utils.js';
+import type * as hooks from './index.js';
+import { logger } from '@cpn-console/logger/hooks';
 
-export type DefaultArgs = Record<any, any>
-export type PluginResultStoreValue = string | number | null
-export type PluginResultStore = Record<string, PluginResultStoreValue>
+export type DefaultArgs = Record<any, any>;
+export type PluginResultStoreValue = string | number | null;
+export type PluginResultStore = Record<string, PluginResultStoreValue>;
 export interface PluginResult {
-  status: { result: 'OK', message?: string } | { result: 'KO' | 'WARNING', message: string }
-  store?: PluginResultStore
-  [key: string]: any
+  status: { result: 'OK'; message?: string } | { result: 'KO' | 'WARNING'; message: string };
+  store?: PluginResultStore;
+  [key: string]: any;
 }
 
 export interface HookPayloadResults {
-  [x: string]: PluginResult
+  [x: string]: PluginResult;
 }
 // @ts-ignore
 // eslint-disable-next-line unused-imports/no-unused-vars
 export interface HookPayloadApis<Args extends DefaultArgs> {
-  [x: string]: PluginApi
+  [x: string]: PluginApi;
 }
-export type Store = Record<string, Record<string, string>> // TO DEPRECIATE USE ONFIG
+export type Store = Record<string, Record<string, string>>; // TO DEPRECIATE USE ONFIG
 
 export interface Config {
-  [x: string]: { [x: string]: string }
+  [x: string]: { [x: string]: string };
 }
 
 export interface HookPayload<Args extends DefaultArgs> {
-  args: Args
-  failed: boolean | string[]
-  warning: string[]
-  results: HookPayloadResults
-  apis: HookPayloadApis<Args>
-  config: Config
+  args: Args;
+  failed: boolean | string[];
+  warning: string[];
+  results: HookPayloadResults;
+  apis: HookPayloadApis<Args>;
+  config: Config;
 }
 
-export type HookResult<Args extends DefaultArgs> = Omit<HookPayload<Args>, 'apis'> & { totalExecutionTime: number, messageResume?: string }
+export type HookResult<Args extends DefaultArgs> = Omit<HookPayload<Args>, 'apis'> & {
+  totalExecutionTime: number;
+  messageResume?: string;
+};
 
-export type StepCall<Args extends DefaultArgs> = (payload: HookPayload<Args>) => Promise<PluginResult>
-type HookStep = Record<string, StepCall<DefaultArgs>>
-export type HookStepsNames = 'check' | 'pre' | 'main' | 'post' | 'revert'
+export type StepCall<Args extends DefaultArgs> = (
+  payload: HookPayload<Args>,
+) => Promise<PluginResult>;
+type HookStep = Record<string, StepCall<DefaultArgs>>;
+export type HookStepsNames = 'check' | 'pre' | 'main' | 'post' | 'revert';
 export interface Hook<E extends DefaultArgs> {
-  uniquePlugin?: string // if plugin register on it no other one can register on it
-  execute: (args: E, store: Config) => Promise<HookResult<E>>
-  apis: Record<string, (args: E) => PluginApi>
-  steps: Record<HookStepsNames, HookStep>
+  uniquePlugin?: string; // if plugin register on it no other one can register on it
+  execute: (args: E, store: Config) => Promise<HookResult<E>>;
+  apis: Record<string, (args: E) => PluginApi>;
+  steps: Record<HookStepsNames, HookStep>;
 }
-export type HookList<E extends DefaultArgs> = Record<keyof typeof hooks, Hook<E>>
+export type HookList<E extends DefaultArgs> = Record<keyof typeof hooks, Hook<E>>;
 
-function generateMessageResume<Args extends DefaultArgs>(payload: HookPayload<Args>): string | undefined {
-  let messageResume = ''
+function generateMessageResume<Args extends DefaultArgs>(
+  payload: HookPayload<Args>,
+): string | undefined {
+  let messageResume = '';
   if (Array.isArray(payload.failed)) {
     for (const pluginName of payload.failed) {
-      messageResume += 'Errors:'
-      messageResume += `\n${pluginName}: ${payload.results[pluginName].status.message};`
+      messageResume += 'Errors:';
+      messageResume += `\n${pluginName}: ${payload.results[pluginName].status.message};`;
     }
   }
   if (payload.warning.length) {
     for (const pluginName of payload.warning) {
-      messageResume += 'Warnings:'
-      messageResume += `\n${pluginName}: ${payload.results[pluginName].status.message};`
+      messageResume += 'Warnings:';
+      messageResume += `\n${pluginName}: ${payload.results[pluginName].status.message};`;
     }
   }
-  return messageResume || undefined
+  return messageResume || undefined;
 }
 
 function handleRejectedStepResult<Args extends DefaultArgs>(
@@ -70,17 +77,15 @@ function handleRejectedStepResult<Args extends DefaultArgs>(
   stepName: string,
   payload: HookPayload<Args>,
 ): PluginResult {
-  logger.error({ plugin: name, step: stepName, err: reason }, 'Hook step failed')
+  logger.error({ plugin: name, step: stepName, err: reason }, 'Hook step failed');
   const result: PluginResult = {
     status: {
       result: 'KO',
       message: reason instanceof Error ? reason.message : String(reason),
     },
-  }
-  payload.failed = Array.isArray(payload.failed)
-    ? [...payload.failed, name]
-    : [name]
-  return result
+  };
+  payload.failed = Array.isArray(payload.failed) ? [...payload.failed, name] : [name];
+  return result;
 }
 
 function handleFulfilledStepResult<Args extends DefaultArgs>(
@@ -90,17 +95,36 @@ function handleFulfilledStepResult<Args extends DefaultArgs>(
   payload: HookPayload<Args>,
 ): PluginResult {
   if (value.status.result === 'KO') {
-    payload.failed = Array.isArray(payload.failed)
-      ? [...payload.failed, name]
-      : [name]
-    logger.error({ plugin: name, step: stepName, err: value.status.message, status: value.status.result, message: value.status.message }, 'Hook step failed')
+    payload.failed = Array.isArray(payload.failed) ? [...payload.failed, name] : [name];
+    logger.error(
+      {
+        plugin: name,
+        step: stepName,
+        err: value.status.message,
+        status: value.status.result,
+        message: value.status.message,
+      },
+      'Hook step failed',
+    );
   } else if (value.status.result === 'WARNING' && !payload.warning.includes(name)) {
-    payload.warning.push(name)
-    logger.warn({ plugin: name, step: stepName, err: value.status.message, status: value.status.result, message: value.status.message }, 'Hook step warning')
+    payload.warning.push(name);
+    logger.warn(
+      {
+        plugin: name,
+        step: stepName,
+        err: value.status.message,
+        status: value.status.result,
+        message: value.status.message,
+      },
+      'Hook step warning',
+    );
   } else {
-    logger.trace({ plugin: name, step: stepName, status: value.status.result }, 'Hook step fulfilled')
+    logger.trace(
+      { plugin: name, step: stepName, status: value.status.result },
+      'Hook step fulfilled',
+    );
   }
-  return value
+  return value;
 }
 
 function handleStepResult<Args extends DefaultArgs>(
@@ -109,32 +133,38 @@ function handleStepResult<Args extends DefaultArgs>(
   stepName: string,
   payload: HookPayload<Args>,
 ): PluginResult {
-  const result = settled.status === 'fulfilled'
-    ? handleFulfilledStepResult(settled.value, name, stepName, payload)
-    : handleRejectedStepResult(settled.reason, name, stepName, payload)
-  return { ...result, executionTime: payload.results[name].executionTime }
+  const result =
+    settled.status === 'fulfilled'
+      ? handleFulfilledStepResult(settled.value, name, stepName, payload)
+      : handleRejectedStepResult(settled.reason, name, stepName, payload);
+  return { ...result, executionTime: payload.results[name].executionTime };
 }
 
-export async function executeStep<Args extends DefaultArgs>(step: HookStep, payload: HookPayload<Args>, stepName: string) {
-  const names = Object.keys(step)
+export async function executeStep<Args extends DefaultArgs>(
+  step: HookStep,
+  payload: HookPayload<Args>,
+  stepName: string,
+) {
+  const names = Object.keys(step);
   const fns = names.map(async (name) => {
     if (payload.results[name]?.executionTime) {
-      payload.results[name].executionTime[stepName] = Date.now()
+      payload.results[name].executionTime[stepName] = Date.now();
     } else {
       payload.results[name] = {
         status: { result: 'OK' },
         executionTime: { [stepName]: Date.now() },
-      }
+      };
     }
-    const fnResult = await step[name](payload)
-    payload.results[name].executionTime[stepName] = Date.now() - payload.results[name].executionTime[stepName]
-    return fnResult
-  })
-  const results = await Promise.allSettled(fns)
+    const fnResult = await step[name](payload);
+    payload.results[name].executionTime[stepName] =
+      Date.now() - payload.results[name].executionTime[stepName];
+    return fnResult;
+  });
+  const results = await Promise.allSettled(fns);
   names.forEach((name, index) => {
-    payload.results[name] = handleStepResult(results[index], name, stepName, payload)
-  })
-  return payload
+    payload.results[name] = handleStepResult(results[index], name, stepName, payload);
+  });
+  return payload;
 }
 export function createHook<E extends DefaultArgs>(unique = false) {
   const steps: Record<HookStepsNames, HookStep> = {
@@ -143,15 +173,14 @@ export function createHook<E extends DefaultArgs>(unique = false) {
     main: {},
     post: {},
     revert: {},
-  }
-  const apis: Record<string, (args: E) => PluginApi> = {
-  }
+  };
+  const apis: Record<string, (args: E) => PluginApi> = {};
   const execute = async (args: E, config: Config): Promise<HookResult<E>> => {
-    const startTime = Date.now()
-    const payloadApis: HookPayloadApis<E> = {}
+    const startTime = Date.now();
+    const payloadApis: HookPayloadApis<E> = {};
     Object.entries(apis).forEach(([pluginName, apiFn]) => {
-      payloadApis[pluginName] = apiFn(args)
-    })
+      payloadApis[pluginName] = apiFn(args);
+    });
     let payload: HookPayload<E> = {
       failed: false,
       args,
@@ -159,14 +188,14 @@ export function createHook<E extends DefaultArgs>(unique = false) {
       apis: payloadApis,
       config,
       warning: [],
-    }
+    };
 
-    const executeSteps = ['pre', 'main', 'post'] as const
+    const executeSteps = ['pre', 'main', 'post'] as const;
     for (const step of executeSteps) {
-      payload = await executeStep(steps[step], payload, step)
+      payload = await executeStep(steps[step], payload, step);
       if (payload.failed) {
-        payload = await executeStep(steps.revert, payload, 'revert')
-        break
+        payload = await executeStep(steps.revert, payload, 'revert');
+        break;
       }
     }
     return {
@@ -177,16 +206,16 @@ export function createHook<E extends DefaultArgs>(unique = false) {
       totalExecutionTime: Date.now() - startTime,
       config,
       messageResume: generateMessageResume(payload),
-    }
-  }
+    };
+  };
 
   const hook: Hook<E> = {
     apis,
     steps,
     execute,
-  }
+  };
   if (unique) {
-    hook.uniquePlugin = ''
+    hook.uniquePlugin = '';
   }
-  return hook
+  return hook;
 }

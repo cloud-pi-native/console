@@ -1,31 +1,28 @@
-import type Zod from 'zod'
-import { z } from 'zod'
-import { pluginsPopulatedManifests } from './config.js'
+import type Zod from 'zod';
+import { z } from 'zod';
+import { pluginsPopulatedManifests } from './config.js';
 
 export const serviceUrl = z.object({
   to: z.string(),
   name: z.string(),
-  description: z.string()
-    .optional(),
-})
+  description: z.string().optional(),
+});
 
-export type ServiceUrl = Zod.infer<typeof serviceUrl>
+export type ServiceUrl = Zod.infer<typeof serviceUrl>;
 
 export const ServiceSchema = z.object({
-  description: z.string()
-    .optional(),
+  description: z.string().optional(),
   title: z.string(),
   name: z.string(),
-  imgSrc: z.string()
-    .optional(),
+  imgSrc: z.string().optional(),
   urls: serviceUrl.array(),
   manifest: pluginsPopulatedManifests,
-})
+});
 
-export const permissionTarget = z.enum(['user', 'admin']).default('user')
+export const permissionTarget = z.enum(['user', 'admin']).default('user');
 
-export type PermissionTarget = Zod.infer<typeof permissionTarget>
-export type ProjectService = Zod.infer<typeof ServiceSchema>
+export type PermissionTarget = Zod.infer<typeof permissionTarget>;
+export type ProjectService = Zod.infer<typeof ServiceSchema>;
 
 export const ServiceHealthSchema = z.object({
   name: z.string(),
@@ -33,4 +30,4 @@ export const ServiceHealthSchema = z.object({
   interval: z.number(),
   lastUpdateTimestamp: z.number(),
   message: z.string(),
-})
+});

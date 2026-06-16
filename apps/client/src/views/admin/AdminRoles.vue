@@ -1,71 +1,66 @@
 <script lang="ts" setup>
-import type { AdminRole, Role } from '@cpn-console/shared'
-import AdminRoleForm from '@/components/AdminRoleForm.vue'
-import { useAdminRoleStore } from '@/stores/admin-role.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import type { AdminRole, Role } from '@cpn-console/shared';
+import AdminRoleForm from '@/components/AdminRoleForm.vue';
+import { useAdminRoleStore } from '@/stores/admin-role.js';
+import { useSnackbarStore } from '@/stores/snackbar.js';
 
-const adminRoleStore = useAdminRoleStore()
-const snackbarStore = useSnackbarStore()
+const adminRoleStore = useAdminRoleStore();
+const snackbarStore = useSnackbarStore();
 
-const selectedId = ref<string>()
-type RoleItem = Omit<AdminRole, 'permissions'> & { permissions: bigint, memberCounts?: number }
+const selectedId = ref<string>();
+type RoleItem = Omit<AdminRole, 'permissions'> & { permissions: bigint; memberCounts?: number };
 
-const roleList = computed((): RoleItem[] => adminRoleStore.roles.map(role => ({
-  ...role,
-  permissions: BigInt(role.permissions),
-  memberCounts: adminRoleStore.memberCounts[role.id],
-})))
+const roleList = computed((): RoleItem[] =>
+  adminRoleStore.roles.map((role) => ({
+    ...role,
+    permissions: BigInt(role.permissions),
+    memberCounts: adminRoleStore.memberCounts[role.id],
+  })),
+);
 
-const selectedRole = computed(() => roleList.value.find(({ id }) => id === selectedId.value))
+const selectedRole = computed(() => roleList.value.find(({ id }) => id === selectedId.value));
 
 async function addRole() {
-  await adminRoleStore.createRole()
-  snackbarStore.setMessage('Rôle ajouté', 'success')
+  await adminRoleStore.createRole();
+  snackbarStore.setMessage('Rôle ajouté', 'success');
 
-  selectedId.value = adminRoleStore.roles.at(-1)?.id
+  selectedId.value = adminRoleStore.roles.at(-1)?.id;
 }
 
 async function deleteRole(roleId: Role['id']) {
-  await adminRoleStore.deleteRole(roleId)
-  await adminRoleStore.listRoles()
-  snackbarStore.setMessage('Rôle supprimé', 'success')
-  selectedId.value = undefined
+  await adminRoleStore.deleteRole(roleId);
+  await adminRoleStore.listRoles();
+  snackbarStore.setMessage('Rôle supprimé', 'success');
+  selectedId.value = undefined;
 }
 
 async function saveRole(role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permissions' | 'type'>) {
-  if (!selectedRole.value) return
-  await adminRoleStore.patchRoles(
-    [{
+  if (!selectedRole.value) return;
+  await adminRoleStore.patchRoles([
+    {
       id: selectedRole.value.id,
       permissions: role.permissions.toString(),
       name: role.name,
       oidcGroup: role.oidcGroup,
       type: role.type,
-    }],
-  )
-  snackbarStore.setMessage('Rôle mis à jour', 'success')
+    },
+  ]);
+  snackbarStore.setMessage('Rôle mis à jour', 'success');
 }
 
-const cancel = () => selectedId.value = undefined
+const cancel = () => (selectedId.value = undefined);
 
 onBeforeMount(async () => {
   if (!adminRoleStore.roles.length) {
-    await adminRoleStore.listRoles()
+    await adminRoleStore.listRoles();
   }
-})
+});
 </script>
 
 <template>
-  <div
-    class="flex flex-row"
-  >
-    <div
-      :class="`flex flex-col ${selectedId ? 'max-w-11em w-2/8 max-sm:hidden' : 'w-full'}`"
-    >
-      <div
-        class="flex flex-col"
-        data-testid="role-list"
-      >
+  <div class="flex flex-row">
+    <div :class="`flex flex-col ${selectedId ? 'max-w-11em w-2/8 max-sm:hidden' : 'w-full'}`">
+      <div class="flex flex-col" data-testid="role-list">
         <DsfrButton
           label="Ajouter un rôle"
           data-testid="addRoleBtn"
@@ -81,29 +76,17 @@ onBeforeMount(async () => {
           @click="selectedId = selectedId === role.id ? undefined : role.id"
         >
           {{ role.name }}
-          <template
-            v-if="!selectedId"
-          >
-            <div
-              class="text-wrap truncate text-right grow-0"
-            >
-              <template
-                v-if="role.oidcGroup"
-              >
+          <template v-if="!selectedId">
+            <div class="text-wrap truncate text-right grow-0">
+              <template v-if="role.oidcGroup">
                 <span>oidc</span>
-                <v-icon
-                  class="ml-4"
-                  name="ri:user-shared-2-line"
-                />
+                <v-icon class="ml-4" name="ri:user-shared-2-line" />
               </template>
               <template v-else>
                 <span>
-                  {{ (role.memberCounts ?? '-') }}
+                  {{ role.memberCounts ?? '-' }}
                 </span>
-                <v-icon
-                  class="ml-4"
-                  name="ri:team-line"
-                />
+                <v-icon class="ml-4" name="ri:team-line" />
               </template>
             </div>
           </template>
@@ -120,7 +103,9 @@ onBeforeMount(async () => {
       :oidc-group="selectedRole.oidcGroup"
       :type="selectedRole.type"
       @delete="deleteRole(selectedRole.id)"
-      @save="(role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permissions' | 'type'>) => saveRole(role)"
+      @save="
+        (role: Pick<AdminRole, 'name' | 'oidcGroup' | 'permissions' | 'type'>) => saveRole(role)
+      "
       @cancel="() => cancel()"
     />
   </div>

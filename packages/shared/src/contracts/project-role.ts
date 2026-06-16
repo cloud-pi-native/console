@@ -1,79 +1,84 @@
-import { z } from 'zod'
-import { apiPrefix, contractInstance } from '../api-client.js'
-import { ProjectRoleSchema } from '../schemas/role.js'
-import { baseHeaders, ErrorSchema } from './_utils.js'
+import { z } from 'zod';
+import { apiPrefix, contractInstance } from '../api-client.js';
+import { ProjectRoleSchema } from '../schemas/role.js';
+import { baseHeaders, ErrorSchema } from './_utils.js';
 
-export const projectRoleContract = contractInstance.router({
-  listProjectRoles: {
-    method: 'GET',
-    path: '',
-    pathParams: z.object({ projectId: z.string().uuid() }),
-    responses: {
-      200: ProjectRoleSchema.array(),
-      400: ErrorSchema,
-      401: ErrorSchema,
-      403: ErrorSchema,
-      404: ErrorSchema,
+export const projectRoleContract = contractInstance.router(
+  {
+    listProjectRoles: {
+      method: 'GET',
+      path: '',
+      pathParams: z.object({ projectId: z.string().uuid() }),
+      responses: {
+        200: ProjectRoleSchema.array(),
+        400: ErrorSchema,
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+      },
+    },
+    createProjectRole: {
+      method: 'POST',
+      path: '',
+      body: ProjectRoleSchema.omit({ position: true, id: true, projectId: true }),
+      pathParams: z.object({ projectId: z.string().uuid() }),
+      responses: {
+        // 200: z.any(),
+        201: ProjectRoleSchema.array(),
+        400: ErrorSchema,
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+      },
+    },
+    patchProjectRoles: {
+      method: 'PATCH',
+      path: '',
+      pathParams: z.object({ projectId: z.string().uuid() }),
+      // body: z.any(),
+      body: ProjectRoleSchema.pick({ id: true })
+        .merge(ProjectRoleSchema.omit({ id: true, projectId: true }).partial())
+        .array(),
+      responses: {
+        // 200: z.any(),
+        200: ProjectRoleSchema.array(),
+        400: ErrorSchema,
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+      },
+    },
+    projectRoleMemberCounts: {
+      method: 'GET',
+      path: `/member-counts`,
+      pathParams: z.object({ projectId: z.string().uuid() }),
+      responses: {
+        200: z.record(z.number().min(0)), // Record<role uuid, number of member>
+        400: ErrorSchema,
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+      },
+    },
+    deleteProjectRole: {
+      method: 'DELETE',
+      path: `/:roleId`,
+      pathParams: z.object({
+        projectId: z.string().uuid(),
+        roleId: z.string().uuid(),
+      }),
+      body: null,
+      responses: {
+        204: null,
+        400: ErrorSchema,
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+      },
     },
   },
-  createProjectRole: {
-    method: 'POST',
-    path: '',
-    body: ProjectRoleSchema.omit({ position: true, id: true, projectId: true }),
-    pathParams: z.object({ projectId: z.string().uuid() }),
-    responses: {
-      // 200: z.any(),
-      201: ProjectRoleSchema.array(),
-      400: ErrorSchema,
-      401: ErrorSchema,
-      403: ErrorSchema,
-      404: ErrorSchema,
-    },
+  {
+    baseHeaders,
+    pathPrefix: `${apiPrefix}/projects/:projectId/roles`,
   },
-  patchProjectRoles: {
-    method: 'PATCH',
-    path: '',
-    pathParams: z.object({ projectId: z.string().uuid() }),
-    // body: z.any(),
-    body: ProjectRoleSchema.pick({ id: true }).merge(ProjectRoleSchema.omit({ id: true, projectId: true }).partial()).array(),
-    responses: {
-      // 200: z.any(),
-      200: ProjectRoleSchema.array(),
-      400: ErrorSchema,
-      401: ErrorSchema,
-      403: ErrorSchema,
-      404: ErrorSchema,
-    },
-  },
-  projectRoleMemberCounts: {
-    method: 'GET',
-    path: `/member-counts`,
-    pathParams: z.object({ projectId: z.string().uuid() }),
-    responses: {
-      200: z.record(z.number().min(0)), // Record<role uuid, number of member>
-      400: ErrorSchema,
-      401: ErrorSchema,
-      403: ErrorSchema,
-      404: ErrorSchema,
-    },
-  },
-  deleteProjectRole: {
-    method: 'DELETE',
-    path: `/:roleId`,
-    pathParams: z.object({
-      projectId: z.string().uuid(),
-      roleId: z.string().uuid(),
-    }),
-    body: null,
-    responses: {
-      204: null,
-      400: ErrorSchema,
-      401: ErrorSchema,
-      403: ErrorSchema,
-      404: ErrorSchema,
-    },
-  },
-}, {
-  baseHeaders,
-  pathPrefix: `${apiPrefix}/projects/:projectId/roles`,
-})
+);

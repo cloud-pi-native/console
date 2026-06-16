@@ -1,12 +1,17 @@
 {
   "name": "@cpn-console/client",
-  "type": "module",
   "version": "9.18.4",
   "private": false,
   "description": "cpn-console client",
   "repository": {
     "type": "git",
     "url": "https://github.com/cloud-pi-native/console"
+  },
+  "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest"
   },
   "scripts": {
     "build": "pnpm run icons && pnpm run type-check && pnpm run build-only",
@@ -79,10 +84,5 @@
     "vue-eslint-parser": "^10.4.0",
     "vue-tsc": "^2.2.12",
     "workbox-window": "^7.4.0"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public",
-    "tag": "latest"
   }
 }

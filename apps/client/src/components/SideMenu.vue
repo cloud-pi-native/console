@@ -1,54 +1,50 @@
 <script lang="ts" setup>
-import { AdminAuthorized } from '@cpn-console/shared'
-import { useServiceStore } from '@/stores/services-monitor.js'
-import { useUserStore } from '@/stores/user.js'
-import { openCDSEnabled } from '@/utils/env.js'
-import { isInProject } from '../router/index.js'
+import { AdminAuthorized } from '@cpn-console/shared';
+import { useServiceStore } from '@/stores/services-monitor.js';
+import { useUserStore } from '@/stores/user.js';
+import { openCDSEnabled } from '@/utils/env.js';
+import { isInProject } from '../router/index.js';
 
-const route = useRoute()
-const userStore = useUserStore()
-const serviceStore = useServiceStore()
+const route = useRoute();
+const userStore = useUserStore();
+const serviceStore = useServiceStore();
 
-const routeName = computed(() => route.name)
-const isLoggedIn = computed(() => userStore.isLoggedIn)
+const routeName = computed(() => route.name);
+const isLoggedIn = computed(() => userStore.isLoggedIn);
 
-const isDarkScheme = ref<boolean>()
-const selectedScheme = computed<string | undefined>(() =>
-  isDarkScheme.value ? 'dark' : 'light',
-)
+const isDarkScheme = ref<boolean>();
+const selectedScheme = computed<string | undefined>(() => (isDarkScheme.value ? 'dark' : 'light'));
 
 const isExpanded = ref({
   mainMenu: false,
   projects: false,
   administration: false,
   profile: false,
-})
+});
 
-const isCDSActivated = ref<boolean>()
+const isCDSActivated = ref<boolean>();
 
 function toggleExpand(key: keyof typeof isExpanded.value) {
-  isExpanded.value[key] = !isExpanded.value[key]
+  isExpanded.value[key] = !isExpanded.value[key];
 }
 
 watch(route, (currentRoute) => {
-  isExpanded.value.projects = isInProject.value
-  isExpanded.value.profile = currentRoute.matched.some(
-    match => match.name === 'Profile',
-  )
+  isExpanded.value.projects = isInProject.value;
+  isExpanded.value.profile = currentRoute.matched.some((match) => match.name === 'Profile');
   isExpanded.value.administration = currentRoute.matched.some(
-    match => match.name === 'ParentAdmin',
-  )
-})
+    (match) => match.name === 'ParentAdmin',
+  );
+});
 
 onMounted(() => {
   // @ts-ignore
-  const { scheme, setScheme } = useScheme()
+  const { scheme, setScheme } = useScheme();
 
-  isDarkScheme.value = scheme.value === 'dark'
-  isCDSActivated.value = openCDSEnabled === 'true'
+  isDarkScheme.value = scheme.value === 'dark';
+  isCDSActivated.value = openCDSEnabled === 'true';
 
-  watchEffect(() => setScheme(selectedScheme.value))
-})
+  watchEffect(() => setScheme(selectedScheme.value));
+});
 </script>
 
 <template>
@@ -59,17 +55,9 @@ onMounted(() => {
     button-label="Menu"
     @toggle-expand="toggleExpand('mainMenu')"
   >
-    <DsfrSideMenuList
-      id="menuList"
-      class="mt-0 mb-4 ml-4"
-      :expanded="isExpanded.mainMenu"
-    >
+    <DsfrSideMenuList id="menuList" class="mt-0 mb-4 ml-4" :expanded="isExpanded.mainMenu">
       <DsfrSideMenuListItem>
-        <DsfrSideMenuLink
-          to=""
-          class="flex flex-row gap-2"
-          @click="isDarkScheme = !isDarkScheme"
-        >
+        <DsfrSideMenuLink to="" class="flex flex-row gap-2" @click="isDarkScheme = !isDarkScheme">
           {{ isDarkScheme ? 'Thème clair' : 'Thème sombre' }}
           <v-icon
             :name="isDarkScheme ? 'ri:sun-line' : 'ri:moon-clear-line'"
@@ -82,11 +70,7 @@ onMounted(() => {
         </DsfrSideMenuLink>
       </DsfrSideMenuListItem>
       <DsfrSideMenuListItem>
-        <DsfrSideMenuLink
-          data-testid="menuHome"
-          :active="routeName === 'Home'"
-          to="/"
-        >
+        <DsfrSideMenuLink data-testid="menuHome" :active="routeName === 'Home'" to="/">
           Accueil
         </DsfrSideMenuLink>
       </DsfrSideMenuListItem>
@@ -103,11 +87,7 @@ onMounted(() => {
           {{ userStore.userProfile?.firstName }}
           {{ userStore.userProfile?.lastName }}
         </DsfrSideMenuButton>
-        <DsfrSideMenuList
-          id="profileList"
-          :expanded="isExpanded.profile"
-          :collapsable="true"
-        >
+        <DsfrSideMenuList id="profileList" :expanded="isExpanded.profile" :collapsable="true">
           <div>
             <DsfrSideMenuListItem>
               <DsfrSideMenuLink

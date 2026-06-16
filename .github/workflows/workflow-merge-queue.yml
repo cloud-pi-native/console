@@ -20,12 +20,12 @@ on:
 env:
   NODE_VERSION: 24.13.1
   REGISTRY: ghcr.io
-  NAMESPACE: "${{ github.repository }}"
+  NAMESPACE: '${{ github.repository }}'
   BUILD_AMD64: true
   BUILD_ARM64: false
   USE_QEMU: false
-  MERGE_GROUP_HEAD_SHA: "${{ github.event.merge_group.head_sha || github.sha }}"
-  MERGE_GROUP_HEAD_REF: "${{ github.event.merge_group.head_ref || github.ref_name }}"
+  MERGE_GROUP_HEAD_SHA: '${{ github.event.merge_group.head_sha || github.sha }}'
+  MERGE_GROUP_HEAD_REF: '${{ github.event.merge_group.head_ref || github.ref_name }}'
 
 jobs:
   path-filter:
@@ -86,9 +86,9 @@ jobs:
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
     secrets:
-      SONAR_HOST_URL: "${{ secrets.SONAR_HOST_URL }}"
-      SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
-      SONAR_PROJECT_KEY: "${{ secrets.SONAR_PROJECT_KEY }}"
+      SONAR_HOST_URL: '${{ secrets.SONAR_HOST_URL }}'
+      SONAR_TOKEN: '${{ secrets.SONAR_TOKEN }}'
+      SONAR_PROJECT_KEY: '${{ secrets.SONAR_PROJECT_KEY }}'
 
   build:
     uses: ./.github/workflows/job-build.yml

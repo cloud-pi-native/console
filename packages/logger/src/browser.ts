@@ -1,4 +1,4 @@
-import { pino, stdSerializers } from 'pino'
+import { pino, stdSerializers } from 'pino';
 
 export const logger = pino({
   customLevels: {
@@ -11,6 +11,6 @@ export const logger = pino({
   serializers: {
     err: stdSerializers.errWithCause,
   },
-})
+});
 
-export type Logger = typeof logger
+export type Logger = typeof logger;

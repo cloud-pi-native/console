@@ -1,33 +1,34 @@
 <script lang="ts" setup>
-import type { Project, ProjectOperations } from '@/utils/project-utils.js'
-import { deleteValidationInput } from '@cpn-console/shared'
-import { useProjectStore } from '@/stores/project.js'
-import { clickInDialog } from '@/utils/func.js'
+import type { Project, ProjectOperations } from '@/utils/project-utils.js';
+import { deleteValidationInput } from '@cpn-console/shared';
+import { useProjectStore } from '@/stores/project.js';
+import { clickInDialog } from '@/utils/func.js';
 
 const props = defineProps<{
-  project: Project
-}>()
+  project: Project;
+}>();
 
 const emit = defineEmits<{
-  archive: []
-}>()
+  archive: [];
+}>();
 
-const isArchivingProject = ref(false)
-const deleteInput = ref('')
-const isDeleting = computed(
-  () =>
-    (props.project.operationsInProgress as unknown as ProjectOperations[]).some(ope => ope.startsWith('delete')),
-)
+const isArchivingProject = ref(false);
+const deleteInput = ref('');
+const isDeleting = computed(() =>
+  (props.project.operationsInProgress as unknown as ProjectOperations[]).some((ope) =>
+    ope.startsWith('delete'),
+  ),
+);
 
 async function archiveProject() {
-  isArchivingProject.value = false
-  await props.project.Commands.delete()
-  useProjectStore().lastSelectedProjectSlug = undefined
-  emit('archive')
+  isArchivingProject.value = false;
+  await props.project.Commands.delete();
+  useProjectStore().lastSelectedProjectSlug = undefined;
+  emit('archive');
 }
 
 function closeModal() {
-  isArchivingProject.value = false
+  isArchivingProject.value = false;
 }
 </script>
 
@@ -36,11 +37,7 @@ function closeModal() {
     data-testid="showArchiveProjectBtn"
     label="Supprimer le projet"
     :disabled="isDeleting || project.locked"
-    :icon="
-      isDeleting
-        ? { name: 'ri:refresh-line', animation: 'spin' }
-        : 'ri:delete-bin-7-line'
-    "
+    :icon="isDeleting ? { name: 'ri:refresh-line', animation: 'spin' } : 'ri:delete-bin-7-line'"
     @click="isArchivingProject = true"
   />
   <DsfrModal

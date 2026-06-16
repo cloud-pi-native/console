@@ -1,221 +1,255 @@
 <script setup lang="ts">
-import type { CleanedCluster, Cluster, CreateEnvironmentBody, Environment, Repo, UpdateEnvironmentBody, Zone } from '@cpn-console/shared'
-import type { Project } from '@/utils/project-utils.js'
-import { logger } from '@cpn-console/logger/browser'
-import { AdminAuthorized, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
-import TimeAgo from 'javascript-time-ago'
-import fr from 'javascript-time-ago/locale/fr'
-import { useClusterStore } from '@/stores/cluster.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useStageStore } from '@/stores/stage.js'
-import { useUserStore } from '@/stores/user.js'
-import { useZoneStore } from '@/stores/zone.js'
-import { clickInDialog, getRandomId } from '@/utils/func.js'
+import type {
+  CleanedCluster,
+  Cluster,
+  CreateEnvironmentBody,
+  Environment,
+  Repo,
+  UpdateEnvironmentBody,
+  Zone,
+} from '@cpn-console/shared';
+import type { Project } from '@/utils/project-utils.js';
+import { logger } from '@cpn-console/logger/browser';
+import { AdminAuthorized, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared';
+import TimeAgo from 'javascript-time-ago';
+import fr from 'javascript-time-ago/locale/fr';
+import { useClusterStore } from '@/stores/cluster.js';
+import { useSnackbarStore } from '@/stores/snackbar.js';
+import { useStageStore } from '@/stores/stage.js';
+import { useUserStore } from '@/stores/user.js';
+import { useZoneStore } from '@/stores/zone.js';
+import { clickInDialog, getRandomId } from '@/utils/func.js';
 
-type Source = 'Privée extérieure' | 'Publique extérieure' | 'Interne'
+type Source = 'Privée extérieure' | 'Publique extérieure' | 'Interne';
 
 const props = defineProps<{
-  project: Project
-  asProfile: 'user' | 'admin'
-}>()
+  project: Project;
+  asProfile: 'user' | 'admin';
+}>();
 
-const zoneStore = useZoneStore()
-const clusterStore = useClusterStore()
-const snackbarStore = useSnackbarStore()
-const stageStore = useStageStore()
-const userStore = useUserStore()
+const zoneStore = useZoneStore();
+const clusterStore = useClusterStore();
+const snackbarStore = useSnackbarStore();
+const stageStore = useStageStore();
+const userStore = useUserStore();
 
-const environments = ref<(Environment & { cluster?: Cluster, zone?: Zone })[]>()
-const repositories = ref<(Repo & { source: Source })[]>()
-const projectUsage = ref<({
-  hprod: { cpu: number, gpu: number, memory: number }
-  prod: { cpu: number, gpu: number, memory: number }
-})>()
+const environments = ref<(Environment & { cluster?: Cluster; zone?: Zone })[]>();
+const repositories = ref<(Repo & { source: Source })[]>();
+const projectUsage = ref<{
+  hprod: { cpu: number; gpu: number; memory: number };
+  prod: { cpu: number; gpu: number; memory: number };
+}>();
 
-const defaultBranchName = 'main'
-const branchName = ref<string>(defaultBranchName)
+const defaultBranchName = 'main';
+const branchName = ref<string>(defaultBranchName);
 
-const environmentsCtKey = ref(getRandomId('environment'))
-const repositoriesCtKey = ref(getRandomId('repository'))
+const environmentsCtKey = ref(getRandomId('environment'));
+const repositoriesCtKey = ref(getRandomId('repository'));
 
-const headerEnvs = ['Nom', 'Type', 'Ressources', 'Localisation', 'Date']
-const headerRepos = ['Nom', 'Type', 'Source', 'Date']
-const repositoriesId = 'repositoriesTable'
-const environmentsId = 'environmentsTable'
-const syncFormId = 'syncFormId'
-const selectedRepo = ref<Repo>()
-const selectedEnv = ref<Environment>()
-const newResource = ref<'repo' | 'env'>()
-const hideEnvs = computed(() => props.asProfile === 'user' && !ProjectAuthorized.ListEnvironments({ projectPermissions: props.project.myPerms }))
-const hideRepos = computed(() => props.asProfile === 'user' && !ProjectAuthorized.ListRepositories({ projectPermissions: props.project.myPerms }))
+const headerEnvs = ['Nom', 'Type', 'Ressources', 'Localisation', 'Date'];
+const headerRepos = ['Nom', 'Type', 'Source', 'Date'];
+const repositoriesId = 'repositoriesTable';
+const environmentsId = 'environmentsTable';
+const syncFormId = 'syncFormId';
+const selectedRepo = ref<Repo>();
+const selectedEnv = ref<Environment>();
+const newResource = ref<'repo' | 'env'>();
+const hideEnvs = computed(
+  () =>
+    props.asProfile === 'user' &&
+    !ProjectAuthorized.ListEnvironments({ projectPermissions: props.project.myPerms }),
+);
+const hideRepos = computed(
+  () =>
+    props.asProfile === 'user' &&
+    !ProjectAuthorized.ListRepositories({ projectPermissions: props.project.myPerms }),
+);
 
-const openedModal = computed(() => !!(selectedRepo.value || selectedEnv.value || newResource.value))
+const openedModal = computed(
+  () => !!(selectedRepo.value || selectedEnv.value || newResource.value),
+);
 
-const prodStageId = stageStore.stages.find(stage => stage.name === 'prod')?.id
+const prodStageId = stageStore.stages.find((stage) => stage.name === 'prod')?.id;
 
-const publicClusters = computed(() => clusterStore.clusters.filter(({ privacy }) => privacy === 'public'))
-const dedicatedProjectClusters = computed(() => clusterStore.clusters.filter(cluster => props.project.clusterIds.includes(cluster.id)))
-const projectClusters = computed(() => ([
+const publicClusters = computed(() =>
+  clusterStore.clusters.filter(({ privacy }) => privacy === 'public'),
+);
+const dedicatedProjectClusters = computed(() =>
+  clusterStore.clusters.filter((cluster) => props.project.clusterIds.includes(cluster.id)),
+);
+const projectClusters = computed(() => [
   ...publicClusters.value,
   ...dedicatedProjectClusters.value,
-]))
+]);
 
-const canManageEnvs = computed(() => !props.project.locked && props.asProfile === 'user' && ProjectAuthorized.ManageEnvironments({ projectPermissions: props.project.myPerms }))
-const canManageRepos = computed(() => !props.project.locked && props.asProfile === 'user' && ProjectAuthorized.ManageRepositories({ projectPermissions: props.project.myPerms }))
+const canManageEnvs = computed(
+  () =>
+    !props.project.locked &&
+    props.asProfile === 'user' &&
+    ProjectAuthorized.ManageEnvironments({ projectPermissions: props.project.myPerms }),
+);
+const canManageRepos = computed(
+  () =>
+    !props.project.locked &&
+    props.asProfile === 'user' &&
+    ProjectAuthorized.ManageRepositories({ projectPermissions: props.project.myPerms }),
+);
 
 watch(selectedRepo, async () => {
-  branchName.value = defaultBranchName
-})
+  branchName.value = defaultBranchName;
+});
 
 async function putEnvironment(environment: UpdateEnvironmentBody, envId: Environment['id']) {
-  selectedEnv.value = undefined
+  selectedEnv.value = undefined;
   if (!props.project.locked) {
     props.project.Environments.update(envId, environment)
-      .catch(reason => snackbarStore.setMessage(reason, 'error'))
-      .finally(reload)
+      .catch((reason) => snackbarStore.setMessage(reason, 'error'))
+      .finally(reload);
   }
 }
 
 async function deleteEnvironment(environmentId: Environment['id']) {
-  selectedEnv.value = undefined
+  selectedEnv.value = undefined;
   if (!props.project.locked) {
     props.project.Environments.delete(environmentId)
-      .catch(reason => snackbarStore.setMessage(reason, 'error'))
-      .finally(reload)
+      .catch((reason) => snackbarStore.setMessage(reason, 'error'))
+      .finally(reload);
   }
 }
 
 async function addEnvironment(environment: Omit<CreateEnvironmentBody, 'id' | 'projectId'>) {
-  newResource.value = undefined
+  newResource.value = undefined;
   if (!props.project.locked) {
     props.project.Environments.create(environment)
-      .catch(reason => snackbarStore.setMessage(reason, 'error'))
-      .finally(reload)
+      .catch((reason) => snackbarStore.setMessage(reason, 'error'))
+      .finally(reload);
   }
 }
 
-const isAllSyncing = ref<boolean>(false)
+const isAllSyncing = ref<boolean>(false);
 
 async function saveRepo(repo: Repo) {
-  selectedRepo.value = undefined
-  newResource.value = undefined
+  selectedRepo.value = undefined;
+  newResource.value = undefined;
   if (repo.id) {
     props.project.Repositories.update(repo.id, repo)
-      .catch(reason => snackbarStore.setMessage(reason, 'error'))
-      .finally(reload)
+      .catch((reason) => snackbarStore.setMessage(reason, 'error'))
+      .finally(reload);
   } else {
     props.project.Repositories.create(repo)
-      .catch(reason => snackbarStore.setMessage(reason, 'error'))
-      .finally(reload)
+      .catch((reason) => snackbarStore.setMessage(reason, 'error'))
+      .finally(reload);
   }
 }
 
 async function deleteRepo(repoId: Repo['id']) {
-  selectedRepo.value = undefined
+  selectedRepo.value = undefined;
   props.project.Repositories.delete(repoId)
-    .catch(reason => snackbarStore.setMessage(reason, 'error'))
-    .finally(reload)
+    .catch((reason) => snackbarStore.setMessage(reason, 'error'))
+    .finally(reload);
 }
 
 async function syncRepository() {
-  if (!selectedRepo.value) return
-  if (!isAllSyncing.value && !branchName.value) branchName.value = defaultBranchName
-  await props.project.Repositories.sync(selectedRepo.value.id, { syncAllBranches: isAllSyncing.value, branchName: branchName.value })
-  snackbarStore.setMessage(`Travail de synchronisation lancé pour le dépôt ${selectedRepo.value.internalRepoName}`)
+  if (!selectedRepo.value) return;
+  if (!isAllSyncing.value && !branchName.value) branchName.value = defaultBranchName;
+  await props.project.Repositories.sync(selectedRepo.value.id, {
+    syncAllBranches: isAllSyncing.value,
+    branchName: branchName.value,
+  });
+  snackbarStore.setMessage(
+    `Travail de synchronisation lancé pour le dépôt ${selectedRepo.value.internalRepoName}`,
+  );
 }
 
 // Add locale-specific relative date/time formatting rules.
-TimeAgo.addLocale(fr)
+TimeAgo.addLocale(fr);
 
 // Create relative date/time formatter.
-const timeAgo = new TimeAgo('fr-FR')
+const timeAgo = new TimeAgo('fr-FR');
 
 async function reload() {
-  environments.value = await props.project.Environments.list()
-    .then(envs => envs.map((environment: Environment) => {
-      const cluster = clusterStore.clusters.find(cluster => cluster.id === environment.clusterId)
-      const zone = zoneStore.zones.find(zone => zone.id === cluster?.zoneId)
+  environments.value = await props.project.Environments.list().then((envs) =>
+    envs.map((environment: Environment) => {
+      const cluster = clusterStore.clusters.find((cluster) => cluster.id === environment.clusterId);
+      const zone = zoneStore.zones.find((zone) => zone.id === cluster?.zoneId);
       return {
         ...environment,
         cluster,
         zone,
+      };
+    }),
+  );
+  repositories.value = await props.project.Repositories.list().then((repos) => {
+    return repos.map((repo: Repo) => {
+      let source: Source;
+      if (repo.externalRepoUrl) {
+        source = repo.isPrivate ? 'Privée extérieure' : 'Publique extérieure';
+      } else {
+        source = 'Interne';
       }
-    }))
-  repositories.value = await props.project.Repositories.list()
-    .then((repos) => {
-      return repos.map((repo: Repo) => {
-        let source: Source
-        if (repo.externalRepoUrl) {
-          source = repo.isPrivate ? 'Privée extérieure' : 'Publique extérieure'
-        } else {
-          source = 'Interne'
-        }
-        return {
-          ...repo,
-          source,
-        }
-      })
-    })
+      return {
+        ...repo,
+        source,
+      };
+    });
+  });
   projectUsage.value = environments.value?.reduce(
     (accumulator, current) => {
       if (current.stageId === prodStageId) {
-        accumulator.prod.cpu += current.cpu
-        accumulator.prod.gpu += current.gpu
-        accumulator.prod.memory += current.memory
+        accumulator.prod.cpu += current.cpu;
+        accumulator.prod.gpu += current.gpu;
+        accumulator.prod.memory += current.memory;
       } else {
-        accumulator.hprod.cpu += current.cpu
-        accumulator.hprod.gpu += current.gpu
-        accumulator.hprod.memory += current.memory
+        accumulator.hprod.cpu += current.cpu;
+        accumulator.hprod.gpu += current.gpu;
+        accumulator.hprod.memory += current.memory;
       }
-      return accumulator
+      return accumulator;
     },
     {
       hprod: { cpu: 0, gpu: 0, memory: 0 },
       prod: { cpu: 0, gpu: 0, memory: 0 },
     },
-  )
+  );
 
-  logger.debug({ projectSlug: props.project.slug, environmentsCount: props.project.environments?.value?.length }, 'Loaded project resources')
+  logger.debug(
+    {
+      projectSlug: props.project.slug,
+      environmentsCount: props.project.environments?.value?.length,
+    },
+    'Loaded project resources',
+  );
 }
-onMounted(reload)
+onMounted(reload);
 
 function closeModal() {
-  selectedRepo.value = undefined
-  selectedEnv.value = undefined
-  newResource.value = undefined
+  selectedRepo.value = undefined;
+  selectedEnv.value = undefined;
+  newResource.value = undefined;
 }
 
 // Allow the copy to clipboard on click
-const copiedText = ref('')
-const MILLISECONDS_UNTIL_CLIPBOARD_CLEAR = 2000
+const copiedText = ref('');
+const MILLISECONDS_UNTIL_CLIPBOARD_CLEAR = 2000;
 
 async function copyToClipboard(text: string) {
   try {
-    await navigator.clipboard.writeText(text)
-    copiedText.value = text
-    setTimeout(() => (copiedText.value = ''), MILLISECONDS_UNTIL_CLIPBOARD_CLEAR)
+    await navigator.clipboard.writeText(text);
+    copiedText.value = text;
+    setTimeout(() => (copiedText.value = ''), MILLISECONDS_UNTIL_CLIPBOARD_CLEAR);
   } catch (err) {
-    logger.error({ err }, 'Clipboard write failed')
+    logger.error({ err }, 'Clipboard write failed');
   }
 }
 </script>
 
 <template>
-  <div
-    class="grow"
-  >
+  <div class="grow">
     <div>
-      <DsfrTable
-        :id="environmentsId"
-        :key="environmentsCtKey"
-        title="Environnements"
-      >
+      <DsfrTable :id="environmentsId" :key="environmentsCtKey" title="Environnements">
         <template #header>
           <tr>
-            <td
-              v-for="header in headerEnvs"
-              :key="header"
-            >
+            <td v-for="header in headerEnvs" :key="header">
               {{ header }}
             </td>
           </tr>
@@ -227,44 +261,60 @@ async function copyToClipboard(text: string) {
           @click="selectedEnv = env"
         >
           <td>{{ env.name }}</td>
-          <td>{{ stageStore.stages.find(stage => stage.id === env.stageId)?.name ?? 'Type inconnu...' }}</td>
           <td>
-            {{ env.memory.toLocaleString() }}GiB {{ env.cpu.toLocaleString() }}CPU {{ env.gpu.toLocaleString() }}GPU
+            {{
+              stageStore.stages.find((stage) => stage.id === env.stageId)?.name ?? 'Type inconnu...'
+            }}
+          </td>
+          <td>
+            {{ env.memory.toLocaleString() }}GiB {{ env.cpu.toLocaleString() }}CPU
+            {{ env.gpu.toLocaleString() }}GPU
           </td>
           <td>
             <div class="flex flex-row gap-2">
-              <Badge
-                :name="env.cluster?.label ?? 'Cluster inconnu'"
-                type="cluster"
-              />
-              <Badge
-                :name="env.zone?.label ?? 'Zone inconnue'"
-                type="zone"
-              />
+              <Badge :name="env.cluster?.label ?? 'Cluster inconnu'" type="cluster" />
+              <Badge :name="env.zone?.label ?? 'Zone inconnue'" type="zone" />
             </div>
           </td>
-          <td
-            :title="(new Date(env.createdAt)).toLocaleString()"
-          >
+          <td :title="new Date(env.createdAt).toLocaleString()">
             <span>{{ timeAgo.format(new Date(env.createdAt)) }}</span>
           </td>
         </tr>
-        <tr
-          v-if="!environments?.length"
-          data-testid="noEnvsTr"
-        >
-          <td
-            :colspan="headerEnvs.length"
-          >
-            {{ hideEnvs ? 'Vous n\'avez pas les permissions suffisantes' : 'Aucun environnement existant' }}
+        <tr v-if="!environments?.length" data-testid="noEnvsTr">
+          <td :colspan="headerEnvs.length">
+            {{
+              hideEnvs
+                ? "Vous n'avez pas les permissions suffisantes"
+                : 'Aucun environnement existant'
+            }}
           </td>
         </tr>
       </DsfrTable>
       <div v-if="!project.limitless">
         Utilisation des ressources projets :
         <ul>
-          <li>Hors-Prod: {{ projectUsage?.hprod.memory.toLocaleString() }}/{{ project.hprodMemory.toLocaleString() }} GiB {{ projectUsage?.hprod.cpu.toLocaleString() }}/{{ project.hprodCpu.toLocaleString() }} CPU {{ projectUsage?.hprod.gpu.toLocaleString() }}/{{ project.hprodGpu.toLocaleString() }} GPU</li>
-          <li>Prod: {{ projectUsage?.prod.memory.toLocaleString() }}/{{ project.prodMemory.toLocaleString() }} GiB {{ projectUsage?.prod.cpu.toLocaleString() }}/{{ project.prodCpu.toLocaleString() }} CPU {{ projectUsage?.prod.gpu.toLocaleString() }}/{{ project.prodGpu.toLocaleString() }} GPU</li>
+          <li>
+            Hors-Prod: {{ projectUsage?.hprod.memory.toLocaleString() }}/{{
+              project.hprodMemory.toLocaleString()
+            }}
+            GiB {{ projectUsage?.hprod.cpu.toLocaleString() }}/{{
+              project.hprodCpu.toLocaleString()
+            }}
+            CPU {{ projectUsage?.hprod.gpu.toLocaleString() }}/{{
+              project.hprodGpu.toLocaleString()
+            }}
+            GPU
+          </li>
+          <li>
+            Prod: {{ projectUsage?.prod.memory.toLocaleString() }}/{{
+              project.prodMemory.toLocaleString()
+            }}
+            GiB {{ projectUsage?.prod.cpu.toLocaleString() }}/{{
+              project.prodCpu.toLocaleString()
+            }}
+            CPU {{ projectUsage?.prod.gpu.toLocaleString() }}/{{ project.prodGpu.toLocaleString() }}
+            GPU
+          </li>
         </ul>
       </div>
       <DsfrButton
@@ -280,87 +330,46 @@ async function copyToClipboard(text: string) {
       />
     </div>
   </div>
-  <div
-    class="grow"
-  >
-    <DsfrTable
-      :id="repositoriesId"
-      :key="repositoriesCtKey"
-      title="Dépôts"
-    >
+  <div class="grow">
+    <DsfrTable :id="repositoriesId" :key="repositoriesCtKey" title="Dépôts">
       <template #header>
         <tr>
-          <td
-            v-for="header in headerRepos"
-            :key="header"
-          >
+          <td v-for="header in headerRepos" :key="header">
             {{ header }}
           </td>
         </tr>
       </template>
       <tr
-        v-for="repo in repositories?.toSorted((a, b) => a.internalRepoName.localeCompare(b.internalRepoName))"
+        v-for="repo in repositories?.toSorted((a, b) =>
+          a.internalRepoName.localeCompare(b.internalRepoName),
+        )"
         :key="repo.id"
         :data-testid="`repoTr-${repo.internalRepoName}`"
         @click="selectedRepo = repo"
       >
         <td>{{ repo.internalRepoName }}</td>
-        <td
-          :title="repo.isInfra ? 'Infrastructure' : 'Application'"
-        >
-          <v-icon
-            v-if="repo.isInfra"
-            name="ri:file-info-line"
-          />
-          <v-icon
-            v-else
-            name="ri:code-s-slash-line"
-          />
+        <td :title="repo.isInfra ? 'Infrastructure' : 'Application'">
+          <v-icon v-if="repo.isInfra" name="ri:file-info-line" />
+          <v-icon v-else name="ri:code-s-slash-line" />
         </td>
-        <td
-          :title="repo.source"
-        >
-          <div
-            class="flex justify-end"
-          >
-            <template
-              v-if="repo.externalRepoUrl"
-            >
-              <v-icon
-                v-if="repo.isPrivate"
-                name="ri:git-repository-private-line"
-              />
-              <v-icon
-                v-else
-                name="ri:global-line"
-              />
-              <v-icon
-                name="ri:arrow-right-line"
-              />
-              <v-icon
-                name="ri:building-line"
-              />
+        <td :title="repo.source">
+          <div class="flex justify-end">
+            <template v-if="repo.externalRepoUrl">
+              <v-icon v-if="repo.isPrivate" name="ri:git-repository-private-line" />
+              <v-icon v-else name="ri:global-line" />
+              <v-icon name="ri:arrow-right-line" />
+              <v-icon name="ri:building-line" />
             </template>
-            <v-icon
-              v-else
-              name="ri:building-line"
-            />
+            <v-icon v-else name="ri:building-line" />
           </div>
         </td>
-        <td
-          :title="(new Date(repo.createdAt)).toLocaleString()"
-        >
+        <td :title="new Date(repo.createdAt).toLocaleString()">
           {{ timeAgo.format(new Date(repo.createdAt)) }}
         </td>
       </tr>
-      <tr
-        v-if="!repositories?.length"
-        data-testid="noReposTr"
-      >
-        <td
-          :colspan="headerRepos.length"
-        >
-          {{ hideRepos ? 'Vous n\'avez pas les permissions suffisantes' : 'Aucun dépôt existant' }}
+      <tr v-if="!repositories?.length" data-testid="noReposTr">
+        <td :colspan="headerRepos.length">
+          {{ hideRepos ? "Vous n'avez pas les permissions suffisantes" : 'Aucun dépôt existant' }}
         </td>
       </tr>
     </DsfrTable>
@@ -387,12 +396,19 @@ async function copyToClipboard(text: string) {
   >
     <EnvironmentForm
       v-if="selectedEnv"
-      :available-clusters="[clusterStore.clusters.find(({ id }) => id === selectedEnv?.clusterId) as CleanedCluster]"
+      :available-clusters="[
+        clusterStore.clusters.find(({ id }) => id === selectedEnv?.clusterId) as CleanedCluster,
+      ]"
       :environment="selectedEnv"
       :is-editable="false"
       :is-project-locked="project.locked"
-      :can-manage="canManageEnvs || (AdminAuthorized.Manage(userStore.adminPerms) && asProfile === 'admin')"
-      @put-environment="(environmentUpdate: UpdateEnvironmentBody) => putEnvironment(environmentUpdate, selectedEnv!.id)"
+      :can-manage="
+        canManageEnvs || (AdminAuthorized.Manage(userStore.adminPerms) && asProfile === 'admin')
+      "
+      @put-environment="
+        (environmentUpdate: UpdateEnvironmentBody) =>
+          putEnvironment(environmentUpdate, selectedEnv!.id)
+      "
       @delete-environment="() => deleteEnvironment(selectedEnv!.id)"
       @cancel="selectedEnv = undefined"
     />
@@ -402,25 +418,24 @@ async function copyToClipboard(text: string) {
       :available-clusters="projectClusters"
       :can-manage="canManageEnvs"
       is-editable
-      @add-environment="(environment: Omit<CreateEnvironmentBody, 'id' | 'projectId'>) => addEnvironment(environment)"
+      @add-environment="
+        (environment: Omit<CreateEnvironmentBody, 'id' | 'projectId'>) =>
+          addEnvironment(environment)
+      "
       @cancel="newResource = undefined"
     />
-    <template
-      v-else-if="selectedRepo"
-    >
+    <template v-else-if="selectedRepo">
       <div
-        v-if="ProjectAuthorized.ManageRepositories({ projectPermissions: project.myPerms }) && selectedRepo?.externalRepoUrl && selectedRepo?.id"
+        v-if="
+          ProjectAuthorized.ManageRepositories({ projectPermissions: project.myPerms }) &&
+          selectedRepo?.externalRepoUrl &&
+          selectedRepo?.id
+        "
         :id="syncFormId"
         class="flex flex-col gap-4 fr-mb-4w"
       >
-        <h2
-          class="fr-h2 fr-mt-2w"
-        >
-          Synchroniser le dépôt {{ selectedRepo?.internalRepoName }}
-        </h2>
-        <div
-          class="flex flex-col gap-4 w-2/5"
-        >
+        <h2 class="fr-h2 fr-mt-2w">Synchroniser le dépôt {{ selectedRepo?.internalRepoName }}</h2>
+        <div class="flex flex-col gap-4 w-2/5">
           <DsfrToggleSwitch
             v-model="isAllSyncing"
             label="Synchroniser toutes les branches"
@@ -437,9 +452,7 @@ async function copyToClipboard(text: string) {
             placeholder="main"
           />
         </div>
-        <div
-          class="flex space-x-10 mt-5"
-        >
+        <div class="flex space-x-10 mt-5">
           <DsfrButton
             data-testid="syncRepoBtn"
             label="Lancer la synchronisation"

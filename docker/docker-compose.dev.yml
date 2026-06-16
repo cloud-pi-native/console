@@ -16,7 +16,7 @@ services:
     entrypoint: /opt/bitnami/keycloak/bin/kc.sh
     command: start-dev --import-realm
     healthcheck:
-      test: [CMD, curl, --head, fsS, "http://localhost:8080/health/ready"]
+      test: [CMD, curl, --head, fsS, 'http://localhost:8080/health/ready']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -175,8 +175,8 @@ services:
       server-nestjs:
         condition: service_healthy
     environment:
-      LEGACY_UPSTREAM: "server:8080"
-      NESTJS_UPSTREAM: "server-nestjs:3001"
+      LEGACY_UPSTREAM: 'server:8080'
+      NESTJS_UPSTREAM: 'server-nestjs:3001'
     networks:
       - dso-network
     attach: false

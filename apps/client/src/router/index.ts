@@ -1,51 +1,45 @@
-import type {
-  RouteLocationNormalizedGeneric,
-  RouteRecordRaw,
-} from 'vue-router'
-import { logger } from '@cpn-console/logger/browser'
-import { AdminAuthorized, swaggerUiPath } from '@cpn-console/shared'
-import {
-  createRouter,
-  createWebHistory,
-} from 'vue-router'
-import { useProjectStore } from '@/stores/project.js'
-import { useSystemSettingsStore } from '@/stores/system-settings.js'
+import type { RouteLocationNormalizedGeneric, RouteRecordRaw } from 'vue-router';
+import { logger } from '@cpn-console/logger/browser';
+import { AdminAuthorized, swaggerUiPath } from '@cpn-console/shared';
+import { createRouter, createWebHistory } from 'vue-router';
+import { useProjectStore } from '@/stores/project.js';
+import { useSystemSettingsStore } from '@/stores/system-settings.js';
 
-import { useUserStore } from '@/stores/user.js'
-import { uuid } from '@/utils/regex.js'
-import DsoHome from '@/views/DsoHome.vue'
-import NotFound from '@/views/NotFound.vue'
+import { useUserStore } from '@/stores/user.js';
+import { uuid } from '@/utils/regex.js';
+import DsoHome from '@/views/DsoHome.vue';
+import NotFound from '@/views/NotFound.vue';
 
-const AdminCluster = () => import('@/views/admin/AdminCluster.vue')
-const AdminServiceChain = () => import('@/views/admin/AdminServiceChain.vue')
-const ServicesHealth = () => import('@/views/ServicesHealth.vue')
-const CreateProject = () => import('@/views/CreateProject.vue')
-const ProfileWrapper = () => import('@/views/profile/ProfileWrapper.vue')
-const UserInfo = () => import('@/views/profile/UserInfo.vue')
-const PersonalAccessTokens = () => import('@/views/profile/PersonalAccessTokens.vue')
-const DsoProjects = () => import('@/views/projects/DsoProjects.vue')
-const DsoAdmin = () => import('@/views/admin/DsoAdmin.vue')
-const ListUser = () => import('@/views/admin/ListUser.vue')
-const ProjectDashboard = () => import('@/views/ProjectDashboard.vue')
-const ListProjects = () => import('@/views/admin/ListProjects.vue')
-const ListLogs = () => import('@/views/admin/ListLogs.vue')
-const AdminRoles = () => import('@/views/admin/AdminRoles.vue')
-const ListClusters = () => import('@/views/admin/ListClusters.vue')
-const ListServiceChains = () => import('@/views/admin/ListServiceChains.vue')
-const ListStages = () => import('@/views/admin/ListStages.vue')
-const ListZones = () => import('@/views/admin/ListZones.vue')
-const ListPlugins = () => import('@/views/admin/ListPlugins.vue')
-const SystemSettings = () => import('@/views/admin/SystemSettings.vue')
-const Maintenance = () => import('@/views/DsoMaintenance.vue')
-const AdminTokens = () => import('@/views/admin/AdminTokens.vue')
+const AdminCluster = () => import('@/views/admin/AdminCluster.vue');
+const AdminServiceChain = () => import('@/views/admin/AdminServiceChain.vue');
+const ServicesHealth = () => import('@/views/ServicesHealth.vue');
+const CreateProject = () => import('@/views/CreateProject.vue');
+const ProfileWrapper = () => import('@/views/profile/ProfileWrapper.vue');
+const UserInfo = () => import('@/views/profile/UserInfo.vue');
+const PersonalAccessTokens = () => import('@/views/profile/PersonalAccessTokens.vue');
+const DsoProjects = () => import('@/views/projects/DsoProjects.vue');
+const DsoAdmin = () => import('@/views/admin/DsoAdmin.vue');
+const ListUser = () => import('@/views/admin/ListUser.vue');
+const ProjectDashboard = () => import('@/views/ProjectDashboard.vue');
+const ListProjects = () => import('@/views/admin/ListProjects.vue');
+const ListLogs = () => import('@/views/admin/ListLogs.vue');
+const AdminRoles = () => import('@/views/admin/AdminRoles.vue');
+const ListClusters = () => import('@/views/admin/ListClusters.vue');
+const ListServiceChains = () => import('@/views/admin/ListServiceChains.vue');
+const ListStages = () => import('@/views/admin/ListStages.vue');
+const ListZones = () => import('@/views/admin/ListZones.vue');
+const ListPlugins = () => import('@/views/admin/ListPlugins.vue');
+const SystemSettings = () => import('@/views/admin/SystemSettings.vue');
+const Maintenance = () => import('@/views/DsoMaintenance.vue');
+const AdminTokens = () => import('@/views/admin/AdminTokens.vue');
 
-const MAIN_TITLE = 'Console Cloud π Native'
+const MAIN_TITLE = 'Console Cloud π Native';
 
 export function detectProjectslug(to: Pick<RouteLocationNormalizedGeneric, 'params'>) {
-  const slugParam = to.params.slug as string
+  const slugParam = to.params.slug as string;
   return uuid.test(slugParam)
-    ? useProjectStore().projects.find(project => project.id === slugParam)?.slug
-    : slugParam
+    ? useProjectStore().projects.find((project) => project.id === slugParam)?.slug
+    : slugParam;
 }
 
 export const routes: Readonly<RouteRecordRaw[]> = [
@@ -53,8 +47,8 @@ export const routes: Readonly<RouteRecordRaw[]> = [
     path: '/login',
     name: 'Login',
     beforeEnter: async (_to, _from) => {
-      const userStore = useUserStore()
-      await userStore.login()
+      const userStore = useUserStore();
+      await userStore.login();
     },
     component: DsoProjects,
   },
@@ -62,8 +56,8 @@ export const routes: Readonly<RouteRecordRaw[]> = [
     path: '/logout',
     name: 'Logout',
     beforeEnter: async (_to, _from) => {
-      const userStore = useUserStore()
-      await userStore.logout()
+      const userStore = useUserStore();
+      await userStore.logout();
     },
     component: DsoHome,
   },
@@ -114,16 +108,21 @@ export const routes: Readonly<RouteRecordRaw[]> = [
         component: ProjectDashboard,
         async beforeEnter(to, _from, next) {
           if (typeof to.params.slug !== 'string') {
-            return next({ name: 'Projects' })
+            return next({ name: 'Projects' });
           }
           if (!(to.params.slug in useProjectStore().projectsBySlug)) {
-            await useProjectStore().getProject(to.params.slug).catch(async () => {
-              logger.warn({ slug: to.params.slug }, 'Unable to find project information, redirecting to /projects')
-              return next({ name: 'Projects' })
-            })
+            await useProjectStore()
+              .getProject(to.params.slug)
+              .catch(async () => {
+                logger.warn(
+                  { slug: to.params.slug },
+                  'Unable to find project information, redirecting to /projects',
+                );
+                return next({ name: 'Projects' });
+              });
           }
-          useProjectStore().lastSelectedProjectSlug = to.params.slug
-          return next()
+          useProjectStore().lastSelectedProjectSlug = to.params.slug;
+          return next();
         },
         props(to) {
           return {
@@ -131,7 +130,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
             parentRoute: 'Projects',
             asProfile: 'user',
             tab: to.query.tab,
-          }
+          };
         },
       },
     ],
@@ -165,17 +164,17 @@ export const routes: Readonly<RouteRecordRaw[]> = [
             component: ProjectDashboard,
             async beforeEnter(to, _from, next) {
               if (typeof to.params.slug !== 'string') {
-                return next('/admin/projects')
+                return next('/admin/projects');
               }
-              await useProjectStore().getProject(to.params.slug)
-              return next()
+              await useProjectStore().getProject(to.params.slug);
+              return next();
             },
             props(to) {
               return {
                 projectSlug: detectProjectslug(to),
                 parentRoute: 'ListProjects',
                 asProfile: 'admin',
-              }
+              };
             },
           },
         ],
@@ -195,7 +194,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
             props(to) {
               return {
                 id: to.params.id,
-              }
+              };
             },
           },
         ],
@@ -220,7 +219,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
             props(to) {
               return {
                 id: to.params.id,
-              }
+              };
             },
           },
         ],
@@ -276,51 +275,63 @@ export const routes: Readonly<RouteRecordRaw[]> = [
     name: 'NotFound',
     component: NotFound,
   },
-]
+];
 
 export function createAppRouter(base?: string) {
   const router = createRouter({
     history: createWebHistory(base ?? (import.meta.env?.BASE_URL || '')),
-    scrollBehavior: (to) => { if (to.hash && !to.hash.startsWith('#state=')) return ({ el: to.hash }) },
+    scrollBehavior: (to) => {
+      if (to.hash && !to.hash.startsWith('#state=')) return { el: to.hash };
+    },
     routes,
-  })
+  });
   router.beforeEach((to) => {
-    const specificTitle = to.meta.title ? `${to.meta.title} - ` : ''
-    document.title = `${specificTitle}${MAIN_TITLE}`
-  })
+    const specificTitle = to.meta.title ? `${to.meta.title} - ` : '';
+    document.title = `${specificTitle}${MAIN_TITLE}`;
+  });
   router.beforeEach(async (to, _from, next) => {
-    const validPath = new Set(['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout', 'Swagger-server', 'Swagger-server-nestjs'])
-    const userStore = useUserStore()
-    const systemStore = useSystemSettingsStore()
-    await userStore.setIsLoggedIn()
-    if (
-      !validPath.has(to.name?.toString() ?? '')
-      && !userStore.isLoggedIn
-    ) {
-      return next('/login')
+    const validPath = new Set([
+      'Login',
+      'Home',
+      'Doc',
+      'NotFound',
+      'ServicesHealth',
+      'Maintenance',
+      'Logout',
+      'Swagger-server',
+      'Swagger-server-nestjs',
+    ]);
+    const userStore = useUserStore();
+    const systemStore = useSystemSettingsStore();
+    await userStore.setIsLoggedIn();
+    if (!validPath.has(to.name?.toString() ?? '') && !userStore.isLoggedIn) {
+      return next('/login');
     }
     if (to.name === 'Login' && userStore.isLoggedIn) {
-      return next('/')
+      return next('/');
     }
-    if (
-      !validPath.has(to.name?.toString() ?? '')
-      && userStore.isLoggedIn
-    ) {
-      await systemStore.listSystemSettings()
-      if (systemStore.systemSettingsByKey.maintenance?.value === 'on' && !AdminAuthorized.Manage(userStore.adminPerms)) return next('/maintenance')
+    if (!validPath.has(to.name?.toString() ?? '') && userStore.isLoggedIn) {
+      await systemStore.listSystemSettings();
+      if (
+        systemStore.systemSettingsByKey.maintenance?.value === 'on' &&
+        !AdminAuthorized.Manage(userStore.adminPerms)
+      )
+        return next('/maintenance');
     }
-    next()
-  })
-  return router
+    next();
+  });
+  return router;
 }
 
-const router = createAppRouter()
+const router = createAppRouter();
 
-export const isInProject = computed(() => router.currentRoute.value.matched.some(route => route.name === 'Project'))
+export const isInProject = computed(() =>
+  router.currentRoute.value.matched.some((route) => route.name === 'Project'),
+);
 export const selectedProjectSlug = computed<string | undefined>(() => {
-  if (router.currentRoute.value.matched.some(route => route.name === 'Project')) {
-    return router.currentRoute.value.params.slug as string
+  if (router.currentRoute.value.matched.some((route) => route.name === 'Project')) {
+    return router.currentRoute.value.params.slug as string;
   }
-  return undefined
-})
-export default router
+  return undefined;
+});
+export default router;

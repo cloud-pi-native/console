@@ -1,6 +1,6 @@
-import type { Log, Prisma, Project, User } from '@prisma/client'
-import { exclude } from '@cpn-console/shared'
-import prisma from '@/prisma.js'
+import type { Log, Prisma, Project, User } from '@prisma/client';
+import { exclude } from '@cpn-console/shared';
+import prisma from '@/prisma.js';
 
 // SELECT
 export function getAllLogsForUser(user: User, offset = 0) {
@@ -8,7 +8,7 @@ export function getAllLogsForUser(user: User, offset = 0) {
     where: { userId: user.id },
     take: 100,
     skip: offset,
-  })
+  });
 }
 
 export function getAllLogs({ skip = 0, take = 5, where }: Prisma.LogFindManyArgs) {
@@ -22,16 +22,16 @@ export function getAllLogs({ skip = 0, take = 5, where }: Prisma.LogFindManyArgs
       take,
       where,
     }),
-  ])
+  ]);
 }
 
 // CREATE
 interface AddLogsArgs {
-  action: Log['action']
-  data: Record<string, any>
-  userId?: User['id'] | null
-  requestId: string
-  projectId?: Project['id']
+  action: Log['action'];
+  data: Record<string, any>;
+  userId?: User['id'] | null;
+  requestId: string;
+  projectId?: Project['id'];
 }
 export function addLogs({ action, data, requestId, userId = null, projectId }: AddLogsArgs) {
   return prisma.log.create({
@@ -42,7 +42,7 @@ export function addLogs({ action, data, requestId, userId = null, projectId }: A
       requestId,
       projectId,
     },
-  })
+  });
 }
 
 // TECH
@@ -53,5 +53,5 @@ export function _createLog(data: Parameters<typeof prisma.log.upsert>[0]['create
     },
     create: data,
     update: data,
-  })
+  });
 }

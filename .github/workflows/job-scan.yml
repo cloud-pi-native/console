@@ -64,14 +64,14 @@ jobs:
       - name: Run Trivy vulnerability scanner on images
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
-          image-ref: "${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }}:${{ inputs.TAG }}"
+          image-ref: '${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }}:${{ inputs.TAG }}'
           format: template
-          template: "@/contrib/sarif.tpl"
-          vuln-type: "os,library"
+          template: '@/contrib/sarif.tpl'
+          vuln-type: 'os,library'
           ignore-unfixed: true
           output: trivy-results.sarif
           github-pat: ${{ secrets.GITHUB_TOKEN }}
-          cache: "false"
+          cache: 'false'
         continue-on-error: true
 
       - name: Upload Trivy scan results to GitHub Security tab
@@ -100,12 +100,12 @@ jobs:
           scan-ref: .
           scan-type: config
           format: template
-          template: "@/contrib/sarif.tpl"
-          skip-dirs: "**/node_modules,ci"
+          template: '@/contrib/sarif.tpl'
+          skip-dirs: '**/node_modules,ci'
           ignore-unfixed: true
           output: trivy-results.sarif
           github-pat: ${{ secrets.GITHUB_TOKEN }}
-          cache: "false"
+          cache: 'false'
         continue-on-error: true
 
       - name: Upload Trivy scan results to GitHub Security tab

@@ -1,16 +1,16 @@
 {
   "name": "@cpn-console/ts-config",
+  "version": "1.1.0",
+  "private": false,
+  "description": "",
   "repository": {
     "type": "git",
     "url": "https://github.com/cloud-pi-native/console"
   },
-  "version": "1.1.0",
-  "private": false,
-  "description": "",
   "main": "index.js",
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
     "access": "public",
+    "registry": "https://registry.npmjs.org/",
     "tag": "latest"
   }
 }

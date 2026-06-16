@@ -1,37 +1,37 @@
-import type { projectContract, XOR } from '@cpn-console/shared'
-import type {
-  Prisma,
-  Project,
-  User,
-} from '@prisma/client'
-import { PROJECT_PERMS } from '@cpn-console/shared'
-import {
-  ProjectStatus,
-} from '@prisma/client'
-import prisma from '@/prisma.js'
-import { appVersion } from '@/utils/env.js'
-import { uuid } from '@/utils/queries-tools.js'
+import type { projectContract, XOR } from '@cpn-console/shared';
+import type { Prisma, Project, User } from '@prisma/client';
+import { PROJECT_PERMS } from '@cpn-console/shared';
+import { ProjectStatus } from '@prisma/client';
+import prisma from '@/prisma.js';
+import { appVersion } from '@/utils/env.js';
+import { uuid } from '@/utils/queries-tools.js';
 
-type ProjectUpdate = Partial<Pick<Project, 'description' | 'ownerId' | 'everyonePerms' | 'locked'>>
+type ProjectUpdate = Partial<Pick<Project, 'description' | 'ownerId' | 'everyonePerms' | 'locked'>>;
 export function updateProject(id: Project['id'], data: ProjectUpdate) {
   return prisma.project.update({
     where: { id },
     data,
     include: { members: true },
-  })
+  });
 }
 
 // SELECT
-type FilterWhere = XOR<{
-  userId?: User['id']
-  filter: 'all'
-}, {
-  userId: User['id'] | undefined
-  filter: 'owned' | 'member'
-}>
-type ListProjectWhere = Omit<(typeof projectContract.listProjects.query._type), 'status_in' | 'status_not_in' | 'status'>
-  & Pick<Prisma.ProjectWhereInput, 'status'>
-  & FilterWhere
+type FilterWhere = XOR<
+  {
+    userId?: User['id'];
+    filter: 'all';
+  },
+  {
+    userId: User['id'] | undefined;
+    filter: 'owned' | 'member';
+  }
+>;
+type ListProjectWhere = Omit<
+  typeof projectContract.listProjects.query._type,
+  'status_in' | 'status_not_in' | 'status'
+> &
+  Pick<Prisma.ProjectWhereInput, 'status'> &
+  FilterWhere;
 export async function listProjects({
   description,
   locked,
@@ -43,33 +43,45 @@ export async function listProjects({
   search,
   lastSuccessProvisionningVersion,
 }: ListProjectWhere) {
-  const whereAnd: Prisma.ProjectWhereInput[] = []
-  if (id) whereAnd.push({ id })
-  if (locked != null) whereAnd.push({ locked })
-  if (name) whereAnd.push({ name })
-  if (status) whereAnd.push({ status })
-  if (description) whereAnd.push({ description: { contains: description } })
+  const whereAnd: Prisma.ProjectWhereInput[] = [];
+  if (id) whereAnd.push({ id });
+  if (locked != null) whereAnd.push({ locked });
+  if (name) whereAnd.push({ name });
+  if (status) whereAnd.push({ status });
+  if (description) whereAnd.push({ description: { contains: description } });
   if (lastSuccessProvisionningVersion) {
-    if (lastSuccessProvisionningVersion === 'outdated') whereAnd.push({ lastSuccessProvisionningVersion: { not: appVersion } })
-    else if (lastSuccessProvisionningVersion === 'last') whereAnd.push({ lastSuccessProvisionningVersion: { equals: appVersion } })
-    else whereAnd.push({ lastSuccessProvisionningVersion })
+    if (lastSuccessProvisionningVersion === 'outdated')
+      whereAnd.push({ lastSuccessProvisionningVersion: { not: appVersion } });
+    else if (lastSuccessProvisionningVersion === 'last')
+      whereAnd.push({ lastSuccessProvisionningVersion: { equals: appVersion } });
+    else whereAnd.push({ lastSuccessProvisionningVersion });
   }
   if (search) {
-    whereAnd.push({ OR: [{
-      name: { contains: search },
-    }, {
-      owner: { email: { contains: search } },
-    }] })
+    whereAnd.push({
+      OR: [
+        {
+          name: { contains: search },
+        },
+        {
+          owner: { email: { contains: search } },
+        },
+      ],
+    });
   }
 
   if (filter === 'owned') {
-    whereAnd.push({ ownerId: userId })
+    whereAnd.push({ ownerId: userId });
   } else if (filter === 'member') {
-    whereAnd.push({ OR: [{
-      members: { some: { userId } },
-    }, {
-      ownerId: userId,
-    }] })
+    whereAnd.push({
+      OR: [
+        {
+          members: { some: { userId } },
+        },
+        {
+          ownerId: userId,
+        },
+      ],
+    });
   }
 
   return prisma.project.findMany({
@@ -80,21 +92,19 @@ export async function listProjects({
       roles: true,
       owner: true,
     },
-  })
+  });
 }
 
 export function getProjectOrThrow(id: Project['id'] | Project['slug']) {
   return prisma.project.findFirstOrThrow({
-    where: uuid.test(id)
-      ? { id }
-      : { slug: id },
+    where: uuid.test(id) ? { id } : { slug: id },
     include: {
       clusters: { select: { id: true } },
       members: { include: { user: true } },
       roles: true,
       owner: true,
     },
-  })
+  });
 }
 
 export function getProjectInfosByIdOrThrow(projectId: Project['id']) {
@@ -106,7 +116,7 @@ export function getProjectInfosByIdOrThrow(projectId: Project['id']) {
       environments: true,
       clusters: { include: { zone: true } },
     },
-  })
+  });
 }
 
 export function getProjectMembers(projectId: Project['id']) {
@@ -115,11 +125,11 @@ export function getProjectMembers(projectId: Project['id']) {
       projectId,
     },
     include: { user: true },
-  })
+  });
 }
 
 export function getProjectById(id: Project['id']) {
-  return prisma.project.findUnique({ where: { id } })
+  return prisma.project.findUnique({ where: { id } });
 }
 
 export const baseProjectIncludes = {
@@ -127,20 +137,20 @@ export const baseProjectIncludes = {
   clusters: true,
   roles: true,
   owner: true,
-} as const
+} as const;
 
 export function getProjectInfos(id: Project['id']) {
   return prisma.project.findUnique({
     where: { id },
     include: baseProjectIncludes,
-  })
+  });
 }
 
 export function getProjectInfosOrThrow(id: Project['id']) {
   return prisma.project.findUniqueOrThrow({
     where: { id },
     include: baseProjectIncludes,
-  })
+  });
 }
 
 export function getProjectInfosAndRepos(id: Project['id']) {
@@ -150,7 +160,7 @@ export function getProjectInfosAndRepos(id: Project['id']) {
       ...baseProjectIncludes,
       repositories: true,
     },
-  })
+  });
 }
 
 export function getSlugs(slugPrefix: string) {
@@ -158,7 +168,7 @@ export function getSlugs(slugPrefix: string) {
     where: {
       slug: { startsWith: slugPrefix },
     },
-  })
+  });
 }
 
 export function getAllProjectsDataForExport() {
@@ -179,13 +189,13 @@ export function getAllProjectsDataForExport() {
       },
       owner: true,
     },
-  })
+  });
 }
 
 export function getRolesByProjectId(projectId: Project['id']) {
   return prisma.projectRole.findMany({
     where: { projectId },
-  })
+  });
 }
 
 const clusterInfosSelect = {
@@ -207,7 +217,7 @@ const clusterInfosSelect = {
       label: true,
     },
   },
-}
+};
 export function getHookProjectInfos(id: Project['id']) {
   return prisma.project.findUniqueOrThrow({
     where: { id },
@@ -233,22 +243,22 @@ export function getHookProjectInfos(id: Project['id']) {
       owner: true,
       roles: true,
     },
-  })
+  });
 }
 
 // CREATE
 interface CreateProjectParams {
-  name: Project['name']
-  description?: Project['description']
-  ownerId: User['id']
-  slug: Project['slug']
-  limitless: boolean
-  hprodCpu: number
-  hprodGpu: number
-  hprodMemory: number
-  prodCpu: number
-  prodGpu: number
-  prodMemory: number
+  name: Project['name'];
+  description?: Project['description'];
+  ownerId: User['id'];
+  slug: Project['slug'];
+  limitless: boolean;
+  hprodCpu: number;
+  hprodGpu: number;
+  hprodMemory: number;
+  prodCpu: number;
+  prodGpu: number;
+  prodMemory: number;
 }
 
 export function initializeProject(params: CreateProjectParams) {
@@ -268,14 +278,23 @@ export function initializeProject(params: CreateProjectParams) {
           },
           {
             name: 'DevOps',
-            permissions: PROJECT_PERMS.MANAGE_ENVIRONMENTS | PROJECT_PERMS.MANAGE_REPOSITORIES | PROJECT_PERMS.REPLAY_HOOKS | PROJECT_PERMS.SEE_SECRETS | PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.LIST_REPOSITORIES,
+            permissions:
+              PROJECT_PERMS.MANAGE_ENVIRONMENTS |
+              PROJECT_PERMS.MANAGE_REPOSITORIES |
+              PROJECT_PERMS.REPLAY_HOOKS |
+              PROJECT_PERMS.SEE_SECRETS |
+              PROJECT_PERMS.LIST_ENVIRONMENTS |
+              PROJECT_PERMS.LIST_REPOSITORIES,
             position: 1,
             oidcGroup: `/${params.slug}/console/devops`,
             type: 'system:managed',
           },
           {
             name: 'Développeur',
-            permissions: PROJECT_PERMS.MANAGE_REPOSITORIES | PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.LIST_REPOSITORIES,
+            permissions:
+              PROJECT_PERMS.MANAGE_REPOSITORIES |
+              PROJECT_PERMS.LIST_ENVIRONMENTS |
+              PROJECT_PERMS.LIST_REPOSITORIES,
             position: 2,
             oidcGroup: `/${params.slug}/console/developer`,
             type: 'system:managed',
@@ -291,7 +310,7 @@ export function initializeProject(params: CreateProjectParams) {
       },
       ...params,
     },
-  })
+  });
 }
 
 // UPDATE
@@ -299,7 +318,7 @@ export function lockProject(id: Project['id']) {
   return prisma.project.update({
     where: { id },
     data: { locked: true },
-  })
+  });
 }
 
 export function updateProjectCreated(id: Project['id']) {
@@ -310,7 +329,7 @@ export function updateProjectCreated(id: Project['id']) {
       lastSuccessProvisionningVersion: appVersion,
     },
     include: baseProjectIncludes,
-  })
+  });
 }
 
 export function updateProjectFailed(id: Project['id']) {
@@ -318,7 +337,7 @@ export function updateProjectFailed(id: Project['id']) {
     where: { id },
     data: { status: ProjectStatus.failed },
     include: baseProjectIncludes,
-  })
+  });
 }
 
 export function updateProjectWarning(id: Project['id']) {
@@ -326,19 +345,25 @@ export function updateProjectWarning(id: Project['id']) {
     where: { id },
     data: { status: ProjectStatus.warning },
     include: baseProjectIncludes,
-  })
+  });
 }
 
-export function addUserToProject({ project, user }: { project: Project, user: User }) {
+export function addUserToProject({ project, user }: { project: Project; user: User }) {
   return prisma.projectMembers.create({
     data: {
       userId: user.id,
       projectId: project.id,
     },
-  })
+  });
 }
 
-export function removeUserFromProject({ projectId, userId }: { projectId: Project['id'], userId: User['id'] }) {
+export function removeUserFromProject({
+  projectId,
+  userId,
+}: {
+  projectId: Project['id'];
+  userId: User['id'];
+}) {
   return prisma.projectMembers.delete({
     where: {
       projectId_userId: {
@@ -346,14 +371,14 @@ export function removeUserFromProject({ projectId, userId }: { projectId: Projec
         userId,
       },
     },
-  })
+  });
 }
 
 export async function archiveProject(id: Project['id']) {
   const project = await prisma.project.findUnique({
     where: { id },
     select: { name: true, slug: true },
-  })
+  });
   return prisma.project.update({
     where: { id },
     data: {
@@ -363,5 +388,5 @@ export async function archiveProject(id: Project['id']) {
       locked: true,
     },
     include: baseProjectIncludes,
-  })
+  });
 }

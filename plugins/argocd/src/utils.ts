@@ -1,51 +1,48 @@
-import type { GitlabZoneApi } from '@cpn-console/gitlab-plugin/types/class.js'
-import type { ClusterObject, HookPayloadApis, ZoneObject } from '@cpn-console/hooks'
-import { createHmac } from 'node:crypto'
-import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared'
-import { stringify } from 'yaml'
+import type { GitlabZoneApi } from '@cpn-console/gitlab-plugin/types/class.js';
+import type { ClusterObject, HookPayloadApis, ZoneObject } from '@cpn-console/hooks';
+import { createHmac } from 'node:crypto';
+import { removeTrailingSlash, requiredEnv } from '@cpn-console/shared';
+import { stringify } from 'yaml';
 
 export function generateAppProjectName(projectSlug: string, env: string) {
-  const envHash = createHmac('sha256', '')
-    .update(env)
-    .digest('hex')
-    .slice(0, 4)
-  return `${projectSlug}-${env}-${envHash}`
+  const envHash = createHmac('sha256', '').update(env).digest('hex').slice(0, 4);
+  return `${projectSlug}-${env}-${envHash}`;
 }
 
 export function generateApplicationName(projectSlug: string, env: string, repo: string) {
-  const envHash = createHmac('sha256', '')
-    .update(env)
-    .digest('hex')
-    .slice(0, 4)
-  return `${projectSlug}-${env}-${repo}-${envHash}`
+  const envHash = createHmac('sha256', '').update(env).digest('hex').slice(0, 4);
+  return `${projectSlug}-${env}-${repo}-${envHash}`;
 }
 
 const config: {
-  namespace?: string
-  url?: string
-} = {}
+  namespace?: string;
+  url?: string;
+} = {};
 
 export function getConfig(): Required<typeof config> {
-  config.namespace = config.namespace ?? requiredEnv('ARGO_NAMESPACE')
-  config.url = removeTrailingSlash(requiredEnv('ARGOCD_URL'))
+  config.namespace = config.namespace ?? requiredEnv('ARGO_NAMESPACE');
+  config.url = removeTrailingSlash(requiredEnv('ARGOCD_URL'));
 
   // @ts-ignore
-  return config
+  return config;
 }
 
-export async function updateZoneValues(zone: ZoneObject, apis: HookPayloadApis<ZoneObject> | HookPayloadApis<ClusterObject>) {
-  const gitlab = apis.gitlab as unknown as GitlabZoneApi
-  const vault = apis.vault as any
+export async function updateZoneValues(
+  zone: ZoneObject,
+  apis: HookPayloadApis<ZoneObject> | HookPayloadApis<ClusterObject>,
+) {
+  const gitlab = apis.gitlab as unknown as GitlabZoneApi;
+  const vault = apis.vault as any;
   const values = {
     vault: await vault.getValues(),
     clusters: zone.clusterNames,
-  }
-  const zoneRepo = await gitlab.getOrCreateInfraProject(zone.slug)
-  await gitlab.commitCreateOrUpdate(zoneRepo.id, stringify(values), 'argocd-values.yaml')
+  };
+  const zoneRepo = await gitlab.getOrCreateInfraProject(zone.slug);
+  await gitlab.commitCreateOrUpdate(zoneRepo.id, stringify(values), 'argocd-values.yaml');
   return {
     status: {
       result: 'OK',
       message: 'Zone argocd configuration created/updated',
     },
-  }
+  };
 }

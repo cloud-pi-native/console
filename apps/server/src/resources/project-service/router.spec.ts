@@ -1,160 +1,178 @@
-import { ADMIN_PERMS, PROJECT_PERMS, projectServiceContract } from '@cpn-console/shared'
-import { faker } from '@faker-js/faker'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import app from '../../app.js'
-import * as utilsController from '../../utils/controller.js'
-import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js'
-import * as business from './business.js'
+import { ADMIN_PERMS, PROJECT_PERMS, projectServiceContract } from '@cpn-console/shared';
+import { faker } from '@faker-js/faker';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import app from '../../app.js';
+import * as utilsController from '../../utils/controller.js';
+import { getProjectMockInfos, getUserMockInfos } from '../../utils/mocks.js';
+import * as business from './business.js';
 
-vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
-const authUserMock = vi.spyOn(utilsController, 'authUser')
-const businessGetServicesMock = vi.spyOn(business, 'getProjectServices')
-const businessUpdateServicesMock = vi.spyOn(business, 'updateProjectServices')
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin);
+const authUserMock = vi.spyOn(utilsController, 'authUser');
+const businessGetServicesMock = vi.spyOn(business, 'getProjectServices');
+const businessUpdateServicesMock = vi.spyOn(business, 'updateProjectServices');
 
 describe('projectServiceRouter tests', () => {
   beforeEach(() => {
-    vi.resetAllMocks()
-  })
+    vi.resetAllMocks();
+  });
 
-  const projectId = faker.string.uuid()
+  const projectId = faker.string.uuid();
 
   describe('getServices', () => {
     it('should return services for authorized user', async () => {
-      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.GUEST })
-      const user = getUserMockInfos(0n, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
+      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.GUEST });
+      const user = getUserMockInfos(0n, undefined, projectPerms);
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessGetServicesMock.mockResolvedValueOnce([])
+      businessGetServicesMock.mockResolvedValueOnce([]);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .get(projectServiceContract.getServices.path.replace(':projectId', projectId))
         .query({ permissionTarget: 'user' })
-        .end()
+        .end();
 
-      expect(businessGetServicesMock).toHaveBeenCalledWith(projectId, 'user')
-      expect(response.statusCode).toEqual(200)
-      expect(response.json()).toEqual([])
-    })
+      expect(businessGetServicesMock).toHaveBeenCalledWith(projectId, 'user');
+      expect(response.statusCode).toEqual(200);
+      expect(response.json()).toEqual([]);
+    });
 
     it('should not return admin services for non admin', async () => {
-      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.GUEST })
-      const user = getUserMockInfos(0n, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
+      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.GUEST });
+      const user = getUserMockInfos(0n, undefined, projectPerms);
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessGetServicesMock.mockResolvedValueOnce([])
+      businessGetServicesMock.mockResolvedValueOnce([]);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .get(projectServiceContract.getServices.path.replace(':projectId', projectId))
         .query({ permissionTarget: 'admin' })
-        .end()
+        .end();
 
-      expect(businessGetServicesMock).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toEqual(403)
-    })
+      expect(businessGetServicesMock).toHaveBeenCalledTimes(0);
+      expect(response.statusCode).toEqual(403);
+    });
 
     it('should return services for admin', async () => {
-      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.GUEST })
-      const user = getUserMockInfos(ADMIN_PERMS.MANAGE, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
+      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.GUEST });
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE, undefined, projectPerms);
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessGetServicesMock.mockResolvedValueOnce([])
+      businessGetServicesMock.mockResolvedValueOnce([]);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .get(projectServiceContract.getServices.path.replace(':projectId', projectId))
-        .end()
+        .end();
 
-      expect(businessGetServicesMock).toHaveBeenCalledWith(projectId, 'user')
-      expect(response.statusCode).toEqual(200)
-      expect(response.json()).toEqual([])
-    })
+      expect(businessGetServicesMock).toHaveBeenCalledWith(projectId, 'user');
+      expect(response.statusCode).toEqual(200);
+      expect(response.json()).toEqual([]);
+    });
 
     it('should return 403 for unauthorized user', async () => {
-      const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(0n, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
+      const projectPerms = getProjectMockInfos({ projectPermissions: 0n });
+      const user = getUserMockInfos(0n, undefined, projectPerms);
+      authUserMock.mockResolvedValueOnce(user);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .get(projectServiceContract.getServices.path.replace(':projectId', projectId))
-        .end()
+        .end();
 
-      expect(response.statusCode).toEqual(403)
-    })
-  })
+      expect(response.statusCode).toEqual(403);
+    });
+  });
 
   describe('updateProjectServices', () => {
-    const updateData = { serviceA: { param1: 'value' } }
+    const updateData = { serviceA: { param1: 'value' } };
 
     it('should update services for project manager', async () => {
-      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE })
-      const user = getUserMockInfos(0n, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
+      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE });
+      const user = getUserMockInfos(0n, undefined, projectPerms);
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessUpdateServicesMock.mockResolvedValueOnce(null)
+      businessUpdateServicesMock.mockResolvedValueOnce(null);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .post(projectServiceContract.updateProjectServices.path.replace(':projectId', projectId))
         .body(updateData)
-        .end()
+        .end();
 
-      expect(businessUpdateServicesMock).toHaveBeenCalledWith(projectId, updateData, ['user'])
-      expect(response.statusCode).toEqual(204)
-    })
+      expect(businessUpdateServicesMock).toHaveBeenCalledWith(projectId, updateData, ['user']);
+      expect(response.statusCode).toEqual(204);
+    });
 
     it('should update services for project admin', async () => {
-      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE })
-      const user = getUserMockInfos(ADMIN_PERMS.MANAGE, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
+      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE });
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE, undefined, projectPerms);
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessUpdateServicesMock.mockResolvedValueOnce(null)
+      businessUpdateServicesMock.mockResolvedValueOnce(null);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .post(projectServiceContract.updateProjectServices.path.replace(':projectId', projectId))
         .body(updateData)
-        .end()
+        .end();
 
-      expect(businessUpdateServicesMock).toHaveBeenCalledWith(projectId, updateData, ['user', 'admin'])
-      expect(response.statusCode).toEqual(204)
-    })
+      expect(businessUpdateServicesMock).toHaveBeenCalledWith(projectId, updateData, [
+        'user',
+        'admin',
+      ]);
+      expect(response.statusCode).toEqual(204);
+    });
 
     it('should return 403 for unauthorized user', async () => {
-      const projectPerms = getProjectMockInfos({ projectPermissions: 0n })
-      const user = getUserMockInfos(0n, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
+      const projectPerms = getProjectMockInfos({ projectPermissions: 0n });
+      const user = getUserMockInfos(0n, undefined, projectPerms);
+      authUserMock.mockResolvedValueOnce(user);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .post(projectServiceContract.updateProjectServices.path.replace(':projectId', projectId))
         .body(updateData)
-        .end()
+        .end();
 
-      expect(response.statusCode).toEqual(403)
-    })
+      expect(response.statusCode).toEqual(403);
+    });
 
     it('should return 403 if project is archived', async () => {
-      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE, projectStatus: 'archived' })
-      const user = getUserMockInfos(0n, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
+      const projectPerms = getProjectMockInfos({
+        projectPermissions: PROJECT_PERMS.MANAGE,
+        projectStatus: 'archived',
+      });
+      const user = getUserMockInfos(0n, undefined, projectPerms);
+      authUserMock.mockResolvedValueOnce(user);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .post(projectServiceContract.updateProjectServices.path.replace(':projectId', projectId))
         .body(updateData)
-        .end()
+        .end();
 
-      expect(response.statusCode).toEqual(403)
-      expect(response.json()).toEqual({ message: 'Le projet est archivé' })
-    })
+      expect(response.statusCode).toEqual(403);
+      expect(response.json()).toEqual({ message: 'Le projet est archivé' });
+    });
 
     it('should return 403 if project is locked', async () => {
-      const projectPerms = getProjectMockInfos({ projectPermissions: PROJECT_PERMS.MANAGE, projectLocked: true })
-      const user = getUserMockInfos(0n, undefined, projectPerms)
-      authUserMock.mockResolvedValueOnce(user)
+      const projectPerms = getProjectMockInfos({
+        projectPermissions: PROJECT_PERMS.MANAGE,
+        projectLocked: true,
+      });
+      const user = getUserMockInfos(0n, undefined, projectPerms);
+      authUserMock.mockResolvedValueOnce(user);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .post(projectServiceContract.updateProjectServices.path.replace(':projectId', projectId))
         .body(updateData)
-        .end()
+        .end();
 
-      expect(response.statusCode).toEqual(403)
-      expect(response.json()).toEqual({ message: 'Le projet est verrouillé' })
-    })
-  })
-})
+      expect(response.statusCode).toEqual(403);
+      expect(response.json()).toEqual({ message: 'Le projet est verrouillé' });
+    });
+  });
+});

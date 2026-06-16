@@ -1,19 +1,19 @@
-import type { ServiceInfos } from '@cpn-console/hooks'
-import { DISABLED, ENABLED } from '@cpn-console/shared'
-import config from './config.js'
+import type { ServiceInfos } from '@cpn-console/hooks';
+import { DISABLED, ENABLED } from '@cpn-console/shared';
+import config from './config.js';
 
-export const DEFAULT_ADMIN_GROUP_PATH = '/console/admin'
-export const DEFAULT_AUDITOR_GROUP_PATH = '/console/readonly'
-export const DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX = '/console/admin'
-export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX = '/console/developer,/console/devops'
-export const DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX = '/console/readonly'
+export const DEFAULT_ADMIN_GROUP_PATH = '/console/admin';
+export const DEFAULT_AUDITOR_GROUP_PATH = '/console/readonly';
+export const DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX = '/console/admin';
+export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX = '/console/developer,/console/devops';
+export const DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX = '/console/readonly';
 
 const infos = {
   name: 'gitlab',
   to: ({ project }) => `${config().publicUrl}/${config().projectsRootDir}/${project.slug}`,
   title: 'Gitlab',
   imgSrc: '/img/gitlab.svg',
-  description: 'GitLab est un service d\'hébergement de code source et de pipeline CI/CD',
+  description: "GitLab est un service d'hébergement de code source et de pipeline CI/CD",
   config: {
     global: [
       {
@@ -26,7 +26,8 @@ const infos = {
         },
         title: 'Purger les utilisateurs non synchronisés',
         value: DISABLED,
-        description: 'Purger les utilisateurs non synchronisés de GitLab lors de la synchronisation',
+        description:
+          'Purger les utilisateurs non synchronisés de GitLab lors de la synchronisation',
       },
       {
         kind: 'switch',
@@ -36,9 +37,10 @@ const infos = {
           admin: { read: true, write: true },
           user: { read: false, write: false },
         },
-        title: 'Afficher l\'aide de déclenchement de pipeline',
+        title: "Afficher l'aide de déclenchement de pipeline",
         value: ENABLED,
-        description: 'Afficher l\'aide de déclenchement de pipeline aux utilisateurs lorsqu\'ils souhaitent afficher les secrets du projet',
+        description:
+          "Afficher l'aide de déclenchement de pipeline aux utilisateurs lorsqu'ils souhaitent afficher les secrets du projet",
       },
       {
         kind: 'text',
@@ -49,7 +51,7 @@ const infos = {
         },
         title: 'Chemin du groupe OIDC Admin',
         value: DEFAULT_ADMIN_GROUP_PATH,
-        description: 'Le chemin du groupe OIDC qui donne les droits d\'administrateur GitLab',
+        description: "Le chemin du groupe OIDC qui donne les droits d'administrateur GitLab",
         placeholder: DEFAULT_ADMIN_GROUP_PATH,
       },
       {
@@ -61,7 +63,7 @@ const infos = {
         },
         title: 'Chemin du groupe OIDC Auditeur',
         value: DEFAULT_AUDITOR_GROUP_PATH,
-        description: 'Le chemin du groupe OIDC qui donne les droits d\'auditeur GitLab',
+        description: "Le chemin du groupe OIDC qui donne les droits d'auditeur GitLab",
         placeholder: DEFAULT_AUDITOR_GROUP_PATH,
       },
       {
@@ -103,6 +105,6 @@ const infos = {
     ],
     project: [],
   },
-} as const satisfies ServiceInfos
+} as const satisfies ServiceInfos;
 
-export default infos
+export default infos;

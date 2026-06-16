@@ -1,67 +1,66 @@
 <script lang="ts" setup>
-import type { Member, ProjectRoleBigint, ProjectV2 } from '@cpn-console/shared'
+import type { Member, ProjectRoleBigint, ProjectV2 } from '@cpn-console/shared';
 import {
   isManagedRoleType,
   isSystemRoleType,
   PROJECT_PERMS,
   projectPermsDetails,
   shallowEqual,
-} from '@cpn-console/shared'
-import { computed, ref } from 'vue'
+} from '@cpn-console/shared';
+import { computed, ref } from 'vue';
 
 const props = defineProps<{
-  id: string
-  permissions: bigint
-  name: string
-  allMembers: Member[]
-  projectId: ProjectV2['id']
-  isEveryone: boolean
-  oidcGroup?: string
-  type?: string
-}>()
+  id: string;
+  permissions: bigint;
+  name: string;
+  allMembers: Member[];
+  projectId: ProjectV2['id'];
+  isEveryone: boolean;
+  oidcGroup?: string;
+  type?: string;
+}>();
 
 defineEmits<{
-  delete: []
-  updateMemberRoles: [checked: boolean, userId: Member['userId']]
-  save: [value: Omit<ProjectRoleBigint, 'position' | 'projectId'>]
-  cancel: []
-}>()
-const router = useRouter()
+  delete: [];
+  updateMemberRoles: [checked: boolean, userId: Member['userId']];
+  save: [value: Omit<ProjectRoleBigint, 'position' | 'projectId'>];
+  cancel: [];
+}>();
+const router = useRouter();
 const role = ref({
   ...props,
   permissions: props.permissions ?? 0n,
   allMembers: props.allMembers ?? [],
   oidcGroup: props.oidcGroup ?? '',
   type: props.type ?? 'managed',
-})
+});
 
-const isSystem = computed(() => isSystemRoleType(role.value.type))
-const isManaged = computed(() => isManagedRoleType(role.value.type))
+const isSystem = computed(() => isSystemRoleType(role.value.type));
+const isManaged = computed(() => isManagedRoleType(role.value.type));
 
 const isUpdated = computed(() => {
-  if (role.value.isEveryone)
-    return props.permissions !== role.value.permissions
-  return !shallowEqual(props, role.value)
-})
+  if (role.value.isEveryone) return props.permissions !== role.value.permissions;
+  return !shallowEqual(props, role.value);
+});
 
-const tabListName = 'Liste d’onglet'
+const tabListName = 'Liste d’onglet';
 const tabTitles = computed(() => [
   { title: 'Général', icon: 'ri:checkbox-circle-line', tabId: 'general' },
   ...(isManaged.value
     ? [{ title: 'Membres', icon: 'ri:checkbox-circle-line', tabId: 'members' }]
     : []),
   { title: 'Fermer', icon: 'ri:close-line', tabId: 'close' },
-])
+]);
 
-const initialSelectedIndex = 0
+const initialSelectedIndex = 0;
 
-const selectedTabIndex = ref(initialSelectedIndex)
+const selectedTabIndex = ref(initialSelectedIndex);
 
 function updateChecked(checked: boolean, value: bigint) {
   if (checked) {
-    role.value.permissions |= value
+    role.value.permissions |= value;
   } else {
-    role.value.permissions &= ~value
+    role.value.permissions &= ~value;
   }
 }
 </script>
@@ -103,13 +102,9 @@ function updateChecked(checked: boolean, value: bigint) {
           :label="perm?.label"
           :hint="perm?.hint"
           :name="perm.key"
-          :disabled="
-            isSystem
-              || (role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE')
-          "
+          :disabled="isSystem || (role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE')"
           @update:model-value="
-            (checked: boolean) =>
-              updateChecked(checked, PROJECT_PERMS[perm.key])
+            (checked: boolean) => updateChecked(checked, PROJECT_PERMS[perm.key])
           "
         />
       </div>
@@ -159,8 +154,7 @@ function updateChecked(checked: boolean, value: bigint) {
           :hint="member.email"
           :model-value="member.roleIds.includes(role.id)"
           @update:model-value="
-            (checked: boolean) =>
-              $emit('updateMemberRoles', checked, member.userId)
+            (checked: boolean) => $emit('updateMemberRoles', checked, member.userId)
           "
         />
       </template>
@@ -181,11 +175,7 @@ function updateChecked(checked: boolean, value: bigint) {
       </template>
     </DsfrTabContent>
     <div class="ms-8">
-      <DsfrTabContent
-        panel-id="close"
-        tab-id="close"
-        @click="() => $emit('cancel')"
-      >
+      <DsfrTabContent panel-id="close" tab-id="close" @click="() => $emit('cancel')">
         {{ selectedTabIndex === tabTitles.length - 1 && $emit('cancel') }}
       </DsfrTabContent>
     </div>

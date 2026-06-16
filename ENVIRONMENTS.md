@@ -93,7 +93,7 @@ Fichiers utilisés :
 
 - `apps/client/.env`
 - `apps/server/.env`
-- `apps/server-nestjs/.env` *(si vous travaillez sur server-nestjs)*
+- `apps/server-nestjs/.env` _(si vous travaillez sur server-nestjs)_
 
 Les valeurs par défaut, disponibles dans les fichiers `.env-example`, sont suffisantes dans 99% des cas. Cela dit, c'est un cas d'usage assez restreint car la console se reposant sur quelques composants externes comme une base de données PostgreSQL ou un serveur IAM comme `keycloak`, il faut configurer manuellement les `.env` pour pointer sur les bonnes URLs, etc. Pas infaisable, mais pas très pratique au quotidien, hors des cas simple de build des applications.
 
@@ -223,7 +223,7 @@ Fichiers utilisés :
 - `apps/server/.env.integ`
 - `apps/server-nestjs/.env`
 - `apps/server-nestjs/.env.docker`
-- `apps/server-nestjs/.env.integ` *(si vous travaillez sur server-nestjs en mode integ)*
+- `apps/server-nestjs/.env.integ` _(si vous travaillez sur server-nestjs en mode integ)_
 
 Cette configuration est une itération de la précédente. Dans ce cas d'usage le Keycloak n'est pas créé en tant que conteneur, car on est supposé se brancher sur l'environnement d'intégration défini dans les fichiers `.env.integ`. Le contenu de ces fichiers (en particulier celui de `apps/server`) est donc clé.
 

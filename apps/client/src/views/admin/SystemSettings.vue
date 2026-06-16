@@ -1,22 +1,20 @@
 <script lang="ts" setup>
-import { useSystemSettingsStore } from '@/stores/system-settings.js'
+import { useSystemSettingsStore } from '@/stores/system-settings.js';
 
-const systemStore = useSystemSettingsStore()
+const systemStore = useSystemSettingsStore();
 
 onBeforeMount(async () => {
-  await systemStore.listSystemSettings()
-})
+  await systemStore.listSystemSettings();
+});
 
 async function upsertSystemSetting(key: string, value: boolean) {
-  await systemStore.upsertSystemSetting({ key, value: value ? 'on' : 'off' })
+  await systemStore.upsertSystemSetting({ key, value: value ? 'on' : 'off' });
 }
 </script>
 
 <template>
   <h1>Réglages de la console Cloud π Native</h1>
-  <div
-    class="flex <md:flex-col-reverse items-center justify-between gap-2 mt-8"
-  >
+  <div class="flex <md:flex-col-reverse items-center justify-between gap-2 mt-8">
     <DsfrToggleSwitch
       v-for="setting in systemStore.systemSettings"
       :key="setting.key"

@@ -1,29 +1,26 @@
-import fs from 'node:fs'
-import { fileURLToPath, URL } from 'node:url'
-import {
-  vueDsfrAutoimportPreset,
-  vueDsfrComponentResolver,
-} from '@gouvminint/vue-dsfr/meta'
-import vue from '@vitejs/plugin-vue'
-import UnoCSS from 'unocss/vite'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
-import { defineConfig } from 'vite'
-import { VitePWA } from 'vite-plugin-pwa'
+import fs from 'node:fs';
+import { fileURLToPath, URL } from 'node:url';
+import { vueDsfrAutoimportPreset, vueDsfrComponentResolver } from '@gouvminint/vue-dsfr/meta';
+import vue from '@vitejs/plugin-vue';
+import UnoCSS from 'unocss/vite';
+import AutoImport from 'unplugin-auto-import/vite';
+import Components from 'unplugin-vue-components/vite';
+import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 if (process.env.INTEGRATION === 'true' && fs.existsSync('.env.integ'))
-  process.loadEnvFile('.env.integ')
+  process.loadEnvFile('.env.integ');
 
-if (process.env.DOCKER !== 'true' && fs.existsSync('.env'))
-  process.loadEnvFile('.env')
+if (process.env.DOCKER !== 'true' && fs.existsSync('.env')) process.loadEnvFile('.env');
 
-const serverHost = process.env.SERVER_HOST ?? 'localhost'
-const serverPort = process.env.SERVER_PORT ?? 4000
-const clientPort = process.env.CLIENT_PORT ?? 8080
+const serverHost = process.env.SERVER_HOST ?? 'localhost';
+const serverPort = process.env.SERVER_PORT ?? 4000;
+const clientPort = process.env.CLIENT_PORT ?? 8080;
 
-const define = process.env.NODE_ENV === 'production'
-  ? { 'process.env': { APP_VERSION: process.env.APP_VERSION } }
-  : { 'process.env': process.env }
+const define =
+  process.env.NODE_ENV === 'production'
+    ? { 'process.env': { APP_VERSION: process.env.APP_VERSION } }
+    : { 'process.env': process.env };
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -72,15 +69,10 @@ export default defineConfig({
     }),
     Components({
       extensions: ['vue'],
-      dirs: [
-        './src/components',
-        './src/views',
-      ],
+      dirs: ['./src/components', './src/views'],
       include: [/\.vue$/, /\.vue\?vue/],
       dts: './src/components.d.ts',
-      resolvers: [
-        vueDsfrComponentResolver,
-      ],
+      resolvers: [vueDsfrComponentResolver],
     }),
     UnoCSS({
       extendTheme: (theme) => {
@@ -90,7 +82,7 @@ export default defineConfig({
             ...theme.breakpoints,
             dsfrmenu: '992px',
           },
-        }
+        };
       },
     }),
     VitePWA({
@@ -100,11 +92,7 @@ export default defineConfig({
       workbox: {
         maximumFileSizeToCacheInBytes: 5_000_000,
         cleanupOutdatedCaches: true,
-        navigateFallbackDenylist: [
-          /^\/api/,
-          /^\/swagger-ui-server/,
-          /^\/swagger-ui-server-nestjs/,
-        ],
+        navigateFallbackDenylist: [/^\/api/, /^\/swagger-ui-server/, /^\/swagger-ui-server-nestjs/],
       },
       devOptions: {
         enabled: false,
@@ -138,8 +126,6 @@ export default defineConfig({
     target: 'ESNext',
   },
   optimizeDeps: {
-    include: [
-      'jszip',
-    ],
+    include: ['jszip'],
   },
-})
+});

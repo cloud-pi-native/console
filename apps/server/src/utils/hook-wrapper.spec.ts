@@ -1,7 +1,7 @@
-import type { KubeCluster, KubeUser, Project as ProjectPayload, Store } from '@cpn-console/hooks'
-import type { ProjectInfos, ReposCreds } from './hook-wrapper.ts'
-import { describe, expect, it } from 'vitest'
-import { transformToHookProject } from './hook-wrapper.ts'
+import type { KubeCluster, KubeUser, Project as ProjectPayload, Store } from '@cpn-console/hooks';
+import type { ProjectInfos, ReposCreds } from './hook-wrapper.ts';
+import { describe, expect, it } from 'vitest';
+import { transformToHookProject } from './hook-wrapper.ts';
 
 const associatedCluster = {
   id: 'f0e39981-0b6d-4c16-aa96-225062b75767',
@@ -29,7 +29,7 @@ const associatedCluster = {
     id: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce0',
     slug: 'default',
   },
-}
+};
 const nonAssociatedCluster = {
   id: 'f0e39981-0b6d-4c16-aa96-225062b75111',
   infos: '',
@@ -56,11 +56,11 @@ const nonAssociatedCluster = {
     id: 'a66c4230-eba6-41f1-aae5-bb1e4f90cce0',
     slug: 'default',
   },
-}
+};
 const project: ProjectInfos = {
   id: '011e7860-04d7-461f-912d-334c622d38b3',
   name: 'candilib',
-  description: 'Application de réservation de places à l\'examen du permis B.',
+  description: "Application de réservation de places à l'examen du permis B.",
   status: 'created',
   locked: false,
   createdAt: '2023-07-03T14:46:56.778Z',
@@ -186,54 +186,65 @@ const project: ProjectInfos = {
     adminRoleIds: [],
   },
   roles: [],
-}
+};
 
 describe('transformToHookProject', () => {
   // Mock data
-  const mockStore: Store = {}
+  const mockStore: Store = {};
   const mockReposCreds: ReposCreds = {
     console: {
       token: 'test',
       username: 'test',
     },
-  }
+  };
 
   it('transforme correctement le projet en objet Payload', () => {
-    const result: ProjectPayload = transformToHookProject(project, mockStore, mockReposCreds)
+    const result: ProjectPayload = transformToHookProject(project, mockStore, mockReposCreds);
 
     // Asserts pour vérifier la transformation
 
     // Assert sur la transformation des utilisateurs
-    expect(result.users).toEqual([project.owner])
+    expect(result.users).toEqual([project.owner]);
 
     // Assert sur la transformation des rôles
-    expect(result.roles).toEqual([{
-      name: 'owner',
-      position: 0,
-      users: [project.owner],
-    }])
+    expect(result.roles).toEqual([
+      {
+        name: 'owner',
+        position: 0,
+        users: [project.owner],
+      },
+    ]);
 
     // Assert sur la transformation des clusters
-    expect(result.clusters).toEqual([associatedCluster, nonAssociatedCluster].map(({ kubeconfig, ...cluster }) => ({
-      user: kubeconfig.user as unknown as KubeUser,
-      cluster: kubeconfig.cluster as unknown as KubeCluster,
-      ...cluster,
-      privacy: cluster.privacy,
-    })))
+    expect(result.clusters).toEqual(
+      [associatedCluster, nonAssociatedCluster].map(({ kubeconfig, ...cluster }) => ({
+        user: kubeconfig.user as unknown as KubeUser,
+        cluster: kubeconfig.cluster as unknown as KubeCluster,
+        ...cluster,
+        privacy: cluster.privacy,
+      })),
+    );
 
     // Assert sur la transformation des environnements
-    expect(result.environments).toEqual(project.environments.map(({ permissions: _, stage, quota, ...environment }) => ({
-      quota,
-      stage: stage.name,
-      permissions: [{ permissions: { rw: true, ro: true }, userId: project.ownerId }],
-      ...environment,
-      apis: {},
-    })))
+    expect(result.environments).toEqual(
+      project.environments.map(({ permissions: _, stage, quota, ...environment }) => ({
+        quota,
+        stage: stage.name,
+        permissions: [{ permissions: { rw: true, ro: true }, userId: project.ownerId }],
+        ...environment,
+        apis: {},
+      })),
+    );
 
     // Assert sur la transformation des repositories
-    expect(result.repositories).toEqual(project.repositories.map(repo => ({ ...repo, newCreds: mockReposCreds[repo.internalRepoName] })))
+    expect(result.repositories).toEqual(
+      project.repositories.map((repo) => ({
+        ...repo,
+        newCreds: mockReposCreds[repo.internalRepoName],
+      })),
+    );
 
     // Assert sur le store
-    expect(result.store).toEqual(mockStore)
-  })
-})
+    expect(result.store).toEqual(mockStore);
+  });
+});

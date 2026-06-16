@@ -1,5 +1,13 @@
-import type { DeclareModuleGenerator, DefaultArgs, Plugin, Project, ProjectMember, UniqueRepo, ZoneObject } from '@cpn-console/hooks'
-import { GitlabProjectApi, GitlabZoneApi } from './class.js'
+import type {
+  DeclareModuleGenerator,
+  DefaultArgs,
+  Plugin,
+  Project,
+  ProjectMember,
+  UniqueRepo,
+  ZoneObject,
+} from '@cpn-console/hooks';
+import { GitlabProjectApi, GitlabZoneApi } from './class.js';
 import {
   checkApi,
   commitFiles,
@@ -12,19 +20,19 @@ import {
   upsertDsoProject,
   upsertProjectMember,
   upsertZone,
-} from './functions.js'
-import infos from './infos.js'
-import { logger } from './logger.js'
-import monitor from './monitor.js'
-import { getOrCreateGroupRoot } from './utils.js'
+} from './functions.js';
+import infos from './infos.js';
+import { logger } from './logger.js';
+import monitor from './monitor.js';
+import { getOrCreateGroupRoot } from './utils.js';
 
-const onlyApi = { api: (project: Project | UniqueRepo) => new GitlabProjectApi(project) }
+const onlyApi = { api: (project: Project | UniqueRepo) => new GitlabProjectApi(project) };
 
 function start() {
   getOrCreateGroupRoot().catch((error) => {
-    logger.error({ action: 'start', err: error }, 'Hook failed')
-    throw new Error('Error at gitlab plugin start')
-  })
+    logger.error({ action: 'start', err: error }, 'Hook failed');
+    throw new Error('Error at gitlab plugin start');
+  });
 }
 
 export const plugin: Plugin = {
@@ -84,13 +92,13 @@ export const plugin: Plugin = {
       },
     },
     upsertProjectMember: {
-      api: member => new GitlabProjectApi(member.project),
+      api: (member) => new GitlabProjectApi(member.project),
       steps: {
         main: upsertProjectMember,
       },
     },
     deleteProjectMember: {
-      api: member => new GitlabProjectApi(member.project),
+      api: (member) => new GitlabProjectApi(member.project),
       steps: {
         post: deleteProjectMember,
       },
@@ -98,7 +106,7 @@ export const plugin: Plugin = {
   },
   monitor,
   start,
-}
+};
 
 declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
@@ -106,11 +114,11 @@ declare module '@cpn-console/hooks' {
       ? GitlabProjectApi
       : Args extends ZoneObject
         ? GitlabZoneApi
-        : never
+        : never;
   }
   interface ProjectStore extends DeclareModuleGenerator<typeof infos, 'project'> {}
   interface Config extends DeclareModuleGenerator<typeof infos, 'global'> {}
   interface PluginResult {
-    warnReasons?: string[]
+    warnReasons?: string[];
   }
 }

@@ -26,6 +26,7 @@ Il faut d'abord lancer une stack, par ex, celle de Dev:
 ```shell
 $ pnpm run docker:dev
 ```
+
 On peut lancer ensuite les tests :
 
 ```shell
@@ -71,6 +72,7 @@ $ pnpm run playwright:test:integration --grep @integ
 ## Conventions de code
 
 Afin d'assurer la lisibilité et la maintenabilité des tests Playwright, quelques décisions ont été prises concernant l'écriture du code :
+
 - Pas d'imbrication de if : les conditions sont autorisées dans les fonctions, mais ne doivent pas être imbriquées.
 - Arguments explicites : certains arguments initialement optionnels doivent être rendus obligatoires afin de rendre le comportement de la fonction plus clair (par exemple pour les zones publiques, ou les contextes spécifiques).
 - Visibilité des tests : il doit être évident, à la lecture du test, de voir ce qui est réellement vérifié. Par conséquent, évitez de masquer les expect à l'intérieur de fonctions utilitaires. Les assertions doivent apparaître directement dans le corps du test lorsqu'elles participent à la vérification d'un comportement.

@@ -1,9 +1,9 @@
-import type { Environment, Prisma, Project } from '@prisma/client'
-import prisma from '@/prisma.js'
+import type { Environment, Prisma, Project } from '@prisma/client';
+import prisma from '@/prisma.js';
 
 // SELECT
 export function getEnvironmentByIdOrThrow(id: Environment['id']) {
-  return prisma.environment.findUniqueOrThrow({ where: { id }, include: { stage: true } })
+  return prisma.environment.findUniqueOrThrow({ where: { id }, include: { stage: true } });
 }
 
 export function getEnvironmentInfos(id: Environment['id']) {
@@ -32,7 +32,7 @@ export function getEnvironmentInfos(id: Environment['id']) {
       },
       stage: true,
     },
-  })
+  });
 }
 
 export async function getEnvironmentsByProjectId(projectId: Project['id']) {
@@ -41,7 +41,7 @@ export async function getEnvironmentsByProjectId(projectId: Project['id']) {
     include: {
       stage: true,
     },
-  })
+  });
 }
 
 export function getEnvironmentByIdWithCluster(id: Environment['id']) {
@@ -52,7 +52,7 @@ export function getEnvironmentByIdWithCluster(id: Environment['id']) {
         include: { kubeconfig: true },
       },
     },
-  })
+  });
 }
 
 // INSERT
@@ -68,10 +68,22 @@ export function initializeEnvironment(data: Prisma.EnvironmentUncheckedCreateInp
         },
       },
     },
-  })
+  });
 }
 
-export function updateEnvironment({ id, cpu, gpu, memory, autosync }: { id: Environment['id'], cpu: Environment['cpu'], gpu: Environment['gpu'], memory: Environment['memory'], autosync: Environment['autosync'] }) {
+export function updateEnvironment({
+  id,
+  cpu,
+  gpu,
+  memory,
+  autosync,
+}: {
+  id: Environment['id'];
+  cpu: Environment['cpu'];
+  gpu: Environment['gpu'];
+  memory: Environment['memory'];
+  autosync: Environment['autosync'];
+}) {
   return prisma.environment.update({
     where: {
       id,
@@ -82,18 +94,18 @@ export function updateEnvironment({ id, cpu, gpu, memory, autosync }: { id: Envi
       memory,
       autosync,
     },
-  })
+  });
 }
 
 // DELETE
 export function deleteEnvironment(id: Environment['id']) {
   return prisma.environment.delete({
     where: { id },
-  })
+  });
 }
 
 export function deleteAllEnvironmentForProject(id: Project['id']) {
   return prisma.environment.deleteMany({
     where: { projectId: id },
-  })
+  });
 }

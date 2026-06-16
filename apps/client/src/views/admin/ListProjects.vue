@@ -1,95 +1,106 @@
 <script lang="ts" setup>
-import type { ArrayElement, projectContract, ProjectV2 } from '@cpn-console/shared'
-import { bts, statusDict } from '@cpn-console/shared'
-import TimeAgo from 'javascript-time-ago'
-import fr from 'javascript-time-ago/locale/fr'
-import { onBeforeMount, ref } from 'vue'
-import { apiClient, extractData } from '@/api/xhr-client.js'
-import router from '@/router/index.js'
-import { useProjectStore } from '@/stores/project.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { getRandomId } from '@/utils/func.js'
+import type { ArrayElement, projectContract, ProjectV2 } from '@cpn-console/shared';
+import { bts, statusDict } from '@cpn-console/shared';
+import TimeAgo from 'javascript-time-ago';
+import fr from 'javascript-time-ago/locale/fr';
+import { onBeforeMount, ref } from 'vue';
+import { apiClient, extractData } from '@/api/xhr-client.js';
+import router from '@/router/index.js';
+import { useProjectStore } from '@/stores/project.js';
+import { useSnackbarStore } from '@/stores/snackbar.js';
+import { getRandomId } from '@/utils/func.js';
 
-const projectStore = useProjectStore()
-const snackbarStore = useSnackbarStore()
+const projectStore = useProjectStore();
+const snackbarStore = useSnackbarStore();
 
 type FileForDownload = File & {
-  href?: string
-  format?: string
-  title?: string
-}
+  href?: string;
+  format?: string;
+  title?: string;
+};
 
-const tableKey = ref(getRandomId('table'))
-const inputSearchText = ref('')
-const isLoading = ref(true)
-const activeFilter = ref<keyof FilterMethods>('Non archivés')
-const file = ref<FileForDownload | undefined>(undefined)
-const queryChanged = ref(false)
+const tableKey = ref(getRandomId('table'));
+const inputSearchText = ref('');
+const isLoading = ref(true);
+const activeFilter = ref<keyof FilterMethods>('Non archivés');
+const file = ref<FileForDownload | undefined>(undefined);
+const queryChanged = ref(false);
 // Add locale-specific relative date/time formatting rules.
-TimeAgo.addLocale(fr)
+TimeAgo.addLocale(fr);
 
 // Create relative date/time formatter.
-const timeAgo = new TimeAgo('fr-FR')
+const timeAgo = new TimeAgo('fr-FR');
 
-const title = 'Liste des projets'
+const title = 'Liste des projets';
 
 const bulkActions: Array<{
-  text: string
-  value: typeof projectContract.bulkActionProject.body._type.action
+  text: string;
+  value: typeof projectContract.bulkActionProject.body._type.action;
 }> = [
   { text: 'Reprovisionner', value: 'replay' },
   { text: 'Vérrouiller', value: 'lock' },
   { text: 'Dévérouiller', value: 'unlock' },
   { text: 'Archiver', value: 'archive' },
-] as const
-type BulkActions = (typeof bulkActions)[number]['value']
-const selectedAction = ref<BulkActions>('replay')
+] as const;
+type BulkActions = (typeof bulkActions)[number]['value'];
+const selectedAction = ref<BulkActions>('replay');
 
-type FilterMethods = Record<string, typeof projectContract.listProjects.query._type>
+type FilterMethods = Record<string, typeof projectContract.listProjects.query._type>;
 const filterMethods: FilterMethods = {
   Tous: { filter: 'all' },
   'Non archivés': { filter: 'all', statusNotIn: 'archived' },
   Archivés: { filter: 'all', statusIn: 'archived' },
   Échoués: { filter: 'all', statusIn: 'failed' },
   Verrouillés: { filter: 'all', locked: true, statusNotIn: 'archived' },
-  'Non à jour': { filter: 'all', statusNotIn: 'archived', lastSuccessProvisionningVersion: 'outdated' },
-}
+  'Non à jour': {
+    filter: 'all',
+    statusNotIn: 'archived',
+    lastSuccessProvisionningVersion: 'outdated',
+  },
+};
 
-const selectedProjectIds = ref<ProjectV2['id'][]>([])
-const projects = ref<(ProjectV2)[]>([])
-const projectWithSelection = computed(() => projects.value.map(project => ({ ...project, selected: selectedProjectIds.value.includes(project.id) })))
-const selectedProjects = computed(() => projectWithSelection.value.filter(project => project.selected))
+const selectedProjectIds = ref<ProjectV2['id'][]>([]);
+const projects = ref<ProjectV2[]>([]);
+const projectWithSelection = computed(() =>
+  projects.value.map((project) => ({
+    ...project,
+    selected: selectedProjectIds.value.includes(project.id),
+  })),
+);
+const selectedProjects = computed(() =>
+  projectWithSelection.value.filter((project) => project.selected),
+);
 
 const isAllSelected = computed<boolean>(() => {
-  return !!selectedProjects.value.length && selectedProjects.value.length === projects.value.length
-})
+  return !!selectedProjects.value.length && selectedProjects.value.length === projects.value.length;
+});
 
 function selectAll() {
   if (isAllSelected.value) {
-    selectedProjectIds.value = []
+    selectedProjectIds.value = [];
   } else {
-    selectedProjectIds.value = projects.value.map(({ id }) => id)
+    selectedProjectIds.value = projects.value.map(({ id }) => id);
   }
 }
 
 function switchSelection(checked: boolean, id: ProjectV2['id']) {
-  selectedProjectIds.value = selectedProjectIds.value.filter(projectId => projectId !== id)
+  selectedProjectIds.value = selectedProjectIds.value.filter((projectId) => projectId !== id);
   if (checked) {
-    selectedProjectIds.value.push(id)
+    selectedProjectIds.value.push(id);
   }
 }
 
 async function getProjects() {
-  queryChanged.value = false
-  isLoading.value = true
+  queryChanged.value = false;
+  isLoading.value = true;
   try {
     projects.value = await projectStore.listProjects({
       ...filterMethods[activeFilter.value],
-      ...inputSearchText.value && { search: inputSearchText.value.toLowerCase() },
-    })
+      ...(inputSearchText.value && { search: inputSearchText.value.toLowerCase() }),
+    });
   } finally {
-    isLoading.value = false
-    tableKey.value = getRandomId('table')
+    isLoading.value = false;
+    tableKey.value = getRandomId('table');
   }
 }
 
@@ -97,14 +108,14 @@ async function goToProject(projectSlug: string) {
   router.push({
     name: 'AdminProject',
     params: { slug: projectSlug },
-  })
+  });
 }
 
 async function generateProjectsDataFile() {
   file.value = new File([await projectStore.generateProjectsData()], 'dso-projects.csv', {
     type: 'text/csv;charset=utf-8',
-  })
-  const url = URL.createObjectURL(file.value)
+  });
+  const url = URL.createObjectURL(file.value);
 
   file.value = {
     ...file.value,
@@ -112,12 +123,12 @@ async function generateProjectsDataFile() {
     size: file.value.size,
     format: 'CSV',
     title: 'dso-projects.csv',
-  }
+  };
 }
 
 onBeforeMount(async () => {
-  await getProjects()
-})
+  await getProjects();
+});
 
 async function validateBulkAction() {
   await apiClient.Projects.bulkActionProject({
@@ -125,32 +136,26 @@ async function validateBulkAction() {
       action: selectedAction.value,
       projectIds: selectedProjects.value.map(({ id }) => id),
     },
-  }).then((res: any) => extractData(res, 202))
-  selectedProjectIds.value = []
-  snackbarStore.setMessage('Traitement en cours, en fonction du nombre de projets cela peut prendre plusieurs minutes, veuillez rafraichir dans quelques instants')
+  }).then((res: any) => extractData(res, 202));
+  selectedProjectIds.value = [];
+  snackbarStore.setMessage(
+    'Traitement en cours, en fonction du nombre de projets cela peut prendre plusieurs minutes, veuillez rafraichir dans quelques instants',
+  );
 }
 
 function clickProject(project: ArrayElement<typeof projectWithSelection.value>) {
-  if (project.selected)
-    return switchSelection(false, project.id)
-  if (selectedProjects.value.length)
-    return switchSelection(true, project.id)
+  if (project.selected) return switchSelection(false, project.id);
+  if (selectedProjects.value.length) return switchSelection(true, project.id);
   if (project.status === 'archived')
-    return snackbarStore.setMessage('Le projet est archivé, pas d\'action possible', 'info')
-  return goToProject(project.slug)
+    return snackbarStore.setMessage("Le projet est archivé, pas d'action possible", 'info');
+  return goToProject(project.slug);
 }
 </script>
 
 <template>
-  <div
-    class="relative"
-  >
-    <div
-      class="flex justify-between gap-5 w-full items-end mb-5"
-    >
-      <div
-        class="flex gap-5 w-max items-end"
-      >
+  <div class="relative">
+    <div class="flex justify-between gap-5 w-full items-end mb-5">
+      <div class="flex gap-5 w-max items-end">
         <DsfrSelect
           v-model="activeFilter"
           select-id="projectSearchFilter"
@@ -176,9 +181,7 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
           @click="getProjects"
         />
       </div>
-      <div
-        class="w-auto flex gap-4 justify-end"
-      >
+      <div class="w-auto flex gap-4 justify-end">
         <DsfrButton
           data-testid="download-btn"
           title="Exporter les données de tous les projets"
@@ -198,11 +201,7 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
         />
       </div>
     </div>
-    <DsfrTable
-      :key="tableKey"
-      data-testid="tableAdministrationProjects"
-      :title="title"
-    >
+    <DsfrTable :key="tableKey" data-testid="tableAdministrationProjects" :title="title">
       <template #header>
         <tr>
           <td>
@@ -211,7 +210,7 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
               data-testid="select-all-cbx"
               :checked="!!projectWithSelection.length && isAllSelected"
               @click="selectAll"
-            >
+            />
           </td>
           <td>Slug</td>
           <td>Nom</td>
@@ -221,15 +220,15 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
           <td>Date de création</td>
         </tr>
       </template>
-      <tr
-        v-if="isLoading || !projects.length"
-      >
+      <tr v-if="isLoading || !projects.length">
         <td colspan="7">
           {{ isLoading ? 'Chargement...' : 'Aucun projet trouvé' }}
         </td>
       </tr>
       <tr
-        v-for="project in projectWithSelection.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))"
+        v-for="project in projectWithSelection.sort((a, b) =>
+          a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
+        )"
         v-else
         :key="project.id"
         :data-testid="`projectTr-${project.id}`"
@@ -238,15 +237,13 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
         :title="`Voir le tableau de bord du projet ${project.name}`"
         @click.stop="() => clickProject(project)"
       >
-        <td
-          @click.stop
-        >
+        <td @click.stop>
           <input
             type="checkbox"
             :data-testid="`select-${project.id}-cbx`"
             :checked="project.selected"
             @click="(event: any) => switchSelection(event.target.checked, project.id)"
-          >
+          />
         </td>
         <td>{{ project.slug }}</td>
         <td>{{ project.name }}</td>
@@ -254,9 +251,7 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
         <td
           :title="`${statusDict.status[project.status].wording}\n${statusDict.locked[bts(project.locked)].wording}`"
         >
-          <div
-            class="grid md:grid-cols-2 gap-2"
-          >
+          <div class="grid md:grid-cols-2 gap-2">
             <v-icon
               :name="statusDict.status[project.status].icon"
               :fill="statusDict.status[project.status].color"
@@ -268,16 +263,12 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
           </div>
         </td>
         <td>{{ project.lastSuccessProvisionningVersion ?? '-' }}</td>
-        <td
-          :title="(new Date(project.createdAt)).toLocaleString()"
-        >
+        <td :title="new Date(project.createdAt).toLocaleString()">
           {{ timeAgo.format(new Date(project.createdAt)) }}
         </td>
       </tr>
     </DsfrTable>
-    <div
-      class="w-max flex gap-5 items-end"
-    >
+    <div class="w-max flex gap-5 items-end">
       <DsfrSelect
         v-model="selectedAction"
         data-testid="selectBulkAction"
@@ -306,15 +297,16 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
 </template>
 
 <style scoped>
-.fr-select-group, .fr-input-group {
+.fr-select-group,
+.fr-input-group {
   margin-bottom: 0 !important;
 }
 
-tr[selected]{
+tr[selected] {
   background-color: var(--background-action-low-blue-france-active) !important;
 }
 
-tr:nth-child(2n)[selected]{
+tr:nth-child(2n)[selected] {
   background-color: var(--background-alt-blue-france-active) !important;
 }
 </style>

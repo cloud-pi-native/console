@@ -19,6 +19,7 @@ pnpm monorepo. Node >= 24, pnpm v10.33
 ## Server architecture (Fastify)
 
 Resource-based organization in `apps/server/src/resources/`. Each resource follows a 3-file pattern:
+
 - `router.ts` : route handlers (auth, permissions, delegates to business)
 - `business.ts` : business logic, orchestrates queries + hook calls
 - `queries.ts` : Prisma database queries

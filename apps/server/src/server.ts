@@ -1,44 +1,44 @@
-import { logger } from '@cpn-console/logger'
-import { closeConnections } from './connect.js'
-import { getPreparedApp } from './prepare-app.js'
-import { isCI, isDev, isDevSetup, isProd, isTest, port } from './utils/env.js'
+import { logger } from '@cpn-console/logger';
+import { closeConnections } from './connect.js';
+import { getPreparedApp } from './prepare-app.js';
+import { isCI, isDev, isDevSetup, isProd, isTest, port } from './utils/env.js';
 
-const app = await getPreparedApp()
+const app = await getPreparedApp();
 
 try {
-  await app.listen({ host: '0.0.0.0', port: +(port ?? 8080) })
+  await app.listen({ host: '0.0.0.0', port: +(port ?? 8080) });
 } catch (error) {
-  logger.error({ err: error }, 'Failed to start server')
-  process.exit(1)
+  logger.error({ err: error }, 'Failed to start server');
+  process.exit(1);
 }
 
-logger.debug({ isDev, isTest, isCI, isDevSetup, isProd })
+logger.debug({ isDev, isTest, isCI, isDevSetup, isProd });
 
 export async function exitGracefully(error?: Error) {
   if (error instanceof Error) {
-    logger.fatal(error)
+    logger.fatal(error);
   }
-  await app.close()
-  logger.info('Closing connections...')
-  await closeConnections()
-  logger.info('Exiting...')
-  process.exit(error instanceof Error ? 1 : 0)
+  await app.close();
+  logger.info('Closing connections...');
+  await closeConnections();
+  logger.info('Exiting...');
+  process.exit(error instanceof Error ? 1 : 0);
 }
 
 function logExitCode(code: number) {
-  logger.warn(`received signal: ${code}`)
+  logger.warn(`received signal: ${code}`);
 }
 
 function logUnhandledRejection(reason: unknown, promise: Promise<unknown>) {
-  logger.error({ promise, err: reason }, 'Unhandled Rejection')
+  logger.error({ promise, err: reason }, 'Unhandled Rejection');
 }
 
 export function handleExit() {
-  process.on('exit', logExitCode)
-  process.on('SIGINT', exitGracefully)
-  process.on('SIGTERM', exitGracefully)
-  process.on('uncaughtException', exitGracefully)
-  process.on('unhandledRejection', logUnhandledRejection)
+  process.on('exit', logExitCode);
+  process.on('SIGINT', exitGracefully);
+  process.on('SIGTERM', exitGracefully);
+  process.on('uncaughtException', exitGracefully);
+  process.on('unhandledRejection', logUnhandledRejection);
 }
 
-handleExit()
+handleExit();

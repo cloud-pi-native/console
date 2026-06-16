@@ -1,30 +1,30 @@
 <script lang="ts" setup>
-import type { Ref } from 'vue'
-import { ref } from 'vue'
-import { contactEmail } from '@/utils/env.js'
+import type { Ref } from 'vue';
+import { ref } from 'vue';
+import { contactEmail } from '@/utils/env.js';
 
 interface TabTitle {
-  title: string
-  icon: string
+  title: string;
+  icon: string;
 }
 
 interface MailType {
-  to: string
-  label: string
-  address: string
+  to: string;
+  label: string;
+  address: string;
 }
 
 interface KnowMoreBtn {
-  label: string
-  title: string
-  onClick: any
+  label: string;
+  title: string;
+  onClick: any;
 }
 
-const initialSelectedIndex = 0
+const initialSelectedIndex = 0;
 
-const selectedTabIndex = ref(initialSelectedIndex)
+const selectedTabIndex = ref(initialSelectedIndex);
 
-const tabListName: string = 'benefitsTab'
+const tabListName: string = 'benefitsTab';
 const tabTitles: Array<TabTitle> = [
   {
     title: 'Qualité',
@@ -38,44 +38,37 @@ const tabTitles: Array<TabTitle> = [
     title: 'Sécurité',
     icon: 'ri:shield-check-line',
   },
-]
+];
 const tabContents: Array<string> = [
   'Avec la mise en place progressive d\'une véritable usine logicielle DevSecOps ("DSO" pour "développement, sécurité et exploitation") soutenant l\'agilité pour concevoir des applications sécurisées et de qualité à partir du socle OpenShift, le ministère de l\'Intérieur se dote d\'une offre clé en main, fonctionnelle et technique, qui permet de produire et opérer des services numériques de haute qualité, sécurisés et ergonomiques qui répondent aux besoins des citoyens et des agents, tout en restant évolutifs et maintenables à moindre coût.',
-  'Temps de déploiement < 2 heures pour une application existante, sans impact utilisateur ; < 15 minutes pour un environnement usine et < 5 jours pour le déploiement en autonomie d\'une nouvelle application d\'un langage « top3 », après demande initiale sur la console Cloud Native (incluant signature du conventionnement dématérialisé.',
-  'L\'offre Cloud π Native permet d\'héberger des données sensibles jusqu\'au niveau Diffusion Restreinte (DR) en conformité avec le SecNumCloud. Elle intègre les règles de durcissement de Kubernetes en vigueur et la conformité à l\'état de l\'art (cf. SecNumCloud et guide NSA/CISA).',
-]
+  "Temps de déploiement < 2 heures pour une application existante, sans impact utilisateur ; < 15 minutes pour un environnement usine et < 5 jours pour le déploiement en autonomie d'une nouvelle application d'un langage « top3 », après demande initiale sur la console Cloud Native (incluant signature du conventionnement dématérialisé.",
+  "L'offre Cloud π Native permet d'héberger des données sensibles jusqu'au niveau Diffusion Restreinte (DR) en conformité avec le SecNumCloud. Elle intègre les règles de durcissement de Kubernetes en vigueur et la conformité à l'état de l'art (cf. SecNumCloud et guide NSA/CISA).",
+];
 
 const mail: MailType = {
   to: `mailto:${contactEmail}?subject=Question à propos de Cloud π Native`,
   label: `Nous écrire (${contactEmail})`,
   address: contactEmail,
-}
-const ghFormationUrl: string = 'https://github.com/cloud-pi-native/embarquement-autoformation'
+};
+const ghFormationUrl: string = 'https://github.com/cloud-pi-native/embarquement-autoformation';
 
 const knowMoreBtn: Ref<KnowMoreBtn> = ref({
   label: 'Contactez-nous pour en savoir plus',
   title: mail.address,
   onClick: () => setWindowLocation(mail.to),
-})
+});
 
 function setWindowLocation(to: string) {
   // TODO
   // @ts-ignore
-  window.location = to
+  window.location = to;
 }
 </script>
 
 <template>
-  <h1
-    id="top"
-    class="fr-h1 fr-text-title--blue-france text-center"
-  >
-    Cloud π Native
-  </h1>
+  <h1 id="top" class="fr-h1 fr-text-title--blue-france text-center">Cloud π Native</h1>
 
-  <section
-    class="fr-py-2w flex flex-col"
-  >
+  <section class="fr-py-2w flex flex-col">
     <DsfrCallout
       title="Description de l'offre Cloud π Native"
       content="L'offre à visée interministérielle Cloud π Native s'appuie sur l'écosystème de ressources Cloud π du Ministère de l'Intérieur et des Outre-mer. Elle propose en outre une usine logicielle et un orchestrateur DevSecOps permettant de produire et opérer des services numériques de qualité au service des usagers (y compris celles et ceux qui produisent le numérique public)."
@@ -87,32 +80,20 @@ function setWindowLocation(to: string) {
       :tab-contents="tabContents"
       class="md:(h-full mt-0 pt-0)"
     >
-      <DsfrTabContent
-        v-for="i in tabContents.length"
-        :key="i"
-        panel-id="general"
-        tab-id="general"
-      >
+      <DsfrTabContent v-for="i in tabContents.length" :key="i" panel-id="general" tab-id="general">
         {{ tabContents[i] }}
       </DsfrTabContent>
     </DsfrTabs>
   </section>
 
-  <hr class="section-separator">
+  <hr class="section-separator" />
 
   <section>
-    <h2
-      id="personas"
-      class="fr-h2 fr-text-title--blue-france text-center"
-    >
+    <h2 id="personas" class="fr-h2 fr-text-title--blue-france text-center">
       À qui s'adresse l'offre Cloud π Native ?
     </h2>
-    <div
-      class="grid grid-cols-3 gap-10 <md:flex <md:flex-col mb-2"
-    >
-      <div
-        class="tile-button"
-      >
+    <div class="grid grid-cols-3 gap-10 <md:flex <md:flex-col mb-2">
+      <div class="tile-button">
         <DsfrTile
           class="fr-mb-2w"
           title="Agents ministériels"
@@ -128,9 +109,7 @@ function setWindowLocation(to: string) {
           @click="setWindowLocation(ghFormationUrl)"
         />
       </div>
-      <div
-        class="tile-button"
-      >
+      <div class="tile-button">
         <DsfrTile
           class="fr-mb-2w"
           title="Acteurs industriels, SSII/ESN, contributeurs open source... et curieux"
@@ -145,9 +124,7 @@ function setWindowLocation(to: string) {
           @click="setWindowLocation(mail.to)"
         />
       </div>
-      <div
-        class="tile-button"
-      >
+      <div class="tile-button">
         <DsfrTile
           class="fr-mb-2w"
           title="Initiatives partenariales"
@@ -165,13 +142,10 @@ function setWindowLocation(to: string) {
     </div>
   </section>
 
-  <hr class="section-separator">
+  <hr class="section-separator" />
 
   <section>
-    <h2
-      id="consommation"
-      class="fr-h2 fr-text-title--blue-france text-center"
-    >
+    <h2 id="consommation" class="fr-h2 fr-text-title--blue-france text-center">
       Comment consommer Cloud π Native ?
     </h2>
     <DsfrCallout

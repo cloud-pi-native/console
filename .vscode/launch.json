@@ -9,128 +9,78 @@
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "corepack",
-      "runtimeArgs": [
-        "pnpm",
-        "--filter",
-        "@cpn-console/server",
-        "run",
-        "integ"
-      ],
+      "runtimeArgs": ["pnpm", "--filter", "@cpn-console/server", "run", "integ"],
       "console": "integratedTerminal",
       "restart": true,
       "presentation": {
         "hidden": true
       },
-      "skipFiles": [
-        "<node_internals>/**",
-        "${workspaceFolder}/node_modules/**/*.js"
-      ]
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**/*.js"]
     },
     {
       "name": "Launch Server (Dev)",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "corepack",
-      "runtimeArgs": [
-        "pnpm",
-        "--filter",
-        "@cpn-console/server",
-        "run",
-        "dev"
-      ],
+      "runtimeArgs": ["pnpm", "--filter", "@cpn-console/server", "run", "dev"],
       "console": "integratedTerminal",
       "restart": true,
       "presentation": {
         "hidden": true
       },
-      "skipFiles": [
-        "<node_internals>/**",
-        "${workspaceFolder}/node_modules/**/*.js"
-      ]
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**/*.js"]
     },
     {
       "name": "Launch Infra (Integ)",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "corepack",
-      "runtimeArgs": [
-        "pnpm",
-        "run",
-        "integ"
-      ],
+      "runtimeArgs": ["pnpm", "run", "integ"],
       "console": "internalConsole",
       "restart": true,
       "presentation": {
         "hidden": true
       },
-      "skipFiles": [
-        "<node_internals>/**",
-        "${workspaceFolder}/node_modules/**/*.js"
-      ]
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**/*.js"]
     },
     {
       "name": "Launch Infra (Dev)",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "corepack",
-      "runtimeArgs": [
-        "pnpm",
-        "run",
-        "dev"
-      ],
+      "runtimeArgs": ["pnpm", "run", "dev"],
       "console": "internalConsole",
       "restart": true,
       "presentation": {
         "hidden": true
       },
-      "skipFiles": [
-        "<node_internals>/**",
-        "${workspaceFolder}/node_modules/**/*.js"
-      ]
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**/*.js"]
     },
     {
       "name": "Launch Server NestJS (Integ)",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "corepack",
-      "runtimeArgs": [
-        "pnpm",
-        "--filter",
-        "@cpn-console/server-nestjs",
-        "run",
-        "start:dev"
-      ],
+      "runtimeArgs": ["pnpm", "--filter", "@cpn-console/server-nestjs", "run", "start:dev"],
       "console": "integratedTerminal",
       "restart": true,
       "presentation": {
         "hidden": true
       },
-      "skipFiles": [
-        "<node_internals>/**",
-        "${workspaceFolder}/node_modules/**/*.js"
-      ]
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**/*.js"]
     },
     {
       "name": "Launch Server NestJS (Dev)",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "corepack",
-      "runtimeArgs": [
-        "pnpm",
-        "--filter",
-        "@cpn-console/server-nestjs",
-        "run",
-        "start:dev"
-      ],
+      "runtimeArgs": ["pnpm", "--filter", "@cpn-console/server-nestjs", "run", "start:dev"],
       "console": "integratedTerminal",
       "restart": true,
       "presentation": {
         "hidden": true
       },
-      "skipFiles": [
-        "<node_internals>/**",
-        "${workspaceFolder}/node_modules/**/*.js"
-      ]
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**/*.js"]
     },
     {
       "name": "Attach Server",
@@ -140,10 +90,7 @@
       "address": "127.0.0.1",
       "localRoot": "${workspaceFolder}/apps/server",
       "remoteRoot": "/app/apps/server",
-      "skipFiles": [
-        "<node_internals>/**",
-        "${workspaceFolder}/node_modules/**/*.js"
-      ],
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**/*.js"],
       "presentation": {
         "hidden": true
       }

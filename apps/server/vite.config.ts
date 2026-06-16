@@ -1,18 +1,15 @@
 /// <reference types="vitest" />
-import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
+import { fileURLToPath, URL } from 'node:url';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
-  plugins: [
-  ],
+  plugins: [],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
   test: {
-    poolMatchGlobs: [
-      ['**/resources/**/*.spec.ts', 'forks'],
-    ],
+    poolMatchGlobs: [['**/resources/**/*.spec.ts', 'forks']],
   },
-})
+});

@@ -1,32 +1,36 @@
 <script lang="ts" setup>
-import type { CleanLog } from '@cpn-console/shared'
-import type { Project } from '@/utils/project-utils.js'
-import { ref, watch } from 'vue'
+import type { CleanLog } from '@cpn-console/shared';
+import type { Project } from '@/utils/project-utils.js';
+import { ref, watch } from 'vue';
 
 const props = defineProps<{
-  project: Project
-  asProfile: 'user' | 'admin'
-}>()
+  project: Project;
+  asProfile: 'user' | 'admin';
+}>();
 
-const step = props.asProfile === 'user' ? 5 : 15
-const isUpdating = ref(false)
-const page = ref(0)
+const step = props.asProfile === 'user' ? 5 : 15;
+const isUpdating = ref(false);
+const page = ref(0);
 
-const logs = ref<CleanLog[]>([])
-const totalLength = ref(0)
+const logs = ref<CleanLog[]>([]);
+const totalLength = ref(0);
 
 async function showLogs(newPage?: number) {
-  if (newPage != null) page.value = newPage
-  isUpdating.value = true
-  const res = await props.project.Logs.list({ offset: page.value * step, limit: step, clean: props.asProfile === 'user' ? 'true' : 'false' })
-  logs.value = res.logs
-  totalLength.value = res.total
-  isUpdating.value = false
+  if (newPage != null) page.value = newPage;
+  isUpdating.value = true;
+  const res = await props.project.Logs.list({
+    offset: page.value * step,
+    limit: step,
+    clean: props.asProfile === 'user' ? 'true' : 'false',
+  });
+  logs.value = res.logs;
+  totalLength.value = res.total;
+  isUpdating.value = false;
 }
 
-watch(props.project, () => showLogs())
+watch(props.project, () => showLogs());
 
-onMounted(showLogs)
+onMounted(showLogs);
 </script>
 
 <template>

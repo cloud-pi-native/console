@@ -497,7 +497,7 @@ export interface ProviderUnderProject {
 
 export interface Icon {
   /** The content type of the icon */
-  "content-type"?: string;
+  'content-type'?: string;
   /** The base64 encoded content of the icon */
   content?: string;
 }
@@ -1195,7 +1195,7 @@ export interface ScheduleObj {
    * 'Manual' means to trigger it right away, 'Schedule' means to trigger it by a specified cron schedule and
    * 'None' means to cancel the schedule.
    */
-  type?: "Hourly" | "Daily" | "Weekly" | "Custom" | "Manual" | "None" | "Schedule";
+  type?: 'Hourly' | 'Daily' | 'Weekly' | 'Custom' | 'Manual' | 'None' | 'Schedule';
   /** A cron expression, a time-based job scheduler. */
   cron?: string;
   /**
@@ -1227,7 +1227,7 @@ export interface Stats {
   /** A flag indicating job status of scan all. */
   ongoing: boolean;
   /** The trigger of the scan all job. */
-  trigger?: "Manual" | "Schedule" | "Event";
+  trigger?: 'Manual' | 'Schedule' | 'Event';
 }
 
 /** the tag retention metadata */
@@ -2361,7 +2361,7 @@ export interface Worker {
 /** The request to stop, pause or resume */
 export interface ActionRequest {
   /** The action of the request, should be stop, pause or resume */
-  action?: "stop" | "pause" | "resume";
+  action?: 'stop' | 'pause' | 'resume';
 }
 
 /** the job queue info */
@@ -2532,12 +2532,21 @@ export interface VulnerabilityItem {
   links?: string[];
 }
 
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, HeadersDefaults, ResponseType } from "axios";
-import axios from "axios";
+import type {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  HeadersDefaults,
+  ResponseType,
+} from 'axios';
+import axios from 'axios';
 
 export type QueryParamsType = Record<string | number, any>;
 
-export interface FullRequestParams extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
+export interface FullRequestParams extends Omit<
+  AxiosRequestConfig,
+  'data' | 'params' | 'url' | 'responseType'
+> {
   /** set parameter to `true` for call `securityWorker` for this request */
   secure?: boolean;
   /** request path */
@@ -2552,9 +2561,12 @@ export interface FullRequestParams extends Omit<AxiosRequestConfig, "data" | "pa
   body?: unknown;
 }
 
-export type RequestParams = Omit<FullRequestParams, "body" | "method" | "query" | "path">;
+export type RequestParams = Omit<FullRequestParams, 'body' | 'method' | 'query' | 'path'>;
 
-export interface ApiConfig<SecurityDataType = unknown> extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
+export interface ApiConfig<SecurityDataType = unknown> extends Omit<
+  AxiosRequestConfig,
+  'data' | 'cancelToken'
+> {
   securityWorker?: (
     securityData: SecurityDataType | null,
   ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
@@ -2563,21 +2575,29 @@ export interface ApiConfig<SecurityDataType = unknown> extends Omit<AxiosRequest
 }
 
 export enum ContentType {
-  Json = "application/json",
-  FormData = "multipart/form-data",
-  UrlEncoded = "application/x-www-form-urlencoded",
-  Text = "text/plain",
+  Json = 'application/json',
+  FormData = 'multipart/form-data',
+  UrlEncoded = 'application/x-www-form-urlencoded',
+  Text = 'text/plain',
 }
 
 export class HttpClient<SecurityDataType = unknown> {
   public instance: AxiosInstance;
   private securityData: SecurityDataType | null = null;
-  private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
+  private securityWorker?: ApiConfig<SecurityDataType>['securityWorker'];
   private secure?: boolean;
   private format?: ResponseType;
 
-  constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "http://localhost/api/v2.0" });
+  constructor({
+    securityWorker,
+    secure,
+    format,
+    ...axiosConfig
+  }: ApiConfig<SecurityDataType> = {}) {
+    this.instance = axios.create({
+      ...axiosConfig,
+      baseURL: axiosConfig.baseURL || 'http://localhost/api/v2.0',
+    });
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
@@ -2587,7 +2607,10 @@ export class HttpClient<SecurityDataType = unknown> {
     this.securityData = data;
   };
 
-  protected mergeRequestParams(params1: AxiosRequestConfig, params2?: AxiosRequestConfig): AxiosRequestConfig {
+  protected mergeRequestParams(
+    params1: AxiosRequestConfig,
+    params2?: AxiosRequestConfig,
+  ): AxiosRequestConfig {
     const method = params1.method || (params2 && params2.method);
 
     return {
@@ -2595,7 +2618,9 @@ export class HttpClient<SecurityDataType = unknown> {
       ...params1,
       ...(params2 || {}),
       headers: {
-        ...((method && this.instance.defaults.headers[method.toLowerCase() as keyof HeadersDefaults]) || {}),
+        ...((method &&
+          this.instance.defaults.headers[method.toLowerCase() as keyof HeadersDefaults]) ||
+          {}),
         ...(params1.headers || {}),
         ...((params2 && params2.headers) || {}),
       },
@@ -2603,7 +2628,7 @@ export class HttpClient<SecurityDataType = unknown> {
   }
 
   protected stringifyFormItem(formItem: unknown) {
-    if (typeof formItem === "object" && formItem !== null) {
+    if (typeof formItem === 'object' && formItem !== null) {
       return JSON.stringify(formItem);
     } else {
       return `${formItem}`;
@@ -2634,18 +2659,18 @@ export class HttpClient<SecurityDataType = unknown> {
     ...params
   }: FullRequestParams): Promise<AxiosResponse<T>> => {
     const secureParams =
-      ((typeof secure === "boolean" ? secure : this.secure) &&
+      ((typeof secure === 'boolean' ? secure : this.secure) &&
         this.securityWorker &&
         (await this.securityWorker(this.securityData))) ||
       {};
     const requestParams = this.mergeRequestParams(params, secureParams);
     const responseFormat = format || this.format || undefined;
 
-    if (type === ContentType.FormData && body && body !== null && typeof body === "object") {
+    if (type === ContentType.FormData && body && body !== null && typeof body === 'object') {
       body = this.createFormData(body as Record<string, unknown>);
     }
 
-    if (type === ContentType.Text && body && body !== null && typeof body !== "string") {
+    if (type === ContentType.Text && body && body !== null && typeof body !== 'string') {
       body = JSON.stringify(body);
     }
 
@@ -2653,7 +2678,7 @@ export class HttpClient<SecurityDataType = unknown> {
       ...requestParams,
       headers: {
         ...(requestParams.headers || {}),
-        ...(type && type !== ContentType.FormData ? { "Content-Type": type } : {}),
+        ...(type && type !== ContentType.FormData ? { 'Content-Type': type } : {}),
       },
       params: query,
       responseType: responseFormat,
@@ -2684,9 +2709,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getHealth: (params: RequestParams = {}) =>
       this.request<OverallHealthStatus, Errors>({
         path: `/health`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
   };
@@ -2709,10 +2734,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Search, Errors>({
         path: `/search`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
   };
@@ -2729,9 +2754,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getStatistic: (params: RequestParams = {}) =>
       this.request<Statistic, Errors>({
         path: `/statistics`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
   };
@@ -2748,11 +2773,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     pingLdap: (ldapconf: LdapConf, params: RequestParams = {}) =>
       this.request<LdapPingResult, Errors>({
         path: `/ldap/ping`,
-        method: "POST",
+        method: 'POST',
         body: ldapconf,
         secure: true,
         type: ContentType.Json,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -2774,10 +2799,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<LdapUser[], Errors>({
         path: `/ldap/users/search`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -2793,7 +2818,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     importLdapUser: (uid_list: LdapImportUsers, params: RequestParams = {}) =>
       this.request<void, Errors | LdapFailedImportUser[]>({
         path: `/ldap/users/import`,
-        method: "POST",
+        method: 'POST',
         body: uid_list,
         secure: true,
         type: ContentType.Json,
@@ -2820,10 +2845,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<UserGroup[], Errors>({
         path: `/ldap/groups/search`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
   };
@@ -2840,9 +2865,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getInternalconfig: (params: RequestParams = {}) =>
       this.request<InternalConfigurationsResponse, void>({
         path: `/internalconfig`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
   };
@@ -2859,9 +2884,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getConfigurations: (params: RequestParams = {}) =>
       this.request<ConfigurationsResponse, void>({
         path: `/configurations`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -2877,7 +2902,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateConfigurations: (configurations: Configurations, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/configurations`,
-        method: "PUT",
+        method: 'PUT',
         body: configurations,
         secure: true,
         type: ContentType.Json,
@@ -2929,10 +2954,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Project[], Errors>({
         path: `/projects`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -2954,7 +2979,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<any, Errors>({
         path: `/projects`,
-        method: "HEAD",
+        method: 'HEAD',
         query: query,
         secure: true,
         ...params,
@@ -2972,7 +2997,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createProject: (project: ProjectReq, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/projects`,
-        method: "POST",
+        method: 'POST',
         body: project,
         secure: true,
         type: ContentType.Json,
@@ -2991,9 +3016,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getProject: (projectNameOrId: string, params: RequestParams = {}) =>
       this.request<Project, Errors>({
         path: `/projects/${projectNameOrId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3009,7 +3034,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateProject: (projectNameOrId: string, project: ProjectReq, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}`,
-        method: "PUT",
+        method: 'PUT',
         body: project,
         secure: true,
         type: ContentType.Json,
@@ -3028,7 +3053,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     deleteProject: (projectNameOrId: string, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -3045,9 +3070,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getProjectDeletable: (projectNameOrId: string, params: RequestParams = {}) =>
       this.request<ProjectDeletable, Errors>({
         path: `/projects/${projectNameOrId}/_deletable`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3063,9 +3088,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getProjectSummary: (projectNameOrId: string, params: RequestParams = {}) =>
       this.request<ProjectSummary, Errors>({
         path: `/projects/${projectNameOrId}/summary`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3101,10 +3126,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<ProjectMemberEntity[], Errors>({
         path: `/projects/${projectNameOrId}/members`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3117,10 +3142,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name_or_id}/members
      * @secure
      */
-    createProjectMember: (projectNameOrId: string, project_member: ProjectMember, params: RequestParams = {}) =>
+    createProjectMember: (
+      projectNameOrId: string,
+      project_member: ProjectMember,
+      params: RequestParams = {},
+    ) =>
       this.request<void, Errors>({
         path: `/projects/${projectNameOrId}/members`,
-        method: "POST",
+        method: 'POST',
         body: project_member,
         secure: true,
         type: ContentType.Json,
@@ -3139,9 +3168,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getProjectMember: (projectNameOrId: string, mid: number, params: RequestParams = {}) =>
       this.request<ProjectMemberEntity, Errors>({
         path: `/projects/${projectNameOrId}/members/${mid}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3154,10 +3183,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/projects/{project_name_or_id}/members/{mid}
      * @secure
      */
-    updateProjectMember: (projectNameOrId: string, mid: number, role: RoleRequest, params: RequestParams = {}) =>
+    updateProjectMember: (
+      projectNameOrId: string,
+      mid: number,
+      role: RoleRequest,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/members/${mid}`,
-        method: "PUT",
+        method: 'PUT',
         body: role,
         secure: true,
         type: ContentType.Json,
@@ -3176,7 +3210,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     deleteProjectMember: (projectNameOrId: string, mid: number, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/members/${mid}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -3193,9 +3227,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     listProjectMetadatas: (projectNameOrId: string, params: RequestParams = {}) =>
       this.request<Annotations, Errors>({
         path: `/projects/${projectNameOrId}/metadatas/`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3208,10 +3242,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name_or_id}/metadatas/
      * @secure
      */
-    addProjectMetadatas: (projectNameOrId: string, metadata: Metadata, params: RequestParams = {}) =>
+    addProjectMetadatas: (
+      projectNameOrId: string,
+      metadata: Metadata,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/metadatas/`,
-        method: "POST",
+        method: 'POST',
         body: metadata,
         secure: true,
         ...params,
@@ -3229,9 +3267,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getProjectMetadata: (projectNameOrId: string, metaName: string, params: RequestParams = {}) =>
       this.request<Annotations, Errors>({
         path: `/projects/${projectNameOrId}/metadatas/${metaName}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3252,7 +3290,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/metadatas/${metaName}`,
-        method: "PUT",
+        method: 'PUT',
         body: metadata,
         secure: true,
         ...params,
@@ -3267,10 +3305,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/projects/{project_name_or_id}/metadatas/{meta_name}
      * @secure
      */
-    deleteProjectMetadata: (projectNameOrId: string, metaName: string, params: RequestParams = {}) =>
+    deleteProjectMetadata: (
+      projectNameOrId: string,
+      metaName: string,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/metadatas/${metaName}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -3309,10 +3351,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Repository[], Errors>({
         path: `/projects/${projectName}/repositories`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3328,9 +3370,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getRepository: (projectName: string, repositoryName: string, params: RequestParams = {}) =>
       this.request<Repository, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3351,7 +3393,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}`,
-        method: "PUT",
+        method: 'PUT',
         body: repository,
         secure: true,
         type: ContentType.Json,
@@ -3370,7 +3412,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     deleteRepository: (projectName: string, repositoryName: string, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -3440,10 +3482,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Artifact[], Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3467,7 +3509,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts`,
-        method: "POST",
+        method: 'POST',
         query: query,
         secure: true,
         ...params,
@@ -3535,10 +3577,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Artifact, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3551,10 +3593,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/projects/{project_name}/repositories/{repository_name}/artifacts/{reference}
      * @secure
      */
-    deleteArtifact: (projectName: string, repositoryName: string, reference: string, params: RequestParams = {}) =>
+    deleteArtifact: (
+      projectName: string,
+      repositoryName: string,
+      reference: string,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -3568,10 +3615,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan
      * @secure
      */
-    scanArtifact: (projectName: string, repositoryName: string, reference: string, params: RequestParams = {}) =>
+    scanArtifact: (
+      projectName: string,
+      repositoryName: string,
+      reference: string,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}/scan`,
-        method: "POST",
+        method: 'POST',
         secure: true,
         ...params,
       }),
@@ -3585,10 +3637,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/stop
      * @secure
      */
-    stopScanArtifact: (projectName: string, repositoryName: string, reference: string, params: RequestParams = {}) =>
+    stopScanArtifact: (
+      projectName: string,
+      repositoryName: string,
+      reference: string,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}/scan/stop`,
-        method: "POST",
+        method: 'POST',
         secure: true,
         ...params,
       }),
@@ -3611,7 +3668,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<EventType, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}/scan/${reportId}/log`,
-        method: "GET",
+        method: 'GET',
         secure: true,
         ...params,
       }),
@@ -3625,10 +3682,16 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
      * @secure
      */
-    createTag: (projectName: string, repositoryName: string, reference: string, tag: Tag, params: RequestParams = {}) =>
+    createTag: (
+      projectName: string,
+      repositoryName: string,
+      reference: string,
+      tag: Tag,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}/tags`,
-        method: "POST",
+        method: 'POST',
         body: tag,
         secure: true,
         type: ContentType.Json,
@@ -3681,10 +3744,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Tag[], Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}/tags`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3706,7 +3769,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}/tags/${tagName}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -3747,10 +3810,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Accessory[], Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}/accessories`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3771,9 +3834,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<EventType, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}/additions/vulnerabilities`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3790,14 +3853,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       projectName: string,
       repositoryName: string,
       reference: string,
-      addition: "build_history" | "values.yaml" | "readme.md" | "dependencies",
+      addition: 'build_history' | 'values.yaml' | 'readme.md' | 'dependencies',
       params: RequestParams = {},
     ) =>
       this.request<EventType, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}/additions/${addition}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3819,7 +3882,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}/labels`,
-        method: "POST",
+        method: 'POST',
         body: label,
         secure: true,
         type: ContentType.Json,
@@ -3844,7 +3907,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}/labels/${labelId}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -3861,9 +3924,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getScannerOfProject: (projectNameOrId: string, params: RequestParams = {}) =>
       this.request<ScannerRegistration, void>({
         path: `/projects/${projectNameOrId}/scanner`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3876,10 +3939,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/projects/{project_name_or_id}/scanner
      * @secure
      */
-    setScannerOfProject: (projectNameOrId: string, payload: ProjectScanner, params: RequestParams = {}) =>
+    setScannerOfProject: (
+      projectNameOrId: string,
+      payload: ProjectScanner,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/scanner`,
-        method: "PUT",
+        method: 'PUT',
         body: payload,
         secure: true,
         type: ContentType.Json,
@@ -3920,10 +3987,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<ScannerRegistration[], Errors>({
         path: `/projects/${projectNameOrId}/scanner/candidates`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3961,10 +4028,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<AuditLog[], Errors>({
         path: `/projects/${projectName}/logs`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -3980,7 +4047,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createPolicy: (projectName: string, policy: PreheatPolicy, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/preheat/policies`,
-        method: "POST",
+        method: 'POST',
         body: policy,
         secure: true,
         ...params,
@@ -4020,10 +4087,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<PreheatPolicy[], Errors>({
         path: `/projects/${projectName}/preheat/policies`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4039,9 +4106,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getPolicy: (projectName: string, preheatPolicyName: string, params: RequestParams = {}) =>
       this.request<PreheatPolicy, Errors>({
         path: `/projects/${projectName}/preheat/policies/${preheatPolicyName}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4054,10 +4121,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/projects/{project_name}/preheat/policies/{preheat_policy_name}
      * @secure
      */
-    updatePolicy: (projectName: string, preheatPolicyName: string, policy: PreheatPolicy, params: RequestParams = {}) =>
+    updatePolicy: (
+      projectName: string,
+      preheatPolicyName: string,
+      policy: PreheatPolicy,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/preheat/policies/${preheatPolicyName}`,
-        method: "PUT",
+        method: 'PUT',
         body: policy,
         secure: true,
         ...params,
@@ -4080,7 +4152,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/preheat/policies/${preheatPolicyName}`,
-        method: "POST",
+        method: 'POST',
         body: policy,
         secure: true,
         ...params,
@@ -4098,7 +4170,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     deletePolicy: (projectName: string, preheatPolicyName: string, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/preheat/policies/${preheatPolicyName}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -4138,10 +4210,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Execution[], Errors>({
         path: `/projects/${projectName}/preheat/policies/${preheatPolicyName}/executions`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4154,12 +4226,17 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/projects/{project_name}/preheat/policies/{preheat_policy_name}/executions/{execution_id}
      * @secure
      */
-    getExecution: (projectName: string, preheatPolicyName: string, executionId: number, params: RequestParams = {}) =>
+    getExecution: (
+      projectName: string,
+      preheatPolicyName: string,
+      executionId: number,
+      params: RequestParams = {},
+    ) =>
       this.request<Execution, Errors>({
         path: `/projects/${projectName}/preheat/policies/${preheatPolicyName}/executions/${executionId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4181,7 +4258,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/preheat/policies/${preheatPolicyName}/executions/${executionId}`,
-        method: "PATCH",
+        method: 'PATCH',
         body: execution,
         secure: true,
         type: ContentType.Json,
@@ -4224,10 +4301,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Task[], Errors>({
         path: `/projects/${projectName}/preheat/policies/${preheatPolicyName}/executions/${executionId}/tasks`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4249,7 +4326,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<EventType, Errors>({
         path: `/projects/${projectName}/preheat/policies/${preheatPolicyName}/executions/${executionId}/tasks/${taskId}/logs`,
-        method: "GET",
+        method: 'GET',
         secure: true,
         ...params,
       }),
@@ -4266,9 +4343,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     listProvidersUnderProject: (projectName: string, params: RequestParams = {}) =>
       this.request<ProviderUnderProject[], Errors>({
         path: `/projects/${projectName}/preheat/providers`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4306,10 +4383,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Robot[], Errors>({
         path: `/projects/${projectNameOrId}/robots`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4325,11 +4402,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createRobotV1: (projectNameOrId: string, robot: RobotCreateV1, params: RequestParams = {}) =>
       this.request<RobotCreated, Errors>({
         path: `/projects/${projectNameOrId}/robots`,
-        method: "POST",
+        method: 'POST',
         body: robot,
         secure: true,
         type: ContentType.Json,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4345,9 +4422,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getRobotByIdv1: (projectNameOrId: string, robotId: number, params: RequestParams = {}) =>
       this.request<Robot, Errors>({
         path: `/projects/${projectNameOrId}/robots/${robotId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4360,10 +4437,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/projects/{project_name_or_id}/robots/{robot_id}
      * @secure
      */
-    updateRobotV1: (projectNameOrId: string, robotId: number, robot: Robot, params: RequestParams = {}) =>
+    updateRobotV1: (
+      projectNameOrId: string,
+      robotId: number,
+      robot: Robot,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/robots/${robotId}`,
-        method: "PUT",
+        method: 'PUT',
         body: robot,
         secure: true,
         ...params,
@@ -4381,7 +4463,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     deleteRobotV1: (projectNameOrId: string, robotId: number, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/robots/${robotId}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -4420,10 +4502,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<ImmutableRule[], Errors>({
         path: `/projects/${projectNameOrId}/immutabletagrules`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4436,10 +4518,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name_or_id}/immutabletagrules
      * @secure
      */
-    createImmuRule: (projectNameOrId: string, ImmutableRule: ImmutableRule, params: RequestParams = {}) =>
+    createImmuRule: (
+      projectNameOrId: string,
+      ImmutableRule: ImmutableRule,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/immutabletagrules`,
-        method: "POST",
+        method: 'POST',
         body: ImmutableRule,
         secure: true,
         ...params,
@@ -4462,7 +4548,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/immutabletagrules/${immutableRuleId}`,
-        method: "PUT",
+        method: 'PUT',
         body: ImmutableRule,
         secure: true,
         ...params,
@@ -4477,10 +4563,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/projects/{project_name_or_id}/immutabletagrules/{immutable_rule_id}
      * @secure
      */
-    deleteImmuRule: (projectNameOrId: string, immutableRuleId: number, params: RequestParams = {}) =>
+    deleteImmuRule: (
+      projectNameOrId: string,
+      immutableRuleId: number,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/immutabletagrules/${immutableRuleId}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -4519,10 +4609,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<WebhookPolicy[], Errors>({
         path: `/projects/${projectNameOrId}/webhook/policies`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4535,10 +4625,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name_or_id}/webhook/policies
      * @secure
      */
-    createWebhookPolicyOfProject: (projectNameOrId: string, policy: WebhookPolicy, params: RequestParams = {}) =>
+    createWebhookPolicyOfProject: (
+      projectNameOrId: string,
+      policy: WebhookPolicy,
+      params: RequestParams = {},
+    ) =>
       this.request<void, Errors>({
         path: `/projects/${projectNameOrId}/webhook/policies`,
-        method: "POST",
+        method: 'POST',
         body: policy,
         secure: true,
         type: ContentType.Json,
@@ -4554,12 +4648,16 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}
      * @secure
      */
-    getWebhookPolicyOfProject: (projectNameOrId: string, webhookPolicyId: number, params: RequestParams = {}) =>
+    getWebhookPolicyOfProject: (
+      projectNameOrId: string,
+      webhookPolicyId: number,
+      params: RequestParams = {},
+    ) =>
       this.request<WebhookPolicy, Errors>({
         path: `/projects/${projectNameOrId}/webhook/policies/${webhookPolicyId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4580,7 +4678,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/webhook/policies/${webhookPolicyId}`,
-        method: "PUT",
+        method: 'PUT',
         body: policy,
         secure: true,
         type: ContentType.Json,
@@ -4596,10 +4694,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}
      * @secure
      */
-    deleteWebhookPolicyOfProject: (projectNameOrId: string, webhookPolicyId: number, params: RequestParams = {}) =>
+    deleteWebhookPolicyOfProject: (
+      projectNameOrId: string,
+      webhookPolicyId: number,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/webhook/policies/${webhookPolicyId}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -4639,10 +4741,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Execution[], Errors>({
         path: `/projects/${projectNameOrId}/webhook/policies/${webhookPolicyId}/executions`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4682,10 +4784,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Task[], Errors>({
         path: `/projects/${projectNameOrId}/webhook/policies/${webhookPolicyId}/executions/${executionId}/tasks`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4707,7 +4809,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<EventType, Errors>({
         path: `/projects/${projectNameOrId}/webhook/policies/${webhookPolicyId}/executions/${executionId}/tasks/${taskId}/log`,
-        method: "GET",
+        method: 'GET',
         secure: true,
         ...params,
       }),
@@ -4724,9 +4826,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getSupportedEventTypes: (projectNameOrId: string, params: RequestParams = {}) =>
       this.request<SupportedWebhookEventTypes, Errors>({
         path: `/projects/${projectNameOrId}/webhook/events`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
   };
@@ -4764,10 +4866,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Repository[], Errors>({
         path: `/repositories`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
   };
@@ -4805,10 +4907,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<AuditLog[], Errors>({
         path: `/audit-logs`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
   };
@@ -4825,9 +4927,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     listProviders: (params: RequestParams = {}) =>
       this.request<Metadata[], Errors>({
         path: `/p2p/preheat/providers`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4843,7 +4945,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     pingInstances: (instance: Instance, params: RequestParams = {}) =>
       this.request<any, Errors | void>({
         path: `/p2p/preheat/instances/ping`,
-        method: "POST",
+        method: 'POST',
         body: instance,
         secure: true,
         ...params,
@@ -4882,10 +4984,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Instance[], Errors>({
         path: `/p2p/preheat/instances`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4901,7 +5003,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createInstance: (instance: Instance, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/p2p/preheat/instances`,
-        method: "POST",
+        method: 'POST',
         body: instance,
         secure: true,
         ...params,
@@ -4919,9 +5021,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getInstance: (preheatInstanceName: string, params: RequestParams = {}) =>
       this.request<Instance, Errors>({
         path: `/p2p/preheat/instances/${preheatInstanceName}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -4937,7 +5039,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     deleteInstance: (preheatInstanceName: string, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/p2p/preheat/instances/${preheatInstanceName}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -4954,7 +5056,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateInstance: (preheatInstanceName: string, instance: Instance, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/p2p/preheat/instances/${preheatInstanceName}`,
-        method: "PUT",
+        method: 'PUT',
         body: instance,
         secure: true,
         type: ContentType.Json,
@@ -4995,10 +5097,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<UserGroup[], Errors>({
         path: `/usergroups`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5014,7 +5116,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createUserGroup: (usergroup: UserGroup, params: RequestParams = {}) =>
       this.request<void, Errors>({
         path: `/usergroups`,
-        method: "POST",
+        method: 'POST',
         body: usergroup,
         secure: true,
         ...params,
@@ -5051,10 +5153,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<UserGroupSearchItem[], Errors>({
         path: `/usergroups/search`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5070,9 +5172,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getUserGroup: (groupId: number, params: RequestParams = {}) =>
       this.request<UserGroup, Errors>({
         path: `/usergroups/${groupId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5088,7 +5190,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateUserGroup: (groupId: number, usergroup: UserGroup, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/usergroups/${groupId}`,
-        method: "PUT",
+        method: 'PUT',
         body: usergroup,
         secure: true,
         ...params,
@@ -5106,7 +5208,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     deleteUserGroup: (groupId: number, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/usergroups/${groupId}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -5124,9 +5226,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getIcon: (digest: string, params: RequestParams = {}) =>
       this.request<Icon, Errors>({
         path: `/icons/${digest}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
   };
@@ -5164,10 +5266,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Robot[], Errors>({
         path: `/robots`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5183,11 +5285,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createRobot: (robot: RobotCreate, params: RequestParams = {}) =>
       this.request<RobotCreated, Errors>({
         path: `/robots`,
-        method: "POST",
+        method: 'POST',
         body: robot,
         secure: true,
         type: ContentType.Json,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5203,9 +5305,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getRobotById: (robotId: number, params: RequestParams = {}) =>
       this.request<Robot, Errors>({
         path: `/robots/${robotId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5221,7 +5323,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateRobot: (robotId: number, robot: Robot, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/robots/${robotId}`,
-        method: "PUT",
+        method: 'PUT',
         body: robot,
         secure: true,
         ...params,
@@ -5239,11 +5341,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     refreshSec: (robotId: number, robotSec: RobotSec, params: RequestParams = {}) =>
       this.request<RobotSec, Errors>({
         path: `/robots/${robotId}`,
-        method: "PATCH",
+        method: 'PATCH',
         body: robotSec,
         secure: true,
         type: ContentType.Json,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5259,7 +5361,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     deleteRobot: (robotId: number, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/robots/${robotId}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -5304,10 +5406,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Quota[], Errors>({
         path: `/quotas`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5323,9 +5425,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getQuota: (id: number, params: RequestParams = {}) =>
       this.request<Quota, Errors>({
         path: `/quotas/${id}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5341,7 +5443,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateQuota: (id: number, hard: QuotaUpdateReq, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/quotas/${id}`,
-        method: "PUT",
+        method: 'PUT',
         body: hard,
         secure: true,
         type: ContentType.Json,
@@ -5382,10 +5484,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<ReplicationPolicy[], Errors>({
         path: `/replication/policies`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5401,7 +5503,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createReplicationPolicy: (policy: ReplicationPolicy, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/replication/policies`,
-        method: "POST",
+        method: 'POST',
         body: policy,
         secure: true,
         ...params,
@@ -5419,9 +5521,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getReplicationPolicy: (id: number, params: RequestParams = {}) =>
       this.request<ReplicationPolicy, Errors>({
         path: `/replication/policies/${id}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5437,7 +5539,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     deleteReplicationPolicy: (id: number, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/replication/policies/${id}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -5454,7 +5556,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateReplicationPolicy: (id: number, policy: ReplicationPolicy, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/replication/policies/${id}`,
-        method: "PUT",
+        method: 'PUT',
         body: policy,
         secure: true,
         ...params,
@@ -5497,10 +5599,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<ReplicationExecution[], Errors>({
         path: `/replication/executions`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5516,7 +5618,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     startReplication: (execution: StartReplicationExecution, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/replication/executions`,
-        method: "POST",
+        method: 'POST',
         body: execution,
         secure: true,
         type: ContentType.Json,
@@ -5535,9 +5637,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getReplicationExecution: (id: number, params: RequestParams = {}) =>
       this.request<ReplicationExecution, Errors>({
         path: `/replication/executions/${id}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5553,7 +5655,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     stopReplication: (id: number, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/replication/executions/${id}`,
-        method: "PUT",
+        method: 'PUT',
         secure: true,
         ...params,
       }),
@@ -5594,10 +5696,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<ReplicationTask[], Errors>({
         path: `/replication/executions/${id}/tasks`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5613,7 +5715,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getReplicationLog: (id: number, taskId: number, params: RequestParams = {}) =>
       this.request<EventType, Errors>({
         path: `/replication/executions/${id}/tasks/${taskId}/log`,
-        method: "GET",
+        method: 'GET',
         secure: true,
         ...params,
       }),
@@ -5630,9 +5732,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     listRegistryProviderTypes: (params: RequestParams = {}) =>
       this.request<string[], Errors>({
         path: `/replication/adapters`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5648,9 +5750,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     listRegistryProviderInfos: (params: RequestParams = {}) =>
       this.request<Record<string, RegistryProviderInfo>, Errors>({
         path: `/replication/adapterinfos`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
   };
@@ -5667,7 +5769,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createRegistry: (registry: Registry, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/registries`,
-        method: "POST",
+        method: 'POST',
         body: registry,
         secure: true,
         type: ContentType.Json,
@@ -5707,10 +5809,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Registry[], Errors>({
         path: `/registries`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5726,7 +5828,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     pingRegistry: (registry: RegistryPing, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/registries/ping`,
-        method: "POST",
+        method: 'POST',
         body: registry,
         secure: true,
         type: ContentType.Json,
@@ -5745,9 +5847,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getRegistry: (id: number, params: RequestParams = {}) =>
       this.request<Registry, Errors>({
         path: `/registries/${id}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5763,7 +5865,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     deleteRegistry: (id: number, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/registries/${id}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -5780,7 +5882,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateRegistry: (id: number, registry: RegistryUpdate, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/registries/${id}`,
-        method: "PUT",
+        method: 'PUT',
         body: registry,
         secure: true,
         type: ContentType.Json,
@@ -5799,9 +5901,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getRegistryInfo: (id: number, params: RequestParams = {}) =>
       this.request<RegistryInfo, Errors>({
         path: `/registries/${id}/info`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
   };
@@ -5818,12 +5920,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getLatestScanAllMetrics: (params: RequestParams = {}) =>
       this.request<Stats, Errors>({
         path: `/scans/all/metrics`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
-
   };
   systeminfo = {
     /**
@@ -5838,9 +5939,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getSystemInfo: (params: RequestParams = {}) =>
       this.request<GeneralInfo, Errors>({
         path: `/systeminfo`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5856,9 +5957,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getVolumes: (params: RequestParams = {}) =>
       this.request<SystemInfo, Errors>({
         path: `/systeminfo/volumes`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5874,7 +5975,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getCert: (params: RequestParams = {}) =>
       this.request<File, void | Errors>({
         path: `/systeminfo/getcert`,
-        method: "GET",
+        method: 'GET',
         secure: true,
         ...params,
       }),
@@ -5900,7 +6001,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<any, Errors>({
         path: `/system/oidc/ping`,
-        method: "POST",
+        method: 'POST',
         body: endpoint,
         secure: true,
         type: ContentType.Json,
@@ -5940,10 +6041,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<GCHistory[], Errors>({
         path: `/system/gc`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5959,9 +6060,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getGc: (gcId: number, params: RequestParams = {}) =>
       this.request<GCHistory, Errors>({
         path: `/system/gc/${gcId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -5977,7 +6078,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     stopGc: (gcId: number, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/system/gc/${gcId}`,
-        method: "PUT",
+        method: 'PUT',
         secure: true,
         ...params,
       }),
@@ -5994,7 +6095,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getGcLog: (gcId: number, params: RequestParams = {}) =>
       this.request<EventType, Errors>({
         path: `/system/gc/${gcId}/log`,
-        method: "GET",
+        method: 'GET',
         secure: true,
         ...params,
       }),
@@ -6011,9 +6112,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getGcSchedule: (params: RequestParams = {}) =>
       this.request<GCHistory, Errors>({
         path: `/system/gc/schedule`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6029,7 +6130,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createGcSchedule: (schedule: Schedule, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/system/gc/schedule`,
-        method: "POST",
+        method: 'POST',
         body: schedule,
         secure: true,
         ...params,
@@ -6047,7 +6148,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateGcSchedule: (schedule: Schedule, params: RequestParams = {}) =>
       this.request<void, Errors>({
         path: `/system/gc/schedule`,
-        method: "PUT",
+        method: 'PUT',
         body: schedule,
         secure: true,
         ...params,
@@ -6086,10 +6187,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<ExecHistory[], Errors>({
         path: `/system/purgeaudit`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6105,9 +6206,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getPurgeJob: (purgeId: number, params: RequestParams = {}) =>
       this.request<ExecHistory, Errors>({
         path: `/system/purgeaudit/${purgeId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6123,7 +6224,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     stopPurge: (purgeId: number, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/system/purgeaudit/${purgeId}`,
-        method: "PUT",
+        method: 'PUT',
         secure: true,
         ...params,
       }),
@@ -6140,7 +6241,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getPurgeJobLog: (purgeId: number, params: RequestParams = {}) =>
       this.request<EventType, Errors>({
         path: `/system/purgeaudit/${purgeId}/log`,
-        method: "GET",
+        method: 'GET',
         secure: true,
         ...params,
       }),
@@ -6157,9 +6258,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getPurgeSchedule: (params: RequestParams = {}) =>
       this.request<ExecHistory, Errors>({
         path: `/system/purgeaudit/schedule`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6175,7 +6276,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createPurgeSchedule: (schedule: Schedule, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/system/purgeaudit/schedule`,
-        method: "POST",
+        method: 'POST',
         body: schedule,
         secure: true,
         ...params,
@@ -6193,7 +6294,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updatePurgeSchedule: (schedule: Schedule, params: RequestParams = {}) =>
       this.request<void, Errors>({
         path: `/system/purgeaudit/schedule`,
-        method: "PUT",
+        method: 'PUT',
         body: schedule,
         secure: true,
         ...params,
@@ -6211,9 +6312,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getSystemCveAllowlist: (params: RequestParams = {}) =>
       this.request<CVEAllowlist, Errors>({
         path: `/system/CVEAllowlist`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6229,7 +6330,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     putSystemCveAllowlist: (allowlist: CVEAllowlist, params: RequestParams = {}) =>
       this.request<void, Errors>({
         path: `/system/CVEAllowlist`,
-        method: "PUT",
+        method: 'PUT',
         body: allowlist,
         secure: true,
         type: ContentType.Json,
@@ -6248,9 +6349,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getScanAllSchedule: (params: RequestParams = {}) =>
       this.request<Schedule, Errors>({
         path: `/system/scanAll/schedule`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6266,7 +6367,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateScanAllSchedule: (schedule: Schedule, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/system/scanAll/schedule`,
-        method: "PUT",
+        method: 'PUT',
         body: schedule,
         secure: true,
         type: ContentType.Json,
@@ -6285,7 +6386,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createScanAllSchedule: (schedule: Schedule, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/system/scanAll/schedule`,
-        method: "POST",
+        method: 'POST',
         body: schedule,
         secure: true,
         type: ContentType.Json,
@@ -6304,7 +6405,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     stopScanAll: (params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/system/scanAll/stop`,
-        method: "POST",
+        method: 'POST',
         secure: true,
         ...params,
       }),
@@ -6322,9 +6423,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getWorkerPools: (params: RequestParams = {}) =>
       this.request<WorkerPool[], Errors>({
         path: `/jobservice/pools`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6340,9 +6441,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getWorkers: (poolId: string, params: RequestParams = {}) =>
       this.request<Worker[], Errors>({
         path: `/jobservice/pools/${poolId}/workers`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6358,7 +6459,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     stopRunningJob: (jobId: string, params: RequestParams = {}) =>
       this.request<void, Errors>({
         path: `/jobservice/jobs/${jobId}`,
-        method: "PUT",
+        method: 'PUT',
         secure: true,
         ...params,
       }),
@@ -6375,7 +6476,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     actionGetJobLog: (jobId: string, params: RequestParams = {}) =>
       this.request<EventType, Errors>({
         path: `/jobservice/jobs/${jobId}/log`,
-        method: "GET",
+        method: 'GET',
         secure: true,
         ...params,
       }),
@@ -6392,9 +6493,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     listJobQueues: (params: RequestParams = {}) =>
       this.request<JobQueue[], Errors>({
         path: `/jobservice/queues`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6407,10 +6508,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/jobservice/queues/{job_type}
      * @secure
      */
-    actionPendingJobs: (jobType: string, action_request: ActionRequest, params: RequestParams = {}) =>
+    actionPendingJobs: (
+      jobType: string,
+      action_request: ActionRequest,
+      params: RequestParams = {},
+    ) =>
       this.request<void, Errors>({
         path: `/jobservice/queues/${jobType}`,
-        method: "PUT",
+        method: 'PUT',
         body: action_request,
         secure: true,
         type: ContentType.Json,
@@ -6446,10 +6551,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<ScheduleTask[], Errors>({
         path: `/schedules`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6464,9 +6569,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getSchedulePaused: (jobType: string, params: RequestParams = {}) =>
       this.request<SchedulerStatus, Errors>({
         path: `/schedules/${jobType}/paused`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
   };
@@ -6483,7 +6588,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getPing: (params: RequestParams = {}) =>
       this.request<EventType, any>({
         path: `/ping`,
-        method: "GET",
+        method: 'GET',
         secure: true,
         ...params,
       }),
@@ -6501,9 +6606,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getRentenitionMetadata: (params: RequestParams = {}) =>
       this.request<RetentionMetadata, any>({
         path: `/retentions/metadatas`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6519,7 +6624,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createRetention: (policy: RetentionPolicy, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/retentions`,
-        method: "POST",
+        method: 'POST',
         body: policy,
         secure: true,
         type: ContentType.Json,
@@ -6538,9 +6643,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getRetention: (id: number, params: RequestParams = {}) =>
       this.request<RetentionPolicy, Errors>({
         path: `/retentions/${id}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6556,7 +6661,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateRetention: (id: number, policy: RetentionPolicy, params: RequestParams = {}) =>
       this.request<void, Errors>({
         path: `/retentions/${id}`,
-        method: "PUT",
+        method: 'PUT',
         body: policy,
         secure: true,
         type: ContentType.Json,
@@ -6575,7 +6680,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     deleteRetention: (id: number, params: RequestParams = {}) =>
       this.request<void, Errors>({
         path: `/retentions/${id}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -6598,7 +6703,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<void, Errors>({
         path: `/retentions/${id}/executions`,
-        method: "POST",
+        method: 'POST',
         body: body,
         secure: true,
         type: ContentType.Json,
@@ -6632,10 +6737,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<RetentionExecution[], Errors>({
         path: `/retentions/${id}/executions`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6658,7 +6763,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<void, Errors>({
         path: `/retentions/${id}/executions/${eid}`,
-        method: "PATCH",
+        method: 'PATCH',
         body: body,
         secure: true,
         type: ContentType.Json,
@@ -6693,10 +6798,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<RetentionExecutionTask[], Errors>({
         path: `/retentions/${id}/executions/${eid}/tasks`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6712,7 +6817,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getRetentionTaskLog: (id: number, eid: number, tid: number, params: RequestParams = {}) =>
       this.request<EventType, Errors>({
         path: `/retentions/${id}/executions/${eid}/tasks/${tid}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
         ...params,
       }),
@@ -6751,10 +6856,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<ScannerRegistration[], Errors>({
         path: `/scanners`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6770,7 +6875,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createScanner: (registration: ScannerRegistrationReq, params: RequestParams = {}) =>
       this.request<void, Errors>({
         path: `/scanners`,
-        method: "POST",
+        method: 'POST',
         body: registration,
         secure: true,
         type: ContentType.Json,
@@ -6789,7 +6894,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     pingScanner: (settings: ScannerRegistrationSettings, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/scanners/ping`,
-        method: "POST",
+        method: 'POST',
         body: settings,
         secure: true,
         type: ContentType.Json,
@@ -6808,9 +6913,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getScanner: (registrationId: string, params: RequestParams = {}) =>
       this.request<ScannerRegistration, Errors>({
         path: `/scanners/${registrationId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6823,10 +6928,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/scanners/{registration_id}
      * @secure
      */
-    updateScanner: (registrationId: string, registration: ScannerRegistrationReq, params: RequestParams = {}) =>
+    updateScanner: (
+      registrationId: string,
+      registration: ScannerRegistrationReq,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/scanners/${registrationId}`,
-        method: "PUT",
+        method: 'PUT',
         body: registration,
         secure: true,
         type: ContentType.Json,
@@ -6845,9 +6954,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     deleteScanner: (registrationId: string, params: RequestParams = {}) =>
       this.request<ScannerRegistration, Errors>({
         path: `/scanners/${registrationId}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6863,7 +6972,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     setScannerAsDefault: (registrationId: string, payload: IsDefault, params: RequestParams = {}) =>
       this.request<void, Errors>({
         path: `/scanners/${registrationId}`,
-        method: "PATCH",
+        method: 'PATCH',
         body: payload,
         secure: true,
         type: ContentType.Json,
@@ -6882,9 +6991,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getScannerMetadata: (registrationId: string, params: RequestParams = {}) =>
       this.request<ScannerAdapterMetadata, Errors>({
         path: `/scanners/${registrationId}/metadata`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
   };
@@ -6922,10 +7031,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<UserResp[], Errors>({
         path: `/users`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6941,7 +7050,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createUser: (userReq: UserCreationReq, params: RequestParams = {}) =>
       this.request<any, Errors | void>({
         path: `/users`,
-        method: "POST",
+        method: 'POST',
         body: userReq,
         secure: true,
         type: ContentType.Json,
@@ -6960,9 +7069,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getCurrentUserInfo: (params: RequestParams = {}) =>
       this.request<UserResp, Errors>({
         path: `/users/current`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -6997,10 +7106,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<UserSearchRespItem[], Errors>({
         path: `/users/search`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -7016,9 +7125,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getUser: (userId: number, params: RequestParams = {}) =>
       this.request<UserResp, Errors>({
         path: `/users/${userId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -7034,7 +7143,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateUserProfile: (userId: number, profile: UserProfile, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/users/${userId}`,
-        method: "PUT",
+        method: 'PUT',
         body: profile,
         secure: true,
         type: ContentType.Json,
@@ -7053,7 +7162,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     deleteUser: (userId: number, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/users/${userId}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -7067,10 +7176,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/users/{user_id}/sysadmin
      * @secure
      */
-    setUserSysAdmin: (userId: number, sysadmin_flag: UserSysAdminFlag, params: RequestParams = {}) =>
+    setUserSysAdmin: (
+      userId: number,
+      sysadmin_flag: UserSysAdminFlag,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors | void>({
         path: `/users/${userId}/sysadmin`,
-        method: "PUT",
+        method: 'PUT',
         body: sysadmin_flag,
         secure: true,
         type: ContentType.Json,
@@ -7089,7 +7202,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateUserPassword: (userId: number, password: PasswordReq, params: RequestParams = {}) =>
       this.request<any, void | Errors>({
         path: `/users/${userId}/password`,
-        method: "PUT",
+        method: 'PUT',
         body: password,
         secure: true,
         type: ContentType.Json,
@@ -7119,10 +7232,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Permission[], void>({
         path: `/users/current/permissions`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -7138,7 +7251,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     setCliSecret: (userId: number, secret: OIDCCliSecretReq, params: RequestParams = {}) =>
       this.request<void, void | Errors>({
         path: `/users/${userId}/cli_secret`,
-        method: "PUT",
+        method: 'PUT',
         body: secret,
         secure: true,
         type: ContentType.Json,
@@ -7188,10 +7301,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<Label[], Errors>({
         path: `/labels`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -7207,7 +7320,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     createLabel: (label: Label, params: RequestParams = {}) =>
       this.request<void, Errors>({
         path: `/labels`,
-        method: "POST",
+        method: 'POST',
         body: label,
         secure: true,
         type: ContentType.Json,
@@ -7226,9 +7339,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getLabelById: (labelId: number, params: RequestParams = {}) =>
       this.request<Label, Errors>({
         path: `/labels/${labelId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -7244,7 +7357,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateLabel: (labelId: number, label: Label, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/labels/${labelId}`,
-        method: "PUT",
+        method: 'PUT',
         body: label,
         secure: true,
         type: ContentType.Json,
@@ -7263,7 +7376,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     deleteLabel: (labelId: number, params: RequestParams = {}) =>
       this.request<any, Errors>({
         path: `/labels/${labelId}`,
-        method: "DELETE",
+        method: 'DELETE',
         secure: true,
         ...params,
       }),
@@ -7281,11 +7394,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     exportScanData: (criteria: ScanDataExportRequest, params: RequestParams = {}) =>
       this.request<ScanDataExportJob, Errors>({
         path: `/export/cve`,
-        method: "POST",
+        method: 'POST',
         body: criteria,
         secure: true,
         type: ContentType.Json,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -7301,9 +7414,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getScanDataExportExecution: (executionId: number, params: RequestParams = {}) =>
       this.request<ScanDataExportExecution, Errors>({
         path: `/export/cve/execution/${executionId}`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -7319,9 +7432,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     getScanDataExportExecutionList: (params: RequestParams = {}) =>
       this.request<ScanDataExportExecutionList, Errors>({
         path: `/export/cve/executions`,
-        method: "GET",
+        method: 'GET',
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -7344,7 +7457,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<File, Errors>({
         path: `/export/cve/download/${executionId}`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
         ...params,
@@ -7377,10 +7490,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<SecuritySummary, Errors>({
         path: `/security/summary`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
 
@@ -7425,10 +7538,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<VulnerabilityItem[], Errors>({
         path: `/security/vul`,
-        method: "GET",
+        method: 'GET',
         query: query,
         secure: true,
-        format: "json",
+        format: 'json',
         ...params,
       }),
   };

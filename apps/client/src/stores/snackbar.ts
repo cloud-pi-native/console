@@ -1,34 +1,38 @@
-import type { ErrorTypes } from '@cpn-console/shared'
-import type { Ref } from 'vue'
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import type { ErrorTypes } from '@cpn-console/shared';
+import type { Ref } from 'vue';
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
 export const useSnackbarStore = defineStore('snackbar', () => {
-  const defaultTimeout: number = 6000
-  const message: Ref<string | undefined> = ref(undefined)
-  const isOpen: Ref<boolean> = ref(false)
-  const type: Ref<ErrorTypes> = ref('info')
-  const timeoutId: Ref<ReturnType<typeof setTimeout> | undefined> = ref(undefined)
-  const isWaitingForResponse = ref<boolean>(false)
+  const defaultTimeout: number = 6000;
+  const message: Ref<string | undefined> = ref(undefined);
+  const isOpen: Ref<boolean> = ref(false);
+  const type: Ref<ErrorTypes> = ref('info');
+  const timeoutId: Ref<ReturnType<typeof setTimeout> | undefined> = ref(undefined);
+  const isWaitingForResponse = ref<boolean>(false);
 
   const hideMessage = () => {
-    isOpen.value = false
-    clearTimeout(timeoutId.value)
-    timeoutId.value = undefined
-  }
+    isOpen.value = false;
+    clearTimeout(timeoutId.value);
+    timeoutId.value = undefined;
+  };
 
-  const setMessage = (errorMessage: string, errorType: ErrorTypes = 'info', timeout: number = defaultTimeout) => {
+  const setMessage = (
+    errorMessage: string,
+    errorType: ErrorTypes = 'info',
+    timeout: number = defaultTimeout,
+  ) => {
     if (timeoutId.value) {
-      clearTimeout(timeoutId.value)
-      timeoutId.value = undefined
+      clearTimeout(timeoutId.value);
+      timeoutId.value = undefined;
     }
     if (errorType !== 'error') {
-      timeoutId.value = setTimeout(hideMessage, timeout)
+      timeoutId.value = setTimeout(hideMessage, timeout);
     }
-    message.value = errorMessage
-    isOpen.value = true
-    type.value = errorType
-  }
+    message.value = errorMessage;
+    isOpen.value = true;
+    type.value = errorType;
+  };
 
   return {
     message,
@@ -38,5 +42,5 @@ export const useSnackbarStore = defineStore('snackbar', () => {
     isWaitingForResponse,
     setMessage,
     hideMessage,
-  }
-})
+  };
+});

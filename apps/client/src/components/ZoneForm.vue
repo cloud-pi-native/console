@@ -1,51 +1,60 @@
 <script lang="ts" setup>
-import type { Cluster, CreateZoneBody, SharedZodError, UpdateZoneBody, Zone } from '@cpn-console/shared'
-import { deleteValidationInput, ZoneSchema } from '@cpn-console/shared'
-import { computed, onBeforeMount, ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import type {
+  Cluster,
+  CreateZoneBody,
+  SharedZodError,
+  UpdateZoneBody,
+  Zone,
+} from '@cpn-console/shared';
+import { deleteValidationInput, ZoneSchema } from '@cpn-console/shared';
+import { computed, onBeforeMount, ref } from 'vue';
+import { useSnackbarStore } from '@/stores/snackbar.js';
 
-const props = withDefaults(defineProps<{
-  isNewZone: boolean
-  zone?: Zone & { clusterIds?: Cluster['id'][] }
-  allClusters: Cluster[]
-  associatedClusters: Cluster[]
-}>(), {
-  isNewZone: false,
-  zone: () => ({
-    id: '',
-    label: '',
-    slug: '',
-    argocdUrl: '',
-    description: '',
-    clusterIds: [],
-  }),
-  allClusters: () => [],
-  associatedClusters: () => [],
-})
+const props = withDefaults(
+  defineProps<{
+    isNewZone: boolean;
+    zone?: Zone & { clusterIds?: Cluster['id'][] };
+    allClusters: Cluster[];
+    associatedClusters: Cluster[];
+  }>(),
+  {
+    isNewZone: false,
+    zone: () => ({
+      id: '',
+      label: '',
+      slug: '',
+      argocdUrl: '',
+      description: '',
+      clusterIds: [],
+    }),
+    allClusters: () => [],
+    associatedClusters: () => [],
+  },
+);
 
 const emit = defineEmits<{
-  add: [value: CreateZoneBody]
-  update: [value: UpdateZoneBody & { zoneId: Zone['id'] }]
-  cancel: []
-  delete: [value: Zone['id']]
-}>()
-const localZone = ref(props.zone)
-const isDeletingZone = ref(false)
-const zoneToDelete = ref('')
+  add: [value: CreateZoneBody];
+  update: [value: UpdateZoneBody & { zoneId: Zone['id'] }];
+  cancel: [];
+  delete: [value: Zone['id']];
+}>();
+const localZone = ref(props.zone);
+const isDeletingZone = ref(false);
+const zoneToDelete = ref('');
 
 const errorSchema = computed<SharedZodError | undefined>(() => {
-  let schemaValidation
+  let schemaValidation;
   if (localZone.value.id) {
-    schemaValidation = ZoneSchema.safeParse(localZone.value)
+    schemaValidation = ZoneSchema.safeParse(localZone.value);
   } else {
-    schemaValidation = ZoneSchema.omit({ id: true }).partial().safeParse(localZone.value)
+    schemaValidation = ZoneSchema.omit({ id: true }).partial().safeParse(localZone.value);
   }
-  return schemaValidation.success ? undefined : schemaValidation.error
-})
-const isZoneValid = computed(() => !errorSchema.value)
+  return schemaValidation.success ? undefined : schemaValidation.error;
+});
+const isZoneValid = computed(() => !errorSchema.value);
 
 function addZone() {
-  if (isZoneValid.value) emit('add', localZone.value)
+  if (isZoneValid.value) emit('add', localZone.value);
 }
 
 function updateZone() {
@@ -55,25 +64,25 @@ function updateZone() {
     argocdUrl: localZone.value.argocdUrl,
     description: localZone.value.description,
     clusterIds: localZone.value.clusterIds,
-  }
-  if (isZoneValid.value) emit('update', updatedZone)
+  };
+  if (isZoneValid.value) emit('update', updatedZone);
 }
 
 function cancel() {
-  emit('cancel')
+  emit('cancel');
 }
 
 onBeforeMount(() => {
   // Retrieve array of clusters from parent component, map it into array of cluster labels and pass it to child component.
-  localZone.value = props.zone
-})
+  localZone.value = props.zone;
+});
 </script>
 
 <template>
-  <div
-    class="relative"
-  >
-    <h1>Informations de la zone <code v-if="localZone.label">{{ localZone.label }}</code></h1>
+  <div class="relative">
+    <h1>
+      Informations de la zone <code v-if="localZone.label">{{ localZone.label }}</code>
+    </h1>
     <DsfrInputGroup
       v-model="localZone.slug"
       label="Nom court de la zone"
@@ -112,10 +121,7 @@ onBeforeMount(() => {
       label-visible
       hint="Facultatif. Attention, ces informations seront visibles par les utilisateurs de la console."
     />
-    <div
-      v-if="!props.isNewZone"
-      class="fr-mb-2w"
-    >
+    <div v-if="!props.isNewZone" class="fr-mb-2w">
       <ChoiceSelector
         id="clusters-select"
         :wrapped="false"
@@ -135,9 +141,7 @@ onBeforeMount(() => {
       description="La zone ne peut être supprimée, car des clusters y sont associés."
       small
     />
-    <div
-      class="flex space-x-10 mt-5"
-    >
+    <div class="flex space-x-10 mt-5">
       <DsfrButton
         v-if="props.isNewZone"
         label="Ajouter la zone"
@@ -185,10 +189,7 @@ onBeforeMount(() => {
           small
         />
       </div>
-      <div
-        v-if="isDeletingZone"
-        class="fr-mt-4w"
-      >
+      <div v-if="isDeletingZone" class="fr-mt-4w">
         <DsfrInput
           v-model="zoneToDelete"
           data-testid="deleteZoneInput"
@@ -197,9 +198,7 @@ onBeforeMount(() => {
           :placeholder="deleteValidationInput"
           class="fr-mb-2w"
         />
-        <div
-          class="flex justify-between"
-        >
+        <div class="flex justify-between">
           <DsfrButton
             data-testid="deleteZoneBtn"
             :label="`Supprimer définitivement la zone ${localZone.slug}`"
@@ -209,11 +208,7 @@ onBeforeMount(() => {
             icon="ri:delete-bin-7-line"
             @click="$emit('delete', localZone.id)"
           />
-          <DsfrButton
-            label="Annuler"
-            primary
-            @click="isDeletingZone = false"
-          />
+          <DsfrButton label="Annuler" primary @click="isDeletingZone = false" />
         </div>
       </div>
     </div>

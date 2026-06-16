@@ -1,14 +1,14 @@
-import type { AdminRole, User } from '@prisma/client'
-import { faker } from '@faker-js/faker'
-import { describe, expect, it, vi } from 'vitest'
-import prisma from '../../__mocks__/prisma.js'
-import { hook } from '../../__mocks__/utils/hook-wrapper.ts'
-import { BadRequest400 } from '../../utils/errors.ts'
-import { countRolesMembers, createRole, deleteRole, listRoles, patchRoles } from './business.ts'
+import type { AdminRole, User } from '@prisma/client';
+import { faker } from '@faker-js/faker';
+import { describe, expect, it, vi } from 'vitest';
+import prisma from '../../__mocks__/prisma.js';
+import { hook } from '../../__mocks__/utils/hook-wrapper.ts';
+import { BadRequest400 } from '../../utils/errors.ts';
+import { countRolesMembers, createRole, deleteRole, listRoles, patchRoles } from './business.ts';
 
 vi.mock('../../utils/hook-wrapper.ts', async () => ({
   hook,
-}))
+}));
 
 describe('test admin-role business', () => {
   describe('listRoles', () => {
@@ -20,13 +20,15 @@ describe('test admin-role business', () => {
         position: 0,
         oidcGroup: '',
         type: 'managed',
-      }
+      };
 
-      prisma.adminRole.findMany.mockResolvedValueOnce([dbRole])
-      const response = await listRoles()
-      expect(response).toContainEqual(expect.objectContaining({ permissions: '4', type: 'managed' }))
-    })
-  })
+      prisma.adminRole.findMany.mockResolvedValueOnce([dbRole]);
+      const response = await listRoles();
+      expect(response).toContainEqual(
+        expect.objectContaining({ permissions: '4', type: 'managed' }),
+      );
+    });
+  });
 
   describe('createRole', () => {
     it('should create role with incremented position when position 0 is the highest', async () => {
@@ -37,16 +39,18 @@ describe('test admin-role business', () => {
         position: 0,
         oidcGroup: '',
         type: 'managed',
-      }
+      };
 
-      prisma.adminRole.findFirst.mockResolvedValueOnce(dbRole)
-      prisma.adminRole.findMany.mockResolvedValueOnce([dbRole])
-      prisma.adminRole.create.mockResolvedValue(dbRole)
-      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} })
-      await createRole({ name: 'test' }, faker.string.uuid())
+      prisma.adminRole.findFirst.mockResolvedValueOnce(dbRole);
+      prisma.adminRole.findMany.mockResolvedValueOnce([dbRole]);
+      prisma.adminRole.create.mockResolvedValue(dbRole);
+      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} });
+      await createRole({ name: 'test' }, faker.string.uuid());
 
-      expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 0n, position: 1 } })
-    })
+      expect(prisma.adminRole.create).toHaveBeenCalledWith({
+        data: { name: 'test', permissions: 0n, position: 1 },
+      });
+    });
 
     it('should create role with incremented position with bigger position', async () => {
       const dbRole: AdminRole = {
@@ -56,16 +60,18 @@ describe('test admin-role business', () => {
         position: 50,
         oidcGroup: '',
         type: 'managed',
-      }
+      };
 
-      prisma.adminRole.findFirst.mockResolvedValueOnce(dbRole)
-      prisma.adminRole.findMany.mockResolvedValueOnce([dbRole])
-      prisma.adminRole.create.mockResolvedValue(dbRole)
-      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} })
-      await createRole({ name: 'test' }, faker.string.uuid())
+      prisma.adminRole.findFirst.mockResolvedValueOnce(dbRole);
+      prisma.adminRole.findMany.mockResolvedValueOnce([dbRole]);
+      prisma.adminRole.create.mockResolvedValue(dbRole);
+      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} });
+      await createRole({ name: 'test' }, faker.string.uuid());
 
-      expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 0n, position: 51 } })
-    })
+      expect(prisma.adminRole.create).toHaveBeenCalledWith({
+        data: { name: 'test', permissions: 0n, position: 51 },
+      });
+    });
 
     it('should create role with incremented position with no role in db', async () => {
       const dbRole: AdminRole = {
@@ -75,41 +81,46 @@ describe('test admin-role business', () => {
         position: 50,
         oidcGroup: '',
         type: 'managed',
-      }
+      };
 
-      prisma.adminRole.findFirst.mockResolvedValueOnce(null)
-      prisma.adminRole.findMany.mockResolvedValueOnce([dbRole])
-      prisma.adminRole.create.mockResolvedValue(dbRole)
-      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} })
-      await createRole({ name: 'test' }, faker.string.uuid())
+      prisma.adminRole.findFirst.mockResolvedValueOnce(null);
+      prisma.adminRole.findMany.mockResolvedValueOnce([dbRole]);
+      prisma.adminRole.create.mockResolvedValue(dbRole);
+      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} });
+      await createRole({ name: 'test' }, faker.string.uuid());
 
-      expect(prisma.adminRole.create).toHaveBeenCalledWith({ data: { name: 'test', permissions: 0n, position: 0 } })
-    })
-  })
+      expect(prisma.adminRole.create).toHaveBeenCalledWith({
+        data: { name: 'test', permissions: 0n, position: 0 },
+      });
+    });
+  });
   describe('deleteRole', () => {
-    const roleId = faker.string.uuid()
+    const roleId = faker.string.uuid();
     it('should delete role and remove id from concerned users', async () => {
-      const users = [{
-        id: faker.string.uuid(),
-        type: 'human',
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName(),
-        email: faker.internet.email(),
-        adminRoleIds: [roleId],
-        createdAt: faker.date.past(),
-        updatedAt: faker.date.recent(),
-        lastLogin: faker.date.past(),
-      }, {
-        id: faker.string.uuid(),
-        type: 'human',
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName(),
-        email: faker.internet.email(),
-        adminRoleIds: [roleId, faker.string.uuid()],
-        createdAt: faker.date.past(),
-        updatedAt: faker.date.recent(),
-        lastLogin: faker.date.past(),
-      }] as const satisfies User[]
+      const users = [
+        {
+          id: faker.string.uuid(),
+          type: 'human',
+          firstName: faker.person.firstName(),
+          lastName: faker.person.lastName(),
+          email: faker.internet.email(),
+          adminRoleIds: [roleId],
+          createdAt: faker.date.past(),
+          updatedAt: faker.date.recent(),
+          lastLogin: faker.date.past(),
+        },
+        {
+          id: faker.string.uuid(),
+          type: 'human',
+          firstName: faker.person.firstName(),
+          lastName: faker.person.lastName(),
+          email: faker.internet.email(),
+          adminRoleIds: [roleId, faker.string.uuid()],
+          createdAt: faker.date.past(),
+          updatedAt: faker.date.recent(),
+          lastLogin: faker.date.past(),
+        },
+      ] as const satisfies User[];
 
       const dbRole: AdminRole = {
         name: 'Admin',
@@ -118,133 +129,148 @@ describe('test admin-role business', () => {
         position: 50,
         oidcGroup: '',
         type: 'managed',
-      }
+      };
 
-      prisma.user.findMany.mockResolvedValue(users)
-      prisma.adminRole.findMany.mockResolvedValueOnce([])
-      prisma.adminRole.findUnique.mockResolvedValueOnce(dbRole)
-      prisma.adminRole.create.mockResolvedValue(dbRole)
-      hook.adminRole.delete.mockResolvedValue({ args: {}, failed: false, results: {} })
-      await deleteRole(roleId, faker.string.uuid())
+      prisma.user.findMany.mockResolvedValue(users);
+      prisma.adminRole.findMany.mockResolvedValueOnce([]);
+      prisma.adminRole.findUnique.mockResolvedValueOnce(dbRole);
+      prisma.adminRole.create.mockResolvedValue(dbRole);
+      hook.adminRole.delete.mockResolvedValue({ args: {}, failed: false, results: {} });
+      await deleteRole(roleId, faker.string.uuid());
 
-      expect(prisma.user.findMany).toHaveBeenCalledTimes(2)
-      expect(prisma.user.update).toHaveBeenNthCalledWith(1, { where: { id: users[0].id }, data: { adminRoleIds: [] } })
-      expect(prisma.user.update).toHaveBeenNthCalledWith(2, { where: { id: users[1].id }, data: { adminRoleIds: [users[1].adminRoleIds[1]] } })
-      expect(prisma.adminRole.delete).toHaveBeenCalledWith({ where: { id: roleId } })
-    })
-  })
+      expect(prisma.user.findMany).toHaveBeenCalledTimes(2);
+      expect(prisma.user.update).toHaveBeenNthCalledWith(1, {
+        where: { id: users[0].id },
+        data: { adminRoleIds: [] },
+      });
+      expect(prisma.user.update).toHaveBeenNthCalledWith(2, {
+        where: { id: users[1].id },
+        data: { adminRoleIds: [users[1].adminRoleIds[1]] },
+      });
+      expect(prisma.adminRole.delete).toHaveBeenCalledWith({ where: { id: roleId } });
+    });
+  });
 
   describe('countRolesMembers', () => {
     it('should return aggregated role member counts', async () => {
-      const roles = [{
+      const roles = [
+        {
+          id: faker.string.uuid(),
+          name: faker.string.alphanumeric(),
+          oidcGroup: '',
+          permissions: faker.number.bigInt({ min: 0n, max: 50000n }),
+          position: 0,
+          type: 'managed',
+        },
+        {
+          id: faker.string.uuid(),
+          name: faker.string.alphanumeric(),
+          oidcGroup: '',
+          permissions: faker.number.bigInt({ min: 0n, max: 50000n }),
+          position: 1,
+          type: 'managed',
+        },
+      ] as const satisfies AdminRole[];
+
+      const users = [
+        {
+          id: faker.string.uuid(),
+          type: 'human',
+          firstName: faker.person.firstName(),
+          lastName: faker.person.lastName(),
+          email: faker.internet.email(),
+          adminRoleIds: [roles[0].id, roles[1].id],
+          createdAt: faker.date.past(),
+          updatedAt: faker.date.recent(),
+          lastLogin: faker.date.past(),
+        },
+        {
+          id: faker.string.uuid(),
+          type: 'human',
+          firstName: faker.person.firstName(),
+          lastName: faker.person.lastName(),
+          email: faker.internet.email(),
+          adminRoleIds: [roles[1].id],
+          createdAt: faker.date.past(),
+          updatedAt: faker.date.recent(),
+          lastLogin: faker.date.past(),
+        },
+      ] as const satisfies User[];
+      prisma.adminRole.findMany.mockResolvedValue(roles);
+      prisma.user.findMany.mockResolvedValue(users);
+
+      const response = await countRolesMembers();
+
+      expect(response).toEqual({ [roles[0].id]: 1, [roles[1].id]: 2 });
+    });
+  });
+  describe('patchRoles', () => {
+    const dbRoles: AdminRole[] = [
+      {
         id: faker.string.uuid(),
         name: faker.string.alphanumeric(),
         oidcGroup: '',
         permissions: faker.number.bigInt({ min: 0n, max: 50000n }),
         position: 0,
         type: 'managed',
-      }, {
+      },
+      {
         id: faker.string.uuid(),
         name: faker.string.alphanumeric(),
         oidcGroup: '',
         permissions: faker.number.bigInt({ min: 0n, max: 50000n }),
         position: 1,
         type: 'managed',
-      }] as const satisfies AdminRole[]
-
-      const users = [{
-        id: faker.string.uuid(),
-        type: 'human',
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName(),
-        email: faker.internet.email(),
-        adminRoleIds: [roles[0].id, roles[1].id],
-        createdAt: faker.date.past(),
-        updatedAt: faker.date.recent(),
-        lastLogin: faker.date.past(),
-      }, {
-        id: faker.string.uuid(),
-        type: 'human',
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName(),
-        email: faker.internet.email(),
-        adminRoleIds: [roles[1].id],
-        createdAt: faker.date.past(),
-        updatedAt: faker.date.recent(),
-        lastLogin: faker.date.past(),
-      }] as const satisfies User[]
-      prisma.adminRole.findMany.mockResolvedValue(roles)
-      prisma.user.findMany.mockResolvedValue(users)
-
-      const response = await countRolesMembers()
-
-      expect(response).toEqual({ [roles[0].id]: 1, [roles[1].id]: 2 })
-    })
-  })
-  describe('patchRoles', () => {
-    const dbRoles: AdminRole[] = [{
-      id: faker.string.uuid(),
-      name: faker.string.alphanumeric(),
-      oidcGroup: '',
-      permissions: faker.number.bigInt({ min: 0n, max: 50000n }),
-      position: 0,
-      type: 'managed',
-    }, {
-      id: faker.string.uuid(),
-      name: faker.string.alphanumeric(),
-      oidcGroup: '',
-      permissions: faker.number.bigInt({ min: 0n, max: 50000n }),
-      position: 1,
-      type: 'managed',
-    }]
+      },
+    ];
 
     it('should do nothing', async () => {
-      prisma.adminRole.findMany.mockResolvedValue([])
-      await patchRoles([], faker.string.uuid())
-      expect(prisma.adminRole.update).toHaveBeenCalledTimes(0)
-    })
+      prisma.adminRole.findMany.mockResolvedValue([]);
+      await patchRoles([], faker.string.uuid());
+      expect(prisma.adminRole.update).toHaveBeenCalledTimes(0);
+    });
 
     it('should return 400 if incoherent positions', async () => {
       const updateRoles: Pick<AdminRole, 'id' | 'position'>[] = [
         { id: dbRoles[0].id, position: 1 },
         { id: dbRoles[1].id, position: 1 },
-      ]
-      prisma.adminRole.findMany.mockResolvedValue(dbRoles)
+      ];
+      prisma.adminRole.findMany.mockResolvedValue(dbRoles);
 
-      const response = await patchRoles(updateRoles, faker.string.uuid())
+      const response = await patchRoles(updateRoles, faker.string.uuid());
 
-      expect(response).instanceOf(BadRequest400)
-      expect(prisma.adminRole.update).toHaveBeenCalledTimes(0)
-    })
+      expect(response).instanceOf(BadRequest400);
+      expect(prisma.adminRole.update).toHaveBeenCalledTimes(0);
+    });
     it('should return 400 if incoherent positions (missing roles)', async () => {
       const updateRoles: Pick<AdminRole, 'id' | 'position'>[] = [
         { id: dbRoles[1].id, position: 1 },
-      ]
-      prisma.adminRole.findMany.mockResolvedValue(dbRoles)
+      ];
+      prisma.adminRole.findMany.mockResolvedValue(dbRoles);
 
-      const response = await patchRoles(updateRoles, faker.string.uuid())
+      const response = await patchRoles(updateRoles, faker.string.uuid());
 
-      expect(response).instanceOf(BadRequest400)
-      expect(prisma.adminRole.update).toHaveBeenCalledTimes(0)
-    })
+      expect(response).instanceOf(BadRequest400);
+      expect(prisma.adminRole.update).toHaveBeenCalledTimes(0);
+    });
     it('should update positions', async () => {
       const updateRoles: Pick<AdminRole, 'id' | 'position'>[] = [
         { id: dbRoles[0].id, position: 1 },
         { id: dbRoles[1].id, position: 0 },
-      ]
-      prisma.adminRole.findMany.mockResolvedValue(dbRoles)
-      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} })
-      await patchRoles(updateRoles, faker.string.uuid())
-      expect(prisma.adminRole.update).toHaveBeenCalledTimes(2)
-    })
+      ];
+      prisma.adminRole.findMany.mockResolvedValue(dbRoles);
+      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} });
+      await patchRoles(updateRoles, faker.string.uuid());
+      expect(prisma.adminRole.update).toHaveBeenCalledTimes(2);
+    });
     it('should update permissions', async () => {
       const updateRoles: (Pick<AdminRole, 'id'> & { permissions?: string })[] = [
         { id: dbRoles[1].id, permissions: '0' },
-      ]
-      prisma.adminRole.findMany.mockResolvedValue(dbRoles)
-      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} })
-      await patchRoles(updateRoles, faker.string.uuid())
-      expect(prisma.adminRole.update).toHaveBeenCalledTimes(1)
+      ];
+      prisma.adminRole.findMany.mockResolvedValue(dbRoles);
+      hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} });
+      await patchRoles(updateRoles, faker.string.uuid());
+      expect(prisma.adminRole.update).toHaveBeenCalledTimes(1);
       expect(prisma.adminRole.update).toHaveBeenCalledWith({
         data: {
           name: dbRoles[1].name,
@@ -256,7 +282,7 @@ describe('test admin-role business', () => {
         where: {
           id: dbRoles[1].id,
         },
-      })
-    })
-  })
-})
+      });
+    });
+  });
+});

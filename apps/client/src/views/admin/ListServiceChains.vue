@@ -1,58 +1,56 @@
 <script lang="ts" setup>
-import type { ServiceChain } from '@cpn-console/shared'
-import { onMounted, ref } from 'vue'
-import router from '@/router/index.js'
-import { useServiceChainStore } from '@/stores/service-chain.js'
-import { getRandomId } from '@/utils/func.js'
+import type { ServiceChain } from '@cpn-console/shared';
+import { onMounted, ref } from 'vue';
+import router from '@/router/index.js';
+import { useServiceChainStore } from '@/stores/service-chain.js';
+import { getRandomId } from '@/utils/func.js';
 
-const serviceChainStore = useServiceChainStore()
+const serviceChainStore = useServiceChainStore();
 
-const tableKey = ref(getRandomId('table'))
-const isLoading = ref(true)
-const inputSearchText = ref('')
+const tableKey = ref(getRandomId('table'));
+const isLoading = ref(true);
+const inputSearchText = ref('');
 
 const serviceChainsFiltered = computed(() =>
   serviceChainStore.serviceChains
-    .filter(serviceChain =>
-      serviceChain.commonName.includes(inputSearchText.value),
-    )
+    .filter((serviceChain) => serviceChain.commonName.includes(inputSearchText.value))
     .map((serviceChain) => {
-      let badgeState: 'success' | 'new' | 'warning' | 'error'
-      let localizedState
+      let badgeState: 'success' | 'new' | 'warning' | 'error';
+      let localizedState;
       switch (serviceChain.state) {
         case 'success':
-          badgeState = 'success'
-          localizedState = 'Succès'
-          break
+          badgeState = 'success';
+          localizedState = 'Succès';
+          break;
         case 'opened':
-          badgeState = 'new'
-          localizedState = 'Nouveau'
-          break
+          badgeState = 'new';
+          localizedState = 'Nouveau';
+          break;
         case 'pending':
-          badgeState = 'warning'
-          localizedState = 'En Attente'
-          break
+          badgeState = 'warning';
+          localizedState = 'En Attente';
+          break;
         default:
-          badgeState = 'error'
-          localizedState = 'En erreur'
+          badgeState = 'error';
+          localizedState = 'En erreur';
       }
 
       return {
         ...serviceChain,
         badgeState,
         localizedState,
-      }
+      };
     }),
-)
-const title = 'Liste des Chaînes de Services'
+);
+const title = 'Liste des Chaînes de Services';
 
 onMounted(async () => {
-  await Promise.all([serviceChainStore.getServiceChainsList()])
-  isLoading.value = false
-})
+  await Promise.all([serviceChainStore.getServiceChainsList()]);
+  isLoading.value = false;
+});
 
 function clickServiceChain(id: ServiceChain['id']) {
-  router.push({ name: 'AdminServiceChain', params: { id } })
+  router.push({ name: 'AdminServiceChain', params: { id } });
 }
 </script>
 
@@ -70,11 +68,7 @@ function clickServiceChain(id: ServiceChain['id']) {
       />
     </div>
   </div>
-  <DsfrTable
-    :key="tableKey"
-    data-testid="tableAdministrationServiceChains"
-    :title="title"
-  >
+  <DsfrTable :key="tableKey" data-testid="tableAdministrationServiceChains" :title="title">
     <template #header>
       <tr>
         <td>CN (Common Name)</td>

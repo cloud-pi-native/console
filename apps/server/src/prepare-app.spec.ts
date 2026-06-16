@@ -1,70 +1,71 @@
-import { logger } from '@cpn-console/logger'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import app from './app.js'
-import { getConnection } from './connect.js'
-import { initDb } from './init/db/index.js'
-import { getPreparedApp } from './prepare-app.js'
+import { logger } from '@cpn-console/logger';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import app from './app.js';
+import { getConnection } from './connect.js';
+import { initDb } from './init/db/index.js';
+import { getPreparedApp } from './prepare-app.js';
 
-vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin)
-vi.mock('./connect.js')
-vi.mock('./index.js')
-vi.mock('./init/db/index.js', () => ({ initDb: vi.fn() }))
+vi.mock('fastify-keycloak-adapter', (await import('./utils/mocks.js')).mockSessionPlugin);
+vi.mock('./connect.js');
+vi.mock('./index.js');
+vi.mock('./init/db/index.js', () => ({ initDb: vi.fn() }));
 
-vi.spyOn(app, 'listen')
-vi.spyOn(logger, 'warn')
-vi.spyOn(logger, 'error')
-vi.spyOn(logger, 'debug')
+vi.spyOn(app, 'listen');
+vi.spyOn(logger, 'warn');
+vi.spyOn(logger, 'error');
+vi.spyOn(logger, 'debug');
 
 describe('server', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
   it('should getConnection', async () => {
-    await getPreparedApp()
+    await getPreparedApp();
 
-    expect(getConnection).toHaveBeenCalledTimes(1)
-    expect(initDb.mock.calls).toHaveLength(1)
-  })
+    expect(getConnection).toHaveBeenCalledTimes(1);
+    expect(initDb.mock.calls).toHaveLength(1);
+  });
 
   it('should throw an error on connection to DB', async () => {
-    const error = new Error('This is OK!')
-    getConnection.mockRejectedValueOnce(error)
+    const error = new Error('This is OK!');
+    getConnection.mockRejectedValueOnce(error);
 
-    let response
-    await getPreparedApp()
-      .catch((err) => { response = err })
+    let response;
+    await getPreparedApp().catch((err) => {
+      response = err;
+    });
 
-    expect(getConnection.mock.calls).toHaveLength(1)
-    expect(app.listen.mock.calls).toHaveLength(0)
-    expect(response).toMatchObject(error)
-  })
+    expect(getConnection.mock.calls).toHaveLength(1);
+    expect(app.listen.mock.calls).toHaveLength(0);
+    expect(response).toMatchObject(error);
+  });
 
   it('should throw an error on initDb import if module is not found', async () => {
-    const infoSpy = vi.spyOn(logger, 'info')
-    const error = new Error('Failed to load')
-    initDb.mockRejectedValueOnce(error)
+    const infoSpy = vi.spyOn(logger, 'info');
+    const error = new Error('Failed to load');
+    initDb.mockRejectedValueOnce(error);
 
-    await getPreparedApp()
+    await getPreparedApp();
 
-    expect(initDb.mock.calls).toHaveLength(1)
-    expect(infoSpy.mock.calls).toHaveLength(3)
-  })
+    expect(initDb.mock.calls).toHaveLength(1);
+    expect(infoSpy.mock.calls).toHaveLength(3);
+  });
 
   it('should throw an error on initDb import', async () => {
-    const infoSpy = vi.spyOn(logger, 'info')
-    const error = new Error('This is OK!')
-    initDb.mockRejectedValueOnce(error)
+    const infoSpy = vi.spyOn(logger, 'info');
+    const error = new Error('This is OK!');
+    initDb.mockRejectedValueOnce(error);
 
-    let response
+    let response;
     try {
-      await getPreparedApp()
+      await getPreparedApp();
     } catch (err) {
-      response = err
+      response = err;
     }
 
-    expect(initDb.mock.calls).toHaveLength(1)
-    expect(infoSpy.mock.calls).toHaveLength(2)
-    expect(response).toMatchObject(error)
-  })
-})
+    expect(initDb.mock.calls).toHaveLength(1);
+    expect(infoSpy.mock.calls).toHaveLength(2);
+    expect(response).toMatchObject(error);
+  });
+});

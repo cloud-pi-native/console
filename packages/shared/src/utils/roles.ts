@@ -1,26 +1,26 @@
-export const SYSTEM_ROLE_TYPE = 'system' as const
+export const SYSTEM_ROLE_TYPE = 'system' as const;
 
 export function generateSystemRoleType(type: string | null | undefined) {
-  return `${SYSTEM_ROLE_TYPE}:${type}`
+  return `${SYSTEM_ROLE_TYPE}:${type}`;
 }
 
 export function isSystemRoleType(type: string | null | undefined) {
-  return !!type?.startsWith(`${SYSTEM_ROLE_TYPE}:`)
+  return !!type?.startsWith(`${SYSTEM_ROLE_TYPE}:`);
 }
 
 export function getBaseRoleType(type: string | null | undefined) {
-  if (!type) return undefined
-  return isSystemRoleType(type) ? type.slice(`${SYSTEM_ROLE_TYPE}:`.length) : type
+  if (!type) return undefined;
+  return isSystemRoleType(type) ? type.slice(`${SYSTEM_ROLE_TYPE}:`.length) : type;
 }
 
 export function isManagedRoleType(type: string | null | undefined) {
-  return getBaseRoleType(type) === 'managed'
+  return getBaseRoleType(type) === 'managed';
 }
 
 export function isGlobalRoleType(type: string | null | undefined) {
-  return getBaseRoleType(type) === 'global'
+  return getBaseRoleType(type) === 'global';
 }
 
 export function isExternalRoleType(type: string | null | undefined) {
-  return getBaseRoleType(type) === 'external'
+  return getBaseRoleType(type) === 'external';
 }

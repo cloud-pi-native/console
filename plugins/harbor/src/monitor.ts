@@ -1,52 +1,53 @@
-import type { MonitorInfos } from '@cpn-console/shared'
-import { Monitor, MonitorStatus } from '@cpn-console/shared'
-import { getApi } from './utils.js'
+import type { MonitorInfos } from '@cpn-console/shared';
+import { Monitor, MonitorStatus } from '@cpn-console/shared';
+import { getApi } from './utils.js';
 
 enum HealthStatus {
   healthy = 'healthy',
   unhealthy = 'unhealthy',
 }
-const coreComponents = ['core', 'database', 'portal', 'registry', 'registryctl']
+const coreComponents = ['core', 'database', 'portal', 'registry', 'registryctl'];
 
 async function monitor(instance: Monitor): Promise<MonitorInfos> {
-  instance.lastStatus.lastUpdateTimestamp = Date.now()
+  instance.lastStatus.lastUpdateTimestamp = Date.now();
   try {
     const res = await getApi().health.getHealth({
-      validateStatus: res => res === 200,
-    })
-    if (res.status === 200) { // 200 only means api responds
-      const data = res.data
+      validateStatus: (res) => res === 200,
+    });
+    if (res.status === 200) {
+      // 200 only means api responds
+      const data = res.data;
       if (data.status === HealthStatus.healthy) {
-        instance.lastStatus.status = MonitorStatus.OK
-        instance.lastStatus.message = MonitorStatus.OK
-        return instance.lastStatus
+        instance.lastStatus.status = MonitorStatus.OK;
+        instance.lastStatus.message = MonitorStatus.OK;
+        return instance.lastStatus;
       }
       const failedCoreComponents = data.components
-        ? data.components
-            .filter(component =>
-              component.status === HealthStatus.unhealthy
-              && component.name
-              && coreComponents.includes(component.name),
-            )
-        : []
+        ? data.components.filter(
+            (component) =>
+              component.status === HealthStatus.unhealthy &&
+              component.name &&
+              coreComponents.includes(component.name),
+          )
+        : [];
 
       if (failedCoreComponents.length > 0) {
-        instance.lastStatus.status = MonitorStatus.ERROR
-        instance.lastStatus.message = 'Service en erreur'
-        return instance.lastStatus
+        instance.lastStatus.status = MonitorStatus.ERROR;
+        instance.lastStatus.message = 'Service en erreur';
+        return instance.lastStatus;
       }
-      instance.lastStatus.status = MonitorStatus.WARNING
-      instance.lastStatus.message = 'Service dégradé'
-      return instance.lastStatus
+      instance.lastStatus.status = MonitorStatus.WARNING;
+      instance.lastStatus.message = 'Service dégradé';
+      return instance.lastStatus;
     }
-    instance.lastStatus.status = MonitorStatus.ERROR
-    instance.lastStatus.message = 'Fatal Error'
+    instance.lastStatus.status = MonitorStatus.ERROR;
+    instance.lastStatus.message = 'Fatal Error';
   } catch (error) {
-    instance.lastStatus.message = 'Erreur lors la requête'
-    instance.lastStatus.status = MonitorStatus.UNKNOW
-    instance.lastStatus.cause = error
+    instance.lastStatus.message = 'Erreur lors la requête';
+    instance.lastStatus.status = MonitorStatus.UNKNOW;
+    instance.lastStatus.cause = error;
   }
-  return instance.lastStatus
+  return instance.lastStatus;
 }
 
-export default new Monitor(monitor)
+export default new Monitor(monitor);

@@ -1,44 +1,44 @@
-import { AdminAuthorized, serviceContract } from '@cpn-console/shared'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { Forbidden403 } from '@/utils/errors.js'
-import { checkServicesHealth, refreshServicesHealth } from './business.js'
+import { AdminAuthorized, serviceContract } from '@cpn-console/shared';
+import { serverInstance } from '@/app.js';
+import { authUser } from '@/utils/controller.js';
+import { Forbidden403 } from '@/utils/errors.js';
+import { checkServicesHealth, refreshServicesHealth } from './business.js';
 
 export function serviceMonitorRouter() {
   return serverInstance.router(serviceContract, {
     getServiceHealth: async () => {
-      const serviceData = checkServicesHealth()
+      const serviceData = checkServicesHealth();
 
       return {
         status: 200,
         body: serviceData,
-      }
+      };
     },
 
     getCompleteServiceHealth: async ({ request: req }) => {
-      const { adminPermissions } = await authUser(req)
+      const { adminPermissions } = await authUser(req);
 
-      if (!AdminAuthorized.ListSystem(adminPermissions)) return new Forbidden403()
-      const serviceData = checkServicesHealth()
+      if (!AdminAuthorized.ListSystem(adminPermissions)) return new Forbidden403();
+      const serviceData = checkServicesHealth();
 
       return {
         status: 200,
         body: serviceData,
-      }
+      };
     },
 
     refreshServiceHealth: async ({ request: req }) => {
-      const { adminPermissions } = await authUser(req)
+      const { adminPermissions } = await authUser(req);
 
-      if (!AdminAuthorized.ManageSystem(adminPermissions)) return new Forbidden403()
+      if (!AdminAuthorized.ManageSystem(adminPermissions)) return new Forbidden403();
 
-      await refreshServicesHealth()
-      const serviceData = checkServicesHealth()
+      await refreshServicesHealth();
+      const serviceData = checkServicesHealth();
 
       return {
         status: 200,
         body: serviceData,
-      }
+      };
     },
-  })
+  });
 }

@@ -70,7 +70,7 @@ Le serveur et le client sont livrés sous forme d'images [Docker](https://www.do
 
 ### API
 
-Le serveur est construit selon une architecture __core / plugins__ pour favoriser l'évolutivité et l'ajout de nouvelles fonctionnalités / la gestion de nouveaux services. Pour ce faire, les plugins s'enregistrent auprès de différents `hooks` (qui suivent le cycle de vie d'un projet au sein de l'application), ces derniers seront déclenchés par les contrôleurs de l'application.
+Le serveur est construit selon une architecture **core / plugins** pour favoriser l'évolutivité et l'ajout de nouvelles fonctionnalités / la gestion de nouveaux services. Pour ce faire, les plugins s'enregistrent auprès de différents `hooks` (qui suivent le cycle de vie d'un projet au sein de l'application), ces derniers seront déclenchés par les contrôleurs de l'application.
 
 Plusieurs plugins sont nativement enregistrés auprès du serveur pour assurer le bon fonctionnement de la plateforme, à savoir :
 
@@ -84,9 +84,10 @@ Plusieurs plugins sont nativement enregistrés auprès du serveur pour assurer l
 - [Vault](https://www.vaultproject.io/)
 
 > Pour plus d'informations sur le développement d'un plugin, voir :
->   - [documentation des plugins](./misc/plugins.md).
->   - [documentation du module hooks](./packages/hooks/README.md).
->   - [exemple de plugin](https://github.com/cloud-pi-native/console-plugin-helloworld).
+>
+> - [documentation des plugins](./misc/plugins.md).
+> - [documentation du module hooks](./packages/hooks/README.md).
+> - [exemple de plugin](https://github.com/cloud-pi-native/console-plugin-helloworld).
 
 ### Gestion des rôles
 
@@ -104,7 +105,7 @@ Dans l'interface, un rôle dont le type commence par `system:` est considéré c
 
 ## Développement
 
-Le développement s'effectue à l'aide de Docker *(le client et le serveur peuvent tourner en local ou dans Docker)*.
+Le développement s'effectue à l'aide de Docker _(le client et le serveur peuvent tourner en local ou dans Docker)_.
 
 ### Construire l'application
 
@@ -128,7 +129,7 @@ pnpm build
 
 L'application peut se lancer de plusieurs manières, à savoir :
 
-__Déploiement local du client et du serveur de la console, le reste dans des conteneurs :__
+**Déploiement local du client et du serveur de la console, le reste dans des conteneurs :**
 
 ```shell
 # Lancer keycloak, postgres et pgadmin dans des conteneurs
@@ -149,7 +150,7 @@ pnpm run dev:clean
 pnpm run dev:delete
 ```
 
-__Tout dans des conteneurs :__
+**Tout dans des conteneurs :**
 
 ```shell
 # Lancer l'application
@@ -162,13 +163,13 @@ pnpm run docker:dev:clean
 pnpm run docker:dev:delete
 ```
 
-> Pour lancer le debugger Node.js sur le serveur, dans les fichiers `docker-compose` remplacer la directive  `command: ["dev"]` par `command: ["debug"]`.
+> Pour lancer le debugger Node.js sur le serveur, dans les fichiers `docker-compose` remplacer la directive `command: ["dev"]` par `command: ["debug"]`.
 
 #### Intégration
 
 L'application peut se lancer de plusieurs manières, à savoir :
 
-__Déploiement local du client et du serveur de la console, le reste dans des conteneurs :__
+**Déploiement local du client et du serveur de la console, le reste dans des conteneurs :**
 
 ```shell
 # Lancer postgres et pgadmin dans des conteneurs
@@ -188,7 +189,7 @@ pnpm run integ:clean
 pnpm run integ:delete
 ```
 
-__Tout dans des conteneurs :__
+**Tout dans des conteneurs :**
 
 ```shell
 # Lancer l'application
@@ -231,12 +232,12 @@ Les services sont disponibles via les ports suivants :
 
 | Service                                        | Url (local/docker)      |
 | ---------------------------------------------- | ----------------------- |
-| Interface graphique *- (client)*               | <http://localhost:8080> |
-| Serveur *- (api)*                              | <http://localhost:4000> |
+| Interface graphique _- (client)_               | <http://localhost:8080> |
+| Serveur _- (api)_                              | <http://localhost:4000> |
 | Interface d'administration de base de données  | <http://localhost:8081> |
 | Interface d'administration du serveur keycloak | <http://localhost:8090> |
 
-*__Notes:__ ⚠ Il est possible que le navigateur utilisé (particulièrement Brave ou Firefox) bloque les cookies utilisés entre le frontend et keycloak, il est nécessaire de désactiver les protections de ce type dans votre navigateur (ex: Brave Shield).*
+_**Notes:** ⚠ Il est possible que le navigateur utilisé (particulièrement Brave ou Firefox) bloque les cookies utilisés entre le frontend et keycloak, il est nécessaire de désactiver les protections de ce type dans votre navigateur (ex: Brave Shield)._
 
 ### Informations de connexion
 
@@ -244,8 +245,8 @@ Les comptes utilisés pendant le développement sont les suivants :
 
 | Service            | Nom d'utilisateur | Mot de passe |
 | ------------------ | ----------------- | ------------ |
-| Keycloak *(admin)* | `admin`           | `admin`      |
-| Keycloak *(user)*  | `test`            | `test`       |
+| Keycloak _(admin)_ | `admin`           | `admin`      |
+| Keycloak _(user)_  | `test`            | `test`       |
 | PgAdmin            | `admin@dso.fr`    | `admin`      |
 | Postgres           | `admin@dso.fr`    | `admin`      |
 
@@ -255,7 +256,7 @@ Les comptes utilisés pendant le développement sont les suivants :
 
 ### Variables d'environnements
 
-__Local / Docker:__
+**Local / Docker:**
 
 Les variables d'environnements sont gérées localement via des fichiers `.env` (local) / `.env.docker` (docker) dans les dossiers `./apps/server` et `./apps/client`, aux précédents fichiers s'ajoute un fichier `.env.integ` utilisé pour le mode intégration (local et docker).
 
@@ -279,7 +280,7 @@ Rendez-vous dans l'onglet "Run and Debug" (ou `Ctrl+Shift+D`) pour voir les conf
 #### Configurations disponibles
 
 - **Launch Server** : Lance le serveur en local (hors Docker) et attache le débogueur.
-  - *Note : Assurez-vous que les bases de données (Postgres) et Keycloak sont accessibles (ex: lancés via `pnpm run dev` dans un autre terminal pour les dépendances).*
+  - _Note : Assurez-vous que les bases de données (Postgres) et Keycloak sont accessibles (ex: lancés via `pnpm run dev` dans un autre terminal pour les dépendances)._
 - **Attach Server** : S'attache au processus Node.js du serveur.
   - Utile lorsque le serveur tourne dans un conteneur Docker.
   - Pour que cela fonctionne, le serveur doit être lancé avec le mode debug activé.
@@ -326,13 +327,13 @@ Les utilisateurs faisant parti du group `admin` ont également accès à l'inter
 
 | Console Cloud Pi | Projet                       | Environnement | Dépots                                  | Utilisateur / membre |
 | ---------------- | ---------------------------- | ------------- | --------------------------------------- | -------------------- |
-| __Openshift__    |                              | Namespace     |                                         |                      |
-| __ArgoCD__       |                              |               | (infra) Secret, AppProject, Application |                      |
-| __Gitlab__       | Group                        |               | Repository (Dépôt)                      | User                 |
-| __Harbor__       | Project                      |               | Repository [1]                          |                      |
-| __Keycloak__     |                              | Group         |                                         | User / member        |
-| __Sonar__        | User                         |               |                                         |                      |
-| __Nexus__        | Repositories, role, user ... |               |                                         |                      |
+| **Openshift**    |                              | Namespace     |                                         |                      |
+| **ArgoCD**       |                              |               | (infra) Secret, AppProject, Application |                      |
+| **Gitlab**       | Group                        |               | Repository (Dépôt)                      | User                 |
+| **Harbor**       | Project                      |               | Repository [1]                          |                      |
+| **Keycloak**     |                              | Group         |                                         | User / member        |
+| **Sonar**        | User                         |               |                                         |                      |
+| **Nexus**        | Repositories, role, user ... |               |                                         |                      |
 
 [1] N'est pas crée par la console mais par le produit de la CI
 
@@ -344,7 +345,7 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 - Les bibliothèques additionnelles se trouvent dans le dossier `packages/`.
 - Les plugins core se trouvent dans le dossier `plugins/`.
 
-*Schema de l'architecture du monorepo :*
+_Schema de l'architecture du monorepo :_
 
 ```shell
 ./

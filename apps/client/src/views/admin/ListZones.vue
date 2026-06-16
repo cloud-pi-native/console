@@ -1,105 +1,99 @@
 <script lang="ts" setup>
-import type { CreateZoneBody, UpdateZoneBody, Zone } from '@cpn-console/shared'
-import { sortArrByObjKeyAsc } from '@cpn-console/shared'
-import { computed, onMounted, ref, watch } from 'vue'
-import { useClusterStore } from '@/stores/cluster'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useZoneStore } from '@/stores/zone.js'
+import type { CreateZoneBody, UpdateZoneBody, Zone } from '@cpn-console/shared';
+import { sortArrByObjKeyAsc } from '@cpn-console/shared';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useClusterStore } from '@/stores/cluster';
+import { useSnackbarStore } from '@/stores/snackbar.js';
+import { useZoneStore } from '@/stores/zone.js';
 
-const snackbarStore = useSnackbarStore()
-const clusterStore = useClusterStore()
-const zoneStore = useZoneStore()
+const snackbarStore = useSnackbarStore();
+const clusterStore = useClusterStore();
+const zoneStore = useZoneStore();
 
-const selectedZone = ref<Zone>()
-const zoneList = ref<{
-  id: string
-  title: string
-  data: Zone
-}[]>([])
-const isNewZoneForm = ref(false)
+const selectedZone = ref<Zone>();
+const zoneList = ref<
+  {
+    id: string;
+    title: string;
+    data: Zone;
+  }[]
+>([]);
+const isNewZoneForm = ref(false);
 
-const zones = computed(() => zoneStore.zones)
-const allClusters = computed(() => clusterStore.clusters)
-const associatedClusters = computed(() => allClusters.value.filter(cluster => cluster.zoneId === selectedZone.value?.id))
+const zones = computed(() => zoneStore.zones);
+const allClusters = computed(() => clusterStore.clusters);
+const associatedClusters = computed(() =>
+  allClusters.value.filter((cluster) => cluster.zoneId === selectedZone.value?.id),
+);
 
 function setZoneTiles(zones: Zone[]) {
-  zoneList.value = sortArrByObjKeyAsc(zones, 'name')
-    .map(zone => ({
-      id: zone.id,
-      title: zone.label,
-      data: zone,
-    }))
+  zoneList.value = sortArrByObjKeyAsc(zones, 'name').map((zone) => ({
+    id: zone.id,
+    title: zone.label,
+    data: zone,
+  }));
 }
 
 async function setSelectedZone(zone: Zone) {
   if (selectedZone.value?.id === zone.id) {
-    selectedZone.value = undefined
-    return
+    selectedZone.value = undefined;
+    return;
   }
-  selectedZone.value = zone
-  isNewZoneForm.value = false
+  selectedZone.value = zone;
+  isNewZoneForm.value = false;
 }
 
 function showNewZoneForm() {
-  isNewZoneForm.value = !isNewZoneForm.value
-  selectedZone.value = undefined
+  isNewZoneForm.value = !isNewZoneForm.value;
+  selectedZone.value = undefined;
 }
 
 function cancel() {
-  isNewZoneForm.value = false
-  selectedZone.value = undefined
+  isNewZoneForm.value = false;
+  selectedZone.value = undefined;
 }
 
 async function createZone(zone: CreateZoneBody) {
-  snackbarStore.isWaitingForResponse = true
-  await zoneStore.createZone(zone)
-  await Promise.all([
-    zoneStore.getAllZones(),
-    clusterStore.getClusters(),
-  ])
-  cancel()
-  snackbarStore.isWaitingForResponse = false
+  snackbarStore.isWaitingForResponse = true;
+  await zoneStore.createZone(zone);
+  await Promise.all([zoneStore.getAllZones(), clusterStore.getClusters()]);
+  cancel();
+  snackbarStore.isWaitingForResponse = false;
 }
 
-async function updateZone({ zoneId, label, argocdUrl, description }: UpdateZoneBody & { zoneId: Zone['id'] }) {
-  snackbarStore.isWaitingForResponse = true
-  await zoneStore.updateZone(zoneId, { label, argocdUrl, description })
-  await Promise.all([
-    zoneStore.getAllZones(),
-    clusterStore.getClusters(),
-  ])
-  cancel()
-  snackbarStore.isWaitingForResponse = false
+async function updateZone({
+  zoneId,
+  label,
+  argocdUrl,
+  description,
+}: UpdateZoneBody & { zoneId: Zone['id'] }) {
+  snackbarStore.isWaitingForResponse = true;
+  await zoneStore.updateZone(zoneId, { label, argocdUrl, description });
+  await Promise.all([zoneStore.getAllZones(), clusterStore.getClusters()]);
+  cancel();
+  snackbarStore.isWaitingForResponse = false;
 }
 
 async function deleteZone(zoneId: Zone['id']) {
-  snackbarStore.isWaitingForResponse = true
-  await zoneStore.deleteZone(zoneId)
-  await Promise.all([
-    zoneStore.getAllZones(),
-    clusterStore.getClusters(),
-  ])
-  cancel()
-  snackbarStore.isWaitingForResponse = false
+  snackbarStore.isWaitingForResponse = true;
+  await zoneStore.deleteZone(zoneId);
+  await Promise.all([zoneStore.getAllZones(), clusterStore.getClusters()]);
+  cancel();
+  snackbarStore.isWaitingForResponse = false;
 }
 
 onMounted(async () => {
-  await Promise.all([
-    zoneStore.getAllZones(),
-    clusterStore.getClusters(),
-  ])
-  setZoneTiles(zones.value)
-})
+  await Promise.all([zoneStore.getAllZones(), clusterStore.getClusters()]);
+  setZoneTiles(zones.value);
+});
 
 watch(zones, async () => {
-  setZoneTiles(zones.value)
-})
+  setZoneTiles(zones.value);
+});
 </script>
 
 <template>
-  <div
-    class="flex <md:flex-col-reverse items-center justify-between pb-5"
-  >
+  <div class="flex <md:flex-col-reverse items-center justify-between pb-5">
     <DsfrButton
       v-if="!selectedZone && !isNewZoneForm"
       label="Ajouter une nouvelle zone"
@@ -110,10 +104,7 @@ watch(zones, async () => {
       icon="ri:add-line"
       @click="showNewZoneForm()"
     />
-    <div
-      v-else
-      class="w-full flex justify-end"
-    >
+    <div v-else class="w-full flex justify-end">
       <DsfrButton
         title="Revenir à la liste des zones"
         data-testid="goBackBtn"
@@ -124,10 +115,7 @@ watch(zones, async () => {
       />
     </div>
   </div>
-  <div
-    v-if="isNewZoneForm"
-    class="my-5 pb-10 border-grey-900 border-y-1"
-  >
+  <div v-if="isNewZoneForm" class="my-5 pb-10 border-grey-900 border-y-1">
     <ZoneForm
       :all-clusters="allClusters"
       :associated-clusters="[]"
@@ -165,9 +153,7 @@ watch(zones, async () => {
       />
     </div>
   </div>
-  <div
-    v-else
-  >
+  <div v-else>
     <p>Aucune zone enregistrée</p>
   </div>
 </template>

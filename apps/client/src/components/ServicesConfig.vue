@@ -1,42 +1,53 @@
 <script lang="ts" setup>
-import type { PermissionTarget, PluginConfigItem, PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
-import type { Project } from '@/utils/project-utils.js'
-import { servicePluginOrder } from '@cpn-console/shared'
-import { computed, ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import type {
+  PermissionTarget,
+  PluginConfigItem,
+  PluginsUpdateBody,
+  ProjectService,
+} from '@cpn-console/shared';
+import type { Project } from '@/utils/project-utils.js';
+import { servicePluginOrder } from '@cpn-console/shared';
+import { computed, ref } from 'vue';
+import { useSnackbarStore } from '@/stores/snackbar.js';
 
-const props = withDefaults(defineProps<{
-  project: Project
-  permissionTarget: PermissionTarget
-  disabled: boolean
-  displayGlobal: boolean
-}>(), {
-  displayGlobal: true,
-  disabled: false,
-})
+const props = withDefaults(
+  defineProps<{
+    project: Project;
+    permissionTarget: PermissionTarget;
+    disabled: boolean;
+    displayGlobal: boolean;
+  }>(),
+  {
+    displayGlobal: true,
+    disabled: false,
+  },
+);
 
-const snackbarStore = useSnackbarStore()
-const services = ref<ProjectService[]>([])
+const snackbarStore = useSnackbarStore();
+const services = ref<ProjectService[]>([]);
 
 interface ManifestGrouped {
-  length: number
-  sectionNumber: number
+  length: number;
+  sectionNumber: number;
   items: {
-    default: PluginConfigItem[]
-    [x: string]: PluginConfigItem[]
-  }
+    default: PluginConfigItem[];
+    [x: string]: PluginConfigItem[];
+  };
 }
 function groupManifest(configItems: PluginConfigItem[] = []) {
-  return configItems.reduce((acc, curr) => {
-    if (!curr.section) curr.section = 'default'
-    if (curr.section in acc.items) {
-      acc.items[curr.section].push(curr as PluginConfigItem)
-    } else {
-      acc.items[curr.section] = [curr as PluginConfigItem]
-      acc.sectionNumber++
-    }
-    return acc
-  }, { length: configItems.length, items: { default: [] }, sectionNumber: 1 } as ManifestGrouped)
+  return configItems.reduce(
+    (acc, curr) => {
+      if (!curr.section) curr.section = 'default';
+      if (curr.section in acc.items) {
+        acc.items[curr.section].push(curr as PluginConfigItem);
+      } else {
+        acc.items[curr.section] = [curr as PluginConfigItem];
+        acc.sectionNumber++;
+      }
+      return acc;
+    },
+    { length: configItems.length, items: { default: [] }, sectionNumber: 1 } as ManifestGrouped,
+  );
 }
 
 function refTheValues(services: ProjectService[]) {
@@ -44,97 +55,101 @@ function refTheValues(services: ProjectService[]) {
     return {
       ...service,
       manifest: {
-        project: service.manifest.project?.map(item => ({ ...item, value: ref(item.value) as unknown as string })),
-        global: service.manifest.global?.map(item => ({ ...item, value: ref(item.value) })),
+        project: service.manifest.project?.map((item) => ({
+          ...item,
+          value: ref(item.value) as unknown as string,
+        })),
+        global: service.manifest.global?.map((item) => ({ ...item, value: ref(item.value) })),
       },
-    }
-  })
+    };
+  });
 }
 
-const updated = ref<PluginsUpdateBody>({})
+const updated = ref<PluginsUpdateBody>({});
 
-function update(data: { value: string, key: string, plugin: string }) {
-  if (!updated.value[data.plugin]) updated.value[data.plugin] = {}
-  updated.value[data.plugin][data.key] = data.value
+function update(data: { value: string; key: string; plugin: string }) {
+  if (!updated.value[data.plugin]) updated.value[data.plugin] = {};
+  updated.value[data.plugin][data.key] = data.value;
 }
 
-function getItemsToShowLength(items: PluginConfigItem[] | (PluginConfigItem & { value: any })[] | undefined, scope: PermissionTarget): number | undefined {
-  return items?.filter(item => item.permissions[scope].read || item.permissions[scope].write).length
+function getItemsToShowLength(
+  items: PluginConfigItem[] | (PluginConfigItem & { value: any })[] | undefined,
+  scope: PermissionTarget,
+): number | undefined {
+  return items?.filter((item) => item.permissions[scope].read || item.permissions[scope].write)
+    .length;
 }
 
-const servicesWithRef = computed(() => refTheValues(services.value)
-  .map(service => ({
-    ...service,
-    wrapable: !!((props.displayGlobal && getItemsToShowLength(service.manifest.global, props.permissionTarget)) || getItemsToShowLength(service.manifest.project, props.permissionTarget)),
-  }))
-  .sort((a, b) => {
-    const fixedOrderA = servicePluginOrder.indexOf(a.name)
-    const fixedOrderB = servicePluginOrder.indexOf(b.name)
-    if (fixedOrderA >= 0 && fixedOrderB >= 0) {
-      return fixedOrderA - fixedOrderB
-    }
-    if (fixedOrderB < 0) {
-      return -1
-    }
-    if (a.urls.length && b.urls.length) { // si les deux services ont des urls les trier par titre
-      return a.title.localeCompare(b.title, 'fr', { sensitivity: 'base' })
-    }
-    // si un des deux n'as pas d'urls il doit être affiché à la fin
-    return b.urls.length - a.urls.length
-  }))
+const servicesWithRef = computed(() =>
+  refTheValues(services.value)
+    .map((service) => ({
+      ...service,
+      wrapable: !!(
+        (props.displayGlobal &&
+          getItemsToShowLength(service.manifest.global, props.permissionTarget)) ||
+        getItemsToShowLength(service.manifest.project, props.permissionTarget)
+      ),
+    }))
+    .sort((a, b) => {
+      const fixedOrderA = servicePluginOrder.indexOf(a.name);
+      const fixedOrderB = servicePluginOrder.indexOf(b.name);
+      if (fixedOrderA >= 0 && fixedOrderB >= 0) {
+        return fixedOrderA - fixedOrderB;
+      }
+      if (fixedOrderB < 0) {
+        return -1;
+      }
+      if (a.urls.length && b.urls.length) {
+        // si les deux services ont des urls les trier par titre
+        return a.title.localeCompare(b.title, 'fr', { sensitivity: 'base' });
+      }
+      // si un des deux n'as pas d'urls il doit être affiché à la fin
+      return b.urls.length - a.urls.length;
+    }),
+);
 
-const servicesWrapableLength = computed(() => servicesWithRef.value.filter(({ wrapable }) => wrapable).length)
+const servicesWrapableLength = computed(
+  () => servicesWithRef.value.filter(({ wrapable }) => wrapable).length,
+);
 
 async function save() {
   try {
-    await props.project.Services.update(updated.value)
-    snackbarStore.setMessage('Paramètres sauvegardés', 'success')
+    await props.project.Services.update(updated.value);
+    snackbarStore.setMessage('Paramètres sauvegardés', 'success');
   } catch {
-    snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
+    snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error');
   }
-  await reload()
-  updated.value = {}
+  await reload();
+  updated.value = {};
 }
 async function reload() {
-  const resServices = await props.project.Services.list(props.permissionTarget)
-  services.value = []
-  await nextTick()
-  services.value = resServices
+  const resServices = await props.project.Services.list(props.permissionTarget);
+  services.value = [];
+  await nextTick();
+  services.value = resServices;
 }
 
-onMounted(async () => await reload())
-const activeAccordion = ref<number>()
+onMounted(async () => await reload());
+const activeAccordion = ref<number>();
 </script>
 
 <template>
   <div class="flex flex-col">
-    <div
-      v-if="!servicesWithRef.length"
-      id="servicesTable"
-      class="p-10 flex justify-center italic"
-    >
+    <div v-if="!servicesWithRef.length" id="servicesTable" class="p-10 flex justify-center italic">
       Aucun service disponible
     </div>
-    <h3
-      v-else
-      id="servicesTable"
-    >
-      Services externes
-    </h3>
+    <h3 v-else id="servicesTable">Services externes</h3>
 
     <div
       data-testid="services-urls"
       class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full mb-10"
     >
-      <template
-        v-for="service in servicesWithRef"
-        :key="service.name"
-      >
+      <template v-for="service in servicesWithRef" :key="service.name">
         <DsfrTile
           v-for="url in service.urls"
           :key="url.name"
           class="flex-basis-60 flex-grow max-w-50"
-          :title=" url.name || service.title || service.name"
+          :title="url.name || service.title || service.name"
           :img-src="service.imgSrc"
           :description="url.description"
           :icon="false"
@@ -143,21 +158,11 @@ const activeAccordion = ref<number>()
         />
       </template>
     </div>
-    <template
-      v-if="servicesWrapableLength"
-    >
+    <template v-if="servicesWrapableLength">
       <h3>Configuration des plugins</h3>
-      <DsfrAccordionsGroup
-        v-model="activeAccordion"
-        class="mb-10"
-      >
-        <template
-          v-for="service in servicesWithRef"
-          :key="service.name"
-        >
-          <template
-            v-if="service.wrapable"
-          >
+      <DsfrAccordionsGroup v-model="activeAccordion" class="mb-10">
+        <template v-for="service in servicesWithRef" :key="service.name">
+          <template v-if="service.wrapable">
             <DsfrAccordion
               :id="service.name"
               :data-testid="`service-config-${service.name}`"
@@ -167,7 +172,13 @@ const activeAccordion = ref<number>()
                 {{ service.description }}
               </p>
               <div
-                :class="getItemsToShowLength(service.manifest.project, permissionTarget) && (props.displayGlobal && getItemsToShowLength(service.manifest.global, permissionTarget)) ? '2xl:grid 2xl:grid-cols-2 2xl:gap-10' : ''"
+                :class="
+                  getItemsToShowLength(service.manifest.project, permissionTarget) &&
+                  props.displayGlobal &&
+                  getItemsToShowLength(service.manifest.global, permissionTarget)
+                    ? '2xl:grid 2xl:grid-cols-2 2xl:gap-10'
+                    : ''
+                "
               >
                 <DsfrCallout
                   v-if="getItemsToShowLength(service.manifest.project, permissionTarget)"
@@ -176,13 +187,14 @@ const activeAccordion = ref<number>()
                   :data-testid="`service-project-config-${service.name}`"
                 >
                   <template
-                    v-for="[title, items] in Object.entries(groupManifest(service.manifest.project as unknown as PluginConfigItem[]).items)"
+                    v-for="[title, items] in Object.entries(
+                      groupManifest(service.manifest.project as unknown as PluginConfigItem[])
+                        .items,
+                    )"
                     :key="title"
                   >
                     <template v-if="items.length">
-                      <div
-                        :class="title === 'default' ? 'flex-end' : ''"
-                      >
+                      <div :class="title === 'default' ? 'flex-end' : ''">
                         <h6 v-if="title !== 'default'">
                           {{ title }}
                         </h6>
@@ -198,7 +210,10 @@ const activeAccordion = ref<number>()
                             placeholder: item.placeholder || '',
                             disabled: !item.permissions[permissionTarget].write || props.disabled,
                           }"
-                          @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
+                          @update="
+                            (value: string) =>
+                              update({ key: item.key, value, plugin: service.name })
+                          "
                         />
                       </div>
                     </template>
@@ -211,7 +226,9 @@ const activeAccordion = ref<number>()
                   :data-testid="`service-global-config-${service.name}`"
                 >
                   <template
-                    v-for="[title, items] in Object.entries(groupManifest(service.manifest.global as unknown as PluginConfigItem[]).items)"
+                    v-for="[title, items] in Object.entries(
+                      groupManifest(service.manifest.global as unknown as PluginConfigItem[]).items,
+                    )"
                     :key="title"
                   >
                     <template v-if="items.length">
@@ -221,7 +238,7 @@ const activeAccordion = ref<number>()
                         <h6 v-if="title !== 'default'">
                           {{ title }}
                         </h6>
-                        <hr v-else>
+                        <hr v-else />
                         <ConfigParam
                           v-for="item in items"
                           :key="item.key"
@@ -234,7 +251,10 @@ const activeAccordion = ref<number>()
                             placeholder: item.placeholder || '',
                             disabled: !item.permissions[permissionTarget].write,
                           }"
-                          @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
+                          @update="
+                            (value: string) =>
+                              update({ key: item.key, value, plugin: service.name })
+                          "
                         />
                       </div>
                     </template>
@@ -245,33 +265,31 @@ const activeAccordion = ref<number>()
           </template>
         </template>
       </DsfrAccordionsGroup>
-      <div
-        class="flex justify-end gap-10"
-      >
+      <div class="flex justify-end gap-10">
         <DsfrButton
-          v-if="Object.values(updated).keys() && Object.values(updated).map(v => Object.keys(v)).flat().length"
+          v-if="
+            Object.values(updated).keys() &&
+            Object.values(updated)
+              .map((v) => Object.keys(v))
+              .flat().length
+          "
           label="Enregistrer"
           data-testid="saveBtn"
           @click="save()"
         />
-        <DsfrButton
-          label="Recharger"
-          secondary
-          data-testid="reloadBtn"
-          @click="reload()"
-        />
+        <DsfrButton label="Recharger" secondary data-testid="reloadBtn" @click="reload()" />
       </div>
     </template>
   </div>
 </template>
 
 <style>
-.fr-tile__title [target="_blank"]::after {
+.fr-tile__title [target='_blank']::after {
   display: none;
 }
 
 .fr-grid-row .fr-tile {
-  height: inherit
+  height: inherit;
 }
 
 .fr-tile__pictogram > img {

@@ -1,82 +1,78 @@
 <script lang="ts" setup>
-import { isAtLeastTomorrow, TokenSchema } from '@cpn-console/shared'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { copyContent } from '@/utils/func.js'
+import { isAtLeastTomorrow, TokenSchema } from '@cpn-console/shared';
+import { useSnackbarStore } from '@/stores/snackbar.js';
+import { copyContent } from '@/utils/func.js';
 
-export interface SimpleToken { name: string, expirationDate: string }
+export interface SimpleToken {
+  name: string;
+  expirationDate: string;
+}
 const props = defineProps<{
-  exposedToken?: string
-  mandatoryExpiration: boolean
-}>()
+  exposedToken?: string;
+  mandatoryExpiration: boolean;
+}>();
 
 const emits = defineEmits<{
-  create: [SimpleToken]
-  reset: []
-}>()
+  create: [SimpleToken];
+  reset: [];
+}>();
 
-const snackbarStore = useSnackbarStore()
+const snackbarStore = useSnackbarStore();
 
-const showNewTokenPassword = ref(false)
-const isCreatingToken = ref(false)
+const showNewTokenPassword = ref(false);
+const isCreatingToken = ref(false);
 const newToken = ref<{
-  name: string
-  expirationDate: string
+  name: string;
+  expirationDate: string;
 }>({
   name: '',
   expirationDate: '',
-})
-const showNewTokenForm = ref<boolean>(false)
+});
+const showNewTokenForm = ref<boolean>(false);
 
 async function createToken() {
   try {
-    snackbarStore.hideMessage()
+    snackbarStore.hideMessage();
     if (!newToken.value.name) {
-      return
+      return;
     }
-    isCreatingToken.value = true
-    emits('create', newToken.value)
-    newToken.value.name = ''
-    newToken.value.expirationDate = ''
-    showNewTokenForm.value = false
+    isCreatingToken.value = true;
+    emits('create', newToken.value);
+    newToken.value.name = '';
+    newToken.value.expirationDate = '';
+    showNewTokenForm.value = false;
   } catch (error) {
     if (error instanceof Error) {
-      snackbarStore.setMessage(error.message, 'error')
+      snackbarStore.setMessage(error.message, 'error');
     }
   }
-  isCreatingToken.value = false
+  isCreatingToken.value = false;
 }
 
 function reset() {
-  showNewTokenForm.value = true
-  showNewTokenPassword.value = false
-  emits('reset')
+  showNewTokenForm.value = true;
+  showNewTokenPassword.value = false;
+  emits('reset');
 }
 
 const invalidExpirationDate = computed<string | undefined>(() => {
   if (!newToken.value.expirationDate) {
-    return undefined
+    return undefined;
   }
-  const actualTime = new Date(newToken.value.expirationDate)
-  return isAtLeastTomorrow(actualTime)
-    ? undefined
-    : 'La durée de vie du token est trop courte'
-})
+  const actualTime = new Date(newToken.value.expirationDate);
+  return isAtLeastTomorrow(actualTime) ? undefined : 'La durée de vie du token est trop courte';
+});
 
 const schema = computed(() => {
-  return TokenSchema.partial().safeParse(newToken.value)
-})
+  return TokenSchema.partial().safeParse(newToken.value);
+});
 </script>
 
 <template>
-  <div
-    v-if="props.exposedToken"
-    class="flex flex-row items-end gap-1 mb-5 max-w-160"
-  >
-    <div
-      class="grow max-w-130"
-    >
+  <div v-if="props.exposedToken" class="flex flex-row items-end gap-1 mb-5 max-w-160">
+    <div class="grow max-w-130">
       <DsfrInput
-        v-model="(props.exposedToken as string)"
+        v-model="props.exposedToken as string"
         label="Jeton d'authentification"
         data-testid="newTokenPassword"
         disabled
@@ -109,14 +105,8 @@ const schema = computed(() => {
     secondary
     @click="reset"
   />
-  <DsfrFieldset
-    v-else
-    legend="Créer un jeton"
-    class="max-w-160 w-full"
-  >
-    <DsfrInputGroup
-      :error-message="newToken.name && schema?.error?.flatten().fieldErrors.name"
-    >
+  <DsfrFieldset v-else legend="Créer un jeton" class="max-w-160 w-full">
+    <DsfrInputGroup :error-message="newToken.name && schema?.error?.flatten().fieldErrors.name">
       <DsfrInput
         v-model="newToken.name"
         data-testid="newTokenName"
@@ -127,9 +117,7 @@ const schema = computed(() => {
         required
       />
     </DsfrInputGroup>
-    <DsfrInputGroup
-      :error-message="invalidExpirationDate"
-    >
+    <DsfrInputGroup :error-message="invalidExpirationDate">
       <DsfrInput
         v-model="newToken.expirationDate"
         type="date"
@@ -140,17 +128,20 @@ const schema = computed(() => {
         :required="mandatoryExpiration"
       />
     </DsfrInputGroup>
-    <div
-      class="flex flex-row place-content-between"
-    >
+    <div class="flex flex-row place-content-between">
       <DsfrButton
         data-testid="saveBtn"
         label="Enregistrer"
         secondary
-        :icon="isCreatingToken
-          ? { name: 'ri:refresh-line', animation: 'spin' }
-          : 'ri:send-plane-line'"
-        :disabled="!schema.success || !!invalidExpirationDate || isCreatingToken || (mandatoryExpiration && !newToken.expirationDate)"
+        :icon="
+          isCreatingToken ? { name: 'ri:refresh-line', animation: 'spin' } : 'ri:send-plane-line'
+        "
+        :disabled="
+          !schema.success ||
+          !!invalidExpirationDate ||
+          isCreatingToken ||
+          (mandatoryExpiration && !newToken.expirationDate)
+        "
         class="mr-5"
         @click="createToken"
       />

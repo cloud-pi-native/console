@@ -10,9 +10,7 @@
   "registrationAllowed": false,
   "privateKey": "MIICXAIBAAKBgQCrVrCuTtArbgaZzL1hvh0xtL5mc7o0NqPVnYXkLvgcwiC3BjLGw1tGEGoJaXDuSaRllobm53JBhjx33UNv+5z/UMG4kytBWxheNVKnL6GgqlNabMaFfPLPCF8kAgKnsi79NMo+n6KnSY8YeUmec/p2vjO2NjsSAVcWEQMVhJ31LwIDAQABAoGAfmO8gVhyBxdqlxmIuglbz8bcjQbhXJLR2EoS8ngTXmN1bo2L90M0mUKSdc7qF10LgETBzqL8jYlQIbt+e6TH8fcEpKCjUlyq0Mf/vVbfZSNaVycY13nTzo27iPyWQHK5NLuJzn1xvxxrUeXI6A2WFpGEBLbHjwpx5WQG9A+2scECQQDvdn9NE75HPTVPxBqsEd2z10TKkl9CZxu10Qby3iQQmWLEJ9LNmy3acvKrE3gMiYNWb6xHPKiIqOR1as7L24aTAkEAtyvQOlCvr5kAjVqrEKXalj0Tzewjweuxc0pskvArTI2Oo070h65GpoIKLc9jf+UA69cRtquwP93aZKtW06U8dQJAF2Y44ks/mK5+eyDqik3koCI08qaC8HYq2wVl7G2QkJ6sbAaILtcvD92ToOvyGyeE0flvmDZxMYlvaZnaQ0lcSQJBAKZU6umJi3/xeEbkJqMfeLclD27XGEFoPeNrmdx0q10Azp4NfJAY+Z8KRyQCR2BEG+oNitBOZ+YXF9KCpH3cdmECQHEigJhYg+ykOvr1aiZUMFT72HU0jnmQe2FVekuG+LJUt2Tm7GtMjTFoGpf0JwrVuZN39fOYAlo+nTixgeW7X8Y=",
   "publicKey": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCrVrCuTtArbgaZzL1hvh0xtL5mc7o0NqPVnYXkLvgcwiC3BjLGw1tGEGoJaXDuSaRllobm53JBhjx33UNv+5z/UMG4kytBWxheNVKnL6GgqlNabMaFfPLPCF8kAgKnsi79NMo+n6KnSY8YeUmec/p2vjO2NjsSAVcWEQMVhJ31LwIDAQAB",
-  "requiredCredentials": [
-    "password"
-  ],
+  "requiredCredentials": ["password"],
   "browserSecurityHeaders": {
     "contentSecurityPolicyReportOnly": "",
     "xContentTypeOptions": "nosniff",
@@ -48,14 +46,9 @@
           "value": "test"
         }
       ],
-      "realmRoles": [
-        "user",
-        "offline_access"
-      ],
+      "realmRoles": ["user", "offline_access"],
       "clientRoles": {
-        "account": [
-          "manage-account"
-        ]
+        "account": ["manage-account"]
       }
     },
     {
@@ -72,18 +65,11 @@
           "value": "test"
         }
       ],
-      "realmRoles": [
-        "user",
-        "offline_access"
-      ],
+      "realmRoles": ["user", "offline_access"],
       "clientRoles": {
-        "account": [
-          "manage-account"
-        ]
+        "account": ["manage-account"]
       },
-      "groups": [
-        "admin"
-      ]
+      "groups": ["admin"]
     },
     {
       "id": "cb8e5b4b-7b7b-40f5-935f-594f48ae6567",
@@ -99,14 +85,9 @@
           "value": "test"
         }
       ],
-      "realmRoles": [
-        "user",
-        "offline_access"
-      ],
+      "realmRoles": ["user", "offline_access"],
       "clientRoles": {
-        "account": [
-          "manage-account"
-        ]
+        "account": ["manage-account"]
       }
     },
     {
@@ -123,14 +104,9 @@
           "value": "test"
         }
       ],
-      "realmRoles": [
-        "user",
-        "offline_access"
-      ],
+      "realmRoles": ["user", "offline_access"],
       "clientRoles": {
-        "account": [
-          "manage-account"
-        ]
+        "account": ["manage-account"]
       }
     },
     {
@@ -147,14 +123,9 @@
           "value": "test"
         }
       ],
-      "realmRoles": [
-        "user",
-        "offline_access"
-      ],
+      "realmRoles": ["user", "offline_access"],
       "clientRoles": {
-        "account": [
-          "manage-account"
-        ]
+        "account": ["manage-account"]
       }
     },
     {
@@ -171,14 +142,9 @@
           "value": "test"
         }
       ],
-      "realmRoles": [
-        "user",
-        "offline_access"
-      ],
+      "realmRoles": ["user", "offline_access"],
       "clientRoles": {
-        "account": [
-          "manage-account"
-        ]
+        "account": ["manage-account"]
       }
     },
     {
@@ -195,21 +161,12 @@
           "value": "admin"
         }
       ],
-      "realmRoles": [
-        "user",
-        "admin"
-      ],
+      "realmRoles": ["user", "admin"],
       "clientRoles": {
-        "realm-management": [
-          "realm-admin"
-        ],
-        "account": [
-          "manage-account"
-        ]
+        "realm-management": ["realm-admin"],
+        "account": ["manage-account"]
       },
-      "groups": [
-        "admin"
-      ]
+      "groups": ["admin"]
     }
   ],
   "roles": {
@@ -237,12 +194,8 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "redirectUris": [
-        "*"
-      ],
-      "webOrigins": [
-        "*"
-      ],
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
@@ -280,16 +233,8 @@
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
-      "defaultClientScopes": [
-        "generic",
-        "basic"
-      ],
-      "optionalClientScopes": [
-        "address",
-        "phone",
-        "offline_access",
-        "microprofile-jwt"
-      ],
+      "defaultClientScopes": ["generic", "basic"],
+      "optionalClientScopes": ["address", "phone", "offline_access", "microprofile-jwt"],
       "access": {
         "view": true,
         "configure": true,
@@ -348,15 +293,8 @@
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
-      "defaultClientScopes": [
-        "generic"
-      ],
-      "optionalClientScopes": [
-        "address",
-        "phone",
-        "offline_access",
-        "microprofile-jwt"
-      ],
+      "defaultClientScopes": ["generic"],
+      "optionalClientScopes": ["address", "phone", "offline_access", "microprofile-jwt"],
       "access": {
         "view": true,
         "configure": true,
@@ -386,17 +324,19 @@
         "gui.order": "",
         "consent.screen.text": ""
       },
-      "protocolMappers": [{
-        "id": "910359ad-0368-44dd-b10c-d1cae6c6dd17",
-        "name": "sub",
-        "protocol": "openid-connect",
-        "protocolMapper": "oidc-sub-mapper",
-        "consentRequired": false,
-        "config": {
-          "introspection.token.claim": "true",
-          "access.token.claim": "true"
+      "protocolMappers": [
+        {
+          "id": "910359ad-0368-44dd-b10c-d1cae6c6dd17",
+          "name": "sub",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sub-mapper",
+          "consentRequired": false,
+          "config": {
+            "introspection.token.claim": "true",
+            "access.token.claim": "true"
+          }
         }
-      }]
+      ]
     },
     {
       "id": "1611458d-38ab-4a9f-859e-1812d251c1ac",
@@ -619,9 +559,6 @@
   "adminTheme": "DSFR",
   "emailTheme": "DSFR",
   "internationalizationEnabled": true,
-  "supportedLocales": [
-    "en",
-    "fr"
-  ],
+  "supportedLocales": ["en", "fr"],
   "defaultLocale": "fr"
 }

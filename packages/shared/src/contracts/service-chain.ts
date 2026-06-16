@@ -1,20 +1,20 @@
-import { ContractNoBody } from '@ts-rest/core'
-import { z } from 'zod'
-import { apiPrefix, contractInstance } from '../api-client.js'
+import { ContractNoBody } from '@ts-rest/core';
+import { z } from 'zod';
+import { apiPrefix, contractInstance } from '../api-client.js';
 import {
   ServiceChainDetailsSchema,
   ServiceChainFlowsSchema,
   ServiceChainSchema,
-} from '../schemas/index.js'
-import { baseHeaders, EmptySchema, ErrorSchema } from './_utils.js'
+} from '../schemas/index.js';
+import { baseHeaders, EmptySchema, ErrorSchema } from './_utils.js';
 
 export const ServiceChainParams = z.object({
   serviceChainId: ServiceChainSchema.shape.id,
-})
+});
 
 export const ServiceChainValidationParams = z.object({
   validationId: ServiceChainDetailsSchema.shape.validationId,
-})
+});
 
 export const serviceChainContract = contractInstance.router(
   {
@@ -48,8 +48,7 @@ export const serviceChainContract = contractInstance.router(
       method: 'POST',
       path: `/:serviceChainId/retry`,
       summary: 'Retry Service Chain creation',
-      description:
-        'Retry the whole service chain creation from the point it failed.',
+      description: 'Retry the whole service chain creation from the point it failed.',
       pathParams: ServiceChainParams,
       body: ContractNoBody,
       responses: {
@@ -90,10 +89,9 @@ export const serviceChainContract = contractInstance.router(
         500: ErrorSchema,
       },
     },
-
   },
   {
     baseHeaders,
     pathPrefix: `${apiPrefix}/service-chains`,
   },
-)
+);

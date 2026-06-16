@@ -1,72 +1,60 @@
-import type {
-  UserTrial,
-} from './business.js'
-import { AdminAuthorized, userContract } from '@cpn-console/shared'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors.js'
-import {
-  getMatchingUsers,
-  getUsers,
-  logViaSession,
-  patchUsers,
-} from './business.js'
-import '@/types/index.js'
+import type { UserTrial } from './business.js';
+import { AdminAuthorized, userContract } from '@cpn-console/shared';
+import { serverInstance } from '@/app.js';
+import { authUser } from '@/utils/controller.js';
+import { ErrorResType, Forbidden403, Unauthorized401 } from '@/utils/errors.js';
+import { getMatchingUsers, getUsers, logViaSession, patchUsers } from './business.js';
+import '@/types/index.js';
 
 export function userRouter() {
   return serverInstance.router(userContract, {
     getMatchingUsers: async ({ query }) => {
-      const usersMatching = await getMatchingUsers(query)
+      const usersMatching = await getMatchingUsers(query);
 
       return {
         status: 200,
         body: usersMatching,
-      }
+      };
     },
 
     auth: async ({ request: req }) => {
-      const user = req.session.user
+      const user = req.session.user;
 
-      if (!user) return new Unauthorized401()
+      if (!user) return new Unauthorized401();
 
-      const { user: body } = await logViaSession(user as unknown as UserTrial)
+      const { user: body } = await logViaSession(user as unknown as UserTrial);
 
       return {
         status: 200,
         body,
-      }
+      };
     },
 
-    getAllUsers: async ({
-      request: req,
-      query: { relationType, ...query },
-    }) => {
-      const perms = await authUser(req)
+    getAllUsers: async ({ request: req, query: { relationType, ...query } }) => {
+      const perms = await authUser(req);
 
-      if (!AdminAuthorized.ManageUsers(perms.adminPermissions))
-        return new Forbidden403()
+      if (!AdminAuthorized.ManageUsers(perms.adminPermissions)) return new Forbidden403();
 
-      const body = await getUsers(query, relationType)
-      if (body instanceof ErrorResType) return body
+      const body = await getUsers(query, relationType);
+      if (body instanceof ErrorResType) return body;
 
       return {
         status: 200,
         body,
-      }
+      };
     },
 
     patchUsers: async ({ request: req, body }) => {
-      const perms = await authUser(req)
+      const perms = await authUser(req);
 
-      if (!AdminAuthorized.ManageUsers(perms.adminPermissions))
-        return new Forbidden403()
+      if (!AdminAuthorized.ManageUsers(perms.adminPermissions)) return new Forbidden403();
 
-      const users = await patchUsers(body)
+      const users = await patchUsers(body);
 
       return {
         status: 200,
         body: users,
-      }
+      };
     },
-  })
+  });
 }

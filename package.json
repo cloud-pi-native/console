@@ -1,17 +1,12 @@
 {
   "name": "@cpn-console/root",
-  "type": "module",
   "version": "9.18.4",
   "private": true,
-  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319",
   "repository": {
     "type": "git",
     "url": "https://github.com/cloud-pi-native/console"
   },
-  "engines": {
-    "node": ">=24.0.0 <25.0.0",
-    "npm": ">=11.0.0"
-  },
+  "type": "module",
   "scripts": {
     "build": "pnpm -r run build",
     "build:clean": "pnpm -r run build:clean",
@@ -30,7 +25,8 @@
     "docker:integ:build": "export $(cat apps/server/.env.integ | grep -v '#' | xargs) && export COMPOSE_FILE=./docker/docker-compose.integ.yml && cd $(dirname $COMPOSE_FILE) && docker buildx bake --allow=fs.read=.. --file $(basename $COMPOSE_FILE) --load && cd - > /dev/null",
     "docker:integ:clean": "docker compose --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml down --remove-orphans",
     "docker:integ:delete": "docker compose --env-file apps/server/.env.integ -f ./docker/docker-compose.integ.yml down -v --remove-orphans",
-    "format": "pnpm -r run format",
+    "format": "oxfmt --write && eslint . --fix",
+    "format:check": "oxfmt --check && eslint .",
     "format:root": "eslint . --fix",
     "format:style": "pnpm -r run format:style",
     "fullclean": "sh ./ci/scripts/cleanup.sh",
@@ -57,6 +53,12 @@
     "@cpn-console/eslint-config": "workspace:^",
     "eslint": "^10.3.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0"
-  }
+    "lint-staged": "^16.4.0",
+    "oxfmt": "^0.25.0"
+  },
+  "engines": {
+    "node": ">=24.0.0 <25.0.0",
+    "npm": ">=11.0.0"
+  },
+  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
 }

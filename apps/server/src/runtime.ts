@@ -1,6 +1,6 @@
-import { Agent, cacheStores, interceptors, ProxyAgent, setGlobalDispatcher } from 'undici'
+import { Agent, cacheStores, interceptors, ProxyAgent, setGlobalDispatcher } from 'undici';
 
-const base = process.env.HTTP_PROXY ? new ProxyAgent(process.env.HTTP_PROXY) : new Agent()
+const base = process.env.HTTP_PROXY ? new ProxyAgent(process.env.HTTP_PROXY) : new Agent();
 
 // Undici’s cache interceptor follows RFC 7234:
 // 1. Only GET/HEAD are cached (configurable via `methods`).
@@ -18,5 +18,5 @@ const client = base.compose(
     store: new cacheStores.SqliteCacheStore(),
     methods: ['GET', 'HEAD'],
   }),
-)
-setGlobalDispatcher(client)
+);
+setGlobalDispatcher(client);

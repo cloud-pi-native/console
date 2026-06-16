@@ -1,9 +1,5 @@
 <script lang="ts" setup>
-import type {
-  ServiceChain,
-  ServiceChainDetails,
-  ServiceChainFlows,
-} from '@cpn-console/shared'
+import type { ServiceChain, ServiceChainDetails, ServiceChainFlows } from '@cpn-console/shared';
 import {
   DsfrBadge,
   DsfrButton,
@@ -11,14 +7,14 @@ import {
   DsfrInputGroup,
   DsfrStepper,
   DsfrToggleSwitch,
-} from '@gouvminint/vue-dsfr'
-import { onBeforeMount, ref } from 'vue'
-import { useServiceChainStore } from '@/stores/service-chain'
+} from '@gouvminint/vue-dsfr';
+import { onBeforeMount, ref } from 'vue';
+import { useServiceChainStore } from '@/stores/service-chain';
 
 const props = withDefaults(
   defineProps<{
-    serviceChainDetails?: ServiceChainDetails
-    serviceChainFlows?: ServiceChainFlows
+    serviceChainDetails?: ServiceChainDetails;
+    serviceChainFlows?: ServiceChainFlows;
   }>(),
   {
     serviceChainDetails: () => ({
@@ -77,90 +73,78 @@ const props = withDefaults(
       },
     }),
   },
-)
+);
 
 const emit = defineEmits<{
-  cancel: []
-}>()
+  cancel: [];
+}>();
 
-const localServiceChainDetails = ref<ServiceChainDetails>(
-  props.serviceChainDetails,
-)
-const localServiceChainFlows = ref<ServiceChainFlows>(props.serviceChainFlows)
+const localServiceChainDetails = ref<ServiceChainDetails>(props.serviceChainDetails);
+const localServiceChainFlows = ref<ServiceChainFlows>(props.serviceChainFlows);
 
 const badgeStatus = computed(() => {
   switch (localServiceChainDetails.value.state) {
     case 'success':
-      return 'success'
+      return 'success';
     case 'opened':
-      return 'new'
+      return 'new';
     case 'pending':
-      return 'warning'
+      return 'warning';
     default:
-      return 'error'
+      return 'error';
   }
-})
+});
 const state = computed(() => {
   switch (localServiceChainDetails.value.state) {
     case 'success':
-      return 'Succès'
+      return 'Succès';
     case 'opened':
-      return 'Ouverte'
+      return 'Ouverte';
     case 'pending':
-      return 'En cours'
+      return 'En cours';
     default:
-      return 'Échec'
+      return 'Échec';
   }
-})
+});
 const createdAt = computed(() =>
   localServiceChainDetails.value.createdAt.toISOString().slice(0, 19),
-)
+);
 const updatedAt = computed(() =>
   localServiceChainDetails.value.updatedAt.toISOString().slice(0, 19),
-)
+);
 const subjectAlternativeNameList = computed(() =>
   localServiceChainDetails.value.subjectAlternativeName.join(', '),
-)
-const ipWhiteList = computed(() =>
-  localServiceChainDetails.value.ipWhiteList.join(', '),
-)
-const antivirus = computed(() => !!localServiceChainDetails.value.antivirus)
+);
+const ipWhiteList = computed(() => localServiceChainDetails.value.ipWhiteList.join(', '));
+const antivirus = computed(() => !!localServiceChainDetails.value.antivirus);
 
-const flows = [
-  'reserve_ip',
-  'create_cert',
-  'call_exec',
-  'activate_ip',
-  'dns_request',
-] as const
+const flows = ['reserve_ip', 'create_cert', 'call_exec', 'activate_ip', 'dns_request'] as const;
 const localizedFlows = [
-  'Réservation de l\'IP',
+  "Réservation de l'IP",
   'Creation du certificat',
-  'Appel de l\'exécutable',
-  'Activation de l\'IP',
+  "Appel de l'exécutable",
+  "Activation de l'IP",
   'Création du DNS',
-]
+];
 const currentFlow = computed(() =>
-  flows.findIndex(
-    flow => localServiceChainFlows.value[flow]?.state !== 'success',
-  ),
-)
+  flows.findIndex((flow) => localServiceChainFlows.value[flow]?.state !== 'success'),
+);
 
 function cancel() {
-  emit('cancel')
+  emit('cancel');
 }
 
 onBeforeMount(() => {
-  localServiceChainDetails.value = props.serviceChainDetails
-})
+  localServiceChainDetails.value = props.serviceChainDetails;
+});
 
-const serviceChainStore = useServiceChainStore()
-const isRetryDisabled = ref(false)
-const retryButtonLabel = ref('Relancer')
+const serviceChainStore = useServiceChainStore();
+const isRetryDisabled = ref(false);
+const retryButtonLabel = ref('Relancer');
 async function clickRetry(id: ServiceChain['id']) {
-  await serviceChainStore.retryServiceChain(id)
-  isRetryDisabled.value = true
-  retryButtonLabel.value = 'Relancé'
+  await serviceChainStore.retryServiceChain(id);
+  isRetryDisabled.value = true;
+  retryButtonLabel.value = 'Relancé';
 }
 </script>
 
@@ -177,15 +161,8 @@ async function clickRetry(id: ServiceChain['id']) {
       />
     </div>
     <h1 class="fr-h1">
-      <span class="mr-5">{{
-        `Chaîne de services "${localServiceChainDetails.commonName}"`
-      }}</span>
-      <DsfrBadge
-        class="mr-12"
-        data-testid="state"
-        :type="badgeStatus"
-        :label="state"
-      />
+      <span class="mr-5">{{ `Chaîne de services "${localServiceChainDetails.commonName}"` }}</span>
+      <DsfrBadge class="mr-12" data-testid="state" :type="badgeStatus" :label="state" />
       <DsfrButton
         v-if="localServiceChainDetails.state === 'failed'"
         :label="retryButtonLabel"

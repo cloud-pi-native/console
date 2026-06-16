@@ -1,30 +1,24 @@
-import type { Project, StepCall } from '@cpn-console/hooks'
-import type { KeycloakProjectApi } from '@cpn-console/keycloak-plugin/types/class.js'
-import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js'
-import type { SonarPaging } from './project.js'
-import type { VaultSonarSecret } from './tech.js'
-import type { SonarUser } from './user.js'
-import { generateProjectKey } from '@cpn-console/hooks'
-import { adminGroupPath } from '@cpn-console/shared'
-import { ensureGroupExists, findGroupByName } from './group.js'
-import { logger } from './logger.js'
+import type { Project, StepCall } from '@cpn-console/hooks';
+import type { KeycloakProjectApi } from '@cpn-console/keycloak-plugin/types/class.js';
+import type { VaultProjectApi } from '@cpn-console/vault-plugin/types/vault-project-api.js';
+import type { SonarPaging } from './project.js';
+import type { VaultSonarSecret } from './tech.js';
+import type { SonarUser } from './user.js';
+import { generateProjectKey } from '@cpn-console/hooks';
+import { adminGroupPath } from '@cpn-console/shared';
+import { ensureGroupExists, findGroupByName } from './group.js';
+import { logger } from './logger.js';
 import {
   createDsoRepository,
   deleteDsoRepository,
   ensureRepositoryConfiguration,
   files,
   findSonarProjectsForDsoProjects,
-} from './project.js'
-import { getAxiosInstance } from './tech.js'
-import { ensureUserExists } from './user.js'
+} from './project.js';
+import { getAxiosInstance } from './tech.js';
+import { ensureUserExists } from './user.js';
 
-const globalPermissions = [
-  'admin',
-  'profileadmin',
-  'gateadmin',
-  'scan',
-  'provisioning',
-]
+const globalPermissions = ['admin', 'profileadmin', 'gateadmin', 'scan', 'provisioning'];
 
 const projectPermissions = [
   'admin',
@@ -33,23 +27,23 @@ const projectPermissions = [
   'securityhotspotadmin',
   'scan',
   'user',
-]
+];
 
 export async function initSonar() {
   try {
-    await setTemplatePermisions()
-    await createAdminGroup()
-    await setAdminPermisions()
-    logger.info({ action: 'initSonar' }, 'Hook done')
+    await setTemplatePermisions();
+    await createAdminGroup();
+    await setAdminPermisions();
+    logger.info({ action: 'initSonar' }, 'Hook done');
   } catch (error) {
-    logger.error({ action: 'initSonar', err: error }, 'Hook failed')
-    throw error
+    logger.error({ action: 'initSonar', err: error }, 'Hook failed');
+    throw error;
   }
 }
 
 async function createAdminGroup() {
-  const axiosInstance = getAxiosInstance()
-  const adminGroup = await findGroupByName(adminGroupPath)
+  const axiosInstance = getAxiosInstance();
+  const adminGroup = await findGroupByName(adminGroupPath);
   if (!adminGroup) {
     await axiosInstance({
       method: 'post',
@@ -58,12 +52,12 @@ async function createAdminGroup() {
         description: 'DSO platform admins',
       },
       url: 'user_groups/create',
-    })
+    });
   }
 }
 
 async function setAdminPermisions() {
-  const axiosInstance = getAxiosInstance()
+  const axiosInstance = getAxiosInstance();
   for (const permission of globalPermissions) {
     await axiosInstance({
       method: 'post',
@@ -72,18 +66,18 @@ async function setAdminPermisions() {
         permission,
       },
       url: 'permissions/add_group',
-    })
+    });
   }
 }
 
 async function setTemplatePermisions() {
-  const axiosInstance = getAxiosInstance()
+  const axiosInstance = getAxiosInstance();
   await axiosInstance({
     method: 'post',
     params: { name: 'Forge Default' },
     url: 'permissions/create_template',
-    validateStatus: code => [200, 400].includes(code),
-  })
+    validateStatus: (code) => [200, 400].includes(code),
+  });
   for (const permission of projectPermissions) {
     await axiosInstance({
       method: 'post',
@@ -92,7 +86,7 @@ async function setTemplatePermisions() {
         permission,
       },
       url: 'permissions/add_project_creator_to_template',
-    })
+    });
     await axiosInstance({
       method: 'post',
       params: {
@@ -101,7 +95,7 @@ async function setTemplatePermisions() {
         permission,
       },
       url: 'permissions/add_group_to_template',
-    })
+    });
   }
   await axiosInstance({
     method: 'post',
@@ -109,24 +103,23 @@ async function setTemplatePermisions() {
       templateName: 'Forge Default',
     },
     url: 'permissions/set_default_template',
-  })
+  });
 }
 
 export const upsertProject: StepCall<Project> = async (payload) => {
   try {
-    const project = payload.args
+    const project = payload.args;
     const {
       vault: vaultApi,
       keycloak: keycloakApi,
     }: {
-      vault: VaultProjectApi
-      keycloak: KeycloakProjectApi
-    } = payload.apis
-    const { slug: projectSlug } = project
-    const username = project.slug
-    const keycloakGroupPath = await keycloakApi.getProjectGroupPath()
-    const sonarRepositories
-      = await findSonarProjectsForDsoProjects(projectSlug)
+      vault: VaultProjectApi;
+      keycloak: KeycloakProjectApi;
+    } = payload.apis;
+    const { slug: projectSlug } = project;
+    const username = project.slug;
+    const keycloakGroupPath = await keycloakApi.getProjectGroupPath();
+    const sonarRepositories = await findSonarProjectsForDsoProjects(projectSlug);
 
     await Promise.all([
       ensureUserAndVault(vaultApi, username, projectSlug),
@@ -135,46 +128,38 @@ export const upsertProject: StepCall<Project> = async (payload) => {
       // Remove excess repositories
       ...sonarRepositories
         .filter(
-          sonarRepository =>
+          (sonarRepository) =>
             !project.repositories.some(
-              repo => repo.internalRepoName === sonarRepository.repository,
+              (repo) => repo.internalRepoName === sonarRepository.repository,
             ),
         )
-        .map(sonarRepository => deleteDsoRepository(sonarRepository.key)),
+        .map((sonarRepository) => deleteDsoRepository(sonarRepository.key)),
 
       // Create or configure needed repos
       ...project.repositories.map(async (repository) => {
-        const projectKey = generateProjectKey(
-          projectSlug,
-          repository.internalRepoName,
-        )
+        const projectKey = generateProjectKey(projectSlug, repository.internalRepoName);
         if (
           !sonarRepositories.some(
-            sonarRepository =>
-              sonarRepository.repository === repository.internalRepoName,
+            (sonarRepository) => sonarRepository.repository === repository.internalRepoName,
           )
         ) {
-          await createDsoRepository(projectSlug, repository.internalRepoName)
+          await createDsoRepository(projectSlug, repository.internalRepoName);
         }
-        await ensureRepositoryConfiguration(
-          projectKey,
-          username,
-          keycloakGroupPath,
-        )
+        await ensureRepositoryConfiguration(projectKey, username, keycloakGroupPath);
       }),
-    ])
+    ]);
 
-    logger.info({ action: 'upsertProject', projectSlug }, 'Hook done')
+    logger.info({ action: 'upsertProject', projectSlug }, 'Hook done');
     return {
       status: {
         result: 'OK',
       },
-    }
+    };
   } catch (error) {
     logger.error(
       { action: 'upsertProject', projectSlug: payload.args.slug, err: error },
       'Hook failed',
-    )
+    );
     return {
       status: {
         result: 'WARNING',
@@ -183,31 +168,26 @@ export const upsertProject: StepCall<Project> = async (payload) => {
       errors: {
         main: error,
       },
-    }
+    };
   }
-}
+};
 
 export const setVariables: StepCall<Project> = async (payload) => {
-  const returnResponse = payload.results.sonarqube
+  const returnResponse = payload.results.sonarqube;
   try {
-    const project = payload.args
-    const { slug: projectSlug } = project
-    const { gitlab: gitlabApi } = payload.apis
+    const project = payload.args;
+    const { slug: projectSlug } = project;
+    const { gitlab: gitlabApi } = payload.apis;
 
-    const sonarSecret = await payload.apis.vault.read('SONAR')
-    const listGroupVars = await gitlabApi.getGitlabGroupVariables()
+    const sonarSecret = await payload.apis.vault.read('SONAR');
+    const listGroupVars = await gitlabApi.getGitlabGroupVariables();
     await Promise.all([
       // Sonar vars saving in CI (repositories)
       ...project.repositories.map(async (repo) => {
-        const projectKey = generateProjectKey(
-          projectSlug,
-          repo.internalRepoName,
-        )
-        const repoId = await payload.apis.gitlab.getProjectId(
-          repo.internalRepoName,
-        )
-        if (!repoId) return
-        const listVars = await gitlabApi.getGitlabRepoVariables(repoId)
+        const projectKey = generateProjectKey(projectSlug, repo.internalRepoName);
+        const repoId = await payload.apis.gitlab.getProjectId(repo.internalRepoName);
+        if (!repoId) return;
+        const listVars = await gitlabApi.getGitlabRepoVariables(repoId);
         return [
           await gitlabApi.setGitlabRepoVariable(repoId, listVars, {
             key: 'PROJECT_KEY',
@@ -233,7 +213,7 @@ export const setVariables: StepCall<Project> = async (payload) => {
             value: files['sonar-project.properties'](projectKey),
             environment_scope: '*',
           }),
-        ]
+        ];
       }),
       // Sonar vars saving in CI (group)
       gitlabApi.setGitlabGroupVariable(listGroupVars, {
@@ -243,54 +223,53 @@ export const setVariables: StepCall<Project> = async (payload) => {
         value: sonarSecret.data.SONAR_TOKEN,
         variable_type: 'env_var',
       }),
-    ])
+    ]);
 
     if (payload.results.sonarqube.status.result === 'WARNING') {
-      returnResponse.status.message = `main message: ${payload.results.sonarqube.status.message}, post message: OK`
+      returnResponse.status.message = `main message: ${payload.results.sonarqube.status.message}, post message: OK`;
     }
-    logger.info({ action: 'setVariables', projectSlug }, 'Hook done')
-    return returnResponse
+    logger.info({ action: 'setVariables', projectSlug }, 'Hook done');
+    return returnResponse;
   } catch (error) {
-    returnResponse.status.result = 'WARNING'
-    returnResponse.status.message = `main message: ${payload.results.sonarqube.status.message}, post message: Failed to reconcile`
+    returnResponse.status.result = 'WARNING';
+    returnResponse.status.message = `main message: ${payload.results.sonarqube.status.message}, post message: Failed to reconcile`;
     returnResponse.errors = {
       ...returnResponse.errors,
       post: error,
-    }
+    };
     logger.error(
       { action: 'setVariables', projectSlug: payload.args.slug, err: error },
       'Hook failed',
-    )
-    return returnResponse
+    );
+    return returnResponse;
   }
-}
+};
 
 export const deleteProject: StepCall<Project> = async (payload) => {
-  const axiosInstance = getAxiosInstance()
+  const axiosInstance = getAxiosInstance();
 
-  const project = payload.args
-  const { slug: projectSlug } = project
-  const username = projectSlug
+  const project = payload.args;
+  const { slug: projectSlug } = project;
+  const username = projectSlug;
   try {
-    const sonarRepositories
-      = await findSonarProjectsForDsoProjects(projectSlug)
-    await Promise.all(sonarRepositories.map(repo => deleteRepo(repo.key)))
-    const users: { paging: SonarPaging, users: SonarUser[] } = (
+    const sonarRepositories = await findSonarProjectsForDsoProjects(projectSlug);
+    await Promise.all(sonarRepositories.map((repo) => deleteRepo(repo.key)));
+    const users: { paging: SonarPaging; users: SonarUser[] } = (
       await axiosInstance({
         url: 'users/search',
         params: {
           q: username,
         },
       })
-    )?.data
-    const user = users.users.find(u => u.login === username)
+    )?.data;
+    const user = users.users.find((u) => u.login === username);
     if (!user) {
       return {
         status: {
           result: 'OK',
           message: 'Already missing',
         },
-      }
+      };
     }
     await axiosInstance({
       url: 'users/deactivate',
@@ -299,31 +278,25 @@ export const deleteProject: StepCall<Project> = async (payload) => {
         anonymize: true,
       },
       method: 'post',
-    })
-    logger.info(
-      { action: 'deleteProject', projectSlug, outcome: 'user-anonymized' },
-      'Hook done',
-    )
+    });
+    logger.info({ action: 'deleteProject', projectSlug, outcome: 'user-anonymized' }, 'Hook done');
     return {
       status: {
         result: 'OK',
         message: 'User anonymized',
       },
-    }
+    };
   } catch (error) {
-    logger.error(
-      { action: 'deleteProject', projectSlug, err: error },
-      'Hook failed',
-    )
+    logger.error({ action: 'deleteProject', projectSlug, err: error }, 'Hook failed');
     return {
       error,
       status: {
         result: 'KO',
         message: 'Failed',
       },
-    }
+    };
   }
-}
+};
 
 async function deleteRepo(projectKey: string) {
   return getAxiosInstance()({
@@ -332,7 +305,7 @@ async function deleteRepo(projectKey: string) {
       project: projectKey,
     },
     method: 'post',
-  })
+  });
 }
 
 async function ensureUserAndVault(
@@ -342,11 +315,7 @@ async function ensureUserAndVault(
 ) {
   const vaultUserSecret = (await vaultApi.read('SONAR', {
     throwIfNoEntry: false,
-  })) as VaultSonarSecret | undefined
-  const newUserSecret = await ensureUserExists(
-    username,
-    projectSlug,
-    vaultUserSecret,
-  )
-  if (newUserSecret) await vaultApi.write(newUserSecret, 'SONAR')
+  })) as VaultSonarSecret | undefined;
+  const newUserSecret = await ensureUserExists(username, projectSlug, vaultUserSecret);
+  if (newUserSecret) await vaultApi.write(newUserSecret, 'SONAR');
 }

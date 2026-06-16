@@ -1,20 +1,20 @@
 <script lang="ts" setup>
-import { DEFAULT, DISABLED, ENABLED } from '@cpn-console/shared'
+import { DEFAULT, DISABLED, ENABLED } from '@cpn-console/shared';
 
 const props = defineProps<{
   options: {
-    value: globalThis.Ref<string>
-    description: string | undefined
-    name: string
-    disabled: boolean
-    kind: 'text' | 'switch'
-    placeholder: string | undefined
-  }
-}>()
+    value: globalThis.Ref<string>;
+    description: string | undefined;
+    name: string;
+    disabled: boolean;
+    kind: 'text' | 'switch';
+    placeholder: string | undefined;
+  };
+}>();
 
 const emit = defineEmits<{
-  update: [data: string]
-}>()
+  update: [data: string];
+}>();
 const switchOptions = [
   {
     label: 'Activé',
@@ -28,13 +28,13 @@ const switchOptions = [
     label: 'Désactivé',
     value: DISABLED,
   },
-]
+];
 
-const value = ref(props.options.value)
+const value = ref(props.options.value);
 
 function set(data: string) {
-  value.value = data
-  emit('update', data)
+  value.value = data;
+  emit('update', data);
 }
 </script>
 
@@ -63,13 +63,11 @@ function set(data: string) {
     data-testid="switch"
     @update:model-value="(event: string | number) => set(String(event))"
   />
-  <hr
-    class="col-span-2 p-1"
-  >
+  <hr class="col-span-2 p-1" />
 </template>
 
 <style>
-.config-input.fr-input{
+.config-input.fr-input {
   background-color: var(--background-default-grey);
 }
 </style>

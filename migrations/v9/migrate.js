@@ -1,112 +1,119 @@
-import { logger as baseLogger } from '@cpn-console/logger/hooks'
-import { Gitlab } from '@gitbeaker/rest'
-import axios from 'axios'
+import { logger as baseLogger } from '@cpn-console/logger/hooks';
+import { Gitlab } from '@gitbeaker/rest';
+import axios from 'axios';
 
-const logger = baseLogger.child({ scope: 'migration:v9' })
+const logger = baseLogger.child({ scope: 'migration:v9' });
 
 export function removeTrailingSlash(url) {
-  return url?.endsWith('/')
-    ? url.slice(0, -1)
-    : url
+  return url?.endsWith('/') ? url.slice(0, -1) : url;
 }
 
 export function requiredEnv(envName) {
-  const envValue = process.env[envName]
-  if (envValue) return envValue
+  const envValue = process.env[envName];
+  if (envValue) return envValue;
 
-  throw new Error(`env: ${envName} is not defined !`)
+  throw new Error(`env: ${envName} is not defined !`);
 }
 
-const gitlabToken = requiredEnv('GITLAB_TOKEN')
-const gitlabPublicUrl = removeTrailingSlash(requiredEnv('GITLAB_URL'))
-const projectsRootDir = requiredEnv('PROJECTS_ROOT_DIR')
+const gitlabToken = requiredEnv('GITLAB_TOKEN');
+const gitlabPublicUrl = removeTrailingSlash(requiredEnv('GITLAB_URL'));
+const projectsRootDir = requiredEnv('PROJECTS_ROOT_DIR');
 const gitlabInternalUrl = process.env.GITLAB_INTERNAL_URL
   ? removeTrailingSlash(process.env.GITLAB_INTERNAL_URL)
-  : gitlabPublicUrl
+  : gitlabPublicUrl;
 
-const vaultPublicUrl = removeTrailingSlash(requiredEnv('VAULT_URL'))
+const vaultPublicUrl = removeTrailingSlash(requiredEnv('VAULT_URL'));
 
 const axiosInstance = axios.create({
   baseURL: vaultPublicUrl,
   headers: {
     'X-Vault-Token': requiredEnv('VAULT_TOKEN'),
   },
-})
+});
 
-const api = new Gitlab({ token: gitlabToken, host: gitlabInternalUrl })
+const api = new Gitlab({ token: gitlabToken, host: gitlabInternalUrl });
 
-const groupRootSearch = await api.Groups.search(projectsRootDir)
-const groupRootId = (groupRootSearch.find(grp => grp.full_path === projectsRootDir))?.id
+const groupRootSearch = await api.Groups.search(projectsRootDir);
+const groupRootId = groupRootSearch.find((grp) => grp.full_path === projectsRootDir)?.id;
 
-const organizationGroups = await api.Groups.allDescendantGroups(groupRootId, { perPage: 300 })
+const organizationGroups = await api.Groups.allDescendantGroups(groupRootId, { perPage: 300 });
 
-logger.info({ organizationGroupsCount: organizationGroups.length }, 'Loaded organization groups')
+logger.info({ organizationGroupsCount: organizationGroups.length }, 'Loaded organization groups');
 if (organizationGroups.length > 300) {
-  throw new Error('increase perPage, you could miss some results')
+  throw new Error('increase perPage, you could miss some results');
 }
 
 for (const organizationGroup of organizationGroups) {
-  if (organizationGroup.name === 'Infra') continue
-  logger.info({ organizationGroupId: organizationGroup.id, organizationGroupName: organizationGroup.name }, 'Processing organization group')
-  const projectGroups = await api.Groups.allDescendantGroups(organizationGroup.id, { perPage: 300 })
+  if (organizationGroup.name === 'Infra') continue;
+  logger.info(
+    { organizationGroupId: organizationGroup.id, organizationGroupName: organizationGroup.name },
+    'Processing organization group',
+  );
+  const projectGroups = await api.Groups.allDescendantGroups(organizationGroup.id, {
+    perPage: 300,
+  });
   if (projectGroups.length > 300) {
-    throw new Error('increase perPage, you could miss some projects group results')
+    throw new Error('increase perPage, you could miss some projects group results');
   }
 
   for (const projectGroup of projectGroups) {
-    const newName = `${organizationGroup.name}-${projectGroup.name}`
-    logger.info({ projectGroupId: projectGroup.id, newName }, 'Renaming and transferring project group')
+    const newName = `${organizationGroup.name}-${projectGroup.name}`;
+    logger.info(
+      { projectGroupId: projectGroup.id, newName },
+      'Renaming and transferring project group',
+    );
 
     try {
-      const renamedGroup = await api.Groups.edit(projectGroup.id, { name: newName, path: newName })
-      await api.Groups.transfer(renamedGroup.id, { groupId: groupRootId })
+      const renamedGroup = await api.Groups.edit(projectGroup.id, { name: newName, path: newName });
+      await api.Groups.transfer(renamedGroup.id, { groupId: groupRootId });
     } catch (error) {
-      logger.warn({ err: error, projectGroupId: projectGroup.id, organizationGroupId: organizationGroup.id }, 'Could not rename/transfer project group')
+      logger.warn(
+        { err: error, projectGroupId: projectGroup.id, organizationGroupId: organizationGroup.id },
+        'Could not rename/transfer project group',
+      );
     }
   }
 }
 
-const coreKvName = 'forge-dso'
+const coreKvName = 'forge-dso';
 
-const vaultToken = (await axiosInstance.post('/v1/auth/token/create'))
-  .data.auth.client_token
+const vaultToken = (await axiosInstance.post('/v1/auth/token/create')).data.auth.client_token;
 
 function transformPath(path) {
   if (!path.startsWith('/')) {
-    path = `/${path}`
+    path = `/${path}`;
   }
-  const parts = path.split('/')
-  return `/${parts[1]}-${parts[2]}/${parts.slice(3).join('/')}`
+  const parts = path.split('/');
+  return `/${parts[1]}-${parts[2]}/${parts.slice(3).join('/')}`;
 }
-const secretsMapper = {}
+const secretsMapper = {};
 
 async function list(path = '/') {
-  if (!path.startsWith('/'))
-    path = `/${path}`
+  if (!path.startsWith('/')) path = `/${path}`;
   const response = await axiosInstance({
     url: `/v1/${coreKvName}/metadata/${projectsRootDir}${path}`,
     headers: {
       'X-Vault-Token': vaultToken,
     },
     method: 'list',
-    validateStatus: code => [200, 404].includes(code),
-  })
+    validateStatus: (code) => [200, 404].includes(code),
+  });
 
-  if (response.status === 404) return []
+  if (response.status === 404) return [];
   for (const key of response.data.data.keys) {
     if (key.endsWith('/')) {
-      await list(`${path}${key}`)
+      await list(`${path}${key}`);
     } else {
-      secretsMapper[`${path}${key}`] = transformPath(`${path}${key}`)
+      secretsMapper[`${path}${key}`] = transformPath(`${path}${key}`);
     }
   }
 }
 
 try {
-  await list()
-  logger.info({ secretsCount: Object.keys(secretsMapper).length }, 'Collected secrets mapping')
+  await list();
+  logger.info({ secretsCount: Object.keys(secretsMapper).length }, 'Collected secrets mapping');
 } catch (error) {
-  logger.error({ err: error }, 'Failed while collecting secrets mapping')
+  logger.error({ err: error }, 'Failed while collecting secrets mapping');
 }
 
 for (const [source, destination] of Object.entries(secretsMapper)) {
@@ -116,9 +123,9 @@ for (const [source, destination] of Object.entries(secretsMapper)) {
       'X-Vault-Token': vaultToken,
     },
     method: 'get',
-    validateStatus: code => [200, 404].includes(code),
-  })
-  const data = secretContent.data.data.data
+    validateStatus: (code) => [200, 404].includes(code),
+  });
+  const data = secretContent.data.data.data;
 
   try {
     await axiosInstance({
@@ -128,15 +135,15 @@ for (const [source, destination] of Object.entries(secretsMapper)) {
         'X-Vault-Token': vaultToken,
       },
       data: { data },
-    })
+    });
     await axiosInstance({
       method: 'delete',
       url: `/v1/${coreKvName}/metadata/${projectsRootDir}${source}`,
       headers: {
         'X-Vault-Token': vaultToken,
       },
-    })
+    });
   } catch (error) {
-    logger.error({ err: error, source, destination }, 'Failed while moving secret')
+    logger.error({ err: error, source, destination }, 'Failed while moving secret');
   }
 }

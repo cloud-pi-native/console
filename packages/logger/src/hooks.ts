@@ -1,5 +1,5 @@
-import type { Logger } from './index.js'
-import { logger as baseLogger } from './index.js'
+import type { Logger } from './index.js';
+import { logger as baseLogger } from './index.js';
 
 export const logger: Logger = baseLogger.child(
   { scope: 'hooks' },
@@ -19,4 +19,4 @@ export const logger: Logger = baseLogger.child(
       remove: true,
     },
   },
-)
+);

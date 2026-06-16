@@ -1,9 +1,9 @@
-import path from 'node:path'
-import { defineConfig, devices } from '@playwright/test'
+import path from 'node:path';
+import { defineConfig, devices } from '@playwright/test';
 
-process.loadEnvFile(path.resolve(__dirname, '..', 'apps/client', '.env.docker'))
+process.loadEnvFile(path.resolve(__dirname, '..', 'apps/client', '.env.docker'));
 
-const isIntegration = process.env.INTEGRATION === 'true'
+const isIntegration = process.env.INTEGRATION === 'true';
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -55,4 +55,4 @@ export default defineConfig({
       use: { ...devices['Desktop Firefox'] },
     },
   ],
-})
+});

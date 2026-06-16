@@ -22,15 +22,15 @@ Ce typage vous assurera de bien fournir toutes les clés nécessaires au bon fon
 
 ```ts
 // index.ts
-import type { Plugin } from '@cpn-console/hooks'
-import infos from './infos.js'
-import monitor from './monitor.js'
+import type { Plugin } from '@cpn-console/hooks';
+import infos from './infos.js';
+import monitor from './monitor.js';
 
 export const plugin: Plugin = {
   infos,
   subscribedHooks: {},
   monitor,
-}
+};
 ```
 
 ### Infos
@@ -39,7 +39,7 @@ Ce sont les infos de bases de votre application :
 
 ```ts
 // infos.ts
-import type { ServiceInfos } from '@cpn-console/hooks'
+import type { ServiceInfos } from '@cpn-console/hooks';
 
 const infos: ServiceInfos = {
   name: 'my_plugin', // il serait bien que ça ne change jamais, imaginez que c'est un identifiant unique.
@@ -47,26 +47,26 @@ const infos: ServiceInfos = {
   title: 'Mon super plugin',
   imgSrc: 'https://un_lien_vers/image_externe.svg/', // préférez le svg
   description: 'La description générale de mon plugin',
-}
+};
 
-export default infos
+export default infos;
 ```
 
 La fonction `to` peux renvoyer une `String` ou un objet contenant une clé `to` et potentiellement d'autres informations ou encore un tableau de cet objet :
 
 ```ts
 // Valid
-const to1 = () => 'une url'
-const to2 = () => ({ to: 'url', title: 'Un titre', description: 'description', imgSrc: 'url' })
+const to1 = () => 'une url';
+const to2 = () => ({ to: 'url', title: 'Un titre', description: 'description', imgSrc: 'url' });
 function to3() {
   return [
     { to: 'url générale', title: 'Service générale', description: 'description générale' },
     { to: 'url1', title: 'Service 1', description: 'description 1' },
     { to: 'url2', title: 'Service 2', description: 'description 2' },
-  ]
+  ];
 }
 // Invalid
-const to3 = () => ['url', 'url1', 'url2']
+const to3 = () => ['url', 'url1', 'url2'];
 ```
 
 ### Monitoring
@@ -76,10 +76,10 @@ Cette fonction sera éxécutée par un `setInterval` toutes les 5 min ou selon l
 
 ```ts
 // monitor.ts
-import { Monitor, type MonitorInfos, MonitorStatus } from '@cpn-console/shared'
+import { Monitor, type MonitorInfos, MonitorStatus } from '@cpn-console/shared';
 
 async function monitor(instance: Monitor): Promise<MonitorInfos> {
-  instance.lastStatus.lastUpdateTimestamp = (new Date()).getTime()
+  instance.lastStatus.lastUpdateTimestamp = new Date().getTime();
   // Votre fonction ne devrait jamais lever d'exception
   try {
     // faites des trucs
@@ -87,16 +87,16 @@ async function monitor(instance: Monitor): Promise<MonitorInfos> {
     // instance.lastStatus.message = 'Tout va bien'
     // instance.lastStatus.status = MonitorStatus.OK
   } catch (error) {
-    instance.lastStatus.message = 'Error lors la requete'
-    instance.lastStatus.status = MonitorStatus.UNKNOW
+    instance.lastStatus.message = 'Error lors la requete';
+    instance.lastStatus.status = MonitorStatus.UNKNOW;
     // la clé cause n'est pour l'instant jamais retourné à l'utilisateur ni stocké, ça sera pour une prochaine PR
-    instance.lastStatus.cause = error
+    instance.lastStatus.cause = error;
   }
   // c'est bien de le retourner mais on s'en fiche un peu
-  return instance.lastStatus
+  return instance.lastStatus;
 }
 
-export default new Monitor(monitor)
+export default new Monitor(monitor);
 ```
 
 ### SubscribedHooks
@@ -136,21 +136,21 @@ export const createDsoProjectFirst: StepCall<CreateProjectExecArgs> = async (pay
     return {
       status: {
         result: 'OK',
-        message: 'ça s\'est bien passé' // optionnel si OK
+        message: "ça s'est bien passé", // optionnel si OK
       },
       foo: {
-        bar: 'complétement facultatif'
-      }
-    }
+        bar: 'complétement facultatif',
+      },
+    };
   } catch (error) {
     return {
       status: {
         result: 'KO',
-        message: 'Ouille !' // Obligatoire pour explique ce qui n'a pas réussi'
+        message: 'Ouille !', // Obligatoire pour explique ce qui n'a pas réussi'
       },
-    }
+    };
   }
-}
+};
 
 export const createDsoProjectLast: StepCall<CreateProjectExecArgs> = async (payload) => {
   try {
@@ -159,21 +159,21 @@ export const createDsoProjectLast: StepCall<CreateProjectExecArgs> = async (payl
     return {
       status: {
         result: 'OK',
-        message: `${payload.results.my_plugin.foo.bar} a vraiment bien été crée` // optionnel si OK
+        message: `${payload.results.my_plugin.foo.bar} a vraiment bien été crée`, // optionnel si OK
       },
       une_clé: {
-        newProjectName: 'complétement facultatif'
-      }
-    }
+        newProjectName: 'complétement facultatif',
+      },
+    };
   } catch (error) {
     return {
       status: {
         result: 'KO',
-        message: 'Ouille !' // Obligatoire pour explique ce qui n'a pas réussi'
+        message: 'Ouille !', // Obligatoire pour explique ce qui n'a pas réussi'
       },
-    }
+    };
   }
-}
+};
 ```
 
 ### Apis
@@ -185,7 +185,7 @@ Vous pouvez, comme lui, déclarer des apis sur des hooks. Pour l'uniformité, d�
 
 ```ts
 // api.ts
-import { PluginApi } from '@cpn-console/hooks'
+import { PluginApi } from '@cpn-console/hooks';
 
 export class ClusterApi extends PluginApi {}
 ```
@@ -211,20 +211,18 @@ La section précédente est bien sympathique mais en l'état, le plugin n'a aucu
 
 Pour y arriver il va falloir deux étapes
 
-1) Le plugin qui expose l'api doit faire un `declare module` :
+1. Le plugin qui expose l'api doit faire un `declare module` :
 
 ```ts
 // index.ts
 declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
-    vault: Args extends CreateClusterExecArgs | DeleteClusterExecArgs
-      ? ClusterApi
-      : undefined
+    vault: Args extends CreateClusterExecArgs | DeleteClusterExecArgs ? ClusterApi : undefined;
   }
 }
 ```
 
-1) Le module l'utilisant doit importer les types :
+1. Le module l'utilisant doit importer les types :
 
 ```json
 // package.json

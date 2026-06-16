@@ -22,10 +22,10 @@ Ticket de référence : [#1885](https://github.com/cloud-pi-native/console/issue
 
 ## Variables d'environnement
 
-| Variable | Description | Exemple Docker | Exemple local |
-|---|---|---|---|
-| `LEGACY_UPSTREAM` | Adresse du backend Fastify legacy | `server:8080` | `127.0.0.1:4000` |
-| `NESTJS_UPSTREAM` | Adresse du backend NestJS | `server-nestjs:3001` | `127.0.0.1:3001` |
+| Variable          | Description                       | Exemple Docker       | Exemple local    |
+| ----------------- | --------------------------------- | -------------------- | ---------------- |
+| `LEGACY_UPSTREAM` | Adresse du backend Fastify legacy | `server:8080`        | `127.0.0.1:4000` |
+| `NESTJS_UPSTREAM` | Adresse du backend NestJS         | `server-nestjs:3001` | `127.0.0.1:3001` |
 
 Ces variables sont substituées dans `conf.d/routing.conf` via `envsubst` au démarrage du conteneur.
 
@@ -56,11 +56,11 @@ docker compose exec nginx-strangler nginx -s reload
 
 ### Modificateurs de location
 
-| Modificateur | Usage |
-|---|---|
-| `=` | Route exacte (ex: `GET /api/v1/system/health`) |
-| `^~` | Préfixe prioritaire (ex: tout un module `/api/v1/users/`) |
-| *(aucun)* | Préfixe standard |
+| Modificateur | Usage                                                     |
+| ------------ | --------------------------------------------------------- |
+| `=`          | Route exacte (ex: `GET /api/v1/system/health`)            |
+| `^~`         | Préfixe prioritaire (ex: tout un module `/api/v1/users/`) |
+| _(aucun)_    | Préfixe standard                                          |
 
 ---
 

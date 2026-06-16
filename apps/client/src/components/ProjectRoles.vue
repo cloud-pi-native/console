@@ -1,91 +1,98 @@
 <script lang="ts" setup>
-import type { Member, ProjectRole, ProjectRoleBigint, Role, RoleBigint } from '@cpn-console/shared'
-import type { Project } from '@/utils/project-utils.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { toKebabCase } from '@/utils/func.js'
+import type { Member, ProjectRole, ProjectRoleBigint, Role, RoleBigint } from '@cpn-console/shared';
+import type { Project } from '@/utils/project-utils.js';
+import { useSnackbarStore } from '@/stores/snackbar.js';
+import { toKebabCase } from '@/utils/func.js';
 
 const props = defineProps<{
-  project: Project
-}>()
+  project: Project;
+}>();
 
-const snackbarStore = useSnackbarStore()
+const snackbarStore = useSnackbarStore();
 
-const selectedId = ref<string>()
+const selectedId = ref<string>();
 
-type RoleItem = Omit<ProjectRole, 'permissions'> & { permissions: bigint, memberCounts: number, isEveryone: boolean }
+type RoleItem = Omit<ProjectRole, 'permissions'> & {
+  permissions: bigint;
+  memberCounts: number;
+  isEveryone: boolean;
+};
 
-const roleList = ref<RoleItem[]>([])
+const roleList = ref<RoleItem[]>([]);
 
-const selectedRole = computed(() => roleList.value.find(({ id }) => id === selectedId.value))
+const selectedRole = computed(() => roleList.value.find(({ id }) => id === selectedId.value));
 
 async function addRole() {
-  const name = 'Nouveau rôle'
+  const name = 'Nouveau rôle';
   const newRoles = await props.project.Roles.create({
     name,
     oidcGroup: `/${toKebabCase(name)}`,
     permissions: 0n.toString(),
     type: 'managed',
-  })
-  reload()
-  snackbarStore.setMessage('Rôle ajouté', 'success')
-  selectedId.value = newRoles.at(-1)?.id
+  });
+  reload();
+  snackbarStore.setMessage('Rôle ajouté', 'success');
+  selectedId.value = newRoles.at(-1)?.id;
 }
 
 async function deleteRole(roleId: Role['id']) {
-  await props.project.Roles.delete(roleId)
-  reload()
-  snackbarStore.setMessage('Rôle supprimé', 'success')
-  selectedId.value = undefined
+  await props.project.Roles.delete(roleId);
+  reload();
+  snackbarStore.setMessage('Rôle supprimé', 'success');
+  selectedId.value = undefined;
 }
 
 async function updateMember(checked: boolean, userId: Member['userId']) {
-  if (!selectedRole.value) return
-  const matchingMember = props.project.members.find(member => member.userId === userId)
-  if (!matchingMember) return
+  if (!selectedRole.value) return;
+  const matchingMember = props.project.members.find((member) => member.userId === userId);
+  if (!matchingMember) return;
 
   const newRoleList = checked
     ? [...matchingMember.roleIds, selectedRole.value.id]
-    : matchingMember.roleIds.filter(id => id !== selectedRole.value?.id)
+    : matchingMember.roleIds.filter((id) => id !== selectedRole.value?.id);
 
-  await props.project.Members.patch([{ userId, roles: newRoleList }])
-  reload()
-  snackbarStore.setMessage('Rôle mis à jour', 'success')
+  await props.project.Members.patch([{ userId, roles: newRoleList }]);
+  reload();
+  snackbarStore.setMessage('Rôle mis à jour', 'success');
 }
 
 async function saveEveryoneRole(role: { permissions: bigint }) {
   await props.project.Commands.update({
     everyonePerms: role.permissions.toString(),
-  })
-  reload()
-  snackbarStore.setMessage('Rôle mis à jour', 'success')
+  });
+  reload();
+  snackbarStore.setMessage('Rôle mis à jour', 'success');
 }
 
 async function saveRole(role: Omit<ProjectRoleBigint, 'position' | 'projectId'>) {
   if (role.id === 'everyone') {
-    await saveEveryoneRole(role)
-    snackbarStore.setMessage('Rôle mis à jour', 'success')
-    return
+    await saveEveryoneRole(role);
+    snackbarStore.setMessage('Rôle mis à jour', 'success');
+    return;
   }
-  if (!selectedRole.value) return
-  const slug = toKebabCase(role.name)
-  await props.project.Roles.patch([{
-    id: selectedRole.value.id,
-    permissions: role.permissions.toString(),
-    name: role.name,
-    oidcGroup: slug ? `/${slug}` : '',
-    type: 'managed',
-  }])
-  reload()
-  snackbarStore.setMessage('Rôle mis à jour', 'success')
+  if (!selectedRole.value) return;
+  const slug = toKebabCase(role.name);
+  await props.project.Roles.patch([
+    {
+      id: selectedRole.value.id,
+      permissions: role.permissions.toString(),
+      name: role.name,
+      oidcGroup: slug ? `/${slug}` : '',
+      type: 'managed',
+    },
+  ]);
+  reload();
+  snackbarStore.setMessage('Rôle mis à jour', 'success');
 }
 
 function reload() {
-  const roles = props.project.roles.map(role => ({
+  const roles = props.project.roles.map((role) => ({
     ...role,
-    memberCounts: props.project.members.filter(member => member.roleIds.includes(role.id)).length ?? 0,
+    memberCounts:
+      props.project.members.filter((member) => member.roleIds.includes(role.id)).length ?? 0,
     isEveryone: false,
     permissions: BigInt(role.permissions),
-  }))
+  }));
   roles.push({
     id: 'everyone',
     memberCounts: props.project.members.length ?? 0,
@@ -94,25 +101,19 @@ function reload() {
     position: 1000,
     isEveryone: true,
     projectId: props.project.id,
-  })
-  roleList.value = roles
+  });
+  roleList.value = roles;
 }
 
-const cancel = () => selectedId.value = undefined
+const cancel = () => (selectedId.value = undefined);
 
-watch(props.project, reload, { immediate: true })
+watch(props.project, reload, { immediate: true });
 </script>
 
 <template>
-  <div
-    class="flex flex-row"
-  >
-    <div
-      :class="`flex flex-col ${selectedId ? 'w-2/8 max-sm:hidden' : 'w-full'}`"
-    >
-      <div
-        class="flex flex-col"
-      >
+  <div class="flex flex-row">
+    <div :class="`flex flex-col ${selectedId ? 'w-2/8 max-sm:hidden' : 'w-full'}`">
+      <div class="flex flex-col">
         <DsfrButton
           label="Ajouter un rôle"
           data-testid="addRoleBtn"
@@ -128,15 +129,9 @@ watch(props.project, reload, { immediate: true })
           @click="selectedId = selectedId === role.id ? undefined : role.id"
         >
           {{ role.name }}
-          <div
-            v-if="!selectedId"
-            class="text-wrap truncate text-right grow-0"
-          >
+          <div v-if="!selectedId" class="text-wrap truncate text-right grow-0">
             <span>{{ role.memberCounts }}</span>
-            <v-icon
-              class="ml-4"
-              name="ri:team-line"
-            />
+            <v-icon class="ml-4" name="ri:team-line" />
           </div>
         </button>
       </div>
@@ -154,7 +149,9 @@ watch(props.project, reload, { immediate: true })
       :type="selectedRole.type"
       :all-members="project.members"
       @delete="deleteRole(selectedRole.id)"
-      @update-member-roles="(checked: boolean, userId: Member['userId']) => updateMember(checked, userId)"
+      @update-member-roles="
+        (checked: boolean, userId: Member['userId']) => updateMember(checked, userId)
+      "
       @save="(role: Omit<RoleBigint, 'position'>) => saveRole(role)"
       @cancel="cancel"
     />

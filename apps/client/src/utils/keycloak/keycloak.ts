@@ -1,101 +1,121 @@
-import type { UserProfile } from '@cpn-console/shared'
-import type { KeycloakConfig, KeycloakInitOptions } from 'keycloak-js'
-import { logger } from '@cpn-console/logger/browser'
-import Keycloak from 'keycloak-js'
+import type { UserProfile } from '@cpn-console/shared';
+import type { KeycloakConfig, KeycloakInitOptions } from 'keycloak-js';
+import { logger } from '@cpn-console/logger/browser';
+import Keycloak from 'keycloak-js';
 import {
   keycloakClientId,
   keycloakDomain,
   keycloakProtocol,
   keycloakRealm,
   keycloakRedirectUri,
-} from '../env.js'
+} from '../env.js';
 
 export const keycloakInitOptions: KeycloakInitOptions = {
   onLoad: 'check-sso',
   flow: 'standard',
   redirectUri: keycloakRedirectUri,
-}
+};
 
 export const keycloakConfig: KeycloakConfig = {
   url: `${keycloakProtocol}://${keycloakDomain}`,
   realm: keycloakRealm,
   clientId: keycloakClientId,
-}
+};
 
-let keycloak: Keycloak
+let keycloak: Keycloak;
 
 export function getKeycloak() {
   if (!keycloak) {
-    keycloak = new Keycloak(keycloakConfig)
+    keycloak = new Keycloak(keycloakConfig);
     keycloak.onAuthSuccess = () => {
-      if (!(keycloak.refreshTokenParsed?.exp && keycloak.tokenParsed?.exp && keycloak.refreshTokenParsed.exp > keycloak.tokenParsed.exp)) {
-        return
+      if (
+        !(
+          keycloak.refreshTokenParsed?.exp &&
+          keycloak.tokenParsed?.exp &&
+          keycloak.refreshTokenParsed.exp > keycloak.tokenParsed.exp
+        )
+      ) {
+        return;
       }
-      logger.warn('Keycloak misconfiguration: refreshToken should not expire before token')
-      const refreshTokenDelay = (keycloak.tokenParsed.exp * 1000 - Date.now()) / 2
+      logger.warn('Keycloak misconfiguration: refreshToken should not expire before token');
+      const refreshTokenDelay = (keycloak.tokenParsed.exp * 1000 - Date.now()) / 2;
       setTimeout(() => {
-        keycloak.updateToken()
-      }, refreshTokenDelay)
-    }
+        keycloak.updateToken();
+      }, refreshTokenDelay);
+    };
     keycloak.onTokenExpired = () => {
-      keycloak.updateToken(30)
-    }
+      keycloak.updateToken(30);
+    };
   }
-  return keycloak
+  return keycloak;
 }
 
 export function getUserProfile(): UserProfile {
   try {
-    const keycloak = getKeycloak()
-    const { email, sub: id, given_name: firstName, family_name: lastName, groups } = keycloak.idTokenParsed as { email: string, sub: string, given_name: string, firstName: string, family_name: string, lastName: string, groups: string[] }
+    const keycloak = getKeycloak();
+    const {
+      email,
+      sub: id,
+      given_name: firstName,
+      family_name: lastName,
+      groups,
+    } = keycloak.idTokenParsed as {
+      email: string;
+      sub: string;
+      given_name: string;
+      firstName: string;
+      family_name: string;
+      lastName: string;
+      groups: string[];
+    };
     return {
       email,
       id,
       firstName,
       lastName,
       groups,
-    }
+    };
   } catch (error) {
-    if (error instanceof Error) throw new Error(error.message)
-    throw new Error('échec de récupération du profil keycloak de l\'utilisateur')
+    if (error instanceof Error) throw new Error(error.message);
+    throw new Error("échec de récupération du profil keycloak de l'utilisateur");
   }
 }
 
 export async function keycloakInit() {
-  const currentUrl = new URL(window.location.href)
-  const redirectUri = `${window.location.origin}${currentUrl.pathname}${currentUrl.search}`
+  const currentUrl = new URL(window.location.href);
+  const redirectUri = `${window.location.origin}${currentUrl.pathname}${currentUrl.search}`;
   try {
-    const { onLoad, flow } = keycloakInitOptions
-    const keycloak = getKeycloak()
+    const { onLoad, flow } = keycloakInitOptions;
+    const keycloak = getKeycloak();
     await keycloak.init({
       onLoad,
       flow,
       redirectUri,
-    })
+    });
   } catch (error) {
-    if (error instanceof Error) throw new Error(error.message)
-    throw new Error('échec d\'initialisation du keycloak')
+    if (error instanceof Error) throw new Error(error.message);
+    throw new Error("échec d'initialisation du keycloak");
   }
 }
 
 export async function keycloakLogin() {
   try {
-    const keycloak = getKeycloak()
-    const currentUrl = new URL(window.location.href)
-    const redirectUri = `${window.location.origin}${currentUrl.pathname}${currentUrl.search}`
-    await keycloak.login({ redirectUri })
+    const keycloak = getKeycloak();
+    const currentUrl = new URL(window.location.href);
+    const redirectUri = `${window.location.origin}${currentUrl.pathname}${currentUrl.search}`;
+    await keycloak.login({ redirectUri });
   } catch (error) {
-    if (error instanceof Error) throw new Error(error.message)
-    throw new Error('échec de connexion au keycloak')
+    if (error instanceof Error) throw new Error(error.message);
+    throw new Error('échec de connexion au keycloak');
   }
 }
 
 export async function keycloakLogout() {
   try {
-    const keycloak = getKeycloak()
-    await keycloak.logout()
+    const keycloak = getKeycloak();
+    await keycloak.logout();
   } catch (error) {
-    if (error instanceof Error) throw new Error(error.message)
-    throw new Error('échec de déconnexion du keycloak')
+    if (error instanceof Error) throw new Error(error.message);
+    throw new Error('échec de déconnexion du keycloak');
   }
 }

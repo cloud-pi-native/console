@@ -1,9 +1,9 @@
-import type { DeclareModuleGenerator, Plugin } from '@cpn-console/hooks'
-import { deleteCluster, upsertCluster } from './cluster.js'
-import { deleteProject, upsertProject } from './functions.js'
-import infos from './infos.js'
-import monitor from './monitor.js'
-import { upsertZone } from './zone.js'
+import type { DeclareModuleGenerator, Plugin } from '@cpn-console/hooks';
+import { deleteCluster, upsertCluster } from './cluster.js';
+import { deleteProject, upsertProject } from './functions.js';
+import infos from './infos.js';
+import monitor from './monitor.js';
+import { upsertZone } from './zone.js';
 
 export const plugin: Plugin = {
   infos,
@@ -35,7 +35,7 @@ export const plugin: Plugin = {
     },
   },
   monitor,
-}
+};
 
 declare module '@cpn-console/hooks' {
   interface ProjectStore extends DeclareModuleGenerator<typeof infos, 'project'> {}

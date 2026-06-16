@@ -16,7 +16,7 @@ services:
     entrypoint: /opt/bitnami/keycloak/bin/kc.sh
     command: start-dev --import-realm
     healthcheck:
-      test: [CMD, curl, --head, fsS, "http://localhost:8080/health/ready"]
+      test: [CMD, curl, --head, fsS, 'http://localhost:8080/health/ready']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -58,8 +58,8 @@ services:
       - ../apps/server/.env.docker
     environment:
       NODE_ENV: production
-      CI: "true"
-      DEV_SETUP: "true"
+      CI: 'true'
+      DEV_SETUP: 'true'
     networks:
       - dso-network
 
@@ -82,8 +82,8 @@ services:
       - ../apps/server-nestjs/.env.docker
     environment:
       NODE_ENV: production
-      CI: "true"
-      DEV_SETUP: "true"
+      CI: 'true'
+      DEV_SETUP: 'true'
     networks:
       - dso-network
 
@@ -100,8 +100,8 @@ services:
       server-nestjs:
         condition: service_healthy
     environment:
-      LEGACY_UPSTREAM: "server:8080"
-      NESTJS_UPSTREAM: "server-nestjs:3001"
+      LEGACY_UPSTREAM: 'server:8080'
+      NESTJS_UPSTREAM: 'server-nestjs:3001'
     networks:
       - dso-network
 
@@ -123,7 +123,7 @@ services:
     env_file:
       - ../apps/client/.env.docker
     environment:
-      OPENCDS_ENABLED: "true"
+      OPENCDS_ENABLED: 'true'
     networks:
       - dso-network
 

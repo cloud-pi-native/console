@@ -1,9 +1,9 @@
-import type { ApiFetcher } from '@ts-rest/core'
-import { initClient, initContract } from '@ts-rest/core'
+import type { ApiFetcher } from '@ts-rest/core';
+import { initClient, initContract } from '@ts-rest/core';
 
-export const apiPrefix: string = '/api/v1'
+export const apiPrefix: string = '/api/v1';
 
-export const contractInstance: ReturnType<typeof initContract> = initContract()
+export const contractInstance: ReturnType<typeof initContract> = initContract();
 
 export async function getContract() {
   return contractInstance.router({
@@ -13,14 +13,11 @@ export async function getContract() {
     ServiceChains: (await import('./contracts/index.js')).serviceChainContract,
     Environments: (await import('./contracts/index.js')).environmentContract,
     Logs: (await import('./contracts/index.js')).logContract,
-    PersonalAccessTokens: (await import('./contracts/index.js'))
-      .personalAccessTokenContract,
+    PersonalAccessTokens: (await import('./contracts/index.js')).personalAccessTokenContract,
     Projects: (await import('./contracts/index.js')).projectContract,
-    ProjectsMembers: (await import('./contracts/index.js'))
-      .projectMemberContract,
+    ProjectsMembers: (await import('./contracts/index.js')).projectMemberContract,
     ProjectsRoles: (await import('./contracts/index.js')).projectRoleContract,
-    ProjectServices: (await import('./contracts/index.js'))
-      .projectServiceContract,
+    ProjectServices: (await import('./contracts/index.js')).projectServiceContract,
     Repositories: (await import('./contracts/index.js')).repositoryContract,
     Stages: (await import('./contracts/index.js')).stageContract,
     Services: (await import('./contracts/index.js')).serviceContract,
@@ -28,9 +25,8 @@ export async function getContract() {
     Zones: (await import('./contracts/index.js')).zoneContract,
     System: (await import('./contracts/index.js')).systemContract,
     SystemPlugin: (await import('./contracts/index.js')).systemPluginContract,
-    SystemSettings: (await import('./contracts/index.js'))
-      .systemSettingsContract,
-  })
+    SystemSettings: (await import('./contracts/index.js')).systemSettingsContract,
+  });
 }
 
 export async function getApiClient(
@@ -43,5 +39,5 @@ export async function getApiClient(
     baseHeaders,
     api,
     validateResponse: false,
-  })
+  });
 }

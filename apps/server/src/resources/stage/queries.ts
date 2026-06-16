@@ -1,20 +1,22 @@
-import type { Cluster, Stage } from '@prisma/client'
-import prisma from '@/prisma.js'
+import type { Cluster, Stage } from '@prisma/client';
+import prisma from '@/prisma.js';
 
 export function listStages() {
   return prisma.stage.findMany({
     include: {
       clusters: true,
     },
-  })
+  });
 }
 
 export async function getAllStageIds() {
-  return (await prisma.stage.findMany({
-    select: {
-      id: true,
-    },
-  })).map(({ id }) => id)
+  return (
+    await prisma.stage.findMany({
+      select: {
+        id: true,
+      },
+    })
+  ).map(({ id }) => id);
 }
 
 export function getStageById(id: Stage['id']) {
@@ -23,7 +25,7 @@ export function getStageById(id: Stage['id']) {
     include: {
       clusters: true,
     },
-  })
+  });
 }
 
 export function getStageByIdOrThrow(id: Stage['id']) {
@@ -32,7 +34,7 @@ export function getStageByIdOrThrow(id: Stage['id']) {
     include: {
       clusters: true,
     },
-  })
+  });
 }
 
 export function getStageAssociatedEnvironmentById(id: Stage['id']) {
@@ -55,7 +57,7 @@ export function getStageAssociatedEnvironmentById(id: Stage['id']) {
         },
       },
     },
-  })
+  });
 }
 
 export function getStageAssociatedEnvironmentLengthById(id: Stage['id']) {
@@ -63,13 +65,13 @@ export function getStageAssociatedEnvironmentLengthById(id: Stage['id']) {
     where: {
       stageId: id,
     },
-  })
+  });
 }
 
 export function getStageByName(name: Stage['name']) {
   return prisma.stage.findUnique({
     where: { name },
-  })
+  });
 }
 
 export function linkStageToClusters(id: Stage['id'], clusterIds: Cluster['id'][]) {
@@ -79,10 +81,10 @@ export function linkStageToClusters(id: Stage['id'], clusterIds: Cluster['id'][]
     },
     data: {
       clusters: {
-        connect: clusterIds.map(clusterId => ({ id: clusterId })),
+        connect: clusterIds.map((clusterId) => ({ id: clusterId })),
       },
     },
-  })
+  });
 }
 
 export function createStage({ name }: { name: Stage['name'] }) {
@@ -90,7 +92,7 @@ export function createStage({ name }: { name: Stage['name'] }) {
     data: {
       name,
     },
-  })
+  });
 }
 
 export function updateStageName(id: Stage['id'], name: Stage['name']) {
@@ -101,11 +103,11 @@ export function updateStageName(id: Stage['id'], name: Stage['name']) {
     data: {
       name,
     },
-  })
+  });
 }
 
 export function deleteStage(id: Stage['id']) {
   return prisma.stage.delete({
     where: { id },
-  })
+  });
 }

@@ -1,17 +1,17 @@
-import type { LoggerOptions } from 'pino'
-import { pino, stdSerializers } from 'pino'
-import z from 'zod'
+import type { LoggerOptions } from 'pino';
+import { pino, stdSerializers } from 'pino';
+import z from 'zod';
 
 const envSchema = z.object({
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error', 'audit']).default('debug'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-})
+});
 
-export type Env = z.infer<typeof envSchema>['NODE_ENV']
-export type LogLevel = z.infer<typeof envSchema>['LOG_LEVEL']
+export type Env = z.infer<typeof envSchema>['NODE_ENV'];
+export type LogLevel = z.infer<typeof envSchema>['LOG_LEVEL'];
 const customLevels = {
   audit: 25,
-}
+};
 
 const redact: LoggerOptions['redact'] = {
   paths: [
@@ -39,7 +39,7 @@ const redact: LoggerOptions['redact'] = {
     'request.headers.cookie',
   ],
   remove: true,
-}
+};
 
 export function getLoggerOptions(env: Env, level: LogLevel): LoggerOptions {
   switch (env) {
@@ -60,7 +60,7 @@ export function getLoggerOptions(env: Env, level: LogLevel): LoggerOptions {
         serializers: {
           err: stdSerializers.errWithCause,
         },
-      }
+      };
     case 'production':
       return {
         customLevels,
@@ -69,19 +69,19 @@ export function getLoggerOptions(env: Env, level: LogLevel): LoggerOptions {
         serializers: {
           err: stdSerializers.errWithCause,
         },
-      }
+      };
     default:
       return {
         level: 'silent',
-      }
+      };
   }
 }
 
 export function getLoggerOptionsFromEnv(): LoggerOptions {
-  const env = envSchema.parse(process.env)
-  return getLoggerOptions(env.NODE_ENV, env.LOG_LEVEL)
+  const env = envSchema.parse(process.env);
+  return getLoggerOptions(env.NODE_ENV, env.LOG_LEVEL);
 }
 
-export const logger = pino(getLoggerOptionsFromEnv())
+export const logger = pino(getLoggerOptionsFromEnv());
 
-export type Logger = typeof logger
+export type Logger = typeof logger;

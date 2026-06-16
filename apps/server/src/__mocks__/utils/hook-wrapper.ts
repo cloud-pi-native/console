@@ -1,7 +1,7 @@
-import { beforeEach, vi } from 'vitest'
-import { mockDeep, mockReset } from 'vitest-mock-extended'
+import { beforeEach, vi } from 'vitest';
+import { mockDeep, mockReset } from 'vitest-mock-extended';
 
-vi.mock('../utils/hook-wrapper.ts')
+vi.mock('../utils/hook-wrapper.ts');
 
 export const hook = {
   adminRole: {
@@ -32,11 +32,11 @@ export const hook = {
     delete: vi.fn(),
     upsert: vi.fn(),
   },
-} as const
+} as const;
 
-const hookMock = mockDeep<typeof hook>()
+const hookMock = mockDeep<typeof hook>();
 
 beforeEach(() => {
   // reset les mocks
-  mockReset(hookMock)
-})
+  mockReset(hookMock);
+});

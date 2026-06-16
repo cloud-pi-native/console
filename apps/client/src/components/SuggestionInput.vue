@@ -1,31 +1,34 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref } from 'vue';
 
 interface Suggestion {
-  value: string
-  furtherInfo?: string
+  value: string;
+  furtherInfo?: string;
 }
 
-const props = withDefaults(defineProps<{
-  modelValue: string
-  suggestions: Suggestion[]
-}>(), {
-  modelValue: '',
-  suggestions: () => [],
-})
+const props = withDefaults(
+  defineProps<{
+    modelValue: string;
+    suggestions: Suggestion[];
+  }>(),
+  {
+    modelValue: '',
+    suggestions: () => [],
+  },
+);
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
-  selectSuggestion: [value: string]
-}>()
+  'update:modelValue': [value: string];
+  selectSuggestion: [value: string];
+}>();
 
-const localValue = ref(props.modelValue)
+const localValue = ref(props.modelValue);
 
 function updateValue() {
-  if (props.suggestions.some(suggestion => suggestion.value === localValue.value)) {
-    emit('selectSuggestion', localValue.value)
+  if (props.suggestions.some((suggestion) => suggestion.value === localValue.value)) {
+    emit('selectSuggestion', localValue.value);
   }
-  emit('update:modelValue', localValue.value)
+  emit('update:modelValue', localValue.value);
 }
 </script>
 
@@ -38,22 +41,25 @@ function updateValue() {
       list="suggestionList"
       @update:model-value="updateValue()"
     />
-    <datalist
-      id="suggestionList"
-    >
+    <datalist id="suggestionList">
       <option
-        v-for="suggestion, i in props.suggestions"
+        v-for="(suggestion, i) in props.suggestions"
         :key="`${i}-option`"
         :value="suggestion.value"
       >
-        {{ suggestion.furtherInfo ? `${suggestion.furtherInfo} (${suggestion.value})` : suggestion.value }}
+        {{
+          suggestion.furtherInfo
+            ? `${suggestion.furtherInfo} (${suggestion.value})`
+            : suggestion.value
+        }}
       </option>
     </datalist>
   </div>
 </template>
 
 <style scoped>
-.fr-select-group, .fr-input-group {
+.fr-select-group,
+.fr-input-group {
   margin-bottom: 0 !important;
 }
 </style>

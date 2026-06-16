@@ -1,20 +1,17 @@
 <script setup lang="ts">
 // @ts-ignore
-import { useRegisterSW } from 'virtual:pwa-register/vue'
+import { useRegisterSW } from 'virtual:pwa-register/vue';
 
-const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW()
+const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW();
 
 async function close() {
-  offlineReady.value = false
-  needRefresh.value = false
+  offlineReady.value = false;
+  needRefresh.value = false;
 }
 </script>
 
 <template>
-  <div
-    v-if="offlineReady || needRefresh"
-    class="w-full flex justify-center"
-  >
+  <div v-if="offlineReady || needRefresh" class="w-full flex justify-center">
     <DsfrAlert
       data-testid="snackbar"
       type="info"
@@ -24,15 +21,9 @@ async function close() {
       closeable
       @close="close()"
     >
-      <span v-if="offlineReady">
-        App ready to work offline
-      </span>
-      <span v-else>
-        Une nouvelle version de l'application est disponible.
-      </span>
-      <DsfrButton v-if="needRefresh" @click="updateServiceWorker()">
-        Mettre à jour
-      </DsfrButton>
+      <span v-if="offlineReady"> App ready to work offline </span>
+      <span v-else> Une nouvelle version de l'application est disponible. </span>
+      <DsfrButton v-if="needRefresh" @click="updateServiceWorker()"> Mettre à jour </DsfrButton>
     </DsfrAlert>
   </div>
 </template>

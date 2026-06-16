@@ -1,6 +1,6 @@
 // Utils
 export function getSecretObject({ DOCKER_CONFIG }: { DOCKER_CONFIG: string }) {
-  const b64dockerConfig = Buffer.from(DOCKER_CONFIG).toString('base64')
+  const b64dockerConfig = Buffer.from(DOCKER_CONFIG).toString('base64');
   return {
     kind: 'Secret',
     data: {
@@ -10,5 +10,5 @@ export function getSecretObject({ DOCKER_CONFIG }: { DOCKER_CONFIG: string }) {
     metadata: {
       name: 'registry-pull-secret',
     },
-  }
+  };
 }

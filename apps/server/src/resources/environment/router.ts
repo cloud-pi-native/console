@@ -1,35 +1,42 @@
-import { environmentContract, ProjectAuthorized } from '@cpn-console/shared'
-import { serverInstance } from '@/app.js'
-import { authUser } from '@/utils/controller.js'
-import { BadRequest400, Forbidden403, Internal500, Unauthorized401 } from '@/utils/errors.js'
-import { checkEnvironmentCreate, checkEnvironmentUpdate, createEnvironment, deleteEnvironment, getProjectEnvironments, updateEnvironment } from './business.js'
+import { environmentContract, ProjectAuthorized } from '@cpn-console/shared';
+import { serverInstance } from '@/app.js';
+import { authUser } from '@/utils/controller.js';
+import { BadRequest400, Forbidden403, Internal500, Unauthorized401 } from '@/utils/errors.js';
+import {
+  checkEnvironmentCreate,
+  checkEnvironmentUpdate,
+  createEnvironment,
+  deleteEnvironment,
+  getProjectEnvironments,
+  updateEnvironment,
+} from './business.js';
 
 export function environmentRouter() {
   return serverInstance.router(environmentContract, {
     listEnvironments: async ({ request: req, query }) => {
-      const projectId = query.projectId
-      const perms = await authUser(req, { id: projectId })
+      const projectId = query.projectId;
+      const perms = await authUser(req, { id: projectId });
 
-      if (!ProjectAuthorized.ListEnvironments(perms)) return new Forbidden403()
-      const body = await getProjectEnvironments(projectId)
+      if (!ProjectAuthorized.ListEnvironments(perms)) return new Forbidden403();
+      const body = await getProjectEnvironments(projectId);
 
       return {
         status: 200,
         body,
-      }
+      };
     },
 
     createEnvironment: async ({ request: req, body: requestBody }) => {
-      const projectId = requestBody.projectId
-      const perms = await authUser(req, { id: projectId })
+      const projectId = requestBody.projectId;
+      const perms = await authUser(req, { id: projectId });
 
-      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
-      if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403()
-      if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
-      if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
+      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key');
+      if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403();
+      if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé');
+      if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé');
 
-      const checkCreateResult = await checkEnvironmentCreate({ ...requestBody })
-      if (checkCreateResult.isError) return new BadRequest400(checkCreateResult.error)
+      const checkCreateResult = await checkEnvironmentCreate({ ...requestBody });
+      if (checkCreateResult.isError) return new BadRequest400(checkCreateResult.error);
 
       const result = await createEnvironment({
         userId: perms.user.id,
@@ -42,26 +49,26 @@ export function environmentRouter() {
         autosync: requestBody.autosync,
         stageId: requestBody.stageId,
         requestId: req.id,
-      })
+      });
       if (result.isError) {
-        return new Internal500(result.error)
+        return new Internal500(result.error);
       }
       return {
         status: 201,
         body: result.data,
-      }
+      };
     },
 
     updateEnvironment: async ({ request: req, body: requestBody, params }) => {
-      const { environmentId } = params
-      const perms = await authUser(req, { environmentId })
-      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key')
-      if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403()
-      if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
-      if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
+      const { environmentId } = params;
+      const perms = await authUser(req, { environmentId });
+      if (!perms.user) return new Unauthorized401('Require to be requested from user not api key');
+      if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403();
+      if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé');
+      if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé');
 
-      const checkUpdateResult = await checkEnvironmentUpdate({ environmentId, ...requestBody })
-      if (checkUpdateResult.isError) return new BadRequest400(checkUpdateResult.error)
+      const checkUpdateResult = await checkEnvironmentUpdate({ environmentId, ...requestBody });
+      if (checkUpdateResult.isError) return new BadRequest400(checkUpdateResult.error);
 
       const result = await updateEnvironment({
         user: perms.user,
@@ -71,37 +78,37 @@ export function environmentRouter() {
         memory: requestBody.memory,
         autosync: requestBody.autosync,
         requestId: req.id,
-      })
+      });
       if (result.isError) {
-        return new Internal500(result.error)
+        return new Internal500(result.error);
       }
       return {
         status: 200,
         body: result.data,
-      }
+      };
     },
 
     deleteEnvironment: async ({ request: req, params }) => {
-      const { environmentId } = params
-      const perms = await authUser(req, { environmentId })
-      if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403()
-      if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé')
-      if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé')
+      const { environmentId } = params;
+      const perms = await authUser(req, { environmentId });
+      if (!ProjectAuthorized.ManageEnvironments(perms)) return new Forbidden403();
+      if (perms.projectLocked) return new Forbidden403('Le projet est verrouillé');
+      if (perms.projectStatus === 'archived') return new Forbidden403('Le projet est archivé');
 
       const result = await deleteEnvironment({
         userId: perms.user?.id,
         environmentId,
         requestId: req.id,
         projectId: perms.projectId,
-      })
+      });
       if (result.isError) {
-        return new Internal500(result.error)
+        return new Internal500(result.error);
       }
 
       return {
         status: 204,
         body: result.data,
-      }
+      };
     },
-  })
+  });
 }

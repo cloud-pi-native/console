@@ -1,27 +1,27 @@
-import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui'
-import type { generateOpenApi } from '@ts-rest/open-api'
-import type { FastifyServerOptions } from 'fastify'
-import { randomUUID } from 'node:crypto'
-import { getLoggerOptionsFromEnv } from '@cpn-console/logger'
-import { swaggerUiPath } from '@cpn-console/shared'
+import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui';
+import type { generateOpenApi } from '@ts-rest/open-api';
+import type { FastifyServerOptions } from 'fastify';
+import { randomUUID } from 'node:crypto';
+import { getLoggerOptionsFromEnv } from '@cpn-console/logger';
+import { swaggerUiPath } from '@cpn-console/shared';
 import {
   appVersion,
   keycloakClientId,
   keycloakClientSecret,
   keycloakRealm,
   keycloakRedirectUri,
-} from './env.js'
+} from './env.js';
 
 export const fastifyConf: FastifyServerOptions = {
   maxParamLength: 5000,
   logger: getLoggerOptionsFromEnv(),
   genReqId: () => randomUUID(),
-}
+};
 
 const externalDocs = {
   description: 'External documentation.',
   url: 'https://cloud-pi-native.fr',
-}
+};
 
 export const swaggerConf: Parameters<typeof generateOpenApi>[1] = {
   info: {
@@ -36,7 +36,7 @@ export const swaggerConf: Parameters<typeof generateOpenApi>[1] = {
       url: keycloakRedirectUri,
     },
   ],
-}
+};
 
 export const swaggerUiConf: FastifySwaggerUiOptions = {
   routePrefix: `${swaggerUiPath}-server`,
@@ -51,4 +51,4 @@ export const swaggerUiConf: FastifySwaggerUiOptions = {
     appName: 'Cloud Pi Native',
     scopes: 'openid generic',
   },
-}
+};

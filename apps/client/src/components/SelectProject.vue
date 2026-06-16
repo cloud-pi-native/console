@@ -1,60 +1,54 @@
 <script setup lang="ts">
-import { AdminAuthorized } from '@cpn-console/shared'
-import { useProjectStore } from '@/stores/project.js'
-import { useUserStore } from '@/stores/user.js'
-import router, { isInProject, selectedProjectSlug } from '../router/index.js'
+import { AdminAuthorized } from '@cpn-console/shared';
+import { useProjectStore } from '@/stores/project.js';
+import { useUserStore } from '@/stores/user.js';
+import router, { isInProject, selectedProjectSlug } from '../router/index.js';
 
-const projectStore = useProjectStore()
-const userStore = useUserStore()
+const projectStore = useProjectStore();
+const userStore = useUserStore();
 
 const canCreateProject = computed(() => {
-  return AdminAuthorized.ManageProjects(userStore.adminPerms)
-})
+  return AdminAuthorized.ManageProjects(userStore.adminPerms);
+});
 
 watch(userStore, async () => {
   if (userStore.isLoggedIn && !projectStore.myProjects?.length) {
-    await projectStore.listMyProjects()
+    await projectStore.listMyProjects();
   }
-})
+});
 
 const myProjects = {
   value: 'myProjects',
   text: 'Mes projets',
-}
+};
 const projectOptions = computed(() => {
-  return projectStore.myProjects
-})
+  return projectStore.myProjects;
+});
 
 function selectProject(slug: string) {
   if (slug === myProjects.value) {
-    return router.push({ name: 'Projects' })
+    return router.push({ name: 'Projects' });
   }
   return router.push({
     name: 'Project',
     params: { slug },
     query: { tab: router.currentRoute.value.query?.tab },
-  })
+  });
 }
 </script>
 
 <template>
-  <div
-    v-if="userStore.isLoggedIn"
-    class="select-project flex flex-row"
-  >
+  <div v-if="userStore.isLoggedIn" class="select-project flex flex-row">
     <select
       v-if="projectStore.myProjects.length"
       id="project-select"
       class="fr-select"
       @change="(e: any) => selectProject(e.target!.value)"
     >
-      <option
-        :selected="!isInProject"
-        :value="myProjects.value"
-      >
+      <option :selected="!isInProject" :value="myProjects.value">
         {{ myProjects.text }}
       </option>
-      <hr>
+      <hr />
 
       <option
         v-for="project in projectOptions"
@@ -63,9 +57,8 @@ function selectProject(slug: string) {
         :value="project.slug"
         :selected="project.slug === selectedProjectSlug"
       >
-        {{ project.name }}<template v-if="project.name !== project.slug">
-          &nbsp;({{ project.slug }})
-        </template>
+        {{ project.name
+        }}<template v-if="project.name !== project.slug"> &nbsp;({{ project.slug }}) </template>
       </option>
     </select>
     <DsfrButton
@@ -77,13 +70,17 @@ function selectProject(slug: string) {
       :label="!projectStore.myProjects.length ? 'Créer un nouveau projet' : ''"
       small
       :disabled="!canCreateProject"
-      @click="() => router.currentRoute.value.name !== 'CreateProject' && router.push({ name: 'CreateProject' })"
+      @click="
+        () =>
+          router.currentRoute.value.name !== 'CreateProject' &&
+          router.push({ name: 'CreateProject' })
+      "
     />
   </div>
 </template>
 
 <style>
-.select-project{
+.select-project {
   position: absolute;
   padding-top: 1rem;
   top: 0;
@@ -91,13 +88,13 @@ function selectProject(slug: string) {
   z-index: 1000;
 }
 
-.select-project select{
+.select-project select {
   width: 250px;
   height: 50px;
   background-color: var(--background-default-grey);
 }
 
-.select-project .create-project{
+.select-project .create-project {
   height: 50px;
 }
 </style>

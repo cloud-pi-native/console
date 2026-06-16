@@ -1,6 +1,6 @@
-import type { Project } from '@prisma/client'
-import type { ConfigRecords } from './business.js'
-import prisma from '@/prisma.js'
+import type { Project } from '@prisma/client';
+import type { ConfigRecords } from './business.js';
+import prisma from '@/prisma.js';
 
 // CONFIG
 export function getProjectStore(projectId: Project['id']) {
@@ -11,10 +11,10 @@ export function getProjectStore(projectId: Project['id']) {
       pluginName: true,
       value: true,
     },
-  })
+  });
 }
 
-export const getAdminPlugin = prisma.adminPlugin.findMany
+export const getAdminPlugin = prisma.adminPlugin.findMany;
 
 export async function saveProjectStore(records: ConfigRecords, projectId: Project['id']) {
   for (const { pluginName, key, value } of records) {
@@ -27,7 +27,7 @@ export async function saveProjectStore(records: ConfigRecords, projectId: Projec
             key,
           },
         },
-      })
+      });
     } else {
       await prisma.projectPlugin.upsert({
         create: {
@@ -48,7 +48,7 @@ export async function saveProjectStore(records: ConfigRecords, projectId: Projec
             key,
           },
         },
-      })
+      });
     }
   }
 }

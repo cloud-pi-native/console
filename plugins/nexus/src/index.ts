@@ -1,7 +1,7 @@
-import type { DeclareModuleGenerator, Plugin } from '@cpn-console/hooks'
-import infos from './infos.js'
-import monitor from './monitor.js'
-import { createNexusProject, deleteNexusProject, getSecrets } from './project.js'
+import type { DeclareModuleGenerator, Plugin } from '@cpn-console/hooks';
+import infos from './infos.js';
+import monitor from './monitor.js';
+import { createNexusProject, deleteNexusProject, getSecrets } from './project.js';
 
 export const plugin: Plugin = {
   infos,
@@ -11,7 +11,7 @@ export const plugin: Plugin = {
     getProjectSecrets: { steps: { main: getSecrets } },
   },
   monitor,
-}
+};
 
 declare module '@cpn-console/hooks' {
   interface ProjectStore extends DeclareModuleGenerator<typeof infos, 'project'> {}

@@ -1,156 +1,132 @@
-import { expect, test } from '@playwright/test'
-import {
-  adminUser,
-  clientURL,
-  signInCloudPiNative,
-  testUser,
-} from '../config/console'
-import { createProject, projectSlugTextRegexp } from '../helpers/project'
+import { expect, test } from '@playwright/test';
+import { adminUser, clientURL, signInCloudPiNative, testUser } from '../config/console';
+import { createProject, projectSlugTextRegexp } from '../helpers/project';
 
 test.describe('Dashboard page', () => {
-  test(
-    'Should display a project statuses',
-    { tag: '@e2e' },
-    async ({ page }) => {
-      // Arrange
-      await page.goto(clientURL)
-      await signInCloudPiNative({ page, credentials: testUser })
-      const {
-        name: projectName,
-        id: projectId,
-        slug: projectSlug,
-      } = await createProject({ page })
+  test('Should display a project statuses', { tag: '@e2e' }, async ({ page }) => {
+    // Arrange
+    await page.goto(clientURL);
+    await signInCloudPiNative({ page, credentials: testUser });
+    const { name: projectName, id: projectId, slug: projectSlug } = await createProject({ page });
 
-      // Act
-      await page.getByTestId('menuMyProjects').click()
-      await page.getByRole('link', { name: projectName }).click()
+    // Act
+    await page.getByTestId('menuMyProjects').click();
+    await page.getByRole('link', { name: projectName }).click();
 
-      // Assert
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-      expect(await page.getByTestId('project-id').getAttribute('title')).toBe(
-        projectId,
-      )
-      await expect(page.locator('h1')).toContainText(projectName)
-    },
-  )
+    // Assert
+    await expect(page.getByTestId('project-slug')).toHaveText(projectSlugTextRegexp(projectSlug));
+    expect(await page.getByTestId('project-id').getAttribute('title')).toBe(projectId);
+    await expect(page.locator('h1')).toContainText(projectName);
+  });
 
   test(
     'Should add, display and edit description',
     { tag: '@e2e' },
     async ({ page, browserName }) => {
       // Arrange
-      await page.goto(clientURL)
-      await signInCloudPiNative({ page, credentials: testUser })
+      await page.goto(clientURL);
+      await signInCloudPiNative({ page, credentials: testUser });
       const { name: projectName, slug: projectSlug } = await createProject({
         page,
-      })
-      const description1 = 'Application de prise de rendez-vous en préfécture.'
-      const description2
-        = 'Application d\'organisation de tournois de pétanque interministériels.'
+      });
+      const description1 = 'Application de prise de rendez-vous en préfécture.';
+      const description2 = "Application d'organisation de tournois de pétanque interministériels.";
 
       // Act 1
-      await page.getByTestId('menuMyProjects').click()
-      await page.getByRole('link', { name: projectName }).click()
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-      await page.getByTestId('setDescriptionBtn').click()
+      await page.getByTestId('menuMyProjects').click();
+      await page.getByRole('link', { name: projectName }).click();
+      await expect(page.getByTestId('project-slug')).toHaveText(projectSlugTextRegexp(projectSlug));
+      await page.getByTestId('setDescriptionBtn').click();
       // Yep, we need that for now...
       // @TODO Ensure setDescriptionBtn is properly chained to descriptionInput
       if (browserName === 'chromium') {
-        await page.waitForTimeout(1000)
+        await page.waitForTimeout(1000);
       }
-      await page.getByTestId('descriptionInput').fill(description1)
-      await page.getByTestId('saveDescriptionBtn').click()
+      await page.getByTestId('descriptionInput').fill(description1);
+      await page.getByTestId('saveDescriptionBtn').click();
       // Assert 1
-      await expect(page.getByTestId('descriptionP')).toHaveText(description1)
+      await expect(page.getByTestId('descriptionP')).toHaveText(description1);
 
       // Act 2
-      await page.getByTestId('setDescriptionBtn').click()
+      await page.getByTestId('setDescriptionBtn').click();
       if (browserName === 'chromium') {
-        await page.waitForTimeout(1000)
+        await page.waitForTimeout(1000);
       }
-      await page.getByTestId('descriptionInput').fill(description2)
-      await page.getByTestId('saveDescriptionBtn').click()
+      await page.getByTestId('descriptionInput').fill(description2);
+      await page.getByTestId('saveDescriptionBtn').click();
       // Assert 2
-      await expect(page.getByTestId('descriptionP')).toHaveText(description2)
+      await expect(page.getByTestId('descriptionP')).toHaveText(description2);
     },
-  )
+  );
 
   test('Should show project secrets', { tag: '@e2e' }, async ({ page }) => {
     // Arrange
-    await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName, slug: projectSlug } = await createProject({ page })
+    await page.goto(clientURL);
+    await signInCloudPiNative({ page, credentials: testUser });
+    const { name: projectName, slug: projectSlug } = await createProject({ page });
 
     // Act
-    await page.getByTestId('menuMyProjects').click()
-    await page.getByRole('link', { name: projectName }).click()
-    await expect(page.getByTestId('project-slug')).toHaveText(
-      projectSlugTextRegexp(projectSlug),
-    )
-    await expect(page.getByTestId('projectSecretsZone')).not.toBeVisible()
-    await page.getByTestId('showSecretsBtn').click()
+    await page.getByTestId('menuMyProjects').click();
+    await page.getByRole('link', { name: projectName }).click();
+    await expect(page.getByTestId('project-slug')).toHaveText(projectSlugTextRegexp(projectSlug));
+    await expect(page.getByTestId('projectSecretsZone')).not.toBeVisible();
+    await page.getByTestId('showSecretsBtn').click();
 
     // Assert
-    await expect(page.getByTestId('projectSecretsZone')).toBeVisible()
-    await expect(page.getByTestId('noProjectSecretsP')).toHaveText(
-      'Aucun secret à afficher',
-    )
-  })
+    await expect(page.getByTestId('projectSecretsZone')).toBeVisible();
+    await expect(page.getByTestId('noProjectSecretsP')).toHaveText('Aucun secret à afficher');
+  });
 
   test('Should replay hooks for project', { tag: '@e2e' }, async ({ page }) => {
     // Arrange
-    await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: testUser })
-    const { name: projectName, slug: projectSlug } = await createProject({ page })
+    await page.goto(clientURL);
+    await signInCloudPiNative({ page, credentials: testUser });
+    const { name: projectName, slug: projectSlug } = await createProject({ page });
 
     // Act
-    await page.getByTestId('menuMyProjects').click()
-    await page.getByRole('link', { name: projectName }).click()
-    await expect(page.getByTestId('project-slug')).toHaveText(
-      projectSlugTextRegexp(projectSlug),
-    )
-    await page.getByTestId('replayHooksBtn').click()
+    await page.getByTestId('menuMyProjects').click();
+    await page.getByRole('link', { name: projectName }).click();
+    await expect(page.getByTestId('project-slug')).toHaveText(projectSlugTextRegexp(projectSlug));
+    await page.getByTestId('replayHooksBtn').click();
 
     // Assert
     await expect(page.getByTestId('snackbar')).toContainText(
       'Le projet a été reprovisionné avec succès',
-    )
-  })
+    );
+  });
 
   test(
     'Should not be able to access project secrets if not owner',
     { tag: '@e2e' },
     async ({ page }) => {
       // Arrange
-      await page.goto(clientURL)
-      await signInCloudPiNative({ page, credentials: testUser })
-      const { id: projectId, name: projectName, slug: projectSlug } = await createProject({
+      await page.goto(clientURL);
+      await signInCloudPiNative({ page, credentials: testUser });
+      const {
+        id: projectId,
+        name: projectName,
+        slug: projectSlug,
+      } = await createProject({
         page,
-      })
+      });
 
       // Act
-      await page.getByRole('link', { name: 'Se déconnecter' }).click()
-      await signInCloudPiNative({ page, credentials: adminUser })
-      await page.getByTestId('menuAdministrationBtn').click()
-      await page.getByTestId('menuAdministrationProjects').click()
-      await page.getByTestId('projectsSearchInput').fill(projectName)
-      await page.getByTestId('projectsSearchBtn').click()
-      await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
-      await page.getByTestId(`projectTr-${projectId}`).click()
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-      await page.getByTestId('replayHooksBtn').click()
+      await page.getByRole('link', { name: 'Se déconnecter' }).click();
+      await signInCloudPiNative({ page, credentials: adminUser });
+      await page.getByTestId('menuAdministrationBtn').click();
+      await page.getByTestId('menuAdministrationProjects').click();
+      await page.getByTestId('projectsSearchInput').fill(projectName);
+      await page.getByTestId('projectsSearchBtn').click();
+      await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible();
+      await page.getByTestId(`projectTr-${projectId}`).click();
+      await expect(page.getByTestId('project-slug')).toHaveText(projectSlugTextRegexp(projectSlug));
+      await page.getByTestId('replayHooksBtn').click();
 
       // Assert
-      await expect(page.getByTestId('projectSecretsZone')).not.toBeVisible()
-      await expect(page.getByTestId('showSecretsBtn')).not.toBeVisible()
+      await expect(page.getByTestId('projectSecretsZone')).not.toBeVisible();
+      await expect(page.getByTestId('showSecretsBtn')).not.toBeVisible();
     },
-  )
+  );
 
   // @TODO: This test's expectation was reversed in Cypress E2E tests ("you should not be able
   // to archive someone else's project"), but the reality is that you actually can do that,
@@ -162,28 +138,30 @@ test.describe('Dashboard page', () => {
     { tag: ['@e2e', '@need-rework'] },
     async ({ page }) => {
       // Arrange
-      await page.goto(clientURL)
-      await signInCloudPiNative({ page, credentials: testUser })
-      const { id: projectId, name: projectName, slug: projectSlug } = await createProject({
+      await page.goto(clientURL);
+      await signInCloudPiNative({ page, credentials: testUser });
+      const {
+        id: projectId,
+        name: projectName,
+        slug: projectSlug,
+      } = await createProject({
         page,
-      })
+      });
 
       // Act
-      await page.getByRole('link', { name: 'Se déconnecter' }).click()
-      await signInCloudPiNative({ page, credentials: adminUser })
-      await page.getByTestId('menuAdministrationBtn').click()
-      await page.getByTestId('menuAdministrationProjects').click()
-      await page.getByTestId('projectsSearchInput').fill(projectName)
-      await page.getByTestId('projectsSearchBtn').click()
-      await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
-      await page.getByTestId(`projectTr-${projectId}`).click()
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-      await page.getByTestId('replayHooksBtn').click()
+      await page.getByRole('link', { name: 'Se déconnecter' }).click();
+      await signInCloudPiNative({ page, credentials: adminUser });
+      await page.getByTestId('menuAdministrationBtn').click();
+      await page.getByTestId('menuAdministrationProjects').click();
+      await page.getByTestId('projectsSearchInput').fill(projectName);
+      await page.getByTestId('projectsSearchBtn').click();
+      await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible();
+      await page.getByTestId(`projectTr-${projectId}`).click();
+      await expect(page.getByTestId('project-slug')).toHaveText(projectSlugTextRegexp(projectSlug));
+      await page.getByTestId('replayHooksBtn').click();
 
       // Assert
-      await expect(page.getByTestId('showArchiveProjectBtn')).toBeVisible()
+      await expect(page.getByTestId('showArchiveProjectBtn')).toBeVisible();
     },
-  )
-})
+  );
+});

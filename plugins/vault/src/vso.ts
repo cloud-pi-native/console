@@ -1,4 +1,4 @@
-import type { AppRoleCredentials } from './vault-project-api.js'
+import type { AppRoleCredentials } from './vault-project-api.js';
 
 export function generateVsoVaultConnection(creds: AppRoleCredentials) {
   return {
@@ -13,7 +13,7 @@ export function generateVsoVaultConnection(creds: AppRoleCredentials) {
     spec: {
       address: creds.url,
     },
-  }
+  };
 }
 
 export function generateVsoSecret(creds: AppRoleCredentials) {
@@ -29,9 +29,12 @@ export function generateVsoSecret(creds: AppRoleCredentials) {
     stringData: {
       id: creds.secretId,
     },
-  }
+  };
 }
-export function generateVaultAuth(creds: AppRoleCredentials, vaultConnectionRef: string | null = null) {
+export function generateVaultAuth(
+  creds: AppRoleCredentials,
+  vaultConnectionRef: string | null = null,
+) {
   return {
     apiVersion: 'secrets.hashicorp.com/v1beta1',
     kind: 'VaultAuth',
@@ -51,5 +54,5 @@ export function generateVaultAuth(creds: AppRoleCredentials, vaultConnectionRef:
       },
       allowedNamespaces: null,
     },
-  }
+  };
 }

@@ -1,6 +1,5 @@
 {
   "name": "@cpn-console/hooks",
-  "type": "module",
   "version": "4.1.0",
   "private": false,
   "description": "",
@@ -8,16 +7,22 @@
     "type": "git",
     "url": "https://github.com/cloud-pi-native/console"
   },
+  "files": [
+    "dist",
+    "types"
+  ],
+  "type": "module",
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "files": [
-    "dist",
-    "types"
-  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest"
+  },
   "scripts": {
     "build": "tsc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
@@ -49,10 +54,5 @@
     "typescript": "^5.9.3",
     "undici-types": "^7.24.0",
     "vitest": "^4.1.5"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public",
-    "tag": "latest"
   }
 }

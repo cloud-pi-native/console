@@ -1,9 +1,9 @@
-import type { personalAccessTokenContract } from '@cpn-console/shared'
-import type { AdminToken, User } from '@prisma/client'
-import { createHash } from 'node:crypto'
-import { generateRandomPassword, isAtLeastTomorrow } from '@cpn-console/shared'
-import { BadRequest400 } from '@/utils/errors.js'
-import prisma from '../../../prisma.js'
+import type { personalAccessTokenContract } from '@cpn-console/shared';
+import type { AdminToken, User } from '@prisma/client';
+import { createHash } from 'node:crypto';
+import { generateRandomPassword, isAtLeastTomorrow } from '@cpn-console/shared';
+import { BadRequest400 } from '@/utils/errors.js';
+import prisma from '../../../prisma.js';
 
 export async function listTokens(userId: User['id']) {
   return prisma.personalAccessToken.findMany({
@@ -11,15 +11,21 @@ export async function listTokens(userId: User['id']) {
     include: { owner: true },
     orderBy: [{ status: 'asc' }, { createdAt: 'asc' }],
     where: { userId },
-  })
+  });
 }
 
-export async function createToken(data: typeof personalAccessTokenContract.createPersonalAccessToken.body._type, userId: User['id']) {
+export async function createToken(
+  data: typeof personalAccessTokenContract.createPersonalAccessToken.body._type,
+  userId: User['id'],
+) {
   if (data.expirationDate && !isAtLeastTomorrow(new Date(data.expirationDate))) {
-    return new BadRequest400('Date d\'expiration trop courte')
+    return new BadRequest400("Date d'expiration trop courte");
   }
-  const password = generateRandomPassword(48, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-')
-  const hash = createHash('sha256').update(password).digest('hex')
+  const password = generateRandomPassword(
+    48,
+    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-',
+  );
+  const hash = createHash('sha256').update(password).digest('hex');
   const token = await prisma.personalAccessToken.create({
     data: {
       ...data,
@@ -29,11 +35,11 @@ export async function createToken(data: typeof personalAccessTokenContract.creat
     },
     omit: { hash: true },
     include: { owner: true },
-  })
+  });
   return {
     ...token,
     password,
-  }
+  };
 }
 
 export async function deleteToken(id: AdminToken['id'], userId: User['id']) {
@@ -42,10 +48,10 @@ export async function deleteToken(id: AdminToken['id'], userId: User['id']) {
       id,
       userId,
     },
-  })
+  });
   if (token) {
     return prisma.personalAccessToken.delete({
       where: { id },
-    })
+    });
   }
 }

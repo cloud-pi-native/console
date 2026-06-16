@@ -1,6 +1,5 @@
 {
   "name": "@cpn-console/gitlab-plugin",
-  "type": "module",
   "version": "3.3.1",
   "private": false,
   "description": "",
@@ -8,14 +7,20 @@
     "type": "git",
     "url": "https://github.com/cloud-pi-native/console"
   },
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "types/index.d.ts",
   "files": [
     "dist",
     "files",
     "types"
   ],
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "types/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest"
+  },
   "scripts": {
     "build": "tsc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
@@ -43,10 +48,5 @@
     "typescript": "^5.9.3",
     "vite": "^7.3.2",
     "vitest": "^4.1.5"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public",
-    "tag": "latest"
   }
 }

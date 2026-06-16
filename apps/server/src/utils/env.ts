@@ -1,59 +1,71 @@
-import fs from 'node:fs'
-import path from 'node:path'
-import { parseEnv } from 'node:util'
+import fs from 'node:fs';
+import path from 'node:path';
+import { parseEnv } from 'node:util';
 
 if (process.env.DOCKER !== 'true' && fs.existsSync('.env')) {
-  Object.assign(process.env, Object.fromEntries(
-    Object.entries(parseEnv(fs.readFileSync(path.resolve('.env'), 'utf-8'))).filter(([_k, v]) => Boolean(v)),
-  ))
+  Object.assign(
+    process.env,
+    Object.fromEntries(
+      Object.entries(parseEnv(fs.readFileSync(path.resolve('.env'), 'utf-8'))).filter(([_k, v]) =>
+        Boolean(v),
+      ),
+    ),
+  );
 }
 
 if (process.env.INTEGRATION === 'true' && fs.existsSync('.env.integ')) {
-  Object.assign(process.env, Object.fromEntries(
-    Object.entries(parseEnv(fs.readFileSync(path.resolve('.env.integ'), 'utf-8'))).filter(([_k, v]) => Boolean(v)),
-  ))
+  Object.assign(
+    process.env,
+    Object.fromEntries(
+      Object.entries(parseEnv(fs.readFileSync(path.resolve('.env.integ'), 'utf-8'))).filter(
+        ([_k, v]) => Boolean(v),
+      ),
+    ),
+  );
 }
 
 // application mode
-export const isDev = process.env.NODE_ENV === 'development'
-export const isTest = process.env.NODE_ENV === 'test'
-export const isProd = process.env.NODE_ENV === 'production'
-export const isInt = process.env.INTEGRATION === 'true'
-export const isCI = process.env.CI === 'true'
-export const isDevSetup = process.env.DEV_SETUP === 'true'
+export const isDev = process.env.NODE_ENV === 'development';
+export const isTest = process.env.NODE_ENV === 'test';
+export const isProd = process.env.NODE_ENV === 'production';
+export const isInt = process.env.INTEGRATION === 'true';
+export const isCI = process.env.CI === 'true';
+export const isDevSetup = process.env.DEV_SETUP === 'true';
 
 // app
-export const port = process.env.SERVER_PORT
-export const appVersion = isProd
-  ? (process.env.APP_VERSION ?? 'unknown')
-  : 'dev'
+export const port = process.env.SERVER_PORT;
+export const appVersion = isProd ? (process.env.APP_VERSION ?? 'unknown') : 'dev';
 
 // db
-export const dbUrl = process.env.DB_URL
+export const dbUrl = process.env.DB_URL;
 
 // keycloak
-export const sessionSecret = process.env.SESSION_SECRET
-export const keycloakProtocol = process.env.KEYCLOAK_PROTOCOL
-export const keycloakDomain = process.env.KEYCLOAK_DOMAIN
-export const keycloakRealm = process.env.KEYCLOAK_REALM
-export const keycloakClientId = process.env.KEYCLOAK_CLIENT_ID
-export const keycloakClientSecret = process.env.KEYCLOAK_CLIENT_SECRET
-export const keycloakRedirectUri = process.env.KEYCLOAK_REDIRECT_URI
+export const sessionSecret = process.env.SESSION_SECRET;
+export const keycloakProtocol = process.env.KEYCLOAK_PROTOCOL;
+export const keycloakDomain = process.env.KEYCLOAK_DOMAIN;
+export const keycloakRealm = process.env.KEYCLOAK_REALM;
+export const keycloakClientId = process.env.KEYCLOAK_CLIENT_ID;
+export const keycloakClientSecret = process.env.KEYCLOAK_CLIENT_SECRET;
+export const keycloakRedirectUri = process.env.KEYCLOAK_REDIRECT_URI;
 export const adminsUserId = process.env.ADMIN_KC_USER_ID
   ? process.env.ADMIN_KC_USER_ID.split(',')
-  : []
+  : [];
 
-export const contactEmail = process.env.CONTACT_EMAIL ?? 'cloudpinative-relations@interieur.gouv.fr'
+export const contactEmail =
+  process.env.CONTACT_EMAIL ?? 'cloudpinative-relations@interieur.gouv.fr';
 
 // plugins
-export const mockPlugins = process.env.MOCK_PLUGINS === 'true'
-export const projectRootDir = process.env.PROJECTS_ROOT_DIR
-export const pluginsDir = process.env.PLUGINS_DIR ?? '/plugins'
-export const NODE_ENV = process.env.NODE_ENV === 'test'
-  ? 'test'
-  : process.env.NODE_ENV === 'development'
-    ? 'development'
-    : 'production'
+export const mockPlugins = process.env.MOCK_PLUGINS === 'true';
+export const projectRootDir = process.env.PROJECTS_ROOT_DIR;
+export const pluginsDir = process.env.PLUGINS_DIR ?? '/plugins';
+export const NODE_ENV =
+  process.env.NODE_ENV === 'test'
+    ? 'test'
+    : process.env.NODE_ENV === 'development'
+      ? 'development'
+      : 'production';
 
 // server tuning
-export const parallelBulkLimit = process.env.PARALLEL_BULK_LIMIT ? Number(process.env.PARALLEL_BULK_LIMIT) : 5
+export const parallelBulkLimit = process.env.PARALLEL_BULK_LIMIT
+  ? Number(process.env.PARALLEL_BULK_LIMIT)
+  : 5;

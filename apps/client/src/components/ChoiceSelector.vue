@@ -1,79 +1,120 @@
-<script lang="ts" setup generic="T extends Record<string, any>, VALUE extends (Extract<keyof T, string>), LABEL extends (Extract<keyof T, string>)">
-import { sortArrByObjKeyAsc } from '@cpn-console/shared'
-import { computed, ref } from 'vue'
+<script
+  lang="ts"
+  setup
+  generic="
+    T extends Record<string, any>,
+    VALUE extends Extract<keyof T, string>,
+    LABEL extends Extract<keyof T, string>
+  "
+>
+import { sortArrByObjKeyAsc } from '@cpn-console/shared';
+import { computed, ref } from 'vue';
 
-const props = withDefaults(defineProps<{
-  options: T[]
-  optionsSelected: T[]
-  label: string | undefined
-  description: string
-  disabled?: boolean
-  id: string
-  valueKey: VALUE
-  labelKey: LABEL
-  wrapped: boolean
-}>(), {
-  wrapped: true,
-  disabled: false,
-  id: 'choice1',
-  description: '',
-})
+const props = withDefaults(
+  defineProps<{
+    options: T[];
+    optionsSelected: T[];
+    label: string | undefined;
+    description: string;
+    disabled?: boolean;
+    id: string;
+    valueKey: VALUE;
+    labelKey: LABEL;
+    wrapped: boolean;
+  }>(),
+  {
+    wrapped: true,
+    disabled: false,
+    id: 'choice1',
+    description: '',
+  },
+);
 
 const emit = defineEmits<{
-  update: [selected: T[], values: T[VALUE][]]
-}>()
-const isWrapped = ref(props.wrapped)
-const selectedValues = ref<string[]>([])
-const search = ref('')
+  update: [selected: T[], values: T[VALUE][]];
+}>();
+const isWrapped = ref(props.wrapped);
+const selectedValues = ref<string[]>([]);
+const search = ref('');
 
 const options = {
-  selected: computed(() => sortArrByObjKeyAsc(props.options.filter(option => selectedValues.value.includes(option[props.valueKey])), props.labelKey)),
-  notSelected: computed(() => sortArrByObjKeyAsc(props.options.filter(option => !selectedValues.value.includes(option[props.valueKey])), props.labelKey)),
-}
+  selected: computed(() =>
+    sortArrByObjKeyAsc(
+      props.options.filter((option) => selectedValues.value.includes(option[props.valueKey])),
+      props.labelKey,
+    ),
+  ),
+  notSelected: computed(() =>
+    sortArrByObjKeyAsc(
+      props.options.filter((option) => !selectedValues.value.includes(option[props.valueKey])),
+      props.labelKey,
+    ),
+  ),
+};
 const displayed = {
-  notSelected: computed(() => options.notSelected.value.filter(option => option[props.labelKey].includes(search.value))),
-  selected: computed(() => options.selected.value.filter(option => option[props.labelKey].includes(search.value))),
-}
+  notSelected: computed(() =>
+    options.notSelected.value.filter((option) => option[props.labelKey].includes(search.value)),
+  ),
+  selected: computed(() =>
+    options.selected.value.filter((option) => option[props.labelKey].includes(search.value)),
+  ),
+};
 
 function switchSelection(event: string) {
-  const eventValue = event
-  if (!eventValue) return
+  const eventValue = event;
+  if (!eventValue) return;
 
   if (selectedValues.value.includes(eventValue)) {
-    selectedValues.value = selectedValues.value.filter(element => element !== eventValue)
+    selectedValues.value = selectedValues.value.filter((element) => element !== eventValue);
   } else {
-    selectedValues.value.push(eventValue)
+    selectedValues.value.push(eventValue);
   }
-  emit('update', options.selected.value, options.selected.value.map(option => option[props.valueKey]))
+  emit(
+    'update',
+    options.selected.value,
+    options.selected.value.map((option) => option[props.valueKey]),
+  );
 }
 
-type SwitchMultipleParam = 'notSelected' | 'notSelectedDisplayed' | 'selected' | 'selectedDisplayed'
+type SwitchMultipleParam =
+  | 'notSelected'
+  | 'notSelectedDisplayed'
+  | 'selected'
+  | 'selectedDisplayed';
 function switchMultiple(choice: SwitchMultipleParam) {
   if (choice === 'selected') {
-    selectedValues.value = selectedValues.value.filter(value => !options.selected.value.some(select => select[props.valueKey] === value))
+    selectedValues.value = selectedValues.value.filter(
+      (value) => !options.selected.value.some((select) => select[props.valueKey] === value),
+    );
   } else if (choice === 'selectedDisplayed') {
-    selectedValues.value = selectedValues.value.filter(value => !displayed.selected.value.some(select => select[props.valueKey] === value))
+    selectedValues.value = selectedValues.value.filter(
+      (value) => !displayed.selected.value.some((select) => select[props.valueKey] === value),
+    );
   } else if (choice === 'notSelected') {
-    options.notSelected.value.forEach(option => selectedValues.value.push(option[props.valueKey]))
+    options.notSelected.value.forEach((option) =>
+      selectedValues.value.push(option[props.valueKey]),
+    );
   } else if (choice === 'notSelectedDisplayed') {
-    displayed.notSelected.value.forEach(option => selectedValues.value.push(option[props.valueKey]))
+    displayed.notSelected.value.forEach((option) =>
+      selectedValues.value.push(option[props.valueKey]),
+    );
   }
 }
 
 onBeforeMount(() => {
-  selectedValues.value = props.optionsSelected.map(option => option[props.valueKey])
-})
+  selectedValues.value = props.optionsSelected.map((option) => option[props.valueKey]);
+});
 
 interface Group {
-  tagClass: string
-  title: string
-  selectorKey: keyof typeof displayed
-  addButtonLabel: string
-  addButtonTestId: string
-  addVisibleButtonLabel: string
-  addVisibleButtonTestId: string
-  switchAll: () => void
-  switchVisible: () => void
+  tagClass: string;
+  title: string;
+  selectorKey: keyof typeof displayed;
+  addButtonLabel: string;
+  addButtonTestId: string;
+  addVisibleButtonLabel: string;
+  addVisibleButtonTestId: string;
+  switchAll: () => void;
+  switchVisible: () => void;
 }
 
 const groups: Group[] = [
@@ -99,20 +140,12 @@ const groups: Group[] = [
     switchAll: () => switchMultiple('selected'),
     switchVisible: () => switchMultiple('selectedDisplayed'),
   },
-]
+];
 </script>
 
 <template>
-  <div
-    v-if="!isWrapped"
-    :id="props.id"
-    class="fr-select-group"
-    :disabled="props.disabled"
-  >
-    <div
-      class="cursor-pointer"
-      @click="isWrapped = !isWrapped"
-    >
+  <div v-if="!isWrapped" :id="props.id" class="fr-select-group" :disabled="props.disabled">
+    <div class="cursor-pointer" @click="isWrapped = !isWrapped">
       <h6
         v-if="props.label"
         :data-testid="`choice-selector-title-${props.id}`"
@@ -120,10 +153,7 @@ const groups: Group[] = [
       >
         {{ props.label }}
       </h6>
-      <v-icon
-        name="ri:arrow-right-s-line"
-        class="shrink ml-4 rotate-90"
-      />
+      <v-icon name="ri:arrow-right-s-line" class="shrink ml-4 rotate-90" />
     </div>
     <p
       v-if="props.description"
@@ -141,21 +171,15 @@ const groups: Group[] = [
       :data-testid="`choice-selector-search-${props.id}`"
       placeholder="..."
     />
-    <div class="grid gap-5  md:2xl:grid-rows-2 sm:md:grid-cols-2 md:2xl:grid-flow-row sm:md:grid-flow-col">
-      <template
-        v-for="group in groups"
-        :key="group.id"
-      >
-        <div
-          class="grow-x"
-        >
-          <label class="mb-1 ">
+    <div
+      class="grid gap-5 md:2xl:grid-rows-2 sm:md:grid-cols-2 md:2xl:grid-flow-row sm:md:grid-flow-col"
+    >
+      <template v-for="group in groups" :key="group.id">
+        <div class="grow-x">
+          <label class="mb-1">
             {{ group.title }}
           </label>
-          <div
-            v-if="props.options.length > 6 && !props.disabled"
-            class="flex gap-3 mb-3"
-          >
+          <div v-if="props.options.length > 6 && !props.disabled" class="flex gap-3 mb-3">
             <DsfrButton
               :label="group.addButtonLabel"
               secondary
@@ -171,10 +195,7 @@ const groups: Group[] = [
               @click="group.switchVisible()"
             />
           </div>
-          <div
-            v-if="displayed[group.selectorKey].value.length"
-            class="max-h-42 overflow-auto"
-          >
+          <div v-if="displayed[group.selectorKey].value.length" class="max-h-42 overflow-auto">
             <div
               v-for="option in displayed[group.selectorKey].value"
               :key="option[props.valueKey]"
@@ -190,16 +211,14 @@ const groups: Group[] = [
             </div>
           </div>
           <div v-else>
-            <p
-              v-if="options[group.selectorKey].value.length && search"
-              class="italic text-sm"
-            >
-              La recherche masque les {{ options[group.selectorKey].value.length - displayed[group.selectorKey].value.length }} choix disponibles
+            <p v-if="options[group.selectorKey].value.length && search" class="italic text-sm">
+              La recherche masque les
+              {{
+                options[group.selectorKey].value.length - displayed[group.selectorKey].value.length
+              }}
+              choix disponibles
             </p>
-            <p
-              v-else-if="!options[group.selectorKey].value.length"
-              class="italic text-sm"
-            >
+            <p v-else-if="!options[group.selectorKey].value.length" class="italic text-sm">
               Aucun choix disponible
             </p>
           </div>
@@ -207,22 +226,12 @@ const groups: Group[] = [
       </template>
     </div>
   </div>
-  <div
-    v-else
-    :id="props.id"
-    @click="isWrapped = false"
-  >
-    <div
-      class="cursor-pointer"
-      @click="isWrapped = !isWrapped"
-    >
+  <div v-else :id="props.id" @click="isWrapped = false">
+    <div class="cursor-pointer" @click="isWrapped = !isWrapped">
       <h6 class="mb-1 inline-block fr-label">
         {{ props.label }}
       </h6>
-      <v-icon
-        class="ml-4"
-        name="ri:arrow-right-s-line"
-      />
+      <v-icon class="ml-4" name="ri:arrow-right-s-line" />
     </div>
     <div
       v-for="option in options.selected.value.slice(0, 3)"
@@ -237,36 +246,24 @@ const groups: Group[] = [
         @click="isWrapped = false"
       />
     </div>
-    <div
-      v-if="options.selected.value.length === 0"
-      class="inline-block"
-      @click="isWrapped = false"
-    >
+    <div v-if="options.selected.value.length === 0" class="inline-block" @click="isWrapped = false">
       <DsfrTag
         class="cursor-pointer"
         :label="`Aucune sélection, ${props.options.length} choix disponibles`"
       />
     </div>
-    <div
-      v-if="options.selected.value.length > 3"
-      class="inline-block"
-      @click="isWrapped = false"
-    >
+    <div v-if="options.selected.value.length > 3" class="inline-block" @click="isWrapped = false">
       <DsfrTag
         class="cursor-pointer"
         :label="`et ${options.selected.value.length - 3} de +`"
-        :title="`${options.selected.value.slice(3, 10).map(option => option[props.labelKey]).join('\n')}${options.selected.value.length > 10 ? '\n...' : ''}`"
+        :title="`${options.selected.value
+          .slice(3, 10)
+          .map((option) => option[props.labelKey])
+          .join('\n')}${options.selected.value.length > 10 ? '\n...' : ''}`"
       />
     </div>
-    <div
-      v-else
-      class="inline-block"
-      @click="isWrapped = false"
-    >
-      <DsfrTag
-        class="cursor-pointer"
-        label="Modifier"
-      />
+    <div v-else class="inline-block" @click="isWrapped = false">
+      <DsfrTag class="cursor-pointer" label="Modifier" />
     </div>
   </div>
 </template>

@@ -1,9 +1,9 @@
 packages:
-  - "packages/**"
-  - "plugins/**"
-  - "apps/**"
-  - "!apps/server/src/plugins/external/**"
-  - "playwright/**"
+  - 'packages/**'
+  - 'plugins/**'
+  - 'apps/**'
+  - '!apps/server/src/plugins/external/**'
+  - 'playwright/**'
 allowUnusedPatches: true
 
 autoInstallPeers: true
@@ -12,7 +12,7 @@ injectWorkspacePackages: true
 # pnpm will install it. This applies to all dependencies, including transitive ones.
 minimumReleaseAge: 1440 # 1 day
 patchedDependencies:
-  "@gouvminint/vue-dsfr": patches/@gouvminint__vue-dsfr.patch
+  '@gouvminint/vue-dsfr': patches/@gouvminint__vue-dsfr.patch
   fastify-keycloak-adapter@2.3.2: patches/fastify-keycloak-adapter@2.3.2.patch
 
 shellEmulator: true

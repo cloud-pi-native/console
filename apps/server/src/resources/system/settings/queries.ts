@@ -1,5 +1,5 @@
-import type { Prisma, SystemSetting } from '@prisma/client'
-import prisma from '@/prisma.js'
+import type { Prisma, SystemSetting } from '@prisma/client';
+import prisma from '@/prisma.js';
 
 export function upsertSystemSetting(newSystemSetting: SystemSetting) {
   return prisma.systemSetting.upsert({
@@ -12,7 +12,8 @@ export function upsertSystemSetting(newSystemSetting: SystemSetting) {
     where: {
       key: newSystemSetting.key,
     },
-  })
+  });
 }
 
-export const getSystemSettings = (where?: Prisma.SystemSettingWhereInput) => prisma.systemSetting.findMany({ where })
+export const getSystemSettings = (where?: Prisma.SystemSettingWhereInput) =>
+  prisma.systemSetting.findMany({ where });

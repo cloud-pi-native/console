@@ -1,9 +1,10 @@
-import type { AxiosInstance } from 'axios'
-import type { WritePolicy } from './utils.js'
-import getConfig from './config.js'
-import { deleteIfExists } from './utils.js'
+import type { AxiosInstance } from 'axios';
+import type { WritePolicy } from './utils.js';
+import getConfig from './config.js';
+import { deleteIfExists } from './utils.js';
 
-function getRepoNames(projectName: string) { // Unique function per language cause names are unique per repo
+function getRepoNames(projectName: string) {
+  // Unique function per language cause names are unique per repo
   return {
     hosted: [
       {
@@ -15,17 +16,21 @@ function getRepoNames(projectName: string) { // Unique function per language cau
       repo: `${projectName}-npm-group`,
       privilege: `${projectName}-npm-group-privilege`,
     },
-  }
+  };
 }
-export async function createNpmRepo(axiosInstance: AxiosInstance, projectName: string, writePolicy: WritePolicy) {
-  const names = getRepoNames(projectName)
+export async function createNpmRepo(
+  axiosInstance: AxiosInstance,
+  projectName: string,
+  writePolicy: WritePolicy,
+) {
+  const names = getRepoNames(projectName);
   // create local repo maven
   for (const repVersion of names.hosted) {
     const repo = await axiosInstance({
       method: 'GET',
       url: `/repositories/npm/hosted/${repVersion.repo}`,
-      validateStatus: code => [200, 404].includes(code),
-    })
+      validateStatus: (code) => [200, 404].includes(code),
+    });
     if (repo.status === 404) {
       await axiosInstance({
         method: 'post',
@@ -41,8 +46,8 @@ export async function createNpmRepo(axiosInstance: AxiosInstance, projectName: s
           cleanup: { policyNames: ['string'] },
           component: { proprietaryComponents: true },
         },
-        validateStatus: code => [201].includes(code),
-      })
+        validateStatus: (code) => [201].includes(code),
+      });
     } else {
       await axiosInstance({
         method: 'put',
@@ -58,16 +63,16 @@ export async function createNpmRepo(axiosInstance: AxiosInstance, projectName: s
           cleanup: { policyNames: ['string'] },
           component: { proprietaryComponents: true },
         },
-        validateStatus: code => [204].includes(code),
-      })
+        validateStatus: (code) => [204].includes(code),
+      });
     }
   }
   // create maven group
   const group = await axiosInstance({
     method: 'get',
     url: `/repositories/npm/group/${names.group.repo}`,
-    validateStatus: code => [200, 404].includes(code),
-  })
+    validateStatus: (code) => [200, 404].includes(code),
+  });
   if (group.status === 404) {
     await axiosInstance({
       method: 'post',
@@ -80,13 +85,11 @@ export async function createNpmRepo(axiosInstance: AxiosInstance, projectName: s
           strictContentTypeValidation: true,
         },
         group: {
-          memberNames: [
-            ...names.hosted.map(({ repo }) => repo),
-          ],
+          memberNames: [...names.hosted.map(({ repo }) => repo)],
         },
       },
-      validateStatus: code => [201].includes(code),
-    })
+      validateStatus: (code) => [201].includes(code),
+    });
   } else {
     await axiosInstance({
       url: `/repositories/npm/group/${names.group.repo}`,
@@ -99,21 +102,19 @@ export async function createNpmRepo(axiosInstance: AxiosInstance, projectName: s
           strictContentTypeValidation: true,
         },
         group: {
-          memberNames: [
-            ...names.hosted.map(({ repo }) => repo),
-          ],
+          memberNames: [...names.hosted.map(({ repo }) => repo)],
         },
       },
-      validateStatus: code => [204].includes(code),
-    })
+      validateStatus: (code) => [204].includes(code),
+    });
   }
 
   for (const name of [...names.hosted, names.group]) {
     const privilege = await axiosInstance({
       method: 'get',
       url: `/security/privileges/${name.privilege}`,
-      validateStatus: code => [200, 404].includes(code),
-    })
+      validateStatus: (code) => [200, 404].includes(code),
+    });
     if (privilege.status === 404) {
       await axiosInstance({
         method: 'post',
@@ -125,8 +126,8 @@ export async function createNpmRepo(axiosInstance: AxiosInstance, projectName: s
           format: 'npm',
           repository: name.repo,
         },
-        validateStatus: code => [201].includes(code),
-      })
+        validateStatus: (code) => [201].includes(code),
+      });
     } else {
       await axiosInstance({
         method: 'put',
@@ -138,32 +139,32 @@ export async function createNpmRepo(axiosInstance: AxiosInstance, projectName: s
           format: 'npm',
           repository: name.repo,
         },
-        validateStatus: code => [204].includes(code),
-      })
+        validateStatus: (code) => [204].includes(code),
+      });
     }
   }
-  return names
+  return names;
 }
 
 export async function deleteNpmRepo(axiosInstance: AxiosInstance, projectName: string) {
-  const names = getRepoNames(projectName)
-  const repoPaths = [names.group, ...names.hosted]
-  const privileges = [...names.hosted, names.group]
+  const names = getRepoNames(projectName);
+  const repoPaths = [names.group, ...names.hosted];
+  const privileges = [...names.hosted, names.group];
   const pathsToDelete = [
     // delete privileges
     ...privileges.map(({ privilege }) => `/security/privileges/${privilege}`),
     // delete local repo maven snapshot
-    ...repoPaths.map(repo => `/repositories/${repo.repo}`),
-  ]
+    ...repoPaths.map((repo) => `/repositories/${repo.repo}`),
+  ];
   for (const path of pathsToDelete) {
-    await deleteIfExists(path, axiosInstance)
+    await deleteIfExists(path, axiosInstance);
   }
 }
 
 export function getNpmUrls(projectName: string) {
-  const nexusUrl = getConfig().secretExposedUrl
-  const names = getRepoNames(projectName)
+  const nexusUrl = getConfig().secretExposedUrl;
+  const names = getRepoNames(projectName);
   return {
     NPM_REPO: `${nexusUrl}/${names.hosted[0].repo}`,
-  }
+  };
 }

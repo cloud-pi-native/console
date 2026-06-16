@@ -1,10 +1,10 @@
-import { createRandomDbSetup } from '@cpn-console/test-utils'
-import { describe, expect, it } from 'vitest'
+import { createRandomDbSetup } from '@cpn-console/test-utils';
+import { describe, expect, it } from 'vitest';
 
 describe('random utils', () => {
   // TODO
   it.skip('should create a random db for tests', () => {
-    const db = createRandomDbSetup({ nbUsers: 3, nbRepo: 1, envs: ['dev', 'prod'] })
+    const db = createRandomDbSetup({ nbUsers: 3, nbRepo: 1, envs: ['dev', 'prod'] });
     expect(db).toEqual(
       expect.objectContaining({
         stages: expect.arrayContaining([
@@ -58,11 +58,13 @@ describe('random utils', () => {
         project: expect.objectContaining({
           id: expect.any(String),
           name: expect.any(String),
-          clusters: expect.arrayContaining([{
-            caData: expect.any(String),
-            server: expect.any(String),
-            tlsServername: expect.any(String),
-          }]),
+          clusters: expect.arrayContaining([
+            {
+              caData: expect.any(String),
+              server: expect.any(String),
+              tlsServername: expect.any(String),
+            },
+          ]),
           status: expect.any(String),
           locked: expect.any(Boolean),
           roles: expect.arrayContaining([
@@ -143,6 +145,6 @@ describe('random utils', () => {
           },
         ]),
       }),
-    )
-  })
-})
+    );
+  });
+});

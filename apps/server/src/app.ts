@@ -1,24 +1,24 @@
-import type { FastifyRequest } from 'fastify'
-import { apiPrefix, getContract } from '@cpn-console/shared'
-import fastifyCookie from '@fastify/cookie'
-import helmet from '@fastify/helmet'
-import fastifySession from '@fastify/session'
-import fastifySwagger from '@fastify/swagger'
-import fastifySwaggerUi from '@fastify/swagger-ui'
-import { initServer } from '@ts-rest/fastify'
-import { generateOpenApi } from '@ts-rest/open-api'
-import fastify from 'fastify'
-import keycloak from 'fastify-keycloak-adapter'
-import { apiRouter } from './resources/index.js'
-import { isDev, isInt, isTest } from './utils/env.js'
-import { fastifyConf, swaggerConf, swaggerUiConf } from './utils/fastify.js'
-import { keycloakConf, sessionConf } from './utils/keycloak.js'
+import type { FastifyRequest } from 'fastify';
+import { apiPrefix, getContract } from '@cpn-console/shared';
+import fastifyCookie from '@fastify/cookie';
+import helmet from '@fastify/helmet';
+import fastifySession from '@fastify/session';
+import fastifySwagger from '@fastify/swagger';
+import fastifySwaggerUi from '@fastify/swagger-ui';
+import { initServer } from '@ts-rest/fastify';
+import { generateOpenApi } from '@ts-rest/open-api';
+import fastify from 'fastify';
+import keycloak from 'fastify-keycloak-adapter';
+import { apiRouter } from './resources/index.js';
+import { isDev, isInt, isTest } from './utils/env.js';
+import { fastifyConf, swaggerConf, swaggerUiConf } from './utils/fastify.js';
+import { keycloakConf, sessionConf } from './utils/keycloak.js';
 
-export const serverInstance: ReturnType<typeof initServer> = initServer()
+export const serverInstance: ReturnType<typeof initServer> = initServer();
 
 const openApiDocument = generateOpenApi(await getContract(), swaggerConf, {
   setOperationId: true,
-})
+});
 
 const app = fastify(fastifyConf)
   .register(helmet, () => ({
@@ -33,31 +33,29 @@ const app = fastify(fastifyConf)
   .register(apiRouter())
   .addHook('onRoute', (opts) => {
     if (opts.path === `${apiPrefix}/healthz`) {
-      opts.logLevel = 'silent'
+      opts.logLevel = 'silent';
     }
   })
   .setErrorHandler((err: Error, req: FastifyRequest, reply) => {
-    const statusCode = 500
+    const statusCode = 500;
     // @ts-ignore vérifier l'objet
-    const message = err.description || err.message
-    reply
-      .status(statusCode)
-      .send({ status: statusCode, error: message, stack: err.stack })
-    req.log.error({ err, reqId: req.id }, 'Unhandled request error')
+    const message = err.description || err.message;
+    reply.status(statusCode).send({ status: statusCode, error: message, stack: err.stack });
+    req.log.error({ err, reqId: req.id }, 'Unhandled request error');
   })
   .addHook('onResponse', (req, res) => {
     const user = req.session?.user as {
-      id: string
-    }
+      id: string;
+    };
     if (res.statusCode < 400) {
-      req.log.info({ status: res.statusCode, userId: user?.id })
+      req.log.info({ status: res.statusCode, userId: user?.id });
     } else if (res.statusCode < 500) {
-      req.log.warn({ status: res.statusCode, userId: user?.id })
+      req.log.warn({ status: res.statusCode, userId: user?.id });
     } else {
-      req.log.error({ status: res.statusCode, userId: user?.id })
+      req.log.error({ status: res.statusCode, userId: user?.id });
     }
-  })
+  });
 
-await app.ready()
+await app.ready();
 
-export default app
+export default app;

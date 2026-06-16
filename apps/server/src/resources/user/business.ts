@@ -1,73 +1,85 @@
-import type { userContract, XOR } from '@cpn-console/shared'
-import type { AdminRole, AdminToken, PersonalAccessToken, Prisma, User } from '@prisma/client'
-import type { UserDetails } from '@/types/index.js'
-import { createHash } from 'node:crypto'
-import prisma from '@/prisma.js'
-import { getMatchingUsers as getMatchingUsersQuery, getUsers as getUsersQuery } from '@/resources/queries-index.js'
-import { BadRequest400 } from '@/utils/errors.js'
-import { hook } from '@/utils/hook-wrapper.js'
+import type { userContract, XOR } from '@cpn-console/shared';
+import type { AdminRole, AdminToken, PersonalAccessToken, Prisma, User } from '@prisma/client';
+import type { UserDetails } from '@/types/index.js';
+import { createHash } from 'node:crypto';
+import prisma from '@/prisma.js';
+import {
+  getMatchingUsers as getMatchingUsersQuery,
+  getUsers as getUsersQuery,
+} from '@/resources/queries-index.js';
+import { BadRequest400 } from '@/utils/errors.js';
+import { hook } from '@/utils/hook-wrapper.js';
 
-export async function getUsers(query: typeof userContract.getAllUsers.query._type, relationType: 'OR' | 'AND' = 'AND') {
-  const whereInputs: Prisma.UserWhereInput[] = []
+export async function getUsers(
+  query: typeof userContract.getAllUsers.query._type,
+  relationType: 'OR' | 'AND' = 'AND',
+) {
+  const whereInputs: Prisma.UserWhereInput[] = [];
   if (query.adminRoleIds?.length) {
-    whereInputs.push({ adminRoleIds: { hasEvery: query.adminRoleIds } })
+    whereInputs.push({ adminRoleIds: { hasEvery: query.adminRoleIds } });
   }
   if (query.adminRoles?.length) {
     const roles = query.adminRoles
       ? await prisma.adminRole.findMany({ where: { name: { in: query.adminRoles } } })
-      : []
+      : [];
 
-    const adminRoleNameNotFound = query.adminRoles?.find(nameQueried => !roles.some(({ name }) => name === nameQueried))
+    const adminRoleNameNotFound = query.adminRoles?.find(
+      (nameQueried) => !roles.some(({ name }) => name === nameQueried),
+    );
     if (adminRoleNameNotFound) {
-      return new BadRequest400(`Unable to find adminRole ${adminRoleNameNotFound}`)
+      return new BadRequest400(`Unable to find adminRole ${adminRoleNameNotFound}`);
     }
-    whereInputs.push({ adminRoleIds: { hasEvery: roles.map(({ id }) => id) } })
+    whereInputs.push({ adminRoleIds: { hasEvery: roles.map(({ id }) => id) } });
   }
   if (query.memberOfIds) {
     whereInputs.push({
-      AND: query.memberOfIds.map(id => ({
+      AND: query.memberOfIds.map((id) => ({
         OR: [
           { projectsOwned: { some: { id } } },
           { ProjectMembers: { some: { project: { id } } } },
         ],
       })),
-    })
+    });
   }
 
-  return getUsersQuery({ [relationType]: whereInputs })
+  return getUsersQuery({ [relationType]: whereInputs });
 }
 
 export async function getMatchingUsers(query: typeof userContract.getMatchingUsers.query._type) {
-  const AND: Prisma.UserWhereInput[] = []
+  const AND: Prisma.UserWhereInput[] = [];
   if (query.notInProjectId) {
-    AND.push({ projectMembers: { none: { projectId: query.notInProjectId } } })
-    AND.push({ projectsOwned: { none: { id: query.notInProjectId } } })
+    AND.push({ projectMembers: { none: { projectId: query.notInProjectId } } });
+    AND.push({ projectsOwned: { none: { id: query.notInProjectId } } });
   }
-  const filter = { contains: query.letters, mode: 'insensitive' } as const // Default value: default
+  const filter = { contains: query.letters, mode: 'insensitive' } as const; // Default value: default
   if (query.letters) {
     AND.push({
-      OR: [{
-        email: filter,
-      }, {
-        firstName: filter,
-      }, {
-        lastName: filter,
-      }],
-    })
-    AND.push({ type: 'human' })
+      OR: [
+        {
+          email: filter,
+        },
+        {
+          firstName: filter,
+        },
+        {
+          lastName: filter,
+        },
+      ],
+    });
+    AND.push({ type: 'human' });
   }
 
   return getMatchingUsersQuery({
     AND,
-  })
+  });
 }
 
 export async function patchUsers(users: typeof userContract.patchUsers.body._type) {
-  const userIds = users.map(u => u.id)
+  const userIds = users.map((u) => u.id);
   const usersBefore = await prisma.user.findMany({
     where: { id: { in: userIds } },
     select: { id: true, adminRoleIds: true },
-  })
+  });
 
   for (const user of users) {
     await prisma.user.update({
@@ -77,27 +89,27 @@ export async function patchUsers(users: typeof userContract.patchUsers.body._typ
       data: {
         adminRoleIds: user.adminRoleIds,
       },
-    })
+    });
   }
 
-  const impactedRoleIds = new Set<string>()
+  const impactedRoleIds = new Set<string>();
   for (const user of users) {
-    const before = usersBefore.find(u => u.id === user.id)
+    const before = usersBefore.find((u) => u.id === user.id);
     if (before) {
-      before.adminRoleIds.forEach(id => impactedRoleIds.add(id))
+      before.adminRoleIds.forEach((id) => impactedRoleIds.add(id));
     }
-    user.adminRoleIds?.forEach(id => impactedRoleIds.add(id))
+    user.adminRoleIds?.forEach((id) => impactedRoleIds.add(id));
   }
 
   for (const roleId of impactedRoleIds) {
-    await hook.adminRole.upsert(roleId)
+    await hook.adminRole.upsert(roleId);
   }
 
   return prisma.user.findMany({
     where: {
       id: { in: users.map(({ id }) => id) },
     },
-  })
+  });
 }
 
 export enum TokenInvalidReason {
@@ -106,57 +118,78 @@ export enum TokenInvalidReason {
   NOT_FOUND = 'Not authenticated',
 }
 
-export type UserTrial = Omit<UserDetails, 'type'>
-export async function logViaSession({ id, email, groups, ...user }: UserTrial): Promise<{ user: User, adminPerms: bigint }> {
+export type UserTrial = Omit<UserDetails, 'type'>;
+export async function logViaSession({
+  id,
+  email,
+  groups,
+  ...user
+}: UserTrial): Promise<{ user: User; adminPerms: bigint }> {
   let userDb = await prisma.user.findUnique({
     where: { id },
-  })
+  });
 
   if (!userDb) {
-    userDb = await prisma.user.create({ data: { email, id, ...user, adminRoleIds: [], type: 'human' } })
+    userDb = await prisma.user.create({
+      data: { email, id, ...user, adminRoleIds: [], type: 'human' },
+    });
   }
 
   const matchingAdminRoles = await prisma.adminRole.findMany({
-    where: { OR: [{ oidcGroup: { in: groups } }, { id: { in: userDb.adminRoleIds } }, { type: 'global' }] },
-  })
+    where: {
+      OR: [{ oidcGroup: { in: groups } }, { id: { in: userDb.adminRoleIds } }, { type: 'global' }],
+    },
+  });
 
   const oidcRoleIds = matchingAdminRoles
     .filter(({ oidcGroup }) => oidcGroup && groups.includes(oidcGroup))
-    .map(({ id }) => id)
+    .map(({ id }) => id);
 
   // On enregistre en bdd uniquement les roles de l'utilisateur
   // qui ne viennent pas de keycloak
-  const updatedUser = await prisma.user.update({ where: { id }, data: { ...user, lastLogin: (new Date()).toISOString() } })
-    .then(user => ({ ...user, adminRoleIds: [...new Set([...user.adminRoleIds, ...oidcRoleIds])] }))
+  const updatedUser = await prisma.user
+    .update({ where: { id }, data: { ...user, lastLogin: new Date().toISOString() } })
+    .then((user) => ({
+      ...user,
+      adminRoleIds: [...new Set([...user.adminRoleIds, ...oidcRoleIds])],
+    }));
   return {
     user: updatedUser,
     adminPerms: sumAdminPerms(matchingAdminRoles),
-  }
+  };
 }
 
-type UserWithTokenId = Omit<User, 'adminRoleIds'> & { tokenId: string }
-export async function logViaToken(pass: string): Promise<({ user: UserWithTokenId, adminPerms: bigint }) | TokenInvalidReason> {
-  const passHash = createHash('sha256').update(pass).digest('hex')
+type UserWithTokenId = Omit<User, 'adminRoleIds'> & { tokenId: string };
+export async function logViaToken(
+  pass: string,
+): Promise<{ user: UserWithTokenId; adminPerms: bigint } | TokenInvalidReason> {
+  const passHash = createHash('sha256').update(pass).digest('hex');
 
-  let token: (XOR<AdminToken, PersonalAccessToken> & { owner: User }) | TokenInvalidReason | undefined
-  const tokenLoginMethods = [findPersonalAccessToken, findAdminToken]
+  let token:
+    | (XOR<AdminToken, PersonalAccessToken> & { owner: User })
+    | TokenInvalidReason
+    | undefined;
+  const tokenLoginMethods = [findPersonalAccessToken, findAdminToken];
   for (const tokenLoginMethod of tokenLoginMethods) {
-    token = await tokenLoginMethod(passHash)
+    token = await tokenLoginMethod(passHash);
     if (token) {
-      break
+      break;
     }
   }
 
   if (typeof token === 'string') {
-    return token
+    return token;
   }
   if (!token) {
-    return TokenInvalidReason.NOT_FOUND
+    return TokenInvalidReason.NOT_FOUND;
   }
 
-  const globalRoles = await prisma.adminRole.findMany({ where: { type: 'global' }, select: { permissions: true } })
-  const globalPerms = globalRoles.reduce((acc, curr) => acc | curr.permissions, 0n)
-  const adminPerms = token?.permissions ?? await getAdminRolesAndSum(token.owner.adminRoleIds)
+  const globalRoles = await prisma.adminRole.findMany({
+    where: { type: 'global' },
+    select: { permissions: true },
+  });
+  const globalPerms = globalRoles.reduce((acc, curr) => acc | curr.permissions, 0n);
+  const adminPerms = token?.permissions ?? (await getAdminRolesAndSum(token.owner.adminRoleIds));
 
   return {
     user: {
@@ -164,58 +197,80 @@ export async function logViaToken(pass: string): Promise<({ user: UserWithTokenI
       tokenId: token.id,
     },
     adminPerms: globalPerms | adminPerms,
-  }
+  };
 }
 
 function isTokenInvalid(token: AdminToken | PersonalAccessToken): TokenInvalidReason | undefined {
   if (token.status !== 'active') {
-    return TokenInvalidReason.INACTIVE
+    return TokenInvalidReason.INACTIVE;
   }
-  const currentDate = new Date()
+  const currentDate = new Date();
   if (token.expirationDate && currentDate.getTime() > token.expirationDate?.getTime()) {
-    return TokenInvalidReason.EXPIRED
+    return TokenInvalidReason.EXPIRED;
   }
 }
 
 function sumAdminPerms(roles: AdminRole[]): bigint {
   if (!roles.length) {
-    return 0n
+    return 0n;
   }
-  return roles.reduce((acc, curr) => acc | curr.permissions, 0n)
+  return roles.reduce((acc, curr) => acc | curr.permissions, 0n);
 }
 
 async function getAdminRolesAndSum(roles: AdminRole['id'][] | null): Promise<bigint> {
   if (!roles?.length) {
-    return 0n
+    return 0n;
   }
-  return sumAdminPerms(await prisma.adminRole.findMany({
-    where: { id: { in: roles } },
-  }))
+  return sumAdminPerms(
+    await prisma.adminRole.findMany({
+      where: { id: { in: roles } },
+    }),
+  );
 }
 
 // List all token tpe authentication
-async function findPersonalAccessToken(digest: string): Promise<(PersonalAccessToken & { owner: User }) | undefined | TokenInvalidReason> {
-  const token = await prisma.personalAccessToken.findFirst({ where: { hash: digest }, include: { owner: true } })
-  if (!token)
-    return undefined
-  const invalidReason = isTokenInvalid(token)
+async function findPersonalAccessToken(
+  digest: string,
+): Promise<(PersonalAccessToken & { owner: User }) | undefined | TokenInvalidReason> {
+  const token = await prisma.personalAccessToken.findFirst({
+    where: { hash: digest },
+    include: { owner: true },
+  });
+  if (!token) return undefined;
+  const invalidReason = isTokenInvalid(token);
   if (invalidReason) {
-    return invalidReason
+    return invalidReason;
   }
-  await prisma.personalAccessToken.update({ where: { id: token.id }, data: { lastUse: (new Date()).toISOString() } })
-  await prisma.user.update({ where: { id: token.owner.id }, data: { lastLogin: (new Date()).toISOString() } })
-  return token
+  await prisma.personalAccessToken.update({
+    where: { id: token.id },
+    data: { lastUse: new Date().toISOString() },
+  });
+  await prisma.user.update({
+    where: { id: token.owner.id },
+    data: { lastLogin: new Date().toISOString() },
+  });
+  return token;
 }
 
-async function findAdminToken(digest: string): Promise<(AdminToken & { owner: User }) | undefined | TokenInvalidReason> {
-  const token = await prisma.adminToken.findFirst({ where: { hash: digest }, include: { owner: true } })
-  if (!token)
-    return undefined
-  const invalidReason = isTokenInvalid(token)
+async function findAdminToken(
+  digest: string,
+): Promise<(AdminToken & { owner: User }) | undefined | TokenInvalidReason> {
+  const token = await prisma.adminToken.findFirst({
+    where: { hash: digest },
+    include: { owner: true },
+  });
+  if (!token) return undefined;
+  const invalidReason = isTokenInvalid(token);
   if (invalidReason) {
-    return invalidReason
+    return invalidReason;
   }
-  await prisma.adminToken.update({ where: { id: token.id }, data: { lastUse: (new Date()).toISOString() } })
-  await prisma.user.update({ where: { id: token.userId }, data: { lastLogin: (new Date()).toISOString() } })
-  return token
+  await prisma.adminToken.update({
+    where: { id: token.id },
+    data: { lastUse: new Date().toISOString() },
+  });
+  await prisma.user.update({
+    where: { id: token.userId },
+    data: { lastLogin: new Date().toISOString() },
+  });
+  return token;
 }

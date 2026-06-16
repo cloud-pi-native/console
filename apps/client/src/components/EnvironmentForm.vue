@@ -1,9 +1,5 @@
 <script lang="ts" setup>
-import type {
-  CleanedCluster,
-  CreateEnvironmentBody,
-  Environment,
-} from '@cpn-console/shared'
+import type { CleanedCluster, CreateEnvironmentBody, Environment } from '@cpn-console/shared';
 import {
   deleteValidationInput,
   EnvironmentSchema,
@@ -11,147 +7,166 @@ import {
   longestEnvironmentName,
   parseZodError,
   projectIsLockedInfo,
-} from '@cpn-console/shared'
-import { computed, onBeforeMount, ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { useStageStore } from '@/stores/stage.js'
-import { useZoneStore } from '@/stores/zone.js'
-import { copyContent, localeParseFloat, ONE_TENTH_STR } from '@/utils/func.js'
+} from '@cpn-console/shared';
+import { computed, onBeforeMount, ref } from 'vue';
+import { useSnackbarStore } from '@/stores/snackbar.js';
+import { useStageStore } from '@/stores/stage.js';
+import { useZoneStore } from '@/stores/zone.js';
+import { copyContent, localeParseFloat, ONE_TENTH_STR } from '@/utils/func.js';
 
 interface OptionType {
-  text: string
-  value: string
+  text: string;
+  value: string;
 }
 
-const props = withDefaults(defineProps<{
-  environment?: Partial<Omit<Environment, 'updatedAt' | 'createdAt'>>
-  isEditable?: boolean
-  canManage: boolean
-  isProjectLocked?: boolean
-  availableClusters: CleanedCluster[]
-}>(), {
-  environment: () => ({
-    projectId: '',
-    id: '',
-    name: '',
-    cpu: undefined,
-    gpu: undefined,
-    memory: undefined,
-    autosync: true,
-    stageId: undefined,
-    clusterId: undefined,
-  }),
-  isEditable: true,
-  isProjectLocked: false,
-})
+const props = withDefaults(
+  defineProps<{
+    environment?: Partial<Omit<Environment, 'updatedAt' | 'createdAt'>>;
+    isEditable?: boolean;
+    canManage: boolean;
+    isProjectLocked?: boolean;
+    availableClusters: CleanedCluster[];
+  }>(),
+  {
+    environment: () => ({
+      projectId: '',
+      id: '',
+      name: '',
+      cpu: undefined,
+      gpu: undefined,
+      memory: undefined,
+      autosync: true,
+      stageId: undefined,
+      clusterId: undefined,
+    }),
+    isEditable: true,
+    isProjectLocked: false,
+  },
+);
 
 const emit = defineEmits<{
-  addEnvironment: [environment: Omit<CreateEnvironmentBody, 'projectId'>]
-  putEnvironment: [environment: Pick<Environment, 'cpu' | 'gpu' | 'memory' | 'autosync'>]
-  deleteEnvironment: [environmentId: Environment['id']]
-  cancel: []
-}>()
+  addEnvironment: [environment: Omit<CreateEnvironmentBody, 'projectId'>];
+  putEnvironment: [environment: Pick<Environment, 'cpu' | 'gpu' | 'memory' | 'autosync'>];
+  deleteEnvironment: [environmentId: Environment['id']];
+  cancel: [];
+}>();
 
-const snackbarStore = useSnackbarStore()
-const stageStore = useStageStore()
-const zoneStore = useZoneStore()
+const snackbarStore = useSnackbarStore();
+const stageStore = useStageStore();
+const zoneStore = useZoneStore();
 
-const localEnvironment = ref(props.environment)
-const environmentToDelete = ref('')
-const isDeletingEnvironment = ref(false)
-const zoneId = ref<string>()
-const stageOptions = ref<OptionType[]>([])
-const zoneOptions = ref<OptionType[]>([])
-const clusterOptions = ref<OptionType[]>([])
+const localEnvironment = ref(props.environment);
+const environmentToDelete = ref('');
+const isDeletingEnvironment = ref(false);
+const zoneId = ref<string>();
+const stageOptions = ref<OptionType[]>([]);
+const zoneOptions = ref<OptionType[]>([]);
+const clusterOptions = ref<OptionType[]>([]);
 
-const chosenZoneDescription = computed(() => zoneStore.zonesById[zoneId.value ?? '']?.description ?? '')
+const chosenZoneDescription = computed(
+  () => zoneStore.zonesById[zoneId.value ?? '']?.description ?? '',
+);
 
 const schema = computed(() => {
   if (localEnvironment.value?.id) {
-    const schemaValidation = EnvironmentSchema.pick({ id: true, cpu: true, gpu: true, memory: true, autosync: true }).safeParse(localEnvironment.value)
-    return schemaValidation
+    const schemaValidation = EnvironmentSchema.pick({
+      id: true,
+      cpu: true,
+      gpu: true,
+      memory: true,
+      autosync: true,
+    }).safeParse(localEnvironment.value);
+    return schemaValidation;
   } else {
-    const schemaValidation = EnvironmentSchema.pick({ clusterId: true, name: true, cpu: true, gpu: true, memory: true, autosync: true, stageId: true }).safeParse(localEnvironment.value)
-    return schemaValidation
+    const schemaValidation = EnvironmentSchema.pick({
+      clusterId: true,
+      name: true,
+      cpu: true,
+      gpu: true,
+      memory: true,
+      autosync: true,
+      stageId: true,
+    }).safeParse(localEnvironment.value);
+    return schemaValidation;
   }
-})
+});
 
-const availableClusters: ComputedRef<CleanedCluster[]> = computed(() => props.availableClusters
-  .filter(cluster => cluster.zoneId === zoneId.value)
-  .filter(cluster => cluster.stageIds.includes(localEnvironment.value.stageId ?? '')),
-)
+const availableClusters: ComputedRef<CleanedCluster[]> = computed(() =>
+  props.availableClusters
+    .filter((cluster) => cluster.zoneId === zoneId.value)
+    .filter((cluster) => cluster.stageIds.includes(localEnvironment.value.stageId ?? '')),
+);
 
-const clusterInfos = computed(() => availableClusters.value.find(cluster => cluster.id === localEnvironment.value.clusterId)?.infos)
+const clusterInfos = computed(
+  () =>
+    availableClusters.value.find((cluster) => cluster.id === localEnvironment.value.clusterId)
+      ?.infos,
+);
 
 function setEnvironmentOptions() {
-  zoneOptions.value = zoneStore.zones.map(zone => ({
+  zoneOptions.value = zoneStore.zones.map((zone) => ({
     text: zone.label,
     value: zone.id,
-  }))
-  stageOptions.value = stageStore.stages.map(stage => ({
+  }));
+  stageOptions.value = stageStore.stages.map((stage) => ({
     text: stage.name,
     value: stage.id,
-  }))
+  }));
   clusterOptions.value = props.availableClusters
-    .filter(cluster =>
-      (cluster.stageIds.includes(localEnvironment.value.stageId ?? '') // correspondant à ce stage
-        && cluster.zoneId === zoneId.value) // dont la zone d'attachement est celle choisie
-        || cluster.id === localEnvironment.value.clusterId, // ou alors celui associé à l'environnment en cours de modification
+    .filter(
+      (cluster) =>
+        (cluster.stageIds.includes(localEnvironment.value.stageId ?? '') && // correspondant à ce stage
+          cluster.zoneId === zoneId.value) || // dont la zone d'attachement est celle choisie
+        cluster.id === localEnvironment.value.clusterId, // ou alors celui associé à l'environnment en cours de modification
     )
-    .map(cluster => ({
+    .map((cluster) => ({
       text: cluster.label,
       value: cluster.id,
-    }))
+    }));
 }
 
 function resetCluster() {
-  localEnvironment.value.clusterId = ''
+  localEnvironment.value.clusterId = '';
 }
 
 function save() {
   if (schema.value.success) {
     if ('id' in schema.value.data) {
-      emit('putEnvironment', schema.value.data)
+      emit('putEnvironment', schema.value.data);
     } else {
-      emit('addEnvironment', schema.value.data)
+      emit('addEnvironment', schema.value.data);
     }
   } else {
-    snackbarStore.setMessage(parseZodError(schema.value.error))
+    snackbarStore.setMessage(parseZodError(schema.value.error));
   }
 }
 
 function cancel() {
-  emit('cancel')
+  emit('cancel');
 }
 
 onBeforeMount(async () => {
-  await Promise.all([
-    stageStore.getAllStages(),
-    zoneStore.getAllZones(),
-  ])
-  setEnvironmentOptions()
-})
+  await Promise.all([stageStore.getAllStages(), zoneStore.getAllZones()]);
+  setEnvironmentOptions();
+});
 
 onMounted(() => {
-  zoneId.value = props.availableClusters?.find(cluster => cluster.id === localEnvironment.value.clusterId)?.zoneId
-})
+  zoneId.value = props.availableClusters?.find(
+    (cluster) => cluster.id === localEnvironment.value.clusterId,
+  )?.zoneId;
+});
 
 watch(zoneId, () => {
-  setEnvironmentOptions()
-})
+  setEnvironmentOptions();
+});
 
 watch(localEnvironment.value, () => {
-  setEnvironmentOptions()
-})
+  setEnvironmentOptions();
+});
 </script>
 
 <template>
-  <h1
-    v-if="props.isEditable"
-    class="fr-h1"
-  >
-    Ajouter un environnement au projet
-  </h1>
+  <h1 v-if="props.isEditable" class="fr-h1">Ajouter un environnement au projet</h1>
   <DsfrFieldset
     :legend="`Informations de l\'environnement ${localEnvironment.name ?? ''}`"
     :hint="props.isEditable ? 'Les champs munis d\'une astérisque (*) sont requis' : undefined"
@@ -168,9 +183,7 @@ watch(localEnvironment.value, () => {
       title="Namespace kubernetes, les environnements créés en version <=8.22.1 utilisent l'ancien système de nommage"
       class="inline"
     >
-      <v-icon
-        name="ri:question-line"
-      />
+      <v-icon name="ri:question-line" />
     </div>
 
     <DsfrInputGroup
@@ -181,7 +194,12 @@ watch(localEnvironment.value, () => {
       label-visible
       :required="true"
       :hint="`Ne doit pas contenir d'espace ni de trait d'union, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`"
-      :error-message="!!localEnvironment.name && !EnvironmentSchema.pick({ name: true }).safeParse({ name: localEnvironment.name }).success ? `Le nom de l\'environnment ne doit pas contenir d\'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.` : undefined"
+      :error-message="
+        !!localEnvironment.name &&
+        !EnvironmentSchema.pick({ name: true }).safeParse({ name: localEnvironment.name }).success
+          ? `Le nom de l\'environnment ne doit pas contenir d\'espace, doit être unique pour le projet et le cluster sélectionnés, être en minuscules et faire plus de 2 et moins de ${longestEnvironmentName} caractères.`
+          : undefined
+      "
       placeholder="integ0"
       :disabled="!props.isEditable || !props.canManage"
     />
@@ -250,7 +268,10 @@ watch(localEnvironment.value, () => {
         :required="true"
         data-testid="memoryInput"
         :placeholder="ONE_TENTH_STR"
-        @update:model-value="(value: string | number | undefined) => localEnvironment.memory = localeParseFloat(value as string)"
+        @update:model-value="
+          (value: string | number | undefined) =>
+            (localEnvironment.memory = localeParseFloat(value as string))
+        "
       />
       <DsfrInputGroup
         v-model="localEnvironment.cpu"
@@ -263,7 +284,10 @@ watch(localEnvironment.value, () => {
         :required="true"
         data-testid="cpuInput"
         :placeholder="ONE_TENTH_STR"
-        @update:model-value="(value: string | number | undefined) => localEnvironment.cpu = localeParseFloat(value as string)"
+        @update:model-value="
+          (value: string | number | undefined) =>
+            (localEnvironment.cpu = localeParseFloat(value as string))
+        "
       />
       <DsfrInputGroup
         v-model="localEnvironment.gpu"
@@ -276,7 +300,10 @@ watch(localEnvironment.value, () => {
         :required="true"
         data-testid="gpuInput"
         :placeholder="ONE_TENTH_STR"
-        @update:model-value="(value: string | number | undefined) => localEnvironment.gpu = localeParseFloat(value as string)"
+        @update:model-value="
+          (value: string | number | undefined) =>
+            (localEnvironment.gpu = localeParseFloat(value as string))
+        "
       />
       <DsfrCheckbox
         id="autosyncCbx"
@@ -293,10 +320,7 @@ watch(localEnvironment.value, () => {
         type="warning"
         small
       />
-      <div
-        v-if="localEnvironment.id && canManage"
-        class="flex space-x-10 mt-5"
-      >
+      <div v-if="localEnvironment.id && canManage" class="flex space-x-10 mt-5">
         <DsfrButton
           label="Enregistrer"
           data-testid="putEnvironmentBtn"
@@ -317,11 +341,7 @@ watch(localEnvironment.value, () => {
     </div>
   </DsfrFieldset>
   <div v-if="localEnvironment.id && props.canManage">
-    <div
-      v-if="canManage"
-      data-testid="deleteEnvironmentZone"
-      class="danger-zone"
-    >
+    <div v-if="canManage" data-testid="deleteEnvironmentZone" class="danger-zone">
       <div class="danger-zone-btns">
         <DsfrButton
           v-show="!isDeletingEnvironment"
@@ -339,10 +359,7 @@ watch(localEnvironment.value, () => {
           small
         />
       </div>
-      <div
-        v-if="isDeletingEnvironment"
-        class="fr-mt-4w"
-      >
+      <div v-if="isDeletingEnvironment" class="fr-mt-4w">
         <DsfrInput
           v-model="environmentToDelete"
           data-testid="deleteEnvironmentInput"
@@ -351,9 +368,7 @@ watch(localEnvironment.value, () => {
           :placeholder="deleteValidationInput"
           class="fr-mb-2w"
         />
-        <div
-          class="flex justify-between"
-        >
+        <div class="flex justify-between">
           <DsfrButton
             data-testid="deleteEnvironmentBtn"
             :label="`Supprimer définitivement l'environnement ${localEnvironment.name}`"
@@ -363,19 +378,12 @@ watch(localEnvironment.value, () => {
             icon="ri:delete-bin-7-line"
             @click="emit('deleteEnvironment', localEnvironment.id)"
           />
-          <DsfrButton
-            label="Annuler"
-            primary
-            @click="isDeletingEnvironment = false"
-          />
+          <DsfrButton label="Annuler" primary @click="isDeletingEnvironment = false" />
         </div>
       </div>
     </div>
   </div>
-  <div
-    v-if="props.isEditable && canManage"
-    class="flex space-x-10 mt-5"
-  >
+  <div v-if="props.isEditable && canManage" class="flex space-x-10 mt-5">
     <DsfrButton
       label="Ajouter l'environnement"
       data-testid="addEnvironmentBtn"

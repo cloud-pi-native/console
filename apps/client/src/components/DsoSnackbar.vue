@@ -1,23 +1,23 @@
 <script lang="ts" setup>
-import { computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { useSnackbarStore } from '@/stores/snackbar.js';
 
-const route = useRoute()
-const snackbarStore = useSnackbarStore()
+const route = useRoute();
+const snackbarStore = useSnackbarStore();
 
-const routePath = computed(() => route.path)
-const message = computed(() => snackbarStore.message)
-const isOpen = computed(() => snackbarStore.isOpen)
-const type = computed(() => snackbarStore.type)
+const routePath = computed(() => route.path);
+const message = computed(() => snackbarStore.message);
+const isOpen = computed(() => snackbarStore.isOpen);
+const type = computed(() => snackbarStore.type);
 
 function closeSnackbar() {
-  snackbarStore.hideMessage()
+  snackbarStore.hideMessage();
 }
 
 watch(routePath, () => {
-  closeSnackbar()
-})
+  closeSnackbar();
+});
 </script>
 
 <template>
@@ -31,9 +31,7 @@ watch(routePath, () => {
       closeable
       @close="closeSnackbar()"
     >
-      <span
-        style="white-space: pre-wrap;"
-      >
+      <span style="white-space: pre-wrap">
         {{ message }}
       </span>
     </DsfrAlert>

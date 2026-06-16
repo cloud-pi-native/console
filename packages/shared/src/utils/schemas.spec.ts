@@ -1,8 +1,21 @@
-import type { Log, ProjectV2 } from '../index.js'
-import { faker } from '@faker-js/faker'
-import { describe, expect, it } from 'vitest'
-import { ZodError } from 'zod'
-import { ClusterDetailsSchema, ClusterPrivacy, ClusterUsageSchema, descriptionMaxLength, EnvironmentSchema, instanciateSchema, LogSchema, parseZodError, ProjectSchemaV2, RepoSchema, StageSchema, UserSchema } from '../index.js'
+import type { Log, ProjectV2 } from '../index.js';
+import { faker } from '@faker-js/faker';
+import { describe, expect, it } from 'vitest';
+import { ZodError } from 'zod';
+import {
+  ClusterDetailsSchema,
+  ClusterPrivacy,
+  ClusterUsageSchema,
+  descriptionMaxLength,
+  EnvironmentSchema,
+  instanciateSchema,
+  LogSchema,
+  parseZodError,
+  ProjectSchemaV2,
+  RepoSchema,
+  StageSchema,
+  UserSchema,
+} from '../index.js';
 
 describe('schemas utils', () => {
   it('should delete config in log', () => {
@@ -21,23 +34,21 @@ describe('schemas utils', () => {
       },
       requestId: faker.string.uuid(),
       userId: faker.string.uuid(),
-    }
-    const parsed = structuredClone(toParse)
+    };
+    const parsed = structuredClone(toParse);
     // @ts-ignore la date doit être transformé en string
-    parsed.createdAt = parsed.createdAt.toISOString()
+    parsed.createdAt = parsed.createdAt.toISOString();
     // @ts-ignore
-    parsed.updatedAt = parsed.updatedAt.toISOString()
+    parsed.updatedAt = parsed.updatedAt.toISOString();
     // @ts-ignore
-    delete parsed.data.config
-    expect(LogSchema
-      .safeParse(toParse))
-      .toStrictEqual({ data: parsed, success: true })
-  })
+    delete parsed.data.config;
+    expect(LogSchema.safeParse(toParse)).toStrictEqual({ data: parsed, success: true });
+  });
 
   it('should not validate an undefined object', () => {
     // @ts-ignore
-    expect(RepoSchema.safeParse(undefined).error).toBeInstanceOf(ZodError)
-  })
+    expect(RepoSchema.safeParse(undefined).error).toBeInstanceOf(ZodError);
+  });
 
   it('should validate a correct repository schema', () => {
     const toParse = {
@@ -49,13 +60,13 @@ describe('schemas utils', () => {
       isPrivate: true,
       isInfra: false,
       externalUserName: 'clai+re-nlet_',
-    }
+    };
 
-    expect(RepoSchema
-      .omit({ createdAt: true, updatedAt: true })
-      .safeParse(toParse))
-      .toStrictEqual({ data: toParse, success: true })
-  })
+    expect(RepoSchema.omit({ createdAt: true, updatedAt: true }).safeParse(toParse)).toStrictEqual({
+      data: toParse,
+      success: true,
+    });
+  });
 
   it('should validate a correct environment schema', () => {
     const toParse = {
@@ -68,13 +79,12 @@ describe('schemas utils', () => {
       projectId: faker.string.uuid(),
       clusterId: faker.string.uuid(),
       stageId: faker.string.uuid(),
-    }
+    };
 
-    expect(EnvironmentSchema
-      .omit({ createdAt: true, updatedAt: true })
-      .safeParse(toParse))
-      .toStrictEqual({ data: toParse, success: true })
-  })
+    expect(
+      EnvironmentSchema.omit({ createdAt: true, updatedAt: true }).safeParse(toParse),
+    ).toStrictEqual({ data: toParse, success: true });
+  });
 
   it('should validate a correct project schema', () => {
     const toParse: ProjectV2 = {
@@ -112,18 +122,18 @@ describe('schemas utils', () => {
       ownerId: faker.string.uuid(),
       roles: [],
       lastSuccessProvisionningVersion: null,
-    }
-    const parsed = structuredClone(toParse)
+    };
+    const parsed = structuredClone(toParse);
     // @ts-ignore la date doit être transformé en string
-    parsed.createdAt = parsed.createdAt.toISOString()
+    parsed.createdAt = parsed.createdAt.toISOString();
     // @ts-ignore
-    parsed.updatedAt = parsed.updatedAt.toISOString()
+    parsed.updatedAt = parsed.updatedAt.toISOString();
     // @ts-ignore
-    parsed.owner.updatedAt = parsed.owner.updatedAt.toISOString()
+    parsed.owner.updatedAt = parsed.owner.updatedAt.toISOString();
     // @ts-ignore
-    parsed.owner.createdAt = parsed.owner.createdAt.toISOString()
-    expect(ProjectSchemaV2.safeParse(toParse)).toStrictEqual({ data: parsed, success: true })
-  })
+    parsed.owner.createdAt = parsed.owner.createdAt.toISOString();
+    expect(ProjectSchemaV2.safeParse(toParse)).toStrictEqual({ data: parsed, success: true });
+  });
 
   it('should validate a correct user schema', () => {
     const toParse = {
@@ -135,24 +145,24 @@ describe('schemas utils', () => {
       updatedAt: new Date(),
       createdAt: new Date(),
       type: 'human',
-    }
-    const parsed = structuredClone(toParse)
+    };
+    const parsed = structuredClone(toParse);
     // @ts-ignore la date doit être transformé en string
-    parsed.createdAt = parsed.createdAt.toISOString()
+    parsed.createdAt = parsed.createdAt.toISOString();
     // @ts-ignore
-    parsed.updatedAt = parsed.updatedAt.toISOString()
-    expect(UserSchema.safeParse(toParse)).toStrictEqual({ data: parsed, success: true })
-  })
+    parsed.updatedAt = parsed.updatedAt.toISOString();
+    expect(UserSchema.safeParse(toParse)).toStrictEqual({ data: parsed, success: true });
+  });
 
   it('should validate a correct stage schema', () => {
     const toParse = {
       id: faker.string.uuid(),
       name: faker.lorem.word({ length: { min: 2, max: 10 } }),
       clusterIds: [],
-    }
+    };
 
-    expect(StageSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true })
-  })
+    expect(StageSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true });
+  });
 
   it('should validate a repo business schema', () => {
     const toParse = {
@@ -164,13 +174,13 @@ describe('schemas utils', () => {
       externalToken: 'myToken',
       isPrivate: true,
       isInfra: false,
-    }
+    };
 
-    expect(RepoSchema
-      .omit({ createdAt: true, updatedAt: true })
-      .safeParse(toParse))
-      .toStrictEqual({ data: toParse, success: true })
-  })
+    expect(RepoSchema.omit({ createdAt: true, updatedAt: true }).safeParse(toParse)).toStrictEqual({
+      data: toParse,
+      success: true,
+    });
+  });
 
   it('should validate a public cluster details schema', () => {
     const toParse = {
@@ -189,24 +199,23 @@ describe('schemas utils', () => {
           tlsServerName: 'blabla',
         },
       },
-    }
+    };
 
-    expect(ClusterDetailsSchema
-      .safeParse(toParse))
-      .toStrictEqual({ data: { ...toParse, infos: '' }, success: true })
-  })
+    expect(ClusterDetailsSchema.safeParse(toParse)).toStrictEqual({
+      data: { ...toParse, infos: '' },
+      success: true,
+    });
+  });
 
   it('should validate a cluster usage schema', () => {
     const toParse = {
       cpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
       gpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
       memory: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
-    }
+    };
 
-    expect(ClusterUsageSchema
-      .safeParse(toParse))
-      .toStrictEqual({ data: toParse, success: true })
-  })
+    expect(ClusterUsageSchema.safeParse(toParse)).toStrictEqual({ data: toParse, success: true });
+  });
 
   it('should not validate a repository schema with wrong internal repo name', () => {
     const toParse = {
@@ -216,37 +225,35 @@ describe('schemas utils', () => {
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       isPrivate: false,
       isInfra: false,
-    }
+    };
 
     // @ts-ignore
-    expect(parseZodError(RepoSchema
-      .safeParse(toParse)
-      .error))
-      .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"')
+    expect(parseZodError(RepoSchema.safeParse(toParse).error)).toMatch(
+      'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"',
+    );
 
-    toParse.internalRepoName = 'candilib-'
-
-    // @ts-ignore
-    expect(parseZodError(RepoSchema
-      .safeParse(toParse)
-      .error))
-      .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"')
-
-    toParse.internalRepoName = 'candiLib'
+    toParse.internalRepoName = 'candilib-';
 
     // @ts-ignore
-    expect(parseZodError(RepoSchema
-      .omit({ createdAt: true, updatedAt: true })
-      .safeParse(toParse)
-      .error))
-      .toMatch('Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"')
+    expect(parseZodError(RepoSchema.safeParse(toParse).error)).toMatch(
+      'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"',
+    );
 
-    toParse.internalRepoName = 'candi-lib'
-    expect(RepoSchema
-      .omit({ createdAt: true, updatedAt: true })
-      .safeParse(toParse))
-      .toStrictEqual({ data: toParse, success: true })
-  })
+    toParse.internalRepoName = 'candiLib';
+
+    // @ts-ignore
+    expect(
+      parseZodError(RepoSchema.omit({ createdAt: true, updatedAt: true }).safeParse(toParse).error),
+    ).toMatch(
+      'Le nom du dépôt ne doit contenir ni majuscules, ni espaces, ni caractères spéciaux hormis le trait d\'union, et doit commencer et se terminer par un caractère alphanumérique at "internalRepoName"',
+    );
+
+    toParse.internalRepoName = 'candi-lib';
+    expect(RepoSchema.omit({ createdAt: true, updatedAt: true }).safeParse(toParse)).toStrictEqual({
+      data: toParse,
+      success: true,
+    });
+  });
 
   it('should not validate a too short project name', () => {
     const toParse = {
@@ -255,17 +262,16 @@ describe('schemas utils', () => {
       status: 'created',
       locked: false,
       description: '',
-      createdAt: (new Date()).toISOString(),
-      updatedAt: (new Date()).toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       clusterIds: [],
-    }
+    };
 
     // @ts-ignore
-    expect(parseZodError(ProjectSchemaV2
-      .safeParse(toParse)
-      .error))
-      .toMatch('Validation error: String must contain at least 2 character(s) at "name"')
-  })
+    expect(parseZodError(ProjectSchemaV2.safeParse(toParse).error)).toMatch(
+      'Validation error: String must contain at least 2 character(s) at "name"',
+    );
+  });
 
   it('should not validate a too long project name', () => {
     const toParse = {
@@ -274,17 +280,16 @@ describe('schemas utils', () => {
       status: 'created',
       locked: false,
       description: '',
-      createdAt: (new Date()).toISOString(),
-      updatedAt: (new Date()).toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       clusterIds: [],
-    }
+    };
 
     // @ts-ignore
-    expect(parseZodError(ProjectSchemaV2
-      .safeParse(toParse)
-      .error))
-      .toMatch('Validation error: String must contain at most 20 character(s) at "name"')
-  })
+    expect(parseZodError(ProjectSchemaV2.safeParse(toParse).error)).toMatch(
+      'Validation error: String must contain at most 20 character(s) at "name"',
+    );
+  });
 
   it('should not validate a too long project description', () => {
     const toParse = {
@@ -293,35 +298,34 @@ describe('schemas utils', () => {
       description: faker.string.alpha(descriptionMaxLength + 1),
       status: 'created',
       locked: false,
-      createdAt: (new Date()).toISOString(),
-      updatedAt: (new Date()).toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       clusterIds: [],
-    }
+    };
 
-    expect(ProjectSchemaV2
-      .safeParse(toParse)
-      .error).toBeInstanceOf(ZodError)
-  })
+    expect(ProjectSchemaV2.safeParse(toParse).error).toBeInstanceOf(ZodError);
+  });
 
   it('should validate a single key with given schema', () => {
-    const toParse = { internalRepoName: 'candilib' }
+    const toParse = { internalRepoName: 'candilib' };
 
-    expect(RepoSchema
-      .pick({ internalRepoName: true })
-      .safeParse(toParse))
-      .toStrictEqual({ data: toParse, success: true })
-  })
+    expect(RepoSchema.pick({ internalRepoName: true }).safeParse(toParse)).toStrictEqual({
+      data: toParse,
+      success: true,
+    });
+  });
 
   it('should not validate a single key with given schema', () => {
-    const toParse = { internalRepoName: 'candi lib' }
+    const toParse = { internalRepoName: 'candi lib' };
 
-    expect(RepoSchema
-      .omit({ createdAt: true, updatedAt: true })
-      .pick({ internalRepoName: true })
-      .safeParse(toParse)
-      // @ts-ignore
-      .error).toBeInstanceOf(ZodError)
-  })
+    expect(
+      RepoSchema.omit({ createdAt: true, updatedAt: true })
+        .pick({ internalRepoName: true })
+        .safeParse(toParse)
+        // @ts-ignore
+        .error,
+    ).toBeInstanceOf(ZodError);
+  });
 
   it('should return truthy schema', () => {
     expect(instanciateSchema(RepoSchema.omit({ id: true }), true)).toMatchObject({
@@ -332,8 +336,8 @@ describe('schemas utils', () => {
       isInfra: true,
       externalUserName: true,
       projectId: true,
-    })
-  })
+    });
+  });
 
   it('should return true schema', () => {
     expect(instanciateSchema(RepoSchema.omit({ id: true }), true)).toMatchObject({
@@ -344,6 +348,6 @@ describe('schemas utils', () => {
       isInfra: true,
       externalUserName: true,
       projectId: true,
-    })
-  })
-})
+    });
+  });
+});

@@ -15,13 +15,13 @@ on:
       - synchronize
       - ready_for_review
     branches:
-      - "**"
+      - '**'
   workflow_dispatch:
 
 env:
   NODE_VERSION: 24.13.1
   REGISTRY: ghcr.io
-  NAMESPACE: "${{ github.repository }}"
+  NAMESPACE: '${{ github.repository }}'
   BUILD_AMD64: true
   BUILD_ARM64: false
   USE_QEMU: false
@@ -84,9 +84,9 @@ jobs:
     with:
       NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
     secrets:
-      SONAR_HOST_URL: "${{ secrets.SONAR_HOST_URL }}"
-      SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
-      SONAR_PROJECT_KEY: "${{ secrets.SONAR_PROJECT_KEY }}"
+      SONAR_HOST_URL: '${{ secrets.SONAR_HOST_URL }}'
+      SONAR_TOKEN: '${{ secrets.SONAR_TOKEN }}'
+      SONAR_PROJECT_KEY: '${{ secrets.SONAR_PROJECT_KEY }}'
 
   build:
     uses: ./.github/workflows/job-build.yml

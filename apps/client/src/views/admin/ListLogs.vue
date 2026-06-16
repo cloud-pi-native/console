@@ -1,42 +1,41 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue'
-import { useLogStore } from '@/stores/log.js'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { computed, onMounted, ref } from 'vue';
+import { useLogStore } from '@/stores/log.js';
+import { useSnackbarStore } from '@/stores/snackbar.js';
 
-const adminLogStore = useLogStore()
-const snackbarStore = useSnackbarStore()
+const adminLogStore = useLogStore();
+const snackbarStore = useSnackbarStore();
 
-const step = 10
-const isUpdating = ref(true)
-const page = ref(0)
+const step = 10;
+const isUpdating = ref(true);
+const page = ref(0);
 
-const logs = computed(() => adminLogStore.logs)
-const logsLength = computed(() => adminLogStore.count ?? 0)
+const logs = computed(() => adminLogStore.logs);
+const logsLength = computed(() => adminLogStore.count ?? 0);
 
 async function showLogs(index: number) {
-  page.value = index
-  await getAllLogs({ offset: index * step, limit: step })
+  page.value = index;
+  await getAllLogs({ offset: index * step, limit: step });
 }
-async function getAllLogs({ offset, limit }: { offset: number, limit: number }, isDisplayingSuccess = true) {
-  isUpdating.value = true
-  await adminLogStore.getAllLogs({ offset, limit })
+async function getAllLogs(
+  { offset, limit }: { offset: number; limit: number },
+  isDisplayingSuccess = true,
+) {
+  isUpdating.value = true;
+  await adminLogStore.getAllLogs({ offset, limit });
   if (isDisplayingSuccess) {
-    snackbarStore.setMessage('Logs récupérés avec succès', 'success')
+    snackbarStore.setMessage('Logs récupérés avec succès', 'success');
   }
-  isUpdating.value = false
+  isUpdating.value = false;
 }
 
 onMounted(async () => {
-  await getAllLogs({ offset: 0, limit: step }, false)
-})
+  await getAllLogs({ offset: 0, limit: step }, false);
+});
 </script>
 
 <template>
-  <h1
-    class="fr-h3"
-  >
-    Journaux des services associés à la chaîne DSO
-  </h1>
+  <h1 class="fr-h3">Journaux des services associés à la chaîne DSO</h1>
   <LogsViewer
     :logs="logs"
     :total-length="logsLength"

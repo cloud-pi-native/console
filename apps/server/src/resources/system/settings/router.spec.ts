@@ -1,82 +1,80 @@
-import { ADMIN_PERMS, systemSettingsContract } from '@cpn-console/shared'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import app from '../../../app.js'
-import * as utilsController from '../../../utils/controller.js'
-import { getUserMockInfos } from '../../../utils/mocks.js'
-import * as business from './business.js'
+import { ADMIN_PERMS, systemSettingsContract } from '@cpn-console/shared';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import app from '../../../app.js';
+import * as utilsController from '../../../utils/controller.js';
+import { getUserMockInfos } from '../../../utils/mocks.js';
+import * as business from './business.js';
 
-vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin)
-const authUserMock = vi.spyOn(utilsController, 'authUser')
-const businessGetSystemSettingsMock = vi.spyOn(business, 'getSystemSettings')
-const businessUpsertSystemSettingMock = vi.spyOn(business, 'upsertSystemSetting')
+vi.mock('fastify-keycloak-adapter', (await import('../../../utils/mocks.js')).mockSessionPlugin);
+const authUserMock = vi.spyOn(utilsController, 'authUser');
+const businessGetSystemSettingsMock = vi.spyOn(business, 'getSystemSettings');
+const businessUpsertSystemSettingMock = vi.spyOn(business, 'upsertSystemSetting');
 
 describe('test systemSettingsContract', () => {
   beforeEach(() => {
-    vi.resetAllMocks()
-  })
+    vi.resetAllMocks();
+  });
 
   describe('listSystemSettings', () => {
     it('should return plugin configurations for authorized users', async () => {
-      const user = getUserMockInfos(ADMIN_PERMS.LIST_SYSTEM)
-      const systemSettings: any[] = []
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_SYSTEM);
+      const systemSettings: any[] = [];
 
-      authUserMock.mockResolvedValueOnce(user)
-      businessGetSystemSettingsMock.mockResolvedValueOnce(systemSettings)
+      authUserMock.mockResolvedValueOnce(user);
+      businessGetSystemSettingsMock.mockResolvedValueOnce(systemSettings);
 
-      const response = await app.inject()
-        .get(systemSettingsContract.listSystemSettings.path)
-        .end()
+      const response = await app.inject().get(systemSettingsContract.listSystemSettings.path).end();
 
-      expect(businessGetSystemSettingsMock).toHaveBeenCalledTimes(1)
-      expect(response.json()).toEqual(systemSettings)
-      expect(response.statusCode).toEqual(200)
-    })
+      expect(businessGetSystemSettingsMock).toHaveBeenCalledTimes(1);
+      expect(response.json()).toEqual(systemSettings);
+      expect(response.statusCode).toEqual(200);
+    });
 
     it('should return 200 for anybody', async () => {
-      const user = getUserMockInfos(0n)
-      const systemSettings: any[] = []
+      const user = getUserMockInfos(0n);
+      const systemSettings: any[] = [];
 
-      authUserMock.mockResolvedValueOnce(user)
-      businessGetSystemSettingsMock.mockResolvedValueOnce(systemSettings)
+      authUserMock.mockResolvedValueOnce(user);
+      businessGetSystemSettingsMock.mockResolvedValueOnce(systemSettings);
 
-      const response = await app.inject()
-        .get(systemSettingsContract.listSystemSettings.path)
-        .end()
+      const response = await app.inject().get(systemSettingsContract.listSystemSettings.path).end();
 
-      expect(businessGetSystemSettingsMock).toHaveBeenCalledTimes(1)
-      expect(response.statusCode).toEqual(200)
-    })
-  })
+      expect(businessGetSystemSettingsMock).toHaveBeenCalledTimes(1);
+      expect(response.statusCode).toEqual(200);
+    });
+  });
 
   describe('upsertSystemSetting', () => {
-    const newConfig = { key: 'key1', value: 'value1' }
+    const newConfig = { key: 'key1', value: 'value1' };
     it('should update system setting, authorized users', async () => {
-      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_SYSTEM)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_SYSTEM);
 
-      authUserMock.mockResolvedValueOnce(user)
-      businessUpsertSystemSettingMock.mockResolvedValueOnce(newConfig)
+      authUserMock.mockResolvedValueOnce(user);
+      businessUpsertSystemSettingMock.mockResolvedValueOnce(newConfig);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .post(systemSettingsContract.upsertSystemSetting.path)
         .body(newConfig)
-        .end()
+        .end();
 
-      expect(businessUpsertSystemSettingMock).toHaveBeenCalledWith(newConfig)
-      expect(response.statusCode).toEqual(201)
-    })
+      expect(businessUpsertSystemSettingMock).toHaveBeenCalledWith(newConfig);
+      expect(response.statusCode).toEqual(201);
+    });
 
     it('should return 403 for unauthorized users', async () => {
-      const user = getUserMockInfos(0n)
+      const user = getUserMockInfos(0n);
 
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .post(systemSettingsContract.upsertSystemSetting.path)
         .body(newConfig)
-        .end()
+        .end();
 
-      expect(businessUpsertSystemSettingMock).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toEqual(403)
-    })
-  })
-})
+      expect(businessUpsertSystemSettingMock).toHaveBeenCalledTimes(0);
+      expect(response.statusCode).toEqual(403);
+    });
+  });
+});

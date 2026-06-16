@@ -1,96 +1,102 @@
-import { rm } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { logger } from '@cpn-console/logger'
-import app from './app.js'
-import { getConnection } from './connect.js'
-import { initDb } from './init/db/index.js'
-import { initPm } from './plugins.js'
-import { isCI, isDev, isDevSetup, isInt, isProd, isTest, port } from './utils/env.js'
+import { rm } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { logger } from '@cpn-console/logger';
+import app from './app.js';
+import { getConnection } from './connect.js';
+import { initDb } from './init/db/index.js';
+import { initPm } from './plugins.js';
+import { isCI, isDev, isDevSetup, isInt, isProd, isTest, port } from './utils/env.js';
 
 async function initializeDB(path: string) {
-  logger.info('Starting init DB...')
-  const { data } = await import(path)
-  await initDb(data)
-  logger.info('initDb invoked successfully')
+  logger.info('Starting init DB...');
+  const { data } = await import(path);
+  await initDb(data);
+  logger.info('initDb invoked successfully');
 }
 
-export async function startServer(defaultPort: number = (port ? +port : 8080)) {
+export async function startServer(defaultPort: number = port ? +port : 8080) {
   try {
-    await getConnection()
+    await getConnection();
   } catch (error) {
-    logger.error({ err: error }, 'Database connection failed')
-    if (!(error instanceof Error)) return
-    throw error
+    logger.error({ err: error }, 'Database connection failed');
+    if (!(error instanceof Error)) return;
+    throw error;
   }
 
-  initPm()
+  initPm();
 
-  logger.info('Reading init database file')
+  logger.info('Reading init database file');
 
   try {
-    const dataPath = (isProd || isInt)
-      ? './init/db/imports/data.js'
-      : '@cpn-console/test-utils/src/imports/data.ts'
-    await initializeDB(dataPath)
+    const dataPath =
+      isProd || isInt ? './init/db/imports/data.js' : '@cpn-console/test-utils/src/imports/data.ts';
+    await initializeDB(dataPath);
     if (isProd && !isDevSetup) {
-      logger.info('Cleaning up imported data file...')
-      const __filename = fileURLToPath(import.meta.url)
-      const __dirname = dirname(__filename)
-      await rm(resolve(__dirname, dataPath))
-      logger.info(`Successfully deleted '${dataPath}'`)
+      logger.info('Cleaning up imported data file...');
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = dirname(__filename);
+      await rm(resolve(__dirname, dataPath));
+      logger.info(`Successfully deleted '${dataPath}'`);
     }
   } catch (err) {
-    if (err?.code === 'ERR_MODULE_NOT_FOUND' || err?.message?.includes('Failed to load') || err?.message?.includes('Cannot find module')) {
-      logger.info('No initDb file, skipping')
+    if (
+      err?.code === 'ERR_MODULE_NOT_FOUND' ||
+      err?.message?.includes('Failed to load') ||
+      err?.message?.includes('Cannot find module')
+    ) {
+      logger.info('No initDb file, skipping');
     } else {
-      logger.warn({ err }, 'Init DB failed')
-      throw err
+      logger.warn({ err }, 'Init DB failed');
+      throw err;
     }
   }
 
   try {
-    await app.listen({ host: '0.0.0.0', port: defaultPort ?? 8080 })
+    await app.listen({ host: '0.0.0.0', port: defaultPort ?? 8080 });
   } catch (error) {
-    logger.error({ err: error }, 'Failed to start HTTP server')
-    process.exit(1)
+    logger.error({ err: error }, 'Failed to start HTTP server');
+    process.exit(1);
   }
-  logger.debug({ isDev, isTest, isCI, isDevSetup, isProd })
+  logger.debug({ isDev, isTest, isCI, isDevSetup, isProd });
 }
 
 export async function getPreparedApp() {
   try {
-    await getConnection()
+    await getConnection();
   } catch (error) {
-    logger.error({ err: error }, 'Database connection failed')
-    throw error
+    logger.error({ err: error }, 'Database connection failed');
+    throw error;
   }
 
-  initPm()
+  initPm();
 
-  logger.info('Reading init database file')
+  logger.info('Reading init database file');
 
   try {
-    const dataPath = (isProd || isInt)
-      ? './init/db/imports/data.js'
-      : '@cpn-console/test-utils/src/imports/data.ts'
-    await initializeDB(dataPath)
+    const dataPath =
+      isProd || isInt ? './init/db/imports/data.js' : '@cpn-console/test-utils/src/imports/data.ts';
+    await initializeDB(dataPath);
     if (isProd && !isDevSetup) {
-      logger.info('Cleaning up imported data file...')
-      const __filename = fileURLToPath(import.meta.url)
-      const __dirname = dirname(__filename)
-      await rm(resolve(__dirname, dataPath))
-      logger.info(`Successfully deleted '${dataPath}'`)
+      logger.info('Cleaning up imported data file...');
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = dirname(__filename);
+      await rm(resolve(__dirname, dataPath));
+      logger.info(`Successfully deleted '${dataPath}'`);
     }
   } catch (err) {
-    if (err?.code === 'ERR_MODULE_NOT_FOUND' || err?.message?.includes('Failed to load') || err?.message?.includes('Cannot find module')) {
-      logger.info('No initDb file, skipping')
+    if (
+      err?.code === 'ERR_MODULE_NOT_FOUND' ||
+      err?.message?.includes('Failed to load') ||
+      err?.message?.includes('Cannot find module')
+    ) {
+      logger.info('No initDb file, skipping');
     } else {
-      logger.warn({ err }, 'Init DB failed')
-      throw err
+      logger.warn({ err }, 'Init DB failed');
+      throw err;
     }
   }
 
-  logger.debug({ isDev, isTest, isCI, isDevSetup, isProd })
-  return app
+  logger.debug({ isDev, isTest, isCI, isDevSetup, isProd });
+  return app;
 }

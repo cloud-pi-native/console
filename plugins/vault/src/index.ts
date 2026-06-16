@@ -1,11 +1,24 @@
-import type { ClusterObject, DefaultArgs, Plugin, Project, ProjectLite, ZoneObject } from '@cpn-console/hooks'
-import { archiveDsoProject, deleteZone, getSecrets, upsertProject, upsertZone } from './functions.js'
-import infos from './infos.js'
-import monitor from './monitor.js'
-import { VaultProjectApi } from './vault-project-api.js'
-import { VaultZoneApi } from './vault-zone-api.js'
+import type {
+  ClusterObject,
+  DefaultArgs,
+  Plugin,
+  Project,
+  ProjectLite,
+  ZoneObject,
+} from '@cpn-console/hooks';
+import {
+  archiveDsoProject,
+  deleteZone,
+  getSecrets,
+  upsertProject,
+  upsertZone,
+} from './functions.js';
+import infos from './infos.js';
+import monitor from './monitor.js';
+import { VaultProjectApi } from './vault-project-api.js';
+import { VaultZoneApi } from './vault-zone-api.js';
 
-const onlyApi = { api: (project: ProjectLite) => new VaultProjectApi(project) }
+const onlyApi = { api: (project: ProjectLite) => new VaultProjectApi(project) };
 
 export const plugin: Plugin = {
   infos,
@@ -46,14 +59,14 @@ export const plugin: Plugin = {
     },
   },
   monitor,
-}
+};
 
 declare module '@cpn-console/hooks' {
   interface HookPayloadApis<Args extends DefaultArgs> {
-    vault: Args extends (ProjectLite | Project)
+    vault: Args extends ProjectLite | Project
       ? VaultProjectApi
-      : Args extends (ZoneObject | ClusterObject)
+      : Args extends ZoneObject | ClusterObject
         ? VaultZoneApi
-        : never
+        : never;
   }
 }

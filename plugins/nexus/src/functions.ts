@@ -1,15 +1,15 @@
-import getConfig from './config.js'
+import getConfig from './config.js';
 
 let axiosOptions: {
-  baseURL: string
+  baseURL: string;
   auth: {
-    username: string
-    password: string
-  }
+    username: string;
+    password: string;
+  };
   headers: {
-    Accept: string
-  }
-}
+    Accept: string;
+  };
+};
 
 export function getAxiosOptions(): Required<typeof axiosOptions> {
   if (!axiosOptions) {
@@ -22,7 +22,7 @@ export function getAxiosOptions(): Required<typeof axiosOptions> {
       headers: {
         Accept: 'application/json',
       },
-    }
+    };
   }
-  return axiosOptions
+  return axiosOptions;
 }

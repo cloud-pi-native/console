@@ -1,36 +1,36 @@
-import type { PluginResult } from '@cpn-console/hooks'
-import { getAxiosInstance } from './tech.js'
+import type { PluginResult } from '@cpn-console/hooks';
+import { getAxiosInstance } from './tech.js';
 
-let status: PluginResult
+let status: PluginResult;
 
 export async function getStatus() {
   if (!status?.result) {
-    status = await check()
+    status = await check();
   }
-  return status
+  return status;
 }
 
 export async function check(): Promise<PluginResult> {
-  const axiosInstance = getAxiosInstance()
+  const axiosInstance = getAxiosInstance();
 
   try {
     const health = await axiosInstance({
       url: 'system/info',
-    })
+    });
     const res: PluginResult = {
       status: {
         result: 'OK',
       },
-    }
+    };
 
     if (health.data.Health === 'RED') {
-      res.status.result = 'KO'
+      res.status.result = 'KO';
     }
     if (health.data['Health Causes']) {
-      res.status.message = health.data['Health Causes'].join('\n')
+      res.status.message = health.data['Health Causes'].join('\n');
     }
 
-    return res
+    return res;
   } catch (error) {
     return {
       error,
@@ -40,6 +40,6 @@ export async function check(): Promise<PluginResult> {
         message: 'An unexpected error occured',
       },
       updatedAt: Date.now(),
-    }
+    };
   }
 }

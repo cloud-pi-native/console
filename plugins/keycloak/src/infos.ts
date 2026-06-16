@@ -1,4 +1,4 @@
-import type { ServiceInfos } from '@cpn-console/hooks'
+import type { ServiceInfos } from '@cpn-console/hooks';
 
 const infos: ServiceInfos = {
   name: 'keycloak',
@@ -7,6 +7,6 @@ const infos: ServiceInfos = {
     global: [],
     project: [],
   },
-}
+};
 
-export default infos
+export default infos;

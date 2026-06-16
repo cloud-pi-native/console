@@ -1,5 +1,5 @@
 // @ts-check
-import { icons as riCollection } from '@iconify-json/ri'
+import { icons as riCollection } from '@iconify-json/ri';
 
 /**
  * @type {string[]}
@@ -65,11 +65,9 @@ const riIconNames = [
   'upload-cloud-line',
   'user-add-line',
   'user-shared-2-line',
-]
+];
 
 /**
  * @type {[import('@iconify/vue').IconifyJSON, string[]][]}
  */
-export const collectionsToFilter = [
-  [riCollection, riIconNames],
-]
+export const collectionsToFilter = [[riCollection, riIconNames]];

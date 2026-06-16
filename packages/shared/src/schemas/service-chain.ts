@@ -1,23 +1,21 @@
-import type Zod from 'zod'
-import { z } from 'zod'
+import type Zod from 'zod';
+import { z } from 'zod';
 
-export const serviceChainStateEnum = ['opened', 'pending', 'success', 'failed'] as const
-export const ServiceChainStateZodEnum = z.enum(serviceChainStateEnum)
-export type ServiceChainState = Zod.infer<typeof ServiceChainStateZodEnum>
+export const serviceChainStateEnum = ['opened', 'pending', 'success', 'failed'] as const;
+export const ServiceChainStateZodEnum = z.enum(serviceChainStateEnum);
+export type ServiceChainState = Zod.infer<typeof ServiceChainStateZodEnum>;
 
-export const serviceChainNetworkEnum = ['RIE', 'INTERNET'] as const
-export const ServiceChainNetworkZodEnum = z.enum(serviceChainNetworkEnum)
-export type ServiceChainNetwork = Zod.infer<typeof ServiceChainNetworkZodEnum>
+export const serviceChainNetworkEnum = ['RIE', 'INTERNET'] as const;
+export const ServiceChainNetworkZodEnum = z.enum(serviceChainNetworkEnum);
+export type ServiceChainNetwork = Zod.infer<typeof ServiceChainNetworkZodEnum>;
 
-export const serviceChainLocationEnum = ['SIR', 'SIL'] as const
-export const ServiceChainLocationZodEnum = z.enum(serviceChainLocationEnum)
-export type ServiceChainLocation = Zod.infer<typeof ServiceChainLocationZodEnum>
+export const serviceChainLocationEnum = ['SIR', 'SIL'] as const;
+export const ServiceChainLocationZodEnum = z.enum(serviceChainLocationEnum);
+export type ServiceChainLocation = Zod.infer<typeof ServiceChainLocationZodEnum>;
 
-export const serviceChainEnvironmentEnum = ['INT', 'PROD', 'BAS'] as const
-export const ServiceChainEnvironmentZodEnum = z.enum(serviceChainEnvironmentEnum)
-export type ServiceChainEnvironment = Zod.infer<
-  typeof ServiceChainEnvironmentZodEnum
->
+export const serviceChainEnvironmentEnum = ['INT', 'PROD', 'BAS'] as const;
+export const ServiceChainEnvironmentZodEnum = z.enum(serviceChainEnvironmentEnum);
+export type ServiceChainEnvironment = Zod.infer<typeof ServiceChainEnvironmentZodEnum>;
 
 export const ServiceChainSchema = z.object({
   id: z.string().uuid(),
@@ -29,11 +27,11 @@ export const ServiceChainSchema = z.object({
   network: ServiceChainNetworkZodEnum,
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-})
-export type ServiceChain = Zod.infer<typeof ServiceChainSchema>
+});
+export type ServiceChain = Zod.infer<typeof ServiceChainSchema>;
 
-export const ServiceChainListSchema = z.array(ServiceChainSchema)
-export type ServiceChainList = Zod.infer<typeof ServiceChainListSchema>
+export const ServiceChainListSchema = z.array(ServiceChainSchema);
+export type ServiceChainList = Zod.infer<typeof ServiceChainListSchema>;
 
 export const ServiceChainDetailsSchema = ServiceChainSchema.extend({
   validationId: z.string().uuid(),
@@ -48,14 +46,16 @@ export const ServiceChainDetailsSchema = ServiceChainSchema.extend({
     z.string(),
   ),
   redirect: z.boolean(),
-  antivirus: z.nullable(z.object({
-    maxFileSize: z.number(),
-  })),
+  antivirus: z.nullable(
+    z.object({
+      maxFileSize: z.number(),
+    }),
+  ),
   websocket: z.boolean(),
   ipWhiteList: z.array(z.string().cidr()),
   sslOutgoing: z.boolean(),
-})
-export type ServiceChainDetails = Zod.infer<typeof ServiceChainDetailsSchema>
+});
+export type ServiceChainDetails = Zod.infer<typeof ServiceChainDetailsSchema>;
 
 // JSON as String validation through Zod. Instead of adding yet-another-dependency,
 // I merely copied the code as-is.
@@ -63,34 +63,25 @@ export type ServiceChainDetails = Zod.infer<typeof ServiceChainDetailsSchema>
 //
 // Usage: use stringToJSON() as you would use z.string() to validate strings that must
 // contain JSON stringified content
-const literalSchema = z.union([
-  z.string(),
-  z.number(),
-  z.boolean(),
-  z.null(),
-])
-type Literal = z.infer<typeof literalSchema>
-type Json = Literal | { [ key: string ]: Json } | Json[]
+const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+type Literal = z.infer<typeof literalSchema>;
+type Json = Literal | { [key: string]: Json } | Json[];
 const jsonSchema: z.ZodType<Json> = z.lazy(() =>
-  z.union([
-    literalSchema,
-    z.array(jsonSchema),
-    z.record(jsonSchema),
-  ]),
-)
-export const json = () => jsonSchema
+  z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)]),
+);
+export const json = () => jsonSchema;
 
-export const serviceChainFlowStateEnum = ['opened', 'pending', 'success', 'failed'] as const
-export const ServiceChainFlowStateZodEnum = z.enum(serviceChainFlowStateEnum)
-export type ServiceChainFlowState = Zod.infer<typeof ServiceChainFlowStateZodEnum>
+export const serviceChainFlowStateEnum = ['opened', 'pending', 'success', 'failed'] as const;
+export const ServiceChainFlowStateZodEnum = z.enum(serviceChainFlowStateEnum);
+export type ServiceChainFlowState = Zod.infer<typeof ServiceChainFlowStateZodEnum>;
 
 export const ServiceChainFlowDetailsSchema = z.object({
   state: ServiceChainFlowStateZodEnum,
   input: json(),
   output: json(),
   updatedAt: z.coerce.date(),
-})
-export type ServiceChainFlowDetails = Zod.infer<typeof ServiceChainFlowDetailsSchema>
+});
+export type ServiceChainFlowDetails = Zod.infer<typeof ServiceChainFlowDetailsSchema>;
 
 export const ServiceChainFlowsSchema = z.object({
   reserve_ip: ServiceChainFlowDetailsSchema,
@@ -98,6 +89,6 @@ export const ServiceChainFlowsSchema = z.object({
   call_exec: ServiceChainFlowDetailsSchema,
   activate_ip: ServiceChainFlowDetailsSchema,
   dns_request: ServiceChainFlowDetailsSchema,
-})
+});
 // Flows is on object, so always used in plural sense
-export type ServiceChainFlows = Zod.infer<typeof ServiceChainFlowsSchema>
+export type ServiceChainFlows = Zod.infer<typeof ServiceChainFlowsSchema>;

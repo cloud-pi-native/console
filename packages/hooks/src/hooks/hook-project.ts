@@ -1,74 +1,81 @@
-import type { PluginApi } from '../utils/utils.js'
-import type { Hook } from './hook.js'
-import type { ClusterObject, ExternalRepoUrl, InternalRepoName, IsInfra, IsPrivate, UserObject } from './index.js'
-import { createHook } from './hook.js'
+import type { PluginApi } from '../utils/utils.js';
+import type { Hook } from './hook.js';
+import type {
+  ClusterObject,
+  ExternalRepoUrl,
+  InternalRepoName,
+  IsInfra,
+  IsPrivate,
+  UserObject,
+} from './index.js';
+import { createHook } from './hook.js';
 
 export interface RepoCreds {
-  username: string
-  token: string
+  username: string;
+  token: string;
 }
 
 export interface Role {
-  name: string
-  permissions?: string
-  position: number
-  type?: string
-  oidcGroup?: string
-  users: UserObject[]
+  name: string;
+  permissions?: string;
+  position: number;
+  type?: string;
+  oidcGroup?: string;
+  users: UserObject[];
 }
 
 export interface EnvironmentApis {
-  [x: string]: PluginApi
+  [x: string]: PluginApi;
 }
 export interface Environment {
-  id: string
-  name: string
-  clusterId: ClusterObject['id']
-  cpu: number
-  gpu: number
-  memory: number
-  stage: string
-  autosync: boolean
+  id: string;
+  name: string;
+  clusterId: ClusterObject['id'];
+  cpu: number;
+  gpu: number;
+  memory: number;
+  stage: string;
+  autosync: boolean;
   permissions: {
-    userId: UserObject['id']
+    userId: UserObject['id'];
     permissions: {
-      ro: boolean
-      rw: boolean
-    }
-  }[]
-  apis: EnvironmentApis
+      ro: boolean;
+      rw: boolean;
+    };
+  }[];
+  apis: EnvironmentApis;
 }
 
 export interface Repository {
-  id: string
-  internalRepoName: InternalRepoName
-  newCreds?: RepoCreds
-  externalRepoUrl: ExternalRepoUrl
-  isPrivate: IsPrivate
-  isInfra: IsInfra
-  deployRevision: string | null
-  deployPath: string | null
-  helmValuesFiles: string | null
+  id: string;
+  internalRepoName: InternalRepoName;
+  newCreds?: RepoCreds;
+  externalRepoUrl: ExternalRepoUrl;
+  isPrivate: IsPrivate;
+  isInfra: IsInfra;
+  deployRevision: string | null;
+  deployPath: string | null;
+  helmValuesFiles: string | null;
 }
 
 export interface ProjectStore {
-  [x: string]: { [x: string]: string }
+  [x: string]: { [x: string]: string };
 }
 
 export interface Project {
-  id: string
-  description: string | null
-  name: string
-  status: string
-  clusters: ClusterObject[]
-  slug: string
-  environments: Environment[]
-  repositories: Repository[]
-  users: UserObject[]
-  roles: Role[]
-  store: ProjectStore
-  owner: UserObject
+  id: string;
+  description: string | null;
+  name: string;
+  status: string;
+  clusters: ClusterObject[];
+  slug: string;
+  environments: Environment[];
+  repositories: Repository[];
+  users: UserObject[];
+  roles: Role[];
+  store: ProjectStore;
+  owner: UserObject;
 }
 
-export const upsertProject: Hook<Project> = createHook()
-export const deleteProject: Hook<Project> = createHook()
+export const upsertProject: Hook<Project> = createHook();
+export const deleteProject: Hook<Project> = createHook();

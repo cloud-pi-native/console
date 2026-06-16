@@ -1,139 +1,153 @@
 <script lang="ts" setup>
-import type { Repo, SharedZodError } from '@cpn-console/shared'
-import { CreateRepoFormSchema, deleteValidationInput, fakeToken, instanciateSchema, RepoFormSchema, UpdateRepoFormSchema } from '@cpn-console/shared'
-import { computed, ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import type { Repo, SharedZodError } from '@cpn-console/shared';
+import {
+  CreateRepoFormSchema,
+  deleteValidationInput,
+  fakeToken,
+  instanciateSchema,
+  RepoFormSchema,
+  UpdateRepoFormSchema,
+} from '@cpn-console/shared';
+import { computed, ref } from 'vue';
+import { useSnackbarStore } from '@/stores/snackbar.js';
 
-type RepoForm = Partial<Repo> & { isStandalone?: boolean }
-const props = withDefaults(defineProps<{
-  repo?: RepoForm
-  canManage: boolean
-  isProjectLocked: boolean
-}>(), {
-  repo: () => ({
-    isInfra: false,
-    isPrivate: false,
-    internalRepoName: '',
-    externalRepoUrl: '',
-    isStandalone: false,
-    deployRevision: undefined,
-    deployPath: undefined,
-    helmValuesFiles: undefined,
-  }),
-  canManage: false,
-  isProjectLocked: false,
-})
+type RepoForm = Partial<Repo> & { isStandalone?: boolean };
+const props = withDefaults(
+  defineProps<{
+    repo?: RepoForm;
+    canManage: boolean;
+    isProjectLocked: boolean;
+  }>(),
+  {
+    repo: () => ({
+      isInfra: false,
+      isPrivate: false,
+      internalRepoName: '',
+      externalRepoUrl: '',
+      isStandalone: false,
+      deployRevision: undefined,
+      deployPath: undefined,
+      helmValuesFiles: undefined,
+    }),
+    canManage: false,
+    isProjectLocked: false,
+  },
+);
 
-const emit = defineEmits(['save', 'delete', 'cancel'])
-const isExistingAndPrivate = props.repo.id && props.repo.isPrivate
-const initialToken = isExistingAndPrivate ? fakeToken : ''
+const emit = defineEmits(['save', 'delete', 'cancel']);
+const isExistingAndPrivate = props.repo.id && props.repo.isPrivate;
+const initialToken = isExistingAndPrivate ? fakeToken : '';
 
 const localRepo = ref<RepoForm>({
   ...props.repo,
-  ...isExistingAndPrivate && { externalToken: fakeToken },
+  ...(isExistingAndPrivate && { externalToken: fakeToken }),
   isStandalone: !!(props.repo.id && !props.repo.externalRepoUrl), // key present only in frontend for form
-})
-const updatedValues = ref<Record<keyof Omit<typeof localRepo.value, 'id' | 'projectId' | 'createdAt' | 'updatedAt'>, boolean>>(instanciateSchema(RepoFormSchema, false))
+});
+const updatedValues = ref<
+  Record<
+    keyof Omit<typeof localRepo.value, 'id' | 'projectId' | 'createdAt' | 'updatedAt'>,
+    boolean
+  >
+>(instanciateSchema(RepoFormSchema, false));
 
-const repoToDelete = ref('')
-const isDeletingRepo = ref(false)
-const isPassword = ref(true)
+const repoToDelete = ref('');
+const isDeletingRepo = ref(false);
+const isPassword = ref(true);
 
 const errorSchema = computed<SharedZodError | undefined>(() => {
-  let schemaValidation
+  let schemaValidation;
   if (localRepo.value.id) {
-    schemaValidation = UpdateRepoFormSchema.safeParse(localRepo.value)
+    schemaValidation = UpdateRepoFormSchema.safeParse(localRepo.value);
   } else {
-    schemaValidation = CreateRepoFormSchema.safeParse(localRepo.value)
+    schemaValidation = CreateRepoFormSchema.safeParse(localRepo.value);
   }
-  return schemaValidation.success ? undefined : schemaValidation.error
-})
-const isRepoValid = computed(() => !errorSchema.value)
+  return schemaValidation.success ? undefined : schemaValidation.error;
+});
+const isRepoValid = computed(() => !errorSchema.value);
 const helmValuesFilesTextarea = computed(() => {
-  return (localRepo.value.helmValuesFiles || '').split(',').join('\n')
-})
+  return (localRepo.value.helmValuesFiles || '').split(',').join('\n');
+});
 
-function updateRepo<K extends keyof typeof updatedValues.value>(key: K, value: typeof localRepo.value[K]) {
+function updateRepo<K extends keyof typeof updatedValues.value>(
+  key: K,
+  value: (typeof localRepo.value)[K],
+) {
   if (key === 'helmValuesFiles') {
-    localRepo.value.helmValuesFiles = value ? (value as string).split('\n').join(',') : undefined
+    localRepo.value.helmValuesFiles = value ? (value as string).split('\n').join(',') : undefined;
   } else {
-    localRepo.value[key] = value
+    localRepo.value[key] = value;
   }
-  updatedValues.value[key] = true
+  updatedValues.value[key] = true;
 
   if (key === 'externalRepoUrl' && value === '') {
-    localRepo.value.isPrivate = false
-    localRepo.value.externalUserName = undefined
-    localRepo.value.externalToken = undefined
+    localRepo.value.isPrivate = false;
+    localRepo.value.externalUserName = undefined;
+    localRepo.value.externalToken = undefined;
   }
 
   if (key === 'isPrivate') {
-    localRepo.value.externalUserName = undefined
-    localRepo.value.externalToken = undefined
+    localRepo.value.externalUserName = undefined;
+    localRepo.value.externalToken = undefined;
   }
 
   if (key === 'isInfra' && !value) {
-    localRepo.value.deployRevision = undefined
-    localRepo.value.deployPath = undefined
-    localRepo.value.helmValuesFiles = undefined
+    localRepo.value.deployRevision = undefined;
+    localRepo.value.deployPath = undefined;
+    localRepo.value.helmValuesFiles = undefined;
   }
 }
 
 function saveRepo() {
   if (localRepo.value.isStandalone) {
-    updateRepo('externalRepoUrl', '')
+    updateRepo('externalRepoUrl', '');
   }
-  updatedValues.value = instanciateSchema(RepoFormSchema.omit({ id: true, projectId: true }), true)
+  updatedValues.value = instanciateSchema(RepoFormSchema.omit({ id: true, projectId: true }), true);
 
-  if (!isRepoValid.value) return
-  emit('save', localRepo.value)
+  if (!isRepoValid.value) return;
+  emit('save', localRepo.value);
 }
 
 function cancel() {
-  emit('cancel')
+  emit('cancel');
 }
 
 function resetToken() {
-  localRepo.value.externalToken = initialToken
-  updatedValues.value.externalToken = false
-  isPassword.value = true
+  localRepo.value.externalToken = initialToken;
+  updatedValues.value.externalToken = false;
+  isPassword.value = true;
 }
 
 function checkEditToken() {
   if (localRepo.value.externalToken === fakeToken) {
-    localRepo.value.externalToken = ''
-    updatedValues.value.externalToken = true
+    localRepo.value.externalToken = '';
+    updatedValues.value.externalToken = true;
   }
 }
 
 function toggleTokenInputType() {
-  checkEditToken()
-  isPassword.value = !isPassword.value
+  checkEditToken();
+  isPassword.value = !isPassword.value;
 }
 function toggleStandalone(e: boolean) {
-  updateRepo('isStandalone', e)
-  updateRepo('externalRepoUrl', localRepo.value.externalRepoUrl ?? '')
+  updateRepo('isStandalone', e);
+  updateRepo('externalRepoUrl', localRepo.value.externalRepoUrl ?? '');
 }
 </script>
 
 <template>
-  <div
-    data-testid="repo-form"
-    class="relative"
-  >
-    <h2
-      class="fr-h2 fr-mt-2w"
-    >
-      {{ localRepo.id ? `Modifier le dépôt ${localRepo.internalRepoName}` : 'Ajouter un dépôt au projet' }}
+  <div data-testid="repo-form" class="relative">
+    <h2 class="fr-h2 fr-mt-2w">
+      {{
+        localRepo.id
+          ? `Modifier le dépôt ${localRepo.internalRepoName}`
+          : 'Ajouter un dépôt au projet'
+      }}
     </h2>
     <DsfrFieldset
       legend="Informations du dépôt"
       hint="Les champs munis d'une astérisque (*) sont requis"
     >
-      <DsfrFieldset
-        data-testid="repoFieldset"
-        legend="Dépôt Git"
-      >
+      <DsfrFieldset data-testid="repoFieldset" legend="Dépôt Git">
         <div class="fr-mb-2w">
           <DsfrInputGroup
             v-model="localRepo.internalRepoName"
@@ -141,7 +155,11 @@ function toggleStandalone(e: boolean) {
             type="text"
             :required="true"
             :disabled="localRepo.id || props.isProjectLocked || !canManage"
-            :error-message="!!updatedValues.internalRepoName && errorSchema?.flatten().fieldErrors.internalRepoName || undefined"
+            :error-message="
+              (!!updatedValues.internalRepoName &&
+                errorSchema?.flatten().fieldErrors.internalRepoName) ||
+              undefined
+            "
             label="Nom du dépôt Git interne"
             label-visible
             hint="Nom du dépôt Git créé dans le Gitlab interne de la plateforme"
@@ -160,10 +178,7 @@ function toggleStandalone(e: boolean) {
           @update:model-value="updateRepo('isInfra', $event)"
         />
       </DsfrFieldset>
-      <DsfrFieldset
-        v-if="localRepo.isInfra"
-        legend="Déploiement"
-      >
+      <DsfrFieldset v-if="localRepo.isInfra" legend="Déploiement">
         <div class="fr-mb-2w">
           <DsfrInputGroup
             v-model="localRepo.deployRevision"
@@ -215,10 +230,7 @@ values-<env>/custom.yaml"
           @update:model-value="(e: boolean) => toggleStandalone(e)"
         />
       </DsfrFieldset>
-      <DsfrFieldset
-        v-if="!localRepo.isStandalone"
-        legend="Source externe"
-      >
+      <DsfrFieldset v-if="!localRepo.isStandalone" legend="Source externe">
         <div class="fr-mb-2w">
           <DsfrInputGroup
             v-model="localRepo.externalRepoUrl"
@@ -226,7 +238,11 @@ values-<env>/custom.yaml"
             type="text"
             :disabled="props.isProjectLocked || !canManage"
             :required="true"
-            :error-message="!!updatedValues.externalRepoUrl && errorSchema?.flatten().fieldErrors.externalRepoUrl || undefined"
+            :error-message="
+              (!!updatedValues.externalRepoUrl &&
+                errorSchema?.flatten().fieldErrors.externalRepoUrl) ||
+              undefined
+            "
             label="Url du dépôt Git externe"
             label-visible
             hint="Url du dépôt Git source pour la synchronisation"
@@ -245,12 +261,14 @@ values-<env>/custom.yaml"
           name="isGitSourcePrivate"
           @update:model-value="updateRepo('isPrivate', $event)"
         />
-        <div
-          v-if="localRepo.isPrivate"
-        >
+        <div v-if="localRepo.isPrivate">
           <div class="fr-mb-2w">
             <DsfrInputGroup
-              :error-message="(updatedValues.externalUserName || updatedValues.externalToken) && errorSchema?.flatten().fieldErrors.credentials || undefined"
+              :error-message="
+                ((updatedValues.externalUserName || updatedValues.externalToken) &&
+                  errorSchema?.flatten().fieldErrors.credentials) ||
+                undefined
+              "
             >
               <DsfrInput
                 v-model="localRepo.externalUserName"
@@ -261,15 +279,16 @@ values-<env>/custom.yaml"
                 label="Nom d'utilisateur"
                 label-visible
                 hint="Nom de l'utilisateur propriétaire du token"
-                :error-message="!!updatedValues.externalToken && errorSchema?.flatten().fieldErrors.externalUserName"
+                :error-message="
+                  !!updatedValues.externalToken &&
+                  errorSchema?.flatten().fieldErrors.externalUserName
+                "
                 placeholder="this-is-tobi"
                 class="fr-mb-2w"
                 @update:model-value="updateRepo('externalUserName', $event as string)"
               />
               <div class="fr-mb-2w flex items-end">
-                <div
-                  class="w-full"
-                >
+                <div class="w-full">
                   <DsfrInput
                     v-model="localRepo.externalToken"
                     data-testid="externalTokenInput"
@@ -279,7 +298,10 @@ values-<env>/custom.yaml"
                     label="Token d'accès au dépôt Git source"
                     label-visible
                     hint="Token d'accès permettant le clone du dépôt Git source par la chaîne DevSecOps."
-                    :error-message="!!updatedValues.externalToken && errorSchema?.flatten().fieldErrors.externalToken"
+                    :error-message="
+                      !!updatedValues.externalToken &&
+                      errorSchema?.flatten().fieldErrors.externalToken
+                    "
                     placeholder="hoqjC1vXtABzytBIWBXsdyzubmqMYkgA"
                     autocomplete="off"
                     @update:model-value="updateRepo('externalToken', $event as string)"
@@ -314,10 +336,7 @@ values-<env>/custom.yaml"
           />
         </div>
       </DsfrFieldset>
-      <div
-        v-if="!props.isProjectLocked && canManage"
-        class="flex space-x-10 mt-5"
-      >
+      <div v-if="!props.isProjectLocked && canManage" class="flex space-x-10 mt-5">
         <DsfrButton
           :label="localRepo.id ? 'Enregistrer' : 'Ajouter le dépôt'"
           :data-testid="localRepo.id ? 'updateRepoBtn' : 'addRepoBtn'"
@@ -335,11 +354,7 @@ values-<env>/custom.yaml"
         />
       </div>
     </DsfrFieldset>
-    <div
-      v-if="canManage && localRepo.id"
-      data-testid="deleteRepoZone"
-      class="danger-zone"
-    >
+    <div v-if="canManage && localRepo.id" data-testid="deleteRepoZone" class="danger-zone">
       <div class="danger-zone-btns">
         <DsfrButton
           v-show="!isDeletingRepo"
@@ -352,15 +367,16 @@ values-<env>/custom.yaml"
         />
         <DsfrAlert
           class="<md:mt-2"
-          :description="props.isProjectLocked ? 'Impossible de supprimer un dépôt lorsque le projet est verrouillé.' : 'Le retrait d\'un dépôt est irréversible.'"
+          :description="
+            props.isProjectLocked
+              ? 'Impossible de supprimer un dépôt lorsque le projet est verrouillé.'
+              : 'Le retrait d\'un dépôt est irréversible.'
+          "
           type="warning"
           small
         />
       </div>
-      <div
-        v-if="isDeletingRepo"
-        class="fr-mt-4w"
-      >
+      <div v-if="isDeletingRepo" class="fr-mt-4w">
         <DsfrInput
           v-model="repoToDelete"
           data-testid="deleteRepoInput"
@@ -369,9 +385,7 @@ values-<env>/custom.yaml"
           :placeholder="deleteValidationInput"
           class="fr-mb-2w"
         />
-        <div
-          class="flex justify-between"
-        >
+        <div class="flex justify-between">
           <DsfrButton
             data-testid="deleteRepoBtn"
             :label="`Supprimer définitivement le dépôt ${localRepo.internalRepoName}`"
@@ -381,11 +395,7 @@ values-<env>/custom.yaml"
             icon="ri:delete-bin-7-line"
             @click="$emit('delete', localRepo.id)"
           />
-          <DsfrButton
-            label="Annuler"
-            primary
-            @click="isDeletingRepo = false"
-          />
+          <DsfrButton label="Annuler" primary @click="isDeletingRepo = false" />
         </div>
       </div>
     </div>

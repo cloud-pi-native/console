@@ -1,59 +1,55 @@
-import type { ClusterDetails, Environment } from '@cpn-console/shared'
-import { ADMIN_PERMS, clusterContract } from '@cpn-console/shared'
-import { faker } from '@faker-js/faker'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import app from '../../app.js'
-import * as utilsController from '../../utils/controller.js'
-import { BadRequest400 } from '../../utils/errors.js'
-import { getUserMockInfos } from '../../utils/mocks.js'
-import * as business from './business.js'
+import type { ClusterDetails, Environment } from '@cpn-console/shared';
+import { ADMIN_PERMS, clusterContract } from '@cpn-console/shared';
+import { faker } from '@faker-js/faker';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import app from '../../app.js';
+import * as utilsController from '../../utils/controller.js';
+import { BadRequest400 } from '../../utils/errors.js';
+import { getUserMockInfos } from '../../utils/mocks.js';
+import * as business from './business.js';
 
-vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin)
-const authUserMock = vi.spyOn(utilsController, 'authUser')
-const businessListMock = vi.spyOn(business, 'listClusters')
-const businessGetDetailsMock = vi.spyOn(business, 'getClusterDetails')
-const businessGetUsageMock = vi.spyOn(business, 'getClusterUsage')
-const businessGetEnvironmentsMock = vi.spyOn(business, 'getClusterAssociatedEnvironments')
-const businessCreateMock = vi.spyOn(business, 'createCluster')
-const businessUpdateMock = vi.spyOn(business, 'updateCluster')
-const businessDeleteMock = vi.spyOn(business, 'deleteCluster')
+vi.mock('fastify-keycloak-adapter', (await import('../../utils/mocks.js')).mockSessionPlugin);
+const authUserMock = vi.spyOn(utilsController, 'authUser');
+const businessListMock = vi.spyOn(business, 'listClusters');
+const businessGetDetailsMock = vi.spyOn(business, 'getClusterDetails');
+const businessGetUsageMock = vi.spyOn(business, 'getClusterUsage');
+const businessGetEnvironmentsMock = vi.spyOn(business, 'getClusterAssociatedEnvironments');
+const businessCreateMock = vi.spyOn(business, 'createCluster');
+const businessUpdateMock = vi.spyOn(business, 'updateCluster');
+const businessDeleteMock = vi.spyOn(business, 'deleteCluster');
 
 describe('test clusterContract', () => {
   beforeEach(() => {
-    vi.resetAllMocks()
-  })
+    vi.resetAllMocks();
+  });
   describe('listClusters', () => {
     it('as non admin', async () => {
-      const user = getUserMockInfos(0n)
+      const user = getUserMockInfos(0n);
 
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessListMock.mockResolvedValueOnce([])
-      const response = await app.inject()
-        .get(clusterContract.listClusters.path)
-        .end()
+      businessListMock.mockResolvedValueOnce([]);
+      const response = await app.inject().get(clusterContract.listClusters.path).end();
 
-      expect(businessListMock).toHaveBeenCalledWith(user.user.id)
+      expect(businessListMock).toHaveBeenCalledWith(user.user.id);
 
-      expect(response.json()).toStrictEqual([])
-      expect(response.statusCode).toEqual(200)
-    })
+      expect(response.json()).toStrictEqual([]);
+      expect(response.statusCode).toEqual(200);
+    });
     it('as admin', async () => {
-      const user = getUserMockInfos(ADMIN_PERMS.LIST_CLUSTERS)
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_CLUSTERS);
 
-      authUserMock.mockResolvedValueOnce(user)
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessListMock.mockResolvedValueOnce([])
-      const response = await app.inject()
-        .get(clusterContract.listClusters.path)
-        .end()
+      businessListMock.mockResolvedValueOnce([]);
+      const response = await app.inject().get(clusterContract.listClusters.path).end();
 
-      expect(businessListMock).toHaveBeenCalledWith()
+      expect(businessListMock).toHaveBeenCalledWith();
 
-      expect(response.json()).toStrictEqual([])
-      expect(response.statusCode).toEqual(200)
-    })
-  })
+      expect(response.json()).toStrictEqual([]);
+      expect(response.statusCode).toEqual(200);
+    });
+  });
 
   describe('getClusterDetails', () => {
     it('should return cluster details', async () => {
@@ -72,31 +68,33 @@ describe('test clusterContract', () => {
           cluster: { tlsServerName: faker.string.alpha() },
           user: {},
         },
-      }
-      const user = getUserMockInfos(ADMIN_PERMS.LIST_CLUSTERS)
-      authUserMock.mockResolvedValueOnce(user)
+      };
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_CLUSTERS);
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessGetDetailsMock.mockResolvedValueOnce(cluster)
-      const response = await app.inject()
+      businessGetDetailsMock.mockResolvedValueOnce(cluster);
+      const response = await app
+        .inject()
         .get(clusterContract.getClusterDetails.path.replace(':clusterId', cluster.id))
-        .end()
+        .end();
 
-      expect(businessGetDetailsMock).toHaveBeenCalledTimes(1)
-      expect(response.json()).toEqual(cluster)
-      expect(response.statusCode).toEqual(200)
-    })
+      expect(businessGetDetailsMock).toHaveBeenCalledTimes(1);
+      expect(response.json()).toEqual(cluster);
+      expect(response.statusCode).toEqual(200);
+    });
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(0n)
-      authUserMock.mockResolvedValueOnce(user)
+      const user = getUserMockInfos(0n);
+      authUserMock.mockResolvedValueOnce(user);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .get(clusterContract.getClusterDetails.path.replace(':clusterId', faker.string.uuid()))
-        .end()
+        .end();
 
-      expect(businessGetDetailsMock).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toEqual(403)
-    })
-  })
+      expect(businessGetDetailsMock).toHaveBeenCalledTimes(0);
+      expect(response.statusCode).toEqual(403);
+    });
+  });
 
   describe('getClusterUsage', () => {
     it('should return cluster usage', async () => {
@@ -104,59 +102,63 @@ describe('test clusterContract', () => {
         cpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
         gpu: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
         memory: faker.number.float({ min: 0, max: 10, fractionDigits: 1 }),
-      }
-      const user = getUserMockInfos(ADMIN_PERMS.LIST_CLUSTERS)
-      authUserMock.mockResolvedValueOnce(user)
+      };
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_CLUSTERS);
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessGetUsageMock.mockResolvedValueOnce(resources)
-      const response = await app.inject()
+      businessGetUsageMock.mockResolvedValueOnce(resources);
+      const response = await app
+        .inject()
         .get(clusterContract.getClusterUsage.path.replace(':clusterId', faker.string.uuid()))
-        .end()
+        .end();
 
-      expect(businessGetUsageMock).toHaveBeenCalledTimes(1)
-      expect(response.json()).toEqual(resources)
-      expect(response.statusCode).toEqual(200)
-    })
+      expect(businessGetUsageMock).toHaveBeenCalledTimes(1);
+      expect(response.json()).toEqual(resources);
+      expect(response.statusCode).toEqual(200);
+    });
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(0n)
-      authUserMock.mockResolvedValueOnce(user)
+      const user = getUserMockInfos(0n);
+      authUserMock.mockResolvedValueOnce(user);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .get(clusterContract.getClusterUsage.path.replace(':clusterId', faker.string.uuid()))
-        .end()
+        .end();
 
-      expect(businessGetUsageMock).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toEqual(403)
-    })
-  })
+      expect(businessGetUsageMock).toHaveBeenCalledTimes(0);
+      expect(response.statusCode).toEqual(403);
+    });
+  });
 
   describe('getClusterEnvironments', () => {
     it('should return cluster environments', async () => {
-      const envs: Environment[] = []
-      const user = getUserMockInfos(ADMIN_PERMS.LIST_CLUSTERS)
-      authUserMock.mockResolvedValueOnce(user)
+      const envs: Environment[] = [];
+      const user = getUserMockInfos(ADMIN_PERMS.LIST_CLUSTERS);
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessGetEnvironmentsMock.mockResolvedValueOnce(envs)
-      const response = await app.inject()
+      businessGetEnvironmentsMock.mockResolvedValueOnce(envs);
+      const response = await app
+        .inject()
         .get(clusterContract.getClusterEnvironments.path.replace(':clusterId', faker.string.uuid()))
-        .end()
+        .end();
 
-      expect(businessGetEnvironmentsMock).toHaveBeenCalledTimes(1)
-      expect(response.json()).toEqual([])
-      expect(response.statusCode).toEqual(200)
-    })
+      expect(businessGetEnvironmentsMock).toHaveBeenCalledTimes(1);
+      expect(response.json()).toEqual([]);
+      expect(response.statusCode).toEqual(200);
+    });
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(0n)
-      authUserMock.mockResolvedValueOnce(user)
+      const user = getUserMockInfos(0n);
+      authUserMock.mockResolvedValueOnce(user);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .get(clusterContract.getClusterEnvironments.path.replace(':clusterId', faker.string.uuid()))
-        .end()
+        .end();
 
-      expect(businessGetEnvironmentsMock).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toEqual(403)
-    })
-  })
+      expect(businessGetEnvironmentsMock).toHaveBeenCalledTimes(0);
+      expect(response.statusCode).toEqual(403);
+    });
+  });
 
   describe('createCluster', () => {
     const cluster: ClusterDetails = {
@@ -174,48 +176,51 @@ describe('test clusterContract', () => {
         cluster: { tlsServerName: faker.string.alpha() },
         user: {},
       },
-    }
+    };
 
     it('should return created cluster', async () => {
-      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
-      authUserMock.mockResolvedValueOnce(user)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS);
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessCreateMock.mockResolvedValueOnce(cluster)
-      const response = await app.inject()
+      businessCreateMock.mockResolvedValueOnce(cluster);
+      const response = await app
+        .inject()
         .post(clusterContract.createCluster.path)
         .body(cluster)
-        .end()
+        .end();
 
-      expect(response.json()).toEqual(cluster)
-      expect(response.statusCode).toEqual(201)
-    })
+      expect(response.json()).toEqual(cluster);
+      expect(response.statusCode).toEqual(201);
+    });
     it('should pass business error', async () => {
-      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
-      authUserMock.mockResolvedValueOnce(user)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS);
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessCreateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
-      const response = await app.inject()
+      businessCreateMock.mockResolvedValueOnce(new BadRequest400('une erreur'));
+      const response = await app
+        .inject()
         .post(clusterContract.createCluster.path)
         .body(cluster)
-        .end()
+        .end();
 
-      expect(response.statusCode).toEqual(400)
-    })
+      expect(response.statusCode).toEqual(400);
+    });
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(0n)
-      authUserMock.mockResolvedValueOnce(user)
+      const user = getUserMockInfos(0n);
+      authUserMock.mockResolvedValueOnce(user);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .post(clusterContract.createCluster.path)
         .body(cluster)
-        .end()
+        .end();
 
-      expect(response.statusCode).toEqual(403)
-    })
-  })
+      expect(response.statusCode).toEqual(403);
+    });
+  });
 
   describe('updateCluster', () => {
-    const clusterId = faker.string.uuid()
+    const clusterId = faker.string.uuid();
     const cluster: Omit<ClusterDetails, 'id'> = {
       clusterResources: true,
       infos: '',
@@ -230,79 +235,85 @@ describe('test clusterContract', () => {
         cluster: { tlsServerName: faker.string.alpha() },
         user: {},
       },
-    }
+    };
 
     it('should return created cluster', async () => {
-      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
-      authUserMock.mockResolvedValueOnce(user)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS);
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessUpdateMock.mockResolvedValueOnce({ id: clusterId, ...cluster })
-      const response = await app.inject()
+      businessUpdateMock.mockResolvedValueOnce({ id: clusterId, ...cluster });
+      const response = await app
+        .inject()
         .put(clusterContract.updateCluster.path.replace(':clusterId', clusterId))
         .body(cluster)
-        .end()
+        .end();
 
-      expect(response.json()).toEqual({ id: clusterId, ...cluster })
-      expect(response.statusCode).toEqual(200)
-    })
+      expect(response.json()).toEqual({ id: clusterId, ...cluster });
+      expect(response.statusCode).toEqual(200);
+    });
     it('should pass business error', async () => {
-      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
-      authUserMock.mockResolvedValueOnce(user)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS);
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessUpdateMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
-      const response = await app.inject()
+      businessUpdateMock.mockResolvedValueOnce(new BadRequest400('une erreur'));
+      const response = await app
+        .inject()
         .put(clusterContract.updateCluster.path.replace(':clusterId', clusterId))
         .body(cluster)
-        .end()
+        .end();
 
-      expect(response.statusCode).toEqual(400)
-    })
+      expect(response.statusCode).toEqual(400);
+    });
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(0n)
-      authUserMock.mockResolvedValueOnce(user)
+      const user = getUserMockInfos(0n);
+      authUserMock.mockResolvedValueOnce(user);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .put(clusterContract.updateCluster.path.replace(':clusterId', clusterId))
         .body(cluster)
-        .end()
+        .end();
 
-      expect(response.statusCode).toEqual(403)
-    })
-  })
+      expect(response.statusCode).toEqual(403);
+    });
+  });
 
   describe('deleteCluster', () => {
     it('should return empty when delete', async () => {
-      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
-      authUserMock.mockResolvedValueOnce(user)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS);
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessDeleteMock.mockResolvedValueOnce(null)
-      const response = await app.inject()
+      businessDeleteMock.mockResolvedValueOnce(null);
+      const response = await app
+        .inject()
         .delete(clusterContract.deleteCluster.path.replace(':clusterId', faker.string.uuid()))
-        .end()
+        .end();
 
-      expect(response.body).toBeFalsy()
-      expect(response.statusCode).toEqual(204)
-    })
+      expect(response.body).toBeFalsy();
+      expect(response.statusCode).toEqual(204);
+    });
     it('should pass business error', async () => {
-      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
-      authUserMock.mockResolvedValueOnce(user)
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS);
+      authUserMock.mockResolvedValueOnce(user);
 
-      businessDeleteMock.mockResolvedValueOnce(new BadRequest400('une erreur'))
-      const response = await app.inject()
+      businessDeleteMock.mockResolvedValueOnce(new BadRequest400('une erreur'));
+      const response = await app
+        .inject()
         .delete(clusterContract.deleteCluster.path.replace(':clusterId', faker.string.uuid()))
-        .end()
+        .end();
 
-      expect(response.statusCode).toEqual(400)
-    })
+      expect(response.statusCode).toEqual(400);
+    });
     it('should return 403 if not admin', async () => {
-      const user = getUserMockInfos(0n)
-      authUserMock.mockResolvedValueOnce(user)
+      const user = getUserMockInfos(0n);
+      authUserMock.mockResolvedValueOnce(user);
 
-      const response = await app.inject()
+      const response = await app
+        .inject()
         .delete(clusterContract.deleteCluster.path.replace(':clusterId', faker.string.uuid()))
-        .end()
+        .end();
 
-      expect(response.statusCode).toEqual(403)
-    })
-  })
-})
+      expect(response.statusCode).toEqual(403);
+    });
+  });
+});

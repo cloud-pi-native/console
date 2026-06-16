@@ -14,10 +14,10 @@ cd `git rev-parse --show-toplevel`
 docker compose -f ./docker/docker-compose.dev.yml up keycloak
 ```
 
-Admin page url:  <http://localhost:8090/admin>
+Admin page url: <http://localhost:8090/admin>
 
-__*Login:*__ `admin`
-__*Password:*__ `admin`
+**_Login:_** `admin`
+**_Password:_** `admin`
 
 ## Docs
 
@@ -27,8 +27,8 @@ __*Password:*__ `admin`
 
 ### Other doc
 
-* [Keycloak](https://github.com/keycloak/keycloak) - Keycloak Server and Java adapters
-* [Keycloak Documentation](https://github.com/keycloak/keycloak-documentation) - Documentation for Keycloak
-* [Keycloak QuickStarts](https://github.com/keycloak/keycloak-quickstarts) - QuickStarts for getting started with Keycloak
-* [Keycloak Node.js Connect](https://github.com/keycloak/keycloak-nodejs-connect) - Node.js adapter for Keycloak
-* [Keycloak Node.js Admin Client](https://github.com/keycloak/keycloak-nodejs-admin-client) - Node.js library for Keycloak Admin REST API
+- [Keycloak](https://github.com/keycloak/keycloak) - Keycloak Server and Java adapters
+- [Keycloak Documentation](https://github.com/keycloak/keycloak-documentation) - Documentation for Keycloak
+- [Keycloak QuickStarts](https://github.com/keycloak/keycloak-quickstarts) - QuickStarts for getting started with Keycloak
+- [Keycloak Node.js Connect](https://github.com/keycloak/keycloak-nodejs-connect) - Node.js adapter for Keycloak
+- [Keycloak Node.js Admin Client](https://github.com/keycloak/keycloak-nodejs-admin-client) - Node.js library for Keycloak Admin REST API

@@ -1,20 +1,20 @@
 <script lang="ts" setup>
-import { contactEmail } from '@/utils/env.js'
+import { contactEmail } from '@/utils/env.js';
 
 interface MailType {
-  to: string
-  label: string
-  address: string
+  to: string;
+  label: string;
+  address: string;
 }
 
 const mail: MailType = {
   to: `mailto:${contactEmail}?subject=Maintenance console Cloud π Native`,
   label: `Nous écrire (${contactEmail})`,
   address: contactEmail,
-}
+};
 
 function setWindowLocation(to: string) {
-  window.location = to as string & Location
+  window.location = to as string & Location;
 }
 </script>
 

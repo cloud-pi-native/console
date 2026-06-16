@@ -1,24 +1,30 @@
-import type { User, Zone } from '@cpn-console/shared'
-import prisma from '@/prisma.js'
-import { BadRequest400, Unprocessable422 } from '@/utils/errors.js'
-import { hook } from '@/utils/hook-wrapper.js'
-import { addLogs } from '../queries-index.js'
-import { linkZoneToClusters } from './queries.js'
+import type { User, Zone } from '@cpn-console/shared';
+import prisma from '@/prisma.js';
+import { BadRequest400, Unprocessable422 } from '@/utils/errors.js';
+import { hook } from '@/utils/hook-wrapper.js';
+import { addLogs } from '../queries-index.js';
+import { linkZoneToClusters } from './queries.js';
 
-export const listZones = prisma.zone.findMany
+export const listZones = prisma.zone.findMany;
 
 export async function createZone(
-  data: { slug: string, label: string, argocdUrl: string, description?: string | null, clusterIds?: string[] },
+  data: {
+    slug: string;
+    label: string;
+    argocdUrl: string;
+    description?: string | null;
+    clusterIds?: string[];
+  },
   userId: User['id'],
   requestId: string,
 ) {
-  const { slug, label, argocdUrl, description, clusterIds } = data
+  const { slug, label, argocdUrl, description, clusterIds } = data;
 
   const existingZone = await prisma.zone.findUnique({
     where: { slug },
-  })
+  });
 
-  if (existingZone) return new BadRequest400(`Une zone portant le nom ${slug} existe déjà.`)
+  if (existingZone) return new BadRequest400(`Une zone portant le nom ${slug} existe déjà.`);
   const zone = await prisma.zone.create({
     data: {
       slug,
@@ -26,16 +32,16 @@ export async function createZone(
       argocdUrl,
       description,
     },
-  })
+  });
   if (clusterIds) {
-    await linkZoneToClusters(zone.id, clusterIds)
+    await linkZoneToClusters(zone.id, clusterIds);
   }
-  const hookReply = await hook.zone.upsert(zone.id)
-  await addLogs({ action: 'Create zone', data: hookReply, userId, requestId })
+  const hookReply = await hook.zone.upsert(zone.id);
+  await addLogs({ action: 'Create zone', data: hookReply, userId, requestId });
   if (hookReply.failed) {
-    return new Unprocessable422('Echec des services lors de la création de la zone')
+    return new Unprocessable422('Echec des services lors de la création de la zone');
   }
-  return zone
+  return zone;
 }
 
 export async function updateZone(
@@ -44,7 +50,7 @@ export async function updateZone(
   userId: User['id'],
   requestId: string,
 ) {
-  const { label, argocdUrl, description } = data
+  const { label, argocdUrl, description } = data;
 
   const updatedZone = await prisma.zone.update({
     where: {
@@ -55,24 +61,30 @@ export async function updateZone(
       argocdUrl,
       description,
     },
-  })
-  const hookReply = await hook.zone.upsert(updatedZone.id)
-  await addLogs({ action: 'Update zone', data: hookReply, userId, requestId })
+  });
+  const hookReply = await hook.zone.upsert(updatedZone.id);
+  await addLogs({ action: 'Update zone', data: hookReply, userId, requestId });
   if (hookReply.failed) {
-    return new Unprocessable422('Echec des services lors de la mise à jour de la zone')
+    return new Unprocessable422('Echec des services lors de la mise à jour de la zone');
   }
-  return updatedZone
+  return updatedZone;
 }
 
 export async function deleteZone(zoneId: Zone['id'], userId: User['id'], requestId: string) {
-  const attachedCluster = await prisma.cluster.findFirst({ where: { zoneId }, select: { id: true } })
-  if (attachedCluster) return new BadRequest400('Vous ne pouvez supprimer cette zone, car des clusters y sont associés.')
+  const attachedCluster = await prisma.cluster.findFirst({
+    where: { zoneId },
+    select: { id: true },
+  });
+  if (attachedCluster)
+    return new BadRequest400(
+      'Vous ne pouvez supprimer cette zone, car des clusters y sont associés.',
+    );
 
-  const hookReply = await hook.zone.delete(zoneId)
-  await addLogs({ action: 'Delete zone', data: hookReply, userId, requestId })
+  const hookReply = await hook.zone.delete(zoneId);
+  await addLogs({ action: 'Delete zone', data: hookReply, userId, requestId });
   if (hookReply.failed) {
-    return new Unprocessable422('Echec des services lors de la suppression de la zone')
+    return new Unprocessable422('Echec des services lors de la suppression de la zone');
   }
-  await prisma.zone.delete({ where: { id: zoneId } })
-  return null
+  await prisma.zone.delete({ where: { id: zoneId } });
+  return null;
 }

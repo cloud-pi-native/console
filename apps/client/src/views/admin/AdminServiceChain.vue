@@ -1,33 +1,25 @@
 <script setup lang="ts">
-import type {
-  ServiceChain,
-  ServiceChainDetails,
-  ServiceChainFlows,
-} from '@cpn-console/shared'
-import router from '@/router/index.js'
-import { useServiceChainStore } from '@/stores/service-chain.js'
+import type { ServiceChain, ServiceChainDetails, ServiceChainFlows } from '@cpn-console/shared';
+import router from '@/router/index.js';
+import { useServiceChainStore } from '@/stores/service-chain.js';
 
 const props = defineProps<{
-  id: ServiceChain['id']
-}>()
+  id: ServiceChain['id'];
+}>();
 
-const isLoading = ref(true)
-const serviceChainStore = useServiceChainStore()
-const serviceChainDetails = ref<ServiceChainDetails>()
-const serviceChainFlows = ref<ServiceChainFlows>()
+const isLoading = ref(true);
+const serviceChainStore = useServiceChainStore();
+const serviceChainDetails = ref<ServiceChainDetails>();
+const serviceChainFlows = ref<ServiceChainFlows>();
 
 onMounted(async () => {
-  serviceChainDetails.value = await serviceChainStore.getServiceChainDetails(
-    props.id,
-  )
-  serviceChainFlows.value = await serviceChainStore.getServiceChainFlows(
-    props.id,
-  )
-  isLoading.value = false
-})
+  serviceChainDetails.value = await serviceChainStore.getServiceChainDetails(props.id);
+  serviceChainFlows.value = await serviceChainStore.getServiceChainFlows(props.id);
+  isLoading.value = false;
+});
 
 function goBack() {
-  router.push({ name: 'ListServiceChains' })
+  router.push({ name: 'ListServiceChains' });
 }
 </script>
 

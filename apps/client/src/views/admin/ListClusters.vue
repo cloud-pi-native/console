@@ -1,58 +1,57 @@
 <script lang="ts" setup>
-import type {
-  Cluster,
-} from '@cpn-console/shared'
-import { DsfrDataTable } from '@gouvminint/vue-dsfr'
-import { onMounted, ref } from 'vue'
-import router from '@/router/index.js'
-import { useClusterStore } from '@/stores/cluster.js'
-import { useStageStore } from '@/stores/stage.js'
-import { useZoneStore } from '@/stores/zone.js'
-import { getRandomId } from '@/utils/func.js'
+import type { Cluster } from '@cpn-console/shared';
+import { DsfrDataTable } from '@gouvminint/vue-dsfr';
+import { onMounted, ref } from 'vue';
+import router from '@/router/index.js';
+import { useClusterStore } from '@/stores/cluster.js';
+import { useStageStore } from '@/stores/stage.js';
+import { useZoneStore } from '@/stores/zone.js';
+import { getRandomId } from '@/utils/func.js';
 
-const zoneStore = useZoneStore()
-const stageStore = useStageStore()
-const clusterStore = useClusterStore()
+const zoneStore = useZoneStore();
+const stageStore = useStageStore();
+const clusterStore = useClusterStore();
 
-const tableKey = ref(getRandomId('table'))
-const isLoading = ref(true)
-const inputSearchText = ref('')
+const tableKey = ref(getRandomId('table'));
+const isLoading = ref(true);
+const inputSearchText = ref('');
 
-const clustersFiltered = computed(() => clusterStore.clusters.filter(cluster => cluster.label.includes(inputSearchText.value)))
+const clustersFiltered = computed(() =>
+  clusterStore.clusters.filter((cluster) => cluster.label.includes(inputSearchText.value)),
+);
 let clustersUsage: {
-  id: string
-  resources: string
-}[] = []
+  id: string;
+  resources: string;
+}[] = [];
 
-const title = 'Liste des clusters'
+const title = 'Liste des clusters';
 
 function showNewClusterForm() {
-  router.push({ name: 'AdminCluster', params: { id: 'create' } })
+  router.push({ name: 'AdminCluster', params: { id: 'create' } });
 }
 
 onMounted(async () => {
-  await stageStore.getAllStages()
-  await Promise.all([
-    zoneStore.getAllZones(),
-    clusterStore.getClusters(),
-  ])
-  clustersUsage = await Promise.all(clusterStore.clusters.map(async (c) => {
-    const usage = await clusterStore.getClusterUsage(c.id)
-    return {
-      id: c.id,
-      resources: `${usage.memory.toLocaleString()}GiB ${usage.cpu.toLocaleString()}CPU ${usage.gpu.toLocaleString()}GPU`,
-    }
-  }))
-  isLoading.value = false
-})
+  await stageStore.getAllStages();
+  await Promise.all([zoneStore.getAllZones(), clusterStore.getClusters()]);
+  clustersUsage = await Promise.all(
+    clusterStore.clusters.map(async (c) => {
+      const usage = await clusterStore.getClusterUsage(c.id);
+      return {
+        id: c.id,
+        resources: `${usage.memory.toLocaleString()}GiB ${usage.cpu.toLocaleString()}CPU ${usage.gpu.toLocaleString()}GPU`,
+      };
+    }),
+  );
+  isLoading.value = false;
+});
 
 const privacyWording: Record<Cluster['privacy'], string> = {
   dedicated: 'Dédié',
   public: 'Public',
-}
+};
 
 function clickCluster(cluster: Cluster) {
-  router.push({ name: 'AdminCluster', params: { id: cluster.id } })
+  router.push({ name: 'AdminCluster', params: { id: cluster.id } });
 }
 
 const headers = [
@@ -76,16 +75,12 @@ const headers = [
     key: 'usage',
     label: 'Ressources allouées',
   },
-]
+];
 </script>
 
 <template>
-  <div
-    class="flex justify-between gap-5 w-full items-end mb-5"
-  >
-    <div
-      class="flex gap-5 w-max items-end"
-    >
+  <div class="flex justify-between gap-5 w-full items-end mb-5">
+    <div class="flex gap-5 w-max items-end">
       <DsfrInputGroup
         v-model="inputSearchText"
         data-testid="projectsSearchInput"
@@ -134,10 +129,7 @@ const headers = [
       </template>
       <template v-else-if="colKey === 'zone'">
         <span :data-testid="`clusterZone-${(cell as Cluster).label}`">
-          <Badge
-            type="zone"
-            :name="zoneStore.zonesById[(cell as Cluster).zoneId]?.label"
-          />
+          <Badge type="zone" :name="zoneStore.zonesById[(cell as Cluster).zoneId]?.label" />
         </span>
       </template>
       <template v-else-if="colKey === 'access'">
@@ -149,12 +141,14 @@ const headers = [
       </template>
       <template v-else-if="colKey === 'resources'">
         <span :data-testid="`clusterResources-${(cell as Cluster).label}`">
-          {{ (cell as Cluster).memory.toLocaleString() }}GiB {{ (cell as Cluster).cpu.toLocaleString() }}CPU {{ (cell as Cluster).gpu.toLocaleString() }}GPU
+          {{ (cell as Cluster).memory.toLocaleString() }}GiB
+          {{ (cell as Cluster).cpu.toLocaleString() }}CPU
+          {{ (cell as Cluster).gpu.toLocaleString() }}GPU
         </span>
       </template>
       <template v-else-if="colKey === 'usage'">
         <span :data-testid="`clusterUsage-${(cell as Cluster).label}`">
-          {{ clustersUsage.find(c => c.id === (cell as Cluster).id)?.resources }}
+          {{ clustersUsage.find((c) => c.id === (cell as Cluster).id)?.resources }}
         </span>
       </template>
       <template v-else>
@@ -165,7 +159,8 @@ const headers = [
 </template>
 
 <style scoped>
-.fr-select-group, .fr-input-group {
+.fr-select-group,
+.fr-input-group {
   margin-bottom: 0 !important;
 }
 </style>

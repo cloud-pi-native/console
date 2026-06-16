@@ -1,28 +1,29 @@
-import type { Cluster, Environment, Kubeconfig, Prisma, Project, Stage } from '@prisma/client'
-import prisma from '@/prisma.js'
+import type { Cluster, Environment, Kubeconfig, Prisma, Project, Stage } from '@prisma/client';
+import prisma from '@/prisma.js';
 
 export async function getClustersAssociatedWithProject(projectId: Project['id']) {
-  const [
-    clusterIdsHistory,
-    clusterIdsEnv,
-  ] = await Promise.all([
-    prisma.projectClusterHistory.findMany({
-      select: {
-        clusterId: true,
-      },
-      where: {
-        projectId,
-      },
-    }).then(history => history.map(({ clusterId }) => clusterId)),
-    prisma.cluster.findMany({
-      where: { environments: { some: { project: { id: projectId } } } },
-      select: { id: true },
-    }).then(cluster => cluster.map(({ id }) => id)),
-  ])
+  const [clusterIdsHistory, clusterIdsEnv] = await Promise.all([
+    prisma.projectClusterHistory
+      .findMany({
+        select: {
+          clusterId: true,
+        },
+        where: {
+          projectId,
+        },
+      })
+      .then((history) => history.map(({ clusterId }) => clusterId)),
+    prisma.cluster
+      .findMany({
+        where: { environments: { some: { project: { id: projectId } } } },
+        select: { id: true },
+      })
+      .then((cluster) => cluster.map(({ id }) => id)),
+  ]);
   const clusterIds = [
     ...clusterIdsHistory,
-    ...clusterIdsEnv.filter(id => !clusterIdsHistory.includes(id)),
-  ]
+    ...clusterIdsEnv.filter((id) => !clusterIdsHistory.includes(id)),
+  ];
   return prisma.cluster.findMany({
     where: { id: { in: clusterIds } },
     select: {
@@ -45,10 +46,13 @@ export async function getClustersAssociatedWithProject(projectId: Project['id'])
         },
       },
     },
-  })
+  });
 }
 
-export async function updateProjectClusterHistory(projectId: Project['id'], clusterIds: Cluster['id'][]) {
+export async function updateProjectClusterHistory(
+  projectId: Project['id'],
+  clusterIds: Cluster['id'][],
+) {
   return prisma.$transaction([
     prisma.projectClusterHistory.deleteMany({
       where: {
@@ -59,24 +63,24 @@ export async function updateProjectClusterHistory(projectId: Project['id'], clus
       },
     }),
     prisma.projectClusterHistory.createMany({
-      data: clusterIds.map(clusterId => ({ clusterId, projectId })),
+      data: clusterIds.map((clusterId) => ({ clusterId, projectId })),
       skipDuplicates: true,
     }),
-  ])
+  ]);
 }
 
 export function getClusterById(id: Cluster['id']) {
   return prisma.cluster.findUnique({
     where: { id },
     include: { kubeconfig: true },
-  })
+  });
 }
 
 export function getClusterByIdOrThrow(id: Cluster['id']) {
   return prisma.cluster.findUniqueOrThrow({
     where: { id },
     include: { kubeconfig: true, zone: true },
-  })
+  });
 }
 
 export function getClusterEnvironments(clusterId: Cluster['id']) {
@@ -96,7 +100,7 @@ export function getClusterEnvironments(clusterId: Cluster['id']) {
         },
       },
     },
-  })
+  });
 }
 
 export function getClusterDetails(id: Cluster['id']) {
@@ -122,7 +126,7 @@ export function getClusterDetails(id: Cluster['id']) {
       gpu: true,
       memory: true,
     },
-  })
+  });
 }
 
 export function getClustersByIds(clusterIds: Cluster['id'][]) {
@@ -131,14 +135,14 @@ export function getClustersByIds(clusterIds: Cluster['id'][]) {
       id: { in: clusterIds },
     },
     include: { kubeconfig: true },
-  })
+  });
 }
 
 export function getPublicClusters() {
   return prisma.cluster.findMany({
     where: { privacy: 'public' },
     include: { zone: true },
-  })
+  });
 }
 
 export async function getClusterNamesByZoneId(zoneId: string) {
@@ -147,12 +151,12 @@ export async function getClusterNamesByZoneId(zoneId: string) {
     select: {
       label: true,
     },
-  })
-  return clusterNames.map(({ label }) => label)
+  });
+  return clusterNames.map(({ label }) => label);
 }
 
 export function getClusterByLabel(label: Cluster['label']) {
-  return prisma.cluster.findUnique({ where: { label } })
+  return prisma.cluster.findUnique({ where: { label } });
 }
 
 export function getClusterByEnvironmentId(id: Environment['id']) {
@@ -163,7 +167,7 @@ export function getClusterByEnvironmentId(id: Environment['id']) {
       },
     },
     include: { kubeconfig: true },
-  })
+  });
 }
 
 export function getClustersWithProjectIdAndConfig() {
@@ -193,7 +197,7 @@ export function getClustersWithProjectIdAndConfig() {
       gpu: true,
       memory: true,
     },
-  })
+  });
 }
 
 export function listClusters(where: Prisma.ClusterWhereInput) {
@@ -211,24 +215,32 @@ export function listClusters(where: Prisma.ClusterWhereInput) {
       gpu: true,
       memory: true,
     },
-  })
+  });
 }
 
 export async function getProjectsByClusterId(id: Cluster['id']) {
-  return (await prisma.cluster.findUniqueOrThrow({
-    where: { id },
-    select: { projects: true },
-  }))?.projects
+  return (
+    await prisma.cluster.findUniqueOrThrow({
+      where: { id },
+      select: { projects: true },
+    })
+  )?.projects;
 }
 
 export async function listStagesByClusterId(id: Cluster['id']) {
-  return (await prisma.cluster.findUniqueOrThrow({
-    where: { id },
-    select: { stages: true },
-  }))?.stages
+  return (
+    await prisma.cluster.findUniqueOrThrow({
+      where: { id },
+      select: { stages: true },
+    })
+  )?.stages;
 }
 
-export function createCluster(data: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName' | 'zoneId'>, kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>, zoneId: string) {
+export function createCluster(
+  data: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName' | 'zoneId'>,
+  kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>,
+  zoneId: string,
+) {
   return prisma.cluster.create({
     data: {
       ...data,
@@ -238,20 +250,24 @@ export function createCluster(data: Omit<Cluster, 'id' | 'updatedAt' | 'createdA
         connect: { id: zoneId },
       },
     },
-  })
+  });
 }
 
-export function updateCluster(id: Cluster['id'], data: Partial<Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId'>>, kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>) {
+export function updateCluster(
+  id: Cluster['id'],
+  data: Partial<Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId'>>,
+  kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>,
+) {
   return prisma.cluster.update({
     where: { id },
     data: {
       ...data,
       kubeconfig: {
-      // @ts-ignore
+        // @ts-ignore
         update: kubeconfig,
       },
     },
-  })
+  });
 }
 
 export function linkClusterToProjects(id: Cluster['id'], projectIds: Project['id'][]) {
@@ -259,10 +275,10 @@ export function linkClusterToProjects(id: Cluster['id'], projectIds: Project['id
     where: { id },
     data: {
       projects: {
-        connect: projectIds.map(projectId => ({ id: projectId })),
+        connect: projectIds.map((projectId) => ({ id: projectId })),
       },
     },
-  })
+  });
 }
 
 export function linkClusterToStages(id: Cluster['id'], stageIds: Stage['id'][]) {
@@ -270,10 +286,10 @@ export function linkClusterToStages(id: Cluster['id'], stageIds: Stage['id'][]) 
     where: { id },
     data: {
       stages: {
-        connect: stageIds.map(stageId => ({ id: stageId })),
+        connect: stageIds.map((stageId) => ({ id: stageId })),
       },
     },
-  })
+  });
 }
 
 export function removeClusterFromProject(id: Cluster['id'], projectId: Project['id']) {
@@ -286,7 +302,7 @@ export function removeClusterFromProject(id: Cluster['id'], projectId: Project['
         },
       },
     },
-  })
+  });
 }
 
 export function removeClusterFromStage(id: Cluster['id'], stageId: Stage['id']) {
@@ -299,11 +315,11 @@ export function removeClusterFromStage(id: Cluster['id'], stageId: Stage['id']) 
         },
       },
     },
-  })
+  });
 }
 
 export function deleteCluster(id: Cluster['id']) {
   return prisma.cluster.delete({
     where: { id },
-  })
+  });
 }

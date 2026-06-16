@@ -1,12 +1,9 @@
-import type {
-  Prisma,
+import type { Prisma, Project } from '@prisma/client';
 
-  Project,
-} from '@prisma/client'
+import prisma from '@/prisma.js';
 
-import prisma from '@/prisma.js'
-
-export const listMembers = (projectId: Project['id']) => prisma.projectMembers.findMany({ where: { projectId }, include: { user: true } })
+export const listMembers = (projectId: Project['id']) =>
+  prisma.projectMembers.findMany({ where: { projectId }, include: { user: true } });
 
 export function upsertMember(data: Prisma.ProjectMembersUncheckedCreateInput) {
   return prisma.projectMembers.upsert({
@@ -21,7 +18,7 @@ export function upsertMember(data: Prisma.ProjectMembersUncheckedCreateInput) {
       roleIds: data.roleIds,
     },
     include: { user: true },
-  })
+  });
 }
 
 export function deleteMember(data: Prisma.ProjectMembersWhereUniqueInput['projectId_userId']) {
@@ -29,5 +26,5 @@ export function deleteMember(data: Prisma.ProjectMembersWhereUniqueInput['projec
     where: {
       projectId_userId: data,
     },
-  })
+  });
 }

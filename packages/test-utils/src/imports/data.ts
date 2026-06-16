@@ -64,7 +64,8 @@ export const data = {
     {
       id: '2a88634a-0a60-459c-bf68-c4ffb12430a2',
       user: {
-        keyData: 'LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=',
+        keyData:
+          'LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=',
         certData: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K',
       },
       cluster: {
@@ -78,7 +79,8 @@ export const data = {
     {
       id: '2a88634a-0a60-459c-bf68-c4ffb12430a3',
       user: {
-        keyData: 'LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=',
+        keyData:
+          'LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=',
         certData: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K',
       },
       cluster: {
@@ -226,9 +228,7 @@ export const data = {
       email: 'admin@test.com',
       createdAt: '2023-07-03T18:01:52.884Z',
       updatedAt: '2023-07-06T12:53:39.183Z',
-      adminRoleIds: [
-        '76229c96-4716-45bc-99da-00498ec9018c',
-      ],
+      adminRoleIds: ['76229c96-4716-45bc-99da-00498ec9018c'],
       type: 'human',
     },
     {
@@ -269,9 +269,7 @@ export const data = {
       createdAt: '2023-07-03T14:46:56.772Z',
       updatedAt: '2024-07-25T16:18:11.372Z',
       type: 'human',
-      adminRoleIds: [
-        'eadf604f-5f54-4744-bdfb-4793d2271e9b',
-      ],
+      adminRoleIds: ['eadf604f-5f54-4744-bdfb-4793d2271e9b'],
     },
   ],
   log: [
@@ -531,9 +529,7 @@ export const data = {
         },
         nexus: {
           user: {
-            roles: [
-              'mi-int-2-ID',
-            ],
+            roles: ['mi-int-2-ID'],
             source: 'default',
             status: 'active',
             userId: 'mi-int-2',
@@ -610,9 +606,7 @@ export const data = {
                 creation_time: '0001-01-01T00:00:00.000Z',
               },
               current_user_role_id: 1,
-              current_user_role_ids: [
-                1,
-              ],
+              current_user_role_ids: [1],
             },
           },
           status: {
@@ -1718,7 +1712,7 @@ export const data = {
       name: 'candilib',
       slug: 'candilib',
       lastSuccessProvisionningVersion: '8.23.0',
-      description: 'Application de réservation de places à l\'examen du permis B.',
+      description: "Application de réservation de places à l'examen du permis B.",
       status: 'created',
       locked: false,
       createdAt: '2023-07-03T14:46:56.778Z',
@@ -1738,7 +1732,7 @@ export const data = {
       name: 'basegun',
       slug: 'basegun',
       lastSuccessProvisionningVersion: '8.23.0',
-      description: 'Application d\'aide à la catégorisation d\'armes à feu.',
+      description: "Application d'aide à la catégorisation d'armes à feu.",
       status: 'created',
       locked: false,
       createdAt: '2023-07-10T14:46:56.778Z',
@@ -1758,7 +1752,7 @@ export const data = {
       name: 'psijfailed',
       slug: 'psijfailed',
       lastSuccessProvisionningVersion: '8.23.0',
-      description: 'Application de transmission d\'informations entre agents de la PS et de l\'IJ.',
+      description: "Application de transmission d'informations entre agents de la PS et de l'IJ.",
       status: 'failed',
       locked: true,
       createdAt: '2023-07-03T14:46:56.799Z',
@@ -1992,9 +1986,7 @@ export const data = {
     {
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6569',
       projectId: '94c860ab-023f-4e6e-8a4e-ff41456e249b',
-      roleIds: [
-        'c77a1b96-377d-4aa3-bc94-65d4415f9599',
-      ],
+      roleIds: ['c77a1b96-377d-4aa3-bc94-65d4415f9599'],
     },
     {
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566',
@@ -2004,16 +1996,12 @@ export const data = {
     {
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6566',
       projectId: '22e7044f-8414-435d-9c4a-2df42a65034b',
-      roleIds: [
-        'c77a1b96-377d-4aa3-bc94-65d4415f95b5',
-      ],
+      roleIds: ['c77a1b96-377d-4aa3-bc94-65d4415f95b5'],
     },
     {
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567',
       projectId: '554d9150-9a07-42c1-8207-1163f2f0addd',
-      roleIds: [
-        'c77a1b96-377d-4aa3-bc94-65d4415f9595',
-      ],
+      roleIds: ['c77a1b96-377d-4aa3-bc94-65d4415f9595'],
     },
     {
       userId: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567',
@@ -2195,7 +2183,6 @@ export const data = {
       key: 'maintenance',
       value: 'off',
     },
-
   ],
   associations: [
     [
@@ -2302,4 +2289,4 @@ export const data = {
   ],
   deployment: [],
   deploymentSource: [],
-}
+};

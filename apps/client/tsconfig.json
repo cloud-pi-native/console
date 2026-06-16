@@ -1,7 +1,5 @@
 {
-  "extends": [
-    "@cpn-console/ts-config/tsconfig.base.json"
-  ],
+  "extends": ["@cpn-console/ts-config/tsconfig.base.json"],
   "compilerOptions": {
     "incremental": true,
     // Module
@@ -15,17 +13,10 @@
     "module": "Preserve",
     "moduleResolution": "Bundler",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     },
     "resolveJsonModule": true,
-    "types": [
-      "vitest",
-      "vite/client",
-      "vite-plugin-pwa/vue",
-      "vite-plugin-pwa/client"
-    ],
+    "types": ["vitest", "vite/client", "vite-plugin-pwa/vue", "vite-plugin-pwa/client"],
     "allowImportingTsExtensions": false,
     "allowJs": true,
     "strict": true,
@@ -49,14 +40,6 @@
     "skipLibCheck": true
   },
   "vueCompilerOptions": {},
-  "include": [
-    "./src/**/*.ts",
-    "./src/**/*.js",
-    "./src/**/*.vue",
-    "./src/**/*.d.ts"
-  ],
-  "exclude": [
-    "./src/**/*.spec.ts",
-    "./src/**/__mocks__"
-  ]
+  "include": ["./src/**/*.ts", "./src/**/*.js", "./src/**/*.vue", "./src/**/*.d.ts"],
+  "exclude": ["./src/**/*.spec.ts", "./src/**/__mocks__"]
 }

@@ -1,47 +1,47 @@
 <script lang="ts" setup>
-import type { ProjectV2 } from '@cpn-console/shared'
-import { ProjectAuthorized } from '@cpn-console/shared'
-import { onBeforeMount, ref } from 'vue'
-import OperationPanel from '@/components/OperationPanel.vue'
-import ProjectClustersInfos from '@/components/ProjectClustersInfos.vue'
-import ProjectSettings from '@/components/ProjectSettings.vue'
-import router from '@/router/index.js'
-import { useClusterStore } from '@/stores/cluster.js'
-import { useProjectStore } from '@/stores/project.js'
-import { useStageStore } from '@/stores/stage.js'
-import { useUserStore } from '@/stores/user.js'
-import { useZoneStore } from '@/stores/zone.js'
-import { getRandomId } from '@/utils/func.js'
+import type { ProjectV2 } from '@cpn-console/shared';
+import { ProjectAuthorized } from '@cpn-console/shared';
+import { onBeforeMount, ref } from 'vue';
+import OperationPanel from '@/components/OperationPanel.vue';
+import ProjectClustersInfos from '@/components/ProjectClustersInfos.vue';
+import ProjectSettings from '@/components/ProjectSettings.vue';
+import router from '@/router/index.js';
+import { useClusterStore } from '@/stores/cluster.js';
+import { useProjectStore } from '@/stores/project.js';
+import { useStageStore } from '@/stores/stage.js';
+import { useUserStore } from '@/stores/user.js';
+import { useZoneStore } from '@/stores/zone.js';
+import { getRandomId } from '@/utils/func.js';
 
 const props = withDefaults(
   defineProps<{
-    projectSlug: ProjectV2['slug']
-    parentRoute: string
-    asProfile: 'user' | 'admin'
-    tab?: DashboardPanelTabs
+    projectSlug: ProjectV2['slug'];
+    parentRoute: string;
+    asProfile: 'user' | 'admin';
+    tab?: DashboardPanelTabs;
   }>(),
   {
     tab: 'resources',
   },
-)
+);
 
-const projectStore = useProjectStore()
-const zoneStore = useZoneStore()
-const clusterStore = useClusterStore()
-const userStore = useUserStore()
-const stageStore = useStageStore()
+const projectStore = useProjectStore();
+const zoneStore = useZoneStore();
+const clusterStore = useClusterStore();
+const userStore = useUserStore();
+const stageStore = useStageStore();
 
-const teamId = ref(getRandomId('team'))
+const teamId = ref(getRandomId('team'));
 
-const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
+const project = computed(() => projectStore.projectsBySlug[props.projectSlug]);
 
 function unSelectProject() {
-  router.push({ name: props.parentRoute })
+  router.push({ name: props.parentRoute });
 }
 
 async function archive() {
-  unSelectProject()
-  projectStore.listMyProjects()
+  unSelectProject();
+  projectStore.listMyProjects();
 }
 
 onBeforeMount(async () => {
@@ -49,24 +49,24 @@ onBeforeMount(async () => {
     stageStore.getAllStages(),
     clusterStore.getClusters(),
     zoneStore.getAllZones(),
-  ])
-})
+  ]);
+});
 
-const tabListName = 'Liste d’onglet'
+const tabListName = 'Liste d’onglet';
 
-type DashboardPanelTabs
-  = | 'resources'
-    | 'services'
-    | 'team'
-    | 'roles'
-    | 'logs'
-    | 'clusters'
-    | 'configuration'
+type DashboardPanelTabs =
+  | 'resources'
+  | 'services'
+  | 'team'
+  | 'roles'
+  | 'logs'
+  | 'clusters'
+  | 'configuration';
 interface TabTitle {
-  title: string
-  icon: `${string}:${string}`
-  tabId: `tab-${DashboardPanelTabs}`
-  panelId: `panel-${DashboardPanelTabs}`
+  title: string;
+  icon: `${string}:${string}`;
+  tabId: `tab-${DashboardPanelTabs}`;
+  panelId: `panel-${DashboardPanelTabs}`;
 }
 
 const resourcesTitle: TabTitle = {
@@ -74,43 +74,43 @@ const resourcesTitle: TabTitle = {
   icon: 'ri:shapes-line',
   tabId: 'tab-resources',
   panelId: 'panel-resources',
-}
+};
 const servicesTitle: TabTitle = {
   title: 'Services externes',
   icon: 'ri:flow-chart',
   tabId: 'tab-services',
   panelId: 'panel-services',
-}
+};
 const teamTitle: TabTitle = {
   title: 'Équipe',
   icon: 'ri:team-line',
   tabId: 'tab-team',
   panelId: 'panel-team',
-}
+};
 const rolesTitle: TabTitle = {
   title: 'Rôles',
   icon: 'ri:admin-line',
   tabId: 'tab-roles',
   panelId: 'panel-roles',
-}
+};
 const logsTitle: TabTitle = {
   title: 'Journaux',
   icon: 'ri:newspaper-line',
   tabId: 'tab-logs',
   panelId: 'panel-logs',
-}
+};
 const clustersTitle: TabTitle = {
   title: 'Clusters',
   icon: 'ri:server-line',
   tabId: 'tab-clusters',
   panelId: 'panel-clusters',
-}
+};
 const configurationTitle: TabTitle = {
   title: 'Configuration',
   icon: 'ri:settings-5-line',
   tabId: 'tab-configuration',
   panelId: 'panel-configuration',
-}
+};
 const tabTitles: TabTitle[] = [
   resourcesTitle,
   servicesTitle,
@@ -119,53 +119,51 @@ const tabTitles: TabTitle[] = [
   logsTitle,
   clustersTitle,
   configurationTitle,
-]
+];
 
 function findTab() {
   return Math.max(
-    tabTitles.findIndex(
-      tab => `tab-${router.currentRoute.value.query?.tab}` === tab.tabId,
-    ),
+    tabTitles.findIndex((tab) => `tab-${router.currentRoute.value.query?.tab}` === tab.tabId),
     0,
-  )
+  );
 }
 
-const activeTab = ref(findTab())
+const activeTab = ref(findTab());
 const saveProjectState = ref({
   isProcessing: false,
-})
-const currentRoute = useRoute()
+});
+const currentRoute = useRoute();
 
 async function refreshMembers() {
-  await project.value.Members.list()
-  teamId.value = getRandomId('team')
+  await project.value.Members.list();
+  teamId.value = getRandomId('team');
 }
 
 async function leaveProject() {
   if (props.asProfile === 'user') {
-    return unSelectProject()
+    return unSelectProject();
   }
-  await refreshMembers()
+  await refreshMembers();
 }
 
 watch(currentRoute, () => {
-  activeTab.value = findTab()
-})
+  activeTab.value = findTab();
+});
 
 watch(activeTab, (tabIndex) => {
-  const tabId = tabTitles[tabIndex].tabId
+  const tabId = tabTitles[tabIndex].tabId;
   if (tabId) {
     router.replace({
       query: {
         ...router.currentRoute.value.query,
         tab: tabId.replace(/^tab-/, ''),
       },
-    })
+    });
   }
-})
+});
 
 async function saveProject() {
-  saveProjectState.value.isProcessing = true
+  saveProjectState.value.isProcessing = true;
   await project.value.Commands.update({
     description: project.value.description,
     limitless: project.value.limitless,
@@ -175,8 +173,8 @@ async function saveProject() {
     prodMemory: project.value.prodMemory,
     prodCpu: project.value.prodCpu,
     prodGpu: project.value.prodGpu,
-  }).finally(() => project.value.Commands.refresh())
-  saveProjectState.value.isProcessing = false
+  }).finally(() => project.value.Commands.refresh());
+  saveProjectState.value.isProcessing = false;
 }
 </script>
 
@@ -198,8 +196,7 @@ async function saveProject() {
         :model-value="project.description"
         :project="project"
         :can-edit-description="
-          asProfile === 'user'
-            && ProjectAuthorized.Manage({ projectPermissions: project.myPerms })
+          asProfile === 'user' && ProjectAuthorized.Manage({ projectPermissions: project.myPerms })
         "
         @update:model-value="
           (desc: string | undefined) => {
@@ -211,18 +208,17 @@ async function saveProject() {
       <ProjectAction
         :project="project"
         :hide-replay="
-          asProfile === 'user'
-            && !ProjectAuthorized.ReplayHooks({
-              projectPermissions: project.myPerms,
-            })
+          asProfile === 'user' &&
+          !ProjectAuthorized.ReplayHooks({
+            projectPermissions: project.myPerms,
+          })
         "
         :hide-archive="
-          asProfile === 'user'
-            && !ProjectAuthorized.Manage({ projectPermissions: project.myPerms })
+          asProfile === 'user' && !ProjectAuthorized.Manage({ projectPermissions: project.myPerms })
         "
         :hide-secrets="
-          asProfile === 'user'
-            && !ProjectAuthorized.SeeSecrets({ projectPermissions: project.myPerms })
+          asProfile === 'user' &&
+          !ProjectAuthorized.SeeSecrets({ projectPermissions: project.myPerms })
         "
         :hide-lock="asProfile === 'user'"
         class="px-4"
@@ -239,25 +235,18 @@ async function saveProject() {
           :tab-id="resourcesTitle.tabId"
           class="flex gap-20 flex-wrap"
         >
-          <ProjectResources
-            :key="project.id"
-            :project="project"
-            :as-profile="asProfile"
-          />
+          <ProjectResources :key="project.id" :project="project" :as-profile="asProfile" />
         </DsfrTabContent>
 
-        <DsfrTabContent
-          :panel-id="servicesTitle.panelId"
-          :tab-id="servicesTitle.tabId"
-        >
+        <DsfrTabContent :panel-id="servicesTitle.panelId" :tab-id="servicesTitle.tabId">
           <ServicesConfig
             :key="project.id"
             :project="project"
             :permission-target="asProfile"
             :display-global="asProfile !== 'admin'"
             :disabled="
-              asProfile === 'user'
-                && !ProjectAuthorized.Manage({ projectPermissions: project.myPerms })
+              asProfile === 'user' &&
+              !ProjectAuthorized.Manage({ projectPermissions: project.myPerms })
             "
           />
         </DsfrTabContent>
@@ -269,32 +258,26 @@ async function saveProject() {
             :project="project"
             :members="project.members"
             :can-manage="
-              asProfile === 'admin'
-                || ProjectAuthorized.ManageMembers({
-                  projectPermissions: project.myPerms,
-                })
+              asProfile === 'admin' ||
+              ProjectAuthorized.ManageMembers({
+                projectPermissions: project.myPerms,
+              })
             "
-            :can-transfer="
-              asProfile === 'admin'
-                || project.ownerId === userStore.userProfile?.id
-            "
+            :can-transfer="asProfile === 'admin' || project.ownerId === userStore.userProfile?.id"
             @refresh="refreshMembers"
             @leave="leaveProject"
             @transfer="unSelectProject"
           />
         </DsfrTabContent>
 
-        <DsfrTabContent
-          :panel-id="rolesTitle.panelId"
-          :tab-id="rolesTitle.tabId"
-        >
+        <DsfrTabContent :panel-id="rolesTitle.panelId" :tab-id="rolesTitle.tabId">
           <div>
             <template
               v-if="
-                asProfile === 'admin'
-                  || ProjectAuthorized.ManageRoles({
-                    projectPermissions: project.myPerms,
-                  })
+                asProfile === 'admin' ||
+                ProjectAuthorized.ManageRoles({
+                  projectPermissions: project.myPerms,
+                })
               "
             >
               <ProjectRoles :key="project.id" :project="project" />
@@ -306,22 +289,12 @@ async function saveProject() {
         </DsfrTabContent>
 
         <DsfrTabContent :panel-id="logsTitle.panelId" :tab-id="logsTitle.tabId">
-          <ProjectLogsViewer
-            :key="project.id"
-            :project="project"
-            :as-profile="asProfile"
-          />
+          <ProjectLogsViewer :key="project.id" :project="project" :as-profile="asProfile" />
         </DsfrTabContent>
-        <DsfrTabContent
-          :panel-id="clustersTitle.panelId"
-          :tab-id="clustersTitle.tabId"
-        >
+        <DsfrTabContent :panel-id="clustersTitle.panelId" :tab-id="clustersTitle.tabId">
           <ProjectClustersInfos :key="project.id" :project="project" />
         </DsfrTabContent>
-        <DsfrTabContent
-          :panel-id="configurationTitle.panelId"
-          :tab-id="configurationTitle.tabId"
-        >
+        <DsfrTabContent :panel-id="configurationTitle.panelId" :tab-id="configurationTitle.tabId">
           <ProjectSettings :project="project" />
           <DsfrButton
             label="Sauvegarder la configuration"

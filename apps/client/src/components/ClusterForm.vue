@@ -4,136 +4,148 @@ import type {
   ClusterDetails,
   Stage,
   Zone,
-} from '@cpn-console/shared'
+} from '@cpn-console/shared';
 import {
   ClusterDetailsSchema,
   ClusterPrivacy,
   deleteValidationInput,
   KubeconfigSchema,
-} from '@cpn-console/shared'
-import { DsfrDataTable } from '@gouvminint/vue-dsfr'
-import { computed, onBeforeMount, ref, watch } from 'vue'
-import { JsonViewer } from 'vue3-json-viewer'
-import { parse } from 'yaml'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { localeParseFloat, ONE_TENTH_STR } from '@/utils/func.js'
-import ChoiceSelector from './ChoiceSelector.vue'
+} from '@cpn-console/shared';
+import { DsfrDataTable } from '@gouvminint/vue-dsfr';
+import { computed, onBeforeMount, ref, watch } from 'vue';
+import { JsonViewer } from 'vue3-json-viewer';
+import { parse } from 'yaml';
+import { useSnackbarStore } from '@/stores/snackbar.js';
+import { localeParseFloat, ONE_TENTH_STR } from '@/utils/func.js';
+import ChoiceSelector from './ChoiceSelector.vue';
 
-const props = withDefaults(defineProps<{
-  isNewCluster: boolean
-  cluster?: ClusterDetails
-  allProjects: { id: string, label: string }[]
-  allStages: Stage[]
-  allZones: Zone[]
-  associatedEnvironments: ClusterAssociatedEnvironments
-}>(), {
-  isNewCluster: true,
-  cluster: () => ({
-    label: '',
-    stageIds: [],
-    clusterResources: false,
-    privacy: ClusterPrivacy.DEDICATED,
-    infos: '',
-    id: '',
-    cpu: 0,
-    gpu: 0,
-    memory: 0,
-    kubeconfig: {
-      cluster: {
-        tlsServerName: '',
+const props = withDefaults(
+  defineProps<{
+    isNewCluster: boolean;
+    cluster?: ClusterDetails;
+    allProjects: { id: string; label: string }[];
+    allStages: Stage[];
+    allZones: Zone[];
+    associatedEnvironments: ClusterAssociatedEnvironments;
+  }>(),
+  {
+    isNewCluster: true,
+    cluster: () => ({
+      label: '',
+      stageIds: [],
+      clusterResources: false,
+      privacy: ClusterPrivacy.DEDICATED,
+      infos: '',
+      id: '',
+      cpu: 0,
+      gpu: 0,
+      memory: 0,
+      kubeconfig: {
+        cluster: {
+          tlsServerName: '',
+        },
+        user: {},
       },
-      user: {},
-    },
-    zoneId: '',
-    projectIds: [],
-  }),
-  allZones: () => [],
-  allProjects: () => [],
-  allStages: () => [],
-  associatedEnvironments: () => [],
-})
+      zoneId: '',
+      projectIds: [],
+    }),
+    allZones: () => [],
+    allProjects: () => [],
+    allStages: () => [],
+    associatedEnvironments: () => [],
+  },
+);
 
 const emit = defineEmits<{
-  add: [value: Omit<ClusterDetails, 'id'>]
-  update: [value: Partial<ClusterDetails>]
-  delete: [value: typeof localCluster.value['id']]
-  cancel: []
-}>()
+  add: [value: Omit<ClusterDetails, 'id'>];
+  update: [value: Partial<ClusterDetails>];
+  delete: [value: (typeof localCluster.value)['id']];
+  cancel: [];
+}>();
 
-const snackbarStore = useSnackbarStore()
+const snackbarStore = useSnackbarStore();
 
-const jsonKConfig = ref<Record<any, any>>({})
-const kConfigError = ref<string | undefined>(undefined)
-const isMissingCurrentContext = ref<boolean>(false)
-const contexts = ref([])
-const selectedContext = ref('')
-const localCluster = ref<ClusterDetails>(props.cluster)
-const kubeconfig = ref()
-const clusterToDelete = ref('')
-const isDeletingCluster = ref(false)
+const jsonKConfig = ref<Record<any, any>>({});
+const kConfigError = ref<string | undefined>(undefined);
+const isMissingCurrentContext = ref<boolean>(false);
+const contexts = ref([]);
+const selectedContext = ref('');
+const localCluster = ref<ClusterDetails>(props.cluster);
+const kubeconfig = ref();
+const clusterToDelete = ref('');
+const isDeletingCluster = ref(false);
 
 if (!localCluster.value.zoneId && props.allZones.length) {
-  localCluster.value.zoneId = props.allZones[0].id
+  localCluster.value.zoneId = props.allZones[0].id;
 }
 
 const schema = computed(() => {
-  let schemaValidation
+  let schemaValidation;
   if (localCluster.value.id) {
-    schemaValidation = ClusterDetailsSchema.safeParse(localCluster.value)
+    schemaValidation = ClusterDetailsSchema.safeParse(localCluster.value);
   } else {
-    schemaValidation = ClusterDetailsSchema.omit({ id: true }).partial().safeParse(localCluster.value)
+    schemaValidation = ClusterDetailsSchema.omit({ id: true })
+      .partial()
+      .safeParse(localCluster.value);
   }
-  return schemaValidation
-})
-const isClusterValid = computed(() => schema.value.success)
-const chosenZoneDescription = computed(() => props.allZones.find(zone => zone.id === localCluster.value.zoneId)?.description)
+  return schemaValidation;
+});
+const isClusterValid = computed(() => schema.value.success);
+const chosenZoneDescription = computed(
+  () => props.allZones.find((zone) => zone.id === localCluster.value.zoneId)?.description,
+);
 
 function updateKubeconfig(files: FileList) {
-  kConfigError.value = undefined
+  kConfigError.value = undefined;
   localCluster.value.kubeconfig.cluster = {
     tlsServerName: '',
-  }
-  localCluster.value.kubeconfig.user = {}
+  };
+  localCluster.value.kubeconfig.user = {};
 
   try {
-    const reader = new FileReader()
+    const reader = new FileReader();
     reader.onload = (evt) => {
       // Retrieve YAML kubeconfig, turn it to JSON object.
-      if (evt.target) jsonKConfig.value = parse(evt.target.result as string) as object
+      if (evt.target) jsonKConfig.value = parse(evt.target.result as string) as object;
       // Retrieve context.
-      let context
-      if (!jsonKConfig.value.contexts) throw new Error('Pas de contexts spécifiés dans le kubeconfig.')
+      let context;
+      if (!jsonKConfig.value.contexts)
+        throw new Error('Pas de contexts spécifiés dans le kubeconfig.');
       if (jsonKConfig.value['current-context']) {
-        context = jsonKConfig.value.contexts.find((ctx: Record<string, any>) => ctx.name === jsonKConfig.value['current-context']).context
-        isMissingCurrentContext.value = false
-        retrieveUserAndCluster(context)
+        context = jsonKConfig.value.contexts.find(
+          (ctx: Record<string, any>) => ctx.name === jsonKConfig.value['current-context'],
+        ).context;
+        isMissingCurrentContext.value = false;
+        retrieveUserAndCluster(context);
       } else {
-        contexts.value = jsonKConfig.value.contexts.map((context: Record<string, any>) => context.name)
-        isMissingCurrentContext.value = true
-        snackbarStore.setMessage('Pas de current-context. Choisissez un contexte.')
+        contexts.value = jsonKConfig.value.contexts.map(
+          (context: Record<string, any>) => context.name,
+        );
+        isMissingCurrentContext.value = true;
+        snackbarStore.setMessage('Pas de current-context. Choisissez un contexte.');
       }
-    }
-    reader.readAsText(files[0])
+    };
+    reader.readAsText(files[0]);
   } catch (error) {
     // @ts-ignore
-    kConfigError.value = error?.message
+    kConfigError.value = error?.message;
   }
 }
 
 interface ContextType {
   user: {
-    username: string
-    password: string
-    token: string
-    certData: string
-    keyData: string
-  }
+    username: string;
+    password: string;
+    token: string;
+    certData: string;
+    keyData: string;
+  };
   cluster: {
-    server: string
-    tlsServerName: string
-    caData: string
-    skipTLSVerify: string
-  }
+    server: string;
+    tlsServerName: string;
+    caData: string;
+    skipTLSVerify: string;
+  };
 }
 
 function retrieveUserAndCluster(context: ContextType) {
@@ -144,88 +156,89 @@ function retrieveUserAndCluster(context: ContextType) {
       token,
       'client-certificate-data': certData,
       'client-key-data': keyData,
-    } = jsonKConfig.value.users.find((user: Record<string, any>) => user.name === context.user).user
+    } = jsonKConfig.value.users.find(
+      (user: Record<string, any>) => user.name === context.user,
+    ).user;
     localCluster.value.kubeconfig.user = {
-      ...username && password && { username, password },
-      ...token && { token },
-      ...certData && keyData && { certData, keyData },
-    }
+      ...(username && password && { username, password }),
+      ...(token && { token }),
+      ...(certData && keyData && { certData, keyData }),
+    };
     const {
       server,
       'certificate-authority-data': caData,
       'insecure-skip-tls-verify': skipTLSVerify,
-    } = jsonKConfig.value.clusters.find((cluster: Record<string, any>) => cluster.name === context.cluster).cluster
+    } = jsonKConfig.value.clusters.find(
+      (cluster: Record<string, any>) => cluster.name === context.cluster,
+    ).cluster;
     localCluster.value.kubeconfig.cluster = {
       server,
       tlsServerName: server.split('https://')[1].split(':')[0],
-      ...caData && { caData },
+      ...(caData && { caData }),
       skipTLSVerify: skipTLSVerify || false,
-    }
+    };
   } catch (error) {
     // @ts-ignore
-    kConfigError.value = error?.message
+    kConfigError.value = error?.message;
   }
 }
 
 function getRows(associatedEnvironments: ClusterAssociatedEnvironments) {
-  return associatedEnvironments
-    ?.map(associatedEnvironment => ([
-      associatedEnvironment.project,
-      associatedEnvironment.name,
-      associatedEnvironment.owner ?? '',
-      `${associatedEnvironment.memory}GiB ${associatedEnvironment.cpu}CPU ${associatedEnvironment.gpu}GPU`,
-    ]))
+  return associatedEnvironments?.map((associatedEnvironment) => [
+    associatedEnvironment.project,
+    associatedEnvironment.name,
+    associatedEnvironment.owner ?? '',
+    `${associatedEnvironment.memory}GiB ${associatedEnvironment.cpu}CPU ${associatedEnvironment.gpu}GPU`,
+  ]);
 }
 
 function getHeadersRow() {
-  return ['Projet', 'Nom', 'Souscripteur', 'Ressources'].map(row => ({
+  return ['Projet', 'Nom', 'Souscripteur', 'Ressources'].map((row) => ({
     key: row.toLowerCase(),
     label: row,
-  }))
+  }));
 }
 
 function addCluster() {
-  if (isClusterValid.value) emit('add', localCluster.value)
+  if (isClusterValid.value) emit('add', localCluster.value);
 }
 
 function updateCluster() {
-  if (isClusterValid.value) emit('update', localCluster.value)
+  if (isClusterValid.value) emit('update', localCluster.value);
 }
 
 function cancel() {
-  emit('cancel')
+  emit('cancel');
 }
 
 onBeforeMount(() => {
-  localCluster.value = props.cluster
-})
+  localCluster.value = props.cluster;
+});
 
 watch(selectedContext, () => {
   try {
-    const context = jsonKConfig.value.contexts.find((ctx: Record<string, any>) => ctx.name === jsonKConfig.value[selectedContext.value]).context
-    if (!context) throw new Error('Le contexte semble vide.')
-    retrieveUserAndCluster(context)
+    const context = jsonKConfig.value.contexts.find(
+      (ctx: Record<string, any>) => ctx.name === jsonKConfig.value[selectedContext.value],
+    ).context;
+    if (!context) throw new Error('Le contexte semble vide.');
+    retrieveUserAndCluster(context);
   } catch (error) {
     if (error instanceof Error) {
-      kConfigError.value = error.message
-      if (error.message === 'Cannot read properties of undefined (reading \'context\')') {
-        snackbarStore.setMessage('Le contexte semble vide.', 'error')
-        return
+      kConfigError.value = error.message;
+      if (error.message === "Cannot read properties of undefined (reading 'context')") {
+        snackbarStore.setMessage('Le contexte semble vide.', 'error');
+        return;
       }
-      snackbarStore.setMessage(error.message, 'error')
+      snackbarStore.setMessage(error.message, 'error');
     }
   }
-})
-const isConnectionDetailsShown = ref(true)
+});
+const isConnectionDetailsShown = ref(true);
 </script>
 
 <template>
-  <div
-    data-testid="cluster-form"
-  >
-    <div
-      class="w-full flex justify-end"
-    >
+  <div data-testid="cluster-form">
+    <div class="w-full flex justify-end">
       <DsfrButton
         title="Revenir à la liste des clusters"
         data-testid="goBackBtn"
@@ -235,19 +248,11 @@ const isConnectionDetailsShown = ref(true)
         @click="cancel"
       />
     </div>
-    <h1
-      class="fr-h1"
-    >
+    <h1 class="fr-h1">
       {{ isNewCluster ? 'Ajouter un cluster' : `Mettre à jour le cluster ${localCluster.label}` }}
     </h1>
-    <div
-      class="cursor-pointer"
-      @click="isConnectionDetailsShown = !isConnectionDetailsShown"
-    >
-      <h4
-        class="mb-1 inline-block"
-        :aria-expanded="isConnectionDetailsShown"
-      >
+    <div class="cursor-pointer" @click="isConnectionDetailsShown = !isConnectionDetailsShown">
+      <h4 class="mb-1 inline-block" :aria-expanded="isConnectionDetailsShown">
         Informations de connexion (kubeconfig)
       </h4>
       <v-icon
@@ -255,9 +260,7 @@ const isConnectionDetailsShown = ref(true)
         :class="`shrink ml-4 ${isConnectionDetailsShown ? 'rotate-90' : ''}`"
       />
     </div>
-    <template
-      v-if="isConnectionDetailsShown"
-    >
+    <template v-if="isConnectionDetailsShown">
       <DsfrFileUpload
         v-model="kubeconfig"
         label=""
@@ -295,7 +298,14 @@ const isConnectionDetailsShown = ref(true)
         label="Nom du serveur Transport Layer Security (TLS)"
         label-visible
         :required="true"
-        :error-message="localCluster.kubeconfig.cluster.tlsServerName && !KubeconfigSchema.pick({ cluster: true }).safeParse({ cluster: { tlsServerName: localCluster.kubeconfig.cluster.tlsServerName } }).success ? 'Le nom du serveur TLS est obligatoire' : undefined"
+        :error-message="
+          localCluster.kubeconfig.cluster.tlsServerName &&
+          !KubeconfigSchema.pick({ cluster: true }).safeParse({
+            cluster: { tlsServerName: localCluster.kubeconfig.cluster.tlsServerName },
+          }).success
+            ? 'Le nom du serveur TLS est obligatoire'
+            : undefined
+        "
         hint="La valeur est extraite du kubeconfig téléversé."
       />
       <DsfrCheckbox
@@ -307,18 +317,19 @@ const isConnectionDetailsShown = ref(true)
         name="isClusterSkipTlsVerify"
       />
     </template>
-    <h4
-      class="mb-1 inline-block"
-    >
-      Informations fonctionnelles
-    </h4>
+    <h4 class="mb-1 inline-block">Informations fonctionnelles</h4>
     <DsfrInputGroup
       v-model="localCluster.label"
       data-testid="labelInput"
       type="text"
       :disabled="props.associatedEnvironments.length !== 0"
       :required="true"
-      :error-message="localCluster.label && !ClusterDetailsSchema.pick({ label: true }).safeParse({ label: localCluster.label }).success ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux' : undefined"
+      :error-message="
+        localCluster.label &&
+        !ClusterDetailsSchema.pick({ label: true }).safeParse({ label: localCluster.label }).success
+          ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux'
+          : undefined
+      "
       label="Nom du cluster applicatif"
       label-visible
       hint="Nom du cluster applicatif utilisable lors des déploiements Argocd. Modifiable uniquement si le cluster ne comporte aucun environnement."
@@ -339,7 +350,7 @@ const isConnectionDetailsShown = ref(true)
       select-id="zone-select"
       label="Zone associée"
       hint="Sélectionnez la zone associée à ce cluster."
-      :options="props.allZones?.map(zone => ({ value: zone.id, text: zone.label }))"
+      :options="props.allZones?.map((zone) => ({ value: zone.id, text: zone.label }))"
     />
     <DsfrAlert
       v-if="chosenZoneDescription"
@@ -366,7 +377,10 @@ const isConnectionDetailsShown = ref(true)
       :required="true"
       data-testid="memoryInput"
       :placeholder="ONE_TENTH_STR"
-      @update:model-value="(value: string | number | undefined) => localCluster.memory = localeParseFloat(value as string)"
+      @update:model-value="
+        (value: string | number | undefined) =>
+          (localCluster.memory = localeParseFloat(value as string))
+      "
     />
     <DsfrInputGroup
       v-model="localCluster.cpu"
@@ -379,7 +393,10 @@ const isConnectionDetailsShown = ref(true)
       :required="true"
       data-testid="cpuInput"
       :placeholder="ONE_TENTH_STR"
-      @update:model-value="(value: string | number | undefined) => localCluster.cpu = localeParseFloat(value as string)"
+      @update:model-value="
+        (value: string | number | undefined) =>
+          (localCluster.cpu = localeParseFloat(value as string))
+      "
     />
     <DsfrInputGroup
       v-model="localCluster.gpu"
@@ -392,42 +409,42 @@ const isConnectionDetailsShown = ref(true)
       :required="true"
       data-testid="gpuInput"
       :placeholder="ONE_TENTH_STR"
-      @update:model-value="(value: string | number | undefined) => localCluster.gpu = localeParseFloat(value as string)"
+      @update:model-value="
+        (value: string | number | undefined) =>
+          (localCluster.gpu = localeParseFloat(value as string))
+      "
     />
-    <div
-      v-if="localCluster.privacy === ClusterPrivacy.DEDICATED"
-      class="fr-mb-2w"
-    >
+    <div v-if="localCluster.privacy === ClusterPrivacy.DEDICATED" class="fr-mb-2w">
       <ChoiceSelector
         id="projects-select"
         wrapped
         label="Projets associés"
         description="Sélectionnez les projets autorisés à utiliser ce cluster."
         :options="props.allProjects"
-        :options-selected="props.allProjects.filter(project => props.cluster.projectIds?.includes(project.id))"
+        :options-selected="
+          props.allProjects.filter((project) => props.cluster.projectIds?.includes(project.id))
+        "
         label-key="label"
         value-key="id"
-        @update="(_p, projectIds) => localCluster.projectIds = projectIds"
+        @update="(_p, projectIds) => (localCluster.projectIds = projectIds)"
       />
     </div>
-    <div
-      class="fr-mb-2w"
-    >
+    <div class="fr-mb-2w">
       <ChoiceSelector
         id="stages-select"
         :wrapped="false"
         label="Nom des types d'environnement"
         description="Sélectionnez les types d'environnement autorisés à utiliser ce cluster."
         :options="props.allStages"
-        :options-selected="props.allStages.filter(stage => props.cluster.stageIds.includes(stage.id))"
+        :options-selected="
+          props.allStages.filter((stage) => props.cluster.stageIds.includes(stage.id))
+        "
         label-key="name"
         value-key="id"
-        @update="(_s, stageIds) => localCluster.stageIds = stageIds"
+        @update="(_s, stageIds) => (localCluster.stageIds = stageIds)"
       />
     </div>
-    <div
-      class="flex space-x-10 mt-5"
-    >
+    <div class="flex space-x-10 mt-5">
       <DsfrButton
         v-if="isNewCluster"
         label="Ajouter le cluster"
@@ -463,9 +480,7 @@ const isConnectionDetailsShown = ref(true)
         description="Le cluster ne peut être supprimé, car les environnements ci-dessous y sont déployés."
         small
       />
-      <div
-        class="flex flex-row flex-wrap gap-4 w-full"
-      >
+      <div class="flex flex-row flex-wrap gap-4 w-full">
         <DsfrDataTable
           title="Environnements déployés sur le cluster"
           data-testid="associatedEnvironmentsTable"
@@ -496,10 +511,7 @@ const isConnectionDetailsShown = ref(true)
           small
         />
       </div>
-      <div
-        v-if="isDeletingCluster"
-        class="fr-mt-4w"
-      >
+      <div v-if="isDeletingCluster" class="fr-mt-4w">
         <DsfrInput
           v-model="clusterToDelete"
           data-testid="deleteClusterInput"
@@ -508,9 +520,7 @@ const isConnectionDetailsShown = ref(true)
           :placeholder="deleteValidationInput"
           class="fr-mb-2w"
         />
-        <div
-          class="flex justify-between"
-        >
+        <div class="flex justify-between">
           <DsfrButton
             data-testid="deleteClusterBtn"
             :label="`Supprimer définitivement le cluster ${localCluster.label}`"
@@ -520,11 +530,7 @@ const isConnectionDetailsShown = ref(true)
             icon="ri:delete-bin-7-line"
             @click="$emit('delete', localCluster.id)"
           />
-          <DsfrButton
-            label="Annuler"
-            primary
-            @click="isDeletingCluster = false"
-          />
+          <DsfrButton label="Annuler" primary @click="isDeletingCluster = false" />
         </div>
       </div>
     </div>

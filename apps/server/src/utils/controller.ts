@@ -1,28 +1,30 @@
-import type { XOR } from '@cpn-console/shared'
-import type { Cluster, Prisma, Project, ProjectMembers, ProjectRole } from '@prisma/client'
-import type { FastifyRequest } from 'fastify'
-import type { UserTrial } from '@/resources/user/business.js'
-import type { UserDetails } from '@/types/index.js'
-import { PROJECT_PERMS as PP, PROJECT_PERMS, projectIsLockedInfo, tokenHeaderName } from '@cpn-console/shared'
-import prisma from '@/prisma.js'
-import { logViaSession, logViaToken } from '@/resources/user/business.js'
-import { Unauthorized401 } from './errors.js'
-import { uuid } from './queries-tools.js'
+import type { XOR } from '@cpn-console/shared';
+import type { Cluster, Prisma, Project, ProjectMembers, ProjectRole } from '@prisma/client';
+import type { FastifyRequest } from 'fastify';
+import type { UserTrial } from '@/resources/user/business.js';
+import type { UserDetails } from '@/types/index.js';
+import {
+  PROJECT_PERMS as PP,
+  PROJECT_PERMS,
+  projectIsLockedInfo,
+  tokenHeaderName,
+} from '@cpn-console/shared';
+import prisma from '@/prisma.js';
+import { logViaSession, logViaToken } from '@/resources/user/business.js';
+import { Unauthorized401 } from './errors.js';
+import { uuid } from './queries-tools.js';
 
-export type RequireOnlyOne<T, Keys extends keyof T = keyof T>
-  = Pick<T, Exclude<keyof T, Keys>>
-    & {
-      [K in Keys]-?:
-        Required<Pick<T, K>>
-        & Partial<Record<Exclude<Keys, K>, undefined>>
-    }[Keys]
+export type RequireOnlyOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclude<keyof T, Keys>> &
+  {
+    [K in Keys]-?: Required<Pick<T, K>> & Partial<Record<Exclude<Keys, K>, undefined>>;
+  }[Keys];
 
-type ErrorMessagePredicate = () => string | undefined
+type ErrorMessagePredicate = () => string | undefined;
 export function getErrorMessage(...fns: ErrorMessagePredicate[]) {
   for (const f of fns) {
-    const error = f()
+    const error = f();
     if (error) {
-      return error
+      return error;
     }
   }
 }
@@ -31,79 +33,115 @@ export function getErrorMessage(...fns: ErrorMessagePredicate[]) {
  * Renvoie une erreur si le projet est verrouillé
  */
 export function checkProjectLocked(project: { locked: boolean }): string {
-  return project.locked
-    ? projectIsLockedInfo
-    : ''
+  return project.locked ? projectIsLockedInfo : '';
 }
 
 export function checkLocked(project: { locked: Project['locked'] }): string {
-  return checkProjectLocked(project)
+  return checkProjectLocked(project);
 }
 
-export function checkClusterUnavailable(clusterId: Cluster['id'], authorizedClusterIds: Cluster['id'][]): string {
+export function checkClusterUnavailable(
+  clusterId: Cluster['id'],
+  authorizedClusterIds: Cluster['id'][],
+): string {
   return authorizedClusterIds.includes(clusterId)
     ? ''
-    : 'Ce cluster n\'est pas disponible pour cette combinaison projet et stage'
+    : "Ce cluster n'est pas disponible pour cette combinaison projet et stage";
 }
 
-export const splitStringsFilterArray = <T extends Readonly<string[]>>(toMatch: T, inputs: string): T => inputs.split(',').filter(i => toMatch.includes(i)) as unknown as T
+export const splitStringsFilterArray = <T extends Readonly<string[]>>(
+  toMatch: T,
+  inputs: string,
+): T => inputs.split(',').filter((i) => toMatch.includes(i)) as unknown as T;
 
-type StringArray = string[]
+type StringArray = string[];
 interface WhereBuilderParams<T extends StringArray> {
-  enumValues: T
-  eqValue: T[number] | undefined
-  inValues: string | undefined
-  notInValues: string | undefined
+  enumValues: T;
+  eqValue: T[number] | undefined;
+  inValues: string | undefined;
+  notInValues: string | undefined;
 }
 
-export function whereBuilder<T extends StringArray>({ enumValues, eqValue, inValues, notInValues }: WhereBuilderParams<T>) {
+export function whereBuilder<T extends StringArray>({
+  enumValues,
+  eqValue,
+  inValues,
+  notInValues,
+}: WhereBuilderParams<T>) {
   if (eqValue) {
-    return eqValue
+    return eqValue;
   } else if (inValues) {
-    return { in: splitStringsFilterArray(enumValues, inValues) }
+    return { in: splitStringsFilterArray(enumValues, inValues) };
   } else if (notInValues) {
-    return { notIn: splitStringsFilterArray(enumValues, notInValues) }
+    return { notIn: splitStringsFilterArray(enumValues, notInValues) };
   }
 }
 
-type ProjectMinimalPerms = Pick<Project, 'everyonePerms' | 'ownerId' | 'id' | 'locked' | 'status'> & { roles: ProjectRole[], members: ProjectMembers[] }
-export interface UserProfile { user?: UserDetails, adminPermissions: bigint, tokenId?: string }
-export interface ProjectPermState { projectPermissions?: bigint, projectId: Project['id'], projectLocked: boolean, projectStatus: Project['status'], projectOwnerId: Project['ownerId'] }
-export type UserProjectProfile = UserProfile & ProjectPermState
+type ProjectMinimalPerms = Pick<
+  Project,
+  'everyonePerms' | 'ownerId' | 'id' | 'locked' | 'status'
+> & { roles: ProjectRole[]; members: ProjectMembers[] };
+export interface UserProfile {
+  user?: UserDetails;
+  adminPermissions: bigint;
+  tokenId?: string;
+}
+export interface ProjectPermState {
+  projectPermissions?: bigint;
+  projectId: Project['id'];
+  projectLocked: boolean;
+  projectStatus: Project['status'];
+  projectOwnerId: Project['ownerId'];
+}
+export type UserProjectProfile = UserProfile & ProjectPermState;
 
 type ProjectUniqueFinder = XOR<
   { slug: string },
   XOR<{ environmentId: string }, XOR<{ repositoryId: string }, { id: string }>>
->
+>;
 
-const projectPermsSelect = { roles: true, members: true, everyonePerms: true, ownerId: true, id: true, locked: true, status: true } as const satisfies Prisma.ProjectSelect
+const projectPermsSelect = {
+  roles: true,
+  members: true,
+  everyonePerms: true,
+  ownerId: true,
+  id: true,
+  locked: true,
+  status: true,
+} as const satisfies Prisma.ProjectSelect;
 
-export async function authUser(req: FastifyRequest): Promise<UserProfile>
-export async function authUser(req: FastifyRequest, projectUnique: ProjectUniqueFinder): Promise<UserProjectProfile>
-export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqueFinder): Promise<UserProfile | UserProjectProfile> {
-  let adminPermissions: bigint = 0n
-  let tokenId: string | undefined
-  const reqUser: UserTrial = req.session.user as unknown as UserTrial
-  let user: UserDetails | undefined
+export async function authUser(req: FastifyRequest): Promise<UserProfile>;
+export async function authUser(
+  req: FastifyRequest,
+  projectUnique: ProjectUniqueFinder,
+): Promise<UserProjectProfile>;
+export async function authUser(
+  req: FastifyRequest,
+  projectUnique?: ProjectUniqueFinder,
+): Promise<UserProfile | UserProjectProfile> {
+  let adminPermissions: bigint = 0n;
+  let tokenId: string | undefined;
+  const reqUser: UserTrial = req.session.user as unknown as UserTrial;
+  let user: UserDetails | undefined;
 
   if (req.session.user) {
-    const loginResult = await logViaSession(reqUser)
+    const loginResult = await logViaSession(reqUser);
     user = {
       ...loginResult.user,
       groups: reqUser.groups,
-    }
-    adminPermissions = loginResult.adminPerms
+    };
+    adminPermissions = loginResult.adminPerms;
   } else {
-    const tokenHeader = req.headers[tokenHeaderName]
+    const tokenHeader = req.headers[tokenHeaderName];
     if (typeof tokenHeader === 'string') {
-      const resultToken = await logViaToken(tokenHeader)
+      const resultToken = await logViaToken(tokenHeader);
       if (typeof resultToken === 'string') {
-        throw new Unauthorized401(resultToken)
+        throw new Unauthorized401(resultToken);
       }
-      adminPermissions = resultToken.adminPerms ?? 0n
-      tokenId = resultToken.user.tokenId
+      adminPermissions = resultToken.adminPerms ?? 0n;
+      tokenId = resultToken.user.tokenId;
       if (!user && resultToken.user) {
-        user = { ...resultToken.user, groups: [] }
+        user = { ...resultToken.user, groups: [] };
       }
     }
   }
@@ -112,22 +150,26 @@ export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqu
     user,
     adminPermissions,
     tokenId,
-  }
+  };
   if (!projectUnique || !user) {
-    return baseReturnInfos
+    return baseReturnInfos;
   }
-  let project: ProjectMinimalPerms | null | undefined
+  let project: ProjectMinimalPerms | null | undefined;
 
   if (projectUnique.repositoryId) {
-    project = (await prisma.repository.findUnique({
-      where: { id: projectUnique.repositoryId },
-      select: { project: { select: projectPermsSelect } },
-    }))?.project
+    project = (
+      await prisma.repository.findUnique({
+        where: { id: projectUnique.repositoryId },
+        select: { project: { select: projectPermsSelect } },
+      })
+    )?.project;
   } else if (projectUnique.environmentId) {
-    project = (await prisma.environment.findUnique({
-      where: { id: projectUnique.environmentId },
-      select: { project: { select: projectPermsSelect } },
-    }))?.project
+    project = (
+      await prisma.environment.findUnique({
+        where: { id: projectUnique.environmentId },
+        select: { project: { select: projectPermsSelect } },
+      })
+    )?.project;
   } else if (projectUnique.id) {
     project = uuid.test(projectUnique.id)
       ? await prisma.project.findUnique({
@@ -137,18 +179,18 @@ export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqu
       : await prisma.project.findUnique({
           where: { slug: projectUnique.id },
           select: projectPermsSelect,
-        })
+        });
   } else if (projectUnique.slug) {
     project = await prisma.project.findFirstOrThrow({
       where: { slug: projectUnique.slug },
       select: projectPermsSelect,
-    })
+    });
   }
   if (!project) {
-    return baseReturnInfos
+    return baseReturnInfos;
   }
 
-  const projectPermissions = getProjectPermissions(project, user)
+  const projectPermissions = getProjectPermissions(project, user);
 
   return {
     user,
@@ -158,14 +200,20 @@ export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqu
     projectLocked: project.locked,
     projectStatus: project.status,
     projectOwnerId: project.ownerId,
-  }
+  };
 }
 
-function getProjectPermissions(project: ProjectMinimalPerms, user: UserDetails): bigint | undefined {
-  if (project.ownerId === user.id) return PP.MANAGE
-  const member = project.members.find(member => member.userId === user.id)
-  if (!member) return
+function getProjectPermissions(
+  project: ProjectMinimalPerms,
+  user: UserDetails,
+): bigint | undefined {
+  if (project.ownerId === user.id) return PP.MANAGE;
+  const member = project.members.find((member) => member.userId === user.id);
+  if (!member) return;
 
-  const memberRoles = project.roles.filter(role => member.roleIds.includes(role.id))
-  return memberRoles.reduce((acc, curr) => acc | curr.permissions, project.everyonePerms | PROJECT_PERMS.GUEST)
+  const memberRoles = project.roles.filter((role) => member.roleIds.includes(role.id));
+  return memberRoles.reduce(
+    (acc, curr) => acc | curr.permissions,
+    project.everyonePerms | PROJECT_PERMS.GUEST,
+  );
 }

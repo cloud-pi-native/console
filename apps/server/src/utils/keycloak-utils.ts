@@ -1,12 +1,12 @@
-import type { FastifyRequest } from 'fastify'
-import { tokenHeaderName } from '@cpn-console/shared'
+import type { FastifyRequest } from 'fastify';
+import { tokenHeaderName } from '@cpn-console/shared';
 
 interface KeycloakPayload {
-  sub: string
-  email: string
-  given_name: string
-  family_name: string
-  groups: string[]
+  sub: string;
+  email: string;
+  given_name: string;
+  family_name: string;
+  groups: string[];
 }
 
 export function userPayloadMapper(userPayload: KeycloakPayload) {
@@ -16,12 +16,12 @@ export function userPayloadMapper(userPayload: KeycloakPayload) {
     firstName: userPayload.given_name,
     lastName: userPayload.family_name,
     groups: userPayload.groups || [],
-  }
+  };
 }
 
 export function bypassFn(request: FastifyRequest) {
   try {
-    return !!request.headers[tokenHeaderName]
+    return !!request.headers[tokenHeaderName];
   } catch {}
-  return false
+  return false;
 }

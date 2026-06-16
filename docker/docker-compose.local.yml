@@ -40,7 +40,7 @@ services:
     entrypoint: /opt/bitnami/keycloak/bin/kc.sh
     command: start-dev --import-realm
     healthcheck:
-      test: [CMD, curl, --head, fsS, "http://localhost:8080/health/ready"]
+      test: [CMD, curl, --head, fsS, 'http://localhost:8080/health/ready']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -107,12 +107,12 @@ services:
     image: dso-console/nginx-strangler:local
     container_name: dso-console_nginx-strangler
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     ports:
       - 4000:8080
     environment:
-      LEGACY_UPSTREAM: "host.docker.internal:4001"
-      NESTJS_UPSTREAM: "host.docker.internal:3001"
+      LEGACY_UPSTREAM: 'host.docker.internal:4001'
+      NESTJS_UPSTREAM: 'host.docker.internal:3001'
     networks:
       - dso-network
     attach: false

@@ -14,7 +14,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  NAMESPACE: "${{ github.repository }}"
+  NAMESPACE: '${{ github.repository }}'
   BUILD_AMD64: true
   BUILD_ARM64: true
   USE_QEMU: false

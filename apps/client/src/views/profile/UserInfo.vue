@@ -1,41 +1,39 @@
 <script lang="ts" setup>
-import { computed } from 'vue'
-import { useUserStore } from '@/stores/user.js'
+import { computed } from 'vue';
+import { useUserStore } from '@/stores/user.js';
 
-const userStore = useUserStore()
+const userStore = useUserStore();
 
-const displayAllGroups = ref(false)
-const groupsLengthDisplayed = 10
-const groups = computed<string[]>(() => userStore.userProfile?.groups?.length ? userStore.userProfile.groups : ['-'])
-const adminRoles = computed<string[]>(() => userStore.myAdminRoles.map(({ name }) => name))
+const displayAllGroups = ref(false);
+const groupsLengthDisplayed = 10;
+const groups = computed<string[]>(() =>
+  userStore.userProfile?.groups?.length ? userStore.userProfile.groups : ['-'],
+);
+const adminRoles = computed<string[]>(() => userStore.myAdminRoles.map(({ name }) => name));
 </script>
 
 <template>
-  <div
-    v-if="userStore.userProfile"
-  >
-    <DsfrTable
-      title="Informations utilisateur"
-      data-testid="profileInfos"
-    >
-      <tr /> <!-- laissez comme ça c'est pour forcer l'alternance de couleur sinon c'est pas beau -->
+  <div v-if="userStore.userProfile">
+    <DsfrTable title="Informations utilisateur" data-testid="profileInfos">
+      <tr />
+      <!-- laissez comme ça c'est pour forcer l'alternance de couleur sinon c'est pas beau -->
       <tr>
-        <td>Nom, prénom</td><td>{{ userStore.userProfile.lastName }}, {{ userStore.userProfile.firstName }}</td>
+        <td>Nom, prénom</td>
+        <td>{{ userStore.userProfile.lastName }}, {{ userStore.userProfile.firstName }}</td>
       </tr>
       <tr>
-        <td>Email</td><td>{{ userStore.userProfile.email }}</td>
+        <td>Email</td>
+        <td>{{ userStore.userProfile.email }}</td>
       </tr>
       <tr>
-        <td>Id Keycloak</td><td>{{ userStore.userProfile.id }}</td>
+        <td>Id Keycloak</td>
+        <td>{{ userStore.userProfile.id }}</td>
       </tr>
       <tr>
         <td>Roles Admins</td>
         <td>
           <ul>
-            <li
-              v-for="role in adminRoles"
-              :key="role"
-            >
+            <li v-for="role in adminRoles" :key="role">
               {{ role }}
             </li>
           </ul>
@@ -46,7 +44,10 @@ const adminRoles = computed<string[]>(() => userStore.myAdminRoles.map(({ name }
         <td>
           <ul>
             <li
-              v-for="group in groups.slice(0, displayAllGroups ? groups.length : groupsLengthDisplayed)"
+              v-for="group in groups.slice(
+                0,
+                displayAllGroups ? groups.length : groupsLengthDisplayed,
+              )"
               :key="group"
             >
               {{ group }}

@@ -1,21 +1,21 @@
-import type { ClusterObject, Environment, Project, Repository } from '@cpn-console/hooks'
-import { faker } from '@faker-js/faker'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { stringify } from 'yaml'
-import { deleteProject, upsertProject } from './functions.js'
+import type { ClusterObject, Environment, Project, Repository } from '@cpn-console/hooks';
+import { faker } from '@faker-js/faker';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { stringify } from 'yaml';
+import { deleteProject, upsertProject } from './functions.js';
 
 vi.mock('./utils.js', () => ({
   generateAppProjectName: vi.fn(() => 'app-project-name'),
   getConfig: vi.fn(() => ({ namespace: 'argocd', url: 'https://argocd.example.com' })),
-}))
+}));
 
 vi.mock('@cpn-console/shared', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('@cpn-console/shared')>()
+  const mod = await importOriginal<typeof import('@cpn-console/shared')>();
   return {
     ...mod,
     generateNamespaceName: vi.fn(() => 'namespace-name'),
-  }
-})
+  };
+});
 
 describe('argocd functions', () => {
   const mockGitlabApi = {
@@ -33,32 +33,32 @@ describe('argocd functions', () => {
     listFiles: vi.fn(),
     // Used to delete files from the infra project
     commitDelete: vi.fn(),
-  }
+  };
   // Used to get the RO and RW groups for the environment
   const mockKeycloakApi = {
     getEnvGroup: vi.fn(),
-  }
+  };
   // Used to get user vault secrets
   const mockVaultApi = {
     Project: {
       getValues: vi.fn(),
     },
-  }
+  };
 
-  let mockCluster: ClusterObject
-  let mockEnvironment: Environment
-  let mockRepo: Repository
-  let mockProject: Project
+  let mockCluster: ClusterObject;
+  let mockEnvironment: Environment;
+  let mockRepo: Repository;
+  let mockProject: Project;
 
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.clearAllMocks();
 
     mockCluster = {
       id: faker.string.uuid(),
       label: faker.string.alphanumeric(10),
       zone: { slug: faker.string.alphanumeric(5) },
       privacy: 'public',
-    } as any
+    } as any;
 
     mockEnvironment = {
       id: faker.string.uuid(),
@@ -68,7 +68,7 @@ describe('argocd functions', () => {
       memory: faker.number.int({ min: 1, max: 32 }),
       gpu: 0,
       autosync: true,
-    } as any
+    } as any;
 
     mockRepo = {
       id: faker.string.uuid(),
@@ -77,7 +77,7 @@ describe('argocd functions', () => {
       helmValuesFiles: null,
       deployRevision: 'main',
       deployPath: '/deploy',
-    } as any
+    } as any;
 
     mockProject = {
       id: faker.string.uuid(),
@@ -87,22 +87,25 @@ describe('argocd functions', () => {
       environments: [mockEnvironment],
       clusters: [mockCluster],
       store: {},
-    } as any
-  })
+    } as any;
+  });
 
   it('upsertProject should succeed', async () => {
-    const infraProjectId = faker.number.int()
-    const infraProjectUrl = faker.internet.url()
-    const gitlabGroupUrl = faker.internet.url()
-    const gitlabRepoUrl = faker.internet.url()
+    const infraProjectId = faker.number.int();
+    const infraProjectUrl = faker.internet.url();
+    const gitlabGroupUrl = faker.internet.url();
+    const gitlabRepoUrl = faker.internet.url();
 
-    mockGitlabApi.getPublicGroupUrl.mockResolvedValue(gitlabGroupUrl)
-    mockGitlabApi.getOrCreateInfraProject.mockResolvedValue({ id: infraProjectId, http_url_to_repo: infraProjectUrl })
-    mockKeycloakApi.getEnvGroup.mockResolvedValue({ subgroups: { RO: '/ro', RW: '/rw' } })
-    mockVaultApi.Project.getValues.mockResolvedValue({ secret: 'value' })
-    mockGitlabApi.getProjectById.mockResolvedValue({ http_url_to_repo: infraProjectUrl })
-    mockGitlabApi.listFiles.mockResolvedValue([]) // No files to delete
-    mockGitlabApi.getPublicRepoUrl.mockResolvedValue(gitlabRepoUrl)
+    mockGitlabApi.getPublicGroupUrl.mockResolvedValue(gitlabGroupUrl);
+    mockGitlabApi.getOrCreateInfraProject.mockResolvedValue({
+      id: infraProjectId,
+      http_url_to_repo: infraProjectUrl,
+    });
+    mockKeycloakApi.getEnvGroup.mockResolvedValue({ subgroups: { RO: '/ro', RW: '/rw' } });
+    mockVaultApi.Project.getValues.mockResolvedValue({ secret: 'value' });
+    mockGitlabApi.getProjectById.mockResolvedValue({ http_url_to_repo: infraProjectUrl });
+    mockGitlabApi.listFiles.mockResolvedValue([]); // No files to delete
+    mockGitlabApi.getPublicRepoUrl.mockResolvedValue(gitlabRepoUrl);
 
     const payload = {
       args: mockProject,
@@ -112,11 +115,11 @@ describe('argocd functions', () => {
         vault: mockVaultApi,
       },
       config: {},
-    } as any
+    } as any;
 
-    const result = await upsertProject(payload)
+    const result = await upsertProject(payload);
 
-    expect(result.status.result).toBe('OK')
+    expect(result.status.result).toBe('OK');
 
     const expectedValues = {
       common: {
@@ -152,9 +155,7 @@ describe('argocd functions', () => {
           gpu: mockEnvironment.gpu,
           memory: `${mockEnvironment.memory}Gi`,
         },
-        sourceRepositories: [
-          `${gitlabGroupUrl}/**`,
-        ],
+        sourceRepositories: [`${gitlabGroupUrl}/**`],
         destination: {
           namespace: 'namespace-name',
           name: mockCluster.label,
@@ -172,41 +173,49 @@ describe('argocd functions', () => {
           },
         ],
       },
-    }
+    };
 
     expect(mockGitlabApi.commitCreateOrUpdate).toHaveBeenCalledWith(
       infraProjectId,
       stringify(expectedValues),
       `${mockProject.name}/${mockCluster.label}/${mockEnvironment.name}/values.yaml`,
-    )
-    expect(mockGitlabApi.commitDelete).toHaveBeenCalledWith(infraProjectId, [])
-  })
+    );
+    expect(mockGitlabApi.commitDelete).toHaveBeenCalledWith(infraProjectId, []);
+  });
 
   it('deleteProject should succeed', async () => {
-    const infraProjectId = faker.number.int()
-    mockGitlabApi.getOrCreateInfraProject.mockResolvedValue({ id: infraProjectId })
+    const infraProjectId = faker.number.int();
+    mockGitlabApi.getOrCreateInfraProject.mockResolvedValue({ id: infraProjectId });
     mockGitlabApi.listFiles.mockResolvedValue([
-      { name: 'values.yaml', path: `${mockProject.name}/${mockCluster.label}/${mockEnvironment.name}/values.yaml`, type: 'blob' },
-      { name: 'values.yaml', path: `${mockProject.name}/${mockCluster.label}/old-env/values.yaml`, type: 'blob' },
-    ])
+      {
+        name: 'values.yaml',
+        path: `${mockProject.name}/${mockCluster.label}/${mockEnvironment.name}/values.yaml`,
+        type: 'blob',
+      },
+      {
+        name: 'values.yaml',
+        path: `${mockProject.name}/${mockCluster.label}/old-env/values.yaml`,
+        type: 'blob',
+      },
+    ]);
 
     const payload = {
       args: mockProject,
       apis: {
         gitlab: mockGitlabApi,
       },
-    } as any
+    } as any;
 
-    const result = await deleteProject(payload)
+    const result = await deleteProject(payload);
 
-    expect(result.status.result).toBe('OK')
+    expect(result.status.result).toBe('OK');
     expect(mockGitlabApi.listFiles).toHaveBeenCalledWith(infraProjectId, {
       path: `${mockProject.name}/`,
       recursive: true,
-    })
+    });
     // Only the stale env file should be deleted (not in project.environments)
     expect(mockGitlabApi.commitDelete).toHaveBeenCalledWith(infraProjectId, [
       `${mockProject.name}/${mockCluster.label}/old-env/values.yaml`,
-    ])
-  })
-})
+    ]);
+  });
+});

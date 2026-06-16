@@ -1,43 +1,60 @@
-import type { Config, Project, Role, UserObject } from '@cpn-console/hooks'
-import type { GitlabProjectApi } from './class.js'
-import { AccessLevel } from '@gitbeaker/core'
+import type { Config, Project, Role, UserObject } from '@cpn-console/hooks';
+import type { GitlabProjectApi } from './class.js';
+import { AccessLevel } from '@gitbeaker/core';
 import {
   DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX,
-} from './infos.js'
-import { createUsername, upsertUser } from './user.js'
-import { matchRole } from './utils.js'
+} from './infos.js';
+import { createUsername, upsertUser } from './user.js';
+import { matchRole } from './utils.js';
 
-export function getGroupAccessLevelFromProjectRole(project: Project, user: UserObject, config: Config) {
-  const projectReporterGroupPathSuffixes = (config.gitlab?.projectReporterGroupPathSuffix ?? DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX).split(',')
-  const projectDeveloperGroupPathSuffixes = (config.gitlab?.projectDeveloperGroupPathSuffix ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX).split(',')
-  const projectMaintainerGroupPathSuffixes = (config.gitlab?.projectMaintainerGroupPathSuffix ?? DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX).split(',')
+export function getGroupAccessLevelFromProjectRole(
+  project: Project,
+  user: UserObject,
+  config: Config,
+) {
+  const projectReporterGroupPathSuffixes = (
+    config.gitlab?.projectReporterGroupPathSuffix ?? DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX
+  ).split(',');
+  const projectDeveloperGroupPathSuffixes = (
+    config.gitlab?.projectDeveloperGroupPathSuffix ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
+  ).split(',');
+  const projectMaintainerGroupPathSuffixes = (
+    config.gitlab?.projectMaintainerGroupPathSuffix ?? DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX
+  ).split(',');
 
   const getAccessLevel = (role: Role): number | null => {
     // TODO: update to AccessLevel.GUEST once we migrated pre-fine grained
     // projects members to developer access level via database migrations
-    if (!role.oidcGroup) return AccessLevel.DEVELOPER
-    if (matchRole(project.slug, role.oidcGroup, projectReporterGroupPathSuffixes)) return AccessLevel.REPORTER
-    if (matchRole(project.slug, role.oidcGroup, projectDeveloperGroupPathSuffixes)) return AccessLevel.DEVELOPER
-    if (matchRole(project.slug, role.oidcGroup, projectMaintainerGroupPathSuffixes)) return AccessLevel.MAINTAINER
-    return null
-  }
+    if (!role.oidcGroup) return AccessLevel.DEVELOPER;
+    if (matchRole(project.slug, role.oidcGroup, projectReporterGroupPathSuffixes))
+      return AccessLevel.REPORTER;
+    if (matchRole(project.slug, role.oidcGroup, projectDeveloperGroupPathSuffixes))
+      return AccessLevel.DEVELOPER;
+    if (matchRole(project.slug, role.oidcGroup, projectMaintainerGroupPathSuffixes))
+      return AccessLevel.MAINTAINER;
+    return null;
+  };
 
   // TODO: update to AccessLevel.GUEST once we migrated pre-fine grained
   // projects members to developer access level via database migrations
   return project.roles.reduce<number | null>((highestAccessLevel, role) => {
-    if (role.users.some(userRole => userRole.id === user.id)) {
-      const level = getAccessLevel(role)
-      if (level && level > (highestAccessLevel ?? 0)) return level
+    if (role.users.some((userRole) => userRole.id === user.id)) {
+      const level = getAccessLevel(role);
+      if (level && level > (highestAccessLevel ?? 0)) return level;
     }
-    return highestAccessLevel
-  }, AccessLevel.DEVELOPER)
+    return highestAccessLevel;
+  }, AccessLevel.DEVELOPER);
 }
 
-export function getGroupAccessLevel(project: Project, user: UserObject, config: Config): number | null {
-  if (project.owner.id === user.id) return AccessLevel.OWNER
-  return getGroupAccessLevelFromProjectRole(project, user, config)
+export function getGroupAccessLevel(
+  project: Project,
+  user: UserObject,
+  config: Config,
+): number | null {
+  if (project.owner.id === user.id) return AccessLevel.OWNER;
+  return getGroupAccessLevelFromProjectRole(project, user, config);
 }
 
 export async function ensureGroup(
@@ -51,19 +68,19 @@ export async function ensureGroup(
     firstName: user.firstName,
     lastName: user.lastName,
     email: user.email,
-  })
+  });
 
-  const groupMembers = await gitlabApi.getGroupMembers()
-  const existingMember = groupMembers.find(m => m.username === createUsername(user.email))
-  const maxAccessLevel = getGroupAccessLevel(project, user, config)
+  const groupMembers = await gitlabApi.getGroupMembers();
+  const existingMember = groupMembers.find((m) => m.username === createUsername(user.email));
+  const maxAccessLevel = getGroupAccessLevel(project, user, config);
 
   if (existingMember && maxAccessLevel) {
     if (existingMember.access_level !== maxAccessLevel) {
-      await gitlabApi.editGroupMember(gitlabUser.id, maxAccessLevel)
+      await gitlabApi.editGroupMember(gitlabUser.id, maxAccessLevel);
     }
   } else if (maxAccessLevel) {
-    await gitlabApi.addGroupMember(gitlabUser.id, maxAccessLevel)
+    await gitlabApi.addGroupMember(gitlabUser.id, maxAccessLevel);
   } else if (existingMember) {
-    await gitlabApi.removeGroupMember(gitlabUser.id)
+    await gitlabApi.removeGroupMember(gitlabUser.id);
   }
 }
