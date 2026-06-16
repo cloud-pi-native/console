@@ -10,6 +10,7 @@ import {
 
 import { createEnvironment, deleteEnvironment } from '../helpers/environment'
 import { createProject } from '../helpers/project'
+import { unsetCheckbox } from '../helpers/checkbox'
 
 test.describe('Environments page', { tag: '@e2e' }, () => {
   test('should add environments to an existing project', async ({ page }) => {
@@ -326,9 +327,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     await expect(page.getByTestId('noAutosyncAlert')).not.toBeVisible()
 
     // Act - Uncheck auto-sync to trigger warning message
-    await page.getByTestId('input-checkbox-autosyncCbx').uncheck({
-      force: true,
-    })
+    await unsetCheckbox({ page, name: 'autosyncCbx' })
     await expect(page.getByTestId('noAutosyncAlert')).toBeVisible()
     await expect(page.getByTestId('noAutosyncAlert'))
       .toHaveText('La synchronisation automatique est désactivée. Les déploiements devront être synchronisés manuellement.')

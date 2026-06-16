@@ -580,9 +580,7 @@ test.describe('Repositories', () => {
         .getByTestId('internalRepoNameInput')
         .fill(repo.internalRepoName)
       await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await page
-        .getByTestId('input-checkbox-infraRepoCbx')
-        .check({ force: true })
+      await setCheckbox({ page, name: 'infraRepoCbx' })
       await page.getByTestId('addRepoBtn').click()
       await expect(
         page.getByTestId(`repoTr-${repo.internalRepoName}`),
@@ -645,9 +643,7 @@ test.describe('Repositories', () => {
         .getByTestId('internalRepoNameInput')
         .fill(repo.internalRepoName)
       await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await page
-        .getByTestId('input-checkbox-infraRepoCbx')
-        .check({ force: true })
+      await setCheckbox({ page, name: 'infraRepoCbx' })
       await page.getByTestId('addRepoBtn').click()
       await expect(
         page.getByTestId(`repoTr-${repo.internalRepoName}`),
