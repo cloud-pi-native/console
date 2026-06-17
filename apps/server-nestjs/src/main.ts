@@ -55,7 +55,10 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, swaggerConfig)
   SwaggerModule.setup('swagger-ui-server-nestjs', app, documentFactory)
 
-  await app.listen(config.port ?? 0)
+  await app.listen({
+    host: config.host,
+    port: config.port,
+  })
 }
 
 void bootstrap()

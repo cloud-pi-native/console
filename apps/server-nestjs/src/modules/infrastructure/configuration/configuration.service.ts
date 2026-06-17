@@ -11,7 +11,8 @@ export class ConfigurationService {
   isDevSetup = process.env.DEV_SETUP === 'true'
 
   // app
-  port = process.env.SERVER_PORT
+  host = process.env.SERVER_HOST ?? '0.0.0.0'
+  port = Number(process.env.SERVER_PORT ?? 3001)
   appVersion = this.isProd ? (process.env.APP_VERSION ?? 'unknown') : 'dev'
 
   // db
