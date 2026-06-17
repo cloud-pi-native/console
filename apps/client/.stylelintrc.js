@@ -35,6 +35,7 @@ export default {
       },
     ],
     'no-descending-specificity': null,
+    'no-invalid-position-declaration': null,
     'selector-class-pattern': '^((sm|md|lg|xl|2xl):)?[a-z][-_/a-z0-9]*$',
   },
 }

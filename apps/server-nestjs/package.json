@@ -10,7 +10,6 @@
     "url": "https://github.com/cloud-pi-native/console"
   },
   "scripts": {
-    "prebuild": "pnpm i --frozen-lockfile",
     "build": "nest build",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev --name dso",
@@ -21,10 +20,8 @@
     "start:debug": "nest start --debug --watch",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
-    "pretest": "pnpm run db:generate",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pretest:cov": "pnpm run db:generate",
     "test:cov": "vitest run --coverage",
     "test:debug": "vitest --inspect"
   },
@@ -47,7 +44,7 @@
     "@nestjs/cache-manager": "^3.1.2",
     "@nestjs/common": "^11.1.16",
     "@nestjs/config": "^4.0.3",
-    "@nestjs/core": "^11.1.16",
+    "@nestjs/core": "^11.1.18",
     "@nestjs/event-emitter": "^3.0.1",
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-fastify": "^11.1.16",
@@ -55,13 +52,13 @@
     "@nestjs/swagger": "^11.4.1",
     "@nestjs/terminus": "^11.1.1",
     "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/auto-instrumentations-node": "^0.70.1",
-    "@opentelemetry/exporter-metrics-otlp-proto": "^0.213.0",
-    "@opentelemetry/exporter-trace-otlp-proto": "^0.213.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.75.0",
+    "@opentelemetry/exporter-metrics-otlp-proto": "^0.217.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.217.0",
     "@opentelemetry/instrumentation-nestjs-core": "^0.58.0",
     "@opentelemetry/instrumentation-pino": "^0.59.0",
     "@opentelemetry/sdk-metrics": "^2.5.1",
-    "@opentelemetry/sdk-node": "^0.212.0",
+    "@opentelemetry/sdk-node": "^0.217.0",
     "@prisma/client": "^6.19.2",
     "@ts-rest/core": "^3.52.1",
     "@ts-rest/fastify": "^3.52.1",
@@ -92,7 +89,7 @@
     "@nestjs/schematics": "^11.0.9",
     "@nestjs/testing": "^11.1.16",
     "@types/node": "^22.19.15",
-    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/coverage-v8": "^4.1.9",
     "eslint": "^9.39.4",
     "globals": "^16.5.0",
     "msw": "^2.12.10",
@@ -103,7 +100,7 @@
     "typescript-eslint": "^8.57.0",
     "vite": "^7.3.2",
     "vite-node": "^6.0.0",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.9"
   },
   "publishConfig": {
     "tag": "latest"

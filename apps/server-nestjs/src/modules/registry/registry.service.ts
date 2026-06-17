@@ -118,7 +118,6 @@ export class RegistryService {
       if (error instanceof VaultError && error.kind === 'NotFound') return null
       throw error
     })
-
     const expiring = vaultRobotSecret
       ? this.isRobotSecretExpiring(vaultRobotSecret)
       : false
