@@ -5,7 +5,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
-import { toAdminRoles } from './admin-role.utils'
+import { toAdminRole, toAdminRoles } from './admin-role.utils'
 
 @Injectable()
 export class AdminRoleService {
@@ -71,7 +71,7 @@ export class AdminRoleService {
       })),
     })
     this.logger.log(`adminRole.create completed (id=${created.id})`)
-    return this.list()
+    return toAdminRole(createdRole)
   }
 
   @StartActiveSpan()

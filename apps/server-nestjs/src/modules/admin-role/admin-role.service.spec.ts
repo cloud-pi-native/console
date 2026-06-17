@@ -41,7 +41,7 @@ describe('adminRoleService', () => {
     ])
   })
 
-  it('creates a role at the next position and returns the updated list', async () => {
+  it('creates a role at the next position and returns the created role', async () => {
     const existingRole = {
       id: faker.string.uuid(),
       name: 'Role A',
@@ -53,18 +53,17 @@ describe('adminRoleService', () => {
 
     prisma.$transaction.mockImplementation(async callback => callback(prisma))
     prisma.adminRole.findFirst.mockResolvedValue(existingRole)
-    prisma.adminRole.findMany.mockResolvedValue([existingRole])
     prisma.adminRole.create.mockResolvedValue(existingRole)
     prisma.adminRole.findUnique.mockResolvedValue(existingRole)
     prisma.user.findMany.mockResolvedValue([])
 
-    await expect(service.create({ name: 'New role' })).resolves.toEqual([
+    await expect(service.create({ name: 'New role' })).resolves.toEqual(
       expect.objectContaining({
         id: existingRole.id,
         permissions: '4',
         position: 5,
       }),
-    ])
+    )
 
     expect(prisma.adminRole.create).toHaveBeenCalledWith({
       data: {
