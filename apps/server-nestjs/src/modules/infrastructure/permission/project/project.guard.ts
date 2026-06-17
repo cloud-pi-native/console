@@ -1,10 +1,10 @@
 import type { CanActivate, ExecutionContext } from '@nestjs/common'
 import type { Project } from '@prisma/client'
 import type { FastifyRequest } from 'fastify'
-import type { ProjectRequirements } from './project-loader.service.js'
+import type { ProjectRequirements } from './project-loader.service'
 import type { ProjectPolicyConfig } from './project.policy'
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
-import { ProjectLoaderService } from './project-loader.service.js'
+import { ProjectLoaderService } from './project-loader.service'
 import { ProjectPolicy } from './project.policy'
 import { ProjectService } from './project.service'
 
@@ -45,11 +45,11 @@ export class ProjectGuard implements CanActivate {
     >()
     const userId = request.userId
     if (typeof userId !== 'string') {
-      throw new UnauthorizedException()
+      throw new UnauthorizedException('User ID not available')
     }
     const adminPermissions = request.adminPermissions
     if (typeof adminPermissions !== 'bigint') {
-      throw new UnauthorizedException()
+      throw new UnauthorizedException('Admin permissions not available')
     }
 
     const requirements = makeProjectRequirements(policy)

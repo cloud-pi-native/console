@@ -1,19 +1,4 @@
-import type { KeycloakPayload } from './keycloak-jwt.service'
-import { generateKeyPairSync } from 'node:crypto'
 import { faker } from '@faker-js/faker'
-import { KeycloakPayloadSchema } from './keycloak-jwt.service'
-
-export function makeKeycloakPayload(overrides: Partial<KeycloakPayload> = {}) {
-  return KeycloakPayloadSchema.parse({
-    sub: faker.string.uuid(),
-    email: faker.internet.email().toLowerCase(),
-    given_name: faker.person.firstName(),
-    family_name: faker.person.lastName(),
-    groups: Array.from({ length: faker.number.int({ min: 0, max: 3 }) }, () =>
-      `/${faker.word.noun()}`),
-    ...overrides,
-  })
-}
 
 export function makeMockUser(overrides: Partial<{
   id: string
@@ -57,25 +42,4 @@ export function makeMockAdminRole(overrides: Partial<{
     type: 'managed',
     ...overrides,
   }
-}
-
-export function makeJwksResponse(kid: string): Response {
-  const { publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 })
-  const jwk = publicKey.export({ format: 'jwk' })
-  return new Response(JSON.stringify({
-    keys: [
-      {
-        kid,
-        kty: 'RSA',
-        use: 'sig',
-        n: jwk.n,
-        e: jwk.e,
-      },
-    ],
-  }), {
-    status: 200,
-    headers: {
-      'content-type': 'application/json',
-    },
-  })
 }

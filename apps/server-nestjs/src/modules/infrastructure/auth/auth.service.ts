@@ -27,6 +27,6 @@ export class AuthService {
       return bearerTokenResult
     }
 
-    throw new UnauthorizedException()
+    throw new UnauthorizedException('Not authenticated')
   }
 }
