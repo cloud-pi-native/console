@@ -123,7 +123,12 @@ export default defineConfig({
     dedupe: ['vue'],
   },
   build: {
-    target: 'ESNext',
+    target: 'es2022',
+  },
+  css: {
+    lightningcss: {
+      errorRecovery: true,
+    },
   },
   optimizeDeps: {
     include: ['jszip'],
