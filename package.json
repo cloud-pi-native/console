@@ -60,5 +60,32 @@
     "node": ">=24.0.0 <25.0.0",
     "npm": ">=11.0.0"
   },
-  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
+  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319",
+  "pnpm": {
+    "overrides": {
+      "defu": "6.1.5",
+      "lodash": "4.18.0",
+      "picomatch": "4.0.4",
+      "ws": "8.20.1",
+      "@protobufjs/utf8": "1.1.1",
+      "brace-expansion@<1.1.13": "1.1.13",
+      "brace-expansion@>=2.0.0 <2.0.3": "2.0.3",
+      "yaml@>=2.0.0 <2.8.3": "2.8.3",
+      "yaml@>=1.0.0 <1.10.3": "1.10.3",
+      "file-type": "21.3.2",
+      "ajv@>=7.0.0 <8.18.0": "8.18.0",
+      "qs": "6.15.2",
+      "dompurify": "3.4.8",
+      "path-to-regexp": "8.4.2",
+      "fast-uri": "3.1.2",
+      "vite": "8.0.16",
+      "esbuild": "0.28.1",
+      "@grpc/grpc-js": "1.14.4",
+      "serialize-javascript": "7.0.5",
+      "uuid": "11.1.1",
+      "protobufjs": "8.6.0",
+      "fast-jwt": "6.2.4",
+      "effect": "3.20.0"
+    }
+  }
 }
