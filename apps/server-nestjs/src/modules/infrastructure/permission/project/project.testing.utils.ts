@@ -32,11 +32,3 @@ export function makeProjectPolicy(overrides: Partial<ProjectPolicyConfig> = {}):
     ...overrides,
   }
 }
-
-export function makeProjectRequest(overrides: Record<string, unknown> = {}): any {
-  return {
-    params: { projectId: 'p1' },
-    project: undefined,
-    ...overrides,
-  }
-}

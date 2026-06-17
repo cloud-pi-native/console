@@ -1,41 +1,23 @@
 import type { Prisma } from '@prisma/client'
-import type { Cache } from 'cache-manager'
 import type { FastifyRequest } from 'fastify'
 import type { AuthRequirements, UserContext } from '../auth.service'
-import { createPublicKey } from 'node:crypto'
-import { CACHE_MANAGER } from '@nestjs/cache-manager'
-import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common'
-import { ModuleRef } from '@nestjs/core'
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import { z } from 'zod'
-import { ConfigurationService } from '../../configuration/configuration.service'
 import { PrismaService } from '../../database/prisma.service'
-import { KeycloakJwtClientService } from './keycloak-jwt-client.service'
 
-const JwtHeaderSchema = z.object({
-  kid: z.string(),
-})
-
-export const KeycloakPayloadSchema = z.object({
-  sub: z.string(),
-  email: z.string().default(''),
-  given_name: z.string().default(''),
-  family_name: z.string().default(''),
-  groups: z.array(z.string()).default([]),
-})
-
-export type KeycloakPayload = z.infer<typeof KeycloakPayloadSchema>
+interface KeycloakPayload {
+  sub: string
+  email: string
+  given_name: string
+  family_name: string
+  groups: string[]
+}
 
 @Injectable()
 export class KeycloakJwtService {
-  private readonly logger = new Logger(KeycloakJwtService.name)
-
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(CACHE_MANAGER) private readonly cache: Cache,
-    @Inject(KeycloakJwtClientService) private readonly client: KeycloakJwtClientService,
-    @Inject(ModuleRef) private readonly moduleRef: ModuleRef,
+    @Inject(JwtService) private readonly jwtService: JwtService,
   ) {}
 
   async authenticate(
@@ -56,58 +38,11 @@ export class KeycloakJwtService {
 
     try {
       const jwt = authHeader.slice(7)
-      const jwtService = this.moduleRef.get(JwtService, { strict: false })
-      if (!jwtService) {
-        throw new Error('JwtService not available')
-      }
-      const payload = await jwtService.verifyAsync(jwt)
+      const payload = await this.jwtService.verifyAsync(jwt)
       return this.validatePayload(payload, requirements)
-    } catch {
-      throw new UnauthorizedException()
+    } catch (error) {
+      throw new UnauthorizedException(error)
     }
-  }
-
-  decodeJweHeader(token: string | object | Buffer<ArrayBufferLike>): { kid: string } | null {
-    if (typeof token !== 'string') return null
-    try {
-      const parts = token.split('.')
-      if (parts.length !== 3) return null
-      const raw = JSON.parse(
-        Buffer.from(parts[0].replaceAll('-', '+').replaceAll('_', '/'), 'base64').toString(),
-      )
-      const header = JwtHeaderSchema.safeParse(raw)
-      return header.success ? { kid: header.data.kid } : null
-    } catch {
-      return null
-    }
-  }
-
-  async getPublicKey(kid: string): Promise<string | undefined> {
-    const cacheKey = `jwks:${kid}`
-    const cached = await this.cache.get<string>(cacheKey)
-    if (cached) return cached
-
-    this.logger.log(`Unknown kid "${kid}", refreshing JWKS`)
-    const jwks = await this.client.fetchJwks()
-    if (!jwks) return undefined
-
-    const kids: string[] = []
-    for (const key of jwks.keys) {
-      if (key.use !== 'sig' || key.kty !== 'RSA') continue
-      const publicKey = buildRsaPublicKey(key.n, key.e)
-      await this.cache.set(`jwks:${key.kid}`, publicKey, this.config.keycloakJwksCacheTtlMs)
-      kids.push(key.kid)
-    }
-
-    await this.cache.set('jwks:kids', kids, this.config.keycloakJwksCacheTtlMs)
-    return this.cache.get<string>(cacheKey)
-  }
-
-  getAudience(): string {
-    if (!this.config.keycloakClientId) {
-      throw new Error('Missing Keycloak client id')
-    }
-    return this.config.keycloakClientId
   }
 
   async validatePayload(
@@ -162,14 +97,6 @@ export class KeycloakJwtService {
       userType: 'type' in user ? user.type : undefined,
     }
   }
-}
-
-function buildRsaPublicKey(n: string, e: string): string {
-  const key = createPublicKey({
-    key: { kty: 'RSA', n, e },
-    format: 'jwk',
-  })
-  return key.export({ format: 'pem', type: 'pkcs1' }) as string
 }
 
 function makeUserSelect(requirements: Required<AuthRequirements>) {

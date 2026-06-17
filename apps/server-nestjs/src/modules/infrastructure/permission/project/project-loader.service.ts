@@ -5,17 +5,17 @@ import { PROJECT_PERMS } from '@cpn-console/shared'
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../database/prisma.service.js'
 
-interface ProjectParams {
-  projectId?: string
-  projectSlug?: string
-}
-
 type RequestWithProjectParams = FastifyRequest<{ Params?: ProjectParams }>
 
 export interface ProjectRequirements {
   includeStatus?: boolean
   includeLocked?: boolean
   includePermissions?: boolean
+}
+
+interface ProjectParams {
+  projectId?: string
+  projectSlug?: string
 }
 
 @Injectable()
