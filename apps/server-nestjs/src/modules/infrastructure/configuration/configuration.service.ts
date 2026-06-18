@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common'
 
+const DEFAULT_SERVER_PORT = 3001
+
 @Injectable()
 export class ConfigurationService {
   // application mode
@@ -12,7 +14,7 @@ export class ConfigurationService {
 
   // app
   host = process.env.SERVER_HOST ?? '0.0.0.0'
-  port = Number(process.env.SERVER_PORT ?? 3001)
+  port = Number(process.env.SERVER_PORT ?? DEFAULT_SERVER_PORT)
   appVersion = this.isProd ? (process.env.APP_VERSION ?? 'unknown') : 'dev'
 
   // db
