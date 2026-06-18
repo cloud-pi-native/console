@@ -59,6 +59,10 @@ async function bootstrap() {
     host: config.host,
     port: config.port,
   })
+
+  const serverUrl = await app.getUrl()
+  const logger = app.get(Logger)
+  logger.log(`NestJS server running on: ${serverUrl}`)
 }
 
 void bootstrap()
