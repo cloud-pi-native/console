@@ -16,6 +16,7 @@
         "run",
         "integ"
       ],
+      "envFile": "${workspaceFolder}/apps/server/.integ.env",
       "console": "integratedTerminal",
       "restart": true,
       "presentation": {
@@ -38,6 +39,7 @@
         "run",
         "dev"
       ],
+      "envFile": "${workspaceFolder}/apps/server/.env",
       "console": "integratedTerminal",
       "restart": true,
       "presentation": {
@@ -100,6 +102,7 @@
         "run",
         "start:dev"
       ],
+      "envFile": "${workspaceFolder}/apps/server-nestjs/.integ.env",
       "console": "integratedTerminal",
       "restart": true,
       "presentation": {
@@ -122,6 +125,7 @@
         "run",
         "start:dev"
       ],
+      "envFile": "${workspaceFolder}/apps/server-nestjs/.env",
       "console": "integratedTerminal",
       "restart": true,
       "presentation": {
@@ -164,15 +168,13 @@
         "8080",
         "--strictPort"
       ],
+      "envFile": "${workspaceFolder}/apps/client/.integ.env",
       "console": "integratedTerminal",
       "restart": true,
       "serverReadyAction": {
         "pattern": "Local:.*(http://localhost:[0-9]+)",
         "action": "startDebugging",
         "name": "Launch Client (Chrome)"
-      },
-      "env": {
-        "SERVER_PORT": "4001"
       },
       "presentation": {
         "hidden": true
@@ -194,6 +196,7 @@
         "8080",
         "--strictPort"
       ],
+      "envFile": "${workspaceFolder}/apps/client/.env",
       "console": "integratedTerminal",
       "restart": true,
       "serverReadyAction": {
@@ -221,6 +224,7 @@
         "8080",
         "--strictPort"
       ],
+      "envFile": "${workspaceFolder}/apps/client/.integ.env",
       "console": "integratedTerminal",
       "restart": true,
       "serverReadyAction": {
@@ -248,6 +252,7 @@
         "8080",
         "--strictPort"
       ],
+      "envFile": "${workspaceFolder}/apps/client/.env",
       "console": "integratedTerminal",
       "restart": true,
       "serverReadyAction": {
