@@ -10,7 +10,6 @@ RUN npm install --global corepack@latest && corepack enable && corepack enable p
 
 # Copier les manifestes workspace (nécessaires pour que pnpm résolve les dépendances)
 COPY --chown=node:root pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY --chown=node:root patches ./patches
 
 # Manifestes des packages workspace dont server-nestjs dépend
 COPY --chown=node:root apps/server-nestjs/package.json           ./apps/server-nestjs/package.json
