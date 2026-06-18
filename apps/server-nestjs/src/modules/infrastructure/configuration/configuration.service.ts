@@ -11,8 +11,8 @@ export class ConfigurationService {
   isDevSetup = process.env.DEV_SETUP === 'true'
 
   // app
-  host = process.env.SERVER_HOST ?? '0.0.0.0'
-  port = process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : undefined
+  host = process.env.SERVER_HOST ?? 'localhost'
+  port = process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 0 // dynamically allocate an available ephemeral port
   appVersion = this.isProd ? (process.env.APP_VERSION ?? 'unknown') : 'dev'
 
   // db
