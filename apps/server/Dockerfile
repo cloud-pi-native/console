@@ -9,7 +9,6 @@ COPY --chown=node:root package.json ./
 RUN npm install --global corepack@latest && corepack enable && corepack enable pnpm
 
 COPY --chown=node:root pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY --chown=node:root patches ./patches
 COPY --chown=node:root apps/server/package.json ./apps/server/package.json
 
 COPY --chown=node:root packages/eslintconfig/package.json ./packages/eslintconfig/package.json
