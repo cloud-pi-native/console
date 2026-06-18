@@ -55,6 +55,10 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, swaggerConfig)
   SwaggerModule.setup('swagger-ui-server-nestjs', app, documentFactory)
 
+  if (!config.port) {
+    throw new Error('SERVER_PORT environment variable is not set')
+  }
+
   await app.listen({
     host: config.host,
     port: config.port,
