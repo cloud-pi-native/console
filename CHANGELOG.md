@@ -1,5 +1,41 @@
 # Changelog
 
+## [9.19.0](https://github.com/cloud-pi-native/console/compare/v9.18.4...v9.19.0) (2026-06-19)
+
+
+### Features
+
+* add support for Keycloak based token ([959dc9f](https://github.com/cloud-pi-native/console/commit/959dc9fb07fc3838e7f3a6f6f4dfd95ad01a4b22))
+* **server-nestjs:** add project permission guards ([04f7204](https://github.com/cloud-pi-native/console/commit/04f72045ada2c6249412664fe95ae13b678a8897))
+
+
+### Bug Fixes
+
+* correct NestJS healthcheck and add opencds health service ([b7633b1](https://github.com/cloud-pi-native/console/commit/b7633b102cfe87969106dad5fdc2785896ee01de))
+* default NestJS port ([76aca60](https://github.com/cloud-pi-native/console/commit/76aca604bfa2b46649cd432bfbb0d12b8d325537))
+* defaulting to 0.0.0.0 is a well known security issue ([5e2ab3b](https://github.com/cloud-pi-native/console/commit/5e2ab3b4e0ed4402944560e9589e52454f07fd92))
+* fix .env examples files having outdated default values ([b18e2ea](https://github.com/cloud-pi-native/console/commit/b18e2ea438ffb3a28d0b95b7a9db8363260a0380))
+* Keycloak JWT validation against public URL ([6e2879d](https://github.com/cloud-pi-native/console/commit/6e2879d5777e2785e84c9c15653050ef5629eb00))
+* **playwright:** correct heading matcher and checkbox helper in e2e tests ([4c2bd24](https://github.com/cloud-pi-native/console/commit/4c2bd2447806519238f6ba622374cfdadd29c10f))
+* **playwright:** increase timeout for service chain details heading ([bf90987](https://github.com/cloud-pi-native/console/commit/bf90987f73e9c2fdac3482b20d16fd566e49ae90))
+* **release-please:** restore default versioning strategy ([5872ebc](https://github.com/cloud-pi-native/console/commit/5872ebc4adf82d3a20e2dd5da19ef45188b13779))
+* remove opencds-mockoon depends_on (optional service) ([181c75b](https://github.com/cloud-pi-native/console/commit/181c75b8753d8e3a921fa18ffb3665a71901a773))
+* replace magic port constant and add startup URL logging ([5cfaf94](https://github.com/cloud-pi-native/console/commit/5cfaf94de6f8d7ac5260b1f1d12d675ffc635297))
+
+
+### Miscellaneous Chores
+
+* add docker:ci commands for targer=prod images tests ([9c8f25e](https://github.com/cloud-pi-native/console/commit/9c8f25e59c91dccf24fe26963a2fda77dd05f30a))
+* **client:** use official nginx unprivileged image instead of unmaintained bitnamilegacy ([58e0f13](https://github.com/cloud-pi-native/console/commit/58e0f136c78d0afc7d6fe8599cf6bffa4b03cb2d)), closes [#2148](https://github.com/cloud-pi-native/console/issues/2148)
+* enforce port config ([e2bde42](https://github.com/cloud-pi-native/console/commit/e2bde427f79d8bcfefcc98d3e90e0a7a9041ba69))
+* **nginx-strangler:** use official nginx unprivileged image instead of unmaintained bitnamilegacy ([6f33cc2](https://github.com/cloud-pi-native/console/commit/6f33cc21bb96c496bde324401c43a6399b87294d)), closes [#2148](https://github.com/cloud-pi-native/console/issues/2148)
+* remove unused packages and fix otel configuration ([242ce68](https://github.com/cloud-pi-native/console/commit/242ce6843c644282c12a20a1c6f2cea23ebc308d))
+
+
+### Refactoring
+
+* extract secret provider code from JWT module ([a69f4ef](https://github.com/cloud-pi-native/console/commit/a69f4ef4fb048ed3e32ba039c908e7ada8b37063))
+
 ## [9.18.4](https://github.com/cloud-pi-native/console/compare/v9.18.3...v9.18.4) (2026-06-10)
 
 
