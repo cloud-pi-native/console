@@ -244,6 +244,7 @@ export const deleteZone: StepCall<ZoneObject> = async ({ args: zone }) => {
 
 export const upsertAdminRole: StepCall<AdminRole> = async ({ args: role }) => {
   if (!role.oidcGroup) return { status: { result: 'OK', message: 'No OIDC Group defined' } }
+  if (role.type === 'system:external') return { status: { result: 'OK', message: 'Skipped (external system role)' } }
   const pluginResult = new PluginResultBuilder('Up-to-date')
   try {
     const kcClient = await getkcClient()
@@ -289,6 +290,7 @@ export const upsertAdminRole: StepCall<AdminRole> = async ({ args: role }) => {
 
 export const deleteAdminRole: StepCall<AdminRole> = async ({ args: role }) => {
   if (!role.oidcGroup) return { status: { result: 'OK', message: 'No OIDC Group defined' } }
+  if (role.type === 'system:external') return { status: { result: 'OK', message: 'Skipped (external system role)' } }
   const pluginResult = new PluginResultBuilder('Deleted')
   try {
     const kcClient = await getkcClient()
