@@ -41,6 +41,7 @@ export type ProjectWithDetails = Prisma.ProjectGetPayload<{
 export const adminRoleSelect = {
   id: true,
   oidcGroup: true,
+  type: true,
 } satisfies Prisma.AdminRoleSelect
 
 export type AdminRoleWithDetails = Prisma.AdminRoleGetPayload<{
