@@ -17,9 +17,9 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
 
-  retries: 3,
+  retries: process.env.CI ? 1 : 3,
 
-  workers: process.env.CI ? 1 : undefined, // Default is 50% logical cores
+  workers: process.env.CI ? 2 : undefined, // Default is 50% logical cores
 
   // The maximum number of test failures forthe whole test suite run.
   // After reaching this number, testing will stop and exit with an error.

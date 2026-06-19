@@ -88,16 +88,17 @@ jobs:
       - name: Initialize application environment for tests
         run: |
           ./ci/scripts/init-env.sh
-          docker pull ghcr.io/cloud-pi-native/console/server:${{ inputs.TAG }}
-          docker tag ghcr.io/cloud-pi-native/console/server:${{ inputs.TAG }} dso-console/server:ci
-          docker pull ghcr.io/cloud-pi-native/console/nginx-strangler:${{ inputs.TAG }}
-          docker tag ghcr.io/cloud-pi-native/console/nginx-strangler:${{ inputs.TAG }} dso-console/nginx-strangler:ci
-          docker pull ghcr.io/cloud-pi-native/console/server-nestjs:${{ inputs.TAG }}
-          docker tag ghcr.io/cloud-pi-native/console/server-nestjs:${{ inputs.TAG }} dso-console/server-nestjs:ci
-          docker pull ghcr.io/cloud-pi-native/console/client:${{ inputs.TAG }}
-          docker tag ghcr.io/cloud-pi-native/console/client:${{ inputs.TAG }} dso-console/client:ci
-          docker pull ghcr.io/cloud-pi-native/console/opencds-mockoon:${{ inputs.TAG }}
-          docker tag ghcr.io/cloud-pi-native/console/opencds-mockoon:${{ inputs.TAG }} dso-console/opencds-mockoon:ci
+          TAG="${{ inputs.TAG }}"
+          pull_and_tag() {
+            docker pull "ghcr.io/cloud-pi-native/console/$1:$TAG" \
+              && docker tag "ghcr.io/cloud-pi-native/console/$1:$TAG" "dso-console/$1:ci"
+          }
+          pull_and_tag server &
+          pull_and_tag nginx-strangler &
+          pull_and_tag server-nestjs &
+          pull_and_tag client &
+          pull_and_tag opencds-mockoon &
+          wait
           docker compose -f ./docker/docker-compose.ci.yml up --no-build -d --remove-orphans
 
       - name: Run Playwright tests
