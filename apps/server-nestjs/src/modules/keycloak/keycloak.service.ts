@@ -1,7 +1,7 @@
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
 import type { GroupRepresentationWith } from './keycloak-client.service'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
-import { getPermsByUserRoles, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
+import { getPermsByUserRoles, isExternalRoleType, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { Cron, CronExpression } from '@nestjs/schedule'
@@ -126,7 +126,7 @@ export class KeycloakService {
       'keycloak.admin_roles.count': adminRoles.length,
       'keycloak.users.count': users.length,
     })
-    const rolesWithOidcGroup = adminRoles.filter(r => isNonEmptyGroupPath(r.oidcGroup) && r.type !== 'system:external')
+    const rolesWithOidcGroup = adminRoles.filter(r => isNonEmptyGroupPath(r.oidcGroup) && !isExternalRoleType(r.type))
     span?.setAttribute('keycloak.admin_roles.oidc_group.count', rolesWithOidcGroup.length)
     await Promise.all(rolesWithOidcGroup.map(role => this.ensureAdminRoleGroup(role, users)))
   }
