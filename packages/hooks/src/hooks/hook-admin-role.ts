@@ -8,6 +8,7 @@ export interface AdminRole {
   permissions: bigint
   position: number
   oidcGroup: string
+  type?: string
   members: UserObject[]
 }
 
