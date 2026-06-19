@@ -27,4 +27,20 @@ describe('configurationService', () => {
       `${service.getKeycloakIssuer()}/protocol/openid-connect/certs`,
     )
   })
+
+  it('should use public protocol and domain for issuer when set', () => {
+    service.keycloakPublicProtocol = 'https'
+    service.keycloakPublicDomain = 'keycloak.public.example.fr'
+    expect(service.getKeycloakIssuer()).toBe(
+      `${service.keycloakPublicProtocol}://${service.keycloakPublicDomain}/realms/${service.keycloakRealm}`,
+    )
+  })
+
+  it('should fall back to internal protocol and domain when public are not set', () => {
+    service.keycloakPublicProtocol = undefined
+    service.keycloakPublicDomain = undefined
+    expect(service.getKeycloakIssuer()).toBe(
+      `${service.keycloakProtocol}://${service.keycloakDomain}/realms/${service.keycloakRealm}`,
+    )
+  })
 })

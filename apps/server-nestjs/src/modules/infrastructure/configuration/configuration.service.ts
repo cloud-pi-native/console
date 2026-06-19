@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 
 @Injectable()
 export class ConfigurationService {
+  private readonly logger = new Logger(ConfigurationService.name)
+
   // application mode
   isDev = process.env.NODE_ENV === 'development'
   isTest = process.env.NODE_ENV === 'test'
@@ -22,6 +24,8 @@ export class ConfigurationService {
   sessionSecret = process.env.SESSION_SECRET
   keycloakProtocol = process.env.KEYCLOAK_PROTOCOL
   keycloakDomain = process.env.KEYCLOAK_DOMAIN
+  keycloakPublicProtocol = process.env.KEYCLOAK_PUBLIC_PROTOCOL
+  keycloakPublicDomain = process.env.KEYCLOAK_PUBLIC_DOMAIN
   keycloakRealm = process.env.KEYCLOAK_REALM
   keycloakClientId = process.env.KEYCLOAK_CLIENT_ID
   keycloakClientSecret = process.env.KEYCLOAK_CLIENT_SECRET
@@ -102,31 +106,69 @@ export class ConfigurationService {
   sonarApiToken = process.env.SONAR_API_TOKEN
 
   getKeycloakIssuer() {
-    return `${this.keycloakProtocol}://${this.keycloakDomain}/realms/${this.keycloakRealm}`
+    const protocol = this.keycloakPublicProtocol ?? this.keycloakProtocol
+    const domain = this.keycloakPublicDomain ?? this.keycloakDomain
+    const issuer = `${protocol}://${domain}/realms/${this.keycloakRealm}`
+    this.logger.log(`Keycloak issuer resolved: ${issuer}`)
+    return issuer
   }
 
   getKeycloakCertsUrl() {
-    return `${this.getKeycloakIssuer()}/protocol/openid-connect/certs`
+    const url = `${this.getKeycloakIssuer()}/protocol/openid-connect/certs`
+    this.logger.log(`Keycloak certs URL resolved: ${url}`)
+    return url
+  }
+
+  getKeycloakOpenidConfigurationUrl() {
+    const url = `${this.getKeycloakUrl()}/realms/${this.keycloakRealm}/.well-known/openid-configuration`
+    this.logger.log(`Keycloak openid-configuration URL resolved: ${url}`)
+    return url
+  }
+
+  getPublicKeycloakUrl() {
+    const protocol = this.keycloakPublicProtocol ?? this.keycloakProtocol
+    this.logger.log(`Keycloak public protocol resolved: ${protocol} (${this.keycloakPublicProtocol ? 'public' : 'internal'})`)
+    const domain = this.keycloakPublicDomain ?? this.keycloakDomain
+    this.logger.log(`Keycloak public domain resolved: ${domain} (${this.keycloakPublicDomain ? 'public' : 'internal'})`)
+    const url = `${protocol}://${domain}`
+    this.logger.log(`Keycloak public URL resolved: ${url}`)
+    return url
+  }
+
+  getKeycloakUrl() {
+    const url = `${this.keycloakProtocol}://${this.keycloakDomain}`
+    this.logger.log(`Keycloak internal URL resolved: ${url}`)
+    return url
   }
 
   getInternalOrPublicGitlabUrl() {
-    return this.gitlabInternalUrl ?? this.gitlabUrl
+    const url = this.gitlabInternalUrl ?? this.gitlabUrl
+    this.logger.log(`GitLab URL resolved: ${url} (${this.gitlabInternalUrl ? 'internal' : 'public'})`)
+    return url
   }
 
   getInternalOrPublicVaultUrl() {
-    return this.vaultInternalUrl ?? this.vaultUrl
+    const url = this.vaultInternalUrl ?? this.vaultUrl
+    this.logger.log(`Vault URL resolved: ${url} (${this.vaultInternalUrl ? 'internal' : 'public'})`)
+    return url
   }
 
   getInternalOrPublicHarborUrl() {
-    return this.harborInternalUrl ?? this.harborUrl
+    const url = this.harborInternalUrl ?? this.harborUrl
+    this.logger.log(`Harbor URL resolved: ${url} (${this.harborInternalUrl ? 'internal' : 'public'})`)
+    return url
   }
 
   getInternalOrPublicNexusUrl() {
-    return this.nexusInternalUrl ?? this.nexusUrl
+    const url = this.nexusInternalUrl ?? this.nexusUrl
+    this.logger.log(`Nexus URL resolved: ${url} (${this.nexusInternalUrl ? 'internal' : 'public'})`)
+    return url
   }
 
   getInternalOrPublicSonarqubeUrl() {
-    return this.sonarqubeInternalUrl ?? this.sonarqubeUrl
+    const url = this.sonarqubeInternalUrl ?? this.sonarqubeUrl
+    this.logger.log(`SonarQube URL resolved: ${url} (${this.sonarqubeInternalUrl ? 'internal' : 'public'})`)
+    return url
   }
 
   NODE_ENV

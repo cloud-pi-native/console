@@ -16,7 +16,7 @@ import { KeycloakService } from './keycloak.service'
       provide: KEYCLOAK_ADMIN_CLIENT,
       inject: [ConfigurationService],
       useFactory: (config: ConfigurationService) => new KcAdminClient({
-        baseUrl: `${config.keycloakProtocol}://${config.keycloakDomain}`,
+        baseUrl: config.getKeycloakUrl(),
       }),
     },
     HealthIndicatorService,

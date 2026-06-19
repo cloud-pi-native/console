@@ -39,9 +39,11 @@ export class KeycloakJwtService {
     try {
       const jwt = authHeader.slice(7)
       const payload = await this.jwtService.verifyAsync(jwt)
-      return this.validatePayload(payload, requirements)
+      return await this.validatePayload(payload, requirements)
     } catch (error) {
-      throw new UnauthorizedException(error)
+      throw new UnauthorizedException(
+        error instanceof Error ? error.message : 'Authentication failed',
+      )
     }
   }
 
