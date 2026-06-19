@@ -126,7 +126,7 @@ export class KeycloakService {
       'keycloak.admin_roles.count': adminRoles.length,
       'keycloak.users.count': users.length,
     })
-    const rolesWithOidcGroup = adminRoles.filter(r => isNonEmptyGroupPath(r.oidcGroup))
+    const rolesWithOidcGroup = adminRoles.filter(r => isNonEmptyGroupPath(r.oidcGroup) && r.type !== 'system:external')
     span?.setAttribute('keycloak.admin_roles.oidc_group.count', rolesWithOidcGroup.length)
     await Promise.all(rolesWithOidcGroup.map(role => this.ensureAdminRoleGroup(role, users)))
   }
