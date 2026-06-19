@@ -81,9 +81,28 @@ describe('keycloakService', () => {
       everyonePerms: 0n,
     })
 
+    it('should not sync system external admin roles', async () => {
+      const adminRoles: AdminRoleWithDetails[] = [
+        { id: 'admin-role-id', oidcGroup: '/console/system-external', type: 'system:external' },
+      ]
+      const users: UserWithAdminRoles[] = [
+        { id: 'user-1', adminRoleIds: ['admin-role-id'] },
+      ]
+      keycloakDatastore.getAllProjects.mockResolvedValue([])
+      keycloakDatastore.getAllAdminRoles.mockResolvedValue(adminRoles)
+      keycloakDatastore.getAllUsersWithAdminRoleIds.mockResolvedValue(users)
+
+      await service.handleCron()
+
+      expect(keycloak.getOrCreateGroupByPath).not.toHaveBeenCalledWith('/console/system-external')
+      expect(keycloak.getGroupMembers).not.toHaveBeenCalled()
+      expect(keycloak.addUserToGroup).not.toHaveBeenCalled()
+      expect(keycloak.removeUserFromGroup).not.toHaveBeenCalled()
+    })
+
     it('should sync admin role groups', async () => {
       const adminRoles: AdminRoleWithDetails[] = [
-        { id: 'admin-role-id', oidcGroup: '/console/admin' },
+        { id: 'admin-role-id', oidcGroup: '/console/admin', type: 'managed' },
       ]
       const users: UserWithAdminRoles[] = [
         { id: 'user-1', adminRoleIds: ['admin-role-id'] },

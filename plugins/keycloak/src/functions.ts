@@ -4,6 +4,7 @@ import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation.js'
 import type { CustomGroup } from './group.js'
 import { generateRandomPassword, PluginResultBuilder } from '@cpn-console/hooks'
+import { isExternalRoleType } from '@cpn-console/shared'
 import { getkcClient } from './client.js'
 import { consoleGroupName, deleteGroup, getAllSubgroups, getGroupByName, getOrCreateChildGroup, getOrCreateGroupByPath, getOrCreateProjectGroup } from './group.js'
 import { logger } from './logger.js'
@@ -244,7 +245,7 @@ export const deleteZone: StepCall<ZoneObject> = async ({ args: zone }) => {
 
 export const upsertAdminRole: StepCall<AdminRole> = async ({ args: role }) => {
   if (!role.oidcGroup) return { status: { result: 'OK', message: 'No OIDC Group defined' } }
-  if (role.type === 'system:external') return { status: { result: 'OK', message: 'Skipped (external system role)' } }
+  if (isExternalRoleType(role.type)) return { status: { result: 'OK', message: 'Skipped (external system role)' } }
   const pluginResult = new PluginResultBuilder('Up-to-date')
   try {
     const kcClient = await getkcClient()
@@ -290,7 +291,7 @@ export const upsertAdminRole: StepCall<AdminRole> = async ({ args: role }) => {
 
 export const deleteAdminRole: StepCall<AdminRole> = async ({ args: role }) => {
   if (!role.oidcGroup) return { status: { result: 'OK', message: 'No OIDC Group defined' } }
-  if (role.type === 'system:external') return { status: { result: 'OK', message: 'Skipped (external system role)' } }
+  if (isExternalRoleType(role.type)) return { status: { result: 'OK', message: 'Skipped (external system role)' } }
   const pluginResult = new PluginResultBuilder('Deleted')
   try {
     const kcClient = await getkcClient()
