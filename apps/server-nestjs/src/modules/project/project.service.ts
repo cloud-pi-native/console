@@ -1,4 +1,5 @@
 import type { projectContract } from '@cpn-console/shared'
+import type { Prisma } from '@prisma/client'
 import type { UserContext } from '../infrastructure/auth/auth.service'
 import type { ProjectDataExport, ProjectDetails } from './project-queries.utils.js'
 import { AdminAuthorized } from '@cpn-console/shared'
@@ -9,24 +10,17 @@ import { ConfigurationService } from '../infrastructure/configuration/configurat
 import { PrismaService } from '../infrastructure/database/prisma.service.js'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { createProjectMember, deleteProjectMember } from '../project-members/project-members-queries.utils.js'
-import { VaultClientService } from '../vault/vault-client.service.js'
-import { VaultService } from '../vault/vault.service.js'
-import { generateProjectPath } from '../vault/vault.utils.js'
 import {
   createProject,
   deleteProjectDependencies,
   getNotArchivedProjectForUpdate,
   getProject,
-  getProjectNotArchived,
-  getProjectSlug,
-  listProjectIdsNotArchived,
-  listProjects,
-  listProjectsForDataExport,
   listProjectSlugsForPrefix as listProjectSlugsForSlugPrefix,
+  projectForDataSelect,
+  projectSelect,
   updateProject,
-  updateProjectLocked,
 } from './project-queries.utils.js'
-import { generateProjectCreateInput, generateProjectWhereInput, generateSlug, parseProjectUpdateInput, parseSecretValue } from './project.utils.js'
+import { generateProjectCreateInput, generateProjectWhereInput, generateSlug, parseProjectUpdateInput } from './project.utils.js'
 
 @Injectable()
 export class ProjectService {
@@ -36,15 +30,13 @@ export class ProjectService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(EventEmitter2) private readonly eventEmitter: EventEmitter2,
     @Inject(ConfigurationService) private readonly config: ConfigurationService,
-    @Inject(VaultService) private readonly vault: VaultService,
-    @Inject(VaultClientService) private readonly vaultClient: VaultClientService,
   ) {}
 
   @StartActiveSpan()
   async getData(): Promise<ProjectDataExport[]> {
     const span = trace.getActiveSpan()
     this.logger.log('project.getData requested')
-    const data = await listProjectsForDataExport(this.prisma)
+    const data = await this.listProjectsForDataExport()
     span?.setAttribute('project.data.count', data.length)
     this.logger.log(`project.getData completed (count=${data.length})`)
     return data
@@ -72,7 +64,7 @@ export class ProjectService {
     })
 
     this.logger.debug(`project.list started (requestorUserId=${user.userId}, filter=${filter})`)
-    const projects = await listProjects(this.prisma, whereAnd)
+    const projects = await this.listProjects(whereAnd)
     span?.setAttribute('project.list.count', projects.length)
     this.logger.debug(`project.list completed (requestorUserId=${user.userId}, filter=${filter}, count=${projects.length})`)
 
@@ -84,7 +76,7 @@ export class ProjectService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.id', projectId)
     this.logger.debug(`project.get started (projectId=${projectId})`)
-    const project = await getProjectNotArchived(this.prisma, projectId)
+    const project = await this.getProjectNotArchived(projectId)
     if (!project) {
       this.logger.warn(`project.get notFound (projectId=${projectId})`)
       throw new NotFoundException()
@@ -235,114 +227,23 @@ export class ProjectService {
     }
   }
 
-  @StartActiveSpan()
-  async replayHooks(projectId: string): Promise<void> {
-    const span = trace.getActiveSpan()
-    span?.setAttribute('project.id', projectId)
-    this.logger.log(`project.replayHooks started (projectId=${projectId})`)
-    const project = await this.get(projectId)
-    span?.setAttribute('project.slug', project.slug)
-    await this.eventEmitter.emitAsync('project.upsert', project)
-    this.logger.log(`project.replayHooks completed (projectId=${projectId})`)
+  private async listProjectsForDataExport(): Promise<ProjectDataExport[]> {
+    return this.prisma.project.findMany({
+      select: projectForDataSelect,
+    })
   }
 
-  @StartActiveSpan()
-  async bulkAction(
-    data: typeof projectContract.bulkActionProject.body._type,
-  ): Promise<void> {
-    const span = trace.getActiveSpan()
-    const projectSelector = data.projectIds
-    span?.setAttribute('project.bulk.action', data.action)
-    const projectIdsLog = projectSelector === 'all' ? 'all' : `count=${projectSelector.length}`
-    this.logger.log(`project.bulkAction started (action=${data.action}, projectIds=${projectIdsLog})`)
-    try {
-      let projectIds = data.projectIds
-      if (projectIds === 'all') {
-        projectIds = (await listProjectIdsNotArchived(this.prisma))
-          .map(({ id }) => id)
-      }
-      span?.setAttribute('project.bulk.count', projectIds.length)
-
-      const tasks = projectIds.map((projectId) => {
-        if (data.action === 'archive') {
-          return () => this.archive(projectId)
-        }
-        if (data.action === 'lock' || data.action === 'unlock') {
-          return () => updateProjectLocked(this.prisma, projectId, data.action === 'lock')
-        }
-        if (data.action === 'replay') {
-          return () => this.replayHooks(projectId)
-        }
-        return async () => undefined
-      })
-
-      const results = await Promise.allSettled(tasks.map(t => t()))
-      const summary = results.reduce(
-        (acc, r) => {
-          if (r.status === 'fulfilled') acc.fulfilled += 1
-          else acc.rejected += 1
-          return acc
-        },
-        { fulfilled: 0, rejected: 0 },
-      )
-      span?.setAttributes({
-        'project.bulk.fulfilled': summary.fulfilled,
-        'project.bulk.rejected': summary.rejected,
-      })
-      this.logger.log(`project.bulkAction completed (action=${data.action}, projectCount=${projectIds.length}, fulfilled=${summary.fulfilled}, rejected=${summary.rejected})`)
-    } catch (error) {
-      this.logger.error(
-        `project.bulkAction failed (action=${data.action}, projectIds=${projectSelector === 'all' ? 'all' : `count=${projectSelector.length}`}): ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      )
-      throw error
-    }
+  private async listProjects(whereAnd: Prisma.ProjectWhereInput[]): Promise<ProjectDetails[]> {
+    return this.prisma.project.findMany({
+      where: { AND: whereAnd },
+      select: projectSelect,
+    })
   }
 
-  @StartActiveSpan()
-  async getSecrets(projectId: string): Promise<Record<string, Record<string, string>>> {
-    const span = trace.getActiveSpan()
-    span?.setAttribute('project.id', projectId)
-    this.logger.log(`project.getSecrets started (projectId=${projectId})`)
-    try {
-      const project = await getProjectSlug(this.prisma, projectId)
-      if (!project) throw new NotFoundException()
-      span?.setAttribute('project.slug', project.slug)
-      const projectPath = generateProjectPath(this.config.projectRootDir, project.slug)
-
-      const result: Record<string, Record<string, string>> = {}
-      const relativePaths = await this.vault.listProjectSecrets(project.slug)
-      span?.setAttribute('vault.secretFiles.count', relativePaths.length)
-      this.logger.debug(`project.getSecrets listed (projectId=${projectId}, slug=${project.slug}, secretFiles=${relativePaths.length})`)
-
-      for (const relativePath of relativePaths) {
-        const fullPath = `${projectPath}/${relativePath}`
-        const secret = await this.vaultClient.read<Record<string, any>>(fullPath).catch(() => null)
-        if (!secret?.data) continue
-
-        const [group, ...rest] = relativePath.split('/').filter(Boolean)
-        if (!group) continue
-        const prefix = rest.length ? `${rest.join('/')}.` : ''
-        const groupObj = (result[group] ??= {})
-        for (const [key, value] of Object.entries(secret.data)) {
-          groupObj[`${prefix}${key}`] = parseSecretValue(value)
-        }
-      }
-
-      const groupCount = Object.keys(result).length
-      const keyCount = Object.values(result).reduce((acc, group) => acc + Object.keys(group).length, 0)
-      span?.setAttributes({
-        'vault.secretGroups.count': groupCount,
-        'vault.secretKeys.count': keyCount,
-      })
-      this.logger.log(`project.getSecrets completed (projectId=${projectId}, slug=${project.slug}, groupCount=${groupCount}, keyCount=${keyCount})`)
-      return result
-    } catch (error) {
-      this.logger.error(
-        `project.getSecrets failed (projectId=${projectId}): ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      )
-      throw error
-    }
+  private async getProjectNotArchived(projectId: string): Promise<ProjectDetails | null> {
+    return this.prisma.project.findFirst({
+      where: { id: projectId, status: { not: 'archived' } },
+      select: projectSelect,
+    })
   }
 }

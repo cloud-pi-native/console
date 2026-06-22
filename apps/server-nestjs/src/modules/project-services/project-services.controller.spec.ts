@@ -1,6 +1,6 @@
 import type { DeepMockProxy } from 'vitest-mock-extended'
-import type { ProjectContext } from '../infrastructure/permission/project/project.guard.js'
 import type { UserContext } from '../infrastructure/auth/auth.service.js'
+import type { ProjectContext } from '../infrastructure/permission/project/project.guard.js'
 import type { ProjectServicesService } from './project-services.service.js'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'

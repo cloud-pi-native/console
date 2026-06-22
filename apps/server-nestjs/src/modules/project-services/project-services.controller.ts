@@ -1,14 +1,14 @@
 import type { PermissionTarget, PluginsUpdateBody } from '@cpn-console/shared'
-import type { ProjectContext } from '../infrastructure/permission/project/project.guard.js'
 import type { UserContext } from '../infrastructure/auth/auth.service.js'
+import type { ProjectContext } from '../infrastructure/permission/project/project.guard.js'
 import { AdminAuthorized, projectServiceContract } from '@cpn-console/shared'
 import { Body, Controller, ForbiddenException, Get, HttpCode, Inject, Post, Query, UseGuards } from '@nestjs/common'
 import { AuthUser } from '../infrastructure/auth/auth-user.decorator.js'
-import { RequireProjectAccess } from '../infrastructure/permission/project/project-access.decorator.js'
 import { RequireProjectLocked } from '../infrastructure/permission/project/project-locked.decorator.js'
+import { RequireProjectPermission } from '../infrastructure/permission/project/project-permission.decorator.js'
+import { RequireProjectStatus } from '../infrastructure/permission/project/project-status.decorator.js'
 import { Project } from '../infrastructure/permission/project/project.decorator.js'
 import { ProjectGuard } from '../infrastructure/permission/project/project.guard.js'
-import { RequireProjectStatus } from '../infrastructure/permission/project/project-status.decorator.js'
 import { UserGuard } from '../infrastructure/permission/user/user.guard.js'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { ProjectServicesService } from './project-services.service'
@@ -21,7 +21,7 @@ export class ProjectServicesController {
   ) {}
 
   @Get('/:projectId/services')
-  @RequireProjectAccess()
+  @RequireProjectPermission('Member')
   async getServices(
     @Query(new ZodValidationPipe(projectServiceContract.getServices.query)) query: { permissionTarget: PermissionTarget },
     @Project() project: ProjectContext,
@@ -36,7 +36,7 @@ export class ProjectServicesController {
 
   @Post('/:projectId/services')
   @HttpCode(204)
-  @RequireProjectAccess()
+  @RequireProjectPermission('Member')
   @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
   @RequireProjectLocked(false)
   async updateProjectServices(

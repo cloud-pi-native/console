@@ -1,6 +1,5 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { Prisma } from '@prisma/client'
-import type { Mocked } from 'vitest'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import type { UserContext } from '../infrastructure/auth/auth.service.js'
 import { faker } from '@faker-js/faker'
@@ -11,12 +10,10 @@ import {
 } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service.js'
 import { PrismaService } from '../infrastructure/database/prisma.service.js'
-import { VaultClientService } from '../vault/vault-client.service.js'
-import { VaultService } from '../vault/vault.service.js'
 import {
   makeCreateProjectBody,
   makeListProjectsQuery,
@@ -26,7 +23,6 @@ import {
   makeProjectWithDetails,
   makeProjectWithMembersResult,
   makeUser,
-  makeVaultSecret,
 } from './project-testing.utils.js'
 import { ProjectService } from './project.service.js'
 import { generateSlug } from './project.utils.js'
@@ -35,54 +31,26 @@ describe('projectService', () => {
   let module: TestingModule
   let service: ProjectService
   let prisma: DeepMockProxy<PrismaService>
-  let events: Mocked<EventEmitter2>
-  let vault: Mocked<VaultService>
-  let vaultClient: Mocked<VaultClientService>
+  let events: DeepMockProxy<EventEmitter2>
+  let config: DeepMockProxy<ConfigurationService>
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
+    events = mockDeep<EventEmitter2>()
+    config = mockDeep<ConfigurationService>()
+    config.appVersion = 'dev'
 
     module = await Test.createTestingModule({
       providers: [
         ProjectService,
-        {
-          provide: PrismaService,
-          useValue: prisma,
-        },
-        {
-          provide: EventEmitter2,
-          useValue: {
-            emitAsync: vi.fn().mockResolvedValue([]),
-          } satisfies Partial<EventEmitter2>,
-        },
-        {
-          provide: ConfigurationService,
-          useValue: {
-            appVersion: 'dev',
-            projectRootDir: '/vault',
-          } satisfies Partial<ConfigurationService>,
-        },
-        {
-          provide: VaultService,
-          useValue: {
-            listProjectSecrets: vi.fn(),
-          } satisfies Partial<VaultService>,
-        },
-        {
-          provide: VaultClientService,
-          useValue: {
-            read: vi.fn(),
-          } satisfies Partial<VaultClientService>,
-        },
+        { provide: PrismaService, useValue: prisma },
+        { provide: EventEmitter2, useValue: events },
+        { provide: ConfigurationService, useValue: config },
       ],
     }).compile()
 
     service = module.get(ProjectService)
     prisma = module.get(PrismaService)
-    events = module.get(EventEmitter2)
-    vault = module.get(VaultService)
-    vaultClient = module.get(VaultClientService)
-
     prisma.$transaction.mockImplementation(async (cb) => {
       const tx = {
         project: prisma.project,
@@ -511,90 +479,6 @@ describe('projectService', () => {
     })
   })
 
-  describe('replayHooks', () => {
-    it('emits project.upsert event', async () => {
-      const projectId = faker.string.uuid()
-      const pwd = makeProjectWithDetails({ id: projectId })
-      prisma.project.findFirst.mockResolvedValue(pwd)
-
-      await service.replayHooks(projectId)
-
-      expect(prisma.project.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ id: projectId }) }))
-      expect(events.emitAsync).toHaveBeenCalledWith('project.upsert', pwd)
-    })
-
-    it('throws NotFoundException when project does not exist', async () => {
-      prisma.project.findFirst.mockResolvedValue(null)
-
-      await expect(service.replayHooks(faker.string.uuid()))
-        .rejects.toThrow(NotFoundException)
-    })
-  })
-
-  describe('getSecrets', () => {
-    it('returns parsed secrets from vault', async () => {
-      const projectId = faker.string.uuid()
-      const slug = 'myproject'
-      prisma.project.findUnique.mockResolvedValue(makeProject({ slug }))
-      vault.listProjectSecrets.mockResolvedValue(['group1/secret1'])
-      vaultClient.read.mockResolvedValue(makeVaultSecret({ data: { key1: 'value1', key2: 42, key3: true, key4: null } }))
-
-      const result = await service.getSecrets(projectId)
-
-      expect(prisma.project.findUnique).toHaveBeenCalledWith({
-        where: { id: projectId },
-        select: { slug: true },
-      })
-      expect(vault.listProjectSecrets).toHaveBeenCalledWith(slug)
-      expect(result).toHaveProperty('group1')
-      expect(result.group1).toHaveProperty('secret1.key1', 'value1')
-      expect(result.group1).toHaveProperty('secret1.key2', '42')
-      expect(result.group1).toHaveProperty('secret1.key3', 'true')
-      expect(result.group1).toHaveProperty('secret1.key4', '')
-    })
-
-    it('handles nested secret paths', async () => {
-      const projectId = faker.string.uuid()
-      prisma.project.findUnique.mockResolvedValue(makeProject({ slug: 'myproj' }))
-      vault.listProjectSecrets.mockResolvedValue(['group1/sub/path'])
-      vaultClient.read.mockResolvedValue(makeVaultSecret({ data: { nested: 'value' } }))
-
-      const result = await service.getSecrets(projectId)
-
-      expect(result.group1).toHaveProperty('sub/path.nested', 'value')
-    })
-
-    it('throws NotFoundException when project does not exist', async () => {
-      prisma.project.findUnique.mockResolvedValue(null)
-
-      await expect(service.getSecrets(faker.string.uuid()))
-        .rejects.toThrow(NotFoundException)
-    })
-
-    it('returns empty object when no secrets exist', async () => {
-      const projectId = faker.string.uuid()
-      prisma.project.findUnique.mockResolvedValue(makeProject({ slug: 'myproj' }))
-      vault.listProjectSecrets.mockResolvedValue([])
-
-      const result = await service.getSecrets(projectId)
-
-      expect(result).toEqual({})
-    })
-
-    it('skips secrets that fail to read', async () => {
-      const projectId = faker.string.uuid()
-      prisma.project.findUnique.mockResolvedValue(makeProject({ slug: 'myproj' }))
-      vault.listProjectSecrets.mockResolvedValue(['group1/s1', 'group1/s2'])
-      vaultClient.read
-        .mockRejectedValueOnce(new Error('vault error'))
-        .mockResolvedValueOnce(makeVaultSecret({ data: { key: 'val' } }))
-
-      const result = await service.getSecrets(projectId)
-
-      expect(result.group1).toEqual({ 's2.key': 'val' })
-    })
-  })
-
   describe('getData', () => {
     it('returns CSV data array', async () => {
       prisma.project.findMany.mockResolvedValue([makeProjectWithDetails()])
@@ -603,104 +487,6 @@ describe('projectService', () => {
 
       expect(Array.isArray(result)).toBe(true)
       expect(result.length).toBe(1)
-    })
-  })
-
-  describe('bulkAction', () => {
-    it('processes specific project ids', async () => {
-      const projectIds = [faker.string.uuid(), faker.string.uuid()]
-      const data = { action: 'archive' as const, projectIds }
-
-      prisma.repository.deleteMany.mockResolvedValue({ count: 0 })
-      prisma.environment.deleteMany.mockResolvedValue({ count: 0 })
-      prisma.deployment.deleteMany.mockResolvedValue({ count: 0 })
-      prisma.project.findUnique.mockResolvedValue(makeProjectWithDetails())
-      prisma.project.update.mockResolvedValue(makeProject())
-
-      await service.bulkAction(data)
-
-      expect(prisma.project.findUnique).toHaveBeenCalledTimes(2)
-    })
-
-    it('resolves "all" to all non-archived project ids', async () => {
-      const project1Id = faker.string.uuid()
-      const project2Id = faker.string.uuid()
-
-      prisma.project.findMany.mockResolvedValue([makeProject({ id: project1Id }), makeProject({ id: project2Id })])
-      prisma.repository.deleteMany.mockResolvedValue({ count: 0 })
-      prisma.environment.deleteMany.mockResolvedValue({ count: 0 })
-      prisma.deployment.deleteMany.mockResolvedValue({ count: 0 })
-      prisma.project.findUnique.mockResolvedValue(makeProjectWithDetails())
-      prisma.project.update.mockResolvedValue(makeProject())
-
-      await service.bulkAction({ action: 'archive', projectIds: 'all' })
-
-      expect(prisma.project.findMany).toHaveBeenCalledWith({
-        select: { id: true },
-        where: { status: { not: 'archived' } },
-      })
-      expect(prisma.project.findUnique).toHaveBeenCalledTimes(2)
-    })
-
-    it('lock action updates locked to true via prisma', async () => {
-      const projectId = faker.string.uuid()
-
-      prisma.project.update.mockResolvedValue(makeProject({ id: projectId }))
-
-      await service.bulkAction(
-        { action: 'lock', projectIds: [projectId] },
-      )
-
-      expect(prisma.project.update).toHaveBeenCalledWith({
-        where: { id: projectId },
-        data: { locked: true },
-      })
-    })
-
-    it('unlock action updates locked to false via prisma', async () => {
-      const projectId = faker.string.uuid()
-
-      prisma.project.update.mockResolvedValue(makeProject({ id: projectId }))
-
-      await service.bulkAction(
-        { action: 'unlock', projectIds: [projectId] },
-
-      )
-
-      expect(prisma.project.update).toHaveBeenCalledWith({
-        where: { id: projectId },
-        data: { locked: false },
-      })
-    })
-
-    it('replay action triggers hooks', async () => {
-      const projectId = faker.string.uuid()
-      const pwd = makeProjectWithDetails({ id: projectId })
-      prisma.project.findFirst.mockResolvedValue(pwd)
-
-      await service.bulkAction(
-        { action: 'replay', projectIds: [projectId] },
-
-      )
-
-      expect(events.emitAsync).toHaveBeenCalledWith('project.upsert', pwd)
-    })
-
-    it('silently ignores errors in individual tasks', async () => {
-      const project1Id = faker.string.uuid()
-      const project2Id = faker.string.uuid()
-
-      prisma.project.findUnique
-        .mockRejectedValueOnce(new Error('fail'))
-        .mockResolvedValueOnce(makeProjectWithDetails({ id: project2Id }))
-      prisma.repository.deleteMany.mockResolvedValue({ count: 0 })
-      prisma.environment.deleteMany.mockResolvedValue({ count: 0 })
-      prisma.deployment.deleteMany.mockResolvedValue({ count: 0 })
-      prisma.project.update.mockResolvedValue(makeProject({ id: project2Id }))
-
-      await service.bulkAction(
-        { action: 'archive', projectIds: [project1Id, project2Id] },
-      )
     })
   })
 })

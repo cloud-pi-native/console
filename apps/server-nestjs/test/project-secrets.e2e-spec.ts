@@ -1,27 +1,26 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
-import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
-import { ProjectHooksService } from '../src/modules/project-hooks/project-hooks.service'
-import { ProjectModule } from '../src/modules/project/project.module'
+import { ProjectSecretsModule } from '../src/modules/project-secrets/project-secrets.module'
+import { ProjectSecretsService } from '../src/modules/project-secrets/project-secrets.service'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
+import { makeVaultSecret } from '../src/modules/vault/vault-testing.utils'
 import { VaultService } from '../src/modules/vault/vault.service'
 
-const canRunProjectHooksE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
+const canRunProjectSecretsE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
 
-const describeWithProjectHooks = describe.runIf(canRunProjectHooksE2E)
+const describeWithProjectSecrets = describe.runIf(canRunProjectSecretsE2E)
 
-describeWithProjectHooks('ProjectHooksService (e2e)', {}, () => {
+describeWithProjectSecrets('ProjectSecretsService (e2e)', {}, () => {
   let moduleRef: TestingModule
   let prisma: PrismaService
-  let service: ProjectHooksService
-  let eventEmitter: DeepMockProxy<EventEmitter2>
+  let service: ProjectSecretsService
   let vaultService: DeepMockProxy<VaultService>
   let vaultClient: DeepMockProxy<VaultClientService>
 
@@ -30,17 +29,13 @@ describeWithProjectHooks('ProjectHooksService (e2e)', {}, () => {
   let projectSlug: string
 
   beforeAll(async () => {
-    eventEmitter = mockDeep<EventEmitter2>()
-    eventEmitter.emitAsync.mockResolvedValue([])
     vaultService = mockDeep<VaultService>()
     vaultService.listProjectSecrets.mockResolvedValue([])
     vaultClient = mockDeep<VaultClientService>()
 
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigurationModule, InfrastructureModule, ProjectModule],
+      imports: [ConfigurationModule, InfrastructureModule, ProjectSecretsModule],
     })
-      .overrideProvider(EventEmitter2)
-      .useValue(eventEmitter)
       .overrideProvider(VaultService)
       .useValue(vaultService)
       .overrideProvider(VaultClientService)
@@ -50,7 +45,7 @@ describeWithProjectHooks('ProjectHooksService (e2e)', {}, () => {
     await moduleRef.init()
 
     prisma = moduleRef.get(PrismaService)
-    service = moduleRef.get(ProjectHooksService)
+    service = moduleRef.get(ProjectSecretsService)
 
     ownerId = faker.string.uuid()
     projectId = faker.string.uuid()
@@ -100,17 +95,21 @@ describeWithProjectHooks('ProjectHooksService (e2e)', {}, () => {
     vi.unstubAllEnvs()
   })
 
-  it('replays hooks through the event system', async () => {
-    await service.replayHooks(projectId)
-
-    expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
-      'project.upsert',
-      expect.objectContaining({ id: projectId, slug: projectSlug }),
-    )
+  it('returns an empty secret map when no secrets exist', async () => {
+    const secrets = await service.getSecrets(projectId)
+    expect(secrets).toEqual({})
+    expect(vaultService.listProjectSecrets).toHaveBeenCalledWith(projectSlug)
   })
 
-  it('rejects replayHooks when the project does not exist', async () => {
-    await expect(service.replayHooks(faker.string.uuid()))
-      .rejects.toThrow()
+  it('parses Vault values into grouped secrets', async () => {
+    vaultService.listProjectSecrets.mockResolvedValue(['group1/secret1'])
+    vaultClient.read.mockResolvedValue(makeVaultSecret({ data: { key1: 'value1', key2: 42 } }))
+
+    const secrets = await service.getSecrets(projectId)
+
+    expect(secrets.group1).toEqual({
+      'secret1.key1': 'value1',
+      'secret1.key2': '42',
+    })
   })
 })

@@ -11,8 +11,6 @@ import { PrismaService } from '../src/modules/infrastructure/database/prisma.ser
 import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
 import { makeCreateProjectBody } from '../src/modules/project/project-testing.utils'
 import { ProjectService } from '../src/modules/project/project.service'
-import { VaultClientService } from '../src/modules/vault/vault-client.service'
-import { VaultService } from '../src/modules/vault/vault.service'
 
 const canRunProjectE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
 
@@ -23,17 +21,12 @@ describeWithProject('ProjectService (e2e)', {}, () => {
   let prisma: PrismaService
   let service: ProjectService
   let eventEmitter: DeepMockProxy<EventEmitter2>
-  let vaultService: DeepMockProxy<VaultService>
-  let vaultClient: DeepMockProxy<VaultClientService>
 
   let ownerId: string
 
   beforeAll(async () => {
     eventEmitter = mockDeep<EventEmitter2>()
     eventEmitter.emitAsync.mockResolvedValue([])
-    vaultService = mockDeep<VaultService>()
-    vaultService.listProjectSecrets.mockResolvedValue([])
-    vaultClient = mockDeep<VaultClientService>()
 
     moduleRef = await Test.createTestingModule({
       imports: [ConfigurationModule, InfrastructureModule],
@@ -42,14 +35,6 @@ describeWithProject('ProjectService (e2e)', {}, () => {
         {
           provide: EventEmitter2,
           useValue: eventEmitter,
-        },
-        {
-          provide: VaultService,
-          useValue: vaultService,
-        },
-        {
-          provide: VaultClientService,
-          useValue: vaultClient,
         },
       ],
     }).compile()
@@ -77,7 +62,8 @@ describeWithProject('ProjectService (e2e)', {}, () => {
       await prisma.user.deleteMany({ where: { id: ownerId } }).catch(() => {})
     }
 
-    await moduleRef.close()
+    await moduleRef?.close()
+
     vi.restoreAllMocks()
     vi.unstubAllEnvs()
   })
@@ -100,10 +86,6 @@ describeWithProject('ProjectService (e2e)', {}, () => {
 
   it('rejects ProjectService.get when project does not exist', async () => {
     await expect(service.get(faker.string.uuid())).rejects.toThrow(NotFoundException)
-  })
-
-  it('rejects ProjectService.getSecrets when project does not exist', async () => {
-    await expect(service.getSecrets(faker.string.uuid())).rejects.toThrow(NotFoundException)
   })
 
   describe('with project', () => {
@@ -156,26 +138,6 @@ describeWithProject('ProjectService (e2e)', {}, () => {
       expect(updated.description).toBe('Updated description')
     })
 
-    it('ProjectService.replayHooks', async () => {
-      await service.replayHooks(projectId)
-      expect(eventEmitter.emitAsync).toHaveBeenCalledWith('project.upsert', expect.anything())
-    })
-
-    it('ProjectService.bulkAction lock/unlock', async () => {
-      await service.bulkAction({ action: 'lock', projectIds: [projectId] })
-      const locked = await prisma.project.findUniqueOrThrow({ where: { id: projectId }, select: { locked: true } })
-      expect(locked.locked).toBe(true)
-
-      await service.bulkAction({ action: 'unlock', projectIds: [projectId] })
-      const unlocked = await prisma.project.findUniqueOrThrow({ where: { id: projectId }, select: { locked: true } })
-      expect(unlocked.locked).toBe(false)
-    })
-
-    it('ProjectService.getSecrets', async () => {
-      const secrets = await service.getSecrets(projectId)
-      expect(secrets).toEqual({})
-    })
-
     it('ProjectService.archive', async () => {
       await service.archive(projectId)
       const archived = await prisma.project.findUniqueOrThrow({ where: { id: projectId }, select: { status: true, locked: true } })
@@ -184,7 +146,7 @@ describeWithProject('ProjectService (e2e)', {}, () => {
     })
 
     it('rejects ProjectService.update when project is locked', async () => {
-      await service.bulkAction({ action: 'lock', projectIds: [projectId] })
+      await prisma.project.update({ where: { id: projectId }, data: { locked: true } })
       await expect(
         service.update({ description: 'nope' }, { userId: ownerId, adminPermissions: 0n }, projectId),
       ).rejects.toThrow(ForbiddenException)

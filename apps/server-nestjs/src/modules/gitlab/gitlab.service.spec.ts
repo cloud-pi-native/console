@@ -1,9 +1,10 @@
-import type { Mocked } from 'vitest'
+import type { DeepMockProxy } from 'vitest-mock-extended'
 import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { AccessLevel } from '@gitbeaker/core'
 import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
@@ -13,69 +14,28 @@ import { TOPIC_PLUGIN_MANAGED } from './gitlab.constants'
 import { GitlabService } from './gitlab.service'
 
 function createGitlabControllerServiceTestingModule() {
+  const gitlab = mockDeep<GitlabClientService>()
+  const datastore = mockDeep<GitlabDatastoreService>()
+  const vault = mockDeep<VaultClientService>()
+  const config = mockDeep<ConfigurationService>()
+  config.projectRootDir = 'forge'
+
   return Test.createTestingModule({
     providers: [
       GitlabService,
-      {
-        provide: GitlabClientService,
-        useValue: {
-          getOrCreateProjectSubGroup: vi.fn(),
-          getGroupMembers: vi.fn(),
-          addGroupMember: vi.fn(),
-          editGroupMember: vi.fn(),
-          removeGroupMember: vi.fn(),
-          upsertUser: vi.fn(),
-          getRepos: vi.fn(),
-          getProjectToken: vi.fn(),
-          deleteGroup: vi.fn(),
-          commitMirror: vi.fn(),
-          getOrCreateMirrorPipelineTriggerToken: vi.fn(),
-          createProjectToken: vi.fn(),
-          createMirrorAccessToken: vi.fn(),
-          upsertProjectGroupRepo: vi.fn(),
-          upsertProjectMirrorRepo: vi.fn(),
-          getOrCreateProjectGroupInternalRepoUrl: vi.fn(),
-          deleteProjectGroupRepo: vi.fn(),
-          getOrCreateInfraGroupRepoPublicUrl: vi.fn(),
-        } satisfies Partial<GitlabClientService>,
-      },
-      {
-        provide: GitlabDatastoreService,
-        useValue: {
-          getAllProjects: vi.fn(),
-          getAdminPluginConfig: vi.fn(),
-          getAdminRolesByOidcGroups: vi.fn(),
-        } satisfies Partial<GitlabDatastoreService>,
-      },
-      {
-        provide: VaultClientService,
-        useValue: {
-          read: vi.fn(),
-          write: vi.fn(),
-          delete: vi.fn(),
-          readGitlabMirrorCreds: vi.fn(),
-          writeGitlabMirrorCreds: vi.fn(),
-          deleteGitlabMirrorCreds: vi.fn(),
-          readTechnReadOnlyCreds: vi.fn(),
-          writeTechReadOnlyCreds: vi.fn(),
-          writeMirrorTriggerToken: vi.fn(),
-        } satisfies Partial<VaultClientService>,
-      },
-      {
-        provide: ConfigurationService,
-        useValue: {
-          projectRootDir: 'forge',
-        },
-      },
+      { provide: GitlabClientService, useValue: gitlab },
+      { provide: GitlabDatastoreService, useValue: datastore },
+      { provide: VaultClientService, useValue: vault },
+      { provide: ConfigurationService, useValue: config },
     ],
   })
 }
 
 describe('gitlabService', () => {
   let service: GitlabService
-  let gitlab: Mocked<GitlabClientService>
-  let vault: Mocked<VaultClientService>
-  let gitlabDatastore: Mocked<GitlabDatastoreService>
+  let gitlab: DeepMockProxy<GitlabClientService>
+  let vault: DeepMockProxy<VaultClientService>
+  let gitlabDatastore: DeepMockProxy<GitlabDatastoreService>
 
   beforeEach(async () => {
     const moduleRef = await createGitlabControllerServiceTestingModule().compile()

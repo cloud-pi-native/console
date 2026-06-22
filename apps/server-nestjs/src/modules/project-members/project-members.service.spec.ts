@@ -1,12 +1,11 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { Prisma } from '@prisma/client'
-import type { Mocked } from 'vitest'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
 import { NotFoundException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { KeycloakClientService } from '../keycloak/keycloak-client.service.js'
@@ -22,37 +21,25 @@ describe('projectMembersService', () => {
   let module: TestingModule
   let service: ProjectMembersService
   let prisma: DeepMockProxy<PrismaService>
-  let events: Mocked<EventEmitter2>
-  let keycloak: Mocked<KeycloakClientService>
+  let events: DeepMockProxy<EventEmitter2>
+  let keycloak: DeepMockProxy<KeycloakClientService>
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
+    events = mockDeep<EventEmitter2>()
+    keycloak = mockDeep<KeycloakClientService>()
+    keycloak.getUserByEmail.mockResolvedValue(undefined)
 
     module = await Test.createTestingModule({
       providers: [
         ProjectMembersService,
-        {
-          provide: PrismaService,
-          useValue: prisma,
-        },
-        {
-          provide: EventEmitter2,
-          useValue: {
-            emitAsync: vi.fn().mockResolvedValue([]),
-          } satisfies Partial<EventEmitter2>,
-        },
-        {
-          provide: KeycloakClientService,
-          useValue: {
-            getUserByEmail: vi.fn().mockResolvedValue(undefined),
-          } satisfies Partial<KeycloakClientService>,
-        },
+        { provide: PrismaService, useValue: prisma },
+        { provide: EventEmitter2, useValue: events },
+        { provide: KeycloakClientService, useValue: keycloak },
       ],
     }).compile()
 
     service = module.get<ProjectMembersService>(ProjectMembersService)
-    events = module.get(EventEmitter2)
-    keycloak = module.get(KeycloakClientService)
   })
 
   describe('listMembers', () => {

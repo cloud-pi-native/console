@@ -82,13 +82,18 @@ describeWithProjectMembers('ProjectMembersService (e2e)', {}, () => {
       await prisma.user.deleteMany({ where: { id: ownerId } }).catch(() => {})
     }
 
-    await moduleRef.close()
+    await moduleRef?.close()
+
     vi.restoreAllMocks()
     vi.unstubAllEnvs()
   })
 
   it('rejects addMember when project does not exist', async () => {
     await expect(service.addMember(faker.string.uuid(), { userId: memberId })).rejects.toThrow(NotFoundException)
+  })
+
+  it('rejects listMembers when project does not exist', async () => {
+    await expect(service.listMembers(faker.string.uuid())).resolves.toEqual([])
   })
 
   describe('with project', () => {

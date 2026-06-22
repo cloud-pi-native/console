@@ -2,10 +2,9 @@ import type { ProjectV2 } from '@cpn-console/shared'
 import type { UserContext } from '../infrastructure/auth/auth.service'
 import type { ProjectContext } from '../infrastructure/permission/project/project.guard.js'
 import { projectContract } from '@cpn-console/shared'
-import { Body, Controller, Get, HttpCode, Inject, Logger, Post, Put, Query, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, HttpCode, Inject, Post, Put, Query, UseGuards } from '@nestjs/common'
 import { json2csv } from 'json-2-csv'
 import { AuthUser } from '../infrastructure/auth/auth-user.decorator.js'
-import { RequireProjectLocked } from '../infrastructure/permission/project/project-locked.decorator.js'
 import { RequireProjectPermission } from '../infrastructure/permission/project/project-permission.decorator.js'
 import { RequireProjectStatus } from '../infrastructure/permission/project/project-status.decorator.js'
 import { Project } from '../infrastructure/permission/project/project.decorator.js'
@@ -18,8 +17,6 @@ import { generateProjectV2 } from './project.utils'
 
 @Controller('api/v1/projects')
 export class ProjectController {
-  private readonly logger = new Logger(ProjectController.name)
-
   constructor(
     @Inject(ProjectService) private readonly projectService: ProjectService,
   ) {}
@@ -51,18 +48,6 @@ export class ProjectController {
     return generateProjectV2(await this.projectService.create(body, user.userId))
   }
 
-  @Post('-bulk')
-  @HttpCode(202)
-  @UseGuards(UserGuard)
-  @RequireAdminPermission('Manage')
-  async bulkAction(
-    @Body(new ZodValidationPipe(projectContract.bulkActionProject.body)) body: typeof projectContract.bulkActionProject.body._type,
-  ): Promise<void> {
-    this.logger.log(`project.bulkAction requested (action=${body.action}, target=${body.projectIds === 'all' ? 'all' : `count=${body.projectIds.length}`})`)
-    await this.projectService.bulkAction(body)
-    this.logger.log(`project.bulkAction accepted (action=${body.action})`)
-  }
-
   @Get('/:projectId')
   @UseGuards(UserGuard, ProjectGuard)
   @RequireAdminPermission('Manage')
@@ -85,17 +70,5 @@ export class ProjectController {
     @AuthUser() user: UserContext,
   ): Promise<ProjectV2> {
     return generateProjectV2(await this.projectService.update(data, user, project.id))
-  }
-
-  @Get('/:projectId/secrets')
-  @UseGuards(UserGuard, ProjectGuard)
-  @RequireAdminPermission('Manage')
-  @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
-  @RequireProjectLocked(false)
-  @RequireProjectPermission('SeeSecrets')
-  async getSecrets(
-    @Project() project: ProjectContext,
-  ): Promise<Record<string, Record<string, string>>> {
-    return this.projectService.getSecrets(project.id)
   }
 }

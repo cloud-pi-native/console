@@ -114,6 +114,8 @@ export const AdminAuthorized = {
 } as const
 
 export const ProjectAuthorized = {
+  Member: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
+    || !!(toBigInt(perms.projectPermissions) & PROJECT_PERMS.GUEST),
   Manage: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
     || !!(toBigInt(perms.projectPermissions) & PROJECT_PERMS.MANAGE),
 

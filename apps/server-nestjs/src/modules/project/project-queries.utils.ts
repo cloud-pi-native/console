@@ -271,13 +271,6 @@ export function listProjectIdsNotArchived(db: Prisma.TransactionClient) {
   })
 }
 
-export function updateProjectLocked(db: Prisma.TransactionClient, projectId: string, locked: boolean) {
-  return db.project.update({
-    where: { id: projectId },
-    data: { locked },
-  })
-}
-
 export function listProjectsForDataExport(db: Prisma.TransactionClient) {
   return db.project.findMany({
     select: projectForDataSelect,

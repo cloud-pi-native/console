@@ -8,22 +8,18 @@ import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
-import { ProjectHooksService } from '../src/modules/project-hooks/project-hooks.service'
-import { ProjectModule } from '../src/modules/project/project.module'
-import { VaultClientService } from '../src/modules/vault/vault-client.service'
-import { VaultService } from '../src/modules/vault/vault.service'
+import { ProjectBulkModule } from '../src/modules/project-bulk/project-bulk.module'
+import { ProjectBulkService } from '../src/modules/project-bulk/project-bulk.service'
 
-const canRunProjectHooksE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
+const canRunProjectBulkE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
 
-const describeWithProjectHooks = describe.runIf(canRunProjectHooksE2E)
+const describeWithProjectBulk = describe.runIf(canRunProjectBulkE2E)
 
-describeWithProjectHooks('ProjectHooksService (e2e)', {}, () => {
+describeWithProjectBulk('ProjectBulkService (e2e)', {}, () => {
   let moduleRef: TestingModule
   let prisma: PrismaService
-  let service: ProjectHooksService
+  let service: ProjectBulkService
   let eventEmitter: DeepMockProxy<EventEmitter2>
-  let vaultService: DeepMockProxy<VaultService>
-  let vaultClient: DeepMockProxy<VaultClientService>
 
   let ownerId: string
   let projectId: string
@@ -32,25 +28,18 @@ describeWithProjectHooks('ProjectHooksService (e2e)', {}, () => {
   beforeAll(async () => {
     eventEmitter = mockDeep<EventEmitter2>()
     eventEmitter.emitAsync.mockResolvedValue([])
-    vaultService = mockDeep<VaultService>()
-    vaultService.listProjectSecrets.mockResolvedValue([])
-    vaultClient = mockDeep<VaultClientService>()
 
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigurationModule, InfrastructureModule, ProjectModule],
+      imports: [ConfigurationModule, InfrastructureModule, ProjectBulkModule],
     })
       .overrideProvider(EventEmitter2)
       .useValue(eventEmitter)
-      .overrideProvider(VaultService)
-      .useValue(vaultService)
-      .overrideProvider(VaultClientService)
-      .useValue(vaultClient)
       .compile()
 
     await moduleRef.init()
 
     prisma = moduleRef.get(PrismaService)
-    service = moduleRef.get(ProjectHooksService)
+    service = moduleRef.get(ProjectBulkService)
 
     ownerId = faker.string.uuid()
     projectId = faker.string.uuid()
@@ -100,17 +89,21 @@ describeWithProjectHooks('ProjectHooksService (e2e)', {}, () => {
     vi.unstubAllEnvs()
   })
 
-  it('replays hooks through the event system', async () => {
-    await service.replayHooks(projectId)
+  it('locks and unlocks projects', async () => {
+    await service.bulkAction({ action: 'lock', projectIds: [projectId] })
+    const locked = await prisma.project.findUniqueOrThrow({ where: { id: projectId }, select: { locked: true } })
+    expect(locked.locked).toBe(true)
 
+    await service.bulkAction({ action: 'unlock', projectIds: [projectId] })
+    const unlocked = await prisma.project.findUniqueOrThrow({ where: { id: projectId }, select: { locked: true } })
+    expect(unlocked.locked).toBe(false)
+  })
+
+  it('replays hooks for projects', async () => {
+    await service.bulkAction({ action: 'replay', projectIds: [projectId] })
     expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
       'project.upsert',
       expect.objectContaining({ id: projectId, slug: projectSlug }),
     )
-  })
-
-  it('rejects replayHooks when the project does not exist', async () => {
-    await expect(service.replayHooks(faker.string.uuid()))
-      .rejects.toThrow()
   })
 })
