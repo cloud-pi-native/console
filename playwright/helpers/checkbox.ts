@@ -1,21 +1,20 @@
-import type { Page } from '@playwright/test'
+import type { Locator } from '@playwright/test'
 import { expect } from '@playwright/test'
 
-async function setCheckboxValue(page: Page, name: string, checked: boolean) {
-  const input = page.getByTestId(`input-checkbox-${name}`)
-  await expect(input).toBeVisible()
-  await input.evaluate((el: HTMLInputElement, nextChecked: boolean) => {
+async function setCheckboxValue(locator: Locator, checked: boolean) {
+  await expect(locator).toBeVisible()
+  await locator.evaluate((el: HTMLInputElement, nextChecked: boolean) => {
     el.checked = nextChecked
     el.dispatchEvent(new Event('input', { bubbles: true }))
     el.dispatchEvent(new Event('change', { bubbles: true }))
   }, checked)
-  await expect(input).toBeChecked({ checked })
+  await expect(locator).toBeChecked({ checked })
 }
 
-export async function setCheckbox({ page, name }: { page: Page, name: string }) {
-  await setCheckboxValue(page, name, true)
+export async function setCheckbox(locator: Locator) {
+  await setCheckboxValue(locator, true)
 }
 
-export async function unsetCheckbox({ page, name }: { page: Page, name: string }) {
-  await setCheckboxValue(page, name, false)
+export async function unsetCheckbox(locator: Locator) {
+  await setCheckboxValue(locator, false)
 }

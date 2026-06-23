@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
+import { setCheckbox, unsetCheckbox } from 'helpers/checkbox'
 import { clientURL, cnolletUser, signInCloudPiNative, testUser } from '../config/console'
 import { createEnvironment } from '../helpers/environment'
 import { createProject, deleteProject } from '../helpers/project'
@@ -39,7 +40,7 @@ async function assignPerms({
     if (await label.count()) {
       await label.click()
     } else {
-      await input.click({ force: true })
+      await setCheckbox(input)
     }
 
     try {
@@ -93,7 +94,7 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await page.getByTestId('saveBtn').click()
 
     await page.getByRole('tab', { name: 'Membres' }).click()
-    await page.getByTestId(`input-checkbox-${cnolletUser.id}-cbx`).check({ force: true })
+    await setCheckbox(page.getByTestId(`input-checkbox-${cnolletUser.id}-cbx`))
     await page.close()
   })
 
@@ -144,15 +145,16 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     const membersTab = page.getByRole('tab', { name: 'Membres' })
     await expect(membersTab).toBeVisible()
     await membersTab.click()
+
     const memberCheckbox = page.getByTestId(`input-checkbox-${cnolletUser.id}-cbx`)
     await expect(memberCheckbox).toBeVisible()
-    const wasChecked = await memberCheckbox.isChecked()
-    await memberCheckbox.setChecked(!wasChecked, { force: true })
-    await expect(memberCheckbox).toBeChecked({ checked: !wasChecked })
+
+    await setCheckbox(memberCheckbox)
+    await expect(memberCheckbox).toBeChecked()
     await expect(page.getByTestId('snackbar')).toContainText('Rôle mis à jour')
 
-    await memberCheckbox.setChecked(wasChecked, { force: true })
-    await expect(memberCheckbox).toBeChecked({ checked: wasChecked })
+    await unsetCheckbox(memberCheckbox)
+    await expect(memberCheckbox).not.toBeChecked()
     await expect(page.getByTestId('snackbar')).toContainText('Rôle mis à jour')
   })
 
