@@ -106,8 +106,6 @@ services:
       dockerfile: apps/nginx-strangler/Dockerfile
     image: dso-console/nginx-strangler:local
     container_name: dso-console_nginx-strangler
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     ports:
       - 4000:8080
     environment:
