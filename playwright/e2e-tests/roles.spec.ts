@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
 import { clientURL, signInCloudPiNative, tcolinUser } from 'config/console'
+import { setCheckbox } from 'helpers/checkbox'
 
 test.describe('Administration Roles', () => {
   test(
@@ -101,7 +102,7 @@ test.describe('Administration Roles', () => {
     await expect(page.getByTestId('saveBtn')).toBeDisabled()
     await expect(page.getByTestId('roleNameInput')).toHaveValue('Nouveau rôle')
     await page.getByTestId('roleNameInput').fill(newRole.name)
-    await page.locator('input[name=MANAGE]').check({ force: true })
+    await setCheckbox(page.locator('input[name=MANAGE]'))
     await page.getByTestId('saveBtn').click()
 
     // Assert
@@ -138,7 +139,7 @@ test.describe('Administration Roles', () => {
     await expect(page.getByTestId('saveBtn')).toBeDisabled()
     await expect(page.getByTestId('roleNameInput')).toHaveValue('Nouveau rôle')
     await page.getByTestId('roleNameInput').fill(newRole.name)
-    await page.locator('input[name=MANAGE]').check({ force: true })
+    await setCheckbox(page.locator('input[name=MANAGE]'))
     await page.getByTestId('saveBtn').click()
     await expect(page.getByTestId('role-list')).toContainText(newRole.name)
     // Add user to role
@@ -214,7 +215,7 @@ test.describe('Administration Roles', () => {
     await expect(page.getByTestId('saveBtn')).toBeDisabled()
     await expect(page.getByTestId('roleNameInput')).toHaveValue('Nouveau rôle')
     await page.getByTestId('roleNameInput').fill(newRole.name)
-    await page.locator('input[name=MANAGE]').check({ force: true })
+    await setCheckbox(page.locator('input[name=MANAGE]'))
     await page.getByTestId('saveBtn').click()
     await expect(page.getByTestId('role-list')).toContainText(newRole.name)
     // Delete role

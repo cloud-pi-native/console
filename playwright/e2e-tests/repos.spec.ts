@@ -50,17 +50,16 @@ test.describe('Repositories', () => {
         'Ajouter un dépôt au projet',
       )
       await expect(page.getByTestId('addRepoBtn')).toBeDisabled()
-      await page.getByTestId('standaloneRepoSwitch').locator('input').check({
-        force: true,
-      })
+      await setCheckbox(
+        page.getByTestId('standaloneRepoSwitch').locator('input'),
+      )
       await page
         .getByTestId('internalRepoNameInput')
         .fill(repo.internalRepoName)
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
-      await page
-        .getByTestId('standaloneRepoSwitch')
-        .locator('input')
-        .uncheck({ force: true })
+      await unsetCheckbox(
+        page.getByTestId('standaloneRepoSwitch').locator('input'),
+      )
       await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
       await page.getByTestId('internalRepoNameInput').fill('$%_>')
@@ -113,7 +112,7 @@ test.describe('Repositories', () => {
           .locator('//following-sibling::*[1]'),
       ).not.toBeVisible()
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
-      await setCheckbox({ page, name: 'privateRepoCbx' })
+      await setCheckbox(page.getByTestId('input-checkbox-privateRepoCbx'))
       await expect(page.getByTestId('addRepoBtn')).toBeDisabled()
       await page
         .getByTestId('externalUserNameInput')
@@ -125,9 +124,9 @@ test.describe('Repositories', () => {
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
       await page.getByTestId('externalTokenInput').clear()
       await expect(page.getByTestId('addRepoBtn')).toBeDisabled()
-      await unsetCheckbox({ page, name: 'privateRepoCbx' })
+      await unsetCheckbox(page.getByTestId('input-checkbox-privateRepoCbx'))
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
-      await setCheckbox({ page, name: 'infraRepoCbx' })
+      await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
       await expect(page.getByTestId('addRepoBtn')).toBeEnabled()
     },
   )
@@ -163,10 +162,9 @@ test.describe('Repositories', () => {
       await page
         .getByTestId('internalRepoNameInput')
         .fill(repo.internalRepoName)
-      await page
-        .getByTestId('standaloneRepoSwitch')
-        .locator('input')
-        .check({ force: true })
+      await setCheckbox(
+        page.getByTestId('standaloneRepoSwitch').locator('input'),
+      )
       await page.getByTestId('addRepoBtn').click()
       await page.getByTestId(`repoTr-${repo.internalRepoName}`).click()
       await expect(page.locator('h2')).not.toContainText(
@@ -254,9 +252,7 @@ test.describe('Repositories', () => {
         .getByTestId('internalRepoNameInput')
         .fill(repo.internalRepoName)
       await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await page
-        .getByTestId('input-checkbox-privateRepoCbx')
-        .check({ force: true })
+      await setCheckbox(page.getByTestId('input-checkbox-privateRepoCbx'))
       await page.getByTestId('externalTokenInput').fill(repo.externalToken)
       await page.getByTestId('addRepoBtn').click()
       await expect(
@@ -301,7 +297,7 @@ test.describe('Repositories', () => {
         .getByTestId('internalRepoNameInput')
         .fill(repo.internalRepoName)
       await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await setCheckbox({ page, name: 'infraRepoCbx' })
+      await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
       await page.getByTestId('addRepoBtn').click()
       await expect(
         page.getByTestId(`repoTr-${repo.internalRepoName}`),
@@ -345,12 +341,12 @@ test.describe('Repositories', () => {
         .getByTestId('internalRepoNameInput')
         .fill(repo.internalRepoName)
       await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await setCheckbox({ page, name: 'privateRepoCbx' })
+      await setCheckbox(page.getByTestId('input-checkbox-privateRepoCbx'))
       await page
         .getByTestId('externalUserNameInput')
         .fill(repo.externalUserName)
       await page.getByTestId('externalTokenInput').fill(repo.externalToken)
-      await setCheckbox({ page, name: 'infraRepoCbx' })
+      await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
       await page.getByTestId('addRepoBtn').click()
       await expect(
         page.getByTestId(`repoTr-${repo.internalRepoName}`),
@@ -387,9 +383,7 @@ test.describe('Repositories', () => {
     )
     await page.getByTestId('internalRepoNameInput').fill(repo.internalRepoName)
     await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-    await page
-      .getByTestId('input-checkbox-infraRepoCbx')
-      .check({ force: true })
+    await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
     await page.getByTestId('addRepoBtn').click()
     await expect(
       page.getByTestId(`repoTr-${repo.internalRepoName}`),
@@ -401,9 +395,7 @@ test.describe('Repositories', () => {
     await page
       .getByTestId('externalRepoUrlInput')
       .fill('https://github.com/externalUser04/new-repo.git')
-    await page
-      .getByTestId('input-checkbox-privateRepoCbx')
-      .check({ force: true })
+    await setCheckbox(page.getByTestId('input-checkbox-privateRepoCbx'))
     await page.getByTestId('externalUserNameInput').fill('newUser')
     await page.getByTestId('externalTokenInput').fill('newToken')
     await expect(page.getByTestId('input-checkbox-infraRepoCbx')).toBeEnabled()
@@ -452,9 +444,7 @@ test.describe('Repositories', () => {
     )
     await page.getByTestId('internalRepoNameInput').fill(repo.internalRepoName)
     await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-    await page
-      .getByTestId('input-checkbox-infraRepoCbx')
-      .check({ force: true })
+    await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
     await page.getByTestId('addRepoBtn').click()
     await expect(
       page.getByTestId(`repoTr-${repo.internalRepoName}`),
@@ -521,9 +511,7 @@ test.describe('Repositories', () => {
     )
     await page.getByTestId('internalRepoNameInput').fill(repo.internalRepoName)
     await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-    await page
-      .getByTestId('input-checkbox-infraRepoCbx')
-      .check({ force: true })
+    await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
     await page.getByTestId('addRepoBtn').click()
     await expect(
       page.getByTestId(`repoTr-${repo.internalRepoName}`),
@@ -553,7 +541,11 @@ test.describe('Repositories', () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { id: projectId, name: projectName, slug: projectSlug } = await createProject({
+      const {
+        id: projectId,
+        name: projectName,
+        slug: projectSlug,
+      } = await createProject({
         page,
       })
       const repo = {
@@ -580,7 +572,7 @@ test.describe('Repositories', () => {
         .getByTestId('internalRepoNameInput')
         .fill(repo.internalRepoName)
       await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await setCheckbox({ page, name: 'infraRepoCbx' })
+      await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
       await page.getByTestId('addRepoBtn').click()
       await expect(
         page.getByTestId(`repoTr-${repo.internalRepoName}`),
@@ -616,7 +608,11 @@ test.describe('Repositories', () => {
           // Only admin users can lock projects
           tcolinUser,
       })
-      const { id: projectId, name: projectName, slug: projectSlug } = await createProject({
+      const {
+        id: projectId,
+        name: projectName,
+        slug: projectSlug,
+      } = await createProject({
         page,
       })
       const repo = {
@@ -643,7 +639,7 @@ test.describe('Repositories', () => {
         .getByTestId('internalRepoNameInput')
         .fill(repo.internalRepoName)
       await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await setCheckbox({ page, name: 'infraRepoCbx' })
+      await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
       await page.getByTestId('addRepoBtn').click()
       await expect(
         page.getByTestId(`repoTr-${repo.internalRepoName}`),

@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
+import { setCheckbox, unsetCheckbox } from 'helpers/checkbox'
 import { clientURL, signInCloudPiNative, tcolinUser } from '../config/console'
 
 interface ApiUser {
@@ -46,8 +47,7 @@ test.describe('Administration users', { tag: '@e2e' }, () => {
       await expect(row).toContainText('202')
     }
 
-    const displayIdCheckbox = page.getByTestId('input-checkbox-tableAdministrationUsersDisplayId')
-    await displayIdCheckbox.check({ force: true })
+    await setCheckbox(page.getByTestId('input-checkbox-tableAdministrationUsersDisplayId'))
     for (const user of users) {
       await expect(page.getByTestId(`user-${user.id}`)).toContainText(user.id)
     }
@@ -55,10 +55,9 @@ test.describe('Administration users', { tag: '@e2e' }, () => {
     const botUser = users.find(u => u.email.includes('anon@user')) ?? users.find(u => u.type && u.type !== 'human')
     if (botUser) {
       await expect(page.getByTestId(`user-${botUser.id}`)).toBeVisible()
-      const hideBotsCheckbox = page.getByTestId('input-checkbox-tableAdministrationUsersHideBots')
-      await hideBotsCheckbox.check({ force: true })
+      await setCheckbox(page.getByTestId('input-checkbox-tableAdministrationUsersHideBots'))
       await expect(page.getByTestId(`user-${botUser.id}`)).toHaveCount(0)
-      await hideBotsCheckbox.uncheck({ force: true })
+      await unsetCheckbox(page.getByTestId('input-checkbox-tableAdministrationUsersHideBots'))
     }
 
     const rows = page.getByTestId('tableAdministrationUsers').locator('tbody tr')
