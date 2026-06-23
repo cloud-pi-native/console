@@ -327,7 +327,7 @@ test.describe('Environments page', { tag: '@e2e' }, () => {
     await expect(page.getByTestId('noAutosyncAlert')).not.toBeVisible()
 
     // Act - Uncheck auto-sync to trigger warning message
-    await unsetCheckbox({ page, name: 'autosyncCbx' })
+    await unsetCheckbox(page.getByTestId('input-checkbox-autosyncCbx'))
     await expect(page.getByTestId('noAutosyncAlert')).toBeVisible()
     await expect(page.getByTestId('noAutosyncAlert'))
       .toHaveText('La synchronisation automatique est désactivée. Les déploiements devront être synchronisés manuellement.')
