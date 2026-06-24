@@ -1,9 +1,10 @@
-import type { Mocked } from 'vitest'
+import type { DeepMockProxy } from 'vitest-mock-extended'
 import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { AccessLevel } from '@gitbeaker/core'
 import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
@@ -12,77 +13,29 @@ import { makeAccessTokenExposedSchema, makeExpandedUserSchema, makeGroupSchema, 
 import { TOPIC_PLUGIN_MANAGED } from './gitlab.constants'
 import { GitlabService } from './gitlab.service'
 
-function createGitlabControllerServiceTestingModule() {
-  return Test.createTestingModule({
-    providers: [
-      GitlabService,
-      {
-        provide: GitlabClientService,
-        useValue: {
-          getOrCreateProjectSubGroup: vi.fn(),
-          getGroupMembers: vi.fn(),
-          addGroupMember: vi.fn(),
-          editGroupMember: vi.fn(),
-          removeGroupMember: vi.fn(),
-          upsertUser: vi.fn(),
-          getRepos: vi.fn(),
-          getProjectToken: vi.fn(),
-          deleteGroup: vi.fn(),
-          commitMirror: vi.fn(),
-          getOrCreateMirrorPipelineTriggerToken: vi.fn(),
-          createProjectToken: vi.fn(),
-          createMirrorAccessToken: vi.fn(),
-          upsertProjectGroupRepo: vi.fn(),
-          upsertProjectMirrorRepo: vi.fn(),
-          getOrCreateProjectGroupInternalRepoUrl: vi.fn(),
-          deleteProjectGroupRepo: vi.fn(),
-          getOrCreateInfraGroupRepoPublicUrl: vi.fn(),
-        } satisfies Partial<GitlabClientService>,
-      },
-      {
-        provide: GitlabDatastoreService,
-        useValue: {
-          getAllProjects: vi.fn(),
-          getAdminPluginConfig: vi.fn(),
-          getAdminRolesByOidcGroups: vi.fn(),
-        } satisfies Partial<GitlabDatastoreService>,
-      },
-      {
-        provide: VaultClientService,
-        useValue: {
-          read: vi.fn(),
-          write: vi.fn(),
-          delete: vi.fn(),
-          readGitlabMirrorCreds: vi.fn(),
-          writeGitlabMirrorCreds: vi.fn(),
-          deleteGitlabMirrorCreds: vi.fn(),
-          readTechnReadOnlyCreds: vi.fn(),
-          writeTechReadOnlyCreds: vi.fn(),
-          writeMirrorTriggerToken: vi.fn(),
-        } satisfies Partial<VaultClientService>,
-      },
-      {
-        provide: ConfigurationService,
-        useValue: {
-          projectRootDir: 'forge',
-        },
-      },
-    ],
-  })
-}
-
 describe('gitlabService', () => {
   let service: GitlabService
-  let gitlab: Mocked<GitlabClientService>
-  let vault: Mocked<VaultClientService>
-  let gitlabDatastore: Mocked<GitlabDatastoreService>
+  let gitlab: DeepMockProxy<GitlabClientService>
+  let vault: DeepMockProxy<VaultClientService>
+  let datastore: DeepMockProxy<GitlabDatastoreService>
 
   beforeEach(async () => {
-    const moduleRef = await createGitlabControllerServiceTestingModule().compile()
+    gitlab = mockDeep<GitlabClientService>()
+    datastore = mockDeep<GitlabDatastoreService>()
+    vault = mockDeep<VaultClientService>()
+    const config = mockDeep<ConfigurationService>({ projectRootDir: 'forge' })
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GitlabService,
+        { provide: GitlabClientService, useValue: gitlab },
+        { provide: GitlabDatastoreService, useValue: datastore },
+        { provide: VaultClientService, useValue: vault },
+        { provide: ConfigurationService, useValue: config },
+      ],
+    }).compile()
+
     service = moduleRef.get(GitlabService)
-    gitlab = moduleRef.get(GitlabClientService)
-    vault = moduleRef.get(VaultClientService)
-    gitlabDatastore = moduleRef.get(GitlabDatastoreService)
 
     vault.writeGitlabMirrorCreds.mockResolvedValue(undefined)
     vault.deleteGitlabMirrorCreds.mockResolvedValue(undefined)
@@ -90,8 +43,8 @@ describe('gitlabService', () => {
     vault.writeMirrorTriggerToken.mockResolvedValue(undefined)
     vault.readTechnReadOnlyCreds.mockResolvedValue(null)
     vault.readGitlabMirrorCreds.mockResolvedValue(null)
-    gitlabDatastore.getAdminPluginConfig.mockResolvedValue(null)
-    gitlabDatastore.getAdminRolesByOidcGroups.mockResolvedValue([])
+    datastore.getAdminPluginConfig.mockResolvedValue(null)
+    datastore.getAdminRolesByOidcGroups.mockResolvedValue([])
   })
 
   it('should be defined', () => {
@@ -358,12 +311,12 @@ describe('gitlabService', () => {
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
 
-      gitlabDatastore.getAdminPluginConfig.mockImplementation(async (_pluginName: string, key: string) => {
+      datastore.getAdminPluginConfig.mockImplementation(async (_pluginName: string, key: string) => {
         if (key === 'adminGroupPath') return '/console/admin'
         if (key === 'auditorGroupPath') return '/console/readonly'
         return null
       })
-      gitlabDatastore.getAdminRolesByOidcGroups.mockResolvedValue([
+      datastore.getAdminRolesByOidcGroups.mockResolvedValue([
         { id: 'admin-role-id', oidcGroup: '/console/admin' },
         { id: 'auditor-role-id', oidcGroup: '/console/readonly' },
       ])
@@ -450,7 +403,7 @@ describe('gitlabService', () => {
   describe('handleCron', () => {
     it('should reconcile all projects', async () => {
       const projects = [makeProjectWithDetails({ id: 'p1', slug: 'project-1' })]
-      gitlabDatastore.getAllProjects.mockResolvedValue(projects)
+      datastore.getAllProjects.mockResolvedValue(projects)
 
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
       gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
@@ -461,7 +414,7 @@ describe('gitlabService', () => {
 
       await service.handleCron()
 
-      expect(gitlabDatastore.getAllProjects).toHaveBeenCalled()
+      expect(datastore.getAllProjects).toHaveBeenCalled()
       expect(gitlab.getOrCreateProjectSubGroup).toHaveBeenCalledWith('project-1')
     })
   })

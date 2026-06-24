@@ -7,11 +7,12 @@ import { NexusClientService } from './nexus-client.service'
 import { NexusDatastoreService } from './nexus-datastore.service'
 import { NexusHealthService } from './nexus-health.service'
 import { NexusHttpClientService } from './nexus-http-client.service'
+import { NexusPluginService } from './nexus-plugin.service'
 import { NexusService } from './nexus.service'
 
 @Module({
   imports: [ConfigurationModule, InfrastructureModule, VaultModule],
-  providers: [HealthIndicatorService, NexusHealthService, NexusService, NexusDatastoreService, NexusHttpClientService, NexusClientService],
-  exports: [NexusClientService, NexusHealthService],
+  providers: [HealthIndicatorService, NexusHealthService, NexusPluginService, NexusService, NexusDatastoreService, NexusHttpClientService, NexusClientService],
+  exports: [NexusClientService, NexusHealthService, NexusPluginService, NexusService],
 })
 export class NexusModule {}

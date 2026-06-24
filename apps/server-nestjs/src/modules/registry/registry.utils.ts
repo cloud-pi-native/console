@@ -1,6 +1,10 @@
 import type { ProjectWithDetails } from './registry-datastore.service'
 import { removeTrailingSlash } from '@cpn-console/shared'
 
+export function createProjectSlugCacheKey(projectId: string) {
+  return `registry:project-slug:${projectId}`
+}
+
 const protocolPrefixRegex = /^https?:\/\//u
 const parseBytesRegex = /^(\d+(?:\.\d+)?)(?:\s*(kb|mb|gb|tb|[kmgtb]))?$/u
 

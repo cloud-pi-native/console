@@ -133,7 +133,7 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
       await gitlabClient.Users.remove(ownerUser.id).catch(() => {})
     }
 
-    await moduleRef.close()
+    await moduleRef?.close()
 
     vi.restoreAllMocks()
     vi.unstubAllEnvs()

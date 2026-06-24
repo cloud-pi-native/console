@@ -4,7 +4,6 @@ import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } fro
 import { getPermsByUserRoles, isExternalRoleType, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
-import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
