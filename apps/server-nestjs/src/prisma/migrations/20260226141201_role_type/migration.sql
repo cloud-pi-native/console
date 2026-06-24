@@ -1,0 +1,25 @@
+-- Alter existing column to change the default value from 'custom' to 'managed' for AdminRole type
+ALTER TABLE "AdminRole" ALTER COLUMN "type" SET DEFAULT 'managed';
+
+-- Alter existing column to change the default value from 'custom' to 'managed' for ProjectRole type
+ALTER TABLE "ProjectRole" ALTER COLUMN "type" SET DEFAULT 'managed';
+
+-- Migrate system roles to managed roles
+UPDATE "AdminRole"
+SET "type" = 'managed'
+WHERE "type" = 'system';
+
+-- Migrate system roles to managed roles
+UPDATE "ProjectRole"
+SET "type" = 'managed'
+WHERE "type" = 'system';
+
+-- Migrate custom roles to managed roles
+UPDATE "ProjectRole"
+SET "type" = 'managed'
+WHERE "type" = 'custom';
+
+-- Update existing Admin role to be an externally managed role
+UPDATE "AdminRole"
+SET "type" = 'external'
+WHERE "id" = '76229c96-4716-45bc-99da-00498ec9018c'::uuid;
