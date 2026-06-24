@@ -7,6 +7,7 @@ import { InfrastructureModule } from '../infrastructure/infrastructure.module'
 import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
 import { KeycloakHealthService } from './keycloak-health.service'
+import { KeycloakPluginService } from './keycloak-plugin.service'
 import { KeycloakService } from './keycloak.service'
 
 @Module({
@@ -23,8 +24,9 @@ import { KeycloakService } from './keycloak.service'
     KeycloakClientService,
     KeycloakDatastoreService,
     KeycloakHealthService,
+    KeycloakPluginService,
     KeycloakService,
   ],
-  exports: [KeycloakClientService, KeycloakHealthService],
+  exports: [KeycloakClientService, KeycloakHealthService, KeycloakPluginService, KeycloakService],
 })
 export class KeycloakModule {}

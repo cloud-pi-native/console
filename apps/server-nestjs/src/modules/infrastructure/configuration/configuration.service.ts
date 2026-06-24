@@ -89,6 +89,7 @@ export class ConfigurationService {
   harborRuleCount = process.env.HARBOR_RULE_COUNT
   harborRetentionCron = process.env.HARBOR_RETENTION_CRON ?? '0 22 2 * * *'
   harborRobotRotationThresholdDays = Number(process.env.HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS ?? 90)
+  harborProjectSlugCacheTtlMs = Number(process.env.HARBOR_PROJECT_SLUG_CACHE_TTL_MS ?? 300_000)
 
   // nexus
   nexusUrl = process.env.NEXUS_URL

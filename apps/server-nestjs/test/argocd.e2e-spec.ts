@@ -232,7 +232,7 @@ describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
       await prisma.user.deleteMany({ where: { id: ownerId } }).catch(() => {})
     }
 
-    await moduleRef.close()
+    await moduleRef?.close()
 
     vi.restoreAllMocks()
     vi.unstubAllEnvs()

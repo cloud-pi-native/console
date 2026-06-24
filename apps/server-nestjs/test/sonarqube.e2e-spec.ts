@@ -78,6 +78,7 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
     }
 
     await moduleRef?.close()
+
     vi.restoreAllMocks()
     vi.unstubAllEnvs()
   })

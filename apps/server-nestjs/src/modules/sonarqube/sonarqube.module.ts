@@ -7,6 +7,7 @@ import { SonarqubeClientService } from './sonarqube-client.service'
 import { SonarqubeDatastoreService } from './sonarqube-datastore.service'
 import { SonarqubeHealthService } from './sonarqube-health.service'
 import { SonarqubeHttpClientService } from './sonarqube-http-client.service'
+import { SonarqubePluginService } from './sonarqube-plugin.service'
 import { SonarqubeService } from './sonarqube.service'
 
 @Module({
@@ -17,8 +18,9 @@ import { SonarqubeService } from './sonarqube.service'
     SonarqubeClientService,
     SonarqubeDatastoreService,
     SonarqubeHealthService,
+    SonarqubePluginService,
     SonarqubeService,
   ],
-  exports: [SonarqubeClientService, SonarqubeHealthService],
+  exports: [SonarqubeClientService, SonarqubeHealthService, SonarqubePluginService, SonarqubeService],
 })
 export class SonarqubeModule {}

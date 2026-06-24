@@ -56,7 +56,7 @@ describeWithRegistry('RegistryService (e2e)', () => {
       await registry.deleteProject(projectSlug).catch(() => {})
     }
 
-    await moduleRef.close()
+    await moduleRef?.close()
   })
 
   it('should provision project in Harbor and write robot secrets to Vault', async () => {

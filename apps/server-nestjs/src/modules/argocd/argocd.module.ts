@@ -6,11 +6,12 @@ import { InfrastructureModule } from '../infrastructure/infrastructure.module'
 import { VaultModule } from '../vault/vault.module'
 import { ArgoCDDatastoreService } from './argocd-datastore.service'
 import { ArgoCDHealthService } from './argocd-health.service'
+import { ArgoCDPluginService } from './argocd-plugin.service'
 import { ArgoCDService } from './argocd.service'
 
 @Module({
   imports: [ConfigurationModule, InfrastructureModule, GitlabModule, VaultModule],
-  providers: [HealthIndicatorService, ArgoCDHealthService, ArgoCDService, ArgoCDDatastoreService],
-  exports: [ArgoCDHealthService],
+  providers: [HealthIndicatorService, ArgoCDHealthService, ArgoCDPluginService, ArgoCDService, ArgoCDDatastoreService],
+  exports: [ArgoCDHealthService, ArgoCDPluginService, ArgoCDService],
 })
 export class ArgoCDModule {}
