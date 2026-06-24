@@ -25,7 +25,7 @@ export class ProjectLoaderService {
   async load(request: RequestWithProjectParams, userId: string, requirements?: ProjectRequirements): Promise<ProjectContext> {
     let where: { id: string } | { slug: string }
     if (request.params?.projectId) {
-      where = { id: request.params.projectId }
+      where = isUuid(request.params.projectId) ? { id: request.params.projectId } : { slug: request.params.projectId }
     } else if (request.params?.projectSlug) {
       where = { slug: request.params.projectSlug }
     } else {
@@ -36,18 +36,21 @@ export class ProjectLoaderService {
       where,
       select: makeProjectSelect(requirements),
     })
-    if (!raw) throw new NotFoundException()
+    if (!raw) throw new NotFoundException('Projet introuvable')
 
     const project: ProjectContext = {
       id: raw.id,
       slug: raw.slug,
     }
 
-    if ('status' in raw && raw.status !== undefined) project.status = raw.status
-    if ('locked' in raw && raw.locked !== undefined) project.locked = raw.locked
-
-    if (requirements?.includePermissions && 'ownerId' in raw) {
-      project.projectPermissions = this.resolveProjectPermissions(raw as any, userId)
+    if (requirements?.includeStatus) {
+      project.status = raw.status
+    }
+    if (requirements?.includeLocked) {
+      project.locked = raw.locked
+    }
+    if (requirements?.includePermissions) {
+      project.projectPermissions = this.resolveProjectPermissions(raw, userId)
     }
 
     return project
@@ -90,4 +93,10 @@ function makeProjectSelect(requirements?: ProjectRequirements): Prisma.ProjectSe
         }
       : {}),
   } satisfies Prisma.ProjectSelect
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+function isUuid(value: string): boolean {
+  return UUID_RE.test(value)
 }

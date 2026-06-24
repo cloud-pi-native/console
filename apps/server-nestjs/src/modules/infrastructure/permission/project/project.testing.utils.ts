@@ -26,9 +26,12 @@ export function makeProjectContext(overrides: Partial<ProjectContext> = {}): Pro
 
 export function makeProjectPolicy(overrides: Partial<ProjectPolicyConfig> = {}): ProjectPolicyConfig {
   return {
+    adminPermissions: [],
+    userTypes: [],
     projectPermissions: [],
     projectStatuses: [],
     projectLocked: undefined,
+    projectAccess: false,
     ...overrides,
   }
 }

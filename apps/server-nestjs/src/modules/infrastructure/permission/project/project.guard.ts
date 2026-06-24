@@ -1,9 +1,9 @@
 import type { CanActivate, ExecutionContext } from '@nestjs/common'
 import type { Project } from '@prisma/client'
 import type { FastifyRequest } from 'fastify'
-import type { ProjectRequirements } from './project-loader.service'
-import type { ProjectPolicyConfig } from './project.policy'
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
+import type { UserContext } from '../../auth/auth.service'
+import { Inject, Injectable, Logger } from '@nestjs/common'
+import { AuthService } from '../../auth/auth.service'
 import { ProjectLoaderService } from './project-loader.service'
 import { ProjectPolicy } from './project.policy'
 import { ProjectService } from './project.service'
@@ -23,6 +23,7 @@ export interface RequestWithProjectContext extends FastifyRequest {
 type RequestWithUserContext = FastifyRequest & {
   userId?: string
   adminPermissions?: bigint
+  userType?: string
 }
 
 interface ProjectParams {
@@ -32,39 +33,62 @@ interface ProjectParams {
 
 @Injectable()
 export class ProjectGuard implements CanActivate {
+  private readonly logger = new Logger(ProjectGuard.name)
+
   constructor(
+    @Inject(AuthService) private readonly authService: AuthService,
     @Inject(ProjectService) private readonly projectService: ProjectService,
-    @Inject(ProjectPolicy) private readonly projectPolicy: ProjectPolicy,
     @Inject(ProjectLoaderService) private readonly loader: ProjectLoaderService,
+    @Inject(ProjectPolicy) private readonly projectPolicy: ProjectPolicy,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const policy = this.projectPolicy.build(context)
-    const request = context.switchToHttp().getRequest<
-      RequestWithProjectContext & RequestWithUserContext & FastifyRequest<{ Params?: ProjectParams }>
-    >()
-    const userId = request.userId
-    if (typeof userId !== 'string') {
-      throw new UnauthorizedException('User ID not available')
-    }
-    const adminPermissions = request.adminPermissions
-    if (typeof adminPermissions !== 'bigint') {
-      throw new UnauthorizedException('Admin permissions not available')
-    }
+    const request = this.getRequest(context)
+    const user = await this.authenticate(request)
+    const project = await this.loadProject(request, user.userId)
 
-    const requirements = makeProjectRequirements(policy)
-    request.project = await this.loader.load(request, userId, requirements)
-
-    this.projectService.validate(policy, request.project, { userId, adminPermissions })
+    this.projectService.validate(policy, project, user)
 
     return true
   }
-}
 
-function makeProjectRequirements(policy: ProjectPolicyConfig): ProjectRequirements {
-  return {
-    includeStatus: policy.projectStatuses.length > 0,
-    includeLocked: policy.projectLocked !== undefined,
-    includePermissions: policy.projectPermissions.length > 0,
+  private getRequest(context: ExecutionContext): RequestWithProjectContext & RequestWithUserContext & FastifyRequest<{ Params?: ProjectParams }> {
+    return context.switchToHttp().getRequest<
+      RequestWithProjectContext & RequestWithUserContext & FastifyRequest<{ Params?: ProjectParams }>
+    >()
+  }
+
+  private async authenticate(
+    request: RequestWithProjectContext & RequestWithUserContext & FastifyRequest<{ Params?: ProjectParams }>,
+  ): Promise<UserContext> {
+    try {
+      const user = await this.authService.authenticate(request, {
+        includeAdminRoleIds: true,
+        includeUserType: true,
+      })
+
+      request.userId = user.userId
+      if (user.adminPermissions !== undefined) request.adminPermissions = user.adminPermissions
+      if (user.userType !== undefined) request.userType = user.userType
+
+      return user
+    } catch (error) {
+      this.logger.warn(`Project access auth rejected (requestId=${request.id}, error=${error instanceof Error ? error.message : String(error)})`)
+      throw error
+    }
+  }
+
+  private async loadProject(
+    request: RequestWithProjectContext & RequestWithUserContext & FastifyRequest<{ Params?: ProjectParams }>,
+    userId: string,
+  ): Promise<ProjectContext> {
+    const project = await this.loader.load(request, userId, {
+      includeStatus: true,
+      includeLocked: true,
+      includePermissions: true,
+    })
+    request.project = project
+    return project
   }
 }
