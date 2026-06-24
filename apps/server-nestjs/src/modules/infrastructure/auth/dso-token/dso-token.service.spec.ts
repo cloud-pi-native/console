@@ -16,8 +16,7 @@ describe('dsoTokenService', () => {
   let prisma: DeepMockProxy<PrismaService>
 
   beforeEach(async () => {
-    prisma = mockDeep<PrismaService>()
-    prisma.adminRole.findMany.mockResolvedValue([])
+    prisma = mockDeep<PrismaService>({ adminRole: { findMany() { return [] } } })
 
     module = await Test.createTestingModule({
       providers: [
