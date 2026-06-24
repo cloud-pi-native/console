@@ -108,7 +108,7 @@ describeWithKeycloak('KeycloakController (e2e)', () => {
       Logger.warn(`Cleanup failed: ${e.message}`)
     }
 
-    await moduleRef.close()
+    await moduleRef?.close()
 
     vi.unstubAllEnvs()
   })

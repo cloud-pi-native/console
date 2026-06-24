@@ -6,7 +6,6 @@ import type {
 import { specificallyEnabled } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
-import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'

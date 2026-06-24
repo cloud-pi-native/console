@@ -1,9 +1,10 @@
 import type { ExpandedGroupSchema, Gitlab as GitlabApi, ProjectSchema } from '@gitbeaker/core'
 import type { TestingModule } from '@nestjs/testing'
 import type { MockedFunction } from 'vitest'
+import type { DeepMockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { mockDeep, mockReset } from 'vitest-mock-extended'
+import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { GITLAB_REST_CLIENT, GitlabClientService } from './gitlab-client.service'
 import {
@@ -28,37 +29,28 @@ import {
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
 
-const gitlabMock = mockDeep<GitlabApi>()
-
-function createGitlabClientServiceTestingModule() {
-  return Test.createTestingModule({
-    providers: [
-      GitlabClientService,
-      {
-        provide: GITLAB_REST_CLIENT,
-        useValue: gitlabMock,
-      },
-      {
-        provide: ConfigurationService,
-        useValue: {
-          gitlabUrl: 'https://gitlab.internal',
-          gitlabToken: 'token',
-          gitlabInternalUrl: 'https://gitlab.internal',
-          projectRootDir: 'forge',
-          gitlabMirrorTokenExpirationDays: 30,
-          getInternalOrPublicGitlabUrl: () => 'https://gitlab.internal',
-        } satisfies Partial<ConfigurationService>,
-      },
-    ],
-  })
-}
-
 describe('gitlab-client', () => {
   let service: GitlabClientService
+  let gitlabApi: DeepMockProxy<GitlabApi>
 
   beforeEach(async () => {
-    mockReset(gitlabMock)
-    const module: TestingModule = await createGitlabClientServiceTestingModule().compile()
+    gitlabApi = mockDeep<GitlabApi>()
+    const config = mockDeep<ConfigurationService>({
+      gitlabUrl: 'https://gitlab.internal',
+      gitlabToken: 'token',
+      gitlabInternalUrl: 'https://gitlab.internal',
+      projectRootDir: 'forge',
+      gitlabMirrorTokenExpirationDays: 30,
+      getInternalOrPublicGitlabUrl: () => 'https://gitlab.internal',
+    } satisfies Partial<ConfigurationService>)
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        GitlabClientService,
+        { provide: GITLAB_REST_CLIENT, useValue: gitlabApi },
+        { provide: ConfigurationService, useValue: config },
+      ],
+    }).compile()
     service = module.get(GitlabClientService)
   })
 
@@ -73,28 +65,28 @@ describe('gitlab-client', () => {
       const infraGroupId = 456
       const projectId = 789
 
-      const gitlabGroupsAllMock = gitlabMock.Groups.all as MockedFunction<typeof gitlabMock.Groups.all>
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
       gitlabGroupsAllMock.mockResolvedValueOnce({
         data: [{ id: rootId, full_path: 'forge' }],
         paginationInfo: { next: null },
       })
 
-      gitlabMock.Groups.show.mockResolvedValueOnce({ id: rootId, full_path: 'forge' } as ExpandedGroupSchema)
+      gitlabApi.Groups.show.mockResolvedValueOnce({ id: rootId, full_path: 'forge' } as ExpandedGroupSchema)
 
       gitlabGroupsAllMock.mockResolvedValueOnce({
         data: [],
         paginationInfo: { next: null },
       })
 
-      gitlabMock.Groups.create.mockResolvedValue({ id: infraGroupId, full_path: 'forge/infra' } as ExpandedGroupSchema)
+      gitlabApi.Groups.create.mockResolvedValue({ id: infraGroupId, full_path: 'forge/infra' } as ExpandedGroupSchema)
 
-      const gitlabProjectsAllMock = gitlabMock.Projects.all as MockedFunction<typeof gitlabMock.Projects.all>
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
       gitlabProjectsAllMock.mockResolvedValueOnce({
         data: [],
         paginationInfo: { next: null },
       })
 
-      gitlabMock.Projects.create.mockResolvedValue({
+      gitlabApi.Projects.create.mockResolvedValue({
         id: projectId,
         path_with_namespace: 'forge/infra/zone-1',
         http_url_to_repo: 'https://gitlab.internal/infra/zone-1.git',
@@ -107,16 +99,16 @@ describe('gitlab-client', () => {
         http_url_to_repo: 'https://gitlab.internal/infra/zone-1.git',
         path_with_namespace: 'forge/infra/zone-1',
       })
-      expect(gitlabMock.Groups.create).toHaveBeenCalledWith('infra', 'infra', expect.any(Object))
-      expect(gitlabMock.GroupCustomAttributes.set).toHaveBeenCalledWith(rootId, GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY, 'true')
-      expect(gitlabMock.GroupCustomAttributes.set).toHaveBeenCalledWith(infraGroupId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
-      expect(gitlabMock.GroupCustomAttributes.set).toHaveBeenCalledWith(infraGroupId, INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY, 'true')
-      expect(gitlabMock.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
+      expect(gitlabApi.Groups.create).toHaveBeenCalledWith('infra', 'infra', expect.any(Object))
+      expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(rootId, GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(infraGroupId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(infraGroupId, INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabApi.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
         name: zoneSlug,
         path: zoneSlug,
         namespaceId: infraGroupId,
       }))
-      expect(gitlabMock.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
     })
   })
 
@@ -128,14 +120,14 @@ describe('gitlab-client', () => {
       const filePath = 'file.txt'
       const message = 'ci: :robot_face: Update file content'
 
-      const gitlabRepositoryFilesShowMock = gitlabMock.RepositoryFiles.show as MockedFunction<typeof gitlabMock.RepositoryFiles.show>
+      const gitlabRepositoryFilesShowMock = gitlabApi.RepositoryFiles.show as MockedFunction<typeof gitlabApi.RepositoryFiles.show>
       const notFoundError = makeGitbeakerRequestError({ description: '404 File Not Found' })
       gitlabRepositoryFilesShowMock.mockRejectedValue(notFoundError)
 
       const action = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
       await service.maybeCreateCommit(repo, message, action ? [action] : [])
 
-      expect(gitlabMock.Commits.create).toHaveBeenCalledWith(
+      expect(gitlabApi.Commits.create).toHaveBeenCalledWith(
         repoId,
         'main',
         message,
@@ -151,13 +143,13 @@ describe('gitlab-client', () => {
       const oldHash = 'oldhash'
       const message = 'ci: :robot_face: Update file content'
 
-      const gitlabRepositoryFilesShowMock = gitlabMock.RepositoryFiles.show as MockedFunction<typeof gitlabMock.RepositoryFiles.show>
+      const gitlabRepositoryFilesShowMock = gitlabApi.RepositoryFiles.show as MockedFunction<typeof gitlabApi.RepositoryFiles.show>
       gitlabRepositoryFilesShowMock.mockResolvedValue(makeRepositoryFileExpandedSchema({ content_sha256: oldHash }))
 
       const action = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
       await service.maybeCreateCommit(repo, message, action ? [action] : [])
 
-      expect(gitlabMock.Commits.create).toHaveBeenCalledWith(
+      expect(gitlabApi.Commits.create).toHaveBeenCalledWith(
         repoId,
         'main',
         message,
@@ -173,13 +165,13 @@ describe('gitlab-client', () => {
       const hash = 'ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73'
       const message = 'ci: :robot_face: Update file content'
 
-      const gitlabRepositoryFilesShowMock = gitlabMock.RepositoryFiles.show as MockedFunction<typeof gitlabMock.RepositoryFiles.show>
+      const gitlabRepositoryFilesShowMock = gitlabApi.RepositoryFiles.show as MockedFunction<typeof gitlabApi.RepositoryFiles.show>
       gitlabRepositoryFilesShowMock.mockResolvedValue(makeRepositoryFileExpandedSchema({ content_sha256: hash }))
 
       const action = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
       await service.maybeCreateCommit(repo, message, action ? [action] : [])
 
-      expect(gitlabMock.Commits.create).not.toHaveBeenCalled()
+      expect(gitlabApi.Commits.create).not.toHaveBeenCalled()
     })
   })
 
@@ -189,26 +181,26 @@ describe('gitlab-client', () => {
       const rootId = 123
       const groupId = 456
 
-      const gitlabGroupsAllMock = gitlabMock.Groups.all as MockedFunction<typeof gitlabMock.Groups.all>
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
       gitlabGroupsAllMock.mockResolvedValueOnce({
         data: [{ id: rootId, full_path: 'forge' }],
         paginationInfo: { next: null },
       })
-      gitlabMock.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
       gitlabGroupsAllMock.mockResolvedValueOnce({
         data: [],
         paginationInfo: { next: null },
       })
-      gitlabMock.Groups.create.mockResolvedValue(makeExpandedGroupSchema({ id: groupId, name: projectSlug, path: projectSlug, full_path: `forge/${projectSlug}` }))
+      gitlabApi.Groups.create.mockResolvedValue(makeExpandedGroupSchema({ id: groupId, name: projectSlug, path: projectSlug, full_path: `forge/${projectSlug}` }))
 
       const result = await service.getOrCreateProjectSubGroup(projectSlug)
 
       expect(result).toEqual(expect.objectContaining({ id: groupId, name: projectSlug }))
-      expect(gitlabMock.Groups.create).toHaveBeenCalledWith(projectSlug, projectSlug, expect.objectContaining({
+      expect(gitlabApi.Groups.create).toHaveBeenCalledWith(projectSlug, projectSlug, expect.objectContaining({
         parentId: rootId,
       }))
-      expect(gitlabMock.GroupCustomAttributes.set).toHaveBeenCalledWith(groupId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
-      expect(gitlabMock.GroupCustomAttributes.set).toHaveBeenCalledWith(groupId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, projectSlug)
+      expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(groupId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(groupId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, projectSlug)
     })
 
     it('should return existing group', async () => {
@@ -216,12 +208,12 @@ describe('gitlab-client', () => {
       const rootId = 123
       const groupId = 456
 
-      const gitlabGroupsAllMock = gitlabMock.Groups.all as MockedFunction<typeof gitlabMock.Groups.all>
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
       gitlabGroupsAllMock.mockResolvedValueOnce({
         data: [{ id: rootId, full_path: 'forge' }],
         paginationInfo: { next: null },
       })
-      gitlabMock.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
       gitlabGroupsAllMock.mockResolvedValueOnce({
         data: [{ id: groupId, name: projectSlug, parent_id: rootId, full_path: 'forge/project-1' }],
         paginationInfo: { next: null },
@@ -230,7 +222,7 @@ describe('gitlab-client', () => {
       const result = await service.getOrCreateProjectSubGroup(projectSlug)
 
       expect(result).toEqual({ id: groupId, name: projectSlug, parent_id: rootId, full_path: 'forge/project-1' })
-      expect(gitlabMock.Groups.create).not.toHaveBeenCalled()
+      expect(gitlabApi.Groups.create).not.toHaveBeenCalled()
     })
   })
 
@@ -241,7 +233,7 @@ describe('gitlab-client', () => {
       const rootId = 123
       const groupId = 1
 
-      const gitlabGroupsAllMock = gitlabMock.Groups.all as MockedFunction<typeof gitlabMock.Groups.all>
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
       gitlabGroupsAllMock.mockResolvedValueOnce({
         data: [{ id: rootId, full_path: 'forge' }],
         paginationInfo: { next: null },
@@ -259,18 +251,18 @@ describe('gitlab-client', () => {
       const projectSlug = 'project-1'
       const repoId = 1
 
-      const gitlabProjectsAllMock = gitlabMock.Projects.all as MockedFunction<typeof gitlabMock.Projects.all>
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
       gitlabProjectsAllMock.mockResolvedValue({
         data: [{ id: repoId, path_with_namespace: 'forge/project-1/mirror' }],
         paginationInfo: { next: null },
       })
 
-      gitlabMock.Projects.edit.mockResolvedValue({ id: repoId, name: 'mirror' } as ProjectSchema)
+      gitlabApi.Projects.edit.mockResolvedValue({ id: repoId, name: 'mirror' } as ProjectSchema)
 
       const result = await service.upsertProjectMirrorRepo(projectSlug)
 
       expect(result).toEqual({ id: repoId, name: 'mirror' })
-      expect(gitlabMock.Projects.edit).toHaveBeenCalledWith(repoId, expect.objectContaining({
+      expect(gitlabApi.Projects.edit).toHaveBeenCalledWith(repoId, expect.objectContaining({
         name: 'mirror',
         path: 'mirror',
       }))
@@ -281,13 +273,13 @@ describe('gitlab-client', () => {
       const repoName = 'repo-1'
       const repoId = 101
 
-      gitlabMock.Projects.show.mockResolvedValue(makeProjectSchema({ id: repoId }))
-      gitlabMock.Projects.edit.mockResolvedValue({ id: repoId, name: repoName } as ProjectSchema)
+      gitlabApi.Projects.show.mockResolvedValue(makeProjectSchema({ id: repoId }))
+      gitlabApi.Projects.edit.mockResolvedValue({ id: repoId, name: repoName } as ProjectSchema)
 
       const result = await service.upsertProjectGroupRepo(projectSlug, repoName, 'desc')
 
       expect(result).toEqual({ id: repoId, name: repoName })
-      expect(gitlabMock.ProjectCustomAttributes.set).toHaveBeenCalledWith(repoId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(repoId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
     })
 
     describe('upsertUser', () => {
@@ -298,14 +290,14 @@ describe('gitlab-client', () => {
           username: 'new',
           name: 'New User',
         }
-        const gitlabUsersAllMock = gitlabMock.Users.all as MockedFunction<typeof gitlabMock.Users.all>
+        const gitlabUsersAllMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
         gitlabUsersAllMock.mockResolvedValue([])
-        gitlabMock.Users.create.mockResolvedValue(makeExpandedUserSchema({ id: 999, email: consoleUser.email }))
+        gitlabApi.Users.create.mockResolvedValue(makeExpandedUserSchema({ id: 999, email: consoleUser.email }))
 
         const result = await service.upsertUser(gitlabUser, { cpnUserId: consoleUser.id })
 
         expect(result).toEqual(expect.objectContaining({ id: 999, email: consoleUser.email }))
-        expect(gitlabMock.Users.create).toHaveBeenCalledWith(expect.objectContaining({
+        expect(gitlabApi.Users.create).toHaveBeenCalledWith(expect.objectContaining({
           email: 'new@example.com',
           username: 'new',
           name: 'New User',
@@ -313,8 +305,8 @@ describe('gitlab-client', () => {
           provider: 'openid_connect',
           skipConfirmation: true,
         }))
-        expect(gitlabMock.UserCustomAttributes.set).toHaveBeenCalledWith(999, USER_ID_CUSTOM_ATTRIBUTE_KEY, consoleUser.id)
-        expect(gitlabMock.UserCustomAttributes.set).toHaveBeenCalledWith(999, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+        expect(gitlabApi.UserCustomAttributes.set).toHaveBeenCalledWith(999, USER_ID_CUSTOM_ATTRIBUTE_KEY, consoleUser.id)
+        expect(gitlabApi.UserCustomAttributes.set).toHaveBeenCalledWith(999, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
       })
 
       it('should set custom attribute if user exists', async () => {
@@ -324,22 +316,22 @@ describe('gitlab-client', () => {
           username: 'existing',
           name: 'Existing User',
         }
-        const gitlabUsersAllMock = gitlabMock.Users.all as MockedFunction<typeof gitlabMock.Users.all>
+        const gitlabUsersAllMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
         gitlabUsersAllMock.mockResolvedValue([makeExpandedUserSchema({ id: 1000, email: consoleUser.email })])
 
         const result = await service.upsertUser(gitlabUser, { cpnUserId: consoleUser.id })
 
         expect(result).toEqual(expect.objectContaining({ id: 1000, email: consoleUser.email }))
-        expect(gitlabMock.Users.edit).toHaveBeenCalledWith(1000, expect.objectContaining({
+        expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.objectContaining({
           email: 'existing@example.com',
           username: 'existing',
           name: 'Existing User',
           externUid: 'existing@example.com',
           provider: 'openid_connect',
         }))
-        expect(gitlabMock.UserCustomAttributes.set).toHaveBeenCalledWith(1000, USER_ID_CUSTOM_ATTRIBUTE_KEY, consoleUser.id)
-        expect(gitlabMock.UserCustomAttributes.set).toHaveBeenCalledWith(1000, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
-        expect(gitlabMock.Users.create).not.toHaveBeenCalled()
+        expect(gitlabApi.UserCustomAttributes.set).toHaveBeenCalledWith(1000, USER_ID_CUSTOM_ATTRIBUTE_KEY, consoleUser.id)
+        expect(gitlabApi.UserCustomAttributes.set).toHaveBeenCalledWith(1000, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+        expect(gitlabApi.Users.create).not.toHaveBeenCalled()
       })
 
       it('should set admin flag when provided', async () => {
@@ -349,13 +341,13 @@ describe('gitlab-client', () => {
           username: 'admin',
           name: 'Admin User',
         }
-        const gitlabUsersAllMock = gitlabMock.Users.all as MockedFunction<typeof gitlabMock.Users.all>
+        const gitlabUsersAllMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
         gitlabUsersAllMock.mockResolvedValue([])
-        gitlabMock.Users.create.mockResolvedValue(makeExpandedUserSchema({ id: 999, email: consoleUser.email }))
+        gitlabApi.Users.create.mockResolvedValue(makeExpandedUserSchema({ id: 999, email: consoleUser.email }))
 
         await service.upsertUser({ ...gitlabUser, admin: true }, { cpnUserId: consoleUser.id })
 
-        expect(gitlabMock.Users.create).toHaveBeenCalledWith(expect.objectContaining({
+        expect(gitlabApi.Users.create).toHaveBeenCalledWith(expect.objectContaining({
           email: 'admin@example.com',
           username: 'admin',
           name: 'Admin User',
@@ -373,14 +365,14 @@ describe('gitlab-client', () => {
           username: 'admin-auditor',
           name: 'Admin Auditor',
         }
-        const gitlabUsersAllMock = gitlabMock.Users.all as MockedFunction<typeof gitlabMock.Users.all>
+        const gitlabUsersAllMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
         gitlabUsersAllMock.mockResolvedValue([
           makeExpandedUserSchema({ id: 1000, email: consoleUser.email, is_admin: true }),
         ])
 
         await service.upsertUser({ ...gitlabUser, auditor: true }, { cpnUserId: consoleUser.id })
 
-        expect(gitlabMock.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
+        expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
           admin: true,
         }))
       })
@@ -392,14 +384,14 @@ describe('gitlab-client', () => {
           username: 'auditor-admin',
           name: 'Auditor Admin',
         }
-        const gitlabUsersAllMock = gitlabMock.Users.all as MockedFunction<typeof gitlabMock.Users.all>
+        const gitlabUsersAllMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
         gitlabUsersAllMock.mockResolvedValue([
           makeExpandedUserSchema({ id: 1000, email: consoleUser.email, is_auditor: true }),
         ])
 
         await service.upsertUser({ ...gitlabUser, admin: true }, { cpnUserId: consoleUser.id })
 
-        expect(gitlabMock.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
+        expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
           auditor: true,
         }))
       })
@@ -410,25 +402,25 @@ describe('gitlab-client', () => {
       const repoId = 1
       const tokenDescription = 'mirroring-from-external-repo'
 
-      const gitlabProjectsAllMock = gitlabMock.Projects.all as MockedFunction<typeof gitlabMock.Projects.all>
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
       gitlabProjectsAllMock.mockResolvedValue({
         data: [{ id: repoId, path_with_namespace: 'forge/project-1/mirror' }],
         paginationInfo: { next: null },
       })
-      gitlabMock.Projects.edit.mockResolvedValue({ id: repoId, name: 'mirror' } as ProjectSchema)
+      gitlabApi.Projects.edit.mockResolvedValue({ id: repoId, name: 'mirror' } as ProjectSchema)
 
-      const gitlabPipelineTriggerTokensAllMock = gitlabMock.PipelineTriggerTokens.all as MockedFunction<typeof gitlabMock.PipelineTriggerTokens.all>
+      const gitlabPipelineTriggerTokensAllMock = gitlabApi.PipelineTriggerTokens.all as MockedFunction<typeof gitlabApi.PipelineTriggerTokens.all>
       gitlabPipelineTriggerTokensAllMock.mockResolvedValue({
         data: [],
         paginationInfo: makeOffsetPagination({ next: null }),
       })
 
-      gitlabMock.PipelineTriggerTokens.create.mockResolvedValue(makePipelineTriggerToken({ id: 2, description: tokenDescription }))
+      gitlabApi.PipelineTriggerTokens.create.mockResolvedValue(makePipelineTriggerToken({ id: 2, description: tokenDescription }))
 
       const result = await service.getOrCreateMirrorPipelineTriggerToken(projectSlug)
 
       expect(result).toEqual(expect.objectContaining({ id: 2, description: tokenDescription }))
-      expect(gitlabMock.PipelineTriggerTokens.create).toHaveBeenCalledWith(repoId, tokenDescription)
+      expect(gitlabApi.PipelineTriggerTokens.create).toHaveBeenCalledWith(repoId, tokenDescription)
     })
   })
 
@@ -437,12 +429,12 @@ describe('gitlab-client', () => {
       const groupId = 1
       const group = makeGroupSchema({ id: groupId })
       const members = [makeMemberSchema({ id: 1, name: 'user' })]
-      const gitlabGroupMembersAllMock = gitlabMock.GroupMembers.all as MockedFunction<typeof gitlabMock.GroupMembers.all>
+      const gitlabGroupMembersAllMock = gitlabApi.GroupMembers.all as MockedFunction<typeof gitlabApi.GroupMembers.all>
       gitlabGroupMembersAllMock.mockResolvedValue(members)
 
       const result = await service.getGroupMembers(group)
       expect(result).toEqual(members)
-      expect(gitlabMock.GroupMembers.all).toHaveBeenCalledWith(groupId)
+      expect(gitlabApi.GroupMembers.all).toHaveBeenCalledWith(groupId)
     })
 
     it('should add group member', async () => {
@@ -450,20 +442,20 @@ describe('gitlab-client', () => {
       const group = makeGroupSchema({ id: groupId })
       const userId = 2
       const accessLevel = 30
-      gitlabMock.GroupMembers.add.mockResolvedValue(makeMemberSchema({ id: userId }))
+      gitlabApi.GroupMembers.add.mockResolvedValue(makeMemberSchema({ id: userId }))
 
       await service.addGroupMember(group, userId, accessLevel)
-      expect(gitlabMock.GroupMembers.add).toHaveBeenCalledWith(groupId, userId, accessLevel)
+      expect(gitlabApi.GroupMembers.add).toHaveBeenCalledWith(groupId, userId, accessLevel)
     })
 
     it('should remove group member', async () => {
       const groupId = 1
       const group = makeGroupSchema({ id: groupId })
       const userId = 2
-      gitlabMock.GroupMembers.remove.mockResolvedValue(undefined)
+      gitlabApi.GroupMembers.remove.mockResolvedValue(undefined)
 
       await service.removeGroupMember(group, userId)
-      expect(gitlabMock.GroupMembers.remove).toHaveBeenCalledWith(groupId, userId)
+      expect(gitlabApi.GroupMembers.remove).toHaveBeenCalledWith(groupId, userId)
     })
   })
 
@@ -474,25 +466,25 @@ describe('gitlab-client', () => {
       const tokenName = `${projectSlug}-bot`
       const token = makeAccessTokenExposedSchema({ id: 1, name: tokenName, token: 'secret-token' })
 
-      const gitlabGroupsAllMock = gitlabMock.Groups.all as MockedFunction<typeof gitlabMock.Groups.all>
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
       gitlabGroupsAllMock.mockResolvedValueOnce({
         data: [{ id: 123, full_path: 'forge' }],
         paginationInfo: { next: null },
       })
-      gitlabMock.Groups.show.mockResolvedValueOnce({ id: 123, full_path: 'forge' } as ExpandedGroupSchema)
+      gitlabApi.Groups.show.mockResolvedValueOnce({ id: 123, full_path: 'forge' } as ExpandedGroupSchema)
 
-      const gitlabGroupsAllSubgroupsMock = gitlabMock.Groups.allSubgroups as MockedFunction<typeof gitlabMock.Groups.allSubgroups>
+      const gitlabGroupsAllSubgroupsMock = gitlabApi.Groups.allSubgroups as MockedFunction<typeof gitlabApi.Groups.allSubgroups>
       gitlabGroupsAllSubgroupsMock.mockResolvedValueOnce({
         data: [{ id: groupId, name: projectSlug, parent_id: 123, full_path: 'forge/project-1' }],
         paginationInfo: { next: null },
       })
 
-      gitlabMock.GroupAccessTokens.create.mockResolvedValue(token)
+      gitlabApi.GroupAccessTokens.create.mockResolvedValue(token)
 
       const result = await service.createMirrorAccessToken(projectSlug)
 
       expect(result).toEqual(token)
-      expect(gitlabMock.GroupAccessTokens.create).toHaveBeenCalledWith(
+      expect(gitlabApi.GroupAccessTokens.create).toHaveBeenCalledWith(
         groupId,
         tokenName,
         ['write_repository', 'read_repository', 'read_api'],
@@ -508,7 +500,7 @@ describe('gitlab-client', () => {
       const fullPath = `${subGroupPath}/${repoName}`
       const projectId = 789
 
-      const gitlabProjectsAllMock = gitlabMock.Projects.all as MockedFunction<typeof gitlabMock.Projects.all>
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
       gitlabProjectsAllMock.mockResolvedValueOnce({
         data: [{ id: projectId, path_with_namespace: `forge/${fullPath}` }],
         paginationInfo: { next: null },
@@ -517,8 +509,8 @@ describe('gitlab-client', () => {
       const result = await service.getOrCreateProjectGroupRepo(subGroupPath, fullPath)
 
       expect(result).toEqual(expect.objectContaining({ id: projectId }))
-      expect(gitlabMock.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
-      expect(gitlabMock.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, 'project-1')
+      expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, 'project-1')
     })
 
     it('should create repo if not exists', async () => {
@@ -529,13 +521,13 @@ describe('gitlab-client', () => {
       const groupId = 456
       const rootId = 123
 
-      const gitlabProjectsAllMock = gitlabMock.Projects.all as MockedFunction<typeof gitlabMock.Projects.all>
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
       gitlabProjectsAllMock.mockResolvedValueOnce({
         data: [],
         paginationInfo: { next: null },
       })
 
-      const gitlabGroupsAllMock = gitlabMock.Groups.all as MockedFunction<typeof gitlabMock.Groups.all>
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
       gitlabGroupsAllMock.mockResolvedValueOnce({
         data: [{ id: rootId, full_path: 'forge' }],
         paginationInfo: { next: null },
@@ -546,18 +538,18 @@ describe('gitlab-client', () => {
         paginationInfo: { next: null },
       })
 
-      gitlabMock.Projects.create.mockResolvedValue({ id: projectId, name: repoName } as ProjectSchema)
+      gitlabApi.Projects.create.mockResolvedValue({ id: projectId, name: repoName } as ProjectSchema)
 
       const result = await service.getOrCreateProjectGroupRepo(subGroupPath, fullPath)
 
       expect(result).toEqual(expect.objectContaining({ id: projectId }))
-      expect(gitlabMock.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
+      expect(gitlabApi.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
         name: repoName,
         path: repoName,
         namespaceId: groupId,
       }))
-      expect(gitlabMock.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
-      expect(gitlabMock.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, 'project-1')
+      expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, 'project-1')
     })
   })
 
@@ -569,7 +561,7 @@ describe('gitlab-client', () => {
       const ref = 'main'
       const file = makeRepositoryFileExpandedSchema({ content: 'content' })
 
-      gitlabMock.RepositoryFiles.show.mockResolvedValue(file)
+      gitlabApi.RepositoryFiles.show.mockResolvedValue(file)
 
       const result = await service.getFile(repo, filePath, ref)
       expect(result).toEqual(file)
@@ -582,7 +574,7 @@ describe('gitlab-client', () => {
       const ref = 'main'
       const error = makeGitbeakerRequestError({ description: '404 File Not Found' })
 
-      gitlabMock.RepositoryFiles.show.mockRejectedValue(error)
+      gitlabApi.RepositoryFiles.show.mockRejectedValue(error)
 
       const result = await service.getFile(repo, filePath, ref)
       expect(result).toBeUndefined()
@@ -595,7 +587,7 @@ describe('gitlab-client', () => {
       const ref = 'main'
       const error = new Error('Some other error')
 
-      gitlabMock.RepositoryFiles.show.mockRejectedValue(error)
+      gitlabApi.RepositoryFiles.show.mockRejectedValue(error)
 
       await expect(service.getFile(repo, filePath, ref)).rejects.toThrow(error)
     })
@@ -607,7 +599,7 @@ describe('gitlab-client', () => {
       const repo = makeProjectSchema({ id: repoId })
       const files = [makeRepositoryTreeSchema({ path: 'file.txt' })]
 
-      gitlabMock.Repositories.allRepositoryTrees.mockResolvedValue(files)
+      gitlabApi.Repositories.allRepositoryTrees.mockResolvedValue(files)
 
       const result = await service.listFiles(repo)
       expect(result).toEqual(files)
@@ -618,7 +610,7 @@ describe('gitlab-client', () => {
       const repo = makeProjectSchema({ id: repoId })
       const error = makeGitbeakerRequestError({ description: '404 Tree Not Found' })
 
-      gitlabMock.Repositories.allRepositoryTrees.mockRejectedValue(error)
+      gitlabApi.Repositories.allRepositoryTrees.mockRejectedValue(error)
 
       const result = await service.listFiles(repo)
       expect(result).toEqual([])
@@ -632,19 +624,19 @@ describe('gitlab-client', () => {
       const tokenName = `${projectSlug}-bot`
       const token = makeAccessTokenSchema({ id: 1, name: tokenName })
 
-      const gitlabGroupsAllMock = gitlabMock.Groups.all as MockedFunction<typeof gitlabMock.Groups.all>
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
       gitlabGroupsAllMock.mockResolvedValueOnce({
         data: [{ id: 123, full_path: 'forge' }],
         paginationInfo: { next: null },
       })
-      gitlabMock.Groups.show.mockResolvedValueOnce({ id: 123, full_path: 'forge' } as ExpandedGroupSchema)
-      const gitlabGroupsAllSubgroupsMock = gitlabMock.Groups.allSubgroups as MockedFunction<typeof gitlabMock.Groups.allSubgroups>
+      gitlabApi.Groups.show.mockResolvedValueOnce({ id: 123, full_path: 'forge' } as ExpandedGroupSchema)
+      const gitlabGroupsAllSubgroupsMock = gitlabApi.Groups.allSubgroups as MockedFunction<typeof gitlabApi.Groups.allSubgroups>
       gitlabGroupsAllSubgroupsMock.mockResolvedValueOnce({
         data: [{ id: groupId, name: projectSlug, parent_id: 123, full_path: `forge/${projectSlug}` }],
         paginationInfo: { next: null },
       })
 
-      const gitlabGroupAccessTokensAllMock = gitlabMock.GroupAccessTokens.all as MockedFunction<typeof gitlabMock.GroupAccessTokens.all>
+      const gitlabGroupAccessTokensAllMock = gitlabApi.GroupAccessTokens.all as MockedFunction<typeof gitlabApi.GroupAccessTokens.all>
       gitlabGroupAccessTokensAllMock.mockResolvedValue({
         data: [token],
         paginationInfo: makeOffsetPagination({ next: null }),
@@ -662,12 +654,12 @@ describe('gitlab-client', () => {
       const name = 'User Name'
       const user = makeExpandedUserSchema({ id: 1, username })
 
-      gitlabMock.Users.create.mockResolvedValue(user)
+      gitlabApi.Users.create.mockResolvedValue(user)
 
       const result = await service.createUser({ email, username, name })
 
       expect(result).toEqual(user)
-      expect(gitlabMock.Users.create).toHaveBeenCalledWith(expect.objectContaining({
+      expect(gitlabApi.Users.create).toHaveBeenCalledWith(expect.objectContaining({
         email,
         username,
         name,
@@ -682,7 +674,7 @@ describe('gitlab-client', () => {
 
       await service.commitMirror(repoId)
 
-      expect(gitlabMock.Commits.create).toHaveBeenCalledWith(
+      expect(gitlabApi.Commits.create).toHaveBeenCalledWith(
         repoId,
         'main',
         expect.any(String),
