@@ -55,7 +55,7 @@ describe('userGuard', () => {
     expect(result).toBe(true)
     expect(authService.authenticate).toHaveBeenCalledWith(
       expect.anything(),
-      { includeAdminRoleIds: false, includeUserType: false },
+      { includeAdminRoleIds: true, includeUserType: true },
     )
     expect(authService.authenticate.mock.calls[0]?.[0]?.headers).toEqual(httpRequest.headers)
     expect(request.userId).toBe('u1')
@@ -71,7 +71,7 @@ describe('userGuard', () => {
     await expect(guard.canActivate(ctx)).resolves.toBe(true)
     expect(authService.authenticate).toHaveBeenCalledWith(
       expect.anything(),
-      { includeAdminRoleIds: true, includeUserType: false },
+      { includeAdminRoleIds: true, includeUserType: true },
     )
     expect(authService.authenticate.mock.calls[0]?.[0]?.headers).toEqual(httpRequest.headers)
     expect(userService.validate).toHaveBeenCalled()
@@ -82,7 +82,7 @@ describe('userGuard', () => {
     const policy: UserPolicyConfig = { adminPermissions: ['ManageSystem'], userTypes: [] }
     userPolicy.build.mockReturnValue(policy)
     userService.validate.mockImplementation(() => { throw new ForbiddenException() })
-    const ctx = makeExecutionContext({ headers: { 'x-dso-token': 'tok' } })
+    const ctx = makeExecutionContext({ 'x-dso-token': 'tok' })
 
     await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException)
   })
@@ -97,7 +97,7 @@ describe('userGuard', () => {
     await expect(guard.canActivate(ctx)).resolves.toBe(true)
     expect(authService.authenticate).toHaveBeenCalledWith(
       expect.anything(),
-      { includeAdminRoleIds: false, includeUserType: true },
+      { includeAdminRoleIds: true, includeUserType: true },
     )
     expect(authService.authenticate.mock.calls[0]?.[0]?.headers).toEqual(httpRequest.headers)
     expect(userService.validate).toHaveBeenCalled()
