@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.19.1](https://github.com/cloud-pi-native/console/compare/v9.19.0...v9.19.1) (2026-06-24)
+
+
+### Bug Fixes
+
+* disable NestJS reconciler loop to avoid conflicts ([8c896fa](https://github.com/cloud-pi-native/console/commit/8c896fab6eb1aa774969a8c015bbec7cf6689c1b))
+
 ## [9.19.0](https://github.com/cloud-pi-native/console/compare/v9.18.4...v9.19.0) (2026-06-19)
 
 
