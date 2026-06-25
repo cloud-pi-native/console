@@ -1,3 +1,4 @@
+import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
@@ -5,7 +6,9 @@ import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { baseConfigFactory } from '../../config/base.config'
+import { harborConfigFactory } from '../../config/harbor.config'
+import { vaultConfigFactory } from '../../config/vault.config'
 import { VaultClientService } from '../vault/vault-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
 import { RegistryClientService } from './registry-client.service'
@@ -24,7 +27,9 @@ describe('registryService', () => {
   let client: DeepMockProxy<RegistryClientService>
   let datastore: DeepMockProxy<RegistryDatastoreService>
   let vault: DeepMockProxy<VaultClientService>
-  let config: DeepMockProxy<ConfigurationService>
+  let harborConfig: DeepMockProxy<ConfigType<typeof harborConfigFactory>>
+  let baseConfig: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
+  let vaultConfig: DeepMockProxy<ConfigType<typeof vaultConfigFactory>>
 
   beforeEach(async () => {
     client = mockDeep<RegistryClientService>({
@@ -52,17 +57,20 @@ describe('registryService', () => {
       })),
       write: vi.fn().mockResolvedValue(undefined),
     })
-    config = mockDeep<ConfigurationService>({
-      harborUrl: 'https://harbor.example',
-      harborInternalUrl: 'https://harbor.example',
-      harborAdmin: 'admin',
-      harborAdminPassword: faker.internet.password(),
-      harborRuleTemplate: 'latestPushedK',
-      harborRuleCount: '10',
-      harborRetentionCron: '0 22 2 * * *',
-      harborRobotRotationThresholdDays: 90,
-      projectRootDir: 'forge',
+    harborConfig = mockDeep<ConfigType<typeof harborConfigFactory>>({
+      url: 'https://harbor.example',
+      internalUrl: 'https://harbor.example',
+      admin: 'admin',
+      adminPassword: faker.internet.password(),
+      ruleTemplate: 'latestPushedK',
+      ruleCount: 10,
+      retentionCron: '0 22 2 * * *',
+      robotRotationThresholdDays: 90,
     })
+    baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>({
+      projectsRootDir: 'forge',
+    })
+    vaultConfig = mockDeep<ConfigType<typeof vaultConfigFactory>>({})
 
     const module = await Test.createTestingModule({
       providers: [
@@ -70,7 +78,9 @@ describe('registryService', () => {
         { provide: RegistryClientService, useValue: client },
         { provide: RegistryDatastoreService, useValue: datastore },
         { provide: VaultClientService, useValue: vault },
-        { provide: ConfigurationService, useValue: config },
+        { provide: harborConfigFactory.KEY, useValue: harborConfig },
+        { provide: baseConfigFactory.KEY, useValue: baseConfig },
+        { provide: vaultConfigFactory.KEY, useValue: vaultConfig },
       ],
     }).compile()
 

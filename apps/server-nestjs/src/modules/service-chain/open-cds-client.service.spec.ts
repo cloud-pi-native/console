@@ -1,10 +1,13 @@
+import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import type { RequestInit } from 'undici'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { Agent, fetch, Headers, Response } from 'undici'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { mockDeep } from 'vitest-mock-extended'
+import { baseConfigFactory } from '../../config/base.config'
+import { serviceChainConfigFactory } from '../../config/service-chain.config'
 import { OpenCdsClientError, OpenCdsClientService } from './open-cds-client.service'
 
 vi.mock('undici', async (importOriginal) => {
@@ -29,22 +32,25 @@ function getLastFetchCall(): [string, RequestInit] {
 describe('openCdsClientService', () => {
   let module: TestingModule
   let service: OpenCdsClientService
-  let config: Partial<ConfigurationService>
+  let serviceCHainConfig: Partial<ConfigType<typeof serviceChainConfigFactory>>
+  let baseConfig: ReturnType<typeof mockDeep<ConfigType<typeof baseConfigFactory>>>
 
   beforeEach(async () => {
     vi.clearAllMocks()
     vi.unstubAllEnvs()
 
-    config = {
-      openCdsUrl: 'https://opencds.example.com/root/api/',
-      openCdsApiToken: 'test-token',
-      openCdsApiTlsRejectUnauthorized: true,
+    serviceCHainConfig = {
+      url: 'https://opencds.example.com/root/api/',
+      apiToken: 'test-token',
+      apiTlsRejectUnauthorized: true,
     }
+    baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>()
 
     module = await Test.createTestingModule({
       providers: [
         OpenCdsClientService,
-        { provide: ConfigurationService, useValue: config },
+        { provide: serviceChainConfigFactory.KEY, useValue: serviceCHainConfig },
+        { provide: baseConfigFactory.KEY, useValue: baseConfig },
       ],
     }).compile()
 
@@ -128,7 +134,7 @@ describe('openCdsClientService', () => {
   })
 
   it('throws when OpenCDS is disabled', async () => {
-    config.openCdsUrl = undefined
+    serviceCHainConfig.url = undefined
 
     await expect(service.get('/requests')).rejects.toThrow('OpenCDS is disabled')
   })
@@ -149,14 +155,15 @@ describe('openCdsClientService', () => {
   })
 
   it('uses a local Agent with rejectUnauthorized:false when TLS verification is disabled', async () => {
-    config = {
-      ...config,
-      openCdsApiTlsRejectUnauthorized: false,
+    serviceCHainConfig = {
+      ...serviceCHainConfig,
+      apiTlsRejectUnauthorized: false,
     }
     module = await Test.createTestingModule({
       providers: [
         OpenCdsClientService,
-        { provide: ConfigurationService, useValue: config },
+        { provide: serviceChainConfigFactory.KEY, useValue: serviceCHainConfig },
+        { provide: baseConfigFactory.KEY, useValue: baseConfig },
       ],
     }).compile()
     service = module.get<OpenCdsClientService>(OpenCdsClientService)

@@ -1,22 +1,24 @@
 import type { ExpandedUserSchema, Gitlab } from '@gitbeaker/core'
+import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
+import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import z from 'zod'
+import { baseConfigFactory } from '../src/config/base.config'
 import { GITLAB_REST_CLIENT, GitlabClientService } from '../src/modules/gitlab/gitlab-client.service'
 import { projectSelect } from '../src/modules/gitlab/gitlab-datastore.service'
 import { GitlabModule } from '../src/modules/gitlab/gitlab.module'
 import { GitlabService } from '../src/modules/gitlab/gitlab.service'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
-import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
-import { ConfigurationService } from '../src/modules/infrastructure/configuration/configuration.service'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
 import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
+import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunGitlabE2E
   = Boolean(process.env.E2E)
@@ -36,7 +38,7 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
   let gitlabClient: Gitlab
   let vaultService: VaultClientService
   let prisma: PrismaService
-  let config: ConfigurationService
+  let config: ConfigType<typeof baseConfigFactory>
 
   let testProjectId: string
   let testProjectSlug: string
@@ -45,7 +47,7 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [GitlabModule, ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+      imports: [GitlabModule, ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()
@@ -55,7 +57,7 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
     gitlabClient = moduleRef.get<Gitlab>(GITLAB_REST_CLIENT)
     vaultService = moduleRef.get<VaultClientService>(VaultClientService)
     prisma = moduleRef.get<PrismaService>(PrismaService)
-    config = moduleRef.get<ConfigurationService>(ConfigurationService)
+    config = moduleRef.get(baseConfigFactory.KEY)
 
     ownerId = faker.string.uuid()
     testProjectId = faker.string.uuid()
@@ -111,8 +113,8 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
 
   afterAll(async () => {
     // Clean GitLab group
-    if (testProjectSlug && config.projectRootDir) {
-      const fullPath = `${config.projectRootDir}/${testProjectSlug}`
+    if (testProjectSlug && config.projectsRootDir) {
+      const fullPath = `${config.projectsRootDir}/${testProjectSlug}`
       const group = await gitlabService.getGroupByPath(fullPath)
       if (group) {
         await gitlabService.deleteGroup(group).catch(() => {})
@@ -120,8 +122,8 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
     }
 
     // Clean Vault
-    if (testProjectSlug && config.projectRootDir) {
-      const vaultPath = `${config.projectRootDir}/${testProjectSlug}`
+    if (testProjectSlug && config.projectsRootDir) {
+      const vaultPath = `${config.projectsRootDir}/${testProjectSlug}`
       await vaultService.delete(`${vaultPath}/tech/GITLAB_MIRROR`).catch(() => {})
       await vaultService.delete(`${vaultPath}/app-mirror`).catch(() => {})
     }
@@ -153,7 +155,7 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
     await gitlabController.handleUpsert(project)
 
     // Assert
-    const groupPath = `${config.projectRootDir}/${testProjectSlug}`
+    const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
     const group = z.object({
       id: z.number(),
       name: z.string(),
@@ -167,7 +169,7 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
     const isMember = members.some(m => m.id === ownerUser.id)
     expect(isMember).toBe(true)
 
-    const repoVaultPath = `${config.projectRootDir}/${testProjectSlug}/app-mirror`
+    const repoVaultPath = `${config.projectsRootDir}/${testProjectSlug}/app-mirror`
     const repoSecret = await vaultService.read(repoVaultPath)
     expect(repoSecret?.data?.GIT_OUTPUT_USER).toBeTruthy()
     expect(repoSecret?.data?.GIT_OUTPUT_PASSWORD).toBeTruthy()
@@ -225,7 +227,7 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
 
       await gitlabController.handleUpsert(project)
 
-      const groupPath = `${config.projectRootDir}/${testProjectSlug}`
+      const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
       const group = z.object({
         id: z.number(),
         name: z.string(),

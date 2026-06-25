@@ -1,3 +1,4 @@
+import type { ConfigType } from '@nestjs/config'
 import type { NestFastifyApplication } from '@nestjs/platform-fastify'
 import { NestFactory } from '@nestjs/core'
 import { FastifyAdapter } from '@nestjs/platform-fastify'
@@ -9,8 +10,8 @@ import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { NodeSDK, resources } from '@opentelemetry/sdk-node'
 import { Logger } from 'nestjs-pino'
 import { EnvHttpProxyAgent, setGlobalDispatcher } from 'undici'
+import { baseConfigFactory } from './config/base.config'
 import { MainModule } from './main.module'
-import { ConfigurationService } from './modules/infrastructure/configuration/configuration.service'
 
 const SERVICE_NAME = 'console-pi-native-console'
 
@@ -46,7 +47,7 @@ async function bootstrap() {
     await telemetry.shutdown()
   })
 
-  const config = app.get(ConfigurationService)
+  const config = app.get<ConfigType<typeof baseConfigFactory>>(baseConfigFactory.KEY)
 
   // Setup swagger-ui route
   const swaggerConfig = new DocumentBuilder()
@@ -58,7 +59,7 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, swaggerConfig)
   SwaggerModule.setup('swagger-ui-server-nestjs', app, documentFactory)
 
-  await app.listen(config.port, config.host)
+  await app.listen(config.serverPort, config.serverHost)
 
   const serverUrl = await app.getUrl()
   const logger = app.get(Logger)

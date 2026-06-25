@@ -7,7 +7,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
-import { getErrorResponseStatus } from '../../utils/http-error'
+import { getErrorResponseStatus } from '../../utils/http.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { KeycloakClientService } from './keycloak-client.service'
@@ -20,7 +20,7 @@ export class KeycloakService {
 
   constructor(
     @Inject(KeycloakClientService) private readonly keycloak: KeycloakClientService,
-    @Inject(KeycloakDatastoreService) private readonly keycloakDatastore: KeycloakDatastoreService,
+    @Inject(KeycloakDatastoreService) private readonly datastore: KeycloakDatastoreService,
   ) {
     this.logger.log('KeycloakService initialized')
   }
@@ -59,9 +59,9 @@ export class KeycloakService {
     const span = trace.getActiveSpan()
     this.logger.log('Starting periodic Keycloak reconciliation')
     const [projects, adminRoles, users] = await Promise.all([
-      this.keycloakDatastore.getAllProjects(),
-      this.keycloakDatastore.getAllAdminRoles(),
-      this.keycloakDatastore.getAllUsersWithAdminRoleIds(),
+      this.datastore.getAllProjects(),
+      this.datastore.getAllAdminRoles(),
+      this.datastore.getAllUsersWithAdminRoleIds(),
     ])
     span?.setAttributes({
       'keycloak.projects.count': projects.length,

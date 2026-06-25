@@ -1,6 +1,7 @@
+import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { harborConfigFactory } from '../../config/harbor.config'
 import { encodeBasicAuth } from './registry.utils'
 
 export type RegistryQuery = Record<string, string | number | undefined>
@@ -46,28 +47,15 @@ export class RegistryError extends Error {
 @Injectable()
 export class RegistryHttpClientService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(harborConfigFactory.KEY) private readonly harborConfig: ConfigType<typeof harborConfigFactory>,
   ) {}
 
-  private get baseUrl() {
-    if (!this.config.harborInternalUrl) {
-      throw new RegistryError('NotConfigured', 'HARBOR_INTERNAL_URL is required')
-    }
-    return this.config.harborInternalUrl
-  }
-
   private get apiBaseUrl() {
-    return new URL('api/v2.0/', this.baseUrl).toString()
+    return new URL('api/v2.0/', this.harborConfig.internalOrPublicUrl).toString()
   }
 
   private get defaultHeaders() {
-    if (!this.config.harborAdmin) {
-      throw new RegistryError('NotConfigured', 'HARBOR_ADMIN is required')
-    }
-    if (!this.config.harborAdminPassword) {
-      throw new RegistryError('NotConfigured', 'HARBOR_ADMIN_PASSWORD is required')
-    }
-    return { Accept: 'application/json', Authorization: `Basic ${encodeBasicAuth(this.config.harborAdmin, this.config.harborAdminPassword)}` }
+    return { Accept: 'application/json', Authorization: `Basic ${encodeBasicAuth(this.harborConfig.admin, this.harborConfig.adminPassword)}` }
   }
 
   async fetch<T = unknown>(

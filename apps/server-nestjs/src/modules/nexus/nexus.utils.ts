@@ -10,11 +10,9 @@ export function generateRandomPassword(length: number) {
   return raw.slice(0, length)
 }
 
-export function getProjectVaultPath(projectRootDir: string | undefined, projectSlug: string, relativePath: string) {
+export function getProjectVaultPath(projectRootDir: string, projectSlug: string, relativePath: string) {
   const normalized = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath
-  return projectRootDir
-    ? `${projectRootDir}/${projectSlug}/${normalized}`
-    : `${projectSlug}/${normalized}`
+  return `${projectRootDir}/${projectSlug}/${normalized}`
 }
 
 export type MavenHostedRepoKind = 'release' | 'snapshot'

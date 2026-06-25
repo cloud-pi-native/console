@@ -1,23 +1,21 @@
+import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { keycloakConfigFactory } from '../../config/keycloak.config'
 
 @Injectable()
 export class KeycloakHealthService {
   constructor(
-    @Inject(ConfigurationService)
-    private readonly config: ConfigurationService,
+    @Inject(keycloakConfigFactory.KEY)
+    private readonly keycloakConfig: ConfigType<typeof keycloakConfigFactory>,
     @Inject(HealthIndicatorService)
     private readonly healthIndicator: HealthIndicatorService,
   ) {}
 
   async check(key: string) {
     const indicator = this.healthIndicator.check(key)
-    const url = this.config.getKeycloakOpenidConfigurationUrl()
-    if (!url) return indicator.down('Not configured')
-
     try {
-      const response = await fetch(url)
+      const response = await fetch(this.keycloakConfig.openidConfigurationUrl)
       if (response.status < HttpStatus.INTERNAL_SERVER_ERROR) return indicator.up({ httpStatus: response.status })
       return indicator.down({ httpStatus: response.status })
     } catch (error) {

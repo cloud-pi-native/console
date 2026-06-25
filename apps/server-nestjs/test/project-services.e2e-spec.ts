@@ -1,10 +1,11 @@
 import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
 import { NotFoundException } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
-import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
@@ -12,6 +13,7 @@ import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { ProjectServicesModule } from '../src/modules/project-services/project-services.module'
 import { ProjectServicesService } from '../src/modules/project-services/project-services.service'
+import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunServicesE2E
   = Boolean(process.env.E2E)
@@ -20,18 +22,15 @@ const canRunServicesE2E
     && Boolean(process.env.GITLAB_URL)
     && Boolean(process.env.GITLAB_TOKEN)
     && Boolean(process.env.HARBOR_URL)
-    && Boolean(process.env.HARBOR_INTERNAL_URL)
     && Boolean(process.env.HARBOR_ADMIN)
     && Boolean(process.env.HARBOR_ADMIN_PASSWORD)
     && Boolean(process.env.KEYCLOAK_DOMAIN)
     && Boolean(process.env.KEYCLOAK_REALM)
     && Boolean(process.env.KEYCLOAK_PROTOCOL)
     && Boolean(process.env.NEXUS_URL)
-    && Boolean(process.env.NEXUS_INTERNAL_URL)
     && Boolean(process.env.NEXUS_ADMIN)
     && Boolean(process.env.NEXUS_ADMIN_PASSWORD)
     && Boolean(process.env.SONARQUBE_URL)
-    && Boolean(process.env.SONARQUBE_INTERNAL_URL)
     && Boolean(process.env.SONAR_API_TOKEN)
     && Boolean(process.env.VAULT_URL)
     && Boolean(process.env.VAULT_TOKEN)
@@ -51,7 +50,7 @@ describeWithServices('ProjectServicesService (e2e)', {}, () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectServicesModule],
+      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectServicesModule],
     }).compile()
 
     await moduleRef.init()

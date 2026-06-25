@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { ConditionalModule, ConfigModule } from '@nestjs/config'
+import { ConditionalModule } from '@nestjs/config'
 import { TerminusModule } from '@nestjs/terminus'
 import { optIn } from 'src/utils/config.utils'
 import { ArgoCDModule } from '../argocd/argocd.module'
@@ -16,7 +16,6 @@ import { HealthzService } from './healthz.service'
 @Module({
   imports: [
     TerminusModule.forRoot(),
-    ConfigModule.forRoot(),
     DatabaseModule,
     KeycloakModule,
     ConditionalModule.registerWhen(GitlabModule, 'USE_GITLAB'),

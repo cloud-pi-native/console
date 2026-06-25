@@ -1,8 +1,5 @@
 import type { ProjectWithDetails } from './registry-datastore.service'
-import type { ALLOWED_RETENTION_RULE_TEMPLATES } from './registry.constants'
 import { removeTrailingSlash } from '@cpn-console/shared'
-
-export type RuleTemplate = typeof ALLOWED_RETENTION_RULE_TEMPLATES[number]
 
 export function createProjectSlugCacheKey(projectId: string) {
   return `registry:project-slug:${projectId}`

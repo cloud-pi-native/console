@@ -1,7 +1,8 @@
+import type { ConfigType } from '@nestjs/config'
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { z } from 'zod'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { baseConfigFactory } from '../../config/base.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -28,7 +29,7 @@ export class ProjectSecretsService {
 
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
     @Inject(VaultService) private readonly vault: VaultService,
     @Inject(VaultClientService) private readonly vaultClient: VaultClientService,
   ) {}
@@ -42,7 +43,7 @@ export class ProjectSecretsService {
       const project = await getProjectSlug(this.prisma, projectId)
       if (!project) throw new NotFoundException('Projet introuvable')
       span?.setAttribute('project.slug', project.slug)
-      const projectPath = generateProjectPath(this.config.projectRootDir, project.slug)
+      const projectPath = generateProjectPath(this.baseConfig.projectsRootDir, project.slug)
 
       const result: Record<string, Record<string, string>> = {}
       const relativePaths = await this.vault.listProjectSecrets(project.slug).catch((error) => {

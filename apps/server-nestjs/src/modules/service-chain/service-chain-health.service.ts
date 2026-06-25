@@ -1,26 +1,21 @@
+import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { serviceChainConfigFactory } from '../../config/service-chain.config'
 
 @Injectable()
 export class ServiceChainHealthService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(serviceChainConfigFactory.KEY) private readonly opencdsConfig: ConfigType<typeof serviceChainConfigFactory>,
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 
   async check(key: string) {
     const indicator = this.healthIndicator.check(key)
-    if (!this.config.openCdsUrl) return indicator.down('Not configured')
-
     try {
-      const url = new URL('/api/v1/health', this.config.openCdsUrl).toString()
       const headers: Record<string, string> = {}
-      if (this.config.openCdsApiToken) {
-        headers.Authorization = `Bearer ${this.config.openCdsApiToken}`
-      }
-
-      const response = await fetch(url, { headers })
+      headers.Authorization = `Bearer ${this.opencdsConfig.apiToken}`
+      const response = await fetch(this.opencdsConfig.probeUrl, { headers })
       if (response.status < HttpStatus.INTERNAL_SERVER_ERROR) return indicator.up({ httpStatus: response.status })
       return indicator.down({ httpStatus: response.status })
     } catch (error) {

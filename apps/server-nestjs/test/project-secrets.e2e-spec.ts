@@ -1,9 +1,10 @@
 import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
+import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
-import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
@@ -13,6 +14,7 @@ import { ProjectSecretsModule } from '../src/modules/project-secrets/project-sec
 import { ProjectSecretsService } from '../src/modules/project-secrets/project-secrets.service'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { generateProjectPath } from '../src/modules/vault/vault.utils'
+import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunProjectSecretsE2E
   = Boolean(process.env.E2E)
@@ -38,7 +40,7 @@ describeWithProjectSecrets('ProjectSecretsService (e2e)', {}, () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectSecretsModule],
+      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectSecretsModule],
     }).compile()
 
     await moduleRef.init()

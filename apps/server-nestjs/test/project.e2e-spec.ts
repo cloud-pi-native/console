@@ -2,11 +2,12 @@ import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
 import { ForbiddenException, NotFoundException } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
-import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
@@ -15,6 +16,7 @@ import { PermissionModule } from '../src/modules/infrastructure/permission/permi
 import { ProjectPermissionModule } from '../src/modules/infrastructure/permission/project/project.module'
 import { makeCreateProjectBody } from '../src/modules/project/project-testing.utils'
 import { ProjectService } from '../src/modules/project/project.service'
+import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunProjectE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
 
@@ -30,7 +32,7 @@ describeWithProject('ProjectService (e2e)', {}, () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectPermissionModule],
+      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectPermissionModule],
     }).compile()
 
     await moduleRef.init()

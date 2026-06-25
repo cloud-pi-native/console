@@ -1,12 +1,13 @@
 import type { projectContract } from '@cpn-console/shared'
+import type { ConfigType } from '@nestjs/config'
 import type { Prisma } from '@prisma/client'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import type { ProjectDataExport, ProjectUpdateContext, ProjectWithDetails } from './project-queries.utils'
 import { AdminAuthorized } from '@cpn-console/shared'
 import { BadRequestException, ForbiddenException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
+import { baseConfigFactory } from '../../config/base.config'
 import { AppEventsService } from '../events/app-events.service'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { LogService } from '../log/log.service'
@@ -30,7 +31,7 @@ export class ProjectService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AppEventsService) private readonly appEvents: AppEventsService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
     @Inject(LogService) private readonly logs: LogService,
   ) {}
 
@@ -62,7 +63,7 @@ export class ProjectService {
     const whereAnd = generateProjectWhereInput({
       query,
       requestorUserId: user.userId,
-      appVersion: this.config.appVersion,
+      appVersion: this.baseConfig.appVersion,
     })
 
     this.logger.debug(`project.list started (requestorUserId=${user.userId}, filter=${filter})`)

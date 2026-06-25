@@ -1,22 +1,24 @@
 import type { CommitAction, Gitlab } from '@gitbeaker/core'
+import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
+import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { parse } from 'yaml'
+import { baseConfigFactory } from '../src/config/base.config'
 import { projectSelect } from '../src/modules/argocd/argocd-datastore.service'
 import { ArgoCDModule } from '../src/modules/argocd/argocd.module'
 import { ArgoCDService } from '../src/modules/argocd/argocd.service'
 import { GITLAB_REST_CLIENT, GitlabClientService } from '../src/modules/gitlab/gitlab-client.service'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
-import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
-import { ConfigurationService } from '../src/modules/infrastructure/configuration/configuration.service'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
 import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
+import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunArgoCDE2E
   = Boolean(process.env.E2E)
@@ -36,7 +38,7 @@ describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
   let gitlabClient: Gitlab
   let vault: VaultClientService
   let prisma: PrismaService
-  let config: ConfigurationService
+  let config: ConfigType<typeof baseConfigFactory>
 
   let ownerId: string
   let testProjectId: string
@@ -59,7 +61,7 @@ describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ArgoCDModule, ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+      imports: [ArgoCDModule, ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()
@@ -69,7 +71,7 @@ describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
     gitlabClient = moduleRef.get<Gitlab>(GITLAB_REST_CLIENT)
     vault = moduleRef.get<VaultClientService>(VaultClientService)
     prisma = moduleRef.get<PrismaService>(PrismaService)
-    config = moduleRef.get<ConfigurationService>(ConfigurationService)
+    config = moduleRef.get(baseConfigFactory.KEY)
 
     ownerId = faker.string.uuid()
     testProjectId = faker.string.uuid()
@@ -186,7 +188,7 @@ describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
       },
     })
 
-    infraRepoPath = `${config.projectRootDir}/infra/${zoneSlug}`
+    infraRepoPath = `${config.projectsRootDir}/infra/${zoneSlug}`
     try {
       const existing = await gitlabClient.Projects.show(infraRepoPath)
       if (existing.empty_repo || existing.default_branch !== 'main') {
@@ -214,7 +216,7 @@ describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
       infraRepoId = created.id
     }
 
-    vaultProjectValuesPath = `${config.projectRootDir}/${testProjectId}`
+    vaultProjectValuesPath = `${config.projectsRootDir}/${testProjectId}`
     await vault.write({ e2e: true }, vaultProjectValuesPath)
   })
 

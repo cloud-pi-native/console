@@ -1,9 +1,12 @@
+import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { baseConfigFactory } from '../../config/base.config'
+import { nexusConfigFactory } from '../../config/nexus.config'
+import { vaultConfigFactory } from '../../config/vault.config'
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultError } from '../vault/vault-http-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
@@ -26,7 +29,9 @@ describe('nexusService', () => {
   let client: DeepMockProxy<NexusClientService>
   let datastore: DeepMockProxy<NexusDatastoreService>
   let vault: DeepMockProxy<VaultClientService>
-  let config: DeepMockProxy<ConfigurationService>
+  let config: DeepMockProxy<ConfigType<typeof nexusConfigFactory>>
+  let baseConfig: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
+  let vaultConfig: DeepMockProxy<ConfigType<typeof vaultConfigFactory>>
 
   beforeEach(async () => {
     client = mockDeep<NexusClientService>({
@@ -45,7 +50,9 @@ describe('nexusService', () => {
     vault = mockDeep<VaultClientService>({
       read: vi.fn().mockRejectedValue(new VaultError('NotFound', 'Not Found')),
     })
-    config = mockDeep<ConfigurationService>({ projectRootDir: 'forge' })
+    config = mockDeep<ConfigType<typeof nexusConfigFactory>>({})
+    baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>({ projectsRootDir: 'forge' })
+    vaultConfig = mockDeep<ConfigType<typeof vaultConfigFactory>>({})
 
     const module = await Test.createTestingModule({
       providers: [
@@ -53,7 +60,9 @@ describe('nexusService', () => {
         { provide: NexusClientService, useValue: client },
         { provide: NexusDatastoreService, useValue: datastore },
         { provide: VaultClientService, useValue: vault },
-        { provide: ConfigurationService, useValue: config },
+        { provide: nexusConfigFactory.KEY, useValue: config },
+        { provide: baseConfigFactory.KEY, useValue: baseConfig },
+        { provide: vaultConfigFactory.KEY, useValue: vaultConfig },
       ],
     }).compile()
 
