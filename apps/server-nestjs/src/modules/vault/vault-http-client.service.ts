@@ -1,7 +1,8 @@
+import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { vaultConfigFactory } from '../../config/vault.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 
 export interface VaultFetchOptions {
@@ -46,7 +47,7 @@ export class VaultHttpClientService {
   private readonly logger = new Logger(VaultHttpClientService.name)
 
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(vaultConfigFactory.KEY) private readonly vaultConfig: ConfigType<typeof vaultConfigFactory>,
   ) {}
 
   @StartActiveSpan()
@@ -83,7 +84,7 @@ export class VaultHttpClientService {
   }
 
   private get baseUrl() {
-    const baseUrl = this.config.getInternalOrPublicVaultUrl()
+    const baseUrl = this.vaultConfig.internalUrl || this.vaultConfig.url
     if (!baseUrl) {
       throw new VaultError('NotConfigured', 'VAULT_INTERNAL_URL or VAULT_URL is required')
     }
@@ -95,11 +96,11 @@ export class VaultHttpClientService {
   }
 
   private get token() {
-    if (!this.config.vaultToken) {
+    if (!this.vaultConfig.token) {
       this.logger.warn('Vault token is not configured (VAULT_TOKEN is missing)')
       throw new VaultError('NotConfigured', 'VAULT_TOKEN is required')
     }
-    return this.config.vaultToken
+    return this.vaultConfig.token
   }
 
   private createRequest(path: string, method: string, body?: unknown): Request {

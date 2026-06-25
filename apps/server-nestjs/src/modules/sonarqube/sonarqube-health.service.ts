@@ -1,24 +1,25 @@
+import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
 
 @Injectable()
 export class SonarqubeHealthService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(sonarqubeConfigFactory.KEY) private readonly sonarqubeConfig: ConfigType<typeof sonarqubeConfigFactory>,
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 
   async check(key: string) {
     const indicator = this.healthIndicator.check(key)
-    const urlBase = this.config.getInternalOrPublicSonarqubeUrl()
-    if (!urlBase) return indicator.down('Not configured')
+    const url = this.sonarqubeConfig.probeUrl
 
-    const url = new URL('/api/system/health', urlBase).toString()
-    const token = this.config.sonarApiToken
+    if (!url) return indicator.down('Not configured')
+
+    const token = this.sonarqubeConfig.apiToken
     const headers: Record<string, string> = {}
     if (token) {
-      const bearerToken = Buffer.from(`${token}:`, 'utf8').toString('base64')
+      const bearerToken = Buffer.from(`${token}:`, 'utf-8').toString('base64')
       headers.Authorization = `Bearer ${bearerToken}`
     }
 

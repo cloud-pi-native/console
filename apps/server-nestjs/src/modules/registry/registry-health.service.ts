@@ -1,22 +1,23 @@
+import type { HarborConfig } from '../../config/harbor.config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { harborConfigFactory } from '../../config/harbor.config'
 
 @Injectable()
 export class RegistryHealthService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(harborConfigFactory.KEY) private readonly harborConfig: HarborConfig,
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 
   async check(key: string) {
     const indicator = this.healthIndicator.check(key)
-    if (!this.config.harborInternalUrl) return indicator.down('Not configured')
+    if (!this.harborConfig.internalUrl) return indicator.down('Not configured')
 
-    const url = new URL('/api/v2.0/ping', this.config.harborInternalUrl).toString()
+    const url = new URL('/api/v2.0/ping', this.harborConfig.internalUrl).toString()
     const headers: Record<string, string> = {}
-    if (this.config.harborAdmin && this.config.harborAdminPassword) {
-      const credentials = `${this.config.harborAdmin}:${this.config.harborAdminPassword}`
+    if (this.harborConfig.admin && this.harborConfig.adminPassword) {
+      const credentials = `${this.harborConfig.admin}:${this.harborConfig.adminPassword}`
       const base64 = Buffer.from(credentials).toString('base64')
       headers.Authorization = `Basic ${base64}`
     }

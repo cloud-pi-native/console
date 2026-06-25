@@ -1,3 +1,4 @@
+import type { ConfigType } from '@nestjs/config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { NexusPrivilege } from './nexus-client.service'
 import type { ProjectWithDetails } from './nexus-datastore.service'
@@ -8,7 +9,8 @@ import { specificallyEnabled } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { baseConfigFactory } from '../../config/base.config'
+import { nexusConfigFactory } from '../../config/nexus.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -52,10 +54,11 @@ export class NexusService {
   private readonly logger = new Logger(NexusService.name)
 
   constructor(
-    @Inject(NexusDatastoreService) private readonly nexusDatastore: NexusDatastoreService,
+    @Inject(NexusDatastoreService) private readonly datastore: NexusDatastoreService,
     @Inject(NexusClientService) private readonly client: NexusClientService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
+    @Inject(nexusConfigFactory.KEY) private readonly nexusConfig: ConfigType<typeof nexusConfigFactory>,
+    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
   ) {
     this.logger.log('NexusService initialized')
   }
@@ -71,7 +74,7 @@ export class NexusService {
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling project upsert for ${project.slug}`)
     await this.ensureProject(project)
-    const projects = await this.nexusDatastore.getAllProjects()
+    const projects = await this.datastore.getAllProjects()
     await this.ensurePlatformRoles(projects)
   }
 
@@ -86,7 +89,7 @@ export class NexusService {
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling project delete for ${project.slug}`)
     await this.deleteProject(project)
-    const projects = await this.nexusDatastore.getAllProjects()
+    const projects = await this.datastore.getAllProjects()
     await this.ensurePlatformRoles(projects)
   }
 
@@ -95,7 +98,7 @@ export class NexusService {
   async handleCron() {
     const span = trace.getActiveSpan()
     this.logger.log('Starting Nexus reconciliation')
-    const projects = await this.nexusDatastore.getAllProjects()
+    const projects = await this.datastore.getAllProjects()
     span?.setAttribute('nexus.projects.count', projects.length)
     await this.ensureProjects(projects)
     await this.ensurePlatformRoles(projects)
@@ -429,7 +432,7 @@ export class NexusService {
   }
 
   private async ensureUser(project: ProjectWithDetails) {
-    const vaultPath = getProjectVaultPath(this.config.projectRootDir, project.slug, 'tech/NEXUS')
+    const vaultPath = getProjectVaultPath(this.baseConfig.projectsRootDir, project.slug, 'tech/NEXUS')
     let existingPassword: string | undefined
     try {
       existingPassword = await this.vault.read(vaultPath).then(res => res.data?.NEXUS_PASSWORD)
@@ -487,7 +490,7 @@ export class NexusService {
   private async getOptionalConfigValue(project: ProjectWithDetails, key: string) {
     const projectValue = getPluginConfig(project, key)
     if (projectValue) return projectValue
-    return await this.nexusDatastore.getAdminPluginConfig(PLUGIN_NAME, key)
+    return await this.datastore.getAdminPluginConfig(PLUGIN_NAME, key)
   }
 
   private async ensureProjectGroupRoles(project: ProjectWithDetails, args: { readOnlyPrivileges: string[], writePrivileges: string[] }) {
@@ -511,10 +514,10 @@ export class NexusService {
   }
 
   private async ensurePlatformRoles(projects: ProjectWithDetails[]) {
-    const rawWriteGroupPaths = await this.nexusDatastore.getAdminPluginConfig(PLUGIN_NAME, PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY)
+    const rawWriteGroupPaths = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY)
       ?? DEFAULT_PLATFORM_WRITE_GROUP_PATHS
 
-    const rawReadGroupPaths = await this.nexusDatastore.getAdminPluginConfig(PLUGIN_NAME, PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY)
+    const rawReadGroupPaths = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY)
       ?? DEFAULT_PLATFORM_READ_GROUP_PATHS
 
     const readonlyPrivileges = new Set<string>()
@@ -574,7 +577,7 @@ export class NexusService {
       this.client.deleteSecurityUsers(project.slug),
     ])
 
-    const vaultPath = getProjectVaultPath(this.config.projectRootDir, project.slug, 'tech/NEXUS')
+    const vaultPath = getProjectVaultPath(this.baseConfig.projectsRootDir, project.slug, 'tech/NEXUS')
     try {
       await this.vault.delete(vaultPath)
     } catch (error) {

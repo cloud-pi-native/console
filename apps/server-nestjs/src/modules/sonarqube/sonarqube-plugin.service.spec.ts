@@ -1,25 +1,26 @@
+import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
 import { makeToUrlParams } from '../plugin/plugin.utils'
 import { SonarqubePluginService } from './sonarqube-plugin.service'
 
 describe('sonarqubePluginService', () => {
   let service: SonarqubePluginService
-  let config: DeepMockProxy<ConfigurationService>
+  let config: DeepMockProxy<ConfigType<typeof sonarqubeConfigFactory>>
 
   beforeEach(async () => {
-    config = mockDeep<ConfigurationService>({
-      sonarqubeUrl: 'https://sonar.public/',
-      sonarqubeInternalUrl: 'https://sonar.internal/',
+    config = mockDeep<ConfigType<typeof sonarqubeConfigFactory>>({
+      url: 'https://sonar.public/',
+      internalUrl: 'https://sonar.internal/',
     })
 
     const moduleRef = await Test.createTestingModule({
       providers: [
         SonarqubePluginService,
-        { provide: ConfigurationService, useValue: config },
+        { provide: sonarqubeConfigFactory.KEY, useValue: config },
       ],
     }).compile()
 

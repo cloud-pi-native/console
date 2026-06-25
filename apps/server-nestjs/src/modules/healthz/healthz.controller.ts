@@ -1,8 +1,8 @@
-import { Controller, Get, Inject } from '@nestjs/common'
-import { HealthCheck, HealthCheckService } from '@nestjs/terminus'
+import type { HealthCheckService, HealthIndicatorFunction } from '@nestjs/terminus'
+import { Controller, Get, Optional } from '@nestjs/common'
+import { HealthCheck } from '@nestjs/terminus'
 import { ArgoCDHealthService } from '../argocd/argocd-health.service'
 import { GitlabHealthService } from '../gitlab/gitlab-health.service'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { DatabaseHealthService } from '../infrastructure/database/database-health.service'
 import { KeycloakHealthService } from '../keycloak/keycloak-health.service'
 import { NexusHealthService } from '../nexus/nexus-health.service'
@@ -12,46 +12,32 @@ import { VaultHealthService } from '../vault/vault-health.service'
 
 @Controller('api/v1/healthz')
 export class HealthzController {
+  // Optional modules (gated by USE_*) resolve to undefined when not registered.
   constructor(
-    @Inject(HealthCheckService) private readonly health: HealthCheckService,
-    @Inject(DatabaseHealthService) private readonly database: DatabaseHealthService,
-    @Inject(KeycloakHealthService) private readonly keycloak: KeycloakHealthService,
-    @Inject(GitlabHealthService) private readonly gitlab: GitlabHealthService,
-    @Inject(VaultHealthService) private readonly vault: VaultHealthService,
-    @Inject(NexusHealthService) private readonly nexus: NexusHealthService,
-    @Inject(RegistryHealthService) private readonly registry: RegistryHealthService,
-    @Inject(ArgoCDHealthService) private readonly argocd: ArgoCDHealthService,
-    @Inject(OpenCdsHealthService) private readonly opencds: OpenCdsHealthService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    private readonly health: HealthCheckService,
+    @Optional() private readonly database?: DatabaseHealthService,
+    @Optional() private readonly keycloak?: KeycloakHealthService,
+    @Optional() private readonly gitlab?: GitlabHealthService,
+    @Optional() private readonly vault?: VaultHealthService,
+    @Optional() private readonly nexus?: NexusHealthService,
+    @Optional() private readonly registry?: RegistryHealthService,
+    @Optional() private readonly argocd?: ArgoCDHealthService,
+    @Optional() private readonly opencds?: OpenCdsHealthService,
   ) {}
 
   @Get()
   @HealthCheck()
   check() {
-    const checks = [
-      () => this.database.check('database'),
-      () => this.keycloak.check('keycloak'),
-    ]
-
-    if (this.config.openCdsUrl) {
-      checks.push(() => this.opencds.check('opencds'))
-    }
-    if (this.config.gitlabUrl) {
-      checks.push(() => this.gitlab.check('gitlab'))
-    }
-    if (this.config.vaultUrl) {
-      checks.push(() => this.vault.check('vault'))
-    }
-    if (this.config.nexusUrl) {
-      checks.push(() => this.nexus.check('nexus'))
-    }
-    if (this.config.harborUrl) {
-      checks.push(() => this.registry.check('registry'))
-    }
-    if (this.config.argocdUrl) {
-      checks.push(() => this.argocd.check('argocd'))
-    }
-
+    const checks: HealthIndicatorFunction[] = []
+    // Each health service's own check() reports 'Not configured' when its URL is absent.
+    if (this.database) checks.push(() => this.database!.check('database'))
+    if (this.keycloak) checks.push(() => this.keycloak!.check('keycloak'))
+    if (this.gitlab) checks.push(() => this.gitlab!.check('gitlab'))
+    if (this.vault) checks.push(() => this.vault!.check('vault'))
+    if (this.nexus) checks.push(() => this.nexus!.check('nexus'))
+    if (this.registry) checks.push(() => this.registry!.check('registry'))
+    if (this.argocd) checks.push(() => this.argocd!.check('argocd'))
+    if (this.opencds) checks.push(() => this.opencds!.check('opencds'))
     return this.health.check(checks)
   }
 }

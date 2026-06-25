@@ -1,6 +1,7 @@
+import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { nexusConfigFactory } from '../../config/nexus.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 
 export interface NexusFetchOptions {
@@ -44,7 +45,7 @@ export class NexusError extends Error {
 @Injectable()
 export class NexusHttpClientService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(nexusConfigFactory.KEY) private readonly nexusConfig: ConfigType<typeof nexusConfigFactory>,
   ) {}
 
   @StartActiveSpan()
@@ -76,7 +77,7 @@ export class NexusHttpClientService {
   }
 
   private get baseUrl() {
-    const url = this.config.getInternalOrPublicNexusUrl()
+    const url = this.nexusConfig.internalOrPublicUrl
     if (!url) {
       throw new NexusError('NotConfigured', 'NEXUS_INTERNAL_URL or NEXUS_URL is required')
     }
@@ -88,13 +89,13 @@ export class NexusHttpClientService {
   }
 
   private get basicAuth() {
-    if (!this.config.nexusAdmin) {
+    if (!this.nexusConfig.admin) {
       throw new NexusError('NotConfigured', 'NEXUS_ADMIN is required')
     }
-    if (!this.config.nexusAdminPassword) {
+    if (!this.nexusConfig.adminPassword) {
       throw new NexusError('NotConfigured', 'NEXUS_ADMIN_PASSWORD is required')
     }
-    const raw = `${this.config.nexusAdmin}:${this.config.nexusAdminPassword}`
+    const raw = `${this.nexusConfig.admin}:${this.nexusConfig.adminPassword}`
     return Buffer.from(raw, 'utf8').toString('base64')
   }
 

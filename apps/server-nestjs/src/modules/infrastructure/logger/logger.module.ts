@@ -1,19 +1,18 @@
+import type { ConfigType } from '@nestjs/config'
 import { getLoggerOptions } from '@cpn-console/logger'
 import { Module } from '@nestjs/common'
 import { LoggerModule as PinoLoggerModule } from 'nestjs-pino'
-
-import { ConfigurationModule } from '../configuration/configuration.module'
-import { ConfigurationService } from '../configuration/configuration.service'
+import { baseConfigFactory } from '../../../config/base.config'
 
 @Module({
   imports: [
     PinoLoggerModule.forRootAsync({
-      imports: [ConfigurationModule],
-      inject: [ConfigurationService],
-      useFactory: async (configService: ConfigurationService) => {
+      imports: [],
+      inject: [baseConfigFactory.KEY],
+      useFactory: async (baseConfig: ConfigType<typeof baseConfigFactory>) => {
         return {
           pinoHttp: {
-            ...getLoggerOptions(configService.isProd ? 'production' : 'development', configService.isTest ? 'info' : 'debug'),
+            ...getLoggerOptions(baseConfig.isProd ? 'production' : 'development', baseConfig.isTest ? 'info' : 'debug'),
             customLogLevel: (req, res, err) => {
               if (err || res.statusCode >= 500) {
                 return 'error'

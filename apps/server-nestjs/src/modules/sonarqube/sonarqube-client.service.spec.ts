@@ -1,3 +1,4 @@
+import type { ConfigType } from '@nestjs/config'
 import type { AddPermissionGroupParams, CreateUserParams, DeactivateUserParams, RevokeUserTokenParams } from './sonarqube-client.service'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
@@ -5,7 +6,7 @@ import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
 import { SonarqubeClientService } from './sonarqube-client.service'
 import { SonarqubeHttpClientService } from './sonarqube-http-client.service'
 import { makeSonarqubeGeneratedToken, makeSonarqubeGroup, makeSonarqubePaging, makeSonarqubeProject, makeSonarqubeUser } from './sonarqube-testing.utils'
@@ -18,20 +19,20 @@ const server = setupServer()
 
 describe('sonarqubeClientService', () => {
   let service: SonarqubeClientService
-  let config: ReturnType<typeof mockDeep<ConfigurationService>>
+  let config: ReturnType<typeof mockDeep<ConfigType<typeof sonarqubeConfigFactory>>>
 
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
   beforeEach(async () => {
-    config = mockDeep<ConfigurationService>({
-      sonarApiToken: sonarToken,
-      getInternalOrPublicSonarqubeUrl: () => sonarUrl,
+    config = mockDeep<ConfigType<typeof sonarqubeConfigFactory>>({
+      apiToken: sonarToken,
+      internalOrPublicUrl: sonarUrl,
     })
 
     const module = await Test.createTestingModule({
       providers: [
         SonarqubeClientService,
         SonarqubeHttpClientService,
-        { provide: ConfigurationService, useValue: config },
+        { provide: sonarqubeConfigFactory.KEY, useValue: config },
       ],
     }).compile()
 

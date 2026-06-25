@@ -1,3 +1,4 @@
+import type { ConfigType } from '@nestjs/config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { VaultSecret } from '../vault/vault-client.service'
 import type {
@@ -14,8 +15,9 @@ import { specificallyEnabled } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
-import { find } from '../../utils/iterable'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { baseConfigFactory } from '../../config/base.config'
+import { harborConfigFactory } from '../../config/harbor.config'
+import { find } from '../../utils/iterable.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -55,18 +57,19 @@ export class RegistryService {
 
   constructor(
     @Inject(RegistryClientService) private readonly client: RegistryClientService,
-    @Inject(RegistryDatastoreService) private readonly registryDatastore: RegistryDatastoreService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(RegistryDatastoreService) private readonly datastore: RegistryDatastoreService,
+    @Inject(harborConfigFactory.KEY) private readonly harborConfig: ConfigType<typeof harborConfigFactory>,
+    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
   ) {
     this.logger.log('RegistryService initialized')
   }
 
   private get host() {
-    if (!this.config.harborUrl) {
+    if (!this.harborConfig.url) {
       throw new Error('HARBOR_URL is required')
     }
-    return getHostFromUrl(this.config.harborUrl)
+    return getHostFromUrl(this.harborConfig.url)
   }
 
   private async getRobot(project: ProjectWithDetails, harborProjectId: number, robotName: string) {
@@ -103,11 +106,11 @@ export class RegistryService {
       'project.slug': project.slug,
       'registry.robot.name': robotName,
     })
-    if (!this.config.projectRootDir) {
+    if (!this.baseConfig.projectsRootDir) {
       throw new Error('PROJECTS_ROOT_DIR is required')
     }
     const relativeVaultPath = `REGISTRY/${robotName}`
-    const vaultPath = getProjectVaultPath(project, this.config.projectRootDir, relativeVaultPath)
+    const vaultPath = getProjectVaultPath(project, this.baseConfig.projectsRootDir, relativeVaultPath)
     const vaultRobotSecret = await this.vault.read<VaultRobotSecret>(vaultPath).catch((error) => {
       if (error instanceof VaultError && error.kind === 'NotFound') return null
       throw error
@@ -142,7 +145,7 @@ export class RegistryService {
     const createdTimeRaw = vaultSecret?.metadata?.created_time
     if (!createdTimeRaw) return false
     const createdTime = new Date(createdTimeRaw)
-    return daysAgoFromNow(createdTime) > this.config.harborRobotRotationThresholdDays
+    return daysAgoFromNow(createdTime) > this.harborConfig.robotRotationThresholdDays
   }
 
   private async ensureProjectGroupMember(
@@ -252,9 +255,9 @@ export class RegistryService {
       'registry.project.id': harborProjectId,
     })
     const policy = generateRetentionPolicy(harborProjectId, {
-      harborRuleTemplate: this.config.harborRuleTemplate,
-      harborRuleCount: this.config.harborRuleCount,
-      harborRetentionCron: this.config.harborRetentionCron,
+      harborRuleTemplate: this.harborConfig.ruleTemplate,
+      harborRuleCount: this.harborConfig.ruleCount,
+      harborRetentionCron: this.harborConfig.retentionCron,
     })
     const retentionId = await this.client.getRetentionId(project.slug)
     span?.setAttribute('registry.retention.exists', !!retentionId)
@@ -346,13 +349,13 @@ export class RegistryService {
   async handleCron() {
     const span = trace.getActiveSpan()
     this.logger.log('Starting Registry reconciliation')
-    const projects = await this.registryDatastore.getAllProjects()
+    const projects = await this.datastore.getAllProjects()
     span?.setAttribute('registry.projects.count', projects.length)
     await Promise.all(projects.map(p => this.ensureProject(p)))
   }
 
   private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string) {
-    const adminPluginConfig = await this.registryDatastore.getAdminPluginConfig(PLUGIN_NAME, key)
+    const adminPluginConfig = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, key)
     if (adminPluginConfig) return adminPluginConfig
     return getPluginConfig(project, key)
   }

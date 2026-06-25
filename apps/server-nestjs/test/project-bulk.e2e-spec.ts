@@ -1,10 +1,12 @@
 import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
+import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { baseConfigFactory } from '../src/config/base.config'
+import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
-import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
@@ -29,7 +31,7 @@ describeWithProjectBulk('ProjectBulkService (e2e)', {}, () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectBulkModule],
+      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectBulkModule],
     }).compile()
 
     await moduleRef.init()

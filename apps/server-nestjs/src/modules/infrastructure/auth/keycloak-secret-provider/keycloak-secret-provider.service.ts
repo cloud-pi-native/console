@@ -1,10 +1,11 @@
+import type { ConfigType } from '@nestjs/config'
 import type { Cache } from 'cache-manager'
 import { createPublicKey } from 'node:crypto'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { JwtSecretRequestType } from '@nestjs/jwt'
 import { z } from 'zod'
-import { ConfigurationService } from '../../configuration/configuration.service'
+import { keycloakConfigFactory } from '../../../../config/keycloak.config'
 import { createKeycloakSecretProviderOpenIdConfigurationCacheKey, createKeycloakSecretProviderPublicKeyCacheKey } from './keycloak-secret-provider.utils'
 
 const OpenidConfigurationSchema = z.object({
@@ -35,16 +36,19 @@ export class KeycloakSecretProviderService {
   private readonly logger = new Logger(KeycloakSecretProviderService.name)
 
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
+    @Inject(keycloakConfigFactory.KEY) private readonly keycloakConfig: ConfigType<typeof keycloakConfigFactory>,
   ) {}
 
   async fetchOpenIdConfig(): Promise<OpenidConfiguration | undefined> {
-    const cacheKey = createKeycloakSecretProviderOpenIdConfigurationCacheKey(this.config.getKeycloakOpenidConfigurationUrl())
+    const openidUrl = this.keycloakConfig.openidConfigurationUrl
+    if (!openidUrl) return undefined
+
+    const cacheKey = createKeycloakSecretProviderOpenIdConfigurationCacheKey(openidUrl)
     const cached = await this.cache.get<OpenidConfiguration>(cacheKey)
     if (cached) return cached
 
-    const response = await fetch(this.config.getKeycloakOpenidConfigurationUrl())
+    const response = await fetch(openidUrl)
     if (!response.ok) {
       this.logger.error(`Failed to fetch openid-configuration: ${response.status} ${response.statusText}`)
       return undefined
@@ -57,7 +61,7 @@ export class KeycloakSecretProviderService {
       return undefined
     }
 
-    await this.cache.set(cacheKey, config.data, this.config.keycloakOpenidConfigurationCacheTtlMs)
+    await this.cache.set(cacheKey, config.data, this.keycloakConfig.openidConfigurationCacheTtlMs)
     return config.data
   }
 
@@ -72,13 +76,13 @@ export class KeycloakSecretProviderService {
   }
 
   private replaceJwksUriDomainWithInternalDomain(jwksUri: string): string {
-    if (!this.config.keycloakDomain) {
+    if (!this.keycloakConfig.domain) {
       this.logger.log(`No internal domain configured, returning original JWKS URI: ${jwksUri}`)
       return jwksUri
     }
     const url = new URL(jwksUri)
-    url.protocol = this.config.keycloakProtocol ?? url.protocol
-    url.host = this.config.keycloakDomain ?? url.host
+    url.protocol = this.keycloakConfig.protocol ?? url.protocol
+    url.host = this.keycloakConfig.domain ?? url.host
     this.logger.log(`Replacing JWKS URI domain: ${jwksUri} -> ${url.toString()}`)
     return url.toString()
   }
@@ -88,7 +92,7 @@ export class KeycloakSecretProviderService {
     if (!jwksUri) return undefined
 
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), this.config.keycloakJwksTimeoutMs)
+    const timeout = setTimeout(() => controller.abort(), this.keycloakConfig.jwksTimeoutMs)
 
     try {
       const response = await fetch(jwksUri, { signal: controller.signal })
@@ -124,7 +128,7 @@ export class KeycloakSecretProviderService {
     })
 
     const pem = publicKey.export({ format: 'pem', type: 'pkcs1' }) as string
-    await this.cache.set(cacheKey, pem, this.config.keycloakJwksCacheTtlMs)
+    await this.cache.set(cacheKey, pem, this.keycloakConfig.jwksCacheTtlMs)
     return pem
   }
 

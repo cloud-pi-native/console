@@ -1,8 +1,9 @@
+import type { ConfigType } from '@nestjs/config'
 import type { PluginResults } from '../plugin/plugin.utils'
 import type { ProjectWithDetails } from '../project/project-queries.utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { baseConfigFactory } from '../../config/base.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { LogService } from '../log/log.service'
 import { getFailedPlugins, mergePluginResults } from '../plugin/plugin.utils'
@@ -46,7 +47,7 @@ export class AppEventsService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(EventEmitter2) private readonly eventEmitter: EventEmitter2,
     @Inject(LogService) private readonly logs: LogService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
   ) {}
 
   /**
@@ -130,7 +131,7 @@ export class AppEventsService {
     if (event === 'project.upsert') {
       await this.prisma.project.update({
         where: { id: projectId },
-        data: { status: 'created', lastSuccessProvisionningVersion: this.config.appVersion },
+        data: { status: 'created', lastSuccessProvisionningVersion: this.baseConfig.appVersion },
       })
     }
   }

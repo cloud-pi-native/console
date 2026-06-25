@@ -1,6 +1,6 @@
 import { generateProjectKey as legacyGenerateProjectKey } from '@cpn-console/hooks'
 import { describe, expect, it } from 'vitest'
-import { generateProjectKey } from './crypto'
+import { generateProjectKey } from './crypto.utils'
 
 describe('generateProjectKey', () => {
   it('matches the legacy @cpn-console/hooks implementation byte-for-byte', () => {

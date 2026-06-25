@@ -1,9 +1,10 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
+import type { ConfigType } from '@nestjs/config'
 import type { Cache } from 'cache-manager'
 import { DISABLED } from '@cpn-console/shared'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { harborConfigFactory } from '../../config/harbor.config'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
 import { createProjectSlugCacheKey } from './registry.utils'
@@ -13,10 +14,10 @@ export class RegistryPluginService {
   private readonly logger = new Logger(RegistryPluginService.name)
 
   constructor(
-    @Inject(ConfigurationService)
-    private readonly config: ConfigurationService,
+    @Inject(harborConfigFactory.KEY)
+    private readonly harborConfig: ConfigType<typeof harborConfigFactory>,
     @Inject(RegistryDatastoreService)
-    private readonly registryDatastore: RegistryDatastoreService,
+    private readonly datastore: RegistryDatastoreService,
     @Inject(RegistryClientService)
     private readonly registryClient: RegistryClientService,
     @Inject(CACHE_MANAGER)
@@ -28,9 +29,9 @@ export class RegistryPluginService {
     const cached = await this.cache.get<string | null>(cacheKey)
     if (cached !== undefined) return cached ?? undefined
 
-    const project = await this.registryDatastore.getProject(projectId)
+    const project = await this.datastore.getProject(projectId)
     const slug = project?.slug ?? null
-    await this.cache.set(cacheKey, slug, this.config.harborProjectSlugCacheTtlMs)
+    await this.cache.set(cacheKey, slug, this.harborConfig.projectSlugCacheTtlMs)
     return slug ?? undefined
   }
 
@@ -50,8 +51,8 @@ export class RegistryPluginService {
   }
 
   private resolveHarborProjectUrl(harborProjectId: number): string | undefined {
-    if (!this.config.harborUrl) return undefined
-    return new URL(`harbor/projects/${harborProjectId}/`, this.config.harborUrl).toString()
+    if (!this.harborConfig.url) return undefined
+    return new URL(`harbor/projects/${harborProjectId}/`, this.harborConfig.url).toString()
   }
 
   private async resolveProjectUrl(projectId: string): Promise<string | undefined> {

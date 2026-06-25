@@ -1,4 +1,5 @@
 import type { CondensedGroupSchema, MemberSchema, ProjectSchema } from '@gitbeaker/core'
+import type { ConfigType } from '@nestjs/config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { VaultSecret } from '../vault/vault-client.service'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
@@ -7,8 +8,8 @@ import { AccessLevel } from '@gitbeaker/core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
-import { getAll } from '../../utils/iterable'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { gitlabConfigFactory } from '../../config/gitlab.config'
+import { getAll } from '../../utils/iterable.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -51,10 +52,10 @@ export class GitlabService {
   private readonly logger = new Logger(GitlabService.name)
 
   constructor(
-    @Inject(GitlabDatastoreService) private readonly gitlabDatastore: GitlabDatastoreService,
+    @Inject(GitlabDatastoreService) private readonly datastore: GitlabDatastoreService,
     @Inject(GitlabClientService) private readonly gitlab: GitlabClientService,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(gitlabConfigFactory.KEY) private readonly gitlabConfig: ConfigType<typeof gitlabConfigFactory>,
   ) {
     this.logger.log('GitLabService initialized')
   }
@@ -93,7 +94,7 @@ export class GitlabService {
     const span = trace.getActiveSpan()
     span?.setAttribute('gitlab.projects.count', 0)
     this.logger.log('Starting GitLab reconciliation')
-    const projects = await this.gitlabDatastore.getAllProjects()
+    const projects = await this.datastore.getAllProjects()
     span?.setAttribute('gitlab.projects.count', projects.length)
     this.logger.log(`Loaded ${projects.length} projects for GitLab reconciliation`)
     await this.ensureProjectGroups(projects)
@@ -220,7 +221,7 @@ export class GitlabService {
   private async getAdminRoleIds(project: ProjectWithDetails): Promise<{ adminRoleId?: string, auditorRoleId?: string }> {
     const adminGroupPath = await this.getAdminGroupPath(project)
     const auditorGroupPath = await this.getAuditorGroupPath(project)
-    const roles = await this.gitlabDatastore.getAdminRolesByOidcGroups([adminGroupPath, auditorGroupPath])
+    const roles = await this.datastore.getAdminRolesByOidcGroups([adminGroupPath, auditorGroupPath])
     return generateAdminRoleMapping(roles, adminGroupPath, auditorGroupPath)
   }
 
@@ -233,7 +234,7 @@ export class GitlabService {
   }
 
   private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
-    const adminPluginConfig = await this.gitlabDatastore.getAdminPluginConfig(PLUGIN_NAME, key)
+    const adminPluginConfig = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, key)
     if (adminPluginConfig) return adminPluginConfig
     if (!project) return undefined
     return getProjectPluginConfig(project, key) ?? undefined
@@ -513,7 +514,7 @@ export class GitlabService {
   private isMirrorCredsExpiring(vaultSecret: VaultSecret): boolean {
     if (!vaultSecret?.metadata?.created_time) return false
     const createdTime = new Date(vaultSecret.metadata.created_time)
-    return daysAgoFromNow(createdTime) > this.config.gitlabMirrorTokenRotationThresholdDays
+    return daysAgoFromNow(createdTime) > this.gitlabConfig.mirrorTokenRotationThresholdDays
   }
 
   private getExternalRepoHost(externalRepoUrl: string | null | undefined): string | undefined {
