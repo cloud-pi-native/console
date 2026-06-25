@@ -3,7 +3,7 @@ import { HealthIndicatorService } from '@nestjs/terminus'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 
 @Injectable()
-export class OpenCdsHealthService {
+export class ServiceChainHealthService {
   constructor(
     @Inject(ConfigurationService) private readonly config: ConfigurationService,
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
