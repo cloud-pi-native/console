@@ -10,6 +10,7 @@ import { RegistryModule } from '../registry/registry.module'
 import { ServiceChainModule } from '../service-chain/service-chain.module'
 import { VaultModule } from '../vault/vault.module'
 import { HealthzController } from './healthz.controller'
+import { HealthzService } from './healthz.service'
 
 @Module({
   imports: [
@@ -25,5 +26,6 @@ import { HealthzController } from './healthz.controller'
     ServiceChainModule,
   ],
   controllers: [HealthzController],
+  providers: [HealthzService],
 })
 export class HealthzModule {}

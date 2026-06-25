@@ -1,6 +1,7 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { PLUGIN_NAME } from './keycloak.constants'
 
 @Injectable()
 export class KeycloakHealthService {
@@ -11,8 +12,8 @@ export class KeycloakHealthService {
     private readonly healthIndicator: HealthIndicatorService,
   ) {}
 
-  async check(key: string) {
-    const indicator = this.healthIndicator.check(key)
+  async check() {
+    const indicator = this.healthIndicator.check(PLUGIN_NAME)
     const url = this.config.getKeycloakOpenidConfigurationUrl()
     if (!url) return indicator.down('Not configured')
 

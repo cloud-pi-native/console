@@ -1,6 +1,7 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { PLUGIN_NAME } from './nexus.constants'
 
 @Injectable()
 export class NexusHealthService {
@@ -9,8 +10,8 @@ export class NexusHealthService {
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 
-  async check(key: string) {
-    const indicator = this.healthIndicator.check(key)
+  async check() {
+    const indicator = this.healthIndicator.check(PLUGIN_NAME)
     if (!this.config.nexusInternalUrl) return indicator.down('Not configured')
 
     const url = new URL('/service/rest/v1/status', this.config.nexusInternalUrl).toString()
