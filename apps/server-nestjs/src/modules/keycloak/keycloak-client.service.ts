@@ -3,14 +3,15 @@ import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/g
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
 import type { Credentials } from '@keycloak/keycloak-admin-client/lib/utils/auth'
 import type { OnModuleInit } from '@nestjs/common'
+import type { ConfigType } from '@nestjs/config'
 import type { ProjectWithDetails } from './keycloak-datastore.service'
 import type { GroupRepresentationWith } from './keycloak.utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Interval } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
-import { getErrorResponseStatus } from '../../utils/http-error'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { keycloakConfigFactory } from '../../config/keycloak.config'
+import { getErrorResponseStatus } from '../../utils/http.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { ADMIN_AUTH_REALM, ADMIN_TOKEN_REFRESH_INTERVAL_MS, CONSOLE_GROUP_NAME, PASSWORD_GRANT_TYPE, REFRESH_TOKEN_GRANT_TYPE, SUBGROUPS_PAGINATE_QUERY_MAX } from './keycloak.constants'
 
@@ -23,7 +24,7 @@ export class KeycloakClientService implements OnModuleInit {
   private authenticated = false
 
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(keycloakConfigFactory.KEY) private readonly keycloakConfig: ConfigType<typeof keycloakConfigFactory>,
     @Inject(KEYCLOAK_ADMIN_CLIENT) private readonly client: KcAdminClient,
   ) {
   }
@@ -274,17 +275,8 @@ export class KeycloakClientService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    if (!this.config.keycloakRealm) {
-      throw new Error('Keycloak realm is not configured')
-    }
-    if (!this.config.keycloakAdmin || !this.config.keycloakAdminPassword) {
-      throw new Error('Keycloak admin username or password is not configured')
-    }
-    if (!this.config.keycloakAdminClientId) {
-      throw new Error('Keycloak admin client id is not configured')
-    }
     try {
-      this.logger.log(`Authenticating Keycloak admin client (realm=${this.config.keycloakRealm})`)
+      this.logger.log(`Authenticating Keycloak admin client (realm=${this.keycloakConfig.realm})`)
       await this.authenticate(this.passwordCredentials())
     } catch (err) {
       if (err instanceof Error) {
@@ -294,9 +286,9 @@ export class KeycloakClientService implements OnModuleInit {
       }
       throw err
     }
-    this.client.setConfig({ realmName: this.config.keycloakRealm })
+    this.client.setConfig({ realmName: this.keycloakConfig.realm })
     this.authenticated = true
-    this.logger.log(`Keycloak Admin Client authenticated (realm=${this.config.keycloakRealm})`)
+    this.logger.log(`Keycloak Admin Client authenticated (realm=${this.keycloakConfig.realm})`)
   }
 
   // The admin client never refreshes its token on its own; without this the
@@ -318,27 +310,18 @@ export class KeycloakClientService implements OnModuleInit {
     }
   }
 
-  // Checked by onModuleInit before any authentication; the getter narrows the
-  // config value so Credentials.clientId stays a plain string
-  private get adminClientId(): string {
-    if (!this.config.keycloakAdminClientId) {
-      throw new Error('KEYCLOAK_ADMIN_CLIENT_ID is not configured')
-    }
-    return this.config.keycloakAdminClientId
-  }
-
   private passwordCredentials(): Credentials {
     return {
-      clientId: this.adminClientId,
+      clientId: this.keycloakConfig.adminClientId,
       grantType: PASSWORD_GRANT_TYPE,
-      username: this.config.keycloakAdmin,
-      password: this.config.keycloakAdminPassword,
+      username: this.keycloakConfig.admin,
+      password: this.keycloakConfig.adminPassword,
     }
   }
 
   private refreshTokenCredentials(): Credentials {
     return {
-      clientId: this.adminClientId,
+      clientId: this.keycloakConfig.adminClientId,
       grantType: REFRESH_TOKEN_GRANT_TYPE,
       refreshToken: this.client.refreshToken,
     }

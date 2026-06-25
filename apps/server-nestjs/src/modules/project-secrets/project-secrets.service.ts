@@ -1,7 +1,8 @@
+import type { ConfigType } from '@nestjs/config'
 import { Inject, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { z } from 'zod'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { baseConfigFactory } from '../../config/base.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -28,7 +29,7 @@ export class ProjectSecretsService {
 
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
     @Inject(VaultService) @Optional() private readonly vault?: VaultService,
     @Inject(VaultClientService) @Optional() private readonly vaultClient?: VaultClientService,
   ) {}
@@ -85,7 +86,7 @@ export class ProjectSecretsService {
     slug: string,
     relativePaths: string[],
   ): Promise<Record<string, Record<string, string>>> {
-    const projectPath = generateProjectPath(this.config.projectRootDir, slug)
+    const projectPath = generateProjectPath(this.baseConfig.projectsRootDir, slug)
 
     const result: Record<string, Record<string, string>> = {}
     this.logger.debug(`project.get aggregating (projectId=${projectId}, slug=${slug}, secretFiles=${relativePaths.length})`)

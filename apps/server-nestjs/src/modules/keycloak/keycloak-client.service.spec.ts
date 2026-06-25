@@ -1,3 +1,4 @@
+import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import KcAdminClient from '@keycloak/keycloak-admin-client'
 import { ScheduleModule } from '@nestjs/schedule'
@@ -6,7 +7,7 @@ import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { keycloakConfigFactory } from '../../config/keycloak.config'
 import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from './keycloak-client.service'
 import { ADMIN_TOKEN_REFRESH_INTERVAL_MS } from './keycloak.constants'
 
@@ -37,19 +38,19 @@ function useTokenEndpoint({ rejectGrant = () => false }: { rejectGrant?: (grantT
   return tokenRequests
 }
 
-function createKeycloakClientServiceTestingModule(config: Partial<ConfigurationService> = {}) {
+function createKeycloakClientServiceTestingModule(config: Partial<ConfigType<typeof keycloakConfigFactory>> = {}) {
   return Test.createTestingModule({
     imports: [ScheduleModule.forRoot()],
     providers: [
       KeycloakClientService,
       { provide: KEYCLOAK_ADMIN_CLIENT, useValue: new KcAdminClient({ baseUrl: keycloakUrl }) },
       {
-        provide: ConfigurationService,
-        useValue: mockDeep<ConfigurationService>({
-          keycloakRealm: projectRealm,
-          keycloakAdmin: 'admin',
-          keycloakAdminPassword: 'admin-password',
-          keycloakAdminClientId: 'admin-cli',
+        provide: keycloakConfigFactory.KEY,
+        useValue: mockDeep<ConfigType<typeof keycloakConfigFactory>>({
+          realm: projectRealm,
+          admin: 'admin',
+          adminPassword: 'admin-password',
+          adminClientId: 'admin-cli',
           ...config,
         }),
       },
@@ -158,28 +159,6 @@ describe('keycloakClientService authentication lifecycle', () => {
 
     await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS * 2)
     expect(tokenRequests).toHaveLength(1)
-  })
-
-  it('should not authenticate nor refresh the token when the Keycloak realm is not configured', async () => {
-    const tokenRequests = useTokenEndpoint()
-    await module.close()
-    module = await createKeycloakClientServiceTestingModule({ keycloakRealm: undefined }).compile()
-
-    await expect(module.init()).rejects.toThrow()
-
-    await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS * 2)
-    expect(tokenRequests).toHaveLength(0)
-  })
-
-  it('should not authenticate nor refresh the token when the admin credentials are not configured', async () => {
-    const tokenRequests = useTokenEndpoint()
-    await module.close()
-    module = await createKeycloakClientServiceTestingModule({ keycloakAdminPassword: undefined }).compile()
-
-    await expect(module.init()).rejects.toThrow()
-
-    await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS * 2)
-    expect(tokenRequests).toHaveLength(0)
   })
 })
 

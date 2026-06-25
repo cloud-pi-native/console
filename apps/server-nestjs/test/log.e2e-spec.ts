@@ -13,7 +13,6 @@ import { LogService } from '../src/modules/log/log.service'
 
 const canRunLogE2E
   = Boolean(process.env.E2E)
-    && Boolean(process.env.DB_URL)
 
 const describeWithLog = describe.runIf(canRunLogE2E)
 

@@ -1,9 +1,10 @@
+import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { harborConfigFactory } from '../../config/harbor.config'
 import { encodeBasicAuth } from './registry.utils'
 
-export type RegistryQuery = Record<string, string | number | undefined>
+export type RegistryQuery = Record<string, string | number>
 
 export interface RegistryFetchOptions {
   method?: string
@@ -46,28 +47,15 @@ export class RegistryError extends Error {
 @Injectable()
 export class RegistryHttpClientService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(harborConfigFactory.KEY) private readonly harborConfig: ConfigType<typeof harborConfigFactory>,
   ) {}
 
-  private get baseUrl() {
-    if (!this.config.harborInternalUrl) {
-      throw new RegistryError('NotConfigured', 'HARBOR_INTERNAL_URL is required')
-    }
-    return this.config.harborInternalUrl
-  }
-
   private get apiBaseUrl() {
-    return new URL('api/v2.0/', this.baseUrl).toString()
+    return new URL('api/v2.0/', this.harborConfig.internalUrl ?? this.harborConfig.url).toString()
   }
 
   private get defaultHeaders() {
-    if (!this.config.harborAdmin) {
-      throw new RegistryError('NotConfigured', 'HARBOR_ADMIN is required')
-    }
-    if (!this.config.harborAdminPassword) {
-      throw new RegistryError('NotConfigured', 'HARBOR_ADMIN_PASSWORD is required')
-    }
-    return { Accept: 'application/json', Authorization: `Basic ${encodeBasicAuth(this.config.harborAdmin, this.config.harborAdminPassword)}` }
+    return { Accept: 'application/json', Authorization: `Basic ${encodeBasicAuth(this.harborConfig.admin, this.harborConfig.adminPassword)}` }
   }
 
   async fetch<T = unknown>(
@@ -79,7 +67,7 @@ export class RegistryHttpClientService {
     span?.setAttribute('registry.method', method)
     span?.setAttribute('registry.path', path)
 
-    const request = this.createRequest(path, method, options.body, options.headers, options.query)
+    const request = this.createRequest(path, method, options)
     const response = await fetch(request).catch((error) => {
       throw new RegistryError(
         'Unexpected',
@@ -91,20 +79,20 @@ export class RegistryHttpClientService {
     return await handleResponse<T>(response)
   }
 
-  private createRequest(path: string, method: string, body?: unknown, extraHeaders?: Record<string, string>, query?: RegistryQuery): Request {
+  private createRequest(path: string, method: string, options: RegistryFetchOptions): Request {
     const url = new URL(path, this.apiBaseUrl)
-    if (query) {
-      for (const [key, value] of Object.entries(query)) {
-        if (value !== undefined) url.searchParams.set(key, String(value))
+    if (options.query) {
+      for (const [key, value] of Object.entries(options.query)) {
+        url.searchParams.set(key, String(value))
       }
     }
     const headers: Record<string, string> = {
       ...this.defaultHeaders,
-      ...extraHeaders,
+      ...options.headers,
     }
     let requestBody: string | undefined
-    if (body !== undefined) {
-      requestBody = JSON.stringify(body)
+    if (options.body !== undefined) {
+      requestBody = JSON.stringify(options.body)
       headers['Content-Type'] = 'application/json'
     }
     return new Request(url, { method, headers, body: requestBody })

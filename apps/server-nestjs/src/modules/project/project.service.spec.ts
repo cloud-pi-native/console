@@ -1,3 +1,4 @@
+import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import type { Prisma } from '@prisma/client'
 import type { DeepMockProxy } from 'vitest-mock-extended'
@@ -11,8 +12,9 @@ import {
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { baseConfigFactory } from '../../config/base.config'
+import { vaultConfigFactory } from '../../config/vault.config'
 import { AppEventsService } from '../events/app-events.service'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { LogService } from '../log/log.service'
 import {
@@ -33,13 +35,15 @@ describe('projectService', () => {
   let service: ProjectService
   let prisma: DeepMockProxy<PrismaService>
   let appEvents: DeepMockProxy<AppEventsService>
-  let config: DeepMockProxy<ConfigurationService>
+  let config: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
+  let vaultConfig: DeepMockProxy<ConfigType<typeof vaultConfigFactory>>
   let logs: DeepMockProxy<LogService>
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
     appEvents = mockDeep<AppEventsService>()
-    config = mockDeep<ConfigurationService>({ appVersion: 'dev' })
+    config = mockDeep<ConfigType<typeof baseConfigFactory>>({ appVersion: 'dev' })
+    vaultConfig = mockDeep<ConfigType<typeof vaultConfigFactory>>()
     logs = mockDeep<LogService>()
 
     module = await Test.createTestingModule({
@@ -47,7 +51,8 @@ describe('projectService', () => {
         ProjectService,
         { provide: PrismaService, useValue: prisma },
         { provide: AppEventsService, useValue: appEvents },
-        { provide: ConfigurationService, useValue: config },
+        { provide: baseConfigFactory.KEY, useValue: config },
+        { provide: vaultConfigFactory.KEY, useValue: vaultConfig },
         { provide: LogService, useValue: logs },
       ],
     }).compile()

@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
-import { ConfigurationModule } from '../../configuration/configuration.module'
 import { DatabaseModule } from '../../database/database.module'
 import { KeycloakSecretProviderModule } from '../keycloak-secret-provider/keycloak-secret-provider.module'
 import { KeycloakSecretProviderService } from '../keycloak-secret-provider/keycloak-secret-provider.service'
@@ -10,7 +9,7 @@ import { KeycloakJwtService } from './keycloak-jwt.service'
   imports: [
     DatabaseModule,
     JwtModule.registerAsync({
-      imports: [ConfigurationModule, KeycloakSecretProviderModule],
+      imports: [KeycloakSecretProviderModule],
       inject: [KeycloakSecretProviderService],
       useFactory: async (client: KeycloakSecretProviderService) => {
         // The issuer is fetched from the openid-configuration endpoint

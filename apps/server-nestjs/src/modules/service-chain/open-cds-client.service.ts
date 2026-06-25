@@ -1,57 +1,38 @@
-import type { HttpStatus } from '@nestjs/common'
-import type { Dispatcher, HeadersInit } from 'undici'
-import { Inject, Injectable, Logger } from '@nestjs/common'
-import { Agent, fetch, Headers } from 'undici'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
-import { throwIfNotOk } from './service-chain.utils'
-
-const openCdsDisabledMessage
-  = 'OpenCDS is disabled, please set OPENCDS_URL in your relevant .env file. See .env-example'
-
-const URL_REGEX = /^https?:\/\//
-const START_SLASHES_REGEX = /^\/+/
-const END_SLASHES_REGEX = /\/+$/
+import type { ConfigType } from '@nestjs/config'
+import type { HeadersInit, RequestInit } from 'undici'
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common'
+import { Agent, fetch, Headers, Request } from 'undici'
+import { baseConfigFactory } from '../../config/base.config'
+import { serviceChainConfigFactory } from '../../config/service-chain.config'
+import { OpenCdsClientError, throwIfNotOk } from './service-chain.utils'
 
 export interface OpenCdsRequestOptions {
   headers?: HeadersInit
   signal?: AbortSignal
-  query?: Record<string, string | number | boolean | undefined>
-}
-
-export class OpenCdsClientError extends Error {
-  constructor(
-    public readonly status: HttpStatus,
-    public readonly statusText: string,
-    public readonly body?: string,
-  ) {
-    super(`OpenCDS request failed with ${status} ${statusText}`)
-    this.name = 'OpenCdsClientError'
-  }
+  query?: Record<string, string | number | boolean>
 }
 
 @Injectable()
 export class OpenCdsClientService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(serviceChainConfigFactory.KEY) private readonly opencdsConfig: ConfigType<typeof serviceChainConfigFactory>,
+    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
   ) {}
 
   private readonly logger = new Logger(OpenCdsClientService.name)
 
   async get<T>(path: string, options?: OpenCdsRequestOptions): Promise<T> {
-    const url = this.buildUrl(path, options?.query)
-    this.logger.debug(`Retrieving data from URL: ${url}`)
+    const request = this.createRequest('GET', path, undefined, options)
+    this.logger.debug(`Retrieving data from URL: ${request.url}`)
 
-    const headers = this.buildHeaders(options?.headers)
-
-    const response = await fetch(url, {
-      dispatcher: this.buildDispatcher(),
-      headers,
-      method: 'GET',
-      signal: options?.signal,
+    const response = await fetch(request).catch((error) => {
+      throw new OpenCdsClientError(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        error instanceof Error ? error.message : String(error),
+      )
     })
 
     await throwIfNotOk(response)
-
     return (await response.json()) as T
   }
 
@@ -60,63 +41,48 @@ export class OpenCdsClientService {
     body?: TBody,
     options?: OpenCdsRequestOptions,
   ): Promise<void> {
-    const hasBody = body !== undefined
+    const requestBody = JSON.stringify(body)
+    const request = this.createRequest('POST', path, requestBody, options)
 
-    const response = await fetch(this.buildUrl(path, options?.query), {
-      body: hasBody ? JSON.stringify(body) : undefined,
-      dispatcher: this.buildDispatcher(),
-      headers: this.buildHeaders(options?.headers, hasBody),
-      method: 'POST',
-      signal: options?.signal,
+    const response = await fetch(request).catch((error) => {
+      throw new OpenCdsClientError(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        error instanceof Error ? error.message : String(error),
+      )
     })
 
     await throwIfNotOk(response)
   }
 
-  private buildUrl(
+  private createRequest(
+    method: string,
     path: string,
-    query?: OpenCdsRequestOptions['query'],
-  ): string {
-    if (!this.config.openCdsUrl) {
-      throw new Error(openCdsDisabledMessage)
+    body?: string,
+    options?: OpenCdsRequestOptions,
+  ): Request {
+    const url = new URL(path.replace(/^\/+/, ''), `${this.opencdsConfig.url}/`)
+
+    for (const [key, value] of Object.entries(options?.query ?? {})) {
+      url.searchParams.append(key, String(value))
     }
 
-    const resolvedPath = URL_REGEX.test(path)
-      ? path
-      : `${this.config.openCdsUrl.replace(END_SLASHES_REGEX, '')}/${path.replace(START_SLASHES_REGEX, '')}`
-
-    const url = new URL(resolvedPath)
-
-    for (const [key, value] of Object.entries(query ?? {})) {
-      if (value !== undefined) {
-        url.searchParams.append(key, String(value))
-      }
+    const headers = new Headers(options?.headers)
+    headers.set('X-API-Key', this.opencdsConfig.apiToken)
+    if (body !== undefined) {
+      headers.set('Content-Type', 'application/json')
     }
 
-    return url.toString()
-  }
-
-  private buildHeaders(
-    headers?: OpenCdsRequestOptions['headers'],
-    hasJsonBody = false,
-  ): Headers {
-    const mergedHeaders = new Headers(headers)
-    mergedHeaders.set('X-API-Key', this.config.openCdsApiToken ?? '')
-
-    if (hasJsonBody) {
-      mergedHeaders.set('Content-Type', 'application/json')
+    const init: RequestInit = {
+      method,
+      headers,
+      body,
+      signal: options?.signal,
     }
 
-    return mergedHeaders
-  }
-
-  private buildDispatcher(): Dispatcher | undefined {
-    // Only the TLS-verify-disabled case needs a local dispatcher; proxy bypass on
-    // that rare path is accepted. Security default (apiTlsRejectUnauthorized=true) keeps cert verification ON.
-    if (!this.config.openCdsApiTlsRejectUnauthorized) {
-      return new Agent({ connect: { rejectUnauthorized: false } })
+    if (!this.opencdsConfig.apiTlsRejectUnauthorized) {
+      init.dispatcher = new Agent({ connect: { rejectUnauthorized: false } })
     }
 
-    return undefined
+    return new Request(url, init)
   }
 }

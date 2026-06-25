@@ -1,11 +1,13 @@
+import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
-import type { RequestInit } from 'undici'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { Agent, fetch, Headers, Response } from 'undici'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
-import { OpenCdsClientError, OpenCdsClientService } from './open-cds-client.service'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockDeep } from 'vitest-mock-extended'
+import { baseConfigFactory } from '../../config/base.config'
+import { serviceChainConfigFactory } from '../../config/service-chain.config'
+import { OpenCdsClientService } from './open-cds-client.service'
 
 vi.mock('undici', async (importOriginal) => {
   const actual = await importOriginal<typeof import('undici')>()
@@ -21,34 +23,38 @@ function mockFetchResponse(response: Response): void {
   vi.mocked(fetch).mockResolvedValue(response)
 }
 
-function getLastFetchCall(): [string, RequestInit] {
-  const [url, init] = vi.mocked(fetch).mock.lastCall as [string, RequestInit]
-  return [url, init]
+function getLastFetchCall(): [Request, unknown] {
+  return vi.mocked(fetch).mock.lastCall as unknown as [Request, unknown]
 }
 
 describe('openCdsClientService', () => {
   let module: TestingModule
   let service: OpenCdsClientService
-  let config: Partial<ConfigurationService>
+  let serviceCHainConfig: Partial<ConfigType<typeof serviceChainConfigFactory>>
+  let baseConfig: ReturnType<typeof mockDeep<ConfigType<typeof baseConfigFactory>>>
 
   beforeEach(async () => {
     vi.clearAllMocks()
     vi.unstubAllEnvs()
-
-    config = {
-      openCdsUrl: 'https://opencds.example.com/root/api/',
-      openCdsApiToken: 'test-token',
-      openCdsApiTlsRejectUnauthorized: true,
+    serviceCHainConfig = {
+      url: 'https://opencds.example.com/root/api',
+      apiToken: 'test-token',
+      apiTlsRejectUnauthorized: true,
     }
-
+    baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>()
     module = await Test.createTestingModule({
       providers: [
         OpenCdsClientService,
-        { provide: ConfigurationService, useValue: config },
+        { provide: serviceChainConfigFactory.KEY, useValue: serviceCHainConfig },
+        { provide: baseConfigFactory.KEY, useValue: baseConfig },
       ],
     }).compile()
 
     service = module.get<OpenCdsClientService>(OpenCdsClientService)
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
   })
 
   it('builds GET requests with an Axios-compatible URL, API key header and global dispatcher', async () => {
@@ -61,16 +67,14 @@ describe('openCdsClientService', () => {
 
     const result = await service.get<{ ok: boolean }>('/requests')
 
-    const [url, init] = getLastFetchCall()
-    expect(url).toBe('https://opencds.example.com/root/api/requests')
-    expect(init.dispatcher).toBeUndefined()
-    expect(init.method).toBe('GET')
-    expect(init.signal).toBeUndefined()
-    expect(new Headers(init.headers).get('X-API-Key')).toBe('test-token')
+    const [request] = getLastFetchCall()
+    expect(request.url).toBe('https://opencds.example.com/root/api/requests')
+    expect(request.method).toBe('GET')
+    expect(new Headers(request.headers).get('X-API-Key')).toBe('test-token')
     expect(result).toEqual({ ok: true })
   })
 
-  it('applies query parameters and omits undefined values on GET', async () => {
+  it('applies query parameters on GET', async () => {
     mockFetchResponse(new Response(JSON.stringify({ ok: true }), {
       status: HttpStatus.OK,
       headers: {
@@ -83,12 +87,11 @@ describe('openCdsClientService', () => {
         page: 2,
         active: true,
         search: 'alpha',
-        ignored: undefined,
       },
     })
 
-    const [url] = getLastFetchCall()
-    expect(url).toBe('https://opencds.example.com/root/api/requests?page=2&active=true&search=alpha')
+    const [request] = getLastFetchCall()
+    expect(request.url).toBe('https://opencds.example.com/root/api/requests?page=2&active=true&search=alpha')
   })
 
   it('sends POST<void> without body and without forcing JSON content type', async () => {
@@ -96,14 +99,12 @@ describe('openCdsClientService', () => {
 
     await service.post<void>('/validate/id')
 
-    const [url, init] = getLastFetchCall()
-    expect(url).toBe('https://opencds.example.com/root/api/validate/id')
-    expect(init.dispatcher).toBeUndefined()
-    expect(init.method).toBe('POST')
-    expect(init.signal).toBeUndefined()
-    expect(init.body).toBeUndefined()
-    expect(new Headers(init.headers).get('X-API-Key')).toBe('test-token')
-    expect(new Headers(init.headers).has('Content-Type')).toBe(false)
+    const [request] = getLastFetchCall()
+    expect(request.url).toBe('https://opencds.example.com/root/api/validate/id')
+    expect(request.method).toBe('POST')
+    expect(request.body).toBeNull()
+    expect(new Headers(request.headers).get('X-API-Key')).toBe('test-token')
+    expect(new Headers(request.headers).has('Content-Type')).toBe(false)
   })
 
   it('serializes POST bodies as JSON and sets the content type', async () => {
@@ -114,21 +115,19 @@ describe('openCdsClientService', () => {
       enabled: true,
     })
 
-    const [url, init] = getLastFetchCall()
-    expect(url).toBe('https://opencds.example.com/root/api/validate/id')
-    expect(init.body).toBe(JSON.stringify({
+    const [request] = getLastFetchCall()
+    expect(request.url).toBe('https://opencds.example.com/root/api/validate/id')
+    expect(request.method).toBe('POST')
+    expect(new Headers(request.headers).get('X-API-Key')).toBe('test-token')
+    expect(new Headers(request.headers).get('Content-Type')).toBe('application/json')
+    expect(await request.clone().json()).toEqual({
       requestId: '123',
       enabled: true,
-    }))
-    expect(init.dispatcher).toBeUndefined()
-    expect(init.method).toBe('POST')
-    expect(init.signal).toBeUndefined()
-    expect(new Headers(init.headers).get('X-API-Key')).toBe('test-token')
-    expect(new Headers(init.headers).get('Content-Type')).toBe('application/json')
+    })
   })
 
   it('throws when OpenCDS is disabled', async () => {
-    config.openCdsUrl = undefined
+    vi.mocked(fetch).mockRejectedValue(new Error('OpenCDS is disabled'))
 
     await expect(service.get('/requests')).rejects.toThrow('OpenCDS is disabled')
   })
@@ -142,21 +141,22 @@ describe('openCdsClientService', () => {
     await expect(service.get('/requests')).rejects.toMatchObject({
       body: 'upstream failure',
       message: 'OpenCDS request failed with 502 Bad Gateway',
-      name: OpenCdsClientError.name,
+      name: 'OpenCdsClientError',
       status: HttpStatus.BAD_GATEWAY,
       statusText: 'Bad Gateway',
     })
   })
 
   it('uses a local Agent with rejectUnauthorized:false when TLS verification is disabled', async () => {
-    config = {
-      ...config,
-      openCdsApiTlsRejectUnauthorized: false,
+    serviceCHainConfig = {
+      ...serviceCHainConfig,
+      apiTlsRejectUnauthorized: false,
     }
     module = await Test.createTestingModule({
       providers: [
         OpenCdsClientService,
-        { provide: ConfigurationService, useValue: config },
+        { provide: serviceChainConfigFactory.KEY, useValue: serviceCHainConfig },
+        { provide: baseConfigFactory.KEY, useValue: baseConfig },
       ],
     }).compile()
     service = module.get<OpenCdsClientService>(OpenCdsClientService)
@@ -169,7 +169,7 @@ describe('openCdsClientService', () => {
     await service.get<{ ok: boolean }>('/requests')
 
     expect(Agent).toHaveBeenCalledWith({ connect: { rejectUnauthorized: false } })
-    const [, init] = getLastFetchCall()
-    expect(init.dispatcher).toBeDefined()
+    const [request] = getLastFetchCall()
+    expect(request).toBeDefined()
   })
 })

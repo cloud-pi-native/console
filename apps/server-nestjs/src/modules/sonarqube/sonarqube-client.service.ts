@@ -202,86 +202,86 @@ export class SonarqubeClientService {
 
   @StartActiveSpan()
   searchUserGroup(params: SearchUserGroupParams) {
-    return this.http.fetch<SearchUserGroupResponse>('user_groups/search', { params }).then(res => res.data!)
+    return this.http.fetch<SearchUserGroupResponse>('user_groups/search', { query: params }).then(res => res.data!)
   }
 
   @StartActiveSpan()
   async createUserGroup(params: CreateUserGroupParams) {
-    await this.http.fetch('user_groups/create', { method: 'POST', params })
+    await this.http.fetch('user_groups/create', { method: 'POST', query: params })
   }
 
   @StartActiveSpan()
   async createPermissionTemplate(params: CreatePermissionTemplateParams) {
-    await this.http.fetch('permissions/create_template', { method: 'POST', params })
+    await this.http.fetch('permissions/create_template', { method: 'POST', query: params })
   }
 
   @StartActiveSpan()
   searchPermissionTemplates(params: SearchPermissionTemplatesParams) {
-    return this.http.fetch<SearchPermissionTemplatesResponse>('permissions/search_templates', { params }).then(res => res.data!)
+    return this.http.fetch<SearchPermissionTemplatesResponse>('permissions/search_templates', { query: params }).then(res => res.data!)
   }
 
   @StartActiveSpan()
   async setPermissionDefaultTemplate(params: SetPermissionDefaultTemplateParams) {
-    await this.http.fetch('permissions/set_default_template', { method: 'POST', params })
+    await this.http.fetch('permissions/set_default_template', { method: 'POST', query: params })
   }
 
   @StartActiveSpan()
   async addPermissionProjectCreatorToTemplate(params: AddPermissionProjectCreatorToTemplateParams) {
-    await this.http.fetch('permissions/add_project_creator_to_template', { method: 'POST', params })
+    await this.http.fetch('permissions/add_project_creator_to_template', { method: 'POST', query: params })
   }
 
   @StartActiveSpan()
   async addPermissionGroupToTemplate(params: AddPermissionGroupToTemplateParams) {
-    await this.http.fetch('permissions/add_group_to_template', { method: 'POST', params })
+    await this.http.fetch('permissions/add_group_to_template', { method: 'POST', query: params })
   }
 
   @StartActiveSpan()
   async addPermissionGroup(params: AddPermissionGroupParams) {
-    await this.http.fetch('permissions/add_group', { method: 'POST', params })
+    await this.http.fetch('permissions/add_group', { method: 'POST', query: params })
   }
 
   @StartActiveSpan()
   async addPermissionUser(params: AddPermissionUserParams) {
-    await this.http.fetch('permissions/add_user', { method: 'POST', params })
+    await this.http.fetch('permissions/add_user', { method: 'POST', query: params })
   }
 
   @StartActiveSpan()
   searchUsers(params: SearchUsersParams) {
-    return this.http.fetch<SearchUsersResponse>('users/search', { params }).then(res => res.data!)
+    return this.http.fetch<SearchUsersResponse>('users/search', { query: params }).then(res => res.data!)
   }
 
   @StartActiveSpan()
   async createUser(params: CreateUserParams) {
-    await this.http.fetch('users/create', { method: 'POST', params })
+    await this.http.fetch('users/create', { method: 'POST', query: params })
   }
 
   @StartActiveSpan()
   async deactivateUser(params: DeactivateUserParams) {
-    await this.http.fetch('users/deactivate', { method: 'POST', params })
+    await this.http.fetch('users/deactivate', { method: 'POST', query: params })
   }
 
   @StartActiveSpan()
   async revokeUserToken(params: RevokeUserTokenParams) {
-    await this.http.fetch('user_tokens/revoke', { method: 'POST', params })
+    await this.http.fetch('user_tokens/revoke', { method: 'POST', query: params })
   }
 
   @StartActiveSpan()
   generateUserToken(params: GenerateUserTokenParams) {
-    return this.http.fetch<SonarqubeGeneratedToken>('user_tokens/generate', { method: 'POST', params }).then(res => res.data!)
+    return this.http.fetch<SonarqubeGeneratedToken>('user_tokens/generate', { method: 'POST', query: params }).then(res => res.data!)
   }
 
   @StartActiveSpan()
   searchProject(params: SearchProjectParams) {
-    return this.http.fetch<SearchProjectResponse>('projects/search', { params }).then(res => res.data!)
+    return this.http.fetch<SearchProjectResponse>('projects/search', { query: params }).then(res => res.data!)
   }
 
   @StartActiveSpan()
   async createProject(params: CreateProjectParams) {
-    await this.http.fetch('projects/create', { method: 'POST', params })
+    await this.http.fetch('projects/create', { method: 'POST', query: params })
   }
 
   @StartActiveSpan()
   async deleteProject(params: DeleteProjectParams) {
-    await this.http.fetch('projects/delete', { method: 'POST', params })
+    await this.http.fetch('projects/delete', { method: 'POST', query: params })
   }
 }
