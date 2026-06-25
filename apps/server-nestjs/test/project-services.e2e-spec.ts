@@ -9,12 +9,12 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { ProjectServicesService } from '../src/modules/core/project-services/project-services.service'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
-import { ProjectServicesService } from '../src/modules/project-services/project-services.service'
-import { VaultClientService } from '../src/modules/vault/vault-client.service'
-import { VaultService } from '../src/modules/vault/vault.service'
+import { VaultClientService } from '../src/modules/plugins/vault/vault-client.service'
+import { VaultService } from '../src/modules/plugins/vault/vault.service'
 
 const canRunProjectServicesE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
 

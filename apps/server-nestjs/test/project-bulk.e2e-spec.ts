@@ -5,11 +5,11 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { ProjectBulkModule } from '../src/modules/core/project-bulk/project-bulk.module'
+import { ProjectBulkService } from '../src/modules/core/project-bulk/project-bulk.service'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
-import { ProjectBulkModule } from '../src/modules/project-bulk/project-bulk.module'
-import { ProjectBulkService } from '../src/modules/project-bulk/project-bulk.service'
 
 const canRunProjectBulkE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
 

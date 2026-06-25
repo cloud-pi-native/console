@@ -2,13 +2,13 @@ import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { ProjectSecretsModule } from '../src/modules/core/project-secrets/project-secrets.module'
+import { ProjectSecretsService } from '../src/modules/core/project-secrets/project-secrets.service'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
-import { ProjectSecretsModule } from '../src/modules/project-secrets/project-secrets.module'
-import { ProjectSecretsService } from '../src/modules/project-secrets/project-secrets.service'
-import { VaultClientService } from '../src/modules/vault/vault-client.service'
-import { generateProjectPath } from '../src/modules/vault/vault.utils'
+import { VaultClientService } from '../src/modules/plugins/vault/vault-client.service'
+import { generateProjectPath } from '../src/modules/plugins/vault/vault.utils'
 
 const canRunProjectSecretsE2E
   = Boolean(process.env.E2E)

@@ -5,11 +5,11 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
-import { VaultClientService } from '../src/modules/vault/vault-client.service'
-import { projectSelect } from '../src/modules/vault/vault-datastore.service'
-import { makeProjectWithDetails } from '../src/modules/vault/vault-testing.utils'
-import { VaultModule } from '../src/modules/vault/vault.module'
-import { VaultService } from '../src/modules/vault/vault.service'
+import { VaultClientService } from '../src/modules/plugins/vault/vault-client.service'
+import { projectSelect } from '../src/modules/plugins/vault/vault-datastore.service'
+import { makeProjectWithDetails } from '../src/modules/plugins/vault/vault-testing.utils'
+import { VaultModule } from '../src/modules/plugins/vault/vault.module'
+import { VaultService } from '../src/modules/plugins/vault/vault.service'
 
 const canRunVaultE2E
   = Boolean(process.env.E2E)

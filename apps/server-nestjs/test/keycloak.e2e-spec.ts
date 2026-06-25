@@ -8,10 +8,10 @@ import z from 'zod'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
-import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from '../src/modules/keycloak/keycloak-client.service'
-import { projectSelect } from '../src/modules/keycloak/keycloak-datastore.service'
-import { KeycloakModule } from '../src/modules/keycloak/keycloak.module'
-import { KeycloakService } from '../src/modules/keycloak/keycloak.service'
+import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from '../src/modules/plugins/keycloak/keycloak-client.service'
+import { projectSelect } from '../src/modules/plugins/keycloak/keycloak-datastore.service'
+import { KeycloakModule } from '../src/modules/plugins/keycloak/keycloak.module'
+import { KeycloakService } from '../src/modules/plugins/keycloak/keycloak.service'
 
 const canRunKeycloakE2E
   = Boolean(process.env.E2E)

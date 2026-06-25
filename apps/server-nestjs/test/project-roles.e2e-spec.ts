@@ -5,11 +5,11 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { ProjectRolesService } from '../src/modules/core/project-roles/project-roles.service'
+import { ProjectModule } from '../src/modules/core/project/project.module'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
-import { ProjectRolesService } from '../src/modules/project-roles/project-roles.service'
-import { ProjectModule } from '../src/modules/project/project.module'
 
 const canRunProjectRolesE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
 
