@@ -7,5 +7,6 @@ import { ProjectRolesService } from './project-roles.service'
   imports: [InfrastructureModule],
   controllers: [ProjectRolesController],
   providers: [ProjectRolesService],
+  exports: [ProjectRolesService],
 })
 export class ProjectRolesModule {}

@@ -164,14 +164,148 @@ export const projectSelect = {
   },
 } satisfies Prisma.ProjectSelect
 
-export function getProject(db: Prisma.TransactionClient, projectId: string) {
-  return db.project.findUnique({ where: { id: projectId }, select: projectSelect })
-}
+export const projectForUpdateSelect = {
+  id: true,
+  ownerId: true,
+  status: true,
+  locked: true,
+  members: {
+    select: {
+      userId: true,
+      user: {
+        select: {
+          type: true,
+        },
+      },
+    },
+  },
+} satisfies Prisma.ProjectSelect
 
-export type ProjectDetails = Prisma.ProjectGetPayload<{
+export const projectForDataSelect = {
+  name: true,
+  description: true,
+  createdAt: true,
+  updatedAt: true,
+  environments: {
+    select: {
+      name: true,
+      stage: true,
+      cluster: {
+        select: { label: true },
+      },
+    },
+  },
+  owner: true,
+} satisfies Prisma.ProjectSelect
+
+export const projectIdSelect = {
+  id: true,
+} satisfies Prisma.ProjectSelect
+
+export const projectSlugSelect = {
+  slug: true,
+} satisfies Prisma.ProjectSelect
+
+export const projectContextSelect = {
+  slug: true,
+} satisfies Prisma.ProjectSelect
+
+export const projectForUpsertSelect = {
+  id: true,
+  slug: true,
+  status: true,
+  locked: true,
+} satisfies Prisma.ProjectSelect
+
+export type ProjectWithDetails = Prisma.ProjectGetPayload<{
   select: typeof projectSelect
 }>
 
-export function getProjectNotArchived(db: Prisma.TransactionClient, projectId: string) {
-  return db.project.findFirst({ where: { id: projectId, status: { not: 'archived' } }, select: projectSelect })
+export type ProjectUpdateContext = Prisma.ProjectGetPayload<{
+  select: typeof projectForUpdateSelect
+}>
+
+export type ProjectDataExport = Prisma.ProjectGetPayload<{
+  select: typeof projectForDataSelect
+}>
+
+export type ProjectContext = Prisma.ProjectGetPayload<{
+  select: typeof projectContextSelect
+}>
+
+export type ProjectForUpsert = Prisma.ProjectGetPayload<{
+  select: typeof projectForUpsertSelect
+}>
+
+export function getProject(tx: Prisma.TransactionClient, projectId: string) {
+  return tx.project.findUnique({ where: { id: projectId }, select: projectSelect })
+}
+
+export function getProjectNotArchived(tx: Prisma.TransactionClient, projectId: string) {
+  return tx.project.findFirst({ where: { id: projectId, status: { not: 'archived' } }, select: projectSelect })
+}
+
+export function listProjects(tx: Prisma.TransactionClient, whereAnd: Prisma.ProjectWhereInput[]) {
+  return tx.project.findMany({
+    where: { AND: whereAnd },
+    select: projectSelect,
+  })
+}
+
+export function listProjectSlugsForPrefix(tx: Prisma.TransactionClient, prefix: string) {
+  return tx.project.findMany({
+    where: { slug: { startsWith: prefix } },
+    select: { slug: true },
+  })
+}
+
+export function getProjectSlug(tx: Prisma.TransactionClient, projectId: string) {
+  return tx.project.findUnique({ where: { id: projectId }, select: { slug: true } })
+}
+
+export function getProjectContext(tx: Prisma.TransactionClient, projectId: string) {
+  return tx.project.findUnique({ where: { id: projectId }, select: projectContextSelect })
+}
+
+export function listProjectIdsNotArchived(tx: Prisma.TransactionClient) {
+  return tx.project.findMany({
+    select: projectIdSelect,
+    where: { status: { not: 'archived' } },
+  })
+}
+
+export function listProjectsForDataExport(tx: Prisma.TransactionClient) {
+  return tx.project.findMany({
+    select: projectForDataSelect,
+  })
+}
+
+export function createProject(tx: Prisma.TransactionClient, data: Prisma.ProjectCreateInput) {
+  return tx.project.create({
+    data,
+    select: projectIdSelect,
+  })
+}
+
+export function getNotArchivedProjectForUpdate(tx: Prisma.TransactionClient, projectId: string) {
+  return tx.project.findFirst({
+    where: { id: projectId, status: { not: 'archived' } },
+    select: projectForUpdateSelect,
+  })
+}
+
+export function getProjectForUpsert(tx: Prisma.TransactionClient, projectId: string) {
+  return tx.project.findUnique({ where: { id: projectId }, select: projectForUpsertSelect })
+}
+
+export function updateProject(tx: Prisma.TransactionClient, projectId: string, data: Prisma.ProjectUpdateInput) {
+  return tx.project.update({ where: { id: projectId }, data })
+}
+
+export function deleteProjectDependencies(tx: Prisma.TransactionClient, projectId: string) {
+  return Promise.all([
+    tx.repository.deleteMany({ where: { projectId } }),
+    tx.environment.deleteMany({ where: { projectId } }),
+    tx.deployment.deleteMany({ where: { projectId } }),
+  ])
 }

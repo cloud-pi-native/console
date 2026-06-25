@@ -1,35 +1,8 @@
 import type { Plugin } from '@cpn-console/hooks'
 import type { PluginsUpdateBody } from '@cpn-console/shared'
-import type { Prisma } from '@prisma/client'
-import type { projectServicesProjectSelect } from './services.utils'
+import type { AdminPlugin, ProjectPlugin, ProjectWithDetails, PublicCluster } from './project-services-queries.utils'
 import { DEFAULT } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
-
-export type ServicesProject = Prisma.ProjectGetPayload<{
-  select: typeof projectServicesProjectSelect
-}>
-
-export type ServicesProjectPlugin = Prisma.ProjectPluginGetPayload<{
-  select: {
-    pluginName: true
-    key: true
-    value: true
-  }
-}>
-
-export type ServicesAdminPlugin = Prisma.AdminPluginGetPayload<{
-  select: {
-    pluginName: true
-    key: true
-    value: true
-  }
-}>
-
-export type ServicesCluster = Prisma.ClusterGetPayload<{
-  include: {
-    zone: true
-  }
-}>
 
 export function makeServicesPluginName(): string {
   return faker.helpers.slugify(faker.company.name())
@@ -67,19 +40,19 @@ export function makeServicesPlugin(overrides: Partial<Plugin['infos']> = {}): Pl
   }
 }
 
-export function makeServicesProject(overrides: Partial<ServicesProject> = {}): ServicesProject {
+export function makeProjectWithDetails(overrides: Partial<ProjectWithDetails> = {}): ProjectWithDetails {
   return {
     id: faker.string.uuid(),
     name: faker.company.name(),
     slug: faker.helpers.slugify(faker.company.name()),
     description: faker.lorem.sentence(),
-    clusters: [makeServicesCluster()],
+    clusters: [makePublicCluster()],
     environments: [],
     ...overrides,
   }
 }
 
-export function makeServicesProjectPlugin(overrides: Partial<ServicesProjectPlugin> = {}): ServicesProjectPlugin {
+export function makeProjectPlugin(overrides: Partial<ProjectPlugin> = {}): ProjectPlugin {
   return {
     pluginName: makeServicesPluginName(),
     key: 'enabled',
@@ -88,7 +61,7 @@ export function makeServicesProjectPlugin(overrides: Partial<ServicesProjectPlug
   }
 }
 
-export function makeServicesAdminPlugin(overrides: Partial<ServicesAdminPlugin> = {}): ServicesAdminPlugin {
+export function makeServicesAdminPlugin(overrides: Partial<AdminPlugin> = {}): AdminPlugin {
   const pluginName = overrides.pluginName ?? makeServicesPluginName()
   const adminPlugin = {
     pluginName,
@@ -98,7 +71,7 @@ export function makeServicesAdminPlugin(overrides: Partial<ServicesAdminPlugin> 
   return { ...adminPlugin, ...overrides, pluginName }
 }
 
-export function makeServicesCluster(overrides: Partial<ServicesCluster> = {}): ServicesCluster {
+export function makePublicCluster(overrides: Partial<PublicCluster> = {}): PublicCluster {
   const zone = makeServicesZone()
   return {
     id: faker.string.uuid(),
@@ -116,25 +89,22 @@ export function makeServicesCluster(overrides: Partial<ServicesCluster> = {}): S
     zoneId: zone.id,
     ...overrides,
     zone: overrides.zone ?? zone,
-  } as ServicesCluster
+  } as PublicCluster
 }
 
-export function makeServicesZone(overrides: Partial<ServicesCluster['zone']> = {}): ServicesCluster['zone'] {
+export function makeServicesZone(overrides: Partial<PublicCluster['zone']> = {}): PublicCluster['zone'] {
   return {
     id: faker.string.uuid(),
     slug: faker.helpers.slugify(`zone-${faker.string.alphanumeric(8)}`),
     label: faker.location.city(),
-    description: faker.lorem.sentence(),
-    createdAt: faker.date.past(),
-    updatedAt: faker.date.past(),
     argocdUrl: `https://${faker.helpers.slugify(faker.location.city())}.example.com`,
     ...overrides,
   }
 }
 
-export function makeServicesEnvironment(overrides: Partial<ServicesProject['environments'][number]> = {}): ServicesProject['environments'][number] {
+export function makeServicesEnvironment(overrides: Partial<ProjectWithDetails['environments'][number]> = {}): ProjectWithDetails['environments'][number] {
   const { cluster: clusterOverride, ...restOverrides } = overrides
-  const cluster = clusterOverride ?? makeServicesCluster()
+  const cluster: PublicCluster = (clusterOverride ?? makePublicCluster()) as PublicCluster
   return {
     id: faker.string.uuid(),
     name: faker.word.noun(),
@@ -147,7 +117,7 @@ export function makeServicesEnvironment(overrides: Partial<ServicesProject['envi
     autosync: true,
     cluster,
     ...restOverrides,
-  } as ServicesProject['environments'][number]
+  } as ProjectWithDetails['environments'][number]
 }
 
 export function makeServicesUpdateBody(pluginName: string = makeServicesPluginName()): PluginsUpdateBody {

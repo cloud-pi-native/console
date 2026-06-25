@@ -41,7 +41,7 @@ describe('projectMembersService', () => {
     service = module.get<ProjectMembersService>(ProjectMembersService)
   })
 
-  describe('listMembers', () => {
+  describe('list', () => {
     it('returns members', async () => {
       const projectId = faker.string.uuid()
       const user1 = makeUser()
@@ -51,7 +51,7 @@ describe('projectMembersService', () => {
         makeProjectMemberWithUser(user2),
       ])
 
-      const result = await service.listMembers(projectId)
+      const result = await service.list(projectId)
 
       expect(result).toHaveLength(2)
       expect(result[0]).toHaveProperty('roleIds')
@@ -63,13 +63,13 @@ describe('projectMembersService', () => {
       const projectId = faker.string.uuid()
       prisma.projectMembers.findMany.mockResolvedValue([])
 
-      const result = await service.listMembers(projectId)
+      const result = await service.list(projectId)
 
       expect(result).toEqual([])
     })
   })
 
-  describe('addMember', () => {
+  describe('add', () => {
     it('adds member by userId and returns updated member list', async () => {
       const projectId = faker.string.uuid()
       const ownerId = faker.string.uuid()
@@ -84,7 +84,7 @@ describe('projectMembersService', () => {
       tx.projectMembers.findMany.mockResolvedValue([makeProjectMemberWithUser(memberUser)])
       prisma.$transaction.mockImplementation(async cb => cb(tx))
 
-      const result = await service.addMember(projectId, body)
+      const result = await service.add(projectId, body)
 
       expect(tx.projectMembers.upsert).toHaveBeenCalledWith({
         where: { projectId_userId: { projectId, userId: newUserId } },
@@ -111,7 +111,7 @@ describe('projectMembersService', () => {
       tx.projectMembers.findMany.mockResolvedValue([])
       prisma.$transaction.mockImplementation(async cb => cb(tx))
 
-      const result = await service.addMember(projectId, body)
+      const result = await service.add(projectId, body)
 
       expect(tx.user.findFirst).toHaveBeenCalledWith({
         where: { email, type: 'human' },
@@ -129,7 +129,7 @@ describe('projectMembersService', () => {
       tx.user.findFirst.mockResolvedValue(makeUser({ id: ownerId }))
       prisma.$transaction.mockImplementation(async cb => cb(tx))
 
-      await expect(service.addMember(projectId, body))
+      await expect(service.add(projectId, body))
         .rejects.toThrow('Le owner ne peut pas être ajouté à cette liste')
     })
 
@@ -142,7 +142,7 @@ describe('projectMembersService', () => {
       tx.user.findFirst.mockResolvedValue(null)
       prisma.$transaction.mockImplementation(async cb => cb(tx))
 
-      await expect(service.addMember(projectId, body))
+      await expect(service.add(projectId, body))
         .rejects.toThrow(NotFoundException)
     })
 
@@ -168,7 +168,7 @@ describe('projectMembersService', () => {
         lastName: 'User',
       }))
 
-      const result = await service.addMember(projectId, body)
+      const result = await service.add(projectId, body)
 
       expect(keycloak.getUserByEmail).toHaveBeenCalledWith(email)
       expect(tx.user.upsert).toHaveBeenCalledWith({
@@ -200,7 +200,7 @@ describe('projectMembersService', () => {
       tx.user.findFirst.mockResolvedValue(null)
       prisma.$transaction.mockImplementation(async cb => cb(tx))
 
-      await expect(service.addMember(projectId, body))
+      await expect(service.add(projectId, body))
         .rejects.toThrow(NotFoundException)
     })
 
@@ -210,12 +210,12 @@ describe('projectMembersService', () => {
       prisma.$transaction.mockImplementation(async cb => cb(tx))
 
       await expect(
-        service.addMember(faker.string.uuid(), { userId: faker.string.uuid() }),
+        service.add(faker.string.uuid(), { userId: faker.string.uuid() }),
       ).rejects.toThrow(NotFoundException)
     })
   })
 
-  describe('patchMembers', () => {
+  describe('patch', () => {
     it('upserts multiple members and emits events', async () => {
       const projectId = faker.string.uuid()
       const members = [
@@ -227,7 +227,7 @@ describe('projectMembersService', () => {
       prisma.$transaction.mockImplementation(async cb => cb(tx))
       tx.projectMembers.findMany.mockResolvedValue([])
 
-      await service.patchMembers(projectId, members)
+      await service.patch(projectId, members)
 
       expect(tx.projectMembers.upsert).toHaveBeenCalledTimes(2)
       expect(events.emitAsync).toHaveBeenCalledTimes(2)
@@ -242,7 +242,7 @@ describe('projectMembersService', () => {
     })
   })
 
-  describe('removeMember', () => {
+  describe('remove', () => {
     it('deletes member, emits event, returns updated list', async () => {
       const projectId = faker.string.uuid()
       const userId = faker.string.uuid()
@@ -253,7 +253,7 @@ describe('projectMembersService', () => {
       tx.projectMembers.findMany.mockResolvedValue([makeProjectMemberWithUser(memberUser)])
       prisma.$transaction.mockImplementation(async cb => cb(tx))
 
-      const result = await service.removeMember(projectId, userId)
+      const result = await service.remove(projectId, userId)
 
       expect(tx.projectMembers.delete).toHaveBeenCalledWith({
         where: { projectId_userId: { projectId, userId } },

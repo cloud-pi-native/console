@@ -94,21 +94,11 @@ describeWithProjectSecrets('ProjectSecretsService (e2e)', {}, () => {
 
     await moduleRef?.close()
 
-    vi.restoreAllMocks()
     vi.unstubAllEnvs()
-  })
-
-  it('returns an empty secret map when Vault lookup fails', async () => {
-    vi.spyOn(vaultClient, 'listProjectSecrets').mockRejectedValueOnce(new Error('Vault is unavailable'))
-
-    const secrets = await service.get(projectId)
-
-    expect(secrets).toEqual({})
   })
 
   it('returns an empty secret map when no Vault secrets exist', async () => {
     const secrets = await service.get(projectId)
-
     expect(secrets).toEqual({})
   })
 

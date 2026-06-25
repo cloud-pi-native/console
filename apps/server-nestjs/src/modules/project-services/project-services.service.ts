@@ -3,20 +3,19 @@ import type { PermissionTarget, PluginsUpdateBody, ProjectService } from '@cpn-c
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { PluginService } from '../plugin/plugin.service'
+import { getServicesQueryData } from './project-services-queries.utils'
 import {
   buildProjectEditStrippers,
   generatePluginsUpdateBody,
   normalizeServiceUrls,
   parsePluginsUpdateBody,
   populateServiceManifest,
-  projectServicesProjectSelect,
-  publicClusterSelect,
   saveProjectStore,
-} from './services.utils'
+} from './project-services.utils'
 
 @Injectable()
-export class ServicesService {
-  private readonly logger = new Logger(ServicesService.name)
+export class ProjectServicesService {
+  private readonly logger = new Logger(ProjectServicesService.name)
 
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
@@ -24,31 +23,7 @@ export class ServicesService {
   ) {}
 
   async get(projectId: string, permissionTarget: PermissionTarget): Promise<ProjectService[]> {
-    const [project, projectStore, globalConfig, publicClusters] = await Promise.all([
-      this.prisma.project.findUnique({
-        where: { id: projectId },
-        select: projectServicesProjectSelect,
-      }),
-      this.prisma.projectPlugin.findMany({
-        where: { projectId },
-        select: {
-          key: true,
-          pluginName: true,
-          value: true,
-        },
-      }),
-      this.prisma.adminPlugin.findMany({
-        select: {
-          key: true,
-          pluginName: true,
-          value: true,
-        },
-      }),
-      this.prisma.cluster.findMany({
-        where: { privacy: 'public' },
-        ...publicClusterSelect,
-      }),
-    ])
+    const [project, projectStore, globalConfig, publicClusters] = await getServicesQueryData(this.prisma, projectId)
 
     if (!project) {
       throw new NotFoundException('Projet introuvable')

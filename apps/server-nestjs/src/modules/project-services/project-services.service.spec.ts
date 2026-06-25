@@ -1,6 +1,7 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { ProjectWithDetails, PublicCluster } from './project-services-queries.utils'
 import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
@@ -9,15 +10,15 @@ import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { PluginService } from '../plugin/plugin.service'
 import {
-  makeServicesCluster,
+  makeProjectPlugin,
+  makeProjectWithDetails,
+  makePublicCluster,
   makeServicesEnvironment,
   makeServicesPlugin,
-  makeServicesProject,
-  makeServicesProjectPlugin,
   makeServicesUpdateBody,
   makeServicesZone,
-} from './services-testing.utils'
-import { ServicesService } from './services.service'
+} from './project-services-testing.utils'
+import { ProjectServicesService } from './project-services.service'
 
 function makeEmptyServiceInfo(name: string): ServiceInfos {
   return {
@@ -32,7 +33,7 @@ function makeEmptyServiceInfo(name: string): ServiceInfos {
 
 describe('servicesService', () => {
   let module: TestingModule
-  let service: ServicesService
+  let service: ProjectServicesService
   let prisma: DeepMockProxy<PrismaService>
   let projectId: string
   let pluginName: string
@@ -40,9 +41,9 @@ describe('servicesService', () => {
   let serviceTitle: string
   let serviceDescription: string
   let serviceImgSrc: string
-  let project: ReturnType<typeof makeServicesProject>
-  let cluster: ReturnType<typeof makeServicesCluster>
-  let plugin: ReturnType<typeof makeServicesPlugin>
+  let project: ProjectWithDetails
+  let cluster: PublicCluster
+  let plugin: ServicePlugin
 
   beforeEach(async () => {
     projectId = faker.string.uuid()
@@ -58,20 +59,20 @@ describe('servicesService', () => {
       to: ({ project }) => `/projects/${project.slug}`,
     })
     pluginName = plugin.infos.name
-    project = makeServicesProject({ slug: projectSlug })
-    cluster = makeServicesCluster()
+    project = makeProjectWithDetails({ slug: projectSlug })
+    cluster = makePublicCluster()
 
     prisma = mockDeep<PrismaService>()
 
     module = await Test.createTestingModule({
       providers: [
-        ServicesService,
+        ProjectServicesService,
         { provide: PrismaService, useValue: prisma },
         { provide: PluginService, useValue: { infos: async () => [plugin.infos, makeEmptyServiceInfo('gitlab'), makeEmptyServiceInfo('harbor'), makeEmptyServiceInfo('keycloak'), makeEmptyServiceInfo('nexus'), makeEmptyServiceInfo('sonarqube'), makeEmptyServiceInfo('vault')] } },
       ],
     }).compile()
 
-    service = module.get(ServicesService)
+    service = module.get(ProjectServicesService)
   })
 
   afterEach(async () => {
@@ -81,7 +82,7 @@ describe('servicesService', () => {
   it('get returns the service with actual hooks data', async () => {
     prisma.project.findUnique.mockResolvedValue(project)
     prisma.projectPlugin.findMany.mockResolvedValue([
-      makeServicesProjectPlugin({ pluginName, value: ENABLED }),
+      makeProjectPlugin({ pluginName, value: ENABLED }),
     ])
     prisma.adminPlugin.findMany.mockResolvedValue([])
     prisma.cluster.findMany.mockResolvedValue([cluster])
@@ -108,11 +109,11 @@ describe('servicesService', () => {
       label: faker.word.noun(),
       argocdUrl: 'https://argocd.example.com',
     }
-    const projectWithEnvironmentZones = makeServicesProject({
+    const projectWithEnvironmentZones = makeProjectWithDetails({
       clusters: [],
       environments: [
         makeServicesEnvironment({
-          cluster: makeServicesCluster({
+          cluster: makePublicCluster({
             zone: makeServicesZone(environmentZone),
           }),
         }),
@@ -132,12 +133,12 @@ describe('servicesService', () => {
 
     const module = await Test.createTestingModule({
       providers: [
-        ServicesService,
+        ProjectServicesService,
         { provide: PrismaService, useValue: prisma },
         { provide: PluginService, useValue: { infos: async () => [envZonePlugin.infos] } },
       ],
     }).compile()
-    const envService = module.get(ServicesService)
+    const envService = module.get(ProjectServicesService)
 
     const result = await envService.get(projectId, 'user')
 

@@ -18,10 +18,10 @@ export class ProjectRolesController {
 
   @Get('/:projectId/roles')
   @RequireProjectPermission('ListRoles')
-  async listProjectRoles(
+  async list(
     @Project() project: ProjectContext,
   ) {
-    return this.projectRoles.listRoles(project.id)
+    return this.projectRoles.list(project.id)
   }
 
   @Post('/:projectId/roles')
@@ -29,11 +29,11 @@ export class ProjectRolesController {
   @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
   @RequireProjectLocked(false)
   @RequireProjectPermission('ManageRoles')
-  async createProjectRole(
+  async create(
     @Body(new ZodValidationPipe(projectRoleContract.createProjectRole.body)) body: typeof projectRoleContract.createProjectRole.body._type,
     @Project() project: ProjectContext,
   ) {
-    return this.projectRoles.createRole(project.id, body)
+    return this.projectRoles.create(project.id, body)
   }
 
   @Patch('/:projectId/roles')
@@ -41,19 +41,19 @@ export class ProjectRolesController {
   @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
   @RequireProjectLocked(false)
   @RequireProjectPermission('ManageRoles')
-  async patchProjectRoles(
+  async update(
     @Body(new ZodValidationPipe(projectRoleContract.patchProjectRoles.body)) body: typeof projectRoleContract.patchProjectRoles.body._type,
     @Project() project: ProjectContext,
   ) {
-    return this.projectRoles.patchRoles(project.id, body)
+    return this.projectRoles.update(project.id, body)
   }
 
   @Get('/:projectId/roles/member-counts')
   @RequireProjectPermission('ListRoles')
-  async projectRoleMemberCounts(
+  async countMembers(
     @Project() project: ProjectContext,
   ) {
-    return this.projectRoles.countRolesMembers(project.id)
+    return this.projectRoles.countMembers(project.id)
   }
 
   @Delete('/:projectId/roles/:roleId')
@@ -61,10 +61,10 @@ export class ProjectRolesController {
   @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
   @RequireProjectLocked(false)
   @RequireProjectPermission('ManageRoles')
-  async deleteProjectRole(
+  async delete(
     @Param('roleId') roleId: string,
     @Project() _project: ProjectContext,
   ): Promise<void> {
-    return this.projectRoles.deleteRole(roleId)
+    return this.projectRoles.delete(roleId)
   }
 }

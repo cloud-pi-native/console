@@ -1,6 +1,5 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
 import type { PermissionTarget, PluginConfig, PluginsUpdateBody, ServiceUrl } from '@cpn-console/shared'
-import type { Prisma } from '@prisma/client'
 import type { PrismaService } from '../infrastructure/database/prisma.service'
 import { editStrippersGenerator } from '@cpn-console/hooks'
 import { atomicValidators, DEFAULT } from '@cpn-console/shared'
@@ -11,33 +10,6 @@ export interface PluginRecord {
   key: string
   value: string
 }
-
-export const projectServicesProjectSelect = {
-  id: true,
-  name: true,
-  slug: true,
-  description: true,
-  clusters: {
-    include: {
-      zone: true,
-    },
-  },
-  environments: {
-    include: {
-      cluster: {
-        include: {
-          zone: true,
-        },
-      },
-    },
-  },
-} satisfies Prisma.ProjectSelect
-
-export const publicClusterSelect = {
-  include: {
-    zone: true,
-  },
-} satisfies Prisma.ClusterDefaultArgs
 
 export function generatePluginsUpdateBody(records: PluginRecord[]): PluginsUpdateBody {
   const obj: PluginsUpdateBody = {}

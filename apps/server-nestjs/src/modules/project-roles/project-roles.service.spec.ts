@@ -45,7 +45,7 @@ describe('projectRolesService', () => {
       project: { slug },
     })])
 
-    const roles = await service.listRoles(projectId)
+    const roles = await service.list(projectId)
 
     expect(roles[0].permissions).toBe('4')
     expect(roles[0].oidcGroup).toBe('/console/admin')
@@ -60,7 +60,7 @@ describe('projectRolesService', () => {
     prisma.projectRole.findMany.mockResolvedValue([])
     prisma.project.findUnique.mockResolvedValueOnce(makeProject({ id: projectId, slug }))
 
-    await service.createRole(projectId, { name: 'test', permissions: '4' })
+    await service.create(projectId, { name: 'test', permissions: '4' })
 
     expect(prisma.projectRole.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
@@ -77,7 +77,7 @@ describe('projectRolesService', () => {
     const projectId = faker.string.uuid()
     prisma.project.findUnique.mockResolvedValueOnce(makeProject({ slug: 'slug' }))
 
-    await expect(service.createRole(projectId, { name: 'test', permissions: '4', type: 'system:managed' }))
+    await expect(service.create(projectId, { name: 'test', permissions: '4', type: 'system:managed' }))
       .rejects.toThrow(BadRequestException)
   })
 
@@ -98,7 +98,7 @@ describe('projectRolesService', () => {
     prisma.projectRole.update.mockResolvedValue(makeProjectRole({ id: roleId }))
     prisma.project.findUnique.mockResolvedValueOnce(makeProject({ id: projectId, slug }))
 
-    await service.patchRoles(projectId, [{ id: roleId, name: 'updated', position: 0 }])
+    await service.update(projectId, [{ id: roleId, name: 'updated', position: 0 }])
 
     expect(prisma.projectRole.update).toHaveBeenCalledWith(expect.objectContaining({
       where: { id: roleId },
@@ -120,7 +120,7 @@ describe('projectRolesService', () => {
       makeProjectRoleWithProject({ id: roleId2, name: 'b', permissions: 1n, position: 1, projectId, oidcGroup: '', project: { slug } }),
     ])
 
-    await expect(service.patchRoles(projectId, [{ id: roleId1, position: 1 }]))
+    await expect(service.update(projectId, [{ id: roleId1, position: 1 }]))
       .rejects.toThrow(BadRequestException)
   })
 
@@ -139,7 +139,7 @@ describe('projectRolesService', () => {
       makeProjectMembers({ roleIds: [roleId2] }),
     ])
 
-    await expect(service.countRolesMembers(projectId)).resolves.toEqual({
+    await expect(service.countMembers(projectId)).resolves.toEqual({
       [roleId1]: 1,
       [roleId2]: 2,
     })
@@ -159,7 +159,7 @@ describe('projectRolesService', () => {
     ])
     prisma.$transaction.mockImplementation(async cb => cb(tx))
 
-    await service.deleteRole(roleId)
+    await service.delete(roleId)
 
     expect(tx.projectMembers.update).toHaveBeenCalledTimes(2)
     expect(events.emitAsync).toHaveBeenCalledWith('project.upsert', expect.anything())
@@ -168,14 +168,14 @@ describe('projectRolesService', () => {
   it('rejects system role deletion', async () => {
     prisma.projectRole.findUnique.mockResolvedValue(makeProjectRole({ type: 'system:managed', projectId: faker.string.uuid() }))
 
-    await expect(service.deleteRole(faker.string.uuid()))
+    await expect(service.delete(faker.string.uuid()))
       .rejects.toThrow(BadRequestException)
   })
 
   it('rejects missing role deletion', async () => {
     prisma.projectRole.findUnique.mockResolvedValue(null)
 
-    await expect(service.deleteRole(faker.string.uuid()))
+    await expect(service.delete(faker.string.uuid()))
       .rejects.toThrow(NotFoundException)
   })
 })

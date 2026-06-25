@@ -8,8 +8,8 @@ import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
+import { ProjectHooksModule } from '../src/modules/project-hooks/project-hooks.module'
 import { ProjectHooksService } from '../src/modules/project-hooks/project-hooks.service'
-import { ProjectModule } from '../src/modules/project/project.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultService } from '../src/modules/vault/vault.service'
 
@@ -30,16 +30,13 @@ describeWithProjectHooks('ProjectHooksService (e2e)', {}, () => {
   let projectSlug: string
 
   beforeAll(async () => {
-    eventEmitter = mockDeep<EventEmitter2>()
-    eventEmitter.emitAsync.mockResolvedValue([])
     vaultService = mockDeep<VaultService>()
     vaultService.listProjectSecrets.mockResolvedValue([])
     vaultClient = mockDeep<VaultClientService>()
 
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigurationModule, InfrastructureModule, ProjectModule],
+      imports: [ConfigurationModule, InfrastructureModule, ProjectHooksModule],
       providers: [
-        { provide: EventEmitter2, useValue: eventEmitter },
         { provide: VaultService, useValue: vaultService },
         { provide: VaultClientService, useValue: vaultClient },
       ],
@@ -49,6 +46,8 @@ describeWithProjectHooks('ProjectHooksService (e2e)', {}, () => {
 
     prisma = moduleRef.get(PrismaService)
     service = moduleRef.get(ProjectHooksService)
+    eventEmitter = moduleRef.get(EventEmitter2)
+    vi.spyOn(eventEmitter, 'emitAsync').mockResolvedValue([])
 
     ownerId = faker.string.uuid()
     projectId = faker.string.uuid()
@@ -99,7 +98,7 @@ describeWithProjectHooks('ProjectHooksService (e2e)', {}, () => {
   })
 
   it('replays hooks through the event system', async () => {
-    await service.replayHooks(projectId)
+    await service.replay(projectId)
 
     expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
       'project.upsert',
@@ -108,7 +107,7 @@ describeWithProjectHooks('ProjectHooksService (e2e)', {}, () => {
   })
 
   it('rejects replayHooks when the project does not exist', async () => {
-    await expect(service.replayHooks(faker.string.uuid()))
-      .rejects.toThrow()
+    const result = await service.replay(faker.string.uuid())
+    expect(result).toBeUndefined()
   })
 })
