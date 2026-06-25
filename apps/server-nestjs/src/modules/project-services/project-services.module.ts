@@ -7,7 +7,12 @@ import { ProjectServicesController } from './project-services.controller'
 import { ProjectServicesService } from './project-services.service'
 
 @Module({
-  imports: [AuthModule, DatabaseModule, PluginModule, ProjectPermissionModule],
+  imports: [
+    AuthModule,
+    DatabaseModule,
+    PluginModule,
+    ProjectPermissionModule,
+  ],
   controllers: [ProjectServicesController],
   providers: [ProjectServicesService],
   exports: [ProjectServicesService],

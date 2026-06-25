@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common'
+import { ConditionalModule } from '@nestjs/config'
 import { TerminusModule } from '@nestjs/terminus'
+import { optIn } from 'src/utils/config.utils'
 import { ArgoCDModule } from '../argocd/argocd.module'
 import { GitlabModule } from '../gitlab/gitlab.module'
-import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
 import { DatabaseModule } from '../infrastructure/database/database.module'
 import { KeycloakModule } from '../keycloak/keycloak.module'
 import { NexusModule } from '../nexus/nexus.module'
@@ -17,13 +18,12 @@ import { HealthzService } from './healthz.service'
     TerminusModule,
     DatabaseModule,
     KeycloakModule,
-    GitlabModule,
-    VaultModule,
-    NexusModule,
-    RegistryModule,
-    ArgoCDModule,
-    ConfigurationModule,
-    ServiceChainModule,
+    ConditionalModule.registerWhen(ArgoCDModule, 'USE_ARGOCD'),
+    ConditionalModule.registerWhen(GitlabModule, 'USE_GITLAB'),
+    ConditionalModule.registerWhen(NexusModule, 'USE_NEXUS'),
+    ConditionalModule.registerWhen(RegistryModule, 'USE_HARBOR'),
+    ConditionalModule.registerWhen(ServiceChainModule, optIn('USE_SERVICE_CHAIN')),
+    ConditionalModule.registerWhen(VaultModule, 'USE_VAULT'),
   ],
   controllers: [HealthzController],
   providers: [HealthzService],

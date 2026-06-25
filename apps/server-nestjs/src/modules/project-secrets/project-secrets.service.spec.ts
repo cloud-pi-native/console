@@ -97,4 +97,22 @@ describe('projectSecretsService', () => {
 
     expect(result.group1).toEqual({ 's2.key': 'val' })
   })
+
+  describe('without vault configured (USE_VAULT=false)', () => {
+    it('returns empty result without touching vault', async () => {
+      const moduleNoVault = await Test.createTestingModule({
+        providers: [
+          ProjectSecretsService,
+          { provide: PrismaService, useValue: mockDeep<PrismaService>() },
+          { provide: ConfigurationService, useValue: mockDeep<ConfigurationService>({ projectRootDir: '/vault' }) },
+        ],
+      }).compile()
+
+      const serviceNoVault = moduleNoVault.get(ProjectSecretsService)
+      const result = await serviceNoVault.get('project-id')
+
+      expect(result).toEqual({})
+      await moduleNoVault.close()
+    })
+  })
 })

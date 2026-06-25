@@ -492,7 +492,7 @@ function formatDeploymentSourceValueSources(
       }]
     : []
   return [...internalValueSources, ...externalValueSource]
-    .sort((a, b) => a.order - b.order)
+    .toSorted((a, b) => a.order - b.order)
     .map(entry => entry.value)
 }
 
