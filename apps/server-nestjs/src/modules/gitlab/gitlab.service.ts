@@ -25,18 +25,22 @@ import {
   PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PURGE_PLUGIN_KEY,
-  TOPIC_PLUGIN_MANAGED,
 } from './gitlab.constants'
 import {
+  adminRoleFlag,
+  daysAgoFromNow,
   generateAccessLevelMapping,
   generateAdminRoleMapping,
   generateName,
   generateProjectRoleGroupPath,
   generateUsername,
   generateUsernameCandidates,
+  getProjectPluginConfig,
+  isOwnedRepo,
+  isOwnedUser,
+  isSystemRepo,
 } from './gitlab.utils'
 
-const ownedUserRegex = /group_\d+_bot/u
 type ProjectAccessLevel = Exclude<AccessLevel, (typeof AccessLevel)['ADMIN']>
 
 @Injectable()
@@ -509,28 +513,4 @@ export class GitlabService {
       return undefined
     }
   }
-}
-
-function isOwnedUser(member: MemberSchema) {
-  return ownedUserRegex.test(member.username)
-}
-
-function isOwnedRepo(repo: ProjectSchema) {
-  return repo.topics?.includes(TOPIC_PLUGIN_MANAGED) ?? false
-}
-
-function isSystemRepo(project: ProjectWithDetails, repo: ProjectSchema) {
-  return project.repositories.some(r => r.internalRepoName === repo.name)
-}
-
-function getProjectPluginConfig(project: ProjectWithDetails, key: string) {
-  return project.plugins?.find(p => p.key === key)?.value
-}
-
-function daysAgoFromNow(date: Date) {
-  return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
-}
-
-function adminRoleFlag(user: ProjectWithDetails['members'][0]['user'], adminRoleId?: string) {
-  return adminRoleId ? user.adminRoleIds?.includes(adminRoleId) : undefined
 }
