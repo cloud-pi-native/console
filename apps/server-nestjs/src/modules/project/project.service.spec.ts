@@ -34,7 +34,7 @@ describe('projectService', () => {
     expect(service).toBeDefined()
   })
 
-  describe('getProjectWithDetails', () => {
+  describe('get', () => {
     it('should return project details when project exists', async () => {
       const mockProject = {
         id: projectId,
@@ -48,7 +48,7 @@ describe('projectService', () => {
 
       mockProjectDatastoreService.getProjectWithDetails.mockResolvedValue(mockProject)
 
-      const result = await service.getProjectWithDetails(projectId)
+      const result = await service.get(projectId)
 
       expect(mockProjectDatastoreService.getProjectWithDetails).toHaveBeenCalledTimes(1)
       expect(mockProjectDatastoreService.getProjectWithDetails).toHaveBeenCalledWith(projectId)
@@ -58,7 +58,7 @@ describe('projectService', () => {
     it('should throw an error when project does not exist', async () => {
       mockProjectDatastoreService.getProjectWithDetails.mockResolvedValue(null)
 
-      await expect(service.getProjectWithDetails(projectId)).rejects.toThrow(
+      await expect(service.get(projectId)).rejects.toThrow(
         `Project with id ${projectId} not found`,
       )
 
