@@ -255,7 +255,7 @@ describe('sonarqubeService', () => {
     })
   })
 
-  describe('handleDelete', () => {
+  describe('delete', () => {
     it('should delete sonarqube projects, anonymize user and remove vault entry', async () => {
       const project = makeProjectWithDetails({ slug: 'doomed' })
       const doomedKey = generateProjectKey('doomed', 'repo')
@@ -265,7 +265,7 @@ describe('sonarqubeService', () => {
       })
       client.searchUsers.mockResolvedValue({ paging: makeSonarqubePaging({ total: 1 }), users: [makeSonarqubeUser({ login: 'doomed' })] })
 
-      await service.handleDelete(project)
+      await service.delete(project)
 
       expect(client.deleteProject).toHaveBeenCalledWith({ project: doomedKey })
       expect(client.deactivateUser).toHaveBeenCalledWith({ login: 'doomed', anonymize: true })
@@ -275,14 +275,14 @@ describe('sonarqubeService', () => {
     it('should skip anonymization when the user does not exist', async () => {
       const project = makeProjectWithDetails({ slug: 'no-user' })
 
-      await service.handleDelete(project)
+      await service.delete(project)
 
       expect(client.deactivateUser).not.toHaveBeenCalled()
       expect(vault.deleteSonarqubeUser).toHaveBeenCalledWith('no-user')
     })
   })
 
-  describe('handleCron', () => {
+  describe('apply', () => {
     it('should reconcile all projects and run init', async () => {
       const projects = [
         makeProjectWithDetails({ repositories: [] }),
@@ -291,7 +291,7 @@ describe('sonarqubeService', () => {
       datastore.getAllProjects.mockResolvedValue(projects)
       client.generateUserToken.mockImplementation(({ login }) => Promise.resolve(makeUserToken({ login })))
 
-      await service.handleCron()
+      await service.apply()
 
       expect(client.searchProject).toHaveBeenCalledTimes(2)
       expect(client.createPermissionTemplate).toHaveBeenCalledOnce()

@@ -14,11 +14,12 @@ import type {
   PipelineTriggerTokenSchema,
   SimpleUserSchema,
 } from '@gitbeaker/core'
+import type { GitlabConfig } from '../../config/gitlab'
 import { join } from 'node:path'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
+import { gitlabConfigFactory } from '../../config/gitlab'
 import { find } from '../../utils/iterable'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import {
   GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY,
   INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY,
@@ -51,7 +52,7 @@ export class GitlabClientService {
   private readonly logger = new Logger(GitlabClientService.name)
 
   constructor(
-    @Inject(ConfigurationService) readonly config: ConfigurationService,
+    @Inject(gitlabConfigFactory.KEY) readonly config: GitlabConfig,
     @Inject(GITLAB_REST_CLIENT) private readonly client: Gitlab,
   ) {
   }
@@ -197,7 +198,7 @@ export class GitlabClientService {
 
   async getOrCreateProjectGroupInternalRepoUrl(subGroupPath: string, repoName: string): Promise<string> {
     const projectGroup = await this.getOrCreateProjectSubGroup(subGroupPath)
-    const urlBase = this.config.getInternalOrPublicGitlabUrl()
+    const urlBase = this.config.internalOrPublicGitlabUrl
     if (!urlBase) throw new Error('GITLAB_URL is required')
     return `${urlBase}/${projectGroup.full_path}/${repoName}.git`
   }

@@ -6,7 +6,12 @@ import { mockDeep } from 'vitest-mock-extended'
 import { stringify } from 'yaml'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
 import { makeCommitAction, makeProjectSchema, makeRepositoryTreeSchema } from '../gitlab/gitlab-testing.utils'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { argocdConfigFactory } from '../../config/argocd'
+import type { ArgoCDConfig } from '../../config/argocd'
+import { baseConfigFactory } from '../../config/base'
+import type { BaseConfig } from '../../config/base'
+import { vaultConfigFactory } from '../../config/vault'
+import type { VaultConfig } from '../../config/vault'
 import { VaultClientService } from '../vault/vault-client.service'
 import { ArgoCDDatastoreService } from './argocd-datastore.service'
 import { makeProjectDeployment, makeProjectDeploymentSource, makeProjectEnvironment, makeProjectRepository, makeProjectWithDetails } from './argocd-testing.utils'
@@ -22,23 +27,33 @@ describe('argoCDService', () => {
     datastore = mockDeep<ArgoCDDatastoreService>()
     gitlab = mockDeep<GitlabClientService>()
     vault = mockDeep<VaultClientService>()
-    const config = mockDeep<ConfigurationService>({
-      argoNamespace: 'argocd',
+    const argocdConfig = mockDeep<ArgoCDConfig>({
+      useArgocd: true,
+      argocdNamespace: 'argocd',
       argocdUrl: 'https://argocd.internal',
+      argocdInternalUrl: undefined,
       argocdExtraRepositories: 'repo3',
       dsoEnvChartVersion: 'dso-env-1.6.0',
       dsoNsChartVersion: 'dso-ns-1.1.5',
-      projectRootDir: 'forge',
+      vaultDeployVaultConnectionInNs: false,
+      internalOrPublicArgocdUrl: undefined,
+    })
+    const baseConfig = mockDeep<BaseConfig>({
+      projectsRootDir: 'forge',
+    })
+    const vaultConfig = mockDeep<VaultConfig>({
       vaultUrl: 'https://vault.internal',
       vaultKvName: 'kv',
-      deployVaultConnectionInNamespaces: false,
+      vaultInternalUrl: undefined,
     })
 
     const module = await Test.createTestingModule({
       providers: [
         ArgoCDService,
         { provide: ArgoCDDatastoreService, useValue: datastore },
-        { provide: ConfigurationService, useValue: config },
+        { provide: argocdConfigFactory.KEY, useValue: argocdConfig },
+        { provide: baseConfigFactory.KEY, useValue: baseConfig },
+        { provide: vaultConfigFactory.KEY, useValue: vaultConfig },
         { provide: GitlabClientService, useValue: gitlab },
         { provide: VaultClientService, useValue: vault },
       ],

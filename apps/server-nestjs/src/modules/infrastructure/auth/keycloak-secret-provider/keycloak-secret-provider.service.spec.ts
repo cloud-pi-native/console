@@ -1,5 +1,6 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { KeycloakConfig, keycloakConfigFactory } from '../../../../config/keycloak'
 import { faker } from '@faker-js/faker'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { JwtSecretRequestType } from '@nestjs/jwt'
@@ -7,7 +8,6 @@ import { Test } from '@nestjs/testing'
 import { createCache } from 'cache-manager'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../../configuration/configuration.service'
 import { makeJwksResponse } from './keycloak-secret-provider-testing.utils'
 import { KeycloakSecretProviderService } from './keycloak-secret-provider.service'
 import { createKeycloakSecretProviderPublicKeyCacheKey } from './keycloak-secret-provider.utils'
@@ -15,22 +15,18 @@ import { createKeycloakSecretProviderPublicKeyCacheKey } from './keycloak-secret
 describe('keycloakSecretProviderService', () => {
   let module: TestingModule
   let service: KeycloakSecretProviderService
-  let config: DeepMockProxy<ConfigurationService>
+  let config: DeepMockProxy<KeycloakConfig>
   let fetchMock: ReturnType<typeof vi.fn>
   let cache: ReturnType<typeof createCache>
 
   beforeEach(async () => {
-    config = mockDeep<ConfigurationService>({
+    config = mockDeep<KeycloakConfig>({
       keycloakProtocol: 'https',
       keycloakDomain: faker.internet.domainName(),
       keycloakRealm: faker.lorem.word(),
       keycloakJwksTimeoutMs: 1_000,
       keycloakJwksCacheTtlMs: 300_000,
       keycloakOpenidConfigurationCacheTtlMs: 300_000,
-
-      getKeycloakOpenidConfigurationUrl() {
-        return `https://${this.keycloakDomain}/realms/${this.keycloakRealm}/.well-known/openid-configuration`
-      },
     })
     fetchMock = vi.fn()
     cache = createCache()
@@ -42,7 +38,7 @@ describe('keycloakSecretProviderService', () => {
     module = await Test.createTestingModule({
       providers: [
         KeycloakSecretProviderService,
-        { provide: ConfigurationService, useValue: config },
+        { provide: keycloakConfigFactory.KEY, useValue: config },
         { provide: CACHE_MANAGER, useValue: cache },
       ],
     }).compile()

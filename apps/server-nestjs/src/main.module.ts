@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common'
+import { ConditionalModule, ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
+import baseConfig from './config/base'
 import { DeploymentModule } from './modules/deployment/deployment.module'
 import { EnvironmentModule } from './modules/environment/environment.module'
 import { HealthzModule } from './modules/healthz/healthz.module'
@@ -19,9 +21,14 @@ import { VersionModule } from './modules/version/version.module'
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: [...(process.env.DOCKER !== 'true' ? ['.env'] : []), ...(process.env.INTEGRATION === 'true' ? ['.env.integ'] : [])],
+      isGlobal: true,
+      load: [baseConfig],
+    }),
     InfrastructureModule,
     HealthzModule,
-    KeycloakModule,
+    ConditionalModule.registerWhen(KeycloakModule, 'USE_KEYCLOAK'),
     ScheduleModule.forRoot(),
     SystemSettingsModule,
     ServiceChainModule,

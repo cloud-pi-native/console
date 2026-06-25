@@ -1,4 +1,7 @@
 import type { CommitAction, CondensedProjectSchema, ProjectSchema, SimpleProjectSchema } from '@gitbeaker/core'
+import type { ArgoCDConfig } from '../../config/argocd'
+import type { BaseConfig } from '../../config/base'
+import type { VaultConfig } from '../../config/vault'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { ProjectWithDetails } from './argocd-datastore.service'
 import { createHmac } from 'node:crypto'
@@ -7,8 +10,10 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { stringify } from 'yaml'
+import { argocdConfigFactory } from '../../config/argocd'
+import { InjectBaseConfig } from '../../config/base'
+import { InjectVaultConfig } from '../../config/vault'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -31,7 +36,9 @@ export class ArgoCDService {
 
   constructor(
     @Inject(ArgoCDDatastoreService) private readonly argoCDDatastore: ArgoCDDatastoreService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(argocdConfigFactory.KEY) private readonly config: ArgoCDConfig,
+    @InjectBaseConfig() private readonly baseConfig: BaseConfig,
+    @InjectVaultConfig() private readonly vaultConfig: VaultConfig,
     @Inject(GitlabClientService) private readonly gitlab: GitlabClientService,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
   ) {
@@ -251,7 +258,7 @@ export class ArgoCDService {
       infraProject,
       valueFilePath,
       vaultValues,
-      argoNamespace: this.config.argoNamespace,
+      argoNamespace: this.config.argocdNamespace,
       envChartVersion: this.config.dsoEnvChartVersion,
       nsChartVersion: this.config.dsoNsChartVersion,
     })
@@ -323,7 +330,7 @@ export class ArgoCDService {
       infraProject,
       valueFilePath,
       vaultValues,
-      argoNamespace: this.config.argoNamespace,
+      argoNamespace: this.config.argocdNamespace,
       envChartVersion: this.config.dsoEnvChartVersion,
       nsChartVersion: this.config.dsoNsChartVersion,
       deployments,
@@ -348,9 +355,9 @@ export class ArgoCDService {
       return undefined
     })
     return {
-      projectsRootDir: this.config.projectRootDir,
-      url: this.config.deployVaultConnectionInNamespaces ? this.config.vaultUrl : '',
-      coreKvName: this.config.vaultKvName,
+      projectsRootDir: this.baseConfig.projectsRootDir,
+      url: this.config.vaultDeployVaultConnectionInNs ? this.vaultConfig.vaultUrl : '',
+      coreKvName: this.vaultConfig.vaultKvName,
       roleId: roleId ?? 'none',
       secretId: secretId ?? 'none',
     }

@@ -1,6 +1,7 @@
+import type { BaseConfig } from '../../../config/base'
 import { setTimeout } from 'node:timers/promises'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { ConfigurationService } from '../configuration/configuration.service'
+import { InjectBaseConfig } from '../../../config/base'
 import { PrismaService } from './prisma.service'
 
 @Injectable()
@@ -9,7 +10,7 @@ export class DatabaseService {
 
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(ConfigurationService) private readonly configurationService: ConfigurationService,
+    @InjectBaseConfig() private readonly configurationService: BaseConfig,
   ) {
     this.DELAY_BEFORE_RETRY
       = this.configurationService.isTest || this.configurationService.isCI

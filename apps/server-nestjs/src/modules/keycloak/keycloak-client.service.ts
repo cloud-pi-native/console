@@ -3,14 +3,15 @@ import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/g
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
 import type { Credentials } from '@keycloak/keycloak-admin-client/lib/utils/auth'
 import type { OnModuleInit } from '@nestjs/common'
+import type { KeycloakConfig } from '../../config/keycloak'
 import type { ProjectWithDetails } from './keycloak-datastore.service'
 import type { GroupRepresentationWith } from './keycloak.utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Interval } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
+import { InjectKeycloakConfig } from '../../config/keycloak'
 import { getErrorResponseStatus } from '../../utils/http-error'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { ADMIN_AUTH_REALM, ADMIN_TOKEN_REFRESH_INTERVAL_MS, CONSOLE_GROUP_NAME, PASSWORD_GRANT_TYPE, REFRESH_TOKEN_GRANT_TYPE, SUBGROUPS_PAGINATE_QUERY_MAX } from './keycloak.constants'
 
@@ -23,7 +24,7 @@ export class KeycloakClientService implements OnModuleInit {
   private authenticated = false
 
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @InjectKeycloakConfig() private readonly config: KeycloakConfig,
     @Inject(KEYCLOAK_ADMIN_CLIENT) private readonly client: KcAdminClient,
   ) {
   }

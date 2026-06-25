@@ -1,8 +1,9 @@
+import type { GitlabConfig } from '../../config/gitlab'
 import { Gitlab } from '@gitbeaker/rest'
 import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { TerminusModule } from '@nestjs/terminus'
-import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import gitlabConfigFactory from '../../config/gitlab'
 import { DatabaseModule } from '../infrastructure/database/database.module'
 import { VaultModule } from '../vault/vault.module'
 import { GITLAB_REST_CLIENT, GitlabClientService } from './gitlab-client.service'
@@ -12,14 +13,14 @@ import { GitlabPluginService } from './gitlab-plugin.service'
 import { GitlabService } from './gitlab.service'
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule, TerminusModule, VaultModule],
+  imports: [DatabaseModule, TerminusModule, VaultModule, ConfigModule.forFeature([gitlabConfigFactory])],
   providers: [
     {
       provide: GITLAB_REST_CLIENT,
-      inject: [ConfigurationService],
-      useFactory: (config: ConfigurationService) => new Gitlab({
+      inject: [gitlabConfigFactory.KEY],
+      useFactory: (config: GitlabConfig) => new Gitlab({
         token: config.gitlabToken,
-        host: config.getInternalOrPublicGitlabUrl(),
+        host: config.internalOrPublicGitlabUrl,
       }),
     },
     GitlabClientService,

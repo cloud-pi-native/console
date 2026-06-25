@@ -1,11 +1,11 @@
+import type { BaseConfig } from '../../config/base'
 import { Controller, Get, Inject } from '@nestjs/common'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { baseConfigFactory } from '../../config/base'
 
 @Controller('api/v1/version')
 export class VersionController {
   constructor(
-    @Inject(ConfigurationService)
-    private readonly config: ConfigurationService,
+    @Inject(baseConfigFactory.KEY) private readonly config: BaseConfig,
   ) {}
 
   @Get()

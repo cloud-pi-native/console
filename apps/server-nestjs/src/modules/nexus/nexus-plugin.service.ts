@@ -1,13 +1,13 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { nexusConfigFactory } from '../../config/nexus'
+import type { NexusConfig } from '../../config/nexus'
 
 @Injectable()
 export class NexusPluginService {
   constructor(
-    @Inject(ConfigurationService)
-    private readonly config: ConfigurationService,
+    @Inject(nexusConfigFactory.KEY) private readonly config: NexusConfig,
   ) {}
 
   infos(): ServiceInfos {

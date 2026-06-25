@@ -1,17 +1,18 @@
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { VaultConfig } from '../../config/vault'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { vaultConfigFactory } from '../../config/vault'
 import { makeToUrlParams } from '../plugin/plugin.utils'
 import { VaultPluginService } from './vault-plugin.service'
 
 describe('vaultPluginService', () => {
   let service: VaultPluginService
-  let config: DeepMockProxy<ConfigurationService>
+  let config: DeepMockProxy<VaultConfig>
 
   beforeEach(async () => {
-    config = mockDeep<ConfigurationService>({
+    config = mockDeep<VaultConfig>({
       vaultUrl: 'https://vault.public/',
       vaultInternalUrl: 'https://vault.internal/',
     })
@@ -19,7 +20,7 @@ describe('vaultPluginService', () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         VaultPluginService,
-        { provide: ConfigurationService, useValue: config },
+        { provide: vaultConfigFactory.KEY, useValue: config },
       ],
     }).compile()
 

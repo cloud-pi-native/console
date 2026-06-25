@@ -8,8 +8,8 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { NodeSDK, resources } from '@opentelemetry/sdk-node'
 import { Logger } from 'nestjs-pino'
+import baseConfigFactory from './config/base'
 import { MainModule } from './main.module'
-import { ConfigurationService } from './modules/infrastructure/configuration/configuration.service'
 
 const SERVICE_NAME = 'console-pi-native-console'
 
@@ -43,7 +43,7 @@ async function bootstrap() {
     await telemetry.shutdown()
   })
 
-  const config = app.get(ConfigurationService)
+  const config = baseConfigFactory()
 
   // Setup swagger-ui route
   const swaggerConfig = new DocumentBuilder()
@@ -55,7 +55,7 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, swaggerConfig)
   SwaggerModule.setup('swagger-ui-server-nestjs', app, documentFactory)
 
-  await app.listen(config.port, config.host)
+  await app.listen(config.SERVER_PORT, config.SERVER_HOST)
 
   const serverUrl = await app.getUrl()
   const logger = app.get(Logger)

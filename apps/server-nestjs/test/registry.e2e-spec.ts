@@ -1,8 +1,9 @@
 import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
+import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
+import baseConfig from '../src/config/base'
 import { ConfigurationService } from '../src/modules/infrastructure/configuration/configuration.service'
 import { RegistryClientService } from '../src/modules/registry/registry-client.service'
 import { makeProjectWithDetails } from '../src/modules/registry/registry-testing.utils'
@@ -34,7 +35,7 @@ describeWithRegistry('RegistryService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigurationModule, RegistryModule],
+      imports: [ConfigModule.forRoot({ envFilePath: [...(process.env.DOCKER !== 'true' ? ['.env'] : []), ...(process.env.INTEGRATION === 'true' ? ['.env.integ'] : [])], isGlobal: true, load: [baseConfig] }), RegistryModule],
     })
       .compile()
 
