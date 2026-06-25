@@ -1,25 +1,26 @@
+import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { makeToUrlParams } from '../plugin/plugin.utils'
 import { GitlabPluginService } from './gitlab-plugin.service'
 
 describe('gitlabPluginService', () => {
   let service: GitlabPluginService
-  let config: DeepMockProxy<ConfigurationService>
+  let config: DeepMockProxy<ConfigType<typeof gitlabConfigFactory>>
 
   beforeEach(async () => {
-    config = mockDeep<ConfigurationService>({
-      gitlabUrl: 'https://gitlab.public',
+    config = mockDeep<ConfigType<typeof gitlabConfigFactory>>({
+      url: 'https://gitlab.public',
       projectRootDir: 'forge',
     })
 
     const moduleRef = await Test.createTestingModule({
       providers: [
         GitlabPluginService,
-        { provide: ConfigurationService, useValue: config },
+        { provide: gitlabConfigFactory.KEY, useValue: config },
       ],
     }).compile()
 

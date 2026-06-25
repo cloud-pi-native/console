@@ -1,3 +1,4 @@
+import type { ConfigType } from '@nestjs/config'
 import type { EventEmitter2 as EventEmitter2Type } from '@nestjs/event-emitter'
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
@@ -5,7 +6,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { baseConfigFactory } from '../../config/base.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { LogService } from '../log/log.service'
 import { projectSelect } from '../project/project-queries.utils'
@@ -18,13 +19,13 @@ describe('appEventsService', () => {
   let prisma: DeepMockProxy<PrismaService>
   let eventEmitter: DeepMockProxy<EventEmitter2Type>
   let logs: DeepMockProxy<LogService>
-  let config: DeepMockProxy<ConfigurationService>
+  let config: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
     eventEmitter = mockDeep<EventEmitter2>({ emitAsync: vi.fn().mockResolvedValue([]) })
     logs = mockDeep<LogService>()
-    config = mockDeep<ConfigurationService>({ appVersion: 'test-version' })
+    config = mockDeep<ConfigType<typeof baseConfigFactory>>({ appVersion: 'test-version' })
 
     module = await Test.createTestingModule({
       providers: [
@@ -32,7 +33,7 @@ describe('appEventsService', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: EventEmitter2, useValue: eventEmitter },
         { provide: LogService, useValue: logs },
-        { provide: ConfigurationService, useValue: config },
+        { provide: baseConfigFactory.KEY, useValue: config },
       ],
     }).compile()
 

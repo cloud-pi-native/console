@@ -1,23 +1,21 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
+import type { ConfigType } from '@nestjs/config'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { DEFAULT_ADMIN_GROUP_PATH, DEFAULT_AUDITOR_GROUP_PATH, DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX, PURGE_PLUGIN_KEY } from './gitlab.constants'
 
 @Injectable()
 export class GitlabPluginService {
   constructor(
-    @Inject(ConfigurationService)
-    private readonly config: ConfigurationService,
+    @Inject(gitlabConfigFactory.KEY)
+    private readonly gitlabConfig: ConfigType<typeof gitlabConfigFactory>,
   ) {}
 
   infos(): ServiceInfos {
     return {
       name: 'gitlab',
-      to: ({ project }) => {
-        if (!this.config.gitlabUrl || !this.config.projectRootDir) return undefined
-        return new URL(`${this.config.projectRootDir}/${project.slug}`, this.config.gitlabUrl).toString()
-      },
+      to: ({ project }) => new URL(`${this.gitlabConfig.projectRootDir}/${project.slug}`, this.gitlabConfig.url).toString(),
       title: 'Gitlab',
       imgSrc: '/img/gitlab.svg',
       description: 'GitLab est un service d\'hébergement de code source et de pipeline CI/CD',

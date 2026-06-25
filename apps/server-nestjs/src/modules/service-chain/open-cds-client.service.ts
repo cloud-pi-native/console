@@ -1,12 +1,11 @@
 import type { HttpStatus } from '@nestjs/common'
+import type { ConfigType } from '@nestjs/config'
 import type { Dispatcher, HeadersInit } from 'undici'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Agent, fetch, Headers, ProxyAgent } from 'undici'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { baseConfigFactory } from '../../config/base.config'
+import { opencdsConfigFactory } from '../../config/opencds.config'
 import { throwIfNotOk } from './service-chain.utils'
-
-const openCdsDisabledMessage
-  = 'OpenCDS is disabled, please set OPENCDS_URL in your relevant .env file. See .env-example'
 
 const URL_REGEX = /^https?:\/\//
 const START_SLASHES_REGEX = /^\/+/
@@ -25,14 +24,14 @@ export class OpenCdsClientError extends Error {
     public readonly body?: string,
   ) {
     super(`OpenCDS request failed with ${status} ${statusText}`)
-    this.name = 'OpenCdsClientError'
   }
 }
 
 @Injectable()
 export class OpenCdsClientService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(opencdsConfigFactory.KEY) private readonly opencdsConfig: ConfigType<typeof opencdsConfigFactory>,
+    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
   ) {}
 
   private readonly logger = new Logger(OpenCdsClientService.name)
@@ -77,13 +76,11 @@ export class OpenCdsClientService {
     path: string,
     query?: OpenCdsRequestOptions['query'],
   ): string {
-    if (!this.config.openCdsUrl) {
-      throw new Error(openCdsDisabledMessage)
-    }
+    if (!this.opencdsConfig.url) throw new Error('OpenCDS is disabled')
 
     const resolvedPath = URL_REGEX.test(path)
       ? path
-      : `${this.config.openCdsUrl.replace(END_SLASHES_REGEX, '')}/${path.replace(START_SLASHES_REGEX, '')}`
+      : `${this.opencdsConfig.url.replace(END_SLASHES_REGEX, '')}/${path.replace(START_SLASHES_REGEX, '')}`
 
     const url = new URL(resolvedPath)
 
@@ -101,7 +98,7 @@ export class OpenCdsClientService {
     hasJsonBody = false,
   ): Headers {
     const mergedHeaders = new Headers(headers)
-    mergedHeaders.set('X-API-Key', this.config.openCdsApiToken ?? '')
+    mergedHeaders.set('X-API-Key', this.opencdsConfig.apiToken ?? '')
 
     if (hasJsonBody) {
       mergedHeaders.set('Content-Type', 'application/json')
@@ -111,18 +108,20 @@ export class OpenCdsClientService {
   }
 
   private buildDispatcher(): Dispatcher {
-    if (process.env.HTTP_PROXY) {
+    const httpProxy = this.baseConfig.httpProxy
+
+    if (httpProxy) {
       return new ProxyAgent({
         requestTls: {
-          rejectUnauthorized: this.config.openCdsApiTlsRejectUnauthorized,
+          rejectUnauthorized: this.opencdsConfig.apiTlsRejectUnauthorized,
         },
-        uri: process.env.HTTP_PROXY,
+        uri: httpProxy,
       })
     }
 
     return new Agent({
       connect: {
-        rejectUnauthorized: this.config.openCdsApiTlsRejectUnauthorized,
+        rejectUnauthorized: this.opencdsConfig.apiTlsRejectUnauthorized,
       },
     })
   }

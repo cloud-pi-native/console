@@ -19,7 +19,7 @@ import { KeycloakService } from './keycloak.service'
 describe('keycloakService', () => {
   let service: KeycloakService
   let keycloak: DeepMockProxy<KeycloakClientService>
-  let keycloakDatastore: DeepMockProxy<KeycloakDatastoreService>
+  let datastore: DeepMockProxy<KeycloakDatastoreService>
 
   beforeEach(async () => {
     keycloak = mockDeep<KeycloakClientService>({
@@ -31,7 +31,7 @@ describe('keycloakService', () => {
       getAllGroups: vi.fn().mockImplementation(async function* () { /* empty by default */ }),
       deleteGroup: vi.fn().mockResolvedValue(undefined),
     })
-    keycloakDatastore = mockDeep<KeycloakDatastoreService>({
+    datastore = mockDeep<KeycloakDatastoreService>({
       getAllAdminRoles: vi.fn().mockResolvedValue([]),
       getAllUsersWithAdminRoleIds: vi.fn().mockResolvedValue([]),
     })
@@ -40,7 +40,7 @@ describe('keycloakService', () => {
       providers: [
         KeycloakService,
         { provide: KeycloakClientService, useValue: keycloak },
-        { provide: KeycloakDatastoreService, useValue: keycloakDatastore },
+        { provide: KeycloakDatastoreService, useValue: datastore },
       ],
     }).compile()
 
@@ -66,9 +66,9 @@ describe('keycloakService', () => {
       const users: UserWithAdminRoles[] = [
         { id: 'user-1', adminRoleIds: ['admin-role-id'] },
       ]
-      keycloakDatastore.getAllProjects.mockResolvedValue([])
-      keycloakDatastore.getAllAdminRoles.mockResolvedValue(adminRoles)
-      keycloakDatastore.getAllUsersWithAdminRoleIds.mockResolvedValue(users)
+      datastore.getAllProjects.mockResolvedValue([])
+      datastore.getAllAdminRoles.mockResolvedValue(adminRoles)
+      datastore.getAllUsersWithAdminRoleIds.mockResolvedValue(users)
 
       await service.handleCron()
 
@@ -86,9 +86,9 @@ describe('keycloakService', () => {
         { id: 'user-1', adminRoleIds: ['admin-role-id'] },
         { id: 'user-2', adminRoleIds: [] },
       ]
-      keycloakDatastore.getAllProjects.mockResolvedValue([])
-      keycloakDatastore.getAllAdminRoles.mockResolvedValue(adminRoles)
-      keycloakDatastore.getAllUsersWithAdminRoleIds.mockResolvedValue(users)
+      datastore.getAllProjects.mockResolvedValue([])
+      datastore.getAllAdminRoles.mockResolvedValue(adminRoles)
+      datastore.getAllUsersWithAdminRoleIds.mockResolvedValue(users)
 
       const adminGroup = makeGroupRepresentation({ id: 'kc-group-id', name: 'admin', path: '/console/admin' })
       keycloak.getOrCreateGroupByPath.mockResolvedValue(adminGroup)
@@ -105,7 +105,7 @@ describe('keycloakService', () => {
     })
 
     it('should purge orphans', async () => {
-      keycloakDatastore.getAllProjects.mockResolvedValue([mockProject])
+      datastore.getAllProjects.mockResolvedValue([mockProject])
 
       const projectGroup = makeGroupRepresentation({ id: 'group-id', name: 'test-project', subGroups: [] })
       const orphanGroup = makeGroupRepresentation({
@@ -124,7 +124,7 @@ describe('keycloakService', () => {
       keycloak.getSubGroups.mockImplementation(async function* () { /* empty */ })
       await service.handleCron()
 
-      expect(keycloakDatastore.getAllProjects).toHaveBeenCalled()
+      expect(datastore.getAllProjects).toHaveBeenCalled()
       expect(keycloak.getAllGroups).toHaveBeenCalled()
       expect(keycloak.getOrCreateGroupByPath).toHaveBeenCalledWith('/test-project')
       expect(keycloak.deleteGroup).toHaveBeenCalledWith('orphan-id')
@@ -140,7 +140,7 @@ describe('keycloakService', () => {
           }),
         ],
       })
-      keycloakDatastore.getAllProjects.mockResolvedValue([projectWithMembers])
+      datastore.getAllProjects.mockResolvedValue([projectWithMembers])
 
       const projectGroup = makeGroupRepresentation({ id: 'group-id', name: 'test-project' })
       keycloak.getOrCreateGroupByPath.mockResolvedValue(projectGroup)
@@ -180,7 +180,7 @@ describe('keycloakService', () => {
         ],
         roles: [roleWithOidc],
       })
-      keycloakDatastore.getAllProjects.mockResolvedValue([projectWithRole])
+      datastore.getAllProjects.mockResolvedValue([projectWithRole])
 
       const projectGroup = makeGroupRepresentation({ id: 'group-id', name: 'test-project' })
       const consoleGroup = { id: 'console-id', name: 'console' }
@@ -218,7 +218,7 @@ describe('keycloakService', () => {
         ...mockProject,
         environments: [makeProjectEnvironment({ id: 'env-1', name: 'dev' })],
       })
-      keycloakDatastore.getAllProjects.mockResolvedValue([projectWithEnv])
+      datastore.getAllProjects.mockResolvedValue([projectWithEnv])
 
       const projectGroup = makeGroupRepresentation({
         id: 'group-id',
@@ -290,7 +290,7 @@ describe('keycloakService', () => {
         ],
         environments: [makeProjectEnvironment({ id: 'env-1', name: 'dev' })],
       })
-      keycloakDatastore.getAllProjects.mockResolvedValue([projectWithEnvAndMembers])
+      datastore.getAllProjects.mockResolvedValue([projectWithEnvAndMembers])
 
       const projectGroup = makeGroupRepresentation({
         id: 'group-id',
@@ -349,7 +349,7 @@ describe('keycloakService', () => {
         ],
         roles: [roleManaged, roleExternal, roleGlobal],
       })
-      keycloakDatastore.getAllProjects.mockResolvedValue([projectWithRoles])
+      datastore.getAllProjects.mockResolvedValue([projectWithRoles])
 
       const projectGroup = makeGroupRepresentation({ id: 'group-id', name: 'test-project' })
       const consoleGroup = { id: 'console-id', name: 'console' }
@@ -416,7 +416,7 @@ describe('keycloakService', () => {
         ],
         roles: [roleSystemManaged],
       })
-      keycloakDatastore.getAllProjects.mockResolvedValue([projectWithRoles])
+      datastore.getAllProjects.mockResolvedValue([projectWithRoles])
 
       const projectGroup = makeGroupRepresentation({ id: 'group-id', name: 'test-project' })
       const consoleGroup = { id: 'console-id', name: 'console' }

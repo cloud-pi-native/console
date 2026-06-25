@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { TerminusModule } from '@nestjs/terminus'
-import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
+import { baseConfigFactory } from '../../config/base.config'
+import { vaultConfigFactory } from '../../config/vault.config'
 import { DatabaseModule } from '../infrastructure/database/database.module'
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
@@ -10,7 +12,7 @@ import { VaultPluginService } from './vault-plugin.service'
 import { VaultService } from './vault.service'
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule, TerminusModule],
+  imports: [DatabaseModule, TerminusModule, ConfigModule.forFeature(vaultConfigFactory), ConfigModule.forFeature(baseConfigFactory)],
   providers: [
     VaultHealthService,
     VaultHttpClientService,

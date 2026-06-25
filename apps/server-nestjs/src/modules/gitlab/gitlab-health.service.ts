@@ -1,22 +1,19 @@
+import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { gitlabConfigFactory } from '../../config/gitlab.config'
 
 @Injectable()
 export class GitlabHealthService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(gitlabConfigFactory.KEY) private readonly gitlabConfig: ConfigType<typeof gitlabConfigFactory>,
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 
   async check(key: string) {
     const indicator = this.healthIndicator.check(key)
-    const urlBase = this.config.getInternalOrPublicGitlabUrl()
-    if (!urlBase) return indicator.down('Not configured')
-
-    const url = new URL('/-/health', urlBase).toString()
     try {
-      const response = await fetch(url)
+      const response = await fetch(this.gitlabConfig.probeUrl)
       if (response.status < HttpStatus.INTERNAL_SERVER_ERROR) return indicator.up({ httpStatus: response.status })
       return indicator.down({ httpStatus: response.status })
     } catch (error) {

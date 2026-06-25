@@ -1,6 +1,7 @@
+import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
 
 export interface SonarqubeFetchOptions {
   method?: string
@@ -37,23 +38,17 @@ export class SonarqubeError extends Error {
 @Injectable()
 export class SonarqubeHttpClientService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(sonarqubeConfigFactory.KEY) private readonly sonarqubeConfig: ConfigType<typeof sonarqubeConfigFactory>,
   ) {}
 
-  private get baseUrl(): string {
-    const url = this.config.getInternalOrPublicSonarqubeUrl()
-    if (!url) throw new SonarqubeError('NotConfigured', 'SONARQUBE_URL or SONARQUBE_INTERNAL_URL is required')
-    return url
-  }
-
   private get apiBaseUrl(): string {
-    return new URL('api/', this.baseUrl).toString()
+    return new URL('api/', this.sonarqubeConfig.internalOrPublicUrl).toString()
   }
 
   private get defaultHeaders(): Record<string, string> {
-    if (!this.config.sonarApiToken) throw new SonarqubeError('NotConfigured', 'SONAR_API_TOKEN is required')
+    if (!this.sonarqubeConfig.apiToken) throw new SonarqubeError('NotConfigured', 'SONAR_API_TOKEN is required')
     return {
-      Authorization: `Bearer ${this.config.sonarApiToken}`,
+      Authorization: `Bearer ${this.sonarqubeConfig.apiToken}`,
     }
   }
 

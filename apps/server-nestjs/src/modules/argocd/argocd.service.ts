@@ -1,4 +1,5 @@
 import type { CommitAction, CondensedProjectSchema, ProjectSchema, SimpleProjectSchema } from '@gitbeaker/core'
+import type { ConfigType } from '@nestjs/config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { ProjectWithDetails } from './argocd-datastore.service'
 import { createHmac } from 'node:crypto'
@@ -7,8 +8,10 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { stringify } from 'yaml'
+import { argocdConfigFactory } from '../../config/argocd.config'
+import { baseConfigFactory } from '../../config/base.config'
+import { vaultConfigFactory } from '../../config/vault.config'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -30,8 +33,10 @@ export class ArgoCDService {
   private readonly logger = new Logger(ArgoCDService.name)
 
   constructor(
-    @Inject(ArgoCDDatastoreService) private readonly argoCDDatastore: ArgoCDDatastoreService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(ArgoCDDatastoreService) private readonly datastore: ArgoCDDatastoreService,
+    @Inject(argocdConfigFactory.KEY) private readonly argocdConfig: ConfigType<typeof argocdConfigFactory>,
+    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
+    @Inject(vaultConfigFactory.KEY) private readonly vaultConfig: ConfigType<typeof vaultConfigFactory>,
     @Inject(GitlabClientService) private readonly gitlab: GitlabClientService,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
   ) {
@@ -70,7 +75,7 @@ export class ArgoCDService {
   @StartActiveSpan()
   async handleCron() {
     this.logger.log('Starting ArgoCD reconciliation')
-    const projects = await this.argoCDDatastore.getAllProjects()
+    const projects = await this.datastore.getAllProjects()
     const span = trace.getActiveSpan()
     span?.setAttribute('argocd.projects.count', projects.length)
     this.logger.log(`Loaded ${projects.length} projects for ArgoCD reconciliation`)
@@ -247,13 +252,13 @@ export class ArgoCDService {
       environment,
       cluster,
       gitlabPublicProjectUrl,
-      argocdExtraRepositories: this.config.argocdExtraRepositories,
+      argocdExtraRepositories: this.argocdConfig.extraRepositories,
       infraProject,
       valueFilePath,
       vaultValues,
-      argoNamespace: this.config.argoNamespace,
-      envChartVersion: this.config.dsoEnvChartVersion,
-      nsChartVersion: this.config.dsoNsChartVersion,
+      argoNamespace: this.argocdConfig.namespace,
+      envChartVersion: this.argocdConfig.dsoEnvChartVersion,
+      nsChartVersion: this.argocdConfig.dsoNsChartVersion,
     })
 
     return this.gitlab.generateCreateOrUpdateAction(
@@ -319,13 +324,13 @@ export class ArgoCDService {
       environment,
       cluster,
       gitlabPublicProjectUrl,
-      argocdExtraRepositories: this.config.argocdExtraRepositories,
+      argocdExtraRepositories: this.argocdConfig.extraRepositories,
       infraProject,
       valueFilePath,
       vaultValues,
-      argoNamespace: this.config.argoNamespace,
-      envChartVersion: this.config.dsoEnvChartVersion,
-      nsChartVersion: this.config.dsoNsChartVersion,
+      argoNamespace: this.argocdConfig.namespace,
+      envChartVersion: this.argocdConfig.dsoEnvChartVersion,
+      nsChartVersion: this.argocdConfig.dsoNsChartVersion,
       deployments,
     })
 
@@ -348,9 +353,9 @@ export class ArgoCDService {
       return undefined
     })
     return {
-      projectsRootDir: this.config.projectRootDir,
-      url: this.config.deployVaultConnectionInNamespaces ? this.config.vaultUrl : '',
-      coreKvName: this.config.vaultKvName,
+      projectsRootDir: this.baseConfig.projectsRootDir,
+      url: this.argocdConfig.vaultDeployVaultConnectionInNs ? this.vaultConfig.url : '',
+      coreKvName: this.vaultConfig.kvName,
       roleId: roleId ?? 'none',
       secretId: secretId ?? 'none',
     }

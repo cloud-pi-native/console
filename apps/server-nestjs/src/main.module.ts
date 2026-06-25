@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
+import { TerminusModule } from '@nestjs/terminus'
+import { baseConfigFactory } from './config/base.config'
 import { DeploymentModule } from './modules/deployment/deployment.module'
 import { EnvironmentModule } from './modules/environment/environment.module'
 import { HealthzModule } from './modules/healthz/healthz.module'
@@ -16,9 +19,16 @@ import { ProjectModule } from './modules/project/project.module'
 import { ServiceChainModule } from './modules/service-chain/service-chain.module'
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module'
 import { VersionModule } from './modules/version/version.module'
+import { getDotenvPaths } from './utils/dotenv.utils'
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: getDotenvPaths(),
+      isGlobal: true,
+      load: [baseConfigFactory],
+    }),
+    TerminusModule.forRoot(),
     InfrastructureModule,
     HealthzModule,
     KeycloakModule,

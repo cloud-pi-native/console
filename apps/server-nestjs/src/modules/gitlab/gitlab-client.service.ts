@@ -14,11 +14,12 @@ import type {
   PipelineTriggerTokenSchema,
   SimpleUserSchema,
 } from '@gitbeaker/core'
+import type { ConfigType } from '@nestjs/config'
 import { join } from 'node:path'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { find } from '../../utils/iterable'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { gitlabConfigFactory } from '../../config/gitlab.config'
+import { find } from '../../utils/iterable.utils'
 import {
   GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY,
   INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY,
@@ -51,7 +52,7 @@ export class GitlabClientService {
   private readonly logger = new Logger(GitlabClientService.name)
 
   constructor(
-    @Inject(ConfigurationService) readonly config: ConfigurationService,
+    @Inject(gitlabConfigFactory.KEY) readonly config: ConfigType<typeof gitlabConfigFactory>,
     @Inject(GITLAB_REST_CLIENT) private readonly client: Gitlab,
   ) {
   }
@@ -187,17 +188,17 @@ export class GitlabClientService {
 
   async getOrCreateProjectGroupPublicUrl(): Promise<string> {
     const projectGroup = await this.getOrCreateProjectGroup()
-    return new URL(projectGroup.full_path, this.config.gitlabUrl).toString()
+    return new URL(projectGroup.full_path, this.config.url).toString()
   }
 
   async getOrCreateInfraGroupRepoPublicUrl(repoName: string): Promise<string> {
     const projectGroup = await this.getOrCreateProjectGroup()
-    return new URL(`${projectGroup.full_path}/${INFRA_GROUP_PATH}/${repoName}.git`, this.config.gitlabUrl).toString()
+    return new URL(`${projectGroup.full_path}/${INFRA_GROUP_PATH}/${repoName}.git`, this.config.url).toString()
   }
 
   async getOrCreateProjectGroupInternalRepoUrl(subGroupPath: string, repoName: string): Promise<string> {
     const projectGroup = await this.getOrCreateProjectSubGroup(subGroupPath)
-    const urlBase = this.config.getInternalOrPublicGitlabUrl()
+    const urlBase = this.config.internalOrPublicUrl
     if (!urlBase) throw new Error('GITLAB_URL is required')
     return `${urlBase}/${projectGroup.full_path}/${repoName}.git`
   }
@@ -474,7 +475,7 @@ export class GitlabClientService {
   async createProjectToken(projectSlug: string, tokenName: string, scopes: AccessTokenScopes[]) {
     const group = await this.getProjectGroup(projectSlug)
     if (!group) throw new Error('Unable to retrieve gitlab project group')
-    const expirationDays = Number(this.config.gitlabMirrorTokenExpirationDays)
+    const expirationDays = Number(this.config.mirrorTokenExpirationDays)
     const effectiveExpirationDays = Number.isFinite(expirationDays) && expirationDays > 0 ? expirationDays : 30
     const expiryDate = new Date(Date.now() + effectiveExpirationDays * 24 * 60 * 60 * 1000)
     this.logger.log(`Creating a GitLab group access token (projectSlug=${projectSlug}, tokenName=${tokenName}, expiry=${expiryDate.toISOString().slice(0, 10)})`)

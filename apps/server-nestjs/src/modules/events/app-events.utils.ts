@@ -1,6 +1,6 @@
 import type { LogData } from '../log/log.service'
 import type { PluginName, PluginResult, PluginResults } from '../plugin/plugin.utils'
-import { getErrorHttpDetails } from '../../utils/http-error'
+import { getErrorHttpDetails } from '../../utils/http.utils'
 import { getFailedPlugins } from '../plugin/plugin.utils'
 
 /** Per-service result as persisted in the admin logs (legacy hooks format, parsed by LogSchema). */

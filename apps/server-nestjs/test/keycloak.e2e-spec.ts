@@ -2,11 +2,12 @@ import type KcAdminClient from '@keycloak/keycloak-admin-client'
 import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
 import { Logger } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import z from 'zod'
+import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
-import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
@@ -16,6 +17,7 @@ import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from '../src/modules/key
 import { projectSelect } from '../src/modules/keycloak/keycloak-datastore.service'
 import { KeycloakModule } from '../src/modules/keycloak/keycloak.module'
 import { KeycloakService } from '../src/modules/keycloak/keycloak.service'
+import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunKeycloakE2E
   = Boolean(process.env.E2E)
@@ -42,7 +44,7 @@ describeWithKeycloak('KeycloakController (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [KeycloakModule, ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+      imports: [KeycloakModule, ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()

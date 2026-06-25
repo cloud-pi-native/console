@@ -1,9 +1,11 @@
+import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { baseConfigFactory } from '../../config/base.config'
+import { vaultConfigFactory } from '../../config/vault.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { makeProject } from '../project/project-testing.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -17,19 +19,22 @@ describe('projectSecretsService', () => {
   let prisma: DeepMockProxy<PrismaService>
   let vault: DeepMockProxy<VaultService>
   let vaultClient: DeepMockProxy<VaultClientService>
-  let config: DeepMockProxy<ConfigurationService>
+  let config: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
+  let vaultConfig: DeepMockProxy<ConfigType<typeof vaultConfigFactory>>
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
     vault = mockDeep<VaultService>()
     vaultClient = mockDeep<VaultClientService>()
-    config = mockDeep<ConfigurationService>({ projectRootDir: '/vault' })
+    config = mockDeep<ConfigType<typeof baseConfigFactory>>({ projectsRootDir: '/vault' })
+    vaultConfig = mockDeep<ConfigType<typeof vaultConfigFactory>>()
 
     module = await Test.createTestingModule({
       providers: [
         ProjectSecretsService,
         { provide: PrismaService, useValue: prisma },
-        { provide: ConfigurationService, useValue: config },
+        { provide: baseConfigFactory.KEY, useValue: config },
+        { provide: vaultConfigFactory.KEY, useValue: vaultConfig },
         { provide: VaultService, useValue: vault },
         { provide: VaultClientService, useValue: vaultClient },
       ],

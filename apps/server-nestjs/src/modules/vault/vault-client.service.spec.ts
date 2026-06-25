@@ -1,10 +1,12 @@
+import type { ConfigType } from '@nestjs/config'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { baseConfigFactory } from '../../config/base.config'
+import { vaultConfigFactory } from '../../config/vault.config'
 import { VaultClientService } from './vault-client.service'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
 
@@ -30,19 +32,23 @@ describe('vault', () => {
 
   beforeAll(() => server.listen())
   beforeEach(async () => {
-    const config = mockDeep<ConfigurationService>({
-      vaultToken: 'token',
-      vaultUrl,
-      vaultInternalUrl: vaultUrl,
-      vaultKvName: 'kv',
-      getInternalOrPublicVaultUrl: () => vaultUrl,
+    const config = mockDeep<ConfigType<typeof vaultConfigFactory>>({
+      token: 'token',
+      url: vaultUrl,
+      internalUrl: vaultUrl,
+      kvName: 'kv',
+      internalOrPublicUrl: vaultUrl,
+    })
+    const baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>({
+      projectsRootDir: 'forge',
     })
 
     const module = await Test.createTestingModule({
       providers: [
         VaultClientService,
         VaultHttpClientService,
-        { provide: ConfigurationService, useValue: config },
+        { provide: vaultConfigFactory.KEY, useValue: config },
+        { provide: baseConfigFactory.KEY, useValue: baseConfig },
       ],
     }).compile()
 

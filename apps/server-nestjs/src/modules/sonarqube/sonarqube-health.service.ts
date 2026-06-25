@@ -1,29 +1,22 @@
+import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
 
 @Injectable()
 export class SonarqubeHealthService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(sonarqubeConfigFactory.KEY) private readonly sonarqubeConfig: ConfigType<typeof sonarqubeConfigFactory>,
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 
   async check(key: string) {
     const indicator = this.healthIndicator.check(key)
-    const urlBase = this.config.getInternalOrPublicSonarqubeUrl()
-    if (!urlBase) return indicator.down('Not configured')
-
-    const url = new URL('/api/system/health', urlBase).toString()
-    const token = this.config.sonarApiToken
     const headers: Record<string, string> = {}
-    if (token) {
-      const bearerToken = Buffer.from(`${token}:`, 'utf8').toString('base64')
-      headers.Authorization = `Bearer ${bearerToken}`
-    }
-
+    const bearerToken = Buffer.from(`${this.sonarqubeConfig.apiToken}:`, 'utf-8').toString('base64')
+    headers.Authorization = `Bearer ${bearerToken}`
     try {
-      const response = await fetch(url, { headers })
+      const response = await fetch(this.sonarqubeConfig.probeUrl, { headers })
       if (response.status < HttpStatus.INTERNAL_SERVER_ERROR) return indicator.up({ httpStatus: response.status })
       return indicator.down({ httpStatus: response.status })
     } catch (error) {

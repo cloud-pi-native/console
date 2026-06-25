@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { ConditionalModule } from '@nestjs/config'
 import { ArgoCDModule } from '../argocd/argocd.module'
 import { GitlabModule } from '../gitlab/gitlab.module'
 import { KeycloakModule } from '../keycloak/keycloak.module'
@@ -9,7 +10,15 @@ import { VaultModule } from '../vault/vault.module'
 import { PluginService } from './plugin.service'
 
 @Module({
-  imports: [ArgoCDModule, GitlabModule, RegistryModule, KeycloakModule, NexusModule, SonarqubeModule, VaultModule],
+  imports: [
+    ConditionalModule.registerWhen(ArgoCDModule, 'USE_ARGOCD'),
+    ConditionalModule.registerWhen(GitlabModule, 'USE_GITLAB'),
+    ConditionalModule.registerWhen(RegistryModule, 'USE_REGISTRY'),
+    KeycloakModule,
+    ConditionalModule.registerWhen(NexusModule, 'USE_NEXUS'),
+    ConditionalModule.registerWhen(SonarqubeModule, 'USE_SONARQUBE'),
+    VaultModule,
+  ],
   providers: [PluginService],
   exports: [PluginService],
 })
