@@ -6,7 +6,7 @@ import { ConfigurationModule } from '../infrastructure/configuration/configurati
 import { DatabaseModule } from '../infrastructure/database/database.module'
 import { KeycloakModule } from '../keycloak/keycloak.module'
 import { NexusModule } from '../nexus/nexus.module'
-import { OpenCdsModule } from '../opencds/opencds.module'
+import { ServiceChainModule } from '../service-chain/service-chain.module'
 import { RegistryModule } from '../registry/registry.module'
 import { VaultModule } from '../vault/vault.module'
 import { HealthzController } from './healthz.controller'
@@ -22,7 +22,7 @@ import { HealthzController } from './healthz.controller'
     RegistryModule,
     ArgoCDModule,
     ConfigurationModule,
-    OpenCdsModule,
+    ServiceChainModule,
   ],
   controllers: [HealthzController],
 })

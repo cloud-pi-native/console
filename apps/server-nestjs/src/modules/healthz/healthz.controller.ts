@@ -6,7 +6,7 @@ import { ConfigurationService } from '../infrastructure/configuration/configurat
 import { DatabaseHealthService } from '../infrastructure/database/database-health.service'
 import { KeycloakHealthService } from '../keycloak/keycloak-health.service'
 import { NexusHealthService } from '../nexus/nexus-health.service'
-import { OpenCdsHealthService } from '../opencds/opencds-health.service'
+import { ServiceChainHealthService } from '../service-chain/service-chain-health.service'
 import { RegistryHealthService } from '../registry/registry-health.service'
 import { VaultHealthService } from '../vault/vault-health.service'
 
@@ -21,7 +21,7 @@ export class HealthzController {
     @Inject(NexusHealthService) private readonly nexus: NexusHealthService,
     @Inject(RegistryHealthService) private readonly registry: RegistryHealthService,
     @Inject(ArgoCDHealthService) private readonly argocd: ArgoCDHealthService,
-    @Inject(OpenCdsHealthService) private readonly opencds: OpenCdsHealthService,
+    @Inject(ServiceChainHealthService) private readonly opencds: ServiceChainHealthService,
     @Inject(ConfigurationService) private readonly config: ConfigurationService,
   ) {}
 
