@@ -30,7 +30,7 @@ import {
   TOPIC_PLUGIN_MANAGED,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
-import { hasFileContentChanged, readGitlabCIConfigContent, readMirrorScriptContent } from './gitlab.utils'
+import { hasFileContentChanged, generateGitlabCIConfigContent, generateMirrorScriptContent } from './gitlab.utils'
 
 export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
 
@@ -436,13 +436,13 @@ export class GitlabClientService {
       {
         action: 'create',
         filePath: '.gitlab-ci.yml',
-        content: await readGitlabCIConfigContent(),
+        content: generateGitlabCIConfigContent(),
         execute_filemode: false,
       },
       {
         action: 'create',
         filePath: 'mirror.sh',
-        content: await readMirrorScriptContent(),
+        content: generateMirrorScriptContent(),
         execute_filemode: true,
       },
     ]
