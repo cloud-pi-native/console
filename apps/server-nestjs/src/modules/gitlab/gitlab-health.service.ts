@@ -1,6 +1,7 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { PLUGIN_NAME } from '../vault/vault.constants'
 
 @Injectable()
 export class GitlabHealthService {
@@ -9,8 +10,8 @@ export class GitlabHealthService {
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 
-  async check(key: string) {
-    const indicator = this.healthIndicator.check(key)
+  async check() {
+    const indicator = this.healthIndicator.check(PLUGIN_NAME)
     const urlBase = this.config.getInternalOrPublicGitlabUrl()
     if (!urlBase) return indicator.down('Not configured')
 
