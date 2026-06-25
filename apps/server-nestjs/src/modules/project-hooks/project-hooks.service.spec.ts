@@ -8,8 +8,8 @@ import { ForbiddenException } from '@nestjs/common'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service.js'
 import { LogService } from '../log/log.service.js'
-import { projectSelect } from './project-hooks-queries.utils.js'
 import { makeProject } from '../project/project-testing.utils.js'
+import { projectSelect } from './project-hooks-queries.utils.js'
 import { ProjectHooksService } from './project-hooks.service.js'
 
 describe('projectHooksService', () => {
