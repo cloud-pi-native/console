@@ -1,3 +1,4 @@
+import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
 import { HttpStatus } from '@nestjs/common'
@@ -6,7 +7,7 @@ import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { nexusConfigFactory } from '../../config/nexus.config'
 import { NexusClientService } from './nexus-client.service'
 import { NexusHttpClientService } from './nexus-http-client.service'
 
@@ -18,18 +19,15 @@ const basicAuth = `Basic ${Buffer.from(`admin:${nexusAdminPassword}`, 'utf8').to
 
 describe('nexusClientService', () => {
   let service: NexusClientService
-  let config: DeepMockProxy<ConfigurationService>
+  let config: DeepMockProxy<ConfigType<typeof nexusConfigFactory>>
 
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 
   beforeEach(async () => {
-    config = mockDeep<ConfigurationService>({
-      nexusSecretExposedUrl: 'https://nexus.example',
-      nexusInternalUrl: nexusUrl,
-      nexusAdmin: 'admin',
-      nexusAdminPassword,
-      projectRootDir: 'forge',
-      getInternalOrPublicNexusUrl: () => nexusUrl,
+    config = mockDeep<ConfigType<typeof nexusConfigFactory>>({
+      internalUrl: nexusUrl,
+      admin: 'admin',
+      adminPassword: nexusAdminPassword,
     })
 
     const module = await Test.createTestingModule({
@@ -37,7 +35,7 @@ describe('nexusClientService', () => {
         NexusClientService,
         NexusHttpClientService,
         {
-          provide: ConfigurationService,
+          provide: nexusConfigFactory.KEY,
           useValue: config,
         },
       ],

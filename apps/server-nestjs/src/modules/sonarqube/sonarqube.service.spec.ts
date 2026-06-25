@@ -1,9 +1,10 @@
+import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { generateProjectKey } from '../../utils/crypto'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
+import { generateProjectKey } from '../../utils/crypto.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
 import { SonarqubeClientService } from './sonarqube-client.service'
@@ -25,7 +26,7 @@ describe('sonarqubeService', () => {
   let client: DeepMockProxy<SonarqubeClientService>
   let datastore: DeepMockProxy<SonarqubeDatastoreService>
   let vault: DeepMockProxy<VaultClientService>
-  let config: DeepMockProxy<ConfigurationService>
+  let config: DeepMockProxy<ConfigType<typeof sonarqubeConfigFactory>>
 
   beforeEach(async () => {
     client = mockDeep<SonarqubeClientService>({
@@ -34,7 +35,6 @@ describe('sonarqubeService', () => {
       createPermissionTemplate: vi.fn().mockResolvedValue(undefined),
       searchPermissionTemplates: vi.fn().mockResolvedValue({ permissionTemplates: [] }),
       setPermissionDefaultTemplate: vi.fn().mockResolvedValue(undefined),
-      addPermissionProjectCreatorToTemplate: vi.fn().mockResolvedValue(undefined),
       addPermissionGroupToTemplate: vi.fn().mockResolvedValue(undefined),
       addPermissionGroup: vi.fn().mockResolvedValue(undefined),
       addPermissionUser: vi.fn().mockResolvedValue(undefined),
@@ -54,9 +54,7 @@ describe('sonarqubeService', () => {
       writeSonarqubeUser: vi.fn().mockResolvedValue(undefined),
       deleteSonarqubeUser: vi.fn().mockResolvedValue(undefined),
     })
-    config = mockDeep<ConfigurationService>({
-      projectRootDir: 'forge',
-      getInternalOrPublicSonarqubeUrl: vi.fn().mockReturnValue('https://sonarqube.internal'),
+    config = mockDeep<ConfigType<typeof sonarqubeConfigFactory>>({
     })
 
     const moduleRef = await Test.createTestingModule({
@@ -65,7 +63,7 @@ describe('sonarqubeService', () => {
         { provide: SonarqubeClientService, useValue: client },
         { provide: SonarqubeDatastoreService, useValue: datastore },
         { provide: VaultClientService, useValue: vault },
-        { provide: ConfigurationService, useValue: config },
+        { provide: sonarqubeConfigFactory.KEY, useValue: config },
       ],
     }).compile()
 
@@ -111,14 +109,6 @@ describe('sonarqubeService', () => {
       })
       await service.init()
       expect(client.createUserGroup).not.toHaveBeenCalledWith(expect.objectContaining({ name: '/console/admin' }))
-    })
-
-    it('should skip initialization when URL is not configured', async () => {
-      config.getInternalOrPublicSonarqubeUrl.mockReturnValue(undefined)
-
-      await service.init()
-
-      expect(client.createPermissionTemplate).not.toHaveBeenCalled()
     })
 
     it('should use custom group paths from admin plugin config', async () => {

@@ -1,11 +1,12 @@
 import type { ExpandedGroupSchema, Gitlab as GitlabApi, ProjectSchema } from '@gitbeaker/core'
+import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import type { MockedFunction } from 'vitest'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { GITLAB_REST_CLIENT, GitlabClientService } from './gitlab-client.service'
 import {
   makeAccessTokenExposedSchema,
@@ -35,20 +36,19 @@ describe('gitlab-client', () => {
 
   beforeEach(async () => {
     gitlabApi = mockDeep<GitlabApi>()
-    const config = mockDeep<ConfigurationService>({
-      gitlabUrl: 'https://gitlab.internal',
-      gitlabToken: 'token',
-      gitlabInternalUrl: 'https://gitlab.internal',
+    const config = mockDeep<ConfigType<typeof gitlabConfigFactory>>({
+      url: 'https://gitlab.internal',
+      token: 'token',
+      internalUrl: 'https://gitlab.internal',
       projectRootDir: 'forge',
-      gitlabMirrorTokenExpirationDays: 30,
-      getInternalOrPublicGitlabUrl: () => 'https://gitlab.internal',
+      mirrorTokenExpirationDays: 30,
     })
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GitlabClientService,
         { provide: GITLAB_REST_CLIENT, useValue: gitlabApi },
-        { provide: ConfigurationService, useValue: config },
+        { provide: gitlabConfigFactory.KEY, useValue: config },
       ],
     }).compile()
     service = module.get(GitlabClientService)

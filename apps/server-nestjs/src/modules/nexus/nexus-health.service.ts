@@ -1,28 +1,24 @@
+import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { nexusConfigFactory } from '../../config/nexus.config'
 import { PLUGIN_NAME } from './nexus.constants'
 
 @Injectable()
 export class NexusHealthService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(nexusConfigFactory.KEY) private readonly nexusConfig: ConfigType<typeof nexusConfigFactory>,
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 
   async check() {
     const indicator = this.healthIndicator.check(PLUGIN_NAME)
-    if (!this.config.nexusInternalUrl) return indicator.down('Not configured')
-
-    const url = new URL('/service/rest/v1/status', this.config.nexusInternalUrl).toString()
     const headers: Record<string, string> = {}
-    if (this.config.nexusAdmin && this.config.nexusAdminPassword) {
-      const credentials = `${this.config.nexusAdmin}:${this.config.nexusAdminPassword}`
-      const encoded = Buffer.from(credentials).toString('base64')
-      headers.Authorization = `Basic ${encoded}`
-    }
-
+    const credentials = `${this.nexusConfig.admin}:${this.nexusConfig.adminPassword}`
+    const encoded = Buffer.from(credentials).toString('base64')
+    headers.Authorization = `Basic ${encoded}`
     try {
+      const url = new URL('/service/rest/v1/status', this.nexusConfig.internalUrl ?? this.nexusConfig.url).toString()
       const response = await fetch(url, { headers })
       if (response.status < HttpStatus.INTERNAL_SERVER_ERROR) return indicator.up({ httpStatus: response.status })
       return indicator.down({ httpStatus: response.status })

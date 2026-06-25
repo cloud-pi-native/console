@@ -1,10 +1,11 @@
 import type { TestingModule } from '@nestjs/testing'
 import { generateProjectKey } from '@cpn-console/hooks'
 import { faker } from '@faker-js/faker'
+import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
-import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
@@ -17,14 +18,10 @@ import { SonarqubeModule } from '../src/modules/sonarqube/sonarqube.module'
 import { SonarqubeService } from '../src/modules/sonarqube/sonarqube.service'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultModule } from '../src/modules/vault/vault.module'
+import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunSonarqubeE2E
   = Boolean(process.env.E2E)
-    && Boolean(process.env.SONARQUBE_URL)
-    && Boolean(process.env.SONAR_API_TOKEN)
-    && Boolean(process.env.VAULT_URL)
-    && Boolean(process.env.VAULT_TOKEN)
-    && Boolean(process.env.DB_URL)
 
 const describeWithSonarqube = describe.runIf(canRunSonarqubeE2E)
 
@@ -42,7 +39,7 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [SonarqubeModule, VaultModule, ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+      imports: [SonarqubeModule, VaultModule, ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()

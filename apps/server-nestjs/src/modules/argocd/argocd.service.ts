@@ -1,4 +1,5 @@
 import type { CommitAction, CondensedProjectSchema, ProjectSchema, SimpleProjectSchema } from '@gitbeaker/core'
+import type { ConfigType } from '@nestjs/config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { ProjectWithDetails } from './argocd-datastore.service'
 import { createHmac } from 'node:crypto'
@@ -7,8 +8,10 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { stringify } from 'yaml'
+import { argocdConfigFactory } from '../../config/argocd.config'
+import { baseConfigFactory } from '../../config/base.config'
+import { vaultConfigFactory } from '../../config/vault.config'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -30,12 +33,20 @@ export class ArgoCDService {
   private readonly logger = new Logger(ArgoCDService.name)
 
   constructor(
-    @Inject(ArgoCDDatastoreService) private readonly argoCDDatastore: ArgoCDDatastoreService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(ArgoCDDatastoreService) private readonly datastore: ArgoCDDatastoreService,
+    @Inject(argocdConfigFactory.KEY) private readonly argocdConfig: ConfigType<typeof argocdConfigFactory>,
+    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
+    @Inject(vaultConfigFactory.KEY) private readonly vaultConfig: ConfigType<typeof vaultConfigFactory>,
     @Inject(GitlabClientService) private readonly gitlab: GitlabClientService,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
   ) {
     this.logger.log('ArgoCDService initialized')
+  }
+
+  private getExtraRepositories(project: ProjectWithDetails): string[] {
+    return splitExtraRepositories(
+      project.plugins?.find(p => p.key === 'extraRepositories')?.value,
+    )
   }
 
   @OnEvent('project.upsert')
@@ -70,7 +81,7 @@ export class ArgoCDService {
   @StartActiveSpan()
   async handleCron() {
     this.logger.log('Starting ArgoCD reconciliation')
-    const projects = await this.argoCDDatastore.getAllProjects()
+    const projects = await this.datastore.getAllProjects()
     const span = trace.getActiveSpan()
     span?.setAttribute('argocd.projects.count', projects.length)
     this.logger.log(`Loaded ${projects.length} projects for ArgoCD reconciliation`)
@@ -103,7 +114,7 @@ export class ArgoCDService {
     span?.setAttribute('project.slug', project.slug)
     // Visit every zone, not only those with a current environment, so leftover
     // values files are purged from zones the project no longer deploys to.
-    const zones = await this.argoCDDatastore.getAllZoneSlugs()
+    const zones = await this.datastore.getAllZoneSlugs()
     span?.setAttribute('argocd.zones.count', zones.length)
     this.logger.verbose(`Reconciling ArgoCD zones for project ${project.slug} (count=${zones.length})`)
     await Promise.all(zones.map(zoneSlug => this.ensureZone(project, zoneSlug)))
@@ -240,13 +251,13 @@ export class ArgoCDService {
       environment,
       cluster,
       gitlabPublicProjectUrl,
-      argocdExtraRepositories: this.config.argocdExtraRepositories,
+      argocdExtraRepositories: this.getExtraRepositories(project),
       infraProject,
       valueFilePath,
       vaultValues,
-      argoNamespace: this.config.argoNamespace,
-      envChartVersion: this.config.dsoEnvChartVersion,
-      nsChartVersion: this.config.dsoNsChartVersion,
+      argoNamespace: this.argocdConfig.namespace,
+      envChartVersion: this.argocdConfig.dsoEnvChartVersion,
+      nsChartVersion: this.argocdConfig.dsoNsChartVersion,
     })
 
     return this.gitlab.generateCreateOrUpdateAction(
@@ -312,13 +323,13 @@ export class ArgoCDService {
       environment,
       cluster,
       gitlabPublicProjectUrl,
-      argocdExtraRepositories: this.config.argocdExtraRepositories,
+      argocdExtraRepositories: this.getExtraRepositories(project),
       infraProject,
       valueFilePath,
       vaultValues,
-      argoNamespace: this.config.argoNamespace,
-      envChartVersion: this.config.dsoEnvChartVersion,
-      nsChartVersion: this.config.dsoNsChartVersion,
+      argoNamespace: this.argocdConfig.namespace,
+      envChartVersion: this.argocdConfig.dsoEnvChartVersion,
+      nsChartVersion: this.argocdConfig.dsoNsChartVersion,
       deployments,
     })
 
@@ -341,9 +352,9 @@ export class ArgoCDService {
       return undefined
     })
     return {
-      projectsRootDir: this.config.projectRootDir,
-      url: this.config.deployVaultConnectionInNamespaces ? this.config.vaultUrl : '',
-      coreKvName: this.config.vaultKvName,
+      projectsRootDir: this.baseConfig.projectsRootDir,
+      url: this.argocdConfig.vaultDeployVaultConnectionInNs ? this.vaultConfig.url : '',
+      coreKvName: this.vaultConfig.kvName,
       roleId: roleId ?? 'none',
       secretId: secretId ?? 'none',
     }
@@ -546,23 +557,15 @@ function formatEnvironmentValues(
 
 interface FormatSourceRepositoriesValuesOptions {
   gitlabPublicProjectUrl: string
-  argocdExtraRepositories?: string
-  projectPlugins?: ProjectWithDetails['plugins']
+  argocdExtraRepositories?: string[]
 }
 
 function formatSourceRepositoriesValues(
-  { gitlabPublicProjectUrl, argocdExtraRepositories, projectPlugins }: FormatSourceRepositoriesValuesOptions,
+  { gitlabPublicProjectUrl, argocdExtraRepositories = [] }: FormatSourceRepositoriesValuesOptions,
 ): string[] {
-  let projectExtraRepositories = ''
-  if (projectPlugins) {
-    const argocdPlugin = projectPlugins.find(p => p.pluginName === 'argocd' && p.key === 'extraRepositories')
-    if (argocdPlugin) projectExtraRepositories = argocdPlugin.value
-  }
-
   return [
     `${gitlabPublicProjectUrl}/**`,
-    ...splitExtraRepositories(argocdExtraRepositories),
-    ...splitExtraRepositories(projectExtraRepositories),
+    ...argocdExtraRepositories,
   ]
 }
 
@@ -604,7 +607,7 @@ interface FormatValuesOptions {
   environment: ProjectWithDetails['environments'][number]
   cluster: ProjectWithDetails['environments'][number]['cluster']
   gitlabPublicProjectUrl: string
-  argocdExtraRepositories?: string
+  argocdExtraRepositories?: string[]
   vaultValues: Record<string, any>
   infraProject: SimpleProjectSchema
   valueFilePath: string
@@ -652,7 +655,6 @@ function formatValues({
       sourceRepositories: formatSourceRepositoriesValues({
         gitlabPublicProjectUrl,
         argocdExtraRepositories,
-        projectPlugins: project.plugins,
       }),
       destination: {
         namespace: generateNamespaceName(project.id, environment.id),

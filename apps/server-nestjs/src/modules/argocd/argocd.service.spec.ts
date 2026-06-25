@@ -1,12 +1,15 @@
+import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { generateNamespaceName } from '@cpn-console/shared'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { parse, stringify } from 'yaml'
+import { argocdConfigFactory } from '../../config/argocd.config'
+import { baseConfigFactory } from '../../config/base.config'
+import { vaultConfigFactory } from '../../config/vault.config'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
 import { makeCommitAction, makeProjectSchema, makeRepositoryTreeSchema } from '../gitlab/gitlab-testing.utils'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { ArgoCDDatastoreService } from './argocd-datastore.service'
 import {
@@ -25,21 +28,31 @@ describe('argoCDService', () => {
   let datastore: DeepMockProxy<ArgoCDDatastoreService>
   let gitlab: DeepMockProxy<GitlabClientService>
   let vault: DeepMockProxy<VaultClientService>
+  let argocdConfig: DeepMockProxy<ConfigType<typeof argocdConfigFactory>>
+  let baseConfig: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
+  let vaultConfig: DeepMockProxy<ConfigType<typeof vaultConfigFactory>>
 
   beforeEach(async () => {
     datastore = mockDeep<ArgoCDDatastoreService>()
     gitlab = mockDeep<GitlabClientService>()
     vault = mockDeep<VaultClientService>()
-    const config = mockDeep<ConfigurationService>({
-      argoNamespace: 'argocd',
-      argocdUrl: 'https://argocd.internal',
-      argocdExtraRepositories: 'repo3',
+    argocdConfig = mockDeep<ConfigType<typeof argocdConfigFactory>>({
+      enabled: true,
+      namespace: 'argocd',
+      url: 'https://argocd.internal',
+      internalUrl: undefined,
+      extraRepositories: ['repo3'],
       dsoEnvChartVersion: 'dso-env-1.6.0',
       dsoNsChartVersion: 'dso-ns-1.1.5',
-      projectRootDir: 'forge',
-      vaultUrl: 'https://vault.internal',
-      vaultKvName: 'kv',
-      deployVaultConnectionInNamespaces: false,
+      vaultDeployVaultConnectionInNs: false,
+    })
+    baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>({
+      projectsRootDir: 'forge',
+    })
+    vaultConfig = mockDeep<ConfigType<typeof vaultConfigFactory>>({
+      url: 'https://vault.internal',
+      kvName: 'kv',
+      internalUrl: undefined,
     })
 
     datastore.getAllZoneSlugs.mockResolvedValue(['zone-1'])
@@ -48,7 +61,9 @@ describe('argoCDService', () => {
       providers: [
         ArgoCDService,
         { provide: ArgoCDDatastoreService, useValue: datastore },
-        { provide: ConfigurationService, useValue: config },
+        { provide: argocdConfigFactory.KEY, useValue: argocdConfig },
+        { provide: baseConfigFactory.KEY, useValue: baseConfig },
+        { provide: vaultConfigFactory.KEY, useValue: vaultConfig },
         { provide: GitlabClientService, useValue: gitlab },
         { provide: VaultClientService, useValue: vault },
       ],
@@ -191,7 +206,6 @@ describe('argoCDService', () => {
               },
               sourceRepositories: [
                 'https://gitlab.internal/group/project-1/**',
-                'repo3',
                 'repo2',
               ],
               destination: {
@@ -267,7 +281,6 @@ describe('argoCDService', () => {
               },
               sourceRepositories: [
                 'https://gitlab.internal/group/project-1/**',
-                'repo3',
                 'repo2',
               ],
               destination: {
@@ -528,7 +541,6 @@ describe('argoCDService', () => {
               },
               sourceRepositories: [
                 'https://gitlab.internal/group/project-1/**',
-                'repo3',
                 'repo2',
               ],
               destination: {

@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { TerminusModule } from '@nestjs/terminus'
-import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
+import { baseConfigFactory } from '../../config/base.config'
+import { nexusConfigFactory } from '../../config/nexus.config'
 import { DatabaseModule } from '../infrastructure/database/database.module'
 import { VaultModule } from '../vault/vault.module'
 import { NexusClientService } from './nexus-client.service'
@@ -11,7 +13,7 @@ import { NexusPluginService } from './nexus-plugin.service'
 import { NexusService } from './nexus.service'
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule, TerminusModule, VaultModule],
+  imports: [DatabaseModule, TerminusModule, VaultModule, ConfigModule.forFeature(nexusConfigFactory), ConfigModule.forFeature(baseConfigFactory)],
   providers: [
     NexusHealthService,
     NexusPluginService,

@@ -1,10 +1,11 @@
+import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
 
 export interface SonarqubeFetchOptions {
   method?: string
-  params?: Record<string, string | number | boolean | undefined | null>
+  query?: Record<string, string | number | boolean | undefined>
 }
 
 export interface SonarqubeResponse<T = unknown> {
@@ -37,23 +38,16 @@ export class SonarqubeError extends Error {
 @Injectable()
 export class SonarqubeHttpClientService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(sonarqubeConfigFactory.KEY) private readonly sonarqubeConfig: ConfigType<typeof sonarqubeConfigFactory>,
   ) {}
 
-  private get baseUrl(): string {
-    const url = this.config.getInternalOrPublicSonarqubeUrl()
-    if (!url) throw new SonarqubeError('NotConfigured', 'SONARQUBE_URL or SONARQUBE_INTERNAL_URL is required')
-    return url
-  }
-
   private get apiBaseUrl(): string {
-    return new URL('api/', this.baseUrl).toString()
+    return new URL('api/', this.sonarqubeConfig.internalUrl ?? this.sonarqubeConfig.url).toString()
   }
 
   private get defaultHeaders(): Record<string, string> {
-    if (!this.config.sonarApiToken) throw new SonarqubeError('NotConfigured', 'SONAR_API_TOKEN is required')
     return {
-      Authorization: `Bearer ${this.config.sonarApiToken}`,
+      Authorization: `Bearer ${this.sonarqubeConfig.apiToken}`,
     }
   }
 
@@ -63,7 +57,7 @@ export class SonarqubeHttpClientService {
     span?.setAttribute('sonarqube.method', method)
     span?.setAttribute('sonarqube.path', path)
 
-    const request = this.createRequest(path, method, options.params)
+    const request = this.createRequest(path, method, options)
     const response = await fetch(request).catch((error) => {
       throw new SonarqubeError('Unexpected', error instanceof Error ? error.message : String(error), { method, path })
     })
@@ -77,11 +71,12 @@ export class SonarqubeHttpClientService {
     return result
   }
 
-  private createRequest(path: string, method: string, params?: Record<string, string | number | boolean | undefined | null>): Request {
+  private createRequest(path: string, method: string, options: SonarqubeFetchOptions): Request {
     const url = new URL(path, this.apiBaseUrl)
-    if (params) {
-      for (const [key, value] of Object.entries(params)) {
-        if (value !== undefined && value !== null) url.searchParams.append(key, String(value))
+    if (options.query) {
+      for (const [key, value] of Object.entries(options.query)) {
+        if (value === undefined) continue
+        url.searchParams.append(key, String(value))
       }
     }
     return new Request(url.toString(), { method, headers: this.defaultHeaders })

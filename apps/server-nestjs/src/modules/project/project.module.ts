@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
+import { baseConfigFactory } from '../../config/base.config'
 import { AppEventsModule } from '../events/app-events.module'
 import { AuthModule } from '../infrastructure/auth/auth.module'
-import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
 import { DatabaseModule } from '../infrastructure/database/database.module'
 import { EventsModule } from '../infrastructure/events/events.module'
 import { ProjectPermissionModule } from '../infrastructure/permission/project/project.module'
@@ -14,12 +15,12 @@ import { ProjectService } from './project.service'
   imports: [
     AppEventsModule,
     AuthModule,
-    ConfigurationModule,
     DatabaseModule,
     EventsModule,
     ProjectPermissionModule,
     UserPermissionModule,
     LogModule,
+    ConfigModule.forFeature(baseConfigFactory),
   ],
   controllers: [ProjectController],
   providers: [ProjectService],

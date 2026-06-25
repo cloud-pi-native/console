@@ -1,6 +1,7 @@
+import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { nexusConfigFactory } from '../../config/nexus.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 
 export interface NexusFetchOptions {
@@ -44,7 +45,7 @@ export class NexusError extends Error {
 @Injectable()
 export class NexusHttpClientService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(nexusConfigFactory.KEY) private readonly nexusConfig: ConfigType<typeof nexusConfigFactory>,
   ) {}
 
   @StartActiveSpan()
@@ -54,7 +55,7 @@ export class NexusHttpClientService {
     span?.setAttribute('nexus.method', method)
     span?.setAttribute('nexus.path', path)
 
-    const request = this.createRequest(path, method, options.body, options.headers)
+    const request = this.createRequest(path, method, options)
     const response = await fetch(request).catch((error) => {
       throw new NexusError(
         'Unexpected',
@@ -75,42 +76,28 @@ export class NexusHttpClientService {
     return result
   }
 
-  private get baseUrl() {
-    const url = this.config.getInternalOrPublicNexusUrl()
-    if (!url) {
-      throw new NexusError('NotConfigured', 'NEXUS_INTERNAL_URL or NEXUS_URL is required')
-    }
-    return url
-  }
-
   private get apiBaseUrl() {
-    return new URL('service/rest/v1/', this.baseUrl).toString()
+    return new URL('service/rest/v1/', this.nexusConfig.internalUrl ?? this.nexusConfig.url).toString()
   }
 
   private get basicAuth() {
-    if (!this.config.nexusAdmin) {
-      throw new NexusError('NotConfigured', 'NEXUS_ADMIN is required')
-    }
-    if (!this.config.nexusAdminPassword) {
-      throw new NexusError('NotConfigured', 'NEXUS_ADMIN_PASSWORD is required')
-    }
-    const raw = `${this.config.nexusAdmin}:${this.config.nexusAdminPassword}`
+    const raw = `${this.nexusConfig.admin}:${this.nexusConfig.adminPassword}`
     return Buffer.from(raw, 'utf8').toString('base64')
   }
 
-  private createRequest(path: string, method: string, body?: unknown, extraHeaders?: Record<string, string>): Request {
+  private createRequest(path: string, method: string, options?: NexusFetchOptions): Request {
     const url = new URL(path, this.apiBaseUrl).toString()
     const headers: Record<string, string> = {
       Authorization: `Basic ${this.basicAuth}`,
-      ...extraHeaders,
+      ...options?.headers,
     }
     let requestBody: string | undefined
-    if (body !== undefined) {
-      if (typeof body === 'string') {
-        requestBody = body
+    if (options?.body !== undefined) {
+      if (typeof options.body === 'string') {
+        requestBody = options.body
         headers['Content-Type'] = 'text/plain'
       } else {
-        requestBody = JSON.stringify(body)
+        requestBody = JSON.stringify(options.body)
         headers['Content-Type'] = 'application/json'
       }
     }

@@ -1,11 +1,12 @@
+import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
+import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
-import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
-import { ConfigurationService } from '../src/modules/infrastructure/configuration/configuration.service'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
@@ -20,15 +21,10 @@ import { NexusService } from '../src/modules/nexus/nexus.service'
 import { getProjectVaultPath } from '../src/modules/nexus/nexus.utils'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultModule } from '../src/modules/vault/vault.module'
+import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunNexusE2E
   = Boolean(process.env.E2E)
-    && Boolean(process.env.NEXUS_URL)
-    && Boolean(process.env.NEXUS_ADMIN)
-    && Boolean(process.env.NEXUS_ADMIN_PASSWORD)
-    && Boolean(process.env.VAULT_URL)
-    && Boolean(process.env.VAULT_TOKEN)
-    && Boolean(process.env.DB_URL)
 
 const describeWithNexus = describe.runIf(canRunNexusE2E)
 
@@ -37,7 +33,7 @@ describeWithNexus('NexusController (e2e)', () => {
   let nexusController: NexusService
   let nexusClient: NexusClientService
   let vaultService: VaultClientService
-  let config: ConfigurationService
+  let config: ConfigType<typeof baseConfigFactory>
   let prisma: PrismaService
 
   let ownerId: string
@@ -46,7 +42,7 @@ describeWithNexus('NexusController (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [NexusModule, VaultModule, ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+      imports: [NexusModule, VaultModule, ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()
@@ -54,7 +50,7 @@ describeWithNexus('NexusController (e2e)', () => {
     nexusController = moduleRef.get<NexusService>(NexusService)
     nexusClient = moduleRef.get<NexusClientService>(NexusClientService)
     vaultService = moduleRef.get<VaultClientService>(VaultClientService)
-    config = moduleRef.get<ConfigurationService>(ConfigurationService)
+    config = moduleRef.get(baseConfigFactory.KEY)
     prisma = moduleRef.get<PrismaService>(PrismaService)
 
     ownerId = faker.string.uuid()
@@ -146,7 +142,7 @@ describeWithNexus('NexusController (e2e)', () => {
     const users = await nexusClient.getSecurityUsers(testProjectSlug)
     expect(users.some(u => u.userId === testProjectSlug)).toBe(true)
 
-    const vaultPath = getProjectVaultPath(config.projectRootDir, testProjectSlug, 'tech/NEXUS')
+    const vaultPath = getProjectVaultPath(config.projectsRootDir, testProjectSlug, 'tech/NEXUS')
     const secret = await vaultService.read(vaultPath)
     expect(secret.data?.NEXUS_USERNAME).toBe(testProjectSlug)
     expect(secret.data?.NEXUS_PASSWORD).toBeTruthy()

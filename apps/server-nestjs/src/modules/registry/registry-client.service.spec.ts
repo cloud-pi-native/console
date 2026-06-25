@@ -1,3 +1,4 @@
+import type { ConfigType } from '@nestjs/config'
 import { faker } from '@faker-js/faker'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
@@ -5,7 +6,7 @@ import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { harborConfigFactory } from '../../config/harbor.config'
 import { VaultClientService } from '../vault/vault-client.service'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryHttpClientService } from './registry-http-client.service'
@@ -22,15 +23,14 @@ describe('registryService', () => {
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 
   beforeEach(async () => {
-    const config = mockDeep<ConfigurationService>({
-      harborUrl,
-      harborInternalUrl: harborUrl,
-      harborAdmin: 'admin',
-      harborAdminPassword,
-      harborRuleTemplate: 'latestPushedK',
-      harborRuleCount: '10',
-      harborRetentionCron: '0 22 2 * * *',
-      projectRootDir: 'forge',
+    const harborConfig = mockDeep<ConfigType<typeof harborConfigFactory>>({
+      url: harborUrl,
+      internalUrl: harborUrl,
+      admin: 'admin',
+      adminPassword: harborAdminPassword,
+      ruleTemplate: 'latestPushedK',
+      ruleCount: 10,
+      retentionCron: '0 22 2 * * *',
     })
 
     const module = await Test.createTestingModule({
@@ -42,8 +42,8 @@ describe('registryService', () => {
           useValue: {},
         },
         {
-          provide: ConfigurationService,
-          useValue: config,
+          provide: harborConfigFactory.KEY,
+          useValue: harborConfig,
         },
       ],
     }).compile()

@@ -1,4 +1,5 @@
 import type { OnModuleInit } from '@nestjs/common'
+import type { ConfigType } from '@nestjs/config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { SonarqubeUserSecret } from '../vault/vault-client.service'
 import type { SonarqubeProjectResult, SonarqubeUser } from './sonarqube-client.service'
@@ -6,8 +7,8 @@ import type { ProjectWithDetails } from './sonarqube-datastore.service'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
-import { generateProjectKey, generateRandomPassword } from '../../utils/crypto'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
+import { generateProjectKey, generateRandomPassword } from '../../utils/crypto.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -57,7 +58,7 @@ export class SonarqubeService implements OnModuleInit {
   constructor(
     @Inject(SonarqubeDatastoreService) private readonly datastore: SonarqubeDatastoreService,
     @Inject(SonarqubeClientService) private readonly client: SonarqubeClientService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(sonarqubeConfigFactory.KEY) private readonly sonarqubeConfig: ConfigType<typeof sonarqubeConfigFactory>,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
   ) {
     this.logger.log('SonarqubeService initialized')
@@ -69,10 +70,6 @@ export class SonarqubeService implements OnModuleInit {
 
   @StartActiveSpan()
   async init(): Promise<void> {
-    if (!this.config.getInternalOrPublicSonarqubeUrl()) {
-      this.logger.warn('SonarQube URL not configured — skipping initialization')
-      return
-    }
     this.logger.log('Initializing SonarQube platform configuration')
     const adminGroupPath = await this.getAdminGroupPath()
     const [readonlyGroupPath, securityGroupPath] = await Promise.all([

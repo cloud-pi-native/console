@@ -1,9 +1,11 @@
+import type { ConfigType } from '@nestjs/config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { baseConfigFactory } from '../../config/base.config'
+import { vaultConfigFactory } from '../../config/vault.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from './vault-client.service'
@@ -43,8 +45,9 @@ export class VaultService {
   private readonly logger = new Logger(VaultService.name)
 
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
-    @Inject(VaultDatastoreService) private readonly vaultDatastore: VaultDatastoreService,
+    @Inject(vaultConfigFactory.KEY) private readonly vaultConfig: ConfigType<typeof vaultConfigFactory>,
+    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
+    @Inject(VaultDatastoreService) private readonly datastore: VaultDatastoreService,
     @Inject(VaultClientService) private readonly client: VaultClientService,
   ) {
     this.logger.log('VaultService initialized')
@@ -115,8 +118,8 @@ export class VaultService {
     const span = trace.getActiveSpan()
     this.logger.log('Starting Vault reconciliation')
     const [projects, zones] = await Promise.all([
-      this.vaultDatastore.getAllProjects(),
-      this.vaultDatastore.getAllZones(),
+      this.datastore.getAllProjects(),
+      this.datastore.getAllZones(),
     ])
 
     span?.setAttributes({
@@ -148,7 +151,7 @@ export class VaultService {
   }
 
   private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
-    const adminPluginConfig = await this.vaultDatastore.getAdminPluginConfig(PLUGIN_NAME, key)
+    const adminPluginConfig = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, key)
     if (adminPluginConfig) return adminPluginConfig
     return project.plugins?.find(p => p.pluginName === PLUGIN_NAME && p.key === key)?.value
   }
@@ -491,13 +494,13 @@ export class VaultService {
 
   async ensureTechReadOnlyPolicy(name: string, projectSlug: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
-      policy: `path "${this.config.vaultKvName}/data/${projectSlug}/REGISTRY/ro-robot" { capabilities = ["read"] }`,
+      policy: `path "${this.vaultConfig.kvName}/data/${projectSlug}/REGISTRY/ro-robot" { capabilities = ["read"] }`,
     })
   }
 
   async listProjectSecrets(projectSlug: string): Promise<string[]> {
-    const projectPath = generateProjectPath(this.config.projectRootDir, projectSlug)
-    return this.listRecursive(this.config.vaultKvName, projectPath, '')
+    const projectPath = generateProjectPath(this.baseConfig.projectsRootDir, projectSlug)
+    return this.listRecursive(this.vaultConfig.kvName, projectPath, '')
   }
 
   @StartActiveSpan()
@@ -505,12 +508,12 @@ export class VaultService {
     const span = trace.getActiveSpan()
     span?.setAttributes({
       'project.slug': projectSlug,
-      'vault.kv.name': this.config.vaultKvName,
+      'vault.kv.name': this.vaultConfig.kvName,
     })
     const secrets = await this.listProjectSecrets(projectSlug)
     span?.setAttribute('vault.secrets.count', secrets.length)
 
-    const projectPath = generateProjectPath(this.config.projectRootDir, projectSlug)
+    const projectPath = generateProjectPath(this.baseConfig.projectsRootDir, projectSlug)
     await Promise.allSettled(secrets.map(async (relativePath) => {
       const fullPath = `${projectPath}/${relativePath}`
       try {

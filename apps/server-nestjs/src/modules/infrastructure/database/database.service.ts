@@ -1,6 +1,7 @@
+import type { ConfigType } from '@nestjs/config'
 import { setTimeout } from 'node:timers/promises'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { ConfigurationService } from '../configuration/configuration.service'
+import { baseConfigFactory } from '../../../config/base.config'
 import { PrismaService } from './prisma.service'
 
 @Injectable()
@@ -9,10 +10,10 @@ export class DatabaseService {
 
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(ConfigurationService) private readonly configurationService: ConfigurationService,
+    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
   ) {
     this.DELAY_BEFORE_RETRY
-      = this.configurationService.isTest || this.configurationService.isCI
+      = this.baseConfig.isTest || this.baseConfig.isCI
         ? 1000
         : 10000
   }
@@ -28,12 +29,12 @@ export class DatabaseService {
 
     try {
       if (
-        this.configurationService.isDev
-        || this.configurationService.isTest
-        || this.configurationService.isCI
+        this.baseConfig.isDev
+        || this.baseConfig.isTest
+        || this.baseConfig.isCI
       ) {
         this.loggerService.log(
-          `Trying to connect to Postgres with: ${this.configurationService.dbUrl}`,
+          `Trying to connect to Postgres with: ${this.baseConfig.dbUrl}`,
         )
       }
       await this.prisma.$connect()
