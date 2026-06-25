@@ -29,7 +29,6 @@ env:
 jobs:
   path-filter:
     runs-on: ubuntu-latest
-    if: ${{ !github.event.pull_request.draft }}
     outputs:
       apps: ${{ steps.filter.outputs.apps }}
       packages: ${{ steps.filter.outputs.packages }}
@@ -56,7 +55,6 @@ jobs:
 
   expose-vars:
     runs-on: ubuntu-latest
-    if: ${{ !github.event.pull_request.draft }}
     outputs:
       NODE_VERSION: ${{ env.NODE_VERSION }}
       REGISTRY: ${{ env.REGISTRY }}
