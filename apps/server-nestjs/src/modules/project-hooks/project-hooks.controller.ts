@@ -22,11 +22,11 @@ export class ProjectHooksController {
   @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
   @RequireProjectLocked(false)
   @RequireProjectPermission('ReplayHooks')
-  async replayHooks(
+  async replay(
     @Project() project: ProjectContext,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
   ): Promise<void> {
-    await this.projectHooks.replayHooks(project.id, user.userId, request.id)
+    await this.projectHooks.replay(project.id, user.userId, request.id)
   }
 }

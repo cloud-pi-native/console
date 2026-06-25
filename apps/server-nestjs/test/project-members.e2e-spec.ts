@@ -10,6 +10,7 @@ import { ConfigurationModule } from '../src/modules/infrastructure/configuration
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
 import { KeycloakClientService } from '../src/modules/keycloak/keycloak-client.service'
+import { ProjectMembersModule } from '../src/modules/project-members/project-members.module'
 import { ProjectMembersService } from '../src/modules/project-members/project-members.service'
 
 const canRunProjectMembersE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
@@ -27,16 +28,12 @@ describeWithProjectMembers('ProjectMembersService (e2e)', {}, () => {
   let memberId: string
 
   beforeAll(async () => {
-    eventEmitter = mockDeep<EventEmitter2>()
-    eventEmitter.emitAsync.mockResolvedValue([])
     keycloakClient = mockDeep<KeycloakClientService>()
     keycloakClient.getUserByEmail.mockResolvedValue(undefined)
 
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigurationModule, InfrastructureModule],
+      imports: [ConfigurationModule, InfrastructureModule, ProjectMembersModule],
       providers: [
-        ProjectMembersService,
-        { provide: EventEmitter2, useValue: eventEmitter },
         { provide: KeycloakClientService, useValue: keycloakClient },
       ],
     }).compile()
@@ -45,6 +42,8 @@ describeWithProjectMembers('ProjectMembersService (e2e)', {}, () => {
 
     prisma = moduleRef.get(PrismaService)
     service = moduleRef.get(ProjectMembersService)
+    eventEmitter = moduleRef.get(EventEmitter2)
+    vi.spyOn(eventEmitter, 'emitAsync').mockResolvedValue([])
 
     ownerId = faker.string.uuid()
     memberId = faker.string.uuid()
@@ -83,11 +82,11 @@ describeWithProjectMembers('ProjectMembersService (e2e)', {}, () => {
   })
 
   it('rejects addMember when project does not exist', async () => {
-    await expect(service.addMember(faker.string.uuid(), { userId: memberId })).rejects.toThrow(NotFoundException)
+    await expect(service.add(faker.string.uuid(), { userId: memberId })).rejects.toThrow(NotFoundException)
   })
 
   it('rejects listMembers when project does not exist', async () => {
-    await expect(service.listMembers(faker.string.uuid())).resolves.toEqual([])
+    await expect(service.list(faker.string.uuid())).resolves.toEqual([])
   })
 
   describe('with project', () => {
@@ -128,37 +127,37 @@ describeWithProjectMembers('ProjectMembersService (e2e)', {}, () => {
       await prisma.project.deleteMany({ where: { id: projectId } }).catch(() => {})
     })
 
-    it('listMembers', async () => {
-      const members = await service.listMembers(projectId)
+    it('list', async () => {
+      const members = await service.list(projectId)
       expect(members).toHaveLength(0)
     })
 
-    it('addMember', async () => {
-      const afterAdd = await service.addMember(projectId, { userId: memberId })
+    it('add', async () => {
+      const afterAdd = await service.add(projectId, { userId: memberId })
       expect(afterAdd.some(m => m.userId === memberId)).toBe(true)
       expect(eventEmitter.emitAsync).toHaveBeenCalledWith('projectMember.upsert', { projectId, userId: memberId })
     })
 
-    it('patchMembers', async () => {
-      await service.addMember(projectId, { userId: memberId })
+    it('patch', async () => {
+      await service.add(projectId, { userId: memberId })
       const roleId = faker.string.uuid()
-      const afterPatch = await service.patchMembers(projectId, [{ userId: memberId, roles: [roleId] }])
+      const afterPatch = await service.patch(projectId, [{ userId: memberId, roles: [roleId] }])
       expect(afterPatch.find(m => m.userId === memberId)?.roleIds).toContain(roleId)
     })
 
-    it('removeMember', async () => {
-      await service.addMember(projectId, { userId: memberId })
-      const afterRemove = await service.removeMember(projectId, memberId)
+    it('remove', async () => {
+      await service.add(projectId, { userId: memberId })
+      const afterRemove = await service.remove(projectId, memberId)
       expect(afterRemove.some(m => m.userId === memberId)).toBe(false)
       expect(eventEmitter.emitAsync).toHaveBeenCalledWith('projectMember.delete', { projectId, userId: memberId })
     })
 
     it('rejects addMember when adding owner', async () => {
-      await expect(service.addMember(projectId, { userId: ownerId })).rejects.toThrow(BadRequestException)
+      await expect(service.add(projectId, { userId: ownerId })).rejects.toThrow(BadRequestException)
     })
 
     it('rejects addMember when user does not exist', async () => {
-      await expect(service.addMember(projectId, { userId: faker.string.uuid() })).rejects.toThrow(NotFoundException)
+      await expect(service.add(projectId, { userId: faker.string.uuid() })).rejects.toThrow(NotFoundException)
     })
   })
 })

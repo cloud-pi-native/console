@@ -34,14 +34,14 @@ export type ProjectRoleWithProject = Prisma.ProjectRoleGetPayload<{ select: type
 
 export type ProjectForRoleContext = Prisma.ProjectRoleGetPayload<{ select: typeof projectForRoleContextSelect }>
 
-export function getProjectBySlug(db: Prisma.TransactionClient, projectId: string) {
-  return db.project.findUnique({ where: { id: projectId }, select: { slug: true } })
+export function getProjectBySlug(tx: Prisma.TransactionClient, projectId: string) {
+  return tx.project.findUnique({ where: { id: projectId }, select: { slug: true } })
 }
 
-export function getProjectRoleForDelete(db: Prisma.TransactionClient, roleId: string) {
-  return db.projectRole.findUnique({ where: { id: roleId }, select: projectRoleForDeleteSelect })
+export function getProjectRoleForDelete(tx: Prisma.TransactionClient, roleId: string) {
+  return tx.projectRole.findUnique({ where: { id: roleId }, select: projectRoleForDeleteSelect })
 }
 
-export function getProjectForUpsert(db: Prisma.TransactionClient, projectId: string) {
-  return db.project.findUnique({ where: { id: projectId }, select: projectForRoleContextSelect })
+export function getProjectForUpsert(tx: Prisma.TransactionClient, projectId: string) {
+  return tx.project.findUnique({ where: { id: projectId }, select: projectForRoleContextSelect })
 }

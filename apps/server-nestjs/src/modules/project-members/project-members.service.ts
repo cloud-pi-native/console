@@ -1,4 +1,4 @@
-import type { AddMemberInput, PatchMembersInput } from './project-members-queries.utils'
+import type { AddMemberInput, PatchMemberInput } from './project-members-queries.utils'
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
@@ -18,7 +18,7 @@ export class ProjectMembersService {
   ) {}
 
   @StartActiveSpan()
-  async listMembers(projectId: string) {
+  async list(projectId: string) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.id', projectId)
     this.logger.debug(`projectMembers.listMembers started (projectId=${projectId})`)
@@ -29,7 +29,7 @@ export class ProjectMembersService {
   }
 
   @StartActiveSpan()
-  async addMember(
+  async add(
     projectId: string,
     body: AddMemberInput,
   ) {
@@ -108,9 +108,9 @@ export class ProjectMembersService {
   }
 
   @StartActiveSpan()
-  async patchMembers(
+  async patch(
     projectId: string,
-    body: PatchMembersInput,
+    body: PatchMemberInput[],
   ) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.id', projectId)
@@ -139,7 +139,7 @@ export class ProjectMembersService {
   }
 
   @StartActiveSpan()
-  async removeMember(projectId: string, userId: string) {
+  async remove(projectId: string, userId: string) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.id', projectId)
     span?.setAttribute('project.member.userId', userId)

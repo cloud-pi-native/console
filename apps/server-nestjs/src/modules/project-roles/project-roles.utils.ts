@@ -1,6 +1,6 @@
 import type { ProjectRole as SharedProjectRole } from '@cpn-console/shared'
 import type { ProjectRole } from '@prisma/client'
-import type { ProjectRoleWithProject } from './project-roles.queries.utils'
+import type { ProjectRoleWithProject } from './project-roles-queries.utils'
 import { isSystemRoleType } from '@cpn-console/shared'
 import { BadRequestException } from '@nestjs/common'
 

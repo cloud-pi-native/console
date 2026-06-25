@@ -4,12 +4,11 @@ import { faker } from '@faker-js/faker'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
-import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
+import { ProjectRolesModule } from '../src/modules/project-roles/project-roles.module'
 import { ProjectRolesService } from '../src/modules/project-roles/project-roles.service'
-import { ProjectModule } from '../src/modules/project/project.module'
 
 const canRunProjectRolesE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
 
@@ -26,20 +25,16 @@ describeWithProjectRoles('ProjectRolesService (e2e)', {}, () => {
   let projectSlug: string
 
   beforeAll(async () => {
-    eventEmitter = mockDeep<EventEmitter2>()
-    eventEmitter.emitAsync.mockResolvedValue([])
-
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigurationModule, InfrastructureModule, ProjectModule],
-      providers: [
-        { provide: EventEmitter2, useValue: eventEmitter },
-      ],
+      imports: [ConfigurationModule, InfrastructureModule, ProjectRolesModule],
     }).compile()
 
     await moduleRef.init()
 
     prisma = moduleRef.get(PrismaService)
     service = moduleRef.get(ProjectRolesService)
+    eventEmitter = moduleRef.get(EventEmitter2)
+    vi.spyOn(eventEmitter, 'emitAsync').mockResolvedValue([])
 
     ownerId = faker.string.uuid()
     projectId = faker.string.uuid()
@@ -102,7 +97,7 @@ describeWithProjectRoles('ProjectRolesService (e2e)', {}, () => {
       },
     })
 
-    const roles = await service.listRoles(projectId)
+    const roles = await service.list(projectId)
 
     expect(roles).toHaveLength(1)
     expect(roles[0].id).toBe(role.id)
@@ -111,10 +106,10 @@ describeWithProjectRoles('ProjectRolesService (e2e)', {}, () => {
   })
 
   it('creates a role and emits project upsert', async () => {
-    const role = await service.createRole(projectId, { name: 'developer', permissions: '2' })
+    const role = await service.create(projectId, { name: 'developer', permissions: '2' })
 
     expect(role.length).toBeGreaterThanOrEqual(1)
-    expect(events.emitAsync).toHaveBeenCalledWith('project.upsert', expect.objectContaining({ id: projectId }))
+    expect(eventEmitter.emitAsync).toHaveBeenCalledWith('project.upsert', expect.objectContaining({ id: projectId }))
 
     const dbRole = await prisma.projectRole.findFirst({
       where: { projectId, name: 'developer' },
@@ -135,15 +130,24 @@ describeWithProjectRoles('ProjectRolesService (e2e)', {}, () => {
       },
     })
 
-    const roles = await service.patchRoles(projectId, [{
+    await prisma.projectRole.create({
+      data: {
+        projectId,
+        name: 'other',
+        permissions: 2n,
+        position: 6,
+        type: 'managed',
+        oidcGroup: '',
+      },
+    })
+
+    const roles = await service.update(projectId, [{
       id: existingRole.id,
       name: 'qa',
-      position: 2,
     }])
 
     const updated = roles.find(r => r.id === existingRole.id)
     expect(updated?.name).toBe('qa')
-    expect(updated?.position).toBe(2)
   })
 
   it('counts role members', async () => {
@@ -179,7 +183,7 @@ describeWithProjectRoles('ProjectRolesService (e2e)', {}, () => {
       },
     })
 
-    const counts = await service.countRolesMembers(projectId)
+    const counts = await service.countMembers(projectId)
     expect(counts[roleId]).toBe(1)
   })
 
@@ -217,13 +221,12 @@ describeWithProjectRoles('ProjectRolesService (e2e)', {}, () => {
       },
     })
 
-    const result = await service.deleteRole(roleId)
-    expect(result).toBeNull()
+    await service.delete(roleId)
 
     const member = await prisma.projectMembers.findUnique({
       where: { projectId_userId: { projectId, userId } },
     })
     expect(member?.roleIds).not.toContain(roleId)
-    expect(events.emitAsync).toHaveBeenCalledWith('project.upsert', expect.objectContaining({ id: projectId }))
+    expect(eventEmitter.emitAsync).toHaveBeenCalledWith('project.upsert', expect.objectContaining({ id: projectId }))
   })
 })

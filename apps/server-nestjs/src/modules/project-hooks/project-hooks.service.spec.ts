@@ -61,7 +61,7 @@ describe('projectHooksService', () => {
     const requestId = 'request-id'
     const userId = 'user-id'
 
-    await service.replayHooks('project-id', userId, requestId)
+    await service.replay('project-id', userId, requestId)
 
     expect(prisma.project.findFirst).toHaveBeenCalledWith({
       where: { id: 'project-id', status: { not: 'archived' } },
@@ -80,7 +80,7 @@ describe('projectHooksService', () => {
     const project = makeProject({ locked: true })
     prisma.project.findFirst.mockResolvedValue(project)
 
-    await expect(service.replayHooks('project-id', 'user-id', 'request-id')).rejects.toThrow(ForbiddenException)
+    await expect(service.replay('project-id', 'user-id', 'request-id')).rejects.toThrow(ForbiddenException)
 
     expect(eventEmitter.emitAsync).not.toHaveBeenCalled()
     expect(logs.addLog).not.toHaveBeenCalled()

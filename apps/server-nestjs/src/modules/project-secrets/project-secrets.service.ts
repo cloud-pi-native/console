@@ -7,6 +7,7 @@ import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultService } from '../vault/vault.service'
 import { generateProjectPath } from '../vault/vault.utils'
+import { getProjectSlug } from './project-secrets-queries.utils'
 
 const SecretValueSchema = z.union([
   z.string(),
@@ -38,7 +39,7 @@ export class ProjectSecretsService {
     span?.setAttribute('project.id', projectId)
     this.logger.log(`project.get started (projectId=${projectId})`)
     try {
-      const project = await this.getProjectSlug(projectId)
+      const project = await getProjectSlug(this.prisma, projectId)
       if (!project) throw new NotFoundException('Projet introuvable')
       span?.setAttribute('project.slug', project.slug)
       const projectPath = generateProjectPath(this.config.projectRootDir, project.slug)
@@ -82,12 +83,5 @@ export class ProjectSecretsService {
       )
       throw error
     }
-  }
-
-  private async getProjectSlug(projectId: string): Promise<{ slug: string } | null> {
-    return this.prisma.project.findUnique({
-      where: { id: projectId },
-      select: { slug: true },
-    })
   }
 }

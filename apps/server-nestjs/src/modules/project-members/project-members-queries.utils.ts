@@ -25,10 +25,9 @@ export type ProjectOwnerId = Prisma.ProjectGetPayload<{
 
 export type AddMemberInput = { email: string } | { userId: string }
 export interface PatchMemberInput { userId: string, roles: string[] }
-export type PatchMembersInput = PatchMemberInput[]
 
-export function listProjectMembersWithUser(db: Prisma.TransactionClient, projectId: string) {
-  return db.projectMembers.findMany({
+export function listProjectMembersWithUser(tx: Prisma.TransactionClient, projectId: string) {
+  return tx.projectMembers.findMany({
     where: { projectId },
     include: projectMemberWithUser,
   })
@@ -74,6 +73,6 @@ export function getHumanUser(tx: Prisma.TransactionClient, opts: { userId?: stri
   })
 }
 
-export function getProjectOwnerId(db: Prisma.TransactionClient, projectId: string) {
-  return db.project.findUnique({ where: { id: projectId }, select: projectOwnerIdSelect })
+export function getProjectOwnerId(tx: Prisma.TransactionClient, projectId: string) {
+  return tx.project.findUnique({ where: { id: projectId }, select: projectOwnerIdSelect })
 }

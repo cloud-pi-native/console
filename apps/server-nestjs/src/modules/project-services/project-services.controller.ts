@@ -10,13 +10,13 @@ import { RequireProjectStatus } from '../infrastructure/permission/project/proje
 import { Project } from '../infrastructure/permission/project/project.decorator'
 import { ProjectGuard } from '../infrastructure/permission/project/project.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
-import { ServicesService } from './services.service'
+import { ProjectServicesService } from './project-services.service'
 
 @Controller('api/v1/projects/:projectId/services')
 @UseGuards(ProjectGuard)
-export class ServicesController {
+export class ProjectServicesController {
   constructor(
-    @Inject(ServicesService) private readonly services: ServicesService,
+    @Inject(ProjectServicesService) private readonly projectServices: ProjectServicesService,
   ) {}
 
   @Get()
@@ -30,7 +30,7 @@ export class ServicesController {
       throw new ForbiddenException('Vous ne pouvez pas demander les paramètres admin')
     }
 
-    return this.services.get(project.id, query.permissionTarget)
+    return this.projectServices.get(project.id, query.permissionTarget)
   }
 
   @Post()
@@ -44,6 +44,6 @@ export class ServicesController {
     @AuthUser() user: UserContext,
   ): Promise<void> {
     const allowedRoles: Array<'user' | 'admin'> = AdminAuthorized.Manage(user.adminPermissions ?? 0n) ? ['user', 'admin'] : ['user']
-    await this.services.update(project.id, body, allowedRoles)
+    await this.projectServices.update(project.id, body, allowedRoles)
   }
 }

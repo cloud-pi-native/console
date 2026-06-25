@@ -1,3 +1,4 @@
+import type { ProjectWithDetails } from '../project/project-queries.utils'
 import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
@@ -15,6 +16,26 @@ export class ProjectHooksService {
     @Inject(LogService) private readonly logs: LogService,
   ) {}
 
+  private async logProjectAction(
+    action: string,
+    project: ProjectWithDetails,
+    messageResume: string,
+    userId: string | undefined,
+    requestId: string | undefined,
+  ): Promise<void> {
+    await this.logs.addLog({
+      action,
+      data: {
+        args: { projectId: project.id },
+        messageResume,
+        results: { projectId: project.id, slug: project.slug },
+      },
+      userId,
+      requestId,
+      projectId: project.id,
+    })
+  }
+
   async updateProjectLocked(projectId: string, locked: boolean): Promise<void> {
     const project = await this.prisma.project.update({
       where: { id: projectId },
@@ -24,7 +45,7 @@ export class ProjectHooksService {
     await this.eventEmitter.emitAsync('project.upsert', project)
   }
 
-  async replayHooks(projectId: string, requestorUserId?: string, requestId?: string): Promise<void> {
+  async replay(projectId: string, requestorUserId?: string, requestId?: string): Promise<void> {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.id', projectId)
     this.logger.log(`project.replayHooks started (projectId=${projectId})`)
@@ -39,22 +60,13 @@ export class ProjectHooksService {
     }
     span?.setAttribute('project.slug', project.slug)
     await this.eventEmitter.emitAsync('project.upsert', project)
-    await this.logs.addLog({
-      action: 'Replay hooks for Project',
-      data: {
-        args: {
-          projectId,
-        },
-        messageResume: `Hooks du projet rejoués: ${project.slug}`,
-        results: {
-          projectId: project.id,
-          slug: project.slug,
-        },
-      },
-      userId: requestorUserId,
+    await this.logProjectAction(
+      'Replay hooks for Project',
+      project,
+      `Hooks du projet rejoués: ${project.slug}`,
+      requestorUserId,
       requestId,
-      projectId: project.id,
-    })
+    )
     this.logger.log(`project.replayHooks completed (projectId=${projectId})`)
   }
 }

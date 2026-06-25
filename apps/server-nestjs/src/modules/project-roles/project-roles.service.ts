@@ -7,7 +7,7 @@ import { isSystemRoleType } from '@cpn-console/shared'
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { getProjectBySlug, getProjectForUpsert, getProjectRoleForDelete, projectRoleWithProjectSelect } from './project-roles.queries.utils'
+import { getProjectBySlug, getProjectForUpsert, getProjectRoleForDelete, projectRoleWithProjectSelect } from './project-roles-queries.utils'
 import {
   buildUpdatedProjectRoles,
   toProjectRoleResponse,
@@ -21,7 +21,7 @@ export class ProjectRolesService {
     @Inject(EventEmitter2) private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  async listRoles(projectId: Project['id']) {
+  async list(projectId: Project['id']) {
     const roles = await this.prisma.projectRole.findMany({
       where: { projectId },
       orderBy: { position: 'asc' },
@@ -30,7 +30,7 @@ export class ProjectRolesService {
     return roles.map(role => toProjectRoleResponse(role))
   }
 
-  async patchRoles(projectId: Project['id'], roles: PatchProjectRolesInput) {
+  async update(projectId: Project['id'], roles: PatchProjectRolesInput) {
     const project = await getProjectBySlug(this.prisma, projectId)
     if (!project) throw new NotFoundException('Projet introuvable')
 
@@ -43,10 +43,10 @@ export class ProjectRolesService {
     }
 
     await this.emitProjectUpsert(projectId)
-    return this.listRoles(projectId)
+    return this.list(projectId)
   }
 
-  async createRole(projectId: Project['id'], role: CreateProjectRoleInput) {
+  async create(projectId: Project['id'], role: CreateProjectRoleInput) {
     const project = await getProjectBySlug(this.prisma, projectId)
     if (!project) throw new NotFoundException('Projet introuvable')
     if (isSystemRoleType(role.type)) {
@@ -74,11 +74,11 @@ export class ProjectRolesService {
     })
 
     await this.emitProjectUpsert(projectId)
-    return this.listRoles(projectId)
+    return this.list(projectId)
   }
 
-  async countRolesMembers(projectId: Project['id']) {
-    const roles = await this.listRoles(projectId)
+  async countMembers(projectId: Project['id']) {
+    const roles = await this.list(projectId)
     const members = await this.prisma.projectMembers.findMany({ where: { projectId } })
     const rolesCounts: Record<ProjectRole['id'], number> = Object.fromEntries(roles.map(role => [role.id, 0]))
 
@@ -91,7 +91,7 @@ export class ProjectRolesService {
     return rolesCounts
   }
 
-  async deleteRole(roleId: ProjectRole['id']) {
+  async delete(roleId: ProjectRole['id']) {
     const role = await getProjectRoleForDelete(this.prisma, roleId)
     if (!role) throw new NotFoundException('Rôle introuvable')
     if (isSystemRoleType(role.type)) {
