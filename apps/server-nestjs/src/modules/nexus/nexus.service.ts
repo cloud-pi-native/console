@@ -6,6 +6,7 @@ import type {
 import { specificallyEnabled } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
+import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
@@ -38,6 +39,7 @@ import {
   generateRandomPassword,
   getPluginConfig,
   getProjectVaultPath,
+  isSuspended,
 } from './nexus.utils'
 
 export interface EnsureMavenReposOptions {
@@ -61,6 +63,7 @@ export class NexusService {
   @OnEvent('project.upsert')
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
+    if (isSuspended(project)) return
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling project upsert for ${project.slug}`)
@@ -80,12 +83,12 @@ export class NexusService {
     await this.ensurePlatformRoles(projects)
   }
 
-  // @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
     const span = trace.getActiveSpan()
     this.logger.log('Starting Nexus reconciliation')
-    const projects = await this.nexusDatastore.getAllProjects()
+    const projects = await this.nexusDatastore.getAutoSyncProjects()
     span?.setAttribute('nexus.projects.count', projects.length)
     await this.ensureProjects(projects)
     await this.ensurePlatformRoles(projects)

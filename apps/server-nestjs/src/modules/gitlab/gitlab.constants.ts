@@ -1,4 +1,7 @@
-// ArgoCD infrastructure automation
+export const GITLAB_PLUGIN_NAME = 'gitlab'
+export const AUTO_SYNC_PLUGIN_KEY = 'autoSync'
+export const SUSPENDED_PLUGIN_KEY = 'suspended'
+
 export const INFRA_GROUP_NAME = 'Infra'
 export const INFRA_GROUP_PATH = 'infra'
 export const INFRA_APPS_REPO_NAME = 'infra-apps'

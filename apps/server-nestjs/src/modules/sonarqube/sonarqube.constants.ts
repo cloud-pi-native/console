@@ -1,4 +1,6 @@
 export const SONARQUBE_PLUGIN_NAME = 'sonarqube'
+export const AUTO_SYNC_PLUGIN_KEY = 'autoSync'
+export const SUSPENDED_PLUGIN_KEY = 'suspended'
 export const DEFAULT_PERMISSION_TEMPLATE_NAME = 'Forge Default'
 
 // SonarQube global permission names

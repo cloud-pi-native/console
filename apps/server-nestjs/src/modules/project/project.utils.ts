@@ -78,6 +78,8 @@ export function generateProjectCreateInput(
 
 export const ProjectV2ResponseSchema = ProjectSchemaV2.omit({ name: true }).extend({
   name: z.string(),
+  suspended: z.boolean(),
+  autoSync: z.boolean(),
 })
 
 export function generateProjectV2(project: ProjectWithDetails) {
@@ -88,6 +90,8 @@ export function generateProjectV2(project: ProjectWithDetails) {
     description: project.description,
     status: project.status,
     locked: project.locked,
+    suspended: project.suspended,
+    autoSync: project.plugins?.some(p => p.key === 'autoSync' && p.value === ENABLED) ?? false,
     limitless: project.limitless,
     hprodCpu: project.hprodCpu,
     hprodGpu: project.hprodGpu,
@@ -134,6 +138,7 @@ export function generateProjectWhereInput(opts: {
   const whereAnd: Prisma.ProjectWhereInput[] = []
   if (rest.id) whereAnd.push({ id: rest.id })
   if (rest.locked !== undefined) whereAnd.push({ locked: rest.locked })
+  if (rest.suspended !== undefined) whereAnd.push({ suspended: rest.suspended })
   if (rest.name) whereAnd.push({ name: rest.name })
   if (rest.description) whereAnd.push({ description: { contains: rest.description } })
 

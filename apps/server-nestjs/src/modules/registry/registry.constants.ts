@@ -1,5 +1,6 @@
-// Registry plugin identification
 export const REGISTRY_PLUGIN_NAME = 'harbor'
+export const AUTO_SYNC_PLUGIN_KEY = 'autoSync'
+export const SUSPENDED_PLUGIN_KEY = 'suspended'
 
 // Registry configuration keys
 export const REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT = 'quotaHardLimit'

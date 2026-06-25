@@ -1,15 +1,14 @@
 import type { Prisma } from '@prisma/client'
+import { ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { REGISTRY_PLUGIN_NAME } from './registry.constants'
+import { AUTO_SYNC_PLUGIN_KEY, REGISTRY_PLUGIN_NAME, SUSPENDED_PLUGIN_KEY } from './registry.constants'
 
 export const projectSelect = {
   slug: true,
   plugins: {
-    where: {
-      pluginName: REGISTRY_PLUGIN_NAME,
-    },
     select: {
+      pluginName: true,
       key: true,
       value: true,
     },
@@ -25,36 +24,49 @@ export class RegistryDatastoreService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   async getAllProjects(): Promise<ProjectWithDetails[]> {
-    return await this.prisma.project.findMany({
+    return this.prisma.project.findMany({
+      select: projectSelect,
+    })
+  }
+
+  async getAutoSyncProjects(): Promise<ProjectWithDetails[]> {
+    return this.prisma.project.findMany({
       select: projectSelect,
       where: {
-        plugins: {
-          some: {
-            pluginName: REGISTRY_PLUGIN_NAME,
+        AND: [
+          {
+            plugins: {
+              some: {
+                pluginName: REGISTRY_PLUGIN_NAME,
+                key: AUTO_SYNC_PLUGIN_KEY,
+                value: ENABLED,
+              },
+            },
           },
-        },
+          {
+            NOT: {
+              plugins: {
+                some: {
+                  pluginName: REGISTRY_PLUGIN_NAME,
+                  key: SUSPENDED_PLUGIN_KEY,
+                  value: ENABLED,
+                },
+              },
+            },
+          },
+        ],
       },
     })
   }
 
   async getProject(id: string): Promise<ProjectWithDetails | null> {
-    return await this.prisma.project.findUnique({
-      where: { id },
-      select: projectSelect,
-    })
+    return this.prisma.project.findUnique({ where: { id }, select: projectSelect })
   }
 
   async getAdminPluginConfig(pluginName: string, key: string): Promise<string | null> {
     const result = await this.prisma.adminPlugin.findUnique({
-      where: {
-        pluginName_key: {
-          pluginName,
-          key,
-        },
-      },
-      select: {
-        value: true,
-      },
+      where: { pluginName_key: { pluginName, key } },
+      select: { value: true },
     })
     return result?.value ?? null
   }

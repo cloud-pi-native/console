@@ -5,6 +5,7 @@ import type { ProjectWithDetails } from './sonarqube-datastore.service'
 import { generateProjectKey, generateRandomPassword } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
+import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
@@ -39,6 +40,7 @@ import {
   SECURITY_GROUP_PATH_PLUGIN_KEY,
   SONARQUBE_PLUGIN_NAME,
 } from './sonarqube.constants'
+import { isSuspended } from './sonarqube.utils'
 
 interface SonarqubeRolePaths {
   admin: string[]
@@ -89,6 +91,7 @@ export class SonarqubeService implements OnModuleInit {
   @OnEvent('project.upsert')
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
+    if (isSuspended(project)) return
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project upsert event for ${project.slug}`)
@@ -106,13 +109,13 @@ export class SonarqubeService implements OnModuleInit {
     this.logger.log(`SonarQube deletion completed for project ${project.slug}`)
   }
 
-  // @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
     const span = trace.getActiveSpan()
     this.logger.log('Starting SonarQube reconciliation')
     await this.init().catch(error => this.logger.error('SonarQube init during cron failed', error))
-    const projects = await this.datastore.getAllProjects()
+    const projects = await this.datastore.getAutoSyncProjects()
     span?.setAttribute('sonarqube.projects.count', projects.length)
     this.logger.log(`Loaded ${projects.length} projects for SonarQube reconciliation`)
     await this.ensureProjectGroups(projects)

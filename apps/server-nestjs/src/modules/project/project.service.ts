@@ -274,12 +274,13 @@ export class ProjectService {
   private async listProjectsForDataExport(): Promise<ProjectDataExport[]> {
     return this.prisma.project.findMany({
       select: projectForDataSelect,
+      where: { suspended: false },
     })
   }
 
   private async fetchProjects(whereAnd: Prisma.ProjectWhereInput[]): Promise<ProjectWithDetails[]> {
     return this.prisma.project.findMany({
-      where: { AND: whereAnd },
+      where: { AND: [...whereAnd, { suspended: false }] },
       select: projectSelect,
     })
   }

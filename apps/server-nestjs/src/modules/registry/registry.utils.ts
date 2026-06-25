@@ -1,8 +1,17 @@
 import type { ProjectWithDetails } from './registry-datastore.service'
-import { removeTrailingSlash } from '@cpn-console/shared'
+import { ENABLED, removeTrailingSlash } from '@cpn-console/shared'
+import { AUTO_SYNC_PLUGIN_KEY, REGISTRY_PLUGIN_NAME, SUSPENDED_PLUGIN_KEY } from './registry.constants'
 
 export function createProjectSlugCacheKey(projectId: string) {
   return `registry:project-slug:${projectId}`
+}
+
+export function isSuspended(project: ProjectWithDetails): boolean {
+  return project.plugins?.some(p => p.pluginName === REGISTRY_PLUGIN_NAME && p.key === SUSPENDED_PLUGIN_KEY && p.value === ENABLED) ?? false
+}
+
+export function isAutoSync(project: ProjectWithDetails): boolean {
+  return project.plugins?.some(p => p.pluginName === REGISTRY_PLUGIN_NAME && p.key === AUTO_SYNC_PLUGIN_KEY && p.value === ENABLED) ?? false
 }
 
 const protocolPrefixRegex = /^https?:\/\//u

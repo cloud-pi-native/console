@@ -56,6 +56,7 @@ function createNexusControllerServiceTestingModule() {
       {
         provide: NexusDatastoreService,
         useValue: {
+          getAutoSyncProjects: vi.fn(),
           getAllProjects: vi.fn(),
           getAdminPluginConfig: vi.fn(),
         } satisfies Partial<NexusDatastoreService>,
@@ -112,8 +113,8 @@ describe('nexusService', () => {
     const project = makeProjectWithDetails({
       owner: { email: 'owner@example.com', firstName: 'Owner', lastName: 'User' },
       plugins: [
-        { key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED },
-        { key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: DISABLED },
+        { pluginName: 'nexus', key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED },
+        { pluginName: 'nexus', key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: DISABLED },
       ],
     })
 
@@ -144,7 +145,7 @@ describe('nexusService', () => {
       makeProjectWithDetails({ plugins: [{ key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: ENABLED }] }),
     ]
 
-    nexusDatastore.getAllProjects.mockResolvedValue(projects)
+    nexusDatastore.getAutoSyncProjects.mockResolvedValue(projects)
 
     await service.handleCron()
 

@@ -1,6 +1,6 @@
 # Cartographie des modules - Modularisation Backend
 
-> Derniere mise a jour : **2026-06-16** (refonte Infrastructure/Auth/Permission)
+> Derniere mise a jour : **2026-06-26** (synchronisation statut / cartographie)
 
 ---
 
@@ -23,21 +23,21 @@ Cartographier l'ensemble des modules de l'application backend actuelle pour :
 | queries-index.ts | Supprime des le depart : chaque module NestJS possede ses propres queries Prisma |
 | Systeme d'evenements | `@nestjs/event-emitter` (remplacement progressif de `@cpn-console/hooks`) |
 | Plugins | Deviennent des modules NestJS (encapsulation puis reecriture progressive) |
-| Module project | Decoupe en 3 sous-modules : ProjectCore, ProjectSecrets, ProjectBulk |
+| Module project | Decoupe en 6 modules separes : Project, ProjectSecrets, ProjectServices, ProjectHooks, ProjectBulk, ProjectMembers, ProjectRoles |
 | Equipe dediee | 2 developpeurs en parallele |
 
 ---
 
 ## Vue synthetique
 
-**75 routes metier** reparties en **18 modules metier** (dont project eclate en 3),
-plus **5 couches transverses** et **7 plugins** a encapsuler.
+**75 routes metier** reparties en **18 modules metier** (dont project eclate en 7),
+plus **5 couches transverses** et **7 plugins** encapsules.
 
 ### Legende des statuts
 
 - FAIT : Deja implemente dans `server-nestjs`
-- A CREER : N'existe pas encore
 - A MIGRER : Existe dans `server`, a migrer vers `server-nestjs`
+- A CREER : N'existe pas encore dans la codebase
 
 ---
 
@@ -184,31 +184,31 @@ Plus le score est eleve, plus le module est prioritaire.
 | 1 | vault (encapsulation) | Plugin | 8.5 | V3 | S7-S8 | ✅ MIGRE |
 | 2 | system (health/version) | Metier | 7.8 | V1 | S3 | ✅ MIGRE |
 | 3 | system/settings | Metier | 7.4 | V1 | S3 | ✅ MIGRE |
-| 4 | system/config | Metier | 7.4 | V1 | S3-S4 | |
+| 4 | system/config | Metier | 7.4 | V1 | S3-S4 | ✅ MIGRÉ (2026-06-26) |
 | 5 | keycloak (encapsulation) | Plugin | 7.4 | V3 | S8 | ✅ MIGRE |
-| 6 | admin-token | Metier | 7.1 | V1 | S3-S4 | |
-| 7 | user/tokens | Metier | 7.1 | V1 | S3-S4 | |
+| 6 | admin-token | Metier | 7.1 | V1 | S3-S4 | ✅ MIGRÉ (2026-06-30) |
+| 7 | user/tokens | Metier | 7.1 | V1 | S3-S4 | ✅ MIGRÉ (2026-06-30) |
 | 8 | gitlab (encapsulation) | Plugin | 6.7 | V4 | S9 | ✅ MIGRE |
-| 9 | service-monitor | Metier | 6.6 | V2 | S5 | |
-| 10 | user | Metier | 6.6 | V2 | S5 | |
-| 11 | stage | Metier | 6.5 | V2 | S5-S6 | |
-| 12 | log | Metier | 6.5 | V1 | S4 | |
-| 13 | zone | Metier | 6.4 | V2 | S6 | |
-| 14 | environment | Metier | 6.3 | V3 | S7 | |
-| 15 | admin-role | Metier | 6.1 | V2 | S5 | |
-| 16 | project-core | Metier | 5.8 | V4 | S9 | |
-| 17 | service-chain | Metier | 5.9 | V3 | S8 | ✅ MIGRE |
-| 18 | repository | Metier | 5.8 | V3 | S7-S8 | |
-| 19 | cluster | Metier | 5.7 | V3 | S7 | |
+| 9 | service-monitor | Metier | 6.6 | V2 | S5 | 📅 Planifié (non trouvé dans la codebase actuelle) |
+| 10 | user | Metier | 6.6 | V2 | S5 | 📅 Planifié |
+| 11 | stage | Metier | 6.5 | V2 | S5-S6 | 📅 Planifié |
+| 12 | log | Metier | 6.5 | V1 | S4 | ✅ MIGRÉ (2026-06-16) |
+| 13 | zone | Metier | 6.4 | V2 | S6 | 📅 Planifié |
+| 14 | environment | Metier | 6.3 | V3 | S7 | 📅 Planifié |
+| 15 | admin-role | Metier | 6.1 | V2 | S5 | 📅 Planifié |
+| 16 | project-core | Metier | 5.8 | V4 | S9 | ✅ MIGRÉ (2026-05-28) |
+| 17 | service-chain | Metier | 5.9 | V3 | S8 | ✅ MIGRÉ (2026-04-09) |
+| 18 | repository | Metier | 5.8 | V3 | S7-S8 | 📅 Planifié |
+| 19 | cluster | Metier | 5.7 | V3 | S7 | 📅 Planifié |
 | 20 | harbor (encapsulation) | Plugin | 5.6 | V4 | S9-S10 | ✅ MIGRE |
-| 21 | project-service | Metier | 5.6 | V3 | S8 | |
+| 21 | project-service | Metier | 5.6 | V3 | S8 | ✅ MIGRÉ (2026-06-13, module `services`) |
 | 22 | argocd (encapsulation) | Plugin | 5.3 | V5 | S10-S11 | ✅ MIGRE |
-| 23 | project-role | Metier | 5.2 | V3 | S7-S8 | |
+| 23 | project-role | Metier | 5.2 | V3 | S7-S8 | ✅ MIGRÉ (2026-06-13) |
 | 24 | nexus (encapsulation) | Plugin | 5.1 | V4 | S10 | ✅ MIGRE |
-| 25 | project-member | Metier | 4.7 | V3 | S8 | |
-| 26 | project-secrets | Metier | 4.6 | V4 | S9 | |
-| 27 | project-bulk | Metier | 4.2 | V4 | S9-S10 | |
-| 28 | sonarqube (encapsulation) | Plugin | 4.2 | V5 | S11 | |
+| 25 | project-member | Metier | 4.7 | V3 | S8 | ✅ MIGRÉ (2026-06-09) |
+| 26 | project-secrets | Metier | 4.6 | V4 | S9 | ✅ MIGRÉ (2026-06-13, module séparé) |
+| 27 | project-bulk | Metier | 4.2 | V4 | S9-S10 | ✅ MIGRÉ (2026-06-16, module séparé) |
+| 28 | sonarqube (encapsulation) | Plugin | 4.2 | V5 | S11 | ✅ MIGRE |
 
 **Note** : Le score brut ne dicte pas directement l'ordre de migration.
 L'ordre reel est contraint par le graphe de dependances (bottom-up), les
@@ -825,7 +825,7 @@ Encapsuler les plugins intermediaires.
 **Livrable fin S10** : 75 routes migrees (100% des routes metier) + plugins
 vault, keycloak, gitlab, harbor, nexus encapsules
 
-### 19. project-core
+### 19. project-core — ✅ MIGRÉ (2026-05-28)
 
 | Attribut | Valeur |
 |----------|--------|
@@ -857,7 +857,7 @@ vault, keycloak, gitlab, harbor, nexus encapsules
 
 ---
 
-### 20. project-secrets
+### 20. project-secrets — ✅ MIGRÉ (2026-05-28, fusionné dans project-core)
 
 | Attribut | Valeur |
 |----------|--------|
@@ -869,7 +869,7 @@ vault, keycloak, gitlab, harbor, nexus encapsules
 **Routes** :
 - `GET /api/v1/projects/:projectId/secrets` - Secrets du projet
 
-**Dependances sortantes** : hooks (project.getSecrets)
+**Dependances sortantes** : hooks (project.get)
 **Dependances entrantes** : Aucune
 
 **Points d'attention** :
@@ -882,29 +882,26 @@ vault, keycloak, gitlab, harbor, nexus encapsules
 
 ---
 
-### 21. project-bulk
+### 21. project-bulk — ✅ MIGRÉ (2026-06-16, module séparé)
 
 | Attribut | Valeur |
 |----------|--------|
-| **Routes** | 3 |
+| **Routes** | 1 (bulk action) |
 | **Score** | 4.2 |
 | **Sprint** | S9-S10 |
 | **Dev** | A |
 
 **Routes** :
-- `GET /api/v1/admin/projects/data` - Export bulk des donnees projets
-- `POST /api/v1/admin/projects/bulk` - Action bulk sur les projets
-- `POST /api/v1/projects/:projectId/replay-hooks` - Rejeu des hooks d'un projet
+- `POST /api/v1/projects-bulk` - Action bulk sur les projets (archive, lock, unlock, replay)
 
-**Dependances sortantes** : `queries-index` (getAllProjectsDataForExport, deleteAllEnvironmentForProject, deleteAllRepositoryForProject), hooks (project.upsert pour replay)
+**Dependances sortantes** : `ProjectService` (archive), `ProjectHooksService` (replay, lock/unlock)
 **Dependances entrantes** : Aucune
 
 **Points d'attention** :
-- Routes admin uniquement
-- Le bulk action itere sur les projets avec une limite de parallelisme
-  (`parallelBulkLimit` dans la config). Attention aux performances
+- Route admin uniquement (`@RequireAdminPermission('Manage')`)
+- Le bulk action itere sur les projets avec `Promise.allSettled` (pas de limite de parallelisme)
+- L'export CSV (`GET /api/v1/projects/data`) est géré par le `ProjectController`, pas par ce module
 - Le replay-hooks re-execute toute la chaine de hooks pour un projet
-- L'export data peut generer de gros payloads
 
 **Estimation** : 2 jours
 

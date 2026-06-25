@@ -7,6 +7,7 @@ export const projectSelect = {
   description: true,
   status: true,
   locked: true,
+  suspended: true,
   limitless: true,
   hprodCpu: true,
   hprodGpu: true,
@@ -215,6 +216,14 @@ export const projectForUpsertSelect = {
   slug: true,
   status: true,
   locked: true,
+  suspended: true,
+  plugins: {
+    select: {
+      pluginName: true,
+      key: true,
+      value: true,
+    },
+  },
 } satisfies Prisma.ProjectSelect
 
 export type ProjectWithDetails = Prisma.ProjectGetPayload<{

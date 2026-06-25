@@ -1,4 +1,7 @@
-// Path for console admin group
+export const ARGOCD_PLUGIN_NAME = 'argocd'
+export const AUTO_SYNC_PLUGIN_KEY = 'autoSync'
+export const SUSPENDED_PLUGIN_KEY = 'suspended'
+
 export const CONSOLE_ADMIN_GROUP_PATH = '/console/admin'
 export const PLATFORM_ADMIN_GROUP_PATH = '/console/admin'
 export const PLATFORM_READONLY_GROUP_PATH = '/console/readonly'

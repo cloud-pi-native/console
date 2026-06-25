@@ -113,7 +113,32 @@ export class GitlabPluginService {
             placeholder: DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX,
           },
         ],
-        project: [],
+        project: [
+          {
+            kind: 'switch',
+            key: 'suspended',
+            initialValue: DISABLED,
+            permissions: {
+              admin: { read: true, write: true },
+              user: { read: false, write: false },
+            },
+            title: 'Suspendre le projet',
+            value: DISABLED,
+            description: 'Suspendre la synchronisation GitLab pour ce projet',
+          },
+          {
+            kind: 'switch',
+            key: 'autoSync',
+            initialValue: ENABLED,
+            permissions: {
+              admin: { read: true, write: true },
+              user: { read: false, write: false },
+            },
+            title: 'Synchronisation automatique GitLab',
+            value: ENABLED,
+            description: 'Synchroniser automatiquement le projet GitLab',
+          },
+        ],
       },
     } as const satisfies ServiceInfos
   }

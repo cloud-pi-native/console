@@ -1,6 +1,8 @@
 import type { Prisma } from '@prisma/client'
 import { Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
+import { buildProjectAutoSyncWhere } from '../project-datastore.utils'
+import { GITLAB_PLUGIN_NAME } from './gitlab.constants'
 
 export const projectSelect = {
   id: true,
@@ -18,6 +20,7 @@ export const projectSelect = {
   },
   plugins: {
     select: {
+      pluginName: true,
       key: true,
       value: true,
     },
@@ -83,6 +86,13 @@ export class GitlabDatastoreService {
           },
         },
       },
+    })
+  }
+
+  async getAutoSyncProjects(): Promise<ProjectWithDetails[]> {
+    return this.prisma.project.findMany({
+      select: projectSelect,
+      where: buildProjectAutoSyncWhere(GITLAB_PLUGIN_NAME),
     })
   }
 

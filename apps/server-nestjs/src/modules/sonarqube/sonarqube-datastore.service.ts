@@ -1,7 +1,8 @@
 import type { Prisma } from '@prisma/client'
+import { ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { SONARQUBE_PLUGIN_NAME } from './sonarqube.constants'
+import { AUTO_SYNC_PLUGIN_KEY, SONARQUBE_PLUGIN_NAME, SUSPENDED_PLUGIN_KEY } from './sonarqube.constants'
 
 export const projectSelect = {
   id: true,
@@ -12,10 +13,8 @@ export const projectSelect = {
     },
   },
   plugins: {
-    where: {
-      pluginName: SONARQUBE_PLUGIN_NAME,
-    },
     select: {
+      pluginName: true,
       key: true,
       value: true,
     },
@@ -33,21 +32,41 @@ export class SonarqubeDatastoreService {
   async getAllProjects(): Promise<ProjectWithDetails[]> {
     return this.prisma.project.findMany({
       select: projectSelect,
+    })
+  }
+
+  async getAutoSyncProjects(): Promise<ProjectWithDetails[]> {
+    return this.prisma.project.findMany({
+      select: projectSelect,
       where: {
-        plugins: {
-          some: {
-            pluginName: SONARQUBE_PLUGIN_NAME,
+        AND: [
+          {
+            plugins: {
+              some: {
+                pluginName: SONARQUBE_PLUGIN_NAME,
+                key: AUTO_SYNC_PLUGIN_KEY,
+                value: ENABLED,
+              },
+            },
           },
-        },
+          {
+            NOT: {
+              plugins: {
+                some: {
+                  pluginName: SONARQUBE_PLUGIN_NAME,
+                  key: SUSPENDED_PLUGIN_KEY,
+                  value: ENABLED,
+                },
+              },
+            },
+          },
+        ],
       },
     })
   }
 
   async getProject(id: string): Promise<ProjectWithDetails | null> {
-    return this.prisma.project.findUnique({
-      where: { id },
-      select: projectSelect,
-    })
+    return this.prisma.project.findUnique({ where: { id }, select: projectSelect })
   }
 
   async getAdminPluginConfig(

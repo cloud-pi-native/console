@@ -4,6 +4,7 @@ import { createHmac } from 'node:crypto'
 import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
+import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { stringify } from 'yaml'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
@@ -22,6 +23,7 @@ import {
   PROJECT_READONLY_GROUP_PATH_SUFFIX,
   PROJECT_SECURITY_GROUP_PATH_SUFFIX,
 } from './argocd.constant'
+import { isSuspended } from './argocd.utils'
 
 @Injectable()
 export class ArgoCDService {
@@ -39,6 +41,7 @@ export class ArgoCDService {
   @OnEvent('project.upsert')
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
+    if (isSuspended(project)) return
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project upsert event for ${project.slug}`)
@@ -56,11 +59,11 @@ export class ArgoCDService {
     this.logger.log(`ArgoCD sync completed for project ${project.slug}`)
   }
 
-  // @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
     this.logger.log('Starting ArgoCD reconciliation')
-    const projects = await this.argoCDDatastore.getAllProjects()
+    const projects = await this.argoCDDatastore.getAutoSyncProjects()
     const span = trace.getActiveSpan()
     span?.setAttribute('argocd.projects.count', projects.length)
     this.logger.log(`Loaded ${projects.length} projects for ArgoCD reconciliation`)

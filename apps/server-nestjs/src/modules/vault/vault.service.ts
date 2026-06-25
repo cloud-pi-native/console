@@ -1,6 +1,7 @@
 import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
+import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
@@ -32,7 +33,7 @@ import {
   SECURITY_GROUP_PATH_PLUGIN_KEY,
   VAULT_PLUGIN_NAME,
 } from './vault.constant'
-import { generateProjectPath } from './vault.utils'
+import { generateProjectPath, isSuspended } from './vault.utils'
 
 type ProjectScope = 'admin' | 'devops' | 'developer' | 'readonly' | 'security'
 
@@ -51,6 +52,7 @@ export class VaultService {
   @OnEvent('project.upsert')
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
+    if (isSuspended(project)) return
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project upsert event for ${project.slug}`)
@@ -91,16 +93,15 @@ export class VaultService {
     this.logger.log(`Vault zone cleanup completed for ${zone.slug}`)
   }
 
-  // @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
     const span = trace.getActiveSpan()
     this.logger.log('Starting Vault reconciliation')
     const [projects, zones] = await Promise.all([
-      this.vaultDatastore.getAllProjects(),
-      this.vaultDatastore.getAllZones(),
+      this.vaultDatastore.getAutoSyncProjects(),
+      this.vaultDatastore.getAutoSyncZones(),
     ])
-
     span?.setAttributes({
       'vault.projects.count': projects.length,
       'vault.zones.count': zones.length,
@@ -303,15 +304,15 @@ export class VaultService {
     const projectSecurityGroupPaths = generateProjectRoleGroupPaths(project, securityGroupPathSuffix)
 
     await Promise.all([
-      this.createAppAdminPolicy(appPolicyName, project.slug),
-      this.createTechReadOnlyPolicy(techPolicyName, project.slug),
-      this.createProjectDevopsPolicy(projectDevopsPolicyName, project.slug),
-      this.createProjectDeveloperPolicy(projectDeveloperPolicyName, project.slug),
-      this.createProjectReadOnlyPolicy(projectReadOnlyPolicyName, project.slug),
+      this.ensureAppAdminPolicy(appPolicyName, project.slug),
+      this.ensureTechReadOnlyPolicy(techPolicyName, project.slug),
+      this.ensureProjectDevopsPolicy(projectDevopsPolicyName, project.slug),
+      this.ensureProjectReadOnlyPolicy(projectDeveloperPolicyName, project.slug),
+      this.ensureProjectReadOnlyPolicy(projectReadOnlyPolicyName, project.slug),
       this.createProjectSecurityPolicy(projectSecurityPolicyName, project.slug),
-      this.createPlatformAdminPolicy(PLATFORM_ADMIN_POLICY_NAME),
-      this.createPlatformReadOnlyPolicy(PLATFORM_READONLY_POLICY_NAME),
-      this.createPlatformSecurityPolicy(PLATFORM_SECURITY_POLICY_NAME),
+      this.ensurePlatformAdminPolicy(PLATFORM_ADMIN_POLICY_NAME),
+      this.ensurePlatformReadOnlyPolicy(PLATFORM_READONLY_POLICY_NAME),
+      this.ensurePlatformSecurityPolicy(PLATFORM_SECURITY_POLICY_NAME),
       this.ensureIdentityGroup(CONSOLE_ADMIN_GROUP_NAME, [PLATFORM_ADMIN_POLICY_NAME], adminGroupPath),
       this.ensureIdentityGroup(CONSOLE_READONLY_GROUP_NAME, [PLATFORM_READONLY_POLICY_NAME], auditorGroupPath),
       this.ensureIdentityGroup(CONSOLE_SECURITY_GROUP_NAME, [PLATFORM_SECURITY_POLICY_NAME], securityGroupPath),
@@ -407,13 +408,13 @@ export class VaultService {
     }
   }
 
-  async createAppAdminPolicy(name: string, projectSlug: string): Promise<void> {
+  async ensureAppAdminPolicy(name: string, projectSlug: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
       policy: `path "${projectSlug}/*" { capabilities = ["create", "read", "update", "delete", "list"] }`,
     })
   }
 
-  async createProjectDevopsPolicy(name: string, projectSlug: string): Promise<void> {
+  async ensureProjectDevopsPolicy(name: string, projectSlug: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
       policy: [
         `path "${projectSlug}/data/*" { capabilities = ["create", "read", "update", "delete", "list"] }`,
@@ -425,16 +426,7 @@ export class VaultService {
     })
   }
 
-  async createProjectDeveloperPolicy(name: string, projectSlug: string): Promise<void> {
-    await this.client.upsertSysPoliciesAcl(name, {
-      policy: [
-        `path "${projectSlug}/data/*" { capabilities = ["read"] }`,
-        `path "${projectSlug}/metadata/*" { capabilities = ["read", "list"] }`,
-      ].join('\n'),
-    })
-  }
-
-  async createProjectReadOnlyPolicy(name: string, projectSlug: string): Promise<void> {
+  async ensureProjectReadOnlyPolicy(name: string, projectSlug: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
       policy: [
         `path "${projectSlug}/data/*" { capabilities = ["read"] }`,
@@ -449,13 +441,13 @@ export class VaultService {
     })
   }
 
-  async createPlatformAdminPolicy(name: string): Promise<void> {
+  async ensurePlatformAdminPolicy(name: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
       policy: `path "sys/*" { capabilities = ["create", "read", "update", "delete", "list", "sudo"] }`,
     })
   }
 
-  async createPlatformReadOnlyPolicy(name: string): Promise<void> {
+  async ensurePlatformReadOnlyPolicy(name: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
       policy: [
         `path "sys/health" { capabilities = ["read"] }`,
@@ -468,7 +460,7 @@ export class VaultService {
     })
   }
 
-  async createPlatformSecurityPolicy(name: string): Promise<void> {
+  async ensurePlatformSecurityPolicy(name: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
       policy: [
         `path "sys/audit" { capabilities = ["read", "list"] }`,
@@ -480,7 +472,7 @@ export class VaultService {
     })
   }
 
-  async createTechReadOnlyPolicy(name: string, projectSlug: string): Promise<void> {
+  async ensureTechReadOnlyPolicy(name: string, projectSlug: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
       policy: `path "${this.config.vaultKvName}/data/${projectSlug}/REGISTRY/ro-robot" { capabilities = ["read"] }`,
     })

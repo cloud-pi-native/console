@@ -1,6 +1,8 @@
 import type { Prisma } from '@prisma/client'
 import { Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
+import { buildProjectAutoSyncWhere } from '../project-datastore.utils'
+import { ARGOCD_PLUGIN_NAME } from './argocd.constant'
 
 export const projectSelect = {
   id: true,
@@ -100,5 +102,24 @@ export class ArgoCDDatastoreService {
     return this.prisma.project.findMany({
       select: projectSelect,
     })
+  }
+
+  async getAutoSyncProjects(): Promise<ProjectWithDetails[]> {
+    return this.prisma.project.findMany({
+      select: projectSelect,
+      where: buildProjectAutoSyncWhere(ARGOCD_PLUGIN_NAME),
+    })
+  }
+
+  async getProject(id: string): Promise<ProjectWithDetails | null> {
+    return this.prisma.project.findUnique({ where: { id }, select: projectSelect })
+  }
+
+  async getAdminPluginConfig(pluginName: string, key: string): Promise<string | null> {
+    const result = await this.prisma.adminPlugin.findUnique({
+      where: { pluginName_key: { pluginName, key } },
+      select: { value: true },
+    })
+    return result?.value ?? null
   }
 }

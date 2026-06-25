@@ -1,11 +1,20 @@
 import type { MemberSchema, ProjectSchema } from '@gitbeaker/core'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
 import { createHash } from 'node:crypto'
+import { ENABLED } from '@cpn-console/shared'
 import { AccessLevel } from '@gitbeaker/core'
 import { stringify } from 'yaml'
-import { TOPIC_PLUGIN_MANAGED } from './gitlab.constants'
+import { AUTO_SYNC_PLUGIN_KEY, GITLAB_PLUGIN_NAME, SUSPENDED_PLUGIN_KEY, TOPIC_PLUGIN_MANAGED } from './gitlab.constants'
 
 export type ProjectAccessLevel = Exclude<AccessLevel, (typeof AccessLevel)['ADMIN']>
+
+export function isSuspended(project: ProjectWithDetails): boolean {
+  return project.plugins?.some(p => p.pluginName === GITLAB_PLUGIN_NAME && p.key === SUSPENDED_PLUGIN_KEY && p.value === ENABLED) ?? false
+}
+
+export function isAutoSync(project: ProjectWithDetails): boolean {
+  return project.plugins?.some(p => p.pluginName === GITLAB_PLUGIN_NAME && p.key === AUTO_SYNC_PLUGIN_KEY && p.value === ENABLED) ?? false
+}
 
 export function getExternalRepoHost(externalRepoUrl: string | null | undefined): string | undefined {
   if (!externalRepoUrl) return undefined

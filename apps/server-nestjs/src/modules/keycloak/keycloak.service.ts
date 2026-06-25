@@ -4,6 +4,7 @@ import type { GroupRepresentationWith } from './keycloak.utils'
 import { getPermsByUserRoles, isExternalRoleType, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
+import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
@@ -42,7 +43,7 @@ export class KeycloakService {
     this.logger.log(`Keycloak cleanup completed for project ${project.slug}`)
   }
 
-  // @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
     const span = trace.getActiveSpan()

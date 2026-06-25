@@ -81,7 +81,7 @@ describe('gitlabService', () => {
 
     it('should remove orphan member if purge enabled', async () => {
       const project = makeProjectWithDetails({
-        plugins: [{ key: 'purge', value: ENABLED }],
+        plugins: [{ pluginName: 'gitlab', key: 'purge', value: ENABLED }],
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
 
@@ -98,7 +98,7 @@ describe('gitlabService', () => {
 
     it('should not remove managed user (bot) even if purge enabled', async () => {
       const project = makeProjectWithDetails({
-        plugins: [{ key: 'purge', value: ENABLED }],
+        plugins: [{ pluginName: 'gitlab', key: 'purge', value: ENABLED }],
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
 
@@ -130,7 +130,7 @@ describe('gitlabService', () => {
 
     it('should delete orphan repositories if purge enabled', async () => {
       const project = makeProjectWithDetails({
-        plugins: [{ key: 'purge', value: ENABLED }],
+        plugins: [{ pluginName: 'gitlab', key: 'purge', value: ENABLED }],
         repositories: [],
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
@@ -175,7 +175,7 @@ describe('gitlabService', () => {
 
     it('should not delete orphan repositories without the correct topic even if purge enabled', async () => {
       const project = makeProjectWithDetails({
-        plugins: [{ key: 'purge', value: ENABLED }],
+        plugins: [{ pluginName: 'gitlab', key: 'purge', value: ENABLED }],
         repositories: [],
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
@@ -403,7 +403,7 @@ describe('gitlabService', () => {
   describe('handleCron', () => {
     it('should reconcile all projects', async () => {
       const projects = [makeProjectWithDetails({ id: 'p1', slug: 'project-1' })]
-      datastore.getAllProjects.mockResolvedValue(projects)
+      datastore.getAutoSyncProjects.mockResolvedValue(projects)
 
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
       gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
@@ -414,7 +414,7 @@ describe('gitlabService', () => {
 
       await service.handleCron()
 
-      expect(datastore.getAllProjects).toHaveBeenCalled()
+      expect(datastore.getAutoSyncProjects).toHaveBeenCalled()
       expect(gitlab.getOrCreateProjectSubGroup).toHaveBeenCalledWith('project-1')
     })
   })

@@ -41,7 +41,7 @@ function createRegistryControllerServiceTestingModule() {
         provide: RegistryDatastoreService,
         useValue: {
           getAdminPluginConfig: vi.fn(),
-          getAllProjects: vi.fn(),
+          getAutoSyncProjects: vi.fn(),
         } satisfies Partial<RegistryDatastoreService>,
       },
       {
@@ -304,7 +304,7 @@ describe('registryService', () => {
 
   describe('handleCron', () => {
     it('should reconcile all projects', async () => {
-      registryDatastore.getAllProjects.mockResolvedValue([
+      registryDatastore.getAutoSyncProjects.mockResolvedValue([
         makeProjectWithDetails({ slug: 'project-1' }),
         makeProjectWithDetails({ slug: 'project-2' }),
       ])

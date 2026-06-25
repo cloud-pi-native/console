@@ -1,7 +1,7 @@
-// Plugin name used to identify the Vault integration
 export const VAULT_PLUGIN_NAME = 'vault'
+export const AUTO_SYNC_PLUGIN_KEY = 'autoSync'
+export const SUSPENDED_PLUGIN_KEY = 'suspended'
 
-// Platform-level policy names for RBAC
 export const PLATFORM_ADMIN_POLICY_NAME = 'platform--admin'
 export const PLATFORM_READONLY_POLICY_NAME = 'platform--readonly'
 export const PLATFORM_SECURITY_POLICY_NAME = 'platform--security'

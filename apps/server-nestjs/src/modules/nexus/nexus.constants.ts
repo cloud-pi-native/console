@@ -1,5 +1,6 @@
-// Name of the Nexus plugin used throughout the application
 export const NEXUS_PLUGIN_NAME = 'nexus'
+export const AUTO_SYNC_PLUGIN_KEY = 'autoSync'
+export const SUSPENDED_PLUGIN_KEY = 'suspended'
 
 // Configuration keys for enabling Maven and NPM repositories
 export const NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO = 'activateMavenRepo'

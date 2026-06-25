@@ -18,6 +18,7 @@ export function makeZoneWithDetails(overrides: Partial<ZoneWithDetails> = {}): Z
   return {
     id: faker.string.uuid(),
     slug: faker.helpers.slugify(`test-zone-${faker.string.uuid()}`),
+    clusters: [],
     ...overrides,
   } satisfies ZoneWithDetails
 }

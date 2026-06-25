@@ -1,6 +1,9 @@
 import type { Prisma } from '@prisma/client'
+import { ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
+import { VAULT_PLUGIN_NAME } from './vault.constant'
+import { buildProjectAutoSyncWhere } from '../project-datastore.utils'
 
 export const projectSelect = {
   id: true,
@@ -34,6 +37,15 @@ export type ProjectWithDetails = Prisma.ProjectGetPayload<{
 export const zoneSelect = {
   id: true,
   slug: true,
+  clusters: {
+    select: {
+      projects: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  },
 } satisfies Prisma.ZoneSelect
 
 export type ZoneWithDetails = Prisma.ZoneGetPayload<{
@@ -43,6 +55,13 @@ export type ZoneWithDetails = Prisma.ZoneGetPayload<{
 @Injectable()
 export class VaultDatastoreService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+
+  async getAutoSyncProjects(): Promise<ProjectWithDetails[]> {
+    return this.prisma.project.findMany({
+      select: projectSelect,
+      where: buildProjectAutoSyncWhere(VAULT_PLUGIN_NAME),
+    })
+  }
 
   async getAllProjects(): Promise<ProjectWithDetails[]> {
     return this.prisma.project.findMany({
@@ -74,6 +93,23 @@ export class VaultDatastoreService {
 
   async getAllZones(): Promise<ZoneWithDetails[]> {
     return this.prisma.zone.findMany({
+      select: zoneSelect,
+    })
+  }
+
+  async getAutoSyncZones(): Promise<ZoneWithDetails[]> {
+    return this.prisma.zone.findMany({
+      where: {
+        clusters: {
+          some: {
+            environments: {
+              some: {
+                project: buildProjectAutoSyncWhere(VAULT_PLUGIN_NAME),
+              },
+            },
+          },
+        },
+      },
       select: zoneSelect,
     })
   }
