@@ -2,10 +2,10 @@ import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { LogModule } from '../src/modules/core/log/log.module'
+import { LogService } from '../src/modules/core/log/log.service'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
-import { LogModule } from '../src/modules/log/log.module'
-import { LogService } from '../src/modules/log/log.service'
 
 const canRunLogE2E
   = Boolean(process.env.E2E)

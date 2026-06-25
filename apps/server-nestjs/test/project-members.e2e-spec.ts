@@ -6,11 +6,11 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { ProjectMembersService } from '../src/modules/core/project-members/project-members.service'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
-import { KeycloakClientService } from '../src/modules/keycloak/keycloak-client.service'
-import { ProjectMembersService } from '../src/modules/project-members/project-members.service'
+import { KeycloakClientService } from '../src/modules/plugins/keycloak/keycloak-client.service'
 
 const canRunProjectMembersE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
 

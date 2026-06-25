@@ -4,12 +4,12 @@ import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { ConfigurationService } from '../src/modules/infrastructure/configuration/configuration.service'
-import { projectRobotName, RegistryClientService, roRobotName, rwRobotName } from '../src/modules/registry/registry-client.service'
-import { makeProjectWithDetails } from '../src/modules/registry/registry-testing.utils'
-import { RegistryModule } from '../src/modules/registry/registry.module'
-import { RegistryService } from '../src/modules/registry/registry.service'
-import { getHostFromUrl, getProjectVaultPath } from '../src/modules/registry/registry.utils'
-import { VaultClientService } from '../src/modules/vault/vault-client.service'
+import { projectRobotName, RegistryClientService, roRobotName, rwRobotName } from '../src/modules/plugins/registry/registry-client.service'
+import { makeProjectWithDetails } from '../src/modules/plugins/registry/registry-testing.utils'
+import { RegistryModule } from '../src/modules/plugins/registry/registry.module'
+import { RegistryService } from '../src/modules/plugins/registry/registry.service'
+import { getHostFromUrl, getProjectVaultPath } from '../src/modules/plugins/registry/registry.utils'
+import { VaultClientService } from '../src/modules/plugins/vault/vault-client.service'
 
 const canRunRegistryE2E
   = Boolean(process.env.E2E)
