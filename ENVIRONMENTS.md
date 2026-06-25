@@ -166,6 +166,175 @@ Le `nginx-strangler` et `server-nestjs` sont inclus dans ce docker-compose et d�
 pnpm docker:dev
 ```
 
+## Référence des variables d'environnement
+
+### Variables communes
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `NODE_ENV` | `development` | Mode d'exécution : `development`, `production`, `test` |
+| `SERVER_HOST` | `localhost` | Interface d'écoute du serveur (NestJS) |
+| `SERVER_PORT` | `0` (dynamique) | Port du serveur (NestJS) |
+| `SESSION_SECRET` | — | Secret de signature des cookies de session (min 32 caractères) |
+| `CONTACT_EMAIL` | `cloudpinative-relations@interieur.gouv.fr` | Email de contact affiché dans l'interface |
+| `DEV_SETUP` | — | Active les données de démo au démarrage (`true`) |
+
+### Intégration / CI
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `INTEGRATION` | — | Active le mode intégration (`true`) |
+| `CI` | — | Active le mode CI (`true`) |
+| `APP_VERSION` | `unknown` | Version de l'application (prod uniquement) |
+
+---
+
+### Variables Keycloak
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `KEYCLOAK_PROTOCOL` | — | Protocole : `http` ou `https` |
+| `KEYCLOAK_DOMAIN` | — | Domaine Keycloak (host:port) |
+| `KEYCLOAK_PUBLIC_PROTOCOL` | `KEYCLOAK_PROTOCOL` | Protocole exposé publiquement |
+| `KEYCLOAK_PUBLIC_DOMAIN` | `KEYCLOAK_DOMAIN` | Domaine exposé publiquement |
+| `KEYCLOAK_REALM` | — | Nom du royaume |
+| `KEYCLOAK_CLIENT_ID` | — | Client ID côté backend |
+| `KEYCLOAK_CLIENT_SECRET` | — | Secret du client backend |
+| `KEYCLOAK_ADMIN` | — | Identifiant admin Keycloak |
+| `KEYCLOAK_ADMIN_PASSWORD` | — | Mot de passe admin Keycloak |
+| `KEYCLOAK_ADMIN_CLIENT_ID` | `admin-cli` | Client admin pour le royaume master |
+| `KEYCLOAK_REDIRECT_URI` | — | URL de redirection post-auth |
+| `KEYCLOAK_JWKS_CACHE_TTL_MS` | `300000` (5 min) | Cache TTL des JWKS en ms |
+| `KEYCLOAK_JWKS_TIMEOUT_MS` | `5000` (5 s) | Timeout de fetch JWKS en ms |
+| `KEYCLOAK_OPENID_CONFIGURATION_CACHE_TTL_MS` | `300000` (5 min) | Cache TTL openid-configuration en ms |
+| `ADMIN_KC_USER_ID` | — | IDs des admins Keycloak (liste CSV) |
+
+### Variables Base de données
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `DB_URL` | — | URL PostgreSQL (Prisma) |
+
+### Variables OpenCDS
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `OPENCDS_URL` | — | URL de l'API OpenCDS (vide = désactivé) |
+| `OPENCDS_API_TOKEN` | — | Token d'authentification |
+| `OPENCDS_API_TLS_REJECT_UNAUTHORIZED` | `true` | Vérification TLS (true / false) |
+
+### Variables client (Vite)
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `VITE_SERVER_HOST` | — | Hôte du serveur backend (client) |
+| `VITE_SERVER_PORT` | `4001` | Port du serveur backend (client) |
+| `VITE_KEYCLOAK_DOMAIN` | — | Domaine Keycloak (client) |
+| `VITE_KEYCLOAK_REALM` | — | Royaume Keycloak (client) |
+| `VITE_KEYCLOAK_PROTOCOL` | — | Protocole Keycloak (client) |
+| `VITE_KEYCLOAK_CLIENT_ID` | — | Client ID Keycloak (client) |
+| `VITE_KEYCLOAK_REDIRECT_URI` | `http://localhost:8080` | URL de redirection post-auth (client) |
+| `VITE_OPENCDS_ENABLED` | `false` | Active le module OpenCDS (client) |
+| `VITE_CONTACT_EMAIL` | — | Email de contact (client) |
+
+---
+
+### Variables ArgoCD
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `USE_ARGOCD` | `false` | Active le plugin ArgoCD (`true`) |
+| `ARGO_NAMESPACE` | `argocd` | Namespace ArgoCD |
+| `ARGOCD_URL` | — | URL publique ArgoCD |
+| `ARGOCD_INTERNAL_URL` | — | URL interne ArgoCD |
+| `ARGOCD_EXTRA_REPOSITORIES` | — | Répôts additionnels (JSON) |
+
+### Variables GitLab
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `USE_GITLAB` | `false` | Active le plugin GitLab (`true`) |
+| `GITLAB_URL` | — | URL publique GitLab |
+| `GITLAB_INTERNAL_URL` | — | URL interne GitLab |
+| `GITLAB_TOKEN` | — | Token d'authentification |
+| `GITLAB_MIRROR_TOKEN_EXPIRATION_DAYS` | `180` | Durée avant rotation token mirror (jours) |
+| `GITLAB_MIRROR_TOKEN_ROTATION_THRESHOLD_DAYS` | `90` | Seuil de rotation token mirror (jours) |
+
+### Variables Harbor (Registry)
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `USE_HARBOR` | `false` | Active le plugin Harbor (`true`) |
+| `HARBOR_URL` | — | URL publique Harbor |
+| `HARBOR_INTERNAL_URL` | — | URL interne Harbor |
+| `HARBOR_ADMIN` | — | Identifiant administrateur Harbor |
+| `HARBOR_ADMIN_PASSWORD` | — | Mot de passe administrateur Harbor |
+| `HARBOR_RULE_TEMPLATE` | — | Template de règle de rétention |
+| `HARBOR_RULE_COUNT` | — | Nombre de règles de rétention |
+| `HARBOR_RETENTION_CRON` | `0 22 2 * * *` | Cron de nettoyage Harbor |
+| `HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS` | `90` | Seuil de rotation des robots (jours) |
+| `HARBOR_PROJECT_SLUG_CACHE_TTL_MS` | `300000` (5 min) | Cache TTL des slugs projet (ms) |
+
+### Variables Nexus
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `USE_NEXUS` | `false` | Active le plugin Nexus (`true`) |
+| `NEXUS_URL` | — | URL publique Nexus |
+| `NEXUS_INTERNAL_URL` | — | URL interne Nexus |
+| `NEXUS_ADMIN` | — | Identifiant administrateur Nexus |
+| `NEXUS_ADMIN_PASSWORD` | — | Mot de passe administrateur Nexus |
+| `NEXUS__SECRET_EXPOSE_INTERNAL_URL` | — | Expose l'URL interne comme URL secrète (`true`) |
+
+### Variables SonarQube
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `USE_SONARQUBE` | `false` | Active le plugin SonarQube (`true`) |
+| `SONARQUBE_URL` | — | URL publique SonarQube |
+| `SONARQUBE_INTERNAL_URL` | — | URL interne SonarQube |
+| `SONAR_API_TOKEN` | — | Token d'API SonarQube |
+
+### Variables Service Chain
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `USE_SERVICE_CHAIN` | `false` | Active le plugin Service Chain (`true`) |
+
+### Variables Vault
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `USE_VAULT` | `false` | Active le plugin Vault (`true`) |
+| `VAULT_URL` | — | URL publique Vault |
+| `VAULT_INTERNAL_URL` | — | URL interne Vault |
+| `VAULT_TOKEN` | — | Token de service Vault |
+| `VAULT_KV_NAME` | `forge-dso` | Nom du secret KV Vault |
+| `VAULT__DEPLOY_VAULT_CONNECTION_IN_NS` | — | Déploie la connexion Vault dans les namespaces (`true`) |
+
+### Variables DSO (Environnements)
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `DSO_ENV_CHART_VERSION` | `dso-env-1.6.0` | Version du chart dso-env |
+| `DSO_NS_CHART_VERSION` | `dso-ns-1.1.5` | Version du chart dso-ns |
+
+### Variables plugins (mode mock)
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `MOCK_PLUGINS` | — | Active le mode mock des plugins (`true`) |
+| `PROJECTS_ROOT_DIR` | — | Dossier racine des projets |
+| `PLUGINS_DIR` | `/plugins` | Dossier des plugins externes |
+
+### Variables E2E (tests)
+
+| Variable | Défaut | Description |
+|----------|--------|-------------|
+| `E2E` | — | Active les tests E2E (`true`) |
+
+---
+
 ## Configuration pour le développement hybride avec un environnement d'intégration existant
 
 Le développement hybride branché sur l'environnement d'intégration suit cette organisation des composants:

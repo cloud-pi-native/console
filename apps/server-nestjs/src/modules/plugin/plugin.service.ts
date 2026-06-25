@@ -1,5 +1,5 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common'
 import { ArgoCDPluginService } from '../argocd/argocd-plugin.service'
 import { GitlabPluginService } from '../gitlab/gitlab-plugin.service'
 import { KeycloakPluginService } from '../keycloak/keycloak-plugin.service'
@@ -13,33 +13,30 @@ export class PluginService {
   private readonly logger = new Logger(PluginService.name)
 
   constructor(
-    @Inject(ArgoCDPluginService) private readonly argoCDPlugin: ArgoCDPluginService,
-    @Inject(GitlabPluginService) private readonly gitlabPlugin: GitlabPluginService,
-    @Inject(RegistryPluginService) private readonly registryPlugin: RegistryPluginService,
     @Inject(KeycloakPluginService) private readonly keycloakPlugin: KeycloakPluginService,
-    @Inject(NexusPluginService) private readonly nexusPlugin: NexusPluginService,
-    @Inject(SonarqubePluginService) private readonly sonarqubePlugin: SonarqubePluginService,
-    @Inject(VaultPluginService) private readonly vaultPlugin: VaultPluginService,
+    @Inject(VaultPluginService) @Optional() private readonly vaultPlugin?: VaultPluginService,
+    @Inject(ArgoCDPluginService) @Optional() private readonly argoCDPlugin?: ArgoCDPluginService,
+    @Inject(GitlabPluginService) @Optional() private readonly gitlabPlugin?: GitlabPluginService,
+    @Inject(NexusPluginService) @Optional() private readonly nexusPlugin?: NexusPluginService,
+    @Inject(RegistryPluginService) @Optional() private readonly registryPlugin?: RegistryPluginService,
+    @Inject(SonarqubePluginService) @Optional() private readonly sonarqubePlugin?: SonarqubePluginService,
   ) {}
 
   async infos(projectId: string): Promise<ServiceInfos[]> {
-    const plugins = [
-      ['argocd', () => this.argoCDPlugin.infos()],
-      ['gitlab', () => this.gitlabPlugin.infos()],
-      ['registry', () => this.registryPlugin.infos(projectId)],
+    const plugins: Array<[string, () => ServiceInfos | undefined | Promise<ServiceInfos | undefined>]> = [
+      ['argocd', () => this.argoCDPlugin?.infos()],
+      ['gitlab', () => this.gitlabPlugin?.infos()],
+      ['registry', () => this.registryPlugin?.infos(projectId)],
       ['keycloak', () => this.keycloakPlugin.infos()],
-      ['nexus', () => this.nexusPlugin.infos()],
-      ['sonarqube', () => this.sonarqubePlugin.infos()],
-      ['vault', () => this.vaultPlugin.infos()],
-    ] as const
+      ['nexus', () => this.nexusPlugin?.infos()],
+      ['sonarqube', () => this.sonarqubePlugin?.infos()],
+      ['vault', () => this.vaultPlugin?.infos()],
+    ]
 
-    const settled = await Promise.allSettled(plugins.map(([, loadInfos]) => loadInfos()))
-    return settled.flatMap((result, index) => {
-      const [pluginName] = plugins[index]
-      if (result.status === 'fulfilled') {
-        return [result.value]
-      }
-      this.logger.warn(`Skipping project service plugin ${pluginName} because infos() failed: ${result.reason instanceof Error ? result.reason.message : String(result.reason)}`)
+    const settled = await Promise.allSettled(plugins.map(([, fn]) => fn()))
+    return settled.flatMap((result, i) => {
+      if (result.status === 'fulfilled') return result.value ? [result.value] : []
+      this.logger.warn(`Skipping project service plugin ${plugins[i][0]} because infos() failed: ${result.reason instanceof Error ? result.reason.message : String(result.reason)}`)
       return []
     })
   }
