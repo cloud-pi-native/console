@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
+import { TerminusModule } from '@nestjs/terminus'
 import { AuthModule } from '../infrastructure/auth/auth.module'
 import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
 import { DatabaseModule } from '../infrastructure/database/database.module'
@@ -16,6 +18,7 @@ import { ServiceChainService } from './service-chain.service'
     DatabaseModule,
     EventsModule,
     UserPermissionModule,
+    TerminusModule,
   ],
   controllers: [ServiceChainController],
   providers: [OpenCdsClientService, ServiceChainHealthService, ServiceChainService],
