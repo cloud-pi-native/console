@@ -99,8 +99,8 @@ export class DeploymentService {
   }
 
   private async upsertProject(projectId: string) {
-    const projectWithDetails = await this.projectService.getProjectWithDetails(projectId)
+    const project = await this.projectService.get(projectId)
 
-    await this.eventEmitter.emitAsync('project.upsert', projectWithDetails)
+    await this.eventEmitter.emitAsync('project.upsert', project)
   }
 }

@@ -7,9 +7,9 @@
 
 ## 🎯 Progression globale
 
-![Progress](https://progress-bar.dev/7/?title=modularisation&width=400)
+![Progress](https://progress-bar.dev/21/?title=modularisation&width=400)
 
-**~7%** complété (1/18 modules métier migrés, 5/75 routes)
+**~21%** complété (3/18 modules métier migrés, 16/75 routes)
 
 ---
 
@@ -17,9 +17,9 @@
 
 | Statut | Nombre de modules | % du total |
 |--------|-------------------|------------|
-| ✅ Migré | 1 (ServiceChain) | ~6% |
+| ✅ Migré | 3 (ServiceChain, Project, ProjectMember) | ~17% |
 | 🚧 En cours | 0 | 0% |
-| 📅 Planifié | 17 | ~94% |
+| 📅 Planifié | 15 | ~83% |
 | ⏳ En attente de cartographie | 0 | 0% |
 
 ---
@@ -48,9 +48,45 @@ profitant de son isolement complet vis-à-vis du reste du codebase.
 | `POST` | `/api/v1/service-chains/:id/retry` | `ManageSystem` |
 | `POST` | `/api/v1/service-chains/validate/:id` | `ManageSystem` |
 
+### Project — migrés le 2026-05-28
+
+#### Project
+
+Module cœur de gestion des projets (CRUD, secrets, bulk actions, export CSV).
+Regroupe les sous-modules `project-core`, `project-secrets` et `project-bulk`
+découpés dans la cartographie Vague 4, implémités ici en un seul module
+unifié pour accélérer la migration.
+
+- **Routes** : 7 (`/api/v1/projects/...`)
+- **Auth** : Token (`x-dso-token`) + guards projet (`ProjectContextGuard`, `ProjectStatusGuard`, `ProjectLockedGuard`)
+- **Validation** : Contrats Zod via `projectContract` de `@cpn-console/shared` avec `ZodValidationPipe`
+- **Tests** : Controller + Service couverts (Vitest)
+
+| Méthode | Route | Permission |
+|---------|-------|------------|
+| `GET` | `/api/v1/projects/data` | `Manage` (admin) |
+| `GET` | `/api/v1/projects` | Authentifié |
+| `POST` | `/api/v1/projects` | `ManageProjects` (admin) + type `human` |
+| `POST` | `/api/v1/projects-bulk` | `Manage` (admin) |
+| `GET` | `/api/v1/projects/:projectId` | Authentifié + projet |
+| `GET` | `/api/v1/projects/:projectId/secrets` | Authentifié + projet (statut ≠ archived) |
+| `PUT` | `/api/v1/projects/:projectId` | Authentifié + projet (statut ≠ archived) |
+
+**Infrastructure créée/mise à jour** :
+- `ProjectContextGuard` + `Project` decorator : chargement du projet par id/slug, résolution des permissions via bitmask
+- `ProjectStatusGuard` + `@RequireProjectStatus()` : filtrage par statut du projet
+- `ProjectLockedGuard` : protection contre les modifications de projets verrouillés
+- `UserGuard` + `User` decorator : authentification token + injection du contexte utilisateur
+
+**Différences avec le legacy** :
+- Utilisation de `projectContract` de `@cpn-console/shared` pour les schemas de validation (cohérence client/serveur)
+- ZodValidationPipe au lieu de la validation ts-rest implicite
+- Les routes `secrets` et `bulk` sont fusiongées dans le module Project (pas de sous-modules séparés)
+- Pas de `DELETE /api/v1/projects/:projectId` (archivage) dans cette version initiale
+
 ### Infrastructure transverse déployée
 
-En support de cette migration, les éléments d'infrastructure suivants ont été
+En support de ces migrations, les éléments d'infrastructure suivants ont été
 créés :
 
 - **AuthModule** (`infrastructure/auth/`) : `AuthService` (validation token
@@ -67,6 +103,31 @@ créés :
 > désormais la même entrée publique (`AuthService.authenticate(request, ...)`),
 > mais les usages côté contrôleurs restent encore à homogénéiser au fil des
 > modules migrés.
+
+#### ProjectMember
+
+Module de gestion des membres projet (ajout, modification, suppression, liste).
+Dédié aux routes `/api/v1/projects/:projectId/members/...`.
+
+- **Routes** : 4 (`/api/v1/projects/:projectId/members/...`)
+- **Auth** : Token (`x-dso-token`) + guards projet (`ProjectContextGuard`, `ProjectStatusGuard`, `ProjectLockedGuard`)
+- **Validation** : Contrats Zod via `projectMemberContract` de `@cpn-console/shared`
+
+| Méthode | Route | Permission |
+|---------|-------|------------|
+| `GET` | `/api/v1/projects/:projectId/members` | `ListMembers` (admin) |
+| `POST` | `/api/v1/projects/:projectId/members` | `ManageMembers` (admin) + statut non archivé |
+| `PATCH` | `/api/v1/projects/:projectId/members` | `ManageMembers` (admin) + statut non archivé |
+| `DELETE` | `/api/v1/projects/:projectId/members/:userId` | `ManageMembers` (admin) ou auto-suppression + statut non archivé |
+
+**Fichiers** :
+- `src/modules/project/project-member.controller.ts`
+- Méthodes ajoutées dans `src/modules/project/project.service.ts`
+
+**Différences avec le legacy** :
+- Recherche par email non disponible (nécessite le hook Keycloak `user.retrieveUserByEmail`, non migré)
+- Retour de la liste complète des membres après chaque mutation (cohérence avec le legacy)
+- Événements `projectMember.upsert` et `projectMember.delete` via EventEmitter (remplacement du hook `projectMember.upsert`/`projectMember.delete`)
 
 ---
 
@@ -140,9 +201,9 @@ créés :
 ### Routes par statut
 
 - **Total** : ~75 routes métier
-- **Migrés** : 5 (~7%)
+- **Migrés** : 16 (~21%)
 - **En cours** : 0 (0%)
-- **Restants** : ~70 (~93%)
+- **Restants** : ~59 (~79%)
 
 ---
 
@@ -156,6 +217,7 @@ créés :
 | 09/02/2026 | Fin modularisation Auth (S4) - 20% complété |
 | 09/03/2026 | Point mi-parcours - 60% complété |
 | 26/03/2026 | Migration ServiceChain (OpenCDS) finalisée — 1er module métier migré |
+| 28/05/2026 | Migration du module **Project** (7 routes) — CRUD + secrets + bulk |
 | 06/04/2026 | Fin de modularisation - 100% complété |
 
 ---
@@ -187,6 +249,14 @@ créés :
 ---
 
 ## 🔄 Historique des changements
+
+### 2026-05-28
+- ✅ Migration du module **Project** — 7 routes : CRUD projets, secrets, bulk actions, export CSV
+- ✅ Migration du module **ProjectMember** — 4 routes : membres projet (list, add, patch, delete)
+- ✅ Création des guards projet : `ProjectContextGuard`, `ProjectStatusGuard`, `ProjectLockedGuard`
+- ✅ Création des décorateurs `@Project()` et `@RequireProjectStatus()`
+- ✅ Utilisation de `projectContract` de `@cpn-console/shared` pour la validation Zod
+- ✅ Build et lint verts (server-nestjs)
 
 ### 2026-04-09
 - ✅ Migration du module **ServiceChain (OpenCDS)** — 5 routes, proxy HTTP vers API externe

@@ -1,8 +1,10 @@
+import type { projectContract } from '@cpn-console/shared'
 import type { Prisma, ProjectMembers, User } from '@prisma/client'
-import { faker } from '@faker-js/faker'
 import type { ProjectContext } from '../infrastructure/permission/project/project.guard.js'
 import type { ProjectDetails } from './project-queries.utils.js'
+import { randomUUID } from 'node:crypto'
 import { PROJECT_PERMS } from '@cpn-console/shared'
+import { faker } from '@faker-js/faker'
 
 export function makeUser(overrides: Partial<User> = {}): User {
   return {
@@ -81,9 +83,9 @@ export function makeProjectContext(overrides: Partial<ProjectContext> = {}): Pro
   }
 }
 
-type Project = Prisma.ProjectGetPayload<{ select: typeof import('./project-queries.utils.js').projectSelect }>
+type ProjectSelect = Prisma.ProjectGetPayload<{ select: typeof import('./project-queries.utils.js').projectSelect }>
 
-export function makeProject(overrides: Partial<Project> = {}): Project {
+export function makeProject(overrides: Partial<ProjectSelect> = {}): ProjectSelect {
   const id = overrides.id ?? faker.string.uuid()
   return {
     id,
@@ -135,4 +137,26 @@ export function makeProjectWithMembersResult(
   members: Array<Prisma.ProjectMembersGetPayload<{ include: { user: true } }>> = [],
 ): ProjectWithMembers {
   return { ...project, members } as ProjectWithMembers
+}
+
+export function makeCreateProjectBody(overrides: Partial<typeof projectContract.createProject.body._type> = {}): typeof projectContract.createProject.body._type {
+  return {
+    name: faker.string.alphanumeric({ length: faker.number.int({ min: 2, max: 20 }) }).toLowerCase(),
+    description: faker.lorem.sentence(),
+    limitless: true,
+    hprodCpu: faker.number.float({ min: 0, max: 10, fractionDigits: 2 }),
+    hprodGpu: faker.number.float({ min: 0, max: 10, fractionDigits: 2 }),
+    hprodMemory: faker.number.float({ min: 0, max: 10, fractionDigits: 2 }),
+    prodCpu: faker.number.float({ min: 0, max: 10, fractionDigits: 2 }),
+    prodGpu: faker.number.float({ min: 0, max: 10, fractionDigits: 2 }),
+    prodMemory: faker.number.float({ min: 0, max: 10, fractionDigits: 2 }),
+    ...overrides,
+  }
+}
+
+export function makeListProjectsQuery(overrides: Partial<typeof projectContract.listProjects.query._type> = {}): typeof projectContract.listProjects.query._type {
+  return {
+    filter: 'member',
+    ...overrides,
+  }
 }
