@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { ConditionalModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
 import { DeploymentModule } from './modules/deployment/deployment.module'
 import { EnvironmentModule } from './modules/environment/environment.module'
@@ -16,6 +17,7 @@ import { ProjectModule } from './modules/project/project.module'
 import { ServiceChainModule } from './modules/service-chain/service-chain.module'
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module'
 import { VersionModule } from './modules/version/version.module'
+import { optIn } from './utils/config.utils'
 
 @Module({
   imports: [
@@ -24,7 +26,7 @@ import { VersionModule } from './modules/version/version.module'
     KeycloakModule,
     ScheduleModule.forRoot(),
     SystemSettingsModule,
-    ServiceChainModule,
+    ConditionalModule.registerWhen(ServiceChainModule, optIn('USE_SERVICE_CHAIN')),
     ProjectModule,
     ProjectHooksModule,
     ProjectSecretsModule,
