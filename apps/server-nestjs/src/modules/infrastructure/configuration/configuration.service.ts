@@ -128,32 +128,36 @@ export class ConfigurationService {
   }
 
   getInternalOrPublicGitlabUrl() {
-    const url = this.gitlabInternalUrl ?? this.gitlabUrl
-    this.logger.log(`GitLab URL resolved: ${url} (${this.gitlabInternalUrl ? 'internal' : 'public'})`)
-    return url
+    return this.getInternalOrPublicUrl("GitLab", this.gitlabUrl, this.gitlabInternalUrl)
   }
 
   getInternalOrPublicVaultUrl() {
-    const url = this.vaultInternalUrl ?? this.vaultUrl
-    this.logger.log(`Vault URL resolved: ${url} (${this.vaultInternalUrl ? 'internal' : 'public'})`)
-    return url
+    return this.getInternalOrPublicUrl("Vault", this.vaultUrl, this.vaultInternalUrl)
   }
 
   getInternalOrPublicHarborUrl() {
-    const url = this.harborInternalUrl ?? this.harborUrl
-    this.logger.log(`Harbor URL resolved: ${url} (${this.harborInternalUrl ? 'internal' : 'public'})`)
-    return url
+    return this.getInternalOrPublicUrl("Harbor", this.harborUrl, this.harborInternalUrl)
   }
 
   getInternalOrPublicNexusUrl() {
-    const url = this.nexusInternalUrl ?? this.nexusUrl
-    this.logger.log(`Nexus URL resolved: ${url} (${this.nexusInternalUrl ? 'internal' : 'public'})`)
-    return url
+    return this.getInternalOrPublicUrl("Nexus", this.nexusUrl, this.nexusInternalUrl)
   }
 
   getInternalOrPublicSonarqubeUrl() {
-    const url = this.sonarqubeInternalUrl ?? this.sonarqubeUrl
-    this.logger.log(`SonarQube URL resolved: ${url} (${this.sonarqubeInternalUrl ? 'internal' : 'public'})`)
+    return this.getInternalOrPublicUrl("SonarQube", this.sonarqubeUrl, this.sonarqubeInternalUrl)
+  }
+
+  getInternalOrPublicUrl(name: string, publicUrl: string | undefined, internalUrl: string | undefined): string | undefined {
+    const trimedInternalUrl = internalUrl?.trim()
+    const trimmedPublicUrl = publicUrl?.trim()
+    const url = trimedInternalUrl || trimmedPublicUrl || undefined
+    let label = 'none'
+    if (trimedInternalUrl) {
+      label = 'internal'
+    } else if (trimmedPublicUrl) {
+      label = 'public'
+    }
+    this.logger.log(`${name} URL resolved: ${url ?? 'none'} (${label})`)
     return url
   }
 

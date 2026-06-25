@@ -73,40 +73,73 @@ describe('configurationService', () => {
   })
 
   describe('internal-or-public URL helpers', () => {
-    it('should prefer internal over public URL for GitLab, Vault, Harbor, Nexus, SonarQube', () => {
-      service.gitlabInternalUrl = 'https://gitlab.internal'
-      service.vaultInternalUrl = 'https://vault.internal'
-      service.harborInternalUrl = 'https://harbor.internal'
-      service.nexusInternalUrl = 'https://nexus.internal'
-      service.sonarqubeInternalUrl = 'https://sonar.internal'
+    it('should prefer internal over public URL for GitLab, Vault, Harbor, Nexus, SonarQube', async () => {
+      vi.stubEnv('GITLAB_URL', 'https://gitlab.public')
+      vi.stubEnv('VAULT_URL', 'https://vault.public')
+      vi.stubEnv('HARBOR_URL', 'https://harbor.public')
+      vi.stubEnv('NEXUS_URL', 'https://nexus.public')
+      vi.stubEnv('SONARQUBE_URL', 'https://sonar.public')
+      vi.stubEnv('GITLAB_INTERNAL_URL', 'https://gitlab.internal')
+      vi.stubEnv('VAULT_INTERNAL_URL', 'https://vault.internal')
+      vi.stubEnv('HARBOR_INTERNAL_URL', 'https://harbor.internal')
+      vi.stubEnv('NEXUS_INTERNAL_URL', 'https://nexus.internal')
+      vi.stubEnv('SONARQUBE_INTERNAL_URL', 'https://sonar.internal')
 
-      expect(service.getInternalOrPublicGitlabUrl()).toBe('https://gitlab.internal')
-      expect(service.getInternalOrPublicVaultUrl()).toBe('https://vault.internal')
-      expect(service.getInternalOrPublicHarborUrl()).toBe('https://harbor.internal')
-      expect(service.getInternalOrPublicNexusUrl()).toBe('https://nexus.internal')
-      expect(service.getInternalOrPublicSonarqubeUrl()).toBe('https://sonar.internal')
+      const testService = await Test.createTestingModule({
+        providers: [ConfigurationService],
+      }).compile().then(m => m.get<ConfigurationService>(ConfigurationService))
+
+      expect(testService.getInternalOrPublicGitlabUrl()).toBe('https://gitlab.internal')
+      expect(testService.getInternalOrPublicVaultUrl()).toBe('https://vault.internal')
+      expect(testService.getInternalOrPublicHarborUrl()).toBe('https://harbor.internal')
+      expect(testService.getInternalOrPublicNexusUrl()).toBe('https://nexus.internal')
+      expect(testService.getInternalOrPublicSonarqubeUrl()).toBe('https://sonar.internal')
     })
 
-    it('should fall back to public URL for GitLab, Vault, Harbor, Nexus, SonarQube when internal is unset', () => {
-      service.gitlabUrl = 'https://gitlab.public'
-      service.vaultUrl = 'https://vault.public'
-      service.harborUrl = 'https://harbor.public'
-      service.nexusUrl = 'https://nexus.public'
-      service.sonarqubeUrl = 'https://sonar.public'
+    it('should fall back to public URL for GitLab, Vault, Harbor, Nexus, SonarQube when internal is unset', async () => {
+      vi.stubEnv('GITLAB_URL', 'https://gitlab.public')
+      vi.stubEnv('GITLAB_INTERNAL_URL', '')
+      vi.stubEnv('VAULT_URL', 'https://vault.public')
+      vi.stubEnv('VAULT_INTERNAL_URL', '')
+      vi.stubEnv('HARBOR_URL', 'https://harbor.public')
+      vi.stubEnv('HARBOR_INTERNAL_URL', '')
+      vi.stubEnv('NEXUS_URL', 'https://nexus.public')
+      vi.stubEnv('NEXUS_INTERNAL_URL', '')
+      vi.stubEnv('SONARQUBE_URL', 'https://sonar.public')
+      vi.stubEnv('SONARQUBE_INTERNAL_URL', '')
 
-      expect(service.getInternalOrPublicGitlabUrl()).toBe('https://gitlab.public')
-      expect(service.getInternalOrPublicVaultUrl()).toBe('https://vault.public')
-      expect(service.getInternalOrPublicHarborUrl()).toBe('https://harbor.public')
-      expect(service.getInternalOrPublicNexusUrl()).toBe('https://nexus.public')
-      expect(service.getInternalOrPublicSonarqubeUrl()).toBe('https://sonar.public')
+      const testService = await Test.createTestingModule({
+        providers: [ConfigurationService],
+      }).compile().then(m => m.get<ConfigurationService>(ConfigurationService))
+
+      expect(testService.getInternalOrPublicGitlabUrl()).toBe('https://gitlab.public')
+      expect(testService.getInternalOrPublicVaultUrl()).toBe('https://vault.public')
+      expect(testService.getInternalOrPublicHarborUrl()).toBe('https://harbor.public')
+      expect(testService.getInternalOrPublicNexusUrl()).toBe('https://nexus.public')
+      expect(testService.getInternalOrPublicSonarqubeUrl()).toBe('https://sonar.public')
     })
 
-    it('should return undefined for internal-or-public URL when neither side is configured', () => {
-      expect(service.getInternalOrPublicGitlabUrl()).toBeUndefined()
-      expect(service.getInternalOrPublicVaultUrl()).toBeUndefined()
-      expect(service.getInternalOrPublicHarborUrl()).toBeUndefined()
-      expect(service.getInternalOrPublicNexusUrl()).toBeUndefined()
-      expect(service.getInternalOrPublicSonarqubeUrl()).toBeUndefined()
+    it('should return undefined for internal-or-public URL when neither side is configured', async () => {
+      vi.stubEnv('GITLAB_URL', '')
+      vi.stubEnv('GITLAB_INTERNAL_URL', '')
+      vi.stubEnv('VAULT_URL', '')
+      vi.stubEnv('VAULT_INTERNAL_URL', '')
+      vi.stubEnv('HARBOR_URL', '')
+      vi.stubEnv('HARBOR_INTERNAL_URL', '')
+      vi.stubEnv('NEXUS_URL', '')
+      vi.stubEnv('NEXUS_INTERNAL_URL', '')
+      vi.stubEnv('SONARQUBE_URL', '')
+      vi.stubEnv('SONARQUBE_INTERNAL_URL', '')
+
+      const testService = await Test.createTestingModule({
+        providers: [ConfigurationService],
+      }).compile().then(m => m.get<ConfigurationService>(ConfigurationService))
+
+      expect(testService.getInternalOrPublicGitlabUrl()).toBeUndefined()
+      expect(testService.getInternalOrPublicVaultUrl()).toBeUndefined()
+      expect(testService.getInternalOrPublicHarborUrl()).toBeUndefined()
+      expect(testService.getInternalOrPublicNexusUrl()).toBeUndefined()
+      expect(testService.getInternalOrPublicSonarqubeUrl()).toBeUndefined()
     })
   })
 
@@ -173,6 +206,8 @@ describe('configurationService', () => {
     })
 
     it('should disable TLS verification for Open CDS only when explicitly set to false', async () => {
+      vi.stubEnv('OPENCDS_API_TLS_REJECT_UNAUTHORIZED', '')
+
       const defaultService = await Test.createTestingModule({
         providers: [ConfigurationService],
       }).compile().then(m => m.get<ConfigurationService>(ConfigurationService))
