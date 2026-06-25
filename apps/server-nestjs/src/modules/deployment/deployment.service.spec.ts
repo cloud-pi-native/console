@@ -17,7 +17,7 @@ const mockDeploymentDatastoreService = {
 }
 
 const mockProjectService = {
-  getProjectWithDetails: vi.fn(),
+  get: vi.fn(),
 }
 
 const mockEventEmitter = {
@@ -111,7 +111,7 @@ describe('deploymentService', () => {
       const createdDeployment = { id: deploymentId }
 
       mockDeploymentDatastoreService.createDeployment.mockResolvedValue(createdDeployment)
-      mockProjectService.getProjectWithDetails.mockResolvedValue(mockProject)
+      mockProjectService.get.mockResolvedValue(mockProject)
       mockEventEmitter.emitAsync.mockResolvedValue([])
 
       const result = await service.createDeployment(projectId, validCreateDeployment)
@@ -134,7 +134,7 @@ describe('deploymentService', () => {
         },
       })
 
-      expect(mockProjectService.getProjectWithDetails).toHaveBeenCalledWith(projectId)
+      expect(mockProjectService.get).toHaveBeenCalledWith(projectId)
       expect(mockEventEmitter.emitAsync).toHaveBeenCalledWith('project.upsert', mockProject)
       expect(result).toEqual(createdDeployment)
     })
@@ -154,7 +154,7 @@ describe('deploymentService', () => {
 
       mockDeploymentDatastoreService.getDeploymentById.mockResolvedValue(existingDeployment)
       mockDeploymentDatastoreService.updateDeployment.mockResolvedValue(updatedDeployment)
-      mockProjectService.getProjectWithDetails.mockResolvedValue(mockProject)
+      mockProjectService.get.mockResolvedValue(mockProject)
       mockEventEmitter.emitAsync.mockResolvedValue([])
 
       const result = await service.updateDeployment(deploymentId, validUpdateDeployment)
@@ -172,7 +172,7 @@ describe('deploymentService', () => {
         }),
       )
 
-      expect(mockProjectService.getProjectWithDetails).toHaveBeenCalledWith(projectId)
+      expect(mockProjectService.get).toHaveBeenCalledWith(projectId)
       expect(mockEventEmitter.emitAsync).toHaveBeenCalledWith('project.upsert', mockProject)
       expect(result).toEqual(updatedDeployment)
     })
@@ -194,13 +194,13 @@ describe('deploymentService', () => {
         id: deploymentId,
         projectId,
       })
-      mockProjectService.getProjectWithDetails.mockResolvedValue(mockProject)
+      mockProjectService.get.mockResolvedValue(mockProject)
       mockEventEmitter.emitAsync.mockResolvedValue([])
 
       await service.deleteDeployment(deploymentId)
 
       expect(mockDeploymentDatastoreService.deleteDeployment).toHaveBeenCalledWith(deploymentId)
-      expect(mockProjectService.getProjectWithDetails).toHaveBeenCalledWith(projectId)
+      expect(mockProjectService.get).toHaveBeenCalledWith(projectId)
       expect(mockEventEmitter.emitAsync).toHaveBeenCalledWith('project.upsert', mockProject)
     })
   })
@@ -208,13 +208,13 @@ describe('deploymentService', () => {
   describe('deleteAllDeploymentsByProjectId', () => {
     it('should delete all deployments and upsert project', async () => {
       mockDeploymentDatastoreService.deleteAllDeploymentsByProjectId.mockResolvedValue(undefined)
-      mockProjectService.getProjectWithDetails.mockResolvedValue(mockProject)
+      mockProjectService.get.mockResolvedValue(mockProject)
       mockEventEmitter.emitAsync.mockResolvedValue([])
 
       await service.deleteAllDeploymentsByProjectId(projectId)
 
       expect(mockDeploymentDatastoreService.deleteAllDeploymentsByProjectId).toHaveBeenCalledWith(projectId)
-      expect(mockProjectService.getProjectWithDetails).toHaveBeenCalledWith(projectId)
+      expect(mockProjectService.get).toHaveBeenCalledWith(projectId)
       expect(mockEventEmitter.emitAsync).toHaveBeenCalledWith('project.upsert', mockProject)
     })
   })
