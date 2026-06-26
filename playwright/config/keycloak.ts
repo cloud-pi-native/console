@@ -18,7 +18,7 @@ export function loadKeycloakConfig(): KeycloakConfig {
 
   return {
     url,
-    realm: process.env.KEYCLOAK_REALM?.trim() || 'cloud-pi-native',
+    realm: process.env.KEYCLOAK_REALM?.trim() || 'dso',
     adminUser: process.env.KEYCLOAK_ADMIN_USERNAME?.trim() || 'admin',
     adminPass: process.env.KEYCLOAK_ADMIN_PASSWORD?.trim() || 'admin',
     clientFrontend: process.env.KEYCLOAK_CLIENT_FRONTEND || 'dso-console-frontend',

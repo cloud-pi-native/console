@@ -2,12 +2,7 @@ import type { ServiceInfos } from '@cpn-console/hooks'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
-
-const DEFAULT_ADMIN_GROUP_PATH = '/console/admin'
-const DEFAULT_AUDITOR_GROUP_PATH = '/console/readonly'
-const DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX = '/console/admin'
-const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX = '/console/developer,/console/devops'
-const DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX = '/console/readonly'
+import { DEFAULT_ADMIN_GROUP_PATH, DEFAULT_AUDITOR_GROUP_PATH, DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX } from './gitlab.constants'
 
 @Injectable()
 export class GitlabPluginService {

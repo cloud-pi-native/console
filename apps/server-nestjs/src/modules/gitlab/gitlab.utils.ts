@@ -65,9 +65,9 @@ export function generateAccessLevelMapping(
 ): Map<string, ProjectAccessLevel> {
   const getAccessLevelFromOidcGroup = (oidcGroup: string | null): ProjectAccessLevel | null => {
     if (!oidcGroup) return null
-    if (groupPaths.reporter.includes(oidcGroup)) return AccessLevel.REPORTER
-    if (groupPaths.developer.includes(oidcGroup)) return AccessLevel.DEVELOPER
     if (groupPaths.maintainer.includes(oidcGroup)) return AccessLevel.MAINTAINER
+    if (groupPaths.developer.includes(oidcGroup)) return AccessLevel.DEVELOPER
+    if (groupPaths.reporter.includes(oidcGroup)) return AccessLevel.REPORTER
     return null
   }
 
@@ -75,14 +75,15 @@ export function generateAccessLevelMapping(
     project.roles.map(role => [role.id, getAccessLevelFromOidcGroup(role.oidcGroup)]),
   )
 
-  return new Map<string, ProjectAccessLevel>(project.members.map((membership) => {
-    let highest: ProjectAccessLevel | null = null
-    for (const roleId of membership.roleIds) {
+  return project.members.reduce((acc, membership) => {
+    const highest = membership.roleIds.reduce((highest: ProjectAccessLevel | null, roleId) => {
       const level = roleAccessLevelById.get(roleId)
-      if (level !== null && level !== undefined && (highest === null || level > highest)) highest = level
-    }
-    return [membership.user.id, highest ?? AccessLevel.GUEST] as const
-  }))
+      if (level !== null && level !== undefined && (highest === null || level > highest)) return level
+      return highest
+    }, null)
+    acc.set(membership.user.id, highest ?? AccessLevel.GUEST)
+    return acc
+  }, new Map<string, ProjectAccessLevel>())
 }
 
 export function generateGitlabCIConfigContent() {

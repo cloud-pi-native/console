@@ -195,6 +195,8 @@ describe('sonarqubeService', () => {
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/developer` }))
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: '/console/readonly' }))
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: '/console/security' }))
+      expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/developer`, permission: 'issueadmin' }))
+      expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/developer`, permission: 'securityhotspotadmin' }))
     })
 
     it('should not recreate user or write vault when both user and secret exist', async () => {
