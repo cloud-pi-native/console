@@ -2,6 +2,7 @@ import type { projectContract } from '@cpn-console/shared'
 import type { ConfigType } from '@nestjs/config'
 import type { Prisma } from '@prisma/client'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
+import type { CreateProjectBody, UpdateProjectBody } from '../infrastructure/clean-types/controller-body.types'
 import type { ProjectDataExport, ProjectUpdateContext, ProjectWithDetails } from './project-queries.utils'
 import { AdminAuthorized } from '@cpn-console/shared'
 import { BadRequestException, ForbiddenException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common'
@@ -90,7 +91,7 @@ export class ProjectService {
 
   @StartActiveSpan()
   async create(
-    body: typeof projectContract.createProject.body._type,
+    body: CreateProjectBody,
     requestorUserId: string,
     requestId?: string,
   ): Promise<ProjectWithDetails> {
@@ -134,7 +135,7 @@ export class ProjectService {
   }
 
   async update(
-    body: typeof projectContract.updateProject.body._type,
+    body: UpdateProjectBody,
     user: UserContext,
     projectId: string,
     requestId?: string,
@@ -266,7 +267,7 @@ export class ProjectService {
   }
 
   private stripProjectUpdateBody(
-    body: typeof projectContract.updateProject.body._type,
+    body: UpdateProjectBody,
     user: UserContext,
     project: ProjectUpdateContext,
   ): { effectiveData: Record<string, unknown>, strippedKeys: string[] } {

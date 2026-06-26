@@ -1,5 +1,6 @@
 import type { projectContract } from '@cpn-console/shared'
 import type { Prisma, ProjectMembers, User } from '@prisma/client'
+import type { CreateProjectBody } from '../infrastructure/clean-types/controller-body.types'
 import type { ProjectContext } from '../infrastructure/permission/project/project.guard'
 import type { projectSelect, ProjectWithDetails } from './project-queries.utils'
 import { PROJECT_PERMS } from '@cpn-console/shared'
@@ -138,7 +139,7 @@ export function makeProjectWithMembersResult(
   return { ...project, members } as ProjectWithMembers
 }
 
-export function makeCreateProjectBody(overrides: Partial<typeof projectContract.createProject.body._type> = {}): typeof projectContract.createProject.body._type {
+export function makeCreateProjectBody(overrides: Partial<CreateProjectBody> = {}): CreateProjectBody {
   return {
     name: faker.string.alphanumeric({ length: faker.number.int({ min: 2, max: 20 }) }).toLowerCase(),
     description: faker.lorem.sentence(),
