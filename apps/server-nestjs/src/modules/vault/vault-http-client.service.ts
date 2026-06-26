@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
@@ -19,7 +19,7 @@ export type VaultErrorKind
 
 export class VaultError extends Error {
   readonly kind: VaultErrorKind
-  readonly status?: number
+  readonly status?: HttpStatus
   readonly method?: string
   readonly path?: string
   readonly statusText?: string
@@ -28,7 +28,7 @@ export class VaultError extends Error {
   constructor(
     kind: VaultErrorKind,
     message: string,
-    details: { status?: number, method?: string, path?: string, statusText?: string, reasons?: string[] } = {},
+    details: { status?: HttpStatus, method?: string, path?: string, statusText?: string, reasons?: string[] } = {},
   ) {
     super(message)
     this.name = 'VaultError'
@@ -113,7 +113,7 @@ export class VaultHttpClientService {
   }
 
   private async handleResponse<T>(response: Response, method: string, path: string): Promise<T | null> {
-    if (response.status === 204) return null
+    if (response.status === HttpStatus.NO_CONTENT) return null
 
     if (!response.ok) {
       await this.throwForStatus(response, method, path)

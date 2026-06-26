@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
@@ -10,7 +10,7 @@ export interface NexusFetchOptions {
 }
 
 export interface NexusResponse<T = unknown> {
-  status: number
+  status: HttpStatus
   data: T | null
 }
 
@@ -21,7 +21,7 @@ export type NexusErrorKind
 
 export class NexusError extends Error {
   readonly kind: NexusErrorKind
-  readonly status?: number
+  readonly status?: HttpStatus
   readonly method?: string
   readonly path?: string
   readonly statusText?: string
@@ -29,7 +29,7 @@ export class NexusError extends Error {
   constructor(
     kind: NexusErrorKind,
     message: string,
-    details: { status?: number, method?: string, path?: string, statusText?: string } = {},
+    details: { status?: HttpStatus, method?: string, path?: string, statusText?: string } = {},
   ) {
     super(message)
     this.name = 'NexusError'
@@ -119,7 +119,7 @@ export class NexusHttpClientService {
 }
 
 async function handleResponse<T>(response: Response): Promise<NexusResponse<T>> {
-  if (response.status === 204) return { status: response.status, data: null }
+  if (response.status === HttpStatus.NO_CONTENT) return { status: response.status, data: null }
   const contentType = response.headers.get('content-type') ?? ''
   const parsed = contentType.includes('application/json')
     ? await response.json()

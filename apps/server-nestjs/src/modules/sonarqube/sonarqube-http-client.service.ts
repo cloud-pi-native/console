@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 
@@ -8,7 +8,7 @@ export interface SonarqubeFetchOptions {
 }
 
 export interface SonarqubeResponse<T = unknown> {
-  status: number
+  status: HttpStatus
   data: T | null
 }
 
@@ -16,14 +16,14 @@ export type SonarqubeErrorKind = 'NotConfigured' | 'ClientError' | 'ServerError'
 
 export class SonarqubeError extends Error {
   readonly kind: SonarqubeErrorKind
-  readonly status?: number
+  readonly status?: HttpStatus
   readonly method?: string
   readonly path?: string
 
   constructor(
     kind: SonarqubeErrorKind,
     message: string,
-    details: { status?: number, method?: string, path?: string } = {},
+    details: { status?: HttpStatus, method?: string, path?: string } = {},
   ) {
     super(message)
     this.name = 'SonarqubeError'
@@ -99,7 +99,7 @@ function formatErrorMessage(status: number, data: unknown): string {
 }
 
 async function handleResponse<T>(response: Response): Promise<SonarqubeResponse<T>> {
-  if (response.status === 204) return { status: response.status, data: null }
+  if (response.status === HttpStatus.NO_CONTENT) return { status: response.status, data: null }
   const contentType = response.headers.get('content-type') ?? ''
   const parsed = contentType.includes('application/json')
     ? await response.json()

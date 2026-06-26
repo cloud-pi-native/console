@@ -1,8 +1,9 @@
+import type { HttpStatus } from '@nestjs/common'
 import type { Response } from 'undici'
 
 export class OpenCdsClientError extends Error {
   constructor(
-    public readonly status: number,
+    public readonly status: HttpStatus,
     public readonly statusText: string,
     public readonly body?: string,
   ) {
