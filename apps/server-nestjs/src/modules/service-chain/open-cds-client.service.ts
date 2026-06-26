@@ -1,3 +1,4 @@
+import type { HttpStatus } from '@nestjs/common'
 import type { Dispatcher, HeadersInit } from 'undici'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Agent, fetch, Headers, ProxyAgent } from 'undici'
@@ -19,7 +20,7 @@ export interface OpenCdsRequestOptions {
 
 export class OpenCdsClientError extends Error {
   constructor(
-    public readonly status: number,
+    public readonly status: HttpStatus,
     public readonly statusText: string,
     public readonly body?: string,
   ) {

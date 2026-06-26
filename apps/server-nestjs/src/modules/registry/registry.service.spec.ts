@@ -1,6 +1,7 @@
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
+import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
@@ -132,9 +133,9 @@ describe('registryService', () => {
       const project = makeProjectWithDetails()
       client.addGroupMember.mockImplementation(async (_projectName, body) => {
         if (body.member_group.group_name === `/${project.slug}/console/admin` && body.role_id === 2) {
-          return { status: 400, data: null }
+          return { status: HttpStatus.BAD_REQUEST, data: null }
         }
-        return { status: 201, data: null }
+        return { status: HttpStatus.CREATED, data: null }
       })
 
       await expect(service.handleUpsert(project)).resolves.toEqual({
@@ -301,7 +302,7 @@ describe('registryService', () => {
     })
 
     it('should not delete project when it does not exist', async () => {
-      client.getProjectByName.mockResolvedValueOnce({ status: 404, data: null })
+      client.getProjectByName.mockResolvedValueOnce({ status: HttpStatus.NOT_FOUND, data: null })
       await service.handleDelete(makeProjectWithDetails())
       expect(client.deleteProjectByName).not.toHaveBeenCalled()
     })

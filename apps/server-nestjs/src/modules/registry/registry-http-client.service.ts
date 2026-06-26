@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { encodeBasicAuth } from './registry.utils'
@@ -13,7 +13,7 @@ export interface RegistryFetchOptions {
 }
 
 export interface RegistryResponse<T = unknown> {
-  status: number
+  status: HttpStatus
   data: T | null
 }
 
@@ -23,7 +23,7 @@ export type RegistryErrorKind
 
 export class RegistryError extends Error {
   readonly kind: RegistryErrorKind
-  readonly status?: number
+  readonly status?: HttpStatus
   readonly method?: string
   readonly path?: string
   readonly statusText?: string
@@ -31,7 +31,7 @@ export class RegistryError extends Error {
   constructor(
     kind: RegistryErrorKind,
     message: string,
-    details: { status?: number, method?: string, path?: string, statusText?: string } = {},
+    details: { status?: HttpStatus, method?: string, path?: string, statusText?: string } = {},
   ) {
     super(message)
     this.name = 'RegistryError'
@@ -112,7 +112,7 @@ export class RegistryHttpClientService {
 }
 
 async function handleResponse<T>(response: Response): Promise<RegistryResponse<T>> {
-  if (response.status === 204) return { status: response.status, data: null }
+  if (response.status === HttpStatus.NO_CONTENT) return { status: response.status, data: null }
   const contentType = response.headers.get('content-type') ?? ''
   const parsed = contentType.includes('application/json')
     ? await response.json()
