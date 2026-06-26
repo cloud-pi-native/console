@@ -125,9 +125,9 @@ describe('registryService', () => {
         { groupName: '/console/security', roleId: 3 },
         { groupName: `/${project.slug}/console/readonly`, roleId: 3 },
         { groupName: `/${project.slug}/console/security`, roleId: 3 },
-        { groupName: `/${project.slug}/console/developer`, roleId: 2 },
-        { groupName: `/${project.slug}/console/devops`, roleId: 4 },
-        { groupName: `/${project.slug}/console/admin`, roleId: 1 },
+        { groupName: `/${project.slug}/console/developer`, roleId: 3 },
+        { groupName: `/${project.slug}/console/devops`, roleId: 3 },
+        { groupName: `/${project.slug}/console/admin`, roleId: 2 },
       ]
 
       expect(registry.addGroupMember).toHaveBeenCalledTimes(expected.length)
@@ -145,7 +145,7 @@ describe('registryService', () => {
     it('reconciles an existing group membership when role differs', async () => {
       const project = makeProjectWithDetails()
       registry.getGroupMembers.mockResolvedValueOnce(makeOkResponse([
-        { id: 10, entity_name: `/${project.slug}/console/developer`, entity_type: 'g', role_id: 3 },
+        { id: 10, entity_name: `/${project.slug}/console/admin`, entity_type: 'g', role_id: 3 },
       ]))
 
       await service.handleUpsert(project)
@@ -154,16 +154,16 @@ describe('registryService', () => {
       expect(registry.addGroupMember).toHaveBeenCalledWith(project.slug, {
         role_id: 2,
         member_group: {
-          group_name: `/${project.slug}/console/developer`,
+          group_name: `/${project.slug}/console/admin`,
           group_type: 3,
         },
       })
     })
 
-    it('returns a KO result when Maintainer membership creation fails', async () => {
+    it('returns a KO result when project admin membership creation fails', async () => {
       const project = makeProjectWithDetails()
       registry.addGroupMember.mockImplementation(async (_projectName, body) => {
-        if (body.member_group.group_name === `/${project.slug}/console/devops` && body.role_id === 4) {
+        if (body.member_group.group_name === `/${project.slug}/console/admin` && body.role_id === 2) {
           return { status: 400, data: null }
         }
         return { status: 201, data: null }
@@ -177,9 +177,9 @@ describe('registryService', () => {
       })
 
       expect(registry.addGroupMember).toHaveBeenCalledWith(project.slug, {
-        role_id: 4,
+        role_id: 2,
         member_group: {
-          group_name: `/${project.slug}/console/devops`,
+          group_name: `/${project.slug}/console/admin`,
           group_type: 3,
         },
       })

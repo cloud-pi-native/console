@@ -86,6 +86,54 @@ export class NexusPluginService {
         ],
         global: [
           {
+            key: 'platformWriteGroupPaths',
+            kind: 'text',
+            permissions: {
+              admin: { read: true, write: true },
+              user: { read: false, write: false },
+            },
+            title: 'Chemins des groupes OIDC plateforme en écriture',
+            value: '/console/admin',
+            description: 'Liste séparée par des virgules des chemins des groupes OIDC ayant accès en écriture aux dépôts Nexus de la plateforme',
+            placeholder: '/console/admin',
+          },
+          {
+            key: 'platformReadGroupPaths',
+            kind: 'text',
+            permissions: {
+              admin: { read: true, write: true },
+              user: { read: false, write: false },
+            },
+            title: 'Chemins des groupes OIDC plateforme en lecture',
+            value: '/console/readonly,/console/security',
+            description: 'Liste séparée par des virgules des chemins des groupes OIDC ayant accès en lecture aux dépôts Nexus de la plateforme',
+            placeholder: '/console/readonly,/console/security',
+          },
+          {
+            key: 'projectWriteGroupPathSuffixes',
+            kind: 'text',
+            permissions: {
+              admin: { read: true, write: true },
+              user: { read: false, write: false },
+            },
+            title: 'Suffixes des groupes OIDC projet en écriture',
+            value: '/console/admin,/console/devops',
+            description: 'Liste séparée par des virgules des suffixes des chemins des groupes OIDC ayant accès en écriture aux dépôts Nexus du projet',
+            placeholder: '/console/admin,/console/devops',
+          },
+          {
+            key: 'projectReadGroupPathSuffixes',
+            kind: 'text',
+            permissions: {
+              admin: { read: true, write: true },
+              user: { read: false, write: false },
+            },
+            title: 'Suffixes des groupes OIDC projet en lecture',
+            value: '/console/readonly,/console/security,/console/developer',
+            description: 'Liste séparée par des virgules des suffixes des chemins des groupes OIDC ayant accès en lecture aux dépôts Nexus du projet',
+            placeholder: '/console/readonly,/console/security,/console/developer',
+          },
+          {
             key: 'activateNpmRepoDefaultValue',
             section: 'NPM',
             kind: 'switch',
