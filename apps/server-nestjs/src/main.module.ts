@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { ScheduleModule } from '@nestjs/schedule'
+import { AdminTokenModule } from './modules/admin-token/admin-token.module'
 import { DeploymentModule } from './modules/deployment/deployment.module'
 import { EnvironmentModule } from './modules/environment/environment.module'
 import { HealthzModule } from './modules/healthz/healthz.module'
@@ -15,11 +16,13 @@ import { ProjectServicesModule } from './modules/project-services/project-servic
 import { ProjectModule } from './modules/project/project.module'
 import { ServiceChainModule } from './modules/service-chain/service-chain.module'
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module'
+import { UserTokensModule } from './modules/user-tokens/user-tokens.module'
 import { VersionModule } from './modules/version/version.module'
 
 @Module({
   imports: [
     InfrastructureModule,
+    AdminTokenModule,
     HealthzModule,
     KeycloakModule,
     ScheduleModule.forRoot(),
@@ -35,6 +38,7 @@ import { VersionModule } from './modules/version/version.module'
     LogModule,
     DeploymentModule,
     EnvironmentModule,
+    UserTokensModule,
     VersionModule,
   ],
   controllers: [],
