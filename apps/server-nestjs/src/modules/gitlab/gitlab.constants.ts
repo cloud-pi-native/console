@@ -12,15 +12,21 @@ export const TOKEN_DESCRIPTION = 'mirroring-from-external-repo'
 export const DEFAULT_ADMIN_GROUP_PATH = '/console/admin'
 export const DEFAULT_AUDITOR_GROUP_PATH = '/console/readonly'
 export const DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX = '/console/admin'
-export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX = '/console/developer,/console/devops'
+export const DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX = '/console/devops'
+export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX = '/console/developer'
+export const DEFAULT_PROJECT_SECURITY_GROUP_PATH_SUFFIX = '/console/security'
+export const DEFAULT_SECURITY_GROUP_PATH = '/console/security'
 export const DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX = '/console/readonly'
 
-// Plugin configuration keys
+// Plugin configuration keys for custom group paths
 export const ADMIN_GROUP_PATH_PLUGIN_KEY = 'adminGroupPath'
 export const AUDITOR_GROUP_PATH_PLUGIN_KEY = 'auditorGroupPath'
-export const PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectReporterGroupPathSuffix'
-export const PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectDeveloperGroupPathSuffix'
 export const PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectMaintainerGroupPathSuffix'
+export const PROJECT_DEVOPS_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectDevopsGroupPathSuffix'
+export const PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectDeveloperGroupPathSuffix'
+export const PROJECT_SECURITY_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectSecurityGroupPathSuffix'
+export const PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectReporterGroupPathSuffix'
+export const SECURITY_GROUP_PATH_PLUGIN_KEY = 'securityGroupPath'
 export const PURGE_PLUGIN_KEY = 'purge'
 
 // Custom attribute keys used in GitLab groups

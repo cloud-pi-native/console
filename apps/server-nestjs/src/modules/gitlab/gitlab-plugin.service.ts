@@ -2,12 +2,7 @@ import type { ServiceInfos } from '@cpn-console/hooks'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
-
-const DEFAULT_ADMIN_GROUP_PATH = '/console/admin'
-const DEFAULT_AUDITOR_GROUP_PATH = '/console/readonly'
-const DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX = '/console/admin'
-const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX = '/console/developer,/console/devops'
-const DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX = '/console/readonly'
+import { DEFAULT_ADMIN_GROUP_PATH, DEFAULT_AUDITOR_GROUP_PATH, DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_SECURITY_GROUP_PATH_SUFFIX, DEFAULT_SECURITY_GROUP_PATH } from './gitlab.constants'
 
 @Injectable()
 export class GitlabPluginService {
@@ -99,6 +94,42 @@ export class GitlabPluginService {
             value: DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
             description: 'Suffixe du groupe OIDC donnant accès Developer',
             placeholder: DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
+          },
+          {
+            kind: 'text',
+            key: 'projectDevopsGroupPathSuffix',
+            permissions: {
+              admin: { read: true, write: true },
+              user: { read: false, write: false },
+            },
+            title: 'Suffixe du chemin du groupe OIDC DevOps',
+            value: DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
+            description: 'Suffixe du groupe OIDC donnant accès Maintainer pour le rôle DevOps',
+            placeholder: DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
+          },
+          {
+            kind: 'text',
+            key: 'projectSecurityGroupPathSuffix',
+            permissions: {
+              admin: { read: true, write: true },
+              user: { read: false, write: false },
+            },
+            title: 'Suffixe du chemin du groupe OIDC Security',
+            value: DEFAULT_PROJECT_SECURITY_GROUP_PATH_SUFFIX,
+            description: 'Suffixe du groupe OIDC donnant accès Security',
+            placeholder: DEFAULT_PROJECT_SECURITY_GROUP_PATH_SUFFIX,
+          },
+          {
+            kind: 'text',
+            key: 'securityGroupPath',
+            permissions: {
+              admin: { read: true, write: true },
+              user: { read: false, write: false },
+            },
+            title: 'Chemin du groupe OIDC Security plateforme',
+            value: DEFAULT_SECURITY_GROUP_PATH,
+            description: 'Chemin du groupe OIDC de plateforme donnant accès en lecture (Reporter)',
+            placeholder: DEFAULT_SECURITY_GROUP_PATH,
           },
           {
             kind: 'text',

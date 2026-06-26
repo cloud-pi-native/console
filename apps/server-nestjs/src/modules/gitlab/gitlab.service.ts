@@ -18,13 +18,19 @@ import {
   DEFAULT_ADMIN_GROUP_PATH,
   DEFAULT_AUDITOR_GROUP_PATH,
   DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_SECURITY_GROUP_PATH_SUFFIX,
+  DEFAULT_SECURITY_GROUP_PATH,
   INFRA_APPS_REPO_NAME,
   PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
+  PROJECT_DEVOPS_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
+  PROJECT_SECURITY_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PURGE_PLUGIN_KEY,
+  SECURITY_GROUP_PATH_PLUGIN_KEY,
   TOPIC_PLUGIN_MANAGED,
 } from './gitlab.constants'
 import {
@@ -217,6 +223,10 @@ export class GitlabService {
     return await this.getAdminOrProjectPluginConfig(project, AUDITOR_GROUP_PATH_PLUGIN_KEY) ?? DEFAULT_AUDITOR_GROUP_PATH
   }
 
+  private async getSecurityGroupPath(project: ProjectWithDetails): Promise<string> {
+    return await this.getAdminOrProjectPluginConfig(project, SECURITY_GROUP_PATH_PLUGIN_KEY) ?? DEFAULT_SECURITY_GROUP_PATH
+  }
+
   private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
     const adminPluginConfig = await this.gitlabDatastore.getAdminPluginConfig('gitlab', key)
     if (adminPluginConfig) return adminPluginConfig
@@ -225,30 +235,47 @@ export class GitlabService {
   }
 
   private async getProjectRoleGroupPaths(project: ProjectWithDetails): Promise<{ reporter: string[], developer: string[], maintainer: string[] }> {
-    const [reporter, developer, maintainer] = await Promise.all([
+    const [reporter, developer, maintainer, devops] = await Promise.all([
       this.getProjectReporterGroupPaths(project),
       this.getProjectDeveloperGroupPaths(project),
       this.getProjectMaintainerGroupPaths(project),
+      this.getProjectDevopsGroupPaths(project),
     ])
 
     return {
       reporter,
       developer,
-      maintainer,
+      maintainer: [...maintainer, ...devops],
     }
   }
 
   private async getProjectReporterGroupPaths(project: ProjectWithDetails): Promise<string[]> {
     const projectConfig = getProjectPluginConfig(project, PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
     const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
-    const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX
-    return generateProjectRoleGroupPath(project.slug, raw)
+    const reporterRaw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX
+    const reporterPaths = generateProjectRoleGroupPath(project.slug, reporterRaw)
+
+    const securityProjectConfig = getProjectPluginConfig(project, PROJECT_SECURITY_GROUP_PATH_SUFFIX_PLUGIN_KEY)
+    const securityGlobalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_SECURITY_GROUP_PATH_SUFFIX_PLUGIN_KEY)
+    const securityRaw = securityProjectConfig ?? securityGlobalConfig ?? DEFAULT_PROJECT_SECURITY_GROUP_PATH_SUFFIX
+    const securityPaths = generateProjectRoleGroupPath(project.slug, securityRaw)
+
+    const platformSecurityGroupPath = await this.getSecurityGroupPath(project)
+
+    return [...reporterPaths, ...securityPaths, platformSecurityGroupPath]
   }
 
   private async getProjectDeveloperGroupPaths(project: ProjectWithDetails): Promise<string[]> {
     const projectConfig = getProjectPluginConfig(project, PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
     const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
     const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
+    return generateProjectRoleGroupPath(project.slug, raw)
+  }
+
+  private async getProjectDevopsGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+    const projectConfig = getProjectPluginConfig(project, PROJECT_DEVOPS_GROUP_PATH_SUFFIX_PLUGIN_KEY)
+    const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_DEVOPS_GROUP_PATH_SUFFIX_PLUGIN_KEY)
+    const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX
     return generateProjectRoleGroupPath(project.slug, raw)
   }
 
