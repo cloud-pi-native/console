@@ -3,7 +3,7 @@ import type { FastifyRequest } from 'fastify'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import type { ProjectContext } from '../infrastructure/permission/project/project.guard'
 import { AdminAuthorized, projectContract } from '@cpn-console/shared'
-import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, Inject, Post, Put, Query, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Inject, Post, Put, Query, Req, UseGuards } from '@nestjs/common'
 import { json2csv } from 'json-2-csv'
 import { AuthUser } from '../infrastructure/auth/auth-user.decorator'
 import { RequireProjectAccess } from '../infrastructure/permission/project/project-access.decorator'
@@ -43,7 +43,7 @@ export class ProjectController {
   }
 
   @Post('')
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @UseGuards(UserGuard)
   @RequireAdminPermission('ManageProjects')
   async create(
@@ -64,7 +64,7 @@ export class ProjectController {
   }
 
   @Put('/:projectId')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @UseGuards(ProjectGuard)
   @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
   @RequireProjectPermission('Manage')
@@ -78,7 +78,7 @@ export class ProjectController {
   }
 
   @Delete('/:projectId')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(ProjectGuard)
   @RequireProjectPermission('Manage')
   async archive(

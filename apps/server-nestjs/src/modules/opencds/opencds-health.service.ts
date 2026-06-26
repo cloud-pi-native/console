@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 
@@ -21,7 +21,7 @@ export class OpenCdsHealthService {
       }
 
       const response = await fetch(url, { headers })
-      if (response.status < 500) return indicator.up({ httpStatus: response.status })
+      if (response.status < HttpStatus.INTERNAL_SERVER_ERROR) return indicator.up({ httpStatus: response.status })
       return indicator.down({ httpStatus: response.status })
     } catch (error) {
       return indicator.down(error instanceof Error ? error.message : String(error))
