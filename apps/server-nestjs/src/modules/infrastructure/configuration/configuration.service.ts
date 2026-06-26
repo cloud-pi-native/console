@@ -36,7 +36,7 @@ export class ConfigurationService {
   // JWKS cache TTL in ms (default 5 min); Keycloak rotates keys periodically
   keycloakJwksCacheTtlMs = Number(process.env.KEYCLOAK_JWKS_CACHE_TTL_MS ?? 300_000)
   // JWKS fetch timeout in ms (default 1 s); avoids hanging on cache misses
-  keycloakJwksTimeoutMs = Number(process.env.KEYCLOAK_JWKS_TIMEOUT_MS ?? 1_000)
+  keycloakJwksTimeoutMs = Number(process.env.KEYCLOAK_JWKS_TIMEOUT_MS ?? 5_000)
 
   adminsUserId = process.env.ADMIN_KC_USER_ID
     ? process.env.ADMIN_KC_USER_ID.split(',')
@@ -107,8 +107,14 @@ export class ConfigurationService {
   sonarApiToken = process.env.SONAR_API_TOKEN
 
   getKeycloakIssuer() {
-    const protocol = this.keycloakPublicProtocol ?? this.keycloakProtocol
-    const domain = this.keycloakPublicDomain ?? this.keycloakDomain
+    const protocol = this.keycloakPublicProtocol || this.keycloakProtocol
+    const domain = this.keycloakPublicDomain || this.keycloakDomain
+    if (!protocol || !domain) {
+      throw new Error(
+        `Keycloak ${protocol ? 'domain' : 'protocol'} is not configured. `
+        + `Check KEYCLOAK_PROTOCOL / KEYCLOAK_DOMAIN (or public variants) in .env.`,
+      )
+    }
     const issuer = `${protocol}://${domain}/realms/${this.keycloakRealm}`
     this.logger.log(`Keycloak issuer resolved: ${issuer}`)
     return issuer
@@ -127,16 +133,29 @@ export class ConfigurationService {
   }
 
   getPublicKeycloakUrl() {
-    const protocol = this.keycloakPublicProtocol ?? this.keycloakProtocol
-    this.logger.log(`Keycloak public protocol resolved: ${protocol} (${this.keycloakPublicProtocol ? 'public' : 'internal'})`)
-    const domain = this.keycloakPublicDomain ?? this.keycloakDomain
-    this.logger.log(`Keycloak public domain resolved: ${domain} (${this.keycloakPublicDomain ? 'public' : 'internal'})`)
+    const protocol = this.keycloakPublicProtocol || this.keycloakProtocol
+    const domain = this.keycloakPublicDomain || this.keycloakDomain
+    if (!protocol || !domain) {
+      throw new Error(
+        `Keycloak ${protocol ? 'domain' : 'protocol'} is not configured. `
+        + `Check KEYCLOAK_PROTOCOL / KEYCLOAK_DOMAIN (or public variants) in .env.`,
+      )
+    }
+    this.logger.log(
+      `Keycloak public protocol resolved: ${protocol} (${this.keycloakPublicProtocol ? 'public' : 'internal'})`,
+    )
+    this.logger.log(
+      `Keycloak public domain resolved: ${domain} (${this.keycloakPublicDomain ? 'public' : 'internal'})`,
+    )
     const url = `${protocol}://${domain}`
     this.logger.log(`Keycloak public URL resolved: ${url}`)
     return url
   }
 
   getKeycloakUrl() {
+    if (!this.keycloakProtocol || !this.keycloakDomain) {
+      throw new Error(`Keycloak protocol or domain is not configured.`)
+    }
     const url = `${this.keycloakProtocol}://${this.keycloakDomain}`
     this.logger.log(`Keycloak internal URL resolved: ${url}`)
     return url
