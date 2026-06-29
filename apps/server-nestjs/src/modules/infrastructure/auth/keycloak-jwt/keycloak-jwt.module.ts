@@ -19,7 +19,7 @@ import { KeycloakJwtService } from './keycloak-jwt.service'
           // Keycloak tokens currently do not include an audience claim for this app.
           verifyOptions: {
             algorithms: ['RS256'],
-            issuer: config.getKeycloakIssuer(),
+            issuer: config.getPublicKeycloakRealmUrl(),
           },
         }
       },

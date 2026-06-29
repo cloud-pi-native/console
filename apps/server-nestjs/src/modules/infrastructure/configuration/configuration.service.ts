@@ -108,22 +108,20 @@ export class ConfigurationService {
   sonarqubeInternalUrl = process.env.SONARQUBE_INTERNAL_URL
   sonarApiToken = process.env.SONAR_API_TOKEN
 
-  getKeycloakIssuer() {
-    const protocol = this.keycloakPublicProtocol || this.keycloakProtocol
-    const domain = this.keycloakPublicDomain || this.keycloakDomain
-    if (!protocol || !domain) {
-      throw new Error(
-        `Keycloak ${protocol ? 'domain' : 'protocol'} is not configured. `
-        + `Check KEYCLOAK_PROTOCOL / KEYCLOAK_DOMAIN (or public variants) in .env.`,
-      )
-    }
-    const issuer = `${protocol}://${domain}/realms/${this.keycloakRealm}`
-    this.logger.log(`Keycloak issuer resolved: ${issuer}`)
-    return issuer
+  getKeycloakRealmUrl() {
+    const url = `${this.getKeycloakUrl()}/realms/${this.keycloakRealm}`
+    this.logger.log(`Keycloak issuer resolved: ${url}`)
+    return url
+  }
+
+  getPublicKeycloakRealmUrl() {
+    const url = `${this.getPublicKeycloakUrl()}/realms/${this.keycloakRealm}`
+    this.logger.log(`Keycloak public realm URL resolved: ${url}`)
+    return url
   }
 
   getKeycloakOpenidConfigurationUrl() {
-    const url = `${this.getKeycloakUrl()}/realms/${this.keycloakRealm}/.well-known/openid-configuration`
+    const url = `${this.getKeycloakRealmUrl()}/.well-known/openid-configuration`
     this.logger.log(`Keycloak openid-configuration URL resolved: ${url}`)
     return url
   }

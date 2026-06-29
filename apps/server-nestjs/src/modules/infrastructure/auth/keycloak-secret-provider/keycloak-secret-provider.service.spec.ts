@@ -27,7 +27,7 @@ describe('keycloakSecretProviderService', () => {
       keycloakJwksTimeoutMs: 1_000,
       keycloakJwksCacheTtlMs: 300_000,
       keycloakOpenidConfigurationCacheTtlMs: 300_000,
-      getKeycloakIssuer() {
+      getKeycloakRealmUrl() {
         return `https://${this.keycloakDomain}/realms/${this.keycloakRealm}`
       },
       getKeycloakOpenidConfigurationUrl() {
