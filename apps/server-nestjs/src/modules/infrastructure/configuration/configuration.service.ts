@@ -52,6 +52,7 @@ export class ConfigurationService {
   // argocd
   argoNamespace = process.env.ARGO_NAMESPACE ?? 'argocd'
   argocdUrl = process.env.ARGOCD_URL
+  argocdInternalUrl = process.env.ARGOCD_INTERNAL_URL
   argocdExtraRepositories = process.env.ARGOCD_EXTRA_REPOSITORIES
 
   // dso
@@ -126,6 +127,12 @@ export class ConfigurationService {
     }
     const url = `${this.keycloakProtocol}://${this.keycloakDomain}`
     this.logger.log(`Keycloak internal URL resolved: ${url}`)
+    return url
+  }
+
+  getInternalOrPublicArgoCDUrl() {
+    const url = this.argocdInternalUrl ?? this.argocdUrl
+    this.logger.log(`ArgoCD URL resolved: ${url} (${this.argocdInternalUrl ? 'internal' : 'public'})`)
     return url
   }
 
