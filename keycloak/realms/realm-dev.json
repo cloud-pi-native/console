@@ -1,5 +1,5 @@
 {
-  "realm": "cloud-pi-native",
+  "realm": "dso",
   "enabled": true,
   "accessTokenLifespan": 300,
   "accessCodeLifespan": 60,
