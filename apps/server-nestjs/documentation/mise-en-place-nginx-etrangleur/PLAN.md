@@ -162,7 +162,7 @@ Idem dev (avec Watch) + volumes kubeconfig.
 
 ### Tâche 3.5 : `docker/docker-compose.local.yml` ✅
 
-`nginx-strangler` ajouté avec `host.docker.internal`, port `8082:8080`.
+`nginx-strangler` ajouté avec `host.docker.internal`, port `8082:8080`, `extra_hosts: host-gateway`.
 
 ### Tâche 3.6 : `apps/client/nginx/default.docker.conf` ✅
 
