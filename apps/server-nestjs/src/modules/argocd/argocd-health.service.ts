@@ -11,11 +11,11 @@ export class ArgoCDHealthService {
 
   async check(key: string) {
     const indicator = this.healthIndicator.check(key)
-    if (!this.config.argocdUrl) return indicator.down('Not configured')
+    const urlBase = this.config.getInternalOrPublicArgoCDUrl()
+    if (!urlBase) return indicator.down('Not configured')
 
-    const url = new URL('/api/version', this.config.argocdUrl).toString()
     try {
-      const response = await fetch(url)
+      const response = await fetch(new URL('/api/version', urlBase).toString())
       if (response.status < 500) return indicator.up({ httpStatus: response.status })
       return indicator.down({ httpStatus: response.status })
     } catch (error) {
