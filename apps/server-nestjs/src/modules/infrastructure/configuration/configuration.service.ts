@@ -35,8 +35,10 @@ export class ConfigurationService {
 
   // JWKS cache TTL in ms (default 5 min); Keycloak rotates keys periodically
   keycloakJwksCacheTtlMs = Number(process.env.KEYCLOAK_JWKS_CACHE_TTL_MS ?? 300_000)
-  // JWKS fetch timeout in ms (default 1 s); avoids hanging on cache misses
+  // JWKS fetch timeout in ms (default 5 s); avoids hanging on cache misses
   keycloakJwksTimeoutMs = Number(process.env.KEYCLOAK_JWKS_TIMEOUT_MS ?? 5_000)
+  // openid-configuration cache TTL in ms (default 5 min); avoid repeated discovery lookups
+  keycloakOpenidConfigurationCacheTtlMs = Number(process.env.KEYCLOAK_OPENID_CONFIGURATION_CACHE_TTL_MS ?? 300_000)
 
   adminsUserId = process.env.ADMIN_KC_USER_ID
     ? process.env.ADMIN_KC_USER_ID.split(',')
@@ -106,49 +108,13 @@ export class ConfigurationService {
   sonarqubeInternalUrl = process.env.SONARQUBE_INTERNAL_URL
   sonarApiToken = process.env.SONAR_API_TOKEN
 
-  getKeycloakIssuer() {
-    const protocol = this.keycloakPublicProtocol || this.keycloakProtocol
-    const domain = this.keycloakPublicDomain || this.keycloakDomain
-    if (!protocol || !domain) {
-      throw new Error(
-        `Keycloak ${protocol ? 'domain' : 'protocol'} is not configured. `
-        + `Check KEYCLOAK_PROTOCOL / KEYCLOAK_DOMAIN (or public variants) in .env.`,
-      )
-    }
-    const issuer = `${protocol}://${domain}/realms/${this.keycloakRealm}`
-    this.logger.log(`Keycloak issuer resolved: ${issuer}`)
-    return issuer
-  }
-
-  getKeycloakCertsUrl() {
-    const url = `${this.getKeycloakIssuer()}/protocol/openid-connect/certs`
-    this.logger.log(`Keycloak certs URL resolved: ${url}`)
-    return url
+  getKeycloakRealmUrl() {
+    return `${this.getKeycloakUrl()}/realms/${this.keycloakRealm}`
   }
 
   getKeycloakOpenidConfigurationUrl() {
-    const url = `${this.getKeycloakUrl()}/realms/${this.keycloakRealm}/.well-known/openid-configuration`
+    const url = `${this.getKeycloakRealmUrl()}/.well-known/openid-configuration`
     this.logger.log(`Keycloak openid-configuration URL resolved: ${url}`)
-    return url
-  }
-
-  getPublicKeycloakUrl() {
-    const protocol = this.keycloakPublicProtocol || this.keycloakProtocol
-    const domain = this.keycloakPublicDomain || this.keycloakDomain
-    if (!protocol || !domain) {
-      throw new Error(
-        `Keycloak ${protocol ? 'domain' : 'protocol'} is not configured. `
-        + `Check KEYCLOAK_PROTOCOL / KEYCLOAK_DOMAIN (or public variants) in .env.`,
-      )
-    }
-    this.logger.log(
-      `Keycloak public protocol resolved: ${protocol} (${this.keycloakPublicProtocol ? 'public' : 'internal'})`,
-    )
-    this.logger.log(
-      `Keycloak public domain resolved: ${domain} (${this.keycloakPublicDomain ? 'public' : 'internal'})`,
-    )
-    const url = `${protocol}://${domain}`
-    this.logger.log(`Keycloak public URL resolved: ${url}`)
     return url
   }
 
