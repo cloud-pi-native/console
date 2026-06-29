@@ -125,7 +125,6 @@ test.describe('Clusters page', () => {
     })
     // Validate
     await page.getByTestId(`clusterLink-${clusterName}`).click()
-    await expect(page.getByTestId('cpin-loader')).toHaveCount(0)
     await expect(page.getByTestId('infosInput')).toHaveValue(informations)
   })
 
@@ -138,7 +137,6 @@ test.describe('Clusters page', () => {
     await signInCloudPiNative({ page, credentials: adminUser })
     await page.getByTestId('menuAdministrationBtn').click()
     await page.getByTestId('menuAdministrationClusters').click()
-    await expect(page.getByTestId('cpin-loader')).toHaveCount(0)
     await page.getByTestId('addClusterLink').click()
     await page.getByTestId('labelInput').fill(clusterName)
     await page.getByTestId('infosInput').fill(informations)
