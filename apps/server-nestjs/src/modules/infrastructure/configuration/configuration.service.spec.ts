@@ -34,13 +34,14 @@ describe('configurationService', () => {
     expect(service).toBeDefined()
   })
 
-  it('should derive Keycloak issuer and certs URL from configuration', () => {
+  it('should derive Keycloak issuer from internal configuration', () => {
     expect(service.getKeycloakIssuer()).toBe(
       'http://keycloak.example.com/realms/cloud-pi-native',
     )
-    expect(service.getKeycloakCertsUrl()).toBe(
-      'http://keycloak.example.com/realms/cloud-pi-native/protocol/openid-connect/certs',
-    )
+  })
+
+  it('should expose openid-configuration cache TTL', () => {
+    expect(service.keycloakOpenidConfigurationCacheTtlMs).toBe(300_000)
   })
 
   it('should use public protocol and domain for issuer when set', () => {

@@ -35,8 +35,10 @@ export class ConfigurationService {
 
   // JWKS cache TTL in ms (default 5 min); Keycloak rotates keys periodically
   keycloakJwksCacheTtlMs = Number(process.env.KEYCLOAK_JWKS_CACHE_TTL_MS ?? 300_000)
-  // JWKS fetch timeout in ms (default 1 s); avoids hanging on cache misses
+  // JWKS fetch timeout in ms (default 5 s); avoids hanging on cache misses
   keycloakJwksTimeoutMs = Number(process.env.KEYCLOAK_JWKS_TIMEOUT_MS ?? 5_000)
+  // openid-configuration cache TTL in ms (default 5 min); avoid repeated discovery lookups
+  keycloakOpenidConfigurationCacheTtlMs = Number(process.env.KEYCLOAK_OPENID_CONFIGURATION_CACHE_TTL_MS ?? 300_000)
 
   adminsUserId = process.env.ADMIN_KC_USER_ID
     ? process.env.ADMIN_KC_USER_ID.split(',')
@@ -118,12 +120,6 @@ export class ConfigurationService {
     const issuer = `${protocol}://${domain}/realms/${this.keycloakRealm}`
     this.logger.log(`Keycloak issuer resolved: ${issuer}`)
     return issuer
-  }
-
-  getKeycloakCertsUrl() {
-    const url = `${this.getKeycloakIssuer()}/protocol/openid-connect/certs`
-    this.logger.log(`Keycloak certs URL resolved: ${url}`)
-    return url
   }
 
   getKeycloakOpenidConfigurationUrl() {
