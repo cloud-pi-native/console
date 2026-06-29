@@ -34,54 +34,155 @@ describe('configurationService', () => {
     expect(service).toBeDefined()
   })
 
-  it('should derive Keycloak issuer and certs URL from configuration', () => {
-    expect(service.getKeycloakIssuer()).toBe(
-      'http://keycloak.example.com/realms/cloud-pi-native',
-    )
-    expect(service.getKeycloakCertsUrl()).toBe(
-      'http://keycloak.example.com/realms/cloud-pi-native/protocol/openid-connect/certs',
-    )
+  describe('keycloak URL derivation', () => {
+    it('should derive the internal URL from protocol + domain', () => {
+      expect(service.getKeycloakUrl()).toBe('http://keycloak.example.com')
+    })
+
+    it('should derive the realm URL from the internal URL', () => {
+      expect(service.getKeycloakRealmUrl()).toBe(
+        'http://keycloak.example.com/realms/cloud-pi-native',
+      )
+    })
+
+    it('should derive the openid-configuration URL from the realm URL', () => {
+      expect(service.getKeycloakOpenidConfigurationUrl()).toBe(
+        'http://keycloak.example.com/realms/cloud-pi-native/.well-known/openid-configuration',
+      )
+    })
+
+    it('should throw when Keycloak protocol or domain is missing', () => {
+      service.keycloakProtocol = ''
+      service.keycloakDomain = 'keycloak.example.com'
+      expect(() => service.getKeycloakUrl()).toThrow(
+        'Keycloak protocol or domain is not configured.',
+      )
+      expect(() => service.getKeycloakRealmUrl()).toThrow(
+        'Keycloak protocol or domain is not configured.',
+      )
+
+      service.keycloakProtocol = 'http'
+      service.keycloakDomain = ''
+      expect(() => service.getKeycloakUrl()).toThrow(
+        'Keycloak protocol or domain is not configured.',
+      )
+      expect(() => service.getKeycloakRealmUrl()).toThrow(
+        'Keycloak protocol or domain is not configured.',
+      )
+    })
   })
 
-  it('should use public protocol and domain for issuer when set', () => {
-    service.keycloakPublicProtocol = 'https'
-    service.keycloakPublicDomain = 'keycloak.public.example.fr'
-    expect(service.getKeycloakIssuer()).toBe(
-      'https://keycloak.public.example.fr/realms/cloud-pi-native',
-    )
-    expect(service.getPublicKeycloakUrl()).toBe(
-      'https://keycloak.public.example.fr',
-    )
+  describe('internal-or-public URL helpers', () => {
+    it('should prefer internal over public URL for GitLab, Vault, Harbor, Nexus, SonarQube', () => {
+      service.gitlabInternalUrl = 'https://gitlab.internal'
+      service.vaultInternalUrl = 'https://vault.internal'
+      service.harborInternalUrl = 'https://harbor.internal'
+      service.nexusInternalUrl = 'https://nexus.internal'
+      service.sonarqubeInternalUrl = 'https://sonar.internal'
+
+      expect(service.getInternalOrPublicGitlabUrl()).toBe('https://gitlab.internal')
+      expect(service.getInternalOrPublicVaultUrl()).toBe('https://vault.internal')
+      expect(service.getInternalOrPublicHarborUrl()).toBe('https://harbor.internal')
+      expect(service.getInternalOrPublicNexusUrl()).toBe('https://nexus.internal')
+      expect(service.getInternalOrPublicSonarqubeUrl()).toBe('https://sonar.internal')
+    })
+
+    it('should fall back to public URL for GitLab, Vault, Harbor, Nexus, SonarQube when internal is unset', () => {
+      service.gitlabUrl = 'https://gitlab.public'
+      service.vaultUrl = 'https://vault.public'
+      service.harborUrl = 'https://harbor.public'
+      service.nexusUrl = 'https://nexus.public'
+      service.sonarqubeUrl = 'https://sonar.public'
+
+      expect(service.getInternalOrPublicGitlabUrl()).toBe('https://gitlab.public')
+      expect(service.getInternalOrPublicVaultUrl()).toBe('https://vault.public')
+      expect(service.getInternalOrPublicHarborUrl()).toBe('https://harbor.public')
+      expect(service.getInternalOrPublicNexusUrl()).toBe('https://nexus.public')
+      expect(service.getInternalOrPublicSonarqubeUrl()).toBe('https://sonar.public')
+    })
+
+    it('should return undefined for internal-or-public URL when neither side is configured', () => {
+      expect(service.getInternalOrPublicGitlabUrl()).toBeUndefined()
+      expect(service.getInternalOrPublicVaultUrl()).toBeUndefined()
+      expect(service.getInternalOrPublicHarborUrl()).toBeUndefined()
+      expect(service.getInternalOrPublicNexusUrl()).toBeUndefined()
+      expect(service.getInternalOrPublicSonarqubeUrl()).toBeUndefined()
+    })
   })
 
-  it('should fall back to internal protocol and domain when public are not set', () => {
-    service.keycloakPublicProtocol = undefined
-    service.keycloakPublicDomain = undefined
-    expect(service.getKeycloakIssuer()).toBe(
-      'http://keycloak.example.com/realms/cloud-pi-native',
-    )
-    expect(service.getPublicKeycloakUrl()).toBe(
-      'http://keycloak.example.com',
-    )
-  })
+  describe('conditional toggles and computed fields', () => {
+    it('should default NODE_ENV to production and map explicit test/development values', async () => {
+      vi.stubEnv('NODE_ENV', '')
+      const testService = await Test.createTestingModule({
+        providers: [ConfigurationService],
+      }).compile().then(m => m.get<ConfigurationService>(ConfigurationService))
+      expect(testService.NODE_ENV).toBe('production')
+    })
 
-  it('should throw when Keycloak protocol or domain is missing', () => {
-    service.keycloakProtocol = ''
-    service.keycloakDomain = 'keycloak.example.com'
-    expect(() => service.getKeycloakIssuer()).toThrow(
-      'Keycloak protocol is not configured.',
-    )
-    expect(() => service.getKeycloakUrl()).toThrow(
-      'Keycloak protocol or domain is not configured.',
-    )
+    it('should map NODE_ENV=test to "test" and NODE_ENV=development to "development"', async () => {
+      vi.stubEnv('NODE_ENV', 'test')
+      const testService = await Test.createTestingModule({
+        providers: [ConfigurationService],
+      }).compile().then(m => m.get<ConfigurationService>(ConfigurationService))
+      expect(testService.NODE_ENV).toBe('test')
 
-    service.keycloakProtocol = 'http'
-    service.keycloakDomain = ''
-    expect(() => service.getKeycloakIssuer()).toThrow(
-      'Keycloak domain is not configured.',
-    )
-    expect(() => service.getKeycloakUrl()).toThrow(
-      'Keycloak protocol or domain is not configured.',
-    )
+      vi.stubEnv('NODE_ENV', 'development')
+      const devService = await Test.createTestingModule({
+        providers: [ConfigurationService],
+      }).compile().then(m => m.get<ConfigurationService>(ConfigurationService))
+      expect(devService.NODE_ENV).toBe('development')
+    })
+
+    it('should expose the requested app version in production, else "dev"', async () => {
+      vi.stubEnv('NODE_ENV', 'production')
+      vi.stubEnv('APP_VERSION', '1.2.3')
+      const prod = await Test.createTestingModule({
+        providers: [ConfigurationService],
+      }).compile().then(m => m.get<ConfigurationService>(ConfigurationService))
+      expect(prod.appVersion).toBe('1.2.3')
+
+      vi.unstubAllEnvs()
+      vi.stubEnv('NODE_ENV', 'production')
+      const prodUnset = await Test.createTestingModule({
+        providers: [ConfigurationService],
+      }).compile().then(m => m.get<ConfigurationService>(ConfigurationService))
+      expect(prodUnset.appVersion).toBe('unknown')
+
+      vi.unstubAllEnvs()
+      vi.stubEnv('NODE_ENV', 'development')
+      vi.stubEnv('APP_VERSION', '1.2.3')
+      const dev = await Test.createTestingModule({
+        providers: [ConfigurationService],
+      }).compile().then(m => m.get<ConfigurationService>(ConfigurationService))
+      expect(dev.appVersion).toBe('dev')
+    })
+
+    it('should expose nexusSecretExposedUrl based on the internal-url toggle', async () => {
+      vi.stubEnv('NEXUS_URL', 'https://nexus.public')
+      const off = await Test.createTestingModule({
+        providers: [ConfigurationService],
+      }).compile().then(m => m.get<ConfigurationService>(ConfigurationService))
+      expect(off.nexusSecretExposedUrl).toBe('https://nexus.public')
+
+      vi.stubEnv('NEXUS__SECRET_EXPOSE_INTERNAL_URL', 'true')
+      vi.stubEnv('NEXUS_INTERNAL_URL', 'https://nexus.internal')
+      const on = await Test.createTestingModule({
+        providers: [ConfigurationService],
+      }).compile().then(m => m.get<ConfigurationService>(ConfigurationService))
+      expect(on.nexusSecretExposedUrl).toBe('https://nexus.internal')
+    })
+
+    it('should disable TLS verification for Open CDS only when explicitly set to false', async () => {
+      const defaultService = await Test.createTestingModule({
+        providers: [ConfigurationService],
+      }).compile().then(m => m.get<ConfigurationService>(ConfigurationService))
+      expect(defaultService.openCdsApiTlsRejectUnauthorized).toBe(true)
+
+      vi.stubEnv('OPENCDS_API_TLS_REJECT_UNAUTHORIZED', 'false')
+      const disabled = await Test.createTestingModule({
+        providers: [ConfigurationService],
+      }).compile().then(m => m.get<ConfigurationService>(ConfigurationService))
+      expect(disabled.openCdsApiTlsRejectUnauthorized).toBe(false)
+    })
   })
 })

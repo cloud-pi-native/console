@@ -5,7 +5,14 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { JwtSecretRequestType } from '@nestjs/jwt'
 import { z } from 'zod'
 import { ConfigurationService } from '../../configuration/configuration.service'
-import { createKeycloakSecretProviderPublicKeyCacheKey } from './keycloak-secret-provider.utils'
+import { createKeycloakSecretProviderOpenIdConfigurationCacheKey, createKeycloakSecretProviderPublicKeyCacheKey } from './keycloak-secret-provider.utils'
+
+const OpenidConfigurationSchema = z.object({
+  issuer: z.string().url(),
+  jwks_uri: z.string().url(),
+})
+
+type OpenidConfiguration = z.infer<typeof OpenidConfigurationSchema>
 
 const JwksResponseSchema = z.object({
   keys: z.array(z.object({
@@ -32,12 +39,47 @@ export class KeycloakSecretProviderService {
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {}
 
+  async fetchOpenIdConfig(): Promise<OpenidConfiguration | undefined> {
+    const cacheKey = createKeycloakSecretProviderOpenIdConfigurationCacheKey(this.config.getKeycloakOpenidConfigurationUrl())
+    const cached = await this.cache.get<OpenidConfiguration>(cacheKey)
+    if (cached) return cached
+
+    const response = await fetch(this.config.getKeycloakOpenidConfigurationUrl())
+    if (!response.ok) {
+      this.logger.error(`Failed to fetch openid-configuration: ${response.status} ${response.statusText}`)
+      return undefined
+    }
+
+    const raw = await response.json()
+    const config = OpenidConfigurationSchema.safeParse(raw)
+    if (!config.success) {
+      this.logger.error('openid-configuration response missing jwks_uri')
+      return undefined
+    }
+
+    await this.cache.set(cacheKey, config.data, this.config.keycloakOpenidConfigurationCacheTtlMs)
+    return config.data
+  }
+
+  async fetchIssuer(): Promise<string | undefined> {
+    const config = await this.fetchOpenIdConfig()
+    return config?.issuer
+  }
+
+  async fetchJwksUri(): Promise<string | undefined> {
+    const config = await this.fetchOpenIdConfig()
+    return config?.jwks_uri
+  }
+
   async fetchSigningKeys(): Promise<JwksResponse | undefined> {
+    const jwksUri = await this.fetchJwksUri()
+    if (!jwksUri) return undefined
+
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), this.config.keycloakJwksTimeoutMs)
 
     try {
-      const response = await fetch(this.config.getKeycloakCertsUrl(), { signal: controller.signal })
+      const response = await fetch(jwksUri, { signal: controller.signal })
       if (!response.ok) {
         this.logger.error(`Failed to fetch JWKS: ${response.status} ${response.statusText}`)
         return undefined
