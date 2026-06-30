@@ -56,8 +56,9 @@ describe('keycloakSecretProviderService', () => {
 
   it('should fetch JWKS from Keycloak and parse the response', async () => {
     const issuer = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}`
-    const jwksUri = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: jwksUri })))
+    const publicJwksUri = `https://public.${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
+    const internalJwksUri = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: publicJwksUri })))
     fetchMock.mockResolvedValueOnce(makeJwksResponse('kid-1'))
 
     const jwks = await service.fetchSigningKeys()
@@ -66,7 +67,7 @@ describe('keycloakSecretProviderService', () => {
     expect(fetchMock.mock.calls[0]?.[0]).toBe(
       `https://${config.keycloakDomain}/realms/${config.keycloakRealm}/.well-known/openid-configuration`,
     )
-    expect(fetchMock.mock.calls[1]?.[0]).toBe(jwksUri)
+    expect(fetchMock.mock.calls[1]?.[0]).toBe(internalJwksUri)
     expect(jwks).toEqual({
       keys: [
         {
@@ -83,8 +84,8 @@ describe('keycloakSecretProviderService', () => {
   it('should abort and return undefined when the JWKS request exceeds the timeout', async () => {
     vi.useFakeTimers()
     const issuer = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}`
-    const jwksUri = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: jwksUri })))
+    const publicJwksUri = `https://public.${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: publicJwksUri })))
     fetchMock.mockImplementationOnce((_url, init?: RequestInit) => new Promise((_, reject) => {
       init?.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')))
     }))
@@ -97,8 +98,8 @@ describe('keycloakSecretProviderService', () => {
 
   it('should return undefined when Keycloak returns a non-OK response', async () => {
     const issuer = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}`
-    const jwksUri = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: jwksUri })))
+    const publicJwksUri = `https://public.${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: publicJwksUri })))
     fetchMock.mockResolvedValueOnce(new Response('', { status: 500, statusText: 'Internal Server Error' }))
 
     await expect(service.fetchSigningKeys()).resolves.toBeUndefined()
@@ -106,8 +107,8 @@ describe('keycloakSecretProviderService', () => {
 
   it('should resolve a PEM public key from the JWKS', async () => {
     const issuer = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}`
-    const jwksUri = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: jwksUri })))
+    const publicJwksUri = `https://public.${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: publicJwksUri })))
     fetchMock.mockResolvedValueOnce(makeJwksResponse('kid-2'))
 
     const publicKey = await service.fetchPublicKey('kid-2')
@@ -131,8 +132,8 @@ describe('keycloakSecretProviderService', () => {
 
   it('should resolve the secret directly from the JWT token and request type', async () => {
     const issuer = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}`
-    const jwksUri = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: jwksUri })))
+    const publicJwksUri = `https://public.${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: publicJwksUri })))
     fetchMock.mockResolvedValueOnce(makeJwksResponse('kid-3'))
     const header = Buffer.from(JSON.stringify({ kid: 'kid-3' })).toString('base64url')
 
@@ -166,8 +167,8 @@ describe('keycloakSecretProviderService', () => {
 
   it('should reject JWTs when the key cannot be resolved', async () => {
     const issuer = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}`
-    const jwksUri = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: jwksUri })))
+    const publicJwksUri = `https://public.${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: publicJwksUri })))
     fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ keys: [] })))
     const header = Buffer.from(JSON.stringify({ kid: 'missing-kid' })).toString('base64url')
 
@@ -178,10 +179,33 @@ describe('keycloakSecretProviderService', () => {
 
   it('should resolve the issuer from openid-configuration', async () => {
     const issuer = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}`
-    const jwksUri = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: jwksUri })))
+    const publicJwksUri = `https://public.${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: publicJwksUri })))
 
     await expect(service.fetchIssuer()).resolves.toBe(issuer)
     expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('should replace the discovered JWKS domain with the configured internal Keycloak domain', async () => {
+    const publicJwksUri = `https://public.${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({
+      issuer: `https://${config.keycloakDomain}/realms/${config.keycloakRealm}`,
+      jwks_uri: publicJwksUri,
+    })))
+
+    await expect(service.fetchJwksUri()).resolves.toBe(
+      `https://${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`,
+    )
+  })
+
+  it('should keep the discovered JWKS URI unchanged when no internal Keycloak domain is configured', async () => {
+    config.keycloakDomain = undefined
+    const publicJwksUri = `https://public.example.test/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({
+      issuer: 'https://public.example.test/realms/test',
+      jwks_uri: publicJwksUri,
+    })))
+
+    await expect(service.fetchJwksUri()).resolves.toBe(publicJwksUri)
   })
 })

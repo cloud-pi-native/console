@@ -68,7 +68,18 @@ export class KeycloakSecretProviderService {
 
   async fetchJwksUri(): Promise<string | undefined> {
     const config = await this.fetchOpenIdConfig()
-    return config?.jwks_uri
+    return config ? this.replaceJwksUriDomainWithInternalDomain(config.jwks_uri) : undefined
+  }
+
+  private replaceJwksUriDomainWithInternalDomain(jwksUri: string): string {
+    if (!this.config.keycloakDomain) {
+      this.logger.log(`No internal domain configured, returning original JWKS URI: ${jwksUri}`)
+      return jwksUri
+    }
+    this.logger.log(`Replacing JWKS URI domain: ${jwksUri} -> ${this.config.keycloakDomain}`)
+    const url = new URL(jwksUri)
+    url.host = this.config.keycloakDomain
+    return url.toString()
   }
 
   async fetchSigningKeys(): Promise<JwksResponse | undefined> {
