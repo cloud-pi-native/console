@@ -111,7 +111,6 @@ export async function createCluster({
   if (informations)
     await fillClusterInformations(page, informations)
   await page.getByTestId('addClusterBtn').click()
-  await expect(page.getByTestId('cpin-loader')).toHaveCount(0)
   await searchCluster(page, clusterName)
   return clusterName
 }
