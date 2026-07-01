@@ -1,5 +1,47 @@
 # Changelog
 
+## [9.20.0](https://github.com/cloud-pi-native/console/compare/v9.19.0...v9.20.0) (2026-07-01)
+
+
+### Features
+
+* allow ci run on draft PR ([d3771a2](https://github.com/cloud-pi-native/console/commit/d3771a2665930560a42cbdd6619728d58a071ac4))
+* fix the permission policy engine from AND to OR between admin and projectpermissions ([4147cc9](https://github.com/cloud-pi-native/console/commit/4147cc94906a4ec2ea2fb9de0b22f3951e0ef49b))
+* migrate project to PNPM v11.8.0 ([6143d5c](https://github.com/cloud-pi-native/console/commit/6143d5c0db1ece4a9ecd694c89cd4fca9bbc725c))
+* migrate service infos descriptor from server plugin manager ([20e725c](https://github.com/cloud-pi-native/console/commit/20e725c25ad1a4be919bdef18aa1ea0761fc424b))
+
+
+### Bug Fixes
+
+* disable NestJS reconciler loop to avoid conflicts ([51b5488](https://github.com/cloud-pi-native/console/commit/51b5488eab96edb92dd444a929e6aaaadd627f1c))
+* fetch JWKS URI using internal domain ([590b92d](https://github.com/cloud-pi-native/console/commit/590b92d0030b824b60d1bd92caef1716fb018bfe))
+* JWKS fetching rule are flaky ([7faee14](https://github.com/cloud-pi-native/console/commit/7faee1419c526c73ad4fb81c9b097fc50513ee08))
+* **keycloak:** skip group sync for system:external admin roles ([9000139](https://github.com/cloud-pi-native/console/commit/900013993cc0aa44d7737b9db1bb86f6230be6ee))
+* **keycloak:** skip group sync for system:external admin roles ([4254929](https://github.com/cloud-pi-native/console/commit/4254929fbdde7b0e5d60c3b5b35c04dcc09cfc77))
+* launch.json to read envfiles ([5a56ad5](https://github.com/cloud-pi-native/console/commit/5a56ad5e102aee053284ceb97fb673cd832d7d3d))
+* nginx strangler is failling to resolve host in local mode ([78d5c6c](https://github.com/cloud-pi-native/console/commit/78d5c6c3d602a7fcc41817d42a26ad1c8a44941e))
+* **server-nestjs:** add missing healthcheck for local dev ([61de70c](https://github.com/cloud-pi-native/console/commit/61de70c77d0eb4b8496c820b5f42a248f34fb135))
+* **server-nestjs:** migrate system-config route ([20ae55e](https://github.com/cloud-pi-native/console/commit/20ae55ea295573f4abb64d48fe901c55bde15108))
+
+
+### Miscellaneous Chores
+
+* backport server-nestjs missing migrations ([8c2288c](https://github.com/cloud-pi-native/console/commit/8c2288cb0becb3d0bb06b347a8a1e8f0c5edefb3))
+* improve auth logging ([b7393d2](https://github.com/cloud-pi-native/console/commit/b7393d2e44294ae1ec622ab5ed7e83eaf69676f3))
+* **playwright:** generalize checkbox helper to avoid inconsistencies ([6c839ef](https://github.com/cloud-pi-native/console/commit/6c839ef0a1fa87193fdc4131f4273968ec7084e6))
+
+
+### Refactoring
+
+* Keycloak server provider should use openid-configuration URLs instead of rebuilding ([bc2199f](https://github.com/cloud-pi-native/console/commit/bc2199ff8380c243f38cf8d19fde4660adf7e51e))
+* **server-nestjs:** migrate logs ([f05e04f](https://github.com/cloud-pi-native/console/commit/f05e04fd3f90164e5211dbe7244cf25a45c6e320))
+* **server-nestjs:** migrate project hook ([459c60a](https://github.com/cloud-pi-native/console/commit/459c60a743366cc39d0200bcaecc38ef5c722cb7))
+* **server-nestjs:** migrate project members ([796f2a9](https://github.com/cloud-pi-native/console/commit/796f2a987614e4c327153f3150c2c14e54d98827))
+* **server-nestjs:** migrate project role ([0764a2f](https://github.com/cloud-pi-native/console/commit/0764a2fb6efda7e5f101730e7d8e630647208478))
+* **server-nestjs:** migrate project secrets routes ([0626157](https://github.com/cloud-pi-native/console/commit/0626157cd84a58299a765ab5e034922afa013f93))
+* **server-nestjs:** migrate project services route ([bf9d09a](https://github.com/cloud-pi-native/console/commit/bf9d09a11687efff0078a4d36f09dc08ca1e0b2f))
+* **shared:** add RoleType constant and use it across keycloak services ([3933b15](https://github.com/cloud-pi-native/console/commit/3933b15208636f65bc47d9449113b2df33579219))
+
 ## [9.19.0](https://github.com/cloud-pi-native/console/compare/v9.18.4...v9.19.0) (2026-06-19)
 
 
