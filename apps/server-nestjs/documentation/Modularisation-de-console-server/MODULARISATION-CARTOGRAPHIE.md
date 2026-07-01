@@ -196,8 +196,8 @@ Plus le score est eleve, plus le module est prioritaire.
 | 13 | zone | Metier | 6.4 | V2 | S6 | |
 | 14 | environment | Metier | 6.3 | V3 | S7 | |
 | 15 | admin-role | Metier | 6.1 | V2 | S5 | |
-| 16 | project-core | Metier | 5.8 | V4 | S9 | |
-| 17 | service-chain | Metier | 5.9 | V3 | S8 | ✅ MIGRE |
+| 16 | project-core | Metier | 5.8 | V4 | S9 | ✅ MIGRÉ (2026-05-28) |
+| 17 | service-chain | Metier | 5.9 | V3 | S8 | ✅ MIGRÉ (2026-04-09) |
 | 18 | repository | Metier | 5.8 | V3 | S7-S8 | |
 | 19 | cluster | Metier | 5.7 | V3 | S7 | |
 | 20 | harbor (encapsulation) | Plugin | 5.6 | V4 | S9-S10 | ✅ MIGRE |
@@ -206,8 +206,8 @@ Plus le score est eleve, plus le module est prioritaire.
 | 23 | project-role | Metier | 5.2 | V3 | S7-S8 | |
 | 24 | nexus (encapsulation) | Plugin | 5.1 | V4 | S10 | ✅ MIGRE |
 | 25 | project-member | Metier | 4.7 | V3 | S8 | |
-| 26 | project-secrets | Metier | 4.6 | V4 | S9 | |
-| 27 | project-bulk | Metier | 4.2 | V4 | S9-S10 | |
+| 26 | project-secrets | Metier | 4.6 | V4 | S9 | ✅ MIGRÉ (2026-05-28, fusionné dans project-core) |
+| 27 | project-bulk | Metier | 4.2 | V4 | S9-S10 | ✅ MIGRÉ (2026-05-28, fusionné dans project-core) |
 | 28 | sonarqube (encapsulation) | Plugin | 4.2 | V5 | S11 | |
 
 **Note** : Le score brut ne dicte pas directement l'ordre de migration.
@@ -825,7 +825,7 @@ Encapsuler les plugins intermediaires.
 **Livrable fin S10** : 75 routes migrees (100% des routes metier) + plugins
 vault, keycloak, gitlab, harbor, nexus encapsules
 
-### 19. project-core
+### 19. project-core — ✅ MIGRÉ (2026-05-28)
 
 | Attribut | Valeur |
 |----------|--------|
@@ -857,7 +857,7 @@ vault, keycloak, gitlab, harbor, nexus encapsules
 
 ---
 
-### 20. project-secrets
+### 20. project-secrets — ✅ MIGRÉ (2026-05-28, fusionné dans project-core)
 
 | Attribut | Valeur |
 |----------|--------|
@@ -869,7 +869,7 @@ vault, keycloak, gitlab, harbor, nexus encapsules
 **Routes** :
 - `GET /api/v1/projects/:projectId/secrets` - Secrets du projet
 
-**Dependances sortantes** : hooks (project.getSecrets)
+**Dependances sortantes** : hooks (project.get)
 **Dependances entrantes** : Aucune
 
 **Points d'attention** :
@@ -882,10 +882,12 @@ vault, keycloak, gitlab, harbor, nexus encapsules
 
 ---
 
-### 21. project-bulk
+### 21. project-bulk — ✅ MIGRÉ (2026-05-28, fusionné dans project-core)
 
 | Attribut | Valeur |
 |----------|--------|
+| **Routes** | 2 (bulk action + export CSV) |
+| **Note** | La route `POST /api/v1/projects/:projectId/replay-hooks` n'est pas encore migrée |
 | **Routes** | 3 |
 | **Score** | 4.2 |
 | **Sprint** | S9-S10 |

@@ -12,7 +12,7 @@ import {
   KubeconfigSchema,
 } from '@cpn-console/shared'
 import { DsfrDataTable } from '@gouvminint/vue-dsfr'
-import { computed, onBeforeMount, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { JsonViewer } from 'vue3-json-viewer'
 import { parse } from 'yaml'
 import { useSnackbarStore } from '@/stores/snackbar.js'
@@ -195,10 +195,6 @@ function updateCluster() {
 function cancel() {
   emit('cancel')
 }
-
-onBeforeMount(() => {
-  localCluster.value = props.cluster
-})
 
 watch(selectedContext, () => {
   try {
