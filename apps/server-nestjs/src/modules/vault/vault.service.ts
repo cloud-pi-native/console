@@ -427,25 +427,22 @@ export class VaultService {
 
   async createProjectDeveloperPolicy(name: string, projectSlug: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
-      policy: [
-        `path "${projectSlug}/data/*" { capabilities = ["read"] }`,
-        `path "${projectSlug}/metadata/*" { capabilities = ["read", "list"] }`,
-      ].join('\n'),
+      policy: `path "${projectSlug}/data/*" { capabilities = ["list"] }`,
     })
   }
 
   async createProjectReadOnlyPolicy(name: string, projectSlug: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
-      policy: [
-        `path "${projectSlug}/data/*" { capabilities = ["read"] }`,
-        `path "${projectSlug}/metadata/*" { capabilities = ["read", "list"] }`,
-      ].join('\n'),
+      policy: `path "${projectSlug}/data/*" { capabilities = ["list"] }`,
     })
   }
 
   async createProjectSecurityPolicy(name: string, projectSlug: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
-      policy: `path "${projectSlug}/metadata/*" { capabilities = ["read", "list"] }`,
+      policy: [
+        `path "${projectSlug}/metadata/*" { capabilities = ["list"] }`,
+        `path "transit/keys/${projectSlug}/*" { capabilities = ["list"] }`,
+      ].join('\n'),
     })
   }
 

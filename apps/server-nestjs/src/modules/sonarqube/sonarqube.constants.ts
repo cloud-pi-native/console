@@ -10,14 +10,14 @@ export const DEFAULT_TEMPLATE_PERMISSIONS = ['admin', 'codeviewer', 'issueadmin'
 // Project-level permission sets per role (SonarQube permission API names)
 export const PROJECT_ADMIN_PERMISSIONS = ['admin', 'scan', 'user', 'codeviewer', 'issueadmin', 'securityhotspotadmin'] as const
 export const PROJECT_DEVOPS_PERMISSIONS = ['scan', 'user', 'codeviewer', 'issueadmin', 'securityhotspotadmin'] as const
-export const PROJECT_DEVELOPER_PERMISSIONS = ['scan', 'user', 'codeviewer'] as const
+export const PROJECT_DEVELOPER_PERMISSIONS = ['scan', 'user', 'codeviewer', 'issueadmin', 'securityhotspotadmin'] as const
 export const PROJECT_SECURITY_PERMISSIONS = ['scan', 'user', 'codeviewer', 'issueadmin', 'securityhotspotadmin'] as const
 export const PROJECT_READONLY_PERMISSIONS = ['user', 'codeviewer'] as const
 
 // CI robot/service account — needs Execute Analysis + Browse + See Source Code
 export const ROBOT_PROJECT_PERMISSIONS = ['scan', 'user', 'codeviewer'] as const
 
-// Default platform-wide Keycloak group paths (following gitlab /console/* naming)
+// Default platform-wide Keycloak group paths
 export const DEFAULT_ADMIN_GROUP_PATH = '/console/admin'
 export const DEFAULT_READONLY_GROUP_PATH = '/console/readonly'
 export const DEFAULT_SECURITY_GROUP_PATH = '/console/security'

@@ -29,7 +29,6 @@ import {
   HARBOR_ROLE_DEVELOPER,
   HARBOR_ROLE_GUEST,
   HARBOR_ROLE_LIMITED_GUEST,
-  HARBOR_ROLE_MAINTAINER,
   HARBOR_ROLE_PROJECT_ADMIN,
   PLATFORM_ADMIN_GROUP_PATH_PLUGIN_KEY,
   PLATFORM_GUEST_GROUP_PATHS_PLUGIN_KEY,
@@ -400,23 +399,17 @@ export class RegistryService {
       this.getProjectGuestGroupPaths(project),
     ])
 
-    const platformRoles = generateHarborAccessLevelMapping({
-      guest: platformGuestGroupPaths,
-      developer: [],
-      maintainer: [],
-      admin: platformAdminGroupPaths,
-    })
-
-    const projectRoles = generateHarborAccessLevelMapping({
+    const roles = generateHarborAccessLevelMapping({
       guest: projectGuestGroupPaths,
       developer: projectDeveloperGroupPaths,
       maintainer: projectMaintainerGroupPaths,
       admin: projectAdminGroupPaths,
+      platformAdmin: platformAdminGroupPaths,
+      platformGuest: platformGuestGroupPaths,
     })
     return new Map([
       [`/${project.slug}`, HARBOR_ROLE_LIMITED_GUEST],
-      ...platformRoles,
-      ...projectRoles,
+      ...roles,
     ])
   }
 }
@@ -436,12 +429,14 @@ function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes:
   return parseGroupPaths(rawGroupPathSuffixes).map(path => `/${projectSlug}${path}`)
 }
 
-function generateHarborAccessLevelMapping(args: { guest: string[], developer: string[], maintainer: string[], admin: string[] }) {
+function generateHarborAccessLevelMapping(args: { guest: string[], developer: string[], maintainer: string[], admin: string[], platformAdmin: string[], platformGuest: string[] }) {
   const byGroupName = new Map<string, number>()
   for (const groupName of args.guest) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
-  for (const groupName of args.developer) byGroupName.set(groupName, HARBOR_ROLE_DEVELOPER)
-  for (const groupName of args.maintainer) byGroupName.set(groupName, HARBOR_ROLE_MAINTAINER)
-  for (const groupName of args.admin) byGroupName.set(groupName, HARBOR_ROLE_PROJECT_ADMIN)
+  for (const groupName of args.developer) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
+  for (const groupName of args.maintainer) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
+  for (const groupName of args.admin) byGroupName.set(groupName, HARBOR_ROLE_DEVELOPER)
+  for (const groupName of args.platformAdmin) byGroupName.set(groupName, HARBOR_ROLE_PROJECT_ADMIN)
+  for (const groupName of args.platformGuest) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
   return byGroupName
 }
 

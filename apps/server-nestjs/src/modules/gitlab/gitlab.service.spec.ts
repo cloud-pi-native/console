@@ -233,14 +233,16 @@ describe('gitlabService', () => {
         roles: [
           { id: 'r-reporter', oidcGroup: '/project-1/console/readonly' },
           { id: 'r-developer', oidcGroup: '/project-1/console/developer' },
+          { id: 'r-devops', oidcGroup: '/project-1/console/devops' },
           { id: 'r-maintainer', oidcGroup: '/project-1/console/admin' },
           { id: 'r-unknown', oidcGroup: '/other/group' },
         ],
         members: [
           { user: { id: 'u1', email: 'reporter@example.com', firstName: 'Rep', lastName: 'User', adminRoleIds: [] }, roleIds: ['r-reporter'] },
           { user: { id: 'u2', email: 'developer@example.com', firstName: 'Dev', lastName: 'User', adminRoleIds: [] }, roleIds: ['r-developer'] },
-          { user: { id: 'u3', email: 'maintainer@example.com', firstName: 'Main', lastName: 'User', adminRoleIds: [] }, roleIds: ['r-maintainer'] },
-          { user: { id: 'u4', email: 'mixed@example.com', firstName: 'Mixed', lastName: 'User', adminRoleIds: [] }, roleIds: ['r-reporter', 'r-developer'] },
+          { user: { id: 'u3', email: 'devops@example.com', firstName: 'Ops', lastName: 'User', adminRoleIds: [] }, roleIds: ['r-devops'] },
+          { user: { id: 'u4', email: 'maintainer@example.com', firstName: 'Main', lastName: 'User', adminRoleIds: [] }, roleIds: ['r-maintainer'] },
+          { user: { id: 'u5', email: 'mixed@example.com', firstName: 'Mixed', lastName: 'User', adminRoleIds: [] }, roleIds: ['r-reporter', 'r-developer'] },
         ],
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
@@ -251,8 +253,9 @@ describe('gitlabService', () => {
         const idByEmail: Record<string, number> = {
           'reporter@example.com': 101,
           'developer@example.com': 102,
-          'maintainer@example.com': 103,
-          'mixed@example.com': 104,
+          'devops@example.com': 103,
+          'maintainer@example.com': 104,
+          'mixed@example.com': 105,
           'owner@example.com': 100,
         }
         return makeExpandedUserSchema({
@@ -271,7 +274,38 @@ describe('gitlabService', () => {
       expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 101, AccessLevel.REPORTER)
       expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 102, AccessLevel.DEVELOPER)
       expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 103, AccessLevel.MAINTAINER)
-      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 104, AccessLevel.DEVELOPER)
+      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 104, AccessLevel.MAINTAINER)
+      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 105, AccessLevel.DEVELOPER)
+    })
+
+    it('should map security project role to reporter access level', async () => {
+      const project = makeProjectWithDetails({
+        roles: [
+          { id: 'r-security', oidcGroup: '/project-1/console/security' },
+        ],
+        members: [
+          { user: { id: 'u1', email: 'security@example.com', firstName: 'Sec', lastName: 'User', adminRoleIds: [] }, roleIds: ['r-security'] },
+        ],
+      })
+      const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+
+      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.upsertUser.mockImplementation(async (user) => {
+        return makeExpandedUserSchema({
+          id: user.email === 'security@example.com' ? 105 : 100,
+          email: user.email,
+          username: user.email.split('@')[0] ?? user.email,
+          name: user.name,
+        })
+      })
+      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+
+      await service.handleUpsert(project)
+
+      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 105, AccessLevel.REPORTER)
     })
 
     it('should downgrade existing member to guest when no role maps to an access level', async () => {

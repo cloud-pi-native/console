@@ -144,6 +144,17 @@ describe('vaultService', () => {
     expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`, expect.any(Object))
     expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`, expect.any(Object))
     expect(client.createIdentityGroupAlias).not.toHaveBeenCalled()
+
+    const policyCalls = client.upsertSysPoliciesAcl.mock.calls as Array<[string, { policy: string }]>
+    expect(policyCalls.find(([name]) => name === `project--${project.slug}--developer`)?.[1].policy)
+      .toBe(`path "${project.slug}/data/*" { capabilities = ["list"] }`)
+    expect(policyCalls.find(([name]) => name === `project--${project.slug}--readonly`)?.[1].policy)
+      .toBe(`path "${project.slug}/data/*" { capabilities = ["list"] }`)
+    expect(policyCalls.find(([name]) => name === `project--${project.slug}--security`)?.[1].policy)
+      .toBe([
+        `path "${project.slug}/metadata/*" { capabilities = ["list"] }`,
+        `path "transit/keys/${project.slug}/*" { capabilities = ["list"] }`,
+      ].join('\n'))
   })
 
   it('should delete project and destroy secrets on event', async () => {
