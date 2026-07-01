@@ -18,7 +18,7 @@ Cartographier l'ensemble des modules de l'application backend actuelle pour :
 
 | Decision | Choix |
 |----------|-------|
-| Approche migration | Bottom-up (feuilles d'abord, puis remontee vers les modules couples) |
+| Approche migration | Bottom-up (feuilles d'abord, puis remonttee vers les modules couples) |
 | Contrats API | Decorateurs NestJS natifs + class-validator (abandon de ts-rest) |
 | queries-index.ts | Supprime des le depart : chaque module NestJS possede ses propres queries Prisma |
 | Systeme d'evenements | `@nestjs/event-emitter` (remplacement progressif de `@cpn-console/hooks`) |
