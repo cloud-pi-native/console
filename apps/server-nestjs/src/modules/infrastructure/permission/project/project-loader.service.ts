@@ -1,9 +1,9 @@
 import type { Prisma } from '@prisma/client'
 import type { FastifyRequest } from 'fastify'
-import type { ProjectContext } from './project.guard.js'
+import type { ProjectContext } from './project.guard'
 import { PROJECT_PERMS } from '@cpn-console/shared'
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common'
-import { PrismaService } from '../../database/prisma.service.js'
+import { PrismaService } from '../../database/prisma.service'
 
 type RequestWithProjectParams = FastifyRequest<{ Params?: ProjectParams }>
 

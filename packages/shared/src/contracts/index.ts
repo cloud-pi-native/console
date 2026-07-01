@@ -1,6 +1,7 @@
 export * from './admin-role.js'
 export * from './admin-token.js'
 export * from './cluster.js'
+export * from './deployment.js'
 export * from './environment.js'
 export * from './log.js'
 export * from './personal-access-token.js'

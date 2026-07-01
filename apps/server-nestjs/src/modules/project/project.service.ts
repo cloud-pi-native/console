@@ -4,11 +4,11 @@ import { ProjectDatastoreService } from './project-datastore.service'
 @Injectable()
 export class ProjectService {
   constructor(
-    @Inject(ProjectDatastoreService) private readonly deploymentDatastoreService: ProjectDatastoreService,
+    @Inject(ProjectDatastoreService) private readonly projectDatastoreService: ProjectDatastoreService,
   ) {}
 
   async getProjectWithDetails(projectId: string) {
-    const projectWithDetails = await this.deploymentDatastoreService.getProjectWithDetails(projectId)
+    const projectWithDetails = await this.projectDatastoreService.getProjectWithDetails(projectId)
     if (!projectWithDetails) throw new Error(`Project with id ${projectId} not found`)
     return projectWithDetails
   }
