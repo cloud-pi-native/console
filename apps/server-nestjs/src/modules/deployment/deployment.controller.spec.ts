@@ -21,9 +21,6 @@ describe('deploymentController', () => {
     name: 'dev',
     projectId: '11111111-1111-1111-1111-111111111111',
     environmentId: '22222222-2222-2222-2222-222222222222',
-    cpu: 1,
-    gpu: 0,
-    memory: 512,
     autosync: true,
     deploymentSources: [
       {
