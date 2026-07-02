@@ -16,7 +16,7 @@
         "run",
         "integ"
       ],
-      "envFile": "${workspaceFolder}/apps/server/.integ.env",
+      "envFile": "${workspaceFolder}/apps/server/.env.integ",
       "console": "integratedTerminal",
       "restart": true,
       "presentation": {
@@ -102,7 +102,7 @@
         "run",
         "start:dev"
       ],
-      "envFile": "${workspaceFolder}/apps/server-nestjs/.integ.env",
+      "envFile": "${workspaceFolder}/apps/server-nestjs/.env.integ",
       "console": "integratedTerminal",
       "restart": true,
       "presentation": {
@@ -168,7 +168,7 @@
         "8080",
         "--strictPort"
       ],
-      "envFile": "${workspaceFolder}/apps/client/.integ.env",
+      "envFile": "${workspaceFolder}/apps/client/.env.integ",
       "console": "integratedTerminal",
       "restart": true,
       "serverReadyAction": {
@@ -224,7 +224,7 @@
         "8080",
         "--strictPort"
       ],
-      "envFile": "${workspaceFolder}/apps/client/.integ.env",
+      "envFile": "${workspaceFolder}/apps/client/.env.integ",
       "console": "integratedTerminal",
       "restart": true,
       "serverReadyAction": {
