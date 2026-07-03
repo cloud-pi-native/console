@@ -187,12 +187,12 @@ export class GitlabClientService {
 
   async getOrCreateProjectGroupPublicUrl(): Promise<string> {
     const projectGroup = await this.getOrCreateProjectGroup()
-    return `${this.config.gitlabUrl}/${projectGroup.full_path}`
+    return new URL(projectGroup.full_path, this.config.gitlabUrl).toString()
   }
 
   async getOrCreateInfraGroupRepoPublicUrl(repoName: string): Promise<string> {
     const projectGroup = await this.getOrCreateProjectGroup()
-    return `${this.config.gitlabUrl}/${projectGroup.full_path}/${INFRA_GROUP_PATH}/${repoName}.git`
+    return new URL(`${projectGroup.full_path}/${INFRA_GROUP_PATH}/${repoName}.git`, this.config.gitlabUrl).toString()
   }
 
   async getOrCreateProjectGroupInternalRepoUrl(subGroupPath: string, repoName: string): Promise<string> {
