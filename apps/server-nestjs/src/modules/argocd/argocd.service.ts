@@ -220,7 +220,7 @@ export class ArgoCDService {
       'environment.id': environment.id,
       'environment.name': environment.name,
     })
-    const vaultValues = await this.vault.readProjectValues(project.id) ?? {}
+    const vaultValues = await this.generateVaultValues(project.slug)
     const cluster = environment.cluster
     if (!cluster) {
       this.logger.warn(`Cluster not found for environment ${environment.id} in project ${project.slug}`)
@@ -297,7 +297,7 @@ export class ArgoCDService {
       'environment.id': environment.id,
       'environment.name': environment.name,
     })
-    const vaultValues = await this.vault.readProjectValues(project.id) ?? {}
+    const vaultValues = await this.generateVaultValues(project.slug)
     const cluster = environment.cluster
     if (!cluster) {
       this.logger.warn(`Cluster not found for environment ${environment.id} in project ${project.slug}`)
@@ -330,6 +330,25 @@ export class ArgoCDService {
       valueFilePath,
       stringify(values),
     )
+  }
+
+  private async generateVaultValues(projectSlug: string): Promise<Record<string, any>> {
+    this.logger.verbose(`Generating Vault project values for projectSlug=${projectSlug}`)
+    const roleId = await this.vault.getAuthApproleRoleRoleId(projectSlug).catch(() => {
+      this.logger.warn(`Couldn't find app role (project=${projectSlug})`)
+      return undefined
+    })
+    const secretId = await this.vault.createAuthApproleRoleSecretId(projectSlug).catch(() => {
+      this.logger.warn(`Couldn't find secret (project=${projectSlug})`)
+      return undefined
+    })
+    return {
+      projectsRootDir: this.config.projectRootDir,
+      url: this.config.deployVaultConnectionInNamespaces ? this.config.vaultUrl : '',
+      coreKvName: this.config.vaultKvName,
+      roleId: roleId ?? 'none',
+      secretId: secretId ?? 'none',
+    }
   }
 }
 

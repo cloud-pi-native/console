@@ -1,8 +1,8 @@
-import type { TestingModule } from '@nestjs/testing'
-import type { Mocked } from 'vitest'
+import type { DeepMockProxy } from 'vitest-mock-extended'
 import { generateNamespaceName } from '@cpn-console/shared'
 import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { mockDeep } from 'vitest-mock-extended'
 import { stringify } from 'yaml'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
 import { makeCommitAction, makeProjectSchema, makeRepositoryTreeSchema } from '../gitlab/gitlab-testing.utils'
@@ -12,60 +12,39 @@ import { ArgoCDDatastoreService } from './argocd-datastore.service'
 import { makeProjectDeployment, makeProjectDeploymentSource, makeProjectEnvironment, makeProjectRepository, makeProjectWithDetails } from './argocd-testing.utils'
 import { ArgoCDService } from './argocd.service'
 
-function createArgoCDControllerServiceTestingModule() {
-  return Test.createTestingModule({
-    providers: [
-      ArgoCDService,
-      {
-        provide: ArgoCDDatastoreService,
-        useValue: {
-          getAllProjects: vi.fn(),
-        } satisfies Partial<ArgoCDDatastoreService>,
-      },
-      {
-        provide: ConfigurationService,
-        useValue: {
-          argoNamespace: 'argocd',
-          argocdUrl: 'https://argocd.internal',
-          argocdExtraRepositories: 'repo3',
-          dsoEnvChartVersion: 'dso-env-1.6.0',
-          dsoNsChartVersion: 'dso-ns-1.1.5',
-        } satisfies Partial<ConfigurationService>,
-      },
-      {
-        provide: GitlabClientService,
-        useValue: {
-          getOrCreateInfraGroupRepo: vi.fn(),
-          getOrCreateProjectGroupPublicUrl: vi.fn(),
-          getOrCreateInfraGroupRepoPublicUrl: vi.fn(),
-          generateCreateOrUpdateAction: vi.fn(),
-          maybeCreateCommit: vi.fn(),
-          listFiles: vi.fn(),
-        } satisfies Partial<GitlabClientService>,
-      },
-      {
-        provide: VaultClientService,
-        useValue: {
-          readProjectValues: vi.fn(),
-        } satisfies Partial<VaultClientService>,
-      },
-    ],
-  })
-}
-
 describe('argoCDService', () => {
   let service: ArgoCDService
-  let datastore: Mocked<ArgoCDDatastoreService>
-  let gitlab: Mocked<GitlabClientService>
-  let vault: Mocked<VaultClientService>
+  let datastore: DeepMockProxy<ArgoCDDatastoreService>
+  let gitlab: DeepMockProxy<GitlabClientService>
+  let vault: DeepMockProxy<VaultClientService>
 
   beforeEach(async () => {
-    vi.clearAllMocks()
-    const module: TestingModule = await createArgoCDControllerServiceTestingModule().compile()
+    datastore = mockDeep<ArgoCDDatastoreService>()
+    gitlab = mockDeep<GitlabClientService>()
+    vault = mockDeep<VaultClientService>()
+    const config = mockDeep<ConfigurationService>({
+      argoNamespace: 'argocd',
+      argocdUrl: 'https://argocd.internal',
+      argocdExtraRepositories: 'repo3',
+      dsoEnvChartVersion: 'dso-env-1.6.0',
+      dsoNsChartVersion: 'dso-ns-1.1.5',
+      projectRootDir: 'forge',
+      vaultUrl: 'https://vault.internal',
+      vaultKvName: 'kv',
+      deployVaultConnectionInNamespaces: false,
+    })
+
+    const module = await Test.createTestingModule({
+      providers: [
+        ArgoCDService,
+        { provide: ArgoCDDatastoreService, useValue: datastore },
+        { provide: ConfigurationService, useValue: config },
+        { provide: GitlabClientService, useValue: gitlab },
+        { provide: VaultClientService, useValue: vault },
+      ],
+    }).compile()
+
     service = module.get(ArgoCDService)
-    datastore = module.get(ArgoCDDatastoreService)
-    gitlab = module.get(GitlabClientService)
-    vault = module.get(VaultClientService)
   })
 
   it('should be defined', () => {
@@ -91,7 +70,8 @@ describe('argoCDService', () => {
     gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
     gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([])
-    vault.readProjectValues.mockResolvedValue({ secret: 'value' })
+    vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
+    vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
     gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
       return makeCommitAction({ filePath, content })
     })
@@ -153,7 +133,13 @@ describe('argoCDService', () => {
                 name: 'cluster-1',
               },
               autosync: true,
-              vault: { secret: 'value' },
+              vault: {
+                projectsRootDir: 'forge',
+                url: '',
+                coreKvName: 'kv',
+                roleId: 'role-id',
+                secretId: 'secret-id',
+              },
               repositories: [
                 {
                   id: mockProject.repositories[0].id,
@@ -222,7 +208,13 @@ describe('argoCDService', () => {
                 name: 'cluster-1',
               },
               autosync: true,
-              vault: { secret: 'value' },
+              vault: {
+                projectsRootDir: 'forge',
+                url: '',
+                coreKvName: 'kv',
+                roleId: 'role-id',
+                secretId: 'secret-id',
+              },
               repositories: [
                 {
                   id: mockProject.repositories[0].id,
@@ -277,7 +269,8 @@ describe('argoCDService', () => {
         { name: 'values.yaml', path: 'Project 1/cluster-1/prod/values.yaml' },
       ),
     ])
-    vault.readProjectValues.mockResolvedValue({ secret: 'value' })
+    vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
+    vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
     gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
       return makeCommitAction({ filePath, content })
     })
@@ -320,7 +313,8 @@ describe('argoCDService', () => {
     gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
     gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([])
-    vault.readProjectValues.mockResolvedValue({ secret: 'value' })
+    vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
+    vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
 
     gitlab.generateCreateOrUpdateAction.mockResolvedValue(null)
 
@@ -364,7 +358,8 @@ describe('argoCDService', () => {
     gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
     gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([])
-    vault.readProjectValues.mockResolvedValue({ secret: 'value' })
+    vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
+    vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
     gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
       return makeCommitAction({ filePath, content })
     })
@@ -426,7 +421,13 @@ describe('argoCDService', () => {
                 name: 'cluster-1',
               },
               autosync: true,
-              vault: { secret: 'value' },
+              vault: {
+                projectsRootDir: 'forge',
+                url: '',
+                coreKvName: 'kv',
+                roleId: 'role-id',
+                secretId: 'secret-id',
+              },
               repositories: [
                 {
                   name: 'infra-repo',
