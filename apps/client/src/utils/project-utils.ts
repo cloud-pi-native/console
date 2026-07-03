@@ -1,6 +1,8 @@
 import type {
+  CreateDeploymentBody,
   CreateEnvironmentBody,
   CreateRepositoryBody,
+  Deployment,
   Environment,
   GetLogsQuery,
   PermissionTarget,
@@ -13,6 +15,7 @@ import type {
   Repo,
   RepositoryParams,
   Role,
+  UpdateDeploymentBody,
   UpdateEnvironmentBody,
   UpdateRepositoryBody,
   User,
@@ -35,6 +38,7 @@ import { getRandomId } from './func.js'
 
 export type ProjectOperations = 'create'
   | 'delete'
+  | 'deploymentManagement'
   | 'envManagement'
   | 'repoManagement'
   | 'teamManagement'
@@ -80,6 +84,7 @@ export class Project implements ProjectV2 {
   myPerms: bigint
   repositories: Ref<Repo[]>
   environments: Ref<Environment[]>
+  deployments: Ref<Deployment[]>
   services: ProjectService[] = []
   lastSuccessProvisionningVersion: string | null
   needReplay: Ref<boolean>
@@ -112,6 +117,7 @@ export class Project implements ProjectV2 {
     this.environments = ref([])
     this.repositories = ref([])
     this.needReplay = ref(false)
+    this.deployments = ref([])
   }
 
   private removeOperation(operationName: ProjectOperations) {
@@ -226,6 +232,43 @@ export class Project implements ProjectV2 {
     getCandidateUsers: async (letters: string) => {
       return apiClient.Users.getMatchingUsers({ query: { letters, notInProjectId: this.id } })
         .then((response: any) => extractData(response, 200))
+    },
+  }
+
+  Deployments = {
+    list: async () => {
+      this.deployments.value = await apiClient.Deployments.listDeployments({ params: { projectId: this.id } })
+        .then((response: any) => extractData(response, 200))
+      return this.deployments.value
+    },
+    create: async (deploymentData: Omit<CreateDeploymentBody, 'projectId'>) => {
+      const callback = this.addOperation('deploymentManagement')
+      try {
+        await apiClient.Deployments.createDeployment({
+          params: { projectId: this.id },
+          body: { ...deploymentData, projectId: this.id },
+        })
+          .then((response: any) => extractData(response, 201))
+      } finally { callback() }
+    },
+    update: async (id: Deployment['id'], deployment: UpdateDeploymentBody) => {
+      const callback = this.addOperation('deploymentManagement')
+      try {
+        await apiClient.Deployments.updateDeployment({
+          params: { projectId: this.id, deploymentId: id },
+          body: deployment,
+        })
+          .then((response: any) => extractData(response, 200))
+      } finally { callback() }
+    },
+    delete: async (deploymentId: Deployment['id']) => {
+      const callback = this.addOperation('deploymentManagement')
+      try {
+        await apiClient.Deployments.deleteDeployment({
+          params: { projectId: this.id, deploymentId },
+        })
+          .then((response: any) => extractData(response, 204))
+      } finally { callback() }
     },
   }
 
