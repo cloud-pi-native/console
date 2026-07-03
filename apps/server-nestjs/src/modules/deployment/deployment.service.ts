@@ -1,11 +1,13 @@
 import type { CreateDeployment, UpdateDeployment } from '@cpn-console/shared'
 import type { EventLogAction } from '../events/app-events.service'
-import { Inject, Injectable } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { AppEventsService } from '../events/app-events.service'
 import { DeploymentDatastoreService } from './deployment-datastore.service'
 
 @Injectable()
 export class DeploymentService {
+  private readonly logger = new Logger(DeploymentService.name)
+
   constructor(
     @Inject(DeploymentDatastoreService) private readonly deploymentDatastoreService: DeploymentDatastoreService,
     @Inject(AppEventsService) private readonly appEvents: AppEventsService,
@@ -15,7 +17,7 @@ export class DeploymentService {
     return this.deploymentDatastoreService.getDeploymentsByProjectId(projectId)
   }
 
-  async createDeployment(projectId: string, deploymentToCreate: CreateDeployment) {
+  async createDeployment(projectId: string, deploymentToCreate: CreateDeployment, userId: string, requestId: string) {
     const deployment = await this.deploymentDatastoreService.createDeployment({
       name: deploymentToCreate.name,
       project: { connect: { id: projectId } },
@@ -34,11 +36,11 @@ export class DeploymentService {
       },
     })
 
-    await this.upsertProject(projectId, 'Create Deployment')
+    this.reconcileProject(projectId, 'Create Deployment', userId, requestId)
     return deployment
   }
 
-  async updateDeployment(deploymentId: string, deploymentToUpdate: UpdateDeployment) {
+  async updateDeployment(projectId: string, deploymentId: string, deploymentToUpdate: UpdateDeployment, userId: string, requestId: string) {
     const existing = await this.deploymentDatastoreService.getDeploymentById(deploymentId)
     if (!existing) throw new Error(`Deployment with id ${deploymentId} not found`)
 
@@ -79,21 +81,28 @@ export class DeploymentService {
         })),
       },
     })
-    await this.upsertProject(deploymentToUpdate.projectId, 'Update Deployment')
+    this.reconcileProject(projectId, 'Update Deployment', userId, requestId)
     return deployment
   }
 
-  async deleteDeployment(deploymentId: string) {
-    const deployment = await this.deploymentDatastoreService.deleteDeployment(deploymentId)
-    await this.upsertProject(deployment.projectId, 'Delete Deployment')
+  async deleteDeployment(projectId: string, deploymentId: string, userId: string, requestId: string) {
+    await this.deploymentDatastoreService.deleteDeployment(deploymentId)
+    this.reconcileProject(projectId, 'Delete Deployment', userId, requestId)
   }
 
   async deleteAllDeploymentsByProjectId(projectId: string) {
     await this.deploymentDatastoreService.deleteAllDeploymentsByProjectId(projectId)
-    await this.upsertProject(projectId, 'Delete all project deployments')
+    await this.appEvents.emitProjectEvent('project.upsert', projectId, { action: 'Delete all project deployments' })
   }
 
-  private async upsertProject(projectId: string, action: EventLogAction) {
-    await this.appEvents.emitProjectEvent('project.upsert', projectId, { action })
+  /**
+   * Triggers the project reconciliation without blocking the response: listener
+   * outcomes (including failures) are persisted in the admin log by AppEventsService.
+   */
+  private reconcileProject(projectId: string, action: EventLogAction, userId: string, requestId: string) {
+    this.appEvents.emitProjectEvent('project.upsert', projectId, { action, userId, requestId })
+      .catch((error: unknown) => {
+        this.logger.error(`project.upsert reconciliation failed (projectId=${projectId})`, error instanceof Error ? error.stack : String(error))
+      })
   }
 }

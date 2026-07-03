@@ -27,6 +27,7 @@ export class DeploymentDatastoreService {
           include: { repository: true },
         },
       },
+      orderBy: { createdAt: 'asc' },
     })
   }
 

@@ -240,11 +240,6 @@ export class ArgoCDService {
 
     const valueFilePath = formatEnvironmentValuesFilePath(project, cluster, environment)
 
-    const repo = project.repositories.find(r => r.isInfra)
-    if (!repo) {
-      this.logger.warn(`Infrastructure repository not found for project ${project.slug} (projectId=${project.id})`)
-      return null
-    }
     const gitlabPublicProjectUrl = `${(await this.gitlab.getOrCreateProjectGroupPublicUrl())}/${project.slug}`
 
     const values = formatValues({

@@ -16,7 +16,11 @@ describe('deploymentService', () => {
   let appEvents: DeepMockProxy<AppEventsService>
 
   const projectId = '11111111-1111-1111-1111-111111111111'
+  const userId = 'user-uuid-1234'
+  const requestId = 'request-uuid-5678'
   const deploymentId = '22222222-2222-2222-2222-222222222222'
+
+  const okArgoCDResults = { argocd: { status: 'OK' as const, message: 'Up to date', executionTime: 10 } }
 
   const validCreateDeployment = {
     name: 'mydeployment',
@@ -80,12 +84,13 @@ describe('deploymentService', () => {
   })
 
   describe('createDeployment', () => {
-    it('should create deployment and upsert project', async () => {
+    it('should create deployment and trigger a project reconciliation', async () => {
       const createdDeployment = makeDeployment({ id: deploymentId, projectId })
 
       datastore.createDeployment.mockResolvedValue(createdDeployment)
+      appEvents.emitProjectEvent.mockResolvedValue(okArgoCDResults)
 
-      const result = await service.createDeployment(projectId, validCreateDeployment)
+      const result = await service.createDeployment(projectId, validCreateDeployment, userId, requestId)
 
       expect(datastore.createDeployment).toHaveBeenCalledWith({
         name: validCreateDeployment.name,
@@ -105,13 +110,23 @@ describe('deploymentService', () => {
         },
       })
 
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, { action: 'Create Deployment' })
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, { action: 'Create Deployment', userId, requestId })
+      expect(result).toEqual(createdDeployment)
+    })
+
+    it('should return the deployment even when the reconciliation fails', async () => {
+      const createdDeployment = makeDeployment({ id: deploymentId, projectId })
+      datastore.createDeployment.mockResolvedValue(createdDeployment)
+      appEvents.emitProjectEvent.mockRejectedValue(new Error('sync error'))
+
+      const result = await service.createDeployment(projectId, validCreateDeployment, userId, requestId)
+
       expect(result).toEqual(createdDeployment)
     })
   })
 
   describe('updateDeployment', () => {
-    it('should update deployment and upsert project', async () => {
+    it('should update deployment and trigger a project reconciliation', async () => {
       const existingDeployment = makeDeploymentWithRelations({
         id: deploymentId,
         projectId,
@@ -125,8 +140,9 @@ describe('deploymentService', () => {
 
       datastore.getDeploymentById.mockResolvedValue(existingDeployment)
       datastore.updateDeployment.mockResolvedValue(updatedDeployment)
+      appEvents.emitProjectEvent.mockResolvedValue(okArgoCDResults)
 
-      const result = await service.updateDeployment(deploymentId, validUpdateDeployment)
+      const result = await service.updateDeployment(projectId, deploymentId, validUpdateDeployment, userId, requestId)
 
       expect(datastore.updateDeployment).toHaveBeenCalledWith(
         deploymentId,
@@ -141,7 +157,7 @@ describe('deploymentService', () => {
         }),
       )
 
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', validUpdateDeployment.projectId, { action: 'Update Deployment' })
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, { action: 'Update Deployment', userId, requestId })
       expect(result).toEqual(updatedDeployment)
     })
 
@@ -149,21 +165,47 @@ describe('deploymentService', () => {
       datastore.getDeploymentById.mockResolvedValue(null)
 
       await expect(
-        service.updateDeployment(deploymentId, validUpdateDeployment),
+        service.updateDeployment(projectId, deploymentId, validUpdateDeployment, userId, requestId),
       ).rejects.toThrow(`Deployment with id ${deploymentId} not found`)
 
       expect(datastore.updateDeployment).not.toHaveBeenCalled()
     })
+
+    it('should return the deployment even when the reconciliation fails', async () => {
+      const existingDeployment = makeDeploymentWithRelations({
+        id: deploymentId,
+        projectId,
+        deploymentSources: [
+          makeDeploymentSource({ id: '55555555-5555-5555-5555-555555555555', deploymentId }),
+        ],
+      })
+      const updatedDeployment = makeDeployment({ id: deploymentId, projectId })
+      datastore.getDeploymentById.mockResolvedValue(existingDeployment)
+      datastore.updateDeployment.mockResolvedValue(updatedDeployment)
+      appEvents.emitProjectEvent.mockRejectedValue(new Error('sync error'))
+
+      const result = await service.updateDeployment(projectId, deploymentId, validUpdateDeployment, userId, requestId)
+
+      expect(result).toEqual(updatedDeployment)
+    })
   })
 
   describe('deleteDeployment', () => {
-    it('should delete deployment and upsert project', async () => {
+    it('should delete deployment and trigger a project reconciliation', async () => {
       datastore.deleteDeployment.mockResolvedValue(makeDeployment({ id: deploymentId, projectId }))
+      appEvents.emitProjectEvent.mockResolvedValue(okArgoCDResults)
 
-      await service.deleteDeployment(deploymentId)
+      await service.deleteDeployment(projectId, deploymentId, userId, requestId)
 
       expect(datastore.deleteDeployment).toHaveBeenCalledWith(deploymentId)
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, { action: 'Delete Deployment' })
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, { action: 'Delete Deployment', userId, requestId })
+    })
+
+    it('should resolve even when the reconciliation fails', async () => {
+      datastore.deleteDeployment.mockResolvedValue(makeDeployment({ id: deploymentId, projectId }))
+      appEvents.emitProjectEvent.mockRejectedValue(new Error('sync error'))
+
+      await expect(service.deleteDeployment(projectId, deploymentId, userId, requestId)).resolves.toBeUndefined()
     })
   })
 
