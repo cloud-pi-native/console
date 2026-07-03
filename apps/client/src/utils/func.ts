@@ -1,3 +1,4 @@
+import type { Ref } from 'vue'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const LOCALE = navigator.language.slice(0, 2)
@@ -84,4 +85,19 @@ export function localeParseFloat(s: string): number {
   const delocalizedInput = s.replaceAll(THOUSANDS_SEPARATOR, '').replaceAll(DECIMAL_SEPARATOR, '.')
   // Now it can be parsed
   return Number.parseFloat(delocalizedInput)
+}
+
+export async function scrollToFirstError(container: Ref<HTMLDivElement | null>) {
+  await nextTick()
+
+  if (!container.value) return
+
+  const firstErrorElement = container.value.querySelector('.fr-error-text, .fr-input-group--error')
+
+  if (firstErrorElement) {
+    firstErrorElement.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    })
+  }
 }
