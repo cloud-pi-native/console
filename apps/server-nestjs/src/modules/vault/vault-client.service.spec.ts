@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from './vault-client.service'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
@@ -24,20 +25,21 @@ const server = setupServer(
   }),
 )
 
-function createVaultServiceTestingModule() {
+function createVaultServiceTestingModule(config: Partial<ConfigurationService> = {}) {
   return Test.createTestingModule({
     providers: [
       VaultClientService,
       VaultHttpClientService,
       {
         provide: ConfigurationService,
-        useValue: {
+        useValue: mockDeep<ConfigurationService>({
           vaultToken: 'token',
           vaultUrl,
           vaultInternalUrl: vaultUrl,
           vaultKvName: 'kv',
           getInternalOrPublicVaultUrl: () => vaultUrl,
-        } satisfies Partial<ConfigurationService>,
+          ...config,
+        }),
       },
     ],
   })
@@ -53,24 +55,6 @@ describe('vault', () => {
   })
   afterEach(() => server.resetHandlers())
   afterAll(() => server.close())
-
-  describe('getProjectValues', () => {
-    it('should get project values', async () => {
-      const result = await service.readProjectValues('project-id')
-      expect(result).toEqual({ secret: 'value' })
-    })
-
-    it('should return empty object if undefined', async () => {
-      server.use(
-        http.get(`${vaultUrl}/v1/kv/data/:path`, () => {
-          return HttpResponse.json({}, { status: HttpStatus.NOT_FOUND })
-        }),
-      )
-
-      const result = await service.readProjectValues('project-id')
-      expect(result).toEqual(undefined)
-    })
-  })
 
   describe('read', () => {
     it('should read secret', async () => {

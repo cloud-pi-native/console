@@ -81,6 +81,7 @@ export class ConfigurationService {
   vaultInternalUrl = process.env.VAULT_INTERNAL_URL
 
   vaultKvName = process.env.VAULT_KV_NAME ?? 'forge-dso'
+  deployVaultConnectionInNamespaces = process.env.VAULT__DEPLOY_VAULT_CONNECTION_IN_NS === 'true'
 
   // registry (harbor)
   harborUrl = process.env.HARBOR_URL

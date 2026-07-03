@@ -3,7 +3,7 @@ import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
-import { generateGitlabMirrorCredPath, generateProjectPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath } from './vault.utils'
+import { generateGitlabMirrorCredPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath } from './vault.utils'
 
 export interface VaultSysPoliciesAclUpsertRequest {
   policy: string
@@ -159,18 +159,6 @@ export class VaultClientService {
     const span = trace.getActiveSpan()
     span?.setAttribute('vault.kv.path', path)
     return await this.deleteKvMetadata(this.config.vaultKvName, path)
-  }
-
-  @StartActiveSpan()
-  async readProjectValues(projectId: string): Promise<Record<string, any> | undefined> {
-    const path = generateProjectPath(this.config.projectRootDir, projectId)
-    this.logger.debug(`Reading Vault project values (projectId=${projectId}, path=${path})`)
-    this.logger.verbose(`Reading Vault project values for projectId=${projectId}`)
-    const secret = await this.read<Record<string, any>>(path).catch((error) => {
-      if (error instanceof VaultError && error.kind === 'NotFound') return null
-      throw error
-    })
-    return secret?.data
   }
 
   @StartActiveSpan()
