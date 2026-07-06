@@ -76,9 +76,10 @@ export class KeycloakSecretProviderService {
       this.logger.log(`No internal domain configured, returning original JWKS URI: ${jwksUri}`)
       return jwksUri
     }
-    this.logger.log(`Replacing JWKS URI domain: ${jwksUri} -> ${this.config.keycloakDomain}`)
     const url = new URL(jwksUri)
-    url.host = this.config.keycloakDomain
+    url.protocol = this.config.keycloakProtocol ?? url.protocol
+    url.host = this.config.keycloakDomain ?? url.host
+    this.logger.log(`Replacing JWKS URI domain: ${jwksUri} -> ${url.toString()}`)
     return url.toString()
   }
 

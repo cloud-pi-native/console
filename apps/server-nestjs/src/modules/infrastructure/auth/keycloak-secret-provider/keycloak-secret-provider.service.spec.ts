@@ -57,7 +57,7 @@ describe('keycloakSecretProviderService', () => {
   it('should fetch JWKS from Keycloak and parse the response', async () => {
     const issuer = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}`
     const publicJwksUri = `https://public.${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
-    const internalJwksUri = `https://${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
+    const internalJwksUri = `${config.keycloakProtocol}://${config.keycloakDomain}/realms/${config.keycloakRealm}/protocol/openid-connect/certs`
     fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ issuer, jwks_uri: publicJwksUri })))
     fetchMock.mockResolvedValueOnce(makeJwksResponse('kid-1'))
 
