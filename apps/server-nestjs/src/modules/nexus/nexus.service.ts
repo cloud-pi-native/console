@@ -1,3 +1,4 @@
+import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { NexusPrivilege } from './nexus-client.service'
 import type { ProjectWithDetails } from './nexus-datastore.service'
 import type {
@@ -9,6 +10,7 @@ import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultError } from '../vault/vault-http-client.service'
 import { NexusClientService } from './nexus-client.service'
@@ -59,8 +61,12 @@ export class NexusService {
   }
 
   @OnEvent('project.upsert')
+  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'nexus'>> {
+    return capturePluginResult('nexus', () => this.syncProject(project))
+  }
+
   @StartActiveSpan()
-  async handleUpsert(project: ProjectWithDetails) {
+  private async syncProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling project upsert for ${project.slug}`)
@@ -70,8 +76,12 @@ export class NexusService {
   }
 
   @OnEvent('project.delete')
+  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'nexus'>> {
+    return capturePluginResult('nexus', () => this.cleanupProject(project))
+  }
+
   @StartActiveSpan()
-  async handleDelete(project: ProjectWithDetails) {
+  private async cleanupProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling project delete for ${project.slug}`)

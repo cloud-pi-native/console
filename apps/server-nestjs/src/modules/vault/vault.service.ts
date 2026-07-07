@@ -1,9 +1,11 @@
+import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
 import { VaultError } from './vault-http-client.service'
@@ -49,8 +51,12 @@ export class VaultService {
   }
 
   @OnEvent('project.upsert')
+  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'vault'>> {
+    return capturePluginResult('vault', () => this.syncProject(project))
+  }
+
   @StartActiveSpan()
-  async handleUpsert(project: ProjectWithDetails) {
+  private async syncProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project upsert event for ${project.slug}`)
@@ -59,8 +65,12 @@ export class VaultService {
   }
 
   @OnEvent('project.delete')
+  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'vault'>> {
+    return capturePluginResult('vault', () => this.cleanupProject(project))
+  }
+
   @StartActiveSpan()
-  async handleDelete(project: ProjectWithDetails) {
+  private async cleanupProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project delete event for ${project.slug}`)
@@ -72,8 +82,12 @@ export class VaultService {
   }
 
   @OnEvent('zone.upsert')
+  async handleUpsertZone(zone: ZoneWithDetails): Promise<RequiredPluginResult<'vault'>> {
+    return capturePluginResult('vault', () => this.syncZone(zone))
+  }
+
   @StartActiveSpan()
-  async handleUpsertZone(zone: ZoneWithDetails) {
+  private async syncZone(zone: ZoneWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('zone.slug', zone.slug)
     this.logger.log(`Handling a zone upsert event for ${zone.slug}`)
@@ -82,8 +96,12 @@ export class VaultService {
   }
 
   @OnEvent('zone.delete')
+  async handleDeleteZone(zone: ZoneWithDetails): Promise<RequiredPluginResult<'vault'>> {
+    return capturePluginResult('vault', () => this.cleanupZone(zone))
+  }
+
   @StartActiveSpan()
-  async handleDeleteZone(zone: ZoneWithDetails) {
+  private async cleanupZone(zone: ZoneWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('zone.slug', zone.slug)
     this.logger.log(`Handling a zone delete event for ${zone.slug}`)

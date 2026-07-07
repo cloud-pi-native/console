@@ -1,3 +1,4 @@
+import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { VaultSecret } from '../vault/vault-client.service'
 import type {
   HarborAccess,
@@ -15,6 +16,7 @@ import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultError } from '../vault/vault-http-client.service'
 import { projectRobotName, RegistryClientService, roAccess, roRobotName, rwAccess, rwRobotName } from './registry-client.service'
@@ -315,8 +317,12 @@ export class RegistryService {
   }
 
   @OnEvent('project.upsert')
+  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'harbor'>> {
+    return capturePluginResult('harbor', () => this.syncProject(project))
+  }
+
   @StartActiveSpan()
-  async handleUpsert(project: ProjectWithDetails) {
+  private async syncProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling project upsert for ${project.slug}`)
@@ -329,8 +335,12 @@ export class RegistryService {
   }
 
   @OnEvent('project.delete')
+  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'harbor'>> {
+    return capturePluginResult('harbor', () => this.cleanupProject(project))
+  }
+
   @StartActiveSpan()
-  async handleDelete(project: ProjectWithDetails) {
+  private async cleanupProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling project delete for ${project.slug}`)
