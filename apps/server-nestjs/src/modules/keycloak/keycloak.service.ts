@@ -7,6 +7,7 @@ import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { PluginHandler } from '../plugin/plugin-handler.decorator'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
 import { isMember, isNonEmptyGroupPath, isOwnedProjectGroup, normalizeGroupPath } from './keycloak.utils'
@@ -23,6 +24,7 @@ export class KeycloakService {
   }
 
   @OnEvent('project.upsert')
+  @PluginHandler('keycloak')
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -33,6 +35,7 @@ export class KeycloakService {
   }
 
   @OnEvent('project.delete')
+  @PluginHandler('keycloak')
   @StartActiveSpan()
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()

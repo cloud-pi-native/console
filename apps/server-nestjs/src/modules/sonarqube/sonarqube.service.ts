@@ -8,6 +8,7 @@ import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { PluginHandler } from '../plugin/plugin-handler.decorator'
 import { VaultClientService } from '../vault/vault-client.service'
 import { SonarqubeClientService } from './sonarqube-client.service'
 import { SonarqubeDatastoreService } from './sonarqube-datastore.service'
@@ -87,6 +88,7 @@ export class SonarqubeService implements OnModuleInit {
   }
 
   @OnEvent('project.upsert')
+  @PluginHandler('sonarqube')
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -97,6 +99,7 @@ export class SonarqubeService implements OnModuleInit {
   }
 
   @OnEvent('project.delete')
+  @PluginHandler('sonarqube')
   @StartActiveSpan()
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()

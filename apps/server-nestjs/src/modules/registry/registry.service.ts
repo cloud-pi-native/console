@@ -15,6 +15,7 @@ import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { PluginHandler } from '../plugin/plugin-handler.decorator'
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultError } from '../vault/vault-http-client.service'
 import { projectRobotName, RegistryClientService, roAccess, roRobotName, rwAccess, rwRobotName } from './registry-client.service'
@@ -315,6 +316,7 @@ export class RegistryService {
   }
 
   @OnEvent('project.upsert')
+  @PluginHandler('harbor')
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -329,6 +331,7 @@ export class RegistryService {
   }
 
   @OnEvent('project.delete')
+  @PluginHandler('harbor')
   @StartActiveSpan()
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()

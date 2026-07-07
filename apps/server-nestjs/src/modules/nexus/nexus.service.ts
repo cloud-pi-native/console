@@ -9,6 +9,7 @@ import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { PluginHandler } from '../plugin/plugin-handler.decorator'
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultError } from '../vault/vault-http-client.service'
 import { NexusClientService } from './nexus-client.service'
@@ -59,6 +60,7 @@ export class NexusService {
   }
 
   @OnEvent('project.upsert')
+  @PluginHandler('nexus')
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -70,6 +72,7 @@ export class NexusService {
   }
 
   @OnEvent('project.delete')
+  @PluginHandler('nexus')
   @StartActiveSpan()
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()

@@ -9,6 +9,7 @@ import { stringify } from 'yaml'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { PluginHandler } from '../plugin/plugin-handler.decorator'
 import { VaultClientService } from '../vault/vault-client.service'
 import { ArgoCDDatastoreService } from './argocd-datastore.service'
 import {
@@ -37,6 +38,7 @@ export class ArgoCDService {
   }
 
   @OnEvent('project.upsert')
+  @PluginHandler('argocd')
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -47,6 +49,7 @@ export class ArgoCDService {
   }
 
   @OnEvent('project.delete')
+  @PluginHandler('argocd')
   @StartActiveSpan()
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()

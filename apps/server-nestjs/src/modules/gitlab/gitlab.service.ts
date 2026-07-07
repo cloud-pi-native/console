@@ -9,6 +9,7 @@ import { trace } from '@opentelemetry/api'
 import { getAll } from '../../utils/iterable'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { PluginHandler } from '../plugin/plugin-handler.decorator'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
 import { GitlabDatastoreService } from './gitlab-datastore.service'
@@ -57,6 +58,7 @@ export class GitlabService {
   }
 
   @OnEvent('project.upsert')
+  @PluginHandler('gitlab')
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -67,6 +69,7 @@ export class GitlabService {
   }
 
   @OnEvent('project.delete')
+  @PluginHandler('gitlab')
   @StartActiveSpan()
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()

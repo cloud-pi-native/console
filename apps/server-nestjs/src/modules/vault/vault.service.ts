@@ -4,6 +4,7 @@ import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { PluginHandler } from '../plugin/plugin-handler.decorator'
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
 import { VaultError } from './vault-http-client.service'
@@ -49,6 +50,7 @@ export class VaultService {
   }
 
   @OnEvent('project.upsert')
+  @PluginHandler('vault')
   @StartActiveSpan()
   async handleUpsert(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -59,6 +61,7 @@ export class VaultService {
   }
 
   @OnEvent('project.delete')
+  @PluginHandler('vault')
   @StartActiveSpan()
   async handleDelete(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
@@ -72,6 +75,7 @@ export class VaultService {
   }
 
   @OnEvent('zone.upsert')
+  @PluginHandler('vault')
   @StartActiveSpan()
   async handleUpsertZone(zone: ZoneWithDetails) {
     const span = trace.getActiveSpan()
@@ -82,6 +86,7 @@ export class VaultService {
   }
 
   @OnEvent('zone.delete')
+  @PluginHandler('vault')
   @StartActiveSpan()
   async handleDeleteZone(zone: ZoneWithDetails) {
     const span = trace.getActiveSpan()
