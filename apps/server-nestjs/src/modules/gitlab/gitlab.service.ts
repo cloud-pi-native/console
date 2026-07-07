@@ -1,4 +1,5 @@
 import type { CondensedGroupSchema, MemberSchema, ProjectSchema } from '@gitbeaker/core'
+import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { VaultSecret } from '../vault/vault-client.service'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
 import { specificallyEnabled } from '@cpn-console/hooks'
@@ -9,6 +10,7 @@ import { trace } from '@opentelemetry/api'
 import { getAll } from '../../utils/iterable'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
 import { GitlabDatastoreService } from './gitlab-datastore.service'
@@ -57,8 +59,12 @@ export class GitlabService {
   }
 
   @OnEvent('project.upsert')
+  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', () => this.syncProject(project))
+  }
+
   @StartActiveSpan()
-  async handleUpsert(project: ProjectWithDetails) {
+  private async syncProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project upsert event for ${project.slug}`)
@@ -67,8 +73,12 @@ export class GitlabService {
   }
 
   @OnEvent('project.delete')
+  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', () => this.cleanupProject(project))
+  }
+
   @StartActiveSpan()
-  async handleDelete(project: ProjectWithDetails) {
+  private async cleanupProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project delete event for ${project.slug}`)

@@ -1,4 +1,5 @@
 import type { OnModuleInit } from '@nestjs/common'
+import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { SonarqubeUserSecret } from '../vault/vault-client.service'
 import type { SonarqubeProjectResult, SonarqubeUser } from './sonarqube-client.service'
 import type { ProjectWithDetails } from './sonarqube-datastore.service'
@@ -8,6 +9,7 @@ import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { SonarqubeClientService } from './sonarqube-client.service'
 import { SonarqubeDatastoreService } from './sonarqube-datastore.service'
@@ -87,8 +89,12 @@ export class SonarqubeService implements OnModuleInit {
   }
 
   @OnEvent('project.upsert')
+  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'sonarqube'>> {
+    return capturePluginResult('sonarqube', () => this.syncProject(project))
+  }
+
   @StartActiveSpan()
-  async handleUpsert(project: ProjectWithDetails) {
+  private async syncProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project upsert event for ${project.slug}`)
@@ -97,8 +103,12 @@ export class SonarqubeService implements OnModuleInit {
   }
 
   @OnEvent('project.delete')
+  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'sonarqube'>> {
+    return capturePluginResult('sonarqube', () => this.cleanupProject(project))
+  }
+
   @StartActiveSpan()
-  async handleDelete(project: ProjectWithDetails) {
+  private async cleanupProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project delete event for ${project.slug}`)

@@ -160,7 +160,7 @@ describe('registryService', () => {
       })
     })
 
-    it('throws when Maintainer membership creation fails', async () => {
+    it('returns a KO result when Maintainer membership creation fails', async () => {
       const project = makeProjectWithDetails()
       registry.addGroupMember.mockImplementation(async (_projectName, body) => {
         if (body.member_group.group_name === `/${project.slug}/console/devops` && body.role_id === 4) {
@@ -169,7 +169,12 @@ describe('registryService', () => {
         return { status: 201, data: null }
       })
 
-      await expect(service.handleUpsert(project)).rejects.toThrow('Harbor create member failed')
+      await expect(service.handleUpsert(project)).resolves.toEqual({
+        harbor: expect.objectContaining({
+          status: 'KO',
+          message: expect.stringContaining('Harbor create member failed'),
+        }),
+      })
 
       expect(registry.addGroupMember).toHaveBeenCalledWith(project.slug, {
         role_id: 4,

@@ -1,4 +1,5 @@
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
+import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
 import type { GroupRepresentationWith } from './keycloak.utils'
 import { getPermsByUserRoles, isExternalRoleType, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
@@ -7,6 +8,7 @@ import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { capturePluginResult } from '../plugin/plugin.utils'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
 import { isMember, isNonEmptyGroupPath, isOwnedProjectGroup, normalizeGroupPath } from './keycloak.utils'
@@ -23,8 +25,12 @@ export class KeycloakService {
   }
 
   @OnEvent('project.upsert')
+  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'keycloak'>> {
+    return capturePluginResult('keycloak', () => this.syncProject(project))
+  }
+
   @StartActiveSpan()
-  async handleUpsert(project: ProjectWithDetails) {
+  private async syncProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project upsert event for ${project.slug}`)
@@ -33,8 +39,12 @@ export class KeycloakService {
   }
 
   @OnEvent('project.delete')
+  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'keycloak'>> {
+    return capturePluginResult('keycloak', () => this.cleanupProject(project))
+  }
+
   @StartActiveSpan()
-  async handleDelete(project: ProjectWithDetails) {
+  private async cleanupProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project delete event for ${project.slug}`)

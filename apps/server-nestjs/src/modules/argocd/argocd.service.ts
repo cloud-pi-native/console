@@ -1,4 +1,5 @@
 import type { CommitAction, CondensedProjectSchema, ProjectSchema, SimpleProjectSchema } from '@gitbeaker/core'
+import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { ProjectWithDetails } from './argocd-datastore.service'
 import { createHmac } from 'node:crypto'
 import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
@@ -9,6 +10,7 @@ import { stringify } from 'yaml'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { ArgoCDDatastoreService } from './argocd-datastore.service'
 import {
@@ -37,8 +39,12 @@ export class ArgoCDService {
   }
 
   @OnEvent('project.upsert')
+  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'argocd'>> {
+    return capturePluginResult('argocd', () => this.syncProject(project))
+  }
+
   @StartActiveSpan()
-  async handleUpsert(project: ProjectWithDetails) {
+  private async syncProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project upsert event for ${project.slug}`)
@@ -47,8 +53,12 @@ export class ArgoCDService {
   }
 
   @OnEvent('project.delete')
+  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'argocd'>> {
+    return capturePluginResult('argocd', () => this.cleanupProject(project))
+  }
+
   @StartActiveSpan()
-  async handleDelete(project: ProjectWithDetails) {
+  private async cleanupProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project delete event for ${project.slug}`)
