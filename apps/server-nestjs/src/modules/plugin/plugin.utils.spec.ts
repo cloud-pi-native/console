@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { capturePluginResult, getFailedPlugins, mergePluginResults } from './plugin.utils'
+import { capturePluginResult, getFailedPlugins, makeDisabledPluginResult, mergePluginResults } from './plugin.utils'
 
 describe('capturePluginResult', () => {
   it('should resolve a successful task into an OK result with the default message, keyed under the plugin name', async () => {
@@ -44,6 +44,24 @@ describe('capturePluginResult', () => {
   it('should report under the given plugin name', async () => {
     await expect(capturePluginResult('nexus', async () => 'custom message')).resolves.toEqual({
       nexus: expect.objectContaining({ status: 'OK', message: 'custom message' }),
+    })
+  })
+})
+
+describe('makeDisabledPluginResult', () => {
+  it('should return a benign OK with no execution time, keyed under the plugin name', () => {
+    expect(makeDisabledPluginResult('gitlab')).toEqual({
+      gitlab: {
+        status: 'OK',
+        message: 'Plugin execution disabled (not in production/integration)',
+        executionTime: 0,
+      },
+    })
+  })
+
+  it('should report under the given plugin name', () => {
+    expect(makeDisabledPluginResult('nexus')).toEqual({
+      nexus: expect.objectContaining({ status: 'OK', message: 'Plugin execution disabled (not in production/integration)' }),
     })
   })
 })
