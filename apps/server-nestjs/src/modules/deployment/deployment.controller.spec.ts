@@ -4,6 +4,7 @@ import type { DeepMockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { makeDeployment, makeDeploymentWithRelations } from './deployment-testing.utils'
 import { DeploymentController } from './deployment.controller'
 import { DeploymentService } from './deployment.service'
 
@@ -71,7 +72,7 @@ describe('deploymentController', () => {
   describe('list', () => {
     it('should call deploymentService.listByProjectId with projectId', async () => {
       const projectId = '11111111-1111-1111-1111-111111111111'
-      const expectedResult = [{ id: 'deployment-1' }]
+      const expectedResult = [makeDeploymentWithRelations({ projectId })]
 
       service.listByProjectId.mockResolvedValue(expectedResult)
 
@@ -84,7 +85,7 @@ describe('deploymentController', () => {
 
   describe('create', () => {
     it('should validate body and call deploymentService.createDeployment', async () => {
-      const expectedResult = { id: 'new-deployment-id' }
+      const expectedResult = makeDeployment({ projectId: validCreateDeployment.projectId })
 
       service.createDeployment.mockResolvedValue(expectedResult)
 
@@ -101,7 +102,7 @@ describe('deploymentController', () => {
   describe('update', () => {
     it('should validate body and call deploymentService.updateDeployment', async () => {
       const deploymentId = '55555555-5555-5555-5555-555555555555'
-      const expectedResult = { id: deploymentId }
+      const expectedResult = makeDeployment({ id: deploymentId })
 
       service.updateDeployment.mockResolvedValue(expectedResult)
 

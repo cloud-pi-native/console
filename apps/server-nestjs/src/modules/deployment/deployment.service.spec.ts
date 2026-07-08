@@ -5,8 +5,10 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { makeProjectWithDetails } from '../project/project-testing.utils'
 import { ProjectService } from '../project/project.service'
 import { DeploymentDatastoreService } from './deployment-datastore.service'
+import { makeDeployment, makeDeploymentSource, makeDeploymentWithRelations } from './deployment-testing.utils'
 import { DeploymentService } from './deployment.service'
 
 describe('deploymentService', () => {
@@ -19,10 +21,7 @@ describe('deploymentService', () => {
   const projectId = '11111111-1111-1111-1111-111111111111'
   const deploymentId = '22222222-2222-2222-2222-222222222222'
 
-  const mockProject = {
-    id: projectId,
-    name: 'Test Project',
-  }
+  const mockProject = makeProjectWithDetails({ id: projectId })
 
   const validCreateDeployment = {
     name: 'mydeployment',
@@ -77,7 +76,7 @@ describe('deploymentService', () => {
 
   describe('listByProjectId', () => {
     it('should return deployments by projectId', async () => {
-      const deployments = [{ id: deploymentId }]
+      const deployments = [makeDeploymentWithRelations({ id: deploymentId, projectId })]
       datastore.getDeploymentsByProjectId.mockResolvedValue(deployments)
 
       const result = await service.listByProjectId(projectId)
@@ -89,7 +88,7 @@ describe('deploymentService', () => {
 
   describe('createDeployment', () => {
     it('should create deployment and upsert project', async () => {
-      const createdDeployment = { id: deploymentId }
+      const createdDeployment = makeDeployment({ id: deploymentId, projectId })
 
       datastore.createDeployment.mockResolvedValue(createdDeployment)
       projectService.get.mockResolvedValue(mockProject)
@@ -123,15 +122,16 @@ describe('deploymentService', () => {
 
   describe('updateDeployment', () => {
     it('should update deployment and upsert project', async () => {
-      const existingDeployment = {
+      const existingDeployment = makeDeploymentWithRelations({
         id: deploymentId,
+        projectId,
         deploymentSources: [
-          { id: '55555555-5555-5555-5555-555555555555' },
-          { id: '66666666-6666-6666-6666-666666666666' },
+          makeDeploymentSource({ id: '55555555-5555-5555-5555-555555555555', deploymentId }),
+          makeDeploymentSource({ id: '66666666-6666-6666-6666-666666666666', deploymentId }),
         ],
-      }
+      })
 
-      const updatedDeployment = { id: deploymentId }
+      const updatedDeployment = makeDeployment({ id: deploymentId, projectId })
 
       datastore.getDeploymentById.mockResolvedValue(existingDeployment)
       datastore.updateDeployment.mockResolvedValue(updatedDeployment)
@@ -171,10 +171,7 @@ describe('deploymentService', () => {
 
   describe('deleteDeployment', () => {
     it('should delete deployment and upsert project', async () => {
-      datastore.deleteDeployment.mockResolvedValue({
-        id: deploymentId,
-        projectId,
-      })
+      datastore.deleteDeployment.mockResolvedValue(makeDeployment({ id: deploymentId, projectId }))
       projectService.get.mockResolvedValue(mockProject)
       events.emitAsync.mockResolvedValue([])
 
@@ -188,7 +185,7 @@ describe('deploymentService', () => {
 
   describe('deleteAllDeploymentsByProjectId', () => {
     it('should delete all deployments and upsert project', async () => {
-      datastore.deleteAllDeploymentsByProjectId.mockResolvedValue(undefined)
+      datastore.deleteAllDeploymentsByProjectId.mockResolvedValue({ count: 1 })
       projectService.get.mockResolvedValue(mockProject)
       events.emitAsync.mockResolvedValue([])
 
