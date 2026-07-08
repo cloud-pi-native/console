@@ -3,10 +3,10 @@ import type { Prisma } from '@prisma/client'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
 import { NotFoundException } from '@nestjs/common'
-import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { KeycloakClientService } from '../keycloak/keycloak-client.service'
 import {
@@ -21,19 +21,19 @@ describe('projectMembersService', () => {
   let module: TestingModule
   let service: ProjectMembersService
   let prisma: DeepMockProxy<PrismaService>
-  let events: DeepMockProxy<EventEmitter2>
+  let appEvents: DeepMockProxy<AppEventsService>
   let keycloak: DeepMockProxy<KeycloakClientService>
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
-    events = mockDeep<EventEmitter2>()
+    appEvents = mockDeep<AppEventsService>()
     keycloak = mockDeep<KeycloakClientService>()
 
     module = await Test.createTestingModule({
       providers: [
         ProjectMembersService,
         { provide: PrismaService, useValue: prisma },
-        { provide: EventEmitter2, useValue: events },
+        { provide: AppEventsService, useValue: appEvents },
         { provide: KeycloakClientService, useValue: keycloak },
       ],
     }).compile()
@@ -91,10 +91,10 @@ describe('projectMembersService', () => {
         create: { projectId, userId: newUserId, roleIds: [] },
         update: {},
       })
-      expect(events.emitAsync).toHaveBeenCalledWith('projectMember.upsert', {
+      expect(appEvents.emitProjectMemberEvent).toHaveBeenCalledWith('projectMember.upsert', {
         projectId,
         userId: newUserId,
-      })
+      }, { action: 'Add Project Member' })
       expect(result).toBeDefined()
     })
 
@@ -230,15 +230,15 @@ describe('projectMembersService', () => {
       await service.patch(projectId, members)
 
       expect(tx.projectMembers.upsert).toHaveBeenCalledTimes(2)
-      expect(events.emitAsync).toHaveBeenCalledTimes(2)
-      expect(events.emitAsync).toHaveBeenCalledWith('projectMember.upsert', {
+      expect(appEvents.emitProjectMemberEvent).toHaveBeenCalledTimes(2)
+      expect(appEvents.emitProjectMemberEvent).toHaveBeenCalledWith('projectMember.upsert', {
         projectId,
         userId: members[0].userId,
-      })
-      expect(events.emitAsync).toHaveBeenCalledWith('projectMember.upsert', {
+      }, { action: 'Update Project Member' })
+      expect(appEvents.emitProjectMemberEvent).toHaveBeenCalledWith('projectMember.upsert', {
         projectId,
         userId: members[1].userId,
-      })
+      }, { action: 'Update Project Member' })
     })
   })
 
@@ -258,10 +258,10 @@ describe('projectMembersService', () => {
       expect(tx.projectMembers.delete).toHaveBeenCalledWith({
         where: { projectId_userId: { projectId, userId } },
       })
-      expect(events.emitAsync).toHaveBeenCalledWith('projectMember.delete', {
+      expect(appEvents.emitProjectMemberEvent).toHaveBeenCalledWith('projectMember.delete', {
         projectId,
         userId,
-      })
+      }, { action: 'Remove Project Member' })
       expect(result).toBeDefined()
     })
   })

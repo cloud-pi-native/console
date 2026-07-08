@@ -8,10 +8,10 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common'
-import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { AppEventsService } from '../events/app-events.service'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { LogService } from '../log/log.service'
@@ -32,13 +32,13 @@ describe('projectService', () => {
   let module: TestingModule
   let service: ProjectService
   let prisma: DeepMockProxy<PrismaService>
-  let events: DeepMockProxy<EventEmitter2>
+  let appEvents: DeepMockProxy<AppEventsService>
   let config: DeepMockProxy<ConfigurationService>
   let logs: DeepMockProxy<LogService>
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
-    events = mockDeep<EventEmitter2>()
+    appEvents = mockDeep<AppEventsService>()
     config = mockDeep<ConfigurationService>({ appVersion: 'dev' })
     logs = mockDeep<LogService>()
 
@@ -46,7 +46,7 @@ describe('projectService', () => {
       providers: [
         ProjectService,
         { provide: PrismaService, useValue: prisma },
-        { provide: EventEmitter2, useValue: events },
+        { provide: AppEventsService, useValue: appEvents },
         { provide: ConfigurationService, useValue: config },
         { provide: LogService, useValue: logs },
       ],
@@ -90,14 +90,12 @@ describe('projectService', () => {
         expect.objectContaining({ where: { slug: { startsWith: body.name } } }),
       )
       expect(tx.project.create).toHaveBeenCalled()
-      expect(events.emitAsync).toHaveBeenCalledWith('project.upsert', expect.anything())
-      expect(logs.addLog).toHaveBeenCalledWith(expect.objectContaining({
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', pwd.id, {
         action: 'Create Project',
-        requestId,
         userId,
-        projectId: pwd.id,
-      }))
-      expect(logs.addLog).toHaveBeenCalledTimes(5)
+        requestId,
+      })
+      expect(logs.addLog).toHaveBeenCalledTimes(4)
       expect(result).toBeDefined()
       expect(result.slug).toBe(expectedSlug)
     })
@@ -257,13 +255,11 @@ describe('projectService', () => {
       )
 
       expect(result.description).toBe('Updated desc')
-      expect(events.emitAsync).toHaveBeenCalledWith('project.upsert', expect.anything())
-      expect(logs.addLog).toHaveBeenCalledWith(expect.objectContaining({
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', ctx.id, {
         action: 'Update Project',
-        requestId,
         userId: requestorId,
-        projectId: ctx.id,
-      }))
+        requestId,
+      })
     })
 
     it('strips locked field for non-admin', async () => {
@@ -479,13 +475,11 @@ describe('projectService', () => {
       expect(tx.repository.deleteMany).toHaveBeenCalledWith({ where: { projectId } })
       expect(tx.environment.deleteMany).toHaveBeenCalledWith({ where: { projectId } })
       expect(tx.deployment.deleteMany).toHaveBeenCalledWith({ where: { projectId } })
-      expect(events.emitAsync).toHaveBeenCalledWith('project.delete', pwd)
-      expect(logs.addLog).toHaveBeenCalledWith(expect.objectContaining({
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.delete', pwd, {
         action: 'Delete all project resources',
-        requestId,
         userId: requestorId,
-        projectId,
-      }))
+        requestId,
+      })
       expect(tx.project.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: projectId },

@@ -3,10 +3,10 @@ import type { Prisma } from '@prisma/client'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
 import { BadRequestException, NotFoundException } from '@nestjs/common'
-import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { makeProject, makeProjectMembers, makeProjectRole, makeProjectRoleWithProject } from './project-roles-testing.utils'
 import { ProjectRolesService } from './project-roles.service'
@@ -15,17 +15,17 @@ describe('projectRolesService', () => {
   let module: TestingModule
   let service: ProjectRolesService
   let prisma: DeepMockProxy<PrismaService>
-  let events: DeepMockProxy<EventEmitter2>
+  let appEvents: DeepMockProxy<AppEventsService>
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
-    events = mockDeep<EventEmitter2>()
+    appEvents = mockDeep<AppEventsService>()
 
     module = await Test.createTestingModule({
       providers: [
         ProjectRolesService,
         { provide: PrismaService, useValue: prisma },
-        { provide: EventEmitter2, useValue: events },
+        { provide: AppEventsService, useValue: appEvents },
       ],
     }).compile()
 
@@ -70,7 +70,7 @@ describe('projectRolesService', () => {
         projectId,
       }),
     }))
-    expect(events.emitAsync).toHaveBeenCalledWith('project.upsert', expect.anything())
+    expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', expect.anything(), { action: 'Upsert Project Role' })
   })
 
   it('rejects system role creation', async () => {
@@ -162,7 +162,7 @@ describe('projectRolesService', () => {
     await service.delete(roleId)
 
     expect(tx.projectMembers.update).toHaveBeenCalledTimes(2)
-    expect(events.emitAsync).toHaveBeenCalledWith('project.upsert', expect.anything())
+    expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', expect.anything(), { action: 'Upsert Project Role' })
   })
 
   it('rejects system role deletion', async () => {

@@ -1,7 +1,7 @@
 import type { AddMemberInput, PatchMemberInput } from './project-members-queries.utils'
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { EventEmitter2 } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
+import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { KeycloakClientService } from '../keycloak/keycloak-client.service'
@@ -13,7 +13,7 @@ export class ProjectMembersService {
 
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(EventEmitter2) private readonly eventEmitter: EventEmitter2,
+    @Inject(AppEventsService) private readonly appEvents: AppEventsService,
     @Inject(KeycloakClientService) private readonly keycloak: KeycloakClientService,
   ) {}
 
@@ -59,7 +59,7 @@ export class ProjectMembersService {
         const members = await listProjectMembersWithUser(tx, projectId)
         return { userId: userDb.id, members }
       })
-      await this.eventEmitter.emitAsync('projectMember.upsert', { projectId, userId: result.userId })
+      await this.appEvents.emitProjectMemberEvent('projectMember.upsert', { projectId, userId: result.userId }, { action: 'Add Project Member' })
       span?.setAttribute('project.member.userId', result.userId)
       span?.setAttribute('project.members.count', result.members.length)
       this.logger.log(`projectMembers.addMember completed (projectId=${projectId}, userId=${result.userId}, memberCount=${result.members.length})`)
@@ -124,7 +124,7 @@ export class ProjectMembersService {
         return listProjectMembersWithUser(tx, projectId)
       })
       await Promise.all(
-        body.map(member => this.eventEmitter.emitAsync('projectMember.upsert', { projectId, userId: member.userId })),
+        body.map(member => this.appEvents.emitProjectMemberEvent('projectMember.upsert', { projectId, userId: member.userId }, { action: 'Update Project Member' })),
       )
       span?.setAttribute('project.members.count', members.length)
       this.logger.log(`projectMembers.patchMembers completed (projectId=${projectId}, memberCount=${members.length})`)
@@ -149,7 +149,7 @@ export class ProjectMembersService {
         await deleteProjectMember(tx, projectId, userId)
         return listProjectMembersWithUser(tx, projectId)
       })
-      await this.eventEmitter.emitAsync('projectMember.delete', { projectId, userId })
+      await this.appEvents.emitProjectMemberEvent('projectMember.delete', { projectId, userId }, { action: 'Remove Project Member' })
       span?.setAttribute('project.members.count', members.length)
       this.logger.log(`projectMembers.removeMember completed (projectId=${projectId}, userId=${userId}, memberCount=${members.length})`)
       return members
