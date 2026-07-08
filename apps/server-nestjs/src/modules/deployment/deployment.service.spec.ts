@@ -1,12 +1,10 @@
 import type { CreateDeployment, UpdateDeployment } from '@cpn-console/shared'
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
-import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { makeProjectWithDetails } from '../project/project-testing.utils'
-import { ProjectService } from '../project/project.service'
+import { AppEventsService } from '../events/app-events.service'
 import { DeploymentDatastoreService } from './deployment-datastore.service'
 import { makeDeployment, makeDeploymentSource, makeDeploymentWithRelations } from './deployment-testing.utils'
 import { DeploymentService } from './deployment.service'
@@ -15,13 +13,10 @@ describe('deploymentService', () => {
   let module: TestingModule
   let service: DeploymentService
   let datastore: DeepMockProxy<DeploymentDatastoreService>
-  let projectService: DeepMockProxy<ProjectService>
-  let events: DeepMockProxy<EventEmitter2>
+  let appEvents: DeepMockProxy<AppEventsService>
 
   const projectId = '11111111-1111-1111-1111-111111111111'
   const deploymentId = '22222222-2222-2222-2222-222222222222'
-
-  const mockProject = makeProjectWithDetails({ id: projectId })
 
   const validCreateDeployment = {
     name: 'mydeployment',
@@ -55,15 +50,13 @@ describe('deploymentService', () => {
 
   beforeEach(async () => {
     datastore = mockDeep<DeploymentDatastoreService>()
-    projectService = mockDeep<ProjectService>()
-    events = mockDeep<EventEmitter2>()
+    appEvents = mockDeep<AppEventsService>()
 
     module = await Test.createTestingModule({
       providers: [
         DeploymentService,
         { provide: DeploymentDatastoreService, useValue: datastore },
-        { provide: ProjectService, useValue: projectService },
-        { provide: EventEmitter2, useValue: events },
+        { provide: AppEventsService, useValue: appEvents },
       ],
     }).compile()
 
@@ -91,8 +84,6 @@ describe('deploymentService', () => {
       const createdDeployment = makeDeployment({ id: deploymentId, projectId })
 
       datastore.createDeployment.mockResolvedValue(createdDeployment)
-      projectService.get.mockResolvedValue(mockProject)
-      events.emitAsync.mockResolvedValue([])
 
       const result = await service.createDeployment(projectId, validCreateDeployment)
 
@@ -114,8 +105,7 @@ describe('deploymentService', () => {
         },
       })
 
-      expect(projectService.get).toHaveBeenCalledWith(projectId)
-      expect(events.emitAsync).toHaveBeenCalledWith('project.upsert', mockProject)
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, { action: 'Create Deployment' })
       expect(result).toEqual(createdDeployment)
     })
   })
@@ -135,8 +125,6 @@ describe('deploymentService', () => {
 
       datastore.getDeploymentById.mockResolvedValue(existingDeployment)
       datastore.updateDeployment.mockResolvedValue(updatedDeployment)
-      projectService.get.mockResolvedValue(mockProject)
-      events.emitAsync.mockResolvedValue([])
 
       const result = await service.updateDeployment(deploymentId, validUpdateDeployment)
 
@@ -153,8 +141,7 @@ describe('deploymentService', () => {
         }),
       )
 
-      expect(projectService.get).toHaveBeenCalledWith(validUpdateDeployment.projectId)
-      expect(events.emitAsync).toHaveBeenCalledWith('project.upsert', mockProject)
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', validUpdateDeployment.projectId, { action: 'Update Deployment' })
       expect(result).toEqual(updatedDeployment)
     })
 
@@ -172,28 +159,22 @@ describe('deploymentService', () => {
   describe('deleteDeployment', () => {
     it('should delete deployment and upsert project', async () => {
       datastore.deleteDeployment.mockResolvedValue(makeDeployment({ id: deploymentId, projectId }))
-      projectService.get.mockResolvedValue(mockProject)
-      events.emitAsync.mockResolvedValue([])
 
       await service.deleteDeployment(deploymentId)
 
       expect(datastore.deleteDeployment).toHaveBeenCalledWith(deploymentId)
-      expect(projectService.get).toHaveBeenCalledWith(projectId)
-      expect(events.emitAsync).toHaveBeenCalledWith('project.upsert', mockProject)
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, { action: 'Delete Deployment' })
     })
   })
 
   describe('deleteAllDeploymentsByProjectId', () => {
     it('should delete all deployments and upsert project', async () => {
       datastore.deleteAllDeploymentsByProjectId.mockResolvedValue({ count: 1 })
-      projectService.get.mockResolvedValue(mockProject)
-      events.emitAsync.mockResolvedValue([])
 
       await service.deleteAllDeploymentsByProjectId(projectId)
 
       expect(datastore.deleteAllDeploymentsByProjectId).toHaveBeenCalledWith(projectId)
-      expect(projectService.get).toHaveBeenCalledWith(projectId)
-      expect(events.emitAsync).toHaveBeenCalledWith('project.upsert', mockProject)
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, { action: 'Delete all project deployments' })
     })
   })
 })

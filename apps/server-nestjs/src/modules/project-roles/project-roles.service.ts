@@ -5,9 +5,9 @@ import type {
 } from './project-roles.utils'
 import { isSystemRoleType } from '@cpn-console/shared'
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common'
-import { EventEmitter2 } from '@nestjs/event-emitter'
+import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { getProjectBySlug, getProjectForUpsert, getProjectRoleForDelete, projectRoleWithProjectSelect } from './project-roles-queries.utils'
+import { getProjectBySlug, getProjectRoleForDelete, projectRoleWithProjectSelect } from './project-roles-queries.utils'
 import {
   buildUpdatedProjectRoles,
   toProjectRoleResponse,
@@ -18,7 +18,7 @@ import {
 export class ProjectRolesService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(EventEmitter2) private readonly eventEmitter: EventEmitter2,
+    @Inject(AppEventsService) private readonly appEvents: AppEventsService,
   ) {}
 
   async list(projectId: Project['id']) {
@@ -125,9 +125,6 @@ export class ProjectRolesService {
   }
 
   private async emitProjectUpsert(projectId: string): Promise<void> {
-    const project = await getProjectForUpsert(this.prisma, projectId)
-    if (project) {
-      await this.eventEmitter.emitAsync('project.upsert', project)
-    }
+    await this.appEvents.emitProjectEvent('project.upsert', projectId, { action: 'Upsert Project Role' })
   }
 }

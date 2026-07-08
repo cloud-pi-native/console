@@ -1,9 +1,7 @@
-import type { ProjectWithDetails } from '../project/project-queries.utils'
 import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common'
-import { EventEmitter2 } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
+import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { LogService } from '../log/log.service'
 import { getProjectNotArchived, projectSelect } from '../project/project-queries.utils'
 
 @Injectable()
@@ -12,29 +10,8 @@ export class ProjectHooksService {
 
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(EventEmitter2) private readonly eventEmitter: EventEmitter2,
-    @Inject(LogService) private readonly logs: LogService,
+    @Inject(AppEventsService) private readonly appEvents: AppEventsService,
   ) {}
-
-  private async logProjectAction(
-    action: string,
-    project: ProjectWithDetails,
-    messageResume: string,
-    userId: string | undefined,
-    requestId: string | undefined,
-  ): Promise<void> {
-    await this.logs.addLog({
-      action,
-      data: {
-        args: { projectId: project.id },
-        messageResume,
-        results: { projectId: project.id, slug: project.slug },
-      },
-      userId,
-      requestId,
-      projectId: project.id,
-    })
-  }
 
   async updateProjectLocked(projectId: string, locked: boolean): Promise<void> {
     const project = await this.prisma.project.update({
@@ -42,7 +19,7 @@ export class ProjectHooksService {
       data: { locked },
       select: projectSelect,
     })
-    await this.eventEmitter.emitAsync('project.upsert', project)
+    await this.appEvents.emitProjectEvent('project.upsert', project, { action: 'Update Project' })
   }
 
   async replay(projectId: string, requestorUserId?: string, requestId?: string): Promise<void> {
@@ -59,14 +36,11 @@ export class ProjectHooksService {
       throw new ForbiddenException('Veuillez déverrouiller le projet pour rejouer les webhooks')
     }
     span?.setAttribute('project.slug', project.slug)
-    await this.eventEmitter.emitAsync('project.upsert', project)
-    await this.logProjectAction(
-      'Replay hooks for Project',
-      project,
-      `Hooks du projet rejoués: ${project.slug}`,
-      requestorUserId,
+    await this.appEvents.emitProjectEvent('project.upsert', project, {
+      action: 'Replay hooks for Project',
+      userId: requestorUserId,
       requestId,
-    )
+    })
     this.logger.log(`project.replayHooks completed (projectId=${projectId})`)
   }
 }

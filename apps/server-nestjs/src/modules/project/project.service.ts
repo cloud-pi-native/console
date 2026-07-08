@@ -4,8 +4,8 @@ import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import type { ProjectDataExport, ProjectUpdateContext, ProjectWithDetails } from './project-queries.utils'
 import { AdminAuthorized } from '@cpn-console/shared'
 import { BadRequestException, ForbiddenException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common'
-import { EventEmitter2 } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
+import { AppEventsService } from '../events/app-events.service'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
@@ -29,7 +29,7 @@ export class ProjectService {
 
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(EventEmitter2) private readonly eventEmitter: EventEmitter2,
+    @Inject(AppEventsService) private readonly appEvents: AppEventsService,
     @Inject(ConfigurationService) private readonly config: ConfigurationService,
     @Inject(LogService) private readonly logs: LogService,
   ) {}
@@ -106,14 +106,11 @@ export class ProjectService {
         if (!loaded) throw new InternalServerErrorException('Project created but cannot be loaded')
         return loaded
       })
-      await this.eventEmitter.emitAsync('project.upsert', project)
-      await this.logProjectAction(
-        'Create Project',
-        project,
-        `Projet créé: ${project.slug} (${project.roles.length} rôles)`,
-        requestorUserId,
+      await this.appEvents.emitProjectEvent('project.upsert', project.id, {
+        action: 'Create Project',
+        userId: requestorUserId,
         requestId,
-      )
+      })
       await Promise.all(project.roles.map(async role => this.logProjectRoleAction(
         'Upsert Project Role',
         project,
@@ -168,14 +165,11 @@ export class ProjectService {
         this.logger.log(`project.update dbUpdated (projectId=${projectId}, requestorUserId=${user.userId}, effectiveKeys=${effectiveKeys.join(',')})`)
         return updated
       })
-      await this.eventEmitter.emitAsync('project.upsert', project)
-      await this.logProjectAction(
-        'Update Project',
-        project,
-        `Projet mis à jour: ${project.slug}`,
-        user.userId,
+      await this.appEvents.emitProjectEvent('project.upsert', project.id, {
+        action: 'Update Project',
+        userId: user.userId,
         requestId,
-      )
+      })
       span?.setAttribute('project.slug', project.slug)
       this.logger.log(`project.update completed (projectId=${projectId}, requestorUserId=${user.userId})`)
       return project
@@ -211,14 +205,13 @@ export class ProjectService {
 
         return loaded
       })
-      await this.eventEmitter.emitAsync('project.delete', project)
-      await this.logProjectAction(
-        'Delete all project resources',
-        project,
-        `Projet archivé: ${project.slug}`,
-        requestorUserId,
+      // pass the pre-archive snapshot: the row was renamed (slug suffixed) in the
+      // transaction above, listeners must clean up resources named after the old slug
+      await this.appEvents.emitProjectEvent('project.delete', project, {
+        action: 'Delete all project resources',
+        userId: requestorUserId,
         requestId,
-      )
+      })
       span?.setAttribute('project.slug', project.slug)
       this.logger.log(`project.archive completed (projectId=${projectId}, slug=${project.slug})`)
     } catch (error) {
@@ -228,26 +221,6 @@ export class ProjectService {
       )
       throw error
     }
-  }
-
-  private async logProjectAction(
-    action: string,
-    project: ProjectWithDetails,
-    messageResume: string,
-    userId: string | undefined,
-    requestId: string | undefined,
-  ): Promise<void> {
-    await this.logs.addLog({
-      action,
-      data: {
-        args: { projectId: project.id },
-        messageResume,
-        results: { projectId: project.id, slug: project.slug },
-      },
-      userId,
-      requestId,
-      projectId: project.id,
-    })
   }
 
   private async logProjectRoleAction(

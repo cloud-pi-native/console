@@ -1,15 +1,14 @@
 import type { CreateDeployment, UpdateDeployment } from '@cpn-console/shared'
+import type { EventLogAction } from '../events/app-events.service'
 import { Inject, Injectable } from '@nestjs/common'
-import { EventEmitter2 } from '@nestjs/event-emitter'
-import { ProjectService } from '../project/project.service'
+import { AppEventsService } from '../events/app-events.service'
 import { DeploymentDatastoreService } from './deployment-datastore.service'
 
 @Injectable()
 export class DeploymentService {
   constructor(
     @Inject(DeploymentDatastoreService) private readonly deploymentDatastoreService: DeploymentDatastoreService,
-    @Inject(ProjectService) private readonly projectService: ProjectService,
-    @Inject(EventEmitter2) private readonly eventEmitter: EventEmitter2,
+    @Inject(AppEventsService) private readonly appEvents: AppEventsService,
   ) {}
 
   async listByProjectId(projectId: string) {
@@ -35,8 +34,7 @@ export class DeploymentService {
       },
     })
 
-    await this.upsertProject(projectId)
-    // TODO handle result and add logs
+    await this.upsertProject(projectId, 'Create Deployment')
     return deployment
   }
 
@@ -81,26 +79,21 @@ export class DeploymentService {
         })),
       },
     })
-    await this.upsertProject(deploymentToUpdate.projectId)
-    // TODO handle result and add logs
+    await this.upsertProject(deploymentToUpdate.projectId, 'Update Deployment')
     return deployment
   }
 
   async deleteDeployment(deploymentId: string) {
     const deployment = await this.deploymentDatastoreService.deleteDeployment(deploymentId)
-    await this.upsertProject(deployment.projectId)
-    // TODO handle result and add logs
+    await this.upsertProject(deployment.projectId, 'Delete Deployment')
   }
 
   async deleteAllDeploymentsByProjectId(projectId: string) {
     await this.deploymentDatastoreService.deleteAllDeploymentsByProjectId(projectId)
-    await this.upsertProject(projectId)
-    // TODO handle result and add logs
+    await this.upsertProject(projectId, 'Delete all project deployments')
   }
 
-  private async upsertProject(projectId: string) {
-    const projectWithDetails = await this.projectService.get(projectId)
-
-    await this.eventEmitter.emitAsync('project.upsert', projectWithDetails)
+  private async upsertProject(projectId: string, action: EventLogAction) {
+    await this.appEvents.emitProjectEvent('project.upsert', projectId, { action })
   }
 }
