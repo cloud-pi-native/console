@@ -97,21 +97,23 @@ Le nouveau backend `server-nestjs` coexiste avec l'ancien et "étouffe" progress
 Cette modularisation est documentée dans plusieurs fichiers :
 
 1. **[00-OVERVIEW.md](00-OVERVIEW.md)** *(ce document)* - Vue d'ensemble
-3. **[01-MODULARISATION-STRATEGY.md](01-MODULARISATION-STRATEGY.md)** - Stratégie et méthodologie
-7. **[MODULARISATION_STATUS.md](MODULARISATION_STATUS.md)** - Suivi en temps réel (fichier vivant)
-8. **[MODULARISATION_MAP.md](MODULARISATION_MAP.md)** - Cartographie des modules (fichier vivant)
+2. **[01-MODULARISATION-STRATEGIE.md](01-MODULARISATION-STRATEGIE.md)** - Stratégie et méthodologie
+3. **[02-ARCHITECTURE-MODULES.md](02-ARCHITECTURE-MODULES.md)** - Pattern d'un module NestJS
+4. **[MODULARISATION-STATUT.md](MODULARISATION-STATUT.md)** - Suivi en temps réel (fichier vivant)
+5. **[MODULARISATION-CARTOGRAPHIE.md](MODULARISATION-CARTOGRAPHIE.md)** - Cartographie des modules (fichier vivant)
+6. **[../mise-en-place-nginx-etrangleur/PLAN.md](../mise-en-place-nginx-etrangleur/PLAN.md)** - Plan nginx-strangler (routage Strangler Fig)
 
 ## 🚀 Démarrage rapide
 
 ### Pour l'équipe de développement
 1. Lire ce document (OVERVIEW)
-2. Consulter [MODULARISATION\_STATUS.md](MODULARISATION_STATUS.md) pour connaître l'état actuel
+2. Consulter [MODULARISATION\\_STATUT.md](MODULARISATION-STATUT.md) pour connaître l'état actuel
 3. Suivre le canal Mattermost `#backend-modularisation`
 4. Respecter les zones en modularisation (🚧) avant de développer
 
 ### Pour le lead technique de la modularisation
 1. Lire tous les documents dans l'ordre
-2. Personnaliser [MODULARISATION\_MAP.md](MODULARISATION_MAP.md) avec la cartographie réelle
+2. Consulter [MODULARISATION\\_CARTOGRAPHIE.md](MODULARISATION-CARTOGRAPHIE.md) pour la cartographie réelle
 3. Configurer l'infrastructure
 4. Lancer la communication
 
@@ -209,6 +211,6 @@ Cette modularisation est documentée dans plusieurs fichiers :
 
 ---
 
-**Version** : 1.2
-**Dernière mise à jour** : 2026-06-16
+**Version** : 1.3
+**Dernière mise à jour** : 2026-07-16
 **Prochaine revue** : Fin S2
