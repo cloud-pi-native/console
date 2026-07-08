@@ -6,7 +6,7 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
-import { capturePluginResult } from '../plugin/plugin.utils'
+import { capturePluginResult, makeDisabledPluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
 import { VaultError } from './vault-http-client.service'
@@ -53,6 +53,7 @@ export class VaultService {
 
   @OnEvent('project.upsert')
   async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'vault'>> {
+    if (!this.config.usePlugins) return makeDisabledPluginResult('vault')
     return capturePluginResult('vault', () => this.syncProject(project))
   }
 
@@ -71,6 +72,7 @@ export class VaultService {
 
   @OnEvent('project.delete')
   async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'vault'>> {
+    if (!this.config.usePlugins) return makeDisabledPluginResult('vault')
     return capturePluginResult('vault', () => this.cleanupProject(project))
   }
 
@@ -88,6 +90,7 @@ export class VaultService {
 
   @OnEvent('zone.upsert')
   async handleUpsertZone(zone: ZoneWithDetails): Promise<RequiredPluginResult<'vault'>> {
+    if (!this.config.usePlugins) return makeDisabledPluginResult('vault')
     return capturePluginResult('vault', () => this.syncZone(zone))
   }
 
@@ -102,6 +105,7 @@ export class VaultService {
 
   @OnEvent('zone.delete')
   async handleDeleteZone(zone: ZoneWithDetails): Promise<RequiredPluginResult<'vault'>> {
+    if (!this.config.usePlugins) return makeDisabledPluginResult('vault')
     return capturePluginResult('vault', () => this.cleanupZone(zone))
   }
 

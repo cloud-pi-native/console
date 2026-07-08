@@ -10,7 +10,7 @@ import { trace } from '@opentelemetry/api'
 import { generateProjectKey, generateRandomPassword } from '../../utils/crypto'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
-import { capturePluginResult } from '../plugin/plugin.utils'
+import { capturePluginResult, makeDisabledPluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { SonarqubeClientService } from './sonarqube-client.service'
 import { SonarqubeDatastoreService } from './sonarqube-datastore.service'
@@ -92,6 +92,7 @@ export class SonarqubeService implements OnModuleInit {
 
   @OnEvent('project.upsert')
   async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'sonarqube'>> {
+    if (!this.config.usePlugins) return makeDisabledPluginResult('sonarqube')
     return capturePluginResult('sonarqube', () => this.syncProject(project))
   }
 
@@ -110,6 +111,7 @@ export class SonarqubeService implements OnModuleInit {
 
   @OnEvent('project.delete')
   async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'sonarqube'>> {
+    if (!this.config.usePlugins) return makeDisabledPluginResult('sonarqube')
     return capturePluginResult('sonarqube', () => this.cleanupProject(project))
   }
 

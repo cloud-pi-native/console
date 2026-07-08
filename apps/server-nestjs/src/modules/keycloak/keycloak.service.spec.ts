@@ -3,6 +3,7 @@ import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } fro
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
 import {
@@ -36,10 +37,12 @@ describe('keycloakService', () => {
       getAllAdminRoles: vi.fn().mockResolvedValue([]),
       getAllUsersWithAdminRoleIds: vi.fn().mockResolvedValue([]),
     })
+    const config = mockDeep<ConfigurationService>()
 
     const moduleRef = await Test.createTestingModule({
       providers: [
         KeycloakService,
+        { provide: ConfigurationService, useValue: config },
         { provide: KeycloakClientService, useValue: keycloak },
         { provide: KeycloakDatastoreService, useValue: keycloakDatastore },
       ],

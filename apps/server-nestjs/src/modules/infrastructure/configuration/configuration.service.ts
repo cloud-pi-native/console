@@ -64,9 +64,9 @@ export class ConfigurationService {
   openCdsApiTlsRejectUnauthorized = process.env.OPENCDS_API_TLS_REJECT_UNAUTHORIZED !== 'false'
 
   // plugins
-  mockPlugins = process.env.MOCK_PLUGINS === 'true'
   projectRootDir = process.env.PROJECTS_ROOT_DIR
   pluginsDir = process.env.PLUGINS_DIR ?? '/plugins'
+  usePlugins = (process.env.USE_PLUGINS ?? 'true') === 'true'
 
   // gitlab
   gitlabToken = process.env.GITLAB_TOKEN

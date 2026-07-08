@@ -11,7 +11,7 @@ import { trace } from '@opentelemetry/api'
 import { getAll } from '../../utils/iterable'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
-import { capturePluginResult } from '../plugin/plugin.utils'
+import { capturePluginResult, makeDisabledPluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
 import { GitlabDatastoreService } from './gitlab-datastore.service'
@@ -63,6 +63,7 @@ export class GitlabService {
 
   @OnEvent('project.upsert')
   async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'gitlab'>> {
+    if (!this.config.usePlugins) return makeDisabledPluginResult('gitlab')
     return capturePluginResult('gitlab', () => this.syncProject(project))
   }
 
@@ -81,6 +82,7 @@ export class GitlabService {
 
   @OnEvent('project.delete')
   async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'gitlab'>> {
+    if (!this.config.usePlugins) return makeDisabledPluginResult('gitlab')
     return capturePluginResult('gitlab', () => this.cleanupProject(project))
   }
 
