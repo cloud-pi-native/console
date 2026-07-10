@@ -5,6 +5,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { LogService } from '../log/log.service'
 import { projectSelect } from '../project/project-queries.utils'
@@ -17,11 +18,14 @@ describe('appEventsService', () => {
   let prisma: DeepMockProxy<PrismaService>
   let eventEmitter: DeepMockProxy<EventEmitter2Type>
   let logs: DeepMockProxy<LogService>
+  let config: DeepMockProxy<ConfigurationService>
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
     eventEmitter = mockDeep<EventEmitter2>({ emitAsync: vi.fn().mockResolvedValue([]) })
     logs = mockDeep<LogService>()
+    config = mockDeep<ConfigurationService>()
+    config.appVersion = 'test-version'
 
     module = await Test.createTestingModule({
       providers: [
@@ -29,6 +33,7 @@ describe('appEventsService', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: EventEmitter2, useValue: eventEmitter },
         { provide: LogService, useValue: logs },
+        { provide: ConfigurationService, useValue: config },
       ],
     }).compile()
 
@@ -86,6 +91,45 @@ describe('appEventsService', () => {
         messageResume: 'Errors:\nargocd: Sync failed;',
       },
     })
+  })
+
+  it('marks the project as failed when a listener reports a KO result', async () => {
+    const project = makeProject()
+    eventEmitter.emitAsync.mockResolvedValue([
+      { argocd: { status: 'KO', message: 'Sync failed', executionTime: 20, error: new Error('Sync failed') } },
+    ])
+
+    await service.emitProjectEvent('project.upsert', project, { action: 'Update Project' })
+
+    expect(prisma.project.update).toHaveBeenCalledWith({
+      where: { id: project.id },
+      data: { status: 'failed' },
+    })
+  })
+
+  it('marks the project as created with the provisioning version after a successful upsert', async () => {
+    const project = makeProject()
+    eventEmitter.emitAsync.mockResolvedValue([
+      { gitlab: { status: 'OK', message: 'Up to date', executionTime: 10 } },
+    ])
+
+    await service.emitProjectEvent('project.upsert', project, { action: 'Create Project' })
+
+    expect(prisma.project.update).toHaveBeenCalledWith({
+      where: { id: project.id },
+      data: { status: 'created', lastSuccessProvisionningVersion: 'test-version' },
+    })
+  })
+
+  it('does not touch the project status after a successful delete', async () => {
+    const project = makeProject()
+    eventEmitter.emitAsync.mockResolvedValue([
+      { gitlab: { status: 'OK', message: 'Up to date', executionTime: 10 } },
+    ])
+
+    await service.emitProjectEvent('project.delete', project, { action: 'Delete all project resources' })
+
+    expect(prisma.project.update).not.toHaveBeenCalled()
   })
 
   it('uses a provided project snapshot without fetching it again', async () => {

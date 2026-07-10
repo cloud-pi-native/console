@@ -2,9 +2,10 @@ import type { PluginResults } from '../plugin/plugin.utils'
 import type { ProjectWithDetails } from '../project/project-queries.utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
+import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { LogService } from '../log/log.service'
-import { mergePluginResults } from '../plugin/plugin.utils'
+import { getFailedPlugins, mergePluginResults } from '../plugin/plugin.utils'
 import { getProject } from '../project/project-queries.utils'
 import { formatEventLogData, isPluginResults } from './app-events.utils'
 
@@ -44,6 +45,7 @@ export class AppEventsService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(EventEmitter2) private readonly eventEmitter: EventEmitter2,
     @Inject(LogService) private readonly logs: LogService,
+    @Inject(ConfigurationService) private readonly config: ConfigurationService,
   ) {}
 
   /**
@@ -68,7 +70,9 @@ export class AppEventsService {
       return {}
     }
 
-    return this.emitAndLog(event, project, project.id, context)
+    const results = await this.emitAndLog(event, project, project.id, context)
+    await this.updateProjectStatus(event, project.id, results)
+    return results
   }
 
   async emitProjectMemberEvent(
@@ -101,5 +105,32 @@ export class AppEventsService {
     })
 
     return results
+  }
+
+  /**
+   * Reflects the listeners' outcome on the project row (legacy hooks behavior):
+   * any KO result marks the project `failed`; a fully successful upsert marks it
+   * `created` and records the provisioning version. A successful `project.delete`
+   * leaves the `archived` status set when the project was archived.
+   */
+  private async updateProjectStatus(
+    event: ProjectEventName,
+    projectId: string,
+    results: PluginResults,
+  ): Promise<void> {
+    const failed = getFailedPlugins(results)
+
+    if (failed.length) {
+      this.logger.warn(`${event} marked project as failed (projectId=${projectId}, failed=${failed.join(',')})`)
+      await this.prisma.project.update({ where: { id: projectId }, data: { status: 'failed' } })
+      return
+    }
+
+    if (event === 'project.upsert') {
+      await this.prisma.project.update({
+        where: { id: projectId },
+        data: { status: 'created', lastSuccessProvisionningVersion: this.config.appVersion },
+      })
+    }
   }
 }

@@ -1,4 +1,5 @@
 import type { PluginResults } from '../plugin/plugin.utils'
+import { NetworkError } from '@keycloak/keycloak-admin-client'
 import { describe, expect, it } from 'vitest'
 import { formatEventLogData, isPluginResults, serializeError } from './app-events.utils'
 
@@ -22,6 +23,22 @@ describe('serializeError', () => {
   it('should serialize an Error with name, message and stack', () => {
     const parsed = JSON.parse(serializeError(new Error('boom')))
     expect(parsed).toEqual({ name: 'Error', message: 'boom', stack: expect.any(String) })
+  })
+
+  it('should include HTTP details from errors carrying a fetch Response', () => {
+    const error = new NetworkError('Network response was not OK.', {
+      response: new Response('conflict', { status: 409 }),
+      responseData: { errorMessage: 'Sibling group named \'admin\' already exists.' },
+    })
+    const parsed = JSON.parse(serializeError(error))
+    expect(parsed).toEqual({
+      name: 'Error',
+      message: 'Network response was not OK.',
+      status: 409,
+      url: expect.any(String),
+      responseData: { errorMessage: 'Sibling group named \'admin\' already exists.' },
+      stack: expect.any(String),
+    })
   })
 
   it('should serialize non-Error values', () => {
@@ -58,21 +75,19 @@ describe('formatEventLogData', () => {
     })
   })
 
-  it('should produce an empty failed list and a success resume when everything is OK', () => {
+  it('should omit the failed list and produce a success resume when everything is OK', () => {
     const results: PluginResults = {
       gitlab: { status: 'OK', message: 'Up to date', executionTime: 10 },
     }
 
-    expect(formatEventLogData(args, results, 10)).toEqual(expect.objectContaining({
-      failed: [],
-      messageResume: 'Success',
-    }))
+    const data = formatEventLogData(args, results, 10)
+    expect(data).not.toHaveProperty('failed')
+    expect(data.messageResume).toBe('Success')
   })
 
   it('should handle events without any listener', () => {
     expect(formatEventLogData(args, {}, 1)).toEqual({
       args,
-      failed: [],
       results: {},
       totalExecutionTime: 1,
       messageResume: 'Success',
