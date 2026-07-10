@@ -340,8 +340,7 @@ export class NexusService {
   }
 
   private async deleteMavenRepos(project: ProjectWithDetails) {
-    const repoPaths = [
-      generateMavenGroupRepoName(project),
+    const hostedRepoNames = [
       generateMavenHostedRepoName(project, 'release'),
       generateMavenHostedRepoName(project, 'snapshot'),
     ]
@@ -354,7 +353,9 @@ export class NexusService {
       generateMavenHostedPrivilegeNameReadonly(project, 'snapshot'),
     ]
     await Promise.all(privileges.map(privilege => this.client.deleteSecurityPrivileges(privilege)))
-    await Promise.all(repoPaths.map(repo => this.client.deleteRepositoriesByName(repo)))
+    // Nexus responds 500 when deleting a hosted repo still referenced by a group, so delete the group first
+    await this.client.deleteRepositoriesByName(generateMavenGroupRepoName(project))
+    await Promise.all(hostedRepoNames.map(repo => this.client.deleteRepositoriesByName(repo)))
   }
 
   private async ensureNpmRepos(project: ProjectWithDetails, writePolicy: string) {
@@ -396,10 +397,6 @@ export class NexusService {
   }
 
   private async deleteNpmRepos(project: ProjectWithDetails) {
-    const repoPaths = [
-      generateNpmGroupRepoName(project),
-      generateNpmHostedRepoName(project),
-    ]
     const privileges = [
       generateNpmGroupPrivilegeName(project),
       generateNpmHostedPrivilegeName(project),
@@ -407,7 +404,9 @@ export class NexusService {
       generateNpmHostedPrivilegeNameReadonly(project),
     ]
     await Promise.all(privileges.map(privilege => this.client.deleteSecurityPrivileges(privilege)))
-    await Promise.all(repoPaths.map(repo => this.client.deleteRepositoriesByName(repo)))
+    // Nexus responds 500 when deleting a hosted repo still referenced by a group, so delete the group first
+    await this.client.deleteRepositoriesByName(generateNpmGroupRepoName(project))
+    await this.client.deleteRepositoriesByName(generateNpmHostedRepoName(project))
   }
 
   private async ensureRole(project: ProjectWithDetails, privileges: string[]) {

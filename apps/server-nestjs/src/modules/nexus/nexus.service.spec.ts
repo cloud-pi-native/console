@@ -176,6 +176,20 @@ describe('nexusService', () => {
     }), `forge/${project.slug}/tech/NEXUS`)
   })
 
+  it('deletes group repos before their hosted members', async () => {
+    const project = makeProjectWithDetails()
+
+    await service.handleDelete(project)
+
+    const deletedRepos = client.deleteRepositoriesByName.mock.calls.map(([name]) => name)
+    expect(deletedRepos.indexOf(`${project.slug}-repository-group`))
+      .toBeLessThan(deletedRepos.indexOf(`${project.slug}-repository-snapshot`))
+    expect(deletedRepos.indexOf(`${project.slug}-repository-group`))
+      .toBeLessThan(deletedRepos.indexOf(`${project.slug}-repository-release`))
+    expect(deletedRepos.indexOf(`${project.slug}-npm-group`))
+      .toBeLessThan(deletedRepos.indexOf(`${project.slug}-npm`))
+  })
+
   it('tolerates platform role failures when ensuring platform roles', async () => {
     const project = makeProjectWithDetails({
       owner: { email: 'owner@example.com', firstName: 'Owner', lastName: 'User' },
