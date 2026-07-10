@@ -76,10 +76,11 @@ export class NexusHttpClientService {
   }
 
   private get baseUrl() {
-    if (!this.config.nexusInternalUrl) {
-      throw new NexusError('NotConfigured', 'NEXUS_INTERNAL_URL is required')
+    const url = this.config.getInternalOrPublicNexusUrl()
+    if (!url) {
+      throw new NexusError('NotConfigured', 'NEXUS_INTERNAL_URL or NEXUS_URL is required')
     }
-    return this.config.nexusInternalUrl
+    return url
   }
 
   private get apiBaseUrl() {

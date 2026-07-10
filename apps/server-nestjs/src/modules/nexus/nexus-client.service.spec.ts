@@ -29,6 +29,7 @@ describe('nexusClientService', () => {
       nexusAdmin: 'admin',
       nexusAdminPassword,
       projectRootDir: 'forge',
+      getInternalOrPublicNexusUrl: () => nexusUrl,
     })
 
     const module = await Test.createTestingModule({
