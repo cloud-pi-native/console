@@ -533,7 +533,15 @@ export class NexusService {
       writePrivileges: [...writePrivileges],
     })
 
-    await Promise.all(Array.from(byId.entries(), ([id, privileges]) => this.ensureSecurityRole(id, privileges)))
+    // Platform roles aggregate privileges of every Nexus-enabled project; a stale
+    // project (e.g. privileges missing on this instance) must not block the current one.
+    const entries = Array.from(byId.entries())
+    const results = await Promise.allSettled(entries.map(([id, privileges]) => this.ensureSecurityRole(id, privileges)))
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        this.logger.warn(`Failed to ensure platform role ${entries[index][0]}: ${result.reason instanceof Error ? result.reason.message : result.reason}`)
+      }
+    })
   }
 
   private async deleteProjectGroupRoles(project: ProjectWithDetails) {

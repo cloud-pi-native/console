@@ -176,6 +176,25 @@ describe('nexusService', () => {
     }), `forge/${project.slug}/tech/NEXUS`)
   })
 
+  it('tolerates platform role failures when ensuring platform roles', async () => {
+    const project = makeProjectWithDetails({
+      owner: { email: 'owner@example.com', firstName: 'Owner', lastName: 'User' },
+      plugins: [{ key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED }],
+    })
+    const staleProject = makeProjectWithDetails({
+      plugins: [{ key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: ENABLED }],
+    })
+
+    nexusDatastore.getAllProjects.mockResolvedValue([project, staleProject])
+    client.createSecurityRoles.mockImplementation(async (body) => {
+      if (body.id.startsWith('console-')) throw new Error('Request failed: POST security/roles responded 400 Bad Request')
+    })
+
+    await expect(service.handleUpsert(project)).resolves.not.toThrow()
+
+    expect(client.createSecurityRoles).toHaveBeenCalledWith(expect.objectContaining({ id: 'console-admin' }))
+  })
+
   it('dedupes project group roles by role id and keeps the highest privileges', async () => {
     const project = makeProjectWithDetails({
       owner: { email: 'owner@example.com', firstName: 'Owner', lastName: 'User' },
