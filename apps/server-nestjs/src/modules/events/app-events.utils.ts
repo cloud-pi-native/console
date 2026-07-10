@@ -69,7 +69,7 @@ export function formatEventLogData(args: unknown, results: PluginResults, totalE
 
   return {
     args,
-    failed,
+    ...(failed.length ? { failed } : {}),
     results: Object.fromEntries(entries.map(([service, result]) => [service, toLoggableResult(result)])),
     totalExecutionTime: Math.round(totalExecutionTime),
     messageResume: buildMessageResume(results, failed),
