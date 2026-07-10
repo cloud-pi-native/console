@@ -2,7 +2,7 @@ import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/us
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
 import type { GroupRepresentationWith } from './keycloak.utils'
-import { getPermsByUserRoles, isExternalRoleType, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
+import { getBaseRoleType, getPermsByUserRoles, isExternalRoleType, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
@@ -223,9 +223,10 @@ export class KeycloakService {
       await this.keycloak.addUserToGroup(userId, groupId)
       this.logger.log(`Added user to Keycloak group: userId=${userId} groupId=${groupId} groupName=${groupName}`)
     } catch (e) {
-      if (e.response?.status === 404) {
+      const status = getErrorResponseStatus(e)
+      if (status === 404) {
         this.logger.warn(`User not found in Keycloak, skipping addition: userId=${userId} groupId=${groupId} groupName=${groupName}`)
-      } else if (e.response?.status === 409) {
+      } else if (status === 409) {
         this.logger.verbose(`User already a member of Keycloak group: userId=${userId} groupId=${groupId} groupName=${groupName}`)
       } else {
         throw e
@@ -238,7 +239,7 @@ export class KeycloakService {
       await this.keycloak.removeUserFromGroup(userId, groupId)
       this.logger.log(`Removed user from Keycloak group: userId=${userId} groupId=${groupId} groupName=${groupName}`)
     } catch (e) {
-      if (e.response?.status === 404) {
+      if (getErrorResponseStatus(e) === 404) {
         this.logger.warn(`User not found in Keycloak, skipping removal: userId=${userId} groupId=${groupId} groupName=${groupName}`)
       } else {
         throw e
@@ -323,7 +324,7 @@ export class KeycloakService {
     const groupMembers = await this.keycloak.getGroupMembers(roleGroup.id)
     span?.setAttribute('keycloak.group.members.current', groupMembers.length)
 
-    switch (role.type) {
+    switch (getBaseRoleType(role.type)) {
       case 'managed':
         await Promise.all([
           this.ensureRoleGroupMembers(project, role, roleGroup, groupMembers),
@@ -645,6 +646,14 @@ export class KeycloakService {
       rw: ProjectAuthorized.ManageEnvironments({ adminPermissions: 0n, projectPermissions }),
     }
   }
+}
+
+/** HTTP status carried by errors such as keycloak-admin-client's NetworkError. */
+function getErrorResponseStatus(error: unknown): number | undefined {
+  if (error instanceof Error && 'response' in error && error.response instanceof Response) {
+    return error.response.status
+  }
+  return undefined
 }
 
 async function* map<T, U>(
