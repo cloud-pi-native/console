@@ -65,7 +65,7 @@ export class NexusHttpClientService {
     span?.setAttribute('nexus.http.status', response.status)
     const result = await handleResponse<T>(response)
     if (!response.ok) {
-      throw new NexusError('HttpError', 'Request failed', {
+      throw new NexusError('HttpError', `Request failed: ${method} ${path} responded ${result.status} ${response.statusText}`, {
         status: result.status,
         method,
         path,
