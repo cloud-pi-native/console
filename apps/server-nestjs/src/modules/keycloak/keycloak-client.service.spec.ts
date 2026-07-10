@@ -1,28 +1,45 @@
+import type { TestingModule } from '@nestjs/testing'
 import KcAdminClient from '@keycloak/keycloak-admin-client'
+import { ScheduleModule } from '@nestjs/schedule'
 import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from './keycloak-client.service'
+import { ADMIN_TOKEN_REFRESH_INTERVAL_MS } from './keycloak.constants'
 
 const keycloakUrl = 'https://keycloak.internal'
 const projectRealm = 'project-realm'
+// The only handled token endpoint is the master realm's: a token request
+// against any other realm is unhandled and fails the test, which enforces
+// the realm pinning of authenticate()
 const tokenUrl = `${keycloakUrl}/realms/master/protocol/openid-connect/token`
 const childrenUrl = `${keycloakUrl}/admin/realms/${projectRealm}/groups/:parentId/children`
 
 const server = setupServer()
 
-function useTokenEndpoint() {
+function useTokenEndpoint({ rejectGrant = () => false }: { rejectGrant?: (grantType: string | null) => boolean } = {}) {
+  const tokenRequests: URLSearchParams[] = []
+  let issued = 0
   server.use(
-    http.post(tokenUrl, () =>
-      HttpResponse.json({ access_token: 'access-token', refresh_token: 'refresh-token', expires_in: 300 })),
+    http.post(tokenUrl, async ({ request }) => {
+      const body = new URLSearchParams(await request.text())
+      tokenRequests.push(body)
+      if (rejectGrant(body.get('grant_type'))) {
+        return HttpResponse.json({ error: 'invalid_grant' }, { status: 401 })
+      }
+      issued++
+      return HttpResponse.json({ access_token: `access-token-${issued}`, refresh_token: `refresh-token-${issued}`, expires_in: 60 })
+    }),
   )
+  return tokenRequests
 }
 
 function createKeycloakClientServiceTestingModule(config: Partial<ConfigurationService> = {}) {
   return Test.createTestingModule({
+    imports: [ScheduleModule.forRoot()],
     providers: [
       KeycloakClientService,
       { provide: KEYCLOAK_ADMIN_CLIENT, useValue: new KcAdminClient({ baseUrl: keycloakUrl }) },
@@ -32,6 +49,7 @@ function createKeycloakClientServiceTestingModule(config: Partial<ConfigurationS
           keycloakRealm: projectRealm,
           keycloakAdmin: 'admin',
           keycloakAdminPassword: 'admin-password',
+          keycloakAdminClientId: 'admin-cli',
           ...config,
         }),
       },
@@ -40,73 +58,146 @@ function createKeycloakClientServiceTestingModule(config: Partial<ConfigurationS
 }
 
 describe('keycloakClientService authentication lifecycle', () => {
-  let service: KeycloakClientService
+  let module: TestingModule
   let client: KcAdminClient
 
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
   beforeEach(async () => {
-    const module = await createKeycloakClientServiceTestingModule().compile()
-    service = module.get(KeycloakClientService)
+    vi.useFakeTimers()
+    module = await createKeycloakClientServiceTestingModule().compile()
     client = module.get(KEYCLOAK_ADMIN_CLIENT)
   })
-  afterEach(() => server.resetHandlers())
+  afterEach(async () => {
+    // close() re-runs init() on a module whose init() already failed; swallow
+    // that rethrow so the "initial authentication fails" test can clean up
+    await module.close().catch(() => {})
+    server.resetHandlers()
+    vi.useRealTimers()
+  })
   afterAll(() => server.close())
 
   it('should authenticate with the password grant then switch to the project realm', async () => {
-    server.use(
-      http.post(tokenUrl, async ({ request }) => {
-        const body = new URLSearchParams(await request.text())
-        expect(body.get('grant_type')).toBe('password')
-        expect(body.get('client_id')).toBe('admin-cli')
-        expect(body.get('username')).toBe('admin')
-        expect(body.get('password')).toBe('admin-password')
-        return HttpResponse.json({ access_token: 'access-token', refresh_token: 'refresh-token', expires_in: 300 })
-      }),
-    )
+    const tokenRequests = useTokenEndpoint()
 
-    await service.onModuleInit()
+    await module.init()
 
-    expect(client.accessToken).toBe('access-token')
+    expect(tokenRequests).toHaveLength(1)
+    expect(Object.fromEntries(tokenRequests[0])).toMatchObject({
+      grant_type: 'password',
+      client_id: 'admin-cli',
+      username: 'admin',
+      password: 'admin-password',
+    })
+    expect(client.accessToken).toBe('access-token-1')
     expect(client.realmName).toBe(projectRealm)
   })
 
+  it('should refresh the token periodically with the rotated refresh token so it never expires', async () => {
+    const tokenRequests = useTokenEndpoint()
+    await module.init()
+
+    await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS)
+    expect(tokenRequests).toHaveLength(2)
+    expect(Object.fromEntries(tokenRequests[1])).toMatchObject({
+      grant_type: 'refresh_token',
+      client_id: 'admin-cli',
+      refresh_token: 'refresh-token-1',
+    })
+
+    await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS)
+    expect(tokenRequests).toHaveLength(3)
+    expect(tokenRequests[2].get('refresh_token')).toBe('refresh-token-2')
+    expect(client.accessToken).toBe('access-token-3')
+    expect(client.realmName).toBe(projectRealm)
+  })
+
+  it('should fall back to a full re-authentication when the refresh grant fails', async () => {
+    const tokenRequests = useTokenEndpoint({ rejectGrant: grantType => grantType === 'refresh_token' })
+    await module.init()
+
+    await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS)
+
+    expect(tokenRequests.map(body => body.get('grant_type'))).toEqual(['password', 'refresh_token', 'password'])
+    expect(client.accessToken).toBe('access-token-2')
+    expect(client.realmName).toBe(projectRealm)
+  })
+
+  it('should keep refreshing and restore the project realm when both grants fail', async () => {
+    let keycloakIsDown = false
+    const tokenRequests = useTokenEndpoint({ rejectGrant: () => keycloakIsDown })
+    await module.init()
+
+    keycloakIsDown = true
+    await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS)
+    expect(tokenRequests.map(body => body.get('grant_type'))).toEqual(['password', 'refresh_token', 'password'])
+    expect(client.realmName).toBe(projectRealm)
+
+    keycloakIsDown = false
+    await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS)
+    expect(tokenRequests).toHaveLength(4)
+    expect(tokenRequests[3].get('grant_type')).toBe('refresh_token')
+    expect(client.accessToken).toBe('access-token-2')
+  })
+
+  it('should stop refreshing the token on module destroy', async () => {
+    const tokenRequests = useTokenEndpoint()
+    await module.init()
+    expect(tokenRequests).toHaveLength(1)
+
+    await module.close()
+
+    await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS * 3)
+    expect(tokenRequests).toHaveLength(1)
+  })
+
   it('should rethrow when the initial authentication fails', async () => {
-    server.use(
-      http.post(tokenUrl, () =>
-        HttpResponse.json({ error: 'invalid_grant' }, { status: 401 })),
-    )
+    const tokenRequests = useTokenEndpoint({ rejectGrant: () => true })
 
-    await expect(service.onModuleInit()).rejects.toThrow('Network response was not OK.')
+    await expect(module.init()).rejects.toThrow('Network response was not OK.')
     expect(client.realmName).toBe('master')
+
+    await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS * 2)
+    expect(tokenRequests).toHaveLength(1)
   })
 
-  it('should not authenticate when the Keycloak realm is not configured', async () => {
-    const module = await createKeycloakClientServiceTestingModule({ keycloakRealm: undefined }).compile()
-    const serviceWithoutRealm = module.get(KeycloakClientService)
+  it('should not authenticate nor refresh the token when the Keycloak realm is not configured', async () => {
+    const tokenRequests = useTokenEndpoint()
+    await module.close()
+    module = await createKeycloakClientServiceTestingModule({ keycloakRealm: undefined }).compile()
 
-    // No token endpoint handler: any authentication attempt would fail the test
-    await expect(serviceWithoutRealm.onModuleInit()).resolves.toBeUndefined()
+    await module.init()
+
+    await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS * 2)
+    expect(tokenRequests).toHaveLength(0)
   })
 
-  it('should not authenticate when the admin credentials are not configured', async () => {
-    const module = await createKeycloakClientServiceTestingModule({ keycloakAdminPassword: undefined }).compile()
-    const serviceWithoutCredentials = module.get(KeycloakClientService)
+  it('should not authenticate nor refresh the token when the admin credentials are not configured', async () => {
+    const tokenRequests = useTokenEndpoint()
+    await module.close()
+    module = await createKeycloakClientServiceTestingModule({ keycloakAdminPassword: undefined }).compile()
 
-    await expect(serviceWithoutCredentials.onModuleInit()).resolves.toBeUndefined()
+    await module.init()
+
+    await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS * 2)
+    expect(tokenRequests).toHaveLength(0)
   })
 })
 
 describe('getOrCreateSubGroupByName', () => {
+  let module: TestingModule
   let service: KeycloakClientService
 
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
   beforeEach(async () => {
-    const module = await createKeycloakClientServiceTestingModule().compile()
+    module = await createKeycloakClientServiceTestingModule().compile()
     service = module.get(KeycloakClientService)
     useTokenEndpoint()
-    await service.onModuleInit()
+    await module.init()
   })
-  afterEach(() => server.resetHandlers())
+  afterEach(async () => {
+    await module.close()
+    server.resetHandlers()
+  })
   afterAll(() => server.close())
 
   it('should return the existing subgroup without creating it', async () => {
