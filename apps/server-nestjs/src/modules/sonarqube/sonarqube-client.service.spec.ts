@@ -11,8 +11,7 @@ import { makeSonarqubeGeneratedToken, makeSonarqubeGroup, makeSonarqubePaging, m
 
 const sonarUrl = 'https://sonarqube.internal'
 const sonarToken = 'my-token'
-const sonarBearerToken = Buffer.from(`${sonarToken}:`, 'utf8').toString('base64')
-const sonarAuthHeader = `Bearer ${sonarBearerToken}`
+const sonarAuthHeader = `Bearer ${sonarToken}`
 
 const server = setupServer()
 
@@ -118,7 +117,7 @@ describe('sonarqubeClientService', () => {
         http.post(`${sonarUrl}/api/users/deactivate`, ({ request }) => {
           const params = new URL(request.url).searchParams
           expect(params.get('login')).toBe(user.login)
-          expect(params.get('anonymize')).toBe(user.anonymize)
+          expect(params.get('anonymize')).toBe(String(user.anonymize))
           return HttpResponse.json({})
         }),
       )

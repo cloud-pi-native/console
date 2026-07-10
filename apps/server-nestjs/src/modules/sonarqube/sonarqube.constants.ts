@@ -2,7 +2,7 @@ export const SONARQUBE_PLUGIN_NAME = 'sonarqube'
 export const DEFAULT_PERMISSION_TEMPLATE_NAME = 'Forge Default'
 
 // SonarQube global permission names
-export const GLOBAL_ADMIN_PERMISSIONS = ['admin', 'profileadmin', 'gateadmin', 'provisioning'] as const
+export const GLOBAL_ADMIN_PERMISSIONS = ['admin', 'profileadmin', 'gateadmin', 'scan', 'provisioning'] as const
 
 // Permission template — grants to project creator and sonar-administrators on new projects
 export const DEFAULT_TEMPLATE_PERMISSIONS = ['admin', 'codeviewer', 'issueadmin', 'securityhotspotadmin', 'scan', 'user'] as const
