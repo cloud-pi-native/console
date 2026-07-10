@@ -1,5 +1,6 @@
 import type { LogData } from '../log/log.service'
 import type { PluginName, PluginResult, PluginResults } from '../plugin/plugin.utils'
+import { getErrorHttpDetails } from '../../utils/http-error'
 import { getFailedPlugins } from '../plugin/plugin.utils'
 
 /** Per-service result as persisted in the admin logs (legacy hooks format, parsed by LogSchema). */
@@ -30,7 +31,12 @@ export function isPluginResults(response: unknown): response is PluginResults {
 
 export function serializeError(error: unknown): string {
   if (error instanceof Error) {
-    return JSON.stringify({ name: error.name, message: error.message, stack: error.stack })
+    return JSON.stringify({
+      name: error.name,
+      message: error.message,
+      ...getErrorHttpDetails(error),
+      stack: error.stack,
+    })
   }
   try {
     return JSON.stringify(error)

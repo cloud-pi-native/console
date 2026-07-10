@@ -7,6 +7,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
+import { getErrorResponseStatus } from '../../utils/http-error'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { KeycloakClientService } from './keycloak-client.service'
@@ -646,14 +647,6 @@ export class KeycloakService {
       rw: ProjectAuthorized.ManageEnvironments({ adminPermissions: 0n, projectPermissions }),
     }
   }
-}
-
-/** HTTP status carried by errors such as keycloak-admin-client's NetworkError. */
-function getErrorResponseStatus(error: unknown): number | undefined {
-  if (error instanceof Error && 'response' in error && error.response instanceof Response) {
-    return error.response.status
-  }
-  return undefined
 }
 
 async function* map<T, U>(

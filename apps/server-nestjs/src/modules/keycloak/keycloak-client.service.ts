@@ -7,6 +7,7 @@ import type { GroupRepresentationWith } from './keycloak.utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
+import { getErrorResponseStatus } from '../../utils/http-error'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { CONSOLE_GROUP_NAME, SUBGROUPS_PAGINATE_QUERY_MAX } from './keycloak.constants'
@@ -185,14 +186,31 @@ export class KeycloakClientService implements OnModuleInit {
     const span = trace.getActiveSpan()
     span?.setAttribute('group.name', name)
     span?.setAttribute('parent.id', parentId)
+    const existing = await this.findSubGroupByName(parentId, name)
+    if (existing) return existing
+
+    this.logger.debug(`Creating Keycloak subgroup ${name} under parentId=${parentId}`)
+    try {
+      const createdGroup = await this.client.groups.createChildGroup({ id: parentId }, { name })
+      return { id: createdGroup.id, name } satisfies GroupRepresentation
+    } catch (err) {
+      // A concurrent reconciliation may have created the subgroup between the
+      // scan and the create; treat the 409 as "already exists" and re-fetch it
+      if (getErrorResponseStatus(err) !== 409) throw err
+      this.logger.verbose(`Keycloak subgroup ${name} was created concurrently under parentId=${parentId}, fetching it`)
+      const subgroup = await this.findSubGroupByName(parentId, name)
+      if (!subgroup) throw err
+      return subgroup
+    }
+  }
+
+  private async findSubGroupByName(parentId: string, name: string): Promise<GroupRepresentation | undefined> {
     for await (const subgroup of this.getSubGroups(parentId)) {
       if (subgroup.name === name) {
         return subgroup
       }
     }
-    this.logger.debug(`Creating Keycloak subgroup ${name} under parentId=${parentId}`)
-    const createdGroup = await this.client.groups.createChildGroup({ id: parentId }, { name })
-    return { id: createdGroup.id, name } satisfies GroupRepresentation
+    return undefined
   }
 
   async getOrCreateConsoleGroup(projectGroup: GroupRepresentationWith<'id'>) {
