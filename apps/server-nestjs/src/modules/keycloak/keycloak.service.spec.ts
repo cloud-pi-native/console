@@ -424,5 +424,48 @@ describe('keycloakService', () => {
       // Global: should sync group but no members
       expect(keycloak.getOrCreateRoleGroup).toHaveBeenCalledWith(consoleGroup, '/global-group')
     })
+
+    it('should treat system-prefixed role types as their base type', async () => {
+      const roleSystemManaged = makeProjectRole({ id: 'role-system-managed', permissions: 0n, oidcGroup: '/system-managed-group', type: 'system:managed' })
+
+      const projectWithRoles = makeProjectWithDetails({
+        ...mockProject,
+        members: [
+          makeProjectMember({
+            user: makeProjectUser({ id: 'user-1', email: 'user1@example.com' }),
+            roleIds: ['role-system-managed'],
+          }),
+        ],
+        roles: [roleSystemManaged],
+      })
+      keycloakDatastore.getAllProjects.mockResolvedValue([projectWithRoles])
+
+      const projectGroup = makeGroupRepresentation({ id: 'group-id', name: 'test-project' })
+      const consoleGroup = { id: 'console-id', name: 'console' }
+      const systemManagedGroup = makeGroupRepresentation({ id: 'system-managed-id', name: 'system-managed-group' })
+
+      keycloak.getOrCreateGroupByPath.mockImplementation((path) => {
+        if (path === '/test-project') return Promise.resolve(projectGroup)
+        return Promise.resolve({})
+      })
+      keycloak.getOrCreateConsoleGroup.mockResolvedValue(consoleGroup)
+      keycloak.getOrCreateRoleGroup.mockResolvedValue({ ...systemManagedGroup, path: '/console/system-managed-group' })
+
+      keycloak.getGroupMembers.mockImplementation((groupId) => {
+        if (groupId === 'group-id') return Promise.resolve([makeUserRepresentation({ id: 'owner-id' })])
+        // has extra user-2, missing user-1
+        if (groupId === 'system-managed-id') return Promise.resolve([makeUserRepresentation({ id: 'user-2' })])
+        return Promise.resolve([])
+      })
+
+      keycloak.getSubGroups.mockImplementation(async function* () { /* empty */ })
+
+      await service.handleCron()
+
+      // system:managed behaves like managed: add user-1, remove user-2
+      expect(keycloak.getOrCreateRoleGroup).toHaveBeenCalledWith(consoleGroup, '/system-managed-group')
+      expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'system-managed-id')
+      expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-2', 'system-managed-id')
+    })
   })
 })
