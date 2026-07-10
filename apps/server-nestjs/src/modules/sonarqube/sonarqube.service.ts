@@ -3,10 +3,10 @@ import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { SonarqubeUserSecret } from '../vault/vault-client.service'
 import type { SonarqubeProjectResult, SonarqubeUser } from './sonarqube-client.service'
 import type { ProjectWithDetails } from './sonarqube-datastore.service'
-import { generateProjectKey, generateRandomPassword } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
+import { generateProjectKey, generateRandomPassword } from '../../utils/crypto'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
@@ -64,7 +64,7 @@ export class SonarqubeService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    await this.init().catch(error => this.logger.error('SonarQube initialization failed', error))
+    await this.init().catch(error => this.logger.error({ error }, 'SonarQube initialization failed'))
   }
 
   @StartActiveSpan()
@@ -181,7 +181,14 @@ export class SonarqubeService implements OnModuleInit {
   @StartActiveSpan()
   private async ensureDefaultPermissionTemplate(): Promise<void> {
     this.logger.verbose(`Ensuring SonarQube permission template (name=${DEFAULT_PERMISSION_TEMPLATE_NAME})`)
-    await this.client.createPermissionTemplate({ name: DEFAULT_PERMISSION_TEMPLATE_NAME })
+    const { permissionTemplates } = await this.client.searchPermissionTemplates({ q: DEFAULT_PERMISSION_TEMPLATE_NAME })
+
+    if (permissionTemplates.some(t => t.name.toLowerCase() === DEFAULT_PERMISSION_TEMPLATE_NAME.toLowerCase())) {
+      this.logger.verbose(`SonarQube permission template already exists (name=${DEFAULT_PERMISSION_TEMPLATE_NAME})`)
+    } else {
+      await this.client.createPermissionTemplate({ name: DEFAULT_PERMISSION_TEMPLATE_NAME })
+      this.logger.log(`Created SonarQube permission template (name=${DEFAULT_PERMISSION_TEMPLATE_NAME})`)
+    }
     await Promise.all(DEFAULT_TEMPLATE_PERMISSIONS.map(permission =>
       this.client.addPermissionProjectCreatorToTemplate({ templateName: DEFAULT_PERMISSION_TEMPLATE_NAME, permission }),
     ))
@@ -440,7 +447,9 @@ function filterProjectsOwningSlug(
     for (let i = parts.length - 1; i > 0; i--) {
       const project = parts.slice(0, i).join('-')
       const repository = parts.slice(i).join('-')
-      if (sonarKey.startsWith(`${project}-${repository}-`) && project === projectSlug) {
+      // recompute the key (with its HMAC suffix) so keys not managed by the
+      // console, or owned by a project whose slug is a prefix, are never claimed
+      if (generateProjectKey(project, repository) === sonarKey && project === projectSlug) {
         acc.push({ projectSlug, repository, key: sonarKey })
         break
       }

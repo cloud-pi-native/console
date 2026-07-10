@@ -90,6 +90,10 @@ export interface CreatePermissionTemplateParams extends BaseParams {
   projectKeyPattern?: string
 }
 
+export interface SearchPermissionTemplatesParams extends BaseParams {
+  q?: string
+}
+
 export interface SetPermissionDefaultTemplateParams extends BaseParams {
   templateName: string
   projectKeyPattern?: string
@@ -169,6 +173,16 @@ export interface SearchUserGroupResponse {
   groups: SonarqubeGroup[]
 }
 
+export interface SonarqubePermissionTemplate {
+  id: string
+  name: string
+  description?: string
+}
+
+export interface SearchPermissionTemplatesResponse {
+  permissionTemplates: SonarqubePermissionTemplate[]
+}
+
 export interface SearchUsersResponse {
   paging: SonarqubePaging
   users: SonarqubeUser[]
@@ -198,6 +212,11 @@ export class SonarqubeClientService {
   @StartActiveSpan()
   async createPermissionTemplate(params: CreatePermissionTemplateParams) {
     await this.http.fetch('permissions/create_template', { method: 'POST', params })
+  }
+
+  @StartActiveSpan()
+  searchPermissionTemplates(params: SearchPermissionTemplatesParams) {
+    return this.http.fetch<SearchPermissionTemplatesResponse>('permissions/search_templates', { params }).then(res => res.data!)
   }
 
   @StartActiveSpan()

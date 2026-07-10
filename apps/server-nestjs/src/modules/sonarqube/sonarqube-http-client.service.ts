@@ -12,7 +12,7 @@ export interface SonarqubeResponse<T = unknown> {
   data: T | null
 }
 
-export type SonarqubeErrorKind = 'NotConfigured' | 'Unexpected'
+export type SonarqubeErrorKind = 'NotConfigured' | 'ClientError' | 'ServerError' | 'Unexpected'
 
 export class SonarqubeError extends Error {
   readonly kind: SonarqubeErrorKind
@@ -52,9 +52,8 @@ export class SonarqubeHttpClientService {
 
   private get defaultHeaders(): Record<string, string> {
     if (!this.config.sonarApiToken) throw new SonarqubeError('NotConfigured', 'SONAR_API_TOKEN is required')
-    const bearerToken = Buffer.from(`${this.config.sonarApiToken}:`, 'utf8').toString('base64')
     return {
-      Authorization: `Bearer ${bearerToken}`,
+      Authorization: `Bearer ${this.config.sonarApiToken}`,
     }
   }
 
@@ -70,7 +69,12 @@ export class SonarqubeHttpClientService {
     })
 
     span?.setAttribute('sonarqube.http.status', response.status)
-    return handleResponse<T>(response)
+    const result = await handleResponse<T>(response)
+    if (response.status >= 400) {
+      const kind = response.status >= 500 ? 'ServerError' : 'ClientError'
+      throw new SonarqubeError(kind, formatErrorMessage(response.status, result.data), { status: response.status, method, path })
+    }
+    return result
   }
 
   private createRequest(path: string, method: string, params?: Record<string, string | number | boolean | undefined | null>): Request {
@@ -82,6 +86,16 @@ export class SonarqubeHttpClientService {
     }
     return new Request(url.toString(), { method, headers: this.defaultHeaders })
   }
+}
+
+function formatErrorMessage(status: number, data: unknown): string {
+  const errors = (data as { errors?: { msg?: unknown }[] } | null)?.errors
+  const details = Array.isArray(errors)
+    ? errors.map(e => e?.msg).filter((msg): msg is string => typeof msg === 'string').join('; ')
+    : ''
+  return details
+    ? `SonarQube API responded with status ${status}: ${details}`
+    : `SonarQube API responded with status ${status}`
 }
 
 async function handleResponse<T>(response: Response): Promise<SonarqubeResponse<T>> {
