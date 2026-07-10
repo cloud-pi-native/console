@@ -31,6 +31,7 @@ export class ConfigurationService {
   keycloakClientSecret = process.env.KEYCLOAK_CLIENT_SECRET
   keycloakAdmin = process.env.KEYCLOAK_ADMIN
   keycloakAdminPassword = process.env.KEYCLOAK_ADMIN_PASSWORD
+  keycloakAdminClientId = process.env.KEYCLOAK_ADMIN_CLIENT_ID
   keycloakRedirectUri = process.env.KEYCLOAK_REDIRECT_URI
 
   // JWKS cache TTL in ms (default 5 min); Keycloak rotates keys periodically

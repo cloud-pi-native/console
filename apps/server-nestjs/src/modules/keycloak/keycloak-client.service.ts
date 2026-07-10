@@ -1,22 +1,26 @@
 import type KcAdminClient from '@keycloak/keycloak-admin-client'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation'
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
+import type { Credentials } from '@keycloak/keycloak-admin-client/lib/utils/auth'
 import type { OnModuleInit } from '@nestjs/common'
 import type { ProjectWithDetails } from './keycloak-datastore.service'
 import type { GroupRepresentationWith } from './keycloak.utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
+import { Interval } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
 import { getErrorResponseStatus } from '../../utils/http-error'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
-import { CONSOLE_GROUP_NAME, SUBGROUPS_PAGINATE_QUERY_MAX } from './keycloak.constants'
+import { ADMIN_AUTH_REALM, ADMIN_TOKEN_REFRESH_INTERVAL_MS, CONSOLE_GROUP_NAME, PASSWORD_GRANT_TYPE, REFRESH_TOKEN_GRANT_TYPE, SUBGROUPS_PAGINATE_QUERY_MAX } from './keycloak.constants'
 
 export const KEYCLOAK_ADMIN_CLIENT = Symbol('KEYCLOAK_ADMIN_CLIENT')
 
 @Injectable()
 export class KeycloakClientService implements OnModuleInit {
   private readonly logger = new Logger(KeycloakClientService.name)
+
+  private authenticated = false
 
   constructor(
     @Inject(ConfigurationService) private readonly config: ConfigurationService,
@@ -278,14 +282,13 @@ export class KeycloakClientService implements OnModuleInit {
       this.logger.fatal('Keycloak admin username or password is not configured')
       return
     }
+    if (!this.config.keycloakAdminClientId) {
+      this.logger.fatal('Keycloak admin client id is not configured')
+      return
+    }
     try {
       this.logger.log(`Authenticating Keycloak admin client (realm=${this.config.keycloakRealm})`)
-      await this.client.auth({
-        clientId: 'admin-cli',
-        grantType: 'password',
-        username: this.config.keycloakAdmin,
-        password: this.config.keycloakAdminPassword,
-      })
+      await this.authenticate(this.passwordCredentials())
     } catch (err) {
       if (err instanceof Error) {
         this.logger.error(`Keycloak Admin Client authentication failed: ${err.message}`, err.stack)
@@ -295,6 +298,66 @@ export class KeycloakClientService implements OnModuleInit {
       throw err
     }
     this.client.setConfig({ realmName: this.config.keycloakRealm })
+    this.authenticated = true
     this.logger.log(`Keycloak Admin Client authenticated (realm=${this.config.keycloakRealm})`)
+  }
+
+  // The admin client never refreshes its token on its own; without this the
+  // access token expires (~60s) and every admin call fails with a 401
+  @Interval(ADMIN_TOKEN_REFRESH_INTERVAL_MS)
+  async refreshAdminToken() {
+    if (!this.authenticated) return
+    try {
+      await this.authenticate(this.refreshTokenCredentials())
+    } catch (refreshErr) {
+      // The refresh token itself can expire or be revoked (e.g. Keycloak
+      // restart); fall back to a full re-authentication to recover
+      this.logger.warn(`Keycloak Admin Client token refresh failed, re-authenticating: ${refreshErr instanceof Error ? refreshErr.message : String(refreshErr)}`)
+      try {
+        await this.authenticate(this.passwordCredentials())
+      } catch (err) {
+        this.logger.error(`Keycloak Admin Client re-authentication failed: ${err instanceof Error ? err.message : String(err)}`)
+      }
+    }
+  }
+
+  // Checked by onModuleInit before any authentication; the getter narrows the
+  // config value so Credentials.clientId stays a plain string
+  private get adminClientId(): string {
+    if (!this.config.keycloakAdminClientId) {
+      throw new Error('KEYCLOAK_ADMIN_CLIENT_ID is not configured')
+    }
+    return this.config.keycloakAdminClientId
+  }
+
+  private passwordCredentials(): Credentials {
+    return {
+      clientId: this.adminClientId,
+      grantType: PASSWORD_GRANT_TYPE,
+      username: this.config.keycloakAdmin,
+      password: this.config.keycloakAdminPassword,
+    }
+  }
+
+  private refreshTokenCredentials(): Credentials {
+    return {
+      clientId: this.adminClientId,
+      grantType: REFRESH_TOKEN_GRANT_TYPE,
+      refreshToken: this.client.refreshToken,
+    }
+  }
+
+  // auth() resolves the token endpoint from client.realmName, which onModuleInit
+  // switches to the project realm — the admin user lives in the master realm.
+  // Restore the realm even when auth fails: the still-valid previous token keeps
+  // serving admin calls, and those must target the project realm, not master
+  private async authenticate(credentials: Credentials) {
+    const realmName = this.client.realmName
+    this.client.setConfig({ realmName: ADMIN_AUTH_REALM })
+    try {
+      await this.client.auth(credentials)
+    } finally {
+      this.client.setConfig({ realmName })
+    }
   }
 }
