@@ -6,7 +6,6 @@ import { getAxiosOptions } from './functions.js'
 const coreComponents = [
   'Blob Stores Ready',
   'File Blob Stores Path',
-  'Read-Only Detector',
 ]
 const auxComponents = [
   'Available CPUs',
@@ -21,7 +20,6 @@ const auxComponents = [
   'com.codahale.metrics.health.jvm.ThreadDeadlockHealthCheck',
   'Node Health Check',
   'Re-encryption required',
-  'Read-Only Detector',
   'Default Admin Credentials',
   'Recent version',
 ]
