@@ -40,7 +40,7 @@ services:
       context: ..
       dockerfile: apps/server/Dockerfile
       target: dev
-    image: dso-console/server:dev
+    image: dso-console/server:integ
     container_name: dso-console_server
     command: [dev]
     depends_on:
@@ -92,7 +92,7 @@ services:
       context: ..
       dockerfile: apps/server-nestjs/Dockerfile
       target: dev
-    image: dso-console/server-nestjs:dev
+    image: dso-console/server-nestjs:integ
     container_name: dso-console_server-nestjs
     command: [start:dev]
     depends_on:
@@ -145,7 +145,7 @@ services:
     build:
       context: ..
       dockerfile: apps/nginx-strangler/Dockerfile
-    image: dso-console/nginx-strangler:dev
+    image: dso-console/nginx-strangler:integ
     container_name: dso-console_nginx-strangler
     depends_on:
       server:
@@ -167,7 +167,7 @@ services:
       context: ..
       dockerfile: apps/client/Dockerfile
       target: dev
-    image: dso-console/client:dev
+    image: dso-console/client:integ
     container_name: dso-console_client
     depends_on:
       nginx-strangler:
@@ -203,7 +203,7 @@ services:
     build:
       context: ..
       dockerfile: packages/opencds/Dockerfile
-    image: dso-console/opencds-mockoon:dev
+    image: dso-console/opencds-mockoon:integ
     container_name: dso-opencds_mockoon
     user: root
     ports:
