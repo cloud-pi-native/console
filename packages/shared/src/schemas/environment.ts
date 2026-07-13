@@ -21,4 +21,20 @@ export const EnvironmentSchema = z.object({
   autosync: z.boolean(),
 }).extend(AtDatesToStringExtend)
 
+export const CreateEnvironmentSchema = EnvironmentSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  projectId: true,
+})
+
+export const UpdateEnvironmentSchema = EnvironmentSchema.pick({
+  cpu: true,
+  gpu: true,
+  memory: true,
+  autosync: true,
+})
+
 export type Environment = Zod.infer<typeof EnvironmentSchema>
+export type CreateEnvironment = Zod.infer<typeof CreateEnvironmentSchema>
+export type UpdateEnvironment = Zod.infer<typeof UpdateEnvironmentSchema>
