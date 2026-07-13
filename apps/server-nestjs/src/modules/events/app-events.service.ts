@@ -23,6 +23,7 @@ export type EventLogAction
     | 'Replay hooks for Project' | 'Upsert Project Role'
     | 'Create Deployment' | 'Update Deployment' | 'Delete Deployment'
     | 'Delete all project deployments'
+    | 'Create Environment' | 'Update Environment' | 'Delete Environment'
     | 'Add Project Member' | 'Update Project Member' | 'Remove Project Member'
 
 export interface EventContext {

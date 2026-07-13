@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ScheduleModule } from '@nestjs/schedule'
 import { DeploymentModule } from './modules/deployment/deployment.module'
+import { EnvironmentModule } from './modules/environment/environment.module'
 import { HealthzModule } from './modules/healthz/healthz.module'
 import { KeycloakModule } from './modules/keycloak/keycloak.module'
 import { LogModule } from './modules/log/log.module'
@@ -31,6 +32,7 @@ import { VersionModule } from './modules/version/version.module'
     ProjectRolesModule,
     LogModule,
     DeploymentModule,
+    EnvironmentModule,
     VersionModule,
   ],
   controllers: [],

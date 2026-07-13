@@ -2,6 +2,7 @@ import type { ApiFetcher } from '@ts-rest/core'
 import { initClient, initContract } from '@ts-rest/core'
 
 export const apiPrefix: string = '/api/v1'
+export const apiPrefixV2: string = '/api/v2'
 
 export const contractInstance: ReturnType<typeof initContract> = initContract()
 
@@ -13,6 +14,7 @@ export async function getContract() {
     ServiceChains: (await import('./contracts/index.js')).serviceChainContract,
     Deployments: (await import('./contracts/index.js')).deploymentContract,
     Environments: (await import('./contracts/index.js')).environmentContract,
+    EnvironmentsV2: (await import('./contracts/index.js')).environmentContractV2,
     Logs: (await import('./contracts/index.js')).logContract,
     PersonalAccessTokens: (await import('./contracts/index.js'))
       .personalAccessTokenContract,
