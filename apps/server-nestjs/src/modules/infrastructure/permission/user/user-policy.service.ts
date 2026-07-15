@@ -12,7 +12,7 @@ export interface UserPolicyConfig {
 }
 
 @Injectable()
-export class UserPolicy {
+export class UserPermissionPolicy {
   constructor(@Inject(Reflector) private readonly reflector: Reflector) {}
 
   build(context: ExecutionContext): UserPolicyConfig {

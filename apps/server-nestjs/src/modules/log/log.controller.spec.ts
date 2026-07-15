@@ -5,7 +5,7 @@ import { ForbiddenException } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ProjectLoaderService } from '../infrastructure/permission/project/project-loader.service'
+import { ProjectPermissionLoaderService } from '../infrastructure/permission/project/project-loader.service'
 import { makeProjectContext } from '../infrastructure/permission/project/project.testing.utils'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { LogController } from './log.controller'
@@ -15,17 +15,17 @@ describe('logController', () => {
   let module: TestingModule
   let controller: LogController
   let logs: DeepMockProxy<LogService>
-  let projectLoader: DeepMockProxy<ProjectLoaderService>
+  let projectLoader: DeepMockProxy<ProjectPermissionLoaderService>
 
   beforeEach(async () => {
     logs = mockDeep<LogService>()
-    projectLoader = mockDeep<ProjectLoaderService>()
+    projectLoader = mockDeep<ProjectPermissionLoaderService>()
 
     module = await Test.createTestingModule({
       controllers: [LogController],
       providers: [
         { provide: LogService, useValue: logs },
-        { provide: ProjectLoaderService, useValue: projectLoader },
+        { provide: ProjectPermissionLoaderService, useValue: projectLoader },
       ],
     })
       .overrideGuard(UserGuard)

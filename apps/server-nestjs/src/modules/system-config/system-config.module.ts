@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common'
 import { InfrastructureModule } from '../infrastructure/infrastructure.module'
-import { UserModule } from '../infrastructure/permission/user/user.module'
+import { UserPermissionModule } from '../infrastructure/permission/user/user.module'
 import { SystemConfigController } from './system-config.controller'
 import { SystemConfigService } from './system-config.service'
 
 @Module({
-  imports: [InfrastructureModule, UserModule],
+  imports: [InfrastructureModule, UserPermissionModule],
   controllers: [SystemConfigController],
   providers: [SystemConfigService],
 })

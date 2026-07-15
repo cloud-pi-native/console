@@ -4,17 +4,17 @@ import { ForbiddenException } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { makeUserContext, makeUserPolicy } from './user-testing.utils'
-import { UserService } from './user.service'
+import { UserPermissionService } from './user.service'
 
 describe('userService', () => {
-  let service: UserService
+  let service: UserPermissionService
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      providers: [UserService],
+      providers: [UserPermissionService],
     }).compile()
 
-    service = module.get(UserService)
+    service = module.get(UserPermissionService)
   })
 
   describe('validateAdminPermissions', () => {

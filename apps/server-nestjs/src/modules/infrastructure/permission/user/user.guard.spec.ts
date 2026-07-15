@@ -7,28 +7,28 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { makeExecutionContext } from '../../auth/auth-testing.utils'
 import { AuthService } from '../../auth/auth.service'
-import { UserPolicy } from './user-policy.service'
+import { UserPermissionPolicy } from './user-policy.service'
 import { UserGuard } from './user.guard'
-import { UserService } from './user.service'
+import { UserPermissionService } from './user.service'
 
 describe('userGuard', () => {
   let module: TestingModule
   let guard: UserGuard
   let authService: DeepMockProxy<AuthService>
-  let userService: DeepMockProxy<UserService>
-  let userPolicy: DeepMockProxy<UserPolicy>
+  let userService: DeepMockProxy<UserPermissionService>
+  let userPolicy: DeepMockProxy<UserPermissionPolicy>
 
   beforeEach(async () => {
     authService = mockDeep<AuthService>()
-    userService = mockDeep<UserService>()
-    userPolicy = mockDeep<UserPolicy>()
+    userService = mockDeep<UserPermissionService>()
+    userPolicy = mockDeep<UserPermissionPolicy>()
 
     module = await Test.createTestingModule({
       providers: [
         UserGuard,
         { provide: AuthService, useValue: authService },
-        { provide: UserService, useValue: userService },
-        { provide: UserPolicy, useValue: userPolicy },
+        { provide: UserPermissionService, useValue: userService },
+        { provide: UserPermissionPolicy, useValue: userPolicy },
       ],
     }).compile()
 

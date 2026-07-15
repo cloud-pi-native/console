@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common'
 import { AuthModule } from '../../auth/auth.module'
 import { DatabaseModule } from '../../database/database.module'
-import { ProjectLoaderService } from './project-loader.service'
+import { ProjectPermissionLoaderService } from './project-loader.service'
 import { ProjectGuard } from './project.guard'
-import { ProjectPolicy } from './project.policy'
-import { ProjectService } from './project.service'
+import { ProjectPermissionPolicy } from './project.policy'
+import { ProjectPermissionService } from './project.service'
 
 @Module({
   imports: [
@@ -13,15 +13,15 @@ import { ProjectService } from './project.service'
   ],
   providers: [
     ProjectGuard,
-    ProjectLoaderService,
-    ProjectService,
-    ProjectPolicy,
+    ProjectPermissionLoaderService,
+    ProjectPermissionService,
+    ProjectPermissionPolicy,
   ],
   exports: [
     ProjectGuard,
-    ProjectLoaderService,
-    ProjectService,
-    ProjectPolicy,
+    ProjectPermissionLoaderService,
+    ProjectPermissionService,
+    ProjectPermissionPolicy,
   ],
 })
-export class ProjectModule {}
+export class ProjectPermissionModule {}

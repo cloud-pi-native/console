@@ -2,8 +2,8 @@ import type { CanActivate, ExecutionContext } from '@nestjs/common'
 import type { FastifyRequest } from 'fastify'
 import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common'
 import { AuthService } from '../../auth/auth.service'
-import { UserPolicy } from './user-policy.service'
-import { UserService } from './user.service'
+import { UserPermissionPolicy } from './user-policy.service'
+import { UserPermissionService } from './user.service'
 
 type RequestWithAuthContext = FastifyRequest & {
   userId?: string
@@ -17,8 +17,8 @@ export class UserGuard implements CanActivate {
 
   constructor(
     @Inject(AuthService) private readonly authService: AuthService,
-    @Inject(UserService) private readonly userService: UserService,
-    @Inject(UserPolicy) private readonly userPolicy: UserPolicy,
+    @Inject(UserPermissionService) private readonly userService: UserPermissionService,
+    @Inject(UserPermissionPolicy) private readonly userPolicy: UserPermissionPolicy,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -54,7 +54,7 @@ export class UserGuard implements CanActivate {
     }
   }
 
-  private validate(policy: ReturnType<UserPolicy['build']>, user: Awaited<ReturnType<UserGuard['authenticate']>>) {
+  private validate(policy: ReturnType<UserPermissionPolicy['build']>, user: Awaited<ReturnType<UserGuard['authenticate']>>) {
     this.userService.validate(policy, user)
   }
 }

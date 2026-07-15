@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common'
 import { AuthModule } from '../../auth/auth.module'
 import { DatabaseModule } from '../../database/database.module'
-import { UserPolicy } from './user-policy.service'
+import { UserPermissionPolicy } from './user-policy.service'
 import { UserGuard } from './user.guard'
-import { UserService } from './user.service'
+import { UserPermissionService } from './user.service'
 
 @Module({
   imports: [
@@ -12,13 +12,13 @@ import { UserService } from './user.service'
   ],
   providers: [
     UserGuard,
-    UserService,
-    UserPolicy,
+    UserPermissionService,
+    UserPermissionPolicy,
   ],
   exports: [
     UserGuard,
-    UserService,
-    UserPolicy,
+    UserPermissionService,
+    UserPermissionPolicy,
   ],
 })
-export class UserModule {}
+export class UserPermissionModule {}

@@ -13,7 +13,7 @@ interface ProjectParams {
 }
 
 @Injectable()
-export class ProjectLoaderService {
+export class ProjectPermissionLoaderService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   async load(request: RequestWithProjectParams, userId: string, requirements?: ProjectRequirements): Promise<ProjectContext> {
