@@ -8,10 +8,14 @@ import { GITLAB_REST_CLIENT, GitlabClientService } from '../src/modules/gitlab/g
 import { projectSelect } from '../src/modules/gitlab/gitlab-datastore.service'
 import { GitlabModule } from '../src/modules/gitlab/gitlab.module'
 import { GitlabService } from '../src/modules/gitlab/gitlab.service'
+import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { ConfigurationService } from '../src/modules/infrastructure/configuration/configuration.service'
+import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
-import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
+import { EventsModule } from '../src/modules/infrastructure/events/events.module'
+import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
+import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 
 const canRunGitlabE2E
@@ -41,7 +45,7 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [GitlabModule, ConfigurationModule, InfrastructureModule],
+      imports: [GitlabModule, ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()
