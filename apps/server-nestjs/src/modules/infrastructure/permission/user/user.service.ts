@@ -5,8 +5,8 @@ import { AdminAuthorized } from '@cpn-console/shared'
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common'
 
 @Injectable()
-export class UserService {
-  private readonly logger = new Logger(UserService.name)
+export class UserPermissionService {
+  private readonly logger = new Logger(UserPermissionService.name)
 
   validate(policy: UserPolicyConfig, user: UserContext): void {
     this.validateAdminPermissions(policy, user.adminPermissions)

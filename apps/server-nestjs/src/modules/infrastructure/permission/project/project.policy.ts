@@ -20,7 +20,7 @@ export interface ProjectPolicyConfig {
 }
 
 @Injectable()
-export class ProjectPolicy {
+export class ProjectPermissionPolicy {
   constructor(@Inject(Reflector) private readonly reflector: Reflector) {}
 
   build(context: ExecutionContext): ProjectPolicyConfig {

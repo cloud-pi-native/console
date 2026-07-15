@@ -4,9 +4,9 @@ import type { FastifyRequest } from 'fastify'
 import type { UserContext } from '../../auth/auth-user.decorator'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { AuthService } from '../../auth/auth.service'
-import { ProjectLoaderService } from './project-loader.service'
-import { ProjectPolicy } from './project.policy'
-import { ProjectService } from './project.service'
+import { ProjectPermissionLoaderService } from './project-loader.service'
+import { ProjectPermissionPolicy } from './project.policy'
+import { ProjectPermissionService } from './project.service'
 
 export interface ProjectContext {
   id: string
@@ -37,9 +37,9 @@ export class ProjectGuard implements CanActivate {
 
   constructor(
     @Inject(AuthService) private readonly authService: AuthService,
-    @Inject(ProjectService) private readonly projectService: ProjectService,
-    @Inject(ProjectLoaderService) private readonly loader: ProjectLoaderService,
-    @Inject(ProjectPolicy) private readonly projectPolicy: ProjectPolicy,
+    @Inject(ProjectPermissionService) private readonly projectService: ProjectPermissionService,
+    @Inject(ProjectPermissionLoaderService) private readonly loader: ProjectPermissionLoaderService,
+    @Inject(ProjectPermissionPolicy) private readonly projectPolicy: ProjectPermissionPolicy,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

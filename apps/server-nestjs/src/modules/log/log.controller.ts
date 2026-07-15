@@ -3,7 +3,7 @@ import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import { AdminAuthorized, logContract } from '@cpn-console/shared'
 import { Controller, ForbiddenException, Get, Inject, Query, UseGuards } from '@nestjs/common'
 import { AuthUser } from '../infrastructure/auth/auth-user.decorator'
-import { ProjectLoaderService } from '../infrastructure/permission/project/project-loader.service'
+import { ProjectPermissionLoaderService } from '../infrastructure/permission/project/project-loader.service'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { LogService } from './log.service'
@@ -13,7 +13,7 @@ import { LogService } from './log.service'
 export class LogController {
   constructor(
     @Inject(LogService) private readonly logs: LogService,
-    @Inject(ProjectLoaderService) private readonly projectLoader: ProjectLoaderService,
+    @Inject(ProjectPermissionLoaderService) private readonly projectLoader: ProjectPermissionLoaderService,
   ) {}
 
   @Get('')
@@ -30,7 +30,7 @@ export class LogController {
       }
 
       const project = await this.projectLoader.load(
-        { params: { projectId: query.projectId } } as Parameters<ProjectLoaderService['load']>[0],
+        { params: { projectId: query.projectId } } as Parameters<ProjectPermissionLoaderService['load']>[0],
         user.userId,
         { includePermissions: true, includeLocked: false, includeStatus: false },
       )

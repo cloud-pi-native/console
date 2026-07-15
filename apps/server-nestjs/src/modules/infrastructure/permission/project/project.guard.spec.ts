@@ -6,33 +6,33 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { AuthService } from '../../auth/auth.service'
-import { ProjectLoaderService } from './project-loader.service'
+import { ProjectPermissionLoaderService } from './project-loader.service'
 import { ProjectGuard } from './project.guard'
-import { ProjectPolicy } from './project.policy'
-import { ProjectService } from './project.service'
+import { ProjectPermissionPolicy } from './project.policy'
+import { ProjectPermissionService } from './project.service'
 import { makeExecutionContext, makeProjectContext, makeProjectPolicy } from './project.testing.utils'
 
 describe('projectGuard', () => {
   let module: TestingModule
   let guard: ProjectGuard
   let authService: DeepMockProxy<AuthService>
-  let projectService: DeepMockProxy<ProjectService>
-  let projectPolicy: DeepMockProxy<ProjectPolicy>
-  let loader: DeepMockProxy<ProjectLoaderService>
+  let projectService: DeepMockProxy<ProjectPermissionService>
+  let projectPolicy: DeepMockProxy<ProjectPermissionPolicy>
+  let loader: DeepMockProxy<ProjectPermissionLoaderService>
 
   beforeEach(async () => {
     authService = mockDeep<AuthService>()
-    projectService = mockDeep<ProjectService>()
-    projectPolicy = mockDeep<ProjectPolicy>()
-    loader = mockDeep<ProjectLoaderService>()
+    projectService = mockDeep<ProjectPermissionService>()
+    projectPolicy = mockDeep<ProjectPermissionPolicy>()
+    loader = mockDeep<ProjectPermissionLoaderService>()
 
     module = await Test.createTestingModule({
       providers: [
         ProjectGuard,
         { provide: AuthService, useValue: authService },
-        { provide: ProjectService, useValue: projectService },
-        { provide: ProjectPolicy, useValue: projectPolicy },
-        { provide: ProjectLoaderService, useValue: loader },
+        { provide: ProjectPermissionService, useValue: projectService },
+        { provide: ProjectPermissionPolicy, useValue: projectPolicy },
+        { provide: ProjectPermissionLoaderService, useValue: loader },
       ],
     }).compile()
 

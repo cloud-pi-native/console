@@ -6,8 +6,8 @@ import { AdminAuthorized, ProjectAuthorized } from '@cpn-console/shared'
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common'
 
 @Injectable()
-export class ProjectService {
-  private readonly logger = new Logger(ProjectService.name)
+export class ProjectPermissionService {
+  private readonly logger = new Logger(ProjectPermissionService.name)
 
   validate(policy: ProjectPolicyConfig, project: ProjectContext, user: UserContext): void {
     this.validateUserType(policy, user.userType)
