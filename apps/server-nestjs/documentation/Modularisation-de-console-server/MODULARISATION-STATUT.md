@@ -1,115 +1,140 @@
 # État de la modularisation Backend → NestJS
 
 > 📋 **Ce fichier est mis à jour en temps réel**
-> Dernière mise à jour : **2026-06-16**
+> Dernière mise à jour : **2026-07-15** (réconciliation avec l'état réel du code `server-nestjs`)
+
+---
+
+## ⚠️ Faisabilité de ce fichier
+
+L'état ci-dessous est reconstitué à partir de l'analyse du code source
+(`apps/server-nestjs/src/main.module.ts`, les `*.module.ts` / `*.controller.ts`
+et `apps/nginx-strangler/conf.d/routing.conf`). Il **remplace** les anciennes
+estimations (1 module / 5 routes / ~7 %) qui étaient obsolètes.
+
+**Règle de comptage adoptée :**
+- Un module est considéré **MIGRÉ** s'il est déclaré dans `main.module.ts`
+  (donc réellement exposé par l'application).
+- Une route est comptée si elle porte un décorateur `@Get/@Post/@Put/@Patch/@Delete`
+  sur un controller déclaré dans `main.module.ts`.
+- Les modules de plugins présents sur disque mais **non importés** dans
+  `main.module.ts` (donc sans route exposée) sont listés à part comme
+  « encapsulés, non câblés ».
 
 ---
 
 ## 🎯 Progression globale
 
-![Progress](https://progress-bar.dev/7/?title=modularisation&width=400)
-
-**~7%** complété (1/18 modules métier migrés, 5/75 routes)
-
----
-
-## 📊 Vue d'ensemble
-
-| Statut | Nombre de modules | % du total |
-|--------|-------------------|------------|
-| ✅ Migré | 1 (ServiceChain) | ~6% |
-| 🚧 En cours | 0 | 0% |
-| 📅 Planifié | 17 | ~94% |
-| ⏳ En attente de cartographie | 0 | 0% |
+**~12% routé (9/75)** — mais **~47% en code exposé** (35 routes sur ~75,
+13 modules à controllers déclarés dans `main.module.ts` ; +2 routes de
+`system-config` présentes en code mais non câblées).
 
 ---
 
-## ✅ Modules migrés
+## ✅ Modules exposés (déclarés dans `main.module.ts`)
 
-### ServiceChain (OpenCDS) — migré le 2026-04-09
+| Module | Controller | Routes | Auth | Nginx |
+|--------|-----------|--------|------|-------|
+| version (`/api/v1/version`) | ✅ | 1 | aucune | legacy (non basculé) |
+| healthz (`/api/v1/healthz`) | ✅ | 1 | aucune | legacy (non basculé) |
+| system-settings (`/api/v1/system/settings`) | ✅ | 2 (`GET`, `PUT :key`) | admin | legacy (non basculé) |
+| service-chain (`/api/v1/service-chains`) | ✅ | 5 | token/JWT | ✅ **bascule complète** |
+| system-config (`/api/v1/system/plugins`) | ⚠️ code présent, **NON déclaré** dans `main.module.ts` | 2 (`GET`, `POST`) | admin | legacy (non basculé) |
+| log (`/api/v1/projects/:projectId/logs`) | ✅ | 1 | projet | legacy (non basculé) |
+| project (`/api/v1/projects`) | ✅ | 7 | projet/admin | legacy (non basculé) |
+| project-services (`/api/v1/projects/:projectId/services`) | ✅ | 2 | projet | legacy (non basculé) |
+| project-secrets (`/api/v1/projects/:projectId/secrets`) | ✅ | 1 | projet | legacy (non basculé) |
+| project-roles (`/api/v1/projects/:projectId/roles`) | ✅ | 5 | projet | legacy (non basculé) |
+| project-members (`/api/v1/projects/:projectId/members`) | ✅ | 4 | projet | legacy (non basculé) |
+| project-hooks (`/api/v1/projects/:projectId/hooks`) | ✅ | 1 (`PUT`) | projet | legacy (non basculé) |
+| project-bulk (`/api/v1/admin/projects`) | ✅ | 1 (`POST`) | admin | legacy (non basculé) |
+| deployment (`/api/v1/projects/:projectId/deployments`) | ✅ | 4 | projet | ✅ **bascule (regex)** |
 
-Module proxy HTTP vers l'API externe OpenCDS (gestion des chaînes de service
-réseau). Migré en avance de phase par rapport au planning initial (prévu V3/S8),
-profitant de son isolement complet vis-à-vis du reste du codebase.
+**Total routes exposées** (controllers déclarés dans `main.module.ts`) :
+**35 routes** sur 13 modules. Si l'on compte `system-config` (code présent,
+non câblé) : 37 routes.
 
-- **Routes** : 5 (`/api/v1/service-chains/...`)
-- **Auth** : `AuthService` unifie `x-dso-token` et bearer JWT Keycloak
-- **Nginx** : Bascule effectuée dans `nginx-strangler/conf.d/routing.conf`
-- **Tests** : Controller + Service couverts (Vitest)
-- **Différences avec le legacy** :
-  - 403 systématique si permissions insuffisantes (le legacy renvoyait `[]` sur GET /)
-  - Validation UUID sur les paramètres d'URL (400 si format invalide)
+### Détail par module
 
-| Méthode | Route | Permission |
-|---------|-------|------------|
-| `GET` | `/api/v1/service-chains` | `ListSystem` |
-| `GET` | `/api/v1/service-chains/:id` | `ListSystem` |
-| `GET` | `/api/v1/service-chains/:id/flows` | `ListSystem` |
-| `POST` | `/api/v1/service-chains/:id/retry` | `ManageSystem` |
-| `POST` | `/api/v1/service-chains/validate/:id` | `ManageSystem` |
+- **service-chain** : 5 routes (`GET /`, `GET /:id`, `GET /:id/flows`,
+  `POST /:id/retry`, `POST /validate/:id`). Auth par token + bearer JWT via
+  `AuthService`/`UserGuard`. Client OpenCDS dédié. Bascule nginx complète.
+- **deployment** : 4 routes (`GET`, `POST`, `PUT :deploymentId`,
+  `DELETE :deploymentId`) sur `projects/:projectId/deployments`. Bascule nginx
+  par regex `^/api/v1/projects/[^/]+/deployments(.*)$`.
+- **project** (cœur) : 7 routes CRUD + data export (`GET /data`, `GET`, `POST`,
+  `GET /:projectId`, `PUT /:projectId`, `Delete /:projectId`).
+- **project-roles** : 5 routes (list, create, patch, member-counts, delete).
+- **project-members** : 4 routes (list, create, patch, delete).
+- **project-services** : 2 routes (list, update).
+- **project-secrets** : 1 route (get). Importe `VaultModule`.
+- **project-hooks** : 1 route (PUT replay).
+- **project-bulk** : 1 route (`POST /admin/projects/bulk`).
+- **log** : 1 route (GET sur `projects/:projectId/logs`).
+- **system-settings** : 2 routes (`GET`, `PUT :key`).
+- **version**, **healthz** : 1 route chacun, sans auth.
 
-### Infrastructure transverse déployée
+### 🔧 Anomalies détectées (à corriger)
 
-En support de cette migration, les éléments d'infrastructure suivants ont été
-créés :
+1. **system-config non câblé** : `SystemConfigModule` possède un controller
+   (`/api/v1/system/plugins`, 2 routes admin) mais **n'est pas importé** dans
+   `main.module.ts`. Le module existe donc en code sans être exposé.
+2. **Bascule nginx incomplète** : Bien que ~13 modules (35 routes) soient
+   exposés par `server-nestjs`, seuls `service-chains` (5) et `deployments`
+   (4) sont routés vers `server-nestjs` dans `routing.conf`. Tous les autres
+   (projects, membres, roles, secrets, log, settings, version, healthz)
+   restent servis par le legacy via le fallback `location /api/`.
+3. **Modules de plugins non exposés** : `vault`, `gitlab`, `registry/harbor`,
+   `nexus`, `argocd`, `sonarqube`, `keycloak` existent sur disque et sont
+   importés en interne (notamment via `PluginModule`/`HealthzModule`), mais
+   **aucun n'expose de route** `main.module.ts` (seul `vault` est importé par
+   `project-secrets` et `healthz`). Voir ci-dessous.
 
-- **AuthModule** (`infrastructure/auth/`) : `AuthService` (validation token
-  SHA256 via Prisma + bearer JWT Keycloak), `DsoTokenModule`,
-  `KeycloakJwtModule` et décorateur `@AuthUser()`
-- **PermissionModule** (`infrastructure/permission/`) : `UserModule`
-  (`UserGuard`, `UserService`, `UserPolicy`) + `ProjectModule`
-  (`ProjectGuard`, `ProjectLoaderService`, `ProjectService`, `ProjectPolicy`)
-- **Nginx strangler** : Reverse proxy configuré pour router les routes migrées
-  vers server-nestjs, le reste vers le legacy
-- **Docker** : Build order corrigé (shared avant server-nestjs)
+---
 
-> **Limitation connue** : l'auth par session Keycloak et le flux bearer JWT ont
-> désormais la même entrée publique (`AuthService.authenticate(request, ...)`),
-> mais les usages côté contrôleurs restent encore à homogénéiser au fil des
-> modules migrés.
+## 🔌 Modules de plugins encapsulés (présents sur disque, non routés)
+
+Ces modules NestJS encapsulent les plugins legacy mais ne sont pas (encore)
+exposés directement par l'application :
+
+| Plugin | Fichier module | Importé par | Route exposée ? |
+|--------|---------------|-------------|-----------------|
+| vault | `modules/vault/vault.module.ts` | project-secrets, healthz, registry, gitlab, nexus, argocd, sonarqube, plugin | ❌ (service only) |
+| gitlab | `modules/gitlab/gitlab.module.ts` | argocd, plugin, healthz | ❌ |
+| registry (harbor) | `modules/registry/registry.module.ts` | plugin | ❌ |
+| nexus | `modules/nexus/nexus.module.ts` | plugin | ❌ |
+| argocd | `modules/argocd/argocd.module.ts` | plugin, healthz | ❌ |
+| sonarqube | `modules/sonarqube/sonarqube.module.ts` | plugin | ❌ |
+| keycloak | `modules/keycloak/keycloak.module.ts` | plugin, healthz | ❌ |
+| opencds | `modules/opencds/opencds.module.ts` | (service-chain) | ❌ |
+| plugin | `modules/plugin/plugin.module.ts` | — | ❌ |
+
+> Note : `PluginModule` agrège argocd, gitlab, registry, keycloak, nexus,
+> sonarqube, vault mais n'est **pas** déclaré dans `main.module.ts`.
 
 ---
 
 ## 🚧 En cours de modularisation
 
-### Aucune modularisation en cours
+### Aucune (état figé au 2026-07-15)
+
+Les modules sont présents en code ; la bascule nginx et le câblage de
+`system-config` / `PluginModule` restent à faire pour « activer » ce qui existe
+déjà.
 
 ---
 
-## 📅 Modules planifiés
+## 📅 Modules planifiés (restants)
 
-> Ces informations seront affinées après la cartographie (fin S2)
+Basé sur la cartographie `MODULARISATION-CARTOGRAPHIE.md` (routes legacy non
+encore reproduites dans `server-nestjs`) :
 
-### Sprint 3-4 (27 janvier - 9 février)
-- **Module** : Auth
-- **Responsable** : @stephane.trebel
-- **Routes** : ~5
-- **Criticité** : 🔴 Haute
-- **Statut** : 📅 Planifié
-
-### Sprint 5-6 (10-23 février)
-- **Module** : Users
-- **Responsable** : TBD
-- **Routes** : ~10
-- **Criticité** : 🔴 Haute
-- **Statut** : 📅 Planifié
-
-### Sprint 7-8 (24 février - 9 mars)
-- **Module** : À définir (selon cartographie)
-- **Responsable** : TBD
-- **Routes** : TBD
-- **Statut** : 📅 Planifié
-
-### Sprint 9-10 (10-23 mars)
-- **Module** : À définir (selon cartographie)
-- **Responsable** : TBD
-- **Routes** : TBD
-- **Statut** : 📅 Planifié
-
-### Sprint 11-12 (24 mars - 6 avril)
-- **Modules** : Finalisation + cleanup
-- **Responsable** : Équipe
-- **Objectif** : Suppression du legacy
+- **admin-token** (~3 routes), **user/tokens** (~3), **user** (~4),
+  **admin-role** (~5), **stage** (~5), **zone** (~4), **cluster** (~7),
+  **environment** (~4), **repository** (~5), **service-monitor** (~3).
+- **Routes legacy totales estimées** : ~75. **Exposées en code** : 35 (+2
+  system-config non câblé) ; **réellement basculées (nginx)** : 9.
+  **Restantes** : ~33.
 
 ---
 
@@ -117,13 +142,8 @@ créés :
 
 ### Aucune zone gelée actuellement
 
-**Règle** : Quand un module passe en status 🚧 (En cours), il est automatiquement en feature freeze.
-
-**Que faire si vous devez travailler sur une zone gelée ?**
-1. Vérifier l'urgence réelle (Critique / Importante / Normale)
-2. Consulter la [matrice de décision](04-COMMUNICATION-PLAN.md#matrice-de-décision-pour-développeurs)
-3. Coordonner avec le responsable de la modularisation
-4. Annoncer sur #backend-modularisation
+**Règle** : Quand un module passe en statut 🚧 (En cours), il est
+automatiquement en feature freeze.
 
 ---
 
@@ -133,16 +153,19 @@ créés :
 
 | Type | Initial | Actuel | Objectif |
 |------|---------|--------|----------|
-| E2E Playwright | 33% | 33% | 50% |
-| Unitaires Vitest | ? | ? | 70% |
+| E2E Playwright | 33% | ? (non mesuré ici) | 50% |
+| Unitaires Vitest | ? | présents (fichiers `*.spec.ts`) | 70% |
 | Tests de contrat | 0% | 0% | 100% |
 
 ### Routes par statut
 
-- **Total** : ~75 routes métier
-- **Migrés** : 5 (~7%)
-- **En cours** : 0 (0%)
-- **Restants** : ~70 (~93%)
+- **Total (legacy)** : ~75 routes métier
+- **Exposées par server-nestjs** : 35 routes (13 modules à controller déclarés)
+  + 2 routes `system-config` (code, non câblé) = 37 ; la majorité **non routée**
+  via nginx vers le legacy.
+- **Réellement basculées (nginx → server-nestjs)** : service-chains (5) +
+  deployments (4) = **9 routes (~12%)**
+- **Restantes (code + routage)** : ~33
 
 ---
 
@@ -152,63 +175,58 @@ créés :
 |------|-----------|
 | 07/01/2026 | Début du projet (S1) |
 | 26/01/2026 | Fin de la cartographie (S2) |
-| 27/01/2026 | Début modularisation Auth (S3) |
-| 09/02/2026 | Fin modularisation Auth (S4) - 20% complété |
-| 09/03/2026 | Point mi-parcours - 60% complété |
-| 26/03/2026 | Migration ServiceChain (OpenCDS) finalisée — 1er module métier migré |
-| 06/04/2026 | Fin de modularisation - 100% complété |
+| 09/04/2026 | Migration ServiceChain (OpenCDS) finalisée — 1er module métier migré |
+| 2026-06-16 | Dernière MAJ documentaire (STATUT à ~7%) — **obsolète** |
+| 2026-07-15 | Réconciliation : 13 modules exposés (35 routes) + system-config (2, non câblé) |
 
 ---
 
 ## 📞 Contacts & Communication
 
 ### Canaux
-- **Slack** : #backend-modularisation
-- **Meeting hebdo** : Vendredi 16h (30min)
+- **Mattermost** : #backend-modularisation
 - **Lead technique** : @stephane.trebel
 
 ### Besoin d'aide ?
 - **Question technique** : Poser sur #backend-modularisation
 - **Conflit de développement** : Contacter @stephane.trebel
-- **Urgence production** : Suivre la procédure de rollback (voir [01-TECHNICAL-SETUP.md](01-TECHNICAL-SETUP.md))
 
 ---
 
 ## 📚 Documentation
 
 - [00-OVERVIEW.md](00-OVERVIEW.md) - Vue d'ensemble du projet
-- [01-TECHNICAL-SETUP.md](01-TECHNICAL-SETUP.md) - Configuration technique
-- [02-modularisation-STRATEGY.md](02-modularisation-STRATEGY.md) - Stratégie de modularisation
-- [03-PLANNING.md](03-PLANNING.md) - Planning détaillé 12 sprints
-- [04-COMMUNICATION-PLAN.md](04-COMMUNICATION-PLAN.md) - Plan de communication
-- [05-TESTING-STRATEGY.md](05-TESTING-STRATEGY.md) - Stratégie de tests
-- [modularisation_MAP.md](modularisation_MAP.md) - Cartographie des modules
+- [01-MODULARISATION-STRATEGIE.md](01-MODULARISATION-STRATEGIE.md) - Stratégie de modularisation
+- [02-ARCHITECTURE-MODULES.md](02-ARCHITECTURE-MODULES.md) - Pattern d'un module NestJS
+- [MODULARISATION-CARTOGRAPHIE.md](MODULARISATION-CARTOGRAPHIE.md) - Cartographie des modules (référence des vagues/plugins)
+- [../mise-en-place-nginx-etrangleur/PLAN.md](../mise-en-place-nginx-etrangleur/PLAN.md) - Plan nginx-strangler
 
 ---
 
 ## 🔄 Historique des changements
 
+### 2026-07-15
+- ✅ Réconciliation du suivi avec l'état réel du code `server-nestjs`
+- ✅ Recensement des 13 controllers exposés (35 routes) + system-config (2, non câblé)
+- ✅ Recensement des 7+ modules de plugins encapsulés mais non routés
+- ✅ Signalement des anomalies : `SystemConfigModule` non câblé,
+  bascule nginx incomplète, `PluginModule` non déclaré
+- ⚠️ Remplacement des anciennes estimations (~7%) devenues obsolètes
+
 ### 2026-04-09
-- ✅ Migration du module **ServiceChain (OpenCDS)** — 5 routes, proxy HTTP vers API externe
-- ✅ Création de l'**AuthModule** (infrastructure/auth/) : auth par token `x-dso-token`
+- ✅ Migration du module **ServiceChain (OpenCDS)** — 5 routes
+- ✅ Création de l'**AuthModule** (infrastructure/auth/)
 - ✅ Configuration **nginx-strangler** pour les routes service-chain
 - ✅ Fix Docker : build order shared → server-nestjs
-- ✅ Mise à jour de ce fichier de suivi
 
 ### 2026-01-07 (S1)
 - ✅ Création du fichier de suivi
 - ✅ Initialisation de la documentation
-- ✅ Kickoff du projet
 
 ---
 
-## 📝 Notes
+> Ce fichier reflète l'état vérifié du code. Pour proposer des modifications,
+> utiliser #backend-modularisation.
 
-> Ce fichier sera mis à jour régulièrement (minimum une fois par sprint, idéalement en temps réel).
-> Toute l'équipe peut consulter ce fichier pour connaître l'état actuel de la modularisation.
-> Pour proposer des modifications ou signaler des incohérences, utiliser #backend-modularisation.
-
----
-
-**Version du fichier** : 1.1
-**Responsable de mise à jour** : Lead technique backend
+**Version du fichier** : 2.0
+**Responsable de mise à jour** : Équipe backend (réconciliation automatique)
