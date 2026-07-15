@@ -1,4 +1,5 @@
 import type { ClientInferRequest } from '@ts-rest/core'
+import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, apiPrefixV2, contractInstance } from '../api-client.js'
 import {
@@ -69,7 +70,7 @@ export const environmentContract = contractInstance.router({
     path: `/:environmentId`,
     summary: 'Delete environment',
     description: 'Delete a environment by its ID.',
-    body: null,
+    body: ContractNoBody,
     pathParams: z.object({
       environmentId: z.string()
         .uuid(),
@@ -151,7 +152,7 @@ export const environmentContractV2 = contractInstance.router({
     path: '/:environmentId',
     summary: 'Delete environment',
     description: 'Delete an environment by its ID.',
-    body: null,
+    body: ContractNoBody,
     pathParams: z.object({
       environmentId: z.string()
         .uuid(),

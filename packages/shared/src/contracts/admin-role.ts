@@ -1,3 +1,4 @@
+import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import { AdminRoleSchema } from '../schemas/role.js'
@@ -60,7 +61,7 @@ export const adminRoleContract = contractInstance.router({
     pathParams: z.object({
       roleId: z.string().uuid(),
     }),
-    body: null,
+    body: ContractNoBody,
     responses: {
       204: null,
       400: ErrorSchema,

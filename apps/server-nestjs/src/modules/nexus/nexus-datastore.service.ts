@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client'
 import { Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { NEXUS_PLUGIN_NAME } from './nexus.constants'
+import { PLUGIN_NAME } from './nexus.constants'
 
 export const projectSelect = {
   slug: true,
@@ -13,10 +13,8 @@ export const projectSelect = {
     },
   },
   plugins: {
-    where: {
-      pluginName: NEXUS_PLUGIN_NAME,
-    },
     select: {
+      pluginName: true,
       key: true,
       value: true,
     },
@@ -37,7 +35,7 @@ export class NexusDatastoreService {
       where: {
         plugins: {
           some: {
-            pluginName: NEXUS_PLUGIN_NAME,
+            pluginName: PLUGIN_NAME,
           },
         },
       },

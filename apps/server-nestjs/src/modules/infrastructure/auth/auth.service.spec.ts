@@ -4,6 +4,7 @@ import { UnauthorizedException } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { makeAuthRequest } from './auth-testing.utils'
 import { AuthService } from './auth.service'
 import { DsoTokenService } from './dso-token/dso-token.service'
 import { KeycloakJwtService } from './keycloak-jwt/keycloak-jwt.service'
@@ -31,7 +32,7 @@ describe('authService', () => {
 
   it('should authenticate a Fastify request directly', async () => {
     dsoTokenService.authenticate.mockResolvedValue({ userId: 'u1', adminPermissions: 0n, userType: 'human' })
-    const request = { headers: { 'x-dso-token': 'token' } } as Parameters<AuthService['authenticate']>[0]
+    const request = makeAuthRequest({ 'x-dso-token': 'token' })
 
     const result = await service.authenticate(request)
 
@@ -42,7 +43,7 @@ describe('authService', () => {
   it('should authenticate a Keycloak bearer token from the request header', async () => {
     keycloakJwtService.authenticate.mockResolvedValue({ userId: 'u1', adminPermissions: 8n, userType: 'human' })
 
-    const request = { headers: { authorization: 'Bearer jwt-token' } } as Parameters<AuthService['authenticate']>[0]
+    const request = makeAuthRequest({ authorization: 'Bearer jwt-token' })
     const result = await service.authenticate(request)
 
     expect(keycloakJwtService.authenticate).toHaveBeenCalledWith(
@@ -53,6 +54,6 @@ describe('authService', () => {
   })
 
   it('should throw 401 when no supported auth header exists', async () => {
-    await expect(service.authenticate({ headers: {} } as Parameters<AuthService['authenticate']>[0])).rejects.toThrow(UnauthorizedException)
+    await expect(service.authenticate(makeAuthRequest({}))).rejects.toThrow(UnauthorizedException)
   })
 })

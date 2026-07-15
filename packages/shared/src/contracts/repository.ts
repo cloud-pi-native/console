@@ -1,4 +1,5 @@
 import type { ClientInferRequest } from '@ts-rest/core'
+import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import { RepoSchema } from '../schemas/repository.js'
@@ -82,7 +83,7 @@ export const repositoryContract = contractInstance.router({
     path: `/:repositoryId`,
     summary: 'Delete repo',
     description: 'Delete a repo by its ID.',
-    body: null,
+    body: ContractNoBody,
     pathParams: z.object({
       repositoryId: z.string()
         .uuid(),

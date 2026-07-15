@@ -1,4 +1,5 @@
 import type { ClientInferRequest } from '@ts-rest/core'
+import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
@@ -64,7 +65,7 @@ export const deploymentContract = contractInstance.router({
     path: `/:deploymentId`,
     summary: 'Delete deployment',
     description: 'Delete a deployment by its ID.',
-    body: null,
+    body: ContractNoBody,
     pathParams: z.object({
       deploymentId: z.string()
         .uuid(),

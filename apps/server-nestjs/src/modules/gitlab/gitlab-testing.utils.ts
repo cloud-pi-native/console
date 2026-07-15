@@ -12,10 +12,13 @@ import type {
   RepositoryFileExpandedSchema,
   RepositoryTreeSchema,
 } from '@gitbeaker/core'
+import type { AdminRole, Project, User } from '@prisma/client'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
 import { faker } from '@faker-js/faker'
 import { AccessLevel } from '@gitbeaker/core'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
+import { ProjectStatus } from '@prisma/client'
+import { PLUGIN_NAME } from './gitlab.constants'
 
 export function makeExpandedUserSchema(overrides: Partial<ExpandedUserSchema> = {}): ExpandedUserSchema {
   const isoDate = faker.date.past().toISOString()
@@ -253,13 +256,43 @@ export function makeProjectSchema(overrides: Partial<ProjectSchema> = {}) {
   } satisfies ProjectSchema
 }
 
+export function makeProject(overrides: Partial<Project> = {}) {
+  return {
+    id: faker.string.uuid(),
+    slug: faker.lorem.slug(),
+    name: faker.company.name(),
+    description: faker.lorem.sentence(),
+    status: faker.helpers.enumValue(ProjectStatus),
+    locked: false,
+    createdAt: faker.date.past(),
+    updatedAt: faker.date.recent(),
+    everyonePerms: 0n,
+    ownerId: faker.string.uuid(),
+    limitless: false,
+    hprodCpu: 0,
+    hprodGpu: 0,
+    hprodMemory: 0,
+    prodCpu: 0,
+    prodGpu: 0,
+    prodMemory: 0,
+    lastSuccessProvisionningVersion: null,
+    ...overrides,
+  } satisfies Project
+}
+
 export function makeProjectWithDetails(overrides: Partial<ProjectWithDetails> = {}) {
   return {
-    id: 'p1',
-    slug: 'project-1',
-    name: 'Project 1',
-    description: 'Test project',
-    owner: { id: 'o1', email: 'owner@example.com', firstName: 'Owner', lastName: 'User', adminRoleIds: [] },
+    id: faker.string.uuid(),
+    slug: faker.lorem.slug(),
+    name: faker.company.name(),
+    description: faker.lorem.sentence(),
+    owner: {
+      id: faker.string.uuid(),
+      email: faker.internet.email(),
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      adminRoleIds: [],
+    },
     plugins: [],
     roles: [],
     members: [],
@@ -268,7 +301,6 @@ export function makeProjectWithDetails(overrides: Partial<ProjectWithDetails> = 
     ...overrides,
   } satisfies ProjectWithDetails
 }
-
 export function makePipelineTriggerToken(overrides: Partial<PipelineTriggerTokenSchema> = {}) {
   return {
     id: 1,
@@ -364,4 +396,37 @@ export function makeCommitAction(overrides: Partial<CommitAction> = {}) {
     content: 'content',
     ...overrides,
   } satisfies CommitAction
+}
+
+export function makeAdminPlugin(overrides: { value?: string, pluginName?: string, key?: string } = {}) {
+  return {
+    pluginName: overrides.pluginName ?? PLUGIN_NAME,
+    key: overrides.key ?? 'token',
+    value: overrides.value ?? faker.string.alphanumeric(20),
+  }
+}
+
+export function makeAdminRole(overrides: { id?: string, oidcGroup?: string } = {}) {
+  return {
+    id: overrides.id ?? faker.string.uuid(),
+    name: faker.word.words(),
+    permissions: 0n,
+    position: 0,
+    oidcGroup: overrides.oidcGroup ?? faker.word.words(),
+    type: 'managed',
+  } satisfies AdminRole
+}
+
+export function makeUser(overrides: { id?: string, email?: string, firstName?: string, lastName?: string } = {}) {
+  return {
+    id: overrides.id ?? faker.string.uuid(),
+    email: overrides.email ?? faker.internet.email(),
+    firstName: overrides.firstName ?? faker.person.firstName(),
+    lastName: overrides.lastName ?? faker.person.lastName(),
+    createdAt: faker.date.past(),
+    updatedAt: faker.date.recent(),
+    lastLogin: null,
+    adminRoleIds: [],
+    type: 'human' as const,
+  } satisfies User
 }

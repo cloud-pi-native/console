@@ -1,11 +1,12 @@
-import type { Mocked } from 'vitest'
+import type { DeepMockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockDeep } from 'vitest-mock-extended'
 import { generateProjectKey } from '../../utils/crypto'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
-import { SONARQUBE_PROJECT_QUALIFIER_PROJECT, SonarqubeClientService } from './sonarqube-client.service'
+import { SonarqubeClientService } from './sonarqube-client.service'
 import { SonarqubeDatastoreService } from './sonarqube-datastore.service'
 import {
   makeEmptyGroupsResponse,
@@ -16,94 +17,63 @@ import {
   makeSonarqubeUser,
   makeUserToken,
 } from './sonarqube-testing.utils'
+import { PLUGIN_NAME, SONARQUBE_PROJECT_QUALIFIER_PROJECT } from './sonarqube.constants'
 import { SonarqubeService } from './sonarqube.service'
-
-function createTestingModule() {
-  return Test.createTestingModule({
-    providers: [
-      SonarqubeService,
-      {
-        provide: SonarqubeClientService,
-        useValue: {
-          searchUserGroup: vi.fn(),
-          createUserGroup: vi.fn(),
-          createPermissionTemplate: vi.fn(),
-          searchPermissionTemplates: vi.fn(),
-          setPermissionDefaultTemplate: vi.fn(),
-          addPermissionProjectCreatorToTemplate: vi.fn(),
-          addPermissionGroupToTemplate: vi.fn(),
-          addPermissionGroup: vi.fn(),
-          addPermissionUser: vi.fn(),
-          searchUsers: vi.fn(),
-          createUser: vi.fn(),
-          deactivateUser: vi.fn(),
-          revokeUserToken: vi.fn(),
-          generateUserToken: vi.fn(),
-          searchProject: vi.fn(),
-          createProject: vi.fn(),
-          deleteProject: vi.fn(),
-        } satisfies Partial<SonarqubeClientService>,
-      },
-      {
-        provide: SonarqubeDatastoreService,
-        useValue: {
-          getAllProjects: vi.fn(),
-          getProject: vi.fn(),
-          getAdminPluginConfig: vi.fn(),
-        } satisfies Partial<SonarqubeDatastoreService>,
-      },
-      {
-        provide: VaultClientService,
-        useValue: {
-          readSonarqubeUser: vi.fn(),
-          writeSonarqubeUser: vi.fn(),
-          deleteSonarqubeUser: vi.fn(),
-        } satisfies Partial<VaultClientService>,
-      },
-      {
-        provide: ConfigurationService,
-        useValue: {
-          projectRootDir: 'forge',
-          getInternalOrPublicSonarqubeUrl: () => 'https://sonarqube.internal',
-        } satisfies Partial<ConfigurationService>,
-      },
-    ],
-  })
-}
 
 describe('sonarqubeService', () => {
   let service: SonarqubeService
-  let client: Mocked<SonarqubeClientService>
-  let datastore: Mocked<SonarqubeDatastoreService>
-  let vault: Mocked<VaultClientService>
+  let client: DeepMockProxy<SonarqubeClientService>
+  let datastore: DeepMockProxy<SonarqubeDatastoreService>
+  let vault: DeepMockProxy<VaultClientService>
+  let config: DeepMockProxy<ConfigurationService>
 
   beforeEach(async () => {
-    const module = await createTestingModule().compile()
-    service = module.get(SonarqubeService)
-    client = module.get(SonarqubeClientService)
-    datastore = module.get(SonarqubeDatastoreService)
-    vault = module.get(VaultClientService)
+    client = mockDeep<SonarqubeClientService>({
+      searchUserGroup: vi.fn().mockResolvedValue(makeEmptyGroupsResponse()),
+      createUserGroup: vi.fn().mockResolvedValue(undefined),
+      createPermissionTemplate: vi.fn().mockResolvedValue(undefined),
+      searchPermissionTemplates: vi.fn().mockResolvedValue({ permissionTemplates: [] }),
+      setPermissionDefaultTemplate: vi.fn().mockResolvedValue(undefined),
+      addPermissionProjectCreatorToTemplate: vi.fn().mockResolvedValue(undefined),
+      addPermissionGroupToTemplate: vi.fn().mockResolvedValue(undefined),
+      addPermissionGroup: vi.fn().mockResolvedValue(undefined),
+      addPermissionUser: vi.fn().mockResolvedValue(undefined),
+      searchUsers: vi.fn().mockResolvedValue(makeEmptyUsersResponse()),
+      createUser: vi.fn().mockResolvedValue(undefined),
+      deactivateUser: vi.fn().mockResolvedValue(undefined),
+      revokeUserToken: vi.fn().mockResolvedValue(undefined),
+      searchProject: vi.fn().mockResolvedValue(makeEmptyProjectsResponse()),
+      createProject: vi.fn().mockResolvedValue(undefined),
+      deleteProject: vi.fn().mockResolvedValue(undefined),
+    })
+    datastore = mockDeep<SonarqubeDatastoreService>({
+      getAdminPluginConfig: vi.fn().mockResolvedValue(null),
+    })
+    vault = mockDeep<VaultClientService>({
+      readSonarqubeUser: vi.fn().mockResolvedValue(null),
+      writeSonarqubeUser: vi.fn().mockResolvedValue(undefined),
+      deleteSonarqubeUser: vi.fn().mockResolvedValue(undefined),
+    })
+    config = mockDeep<ConfigurationService>({
+      projectRootDir: 'forge',
+      getInternalOrPublicSonarqubeUrl: vi.fn().mockReturnValue('https://sonarqube.internal'),
+    })
 
-    datastore.getAdminPluginConfig.mockResolvedValue(null)
-    client.searchUserGroup.mockResolvedValue(makeEmptyGroupsResponse())
-    client.createUserGroup.mockResolvedValue(undefined)
-    client.createPermissionTemplate.mockResolvedValue(undefined)
-    client.searchPermissionTemplates.mockResolvedValue({ permissionTemplates: [] })
-    client.setPermissionDefaultTemplate.mockResolvedValue(undefined)
-    client.addPermissionProjectCreatorToTemplate.mockResolvedValue(undefined)
-    client.addPermissionGroupToTemplate.mockResolvedValue(undefined)
-    client.addPermissionGroup.mockResolvedValue(undefined)
-    client.addPermissionUser.mockResolvedValue(undefined)
-    client.searchUsers.mockResolvedValue(makeEmptyUsersResponse())
-    client.createUser.mockResolvedValue(undefined)
-    client.deactivateUser.mockResolvedValue(undefined)
-    client.revokeUserToken.mockResolvedValue(undefined)
-    client.searchProject.mockResolvedValue(makeEmptyProjectsResponse())
-    client.createProject.mockResolvedValue(undefined)
-    client.deleteProject.mockResolvedValue(undefined)
-    vault.readSonarqubeUser.mockResolvedValue(null)
-    vault.writeSonarqubeUser.mockResolvedValue(undefined)
-    vault.deleteSonarqubeUser.mockResolvedValue(undefined)
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        SonarqubeService,
+        { provide: SonarqubeClientService, useValue: client },
+        { provide: SonarqubeDatastoreService, useValue: datastore },
+        { provide: VaultClientService, useValue: vault },
+        { provide: ConfigurationService, useValue: config },
+      ],
+    }).compile()
+
+    service = moduleRef.get(SonarqubeService)
+  })
+
+  it('should be defined', () => {
+    expect(service).toBeDefined()
   })
 
   describe('init', () => {
@@ -144,16 +114,10 @@ describe('sonarqubeService', () => {
     })
 
     it('should skip initialization when URL is not configured', async () => {
-      const module = await Test.createTestingModule({
-        providers: [
-          SonarqubeService,
-          { provide: SonarqubeClientService, useValue: client },
-          { provide: SonarqubeDatastoreService, useValue: datastore },
-          { provide: VaultClientService, useValue: vault },
-          { provide: ConfigurationService, useValue: { getInternalOrPublicSonarqubeUrl: () => undefined } },
-        ],
-      }).compile()
-      await module.get(SonarqubeService).init()
+      config.getInternalOrPublicSonarqubeUrl.mockReturnValue(undefined)
+
+      await service.init()
+
       expect(client.createPermissionTemplate).not.toHaveBeenCalled()
     })
 
@@ -280,7 +244,7 @@ describe('sonarqubeService', () => {
     it('should use comma-separated group path suffixes from project plugin config', async () => {
       const project = makeProjectWithDetails({
         repositories: [{ internalRepoName: 'repo' }],
-        plugins: [{ key: 'projectAdminSuffix', value: '/console/admin,/console/owner' }],
+        plugins: [{ pluginName: PLUGIN_NAME, key: 'projectAdminSuffix', value: '/console/admin,/console/owner' }],
       })
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
 

@@ -1,4 +1,4 @@
-export const SONARQUBE_PLUGIN_NAME = 'sonarqube'
+export const PLUGIN_NAME = 'sonarqube'
 export const DEFAULT_PERMISSION_TEMPLATE_NAME = 'Forge Default'
 
 // SonarQube global permission names
@@ -38,3 +38,14 @@ export const PROJECT_DEVOPS_SUFFIX_PLUGIN_KEY = 'projectDevopsSuffix'
 export const PROJECT_DEVELOPER_SUFFIX_PLUGIN_KEY = 'projectDeveloperSuffix'
 export const PROJECT_SECURITY_SUFFIX_PLUGIN_KEY = 'projectSecuritySuffix'
 export const PROJECT_READONLY_SUFFIX_PLUGIN_KEY = 'projectReadonlySuffix'
+
+// SonarQube project qualifier identifiers
+export const SONARQUBE_PROJECT_QUALIFIER_APPLICATION = 'APP'
+export const SONARQUBE_PROJECT_QUALIFIER_BRANCH = 'BRC'
+export const SONARQUBE_PROJECT_QUALIFIER_DIRECTORY = 'DIR'
+export const SONARQUBE_PROJECT_QUALIFIER_FILE = 'FIL'
+export const SONARQUBE_PROJECT_QUALIFIER_LIBRARY = 'LIB'
+export const SONARQUBE_PROJECT_QUALIFIER_PROJECT = 'TRK'
+export const SONARQUBE_PROJECT_QUALIFIER_SUB_VIEW = 'SVW'
+export const SONARQUBE_PROJECT_QUALIFIER_UNIT_TEST = 'UTS'
+export const SONARQUBE_PROJECT_QUALIFIER_VIEW = 'VW'

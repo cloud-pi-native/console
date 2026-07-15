@@ -1,7 +1,7 @@
 import type { SonarqubeGeneratedToken, SonarqubeGroup, SonarqubePaging, SonarqubeProject, SonarqubeUser } from './sonarqube-client.service'
 import type { ProjectWithDetails } from './sonarqube-datastore.service'
 import { faker } from '@faker-js/faker'
-import { SONARQUBE_PROJECT_QUALIFIER_PROJECT } from './sonarqube-client.service'
+import { SONARQUBE_PROJECT_QUALIFIER_PROJECT } from './sonarqube.constants'
 
 export function makeUserToken(overrides: Partial<SonarqubeGeneratedToken> = {}) {
   return {

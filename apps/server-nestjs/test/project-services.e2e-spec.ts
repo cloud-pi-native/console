@@ -39,7 +39,7 @@ const canRunServicesE2E
 
 const describeWithServices = describe.runIf(canRunServicesE2E)
 
-const TEST_PLUGIN_NAME = 'gitlab'
+const PLUGIN_NAME = 'gitlab'
 
 describeWithServices('ProjectServicesService (e2e)', {}, () => {
   let moduleRef: TestingModule
@@ -110,10 +110,10 @@ describeWithServices('ProjectServicesService (e2e)', {}, () => {
 
   it('get returns services for a project member', async () => {
     const services = await service.get(projectId, 'user')
-    const gitlabService = services.find(entry => entry.name === TEST_PLUGIN_NAME)
+    const gitlabService = services.find(entry => entry.name === PLUGIN_NAME)
 
     expect(gitlabService).toBeTruthy()
-    expect(gitlabService?.name).toBe(TEST_PLUGIN_NAME)
+    expect(gitlabService?.name).toBe(PLUGIN_NAME)
   })
 
   it('rejects get when project does not exist', async () => {
@@ -131,7 +131,7 @@ describeWithServices('ProjectServicesService (e2e)', {}, () => {
       where: {
         projectId_pluginName_key: {
           projectId,
-          pluginName: TEST_PLUGIN_NAME,
+          pluginName: PLUGIN_NAME,
           key: 'user.enabled',
         },
       },

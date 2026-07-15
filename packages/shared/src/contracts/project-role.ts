@@ -1,3 +1,4 @@
+import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import { ProjectRoleSchema } from '../schemas/role.js'
@@ -64,7 +65,7 @@ export const projectRoleContract = contractInstance.router({
       projectId: z.string().uuid(),
       roleId: z.string().uuid(),
     }),
-    body: null,
+    body: ContractNoBody,
     responses: {
       204: null,
       400: ErrorSchema,

@@ -3,14 +3,14 @@ import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { AccessLevel } from '@gitbeaker/core'
 import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
 import { GitlabDatastoreService } from './gitlab-datastore.service'
 import { makeAccessTokenExposedSchema, makeExpandedUserSchema, makeGroupSchema, makeMemberSchema, makePipelineTriggerToken, makeProjectSchema, makeProjectWithDetails } from './gitlab-testing.utils'
-import { TOPIC_PLUGIN_MANAGED } from './gitlab.constants'
+import { PLUGIN_NAME, TOPIC_PLUGIN_MANAGED } from './gitlab.constants'
 import { GitlabService } from './gitlab.service'
 
 describe('gitlabService', () => {
@@ -21,8 +21,18 @@ describe('gitlabService', () => {
 
   beforeEach(async () => {
     gitlab = mockDeep<GitlabClientService>()
-    datastore = mockDeep<GitlabDatastoreService>()
-    vault = mockDeep<VaultClientService>()
+    datastore = mockDeep<GitlabDatastoreService>({
+      getAdminPluginConfig: vi.fn().mockResolvedValue(null),
+      getAdminRolesByOidcGroups: vi.fn().mockResolvedValue([]),
+    })
+    vault = mockDeep<VaultClientService>({
+      writeGitlabMirrorCreds: vi.fn().mockResolvedValue(undefined),
+      deleteGitlabMirrorCreds: vi.fn().mockResolvedValue(undefined),
+      writeTechReadOnlyCreds: vi.fn().mockResolvedValue(undefined),
+      writeMirrorTriggerToken: vi.fn().mockResolvedValue(undefined),
+      readTechnReadOnlyCreds: vi.fn().mockResolvedValue(null),
+      readGitlabMirrorCreds: vi.fn().mockResolvedValue(null),
+    })
     const config = mockDeep<ConfigurationService>({ projectRootDir: 'forge' })
 
     const moduleRef = await Test.createTestingModule({
@@ -36,15 +46,6 @@ describe('gitlabService', () => {
     }).compile()
 
     service = moduleRef.get(GitlabService)
-
-    vault.writeGitlabMirrorCreds.mockResolvedValue(undefined)
-    vault.deleteGitlabMirrorCreds.mockResolvedValue(undefined)
-    vault.writeTechReadOnlyCreds.mockResolvedValue(undefined)
-    vault.writeMirrorTriggerToken.mockResolvedValue(undefined)
-    vault.readTechnReadOnlyCreds.mockResolvedValue(null)
-    vault.readGitlabMirrorCreds.mockResolvedValue(null)
-    datastore.getAdminPluginConfig.mockResolvedValue(null)
-    datastore.getAdminRolesByOidcGroups.mockResolvedValue([])
   })
 
   it('should be defined', () => {
@@ -81,7 +82,7 @@ describe('gitlabService', () => {
 
     it('should remove orphan member if purge enabled', async () => {
       const project = makeProjectWithDetails({
-        plugins: [{ key: 'purge', value: ENABLED }],
+        plugins: [{ pluginName: PLUGIN_NAME, key: 'purge', value: ENABLED }],
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
 
@@ -98,7 +99,7 @@ describe('gitlabService', () => {
 
     it('should not remove managed user (bot) even if purge enabled', async () => {
       const project = makeProjectWithDetails({
-        plugins: [{ key: 'purge', value: ENABLED }],
+        plugins: [{ pluginName: PLUGIN_NAME, key: 'purge', value: ENABLED }],
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
 
@@ -130,7 +131,7 @@ describe('gitlabService', () => {
 
     it('should delete orphan repositories if purge enabled', async () => {
       const project = makeProjectWithDetails({
-        plugins: [{ key: 'purge', value: ENABLED }],
+        plugins: [{ pluginName: PLUGIN_NAME, key: 'purge', value: ENABLED }],
         repositories: [],
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
@@ -175,7 +176,7 @@ describe('gitlabService', () => {
 
     it('should not delete orphan repositories without the correct topic even if purge enabled', async () => {
       const project = makeProjectWithDetails({
-        plugins: [{ key: 'purge', value: ENABLED }],
+        plugins: [{ pluginName: PLUGIN_NAME, key: 'purge', value: ENABLED }],
         repositories: [],
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
@@ -196,6 +197,7 @@ describe('gitlabService', () => {
 
     it('should create gitlab user if not exists', async () => {
       const project = makeProjectWithDetails({
+        owner: { id: 'o1', email: 'owner@example.com', firstName: 'Owner', lastName: 'User', adminRoleIds: [] },
         members: [{ user: { id: 'u1', email: 'new@example.com', firstName: 'New', lastName: 'User', adminRoleIds: [] }, roleIds: [] }],
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
@@ -230,6 +232,7 @@ describe('gitlabService', () => {
 
     it('should map roles to access levels and apply highest level', async () => {
       const project = makeProjectWithDetails({
+        slug: 'project-1',
         roles: [
           { id: 'r-reporter', oidcGroup: '/project-1/console/readonly' },
           { id: 'r-developer', oidcGroup: '/project-1/console/developer' },
@@ -280,6 +283,7 @@ describe('gitlabService', () => {
 
     it('should prioritize higher access level when oidc group appears in multiple paths', async () => {
       const project = makeProjectWithDetails({
+        slug: 'project-1',
         roles: [
           { id: 'r-devops', oidcGroup: '/project-1/console/devops' },
         ],
@@ -310,6 +314,7 @@ describe('gitlabService', () => {
 
     it('should map security project role to reporter access level', async () => {
       const project = makeProjectWithDetails({
+        slug: 'project-1',
         roles: [
           { id: 'r-security', oidcGroup: '/project-1/console/security' },
         ],
@@ -417,6 +422,7 @@ describe('gitlabService', () => {
 
     it('should configure repository mirroring if external url is present', async () => {
       const project = makeProjectWithDetails({
+        slug: 'project-1',
         repositories: [{
           id: 'r1',
           internalRepoName: 'repo-1',

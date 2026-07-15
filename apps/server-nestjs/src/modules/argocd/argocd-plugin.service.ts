@@ -3,15 +3,24 @@ import { Injectable } from '@nestjs/common'
 import {
   DEFAULT_DSO_ENV_CHART_VERSION,
   DEFAULT_DSO_NS_CHART_VERSION,
+  DSO_ENV_CHART_VERSION_PLUGIN_KEY,
+  DSO_NS_CHART_VERSION_PLUGIN_KEY,
+  EXTRA_REPOSITORIES_PLUGIN_KEY,
   PLATFORM_ADMIN_GROUP_PATH,
+  PLATFORM_ADMIN_GROUP_PATH_PLUGIN_KEY,
   PLATFORM_READONLY_GROUP_PATH,
+  PLATFORM_READONLY_GROUP_PATH_PLUGIN_KEY,
   PLATFORM_SECURITY_GROUP_PATH,
   PROJECT_ADMIN_GROUP_PATH_SUFFIX,
+  PROJECT_ADMIN_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
+  PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
+  PROJECT_DEVOPS_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_READONLY_GROUP_PATH_SUFFIX,
+  PROJECT_READONLY_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_SECURITY_GROUP_PATH_SUFFIX,
-} from './argocd.constant'
+} from './argocd.constants'
 
 @Injectable()
 export class ArgoCDPluginService {
@@ -29,7 +38,7 @@ export class ArgoCDPluginService {
       description: 'ArgoCD est un outil déclaratif de livraison continue GitOps pour Kubernetes',
       config: {
         global: [{
-          key: 'extraRepositories',
+          key: EXTRA_REPOSITORIES_PLUGIN_KEY,
           kind: 'text',
           permissions: {
             admin: { read: true, write: true },
@@ -40,7 +49,7 @@ export class ArgoCDPluginService {
           description: extraRepositoriesDesc,
           placeholder: 'https://github.com/',
         }, {
-          key: 'platformAdminGroupPath',
+          key: PLATFORM_ADMIN_GROUP_PATH_PLUGIN_KEY,
           kind: 'text',
           permissions: {
             admin: { read: true, write: true },
@@ -50,7 +59,7 @@ export class ArgoCDPluginService {
           value: PLATFORM_ADMIN_GROUP_PATH,
           description: 'Chemin du groupe administrateur de plateforme',
         }, {
-          key: 'platformReadonlyGroupPath',
+          key: PLATFORM_READONLY_GROUP_PATH_PLUGIN_KEY,
           kind: 'text',
           permissions: {
             admin: { read: true, write: true },
@@ -70,7 +79,7 @@ export class ArgoCDPluginService {
           value: PLATFORM_SECURITY_GROUP_PATH,
           description: 'Chemin du groupe sécurité de plateforme',
         }, {
-          key: 'projectAdminGroupPathSuffix',
+          key: PROJECT_ADMIN_GROUP_PATH_SUFFIX_PLUGIN_KEY,
           kind: 'text',
           permissions: {
             admin: { read: true, write: true },
@@ -80,7 +89,7 @@ export class ArgoCDPluginService {
           value: PROJECT_ADMIN_GROUP_PATH_SUFFIX,
           description: 'Suffixe du chemin du groupe administrateur de projet',
         }, {
-          key: 'projectDevopsGroupPathSuffix',
+          key: PROJECT_DEVOPS_GROUP_PATH_SUFFIX_PLUGIN_KEY,
           kind: 'text',
           permissions: {
             admin: { read: true, write: true },
@@ -90,7 +99,7 @@ export class ArgoCDPluginService {
           value: PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
           description: 'Suffixe du chemin du groupe devops de projet',
         }, {
-          key: 'projectDevelopperGroupPathSuffix',
+          key: PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
           kind: 'text',
           permissions: {
             admin: { read: true, write: true },
@@ -100,7 +109,7 @@ export class ArgoCDPluginService {
           value: PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
           description: 'Suffixe du chemin du groupe développeur de projet',
         }, {
-          key: 'projectReadonlyGroupPathSuffix',
+          key: PROJECT_READONLY_GROUP_PATH_SUFFIX_PLUGIN_KEY,
           kind: 'text',
           permissions: {
             admin: { read: true, write: true },
@@ -120,7 +129,7 @@ export class ArgoCDPluginService {
           value: PROJECT_SECURITY_GROUP_PATH_SUFFIX,
           description: 'Suffixe du chemin du groupe sécurité de projet',
         }, {
-          key: 'dsoEnvChartVersion',
+          key: DSO_ENV_CHART_VERSION_PLUGIN_KEY,
           kind: 'text',
           permissions: {
             admin: { read: true, write: true },
@@ -131,7 +140,7 @@ export class ArgoCDPluginService {
           description: 'Version du chart Helm dso-env',
           placeholder: DEFAULT_DSO_ENV_CHART_VERSION,
         }, {
-          key: 'dsoNsChartVersion',
+          key: DSO_NS_CHART_VERSION_PLUGIN_KEY,
           kind: 'text',
           permissions: {
             admin: { read: true, write: true },

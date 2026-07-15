@@ -1,5 +1,5 @@
 // Registry plugin identification
-export const REGISTRY_PLUGIN_NAME = 'harbor'
+export const PLUGIN_NAME = 'harbor'
 
 // Registry configuration keys
 export const REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT = 'quotaHardLimit'
@@ -24,6 +24,20 @@ export const PROJECT_ADMIN_GROUP_PATH_SUFFIXES_PLUGIN_KEY = 'projectAdminGroupPa
 export const PROJECT_MAINTAINER_GROUP_PATH_SUFFIXES_PLUGIN_KEY = 'projectMaintainerGroupPathSuffixes'
 export const PROJECT_DEVELOPER_GROUP_PATH_SUFFIXES_PLUGIN_KEY = 'projectDeveloperGroupPathSuffixes'
 export const PROJECT_GUEST_GROUP_PATH_SUFFIXES_PLUGIN_KEY = 'projectGuestGroupPathSuffixes'
+
+// Registry robot name identifiers
+export const ROBOT_NAME_RO = 'ro-robot'
+export const ROBOT_NAME_RW = 'rw-robot'
+export const ROBOT_NAME_PROJECT = 'project-robot'
+
+// Allowed Harbor retention rule templates
+export const ALLOWED_RETENTION_RULE_TEMPLATES = [
+  'always',
+  'latestPulledK',
+  'latestPushedK',
+  'nDaysSinceLastPull',
+  'nDaysSinceLastPush',
+] as const
 
 // Harbor role identifiers
 export const HARBOR_ROLE_PROJECT_ADMIN = 1

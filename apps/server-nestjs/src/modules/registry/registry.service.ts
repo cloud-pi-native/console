@@ -9,7 +9,7 @@ import type {
   HarborRobotCreateRequest,
 } from './registry-client.service'
 import type { ProjectWithDetails } from './registry-datastore.service'
-import type { VaultRobotSecret } from './registry.utils'
+import type { RuleTemplate, VaultRobotSecret } from './registry.utils'
 import { specificallyEnabled } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
@@ -19,9 +19,10 @@ import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultError } from '../vault/vault-http-client.service'
-import { projectRobotName, RegistryClientService, roAccess, roRobotName, rwAccess, rwRobotName } from './registry-client.service'
+import { RegistryClientService, roAccess, rwAccess } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
 import {
+  ALLOWED_RETENTION_RULE_TEMPLATES,
   DEFAULT_PLATFORM_ADMIN_GROUP_PATHS,
   DEFAULT_PLATFORM_GUEST_GROUP_PATHS,
   DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIXES,
@@ -34,25 +35,18 @@ import {
   HARBOR_ROLE_PROJECT_ADMIN,
   PLATFORM_ADMIN_GROUP_PATH_PLUGIN_KEY,
   PLATFORM_GUEST_GROUP_PATHS_PLUGIN_KEY,
+  PLUGIN_NAME,
   PROJECT_ADMIN_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_DEVELOPER_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_GUEST_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_MAINTAINER_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT,
   REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT,
-  REGISTRY_PLUGIN_NAME,
+  ROBOT_NAME_PROJECT,
+  ROBOT_NAME_RO,
+  ROBOT_NAME_RW,
 } from './registry.constants'
 import { generateVaultRobotSecret, getHostFromUrl, getProjectVaultPath, parseBytes } from './registry.utils'
-
-const allowedRuleTemplates = [
-  'always',
-  'latestPulledK',
-  'latestPushedK',
-  'nDaysSinceLastPull',
-  'nDaysSinceLastPush',
-] as const
-
-type RuleTemplate = typeof allowedRuleTemplates[number]
 
 @Injectable()
 export class RegistryService {
@@ -285,12 +279,12 @@ export class RegistryService {
     const harborProjectId = Number(harborProject.project_id)
 
     await Promise.all([
-      this.ensureRobotSecret(project, roRobotName, roAccess),
-      this.ensureRobotSecret(project, rwRobotName, rwAccess),
+      this.ensureRobotSecret(project, ROBOT_NAME_RO, roAccess),
+      this.ensureRobotSecret(project, ROBOT_NAME_RW, rwAccess),
       this.ensureProjectGroupMembers(project),
       Number.isFinite(harborProjectId) ? this.ensureRetentionPolicy(project, harborProjectId) : Promise.resolve(),
       options.publishProjectRobot
-        ? this.ensureRobotSecret(project, projectRobotName, roAccess)
+        ? this.ensureRobotSecret(project, ROBOT_NAME_PROJECT, roAccess)
         : Promise.resolve(),
     ])
 
@@ -357,7 +351,7 @@ export class RegistryService {
   }
 
   private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string) {
-    const adminPluginConfig = await this.registryDatastore.getAdminPluginConfig(REGISTRY_PLUGIN_NAME, key)
+    const adminPluginConfig = await this.registryDatastore.getAdminPluginConfig(PLUGIN_NAME, key)
     if (adminPluginConfig) return adminPluginConfig
     return getPluginConfig(project, key)
   }
@@ -525,7 +519,7 @@ function generateRetentionPolicy(
 
 function isRuleTemplate(value: unknown): value is RuleTemplate {
   if (typeof value !== 'string') return false
-  for (const template of allowedRuleTemplates) {
+  for (const template of ALLOWED_RETENTION_RULE_TEMPLATES) {
     if (template === value) return true
   }
   return false

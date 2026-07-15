@@ -1,15 +1,16 @@
 import type { Prisma } from '@prisma/client'
 import { Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { REGISTRY_PLUGIN_NAME } from './registry.constants'
+import { PLUGIN_NAME } from './registry.constants'
 
 export const projectSelect = {
   slug: true,
   plugins: {
     where: {
-      pluginName: REGISTRY_PLUGIN_NAME,
+      pluginName: PLUGIN_NAME,
     },
     select: {
+      pluginName: true,
       key: true,
       value: true,
     },
@@ -30,7 +31,7 @@ export class RegistryDatastoreService {
       where: {
         plugins: {
           some: {
-            pluginName: REGISTRY_PLUGIN_NAME,
+            pluginName: PLUGIN_NAME,
           },
         },
       },

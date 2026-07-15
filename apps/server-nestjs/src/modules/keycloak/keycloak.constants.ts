@@ -1,3 +1,6 @@
+// Keycloak plugin constants
+export const PLUGIN_NAME = 'keycloak'
+
 // Name for the console group for admin and project roles
 export const CONSOLE_GROUP_NAME = 'console'
 

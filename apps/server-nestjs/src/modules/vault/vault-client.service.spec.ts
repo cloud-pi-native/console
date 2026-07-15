@@ -25,32 +25,27 @@ const server = setupServer(
   }),
 )
 
-function createVaultServiceTestingModule(config: Partial<ConfigurationService> = {}) {
-  return Test.createTestingModule({
-    providers: [
-      VaultClientService,
-      VaultHttpClientService,
-      {
-        provide: ConfigurationService,
-        useValue: mockDeep<ConfigurationService>({
-          vaultToken: 'token',
-          vaultUrl,
-          vaultInternalUrl: vaultUrl,
-          vaultKvName: 'kv',
-          getInternalOrPublicVaultUrl: () => vaultUrl,
-          ...config,
-        }),
-      },
-    ],
-  })
-}
-
 describe('vault', () => {
   let service: VaultClientService
 
   beforeAll(() => server.listen())
   beforeEach(async () => {
-    const module = await createVaultServiceTestingModule().compile()
+    const config = mockDeep<ConfigurationService>({
+      vaultToken: 'token',
+      vaultUrl,
+      vaultInternalUrl: vaultUrl,
+      vaultKvName: 'kv',
+      getInternalOrPublicVaultUrl: () => vaultUrl,
+    })
+
+    const module = await Test.createTestingModule({
+      providers: [
+        VaultClientService,
+        VaultHttpClientService,
+        { provide: ConfigurationService, useValue: config },
+      ],
+    }).compile()
+
     service = module.get(VaultClientService)
   })
   afterEach(() => server.resetHandlers())

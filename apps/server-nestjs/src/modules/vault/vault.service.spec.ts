@@ -1,8 +1,8 @@
-import type { TestingModule } from '@nestjs/testing'
-import type { Mocked } from 'vitest'
+import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
@@ -11,74 +11,46 @@ import { VaultService } from './vault.service'
 
 const projectRoleGroupNameRegex = /^project-(.*)-(admin|devops|developer|readonly|security)$/
 
-function createVaultControllerServiceTestingModule() {
-  return Test.createTestingModule({
-    providers: [
-      VaultService,
-      {
-        provide: VaultClientService,
-        useValue: {
-          createSysMount: vi.fn(),
-          tuneSysMount: vi.fn(),
-          deleteSysMounts: vi.fn(),
-          upsertSysPoliciesAcl: vi.fn(),
-          deleteSysPoliciesAcl: vi.fn(),
-          upsertAuthApproleRole: vi.fn(),
-          deleteAuthApproleRole: vi.fn(),
-          upsertIdentityGroupName: vi.fn(),
-          getIdentityGroupName: vi.fn(),
-          deleteIdentityGroupName: vi.fn(),
-          getSysAuth: vi.fn(),
-          createIdentityGroupAlias: vi.fn(),
-          listKvMetadata: vi.fn(),
-          delete: vi.fn(),
-        } satisfies Partial<VaultClientService>,
-      },
-      {
-        provide: VaultDatastoreService,
-        useValue: {
-          getAllProjects: vi.fn(),
-          getAllZones: vi.fn(),
-          getAdminPluginConfig: vi.fn(),
-        } satisfies Partial<VaultDatastoreService>,
-      },
-      {
-        provide: ConfigurationService,
-        useValue: {
-          projectRootDir: 'forge',
-          vaultKvName: 'kv',
-        } satisfies Partial<ConfigurationService>,
-      },
-    ],
-  })
-}
-
 describe('vaultService', () => {
   let service: VaultService
-  let datastore: Mocked<VaultDatastoreService>
-  let client: Mocked<VaultClientService>
+  let datastore: DeepMockProxy<VaultDatastoreService>
+  let client: DeepMockProxy<VaultClientService>
+  let config: DeepMockProxy<ConfigurationService>
 
   beforeEach(async () => {
-    const module: TestingModule = await createVaultControllerServiceTestingModule().compile()
-    service = module.get(VaultService)
-    datastore = module.get(VaultDatastoreService)
-    client = module.get(VaultClientService)
+    datastore = mockDeep<VaultDatastoreService>({
+      getAdminPluginConfig: vi.fn().mockResolvedValue(null),
+    })
+    client = mockDeep<VaultClientService>({
+      createSysMount: vi.fn().mockResolvedValue(undefined),
+      tuneSysMount: vi.fn().mockResolvedValue(undefined),
+      deleteSysMounts: vi.fn().mockResolvedValue(undefined),
+      upsertSysPoliciesAcl: vi.fn().mockResolvedValue(undefined),
+      deleteSysPoliciesAcl: vi.fn().mockResolvedValue(undefined),
+      upsertAuthApproleRole: vi.fn().mockResolvedValue(undefined),
+      deleteAuthApproleRole: vi.fn().mockResolvedValue(undefined),
+      getIdentityGroupName: vi.fn(async (groupName: string) => makeVaultSecret({ data: { id: 'gid', name: groupName } })),
+      deleteIdentityGroupName: vi.fn().mockResolvedValue(undefined),
+      getSysAuth: vi.fn().mockResolvedValue({ 'oidc/': { accessor: 'oidc-accessor', type: 'oidc' } }),
+      createIdentityGroupAlias: vi.fn().mockResolvedValue(undefined),
+      listKvMetadata: vi.fn().mockResolvedValue([]),
+      delete: vi.fn().mockResolvedValue(undefined),
+    })
+    config = mockDeep<ConfigurationService>({
+      projectRootDir: 'forge',
+      vaultKvName: 'kv',
+    })
 
-    datastore.getAdminPluginConfig.mockResolvedValue(null)
-    client.createSysMount.mockResolvedValue(undefined)
-    client.tuneSysMount.mockResolvedValue(undefined)
-    client.deleteSysMounts.mockResolvedValue(undefined)
-    client.upsertSysPoliciesAcl.mockResolvedValue(undefined)
-    client.deleteSysPoliciesAcl.mockResolvedValue(undefined)
-    client.upsertAuthApproleRole.mockResolvedValue(undefined)
-    client.deleteAuthApproleRole.mockResolvedValue(undefined)
-    client.upsertIdentityGroupName.mockResolvedValue(undefined)
-    client.getIdentityGroupName.mockImplementation(async (groupName: string) => makeVaultSecret({ data: { id: 'gid', name: groupName } }))
-    client.deleteIdentityGroupName.mockResolvedValue(undefined)
-    client.getSysAuth.mockResolvedValue({ 'oidc/': { accessor: 'oidc-accessor', type: 'oidc' } })
-    client.createIdentityGroupAlias.mockResolvedValue(undefined)
-    client.listKvMetadata.mockResolvedValue([])
-    client.delete.mockResolvedValue(undefined)
+    const module = await Test.createTestingModule({
+      providers: [
+        VaultService,
+        { provide: VaultClientService, useValue: client },
+        { provide: VaultDatastoreService, useValue: datastore },
+        { provide: ConfigurationService, useValue: config },
+      ],
+    }).compile()
+
+    service = module.get(VaultService)
   })
 
   it('should be defined', () => {

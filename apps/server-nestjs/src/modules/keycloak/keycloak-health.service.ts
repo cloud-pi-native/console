@@ -5,8 +5,10 @@ import { ConfigurationService } from '../infrastructure/configuration/configurat
 @Injectable()
 export class KeycloakHealthService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
-    @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
+    @Inject(ConfigurationService)
+    private readonly config: ConfigurationService,
+    @Inject(HealthIndicatorService)
+    private readonly healthIndicator: HealthIndicatorService,
   ) {}
 
   async check(key: string) {

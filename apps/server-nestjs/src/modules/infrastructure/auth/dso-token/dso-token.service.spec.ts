@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto'
 import { faker } from '@faker-js/faker'
 import { UnauthorizedException } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../../database/prisma.service'
 import { makeAdminToken, makePersonalAccessToken } from '../auth-testing.utils'
@@ -16,7 +16,11 @@ describe('dsoTokenService', () => {
   let prisma: DeepMockProxy<PrismaService>
 
   beforeEach(async () => {
-    prisma = mockDeep<PrismaService>({ adminRole: { findMany() { return [] } } })
+    prisma = mockDeep<PrismaService>({
+      adminRole: {
+        findMany: vi.fn().mockResolvedValue([]),
+      },
+    })
 
     module = await Test.createTestingModule({
       providers: [

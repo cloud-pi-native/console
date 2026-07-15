@@ -1,8 +1,10 @@
-import type { Mocked } from 'vitest'
+import type { DeepMockProxy } from 'vitest-mock-extended'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { mockDeep } from 'vitest-mock-extended'
+import { KeycloakClientService } from './keycloak-client.service'
+import { KeycloakDatastoreService } from './keycloak-datastore.service'
 import {
   makeGroupRepresentation,
   makeProjectEnvironment,
@@ -11,62 +13,38 @@ import {
   makeProjectUser,
   makeProjectWithDetails,
   makeUserRepresentation,
-} from './keycloack-testing.utils'
-import { KeycloakClientService } from './keycloak-client.service'
-import { KeycloakDatastoreService } from './keycloak-datastore.service'
+} from './keycloak-testing.utils'
 import { KeycloakService } from './keycloak.service'
-
-function createKeycloakControllerServiceTestingModule() {
-  return Test.createTestingModule({
-    providers: [
-      KeycloakService,
-      {
-        provide: KeycloakClientService,
-        useValue: {
-          getAllGroups: vi.fn().mockImplementation(async function* () {}),
-          deleteGroup: vi.fn().mockResolvedValue(undefined),
-          getOrCreateGroupByPath: vi.fn().mockResolvedValue({}),
-          getGroupMembers: vi.fn().mockResolvedValue([]),
-          addUserToGroup: vi.fn().mockResolvedValue(undefined),
-          removeUserFromGroup: vi.fn().mockResolvedValue(undefined),
-          getOrCreateSubGroupByName: vi.fn().mockResolvedValue({}),
-          getOrCreateRoleGroup: vi.fn().mockResolvedValue({}),
-          getSubGroups: vi.fn().mockImplementation(async function* () {}),
-          getOrCreateConsoleGroup: vi.fn().mockResolvedValue(makeGroupRepresentation({ id: 'console-group-id', name: 'console' })),
-          getOrCreateEnvironmentGroups: vi.fn().mockResolvedValue({
-            roGroup: makeGroupRepresentation({ id: 'ro-id', name: 'RO' }),
-            rwGroup: makeGroupRepresentation({ id: 'rw-id', name: 'RW' }),
-          }),
-        } satisfies Partial<KeycloakClientService>,
-      },
-      {
-        provide: KeycloakDatastoreService,
-        useValue: {
-          getAllProjects: vi.fn().mockResolvedValue([]),
-          getAllAdminRoles: vi.fn().mockResolvedValue([]),
-          getAllUsersWithAdminRoleIds: vi.fn().mockResolvedValue([]),
-        } satisfies Partial<KeycloakDatastoreService>,
-      },
-      {
-        provide: ConfigurationService,
-        useValue: {
-        } satisfies Partial<ConfigurationService>,
-      },
-    ],
-  })
-}
 
 describe('keycloakService', () => {
   let service: KeycloakService
-  let keycloak: Mocked<KeycloakClientService>
-  let keycloakDatastore: Mocked<KeycloakDatastoreService>
+  let keycloak: DeepMockProxy<KeycloakClientService>
+  let keycloakDatastore: DeepMockProxy<KeycloakDatastoreService>
 
   beforeEach(async () => {
-    vi.clearAllMocks()
-    const module = await createKeycloakControllerServiceTestingModule().compile()
-    service = module.get(KeycloakService)
-    keycloak = module.get(KeycloakClientService)
-    keycloakDatastore = module.get(KeycloakDatastoreService)
+    keycloak = mockDeep<KeycloakClientService>({
+      getOrCreateConsoleGroup: vi.fn().mockResolvedValue(makeGroupRepresentation({ id: 'console-group-id', name: 'console' })),
+      getOrCreateEnvironmentGroups: vi.fn().mockResolvedValue({
+        roGroup: makeGroupRepresentation({ id: 'ro-id', name: 'RO' }),
+        rwGroup: makeGroupRepresentation({ id: 'rw-id', name: 'RW' }),
+      }),
+      getAllGroups: vi.fn().mockImplementation(async function* () { /* empty by default */ }),
+      deleteGroup: vi.fn().mockResolvedValue(undefined),
+    })
+    keycloakDatastore = mockDeep<KeycloakDatastoreService>({
+      getAllAdminRoles: vi.fn().mockResolvedValue([]),
+      getAllUsersWithAdminRoleIds: vi.fn().mockResolvedValue([]),
+    })
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        KeycloakService,
+        { provide: KeycloakClientService, useValue: keycloak },
+        { provide: KeycloakDatastoreService, useValue: keycloakDatastore },
+      ],
+    }).compile()
+
+    service = moduleRef.get(KeycloakService)
   })
 
   it('should be defined', () => {
@@ -453,6 +431,7 @@ describe('keycloakService', () => {
 
       keycloak.getGroupMembers.mockImplementation((groupId) => {
         if (groupId === 'group-id') return Promise.resolve([makeUserRepresentation({ id: 'owner-id' })])
+
         // has extra user-2, missing user-1
         if (groupId === 'system-managed-id') return Promise.resolve([makeUserRepresentation({ id: 'user-2' })])
         return Promise.resolve([])

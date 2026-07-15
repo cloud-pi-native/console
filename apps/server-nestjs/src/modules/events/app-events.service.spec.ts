@@ -24,8 +24,7 @@ describe('appEventsService', () => {
     prisma = mockDeep<PrismaService>()
     eventEmitter = mockDeep<EventEmitter2>({ emitAsync: vi.fn().mockResolvedValue([]) })
     logs = mockDeep<LogService>()
-    config = mockDeep<ConfigurationService>()
-    config.appVersion = 'test-version'
+    config = mockDeep<ConfigurationService>({ appVersion: 'test-version' })
 
     module = await Test.createTestingModule({
       providers: [

@@ -42,7 +42,7 @@ describe('gitlab-client', () => {
       projectRootDir: 'forge',
       gitlabMirrorTokenExpirationDays: 30,
       getInternalOrPublicGitlabUrl: () => 'https://gitlab.internal',
-    } satisfies Partial<ConfigurationService>)
+    })
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [

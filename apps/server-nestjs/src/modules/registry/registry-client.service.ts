@@ -2,15 +2,6 @@ import type { RegistryResponse } from './registry-http-client.service'
 import { Inject, Injectable } from '@nestjs/common'
 import { RegistryHttpClientService } from './registry-http-client.service'
 
-export interface HarborAccess {
-  resource: string
-  action: string
-}
-
-export const roRobotName = 'ro-robot'
-export const rwRobotName = 'rw-robot'
-export const projectRobotName = 'project-robot'
-
 export const roAccess: HarborAccess[] = [
   { resource: 'repository', action: 'pull' },
   { resource: 'artifact', action: 'read' },
@@ -29,6 +20,11 @@ export const rwAccess: HarborAccess[] = [
   { resource: 'tag', action: 'create' },
   { resource: 'tag', action: 'delete' },
 ]
+
+export interface HarborAccess {
+  resource: string
+  action: string
+}
 
 export interface HarborProject {
   project_id?: number

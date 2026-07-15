@@ -275,16 +275,13 @@ export class KeycloakClientService implements OnModuleInit {
 
   async onModuleInit() {
     if (!this.config.keycloakRealm) {
-      this.logger.fatal('Keycloak realm is not configured')
-      return
+      throw new Error('Keycloak realm is not configured')
     }
     if (!this.config.keycloakAdmin || !this.config.keycloakAdminPassword) {
-      this.logger.fatal('Keycloak admin username or password is not configured')
-      return
+      throw new Error('Keycloak admin username or password is not configured')
     }
     if (!this.config.keycloakAdminClientId) {
-      this.logger.fatal('Keycloak admin client id is not configured')
-      return
+      throw new Error('Keycloak admin client id is not configured')
     }
     try {
       this.logger.log(`Authenticating Keycloak admin client (realm=${this.config.keycloakRealm})`)

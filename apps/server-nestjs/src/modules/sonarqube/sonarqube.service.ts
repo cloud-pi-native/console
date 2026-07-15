@@ -26,6 +26,7 @@ import {
   DEFAULT_SECURITY_GROUP_PATH,
   DEFAULT_TEMPLATE_PERMISSIONS,
   GLOBAL_ADMIN_PERMISSIONS,
+  PLUGIN_NAME,
   PROJECT_ADMIN_PERMISSIONS,
   PROJECT_ADMIN_SUFFIX_PLUGIN_KEY,
   PROJECT_DEVELOPER_PERMISSIONS,
@@ -39,7 +40,6 @@ import {
   READONLY_GROUP_PATH_PLUGIN_KEY,
   ROBOT_PROJECT_PERMISSIONS,
   SECURITY_GROUP_PATH_PLUGIN_KEY,
-  SONARQUBE_PLUGIN_NAME,
 } from './sonarqube.constants'
 
 interface SonarqubeRolePaths {
@@ -316,22 +316,22 @@ export class SonarqubeService implements OnModuleInit {
   }
 
   private async getAdminGroupPath(): Promise<string> {
-    const config = await this.datastore.getAdminPluginConfig(SONARQUBE_PLUGIN_NAME, ADMIN_GROUP_PATH_PLUGIN_KEY)
+    const config = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, ADMIN_GROUP_PATH_PLUGIN_KEY)
     return config ?? DEFAULT_ADMIN_GROUP_PATH
   }
 
   private async getReadonlyGroupPath(): Promise<string> {
-    const config = await this.datastore.getAdminPluginConfig(SONARQUBE_PLUGIN_NAME, READONLY_GROUP_PATH_PLUGIN_KEY)
+    const config = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, READONLY_GROUP_PATH_PLUGIN_KEY)
     return config ?? DEFAULT_READONLY_GROUP_PATH
   }
 
   private async getSecurityGroupPath(): Promise<string> {
-    const config = await this.datastore.getAdminPluginConfig(SONARQUBE_PLUGIN_NAME, SECURITY_GROUP_PATH_PLUGIN_KEY)
+    const config = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, SECURITY_GROUP_PATH_PLUGIN_KEY)
     return config ?? DEFAULT_SECURITY_GROUP_PATH
   }
 
   private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
-    const adminPluginConfig = await this.datastore.getAdminPluginConfig(SONARQUBE_PLUGIN_NAME, key)
+    const adminPluginConfig = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, key)
     if (adminPluginConfig) return adminPluginConfig
     return getProjectPluginConfig(project, key) ?? undefined
   }

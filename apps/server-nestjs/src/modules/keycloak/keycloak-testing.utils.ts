@@ -78,6 +78,7 @@ export function makeProjectWithDetails(
     slug: faker.helpers.slugify(faker.word.words({ count: 2 })).toLowerCase(),
     ownerId: faker.string.uuid(),
     everyonePerms: 0n,
+    plugins: [],
     members: [],
     roles: [],
     environments: [],
