@@ -55,11 +55,11 @@ export class EnvironmentValidationService {
 
   async validateUpdate(environment: EnvironmentWithCluster, input: UpdateEnvironment): Promise<void> {
     const errorMessages: string[] = []
-    const clusterError = await this.checkClusterResources(input, environment.cluster)
+    const clusterError = await this.checkClusterResources(input, environment.cluster, environment.id)
     if (clusterError) errorMessages.push(clusterError)
 
     const project = await this.environmentDatastoreService.getProjectById(environment.projectId)
-    const projectError = await this.checkProjectResources(input, environment.stageId, project)
+    const projectError = await this.checkProjectResources(input, environment.stageId, project, environment.id)
     if (projectError) errorMessages.push(projectError)
 
     if (errorMessages.length > 0) {
@@ -67,11 +67,12 @@ export class EnvironmentValidationService {
     }
   }
 
-  private async checkClusterResources(request: EnvironmentResources, cluster: Cluster): Promise<string | undefined> {
+  private async checkClusterResources(request: EnvironmentResources, cluster: Cluster, excludedEnvironmentId?: string): Promise<string | undefined> {
     const overflowResources = await this.getOverflowResources({
       request,
       limit: { cpu: cluster.cpu, gpu: cluster.gpu, memory: cluster.memory },
       where: { clusterId: cluster.id },
+      excludedEnvironmentId,
     })
     if (overflowResources.length > 0) {
       return `Le cluster ne dispose pas de suffisamment de ressources : ${overflowResources.join(', ')}.`
@@ -79,7 +80,7 @@ export class EnvironmentValidationService {
     return undefined
   }
 
-  private async checkProjectResources(request: EnvironmentResources, stageId: string, project: Project): Promise<string | undefined> {
+  private async checkProjectResources(request: EnvironmentResources, stageId: string, project: Project, excludedEnvironmentId?: string): Promise<string | undefined> {
     if (project.limitless) {
       // No limits
       return undefined
@@ -99,6 +100,7 @@ export class EnvironmentValidationService {
           projectId: project.id,
           stageId: { in: prodStageIds },
         },
+        excludedEnvironmentId,
       })
     } else { // hprod
       overflowResources = await this.getOverflowResources({
@@ -108,6 +110,7 @@ export class EnvironmentValidationService {
           projectId: project.id,
           stageId: { notIn: prodStageIds },
         },
+        excludedEnvironmentId,
       })
     }
     if (overflowResources.length > 0) {
@@ -116,15 +119,23 @@ export class EnvironmentValidationService {
     return undefined
   }
 
-  private async getOverflowResources({ request, limit, where }: {
+  /**
+   * On update, the environment being updated must be excluded from the consumed-resources
+   * sum: its requested resources replace its current ones. Counting both would reject
+   * legitimate updates within the quota (#1911).
+   */
+  private async getOverflowResources({ request, limit, where, excludedEnvironmentId }: {
     request: EnvironmentResources
     limit: EnvironmentResources
     where: Prisma.EnvironmentWhereInput
+    excludedEnvironmentId?: string
   }): Promise<string[]> {
     if (!areResourceLimitsConfigured(limit)) {
       return []
     }
-    const environmentResources = await this.environmentDatastoreService.sumEnvironmentResources(where)
+    const environmentResources = await this.environmentDatastoreService.sumEnvironmentResources(
+      excludedEnvironmentId === undefined ? where : { ...where, id: { not: excludedEnvironmentId } },
+    )
     // A null sum means no environment matched: nothing is consumed yet.
     const insufficientResources: string[] = []
     if ((environmentResources._sum.cpu ?? 0) + request.cpu > limit.cpu) {
