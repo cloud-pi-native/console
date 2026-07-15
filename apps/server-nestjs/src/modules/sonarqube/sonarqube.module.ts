@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { HealthIndicatorService } from '@nestjs/terminus'
+import { TerminusModule } from '@nestjs/terminus'
 import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
 import { InfrastructureModule } from '../infrastructure/infrastructure.module'
 import { VaultModule } from '../vault/vault.module'
@@ -11,9 +11,8 @@ import { SonarqubePluginService } from './sonarqube-plugin.service'
 import { SonarqubeService } from './sonarqube.service'
 
 @Module({
-  imports: [ConfigurationModule, InfrastructureModule, VaultModule],
+  imports: [ConfigurationModule, InfrastructureModule, TerminusModule, VaultModule],
   providers: [
-    HealthIndicatorService,
     SonarqubeHttpClientService,
     SonarqubeClientService,
     SonarqubeDatastoreService,

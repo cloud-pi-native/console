@@ -1,6 +1,6 @@
 import { Gitlab } from '@gitbeaker/rest'
 import { Module } from '@nestjs/common'
-import { HealthIndicatorService } from '@nestjs/terminus'
+import { TerminusModule } from '@nestjs/terminus'
 import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { InfrastructureModule } from '../infrastructure/infrastructure.module'
@@ -12,7 +12,7 @@ import { GitlabPluginService } from './gitlab-plugin.service'
 import { GitlabService } from './gitlab.service'
 
 @Module({
-  imports: [ConfigurationModule, InfrastructureModule, VaultModule],
+  imports: [ConfigurationModule, InfrastructureModule, TerminusModule, VaultModule],
   providers: [
     {
       provide: GITLAB_REST_CLIENT,
@@ -22,7 +22,6 @@ import { GitlabService } from './gitlab.service'
         host: config.getInternalOrPublicGitlabUrl(),
       }),
     },
-    HealthIndicatorService,
     GitlabClientService,
     GitlabDatastoreService,
     GitlabHealthService,

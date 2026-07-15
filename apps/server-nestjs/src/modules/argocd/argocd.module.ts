@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { HealthIndicatorService } from '@nestjs/terminus'
+import { TerminusModule } from '@nestjs/terminus'
 import { GitlabModule } from '../gitlab/gitlab.module'
 import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
 import { InfrastructureModule } from '../infrastructure/infrastructure.module'
@@ -10,8 +10,8 @@ import { ArgoCDPluginService } from './argocd-plugin.service'
 import { ArgoCDService } from './argocd.service'
 
 @Module({
-  imports: [ConfigurationModule, InfrastructureModule, GitlabModule, VaultModule],
-  providers: [HealthIndicatorService, ArgoCDHealthService, ArgoCDPluginService, ArgoCDService, ArgoCDDatastoreService],
+  imports: [ConfigurationModule, InfrastructureModule, TerminusModule, GitlabModule, VaultModule],
+  providers: [ArgoCDHealthService, ArgoCDPluginService, ArgoCDService, ArgoCDDatastoreService],
   exports: [ArgoCDHealthService, ArgoCDPluginService, ArgoCDService],
 })
 export class ArgoCDModule {}

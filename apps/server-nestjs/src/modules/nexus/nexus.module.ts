@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { HealthIndicatorService } from '@nestjs/terminus'
+import { TerminusModule } from '@nestjs/terminus'
 import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
 import { InfrastructureModule } from '../infrastructure/infrastructure.module'
 import { VaultModule } from '../vault/vault.module'
@@ -11,8 +11,15 @@ import { NexusPluginService } from './nexus-plugin.service'
 import { NexusService } from './nexus.service'
 
 @Module({
-  imports: [ConfigurationModule, InfrastructureModule, VaultModule],
-  providers: [HealthIndicatorService, NexusHealthService, NexusPluginService, NexusService, NexusDatastoreService, NexusHttpClientService, NexusClientService],
+  imports: [ConfigurationModule, InfrastructureModule, TerminusModule, VaultModule],
+  providers: [
+    NexusHealthService,
+    NexusPluginService,
+    NexusService,
+    NexusDatastoreService,
+    NexusHttpClientService,
+    NexusClientService,
+  ],
   exports: [NexusClientService, NexusHealthService, NexusPluginService, NexusService],
 })
 export class NexusModule {}
