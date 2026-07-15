@@ -215,6 +215,13 @@ export const projectForUpsertSelect = {
   slug: true,
   status: true,
   locked: true,
+  plugins: {
+    select: {
+      pluginName: true,
+      key: true,
+      value: true,
+    },
+  },
 } satisfies Prisma.ProjectSelect
 
 export type ProjectWithDetails = Prisma.ProjectGetPayload<{

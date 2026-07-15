@@ -2,7 +2,7 @@ import type { ServiceInfos } from '@cpn-console/hooks'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
-import { DEFAULT_ADMIN_GROUP_PATH, DEFAULT_AUDITOR_GROUP_PATH, DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX } from './gitlab.constants'
+import { DEFAULT_ADMIN_GROUP_PATH, DEFAULT_AUDITOR_GROUP_PATH, DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX, PURGE_PLUGIN_KEY } from './gitlab.constants'
 
 @Injectable()
 export class GitlabPluginService {
@@ -25,7 +25,7 @@ export class GitlabPluginService {
         global: [
           {
             kind: 'switch',
-            key: 'purge',
+            key: PURGE_PLUGIN_KEY,
             initialValue: DISABLED,
             permissions: {
               admin: { read: true, write: true },

@@ -1,7 +1,8 @@
-import type { Mocked } from 'vitest'
+import type { DeepMockProxy } from 'vitest-mock-extended'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultError } from '../vault/vault-http-client.service'
@@ -14,94 +15,49 @@ import {
   NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO,
   PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY,
   PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY,
+  PLUGIN_NAME,
   PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
 } from './nexus.constants'
 import { NexusService } from './nexus.service'
 
-function createNexusControllerServiceTestingModule() {
-  return Test.createTestingModule({
-    providers: [
-      NexusService,
-      {
-        provide: NexusClientService,
-        useValue: {
-          getRepositoriesMavenHosted: vi.fn(),
-          createRepositoriesMavenHosted: vi.fn(),
-          updateRepositoriesMavenHosted: vi.fn(),
-          createRepositoriesMavenGroup: vi.fn(),
-          updateRepositoriesMavenGroup: vi.fn(),
-          getRepositoriesMavenGroup: vi.fn(),
-          getRepositoriesNpmHosted: vi.fn(),
-          createRepositoriesNpmHosted: vi.fn(),
-          updateRepositoriesNpmHosted: vi.fn(),
-          getRepositoriesNpmGroup: vi.fn(),
-          postRepositoriesNpmGroup: vi.fn(),
-          putRepositoriesNpmGroup: vi.fn(),
-          getSecurityPrivileges: vi.fn(),
-          createSecurityPrivilegesRepositoryView: vi.fn(),
-          updateSecurityPrivilegesRepositoryView: vi.fn(),
-          deleteSecurityPrivileges: vi.fn(),
-          getSecurityRoles: vi.fn(),
-          createSecurityRoles: vi.fn(),
-          updateSecurityRoles: vi.fn(),
-          deleteSecurityRoles: vi.fn(),
-          getSecurityUsers: vi.fn(),
-          updateSecurityUsersChangePassword: vi.fn(),
-          createSecurityUsers: vi.fn(),
-          deleteSecurityUsers: vi.fn(),
-          deleteRepositoriesByName: vi.fn(),
-        } satisfies Partial<NexusClientService>,
-      },
-      {
-        provide: NexusDatastoreService,
-        useValue: {
-          getAllProjects: vi.fn(),
-          getAdminPluginConfig: vi.fn(),
-        } satisfies Partial<NexusDatastoreService>,
-      },
-      {
-        provide: VaultClientService,
-        useValue: {
-          read: vi.fn(),
-          write: vi.fn(),
-          delete: vi.fn(),
-        } satisfies Partial<VaultClientService>,
-      },
-      {
-        provide: ConfigurationService,
-        useValue: {
-          projectRootDir: 'forge',
-        } satisfies Partial<ConfigurationService>,
-      },
-    ],
-  })
-}
-
 describe('nexusService', () => {
   let service: NexusService
-  let client: Mocked<NexusClientService>
-  let nexusDatastore: Mocked<NexusDatastoreService>
-  let vault: Mocked<VaultClientService>
+  let client: DeepMockProxy<NexusClientService>
+  let datastore: DeepMockProxy<NexusDatastoreService>
+  let vault: DeepMockProxy<VaultClientService>
+  let config: DeepMockProxy<ConfigurationService>
 
   beforeEach(async () => {
-    const moduleRef = await createNexusControllerServiceTestingModule().compile()
-    service = moduleRef.get(NexusService)
-    client = moduleRef.get(NexusClientService)
-    nexusDatastore = moduleRef.get(NexusDatastoreService)
-    vault = moduleRef.get(VaultClientService)
+    client = mockDeep<NexusClientService>({
+      getRepositoriesMavenHosted: vi.fn().mockResolvedValue(null),
+      getRepositoriesMavenGroup: vi.fn().mockResolvedValue(null),
+      getRepositoriesNpmHosted: vi.fn().mockResolvedValue(null),
+      getRepositoriesNpmGroup: vi.fn().mockResolvedValue(null),
+      getSecurityPrivileges: vi.fn().mockResolvedValue(null),
+      getSecurityRoles: vi.fn().mockResolvedValue(null),
+      getSecurityUsers: vi.fn().mockResolvedValue([]),
+    })
+    datastore = mockDeep<NexusDatastoreService>({
+      getAllProjects: vi.fn().mockResolvedValue([]),
+      getAdminPluginConfig: vi.fn().mockResolvedValue(null),
+    })
+    vault = mockDeep<VaultClientService>({
+      read: vi.fn().mockRejectedValue(new VaultError('NotFound', 'Not Found')),
+    })
+    config = mockDeep<ConfigurationService>({ projectRootDir: 'forge' })
 
-    nexusDatastore.getAllProjects.mockResolvedValue([])
-    nexusDatastore.getAdminPluginConfig.mockResolvedValue(null)
+    const module = await Test.createTestingModule({
+      providers: [
+        NexusService,
+        { provide: NexusClientService, useValue: client },
+        { provide: NexusDatastoreService, useValue: datastore },
+        { provide: VaultClientService, useValue: vault },
+        { provide: ConfigurationService, useValue: config },
+      ],
+    }).compile()
 
-    client.getRepositoriesMavenHosted.mockResolvedValue(null)
-    client.getRepositoriesMavenGroup.mockResolvedValue(null)
-    client.getRepositoriesNpmHosted.mockResolvedValue(null)
-    client.getRepositoriesNpmGroup.mockResolvedValue(null)
-    client.getSecurityPrivileges.mockResolvedValue(null)
-    client.getSecurityRoles.mockResolvedValue(null)
-    client.getSecurityUsers.mockResolvedValue([])
-    vault.read.mockRejectedValue(new VaultError('NotFound', 'Not Found'))
+    service = module.get(NexusService)
   })
 
   it('should be defined', () => {
@@ -112,8 +68,8 @@ describe('nexusService', () => {
     const project = makeProjectWithDetails({
       owner: { email: 'owner@example.com', firstName: 'Owner', lastName: 'User' },
       plugins: [
-        { key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED },
-        { key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: DISABLED },
+        { pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED },
+        { pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: DISABLED },
       ],
     })
 
@@ -140,11 +96,11 @@ describe('nexusService', () => {
 
   it('handleCron should reconcile all projects', async () => {
     const projects = [
-      makeProjectWithDetails({ plugins: [{ key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED }] }),
-      makeProjectWithDetails({ plugins: [{ key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: ENABLED }] }),
+      makeProjectWithDetails({ plugins: [{ pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED }] }),
+      makeProjectWithDetails({ plugins: [{ pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: ENABLED }] }),
     ]
 
-    nexusDatastore.getAllProjects.mockResolvedValue(projects)
+    datastore.getAllProjects.mockResolvedValue(projects)
 
     await service.handleCron()
 
@@ -154,10 +110,10 @@ describe('nexusService', () => {
   it('reuses existing vault password and does not rotate Nexus user password', async () => {
     const project = makeProjectWithDetails({
       owner: { email: 'owner@example.com', firstName: 'Owner', lastName: 'User' },
-      plugins: [{ key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED }],
+      plugins: [{ pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED }],
     })
 
-    nexusDatastore.getAdminPluginConfig.mockImplementation(async (_plugin, key) => {
+    datastore.getAdminPluginConfig.mockImplementation(async (_plugin, key) => {
       if (key === PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY) return ' '
       if (key === PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY) return ' '
       return null
@@ -193,13 +149,13 @@ describe('nexusService', () => {
   it('tolerates platform role failures when ensuring platform roles', async () => {
     const project = makeProjectWithDetails({
       owner: { email: 'owner@example.com', firstName: 'Owner', lastName: 'User' },
-      plugins: [{ key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED }],
+      plugins: [{ pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED }],
     })
     const staleProject = makeProjectWithDetails({
-      plugins: [{ key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: ENABLED }],
+      plugins: [{ pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: ENABLED }],
     })
 
-    nexusDatastore.getAllProjects.mockResolvedValue([project, staleProject])
+    datastore.getAllProjects.mockResolvedValue([project, staleProject])
     client.createSecurityRoles.mockImplementation(async (body) => {
       if (body.id.startsWith('console-')) throw new Error('Request failed: POST security/roles responded 400 Bad Request')
     })
@@ -213,13 +169,13 @@ describe('nexusService', () => {
     const project = makeProjectWithDetails({
       owner: { email: 'owner@example.com', firstName: 'Owner', lastName: 'User' },
       plugins: [
-        { key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED },
-        { key: PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY, value: '/console/devops' },
-        { key: PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY, value: '/console/devops' },
+        { pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED },
+        { pluginName: PLUGIN_NAME, key: PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY, value: '/console/devops' },
+        { pluginName: PLUGIN_NAME, key: PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY, value: '/console/devops' },
       ],
     })
 
-    nexusDatastore.getAdminPluginConfig.mockImplementation(async (_plugin, key) => {
+    datastore.getAdminPluginConfig.mockImplementation(async (_plugin, key) => {
       if (key === PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY) return ' '
       if (key === PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY) return ' '
       return null

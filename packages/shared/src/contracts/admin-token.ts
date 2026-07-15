@@ -1,3 +1,4 @@
+import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import { CoerceBooleanSchema } from '../schemas/_utils.js'
@@ -38,7 +39,7 @@ export const adminTokenContract = contractInstance.router({
     method: 'DELETE',
     path: `/:tokenId`,
     pathParams: z.object({ tokenId: z.string().uuid() }),
-    body: null,
+    body: ContractNoBody,
     responses: {
       204: null,
       400: ErrorSchema,

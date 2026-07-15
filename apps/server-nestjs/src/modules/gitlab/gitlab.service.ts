@@ -23,6 +23,7 @@ import {
   DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX,
   INFRA_APPS_REPO_NAME,
+  PLUGIN_NAME,
   PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
@@ -232,7 +233,7 @@ export class GitlabService {
   }
 
   private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
-    const adminPluginConfig = await this.gitlabDatastore.getAdminPluginConfig('gitlab', key)
+    const adminPluginConfig = await this.gitlabDatastore.getAdminPluginConfig(PLUGIN_NAME, key)
     if (adminPluginConfig) return adminPluginConfig
     if (!project) return undefined
     return getProjectPluginConfig(project, key) ?? undefined

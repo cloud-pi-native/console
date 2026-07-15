@@ -1,4 +1,5 @@
 import type { ClientInferRequest } from '@ts-rest/core'
+import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
@@ -63,7 +64,7 @@ export const zoneContract = contractInstance.router({
     path: `/:zoneId`,
     summary: 'Delete zone',
     description: 'Delete a zone by its ID.',
-    body: null,
+    body: ContractNoBody,
     pathParams: z.object({
       zoneId: z.string()
         .uuid(),

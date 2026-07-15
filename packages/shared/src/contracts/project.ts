@@ -1,4 +1,5 @@
 import type { ClientInferRequest } from '@ts-rest/core'
+import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import { ProjectSchemaV2 } from '../schemas/project.js'
@@ -143,7 +144,7 @@ export const projectContract = contractInstance.router({
     path: `/:projectId/hooks`,
     summary: 'Replay hooks for project',
     description: 'Replay hooks for a project.',
-    body: null,
+    body: ContractNoBody,
     pathParams: ProjectParams,
     responses: {
       204: null,
@@ -157,7 +158,7 @@ export const projectContract = contractInstance.router({
     summary: 'Delete project',
     description: 'Delete a project.',
     pathParams: ProjectParams,
-    body: null,
+    body: ContractNoBody,
     responses: {
       204: null,
       500: ErrorSchema,

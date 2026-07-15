@@ -37,7 +37,7 @@ describe('projectHooksService', () => {
 
   it('updateProjectLocked updates the project locked flag', async () => {
     const project = makeProject({ locked: true })
-    prisma.project.update.mockResolvedValue(project as any)
+    prisma.project.update.mockResolvedValue(project)
 
     await service.updateProjectLocked('project-id', true)
 

@@ -18,6 +18,7 @@ export const projectSelect = {
   },
   plugins: {
     select: {
+      pluginName: true,
       key: true,
       value: true,
     },

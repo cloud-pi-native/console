@@ -62,7 +62,7 @@ describe('deploymentDatastoreService', () => {
     it('should return deployments for a project', async () => {
       const deployments = [{ ...mockDeployment }]
 
-      prisma.deployment.findMany.mockResolvedValue(deployments as any)
+      prisma.deployment.findMany.mockResolvedValue(deployments)
 
       const result = await service.getDeploymentsByProjectId('project1')
 
@@ -108,7 +108,7 @@ describe('deploymentDatastoreService', () => {
     it('should update a deployment', async () => {
       const updated = { ...mockDeployment, name: 'updated' }
 
-      prisma.deployment.update.mockResolvedValue(updated as any)
+      prisma.deployment.update.mockResolvedValue(updated)
 
       const result = await service.updateDeployment('dep1', {
         ...mockDeployment,
@@ -127,7 +127,7 @@ describe('deploymentDatastoreService', () => {
     it('should delete a deployment', async () => {
       const deleted = { ...mockDeployment }
 
-      prisma.deployment.delete.mockResolvedValue(deleted as any)
+      prisma.deployment.delete.mockResolvedValue(deleted)
 
       const result = await service.deleteDeployment('dep1')
 

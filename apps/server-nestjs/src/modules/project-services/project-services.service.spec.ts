@@ -1,7 +1,7 @@
-import type { ServiceInfos } from '@cpn-console/hooks'
+import type { Plugin, ServiceInfos } from '@cpn-console/hooks'
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
-import type { ProjectWithDetails, PublicCluster } from './project-services-queries.utils'
+import type { ClusterWithZone, ProjectWithRelations } from './project-services-testing.utils'
 import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
@@ -10,13 +10,12 @@ import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { PluginService } from '../plugin/plugin.service'
 import {
+  makeClusterWithZone,
+  makeEnvironmentWithCluster,
+  makePlugin,
   makeProjectPlugin,
-  makeProjectWithDetails,
-  makePublicCluster,
-  makeServicesEnvironment,
-  makeServicesPlugin,
+  makeProjectWithRelations,
   makeServicesUpdateBody,
-  makeServicesZone,
 } from './project-services-testing.utils'
 import { ProjectServicesService } from './project-services.service'
 
@@ -41,9 +40,9 @@ describe('servicesService', () => {
   let serviceTitle: string
   let serviceDescription: string
   let serviceImgSrc: string
-  let project: ProjectWithDetails
-  let cluster: PublicCluster
-  let plugin: ServicePlugin
+  let project: ProjectWithRelations
+  let cluster: ClusterWithZone
+  let plugin: Plugin
 
   beforeEach(async () => {
     projectId = faker.string.uuid()
@@ -52,15 +51,15 @@ describe('servicesService', () => {
     serviceDescription = faker.lorem.sentence()
     serviceImgSrc = `/${faker.helpers.slugify(faker.commerce.product())}.svg`
 
-    plugin = makeServicesPlugin({
+    plugin = makePlugin({
       title: serviceTitle,
       description: serviceDescription,
       imgSrc: serviceImgSrc,
       to: ({ project }) => `/projects/${project.slug}`,
     })
     pluginName = plugin.infos.name
-    project = makeProjectWithDetails({ slug: projectSlug })
-    cluster = makePublicCluster()
+    project = makeProjectWithRelations({ id: projectId, slug: projectSlug })
+    cluster = makeClusterWithZone()
 
     prisma = mockDeep<PrismaService>()
 
@@ -82,7 +81,7 @@ describe('servicesService', () => {
   it('get returns the service with actual hooks data', async () => {
     prisma.project.findUnique.mockResolvedValue(project)
     prisma.projectPlugin.findMany.mockResolvedValue([
-      makeProjectPlugin({ pluginName, value: ENABLED }),
+      makeProjectPlugin({ projectId, pluginName, value: ENABLED }),
     ])
     prisma.adminPlugin.findMany.mockResolvedValue([])
     prisma.cluster.findMany.mockResolvedValue([cluster])
@@ -103,23 +102,22 @@ describe('servicesService', () => {
   })
 
   it('get includes zones coming from project environments', async () => {
-    const environmentZone = {
-      id: faker.string.uuid(),
-      slug: faker.helpers.slugify(faker.word.noun()).toLowerCase(),
-      label: faker.word.noun(),
-      argocdUrl: 'https://argocd.example.com',
-    }
-    const projectWithEnvironmentZones = makeProjectWithDetails({
+    const baseZone = makeClusterWithZone().zone
+    const environmentZone = makeClusterWithZone({
+      zone: {
+        ...baseZone,
+        argocdUrl: 'https://argocd.example.com',
+      },
+    })
+    const projectWithEnvironmentZones = makeProjectWithRelations({
       clusters: [],
       environments: [
-        makeServicesEnvironment({
-          cluster: makePublicCluster({
-            zone: makeServicesZone(environmentZone),
-          }),
+        makeEnvironmentWithCluster({
+          cluster: environmentZone,
         }),
       ],
     })
-    const envZonePlugin = makeServicesPlugin({
+    const envZonePlugin = makePlugin({
       to: ({ zones }) => zones.map(zone => ({
         to: `${zone.argocdUrl}/applications?search=${zone.slug}`,
         title: zone.label,
@@ -131,21 +129,21 @@ describe('servicesService', () => {
     prisma.adminPlugin.findMany.mockResolvedValue([])
     prisma.cluster.findMany.mockResolvedValue([])
 
-    const module = await Test.createTestingModule({
+    const envModule = await Test.createTestingModule({
       providers: [
         ProjectServicesService,
         { provide: PrismaService, useValue: prisma },
         { provide: PluginService, useValue: { infos: async () => [envZonePlugin.infos] } },
       ],
     }).compile()
-    const envService = module.get(ProjectServicesService)
+    const envService = envModule.get(ProjectServicesService)
 
     const result = await envService.get(projectId, 'user')
 
     expect(result.find(entry => entry.name === envZonePlugin.infos.name)).toMatchObject({
-      urls: [{ to: `${environmentZone.argocdUrl}/applications?search=${environmentZone.slug}`, name: environmentZone.label }],
+      urls: [{ to: `${environmentZone.zone.argocdUrl}/applications?search=${environmentZone.zone.slug}`, name: environmentZone.zone.label }],
     })
-    await module.close()
+    await envModule.close()
   })
 
   it('update stores project configuration through the real utility', async () => {

@@ -1,4 +1,5 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
+import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 
@@ -50,13 +51,13 @@ export class NexusPluginService {
             key: 'activateMavenRepo',
             section: 'Maven',
             kind: 'switch',
-            initialValue: 'disabled',
+            initialValue: DISABLED,
             permissions: {
               admin: { read: true, write: true },
               user: { read: true, write: true },
             },
             title: 'Activer le dépôt Maven',
-            value: 'disabled',
+            value: DISABLED,
             description: 'Default: utilise le paramétrage globale de la console. Attention: Nexus met un certain temps pour activer/désactiver les dépôts, un reprovisonnage après plusieurs minutes peut être nécessaire',
           },
           {
@@ -137,38 +138,38 @@ export class NexusPluginService {
             key: 'activateNpmRepoDefaultValue',
             section: 'NPM',
             kind: 'switch',
-            initialValue: 'disabled',
+            initialValue: DISABLED,
             permissions: {
               admin: { read: true, write: true },
               user: { read: false, write: false },
             },
             title: 'Créer un dépôt NPM privé (comportement par défaut des projets)',
-            value: 'disabled',
+            value: DISABLED,
             description: 'Défaut au niveau global signifie: Désactivé',
           },
           {
             key: 'activateMavenRepoDefaultValue',
             section: 'Maven',
             kind: 'switch',
-            initialValue: 'disabled',
+            initialValue: DISABLED,
             permissions: {
               admin: { read: true, write: true },
               user: { read: false, write: false },
             },
             title: 'Créer un dépôt MAVEN privé (comportement par défaut des projets)',
-            value: 'disabled',
+            value: DISABLED,
             description: 'Défaut au niveau global signifie: Désactivé',
           },
           {
             key: 'enablePlugin',
             kind: 'switch',
-            initialValue: 'enabled',
+            initialValue: ENABLED,
             permissions: {
               admin: { read: true, write: true },
               user: { read: false, write: false },
             },
             title: 'Activer/Désactiver entièrement le plugin Nexus',
-            value: 'enabled',
+            value: ENABLED,
             description: 'Défaut: Activé',
           },
         ],

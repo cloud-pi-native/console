@@ -1,4 +1,4 @@
-import type { UserContext } from '../../auth/auth.service'
+import type { UserContext } from '../../auth/auth-user.decorator'
 import { AdminAuthorized } from '@cpn-console/shared'
 import { ForbiddenException } from '@nestjs/common'
 import { Test } from '@nestjs/testing'

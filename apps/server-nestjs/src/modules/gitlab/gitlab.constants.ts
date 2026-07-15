@@ -1,4 +1,7 @@
-// ArgoCD infrastructure automation
+// GitLab plugin constants
+export const PLUGIN_NAME = 'gitlab'
+
+// Infrastructure integration
 export const INFRA_GROUP_NAME = 'Infra'
 export const INFRA_GROUP_PATH = 'infra'
 export const INFRA_APPS_REPO_NAME = 'infra-apps'

@@ -24,9 +24,9 @@ describe('systemConfigService', () => {
 
   it('updates plugins config from body via transaction', async () => {
     prisma.$transaction.mockImplementation(async (callback: any) => callback(prisma))
-    prisma.adminPlugin.upsert.mockResolvedValue(null)
+    prisma.adminPlugin.upsert.mockResolvedValue({ pluginName: 'argocd', key: 'url', value: 'https://argocd' })
 
-    await service.update({ global: { argocd: { url: 'https://argocd' } } })
+    await service.update({ argocd: { url: 'https://argocd' } })
 
     expect(prisma.$transaction).toHaveBeenCalledTimes(1)
   })

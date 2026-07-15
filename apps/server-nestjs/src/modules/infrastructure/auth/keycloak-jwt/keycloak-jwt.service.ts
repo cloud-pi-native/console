@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client'
 import type { FastifyRequest } from 'fastify'
+import type { IncomingHttpHeaders } from 'node:http'
 import type { UserContext } from '../auth-user.decorator'
 import type { AuthProvider, AuthRequirements } from '../auth.utils'
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
@@ -29,7 +30,7 @@ export class KeycloakJwtService implements AuthProvider {
   }
 
   async authenticateHeaders(
-    headers: FastifyRequest['headers'],
+    headers: IncomingHttpHeaders,
     requirements?: AuthRequirements,
   ): Promise<UserContext | undefined> {
     const authHeader = headers.authorization

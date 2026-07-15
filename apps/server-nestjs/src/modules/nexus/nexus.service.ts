@@ -28,9 +28,9 @@ import {
   NEXUS_CONFIG_KEY_MAVEN_RELEASE_WRITE_POLICY,
   NEXUS_CONFIG_KEY_MAVEN_SNAPSHOT_WRITE_POLICY,
   NEXUS_CONFIG_KEY_NPM_WRITE_POLICY,
-  NEXUS_PLUGIN_NAME,
   PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY,
   PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY,
+  PLUGIN_NAME,
   PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
 } from './nexus.constants'
@@ -487,7 +487,7 @@ export class NexusService {
   private async getOptionalConfigValue(project: ProjectWithDetails, key: string) {
     const projectValue = getPluginConfig(project, key)
     if (projectValue) return projectValue
-    return await this.nexusDatastore.getAdminPluginConfig(NEXUS_PLUGIN_NAME, key)
+    return await this.nexusDatastore.getAdminPluginConfig(PLUGIN_NAME, key)
   }
 
   private async ensureProjectGroupRoles(project: ProjectWithDetails, args: { readOnlyPrivileges: string[], writePrivileges: string[] }) {
@@ -511,10 +511,10 @@ export class NexusService {
   }
 
   private async ensurePlatformRoles(projects: ProjectWithDetails[]) {
-    const rawWriteGroupPaths = await this.nexusDatastore.getAdminPluginConfig(NEXUS_PLUGIN_NAME, PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY)
+    const rawWriteGroupPaths = await this.nexusDatastore.getAdminPluginConfig(PLUGIN_NAME, PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY)
       ?? DEFAULT_PLATFORM_WRITE_GROUP_PATHS
 
-    const rawReadGroupPaths = await this.nexusDatastore.getAdminPluginConfig(NEXUS_PLUGIN_NAME, PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY)
+    const rawReadGroupPaths = await this.nexusDatastore.getAdminPluginConfig(PLUGIN_NAME, PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY)
       ?? DEFAULT_PLATFORM_READ_GROUP_PATHS
 
     const readonlyPrivileges = new Set<string>()

@@ -1,111 +1,78 @@
-import type { Mocked } from 'vitest'
+import type { DeepMockProxy } from 'vitest-mock-extended'
+import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
-import { projectRobotName, RegistryClientService } from './registry-client.service'
+import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
 import { makeCreatedResponse, makeNoContent, makeOkResponse, makeProjectWithDetails } from './registry-testing.utils'
 import {
+  PLUGIN_NAME,
   REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT,
   REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT,
+  ROBOT_NAME_PROJECT,
 } from './registry.constants'
 import { RegistryService } from './registry.service'
 
-function createRegistryControllerServiceTestingModule() {
-  return Test.createTestingModule({
-    providers: [
-      RegistryService,
-      {
-        provide: RegistryClientService,
-        useValue: {
-          getProjectRobots: vi.fn(),
-          createRobot: vi.fn(),
-          deleteRobot: vi.fn(),
-          getGroupMembers: vi.fn(),
-          addGroupMember: vi.fn(),
-          removeGroupMember: vi.fn(),
-          getProjectByName: vi.fn(),
-          listQuotas: vi.fn(),
-          updateQuota: vi.fn(),
-          createProject: vi.fn(),
-          getRetentionId: vi.fn(),
-          updateRetention: vi.fn(),
-          createRetention: vi.fn(),
-          deleteProjectByName: vi.fn(),
-        } satisfies Partial<RegistryClientService>,
-      },
-      {
-        provide: RegistryDatastoreService,
-        useValue: {
-          getAdminPluginConfig: vi.fn(),
-          getAllProjects: vi.fn(),
-        } satisfies Partial<RegistryDatastoreService>,
-      },
-      {
-        provide: VaultClientService,
-        useValue: {
-          read: vi.fn(),
-          write: vi.fn(),
-          delete: vi.fn(),
-        } satisfies Partial<VaultClientService>,
-      },
-      {
-        provide: ConfigurationService,
-        useValue: {
-          harborUrl: 'https://harbor.example',
-          harborInternalUrl: 'https://harbor.example',
-          harborAdmin: 'admin',
-          harborAdminPassword: faker.internet.password(),
-          harborRuleTemplate: 'latestPushedK',
-          harborRuleCount: '10',
-          harborRetentionCron: '0 22 2 * * *',
-          harborRobotRotationThresholdDays: 90,
-          projectRootDir: 'forge',
-        } satisfies Partial<ConfigurationService>,
-      },
-    ],
-  })
-}
-
 describe('registryService', () => {
   let service: RegistryService
-  let registry: Mocked<RegistryClientService>
-  let vault: Mocked<VaultClientService>
-  let registryDatastore: Mocked<RegistryDatastoreService>
+  let client: DeepMockProxy<RegistryClientService>
+  let datastore: DeepMockProxy<RegistryDatastoreService>
+  let vault: DeepMockProxy<VaultClientService>
+  let config: DeepMockProxy<ConfigurationService>
 
   beforeEach(async () => {
-    const moduleRef = await createRegistryControllerServiceTestingModule().compile()
-    service = moduleRef.get(RegistryService)
-    registry = moduleRef.get(RegistryClientService)
-    vault = moduleRef.get(VaultClientService)
-    registryDatastore = moduleRef.get(RegistryDatastoreService)
+    client = mockDeep<RegistryClientService>({
+      getProjectByName: vi.fn().mockResolvedValue(makeOkResponse({ project_id: 123, metadata: {} })),
+      listQuotas: vi.fn().mockResolvedValue(makeOkResponse([{ ref: { id: 123 }, hard: { storage: -1 } }])),
+      getRetentionId: vi.fn().mockResolvedValue(null),
+      createRetention: vi.fn().mockResolvedValue(makeCreatedResponse(null)),
+      getGroupMembers: vi.fn().mockResolvedValue(makeOkResponse([])),
+      addGroupMember: vi.fn().mockResolvedValue(makeCreatedResponse(null)),
+      removeGroupMember: vi.fn().mockResolvedValue(makeNoContent()),
+      deleteProjectByName: vi.fn().mockResolvedValue(makeNoContent()),
+    })
+    datastore = mockDeep<RegistryDatastoreService>({
+      getAdminPluginConfig: vi.fn().mockResolvedValue(null),
+    })
+    vault = mockDeep<VaultClientService>({
+      read: vi.fn().mockResolvedValue(makeVaultSecret({
+        data: {
+          HOST: 'harbor.example',
+          DOCKER_CONFIG: '{}',
+          USERNAME: 'robot$myproj+ro-robot',
+          TOKEN: 'secret',
+        },
+      })),
+      write: vi.fn().mockResolvedValue(undefined),
+    })
+    config = mockDeep<ConfigurationService>({
+      harborUrl: 'https://harbor.example',
+      harborInternalUrl: 'https://harbor.example',
+      harborAdmin: 'admin',
+      harborAdminPassword: faker.internet.password(),
+      harborRuleTemplate: 'latestPushedK',
+      harborRuleCount: '10',
+      harborRetentionCron: '0 22 2 * * *',
+      harborRobotRotationThresholdDays: 90,
+      projectRootDir: 'forge',
+    })
 
-    registryDatastore.getAdminPluginConfig.mockResolvedValue(null)
+    const module = await Test.createTestingModule({
+      providers: [
+        RegistryService,
+        { provide: RegistryClientService, useValue: client },
+        { provide: RegistryDatastoreService, useValue: datastore },
+        { provide: VaultClientService, useValue: vault },
+        { provide: ConfigurationService, useValue: config },
+      ],
+    }).compile()
 
-    registry.getProjectByName.mockResolvedValue(makeOkResponse({ project_id: 123, metadata: {} }))
-    registry.listQuotas.mockResolvedValue(makeOkResponse([{ ref: { id: 123 }, hard: { storage: -1 } }]))
-
-    registry.getRetentionId.mockResolvedValue(null)
-    registry.createRetention.mockResolvedValue(makeCreatedResponse(null))
-
-    vault.read.mockResolvedValue(makeVaultSecret({
-      data: {
-        HOST: 'harbor.example',
-        DOCKER_CONFIG: '{}',
-        USERNAME: 'robot$myproj+ro-robot',
-        TOKEN: 'secret',
-      },
-    }))
-    vault.write.mockResolvedValue(undefined)
-
-    registry.getGroupMembers.mockResolvedValue(makeOkResponse([]))
-    registry.addGroupMember.mockResolvedValue(makeCreatedResponse(null))
-    registry.removeGroupMember.mockResolvedValue(makeNoContent())
-
-    registry.deleteProjectByName.mockResolvedValue(makeNoContent())
+    service = module.get(RegistryService)
   })
 
   it('should be defined', () => {
@@ -130,9 +97,9 @@ describe('registryService', () => {
         { groupName: `/${project.slug}/console/admin`, roleId: 2 },
       ]
 
-      expect(registry.addGroupMember).toHaveBeenCalledTimes(expected.length)
+      expect(client.addGroupMember).toHaveBeenCalledTimes(expected.length)
       for (const e of expected) {
-        expect(registry.addGroupMember).toHaveBeenCalledWith(project.slug, {
+        expect(client.addGroupMember).toHaveBeenCalledWith(project.slug, {
           role_id: e.roleId,
           member_group: {
             group_name: e.groupName,
@@ -144,14 +111,14 @@ describe('registryService', () => {
 
     it('reconciles an existing group membership when role differs', async () => {
       const project = makeProjectWithDetails()
-      registry.getGroupMembers.mockResolvedValueOnce(makeOkResponse([
+      client.getGroupMembers.mockResolvedValueOnce(makeOkResponse([
         { id: 10, entity_name: `/${project.slug}/console/admin`, entity_type: 'g', role_id: 3 },
       ]))
 
       await service.handleUpsert(project)
 
-      expect(registry.removeGroupMember).toHaveBeenCalledWith(project.slug, 10)
-      expect(registry.addGroupMember).toHaveBeenCalledWith(project.slug, {
+      expect(client.removeGroupMember).toHaveBeenCalledWith(project.slug, 10)
+      expect(client.addGroupMember).toHaveBeenCalledWith(project.slug, {
         role_id: 2,
         member_group: {
           group_name: `/${project.slug}/console/admin`,
@@ -162,7 +129,7 @@ describe('registryService', () => {
 
     it('returns a KO result when project admin membership creation fails', async () => {
       const project = makeProjectWithDetails()
-      registry.addGroupMember.mockImplementation(async (_projectName, body) => {
+      client.addGroupMember.mockImplementation(async (_projectName, body) => {
         if (body.member_group.group_name === `/${project.slug}/console/admin` && body.role_id === 2) {
           return { status: 400, data: null }
         }
@@ -176,7 +143,7 @@ describe('registryService', () => {
         }),
       })
 
-      expect(registry.addGroupMember).toHaveBeenCalledWith(project.slug, {
+      expect(client.addGroupMember).toHaveBeenCalledWith(project.slug, {
         role_id: 2,
         member_group: {
           group_name: `/${project.slug}/console/admin`,
@@ -186,16 +153,16 @@ describe('registryService', () => {
     })
 
     it('updates quota when it differs', async () => {
-      registry.listQuotas.mockResolvedValueOnce(makeOkResponse([{ ref: { id: 123 }, hard: { storage: -1 } }]))
+      client.listQuotas.mockResolvedValueOnce(makeOkResponse([{ ref: { id: 123 }, hard: { storage: -1 } }]))
 
       await service.handleUpsert(makeProjectWithDetails({
         slug: 'myproj',
         plugins: [
-          { key: REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT, value: '1024' },
+          { pluginName: PLUGIN_NAME, key: REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT, value: '1024' },
         ],
       }))
 
-      expect(registry.updateQuota).toHaveBeenCalledWith(123, 1024)
+      expect(client.updateQuota).toHaveBeenCalledWith(123, 1024)
     })
 
     it('reuses robot secret when vault secret host matches', async () => {
@@ -206,9 +173,9 @@ describe('registryService', () => {
       expect(vault.read).toHaveBeenCalledTimes(2)
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/ro-robot`)
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/rw-robot`)
-      expect(registry.getProjectRobots).not.toHaveBeenCalled()
-      expect(registry.createRobot).not.toHaveBeenCalled()
-      expect(registry.deleteRobot).not.toHaveBeenCalled()
+      expect(client.getProjectRobots).not.toHaveBeenCalled()
+      expect(client.createRobot).not.toHaveBeenCalled()
+      expect(client.deleteRobot).not.toHaveBeenCalled()
       expect(vault.write).not.toHaveBeenCalled()
     })
 
@@ -235,14 +202,14 @@ describe('registryService', () => {
         })
       })
 
-      registry.getProjectRobots.mockResolvedValue(makeOkResponse([{ id: 11, name: `robot$${project.slug}+ro-robot` }]))
-      registry.deleteRobot.mockResolvedValue(makeNoContent())
-      registry.createRobot.mockResolvedValue(makeCreatedResponse({ id: 22, name: `robot$${project.slug}+ro-robot`, secret: 'newsecret' }))
+      client.getProjectRobots.mockResolvedValue(makeOkResponse([{ id: 11, name: `robot$${project.slug}+ro-robot` }]))
+      client.deleteRobot.mockResolvedValue(makeNoContent())
+      client.createRobot.mockResolvedValue(makeCreatedResponse({ id: 22, name: `robot$${project.slug}+ro-robot`, secret: 'newsecret' }))
 
       await service.handleUpsert(project)
 
-      expect(registry.deleteRobot).toHaveBeenCalledWith(project.slug, 11)
-      expect(registry.createRobot).toHaveBeenCalledWith(expect.objectContaining({ name: 'ro-robot' }))
+      expect(client.deleteRobot).toHaveBeenCalledWith(project.slug, 11)
+      expect(client.createRobot).toHaveBeenCalledWith(expect.objectContaining({ name: 'ro-robot' }))
       expect(vault.write).toHaveBeenCalledWith(expect.objectContaining({
         HOST: 'harbor.example',
         USERNAME: `robot$${project.slug}+ro-robot`,
@@ -274,14 +241,14 @@ describe('registryService', () => {
         })
       })
 
-      registry.getProjectRobots.mockResolvedValue(makeOkResponse([{ id: 11, name: `robot$${project.slug}+ro-robot` }]))
-      registry.deleteRobot.mockResolvedValue(makeNoContent())
-      registry.createRobot.mockResolvedValue(makeCreatedResponse({ id: 22, name: `robot$${project.slug}+ro-robot`, secret: 'newsecret' }))
+      client.getProjectRobots.mockResolvedValue(makeOkResponse([{ id: 11, name: `robot$${project.slug}+ro-robot` }]))
+      client.deleteRobot.mockResolvedValue(makeNoContent())
+      client.createRobot.mockResolvedValue(makeCreatedResponse({ id: 22, name: `robot$${project.slug}+ro-robot`, secret: 'newsecret' }))
 
       await service.handleUpsert(project)
 
-      expect(registry.deleteRobot).toHaveBeenCalledWith(project.slug, 11)
-      expect(registry.createRobot).toHaveBeenCalledWith(expect.objectContaining({ name: 'ro-robot' }))
+      expect(client.deleteRobot).toHaveBeenCalledWith(project.slug, 11)
+      expect(client.createRobot).toHaveBeenCalledWith(expect.objectContaining({ name: 'ro-robot' }))
       expect(vault.write).toHaveBeenCalledWith(expect.objectContaining({
         HOST: 'harbor.example',
         USERNAME: `robot$${project.slug}+ro-robot`,
@@ -292,32 +259,32 @@ describe('registryService', () => {
     it('parses plugin config and enables project robot publishing', async () => {
       const project = makeProjectWithDetails({
         plugins: [
-          { key: REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT, value: '1gb' },
-          { key: REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT, value: 'enabled' },
+          { pluginName: PLUGIN_NAME, key: REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT, value: '1gb' },
+          { pluginName: PLUGIN_NAME, key: REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT, value: ENABLED },
         ],
       })
-      registry.getProjectByName.mockResolvedValue(makeOkResponse({ project_id: 1, metadata: {} }))
+      client.getProjectByName.mockResolvedValue(makeOkResponse({ project_id: 1, metadata: {} }))
 
       await service.handleUpsert(project)
 
-      expect(registry.updateQuota).toHaveBeenCalledWith(1, 1024 ** 3)
+      expect(client.updateQuota).toHaveBeenCalledWith(1, 1024 ** 3)
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/ro-robot`)
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/rw-robot`)
-      expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/${projectRobotName}`)
+      expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/${ROBOT_NAME_PROJECT}`)
     })
   })
 
   describe('handleCron', () => {
     it('should reconcile all projects', async () => {
-      registryDatastore.getAllProjects.mockResolvedValue([
+      datastore.getAllProjects.mockResolvedValue([
         makeProjectWithDetails({ slug: 'project-1' }),
         makeProjectWithDetails({ slug: 'project-2' }),
       ])
 
       await service.handleCron()
 
-      expect(registry.getGroupMembers).toHaveBeenCalledWith('project-1')
-      expect(registry.getGroupMembers).toHaveBeenCalledWith('project-2')
+      expect(client.getGroupMembers).toHaveBeenCalledWith('project-1')
+      expect(client.getGroupMembers).toHaveBeenCalledWith('project-2')
     })
   })
 
@@ -325,13 +292,13 @@ describe('registryService', () => {
     it('should delete project when it exists', async () => {
       const project = makeProjectWithDetails()
       await service.handleDelete(project)
-      expect(registry.deleteProjectByName).toHaveBeenCalledWith(project.slug)
+      expect(client.deleteProjectByName).toHaveBeenCalledWith(project.slug)
     })
 
     it('should not delete project when it does not exist', async () => {
-      registry.getProjectByName.mockResolvedValueOnce({ status: 404, data: null })
+      client.getProjectByName.mockResolvedValueOnce({ status: 404, data: null })
       await service.handleDelete(makeProjectWithDetails())
-      expect(registry.deleteProjectByName).not.toHaveBeenCalled()
+      expect(client.deleteProjectByName).not.toHaveBeenCalled()
     })
   })
 })

@@ -5,6 +5,13 @@ import type { FastifyRequest } from 'fastify'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import type { UserContext } from './auth-user.decorator'
 import { mockDeep } from 'vitest-mock-extended'
+import { faker } from '@faker-js/faker'
+
+export function makeAuthRequest(headers: FastifyRequest['headers'] = {}): FastifyRequest {
+  const request = mockDeep<FastifyRequest>()
+  request.headers = headers
+  return request
+}
 
 export function makeExecutionContext(headers: FastifyRequest['headers'] = {}): DeepMockProxy<ExecutionContext> {
   const context = mockDeep<ExecutionContext>()
@@ -33,9 +40,9 @@ export function makePersonalAccessToken(overrides: {
     id,
     name: 'test-token',
     status: overrides.status ?? 'active',
-    expirationDate: overrides.expirationDate ?? new Date(Date.now() + 86400000),
+    expirationDate: overrides.expirationDate ?? faker.date.future(),
     lastUse: overrides.lastUse ?? null,
-    createdAt: new Date(),
+    createdAt: faker.date.past(),
     hash: 'hash',
     userId: ownerId,
     owner: {
@@ -67,7 +74,7 @@ export function makeAdminToken(overrides: {
     expirationDate: overrides.expirationDate ?? null,
     permissions: overrides.permissions ?? 256n,
     lastUse: overrides.lastUse ?? null,
-    createdAt: new Date(),
+    createdAt: faker.date.past(),
     hash: 'hash',
     userId: ownerId,
     owner: {

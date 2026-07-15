@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { RegistryClientService } from './registry-client.service'
@@ -15,39 +16,37 @@ const basicAuth = `Basic ${Buffer.from(`admin:${harborAdminPassword}`, 'utf8').t
 
 const server = setupServer()
 
-function createRegistryServiceTestingModule() {
-  return Test.createTestingModule({
-    providers: [
-      RegistryClientService,
-      RegistryHttpClientService,
-      {
-        provide: VaultClientService,
-        useValue: {},
-      },
-      {
-        provide: ConfigurationService,
-        useValue: {
-          harborUrl,
-          harborInternalUrl: harborUrl,
-          harborAdmin: 'admin',
-          harborAdminPassword,
-          harborRuleTemplate: 'latestPushedK',
-          harborRuleCount: '10',
-          harborRetentionCron: '0 22 2 * * *',
-          projectRootDir: 'forge',
-        } satisfies Partial<ConfigurationService>,
-      },
-    ],
-  })
-}
-
 describe('registryService', () => {
   let service: RegistryClientService
 
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 
   beforeEach(async () => {
-    const module = await createRegistryServiceTestingModule().compile()
+    const config = mockDeep<ConfigurationService>({
+      harborUrl,
+      harborInternalUrl: harborUrl,
+      harborAdmin: 'admin',
+      harborAdminPassword,
+      harborRuleTemplate: 'latestPushedK',
+      harborRuleCount: '10',
+      harborRetentionCron: '0 22 2 * * *',
+      projectRootDir: 'forge',
+    })
+
+    const module = await Test.createTestingModule({
+      providers: [
+        RegistryClientService,
+        RegistryHttpClientService,
+        {
+          provide: VaultClientService,
+          useValue: {},
+        },
+        {
+          provide: ConfigurationService,
+          useValue: config,
+        },
+      ],
+    }).compile()
     service = module.get(RegistryClientService)
   })
 

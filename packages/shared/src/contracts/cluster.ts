@@ -1,5 +1,6 @@
 import type { ClientInferResponseBody } from '@ts-rest/core'
 import type Zod from 'zod'
+import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import { CoerceBooleanSchema } from '../schemas/_utils.js'
@@ -117,7 +118,7 @@ export const clusterContract = contractInstance.router({
     description: 'Delete a cluster by its ID.',
     query: z.object({ force: CoerceBooleanSchema.optional() }),
     pathParams: ClusterParams,
-    body: null,
+    body: ContractNoBody,
     responses: {
       204: z.string()
         .nullable(),

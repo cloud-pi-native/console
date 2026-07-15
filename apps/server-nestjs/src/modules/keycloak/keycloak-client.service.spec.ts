@@ -165,7 +165,7 @@ describe('keycloakClientService authentication lifecycle', () => {
     await module.close()
     module = await createKeycloakClientServiceTestingModule({ keycloakRealm: undefined }).compile()
 
-    await module.init()
+    await expect(module.init()).rejects.toThrow()
 
     await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS * 2)
     expect(tokenRequests).toHaveLength(0)
@@ -176,7 +176,7 @@ describe('keycloakClientService authentication lifecycle', () => {
     await module.close()
     module = await createKeycloakClientServiceTestingModule({ keycloakAdminPassword: undefined }).compile()
 
-    await module.init()
+    await expect(module.init()).rejects.toThrow()
 
     await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS * 2)
     expect(tokenRequests).toHaveLength(0)

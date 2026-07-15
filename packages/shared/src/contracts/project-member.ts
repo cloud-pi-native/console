@@ -1,3 +1,4 @@
+import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import { MemberSchema } from '../schemas/user.js'
@@ -52,7 +53,7 @@ export const projectMemberContract = contractInstance.router({
       projectId: z.string().uuid(),
       userId: z.string().uuid(),
     }),
-    body: null,
+    body: ContractNoBody,
     responses: {
       204: MemberSchema.array(),
       400: ErrorSchema,

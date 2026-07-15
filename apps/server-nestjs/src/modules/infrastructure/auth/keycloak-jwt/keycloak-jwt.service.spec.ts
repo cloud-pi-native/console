@@ -7,6 +7,7 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../../database/prisma.service'
+import { makeAuthRequest } from '../auth-testing.utils'
 import { makeMockAdminRole, makeMockUser } from './keycloak-jwt-testing.utils'
 import { KeycloakJwtService } from './keycloak-jwt.service'
 
@@ -153,7 +154,7 @@ describe('keycloakJwtService', () => {
       prisma.adminRole.findMany.mockResolvedValue([])
 
       const result = await service.authenticate(
-        { headers: { authorization: 'Bearer jwt-token' } } as Parameters<KeycloakJwtService['authenticate']>[0],
+        makeAuthRequest({ authorization: 'Bearer jwt-token' }),
       )
 
       expect(jwtService.verifyAsync).toHaveBeenCalledWith('jwt-token')

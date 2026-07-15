@@ -23,7 +23,7 @@ import {
   PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
   PROJECT_READONLY_GROUP_PATH_SUFFIX,
   PROJECT_SECURITY_GROUP_PATH_SUFFIX,
-} from './argocd.constant'
+} from './argocd.constants'
 
 @Injectable()
 export class ArgoCDService {

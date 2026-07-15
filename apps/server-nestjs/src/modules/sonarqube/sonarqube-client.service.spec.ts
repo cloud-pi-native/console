@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { mockDeep } from 'vitest-mock-extended'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { SonarqubeClientService } from './sonarqube-client.service'
 import { SonarqubeHttpClientService } from './sonarqube-http-client.service'
@@ -15,28 +16,25 @@ const sonarAuthHeader = `Bearer ${sonarToken}`
 
 const server = setupServer()
 
-function createTestingModule() {
-  return Test.createTestingModule({
-    providers: [
-      SonarqubeClientService,
-      SonarqubeHttpClientService,
-      {
-        provide: ConfigurationService,
-        useValue: {
-          sonarApiToken: sonarToken,
-          getInternalOrPublicSonarqubeUrl: () => sonarUrl,
-        } satisfies Partial<ConfigurationService>,
-      },
-    ],
-  })
-}
-
 describe('sonarqubeClientService', () => {
   let service: SonarqubeClientService
+  let config: ReturnType<typeof mockDeep<ConfigurationService>>
 
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
   beforeEach(async () => {
-    const module = await createTestingModule().compile()
+    config = mockDeep<ConfigurationService>({
+      sonarApiToken: sonarToken,
+      getInternalOrPublicSonarqubeUrl: () => sonarUrl,
+    })
+
+    const module = await Test.createTestingModule({
+      providers: [
+        SonarqubeClientService,
+        SonarqubeHttpClientService,
+        { provide: ConfigurationService, useValue: config },
+      ],
+    }).compile()
+
     service = module.get(SonarqubeClientService)
   })
   afterEach(() => server.resetHandlers())

@@ -1,5 +1,5 @@
 // Name of the Nexus plugin used throughout the application
-export const NEXUS_PLUGIN_NAME = 'nexus'
+export const PLUGIN_NAME = 'nexus'
 
 // Configuration keys for enabling Maven and NPM repositories
 export const NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO = 'activateMavenRepo'

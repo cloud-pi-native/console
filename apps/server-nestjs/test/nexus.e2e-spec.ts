@@ -1,4 +1,5 @@
 import type { TestingModule } from '@nestjs/testing'
+import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
@@ -13,7 +14,7 @@ import { PermissionModule } from '../src/modules/infrastructure/permission/permi
 import { NexusClientService } from '../src/modules/nexus/nexus-client.service'
 import { projectSelect } from '../src/modules/nexus/nexus-datastore.service'
 import { makeProjectWithDetails } from '../src/modules/nexus/nexus-testing.utils'
-import { NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, NEXUS_PLUGIN_NAME } from '../src/modules/nexus/nexus.constants'
+import { NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, PLUGIN_NAME } from '../src/modules/nexus/nexus.constants'
 import { NexusModule } from '../src/modules/nexus/nexus.module'
 import { NexusService } from '../src/modules/nexus/nexus.service'
 import { getProjectVaultPath } from '../src/modules/nexus/nexus.utils'
@@ -103,8 +104,8 @@ describeWithNexus('NexusController (e2e)', () => {
         prodMemory: 0,
         plugins: {
           create: [
-            { pluginName: NEXUS_PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: 'enabled' },
-            { pluginName: NEXUS_PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: 'enabled' },
+            { pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED },
+            { pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: ENABLED },
           ],
         },
       },

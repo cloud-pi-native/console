@@ -52,6 +52,7 @@ export const projectSelect = {
 export const projectPluginSelect = {
   key: true,
   pluginName: true,
+  projectId: true,
   value: true,
 } satisfies Prisma.ProjectPluginSelect
 

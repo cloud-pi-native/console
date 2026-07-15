@@ -1,5 +1,5 @@
 // Plugin name used to identify the Vault integration
-export const VAULT_PLUGIN_NAME = 'vault'
+export const PLUGIN_NAME = 'vault'
 
 // Platform-level policy names for RBAC
 export const PLATFORM_ADMIN_POLICY_NAME = 'platform--admin'

@@ -4,8 +4,9 @@ import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { ConfigurationService } from '../src/modules/infrastructure/configuration/configuration.service'
-import { projectRobotName, RegistryClientService, roRobotName, rwRobotName } from '../src/modules/registry/registry-client.service'
+import { RegistryClientService } from '../src/modules/registry/registry-client.service'
 import { makeProjectWithDetails } from '../src/modules/registry/registry-testing.utils'
+import { ROBOT_NAME_PROJECT, ROBOT_NAME_RO, ROBOT_NAME_RW } from '../src/modules/registry/registry.constants'
 import { RegistryModule } from '../src/modules/registry/registry.module'
 import { RegistryService } from '../src/modules/registry/registry.service'
 import { getHostFromUrl, getProjectVaultPath } from '../src/modules/registry/registry.utils'
@@ -48,7 +49,7 @@ describeWithRegistry('RegistryService (e2e)', () => {
 
   afterAll(async () => {
     if (vault && config && projectSlug) {
-      const paths = [roRobotName, rwRobotName, projectRobotName].map(name => getProjectVaultPath(makeProjectWithDetails({ slug: projectSlug }), config.projectRootDir, `REGISTRY/${name}`))
+      const paths = [ROBOT_NAME_RO, ROBOT_NAME_RW, ROBOT_NAME_PROJECT].map(name => getProjectVaultPath(makeProjectWithDetails({ slug: projectSlug }), config.projectRootDir, `REGISTRY/${name}`))
       await Promise.all(paths.map(path => vault.delete(path).catch(() => {})))
     }
 
@@ -69,17 +70,17 @@ describeWithRegistry('RegistryService (e2e)', () => {
     const robots = await client.getProjectRobots(projectSlug)
     expect(robots.status).toBe(200)
     const robotNames = (robots.data ?? []).flatMap(r => r.name ? [r.name] : [])
-    expect(robotNames).toContain(`robot$${projectSlug}+${roRobotName}`)
-    expect(robotNames).toContain(`robot$${projectSlug}+${rwRobotName}`)
-    expect(robotNames).toContain(`robot$${projectSlug}+${projectRobotName}`)
+    expect(robotNames).toContain(`robot$${projectSlug}+${ROBOT_NAME_RO}`)
+    expect(robotNames).toContain(`robot$${projectSlug}+${ROBOT_NAME_RW}`)
+    expect(robotNames).toContain(`robot$${projectSlug}+${ROBOT_NAME_PROJECT}`)
 
-    const vaultPaths = [roRobotName, rwRobotName, projectRobotName].map(name => getProjectVaultPath(makeProjectWithDetails({ slug: projectSlug }), config.projectRootDir, `REGISTRY/${name}`))
+    const vaultPaths = [ROBOT_NAME_RO, ROBOT_NAME_RW, ROBOT_NAME_PROJECT].map(name => getProjectVaultPath(makeProjectWithDetails({ slug: projectSlug }), config.projectRootDir, `REGISTRY/${name}`))
     const [roSecret, rwSecret, projectSecret] = await Promise.all(vaultPaths.map(path => vault.read(path)))
     expect(roSecret.data?.HOST).toBe(getHostFromUrl(config.harborUrl!))
     expect(rwSecret.data?.HOST).toBe(getHostFromUrl(config.harborUrl!))
     expect(projectSecret.data?.HOST).toBe(getHostFromUrl(config.harborUrl!))
-    expect(roSecret.data?.USERNAME).toBe(`robot$${projectSlug}+${roRobotName}`)
-    expect(rwSecret.data?.USERNAME).toBe(`robot$${projectSlug}+${rwRobotName}`)
-    expect(projectSecret.data?.USERNAME).toBe(`robot$${projectSlug}+${projectRobotName}`)
+    expect(roSecret.data?.USERNAME).toBe(`robot$${projectSlug}+${ROBOT_NAME_RO}`)
+    expect(rwSecret.data?.USERNAME).toBe(`robot$${projectSlug}+${ROBOT_NAME_RW}`)
+    expect(projectSecret.data?.USERNAME).toBe(`robot$${projectSlug}+${ROBOT_NAME_PROJECT}`)
   })
 })

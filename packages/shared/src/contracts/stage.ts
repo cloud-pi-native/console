@@ -1,4 +1,5 @@
 import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
+import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import { StageSchema } from '../schemas/index.js'
@@ -72,7 +73,7 @@ export const stageContract = contractInstance.router({
     path: `/:stageId`,
     summary: 'Delete stage',
     description: 'Delete a stage by its ID.',
-    body: null,
+    body: ContractNoBody,
     pathParams: z.object({
       stageId: z.string()
         .uuid(),

@@ -1,3 +1,14 @@
+import type {
+  SONARQUBE_PROJECT_QUALIFIER_APPLICATION,
+  SONARQUBE_PROJECT_QUALIFIER_BRANCH,
+  SONARQUBE_PROJECT_QUALIFIER_DIRECTORY,
+  SONARQUBE_PROJECT_QUALIFIER_FILE,
+  SONARQUBE_PROJECT_QUALIFIER_LIBRARY,
+  SONARQUBE_PROJECT_QUALIFIER_PROJECT,
+  SONARQUBE_PROJECT_QUALIFIER_SUB_VIEW,
+  SONARQUBE_PROJECT_QUALIFIER_UNIT_TEST,
+  SONARQUBE_PROJECT_QUALIFIER_VIEW,
+} from './sonarqube.constants'
 import { Inject, Injectable } from '@nestjs/common'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { SonarqubeHttpClientService } from './sonarqube-http-client.service'
@@ -28,16 +39,6 @@ export interface SonarqubeUser {
   externalProvider: string
   managed: boolean
 }
-
-export const SONARQUBE_PROJECT_QUALIFIER_APPLICATION = 'APP'
-export const SONARQUBE_PROJECT_QUALIFIER_BRANCH = 'BRC'
-export const SONARQUBE_PROJECT_QUALIFIER_DIRECTORY = 'DIR'
-export const SONARQUBE_PROJECT_QUALIFIER_FILE = 'FIL'
-export const SONARQUBE_PROJECT_QUALIFIER_LIBRARY = 'LIB'
-export const SONARQUBE_PROJECT_QUALIFIER_PROJECT = 'TRK'
-export const SONARQUBE_PROJECT_QUALIFIER_UNIT_TEST = 'UTS'
-export const SONARQUBE_PROJECT_QUALIFIER_VIEW = 'VW'
-export const SONARQUBE_PROJECT_QUALIFIER_SUB_VIEW = 'SVW'
 
 export type SonarqubeProjectQualifier
   = | typeof SONARQUBE_PROJECT_QUALIFIER_APPLICATION

@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { ProjectHooksService } from '../project-hooks/project-hooks.service'
+import { makeProject } from '../project/project-testing.utils'
 import { ProjectService } from '../project/project.service'
 import { ProjectBulkService } from './project-bulk.service'
 
@@ -47,7 +48,7 @@ describe('projectBulkService', () => {
     const project1Id = faker.string.uuid()
     const project2Id = faker.string.uuid()
 
-    prisma.project.findMany.mockResolvedValue([{ id: project1Id }, { id: project2Id }] as any)
+    prisma.project.findMany.mockResolvedValue([makeProject({ id: project1Id }), makeProject({ id: project2Id })])
 
     await service.bulkAction({ action: 'archive', projectIds: 'all' }, 'user-id', 'request-id')
 

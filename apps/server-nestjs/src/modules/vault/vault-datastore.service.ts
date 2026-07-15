@@ -17,10 +17,8 @@ export const projectSelect = {
   environments: {
     select: {
       id: true,
-      name: true,
       clusterId: true,
       cpu: true,
-      gpu: true,
       memory: true,
       autosync: true,
     },
@@ -34,6 +32,15 @@ export type ProjectWithDetails = Prisma.ProjectGetPayload<{
 export const zoneSelect = {
   id: true,
   slug: true,
+  clusters: {
+    select: {
+      projects: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  },
 } satisfies Prisma.ZoneSelect
 
 export type ZoneWithDetails = Prisma.ZoneGetPayload<{
@@ -51,10 +58,7 @@ export class VaultDatastoreService {
   }
 
   async getProject(id: string): Promise<ProjectWithDetails | null> {
-    return this.prisma.project.findUnique({
-      where: { id },
-      select: projectSelect,
-    })
+    return this.prisma.project.findUnique({ where: { id }, select: projectSelect })
   }
 
   async getAdminPluginConfig(pluginName: string, key: string): Promise<string | null> {
