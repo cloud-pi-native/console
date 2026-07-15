@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { ScheduleModule } from '@nestjs/schedule'
 import { DeploymentModule } from './modules/deployment/deployment.module'
 import { HealthzModule } from './modules/healthz/healthz.module'
+import { InfrastructureModule } from './modules/infrastructure/infrastructure.module'
 import { KeycloakModule } from './modules/keycloak/keycloak.module'
 import { LogModule } from './modules/log/log.module'
 import { ProjectBulkModule } from './modules/project-bulk/project-bulk.module'
@@ -17,6 +18,7 @@ import { VersionModule } from './modules/version/version.module'
 
 @Module({
   imports: [
+    InfrastructureModule,
     HealthzModule,
     KeycloakModule,
     ScheduleModule.forRoot(),

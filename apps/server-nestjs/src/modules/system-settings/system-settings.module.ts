@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common'
-import { InfrastructureModule } from '../infrastructure/infrastructure.module'
+import { DatabaseModule } from '../infrastructure/database/database.module'
 import { SystemSettingsController } from './system-settings.controller'
 import { SystemSettingsService } from './system-settings.service'
 
 @Module({
-  imports: [InfrastructureModule],
+  imports: [DatabaseModule],
   controllers: [SystemSettingsController],
   providers: [SystemSettingsService],
   exports: [SystemSettingsService],

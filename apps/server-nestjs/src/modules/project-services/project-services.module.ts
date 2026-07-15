@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common'
-import { InfrastructureModule } from '../infrastructure/infrastructure.module'
+import { AuthModule } from '../infrastructure/auth/auth.module'
+import { DatabaseModule } from '../infrastructure/database/database.module'
+import { ProjectPermissionModule } from '../infrastructure/permission/project/project.module'
 import { PluginModule } from '../plugin/plugin.module'
 import { ProjectServicesController } from './project-services.controller'
 import { ProjectServicesService } from './project-services.service'
 
 @Module({
-  imports: [InfrastructureModule, PluginModule],
+  imports: [AuthModule, DatabaseModule, PluginModule, ProjectPermissionModule],
   controllers: [ProjectServicesController],
   providers: [ProjectServicesService],
   exports: [ProjectServicesService],

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { TerminusModule } from '@nestjs/terminus'
 import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
-import { InfrastructureModule } from '../infrastructure/infrastructure.module'
+import { DatabaseModule } from '../infrastructure/database/database.module'
 import { VaultModule } from '../vault/vault.module'
 import { SonarqubeClientService } from './sonarqube-client.service'
 import { SonarqubeDatastoreService } from './sonarqube-datastore.service'
@@ -11,12 +11,12 @@ import { SonarqubePluginService } from './sonarqube-plugin.service'
 import { SonarqubeService } from './sonarqube.service'
 
 @Module({
-  imports: [ConfigurationModule, InfrastructureModule, TerminusModule, VaultModule],
+  imports: [ConfigurationModule, DatabaseModule, TerminusModule, VaultModule],
   providers: [
+    SonarqubeHealthService,
     SonarqubeHttpClientService,
     SonarqubeClientService,
     SonarqubeDatastoreService,
-    SonarqubeHealthService,
     SonarqubePluginService,
     SonarqubeService,
   ],

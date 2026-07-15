@@ -3,9 +3,13 @@ import { faker } from '@faker-js/faker'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
+import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
-import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
+import { EventsModule } from '../src/modules/infrastructure/events/events.module'
+import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
+import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { ProjectBulkModule } from '../src/modules/project-bulk/project-bulk.module'
 import { ProjectBulkService } from '../src/modules/project-bulk/project-bulk.service'
 
@@ -25,7 +29,7 @@ describeWithProjectBulk('ProjectBulkService (e2e)', {}, () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigurationModule, InfrastructureModule, ProjectBulkModule],
+      imports: [ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectBulkModule],
     }).compile()
 
     await moduleRef.init()

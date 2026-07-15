@@ -3,9 +3,13 @@ import { generateProjectKey } from '@cpn-console/hooks'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
+import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
-import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
+import { EventsModule } from '../src/modules/infrastructure/events/events.module'
+import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
+import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { SonarqubeClientService } from '../src/modules/sonarqube/sonarqube-client.service'
 import { projectSelect } from '../src/modules/sonarqube/sonarqube-datastore.service'
 import { makeProjectWithDetails } from '../src/modules/sonarqube/sonarqube-testing.utils'
@@ -38,7 +42,7 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [SonarqubeModule, VaultModule, ConfigurationModule, InfrastructureModule],
+      imports: [SonarqubeModule, VaultModule, ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()

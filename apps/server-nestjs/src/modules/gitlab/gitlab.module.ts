@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common'
 import { TerminusModule } from '@nestjs/terminus'
 import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
-import { InfrastructureModule } from '../infrastructure/infrastructure.module'
+import { DatabaseModule } from '../infrastructure/database/database.module'
 import { VaultModule } from '../vault/vault.module'
 import { GITLAB_REST_CLIENT, GitlabClientService } from './gitlab-client.service'
 import { GitlabDatastoreService } from './gitlab-datastore.service'
@@ -12,7 +12,7 @@ import { GitlabPluginService } from './gitlab-plugin.service'
 import { GitlabService } from './gitlab.service'
 
 @Module({
-  imports: [ConfigurationModule, InfrastructureModule, TerminusModule, VaultModule],
+  imports: [ConfigurationModule, DatabaseModule, TerminusModule, VaultModule],
   providers: [
     {
       provide: GITLAB_REST_CLIENT,

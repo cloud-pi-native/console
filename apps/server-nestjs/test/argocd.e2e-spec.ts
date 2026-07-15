@@ -8,10 +8,14 @@ import { projectSelect } from '../src/modules/argocd/argocd-datastore.service'
 import { ArgoCDModule } from '../src/modules/argocd/argocd.module'
 import { ArgoCDService } from '../src/modules/argocd/argocd.service'
 import { GITLAB_REST_CLIENT, GitlabClientService } from '../src/modules/gitlab/gitlab-client.service'
+import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { ConfigurationService } from '../src/modules/infrastructure/configuration/configuration.service'
+import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
-import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
+import { EventsModule } from '../src/modules/infrastructure/events/events.module'
+import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
+import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 
 const canRunArgoCDE2E
@@ -55,7 +59,7 @@ describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ArgoCDModule, ConfigurationModule, InfrastructureModule],
+      imports: [ArgoCDModule, ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()

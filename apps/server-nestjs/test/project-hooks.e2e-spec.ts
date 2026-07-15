@@ -5,9 +5,13 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
+import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
-import { InfrastructureModule } from '../src/modules/infrastructure/infrastructure.module'
+import { EventsModule } from '../src/modules/infrastructure/events/events.module'
+import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
+import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { ProjectHooksModule } from '../src/modules/project-hooks/project-hooks.module'
 import { ProjectHooksService } from '../src/modules/project-hooks/project-hooks.service'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
@@ -35,7 +39,7 @@ describeWithProjectHooks('ProjectHooksService (e2e)', {}, () => {
     vaultClient = mockDeep<VaultClientService>()
 
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigurationModule, InfrastructureModule, ProjectHooksModule],
+      imports: [ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectHooksModule],
       providers: [
         { provide: VaultService, useValue: vaultService },
         { provide: VaultClientService, useValue: vaultClient },

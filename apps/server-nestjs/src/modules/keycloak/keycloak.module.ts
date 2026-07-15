@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common'
 import { TerminusModule } from '@nestjs/terminus'
 import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
-import { InfrastructureModule } from '../infrastructure/infrastructure.module'
+import { DatabaseModule } from '../infrastructure/database/database.module'
 import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
 import { KeycloakHealthService } from './keycloak-health.service'
@@ -11,11 +11,11 @@ import { KeycloakPluginService } from './keycloak-plugin.service'
 import { KeycloakService } from './keycloak.service'
 
 @Module({
-  imports: [ConfigurationModule, InfrastructureModule, TerminusModule],
+  imports: [ConfigurationModule, DatabaseModule, TerminusModule],
   providers: [
     {
-      provide: KEYCLOAK_ADMIN_CLIENT,
       inject: [ConfigurationService],
+      provide: KEYCLOAK_ADMIN_CLIENT,
       useFactory: (config: ConfigurationService) => new KcAdminClient({
         baseUrl: config.getKeycloakUrl(),
       }),
