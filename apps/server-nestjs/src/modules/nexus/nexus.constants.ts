@@ -30,3 +30,7 @@ export const PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY = 'platformReadGroupPaths'
 // Plugin configuration keys for project-level group path suffixes
 export const PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY = 'projectWriteGroupPathSuffixes'
 export const PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY = 'projectReadGroupPathSuffixes'
+
+// Plugin synchronization flags (shared plugin config keys)
+export const AUTO_SYNC_PLUGIN_KEY = 'autoSync'
+export const SUSPENDED_PLUGIN_KEY = 'suspended'

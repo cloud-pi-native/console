@@ -121,7 +121,7 @@ describe('argoCDService', () => {
     })
 
     const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
-    datastore.getAllProjects.mockResolvedValue([mockProject])
+    datastore.getAutoSyncProjects.mockResolvedValue([mockProject])
     gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
     gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
     gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
@@ -313,7 +313,7 @@ describe('argoCDService', () => {
     })
 
     const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
-    datastore.getAllProjects.mockResolvedValue([mockProject])
+    datastore.getAutoSyncProjects.mockResolvedValue([mockProject])
     gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
     gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
     gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
@@ -364,7 +364,7 @@ describe('argoCDService', () => {
     })
 
     const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
-    datastore.getAllProjects.mockResolvedValue([mockProject])
+    datastore.getAutoSyncProjects.mockResolvedValue([mockProject])
     gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
     gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
     gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
@@ -409,7 +409,7 @@ describe('argoCDService', () => {
     })
 
     const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
-    datastore.getAllProjects.mockResolvedValue([mockProject])
+    datastore.getAutoSyncProjects.mockResolvedValue([mockProject])
     gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
     gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
     gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')

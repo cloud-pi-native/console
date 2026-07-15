@@ -1,6 +1,8 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
+import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Injectable } from '@nestjs/common'
 import {
+  AUTO_SYNC_PLUGIN_KEY,
   DEFAULT_DSO_ENV_CHART_VERSION,
   DEFAULT_DSO_NS_CHART_VERSION,
   DSO_ENV_CHART_VERSION_PLUGIN_KEY,
@@ -20,6 +22,7 @@ import {
   PROJECT_READONLY_GROUP_PATH_SUFFIX,
   PROJECT_READONLY_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_SECURITY_GROUP_PATH_SUFFIX,
+  SUSPENDED_PLUGIN_KEY,
 } from './argocd.constants'
 
 @Injectable()
@@ -151,18 +154,44 @@ export class ArgoCDPluginService {
           description: 'Version du chart Helm dso-ns',
           placeholder: DEFAULT_DSO_NS_CHART_VERSION,
         }],
-        project: [{
-          key: 'extraRepositories',
-          kind: 'text',
-          permissions: {
-            admin: { read: true, write: true },
-            user: { read: true, write: false },
+        project: [
+          {
+            kind: 'switch',
+            key: SUSPENDED_PLUGIN_KEY,
+            initialValue: ENABLED,
+            permissions: {
+              admin: { read: true, write: true },
+              user: { read: true, write: true },
+            },
+            title: 'Suspendre le projet',
+            value: ENABLED,
+            description: 'Suspendre la synchronisation ArgoCD pour ce projet',
           },
-          title: 'Source repositories',
-          value: '',
-          description: extraRepositoriesDesc,
-          placeholder: 'https://github.com/',
-        }],
+          {
+            kind: 'switch',
+            key: AUTO_SYNC_PLUGIN_KEY,
+            initialValue: DISABLED,
+            permissions: {
+              admin: { read: true, write: true },
+              user: { read: true, write: true },
+            },
+            title: 'Synchronisation automatique ArgoCD',
+            value: DISABLED,
+            description: 'Synchroniser automatiquement le projet ArgoCD',
+          },
+          {
+            key: EXTRA_REPOSITORIES_PLUGIN_KEY,
+            kind: 'text',
+            permissions: {
+              admin: { read: true, write: true },
+              user: { read: true, write: false },
+            },
+            title: 'Source repositories',
+            value: '',
+            description: extraRepositoriesDesc,
+            placeholder: 'https://github.com/',
+          },
+        ],
       },
     } as const satisfies ServiceInfos
   }

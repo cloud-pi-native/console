@@ -32,3 +32,7 @@ export const INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY = 'cpn_infra_group'
 export const PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY = 'cpn_project_slug'
 export const USER_ID_CUSTOM_ATTRIBUTE_KEY = 'cpn_user_id'
 export const MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY = 'cpn_managed_by_console'
+
+// Plugin synchronization flags (shared plugin config keys)
+export const AUTO_SYNC_PLUGIN_KEY = 'autoSync'
+export const SUSPENDED_PLUGIN_KEY = 'suspended'

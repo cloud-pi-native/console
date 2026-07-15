@@ -1,5 +1,6 @@
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation'
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
+import type { Project, ProjectPlugin } from '@prisma/client'
 import type { ProjectWithDetails } from './keycloak-datastore.service'
 
 import { faker } from '@faker-js/faker'
@@ -84,4 +85,41 @@ export function makeProjectWithDetails(
     environments: [],
     ...overrides,
   } satisfies ProjectWithDetails
+}
+
+export type ProjectWithPlugins = Project & { plugins: ProjectPlugin[] }
+
+export function makeProject(overrides: Partial<ProjectWithPlugins> = {}): ProjectWithPlugins {
+  return {
+    id: faker.string.uuid(),
+    name: faker.company.name(),
+    description: faker.lorem.sentence(),
+    status: 'created',
+    locked: false,
+    createdAt: faker.date.past(),
+    updatedAt: faker.date.past(),
+    everyonePerms: 896n,
+    ownerId: faker.string.uuid(),
+    slug: faker.helpers.slugify(faker.company.name()),
+    limitless: true,
+    hprodCpu: 0,
+    hprodGpu: 0,
+    hprodMemory: 0,
+    prodCpu: 0,
+    prodGpu: 0,
+    prodMemory: 0,
+    lastSuccessProvisionningVersion: null,
+    plugins: [],
+    ...overrides,
+  }
+}
+
+export function makeProjectPlugin(overrides: Partial<ProjectPlugin> = {}): ProjectPlugin {
+  return {
+    pluginName: faker.helpers.slugify(faker.company.name()),
+    projectId: faker.string.uuid(),
+    key: 'enabled',
+    value: 'disabled',
+    ...overrides,
+  }
 }

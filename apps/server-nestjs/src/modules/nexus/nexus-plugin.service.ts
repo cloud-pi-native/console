@@ -2,6 +2,7 @@ import type { ServiceInfos } from '@cpn-console/hooks'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { AUTO_SYNC_PLUGIN_KEY, SUSPENDED_PLUGIN_KEY } from './nexus.constants'
 
 @Injectable()
 export class NexusPluginService {
@@ -23,16 +24,40 @@ export class NexusPluginService {
       config: {
         project: [
           {
+            kind: 'switch',
+            key: SUSPENDED_PLUGIN_KEY,
+            initialValue: ENABLED,
+            permissions: {
+              admin: { read: true, write: true },
+              user: { read: true, write: true },
+            },
+            title: 'Suspendre le projet',
+            value: ENABLED,
+            description: 'Suspendre la synchronisation Nexus pour ce projet',
+          },
+          {
+            kind: 'switch',
+            key: AUTO_SYNC_PLUGIN_KEY,
+            initialValue: DISABLED,
+            permissions: {
+              admin: { read: true, write: true },
+              user: { read: true, write: true },
+            },
+            title: 'Synchronisation automatique Nexus',
+            value: DISABLED,
+            description: 'Synchroniser automatiquement le projet Nexus',
+          },
+          {
             key: 'activateNpmRepo',
             section: 'NPM',
             kind: 'switch',
-            initialValue: 'disabled',
+            initialValue: DISABLED,
             permissions: {
               admin: { read: true, write: true },
               user: { read: true, write: true },
             },
             title: 'Activer le dépôt NPM',
-            value: 'disabled',
+            value: DISABLED,
             description: 'Default: utilise le paramétrage globale de la console. Attention: Nexus met un certain temps pour activer/désactiver les dépôts, un reprovisonnage après plusieurs minutes peut être nécessaire',
           },
           {

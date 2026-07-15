@@ -1,13 +1,6 @@
-import type { ProjectWithDetails } from './sonarqube-datastore.service'
+import type { ProjectWithDetails } from './argocd-datastore.service'
 import { ENABLED } from '@cpn-console/shared'
-import { AUTO_SYNC_PLUGIN_KEY, PLUGIN_NAME, SUSPENDED_PLUGIN_KEY } from './sonarqube.constants'
-
-export function sonarProjectPropertiesFile(projectKey: string) {
-  return [
-    `sonar.projectKey=${projectKey}`,
-    'sonar.qualitygate.wait=true',
-  ]
-}
+import { AUTO_SYNC_PLUGIN_KEY, PLUGIN_NAME, SUSPENDED_PLUGIN_KEY } from './argocd.constants'
 
 export function isSuspended(project: ProjectWithDetails): boolean {
   return project.plugins?.some(p => p.pluginName === PLUGIN_NAME && p.key === SUSPENDED_PLUGIN_KEY && p.value === ENABLED) ?? false
