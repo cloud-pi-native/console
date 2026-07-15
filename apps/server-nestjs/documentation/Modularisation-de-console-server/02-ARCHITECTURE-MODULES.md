@@ -1,25 +1,35 @@
 # Architecture d’un module (pattern `apps/server-nestjs/src/modules/*`)
 
-Les modules NestJS métier vivent dans `src/modules/<nom-du-module>/` et suivent un découpage “vertical slice” avec des responsabilités explicites : **client**, **service (API publique)**, **controller service (orchestration)**, **datastore**, **utils** et **tests**.
+Les modules NestJS vivent dans `src/modules/<nom-du-module>/` et suivent un découpage “vertical slice” avec des responsabilités explicites : **client**, **service (API publique)**, **controller service (orchestration)**, **datastore**, **utils** et **tests**.
 
-Exemples concrets :
+Deux familles coexistent (voir la note sous la structure type) :
 
-- Module GitLab : `src/modules/gitlab/`
-- Module Keycloak : `src/modules/keycloak/`
+- **Modules core** (métier) : exposent des routes HTTP via un `@Controller`. Ex. `src/modules/project/`, `src/modules/system-config/`.
+- **Modules plugins** (encapsulation d’un système externe) : s’enregistrent via le hook `ServiceInfos`, sans controller. Ex. `src/modules/keycloak/`, `src/modules/vault/`, `src/modules/gitlab/`.
 
 ## Structure type
 
 ```txt
 src/modules/<module>/
 ├── <module>.module.ts
+├── <module>.controller.ts        # [core]  exposition HTTP (@Controller('api/v1/…'))
 ├── <module>.constants.ts
-├── <module>-client.service.ts
+├── <module>-client.service.ts    # [plugin] adapter vers l’API externe
 ├── <module>.service.ts
 ├── <module>-datastore.service.ts
+├── <module>-plugin.service.ts    # [plugin] enregistrement hook ServiceInfos
+├── <module>-health.service.ts    # [plugin] indicateur @nestjs/terminus
 ├── <module>.utils.ts
 ├── <module>-testing.utils.ts
 └── *.spec.ts
 ```
+
+> **Note — modules core vs plugins** : les fichiers marqués `[core]` apparaissent
+> sur les modules métier (qui déclarent un controller dans `main.module.ts`) ; les
+> fichiers marqués `[plugin]` apparaissent sur les modules d’encapsulation (qui
+> n’ont **pas** de controller et s’enregistrent via `ServiceInfos`
+> (`@cpn-console/hooks`)). Un module donné ne possède pas forcément tous les
+> fichiers de la liste. Cf. `MODULARISATION-STATUT.md` pour l’état de câblage réel.
 
 ## Sens des dépendances (flow recommandé)
 
@@ -80,6 +90,34 @@ Rôle :
 
 - Appliquer des règles métier (ex: calcul de permissions) : on garde le datastore centré persistence.
 
+### `<module>-plugin.service.ts`  _(modules plugins)_
+
+Rôle :
+
+- Expose le contrat `ServiceInfos` du hook system `@cpn-console/hooks`.
+- Point d’enregistrement du module dans le registre de plugins (legacy) :
+  `name`, `title`, `imgSrc`, `description`, et éventuellement `to({ project })`
+  pour l’URL de l’UI externe.
+- Aucune route HTTP : ce service n’est pas un controller.
+
+À éviter :
+
+- Logique métier, accès DB ou appels réseau : il ne fait qu’exposer des
+  métadonnées statiques ou dérivées de la configuration.
+
+### `<module>-health.service.ts`  _(modules plugins)_
+
+Rôle :
+
+- Indicateur de santé `@nestjs/terminus` pour le système externe
+  (ex : `VaultHealthService`, `KeycloakHealthService`).
+- Consommé par `HealthzModule` pour remonter l’état du plugin dans
+  `/api/v1/healthz`.
+
+À éviter :
+
+- Orchestration métier : se limiter à un check de connectivité / disponibilité.
+
 ### `<module>.utils.ts`
 
 Rôle :
@@ -117,4 +155,15 @@ Cible :
 Approche :
 
 - Mock de Prisma/DatabaseService, pas de logique métier.
+
+### `<module>-plugin.service.spec.ts`  _(modules plugins)_
+
+Cible :
+
+- Valeur de retour `ServiceInfos` (nom, titre, URL dérivée de la config).
+
+Approche :
+
+- Mock de `ConfigurationService` ; assertion sur le shape du contrat
+  (`name`, `title`, `to` si présent).
 
