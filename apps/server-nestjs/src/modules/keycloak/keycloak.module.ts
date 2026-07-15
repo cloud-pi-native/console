@@ -1,6 +1,6 @@
 import KcAdminClient from '@keycloak/keycloak-admin-client'
 import { Module } from '@nestjs/common'
-import { HealthIndicatorService } from '@nestjs/terminus'
+import { TerminusModule } from '@nestjs/terminus'
 import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { InfrastructureModule } from '../infrastructure/infrastructure.module'
@@ -11,7 +11,7 @@ import { KeycloakPluginService } from './keycloak-plugin.service'
 import { KeycloakService } from './keycloak.service'
 
 @Module({
-  imports: [ConfigurationModule, InfrastructureModule],
+  imports: [ConfigurationModule, InfrastructureModule, TerminusModule],
   providers: [
     {
       provide: KEYCLOAK_ADMIN_CLIENT,
@@ -20,7 +20,6 @@ import { KeycloakService } from './keycloak.service'
         baseUrl: config.getKeycloakUrl(),
       }),
     },
-    HealthIndicatorService,
     KeycloakClientService,
     KeycloakDatastoreService,
     KeycloakHealthService,

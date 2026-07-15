@@ -1,6 +1,6 @@
 import { CacheModule } from '@nestjs/cache-manager'
 import { Module } from '@nestjs/common'
-import { HealthIndicatorService } from '@nestjs/terminus'
+import { TerminusModule } from '@nestjs/terminus'
 import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
 import { InfrastructureModule } from '../infrastructure/infrastructure.module'
 import { VaultModule } from '../vault/vault.module'
@@ -12,8 +12,8 @@ import { RegistryPluginService } from './registry-plugin.service'
 import { RegistryService } from './registry.service'
 
 @Module({
-  imports: [ConfigurationModule, InfrastructureModule, VaultModule, CacheModule.register()],
-  providers: [HealthIndicatorService, RegistryHealthService, RegistryPluginService, RegistryService, RegistryDatastoreService, RegistryHttpClientService, RegistryClientService],
+  imports: [ConfigurationModule, InfrastructureModule, TerminusModule, VaultModule, CacheModule.register()],
+  providers: [RegistryHealthService, RegistryPluginService, RegistryService, RegistryDatastoreService, RegistryHttpClientService, RegistryClientService],
   exports: [RegistryHealthService, RegistryPluginService, RegistryService],
 })
 export class RegistryModule {}

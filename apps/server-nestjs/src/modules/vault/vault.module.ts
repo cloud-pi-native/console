@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { HealthIndicatorService } from '@nestjs/terminus'
+import { TerminusModule } from '@nestjs/terminus'
 import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
 import { InfrastructureModule } from '../infrastructure/infrastructure.module'
 import { VaultClientService } from './vault-client.service'
@@ -10,9 +10,8 @@ import { VaultPluginService } from './vault-plugin.service'
 import { VaultService } from './vault.service'
 
 @Module({
-  imports: [ConfigurationModule, InfrastructureModule],
+  imports: [ConfigurationModule, InfrastructureModule, TerminusModule],
   providers: [
-    HealthIndicatorService,
     VaultHealthService,
     VaultHttpClientService,
     VaultClientService,

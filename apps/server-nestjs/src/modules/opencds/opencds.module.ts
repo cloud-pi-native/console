@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common'
-import { HealthIndicatorService } from '@nestjs/terminus'
+import { TerminusModule } from '@nestjs/terminus'
 import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
 import { OpenCdsHealthService } from './opencds-health.service'
 
 @Module({
-  imports: [ConfigurationModule],
-  providers: [HealthIndicatorService, OpenCdsHealthService],
+  imports: [ConfigurationModule, TerminusModule],
+  providers: [OpenCdsHealthService],
   exports: [OpenCdsHealthService],
 })
 export class OpenCdsModule {}
