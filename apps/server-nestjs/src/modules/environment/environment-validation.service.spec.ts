@@ -15,6 +15,7 @@ describe('environmentValidationService', () => {
   let datastore: DeepMockProxy<EnvironmentDatastoreService>
 
   const projectId = '11111111-1111-1111-1111-111111111111'
+  const environmentId = '22222222-2222-2222-2222-222222222222'
   const clusterId = '33333333-3333-3333-3333-333333333333'
   const stageId = '44444444-4444-4444-4444-444444444444'
 
@@ -99,6 +100,7 @@ describe('environmentValidationService', () => {
 
       await expect(service.validateCreate(projectId, validCreateEnvironment))
         .rejects.toThrow('Le cluster ne dispose pas de suffisamment de ressources : CPU, Mémoire.')
+      expect(datastore.sumEnvironmentResources).toHaveBeenCalledWith({ clusterId })
     })
 
     it('should reject when the project does not have enough prod resources', async () => {
@@ -165,6 +167,56 @@ describe('environmentValidationService', () => {
 
       await expect(service.validateUpdate(environment, validUpdateEnvironment))
         .rejects.toThrow('Le cluster ne dispose pas de suffisamment de ressources : CPU, GPU, Mémoire.')
+    })
+
+    it('should not count the environment being updated in the cluster consumed resources', async () => {
+      const environment = makeEnvironmentWithCluster({
+        id: environmentId,
+        projectId,
+        cluster: makeCluster({ id: clusterId, cpu: 8, gpu: 2, memory: 16 }),
+      })
+      datastore.getProjectById.mockResolvedValue(makeProject({ id: projectId, limitless: true }))
+      // the sum only covers the other environments of the cluster
+      datastore.sumEnvironmentResources.mockResolvedValue({
+        _sum: { cpu: 3, gpu: 0, memory: 6 },
+      })
+
+      await expect(service.validateUpdate(environment, validUpdateEnvironment)).resolves.toBeUndefined()
+
+      expect(datastore.sumEnvironmentResources).toHaveBeenCalledWith({
+        clusterId,
+        id: { not: environmentId },
+      })
+    })
+
+    it('should not count the environment being updated in the project consumed resources', async () => {
+      const environment = makeEnvironmentWithCluster({
+        id: environmentId,
+        projectId,
+        stageId,
+        cluster: makeCluster({ id: clusterId, cpu: 0, memory: 0 }),
+      })
+      datastore.getProjectById.mockResolvedValue(makeProject({
+        id: projectId,
+        limitless: false,
+        prodCpu: 8,
+        prodGpu: 2,
+        prodMemory: 16,
+      }))
+      datastore.getStageById.mockResolvedValue(makeStage({ id: stageId, name: 'prod' }))
+      datastore.getProdStageIds.mockResolvedValue([{ id: stageId }])
+      // the sum only covers the other prod environments of the project
+      datastore.sumEnvironmentResources.mockResolvedValue({
+        _sum: { cpu: 3, gpu: 0, memory: 6 },
+      })
+
+      await expect(service.validateUpdate(environment, validUpdateEnvironment)).resolves.toBeUndefined()
+
+      expect(datastore.sumEnvironmentResources).toHaveBeenCalledWith({
+        projectId,
+        stageId: { in: [stageId] },
+        id: { not: environmentId },
+      })
     })
   })
 })
