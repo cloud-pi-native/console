@@ -5,6 +5,7 @@ import type { GroupRepresentationWith } from './keycloak.utils'
 import { getBaseRoleType, getPermsByUserRoles, isExternalRoleType, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
+import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
 import { getErrorResponseStatus } from '../../utils/http-error'
@@ -12,7 +13,7 @@ import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
-import { isMember, isNonEmptyGroupPath, isOwnedProjectGroup, normalizeGroupPath } from './keycloak.utils'
+import { isMember, isNonEmptyGroupPath, isOwnedProjectGroup, isSuspended, normalizeGroupPath } from './keycloak.utils'
 
 @Injectable()
 export class KeycloakService {
@@ -32,6 +33,10 @@ export class KeycloakService {
 
   @StartActiveSpan()
   private async syncProject(project: ProjectWithDetails) {
+    if (isSuspended(project)) {
+      this.logger.log(`Skipping Keycloak sync for suspended project ${project.slug}`)
+      return
+    }
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project upsert event for ${project.slug}`)
@@ -53,13 +58,13 @@ export class KeycloakService {
     this.logger.log(`Keycloak cleanup completed for project ${project.slug}`)
   }
 
-  // @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
     const span = trace.getActiveSpan()
     this.logger.log('Starting periodic Keycloak reconciliation')
     const [projects, adminRoles, users] = await Promise.all([
-      this.keycloakDatastore.getAllProjects(),
+      this.keycloakDatastore.getAutoSyncProjects(),
       this.keycloakDatastore.getAllAdminRoles(),
       this.keycloakDatastore.getAllUsersWithAdminRoleIds(),
     ])

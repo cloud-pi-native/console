@@ -1,8 +1,18 @@
 import type { ProjectWithDetails } from './nexus-datastore.service'
 import { randomBytes } from 'node:crypto'
+import { ENABLED } from '@cpn-console/shared'
+import { AUTO_SYNC_PLUGIN_KEY, PLUGIN_NAME, SUSPENDED_PLUGIN_KEY } from './nexus.constants'
 
 export function getPluginConfig(project: ProjectWithDetails, key: string) {
   return project.plugins?.find(p => p.key === key)?.value
+}
+
+export function isSuspended(project: ProjectWithDetails): boolean {
+  return project.plugins?.some(p => p.pluginName === PLUGIN_NAME && p.key === SUSPENDED_PLUGIN_KEY && p.value === ENABLED) ?? false
+}
+
+export function isAutoSync(project: ProjectWithDetails): boolean {
+  return project.plugins?.some(p => p.pluginName === PLUGIN_NAME && p.key === AUTO_SYNC_PLUGIN_KEY && p.value === ENABLED) ?? false
 }
 
 export function generateRandomPassword(length: number) {

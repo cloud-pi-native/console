@@ -28,3 +28,7 @@ export const PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectDevelopper
 export const PROJECT_READONLY_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectReadonlyGroupPathSuffix'
 export const DSO_ENV_CHART_VERSION_PLUGIN_KEY = 'dsoEnvChartVersion'
 export const DSO_NS_CHART_VERSION_PLUGIN_KEY = 'dsoNsChartVersion'
+
+// Plugin synchronization flags (shared plugin config keys)
+export const AUTO_SYNC_PLUGIN_KEY = 'autoSync'
+export const SUSPENDED_PLUGIN_KEY = 'suspended'

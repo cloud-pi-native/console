@@ -276,7 +276,7 @@ describe('registryService', () => {
 
   describe('handleCron', () => {
     it('should reconcile all projects', async () => {
-      datastore.getAllProjects.mockResolvedValue([
+      datastore.getAutoSyncProjects.mockResolvedValue([
         makeProjectWithDetails({ slug: 'project-1' }),
         makeProjectWithDetails({ slug: 'project-2' }),
       ])

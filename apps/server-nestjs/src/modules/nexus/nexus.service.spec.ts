@@ -100,7 +100,7 @@ describe('nexusService', () => {
       makeProjectWithDetails({ plugins: [{ pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: ENABLED }] }),
     ]
 
-    datastore.getAllProjects.mockResolvedValue(projects)
+    datastore.getAutoSyncProjects.mockResolvedValue(projects)
 
     await service.handleCron()
 
