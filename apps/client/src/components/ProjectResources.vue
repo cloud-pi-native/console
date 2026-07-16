@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CleanedCluster, Cluster, CreateEnvironmentBody, Environment, Repo, Stage, UpdateEnvironmentBody, Zone } from '@cpn-console/shared'
+import type { CleanedCluster, Cluster, CreateEnvironment, Environment, Repo, Stage, UpdateEnvironment, Zone } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
 import { logger } from '@cpn-console/logger/browser'
 import { AdminAuthorized, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
@@ -68,7 +68,7 @@ watch(selectedRepo, async () => {
   branchName.value = defaultBranchName
 })
 
-async function putEnvironment(environment: UpdateEnvironmentBody, envId: Environment['id']) {
+async function putEnvironment(environment: UpdateEnvironment, envId: Environment['id']) {
   selectedEnv.value = undefined
   if (!props.project.locked) {
     props.project.Environments.update(envId, environment)
@@ -86,7 +86,7 @@ async function deleteEnvironment(environmentId: Environment['id']) {
   }
 }
 
-async function addEnvironment(environment: Omit<CreateEnvironmentBody, 'id' | 'projectId'>) {
+async function addEnvironment(environment: CreateEnvironment) {
   newResource.value = undefined
   if (!props.project.locked) {
     props.project.Environments.create(environment)
@@ -396,7 +396,7 @@ async function copyToClipboard(text: string) {
       :is-editable="false"
       :is-project-locked="project.locked"
       :can-manage="canManageEnvs || (AdminAuthorized.Manage(userStore.adminPerms) && asProfile === 'admin')"
-      @put-environment="(environmentUpdate: UpdateEnvironmentBody) => putEnvironment(environmentUpdate, selectedEnv!.id)"
+      @put-environment="(environmentUpdate: UpdateEnvironment) => putEnvironment(environmentUpdate, selectedEnv!.id)"
       @delete-environment="() => deleteEnvironment(selectedEnv!.id)"
       @cancel="selectedEnv = undefined"
     />
@@ -406,7 +406,7 @@ async function copyToClipboard(text: string) {
       :available-clusters="projectClusters"
       :can-manage="canManageEnvs"
       is-editable
-      @add-environment="(environment: Omit<CreateEnvironmentBody, 'id' | 'projectId'>) => addEnvironment(environment)"
+      @add-environment="(environment: CreateEnvironment) => addEnvironment(environment)"
       @cancel="newResource = undefined"
     />
     <template

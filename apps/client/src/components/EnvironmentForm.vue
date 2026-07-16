@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type {
   CleanedCluster,
-  CreateEnvironmentBody,
+  CreateEnvironment,
   Environment,
 } from '@cpn-console/shared'
 import {
@@ -46,7 +46,7 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  addEnvironment: [environment: Omit<CreateEnvironmentBody, 'projectId'>]
+  addEnvironment: [environment: CreateEnvironment]
   putEnvironment: [environment: Pick<Environment, 'cpu' | 'gpu' | 'memory' | 'autosync'>]
   deleteEnvironment: [environmentId: Environment['id']]
   cancel: []
