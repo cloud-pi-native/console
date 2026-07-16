@@ -14,7 +14,6 @@ const auxComponents = [
   'Default Admin Credentials',
   'DefaultRoleRealm',
   'File Blob Stores Path',
-  'File Descriptors',
   'NuGet V2 repositories',
   'Scheduler',
   'com.codahale.metrics.health.jvm.ThreadDeadlockHealthCheck',
