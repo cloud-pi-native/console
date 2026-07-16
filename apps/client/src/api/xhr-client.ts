@@ -38,8 +38,12 @@ export function extractData<T extends { status: number, body: unknown, headers: 
     }
   }
   if (response.status >= 400) {
+    // `message` d'abord : les erreurs gérées du legacy (ErrorResType) et celles de NestJS
+    // (HttpException) portent le vrai message dans `message` — chez NestJS, `error` ne contient
+    // que la raison HTTP générique ("Forbidden", "Bad Request"). `error` reste en repli pour
+    // les erreurs non gérées du legacy (setErrorHandler), qui n'ont pas de champ `message`.
     // @ts-ignore
-    throw new Error(response.body?.error ?? response.body?.message ?? 'Erreur inconnue')
+    throw new Error(response.body?.message ?? response.body?.error ?? 'Erreur inconnue')
   }
   if (response.status === expectedStatus) return response.body
   try {
