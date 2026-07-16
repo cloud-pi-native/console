@@ -5,15 +5,18 @@ import type { UserContext } from '../auth-user.decorator'
 import type { AuthProvider, AuthRequirements } from '../auth.utils'
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
+import { z } from 'zod'
 import { PrismaService } from '../../database/prisma.service'
 
-interface KeycloakPayload {
-  sub: string
-  email: string
-  given_name: string
-  family_name: string
-  groups: string[]
-}
+const KeycloakPayloadSchema = z.object({
+  sub: z.string(),
+  email: z.string().optional().default(''),
+  given_name: z.string().optional().default(''),
+  family_name: z.string().optional().default(''),
+  groups: z.array(z.string()).optional().default([]),
+})
+
+type KeycloakPayload = z.infer<typeof KeycloakPayloadSchema>
 
 @Injectable()
 export class KeycloakJwtService implements AuthProvider {
@@ -41,7 +44,8 @@ export class KeycloakJwtService implements AuthProvider {
     try {
       const jwt = authHeader.slice(7)
       const payload = await this.jwtService.verifyAsync(jwt)
-      return await this.validatePayload(payload, requirements)
+      const parsedPayload = KeycloakPayloadSchema.parse(payload)
+      return await this.validatePayload(parsedPayload, requirements)
     } catch (error) {
       throw new UnauthorizedException(
         error instanceof Error ? error.message : 'Authentication failed',

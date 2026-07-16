@@ -149,7 +149,13 @@ describe('keycloakJwtService', () => {
 
   describe('authenticate', () => {
     it('should authenticate a bearer token from the request', async () => {
-      jwtService.verifyAsync.mockResolvedValue({ sub: faker.string.uuid(), groups: [] })
+      jwtService.verifyAsync.mockResolvedValue({
+        sub: faker.string.uuid(),
+        email: faker.internet.email().toLowerCase(),
+        given_name: faker.person.firstName(),
+        family_name: faker.person.lastName(),
+        groups: [],
+      })
       prisma.user.findUnique.mockResolvedValue(makeMockUser({}))
       prisma.adminRole.findMany.mockResolvedValue([])
 
