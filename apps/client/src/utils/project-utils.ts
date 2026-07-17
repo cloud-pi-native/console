@@ -1,6 +1,6 @@
 import type {
   CreateDeploymentBody,
-  CreateEnvironment,
+  CreateEnvironmentBody,
   CreateRepositoryBody,
   Deployment,
   Environment,
@@ -16,7 +16,7 @@ import type {
   RepositoryParams,
   Role,
   UpdateDeploymentBody,
-  UpdateEnvironment,
+  UpdateEnvironmentBody,
   UpdateRepositoryBody,
   User,
 } from '@cpn-console/shared'
@@ -274,22 +274,22 @@ export class Project implements ProjectV2 {
 
   Environments = {
     list: async () => {
-      this.environments.value = await apiClient.EnvironmentsV2.listEnvironmentsV2({ params: { projectId: this.id } })
+      this.environments.value = await apiClient.Environments.listEnvironments({ query: { projectId: this.id } })
         .then((response: any) => extractData(response, 200))
       return this.environments.value
     },
-    create: async (envData: CreateEnvironment) => {
+    create: async (envData: Omit<CreateEnvironmentBody, 'projectId'>) => {
       const callback = this.addOperation('envManagement')
       try {
-        await apiClient.EnvironmentsV2.createEnvironmentV2({ params: { projectId: this.id }, body: envData })
+        await apiClient.Environments.createEnvironment({ body: { ...envData, projectId: this.id } })
           .then((response: any) => extractData(response, 201))
         return this.Environments.list()
       } finally { callback() }
     },
-    update: async (id: Environment['id'], environment: UpdateEnvironment) => {
+    update: async (id: Environment['id'], environment: UpdateEnvironmentBody) => {
       const callback = this.addOperation('envManagement')
       try {
-        await apiClient.EnvironmentsV2.updateEnvironmentV2({ body: environment, params: { projectId: this.id, environmentId: id } })
+        await apiClient.Environments.updateEnvironment({ body: environment, params: { environmentId: id } })
           .then((response: any) => extractData(response, 200))
         await this.Environments.list()
         return this.environments
@@ -298,7 +298,7 @@ export class Project implements ProjectV2 {
     delete: async (environmentId: Environment['id']) => {
       const callback = this.addOperation('envManagement')
       try {
-        await apiClient.EnvironmentsV2.deleteEnvironmentV2({ params: { projectId: this.id, environmentId } })
+        await apiClient.Environments.deleteEnvironment({ params: { environmentId } })
           .then((response: any) => extractData(response, 204))
         await this.Environments.list()
         return this.environments
