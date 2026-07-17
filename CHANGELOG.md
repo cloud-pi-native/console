@@ -1,5 +1,96 @@
 # Changelog
 
+## [9.20.0](https://github.com/cloud-pi-native/console/compare/v9.19.0...v9.20.0) (2026-07-17)
+
+
+### Features
+
+* allow ci run on draft PR ([d3771a2](https://github.com/cloud-pi-native/console/commit/d3771a2665930560a42cbdd6619728d58a071ac4))
+* **client:** add deployment management UI ([08e212d](https://github.com/cloud-pi-native/console/commit/08e212d010d74206b15ce050e0708a558a60af0a))
+* **client:** switch environments to API v2 ([20d97dd](https://github.com/cloud-pi-native/console/commit/20d97dd46022c2bb3aa01ac896c5cfd1a7d8d1b1))
+* fix the permission policy engine from AND to OR between admin and projectpermissions ([4147cc9](https://github.com/cloud-pi-native/console/commit/4147cc94906a4ec2ea2fb9de0b22f3951e0ef49b))
+* migrate project to PNPM v11.8.0 ([6143d5c](https://github.com/cloud-pi-native/console/commit/6143d5c0db1ece4a9ecd694c89cd4fca9bbc725c))
+* migrate service infos descriptor from server plugin manager ([20e725c](https://github.com/cloud-pi-native/console/commit/20e725c25ad1a4be919bdef18aa1ea0761fc424b))
+* **server-nestjs:** add autoSync and suspended flags to plugin services ([4142e01](https://github.com/cloud-pi-native/console/commit/4142e0147d581884248f8a2fd8e3653fab09fae3))
+* **server-nestjs:** add environment API v2 ([9634d83](https://github.com/cloud-pi-native/console/commit/9634d8376d447c94dd9f1c9514a6c99c5c3b96b7))
+* **server-nestjs:** capture plugin handler outcomes as structured results ([e635708](https://github.com/cloud-pi-native/console/commit/e635708f8a021f49a3ea801df8d02975d8e24f75))
+* **server-nestjs:** introduce AppEventsService for project events ([1cf6dfa](https://github.com/cloud-pi-native/console/commit/1cf6dfa10fe200ea540c27c3d7afc4159656fff7))
+* **server-nestjs:** secure deployment API with project permission guards ([1ea4d32](https://github.com/cloud-pi-native/console/commit/1ea4d3293841a6ba2269e3f25f6dbc1bc96240db))
+
+
+### Bug Fixes
+
+* configuration may be flaky depending on runner env vars ([ff5c62a](https://github.com/cloud-pi-native/console/commit/ff5c62a0e347eeab399db4aa38900c1b5ba52f03))
+* correctly type JWT non standard payload ([efdd446](https://github.com/cloud-pi-native/console/commit/efdd446597d6454eda9a28e7adaacbe757e465a3))
+* disable NestJS reconciler loop to avoid conflicts ([51b5488](https://github.com/cloud-pi-native/console/commit/51b5488eab96edb92dd444a929e6aaaadd627f1c))
+* fetch JWKS URI using internal domain ([590b92d](https://github.com/cloud-pi-native/console/commit/590b92d0030b824b60d1bd92caef1716fb018bfe))
+* GitLab can't find the template files in dist ([a878bba](https://github.com/cloud-pi-native/console/commit/a878bba7adf39b07d90d4b57fd2cfe39f58d3ba2))
+* **jj:** resolve conflict in registry.service.spec.ts test ([2c65fb0](https://github.com/cloud-pi-native/console/commit/2c65fb09ba03b730b1ea39c1b31cd65664da9f93))
+* JWKS fetching rule are flaky ([7faee14](https://github.com/cloud-pi-native/console/commit/7faee1419c526c73ad4fb81c9b097fc50513ee08))
+* **keycloak:** skip group sync for system:external admin roles ([9000139](https://github.com/cloud-pi-native/console/commit/900013993cc0aa44d7737b9db1bb86f6230be6ee))
+* **keycloak:** skip group sync for system:external admin roles ([4254929](https://github.com/cloud-pi-native/console/commit/4254929fbdde7b0e5d60c3b5b35c04dcc09cfc77))
+* **keyloak-secret-provider:** url is not routed to the correct protocol ([1e79d01](https://github.com/cloud-pi-native/console/commit/1e79d017d0dfbb8ba58be806ef5cd9b786b1d9d1))
+* launch.json to read envfiles ([5a56ad5](https://github.com/cloud-pi-native/console/commit/5a56ad5e102aee053284ceb97fb673cd832d7d3d))
+* **nestjs/gitlab:** build project group public URLs with URL constructor to avoid double slashes ([425b16b](https://github.com/cloud-pi-native/console/commit/425b16b6f1bff343e1eed86bcc65f63a1716fa41))
+* **nexus:** remove missing components in new versions ([58b894a](https://github.com/cloud-pi-native/console/commit/58b894a2b45eac0c968856ee8f76562125525ab9))
+* **nexus:** remove unsupported aux component from new Nexus ([bcbfcd2](https://github.com/cloud-pi-native/console/commit/bcbfcd21a6bef53cae1132fef8eb8b6c78342011))
+* nginx strangler is failling to resolve host in local mode ([78d5c6c](https://github.com/cloud-pi-native/console/commit/78d5c6c3d602a7fcc41817d42a26ad1c8a44941e))
+* playwright test expect mock ([1f6c124](https://github.com/cloud-pi-native/console/commit/1f6c124fd1923c6754719ba032a4883cb7d38d8a))
+* **server-nestjs/environment:** exclude updated environment from quota sums ([2b15ed1](https://github.com/cloud-pi-native/console/commit/2b15ed106843f361073468723946761589ce4402))
+* **server-nestjs/events:** update project status after events ([7515912](https://github.com/cloud-pi-native/console/commit/7515912b30b7af11a7969e6c1f708af76467a245))
+* **server-nestjs/keycloak:** refresh admin client token before it expires ([cf26176](https://github.com/cloud-pi-native/console/commit/cf26176bc1b8a3add7324b152ab53ee38edb86cc))
+* **server-nestjs/keycloak:** resolve base role type for system-prefixed roles ([4c8cf98](https://github.com/cloud-pi-native/console/commit/4c8cf98efc644af780f892de00d944e0a2c43e1c))
+* **server-nestjs/keycloak:** tolerate concurrent subgroup creation conflicts ([87cd136](https://github.com/cloud-pi-native/console/commit/87cd1361a213f9357bcb3f376704408a7fbcecf1))
+* **server-nestjs/nexus:** delete group repos before their hosted members ([c505db0](https://github.com/cloud-pi-native/console/commit/c505db0860d7c0113f096f4a37c7f89f701daebf))
+* **server-nestjs/nexus:** fall back to public Nexus URL when internal URL is unset ([be41606](https://github.com/cloud-pi-native/console/commit/be416069ae6bc1ad2408a8ecef4da2df787f5c02))
+* **server-nestjs/nexus:** tolerate platform role failures when syncing platform roles ([caef46d](https://github.com/cloud-pi-native/console/commit/caef46d7009e20b59643315373a202fff7803696))
+* **server-nestjs/vault:** build ArgoCD Vault values from AppRole creds and config ([9ce5916](https://github.com/cloud-pi-native/console/commit/9ce59161a8925a04c7af2f229843cd7e18201767))
+* **server-nestjs:** add default env var for admin client ID ([4b23d9c](https://github.com/cloud-pi-native/console/commit/4b23d9cfb4357d197b8f0baad7336e71185d5488))
+* **server-nestjs:** add missing healthcheck for local dev ([61de70c](https://github.com/cloud-pi-native/console/commit/61de70c77d0eb4b8496c820b5f42a248f34fb135))
+* **server-nestjs:** harden sonarqube reconciliation with strict key matching and idempotent init ([2686a59](https://github.com/cloud-pi-native/console/commit/2686a595bdcc184d6e185e041ea7b60d5057eb67))
+* **server-nestjs:** migrate system-config route ([20ae55e](https://github.com/cloud-pi-native/console/commit/20ae55ea295573f4abb64d48fe901c55bde15108))
+* **server-nestjs:** satisfy Prisma payload types in deployment spec mocks ([e7e9eaa](https://github.com/cloud-pi-native/console/commit/e7e9eaad4fec8953155331a6435590a66aa62668))
+* **server-nestjs:** silence successful healthz request logs ([7d2514b](https://github.com/cloud-pi-native/console/commit/7d2514b5f3388492ffc930e2457bd66aaa92f7f1))
+* vscode launch dotenv path ([26d9419](https://github.com/cloud-pi-native/console/commit/26d9419d2e03f99171c9b7ed33aaa793a8db1f58))
+
+
+### Miscellaneous Chores
+
+* align local Keycloak realm name ([5711c1b](https://github.com/cloud-pi-native/console/commit/5711c1b8d209dd93c827ed6b1b7ece709fb4fcce))
+* backport server-nestjs missing migrations ([8c2288c](https://github.com/cloud-pi-native/console/commit/8c2288cb0becb3d0bb06b347a8a1e8f0c5edefb3))
+* improve auth logging ([b7393d2](https://github.com/cloud-pi-native/console/commit/b7393d2e44294ae1ec622ab5ed7e83eaf69676f3))
+* **keycloak:** update local realm to use publicly facing KC URL ([2fbac4e](https://github.com/cloud-pi-native/console/commit/2fbac4ebde19a9ac32e655c6cd5f45ee6c1be92a))
+* **nginx-strangler:** allow custom (Rancher Desktop) host config in local dev context ([908c252](https://github.com/cloud-pi-native/console/commit/908c25220624d6206bfaef6c7b88878757c3e997))
+* package.json docker delete commands should actually delete the related images ([b32d71c](https://github.com/cloud-pi-native/console/commit/b32d71c047b32f9140794a0aa4809bd0b909dae7))
+* **playwright:** generalize checkbox helper to avoid inconsistencies ([6c839ef](https://github.com/cloud-pi-native/console/commit/6c839ef0a1fa87193fdc4131f4273968ec7084e6))
+* **playwright:** improve tests resilience ([ad95b2c](https://github.com/cloud-pi-native/console/commit/ad95b2cdd19201d8595265e73c8e51670abae1a1))
+* tag integ container images with integ instead of dev ([41c51ad](https://github.com/cloud-pi-native/console/commit/41c51adac249d96f62613f8534baf3f5821e871c))
+
+
+### Docs
+
+* add contribution guide ([1438231](https://github.com/cloud-pi-native/console/commit/1438231bb58fbb9558b57984b1fd84abfcaa008e))
+
+
+### Refactoring
+
+* Keycloak server provider should use openid-configuration URLs instead of rebuilding ([bc2199f](https://github.com/cloud-pi-native/console/commit/bc2199ff8380c243f38cf8d19fde4660adf7e51e))
+* **server-nestjs:** cleanup constants, tests using mockDeep and datastore tighter select ([1b6c21d](https://github.com/cloud-pi-native/console/commit/1b6c21d345d1d3366e641cff641198a6dbcc5039))
+* **server-nestjs:** migrate health modules from HealthIndicatorService to TerminusModule ([5f09649](https://github.com/cloud-pi-native/console/commit/5f09649588ca4e4c1d6d34fd1966ebd24fe8cd31))
+* **server-nestjs:** migrate logs ([f05e04f](https://github.com/cloud-pi-native/console/commit/f05e04fd3f90164e5211dbe7244cf25a45c6e320))
+* **server-nestjs:** migrate project bulk route ([e9fd130](https://github.com/cloud-pi-native/console/commit/e9fd1304c4d5f06d0dfbd3b41c47a37ffc9cf693))
+* **server-nestjs:** migrate project hook ([459c60a](https://github.com/cloud-pi-native/console/commit/459c60a743366cc39d0200bcaecc38ef5c722cb7))
+* **server-nestjs:** migrate project members ([796f2a9](https://github.com/cloud-pi-native/console/commit/796f2a987614e4c327153f3150c2c14e54d98827))
+* **server-nestjs:** migrate project role ([0764a2f](https://github.com/cloud-pi-native/console/commit/0764a2fb6efda7e5f101730e7d8e630647208478))
+* **server-nestjs:** migrate project route ([1740bc8](https://github.com/cloud-pi-native/console/commit/1740bc8d6eaeb89a28083cfea7940a03ad02e5e9))
+* **server-nestjs:** migrate project secrets routes ([0626157](https://github.com/cloud-pi-native/console/commit/0626157cd84a58299a765ab5e034922afa013f93))
+* **server-nestjs:** migrate project services route ([bf9d09a](https://github.com/cloud-pi-native/console/commit/bf9d09a11687efff0078a4d36f09dc08ca1e0b2f))
+* **server-nestjs:** offload project route to new implementation ([7c81349](https://github.com/cloud-pi-native/console/commit/7c813498770bf374acdcdacca68b0892cb2cc5b4))
+* **server-nestjs:** refactor deployment to use strong typing using mockDeep for refactoring resiliency ([934d9a0](https://github.com/cloud-pi-native/console/commit/934d9a0b2542ec8658e079c4dc177f27cfd00495))
+* **server-nestjs:** rename permission services to disambiguate ([0de7c34](https://github.com/cloud-pi-native/console/commit/0de7c3492f0ff8737d31be7c64ef9d81edc74a0c))
+* **server-nestjs:** replace InfrastructureModule with explicit module imports ([8a95834](https://github.com/cloud-pi-native/console/commit/8a95834f7280efc6f0ab74a8e35179f3369ede9a))
+* **shared:** add RoleType constant and use it across keycloak services ([3933b15](https://github.com/cloud-pi-native/console/commit/3933b15208636f65bc47d9449113b2df33579219))
+
 ## [9.19.0](https://github.com/cloud-pi-native/console/compare/v9.18.4...v9.19.0) (2026-06-19)
 
 
