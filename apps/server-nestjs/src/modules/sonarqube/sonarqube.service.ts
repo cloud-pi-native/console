@@ -5,7 +5,6 @@ import type { SonarqubeProjectResult, SonarqubeUser } from './sonarqube-client.s
 import type { ProjectWithDetails } from './sonarqube-datastore.service'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
-import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { generateProjectKey, generateRandomPassword } from '../../utils/crypto'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
@@ -42,7 +41,6 @@ import {
   ROBOT_PROJECT_PERMISSIONS,
   SECURITY_GROUP_PATH_PLUGIN_KEY,
 } from './sonarqube.constants'
-import { isSuspended } from './sonarqube.utils'
 
 interface SonarqubeRolePaths {
   admin: string[]
@@ -97,10 +95,6 @@ export class SonarqubeService implements OnModuleInit {
 
   @StartActiveSpan()
   private async syncProject(project: ProjectWithDetails) {
-    if (isSuspended(project)) {
-      this.logger.log(`Skipping ArgoCD sync for suspended project ${project.slug}`)
-      return
-    }
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project upsert event for ${project.slug}`)
@@ -122,13 +116,13 @@ export class SonarqubeService implements OnModuleInit {
     this.logger.log(`SonarQube deletion completed for project ${project.slug}`)
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  // @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
     const span = trace.getActiveSpan()
     this.logger.log('Starting SonarQube reconciliation')
     await this.init().catch(error => this.logger.error('SonarQube init during cron failed', error))
-    const projects = await this.datastore.getAutoSyncProjects()
+    const projects = await this.datastore.getAllProjects()
     span?.setAttribute('sonarqube.projects.count', projects.length)
     this.logger.log(`Loaded ${projects.length} projects for SonarQube reconciliation`)
     await this.ensureProjectGroups(projects)

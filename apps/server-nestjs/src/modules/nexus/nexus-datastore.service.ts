@@ -1,8 +1,7 @@
 import type { Prisma } from '@prisma/client'
-import { ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { AUTO_SYNC_PLUGIN_KEY, PLUGIN_NAME, SUSPENDED_PLUGIN_KEY } from './nexus.constants'
+import { PLUGIN_NAME } from './nexus.constants'
 
 export const projectSelect = {
   slug: true,
@@ -33,47 +32,34 @@ export class NexusDatastoreService {
   async getAllProjects(): Promise<ProjectWithDetails[]> {
     return this.prisma.project.findMany({
       select: projectSelect,
-    })
-  }
-
-  async getAutoSyncProjects(): Promise<ProjectWithDetails[]> {
-    return this.prisma.project.findMany({
-      select: projectSelect,
       where: {
-        AND: [
-          {
-            plugins: {
-              some: {
-                pluginName: PLUGIN_NAME,
-                key: AUTO_SYNC_PLUGIN_KEY,
-                value: ENABLED,
-              },
-            },
+        plugins: {
+          some: {
+            pluginName: PLUGIN_NAME,
           },
-          {
-            NOT: {
-              plugins: {
-                some: {
-                  pluginName: PLUGIN_NAME,
-                  key: SUSPENDED_PLUGIN_KEY,
-                  value: ENABLED,
-                },
-              },
-            },
-          },
-        ],
+        },
       },
     })
   }
 
   async getProject(id: string): Promise<ProjectWithDetails | null> {
-    return this.prisma.project.findUnique({ where: { id }, select: projectSelect })
+    return this.prisma.project.findUnique({
+      where: { id },
+      select: projectSelect,
+    })
   }
 
   async getAdminPluginConfig(pluginName: string, key: string): Promise<string | null> {
     const result = await this.prisma.adminPlugin.findUnique({
-      where: { pluginName_key: { pluginName, key } },
-      select: { value: true },
+      where: {
+        pluginName_key: {
+          pluginName,
+          key,
+        },
+      },
+      select: {
+        value: true,
+      },
     })
     return result?.value ?? null
   }

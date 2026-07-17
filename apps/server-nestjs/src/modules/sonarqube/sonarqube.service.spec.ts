@@ -288,7 +288,7 @@ describe('sonarqubeService', () => {
         makeProjectWithDetails({ repositories: [] }),
         makeProjectWithDetails({ repositories: [] }),
       ]
-      datastore.getAutoSyncProjects.mockResolvedValue(projects)
+      datastore.getAllProjects.mockResolvedValue(projects)
       client.generateUserToken.mockImplementation(({ login }) => Promise.resolve(makeUserToken({ login })))
 
       await service.handleCron()
