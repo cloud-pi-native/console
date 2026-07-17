@@ -6,7 +6,6 @@ import { specificallyEnabled } from '@cpn-console/hooks'
 import { AccessLevel } from '@gitbeaker/core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
-import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { getAll } from '../../utils/iterable'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
@@ -42,7 +41,6 @@ import {
   getProjectPluginConfig,
   isOwnedRepo,
   isOwnedUser,
-  isSuspended,
   isSystemRepo,
 } from './gitlab.utils'
 
@@ -69,10 +67,6 @@ export class GitlabService {
 
   @StartActiveSpan()
   private async syncProject(project: ProjectWithDetails) {
-    if (isSuspended(project)) {
-      this.logger.warn(`Skipping suspended GitLab reconciliation for ${project.slug}`)
-      return
-    }
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project upsert event for ${project.slug}`)
@@ -95,13 +89,13 @@ export class GitlabService {
     this.logger.log(`GitLab sync completed for project ${project.slug}`)
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  // @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
     const span = trace.getActiveSpan()
     span?.setAttribute('gitlab.projects.count', 0)
     this.logger.log('Starting GitLab reconciliation')
-    const projects = await this.gitlabDatastore.getAutoSyncProjects()
+    const projects = await this.gitlabDatastore.getAllProjects()
     span?.setAttribute('gitlab.projects.count', projects.length)
     this.logger.log(`Loaded ${projects.length} projects for GitLab reconciliation`)
     await this.ensureProjectGroups(projects)

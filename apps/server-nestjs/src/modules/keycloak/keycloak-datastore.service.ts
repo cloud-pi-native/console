@@ -1,8 +1,6 @@
 import type { Prisma } from '@prisma/client'
-import { ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { AUTO_SYNC_PLUGIN_KEY, PLUGIN_NAME, SUSPENDED_PLUGIN_KEY } from './keycloak.constants'
 
 export const projectSelect = {
   id: true,
@@ -73,36 +71,6 @@ export class KeycloakDatastoreService {
   async getAllProjects(): Promise<ProjectWithDetails[]> {
     return this.prisma.project.findMany({
       select: projectSelect,
-    })
-  }
-
-  async getAutoSyncProjects(): Promise<ProjectWithDetails[]> {
-    return this.prisma.project.findMany({
-      select: projectSelect,
-      where: {
-        AND: [
-          {
-            plugins: {
-              some: {
-                pluginName: PLUGIN_NAME,
-                key: AUTO_SYNC_PLUGIN_KEY,
-                value: ENABLED,
-              },
-            },
-          },
-          {
-            NOT: {
-              plugins: {
-                some: {
-                  pluginName: PLUGIN_NAME,
-                  key: SUSPENDED_PLUGIN_KEY,
-                  value: ENABLED,
-                },
-              },
-            },
-          },
-        ],
-      },
     })
   }
 

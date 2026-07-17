@@ -2,16 +2,7 @@ import type { ServiceInfos } from '@cpn-console/hooks'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
-import {
-  AUTO_SYNC_PLUGIN_KEY,
-  DEFAULT_ADMIN_GROUP_PATH,
-  DEFAULT_AUDITOR_GROUP_PATH,
-  DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
-  DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX,
-  DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX,
-  PURGE_PLUGIN_KEY,
-  SUSPENDED_PLUGIN_KEY,
-} from './gitlab.constants'
+import { DEFAULT_ADMIN_GROUP_PATH, DEFAULT_AUDITOR_GROUP_PATH, DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX, PURGE_PLUGIN_KEY } from './gitlab.constants'
 
 @Injectable()
 export class GitlabPluginService {
@@ -117,32 +108,7 @@ export class GitlabPluginService {
             placeholder: DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX,
           },
         ],
-        project: [
-          {
-            kind: 'switch',
-            key: SUSPENDED_PLUGIN_KEY,
-            initialValue: ENABLED,
-            permissions: {
-              admin: { read: true, write: true },
-              user: { read: true, write: true },
-            },
-            title: 'Suspendre le projet',
-            value: ENABLED,
-            description: 'Suspendre la synchronisation GitLab pour ce projet',
-          },
-          {
-            kind: 'switch',
-            key: AUTO_SYNC_PLUGIN_KEY,
-            initialValue: DISABLED,
-            permissions: {
-              admin: { read: true, write: true },
-              user: { read: true, write: true },
-            },
-            title: 'Synchronisation automatique GitLab',
-            value: DISABLED,
-            description: 'Synchroniser automatiquement le projet GitLab',
-          },
-        ],
+        project: [],
       },
     } as const satisfies ServiceInfos
   }

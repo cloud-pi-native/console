@@ -61,13 +61,13 @@ describe('vaultService', () => {
     const projects = faker.helpers.multiple(() => makeProjectWithDetails())
     const zones = faker.helpers.multiple(() => makeZoneWithDetails())
 
-    datastore.getAutoSyncProjects.mockResolvedValue(projects)
-    datastore.getAutoSyncZones.mockResolvedValue(zones)
+    datastore.getAllProjects.mockResolvedValue(projects)
+    datastore.getAllZones.mockResolvedValue(zones)
 
     await service.handleCron()
 
-    expect(datastore.getAutoSyncProjects).toHaveBeenCalled()
-    expect(datastore.getAutoSyncZones).toHaveBeenCalled()
+    expect(datastore.getAllProjects).toHaveBeenCalled()
+    expect(datastore.getAllZones).toHaveBeenCalled()
     expect(client.createSysMount).toHaveBeenCalledTimes(projects.length + zones.length)
     projects.forEach((project) => {
       expect(client.createSysMount).toHaveBeenCalledWith(project.slug, expect.any(Object))

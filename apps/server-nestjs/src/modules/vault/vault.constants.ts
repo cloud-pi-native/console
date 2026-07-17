@@ -32,7 +32,3 @@ export const PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectDeveloperG
 export const PROJECT_DEVOPS_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectDevopsGroupPathSuffix'
 export const PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectMaintainerGroupPathSuffix'
 export const PROJECT_SECURITY_GROUP_PATH_SUFFIX_PLUGIN_KEY = 'projectSecurityGroupPathSuffix'
-
-// Plugin synchronization flags (shared plugin config keys)
-export const AUTO_SYNC_PLUGIN_KEY = 'autoSync'
-export const SUSPENDED_PLUGIN_KEY = 'suspended'

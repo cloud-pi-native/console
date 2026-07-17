@@ -2,7 +2,6 @@ import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
-import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
@@ -35,7 +34,7 @@ import {
   PROJECT_SECURITY_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   SECURITY_GROUP_PATH_PLUGIN_KEY,
 } from './vault.constants'
-import { generateProjectPath, isSuspended } from './vault.utils'
+import { generateProjectPath } from './vault.utils'
 
 type ProjectScope = 'admin' | 'devops' | 'developer' | 'readonly' | 'security'
 
@@ -59,10 +58,6 @@ export class VaultService {
 
   @StartActiveSpan()
   private async syncProject(project: ProjectWithDetails) {
-    if (isSuspended(project)) {
-      this.logger.log(`Skipping ArgoCD sync for suspended project ${project.slug}`)
-      return
-    }
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project upsert event for ${project.slug}`)
@@ -118,15 +113,16 @@ export class VaultService {
     this.logger.log(`Vault zone cleanup completed for ${zone.slug}`)
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  // @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
     const span = trace.getActiveSpan()
     this.logger.log('Starting Vault reconciliation')
     const [projects, zones] = await Promise.all([
-      this.vaultDatastore.getAutoSyncProjects(),
-      this.vaultDatastore.getAutoSyncZones(),
+      this.vaultDatastore.getAllProjects(),
+      this.vaultDatastore.getAllZones(),
     ])
+
     span?.setAttributes({
       'vault.projects.count': projects.length,
       'vault.zones.count': zones.length,

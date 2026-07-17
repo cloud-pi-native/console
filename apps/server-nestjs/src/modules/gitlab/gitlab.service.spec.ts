@@ -473,7 +473,7 @@ describe('gitlabService', () => {
   describe('handleCron', () => {
     it('should reconcile all projects', async () => {
       const projects = [makeProjectWithDetails({ id: 'p1', slug: 'project-1' })]
-      datastore.getAutoSyncProjects.mockResolvedValue(projects)
+      datastore.getAllProjects.mockResolvedValue(projects)
 
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
       gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
@@ -484,7 +484,7 @@ describe('gitlabService', () => {
 
       await service.handleCron()
 
-      expect(datastore.getAutoSyncProjects).toHaveBeenCalled()
+      expect(datastore.getAllProjects).toHaveBeenCalled()
       expect(gitlab.getOrCreateProjectSubGroup).toHaveBeenCalledWith('project-1')
     })
   })
