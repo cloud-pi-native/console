@@ -1,42 +1,25 @@
-# Architecture d'un module (pattern `apps/server-nestjs/src/modules/*`)
+# Architecture d’un module (pattern `apps/server-nestjs/src/modules/*`)
 
-Les modules NestJS vivent dans `src/modules/<nom-du-module>/` et suivent un
-découpage "vertical slice" avec des responsabilités explicites : **client**,
-**service (API publique)**, **controller service (orchestration)**,
-**datastore**, **utils** et **tests**.
+Les modules NestJS métier vivent dans `src/modules/<nom-du-module>/` et suivent un découpage “vertical slice” avec des responsabilités explicites : **client**, **service (API publique)**, **controller service (orchestration)**, **datastore**, **utils** et **tests**.
 
-Deux familles coexistent (voir la note sous la structure type) :
+Exemples concrets :
 
-- **Modules core** (métier) : exposent des routes HTTP via un `@Controller`.
-  Ex. `src/modules/project/`, `src/modules/deployment/`, `src/modules/system-settings/`.
-- **Modules plugins** (encapsulation d'un système externe) : s'enregistrent via
-  le hook `ServiceInfos`, sans controller. Ex. `src/modules/keycloak/`,
-  `src/modules/vault/`, `src/modules/gitlab/`.
+- Module GitLab : `src/modules/gitlab/`
+- Module Keycloak : `src/modules/keycloak/`
 
 ## Structure type
 
 ```txt
 src/modules/<module>/
 ├── <module>.module.ts
-├── <module>.controller.ts        # [core]   exposition HTTP (@Controller('api/v1/…'))
 ├── <module>.constants.ts
-├── <module>-client.service.ts    # [plugin] adapter vers l'API externe
+├── <module>-client.service.ts
 ├── <module>.service.ts
 ├── <module>-datastore.service.ts
-├── <module>-plugin.service.ts    # [plugin] enregistrement hook ServiceInfos
-├── <module>-health.service.ts    # [plugin] indicateur @nestjs/terminus
 ├── <module>.utils.ts
 ├── <module>-testing.utils.ts
 └── *.spec.ts
 ```
-
-> **Note — modules core vs plugins** : les fichiers marqués `[core]` apparaissent
-> sur les modules métier (qui déclarent un controller et sont enregistrés dans
-> `main.module.ts`) ; les fichiers marqués `[plugin]` apparaissent sur les
-> modules d'encapsulation (qui n'ont **pas** de controller et s'enregistrent via
-> `ServiceInfos` depuis `@cpn-console/hooks`). Un module donné ne possède pas
-> forcément tous les fichiers de la liste. Cf. `MODULARISATION-STATUT.md` pour
-> l'état de câblage réel (module déclaré dans `main.module.ts` ou non).
 
 ## Sens des dépendances (flow recommandé)
 
@@ -50,19 +33,12 @@ Objectif : un flux de dépendances lisible et sans cycles.
 
 Règles pratiques :
 
-- Le `<module>.service.ts` est un entrypoint interne (cron, events, reconcile) et
-  orchestre en appelant directement le `client` (et le `datastore` si nécessaire),
-  sans dépendre du `service`.
-- Le `service` contient les règles métier (décisions, transformations, validations)
-  et s'appuie sur le `client` (et le `datastore` quand la lecture/écriture DB fait
-  partie du cas d'usage).
-- Le `client` encapsule l'accès à une API externe (initialisation + appels + erreurs
-  bas niveau).
-- Le `datastore` encapsule l'accès DB (Prisma) et expose des méthodes de
-  lecture/écriture typées.
-- Les `utils` restent "purs" (pas d'IO, pas d'injection Nest).
-- Les `testing utils` centralisent les factories/fixtures pour réduire la
-  duplication dans les tests.
+- Le `<module>.service.ts` est un entrypoint interne (cron, events, reconcile) et orchestre en appelant directement le `client` (et le `datastore` si nécessaire), sans dépendre du `service`.
+- Le `service` contient les règles métier (décisions, transformations, validations) et s’appuie sur le `client` (et le `datastore` quand la lecture/écriture DB fait partie du cas d’usage).
+- Le `client` encapsule l’accès à une API externe (initialisation + appels + erreurs bas niveau).
+- Le `datastore` encapsule l’accès DB (Prisma) et expose des méthodes de lecture/écriture typées.
+- Les `utils` restent “purs” (pas d’IO, pas d’injection Nest).
+- Les `testing utils` centralisent les factories/fixtures pour réduire la duplication dans les tests.
 
 ## Composants
 
@@ -71,22 +47,9 @@ Règles pratiques :
 Rôle :
 
 - Déclare les providers, imports, exports du module.
-- Exporte le `service` du module (`<module>.service.ts`) qui constitue l'API publique.
+- Exporte le `service` du module (`<module>.service.ts`) qui constitue l’API publique.
 
-### `<module>.controller.ts`  _(modules core)_
-
-Rôle :
-
-- Expose les routes HTTP (`@Controller('api/v1/…')`).
-- Applique les guards d'auth/projet (`UserGuard`, `ProjectGuard`, …) et le
-  `ZodValidationPipe` (contrats Zod de `@cpn-console/shared`).
-- Délègue la logique métier au `service`.
-
-À éviter :
-
-- Logique métier ou accès DB direct : tout passe par le `service`.
-
-### `<module>-client.service.ts`  _(modules plugins)_
+### `<module>-client.service.ts`
 
 Rôle :
 
@@ -96,16 +59,15 @@ Rôle :
 
 À éviter :
 
-- Décisions métier (permissions, synchronisation, règles de purge) : elles vont dans
-  `<module>.service.ts` ou le controller service.
+- Décisions métier (permissions, synchronisation, règles de purge) : elles vont dans `<module>.service.ts` ou le controller service.
 
 ### `<module>.service.ts`
 
 Rôle :
 
-- Orchestrateur de workflows : `@Cron`, `@OnEvent`, reconcile périodique, tâches "batch".
+- Orchestrateur de workflows : `@Cron`, `@OnEvent`, reconcile périodique, tâches “batch”.
 - Coordination entre `client` et `datastore` (sans dépendre du `service`).
-- Garde-fous "safety" avant opérations destructrices (ex: suppression de groupes orphelins).
+- Garde-fous “safety” avant opérations destructrices (ex: suppression de groupes orphelins).
 
 ### `<module>-datastore.service.ts`
 
@@ -117,33 +79,6 @@ Rôle :
 À éviter :
 
 - Appliquer des règles métier (ex: calcul de permissions) : on garde le datastore centré persistence.
-
-### `<module>-plugin.service.ts`  _(modules plugins)_
-
-Rôle :
-
-- Expose le contrat `ServiceInfos` du hook system `@cpn-console/hooks`.
-- Point d'enregistrement du module dans le registre de plugins (legacy) :
-  `name`, `title`, `imgSrc`, `description`, et éventuellement `to({ project })`
-  pour l'URL de l'UI externe.
-- Aucune route HTTP : ce service n'est pas un controller.
-
-À éviter :
-
-- Logique métier, accès DB ou appels réseau : il ne fait qu'exposer des
-  métadonnées statiques ou dérivées de la configuration.
-
-### `<module>-health.service.ts`  _(modules plugins)_
-
-Rôle :
-
-- Indicateur de santé `@nestjs/terminus` pour le système externe
-  (ex : `KeycloakHealthService`).
-- Consommé par `HealthzModule` pour remonter l'état du plugin dans `/api/v1/healthz`.
-
-À éviter :
-
-- Orchestration métier : se limiter à un check de connectivité / disponibilité.
 
 ### `<module>.utils.ts`
 
@@ -157,7 +92,7 @@ Rôle :
 Rôle :
 
 - Factories typées pour les structures fréquemment utilisées en tests.
-- Support d'`overrides` pour construire rapidement des variantes.
+- Support d’`overrides` pour construire rapidement des variantes.
 - Centralisation des erreurs/fake responses spécifiques au module (quand utile).
 
 ## Tests (Vitest)
@@ -166,7 +101,7 @@ Rôle :
 
 Cible :
 
-- Orchestration : séquences d'appels, side-effects attendus, reconcile.
+- Orchestration : séquences d’appels, side-effects attendus, reconcile.
 
 Approche :
 
@@ -177,19 +112,9 @@ Approche :
 
 Cible :
 
-- Forme des requêtes Prisma, mapping de résultat, typage de l'agrégat renvoyé.
+- Forme des requêtes Prisma, mapping de résultat, typage de l’agrégat renvoyé.
 
 Approche :
 
 - Mock de Prisma/DatabaseService, pas de logique métier.
 
-### `<module>-plugin.service.spec.ts`  _(modules plugins)_
-
-Cible :
-
-- Valeur de retour `ServiceInfos` (nom, titre, URL dérivée de la config).
-
-Approche :
-
-- Mock de `ConfigurationService` ; assertion sur le shape du contrat
-  (`name`, `title`, `to` si présent).
