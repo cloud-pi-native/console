@@ -62,7 +62,7 @@ const projectClusters = computed(() => ([
 
 const canManageEnvs = computed(() => !props.project.locked && props.asProfile === 'user' && ProjectAuthorized.ManageEnvironments({ projectPermissions: props.project.myPerms }))
 const canManageRepos = computed(() => !props.project.locked && props.asProfile === 'user' && ProjectAuthorized.ManageRepositories({ projectPermissions: props.project.myPerms }))
-const canListDeploy = computed(() => ProjectAuthorized.ListDeployments({ projectPermissions: props.project.myPerms }))
+const canListDeploy = computed(() => AdminAuthorized.Manage(userStore.adminPerms) && ProjectAuthorized.ListDeployments({ projectPermissions: props.project.myPerms }))
 
 watch(selectedRepo, async () => {
   branchName.value = defaultBranchName
