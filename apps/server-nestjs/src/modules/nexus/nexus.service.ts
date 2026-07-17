@@ -11,7 +11,7 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
-import { capturePluginResult, makeDisabledPluginResult } from '../plugin/plugin.utils'
+import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultError } from '../vault/vault-http-client.service'
 import { NexusClientService } from './nexus-client.service'
@@ -64,7 +64,6 @@ export class NexusService {
 
   @OnEvent('project.upsert')
   async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'nexus'>> {
-    if (!this.config.usePlugins) return makeDisabledPluginResult('nexus')
     return capturePluginResult('nexus', () => this.syncProject(project))
   }
 
@@ -84,7 +83,6 @@ export class NexusService {
 
   @OnEvent('project.delete')
   async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'nexus'>> {
-    if (!this.config.usePlugins) return makeDisabledPluginResult('nexus')
     return capturePluginResult('nexus', () => this.cleanupProject(project))
   }
 

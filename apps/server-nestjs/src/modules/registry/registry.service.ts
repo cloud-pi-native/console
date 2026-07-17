@@ -17,7 +17,7 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
-import { capturePluginResult, makeDisabledPluginResult } from '../plugin/plugin.utils'
+import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultError } from '../vault/vault-http-client.service'
 import { RegistryClientService, roAccess, rwAccess } from './registry-client.service'
@@ -312,7 +312,6 @@ export class RegistryService {
 
   @OnEvent('project.upsert')
   async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'harbor'>> {
-    if (!this.config.usePlugins) return makeDisabledPluginResult('harbor')
     return capturePluginResult('harbor', () => this.syncProject(project))
   }
 
@@ -335,7 +334,6 @@ export class RegistryService {
 
   @OnEvent('project.delete')
   async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'harbor'>> {
-    if (!this.config.usePlugins) return makeDisabledPluginResult('harbor')
     return capturePluginResult('harbor', () => this.cleanupProject(project))
   }
 

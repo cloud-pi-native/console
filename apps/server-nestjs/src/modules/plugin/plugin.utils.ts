@@ -86,19 +86,6 @@ export async function capturePluginResult<P extends PluginName>(
   }
 }
 
-/**
- * Benign result returned when plugin execution is disabled (the default in
- * test/CI, mirroring the legacy server's `mockHooks`). The real task is not
- * run and no external service is touched.
- */
-export function makeDisabledPluginResult<P extends PluginName>(plugin: P): RequiredPluginResult<P> {
-  return keyedBy(plugin, {
-    status: 'OK',
-    message: 'Plugin execution disabled (not in production/integration)',
-    executionTime: 0,
-  })
-}
-
 // TypeScript widens a computed property with a generic key to an index
 // signature instead of Record<P, ...>, so the assertion is confined here.
 function keyedBy<P extends PluginName>(plugin: P, result: PluginResult): RequiredPluginResult<P> {

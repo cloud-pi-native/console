@@ -11,7 +11,7 @@ import { stringify } from 'yaml'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
-import { capturePluginResult, makeDisabledPluginResult } from '../plugin/plugin.utils'
+import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { ArgoCDDatastoreService } from './argocd-datastore.service'
 import {
@@ -42,7 +42,6 @@ export class ArgoCDService {
 
   @OnEvent('project.upsert')
   async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'argocd'>> {
-    if (!this.config.usePlugins) return makeDisabledPluginResult('argocd')
     return capturePluginResult('argocd', () => this.syncProject(project))
   }
 
@@ -61,7 +60,6 @@ export class ArgoCDService {
 
   @OnEvent('project.delete')
   async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'argocd'>> {
-    if (!this.config.usePlugins) return makeDisabledPluginResult('argocd')
     return capturePluginResult('argocd', () => this.cleanupProject(project))
   }
 
