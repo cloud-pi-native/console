@@ -1,5 +1,20 @@
 # Changelog
 
+## [9.20.1](https://github.com/cloud-pi-native/console/compare/v9.20.0...v9.20.1) (2026-07-17)
+
+
+### Bug Fixes
+
+* **client:** restrict deployment visibility to console admins ([d836948](https://github.com/cloud-pi-native/console/commit/d836948e2c6689445d473c562a2be189873c75af))
+
+
+### Reverted commits
+
+* **client:** switch environments back from API v2 ([9c1245a](https://github.com/cloud-pi-native/console/commit/9c1245a56f650d4819f27f926457810f33b67753))
+* feat(server-nestjs): add autoSync and suspended flags to plugin services ([a48697d](https://github.com/cloud-pi-native/console/commit/a48697d46fad4fbbf54567988d0e99433cb5c4cc))
+* fix: playwright test expect mock ([828db42](https://github.com/cloud-pi-native/console/commit/828db421f6ce4f7eda293a744fda9f22882f7a8c))
+* refactor(server-nestjs): offload project route to new implementation ([99a7f5d](https://github.com/cloud-pi-native/console/commit/99a7f5d29becefcdad24331004263756a6950774))
+
 ## [9.20.0](https://github.com/cloud-pi-native/console/compare/v9.19.0...v9.20.0) (2026-07-17)
 
 
