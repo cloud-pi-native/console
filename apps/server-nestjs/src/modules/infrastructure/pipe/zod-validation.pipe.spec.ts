@@ -76,7 +76,7 @@ describe('zodValidationPipe', () => {
         expect(error).toBeInstanceOf(BadRequestException)
 
         if (error instanceof BadRequestException) {
-          const response = error.getResponse() as { fieldErrors: Record<string, unknown[]> }
+          const response = error.getResponse() as any
 
           expect(response).toHaveProperty('fieldErrors')
           expect(response.fieldErrors).toHaveProperty('name')

@@ -13,7 +13,6 @@ import type { RuleTemplate, VaultRobotSecret } from './registry.utils'
 import { specificallyEnabled } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
-import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
@@ -47,7 +46,7 @@ import {
   ROBOT_NAME_RO,
   ROBOT_NAME_RW,
 } from './registry.constants'
-import { generateVaultRobotSecret, getHostFromUrl, getProjectVaultPath, isSuspended, parseBytes } from './registry.utils'
+import { generateVaultRobotSecret, getHostFromUrl, getProjectVaultPath, parseBytes } from './registry.utils'
 
 @Injectable()
 export class RegistryService {
@@ -317,10 +316,6 @@ export class RegistryService {
 
   @StartActiveSpan()
   private async syncProject(project: ProjectWithDetails) {
-    if (isSuspended(project)) {
-      this.logger.log(`Skipping ArgoCD sync for suspended project ${project.slug}`)
-      return
-    }
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling project upsert for ${project.slug}`)
@@ -345,12 +340,12 @@ export class RegistryService {
     await this.deleteProject(project.slug)
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  // @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
     const span = trace.getActiveSpan()
     this.logger.log('Starting Registry reconciliation')
-    const projects = await this.registryDatastore.getAutoSyncProjects()
+    const projects = await this.registryDatastore.getAllProjects()
     span?.setAttribute('registry.projects.count', projects.length)
     await Promise.all(projects.map(p => this.ensureProject(p)))
   }

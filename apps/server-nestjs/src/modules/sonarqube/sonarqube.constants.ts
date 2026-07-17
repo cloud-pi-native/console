@@ -49,7 +49,3 @@ export const SONARQUBE_PROJECT_QUALIFIER_PROJECT = 'TRK'
 export const SONARQUBE_PROJECT_QUALIFIER_SUB_VIEW = 'SVW'
 export const SONARQUBE_PROJECT_QUALIFIER_UNIT_TEST = 'UTS'
 export const SONARQUBE_PROJECT_QUALIFIER_VIEW = 'VW'
-
-// Plugin synchronization flags (shared plugin config keys)
-export const AUTO_SYNC_PLUGIN_KEY = 'autoSync'
-export const SUSPENDED_PLUGIN_KEY = 'suspended'

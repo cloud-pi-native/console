@@ -18,7 +18,3 @@ export const ADMIN_TOKEN_REFRESH_INTERVAL_MS = 45_000
 // Maximum number of entities returned in a paginated query
 export const GROUPS_PAGINATE_QUERY_MAX = 20
 export const SUBGROUPS_PAGINATE_QUERY_MAX = 20
-
-// Plugin synchronization flags (shared plugin config keys)
-export const AUTO_SYNC_PLUGIN_KEY = 'autoSync'
-export const SUSPENDED_PLUGIN_KEY = 'suspended'

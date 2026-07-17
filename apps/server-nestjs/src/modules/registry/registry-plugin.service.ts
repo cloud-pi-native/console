@@ -1,12 +1,11 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
 import type { Cache } from 'cache-manager'
-import { DISABLED, ENABLED } from '@cpn-console/shared'
+import { DISABLED } from '@cpn-console/shared'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
-import { AUTO_SYNC_PLUGIN_KEY, SUSPENDED_PLUGIN_KEY } from './registry.constants'
 import { createProjectSlugCacheKey } from './registry.utils'
 
 @Injectable()
@@ -83,66 +82,38 @@ export class RegistryPluginService {
       imgSrc: '/img/harbor.svg',
       description: 'Harbor stocke, analyse et distribue vos images de conteneurs',
       config: {
-        project: [
-          {
-            kind: 'switch',
-            key: SUSPENDED_PLUGIN_KEY,
-            initialValue: ENABLED,
-            permissions: {
-              admin: { read: true, write: true },
-              user: { read: true, write: true },
-            },
-            title: 'Suspendre le projet',
-            value: ENABLED,
-            description: 'Suspendre la synchronisation Harbor pour ce projet',
+        project: [{
+          permissions: {
+            admin: { read: false, write: false },
+            user: { read: false, write: false },
           },
-          {
-            kind: 'switch',
-            key: AUTO_SYNC_PLUGIN_KEY,
-            initialValue: DISABLED,
-            permissions: {
-              admin: { read: true, write: true },
-              user: { read: true, write: true },
-            },
-            title: 'Synchronisation automatique Harbor',
-            value: DISABLED,
-            description: 'Synchroniser automatiquement le projet Harbor',
+          key: 'projectId',
+          kind: 'text',
+          title: 'Num du projet Harbor',
+          value: '',
+        }, {
+          kind: 'switch',
+          key: 'publishProjectRobot',
+          initialValue: DISABLED,
+          title: 'Publication du robot projet',
+          description: 'Activer le robot de projet (read-only) et afficher ses identifiants aux utilisateurs',
+          permissions: {
+            admin: { read: true, write: true },
+            user: { read: true, write: false },
           },
-          {
-            permissions: {
-              admin: { read: false, write: false },
-              user: { read: false, write: false },
-            },
-            key: 'projectId',
-            kind: 'text',
-            title: 'Num du projet Harbor',
-            value: '',
+          value: DISABLED,
+        }, {
+          kind: 'text',
+          permissions: {
+            admin: { read: true, write: true },
+            user: { read: true, write: false },
           },
-          {
-            kind: 'switch',
-            key: 'publishProjectRobot',
-            initialValue: DISABLED,
-            title: 'Publication du robot projet',
-            description: 'Activer le robot de projet (read-only) et afficher ses identifiants aux utilisateurs',
-            permissions: {
-              admin: { read: true, write: true },
-              user: { read: true, write: false },
-            },
-            value: DISABLED,
-          },
-          {
-            kind: 'text',
-            permissions: {
-              admin: { read: true, write: true },
-              user: { read: true, write: false },
-            },
-            key: 'quotaHardLimit',
-            title: 'Quota',
-            value: '',
-            description: `Stockage limite (vide utilisation du paramètre global, ${quotaDescription}`,
-            placeholder: '',
-          },
-        ],
+          key: 'quotaHardLimit',
+          title: 'Quota',
+          value: '',
+          description: `Stockage limite (vide utilisation du paramètre global, ${quotaDescription}`,
+          placeholder: '',
+        }],
         global: [{
           kind: 'switch',
           key: 'publishProjectRobot',

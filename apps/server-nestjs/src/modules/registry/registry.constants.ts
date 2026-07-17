@@ -45,7 +45,3 @@ export const HARBOR_ROLE_DEVELOPER = 2
 export const HARBOR_ROLE_GUEST = 3
 export const HARBOR_ROLE_MAINTAINER = 4
 export const HARBOR_ROLE_LIMITED_GUEST = 5
-
-// Plugin synchronization flags (shared plugin config keys)
-export const AUTO_SYNC_PLUGIN_KEY = 'autoSync'
-export const SUSPENDED_PLUGIN_KEY = 'suspended'
