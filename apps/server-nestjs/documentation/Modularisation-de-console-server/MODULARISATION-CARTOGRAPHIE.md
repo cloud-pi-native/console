@@ -1,6 +1,6 @@
 # Cartographie des modules - Modularisation Backend
 
-> Derniere mise a jour : **2026-07-16** (reconciliation statut / cartographie / routage nginx)
+> Derniere mise a jour : **2026-06-16** (refonte Infrastructure/Auth/Permission)
 
 ---
 
@@ -23,56 +23,36 @@ Cartographier l'ensemble des modules de l'application backend actuelle pour :
 | queries-index.ts | Supprime des le depart : chaque module NestJS possede ses propres queries Prisma |
 | Systeme d'evenements | `@nestjs/event-emitter` (remplacement progressif de `@cpn-console/hooks`) |
 | Plugins | Deviennent des modules NestJS (encapsulation puis reecriture progressive) |
-| Module project | Decoupe en 6 modules separes : Project, ProjectSecrets, ProjectServices, ProjectHooks, ProjectBulk, ProjectMembers, ProjectRoles |
+| Module project | Decoupe en 3 sous-modules : ProjectCore, ProjectSecrets, ProjectBulk |
 | Equipe dediee | 2 developpeurs en parallele |
 
 ---
 
 ## Vue synthetique
 
-**75 routes metier** reparties en **18 modules metier** (dont project eclate en 7),
-plus **5 couches transverses** et **7 plugins** encapsules.
+**75 routes metier** reparties en **18 modules metier** (dont project eclate en 3),
+plus **5 couches transverses** et **7 plugins** a encapsuler.
 
 ### Legende des statuts
 
-- `✅ MIGRE` : module declare dans `main.module.ts` (controller actif) — code NestJS cense remplacer le legacy.
-- `✅ MIGRE + routé` : module `✅ MIGRE` **et** bascule nginx effective dans
-  `apps/nginx-strangler/conf.d/routing.conf` (le trafic est bien servi par `server-nestjs`).
-- `⚠️ exposé (non routé)` : module declare dans `main.module.ts` (controller
-  actif) mais la route reste servie par le legacy via le fallback nginx.
-- `⚠️ encapsulé (non routé)` : module de plugin present, importe en interne,
-  mais sans route exposee par `main.module.ts`.
-- `⚠️ code, non câblé` : code du module/controller present mais le module
-  n'est pas importe dans `main.module.ts` (ex : `system-config`).
-- `A MIGRER` : Existe dans `server`, a migrer vers `server-nestjs`
-- `A CREER` : N'existe pas encore dans la codebase
-- `|` (vide) : module pas encore cree dans `server-nestjs`
+- FAIT : Deja implemente dans `server-nestjs`
+- A CREER : N'existe pas encore
+- A MIGRER : Existe dans `server`, a migrer vers `server-nestjs`
 
 ---
 
 ## Architecture lasagnes - Etat des lieux
 
-```txt
+```
  Couche                          Etat actuel server-nestjs
 +--------------------------------------------------------------+
-| Couche 6 : Modules metier (controllers, DTOs)                | PARTIEL
-|           exposes : version, healthz, system-settings,        |
-|           service-chain, log, deployment, project            |
-|           (+ 6 sous-modules projet), environment ;           |
-|           reste A MIGRER                             |
+| Couche 6 : Modules metier (controllers, DTOs)                | A MIGRER
 +--------------------------------------------------------------+
-| Couche 5 : Plugins (modules NestJS injectables)              | PARTIEL
-|           vault/gitlab/registry/nexus/argocd/sonarqube/       |
-|           harbor/keycloak/opencds encapsules, aucun          |
-|           expose de route ; a CABLER                    |
+| Couche 5 : Plugins (modules NestJS injectables)              | A CREER
 +--------------------------------------------------------------+
-| Couche 4 : Evenements (EventEmitter, remplacement hooks)     | PARTIEL
-|           InfrastructureModule/events + EventsModule +       |
-|           PluginModule (hooks) present ; a activer           |
+| Couche 4 : Evenements (EventEmitter, remplacement hooks)     | A CREER
 +--------------------------------------------------------------+
 | Couche 3 : Securite (AuthService, UserGuard, ProjectGuard, Filters)   | PARTIEL
-|           AuthService + @AuthUser + UserGuard/ProjectGuard     |
-|           + ZodValidationPipe ; GlobalExceptionFilter a verif |
 +--------------------------------------------------------------+
 | Couche 2 : Core (AppService, FastifyService)                 | FAIT
 +--------------------------------------------------------------+
@@ -80,22 +60,14 @@ plus **5 couches transverses** et **7 plugins** encapsules.
 +--------------------------------------------------------------+
 ```
 
-**Etat réel constaté :**
-- Couches 1 et 2 en place.
-- Couche 3 : auth par token (`x-dso-token`) + bearer JWT Keycloak via
-  `AuthService` ; permissions via `InfrastructureModule -> PermissionModule ->
-  UserModule / ProjectModule` (`UserGuard`, `ProjectGuard`, `UserService`,
-  `ProjectService`) ; `ZodValidationPipe` (et non `class-validator` comme
-  prévu initialement). `GlobalExceptionFilter` à confirmer.
-- Couche 4 : `InfrastructureModule` + `EventsModule` + `PluginModule`
-  (encapsulation hooks legacy) présents, non tous déclarés dans
-  `main.module.ts`.
-- Couche 5 : 8+ modules de plugins encapsulés (sans route exposée).
-- Couche 6 : ~13 modules métier exposés (controller actif, déclarés dans
-  `main.module.ts`), mais seuls `service-chains` et `projects` (ce dernier
-  depuis la bascule `location /api/v1/projects`) sont routés vers
-  `server-nestjs` dans `routing.conf` ; `environment` est routé via `/api/v2/`.
-  Le reste reste en fallback legacy.
+Les couches 1 et 2 sont en place. La couche 3 est **partiellement** en place :
+l'auth par token (`x-dso-token`) et le bearer JWT Keycloak passent désormais
+par `AuthService`. La couche de permissions est structurée autour de
+`InfrastructureModule -> PermissionModule -> UserModule / ProjectModule`
+avec `UserGuard`, `ProjectGuard`, `UserService` et `ProjectService`.
+Il reste a homogénéiser les usages des decorateurs de contexte utilisateur
+(`@AuthUser()`), et le `GlobalExceptionFilter`.
+Les couches 4 et 5 restent a creer.
 
 ---
 
@@ -209,34 +181,34 @@ Plus le score est eleve, plus le module est prioritaire.
 
 | Rang | Module | Type | Score | Vague | Sprint | Statut |
 |------|--------|------|-------|-------|--------|--------|
-| 1 | vault (encapsulation) | Plugin | 8.5 | V3 | S7-S8 | ⚠️ encapsulé (non routé) |
-| 2 | system (health/version) | Metier | 7.8 | V1 | S3 | ⚠️ exposé (non routé) |
-| 3 | system/settings | Metier | 7.4 | V1 | S3 | ⚠️ exposé (non routé) |
-| 4 | system/config | Metier | 7.4 | V1 | S3-S4 | ⚠️ code, non câblé |
-| 5 | keycloak (encapsulation) | Plugin | 7.4 | V3 | S8 | ⚠️ encapsulé (non routé) |
-| 6 | admin-token | Metier | 7.1 | V1 | S3-S4 | 📅 Planifié (absent de la codebase) |
-| 7 | user/tokens | Metier | 7.1 | V1 | S3-S4 | 📅 Planifié (absent de la codebase) |
-| 8 | gitlab (encapsulation) | Plugin | 6.7 | V4 | S9 | ⚠️ encapsulé (non routé) |
-| 9 | service-monitor | Metier | 6.6 | V2 | S5 | 📅 Planifié (absent de la codebase) |
-| 10 | user | Metier | 6.6 | V2 | S5 | 📅 Planifié |
-| 11 | stage | Metier | 6.5 | V2 | S5-S6 | 📅 Planifié |
-| 12 | log | Metier | 6.5 | V1 | S4 | ⚠️ exposé (non routé) |
-| 13 | zone | Metier | 6.4 | V2 | S6 | 📅 Planifié |
-| 14 | environment | Metier | 6.3 | V3 | S7 | ✅ MIGRÉ + routé (/api/v2/) |
-| 15 | admin-role | Metier | 6.1 | V2 | S5 | 📅 Planifié |
-| 16 | project-core | Metier | 5.8 | V4 | S9 | ⚠️ exposé (non routé) |
-| 17 | service-chain | Metier | 5.9 | V3 | S8 | ✅ MIGRÉ + routé |
-| 18 | repository | Metier | 5.8 | V3 | S7-S8 | 📅 Planifié |
-| 19 | cluster | Metier | 5.7 | V3 | S7 | 📅 Planifié |
-| 20 | harbor (encapsulation) | Plugin | 5.6 | V4 | S9-S10 | ⚠️ encapsulé (non routé) |
-| 21 | project-service | Metier | 5.6 | V3 | S8 | ⚠️ exposé (non routé) |
-| 22 | argocd (encapsulation) | Plugin | 5.3 | V5 | S10-S11 | ⚠️ encapsulé (non routé) |
-| 23 | project-role | Metier | 5.2 | V3 | S7-S8 | ⚠️ exposé (non routé) |
-| 24 | nexus (encapsulation) | Plugin | 5.1 | V4 | S10 | ⚠️ encapsulé (non routé) |
-| 25 | project-member | Metier | 4.7 | V3 | S8 | ⚠️ exposé (non routé) |
-| 26 | project-secrets | Metier | 4.6 | V4 | S9 | ⚠️ exposé (non routé) |
-| 27 | project-bulk | Metier | 4.2 | V4 | S9-S10 | ⚠️ exposé (non routé) |
-| 28 | sonarqube (encapsulation) | Plugin | 4.2 | V5 | S11 | ⚠️ encapsulé (non routé) |
+| 1 | vault (encapsulation) | Plugin | 8.5 | V3 | S7-S8 | ✅ MIGRE |
+| 2 | system (health/version) | Metier | 7.8 | V1 | S3 | ✅ MIGRE |
+| 3 | system/settings | Metier | 7.4 | V1 | S3 | ✅ MIGRE |
+| 4 | system/config | Metier | 7.4 | V1 | S3-S4 | |
+| 5 | keycloak (encapsulation) | Plugin | 7.4 | V3 | S8 | ✅ MIGRE |
+| 6 | admin-token | Metier | 7.1 | V1 | S3-S4 | |
+| 7 | user/tokens | Metier | 7.1 | V1 | S3-S4 | |
+| 8 | gitlab (encapsulation) | Plugin | 6.7 | V4 | S9 | ✅ MIGRE |
+| 9 | service-monitor | Metier | 6.6 | V2 | S5 | |
+| 10 | user | Metier | 6.6 | V2 | S5 | |
+| 11 | stage | Metier | 6.5 | V2 | S5-S6 | |
+| 12 | log | Metier | 6.5 | V1 | S4 | |
+| 13 | zone | Metier | 6.4 | V2 | S6 | |
+| 14 | environment | Metier | 6.3 | V3 | S7 | |
+| 15 | admin-role | Metier | 6.1 | V2 | S5 | |
+| 16 | project-core | Metier | 5.8 | V4 | S9 | |
+| 17 | service-chain | Metier | 5.9 | V3 | S8 | ✅ MIGRE |
+| 18 | repository | Metier | 5.8 | V3 | S7-S8 | |
+| 19 | cluster | Metier | 5.7 | V3 | S7 | |
+| 20 | harbor (encapsulation) | Plugin | 5.6 | V4 | S9-S10 | ✅ MIGRE |
+| 21 | project-service | Metier | 5.6 | V3 | S8 | |
+| 22 | argocd (encapsulation) | Plugin | 5.3 | V5 | S10-S11 | ✅ MIGRE |
+| 23 | project-role | Metier | 5.2 | V3 | S7-S8 | |
+| 24 | nexus (encapsulation) | Plugin | 5.1 | V4 | S10 | ✅ MIGRE |
+| 25 | project-member | Metier | 4.7 | V3 | S8 | |
+| 26 | project-secrets | Metier | 4.6 | V4 | S9 | |
+| 27 | project-bulk | Metier | 4.2 | V4 | S9-S10 | |
+| 28 | sonarqube (encapsulation) | Plugin | 4.2 | V5 | S11 | |
 
 **Note** : Le score brut ne dicte pas directement l'ordre de migration.
 L'ordre reel est contraint par le graphe de dependances (bottom-up), les
@@ -303,7 +275,7 @@ les premiers modules via Nginx.
 
 ---
 
-### 3. system/config — ⚠️ code, non câblé
+### 3. system/config
 
 | Attribut | Valeur |
 |----------|--------|
@@ -313,8 +285,8 @@ les premiers modules via Nginx.
 | **Dev** | A |
 
 **Routes** :
-- `GET /api/v1/system/plugins` - Configuration des plugins
-- `PUT /api/v1/system/plugins` - Mise a jour de la configuration
+- `GET /api/v1/admin/plugins-config` - Configuration des plugins
+- `PUT /api/v1/admin/plugins-config` - Mise a jour de la configuration
 
 **Dependances sortantes** : Aucune (queries propres)
 **Dependances entrantes** : Aucune
@@ -853,7 +825,7 @@ Encapsuler les plugins intermediaires.
 **Livrable fin S10** : 75 routes migrees (100% des routes metier) + plugins
 vault, keycloak, gitlab, harbor, nexus encapsules
 
-### 19. project-core — ⚠️ exposé (non routé)
+### 19. project-core
 
 | Attribut | Valeur |
 |----------|--------|
@@ -885,7 +857,7 @@ vault, keycloak, gitlab, harbor, nexus encapsules
 
 ---
 
-### 20. project-secrets — ⚠️ exposé (non routé)
+### 20. project-secrets
 
 | Attribut | Valeur |
 |----------|--------|
@@ -897,7 +869,7 @@ vault, keycloak, gitlab, harbor, nexus encapsules
 **Routes** :
 - `GET /api/v1/projects/:projectId/secrets` - Secrets du projet
 
-**Dependances sortantes** : hooks (project.get)
+**Dependances sortantes** : hooks (project.getSecrets)
 **Dependances entrantes** : Aucune
 
 **Points d'attention** :
@@ -910,26 +882,29 @@ vault, keycloak, gitlab, harbor, nexus encapsules
 
 ---
 
-### 21. project-bulk — ⚠️ exposé (non routé)
+### 21. project-bulk
 
 | Attribut | Valeur |
 |----------|--------|
-| **Routes** | 1 (bulk action) |
+| **Routes** | 3 |
 | **Score** | 4.2 |
 | **Sprint** | S9-S10 |
 | **Dev** | A |
 
 **Routes** :
-- `POST /api/v1/projects-bulk` - Action bulk sur les projets (archive, lock, unlock, replay)
+- `GET /api/v1/admin/projects/data` - Export bulk des donnees projets
+- `POST /api/v1/admin/projects/bulk` - Action bulk sur les projets
+- `POST /api/v1/projects/:projectId/replay-hooks` - Rejeu des hooks d'un projet
 
-**Dependances sortantes** : `ProjectService` (archive), `ProjectHooksService` (replay, lock/unlock)
+**Dependances sortantes** : `queries-index` (getAllProjectsDataForExport, deleteAllEnvironmentForProject, deleteAllRepositoryForProject), hooks (project.upsert pour replay)
 **Dependances entrantes** : Aucune
 
 **Points d'attention** :
-- Route admin uniquement (`@RequireAdminPermission('Manage')`)
-- Le bulk action itere sur les projets avec `Promise.allSettled` (pas de limite de parallelisme)
-- L'export CSV (`GET /api/v1/projects/data`) est géré par le `ProjectController`, pas par ce module
+- Routes admin uniquement
+- Le bulk action itere sur les projets avec une limite de parallelisme
+  (`parallelBulkLimit` dans la config). Attention aux performances
 - Le replay-hooks re-execute toute la chaine de hooks pour un projet
+- L'export data peut generer de gros payloads
 
 **Estimation** : 2 jours
 
