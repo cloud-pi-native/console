@@ -309,6 +309,5 @@ Avant de considérer un module comme "migré" :
 - [ ] Monitoring actif
 - [ ] Aucune régression détectée
 - [ ] Documentation technique à jour
-- [ ] MODULARISATION-STATUT.md mis à jour
-- [ ] MODULARISATION-CARTOGRAPHIE.md mis à jour (statut routé / exposé / encapsulé)
+- [ ] MODULARISATION_STATUS.md mis à jour
 - [ ] Annonce de fin sur Mattermost
