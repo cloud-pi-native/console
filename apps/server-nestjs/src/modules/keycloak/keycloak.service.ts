@@ -9,9 +9,8 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
 import { getErrorResponseStatus } from '../../utils/http-error'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
-import { capturePluginResult, makeDisabledPluginResult } from '../plugin/plugin.utils'
+import { capturePluginResult } from '../plugin/plugin.utils'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
 import { isMember, isNonEmptyGroupPath, isOwnedProjectGroup, isSuspended, normalizeGroupPath } from './keycloak.utils'
@@ -23,14 +22,12 @@ export class KeycloakService {
   constructor(
     @Inject(KeycloakClientService) private readonly keycloak: KeycloakClientService,
     @Inject(KeycloakDatastoreService) private readonly keycloakDatastore: KeycloakDatastoreService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
   ) {
     this.logger.log('KeycloakService initialized')
   }
 
   @OnEvent('project.upsert')
   async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'keycloak'>> {
-    if (!this.config.usePlugins) return makeDisabledPluginResult('keycloak')
     return capturePluginResult('keycloak', () => this.syncProject(project))
   }
 
@@ -49,7 +46,6 @@ export class KeycloakService {
 
   @OnEvent('project.delete')
   async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'keycloak'>> {
-    if (!this.config.usePlugins) return makeDisabledPluginResult('keycloak')
     return capturePluginResult('keycloak', () => this.cleanupProject(project))
   }
 
