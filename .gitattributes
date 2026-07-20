@@ -1,0 +1,2 @@
+# Generated API clients — collapse in diffs and exclude from language stats.
+plugins/harbor/src/api/Api.ts linguist-generated=true

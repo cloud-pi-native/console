@@ -30,6 +30,11 @@ export const ROBOT_NAME_RO = 'ro-robot'
 export const ROBOT_NAME_RW = 'rw-robot'
 export const ROBOT_NAME_PROJECT = 'project-robot'
 
+// Page size used when listing robots. A project only ever owns a handful of
+// robots (ro, rw and optionally the project robot — 3 in practice), so a single
+// page is plenty; this simply bounds each pagination request.
+export const ROBOT_LIST_PAGE_SIZE = 100
+
 // Allowed Harbor retention rule templates
 export const ALLOWED_RETENTION_RULE_TEMPLATES = [
   'always',

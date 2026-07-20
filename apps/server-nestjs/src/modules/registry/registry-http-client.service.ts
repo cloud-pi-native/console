@@ -3,10 +3,13 @@ import { trace } from '@opentelemetry/api'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { encodeBasicAuth } from './registry.utils'
 
+export type RegistryQuery = Record<string, string | number | undefined>
+
 export interface RegistryFetchOptions {
   method?: string
   headers?: Record<string, string>
   body?: unknown
+  query?: RegistryQuery
 }
 
 export interface RegistryResponse<T = unknown> {
@@ -76,7 +79,7 @@ export class RegistryHttpClientService {
     span?.setAttribute('registry.method', method)
     span?.setAttribute('registry.path', path)
 
-    const request = this.createRequest(path, method, options.body, options.headers)
+    const request = this.createRequest(path, method, options.body, options.headers, options.query)
     const response = await fetch(request).catch((error) => {
       throw new RegistryError(
         'Unexpected',
@@ -88,8 +91,13 @@ export class RegistryHttpClientService {
     return await handleResponse<T>(response)
   }
 
-  private createRequest(path: string, method: string, body?: unknown, extraHeaders?: Record<string, string>): Request {
-    const url = new URL(path, this.apiBaseUrl).toString()
+  private createRequest(path: string, method: string, body?: unknown, extraHeaders?: Record<string, string>, query?: RegistryQuery): Request {
+    const url = new URL(path, this.apiBaseUrl)
+    if (query) {
+      for (const [key, value] of Object.entries(query)) {
+        if (value !== undefined) url.searchParams.set(key, String(value))
+      }
+    }
     const headers: Record<string, string> = {
       ...this.defaultHeaders,
       ...extraHeaders,

@@ -1,6 +1,7 @@
-import type { RegistryResponse } from './registry-http-client.service'
+import type { RegistryQuery, RegistryResponse } from './registry-http-client.service'
 import { Inject, Injectable } from '@nestjs/common'
 import { RegistryHttpClientService } from './registry-http-client.service'
+import { ROBOT_LIST_PAGE_SIZE } from './registry.constants'
 
 export const roAccess: HarborAccess[] = [
   { resource: 'repository', action: 'pull' },
@@ -171,10 +172,9 @@ export class RegistryClientService {
     })
   }
 
-  async getProjectRobots(projectName: string) {
-    return this.http.fetch<HarborRobot[]>(`projects/${encodeURIComponent(projectName)}/robots`, {
-      method: 'GET',
-      headers: { 'X-Is-Resource-Name': 'true' },
+  getProjectRobots(projectId: number): AsyncGenerator<HarborRobot> {
+    return this.paginate<HarborRobot>('robots', {
+      q: `Level=project,ProjectID=${projectId}`,
     })
   }
 
@@ -185,15 +185,9 @@ export class RegistryClientService {
     })
   }
 
-  async deleteRobot(projectName: string, robotId: number) {
-    const direct = await this.http.fetch(`robots/${encodeURIComponent(String(robotId))}`, {
+  async deleteRobot(robotId: number): Promise<RegistryResponse> {
+    return this.http.fetch(`robots/${encodeURIComponent(String(robotId))}`, {
       method: 'DELETE',
-    })
-    if (direct.status < 300 || direct.status === 404) return direct
-
-    return this.http.fetch(`projects/${encodeURIComponent(projectName)}/robots/${encodeURIComponent(String(robotId))}`, {
-      method: 'DELETE',
-      headers: { 'X-Is-Resource-Name': 'true' },
     })
   }
 
@@ -216,5 +210,17 @@ export class RegistryClientService {
       method: 'PUT',
       body,
     })
+  }
+
+  private async* paginate<T>(path: string, query: RegistryQuery): AsyncGenerator<T> {
+    for (let page = 1; ; page++) {
+      const response = await this.http.fetch<T[]>(path, {
+        method: 'GET',
+        query: { ...query, page, page_size: ROBOT_LIST_PAGE_SIZE },
+      })
+      if (response.status !== 200 || !response.data?.length) return
+      yield* response.data
+      if (response.data.length < ROBOT_LIST_PAGE_SIZE) return
+    }
   }
 }
