@@ -56,18 +56,19 @@ export const createDsoProject: StepCall<Project> = async (payload) => {
     ])
     const api = getApi()
 
-    await Promise.all([
-      ensureRobot(projectName, roRobotName, vaultApi, roAccess, api), // cette ligne en premier sinon ça foire au dessus
-      ensureRobot(projectName, rwRobotName, vaultApi, rwAccess, api),
-      addProjectGroupMember(projectName, oidcGroup),
-      addRetentionPolicy(projectName, projectCreated.project_id as number),
-      createProjectRobot
-        ? ensureRobot(projectName, projectRobotName, vaultApi, roAccess, api)
-        : deleteRobot(projectName, projectRobotName, vaultApi, api),
-    ])
-
     if (!projectCreated.project_id)
       throw new Error('Unable to retrieve project_id')
+    const projectId = projectCreated.project_id
+
+    await Promise.all([
+      ensureRobot(projectName, projectId, roRobotName, vaultApi, roAccess, api), // cette ligne en premier sinon ça foire au dessus
+      ensureRobot(projectName, projectId, rwRobotName, vaultApi, rwAccess, api),
+      addProjectGroupMember(projectName, oidcGroup),
+      addRetentionPolicy(projectName, projectId),
+      createProjectRobot
+        ? ensureRobot(projectName, projectId, projectRobotName, vaultApi, roAccess, api)
+        : deleteRobot(projectName, projectId, projectRobotName, vaultApi, api),
+    ])
     returnResult.status.message = `Created${createProjectRobot ? ' , with project robot' : ''}`
     returnResult.store = {
       projectId: projectCreated.project_id,

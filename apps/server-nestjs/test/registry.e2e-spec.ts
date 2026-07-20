@@ -11,6 +11,7 @@ import { RegistryModule } from '../src/modules/registry/registry.module'
 import { RegistryService } from '../src/modules/registry/registry.service'
 import { getHostFromUrl, getProjectVaultPath } from '../src/modules/registry/registry.utils'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
+import { getAll } from '../src/utils/iterable'
 
 const canRunRegistryE2E
   = Boolean(process.env.E2E)
@@ -67,9 +68,8 @@ describeWithRegistry('RegistryService (e2e)', () => {
     const project = await client.getProjectByName(projectSlug)
     expect(project.status).toBe(200)
 
-    const robots = await client.getProjectRobots(projectSlug)
-    expect(robots.status).toBe(200)
-    const robotNames = (robots.data ?? []).flatMap(r => r.name ? [r.name] : [])
+    const robots = await getAll(client.getProjectRobots(Number(project.data?.project_id)))
+    const robotNames = robots.flatMap(r => r.name ? [r.name] : [])
     expect(robotNames).toContain(`robot$${projectSlug}+${ROBOT_NAME_RO}`)
     expect(robotNames).toContain(`robot$${projectSlug}+${ROBOT_NAME_RW}`)
     expect(robotNames).toContain(`robot$${projectSlug}+${ROBOT_NAME_PROJECT}`)

@@ -4,6 +4,11 @@ import type { HarborApi } from './utils.js'
 import { logger } from './logger.js'
 import { getConfig, toVaultSecret } from './utils.js'
 
+// A project only ever owns a handful of robots (ro, rw and optionally the
+// project robot — 3 in practice), so fetching a single page is enough; we never
+// need to paginate the robot listing.
+const ROBOT_LIST_PAGE_SIZE = 100
+
 export interface VaultRobotSecret {
   // {"auths":{"registry-host.com":{"auth":"<the TOKEN>","email":""}}},
   DOCKER_CONFIG: string
@@ -14,12 +19,12 @@ export interface VaultRobotSecret {
   USERNAME: string
 }
 
-export const getRobot = async (projectName: string, robotName: string, api: HarborApi) => getRobotByName(projectName, `robot$${projectName}+${robotName}`, api)
+export const getRobot = async (projectName: string, projectId: number, robotName: string, api: HarborApi): Promise<Robot | undefined> => getRobotByName(projectId, `robot$${projectName}+${robotName}`, api)
 
-export async function ensureRobot(projectName: string, robotName: string, vaultApi: VaultProjectApi, access: Access[], api: HarborApi): Promise<VaultRobotSecret> {
+export async function ensureRobot(projectName: string, projectId: number, robotName: string, vaultApi: VaultProjectApi, access: Access[], api: HarborApi): Promise<VaultRobotSecret> {
   logger.debug({ action: 'ensureRobot', projectSlug: projectName, robotName }, 'Ensuring Harbor robot')
   const vaultPath = `REGISTRY/${robotName}`
-  const robot = await getRobot(projectName, robotName, api)
+  const robot = await getRobot(projectName, projectId, robotName, api)
   const vaultRobotSecret = await vaultApi.read(vaultPath, { throwIfNoEntry: false }) as { data: VaultRobotSecret } | undefined
 
   let creds: VaultRobotSecret
@@ -27,7 +32,7 @@ export async function ensureRobot(projectName: string, robotName: string, vaultA
   if (vaultRobotSecret?.data && vaultRobotSecret.data.HOST === getConfig().host) {
     creds = vaultRobotSecret.data
   } else if (robot) {
-    creds = toVaultSecret(await regenerateRobot(projectName, robotName, access, api) as Required<RobotCreated>)
+    creds = toVaultSecret(await regenerateRobot(projectName, projectId, robotName, access, api) as Required<RobotCreated>)
     await vaultApi.write(creds, vaultPath)
   } else {
     creds = toVaultSecret(await createRobot(projectName, robotName, access, api) as Required<RobotCreated>)
@@ -36,10 +41,10 @@ export async function ensureRobot(projectName: string, robotName: string, vaultA
   return creds
 }
 
-export async function deleteRobot(projectName: string, robotName: string, vaultApi: VaultProjectApi, api: HarborApi) {
+export async function deleteRobot(projectName: string, projectId: number, robotName: string, vaultApi: VaultProjectApi, api: HarborApi): Promise<void> {
   logger.info({ action: 'deleteRobot', projectSlug: projectName, robotName }, 'Deleting Harbor robot')
   const vaultPath = `REGISTRY/${robotName}`
-  const robot = await getRobot(projectName, robotName, api)
+  const robot = await getRobot(projectName, projectId, robotName, api)
   if (robot?.id) {
     api.robots.deleteRobot(robot.id)
   }
@@ -55,17 +60,20 @@ export async function createRobot(projectName: string, robotName: string, access
   return (await api.robots.createRobot(getRobotPermissions(projectName, robotName, access))).data
 }
 
-export async function regenerateRobot(projectName: string, robotName: string, access: Access[], api: HarborApi) {
+export async function regenerateRobot(projectName: string, projectId: number, robotName: string, access: Access[], api: HarborApi): Promise<RobotCreated> {
   logger.info({ action: 'regenerateRobot', projectSlug: projectName, robotName }, 'Regenerating Harbor robot')
-  const robot = await getRobot(projectName, robotName, api)
+  const robot = await getRobot(projectName, projectId, robotName, api)
   if (robot?.id)
-    await api.projects.deleteRobotV1(projectName, robot.id)
+    await api.robots.deleteRobot(robot.id)
   return createRobot(projectName, robotName, access, api)
 }
 
-export async function getRobotByName(project: string | number, robotName: string, api: HarborApi): Promise<Robot | undefined> {
-  logger.debug({ action: 'getRobotByName', projectRef: project, robotName }, 'Listing Harbor robots to find matching name')
-  const listRobots = await api.projects.listRobotV1(String(project))
+export async function getRobotByName(projectId: number, robotName: string, api: HarborApi): Promise<Robot | undefined> {
+  logger.debug({ action: 'getRobotByName', projectId, robotName }, 'Listing Harbor robots to find matching name')
+  const listRobots = await api.robots.listRobot({
+    q: `Level=project,ProjectID=${projectId}`,
+    page_size: ROBOT_LIST_PAGE_SIZE,
+  })
   return listRobots.data.find(({ name }) => name === robotName)
 }
 

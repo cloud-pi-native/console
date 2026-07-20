@@ -14,6 +14,7 @@ import { specificallyEnabled } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
+import { find } from '../../utils/iterable'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
@@ -68,16 +69,14 @@ export class RegistryService {
     return getHostFromUrl(this.config.harborUrl)
   }
 
-  private async getRobot(project: ProjectWithDetails, robotName: string) {
+  private async getRobot(project: ProjectWithDetails, harborProjectId: number, robotName: string) {
     const span = trace.getActiveSpan()
     span?.setAttributes({
       'project.slug': project.slug,
       'registry.robot.name': robotName,
     })
-    const robots = await this.client.getProjectRobots(project.slug)
-    if (robots.status !== 200 || !robots.data) return undefined
     const fullName = generateRobotFullName(project, robotName)
-    return robots.data.find(r => r?.name === fullName)
+    return find(this.client.getProjectRobots(harborProjectId), r => r?.name === fullName)
   }
 
   private async createProjectRobot(project: ProjectWithDetails, robotName: string, access: HarborAccess[]) {
@@ -90,15 +89,15 @@ export class RegistryService {
     return created.data
   }
 
-  private async rotateRobot(project: ProjectWithDetails, robotName: string, access: HarborAccess[]) {
-    const existing = await this.getRobot(project, robotName)
+  private async rotateRobot(project: ProjectWithDetails, harborProjectId: number, robotName: string, access: HarborAccess[]) {
+    const existing = await this.getRobot(project, harborProjectId, robotName)
     if (existing?.id) {
-      await this.client.deleteRobot(project.slug, existing.id)
+      await this.client.deleteRobot(existing.id)
     }
     return this.createProjectRobot(project, robotName, access)
   }
 
-  private async ensureRobotSecret(project: ProjectWithDetails, robotName: string, access: HarborAccess[]) {
+  private async ensureRobotSecret(project: ProjectWithDetails, harborProjectId: number, robotName: string, access: HarborAccess[]) {
     const span = trace.getActiveSpan()
     span?.setAttributes({
       'project.slug': project.slug,
@@ -128,9 +127,9 @@ export class RegistryService {
       return vaultRobotSecret.data
     }
 
-    const existing = await this.getRobot(project, robotName)
+    const existing = await this.getRobot(project, harborProjectId, robotName)
     const created = existing
-      ? await this.rotateRobot(project, robotName, access)
+      ? await this.rotateRobot(project, harborProjectId, robotName, access)
       : await this.createProjectRobot(project, robotName, access)
     const fullName = generateRobotFullName(project, robotName)
     const secret = generateVaultRobotSecret(this.host, fullName, created.secret)
@@ -277,19 +276,21 @@ export class RegistryService {
     const storageLimit = options.storageLimitBytes ?? -1
     const harborProject = await this.ensureProjectQuota(project, storageLimit)
     const harborProjectId = Number(harborProject.project_id)
+    if (!Number.isFinite(harborProjectId))
+      throw new Error('Unable to retrieve Harbor project_id')
 
     await Promise.all([
-      this.ensureRobotSecret(project, ROBOT_NAME_RO, roAccess),
-      this.ensureRobotSecret(project, ROBOT_NAME_RW, rwAccess),
+      this.ensureRobotSecret(project, harborProjectId, ROBOT_NAME_RO, roAccess),
+      this.ensureRobotSecret(project, harborProjectId, ROBOT_NAME_RW, rwAccess),
       this.ensureProjectGroupMembers(project),
-      Number.isFinite(harborProjectId) ? this.ensureRetentionPolicy(project, harborProjectId) : Promise.resolve(),
+      this.ensureRetentionPolicy(project, harborProjectId),
       options.publishProjectRobot
-        ? this.ensureRobotSecret(project, ROBOT_NAME_PROJECT, roAccess)
+        ? this.ensureRobotSecret(project, harborProjectId, ROBOT_NAME_PROJECT, roAccess)
         : Promise.resolve(),
     ])
 
     return {
-      projectId: Number.isFinite(harborProjectId) ? harborProjectId : undefined,
+      projectId: harborProjectId,
       basePath: `${this.host}/${project.slug}/`,
     }
   }

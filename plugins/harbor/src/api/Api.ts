@@ -1,7 +1,6 @@
-/* eslint-disable eslint-comments/no-unlimited-disable */
-// @ts-nocheck
 /* eslint-disable */
 /* tslint:disable */
+// @ts-nocheck
 /*
  * ---------------------------------------------------------------
  * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
@@ -95,6 +94,8 @@ export interface Artifact {
   media_type?: string;
   /** The manifest media type of the artifact */
   manifest_media_type?: string;
+  /** The artifact_type in the manifest of the artifact */
+  artifact_type?: string;
   /**
    * The ID of the project that the artifact belongs to
    * @format int64
@@ -105,6 +106,8 @@ export interface Artifact {
    * @format int64
    */
   repository_id?: number;
+  /** The name of the repository that the artifact belongs to */
+  repository_name?: string;
   /** The digest of the artifact */
   digest?: string;
   /**
@@ -132,6 +135,8 @@ export interface Artifact {
   labels?: Label[];
   /** The overview of the scan result. */
   scan_overview?: ScanOverview;
+  /** The overview of the generating SBOM progress */
+  sbom_overview?: SBOMOverview;
   accessories?: Accessory[];
 }
 
@@ -264,6 +269,38 @@ export interface Scanner {
 /** The scan overview attached in the metadata of tag */
 export type ScanOverview = Record<string, NativeReportSummary>;
 
+/** The generate SBOM overview information */
+export interface SBOMOverview {
+  /**
+   * The start time of the generating sbom report task
+   * @format date-time
+   * @example "2006-01-02T14:04:05Z"
+   */
+  start_time?: string;
+  /**
+   * The end time of the generating sbom report task
+   * @format date-time
+   * @example "2006-01-02T15:04:05Z"
+   */
+  end_time?: string;
+  /** The status of the generating SBOM task */
+  scan_status?: string;
+  /** The digest of the generated SBOM accessory */
+  sbom_digest?: string;
+  /**
+   * id of the native scan report
+   * @example "5f62c830-f996-11e9-957f-0242c0a89008"
+   */
+  report_id?: string;
+  /**
+   * Time in seconds required to create the report
+   * @format int64
+   * @example 300
+   */
+  duration?: number;
+  scanner?: Scanner;
+}
+
 /** The summary for the native report */
 export interface NativeReportSummary {
   /**
@@ -349,6 +386,37 @@ export interface AuditLog {
   op_time?: string;
 }
 
+export interface AuditLogExt {
+  /** The ID of the audit log entry. */
+  id?: number;
+  /** The username of the operator in this log entry. */
+  username?: string;
+  /** Name of the resource in this log entry. */
+  resource?: string;
+  /** Type of the resource in this log entry. */
+  resource_type?: string;
+  /** The operation against the resource in this log entry. */
+  operation?: string;
+  /** The operation's detail description */
+  operation_description?: string;
+  /** the operation's result, true for success, false for fail */
+  operation_result: boolean;
+  /**
+   * The time when this operation is triggered.
+   * @format date-time
+   * @example "2006-01-02T15:04:05Z"
+   */
+  op_time?: string;
+}
+
+export interface AuditLogEventType {
+  /**
+   * the event type, such as create_user.
+   * @example "create_user"
+   */
+  event_type?: string;
+}
+
 export interface Metadata {
   /** id */
   id?: string;
@@ -413,6 +481,8 @@ export interface PreheatPolicy {
   trigger?: string;
   /** Whether the preheat policy enabled */
   enabled: boolean;
+  /** The extra attributes of preheat policy */
+  extra_attrs?: string;
   /**
    * The Create Time of preheat policy
    * @format date-time
@@ -508,6 +578,8 @@ export interface ProjectReq {
    * @maxLength 255
    */
   project_name?: string;
+  /** deprecated, reserved for project creation in replication */
+  public?: boolean | null;
   /** The metadata of the project. */
   metadata?: ProjectMetadata;
   /** The CVE allowlist of the project. */
@@ -558,6 +630,8 @@ export interface Project {
   owner_name?: string;
   /** Correspond to the UI about whether the project's publicity is  updatable (for UI) */
   togglable?: boolean;
+  /** The role ID with highest permission of the current user who triggered the API (for UI).  This attribute is deprecated and will be removed in future versions. */
+  current_user_role_id?: number;
   /** The list of role ID of the current user who triggered the API (for UI) */
   current_user_role_ids?: number[];
   /** The number of the repositories under this project. */
@@ -588,10 +662,14 @@ export interface ProjectMetadata {
   severity?: string | null;
   /** Whether scan images automatically when pushing. The valid values are "true", "false". */
   auto_scan?: string | null;
+  /** Whether generating SBOM automatically when pushing a subject artifact. The valid values are "true", "false". */
+  auto_sbom_generation?: string | null;
   /** Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false". If it is set to "true" the actual allowlist associate with this project, if any, will be ignored. */
   reuse_sys_cve_allowlist?: string | null;
   /** The ID of the tag retention policy for the project */
   retention_id?: string | null;
+  /** The bandwidth limit of proxy cache, in Kbps (kilobits per second). It limits the communication between Harbor and the upstream registry, not the client and the Harbor. */
+  proxy_speed_kb?: string | null;
 }
 
 export interface ProjectSummary {
@@ -677,6 +755,8 @@ export interface ReplicationPolicy {
   filters?: ReplicationFilter[];
   /** Whether to replicate the deletion operation. */
   replicate_deletion?: boolean;
+  /** Deprecated, use "replicate_deletion" instead. Whether to replicate the deletion operation. */
+  deletion?: boolean;
   /** Whether to override the resources on the destination registry. */
   override?: boolean;
   /** Whether the policy is enabled or not. */
@@ -946,10 +1026,10 @@ export interface Robot {
   /** The level of the robot, project or system */
   level?: string;
   /**
-   * The duration of the robot in days
+   * The duration of the robot in days, duration must be either -1(Never) or a positive integer
    * @format int64
    */
-  duration?: number;
+  duration?: number | null;
   /** The editable status of the robot */
   editable: boolean;
   /** The disable status of the robot */
@@ -960,6 +1040,10 @@ export interface Robot {
    */
   expires_at?: number;
   permissions?: RobotPermission[];
+  /** The type of the robot creator, like local(harbor_user) or robot. */
+  creator_type?: string;
+  /** The reference of the robot creator, like the id of harbor user. */
+  creator_ref?: number;
   /**
    * The creation time of the robot.
    * @format date-time
@@ -985,7 +1069,7 @@ export interface RobotCreate {
   /** The disable status of the robot */
   disable?: boolean;
   /**
-   * The duration of the robot in days
+   * The duration of the robot in days, duration must be either -1(Never) or a positive integer
    * @format int64
    */
   duration?: number;
@@ -1030,7 +1114,7 @@ export interface RobotPermission {
 }
 
 export interface Access {
-  /** The resource of the access. Possible resources are *, artifact, artifact-addition, artifact-label, audit-log, catalog, configuration, distribution, garbage-collection, helm-chart, helm-chart-version, helm-chart-version-label, immutable-tag, label, ldap-user, log, member, metadata, notification-policy, preheat-instance, preheat-policy, project, quota, registry, replication, replication-adapter, replication-policy, repository, robot, scan, scan-all, scanner, system-volumes, tag, tag-retention, user, user-group or "" (for self-reference). */
+  /** The resource of the access. Possible resources are listed here for system and project level https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go */
   resource?: string;
   /** The action of the access. Possible actions are *, pull, push, create, read, update, delete, list, operate, scanner-pull and stop. */
   action?: string;
@@ -1097,6 +1181,8 @@ export interface GeneralInfo {
   notification_enable?: boolean | null;
   /** The setting of auth proxy this is only available when Harbor relies on authproxy for authentication. */
   authproxy_settings?: AuthproxySetting | null;
+  /** The OIDC provider name, empty if current auth is not OIDC_auth or OIDC provider is not configured. */
+  oidc_provider_name?: string | null;
 }
 
 export interface AuthproxySetting {
@@ -1195,7 +1281,14 @@ export interface ScheduleObj {
    * 'Manual' means to trigger it right away, 'Schedule' means to trigger it by a specified cron schedule and
    * 'None' means to cancel the schedule.
    */
-  type?: "Hourly" | "Daily" | "Weekly" | "Custom" | "Manual" | "None" | "Schedule";
+  type?:
+    | "Hourly"
+    | "Daily"
+    | "Weekly"
+    | "Custom"
+    | "Manual"
+    | "None"
+    | "Schedule";
   /** A cron expression, a time-based job scheduler. */
   cron?: string;
   /**
@@ -1447,6 +1540,11 @@ export interface ScannerRegistration {
    * @example "healthy"
    */
   health?: string;
+  /**
+   * Indicates the capabilities of the scanner, e.g. support_vulnerability or support_sbom.
+   * @example {"support_vulnerability":true,"support_sbom":true}
+   */
+  capabilities?: Record<string, any>;
 }
 
 export interface ScannerRegistrationReq {
@@ -1526,6 +1624,11 @@ export interface IsDefault {
 }
 
 export interface ScannerCapability {
+  /**
+   * Specify the type of scanner capability, like vulnerability or sbom
+   * @example "sbom"
+   */
+  type: string;
   consumes_mime_types?: string[];
   produces_mime_types?: string[];
 }
@@ -1763,7 +1866,10 @@ export interface WebhookJob {
   update_time?: string;
 }
 
-export type InternalConfigurationsResponse = Record<string, InternalConfigurationValue>;
+export type InternalConfigurationsResponse = Record<
+  string,
+  InternalConfigurationValue
+>;
 
 export interface InternalConfigurationValue {
   /** The value of current config item */
@@ -1791,6 +1897,8 @@ export interface ConfigurationsResponse {
   ldap_group_search_filter?: StringConfigItem;
   /** The scope to search ldap group. ''0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'' */
   ldap_group_search_scope?: IntegerConfigItem;
+  /** Attach LDAP user group information in parallel. */
+  ldap_group_attach_parallel?: BoolConfigItem;
   /** The scope to search ldap users,'0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE' */
   ldap_scope?: IntegerConfigItem;
   /** The DN of the user to do the search. */
@@ -1857,6 +1965,8 @@ export interface ConfigurationsResponse {
   oidc_auto_onboard?: BoolConfigItem;
   /** Extra parameters to add when redirect request to OIDC provider */
   oidc_extra_redirect_parms?: StringConfigItem;
+  /** Extra parameters to logout user session from the OIDC provider */
+  oidc_logout?: BoolConfigItem;
   /** The robot account token duration in days */
   robot_token_duration?: IntegerConfigItem;
   /** The rebot account name prefix */
@@ -1886,6 +1996,8 @@ export interface ConfigurationsResponse {
   session_timeout?: IntegerConfigItem;
   /** The banner message for the UI.It is the stringified result of the banner message object */
   banner_message?: StringConfigItem;
+  /** The audit log event types to skip to log in database */
+  disabled_audit_log_event_types?: StringConfigItem;
 }
 
 export interface Configurations {
@@ -1907,6 +2019,8 @@ export interface Configurations {
   ldap_group_search_filter?: string;
   /** The scope to search ldap group. ''0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'' */
   ldap_group_search_scope?: number;
+  /** Attach LDAP user group information in parallel, the parallel worker count is 5 */
+  ldap_group_attach_parallel?: boolean;
   /** The scope to search ldap users,'0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE' */
   ldap_scope?: number;
   /** The DN of the user to do the search. */
@@ -1977,6 +2091,8 @@ export interface Configurations {
   oidc_auto_onboard?: boolean;
   /** Extra parameters to add when redirect request to OIDC provider */
   oidc_extra_redirect_parms?: string;
+  /** Logout OIDC user session */
+  oidc_logout?: boolean;
   /** The robot account token duration in days */
   robot_token_duration?: number;
   /** The rebot account name prefix */
@@ -1997,6 +2113,8 @@ export interface Configurations {
   scanner_skip_update_pulltime?: boolean;
   /** The banner message for the UI.It is the stringified result of the banner message object */
   banner_message?: string;
+  /** the list to disable log audit event types. */
+  disabled_audit_log_event_types?: string;
 }
 
 export interface StringConfigItem {
@@ -2159,6 +2277,13 @@ export interface Permission {
   action?: string;
 }
 
+export interface Permissions {
+  /** The system level permissions */
+  system?: Permission[];
+  /** The project level permissions */
+  project?: Permission[];
+}
+
 export interface OIDCCliSecretReq {
   /** The new secret */
   secret?: string;
@@ -2231,6 +2356,11 @@ export interface Accessory {
    * @format int64
    */
   artifact_id: number;
+  /**
+   * Going to be deprecated, use repo and digest for insteand. The subject artifact id of the accessory.
+   * @format int64
+   */
+  subject_artifact_id?: number;
   /** The subject artifact digest of the accessory */
   subject_artifact_digest: string;
   /** The subject artifact repository name of the accessory */
@@ -2532,12 +2662,24 @@ export interface VulnerabilityItem {
   links?: string[];
 }
 
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, HeadersDefaults, ResponseType } from "axios";
+export interface ScanType {
+  /** The scan type for the scan request. Two options are currently supported, vulnerability and sbom */
+  scan_type?: "vulnerability" | "sbom";
+}
+
+import type {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  HeadersDefaults,
+  ResponseType,
+} from "axios";
 import axios from "axios";
 
 export type QueryParamsType = Record<string | number, any>;
 
-export interface FullRequestParams extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
+export interface FullRequestParams
+  extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
   /** set parameter to `true` for call `securityWorker` for this request */
   secure?: boolean;
   /** request path */
@@ -2552,9 +2694,13 @@ export interface FullRequestParams extends Omit<AxiosRequestConfig, "data" | "pa
   body?: unknown;
 }
 
-export type RequestParams = Omit<FullRequestParams, "body" | "method" | "query" | "path">;
+export type RequestParams = Omit<
+  FullRequestParams,
+  "body" | "method" | "query" | "path"
+>;
 
-export interface ApiConfig<SecurityDataType = unknown> extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
+export interface ApiConfig<SecurityDataType = unknown>
+  extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
   securityWorker?: (
     securityData: SecurityDataType | null,
   ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
@@ -2564,6 +2710,7 @@ export interface ApiConfig<SecurityDataType = unknown> extends Omit<AxiosRequest
 
 export enum ContentType {
   Json = "application/json",
+  JsonApi = "application/vnd.api+json",
   FormData = "multipart/form-data",
   UrlEncoded = "application/x-www-form-urlencoded",
   Text = "text/plain",
@@ -2576,8 +2723,16 @@ export class HttpClient<SecurityDataType = unknown> {
   private secure?: boolean;
   private format?: ResponseType;
 
-  constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "http://localhost/api/v2.0" });
+  constructor({
+    securityWorker,
+    secure,
+    format,
+    ...axiosConfig
+  }: ApiConfig<SecurityDataType> = {}) {
+    this.instance = axios.create({
+      ...axiosConfig,
+      baseURL: axiosConfig.baseURL || "http://localhost/api/v2.0",
+    });
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
@@ -2587,7 +2742,10 @@ export class HttpClient<SecurityDataType = unknown> {
     this.securityData = data;
   };
 
-  protected mergeRequestParams(params1: AxiosRequestConfig, params2?: AxiosRequestConfig): AxiosRequestConfig {
+  protected mergeRequestParams(
+    params1: AxiosRequestConfig,
+    params2?: AxiosRequestConfig,
+  ): AxiosRequestConfig {
     const method = params1.method || (params2 && params2.method);
 
     return {
@@ -2595,7 +2753,11 @@ export class HttpClient<SecurityDataType = unknown> {
       ...params1,
       ...(params2 || {}),
       headers: {
-        ...((method && this.instance.defaults.headers[method.toLowerCase() as keyof HeadersDefaults]) || {}),
+        ...((method &&
+          this.instance.defaults.headers[
+            method.toLowerCase() as keyof HeadersDefaults
+          ]) ||
+          {}),
         ...(params1.headers || {}),
         ...((params2 && params2.headers) || {}),
       },
@@ -2611,13 +2773,20 @@ export class HttpClient<SecurityDataType = unknown> {
   }
 
   protected createFormData(input: Record<string, unknown>): FormData {
+    if (input instanceof FormData) {
+      return input;
+    }
     return Object.keys(input || {}).reduce((formData, key) => {
       const property = input[key];
-      const propertyContent: any[] = property instanceof Array ? property : [property];
+      const propertyContent: any[] =
+        property instanceof Array ? property : [property];
 
       for (const formItem of propertyContent) {
         const isFileType = formItem instanceof Blob || formItem instanceof File;
-        formData.append(key, isFileType ? formItem : this.stringifyFormItem(formItem));
+        formData.append(
+          key,
+          isFileType ? formItem : this.stringifyFormItem(formItem),
+        );
       }
 
       return formData;
@@ -2641,11 +2810,21 @@ export class HttpClient<SecurityDataType = unknown> {
     const requestParams = this.mergeRequestParams(params, secureParams);
     const responseFormat = format || this.format || undefined;
 
-    if (type === ContentType.FormData && body && body !== null && typeof body === "object") {
+    if (
+      type === ContentType.FormData &&
+      body &&
+      body !== null &&
+      typeof body === "object"
+    ) {
       body = this.createFormData(body as Record<string, unknown>);
     }
 
-    if (type === ContentType.Text && body && body !== null && typeof body !== "string") {
+    if (
+      type === ContentType.Text &&
+      body &&
+      body !== null &&
+      typeof body !== "string"
+    ) {
       body = JSON.stringify(body);
     }
 
@@ -2653,7 +2832,7 @@ export class HttpClient<SecurityDataType = unknown> {
       ...requestParams,
       headers: {
         ...(requestParams.headers || {}),
-        ...(type && type !== ContentType.FormData ? { "Content-Type": type } : {}),
+        ...(type ? { "Content-Type": type } : {}),
       },
       params: query,
       responseType: responseFormat,
@@ -2670,7 +2849,9 @@ export class HttpClient<SecurityDataType = unknown> {
  *
  * These APIs provide services for manipulating Harbor project.
  */
-export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
+export class Api<
+  SecurityDataType extends unknown,
+> extends HttpClient<SecurityDataType> {
   health = {
     /**
      * @description Check the status of Harbor components. This path does not require authentication.
@@ -2757,7 +2938,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description This endpoint searches the available ldap users based on related configuration parameters. Support searched by input ladp configuration, load configuration from the system and specific filter.
+     * @description This endpoint searches the available ldap users based on related configuration parameters. Support searched by input ldap configuration, load configuration from the system and specific filter.
      *
      * @tags Ldap
      * @name SearchLdapUser
@@ -2874,7 +3055,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/configurations
      * @secure
      */
-    updateConfigurations: (configurations: Configurations, params: RequestParams = {}) =>
+    updateConfigurations: (
+      configurations: Configurations,
+      params: RequestParams = {},
+    ) =>
       this.request<void, void>({
         path: `/configurations`,
         method: "PUT",
@@ -2911,7 +3095,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
          * @default 10
          */
         page_size?: number;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /** The name of project. */
         name?: string;
@@ -3006,7 +3190,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/projects/{project_name_or_id}
      * @secure
      */
-    updateProject: (projectNameOrId: string, project: ProjectReq, params: RequestParams = {}) =>
+    updateProject: (
+      projectNameOrId: string,
+      project: ProjectReq,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}`,
         method: "PUT",
@@ -3042,7 +3230,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/projects/{project_name_or_id}/_deletable
      * @secure
      */
-    getProjectDeletable: (projectNameOrId: string, params: RequestParams = {}) =>
+    getProjectDeletable: (
+      projectNameOrId: string,
+      params: RequestParams = {},
+    ) =>
       this.request<ProjectDeletable, Errors>({
         path: `/projects/${projectNameOrId}/_deletable`,
         method: "GET",
@@ -3117,7 +3308,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name_or_id}/members
      * @secure
      */
-    createProjectMember: (projectNameOrId: string, project_member: ProjectMember, params: RequestParams = {}) =>
+    createProjectMember: (
+      projectNameOrId: string,
+      project_member: ProjectMember,
+      params: RequestParams = {},
+    ) =>
       this.request<void, Errors>({
         path: `/projects/${projectNameOrId}/members`,
         method: "POST",
@@ -3136,7 +3331,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/projects/{project_name_or_id}/members/{mid}
      * @secure
      */
-    getProjectMember: (projectNameOrId: string, mid: number, params: RequestParams = {}) =>
+    getProjectMember: (
+      projectNameOrId: string,
+      mid: number,
+      params: RequestParams = {},
+    ) =>
       this.request<ProjectMemberEntity, Errors>({
         path: `/projects/${projectNameOrId}/members/${mid}`,
         method: "GET",
@@ -3154,7 +3353,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/projects/{project_name_or_id}/members/{mid}
      * @secure
      */
-    updateProjectMember: (projectNameOrId: string, mid: number, role: RoleRequest, params: RequestParams = {}) =>
+    updateProjectMember: (
+      projectNameOrId: string,
+      mid: number,
+      role: RoleRequest,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/members/${mid}`,
         method: "PUT",
@@ -3173,7 +3377,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/projects/{project_name_or_id}/members/{mid}
      * @secure
      */
-    deleteProjectMember: (projectNameOrId: string, mid: number, params: RequestParams = {}) =>
+    deleteProjectMember: (
+      projectNameOrId: string,
+      mid: number,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/members/${mid}`,
         method: "DELETE",
@@ -3190,7 +3398,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/projects/{project_name_or_id}/metadatas/
      * @secure
      */
-    listProjectMetadatas: (projectNameOrId: string, params: RequestParams = {}) =>
+    listProjectMetadatas: (
+      projectNameOrId: string,
+      params: RequestParams = {},
+    ) =>
       this.request<Annotations, Errors>({
         path: `/projects/${projectNameOrId}/metadatas/`,
         method: "GET",
@@ -3208,12 +3419,17 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name_or_id}/metadatas/
      * @secure
      */
-    addProjectMetadatas: (projectNameOrId: string, metadata: Metadata, params: RequestParams = {}) =>
+    addProjectMetadatas: (
+      projectNameOrId: string,
+      metadata: Annotations,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/metadatas/`,
         method: "POST",
         body: metadata,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -3226,7 +3442,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/projects/{project_name_or_id}/metadatas/{meta_name}
      * @secure
      */
-    getProjectMetadata: (projectNameOrId: string, metaName: string, params: RequestParams = {}) =>
+    getProjectMetadata: (
+      projectNameOrId: string,
+      metaName: string,
+      params: RequestParams = {},
+    ) =>
       this.request<Annotations, Errors>({
         path: `/projects/${projectNameOrId}/metadatas/${metaName}`,
         method: "GET",
@@ -3247,7 +3467,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     updateProjectMetadata: (
       projectNameOrId: string,
       metaName: string,
-      metadata: Record<string, string>,
+      metadata: Annotations,
       params: RequestParams = {},
     ) =>
       this.request<any, Errors>({
@@ -3255,6 +3475,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         method: "PUT",
         body: metadata,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -3267,7 +3488,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/projects/{project_name_or_id}/metadatas/{meta_name}
      * @secure
      */
-    deleteProjectMetadata: (projectNameOrId: string, metaName: string, params: RequestParams = {}) =>
+    deleteProjectMetadata: (
+      projectNameOrId: string,
+      metaName: string,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/metadatas/${metaName}`,
         method: "DELETE",
@@ -3289,7 +3514,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -3325,7 +3550,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/projects/{project_name}/repositories/{repository_name}
      * @secure
      */
-    getRepository: (projectName: string, repositoryName: string, params: RequestParams = {}) =>
+    getRepository: (
+      projectName: string,
+      repositoryName: string,
+      params: RequestParams = {},
+    ) =>
       this.request<Repository, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}`,
         method: "GET",
@@ -3367,7 +3596,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/projects/{project_name}/repositories/{repository_name}
      * @secure
      */
-    deleteRepository: (projectName: string, repositoryName: string, params: RequestParams = {}) =>
+    deleteRepository: (
+      projectName: string,
+      repositoryName: string,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}`,
         method: "DELETE",
@@ -3390,7 +3623,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -3421,10 +3654,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
          */
         with_scan_overview?: boolean;
         /**
-         * Specify whether the signature is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+         * Specify whether the SBOM overview is included in returning artifacts, when this option is true, the SBOM overview will be included in the response
          * @default false
          */
-        with_signature?: boolean;
+        with_sbom_overview?: boolean;
         /**
          * Specify whether the immutable status is included inside the tags of the returning artifacts. Only works when setting "with_immutable_status=true"
          * @default false
@@ -3516,6 +3749,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
          */
         with_scan_overview?: boolean;
         /**
+         * Specify whether the SBOM overview is included in returning artifact, when this option is true, the SBOM overview will be included in the response
+         * @default false
+         */
+        with_sbom_overview?: boolean;
+        /**
          * Specify whether the accessories are included of the returning artifacts.
          * @default false
          */
@@ -3551,7 +3789,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/projects/{project_name}/repositories/{repository_name}/artifacts/{reference}
      * @secure
      */
-    deleteArtifact: (projectName: string, repositoryName: string, reference: string, params: RequestParams = {}) =>
+    deleteArtifact: (
+      projectName: string,
+      repositoryName: string,
+      reference: string,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}`,
         method: "DELETE",
@@ -3568,11 +3811,19 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan
      * @secure
      */
-    scanArtifact: (projectName: string, repositoryName: string, reference: string, params: RequestParams = {}) =>
+    scanArtifact: (
+      projectName: string,
+      repositoryName: string,
+      reference: string,
+      scanType: ScanType,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}/scan`,
         method: "POST",
+        body: scanType,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -3585,11 +3836,19 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/stop
      * @secure
      */
-    stopScanArtifact: (projectName: string, repositoryName: string, reference: string, params: RequestParams = {}) =>
+    stopScanArtifact: (
+      projectName: string,
+      repositoryName: string,
+      reference: string,
+      scanType: ScanType,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}/scan/stop`,
         method: "POST",
+        body: scanType,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -3625,7 +3884,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
      * @secure
      */
-    createTag: (projectName: string, repositoryName: string, reference: string, tag: Tag, params: RequestParams = {}) =>
+    createTag: (
+      projectName: string,
+      repositoryName: string,
+      reference: string,
+      tag: Tag,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/repositories/${repositoryName}/artifacts/${reference}/tags`,
         method: "POST",
@@ -3651,7 +3916,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -3666,11 +3931,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
          * @default 10
          */
         page_size?: number;
-        /**
-         * Specify whether the signature is included inside the returning tags
-         * @default false
-         */
-        with_signature?: boolean;
         /**
          * Specify whether the immutable status is included inside the returning tags
          * @default false
@@ -3727,7 +3987,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -3790,7 +4050,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       projectName: string,
       repositoryName: string,
       reference: string,
-      addition: "build_history" | "values.yaml" | "readme.md" | "dependencies",
+      addition:
+        | "build_history"
+        | "values.yaml"
+        | "readme.md"
+        | "dependencies"
+        | "sbom"
+        | "license"
+        | "files",
       params: RequestParams = {},
     ) =>
       this.request<EventType, Errors>({
@@ -3850,6 +4117,82 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
+     * @description List artifacts of the specified project
+     *
+     * @tags project
+     * @name ListArtifactsOfProject
+     * @summary List artifacts
+     * @request GET:/projects/{project_name_or_id}/artifacts
+     * @secure
+     */
+    listArtifactsOfProject: (
+      projectNameOrId: string,
+      query?: {
+        /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
+        q?: string;
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
+        sort?: string;
+        /**
+         * The page number
+         * @format int64
+         * @default 1
+         */
+        page?: number;
+        /**
+         * The size of per page
+         * @format int64
+         * @max 100
+         * @default 10
+         */
+        page_size?: number;
+        /**
+         * Specify whether the tags are included inside the returning artifacts
+         * @default true
+         */
+        with_tag?: boolean;
+        /**
+         * Specify whether the labels are included inside the returning artifacts
+         * @default false
+         */
+        with_label?: boolean;
+        /**
+         * Specify whether the scan overview is included inside the returning artifacts
+         * @default false
+         */
+        with_scan_overview?: boolean;
+        /**
+         * Specify whether the SBOM overview is included in returning artifacts, when this option is true, the SBOM overview will be included in the response
+         * @default false
+         */
+        with_sbom_overview?: boolean;
+        /**
+         * Specify whether the immutable status is included inside the tags of the returning artifacts. Only works when setting "with_immutable_status=true"
+         * @default false
+         */
+        with_immutable_status?: boolean;
+        /**
+         * Specify whether the accessories are included of the returning artifacts. Only works when setting "with_accessory=true"
+         * @default false
+         */
+        with_accessory?: boolean;
+        /**
+         * Specify whether only the latest pushed artifact of each repository is included inside the returning artifacts. Only works when either artifact_type or media_type is included in the query.
+         * @default false
+         */
+        latest_in_repository?: boolean;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<Artifact[], Errors>({
+        path: `/projects/${projectNameOrId}/artifacts`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Get the scanner registration of the specified project. If no scanner registration is configured for the specified project, the system default scanner registration will be returned.
      *
      * @tags project
@@ -3858,7 +4201,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/projects/{project_name_or_id}/scanner
      * @secure
      */
-    getScannerOfProject: (projectNameOrId: string, params: RequestParams = {}) =>
+    getScannerOfProject: (
+      projectNameOrId: string,
+      params: RequestParams = {},
+    ) =>
       this.request<ScannerRegistration, void>({
         path: `/projects/${projectNameOrId}/scanner`,
         method: "GET",
@@ -3876,7 +4222,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/projects/{project_name_or_id}/scanner
      * @secure
      */
-    setScannerOfProject: (projectNameOrId: string, payload: ProjectScanner, params: RequestParams = {}) =>
+    setScannerOfProject: (
+      projectNameOrId: string,
+      payload: ProjectScanner,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/scanner`,
         method: "PUT",
@@ -3900,7 +4250,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -3928,11 +4278,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Get recent logs of the projects
+     * @description Get recent logs of the projects, it only query the previous version's audit log
      *
      * @tags project
      * @name GetLogs
-     * @summary Get recent logs of the projects
+     * @summary Get recent logs of the projects (deprecated)
      * @request GET:/projects/{project_name}/logs
      * @secure
      */
@@ -3941,7 +4291,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -3969,6 +4319,47 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
+     * @description Get recent logs of the projects
+     *
+     * @tags project
+     * @name GetLogExts
+     * @summary Get recent logs of the projects
+     * @request GET:/projects/{project_name}/auditlog-exts
+     * @secure
+     */
+    getLogExts: (
+      projectName: string,
+      query?: {
+        /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
+        q?: string;
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
+        sort?: string;
+        /**
+         * The page number
+         * @format int64
+         * @default 1
+         */
+        page?: number;
+        /**
+         * The size of per page
+         * @format int64
+         * @max 100
+         * @default 10
+         */
+        page_size?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AuditLogExt[], Errors>({
+        path: `/projects/${projectName}/auditlog-exts`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Create a preheat policy under a project
      *
      * @tags preheat
@@ -3977,12 +4368,17 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name}/preheat/policies
      * @secure
      */
-    createPolicy: (projectName: string, policy: PreheatPolicy, params: RequestParams = {}) =>
+    createPolicy: (
+      projectName: string,
+      policy: PreheatPolicy,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/preheat/policies`,
         method: "POST",
         body: policy,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -4013,7 +4409,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         page_size?: number;
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
       },
       params: RequestParams = {},
@@ -4036,7 +4432,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/projects/{project_name}/preheat/policies/{preheat_policy_name}
      * @secure
      */
-    getPolicy: (projectName: string, preheatPolicyName: string, params: RequestParams = {}) =>
+    getPolicy: (
+      projectName: string,
+      preheatPolicyName: string,
+      params: RequestParams = {},
+    ) =>
       this.request<PreheatPolicy, Errors>({
         path: `/projects/${projectName}/preheat/policies/${preheatPolicyName}`,
         method: "GET",
@@ -4054,12 +4454,18 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/projects/{project_name}/preheat/policies/{preheat_policy_name}
      * @secure
      */
-    updatePolicy: (projectName: string, preheatPolicyName: string, policy: PreheatPolicy, params: RequestParams = {}) =>
+    updatePolicy: (
+      projectName: string,
+      preheatPolicyName: string,
+      policy: PreheatPolicy,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/preheat/policies/${preheatPolicyName}`,
         method: "PUT",
         body: policy,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -4083,6 +4489,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         method: "POST",
         body: policy,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -4095,7 +4502,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/projects/{project_name}/preheat/policies/{preheat_policy_name}
      * @secure
      */
-    deletePolicy: (projectName: string, preheatPolicyName: string, params: RequestParams = {}) =>
+    deletePolicy: (
+      projectName: string,
+      preheatPolicyName: string,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectName}/preheat/policies/${preheatPolicyName}`,
         method: "DELETE",
@@ -4131,7 +4542,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         page_size?: number;
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
       },
       params: RequestParams = {},
@@ -4154,7 +4565,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/projects/{project_name}/preheat/policies/{preheat_policy_name}/executions/{execution_id}
      * @secure
      */
-    getExecution: (projectName: string, preheatPolicyName: string, executionId: number, params: RequestParams = {}) =>
+    getExecution: (
+      projectName: string,
+      preheatPolicyName: string,
+      executionId: number,
+      params: RequestParams = {},
+    ) =>
       this.request<Execution, Errors>({
         path: `/projects/${projectName}/preheat/policies/${preheatPolicyName}/executions/${executionId}`,
         method: "GET",
@@ -4217,7 +4633,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         page_size?: number;
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
       },
       params: RequestParams = {},
@@ -4263,126 +4679,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/projects/{project_name}/preheat/providers
      * @secure
      */
-    listProvidersUnderProject: (projectName: string, params: RequestParams = {}) =>
+    listProvidersUnderProject: (
+      projectName: string,
+      params: RequestParams = {},
+    ) =>
       this.request<ProviderUnderProject[], Errors>({
         path: `/projects/${projectName}/preheat/providers`,
         method: "GET",
         secure: true,
         format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get all robot accounts of specified project
-     *
-     * @tags robotv1
-     * @name ListRobotV1
-     * @summary Get all robot accounts of specified project
-     * @request GET:/projects/{project_name_or_id}/robots
-     * @secure
-     */
-    listRobotV1: (
-      projectNameOrId: string,
-      query?: {
-        /**
-         * The page number
-         * @format int64
-         * @default 1
-         */
-        page?: number;
-        /**
-         * The size of per page
-         * @format int64
-         * @max 100
-         * @default 10
-         */
-        page_size?: number;
-        /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
-        q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
-        sort?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<Robot[], Errors>({
-        path: `/projects/${projectNameOrId}/robots`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Create a robot account
-     *
-     * @tags robotv1
-     * @name CreateRobotV1
-     * @summary Create a robot account
-     * @request POST:/projects/{project_name_or_id}/robots
-     * @secure
-     */
-    createRobotV1: (projectNameOrId: string, robot: RobotCreateV1, params: RequestParams = {}) =>
-      this.request<RobotCreated, Errors>({
-        path: `/projects/${projectNameOrId}/robots`,
-        method: "POST",
-        body: robot,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description This endpoint returns specific robot account information by robot ID.
-     *
-     * @tags robotv1
-     * @name GetRobotByIdv1
-     * @summary Get a robot account
-     * @request GET:/projects/{project_name_or_id}/robots/{robot_id}
-     * @secure
-     */
-    getRobotByIdv1: (projectNameOrId: string, robotId: number, params: RequestParams = {}) =>
-      this.request<Robot, Errors>({
-        path: `/projects/${projectNameOrId}/robots/${robotId}`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Used to disable/enable a specified robot account.
-     *
-     * @tags robotv1
-     * @name UpdateRobotV1
-     * @summary Update status of robot account.
-     * @request PUT:/projects/{project_name_or_id}/robots/{robot_id}
-     * @secure
-     */
-    updateRobotV1: (projectNameOrId: string, robotId: number, robot: Robot, params: RequestParams = {}) =>
-      this.request<any, Errors>({
-        path: `/projects/${projectNameOrId}/robots/${robotId}`,
-        method: "PUT",
-        body: robot,
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * @description This endpoint deletes specific robot account information by robot ID.
-     *
-     * @tags robotv1
-     * @name DeleteRobotV1
-     * @summary Delete a robot account
-     * @request DELETE:/projects/{project_name_or_id}/robots/{robot_id}
-     * @secure
-     */
-    deleteRobotV1: (projectNameOrId: string, robotId: number, params: RequestParams = {}) =>
-      this.request<any, Errors>({
-        path: `/projects/${projectNameOrId}/robots/${robotId}`,
-        method: "DELETE",
-        secure: true,
         ...params,
       }),
 
@@ -4413,7 +4718,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         page_size?: number;
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
       },
       params: RequestParams = {},
@@ -4436,12 +4741,17 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name_or_id}/immutabletagrules
      * @secure
      */
-    createImmuRule: (projectNameOrId: string, ImmutableRule: ImmutableRule, params: RequestParams = {}) =>
+    createImmuRule: (
+      projectNameOrId: string,
+      ImmutableRule: ImmutableRule,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/immutabletagrules`,
         method: "POST",
         body: ImmutableRule,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -4465,6 +4775,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         method: "PUT",
         body: ImmutableRule,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -4477,7 +4788,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/projects/{project_name_or_id}/immutabletagrules/{immutable_rule_id}
      * @secure
      */
-    deleteImmuRule: (projectNameOrId: string, immutableRuleId: number, params: RequestParams = {}) =>
+    deleteImmuRule: (
+      projectNameOrId: string,
+      immutableRuleId: number,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/immutabletagrules/${immutableRuleId}`,
         method: "DELETE",
@@ -4497,7 +4812,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     listWebhookPoliciesOfProject: (
       projectNameOrId: string,
       query?: {
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
@@ -4535,7 +4850,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/projects/{project_name_or_id}/webhook/policies
      * @secure
      */
-    createWebhookPolicyOfProject: (projectNameOrId: string, policy: WebhookPolicy, params: RequestParams = {}) =>
+    createWebhookPolicyOfProject: (
+      projectNameOrId: string,
+      policy: WebhookPolicy,
+      params: RequestParams = {},
+    ) =>
       this.request<void, Errors>({
         path: `/projects/${projectNameOrId}/webhook/policies`,
         method: "POST",
@@ -4554,7 +4873,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}
      * @secure
      */
-    getWebhookPolicyOfProject: (projectNameOrId: string, webhookPolicyId: number, params: RequestParams = {}) =>
+    getWebhookPolicyOfProject: (
+      projectNameOrId: string,
+      webhookPolicyId: number,
+      params: RequestParams = {},
+    ) =>
       this.request<WebhookPolicy, Errors>({
         path: `/projects/${projectNameOrId}/webhook/policies/${webhookPolicyId}`,
         method: "GET",
@@ -4596,7 +4919,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}
      * @secure
      */
-    deleteWebhookPolicyOfProject: (projectNameOrId: string, webhookPolicyId: number, params: RequestParams = {}) =>
+    deleteWebhookPolicyOfProject: (
+      projectNameOrId: string,
+      webhookPolicyId: number,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/projects/${projectNameOrId}/webhook/policies/${webhookPolicyId}`,
         method: "DELETE",
@@ -4632,7 +4959,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         page_size?: number;
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
       },
       params: RequestParams = {},
@@ -4675,7 +5002,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         page_size?: number;
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
       },
       params: RequestParams = {},
@@ -4713,6 +5040,74 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
+     * @description This endpoint returns last trigger information of project webhook policy.
+     *
+     * @tags webhook
+     * @name LastTrigger
+     * @summary Get project webhook policy last trigger info
+     * @request GET:/projects/{project_name_or_id}/webhook/lasttrigger
+     * @deprecated
+     * @secure
+     */
+    lastTrigger: (projectNameOrId: string, params: RequestParams = {}) =>
+      this.request<WebhookLastTrigger[], Errors>({
+        path: `/projects/${projectNameOrId}/webhook/lasttrigger`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint returns webhook jobs of a project.
+     *
+     * @tags webhookjob
+     * @name ListWebhookJobs
+     * @summary List project webhook jobs
+     * @request GET:/projects/{project_name_or_id}/webhook/jobs
+     * @deprecated
+     * @secure
+     */
+    listWebhookJobs: (
+      projectNameOrId: string,
+      query: {
+        /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
+        q?: string;
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
+        sort?: string;
+        /**
+         * The page number
+         * @format int64
+         * @default 1
+         */
+        page?: number;
+        /**
+         * The size of per page
+         * @format int64
+         * @max 100
+         * @default 10
+         */
+        page_size?: number;
+        /**
+         * The policy ID.
+         * @format int64
+         */
+        policy_id: number;
+        /** The status of webhook job. */
+        status?: string[];
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<WebhookJob[], Errors>({
+        path: `/projects/${projectNameOrId}/webhook/jobs`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Get supported event types and notify types.
      *
      * @tags webhook
@@ -4721,7 +5116,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/projects/{project_name_or_id}/webhook/events
      * @secure
      */
-    getSupportedEventTypes: (projectNameOrId: string, params: RequestParams = {}) =>
+    getSupportedEventTypes: (
+      projectNameOrId: string,
+      params: RequestParams = {},
+    ) =>
       this.request<SupportedWebhookEventTypes, Errors>({
         path: `/projects/${projectNameOrId}/webhook/events`,
         method: "GET",
@@ -4744,7 +5142,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -4773,11 +5171,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   };
   auditLogs = {
     /**
-     * @description This endpoint let user see the recent operation logs of the projects which he is member of
+     * @description This endpoint let the user see the recent operation logs of projects which the user is a member with project admin role,, or return all audit logs for system admin user, it only query the audit log in previous version.
      *
      * @tags auditlog
      * @name ListAuditLogs
-     * @summary Get recent logs of the projects which the user is a member of
+     * @summary Get recent logs of projects which the user is a member with project admin role, or return all audit logs for system admin user (deprecated)
      * @request GET:/audit-logs
      * @secure
      */
@@ -4785,7 +5183,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -4807,6 +5205,65 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         path: `/audit-logs`,
         method: "GET",
         query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+  };
+  auditlogExts = {
+    /**
+     * @description This endpoint let user see the recent operation logs of the projects which he is member with project_admin role, or return all audit logs for system admin user.
+     *
+     * @tags auditlog
+     * @name ListAuditLogExts
+     * @summary Get recent logs of the projects which the user is a member with project_admin role, or return all audit logs for system admin user
+     * @request GET:/auditlog-exts
+     * @secure
+     */
+    listAuditLogExts: (
+      query?: {
+        /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
+        q?: string;
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
+        sort?: string;
+        /**
+         * The page number
+         * @format int64
+         * @default 1
+         */
+        page?: number;
+        /**
+         * The size of per page
+         * @format int64
+         * @max 100
+         * @default 10
+         */
+        page_size?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AuditLogExt[], Errors>({
+        path: `/auditlog-exts`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get all event types of audit log
+     *
+     * @tags auditlog
+     * @name ListAuditLogEventTypes
+     * @summary Get all event types of audit log
+     * @request GET:/auditlog-exts/events
+     * @secure
+     */
+    listAuditLogEventTypes: (params: RequestParams = {}) =>
+      this.request<AuditLogEventType[], Errors>({
+        path: `/auditlog-exts/events`,
+        method: "GET",
         secure: true,
         format: "json",
         ...params,
@@ -4846,6 +5303,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         method: "POST",
         body: instance,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -4875,7 +5333,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         page_size?: number;
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
       },
       params: RequestParams = {},
@@ -4904,6 +5362,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         method: "POST",
         body: instance,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -4951,7 +5410,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/p2p/preheat/instances/{preheat_instance_name}
      * @secure
      */
-    updateInstance: (preheatInstanceName: string, instance: Instance, params: RequestParams = {}) =>
+    updateInstance: (
+      preheatInstanceName: string,
+      instance: Instance,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/p2p/preheat/instances/${preheatInstanceName}`,
         method: "PUT",
@@ -5017,6 +5480,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         method: "POST",
         body: usergroup,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -5085,12 +5549,17 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/usergroups/{group_id}
      * @secure
      */
-    updateUserGroup: (groupId: number, usergroup: UserGroup, params: RequestParams = {}) =>
+    updateUserGroup: (
+      groupId: number,
+      usergroup: UserGroup,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/usergroups/${groupId}`,
         method: "PUT",
         body: usergroup,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -5144,7 +5613,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -5224,6 +5693,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         method: "PUT",
         body: robot,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -5236,7 +5706,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/robots/{robot_id}
      * @secure
      */
-    refreshSec: (robotId: number, robotSec: RobotSec, params: RequestParams = {}) =>
+    refreshSec: (
+      robotId: number,
+      robotSec: RobotSec,
+      params: RequestParams = {},
+    ) =>
       this.request<RobotSec, Errors>({
         path: `/robots/${robotId}`,
         method: "PATCH",
@@ -5338,7 +5812,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/quotas/{id}
      * @secure
      */
-    updateQuota: (id: number, hard: QuotaUpdateReq, params: RequestParams = {}) =>
+    updateQuota: (
+      id: number,
+      hard: QuotaUpdateReq,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/quotas/${id}`,
         method: "PUT",
@@ -5362,7 +5840,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -5377,6 +5855,8 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
          * @default 10
          */
         page_size?: number;
+        /** Deprecated, use "query" instead. The policy name. */
+        name?: string;
       },
       params: RequestParams = {},
     ) =>
@@ -5398,12 +5878,16 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/replication/policies
      * @secure
      */
-    createReplicationPolicy: (policy: ReplicationPolicy, params: RequestParams = {}) =>
+    createReplicationPolicy: (
+      policy: ReplicationPolicy,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/replication/policies`,
         method: "POST",
         body: policy,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -5451,12 +5935,17 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/replication/policies/{id}
      * @secure
      */
-    updateReplicationPolicy: (id: number, policy: ReplicationPolicy, params: RequestParams = {}) =>
+    updateReplicationPolicy: (
+      id: number,
+      policy: ReplicationPolicy,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/replication/policies/${id}`,
         method: "PUT",
         body: policy,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -5471,7 +5960,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      */
     listReplicationExecutions: (
       query?: {
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -5513,7 +6002,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/replication/executions
      * @secure
      */
-    startReplication: (execution: StartReplicationExecution, params: RequestParams = {}) =>
+    startReplication: (
+      execution: StartReplicationExecution,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/replication/executions`,
         method: "POST",
@@ -5570,7 +6062,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     listReplicationTasks: (
       id: number,
       query?: {
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -5610,7 +6102,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/replication/executions/{id}/tasks/{task_id}/log
      * @secure
      */
-    getReplicationLog: (id: number, taskId: number, params: RequestParams = {}) =>
+    getReplicationLog: (
+      id: number,
+      taskId: number,
+      params: RequestParams = {},
+    ) =>
       this.request<EventType, Errors>({
         path: `/replication/executions/${id}/tasks/${taskId}/log`,
         method: "GET",
@@ -5687,7 +6183,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -5702,6 +6198,8 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
          * @default 10
          */
         page_size?: number;
+        /** Deprecated, use `q` instead. */
+        name?: string;
       },
       params: RequestParams = {},
     ) =>
@@ -5777,7 +6275,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/registries/{id}
      * @secure
      */
-    updateRegistry: (id: number, registry: RegistryUpdate, params: RequestParams = {}) =>
+    updateRegistry: (
+      id: number,
+      registry: RegistryUpdate,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/registries/${id}`,
         method: "PUT",
@@ -5824,6 +6326,24 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
 
+    /**
+     * @description Get the metrics of the latest scheduled scan all process
+     *
+     * @tags scanAll
+     * @name GetLatestScheduledScanAllMetrics
+     * @summary Get the metrics of the latest scheduled scan all process
+     * @request GET:/scans/schedule/metrics
+     * @deprecated
+     * @secure
+     */
+    getLatestScheduledScanAllMetrics: (params: RequestParams = {}) =>
+      this.request<Stats, Errors>({
+        path: `/scans/schedule/metrics`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
   };
   systeminfo = {
     /**
@@ -5920,7 +6440,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -6032,6 +6552,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         method: "POST",
         body: schedule,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -6050,6 +6571,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         method: "PUT",
         body: schedule,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -6066,7 +6588,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -6178,6 +6700,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         method: "POST",
         body: schedule,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -6196,6 +6719,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         method: "PUT",
         body: schedule,
         secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -6226,7 +6750,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/system/CVEAllowlist
      * @secure
      */
-    putSystemCveAllowlist: (allowlist: CVEAllowlist, params: RequestParams = {}) =>
+    putSystemCveAllowlist: (
+      allowlist: CVEAllowlist,
+      params: RequestParams = {},
+    ) =>
       this.request<void, Errors>({
         path: `/system/CVEAllowlist`,
         method: "PUT",
@@ -6407,7 +6934,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/jobservice/queues/{job_type}
      * @secure
      */
-    actionPendingJobs: (jobType: string, action_request: ActionRequest, params: RequestParams = {}) =>
+    actionPendingJobs: (
+      jobType: string,
+      action_request: ActionRequest,
+      params: RequestParams = {},
+    ) =>
       this.request<void, Errors>({
         path: `/jobservice/queues/${jobType}`,
         method: "PUT",
@@ -6553,7 +7084,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/retentions/{id}
      * @secure
      */
-    updateRetention: (id: number, policy: RetentionPolicy, params: RequestParams = {}) =>
+    updateRetention: (
+      id: number,
+      policy: RetentionPolicy,
+      params: RequestParams = {},
+    ) =>
       this.request<void, Errors>({
         path: `/retentions/${id}`,
         method: "PUT",
@@ -6709,7 +7244,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/retentions/{id}/executions/{eid}/tasks/{tid}
      * @secure
      */
-    getRetentionTaskLog: (id: number, eid: number, tid: number, params: RequestParams = {}) =>
+    getRetentionTaskLog: (
+      id: number,
+      eid: number,
+      tid: number,
+      params: RequestParams = {},
+    ) =>
       this.request<EventType, Errors>({
         path: `/retentions/${id}/executions/${eid}/tasks/${tid}`,
         method: "GET",
@@ -6731,7 +7271,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -6767,7 +7307,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/scanners
      * @secure
      */
-    createScanner: (registration: ScannerRegistrationReq, params: RequestParams = {}) =>
+    createScanner: (
+      registration: ScannerRegistrationReq,
+      params: RequestParams = {},
+    ) =>
       this.request<void, Errors>({
         path: `/scanners`,
         method: "POST",
@@ -6786,7 +7329,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/scanners/ping
      * @secure
      */
-    pingScanner: (settings: ScannerRegistrationSettings, params: RequestParams = {}) =>
+    pingScanner: (
+      settings: ScannerRegistrationSettings,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/scanners/ping`,
         method: "POST",
@@ -6823,7 +7369,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/scanners/{registration_id}
      * @secure
      */
-    updateScanner: (registrationId: string, registration: ScannerRegistrationReq, params: RequestParams = {}) =>
+    updateScanner: (
+      registrationId: string,
+      registration: ScannerRegistrationReq,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/scanners/${registrationId}`,
         method: "PUT",
@@ -6860,7 +7410,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/scanners/{registration_id}
      * @secure
      */
-    setScannerAsDefault: (registrationId: string, payload: IsDefault, params: RequestParams = {}) =>
+    setScannerAsDefault: (
+      registrationId: string,
+      payload: IsDefault,
+      params: RequestParams = {},
+    ) =>
       this.request<void, Errors>({
         path: `/scanners/${registrationId}`,
         method: "PATCH",
@@ -6902,7 +7456,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -7031,7 +7585,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/users/{user_id}
      * @secure
      */
-    updateUserProfile: (userId: number, profile: UserProfile, params: RequestParams = {}) =>
+    updateUserProfile: (
+      userId: number,
+      profile: UserProfile,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors>({
         path: `/users/${userId}`,
         method: "PUT",
@@ -7067,7 +7625,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/users/{user_id}/sysadmin
      * @secure
      */
-    setUserSysAdmin: (userId: number, sysadmin_flag: UserSysAdminFlag, params: RequestParams = {}) =>
+    setUserSysAdmin: (
+      userId: number,
+      sysadmin_flag: UserSysAdminFlag,
+      params: RequestParams = {},
+    ) =>
       this.request<any, Errors | void>({
         path: `/users/${userId}/sysadmin`,
         method: "PUT",
@@ -7086,7 +7648,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/users/{user_id}/password
      * @secure
      */
-    updateUserPassword: (userId: number, password: PasswordReq, params: RequestParams = {}) =>
+    updateUserPassword: (
+      userId: number,
+      password: PasswordReq,
+      params: RequestParams = {},
+    ) =>
       this.request<any, void | Errors>({
         path: `/users/${userId}/password`,
         method: "PUT",
@@ -7135,7 +7701,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/users/{user_id}/cli_secret
      * @secure
      */
-    setCliSecret: (userId: number, secret: OIDCCliSecretReq, params: RequestParams = {}) =>
+    setCliSecret: (
+      userId: number,
+      secret: OIDCCliSecretReq,
+      params: RequestParams = {},
+    ) =>
       this.request<void, void | Errors>({
         path: `/users/${userId}/cli_secret`,
         method: "PUT",
@@ -7159,7 +7729,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       query?: {
         /** Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max] */
         q?: string;
-        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2" */
+        /** Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2" */
         sort?: string;
         /**
          * The page number
@@ -7278,7 +7848,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/export/cve
      * @secure
      */
-    exportScanData: (criteria: ScanDataExportRequest, params: RequestParams = {}) =>
+    exportScanData: (
+      criteria: ScanDataExportRequest,
+      params: RequestParams = {},
+    ) =>
       this.request<ScanDataExportJob, Errors>({
         path: `/export/cve`,
         method: "POST",
@@ -7298,7 +7871,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/export/cve/execution/{execution_id}
      * @secure
      */
-    getScanDataExportExecution: (executionId: number, params: RequestParams = {}) =>
+    getScanDataExportExecution: (
+      executionId: number,
+      params: RequestParams = {},
+    ) =>
       this.request<ScanDataExportExecution, Errors>({
         path: `/export/cve/execution/${executionId}`,
         method: "GET",
@@ -7427,6 +8003,25 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         path: `/security/vul`,
         method: "GET",
         query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+  };
+  permissions = {
+    /**
+     * @description This endpoint is for retrieving resource and action info that only provides for admin user(system admin and project admin).
+     *
+     * @tags permissions
+     * @name GetPermissions
+     * @summary Get system or project level permissions info.
+     * @request GET:/permissions
+     * @secure
+     */
+    getPermissions: (params: RequestParams = {}) =>
+      this.request<Permissions, Errors>({
+        path: `/permissions`,
+        method: "GET",
         secure: true,
         format: "json",
         ...params,

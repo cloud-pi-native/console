@@ -32,6 +32,7 @@ describe('registryService', () => {
       getRetentionId: vi.fn().mockResolvedValue(null),
       createRetention: vi.fn().mockResolvedValue(makeCreatedResponse(null)),
       getGroupMembers: vi.fn().mockResolvedValue(makeOkResponse([])),
+      getProjectRobots: vi.fn(async function* () {}),
       addGroupMember: vi.fn().mockResolvedValue(makeCreatedResponse(null)),
       removeGroupMember: vi.fn().mockResolvedValue(makeNoContent()),
       deleteProjectByName: vi.fn().mockResolvedValue(makeNoContent()),
@@ -202,13 +203,15 @@ describe('registryService', () => {
         })
       })
 
-      client.getProjectRobots.mockResolvedValue(makeOkResponse([{ id: 11, name: `robot$${project.slug}+ro-robot` }]))
+      client.getProjectRobots.mockImplementation(async function* () {
+        yield { id: 11, name: `robot$${project.slug}+ro-robot` }
+      })
       client.deleteRobot.mockResolvedValue(makeNoContent())
       client.createRobot.mockResolvedValue(makeCreatedResponse({ id: 22, name: `robot$${project.slug}+ro-robot`, secret: 'newsecret' }))
 
       await service.handleUpsert(project)
 
-      expect(client.deleteRobot).toHaveBeenCalledWith(project.slug, 11)
+      expect(client.deleteRobot).toHaveBeenCalledWith(11)
       expect(client.createRobot).toHaveBeenCalledWith(expect.objectContaining({ name: 'ro-robot' }))
       expect(vault.write).toHaveBeenCalledWith(expect.objectContaining({
         HOST: 'harbor.example',
@@ -241,13 +244,15 @@ describe('registryService', () => {
         })
       })
 
-      client.getProjectRobots.mockResolvedValue(makeOkResponse([{ id: 11, name: `robot$${project.slug}+ro-robot` }]))
+      client.getProjectRobots.mockImplementation(async function* () {
+        yield { id: 11, name: `robot$${project.slug}+ro-robot` }
+      })
       client.deleteRobot.mockResolvedValue(makeNoContent())
       client.createRobot.mockResolvedValue(makeCreatedResponse({ id: 22, name: `robot$${project.slug}+ro-robot`, secret: 'newsecret' }))
 
       await service.handleUpsert(project)
 
-      expect(client.deleteRobot).toHaveBeenCalledWith(project.slug, 11)
+      expect(client.deleteRobot).toHaveBeenCalledWith(11)
       expect(client.createRobot).toHaveBeenCalledWith(expect.objectContaining({ name: 'ro-robot' }))
       expect(vault.write).toHaveBeenCalledWith(expect.objectContaining({
         HOST: 'harbor.example',
