@@ -1,5 +1,13 @@
 # Changelog
 
+## [9.20.2](https://github.com/cloud-pi-native/console/compare/v9.20.1...v9.20.2) (2026-07-21)
+
+
+### Bug Fixes
+
+* **harbor:** migrate robot management off removed robotv1 API for Harbor 2.13+ ([424b1c2](https://github.com/cloud-pi-native/console/commit/424b1c2c3c0bf085b33dfea25a2ae01a79182ad9))
+* **server-nestjs:** align @types/node to v24 to keep workspace libs linked ([2ba4fd5](https://github.com/cloud-pi-native/console/commit/2ba4fd5966bbcb712c793f07c3915ebc58880144))
+
 ## [9.20.1](https://github.com/cloud-pi-native/console/compare/v9.20.0...v9.20.1) (2026-07-17)
 
 
@@ -16,7 +24,6 @@
 * refactor(server-nestjs): offload project route to new implementation ([99a7f5d](https://github.com/cloud-pi-native/console/commit/99a7f5d29becefcdad24331004263756a6950774))
 
 ## [9.20.0](https://github.com/cloud-pi-native/console/compare/v9.19.0...v9.20.0) (2026-07-17)
-
 
 ### Features
 
