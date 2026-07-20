@@ -91,7 +91,7 @@
     "@nestjs/cli": "^11.0.16",
     "@nestjs/schematics": "^11.0.9",
     "@nestjs/testing": "^11.1.16",
-    "@types/node": "^22.19.15",
+    "@types/node": "^24.12.0",
     "@vitest/coverage-v8": "^4.1.5",
     "eslint": "^9.39.4",
     "globals": "^16.5.0",
