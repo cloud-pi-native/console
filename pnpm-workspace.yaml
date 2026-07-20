@@ -14,8 +14,6 @@ allowBuilds:
   prisma: true
   protobufjs: true
   vue-demi: true
-allowUnusedPatches: true
-
 autoInstallPeers: true
 injectWorkspacePackages: true
 # minimum number of minutes that must pass after a version is published before
@@ -34,3 +32,29 @@ trustPolicyExclude:
   - pino@9.14.0
   - typescript-transform-paths@3.5.6
   - undici-types@6.21.0
+  - '@trickfilm400/rollup-plugin-off-main-thread@3.0.0-pre1'
+
+overrides:
+  "@grpc/grpc-js": 1.14.4
+  "@protobufjs/utf8": 1.1.1
+  ajv@>=7.0.0 <8.18.0: 8.18.0
+  brace-expansion@<1.1.13: 1.1.13
+  brace-expansion@>=2.0.0 <2.0.3: 2.0.3
+  defu: 6.1.5
+  dompurify: 3.4.8
+  effect: 3.20.0
+  esbuild: 0.28.1
+  fast-jwt: 6.2.4
+  fast-uri: 3.1.2
+  file-type: 21.3.2
+  lodash: 4.18.1
+  path-to-regexp: 8.4.2
+  picomatch: 4.0.4
+  protobufjs: 8.6.0
+  qs: 6.15.2
+  serialize-javascript: 7.0.5
+  uuid: 11.1.1
+  vite: 8.0.16
+  ws: 8.20.1
+  yaml@>=1.0.0 <1.10.3: 1.10.3
+  yaml@>=2.0.0 <2.8.3: 2.8.3

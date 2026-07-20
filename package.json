@@ -13,9 +13,10 @@
     "npm": ">=11.0.0"
   },
   "scripts": {
+    "prebuild": "pnpm run db:generate",
     "build": "pnpm -r run build",
     "build:clean": "pnpm -r run build:clean",
-    "db:generate": "pnpm -r run db:generate",
+    "db:generate": "pnpm -r --workspace-concurrency=1 run db:generate",
     "dev": "docker compose -f ./docker/docker-compose.local.yml up -d --remove-orphans && echo '\nStart applications with commands:\n\n  pnpm --filter @cpn-console/server run dev\n  pnpm --filter @cpn-console/client run dev\n  pnpm --filter @cpn-console/server-nestjs run dev\n\nMake sure you provide env variables in `.env` files.'",
     "dev:clean": "docker compose -f ./docker/docker-compose.local.yml down --remove-orphans",
     "dev:delete": "docker compose -f ./docker/docker-compose.local.yml down -v --remove-orphans",
@@ -46,6 +47,8 @@
     "lint:root": "eslint .",
     "lint:style": "pnpm -r run lint:style",
     "lint:ts": "pnpm -r run lint:ts",
+    "pretest": "pnpm run db:generate",
+    "pretest:cov": "pnpm run db:generate",
     "playwright:test": "pnpm --dir playwright run playwright:test",
     "playwright:test:ui": "pnpm --dir playwright run playwright:test:ui",
     "playwright:test:integration": "pnpm --dir playwright run playwright:test:integration",
