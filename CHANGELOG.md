@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.22.1](https://github.com/cloud-pi-native/console/compare/v9.22.0...v9.22.1) (2026-07-21)
+
+
+### Bug Fixes
+
+* **plugins/nexus:** remove invalid cleanup policy from repo provisioning to fix Nexus 3.85+ ([8b99cb6](https://github.com/cloud-pi-native/console/commit/8b99cb6a7807dac1f6ba525a6ee3164f3fe13141))
+
 ## [9.22.0](https://github.com/cloud-pi-native/console/compare/v9.21.0...v9.22.0) (2026-07-21)
 
 
