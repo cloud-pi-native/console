@@ -41,7 +41,6 @@ async function provisionMavenHosted(axiosInstance: AxiosInstance, repoName: stri
           strictContentTypeValidation: true,
           writePolicy,
         },
-        cleanup: { policyNames: ['string'] },
         component: { proprietaryComponents: true },
         maven: {
           versionPolicy: 'MIXED',
@@ -63,7 +62,6 @@ async function provisionMavenHosted(axiosInstance: AxiosInstance, repoName: stri
           strictContentTypeValidation: true,
           writePolicy,
         },
-        cleanup: { policyNames: ['string'] },
         component: { proprietaryComponents: true },
         maven: {
           versionPolicy: 'MIXED',
@@ -85,7 +83,6 @@ async function provisionMavenHosted(axiosInstance: AxiosInstance, repoName: stri
             strictContentTypeValidation: true,
             writePolicy,
           },
-          cleanup: { policyNames: ['string'] },
           component: { proprietaryComponents: true },
           maven: {
             versionPolicy: 'MIXED',
@@ -107,7 +104,6 @@ async function provisionMavenHosted(axiosInstance: AxiosInstance, repoName: stri
             strictContentTypeValidation: true,
             writePolicy,
           },
-          cleanup: { policyNames: ['string'] },
           component: { proprietaryComponents: true },
           maven: {
             versionPolicy: 'MIXED',
