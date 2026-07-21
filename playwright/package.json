@@ -20,8 +20,8 @@
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
-    "@faker-js/faker": "^9.9.0",
-    "@playwright/test": "^1.59.1",
-    "@types/node": "^24.12.0"
+    "@faker-js/faker": "catalog:test",
+    "@playwright/test": "catalog:test",
+    "@types/node": "catalog:types"
   }
 }
