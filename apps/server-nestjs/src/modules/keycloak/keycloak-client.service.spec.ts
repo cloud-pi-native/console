@@ -153,7 +153,7 @@ describe('keycloakClientService authentication lifecycle', () => {
   it('should rethrow when the initial authentication fails', async () => {
     const tokenRequests = useTokenEndpoint({ rejectGrant: () => true })
 
-    await expect(module.init()).rejects.toThrow('Network response was not OK.')
+    await expect(module.init()).rejects.toThrow('invalid_grant')
     expect(client.realmName).toBe('master')
 
     await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS * 2)
@@ -252,7 +252,7 @@ describe('getOrCreateSubGroupByName', () => {
         HttpResponse.json({ errorMessage: 'Sibling group named \'sub\' already exists.' }, { status: 409 })),
     )
 
-    await expect(service.getOrCreateSubGroupByName('parent-id', 'sub')).rejects.toThrow('Network response was not OK.')
+    await expect(service.getOrCreateSubGroupByName('parent-id', 'sub')).rejects.toThrow('Sibling group named')
   })
 
   it('should rethrow non-409 errors without re-fetching', async () => {
@@ -266,7 +266,7 @@ describe('getOrCreateSubGroupByName', () => {
         HttpResponse.json({ error: 'unauthorized' }, { status: 401 })),
     )
 
-    await expect(service.getOrCreateSubGroupByName('parent-id', 'sub')).rejects.toThrow('Network response was not OK.')
+    await expect(service.getOrCreateSubGroupByName('parent-id', 'sub')).rejects.toThrow('unauthorized')
     expect(listCalls).toBe(1)
   })
 })
