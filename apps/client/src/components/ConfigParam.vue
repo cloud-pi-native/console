@@ -4,6 +4,7 @@ import { DEFAULT, DISABLED, ENABLED } from '@cpn-console/shared'
 const props = defineProps<{
   options: {
     value: globalThis.Ref<string>
+    defaultValue: string | undefined
     description: string | undefined
     name: string
     disabled: boolean
@@ -14,6 +15,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   update: [data: string]
+  reset: [data: string]
 }>()
 const switchOptions = [
   {
@@ -31,10 +33,15 @@ const switchOptions = [
 ]
 
 const value = ref(props.options.value)
+const defaultValue = computed(() => props.options.defaultValue)
 
 function set(data: string) {
   value.value = data
   emit('update', data)
+}
+function reset() {
+  value.value = defaultValue.value ?? ''
+  emit('reset', defaultValue.value ?? '')
 }
 </script>
 
