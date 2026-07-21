@@ -5,27 +5,398 @@ settings:
   excludeLinksFromLockfile: false
   injectWorkspacePackages: true
 
+catalogs:
+  build:
+    '@iconify/types':
+      specifier: ^2.0.0
+      version: 2.0.0
+    '@nestjs/cli':
+      specifier: ^11.0.16
+      version: 11.0.16
+    '@nestjs/schematics':
+      specifier: ^11.0.9
+      version: 11.0.9
+    '@nestjs/testing':
+      specifier: ^11.1.16
+      version: 11.1.16
+    '@unocss/transformer-directives':
+      specifier: ^0.65.4
+      version: 0.65.4
+    '@vitejs/plugin-vue':
+      specifier: ^6.0.4
+      version: 6.0.4
+    '@vue/tsconfig':
+      specifier: ^0.7.0
+      version: 0.7.0
+    fastify-plugin:
+      specifier: ^5.1.0
+      version: 5.1.0
+    swagger-typescript-api:
+      specifier: ^13.3.1
+      version: 13.3.1
+    ts-patch:
+      specifier: ^3.3.0
+      version: 3.3.0
+    typescript:
+      specifier: ^5.9.3
+      version: 5.9.3
+    typescript-transform-paths:
+      specifier: ^3.5.6
+      version: 3.5.6
+    unocss:
+      specifier: ^66.6.6
+      version: 66.6.6
+    unplugin-auto-import:
+      specifier: ^0.18.6
+      version: 0.18.6
+    unplugin-vue-components:
+      specifier: ^0.27.5
+      version: 0.27.5
+    vite:
+      specifier: ^7.3.2
+      version: 7.3.3
+    vite-node:
+      specifier: ^6.0.0
+      version: 6.0.0
+    vite-plugin-pwa:
+      specifier: ^1.2.0
+      version: 1.2.0
+    vue-tsc:
+      specifier: ^2.2.12
+      version: 2.2.12
+    workbox-window:
+      specifier: ^7.4.0
+      version: 7.4.0
+  dev:
+    '@antfu/eslint-config':
+      specifier: ^8.2.0
+      version: 8.2.0
+    '@commitlint/cli':
+      specifier: ^20.5.3
+      version: 20.5.3
+    '@commitlint/config-conventional':
+      specifier: ^20.5.3
+      version: 20.5.3
+    '@eslint/eslintrc':
+      specifier: ^3.3.5
+      version: 3.3.5
+    '@eslint/js':
+      specifier: ^9.39.4
+      version: 9.39.4
+    '@vue/eslint-config-typescript':
+      specifier: ^14.7.0
+      version: 14.7.0
+    chalk:
+      specifier: ^5.6.2
+      version: 5.6.2
+    eslint:
+      specifier: ^10.5.0
+      version: 10.5.0
+    eslint-plugin-vue:
+      specifier: ^10.8.0
+      version: 10.8.0
+    husky:
+      specifier: ^9.1.7
+      version: 9.1.7
+    js-yaml:
+      specifier: ^4.1.0
+      version: 4.2.0
+    lint-staged:
+      specifier: ^16.4.0
+      version: 16.4.0
+    nodemon:
+      specifier: ^3.1.14
+      version: 3.1.14
+    pino:
+      specifier: ^9.14.0
+      version: 9.14.0
+    pino-pretty:
+      specifier: ^13.1.3
+      version: 13.1.3
+    rimraf:
+      specifier: ^6.1.3
+      version: 6.1.3
+    stylelint:
+      specifier: ^17.11.0
+      version: 17.11.0
+    stylelint-config-html:
+      specifier: ^1.1.0
+      version: 1.1.0
+    stylelint-config-recommended-vue:
+      specifier: ^1.6.1
+      version: 1.6.1
+    stylelint-config-standard:
+      specifier: ^40.0.0
+      version: 40.0.0
+    typescript-eslint:
+      specifier: ^8.57.0
+      version: 8.57.0
+    vue-eslint-parser:
+      specifier: ^10.4.0
+      version: 10.4.0
+  otel:
+    '@opentelemetry/api':
+      specifier: ^1.9.0
+      version: 1.9.1
+    '@opentelemetry/auto-instrumentations-node':
+      specifier: ^0.70.1
+      version: 0.70.1
+    '@opentelemetry/exporter-metrics-otlp-proto':
+      specifier: ^0.213.0
+      version: 0.213.0
+    '@opentelemetry/exporter-trace-otlp-proto':
+      specifier: ^0.213.0
+      version: 0.213.0
+    '@opentelemetry/instrumentation-nestjs-core':
+      specifier: ^0.58.0
+      version: 0.58.0
+    '@opentelemetry/instrumentation-pino':
+      specifier: ^0.59.0
+      version: 0.59.0
+    '@opentelemetry/sdk-metrics':
+      specifier: ^2.5.1
+      version: 2.6.0
+    '@opentelemetry/sdk-node':
+      specifier: ^0.212.0
+      version: 0.212.0
+  runtime:
+    '@fastify/cookie':
+      specifier: ^11.0.2
+      version: 11.0.2
+    '@fastify/helmet':
+      specifier: ^13.0.2
+      version: 13.0.2
+    '@fastify/otel':
+      specifier: ^0.18.1
+      version: 0.18.1
+    '@fastify/session':
+      specifier: ^11.1.1
+      version: 11.1.1
+    '@fastify/swagger':
+      specifier: ^9.7.0
+      version: 9.7.0
+    '@fastify/swagger-ui':
+      specifier: ^5.2.6
+      version: 5.2.6
+    '@gitbeaker/core':
+      specifier: ^40.6.0
+      version: 40.6.0
+    '@gitbeaker/requester-utils':
+      specifier: ^40.6.0
+      version: 40.6.0
+    '@gitbeaker/rest':
+      specifier: ^40.6.0
+      version: 40.6.0
+    '@gouvfr/dsfr':
+      specifier: ^1.14.4
+      version: 1.14.4
+    '@gouvminint/vue-dsfr':
+      specifier: ^8.15.0
+      version: 8.15.0
+    '@himenon/argocd-typescript-openapi':
+      specifier: ^1.2.2
+      version: 1.2.2
+    '@iconify-json/ri':
+      specifier: ^1.2.10
+      version: 1.2.10
+    '@iconify/vue':
+      specifier: ^4.3.0
+      version: 4.3.0
+    '@keycloak/keycloak-admin-client':
+      specifier: ^24.0.0
+      version: 24.0.5
+    '@kubernetes-models/argo-cd':
+      specifier: ^2.7.2
+      version: 2.7.2
+    '@nestjs/cache-manager':
+      specifier: ^3.1.2
+      version: 3.1.3
+    '@nestjs/common':
+      specifier: ^11.1.16
+      version: 11.1.16
+    '@nestjs/config':
+      specifier: ^4.0.3
+      version: 4.0.3
+    '@nestjs/core':
+      specifier: ^11.1.16
+      version: 11.1.16
+    '@nestjs/event-emitter':
+      specifier: ^3.0.1
+      version: 3.0.1
+    '@nestjs/jwt':
+      specifier: ^11.0.2
+      version: 11.0.2
+    '@nestjs/platform-fastify':
+      specifier: ^11.1.16
+      version: 11.1.27
+    '@nestjs/schedule':
+      specifier: ^6.1.1
+      version: 6.1.1
+    '@nestjs/swagger':
+      specifier: ^11.4.1
+      version: 11.4.1
+    '@nestjs/terminus':
+      specifier: ^11.1.1
+      version: 11.1.1
+    '@prisma/client':
+      specifier: ^6.19.2
+      version: 6.19.2
+    '@ts-rest/core':
+      specifier: ^3.52.1
+      version: 3.52.1
+    '@ts-rest/fastify':
+      specifier: ^3.52.1
+      version: 3.52.1
+    '@ts-rest/open-api':
+      specifier: ^3.52.1
+      version: 3.52.1
+    axios:
+      specifier: ^1.15.1
+      version: 1.16.0
+    bytes:
+      specifier: ^3.1.2
+      version: 3.1.2
+    cache-manager:
+      specifier: ^7.2.8
+      version: 7.2.8
+    cron-validator:
+      specifier: ^1.4.0
+      version: 1.4.0
+    date-fns:
+      specifier: ^4.1.0
+      version: 4.1.0
+    fastify:
+      specifier: ^5.8.5
+      version: 5.8.5
+    fastify-keycloak-adapter:
+      specifier: 2.3.2
+      version: 2.3.2
+    javascript-time-ago:
+      specifier: ^2.6.4
+      version: 2.6.4
+    json-2-csv:
+      specifier: ^5.5.10
+      version: 5.5.10
+    json-schema:
+      specifier: ^0.4.0
+      version: 0.4.0
+    jszip:
+      specifier: ^3.10.1
+      version: 3.10.1
+    keycloak-js:
+      specifier: ^26.2.3
+      version: 26.2.3
+    mustache:
+      specifier: ^4.2.0
+      version: 4.2.0
+    nanoid:
+      specifier: 5.0.9
+      version: 5.0.9
+    nestjs-pino:
+      specifier: ^4.6.0
+      version: 4.6.0
+    p-debounce:
+      specifier: ^4.0.0
+      version: 4.0.0
+    pinia:
+      specifier: ^2.3.1
+      version: 2.3.1
+    prisma:
+      specifier: ^6.19.2
+      version: 6.19.2
+    reflect-metadata:
+      specifier: ^0.2.2
+      version: 0.2.2
+    rxjs:
+      specifier: ^7.8.2
+      version: 7.8.2
+    short-uuid:
+      specifier: ^5.2.0
+      version: 5.2.0
+    undici:
+      specifier: ^7.24.0
+      version: 7.24.5
+    vitest-mock-extended:
+      specifier: ^2.0.2
+      version: 2.0.2
+    vue:
+      specifier: ^3.5.30
+      version: 3.5.30
+    vue-router:
+      specifier: ^4.6.4
+      version: 4.6.4
+    vue3-json-viewer:
+      specifier: ^2.4.1
+      version: 2.4.1
+    xbytes:
+      specifier: ^1.9.1
+      version: 1.9.1
+    yaml:
+      specifier: ^2.7.1
+      version: 2.9.0
+    zod:
+      specifier: ^3.25.76
+      version: 3.25.76
+    zod-validation-error:
+      specifier: ^3.5.4
+      version: 3.5.4
+  test:
+    '@faker-js/faker':
+      specifier: ^9.9.0
+      version: 9.9.0
+    '@playwright/test':
+      specifier: ^1.57.0
+      version: 1.59.1
+    '@vitest/coverage-v8':
+      specifier: ^4.1.5
+      version: 4.1.5
+    globals:
+      specifier: ^16.5.0
+      version: 16.5.0
+    jsdom:
+      specifier: ^25.0.1
+      version: 25.0.1
+    msw:
+      specifier: ^2.12.10
+      version: 2.12.10
+    vitest:
+      specifier: ^4.1.5
+      version: 4.1.5
+  types:
+    '@types/jsdom':
+      specifier: ^21.1.7
+      version: 21.1.7
+    '@types/json-schema':
+      specifier: ^7.0.15
+      version: 7.0.15
+    '@types/node':
+      specifier: ^24.12.0
+      version: 24.12.0
+    undici-types:
+      specifier: ^7.16.0
+      version: 7.16.0
+
 importers:
 
   .:
     devDependencies:
       '@commitlint/cli':
-        specifier: ^20.5.3
+        specifier: catalog:dev
         version: 20.5.3(@types/node@24.12.0)(conventional-commits-parser@6.4.0)(typescript@5.9.3)
       '@commitlint/config-conventional':
-        specifier: ^20.5.3
+        specifier: catalog:dev
         version: 20.5.3
       '@cpn-console/eslint-config':
         specifier: workspace:^
         version: link:packages/eslintconfig
       eslint:
-        specifier: ^10.5.0
+        specifier: catalog:dev
         version: 10.5.0(jiti@2.6.1)(supports-color@5.5.0)
       husky:
-        specifier: ^9.1.7
+        specifier: catalog:dev
         version: 9.1.7
       lint-staged:
-        specifier: ^16.4.0
+        specifier: catalog:dev
         version: 16.4.0
 
   apps/client:
@@ -37,58 +408,58 @@ importers:
         specifier: workspace:^
         version: link:../../packages/shared
       '@gouvfr/dsfr':
-        specifier: ^1.14.4
+        specifier: catalog:runtime
         version: 1.14.4
       '@gouvminint/vue-dsfr':
-        specifier: ^8.15.0
+        specifier: catalog:runtime
         version: 8.15.0(@iconify/vue@4.3.0(vue@3.5.30(typescript@5.9.3)))(vue-router@4.6.4(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3))
       '@iconify-json/ri':
-        specifier: ^1.2.10
+        specifier: catalog:runtime
         version: 1.2.10
       '@iconify/vue':
-        specifier: ^4.3.0
+        specifier: catalog:runtime
         version: 4.3.0(vue@3.5.30(typescript@5.9.3))
       '@ts-rest/core':
-        specifier: ^3.52.1
+        specifier: catalog:runtime
         version: 3.52.1(@types/node@24.12.0)(zod@3.25.76)
       '@vue/tsconfig':
-        specifier: ^0.7.0
+        specifier: catalog:build
         version: 0.7.0(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
       axios:
-        specifier: ^1.15.1
+        specifier: catalog:runtime
         version: 1.16.0
       javascript-time-ago:
-        specifier: ^2.6.4
+        specifier: catalog:runtime
         version: 2.6.4
       jszip:
-        specifier: ^3.10.1
+        specifier: catalog:runtime
         version: 3.10.1
       keycloak-js:
-        specifier: ^26.2.3
+        specifier: catalog:runtime
         version: 26.2.3
       nanoid:
-        specifier: 5.0.9
+        specifier: catalog:runtime
         version: 5.0.9
       p-debounce:
-        specifier: ^4.0.0
+        specifier: catalog:runtime
         version: 4.0.0
       pinia:
-        specifier: ^2.3.1
+        specifier: catalog:runtime
         version: 2.3.1(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
       vue:
-        specifier: ^3.5.30
+        specifier: catalog:runtime
         version: 3.5.30(typescript@5.9.3)
       vue-router:
-        specifier: ^4.6.4
+        specifier: catalog:runtime
         version: 4.6.4(vue@3.5.30(typescript@5.9.3))
       vue3-json-viewer:
-        specifier: ^2.4.1
+        specifier: catalog:runtime
         version: 2.4.1(vue@3.5.30(typescript@5.9.3))
       xbytes:
-        specifier: ^1.9.1
+        specifier: catalog:runtime
         version: 1.9.1
       yaml:
-        specifier: ^2.7.1
+        specifier: catalog:runtime
         version: 2.9.0
     devDependencies:
       '@cpn-console/eslint-config':
@@ -101,88 +472,88 @@ importers:
         specifier: workspace:^
         version: link:../../packages/tsconfig
       '@faker-js/faker':
-        specifier: ^9.9.0
+        specifier: catalog:test
         version: 9.9.0
       '@iconify/types':
-        specifier: ^2.0.0
+        specifier: catalog:build
         version: 2.0.0
       '@types/jsdom':
-        specifier: ^21.1.7
+        specifier: catalog:types
         version: 21.1.7
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
       '@unocss/transformer-directives':
-        specifier: ^0.65.4
+        specifier: catalog:build
         version: 0.65.4
       '@vitejs/plugin-vue':
-        specifier: ^6.0.4
+        specifier: catalog:build
         version: 6.0.4(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.30(typescript@5.9.3))
       '@vitest/coverage-v8':
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
       '@vue/eslint-config-typescript':
-        specifier: ^14.7.0
+        specifier: catalog:dev
         version: 14.7.0(eslint-plugin-vue@10.8.0(@stylistic/eslint-plugin@5.10.0(eslint@10.5.0(jiti@2.6.1)))(@typescript-eslint/parser@8.59.2(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.5.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.5.0(jiti@2.6.1))(supports-color@5.5.0)))(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3)
       chalk:
-        specifier: ^5.6.2
+        specifier: catalog:dev
         version: 5.6.2
       eslint:
-        specifier: ^10.1.0
+        specifier: catalog:dev
         version: 10.5.0(jiti@2.6.1)
       eslint-plugin-vue:
-        specifier: ^10.8.0
+        specifier: catalog:dev
         version: 10.8.0(@stylistic/eslint-plugin@5.10.0(eslint@10.5.0(jiti@2.6.1)))(@typescript-eslint/parser@8.59.2(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.5.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.5.0(jiti@2.6.1)))
       jsdom:
-        specifier: ^25.0.1
+        specifier: catalog:test
         version: 25.0.1(supports-color@5.5.0)
       rimraf:
-        specifier: ^6.1.3
+        specifier: catalog:dev
         version: 6.1.3
       stylelint:
-        specifier: ^17.11.0
+        specifier: catalog:dev
         version: 17.11.0(supports-color@5.5.0)(typescript@5.9.3)
       stylelint-config-html:
-        specifier: ^1.1.0
+        specifier: catalog:dev
         version: 1.1.0(postcss-html@1.8.1)(stylelint@17.11.0(supports-color@5.5.0)(typescript@5.9.3))
       stylelint-config-recommended-vue:
-        specifier: ^1.6.1
+        specifier: catalog:dev
         version: 1.6.1(postcss-html@1.8.1)(stylelint@17.11.0(supports-color@5.5.0)(typescript@5.9.3))
       stylelint-config-standard:
-        specifier: ^40.0.0
+        specifier: catalog:dev
         version: 40.0.0(stylelint@17.11.0(supports-color@5.5.0)(typescript@5.9.3))
       typescript:
-        specifier: ^5.9.3
+        specifier: catalog:build
         version: 5.9.3
       unocss:
-        specifier: ^66.6.6
+        specifier: catalog:build
         version: 66.6.6(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
       unplugin-auto-import:
-        specifier: ^0.18.6
+        specifier: catalog:build
         version: 0.18.6(rollup@2.80.0)
       unplugin-vue-components:
-        specifier: ^0.27.5
+        specifier: catalog:build
         version: 0.27.5(@babel/parser@7.29.7)(rollup@2.80.0)(supports-color@5.5.0)(vue@3.5.30(typescript@5.9.3))
       vite:
-        specifier: ^7.3.2
+        specifier: catalog:build
         version: 7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
       vite-node:
-        specifier: ^6.0.0
+        specifier: catalog:build
         version: 6.0.0(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.48.0)(yaml@2.9.0)
       vite-plugin-pwa:
-        specifier: ^1.2.0
+        specifier: catalog:build
         version: 1.2.0(supports-color@5.5.0)(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))(workbox-build@7.4.0(@types/babel__core@7.20.5))(workbox-window@7.4.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.0)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
       vue-eslint-parser:
-        specifier: ^10.4.0
+        specifier: catalog:dev
         version: 10.4.0(eslint@10.5.0(jiti@2.6.1))(supports-color@5.5.0)
       vue-tsc:
-        specifier: ^2.2.12
+        specifier: catalog:build
         version: 2.2.12(typescript@5.9.3)
       workbox-window:
-        specifier: ^7.4.0
+        specifier: catalog:build
         version: 7.4.0
 
   apps/server:
@@ -218,91 +589,91 @@ importers:
         specifier: workspace:^
         version: link:../../plugins/vault
       '@fastify/cookie':
-        specifier: ^11.0.2
+        specifier: catalog:runtime
         version: 11.0.2
       '@fastify/helmet':
-        specifier: ^13.0.2
+        specifier: catalog:runtime
         version: 13.0.2
       '@fastify/otel':
-        specifier: ^0.18.1
+        specifier: catalog:runtime
         version: 0.18.1(@opentelemetry/api@1.9.1)(supports-color@5.5.0)
       '@fastify/session':
-        specifier: ^11.1.1
+        specifier: catalog:runtime
         version: 11.1.1
       '@fastify/swagger':
-        specifier: ^9.7.0
+        specifier: catalog:runtime
         version: 9.7.0(supports-color@5.5.0)
       '@fastify/swagger-ui':
-        specifier: ^5.2.6
+        specifier: catalog:runtime
         version: 5.2.6
       '@gitbeaker/core':
-        specifier: ^40.6.0
+        specifier: catalog:runtime
         version: 40.6.0
       '@gitbeaker/rest':
-        specifier: ^40.6.0
+        specifier: catalog:runtime
         version: 40.6.0
       '@kubernetes-models/argo-cd':
-        specifier: ^2.7.2
+        specifier: catalog:runtime
         version: 2.7.2
       '@opentelemetry/auto-instrumentations-node':
-        specifier: ^0.70.1
+        specifier: catalog:otel
         version: 0.70.1(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.6.0(@opentelemetry/api@1.9.1))
       '@opentelemetry/exporter-metrics-otlp-proto':
-        specifier: ^0.213.0
+        specifier: catalog:otel
         version: 0.213.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/exporter-trace-otlp-proto':
-        specifier: ^0.213.0
+        specifier: catalog:otel
         version: 0.213.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/instrumentation-nestjs-core':
-        specifier: ^0.58.0
+        specifier: catalog:otel
         version: 0.58.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/instrumentation-pino':
-        specifier: ^0.59.0
+        specifier: catalog:otel
         version: 0.59.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/sdk-metrics':
-        specifier: ^2.5.1
+        specifier: catalog:otel
         version: 2.6.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/sdk-node':
-        specifier: ^0.212.0
+        specifier: catalog:otel
         version: 0.212.0(@opentelemetry/api@1.9.1)
       '@prisma/client':
-        specifier: ^6.19.2
+        specifier: catalog:runtime
         version: 6.19.2(prisma@6.19.2(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
       '@ts-rest/core':
-        specifier: ^3.52.1
+        specifier: catalog:runtime
         version: 3.52.1(@types/node@24.12.0)(zod@3.25.76)
       '@ts-rest/fastify':
-        specifier: ^3.52.1
+        specifier: catalog:runtime
         version: 3.52.1(@ts-rest/core@3.52.1(@types/node@24.12.0)(zod@3.25.76))(fastify@5.8.5)(zod@3.25.76)
       '@ts-rest/open-api':
-        specifier: ^3.52.1
+        specifier: catalog:runtime
         version: 3.52.1(@ts-rest/core@3.52.1(@types/node@24.12.0)(zod@3.25.76))(zod@3.25.76)
       axios:
-        specifier: ^1.15.1
+        specifier: catalog:runtime
         version: 1.16.0
       date-fns:
-        specifier: ^4.1.0
+        specifier: catalog:runtime
         version: 4.1.0
       fastify:
-        specifier: ^5.8.5
+        specifier: catalog:runtime
         version: 5.8.5
       fastify-keycloak-adapter:
-        specifier: ^3.0.0
-        version: 3.0.2
+        specifier: catalog:runtime
+        version: 2.3.2
       json-2-csv:
-        specifier: ^5.5.10
+        specifier: catalog:runtime
         version: 5.5.10
       mustache:
-        specifier: ^4.2.0
+        specifier: catalog:runtime
         version: 4.2.0
       prisma:
-        specifier: ^6.19.2
+        specifier: catalog:runtime
         version: 6.19.2(magicast@0.3.5)(typescript@5.9.3)
       undici:
-        specifier: ^7.24.0
+        specifier: catalog:runtime
         version: 7.24.5
       vitest-mock-extended:
-        specifier: ^2.0.2
+        specifier: catalog:runtime
         version: 2.0.2(typescript@5.9.3)(vitest@4.1.5)
     devDependencies:
       '@cpn-console/eslint-config':
@@ -315,43 +686,43 @@ importers:
         specifier: workspace:^
         version: link:../../packages/tsconfig
       '@faker-js/faker':
-        specifier: ^9.9.0
+        specifier: catalog:test
         version: 9.9.0
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
       '@vitest/coverage-v8':
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
       fastify-plugin:
-        specifier: ^5.1.0
+        specifier: catalog:build
         version: 5.1.0
       nodemon:
-        specifier: ^3.1.14
+        specifier: catalog:dev
         version: 3.1.14
       pino-pretty:
-        specifier: ^13.1.3
+        specifier: catalog:dev
         version: 13.1.3
       rimraf:
-        specifier: ^6.1.3
+        specifier: catalog:dev
         version: 6.1.3
       ts-patch:
-        specifier: ^3.3.0
+        specifier: catalog:build
         version: 3.3.0
       typescript:
-        specifier: ^5.9.3
+        specifier: catalog:build
         version: 5.9.3
       typescript-transform-paths:
-        specifier: ^3.5.6
+        specifier: catalog:build
         version: 3.5.6(typescript@5.9.3)
       vite:
-        specifier: ^7.3.2
+        specifier: catalog:build
         version: 7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
       vite-node:
-        specifier: ^6.0.0
+        specifier: catalog:build
         version: 6.0.0(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.48.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.0)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
 
   apps/server-nestjs:
@@ -387,127 +758,127 @@ importers:
         specifier: workspace:^
         version: link:../../plugins/vault
       '@gitbeaker/core':
-        specifier: ^40.6.0
+        specifier: catalog:runtime
         version: 40.6.0
       '@gitbeaker/requester-utils':
-        specifier: ^40.6.0
+        specifier: catalog:runtime
         version: 40.6.0
       '@gitbeaker/rest':
-        specifier: ^40.6.0
+        specifier: catalog:runtime
         version: 40.6.0
       '@keycloak/keycloak-admin-client':
-        specifier: ^24.0.0
+        specifier: catalog:runtime
         version: 24.0.5
       '@kubernetes-models/argo-cd':
-        specifier: ^2.7.2
+        specifier: catalog:runtime
         version: 2.7.2
       '@nestjs/cache-manager':
-        specifier: ^3.1.2
+        specifier: catalog:runtime
         version: 3.1.3(@nestjs/common@11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@5.5.0))(@nestjs/core@11.1.16)(cache-manager@7.2.8)(keyv@5.6.0)(rxjs@7.8.2)
       '@nestjs/common':
-        specifier: ^11.1.16
+        specifier: catalog:runtime
         version: 11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@5.5.0)
       '@nestjs/config':
-        specifier: ^4.0.3
+        specifier: catalog:runtime
         version: 4.0.3(@nestjs/common@11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@5.5.0))(rxjs@7.8.2)
       '@nestjs/core':
-        specifier: ^11.1.16
+        specifier: catalog:runtime
         version: 11.1.16(@nestjs/common@11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@5.5.0))(@nestjs/platform-express@11.1.16)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/event-emitter':
-        specifier: ^3.0.1
+        specifier: catalog:runtime
         version: 3.0.1(@nestjs/common@11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@5.5.0))(@nestjs/core@11.1.16)
       '@nestjs/jwt':
-        specifier: ^11.0.2
+        specifier: catalog:runtime
         version: 11.0.2(@nestjs/common@11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@5.5.0))
       '@nestjs/platform-fastify':
-        specifier: ^11.1.16
+        specifier: catalog:runtime
         version: 11.1.27(@fastify/static@9.1.3)(@nestjs/common@11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@5.5.0))(@nestjs/core@11.1.16)
       '@nestjs/schedule':
-        specifier: ^6.1.1
+        specifier: catalog:runtime
         version: 6.1.1(@nestjs/common@11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@5.5.0))(@nestjs/core@11.1.16)
       '@nestjs/swagger':
-        specifier: ^11.4.1
+        specifier: catalog:runtime
         version: 11.4.1(@fastify/static@9.1.3)(@nestjs/common@11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@5.5.0))(@nestjs/core@11.1.16)(reflect-metadata@0.2.2)
       '@nestjs/terminus':
-        specifier: ^11.1.1
+        specifier: catalog:runtime
         version: 11.1.1(@grpc/grpc-js@1.14.3)(@grpc/proto-loader@0.8.0)(@nestjs/common@11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@5.5.0))(@nestjs/core@11.1.16)(@prisma/client@6.19.2(prisma@6.19.2(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3))(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@opentelemetry/api':
-        specifier: ^1.9.0
+        specifier: catalog:otel
         version: 1.9.1
       '@opentelemetry/auto-instrumentations-node':
-        specifier: ^0.70.1
+        specifier: catalog:otel
         version: 0.70.1(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.6.0(@opentelemetry/api@1.9.1))
       '@opentelemetry/exporter-metrics-otlp-proto':
-        specifier: ^0.213.0
+        specifier: catalog:otel
         version: 0.213.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/exporter-trace-otlp-proto':
-        specifier: ^0.213.0
+        specifier: catalog:otel
         version: 0.213.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/instrumentation-nestjs-core':
-        specifier: ^0.58.0
+        specifier: catalog:otel
         version: 0.58.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/instrumentation-pino':
-        specifier: ^0.59.0
+        specifier: catalog:otel
         version: 0.59.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/sdk-metrics':
-        specifier: ^2.5.1
+        specifier: catalog:otel
         version: 2.6.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/sdk-node':
-        specifier: ^0.212.0
+        specifier: catalog:otel
         version: 0.212.0(@opentelemetry/api@1.9.1)
       '@prisma/client':
-        specifier: ^6.19.2
+        specifier: catalog:runtime
         version: 6.19.2(prisma@6.19.2(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
       '@ts-rest/core':
-        specifier: ^3.52.1
+        specifier: catalog:runtime
         version: 3.52.1(@types/node@24.12.0)(zod@3.25.76)
       '@ts-rest/fastify':
-        specifier: ^3.52.1
+        specifier: catalog:runtime
         version: 3.52.1(@ts-rest/core@3.52.1(@types/node@24.12.0)(zod@3.25.76))(fastify@5.8.5)(zod@3.25.76)
       '@ts-rest/open-api':
-        specifier: ^3.52.1
+        specifier: catalog:runtime
         version: 3.52.1(@ts-rest/core@3.52.1(@types/node@24.12.0)(zod@3.25.76))(zod@3.25.76)
       cache-manager:
-        specifier: ^7.2.8
+        specifier: catalog:runtime
         version: 7.2.8
       date-fns:
-        specifier: ^4.1.0
+        specifier: catalog:runtime
         version: 4.1.0
       fastify:
-        specifier: ^5.8.5
+        specifier: catalog:runtime
         version: 5.8.5
       fastify-keycloak-adapter:
-        specifier: 2.3.2
+        specifier: catalog:runtime
         version: 2.3.2
       json-2-csv:
-        specifier: ^5.5.10
+        specifier: catalog:runtime
         version: 5.5.10
       mustache:
-        specifier: ^4.2.0
+        specifier: catalog:runtime
         version: 4.2.0
       nestjs-pino:
-        specifier: ^4.6.0
+        specifier: catalog:runtime
         version: 4.6.0(@nestjs/common@11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@5.5.0))(pino-http@11.0.0)(pino@10.3.1)(rxjs@7.8.2)
       prisma:
-        specifier: ^6.19.2
+        specifier: catalog:runtime
         version: 6.19.2(magicast@0.3.5)(typescript@5.9.3)
       reflect-metadata:
-        specifier: ^0.2.2
+        specifier: catalog:runtime
         version: 0.2.2
       rxjs:
-        specifier: ^7.8.2
+        specifier: catalog:runtime
         version: 7.8.2
       undici:
-        specifier: ^7.24.0
+        specifier: catalog:runtime
         version: 7.24.5
       vitest-mock-extended:
-        specifier: ^2.0.2
+        specifier: catalog:runtime
         version: 2.0.2(typescript@5.9.3)(vitest@4.1.5)
       yaml:
-        specifier: ^2.7.1
+        specifier: catalog:runtime
         version: 2.9.0
       zod:
-        specifier: ^3.25.76
+        specifier: catalog:runtime
         version: 3.25.76
     devDependencies:
       '@cpn-console/eslint-config':
@@ -520,70 +891,70 @@ importers:
         specifier: workspace:^
         version: link:../../packages/tsconfig
       '@eslint/eslintrc':
-        specifier: ^3.3.5
-        version: 3.3.5
+        specifier: catalog:dev
+        version: 3.3.5(supports-color@5.5.0)
       '@eslint/js':
-        specifier: ^9.39.4
+        specifier: catalog:dev
         version: 9.39.4
       '@faker-js/faker':
-        specifier: ^9.9.0
+        specifier: catalog:test
         version: 9.9.0
       '@nestjs/cli':
-        specifier: ^11.0.16
+        specifier: catalog:build
         version: 11.0.16(@types/node@24.12.0)(esbuild@0.27.3)(lightningcss@1.32.0)
       '@nestjs/schematics':
-        specifier: ^11.0.9
+        specifier: catalog:build
         version: 11.0.9(chokidar@4.0.3)(typescript@5.9.3)
       '@nestjs/testing':
-        specifier: ^11.1.16
+        specifier: catalog:build
         version: 11.1.16(@nestjs/common@11.1.16(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@5.5.0))(@nestjs/core@11.1.16)(@nestjs/platform-express@11.1.16)
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
       '@vitest/coverage-v8':
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
       eslint:
-        specifier: ^9.39.4
-        version: 9.39.4(jiti@2.6.1)(supports-color@5.5.0)
+        specifier: catalog:dev
+        version: 10.5.0(jiti@2.6.1)
       globals:
-        specifier: ^16.5.0
+        specifier: catalog:test
         version: 16.5.0
       msw:
-        specifier: ^2.12.10
+        specifier: catalog:test
         version: 2.12.10(@types/node@24.12.0)(typescript@5.9.3)
       pino-pretty:
-        specifier: ^13.1.3
+        specifier: catalog:dev
         version: 13.1.3
       rimraf:
-        specifier: ^6.1.3
+        specifier: catalog:dev
         version: 6.1.3
       ts-patch:
-        specifier: ^3.3.0
+        specifier: catalog:build
         version: 3.3.0
       typescript:
-        specifier: ^5.9.3
+        specifier: catalog:build
         version: 5.9.3
       typescript-eslint:
-        specifier: ^8.57.0
-        version: 8.57.0(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)
+        specifier: catalog:dev
+        version: 8.57.0(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3)
       vite:
-        specifier: ^7.3.2
+        specifier: catalog:build
         version: 7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
       vite-node:
-        specifier: ^6.0.0
+        specifier: catalog:build
         version: 6.0.0(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.48.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.0)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
 
   packages/eslintconfig:
     devDependencies:
       '@antfu/eslint-config':
-        specifier: ^8.2.0
+        specifier: catalog:dev
         version: 8.2.0(@typescript-eslint/rule-tester@8.57.0(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/typescript-estree@8.59.2(typescript@5.9.3))(@typescript-eslint/utils@8.59.2(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.30)(eslint@10.5.0(jiti@2.6.1))(supports-color@5.5.0)(typescript@5.9.3)(vitest@4.1.5)
       eslint:
-        specifier: ^10.0.3
+        specifier: catalog:dev
         version: 10.5.0(jiti@2.6.1)
 
   packages/hooks:
@@ -595,13 +966,13 @@ importers:
         specifier: workspace:^
         version: link:../shared
       json-schema:
-        specifier: ^0.4.0
+        specifier: catalog:runtime
         version: 0.4.0
       vitest-mock-extended:
-        specifier: ^2.0.2
+        specifier: catalog:runtime
         version: 2.0.2(typescript@5.9.3)(vitest@4.1.5)
       zod:
-        specifier: ^3.25.76
+        specifier: catalog:runtime
         version: 3.25.76
     devDependencies:
       '@cpn-console/eslint-config':
@@ -611,43 +982,40 @@ importers:
         specifier: workspace:^
         version: link:../tsconfig
       '@types/json-schema':
-        specifier: ^7.0.15
+        specifier: catalog:types
         version: 7.0.15
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
       '@vitest/coverage-v8':
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
       nodemon:
-        specifier: ^3.1.14
+        specifier: catalog:dev
         version: 3.1.14
       rimraf:
-        specifier: ^6.1.3
+        specifier: catalog:dev
         version: 6.1.3
-      ts-algebra:
-        specifier: ^2.0.0
-        version: 2.0.0
       typescript:
-        specifier: ^5.9.3
+        specifier: catalog:build
         version: 5.9.3
       undici-types:
-        specifier: ^7.24.0
-        version: 7.24.5
+        specifier: catalog:types
+        version: 7.16.0
       vitest:
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.0)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@8.0.11(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.48.0)(yaml@2.9.0))
 
   packages/logger:
     dependencies:
       pino:
-        specifier: 9.14.0
+        specifier: catalog:dev
         version: 9.14.0
       pino-pretty:
-        specifier: ^13.1.3
+        specifier: catalog:dev
         version: 13.1.3
       zod:
-        specifier: ^3.25.76
+        specifier: catalog:runtime
         version: 3.25.76
     devDependencies:
       '@cpn-console/eslint-config':
@@ -657,13 +1025,13 @@ importers:
         specifier: workspace:^
         version: link:../tsconfig
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
       rimraf:
-        specifier: ^6.1.3
+        specifier: catalog:dev
         version: 6.1.3
       typescript:
-        specifier: ^5.9.3
+        specifier: catalog:build
         version: 5.9.3
 
   packages/shared:
@@ -672,16 +1040,16 @@ importers:
         specifier: workspace:*
         version: link:../logger
       '@ts-rest/core':
-        specifier: ^3.52.1
+        specifier: catalog:runtime
         version: 3.52.1(@types/node@24.12.0)(zod@3.25.76)
       short-uuid:
-        specifier: ^5.2.0
+        specifier: catalog:runtime
         version: 5.2.0
       zod:
-        specifier: ^3.25.76
+        specifier: catalog:runtime
         version: 3.25.76
       zod-validation-error:
-        specifier: ^3.5.4
+        specifier: catalog:runtime
         version: 3.5.4(zod@3.25.76)
     devDependencies:
       '@cpn-console/eslint-config':
@@ -691,32 +1059,32 @@ importers:
         specifier: workspace:^
         version: link:../tsconfig
       '@faker-js/faker':
-        specifier: ^9.9.0
+        specifier: catalog:test
         version: 9.9.0
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
       '@vitest/coverage-v8':
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
       nodemon:
-        specifier: ^3.1.14
+        specifier: catalog:dev
         version: 3.1.14
       rimraf:
-        specifier: ^6.1.3
+        specifier: catalog:dev
         version: 6.1.3
       typescript:
-        specifier: 5.7.2
-        version: 5.7.2
+        specifier: catalog:build
+        version: 5.9.3
       vite:
-        specifier: ^7.3.2
+        specifier: catalog:build
         version: 7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
       vite-node:
-        specifier: ^6.0.0
+        specifier: catalog:build
         version: 6.0.0(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.48.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.0)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.7.2))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
+        specifier: catalog:test
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.0)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
 
   packages/test-utils:
     dependencies:
@@ -724,7 +1092,7 @@ importers:
         specifier: workspace:^
         version: link:../shared
       '@faker-js/faker':
-        specifier: ^9.9.0
+        specifier: catalog:test
         version: 9.9.0
     devDependencies:
       '@cpn-console/eslint-config':
@@ -734,13 +1102,13 @@ importers:
         specifier: workspace:^
         version: link:../tsconfig
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
       rimraf:
-        specifier: ^6.1.3
+        specifier: catalog:dev
         version: 6.1.3
       typescript:
-        specifier: ^5.9.3
+        specifier: catalog:build
         version: 5.9.3
 
   packages/tsconfig: {}
@@ -754,13 +1122,13 @@ importers:
         specifier: workspace:^
         version: link:../packages/tsconfig
       '@faker-js/faker':
-        specifier: ^9.9.0
+        specifier: catalog:test
         version: 9.9.0
       '@playwright/test':
-        specifier: ^1.59.1
+        specifier: catalog:test
         version: 1.59.1
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
 
   plugins/argocd:
@@ -784,13 +1152,13 @@ importers:
         specifier: workspace:^
         version: link:../vault
       '@himenon/argocd-typescript-openapi':
-        specifier: ^1.2.2
+        specifier: catalog:runtime
         version: 1.2.2
       axios:
-        specifier: ^1.15.1
+        specifier: catalog:runtime
         version: 1.16.0
       yaml:
-        specifier: ^2.7.1
+        specifier: catalog:runtime
         version: 2.9.0
     devDependencies:
       '@cpn-console/eslint-config':
@@ -800,28 +1168,28 @@ importers:
         specifier: workspace:^
         version: link:../../packages/tsconfig
       '@faker-js/faker':
-        specifier: ^9.9.0
+        specifier: catalog:test
         version: 9.9.0
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
       '@vitest/coverage-v8':
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
       nodemon:
-        specifier: ^3.1.14
+        specifier: catalog:dev
         version: 3.1.14
       rimraf:
-        specifier: ^6.1.3
+        specifier: catalog:dev
         version: 6.1.3
       typescript:
-        specifier: ^5.9.3
+        specifier: catalog:build
         version: 5.9.3
       vite:
-        specifier: ^7.3.2
+        specifier: catalog:build
         version: 7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.0)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
 
   plugins/gitlab:
@@ -839,16 +1207,16 @@ importers:
         specifier: workspace:^
         version: link:../vault
       '@gitbeaker/core':
-        specifier: ^40.6.0
+        specifier: catalog:runtime
         version: 40.6.0
       '@gitbeaker/requester-utils':
-        specifier: ^40.6.0
+        specifier: catalog:runtime
         version: 40.6.0
       '@gitbeaker/rest':
-        specifier: ^40.6.0
+        specifier: catalog:runtime
         version: 40.6.0
       axios:
-        specifier: ^1.15.1
+        specifier: catalog:runtime
         version: 1.16.0
     devDependencies:
       '@cpn-console/eslint-config':
@@ -858,25 +1226,25 @@ importers:
         specifier: workspace:^
         version: link:../../packages/tsconfig
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
       '@vitest/coverage-v8':
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
       nodemon:
-        specifier: ^3.1.14
+        specifier: catalog:dev
         version: 3.1.14
       rimraf:
-        specifier: ^6.1.3
+        specifier: catalog:dev
         version: 6.1.3
       typescript:
-        specifier: ^5.9.3
+        specifier: catalog:build
         version: 5.9.3
       vite:
-        specifier: ^7.3.2
+        specifier: catalog:build
         version: 7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.0)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
 
   plugins/harbor:
@@ -897,13 +1265,13 @@ importers:
         specifier: workspace:^
         version: link:../vault
       axios:
-        specifier: ^1.15.1
+        specifier: catalog:runtime
         version: 1.16.0
       bytes:
-        specifier: ^3.1.2
+        specifier: catalog:runtime
         version: 3.1.2
       cron-validator:
-        specifier: ^1.4.0
+        specifier: catalog:runtime
         version: 1.4.0
     devDependencies:
       '@cpn-console/eslint-config':
@@ -913,31 +1281,31 @@ importers:
         specifier: workspace:^
         version: link:../../packages/tsconfig
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
       '@vitest/coverage-v8':
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
       js-yaml:
-        specifier: ^4.1.0
+        specifier: catalog:dev
         version: 4.2.0
       nodemon:
-        specifier: ^3.1.14
+        specifier: catalog:dev
         version: 3.1.14
       rimraf:
-        specifier: ^6.1.3
+        specifier: catalog:dev
         version: 6.1.3
       swagger-typescript-api:
-        specifier: ^13.3.1
+        specifier: catalog:build
         version: 13.3.1(magicast@0.5.3)
       typescript:
-        specifier: ^5.9.3
+        specifier: catalog:build
         version: 5.9.3
       vite:
-        specifier: ^7.3.2
+        specifier: catalog:build
         version: 7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.0)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
 
   plugins/keycloak:
@@ -945,6 +1313,9 @@ importers:
       '@cpn-console/hooks':
         specifier: workspace:^
         version: link:../../packages/hooks
+      '@cpn-console/keycloak-plugin':
+        specifier: workspace:^
+        version: 'link:'
       '@cpn-console/logger':
         specifier: workspace:^
         version: link:../../packages/logger
@@ -952,10 +1323,10 @@ importers:
         specifier: workspace:^
         version: link:../../packages/shared
       '@keycloak/keycloak-admin-client':
-        specifier: ^26.5.5
-        version: 26.6.3
+        specifier: catalog:runtime
+        version: 24.0.5
       axios:
-        specifier: ^1.15.1
+        specifier: catalog:runtime
         version: 1.16.0
     devDependencies:
       '@cpn-console/eslint-config':
@@ -968,25 +1339,25 @@ importers:
         specifier: workspace:^
         version: link:../vault
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
       '@vitest/coverage-v8':
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
       nodemon:
-        specifier: ^3.1.14
+        specifier: catalog:dev
         version: 3.1.14
       rimraf:
-        specifier: ^6.1.3
+        specifier: catalog:dev
         version: 6.1.3
       typescript:
-        specifier: ^5.9.3
+        specifier: catalog:build
         version: 5.9.3
       vite:
-        specifier: ^7.3.2
+        specifier: catalog:build
         version: 7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.0)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
 
   plugins/nexus:
@@ -1007,7 +1378,7 @@ importers:
         specifier: workspace:^
         version: link:../vault
       axios:
-        specifier: ^1.15.1
+        specifier: catalog:runtime
         version: 1.16.0
     devDependencies:
       '@cpn-console/eslint-config':
@@ -1017,25 +1388,25 @@ importers:
         specifier: workspace:^
         version: link:../../packages/tsconfig
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
       '@vitest/coverage-v8':
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
       nodemon:
-        specifier: ^3.1.14
+        specifier: catalog:dev
         version: 3.1.14
       rimraf:
-        specifier: ^6.1.3
+        specifier: catalog:dev
         version: 6.1.3
       typescript:
-        specifier: ^5.9.3
+        specifier: catalog:build
         version: 5.9.3
       vite:
-        specifier: ^7.3.2
+        specifier: catalog:build
         version: 7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.0)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
 
   plugins/sonarqube:
@@ -1059,7 +1430,7 @@ importers:
         specifier: workspace:^
         version: link:../vault
       axios:
-        specifier: ^1.15.1
+        specifier: catalog:runtime
         version: 1.16.0
     devDependencies:
       '@cpn-console/eslint-config':
@@ -1069,25 +1440,25 @@ importers:
         specifier: workspace:^
         version: link:../../packages/tsconfig
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
       '@vitest/coverage-v8':
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
       nodemon:
-        specifier: ^3.1.14
+        specifier: catalog:dev
         version: 3.1.14
       rimraf:
-        specifier: ^6.1.3
+        specifier: catalog:dev
         version: 6.1.3
       typescript:
-        specifier: ^5.9.3
+        specifier: catalog:build
         version: 5.9.3
       vite:
-        specifier: ^7.3.2
+        specifier: catalog:build
         version: 7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.0)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
 
   plugins/vault:
@@ -1102,7 +1473,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/shared
       axios:
-        specifier: ^1.15.1
+        specifier: catalog:runtime
         version: 1.16.0
     devDependencies:
       '@cpn-console/eslint-config':
@@ -1112,25 +1483,25 @@ importers:
         specifier: workspace:^
         version: link:../../packages/tsconfig
       '@types/node':
-        specifier: ^24.12.0
+        specifier: catalog:types
         version: 24.12.0
       '@vitest/coverage-v8':
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
       nodemon:
-        specifier: ^3.1.14
+        specifier: catalog:dev
         version: 3.1.14
       rimraf:
-        specifier: ^6.1.3
+        specifier: catalog:dev
         version: 6.1.3
       typescript:
-        specifier: ^5.9.3
+        specifier: catalog:build
         version: 5.9.3
       vite:
-        specifier: ^7.3.2
+        specifier: catalog:build
         version: 7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.0)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
 
 packages:
@@ -2173,17 +2544,9 @@ packages:
       eslint:
         optional: true
 
-  '@eslint/config-array@0.21.2':
-    resolution: {integrity: sha512-nJl2KGTlrf9GjLimgIru+V/mzgSK0ABCDQRvxw5BjURL7WfH5uoWmizbH7QB6MmnMBd8cIC9uceWnezL1VZWWw==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
   '@eslint/config-array@0.23.5':
     resolution: {integrity: sha512-Y3kKLvC1dvTOT+oGlqNQ1XLqK6D1HU2YXPc52NmAlJZbMMWDzGYXMiPRJ8TYD39muD/OTjlZmNJ4ib7dvSrMBA==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
-
-  '@eslint/config-helpers@0.4.2':
-    resolution: {integrity: sha512-gBrxN88gOIf3R7ja5K9slwNayVcZgK6SOUORm2uBzTeIEfeVaIhOpCtTox3P6R7o2jLFwLFTLnC7kU/RGcYEgw==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/config-helpers@0.5.5':
     resolution: {integrity: sha512-eIJYKTCECbP/nsKaaruF6LW967mtbQbsw4JTtSVkUQc9MneSkbrgPJAbKl9nWr0ZeowV8BfsarBmPpBzGelA2w==}
@@ -2192,10 +2555,6 @@ packages:
   '@eslint/config-helpers@0.6.0':
     resolution: {integrity: sha512-ii6Bw9jJ2zi2cWA2Z+9/QZ/+3DX6kwaV5Q986D/CdP3Lap3w/pgQZ373FV7byY/i7L4IRH/G43I5dz1ClsCbpA==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
-
-  '@eslint/core@0.17.0':
-    resolution: {integrity: sha512-yL/sLrpmtDaFEiUj1osRP4TI2MDz1AddJL+jZ7KSqvBuliN4xqYY54IfdN8qD8Toa6g1iloph1fxQNkjOxrrpQ==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/core@1.2.1':
     resolution: {integrity: sha512-MwcE1P+AZ4C6DWlpin/OmOA54mmIZ/+xZuJiQd4SyB29oAJjN30UW9wkKNptW2ctp4cEsvhlLY/CsQ1uoHDloQ==}
@@ -2213,17 +2572,9 @@ packages:
     resolution: {integrity: sha512-WWKmld/EyNdEB8GMq7JMPX1SDWgyJAM1uhtCi5ySrqYQM4HQjmg11EX/q3ZpnpRXHfdccFtli3NBvvGaYjWyQw==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  '@eslint/object-schema@2.1.7':
-    resolution: {integrity: sha512-VtAOaymWVfZcmZbp6E2mympDIHvyjXs/12LqWYjVw6qjrfF+VK+fyG33kChz3nnK+SU5/NeHOqrTEHS8sXO3OA==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
   '@eslint/object-schema@3.0.5':
     resolution: {integrity: sha512-vqTaUEgxzm+YDSdElad6PiRoX4t8VGDjCtt05zn4nU810UIx/uNEV7/lZJ6KwFThKZOzOxzXy48da+No7HZaMw==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
-
-  '@eslint/plugin-kit@0.4.1':
-    resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/plugin-kit@0.6.1':
     resolution: {integrity: sha512-iH1B076HoAshH1mLpHMgwdGeTs0CYwL0SPMkGuSebZrwBp16v415e9NZXg2jtrqPVQjf6IANe2Vtlr5KswtcZQ==}
@@ -2275,9 +2626,6 @@ packages:
 
   '@fastify/jwt@8.0.1':
     resolution: {integrity: sha512-295bd7V6bDCnZOu8MAQgM6r7V1KILB+kdEq1q6nbHfXCnML569n7NSo3WzeLDG6IAqDl+Rhzi1vjxwaNHhRCBA==}
-
-  '@fastify/jwt@9.1.0':
-    resolution: {integrity: sha512-CiGHCnS5cPMdb004c70sUWhQTfzrJHAeTywt7nVw6dAiI0z1o4WRvU94xfijhkaId4bIxTCOjFgn4sU+Gvk43w==}
 
   '@fastify/merge-json-schemas@0.2.1':
     resolution: {integrity: sha512-OA3KGBCy6KtIvLf8DINC5880o5iBlDX4SxzLQS8HorJAbqluzLRn80UXU0bxZn7UOFhFgpRJDasfwn9nG4FG4A==}
@@ -2553,10 +2901,6 @@ packages:
     resolution: {integrity: sha512-SXDVtQ3ov7GQbxXq51Uq8lzhwzQwNg6XiY50ZA9whuUe2t/0zPT4Zd/LcULcjweIjSNWWgfbDyN1E3yRSL8Qqw==}
     engines: {node: '>=18'}
 
-  '@keycloak/keycloak-admin-client@26.6.3':
-    resolution: {integrity: sha512-hHSdEl9Hxww7w1Q+SbMPshhHxjvZZsNEfsL+7PXGxi0fYPggSQUyd/PC1ko1/UX7gNyDmDI89sOYSBoFQ/bcaQ==}
-    engines: {node: '>=18'}
-
   '@keyv/bigmap@1.3.1':
     resolution: {integrity: sha512-WbzE9sdmQtKy8vrNPa9BRnwZh5UF4s1KTmSK0KUVLo3eff5BlQNNWDnFOouNpKfPKDnms9xynJjsMYjMaT/aFQ==}
     engines: {node: '>= 18'}
@@ -2589,24 +2933,6 @@ packages:
   '@lukeed/ms@2.0.2':
     resolution: {integrity: sha512-9I2Zn6+NJLfaGoz9jN3lpwDgAYvfGeNYdbAIjJOqzs4Tpc+VU3Jqq4IofSUBKajiDS8k9fZIg18/z13mpk1bsA==}
     engines: {node: '>=8'}
-
-  '@microsoft/kiota-abstractions@1.0.0-preview.103':
-    resolution: {integrity: sha512-om7nKH8nWyEAQ0lgbIdKdrkmznhkdDJdliCnAIo31X/hlUah1aBzvfUx+pbyp67Q040yLK+2J6P7AnvGSoN/qQ==}
-
-  '@microsoft/kiota-http-fetchlibrary@1.0.0-preview.103':
-    resolution: {integrity: sha512-DbhGL+pdVjtv2AVvxB4fxvNC/GMzKbYyeQsknaXJXwqnPR/oIClWjaXlIxWL5SBK72DOmrZ18leaWMB2vfWvpw==}
-
-  '@microsoft/kiota-serialization-form@1.0.0-preview.103':
-    resolution: {integrity: sha512-AD5Q59Qu61DfhaLLN7Mvgx4Zw0Zmftqx04XAbrRreC+r9hwT1BqTf0EReCraMzEoC4sdrp/8haI2Arm8dWUWuQ==}
-
-  '@microsoft/kiota-serialization-json@1.0.0-preview.103':
-    resolution: {integrity: sha512-dTr8q6H42TSe+HaCPBXU4Pv6ypo7MjMGRo/r9GRbnCuy8VCWfe+Vh38rnAZJx4r8cmvOUD7Yw74IJ6q4Hjv3mg==}
-
-  '@microsoft/kiota-serialization-multipart@1.0.0-preview.103':
-    resolution: {integrity: sha512-b3ePXYgFv/2TQtbzFQ8ZY+hzMtCRkz4Cx5y/Pf8vtoQu56KU0/9rYq5kA9wySDdCx/oZxfubQQRV/8QSTxmejw==}
-
-  '@microsoft/kiota-serialization-text@1.0.0-preview.103':
-    resolution: {integrity: sha512-FkiboqpNtT2F40xUC9LETHK9ckHd+WuocLJE70ljI4EYvD59MQDsrTERYAwbmkfPIJ6JRE4OfLXFVh510LG1/Q==}
 
   '@microsoft/tsdoc@0.16.0':
     resolution: {integrity: sha512-xgAyonlVVS+q7Vc7qLW0UrJU7rSFcETRWsqdXZtjzRU8dF+6CkozTK4V4y1LwOX7j8r/vHphjDeMeGI4tNGeGA==}
@@ -3909,9 +4235,6 @@ packages:
 
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
-
-  '@std-uritemplate/std-uritemplate@2.0.10':
-    resolution: {integrity: sha512-EGxlaZDK+CcvMYzxLWKgQlhNiyGIoznEi/CVnzM1DCiQQh/EwSH0ThvseXJ4g6btu1hvlUZ70SrZD6ahsglXcw==}
 
   '@stylistic/eslint-plugin@5.10.0':
     resolution: {integrity: sha512-nPK52ZHvot8Ju/0A4ucSX1dcPV2/1clx0kLcH5wDmrE4naKso7TUC/voUyU1O9OTKTrR6MYip6LP0ogEMQ9jPQ==}
@@ -5541,10 +5864,6 @@ packages:
     resolution: {integrity: sha512-2NxwbF/hZ0KpepYN0cNbo+FN6XoK7GaHlQhgx/hIZl6Va0bF45RQOOwhLIy8lQDbuCiadSLCBnH2CFYquit5bw==}
     engines: {node: '>=8.0.0'}
 
-  eslint-scope@8.4.0:
-    resolution: {integrity: sha512-sNXOfKCn74rt8RICKMvJS7XKV/Xk9kA7DyJr8mJik3S7Cwgy3qlkkmyS2uQB3jiJg6VNdZd/pDBJu0nvG2NlTg==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
   eslint-scope@9.1.2:
     resolution: {integrity: sha512-xS90H51cKw0jltxmvmHy2Iai1LIqrfbw57b79w/J7MfvDfkIkFZ+kj6zC3BjtUwh150HsSSdxXZcsuv72miDFQ==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
@@ -5564,16 +5883,6 @@ packages:
   eslint@10.5.0:
     resolution: {integrity: sha512-1y+7C+vi12bUK1IpZeaV3gsH9fHLBmPvYmPx42pvT/E9yG0IC8g3PUZZgp0+JLJl7ZDK0flc2gc+Aw9dpCvIsQ==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
-    hasBin: true
-    peerDependencies:
-      jiti: '*'
-    peerDependenciesMeta:
-      jiti:
-        optional: true
-
-  eslint@9.39.4:
-    resolution: {integrity: sha512-XoMjdBOwe/esVgEvLmNsD3IRHkm7fbKIUGvrleloJXUZgDHig2IPWNniv+GwjyJXzuNqVjlr5+4yVUZjycJwfQ==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -5678,13 +5987,10 @@ packages:
   fast-json-stringify@6.4.0:
     resolution: {integrity: sha512-ibRCQ0GZKJIQ+P3Et1h0LhPgp3PMTYk0MH8O+kW3lNYsvmaQww5Nn3f1jf73Q0jR1Yz3a1CDP4/NZD3vOajWJQ==}
 
-  fast-jwt@4.0.5:
-    resolution: {integrity: sha512-QnpNdn0955GT7SlT8iMgYfhTsityUWysrQjM+Q7bGFijLp6+TNWzlbSMPvgalbrQGRg4ZaHZgMcns5fYOm5avg==}
-    engines: {node: '>=16'}
-
-  fast-jwt@5.0.6:
-    resolution: {integrity: sha512-LPE7OCGUl11q3ZgW681cEU2d0d2JZ37hhJAmetCgNyW8waVaJVZXhyFF6U2so1Iim58Yc7pfxJe2P7MNetQH2g==}
+  fast-jwt@4.0.6:
+    resolution: {integrity: sha512-kyNxaoy/m8pDQdyn+gl4FOTNEOrLK/1iAU4MP8cTz3mErOyh+BtvoCNFxKsyY4zlEKWO5HMY526zRXdoiPc6Rg==}
     engines: {node: '>=20'}
+    deprecated: this package version has been deprecated
 
   fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
@@ -5717,9 +6023,6 @@ packages:
 
   fastify-keycloak-adapter@2.3.2:
     resolution: {integrity: sha512-XR4K+r0A1oJafrpQZgNQc+0BWNuRJ9+93sEdYUUFH7vpIDkWgEpXDOPnGOIn7SqZQvBYKhpxAxD7h9KMw1VC1g==}
-
-  fastify-keycloak-adapter@3.0.2:
-    resolution: {integrity: sha512-Zm5PowNKxgHPztM1wC0hJmnFYPrUoduREEIzxwz2dnTpMm5qZkp7btweTuGW5AzDbjBu3EVM0fNyPxyR3OkwwA==}
 
   fastify-plugin@4.5.1:
     resolution: {integrity: sha512-stRHYGeuqpEZTL1Ef0Ovr2ltazUT9g844X5z/zEBFLG8RYlpDiOCIG+ATvYEp+/zmc7sN29mcIMp8gvYplYPIQ==}
@@ -7036,9 +7339,6 @@ packages:
   mnemonist@0.39.8:
     resolution: {integrity: sha512-vyWo2K3fjrUw8YeeZ1zF0fy6Mu59RHokURlld8ymdUPjMlD9EC9ov1/YPqTgqRvUN9nTr3Gqfz29LYAmu0PHPQ==}
 
-  mnemonist@0.40.4:
-    resolution: {integrity: sha512-ZAv+KNavneRVzu4tUeOgzkScI3W5BGwZ3rkxIpKtzzVgfTtWQFN1CgX0U72cyvyh3iTuHL3SiSmrQxTlryEIcw==}
-
   module-details-from-path@1.0.4:
     resolution: {integrity: sha512-EGWKgxALGMgzvxYF1UyGTy0HXX/2vHLkw6+NvDKW2jypWbHpjQuj4UMcqQWXHERJhVGKikolT06G3bcKe4fi7w==}
 
@@ -8286,9 +8586,6 @@ packages:
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
 
-  tinyduration@3.4.1:
-    resolution: {integrity: sha512-NemFoamVYn7TmtwZKZ3OiliM9fZkr6EWiTM+wKknco6POSy2gS689xx/pXip0JYp40HXpUw6k65CUYHWYUXdaA==}
-
   tinyexec@1.2.4:
     resolution: {integrity: sha512-SHf/r48b7vOrjve9PxJo3MN5v5yuyjHvdUcrQffT3WXMUfnGmHDVbC4k3sHJaJTgZCwpUplIaAo5ANtMyp3YHg==}
     engines: {node: '>=18'}
@@ -8364,9 +8661,6 @@ packages:
   tr46@5.1.1:
     resolution: {integrity: sha512-hdF5ZgjTqgAntKkklYw0R03MG2x/bSzTtkxmIRw/sTNV8YXsCJ1tfLAX23lhxhHJlEf3CRCOCGGWw3vI3GaSPw==}
     engines: {node: '>=18'}
-
-  ts-algebra@2.0.0:
-    resolution: {integrity: sha512-FPAhNPFMrkwz76P7cdjdmiShwMynZYN6SgOujD1urY4oNm80Ou9oMdmbR45LotcKOXoy7wSmHkRFE6Mxbrhefw==}
 
   ts-api-utils@2.5.0:
     resolution: {integrity: sha512-OJ/ibxhPlqrMM0UiNHJ/0CKQkoKF243/AEmplt3qpRgkW8VG7IfOS41h7V8TjITqdByHzrjcS/2si+y4lIh8NA==}
@@ -8464,11 +8758,6 @@ packages:
     peerDependencies:
       typescript: '>=3.6.5'
 
-  typescript@5.7.2:
-    resolution: {integrity: sha512-i5t66RHxDvVN40HfDd1PsEThGNnlMCMT3jMUuoh9/0TaqWevNontacunWyN02LA9/fIbEWlcHZcgTKb9QoaLfg==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
@@ -8500,9 +8789,6 @@ packages:
 
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
-
-  undici-types@7.24.5:
-    resolution: {integrity: sha512-kNh333UBSbgK35OIW7FwJTr9tTfVIG51Fm1tSVT7m8foPHfDVjsb7OIee/q/rs3bB2aV/3qOPgG5mHNWl1odiA==}
 
   undici@7.24.5:
     resolution: {integrity: sha512-3IWdCpjgxp15CbJnsi/Y9TCDE7HWVN19j1hmzVhoAkY/+CJx449tVxT5wZc1Gwg8J+P0LWvzlBzxYRnHJ+1i7Q==}
@@ -10266,11 +10552,6 @@ snapshots:
       eslint: 10.5.0(jiti@2.6.1)
       eslint-visitor-keys: 3.4.3
 
-  '@eslint-community/eslint-utils@4.9.1(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))':
-    dependencies:
-      eslint: 9.39.4(jiti@2.6.1)(supports-color@5.5.0)
-      eslint-visitor-keys: 3.4.3
-
   '@eslint-community/regexpp@4.12.2': {}
 
   '@eslint/compat@2.0.3(eslint@10.5.0(jiti@2.6.1))':
@@ -10278,14 +10559,6 @@ snapshots:
       '@eslint/core': 1.2.1
     optionalDependencies:
       eslint: 10.5.0(jiti@2.6.1)
-
-  '@eslint/config-array@0.21.2(supports-color@5.5.0)':
-    dependencies:
-      '@eslint/object-schema': 2.1.7
-      debug: 4.4.3(supports-color@5.5.0)
-      minimatch: 3.1.5
-    transitivePeerDependencies:
-      - supports-color
 
   '@eslint/config-array@0.23.5(supports-color@5.5.0)':
     dependencies:
@@ -10295,10 +10568,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint/config-helpers@0.4.2':
-    dependencies:
-      '@eslint/core': 0.17.0
-
   '@eslint/config-helpers@0.5.5':
     dependencies:
       '@eslint/core': 1.2.1
@@ -10307,15 +10576,11 @@ snapshots:
     dependencies:
       '@eslint/core': 1.2.1
 
-  '@eslint/core@0.17.0':
-    dependencies:
-      '@types/json-schema': 7.0.15
-
   '@eslint/core@1.2.1':
     dependencies:
       '@types/json-schema': 7.0.15
 
-  '@eslint/eslintrc@3.3.5':
+  '@eslint/eslintrc@3.3.5(supports-color@5.5.0)':
     dependencies:
       ajv: 6.15.0
       debug: 4.4.3(supports-color@5.5.0)
@@ -10347,14 +10612,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint/object-schema@2.1.7': {}
-
   '@eslint/object-schema@3.0.5': {}
-
-  '@eslint/plugin-kit@0.4.1':
-    dependencies:
-      '@eslint/core': 0.17.0
-      levn: 0.4.1
 
   '@eslint/plugin-kit@0.6.1':
     dependencies:
@@ -10417,16 +10675,8 @@ snapshots:
     dependencies:
       '@fastify/error': 3.4.1
       '@lukeed/ms': 2.0.2
-      fast-jwt: 4.0.5
+      fast-jwt: 4.0.6
       fastify-plugin: 4.5.1
-      steed: 1.1.3
-
-  '@fastify/jwt@9.1.0':
-    dependencies:
-      '@fastify/error': 4.2.0
-      '@lukeed/ms': 2.0.2
-      fast-jwt: 5.0.6
-      fastify-plugin: 5.1.0
       steed: 1.1.3
 
   '@fastify/merge-json-schemas@0.2.1':
@@ -10743,17 +10993,6 @@ snapshots:
       url-join: 5.0.0
       url-template: 3.1.1
 
-  '@keycloak/keycloak-admin-client@26.6.3':
-    dependencies:
-      '@microsoft/kiota-abstractions': 1.0.0-preview.103
-      '@microsoft/kiota-http-fetchlibrary': 1.0.0-preview.103
-      '@microsoft/kiota-serialization-form': 1.0.0-preview.103
-      '@microsoft/kiota-serialization-json': 1.0.0-preview.103
-      '@microsoft/kiota-serialization-multipart': 1.0.0-preview.103
-      '@microsoft/kiota-serialization-text': 1.0.0-preview.103
-      camelize-ts: 3.0.0
-      url-template: 3.1.1
-
   '@keyv/bigmap@1.3.1(keyv@5.6.0)':
     dependencies:
       hashery: 1.5.0
@@ -10795,39 +11034,6 @@ snapshots:
   '@lukeed/csprng@1.1.0': {}
 
   '@lukeed/ms@2.0.2': {}
-
-  '@microsoft/kiota-abstractions@1.0.0-preview.103':
-    dependencies:
-      '@opentelemetry/api': 1.9.1
-      '@std-uritemplate/std-uritemplate': 2.0.10
-      tinyduration: 3.4.1
-      tslib: 2.8.1
-
-  '@microsoft/kiota-http-fetchlibrary@1.0.0-preview.103':
-    dependencies:
-      '@microsoft/kiota-abstractions': 1.0.0-preview.103
-      '@opentelemetry/api': 1.9.1
-      tslib: 2.8.1
-
-  '@microsoft/kiota-serialization-form@1.0.0-preview.103':
-    dependencies:
-      '@microsoft/kiota-abstractions': 1.0.0-preview.103
-      tslib: 2.8.1
-
-  '@microsoft/kiota-serialization-json@1.0.0-preview.103':
-    dependencies:
-      '@microsoft/kiota-abstractions': 1.0.0-preview.103
-      tslib: 2.8.1
-
-  '@microsoft/kiota-serialization-multipart@1.0.0-preview.103':
-    dependencies:
-      '@microsoft/kiota-abstractions': 1.0.0-preview.103
-      tslib: 2.8.1
-
-  '@microsoft/kiota-serialization-text@1.0.0-preview.103':
-    dependencies:
-      '@microsoft/kiota-abstractions': 1.0.0-preview.103
-      tslib: 2.8.1
 
   '@microsoft/tsdoc@0.16.0': {}
 
@@ -12177,8 +12383,6 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@std-uritemplate/std-uritemplate@2.0.10': {}
-
   '@stylistic/eslint-plugin@5.10.0(eslint@10.5.0(jiti@2.6.1))':
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@10.5.0(jiti@2.6.1))
@@ -12382,22 +12586,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/eslint-plugin@8.57.0(@typescript-eslint/parser@8.57.0(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)':
-    dependencies:
-      '@eslint-community/regexpp': 4.12.2
-      '@typescript-eslint/parser': 8.57.0(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)
-      '@typescript-eslint/scope-manager': 8.57.0
-      '@typescript-eslint/type-utils': 8.57.0(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)
-      '@typescript-eslint/utils': 8.57.0(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(typescript@5.9.3)
-      '@typescript-eslint/visitor-keys': 8.57.0
-      eslint: 9.39.4(jiti@2.6.1)(supports-color@5.5.0)
-      ignore: 7.0.5
-      natural-compare: 1.4.0
-      ts-api-utils: 2.5.0(typescript@5.9.3)
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - supports-color
-
   '@typescript-eslint/eslint-plugin@8.59.2(@typescript-eslint/parser@8.59.2(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.5.0(jiti@2.6.1))(supports-color@5.5.0)(typescript@5.9.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
@@ -12422,18 +12610,6 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.57.0
       debug: 4.4.3(supports-color@5.5.0)
       eslint: 10.5.0(jiti@2.6.1)
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - supports-color
-
-  '@typescript-eslint/parser@8.57.0(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)':
-    dependencies:
-      '@typescript-eslint/scope-manager': 8.57.0
-      '@typescript-eslint/types': 8.57.0
-      '@typescript-eslint/typescript-estree': 8.57.0(typescript@5.9.3)
-      '@typescript-eslint/visitor-keys': 8.57.0
-      debug: 4.4.3(supports-color@5.5.0)
-      eslint: 9.39.4(jiti@2.6.1)(supports-color@5.5.0)
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
@@ -12512,18 +12688,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/type-utils@8.57.0(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)':
-    dependencies:
-      '@typescript-eslint/types': 8.57.0
-      '@typescript-eslint/typescript-estree': 8.57.0(typescript@5.9.3)
-      '@typescript-eslint/utils': 8.57.0(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(typescript@5.9.3)
-      debug: 4.4.3(supports-color@5.5.0)
-      eslint: 9.39.4(jiti@2.6.1)(supports-color@5.5.0)
-      ts-api-utils: 2.5.0(typescript@5.9.3)
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - supports-color
-
   '@typescript-eslint/type-utils@8.59.2(eslint@10.5.0(jiti@2.6.1))(supports-color@5.5.0)(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/types': 8.59.2
@@ -12579,17 +12743,6 @@ snapshots:
       '@typescript-eslint/types': 8.57.0
       '@typescript-eslint/typescript-estree': 8.57.0(typescript@5.9.3)
       eslint: 10.5.0(jiti@2.6.1)
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - supports-color
-
-  '@typescript-eslint/utils@8.57.0(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(typescript@5.9.3)':
-    dependencies:
-      '@eslint-community/eslint-utils': 4.9.1(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))
-      '@typescript-eslint/scope-manager': 8.57.0
-      '@typescript-eslint/types': 8.57.0
-      '@typescript-eslint/typescript-estree': 8.57.0(typescript@5.9.3)
-      eslint: 9.39.4(jiti@2.6.1)(supports-color@5.5.0)
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
@@ -12800,15 +12953,6 @@ snapshots:
       '@vitest/utils': 4.1.5
       chai: 6.2.2
       tinyrainbow: 3.1.0
-
-  '@vitest/mocker@4.1.5(msw@2.12.10(@types/node@24.12.0)(typescript@5.7.2))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))':
-    dependencies:
-      '@vitest/spy': 4.1.5
-      estree-walker: 3.0.3
-      magic-string: 0.30.21
-    optionalDependencies:
-      msw: 2.12.10(@types/node@24.12.0)(typescript@5.7.2)
-      vite: 7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
 
   '@vitest/mocker@4.1.5(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))':
     dependencies:
@@ -14220,11 +14364,6 @@ snapshots:
       esrecurse: 4.3.0
       estraverse: 4.3.0
 
-  eslint-scope@8.4.0:
-    dependencies:
-      esrecurse: 4.3.0
-      estraverse: 5.3.0
-
   eslint-scope@9.1.2:
     dependencies:
       '@types/esrecurse': 4.3.1
@@ -14305,47 +14444,6 @@ snapshots:
       is-glob: 4.0.3
       json-stable-stringify-without-jsonify: 1.0.1
       minimatch: 10.2.5
-      natural-compare: 1.4.0
-      optionator: 0.9.4
-    optionalDependencies:
-      jiti: 2.6.1
-    transitivePeerDependencies:
-      - supports-color
-
-  eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0):
-    dependencies:
-      '@eslint-community/eslint-utils': 4.9.1(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))
-      '@eslint-community/regexpp': 4.12.2
-      '@eslint/config-array': 0.21.2(supports-color@5.5.0)
-      '@eslint/config-helpers': 0.4.2
-      '@eslint/core': 0.17.0
-      '@eslint/eslintrc': 3.3.5
-      '@eslint/js': 9.39.4
-      '@eslint/plugin-kit': 0.4.1
-      '@humanfs/node': 0.16.8
-      '@humanwhocodes/module-importer': 1.0.1
-      '@humanwhocodes/retry': 0.4.3
-      '@types/estree': 1.0.9
-      ajv: 6.15.0
-      chalk: 4.1.2
-      cross-spawn: 7.0.6
-      debug: 4.4.3(supports-color@5.5.0)
-      escape-string-regexp: 4.0.0
-      eslint-scope: 8.4.0
-      eslint-visitor-keys: 4.2.1
-      espree: 10.4.0
-      esquery: 1.7.0
-      esutils: 2.0.3
-      fast-deep-equal: 3.1.3
-      file-entry-cache: 8.0.0
-      find-up: 5.0.0
-      glob-parent: 6.0.2
-      ignore: 5.3.2
-      imurmurhash: 0.1.4
-      is-glob: 4.0.3
-      json-stable-stringify-without-jsonify: 1.0.1
-      lodash.merge: 4.6.2
-      minimatch: 3.1.5
       natural-compare: 1.4.0
       optionator: 0.9.4
     optionalDependencies:
@@ -14469,19 +14567,12 @@ snapshots:
       json-schema-ref-resolver: 3.0.0
       rfdc: 1.4.1
 
-  fast-jwt@4.0.5:
+  fast-jwt@4.0.6:
     dependencies:
       '@lukeed/ms': 2.0.2
       asn1.js: 5.4.1
       ecdsa-sig-formatter: 1.0.11
       mnemonist: 0.39.8
-
-  fast-jwt@5.0.6:
-    dependencies:
-      '@lukeed/ms': 2.0.2
-      asn1.js: 5.4.1
-      ecdsa-sig-formatter: 1.0.11
-      mnemonist: 0.40.4
 
   fast-levenshtein@2.0.6: {}
 
@@ -14517,22 +14608,6 @@ snapshots:
       axios: 1.16.0
       axios-retry: 4.5.0(axios@1.16.0)
       fastify-plugin: 4.5.1
-      fp-ts: 2.16.11
-      grant: 5.4.24
-      io-ts: 2.2.22(fp-ts@2.16.11)
-      qs: 6.15.2
-      wildcard-match: 5.1.4
-    transitivePeerDependencies:
-      - debug
-
-  fastify-keycloak-adapter@3.0.2:
-    dependencies:
-      '@fastify/cookie': 11.0.2
-      '@fastify/jwt': 9.1.0
-      '@fastify/session': 11.1.1
-      axios: 1.16.0
-      axios-retry: 4.5.0(axios@1.16.0)
-      fastify-plugin: 5.1.0
       fp-ts: 2.16.11
       grant: 5.4.24
       io-ts: 2.2.22(fp-ts@2.16.11)
@@ -16079,10 +16154,6 @@ snapshots:
     dependencies:
       obliterator: 2.0.5
 
-  mnemonist@0.40.4:
-    dependencies:
-      obliterator: 2.0.5
-
   module-details-from-path@1.0.4: {}
 
   module-replacements@2.11.0: {}
@@ -16092,32 +16163,6 @@ snapshots:
   mrmime@2.0.1: {}
 
   ms@2.1.3: {}
-
-  msw@2.12.10(@types/node@24.12.0)(typescript@5.7.2):
-    dependencies:
-      '@inquirer/confirm': 5.1.21(@types/node@24.12.0)
-      '@mswjs/interceptors': 0.41.9
-      '@open-draft/deferred-promise': 2.2.0
-      '@types/statuses': 2.0.6
-      cookie: 1.1.1
-      graphql: 16.14.2
-      headers-polyfill: 4.0.3
-      is-node-process: 1.2.0
-      outvariant: 1.4.3
-      path-to-regexp: 6.3.0
-      picocolors: 1.1.1
-      rettime: 0.10.1
-      statuses: 2.0.2
-      strict-event-emitter: 0.5.1
-      tough-cookie: 6.0.1
-      type-fest: 5.7.0
-      until-async: 3.0.2
-      yargs: 17.7.3
-    optionalDependencies:
-      typescript: 5.7.2
-    transitivePeerDependencies:
-      - '@types/node'
-    optional: true
 
   msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3):
     dependencies:
@@ -17555,8 +17600,6 @@ snapshots:
 
   tinybench@2.9.0: {}
 
-  tinyduration@3.4.1: {}
-
   tinyexec@1.2.4: {}
 
   tinyglobby@0.2.17:
@@ -17622,8 +17665,6 @@ snapshots:
   tr46@5.1.1:
     dependencies:
       punycode: 2.3.1
-
-  ts-algebra@2.0.0: {}
 
   ts-api-utils@2.5.0(typescript@5.9.3):
     dependencies:
@@ -17738,23 +17779,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  typescript-eslint@8.57.0(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3):
-    dependencies:
-      '@typescript-eslint/eslint-plugin': 8.57.0(@typescript-eslint/parser@8.57.0(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)
-      '@typescript-eslint/parser': 8.57.0(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)
-      '@typescript-eslint/typescript-estree': 8.57.0(typescript@5.9.3)
-      '@typescript-eslint/utils': 8.57.0(eslint@9.39.4(jiti@2.6.1)(supports-color@5.5.0))(typescript@5.9.3)
-      eslint: 9.39.4(jiti@2.6.1)(supports-color@5.5.0)
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - supports-color
-
   typescript-transform-paths@3.5.6(typescript@5.9.3):
     dependencies:
       minimatch: 9.0.9
       typescript: 5.9.3
-
-  typescript@5.7.2: {}
 
   typescript@5.9.3: {}
 
@@ -17789,8 +17817,6 @@ snapshots:
   undefsafe@2.0.5: {}
 
   undici-types@7.16.0: {}
-
-  undici-types@7.24.5: {}
 
   undici@7.24.5: {}
 
@@ -18032,36 +18058,6 @@ snapshots:
     dependencies:
       '@vitest/expect': 4.1.5
       '@vitest/mocker': 4.1.5(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
-      '@vitest/pretty-format': 4.1.5
-      '@vitest/runner': 4.1.5
-      '@vitest/snapshot': 4.1.5
-      '@vitest/spy': 4.1.5
-      '@vitest/utils': 4.1.5
-      es-module-lexer: 2.1.0
-      expect-type: 1.3.0
-      magic-string: 0.30.21
-      obug: 2.1.3
-      pathe: 2.0.3
-      picomatch: 4.0.4
-      std-env: 4.1.0
-      tinybench: 2.9.0
-      tinyexec: 1.2.4
-      tinyglobby: 0.2.17
-      tinyrainbow: 3.1.0
-      vite: 7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@opentelemetry/api': 1.9.1
-      '@types/node': 24.12.0
-      '@vitest/coverage-v8': 4.1.5(vitest@4.1.5)
-      jsdom: 25.0.1(supports-color@5.5.0)
-    transitivePeerDependencies:
-      - msw
-
-  vitest@4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.0)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@24.12.0)(typescript@5.7.2))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)):
-    dependencies:
-      '@vitest/expect': 4.1.5
-      '@vitest/mocker': 4.1.5(msw@2.12.10(@types/node@24.12.0)(typescript@5.7.2))(vite@7.3.3(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
       '@vitest/pretty-format': 4.1.5
       '@vitest/runner': 4.1.5
       '@vitest/snapshot': 4.1.5
