@@ -1,7 +1,7 @@
 # État de la modularisation Backend → NestJS
 
 > 📋 **Ce fichier est mis à jour en temps réel**
-> Dernière mise à jour : **2026-06-16**
+> Dernière mise à jour : **2026-07-23**
 
 ---
 
@@ -9,7 +9,7 @@
 
 ![Progress](https://progress-bar.dev/7/?title=modularisation&width=400)
 
-**~7%** complété (1/18 modules métier migrés, 5/75 routes)
+**~60%** complété (16/18 modules métier migrés, 45/75 routes)
 
 ---
 
@@ -17,9 +17,9 @@
 
 | Statut | Nombre de modules | % du total |
 |--------|-------------------|------------|
-| ✅ Migré | 1 (ServiceChain) | ~6% |
+| ✅ Migré | 16 | ~89% |
 | 🚧 En cours | 0 | 0% |
-| 📅 Planifié | 17 | ~94% |
+| 📅 Planifié | 2 | ~11% |
 | ⏳ En attente de cartographie | 0 | 0% |
 
 ---
@@ -140,9 +140,9 @@ créés :
 ### Routes par statut
 
 - **Total** : ~75 routes métier
-- **Migrés** : 5 (~7%)
+- **Migrés** : 45 (~60%)
 - **En cours** : 0 (0%)
-- **Restants** : ~70 (~93%)
+- **Restants** : ~30 (~40%)
 
 ---
 
