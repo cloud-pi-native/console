@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.22.2](https://github.com/cloud-pi-native/console/compare/v9.22.1...v9.22.2) (2026-07-24)
+
+
+### Bug Fixes
+
+* ArgoCD internal url for health check ([9429667](https://github.com/cloud-pi-native/console/commit/942966785e23fca986246948033afe60d40d7232))
+
 ## [9.22.1](https://github.com/cloud-pi-native/console/compare/v9.22.0...v9.22.1) (2026-07-21)
 
 
