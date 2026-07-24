@@ -1,4 +1,5 @@
 import type { CondensedGroupSchema, MemberSchema, ProjectSchema } from '@gitbeaker/core'
+import type { GitlabConfig } from '../../config/gitlab'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { VaultSecret } from '../vault/vault-client.service'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
@@ -7,8 +8,8 @@ import { AccessLevel } from '@gitbeaker/core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
+import { gitlabConfigFactory } from '../../config/gitlab'
 import { getAll } from '../../utils/iterable'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -54,7 +55,7 @@ export class GitlabService {
     @Inject(GitlabDatastoreService) private readonly gitlabDatastore: GitlabDatastoreService,
     @Inject(GitlabClientService) private readonly gitlab: GitlabClientService,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(gitlabConfigFactory.KEY) private readonly config: GitlabConfig,
   ) {
     this.logger.log('GitLabService initialized')
   }
@@ -513,7 +514,7 @@ export class GitlabService {
   private isMirrorCredsExpiring(vaultSecret: VaultSecret): boolean {
     if (!vaultSecret?.metadata?.created_time) return false
     const createdTime = new Date(vaultSecret.metadata.created_time)
-    return daysAgoFromNow(createdTime) > this.config.gitlabMirrorTokenRotationThresholdDays
+    return daysAgoFromNow(createdTime) > this.config.GITLAB_MIRROR_TOKEN_ROTATION_THRESHOLD_DAYS
   }
 
   private getExternalRepoHost(externalRepoUrl: string | null | undefined): string | undefined {

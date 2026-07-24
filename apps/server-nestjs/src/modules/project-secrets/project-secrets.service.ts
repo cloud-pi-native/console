@@ -1,7 +1,8 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
+import type { VaultConfig } from '../../config/vault'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { z } from 'zod'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { vaultConfigFactory } from '../../config/vault'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -28,7 +29,7 @@ export class ProjectSecretsService {
 
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(vaultConfigFactory.KEY) private readonly config: VaultConfig,
     @Inject(VaultService) private readonly vault: VaultService,
     @Inject(VaultClientService) private readonly vaultClient: VaultClientService,
   ) {}

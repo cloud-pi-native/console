@@ -8,7 +8,10 @@ import { specificallyEnabled } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { InjectBaseConfig } from '../../config/base'
+import type { BaseConfig } from '../../config/base'
+import { nexusConfigFactory } from '../../config/nexus'
+import type { NexusConfig } from '../../config/nexus'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -54,8 +57,9 @@ export class NexusService {
   constructor(
     @Inject(NexusDatastoreService) private readonly nexusDatastore: NexusDatastoreService,
     @Inject(NexusClientService) private readonly client: NexusClientService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
+    @Inject(nexusConfigFactory.KEY) private readonly config: NexusConfig,
+    @InjectBaseConfig() private readonly baseConfig: BaseConfig,
   ) {
     this.logger.log('NexusService initialized')
   }
@@ -429,7 +433,7 @@ export class NexusService {
   }
 
   private async ensureUser(project: ProjectWithDetails) {
-    const vaultPath = getProjectVaultPath(this.config.projectRootDir, project.slug, 'tech/NEXUS')
+    const vaultPath = getProjectVaultPath(this.baseConfig.projectsRootDir, project.slug, 'tech/NEXUS')
     let existingPassword: string | undefined
     try {
       existingPassword = await this.vault.read(vaultPath).then(res => res.data?.NEXUS_PASSWORD)
@@ -574,7 +578,7 @@ export class NexusService {
       this.client.deleteSecurityUsers(project.slug),
     ])
 
-    const vaultPath = getProjectVaultPath(this.config.projectRootDir, project.slug, 'tech/NEXUS')
+    const vaultPath = getProjectVaultPath(this.baseConfig.projectsRootDir, project.slug, 'tech/NEXUS')
     try {
       await this.vault.delete(vaultPath)
     } catch (error) {

@@ -1,8 +1,9 @@
+import type { KeycloakConfig } from '../../config/keycloak'
 import KcAdminClient from '@keycloak/keycloak-admin-client'
 import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { TerminusModule } from '@nestjs/terminus'
-import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import keycloakConfigFactory from '../../config/keycloak'
 import { DatabaseModule } from '../infrastructure/database/database.module'
 import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
@@ -11,13 +12,13 @@ import { KeycloakPluginService } from './keycloak-plugin.service'
 import { KeycloakService } from './keycloak.service'
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule, TerminusModule],
+  imports: [ConfigModule.forFeature([keycloakConfigFactory]), DatabaseModule, TerminusModule],
   providers: [
     {
-      inject: [ConfigurationService],
+      inject: [keycloakConfigFactory.KEY],
       provide: KEYCLOAK_ADMIN_CLIENT,
-      useFactory: (config: ConfigurationService) => new KcAdminClient({
-        baseUrl: config.getKeycloakUrl(),
+      useFactory: (config: KeycloakConfig) => new KcAdminClient({
+        baseUrl: config.keycloakUrl,
       }),
     },
     KeycloakClientService,

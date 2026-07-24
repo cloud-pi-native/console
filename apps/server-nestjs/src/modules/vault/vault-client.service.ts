@@ -1,6 +1,9 @@
+import type { BaseConfig } from '../../config/base'
+import type { VaultConfig } from '../../config/vault'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { InjectBaseConfig } from '../../config/base'
+import { InjectVaultConfig } from '../../config/vault'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
 import { generateGitlabMirrorCredPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath } from './vault.utils'
@@ -114,7 +117,8 @@ export class VaultClientService {
   private readonly logger = new Logger(VaultClientService.name)
 
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @InjectVaultConfig() private readonly vaultConfig: VaultConfig,
+    @InjectBaseConfig() private readonly baseConfig: BaseConfig,
     @Inject(VaultHttpClientService) private readonly http: VaultHttpClientService,
   ) {
   }
@@ -144,13 +148,13 @@ export class VaultClientService {
   @StartActiveSpan()
   async read<T = any>(path: string): Promise<VaultSecret<T>> {
     this.logger.debug(`Reading Vault KV secret at ${path}`)
-    return await this.getKvData<T>(this.config.vaultKvName, path)
+    return await this.getKvData<T>(this.vaultConfig.vaultKvName, path)
   }
 
   @StartActiveSpan()
   async write<T = any>(data: T, path: string): Promise<void> {
     this.logger.debug(`Writing Vault KV secret at ${path}`)
-    await this.upsertKvData(this.config.vaultKvName, path, { data })
+    await this.upsertKvData(this.vaultConfig.vaultKvName, path, { data })
   }
 
   @StartActiveSpan()
@@ -158,18 +162,16 @@ export class VaultClientService {
     this.logger.debug(`Deleting Vault KV secret at ${path}`)
     const span = trace.getActiveSpan()
     span?.setAttribute('vault.kv.path', path)
-    return await this.deleteKvMetadata(this.config.vaultKvName, path)
+    return await this.deleteKvMetadata(this.vaultConfig.vaultKvName, path)
   }
 
   @StartActiveSpan()
   async readGitlabMirrorCreds(projectSlug: string, repoName: string): Promise<VaultSecret | null> {
-    const vaultCredsPath = generateGitlabMirrorCredPath(this.config.projectRootDir, projectSlug, repoName)
+    const vaultCredsPath = generateGitlabMirrorCredPath(this.baseConfig.projectsRootDir, projectSlug, repoName)
     const span = trace.getActiveSpan()
-    span?.setAttributes({
-      'project.slug': projectSlug,
-      'repo.name': repoName,
-      'vault.kv.path': vaultCredsPath,
-    })
+    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('repo.name', repoName)
+    span?.setAttribute('vault.kv.path', vaultCredsPath)
     this.logger.verbose(`Reading Vault GitLab mirror credentials (projectSlug=${projectSlug}, repoName=${repoName})`)
     return await this.read(vaultCredsPath).catch((error) => {
       if (error instanceof VaultError && error.kind === 'NotFound') return null
@@ -179,26 +181,22 @@ export class VaultClientService {
 
   @StartActiveSpan()
   async writeGitlabMirrorCreds(projectSlug: string, repoName: string, data: Record<string, any>): Promise<void> {
-    const vaultCredsPath = generateGitlabMirrorCredPath(this.config.projectRootDir, projectSlug, repoName)
+    const vaultCredsPath = generateGitlabMirrorCredPath(this.baseConfig.projectsRootDir, projectSlug, repoName)
     const span = trace.getActiveSpan()
-    span?.setAttributes({
-      'project.slug': projectSlug,
-      'repo.name': repoName,
-      'vault.kv.path': vaultCredsPath,
-    })
+    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('repo.name', repoName)
+    span?.setAttribute('vault.kv.path', vaultCredsPath)
     this.logger.verbose(`Writing Vault GitLab mirror credentials (projectSlug=${projectSlug}, repoName=${repoName})`)
     await this.write(data, vaultCredsPath)
   }
 
   @StartActiveSpan()
   async deleteGitlabMirrorCreds(projectSlug: string, repoName: string): Promise<void> {
-    const vaultCredsPath = generateGitlabMirrorCredPath(this.config.projectRootDir, projectSlug, repoName)
+    const vaultCredsPath = generateGitlabMirrorCredPath(this.baseConfig.projectsRootDir, projectSlug, repoName)
     const span = trace.getActiveSpan()
-    span?.setAttributes({
-      'project.slug': projectSlug,
-      'repo.name': repoName,
-      'vault.kv.path': vaultCredsPath,
-    })
+    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('repo.name', repoName)
+    span?.setAttribute('vault.kv.path', vaultCredsPath)
     this.logger.verbose(`Deleting Vault GitLab mirror credentials (projectSlug=${projectSlug}, repoName=${repoName})`)
     await this.delete(vaultCredsPath).catch((error) => {
       if (error instanceof VaultError && error.kind === 'NotFound') return
@@ -208,12 +206,10 @@ export class VaultClientService {
 
   @StartActiveSpan()
   async readTechnReadOnlyCreds(projectSlug: string): Promise<VaultSecret | null> {
-    const vaultPath = generateTechReadOnlyCredPath(this.config.projectRootDir, projectSlug)
+    const vaultPath = generateTechReadOnlyCredPath(this.baseConfig.projectsRootDir, projectSlug)
     const span = trace.getActiveSpan()
-    span?.setAttributes({
-      'project.slug': projectSlug,
-      'vault.kv.path': vaultPath,
-    })
+    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('vault.kv.path', vaultPath)
     return await this.read(vaultPath).catch((error) => {
       if (error instanceof VaultError && error.kind === 'NotFound') return null
       throw error
@@ -221,24 +217,20 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  async writeTechReadOnlyCreds(projectSlug: string, creds: Record<string, any>): Promise<void> {
-    const vaultPath = generateTechReadOnlyCredPath(this.config.projectRootDir, projectSlug)
+  async writeTechnReadOnlyCreds(projectSlug: string, creds: Record<string, any>): Promise<void> {
+    const vaultPath = generateTechReadOnlyCredPath(this.baseConfig.projectsRootDir, projectSlug)
     const span = trace.getActiveSpan()
-    span?.setAttributes({
-      'project.slug': projectSlug,
-      'vault.kv.path': vaultPath,
-    })
+    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('vault.kv.path', vaultPath)
     await this.write(creds, vaultPath)
   }
 
   @StartActiveSpan()
   async readSonarqubeUser(projectSlug: string): Promise<VaultSecret<SonarqubeUserSecret> | null> {
-    const vaultPath = generateSonarqubeCredPath(this.config.projectRootDir, projectSlug)
+    const vaultPath = generateSonarqubeCredPath(this.baseConfig.projectsRootDir, projectSlug)
     const span = trace.getActiveSpan()
-    span?.setAttributes({
-      'project.slug': projectSlug,
-      'vault.kv.path': vaultPath,
-    })
+    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('vault.kv.path', vaultPath)
     this.logger.verbose(`Reading Vault SonarQube user credentials (projectSlug=${projectSlug})`)
     return await this.read<SonarqubeUserSecret>(vaultPath).catch((error) => {
       if (error instanceof VaultError && error.kind === 'NotFound') return null
@@ -248,24 +240,20 @@ export class VaultClientService {
 
   @StartActiveSpan()
   async writeSonarqubeUser(projectSlug: string, secret: SonarqubeUserSecret): Promise<void> {
-    const vaultPath = generateSonarqubeCredPath(this.config.projectRootDir, projectSlug)
+    const vaultPath = generateSonarqubeCredPath(this.baseConfig.projectsRootDir, projectSlug)
     const span = trace.getActiveSpan()
-    span?.setAttributes({
-      'project.slug': projectSlug,
-      'vault.kv.path': vaultPath,
-    })
+    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('vault.kv.path', vaultPath)
     this.logger.verbose(`Writing Vault SonarQube user credentials (projectSlug=${projectSlug})`)
     await this.write(secret, vaultPath)
   }
 
   @StartActiveSpan()
   async deleteSonarqubeUser(projectSlug: string): Promise<void> {
-    const vaultPath = generateSonarqubeCredPath(this.config.projectRootDir, projectSlug)
+    const vaultPath = generateSonarqubeCredPath(this.baseConfig.projectsRootDir, projectSlug)
     const span = trace.getActiveSpan()
-    span?.setAttributes({
-      'project.slug': projectSlug,
-      'vault.kv.path': vaultPath,
-    })
+    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('vault.kv.path', vaultPath)
     this.logger.verbose(`Deleting Vault SonarQube user credentials (projectSlug=${projectSlug})`)
     await this.delete(vaultPath).catch((error) => {
       if (error instanceof VaultError && error.kind === 'NotFound') return

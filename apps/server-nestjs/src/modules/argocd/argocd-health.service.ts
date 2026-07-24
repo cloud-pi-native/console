@@ -1,11 +1,12 @@
+import type { ArgoCDConfig } from '../../config/configuration.utils'
 import { Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { argocdConfigFactory } from '../../config/argocd'
 
 @Injectable()
 export class ArgoCDHealthService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(argocdConfigFactory.KEY) private readonly config: ArgoCDConfig,
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 

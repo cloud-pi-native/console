@@ -1,22 +1,25 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
+import type { BaseConfig } from '../../config/base'
+import type { GitlabConfig } from '../../config/gitlab'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { InjectBaseConfig } from '../../config/base'
+import { gitlabConfigFactory } from '../../config/gitlab'
 import { DEFAULT_ADMIN_GROUP_PATH, DEFAULT_AUDITOR_GROUP_PATH, DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX, PURGE_PLUGIN_KEY } from './gitlab.constants'
 
 @Injectable()
 export class GitlabPluginService {
   constructor(
-    @Inject(ConfigurationService)
-    private readonly config: ConfigurationService,
+    @Inject(gitlabConfigFactory.KEY) private readonly config: GitlabConfig,
+    @InjectBaseConfig() private readonly baseConfig: BaseConfig,
   ) {}
 
   infos(): ServiceInfos {
     return {
       name: 'gitlab',
       to: ({ project }) => {
-        if (!this.config.gitlabUrl || !this.config.projectRootDir) return undefined
-        return new URL(`${this.config.projectRootDir}/${project.slug}`, this.config.gitlabUrl).toString()
+        if (!this.config.gitlabUrl || !this.baseConfig.projectsRootDir) return undefined
+        return new URL(`${this.baseConfig.projectsRootDir}/${project.slug}`, this.config.gitlabUrl).toString()
       },
       title: 'Gitlab',
       imgSrc: '/img/gitlab.svg',

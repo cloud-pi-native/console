@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { nexusConfigFactory } from '../../config/nexus'
+import type { NexusConfig } from '../../config/nexus'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 
 export interface NexusFetchOptions {
@@ -44,7 +45,7 @@ export class NexusError extends Error {
 @Injectable()
 export class NexusHttpClientService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(nexusConfigFactory.KEY) private readonly config: NexusConfig,
   ) {}
 
   @StartActiveSpan()
@@ -76,7 +77,7 @@ export class NexusHttpClientService {
   }
 
   private get baseUrl() {
-    const url = this.config.getInternalOrPublicNexusUrl()
+    const url = this.config.internalOrPublicNexusUrl
     if (!url) {
       throw new NexusError('NotConfigured', 'NEXUS_INTERNAL_URL or NEXUS_URL is required')
     }

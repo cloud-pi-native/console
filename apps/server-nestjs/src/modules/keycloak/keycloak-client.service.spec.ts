@@ -6,7 +6,8 @@ import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { keycloakConfigFactory } from '../../config/keycloak'
+import type { KeycloakConfig } from '../../config/keycloak'
 import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from './keycloak-client.service'
 import { ADMIN_TOKEN_REFRESH_INTERVAL_MS } from './keycloak.constants'
 
@@ -37,15 +38,15 @@ function useTokenEndpoint({ rejectGrant = () => false }: { rejectGrant?: (grantT
   return tokenRequests
 }
 
-function createKeycloakClientServiceTestingModule(config: Partial<ConfigurationService> = {}) {
+function createKeycloakClientServiceTestingModule(config: Partial<KeycloakConfig> = {}) {
   return Test.createTestingModule({
     imports: [ScheduleModule.forRoot()],
     providers: [
       KeycloakClientService,
       { provide: KEYCLOAK_ADMIN_CLIENT, useValue: new KcAdminClient({ baseUrl: keycloakUrl }) },
       {
-        provide: ConfigurationService,
-        useValue: mockDeep<ConfigurationService>({
+        provide: keycloakConfigFactory.KEY,
+        useValue: mockDeep<KeycloakConfig>({
           keycloakRealm: projectRealm,
           keycloakAdmin: 'admin',
           keycloakAdminPassword: 'admin-password',

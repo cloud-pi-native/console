@@ -1,9 +1,12 @@
+import type { BaseConfig } from '../../config/base'
+import type { VaultConfig } from '../../config/vault'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { InjectBaseConfig } from '../../config/base'
+import { InjectVaultConfig } from '../../config/vault'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from './vault-client.service'
@@ -43,7 +46,8 @@ export class VaultService {
   private readonly logger = new Logger(VaultService.name)
 
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @InjectVaultConfig() private readonly vaultConfig: VaultConfig,
+    @InjectBaseConfig() private readonly baseConfig: BaseConfig,
     @Inject(VaultDatastoreService) private readonly vaultDatastore: VaultDatastoreService,
     @Inject(VaultClientService) private readonly client: VaultClientService,
   ) {
@@ -491,13 +495,13 @@ export class VaultService {
 
   async ensureTechReadOnlyPolicy(name: string, projectSlug: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
-      policy: `path "${this.config.vaultKvName}/data/${projectSlug}/REGISTRY/ro-robot" { capabilities = ["read"] }`,
+      policy: `path "${this.vaultConfig.vaultKvName}/data/${projectSlug}/REGISTRY/ro-robot" { capabilities = ["read"] }`,
     })
   }
 
   async listProjectSecrets(projectSlug: string): Promise<string[]> {
-    const projectPath = generateProjectPath(this.config.projectRootDir, projectSlug)
-    return this.listRecursive(this.config.vaultKvName, projectPath, '')
+    const projectPath = generateProjectPath(this.baseConfig.projectsRootDir, projectSlug)
+    return this.listRecursive(this.vaultConfig.vaultKvName, projectPath, '')
   }
 
   @StartActiveSpan()
@@ -505,12 +509,12 @@ export class VaultService {
     const span = trace.getActiveSpan()
     span?.setAttributes({
       'project.slug': projectSlug,
-      'vault.kv.name': this.config.vaultKvName,
+      'vault.kv.name': this.vaultConfig.vaultKvName,
     })
     const secrets = await this.listProjectSecrets(projectSlug)
     span?.setAttribute('vault.secrets.count', secrets.length)
 
-    const projectPath = generateProjectPath(this.config.projectRootDir, projectSlug)
+    const projectPath = generateProjectPath(this.baseConfig.projectsRootDir, projectSlug)
     await Promise.allSettled(secrets.map(async (relativePath) => {
       const fullPath = `${projectPath}/${relativePath}`
       try {

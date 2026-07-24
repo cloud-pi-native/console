@@ -3,7 +3,10 @@ import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { nexusConfigFactory } from '../../config/nexus'
+import type { NexusConfig } from '../../config/nexus'
+import { baseConfigFactory } from '../../config/base'
+import type { BaseConfig } from '../../config/base'
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultError } from '../vault/vault-http-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
@@ -26,7 +29,8 @@ describe('nexusService', () => {
   let client: DeepMockProxy<NexusClientService>
   let datastore: DeepMockProxy<NexusDatastoreService>
   let vault: DeepMockProxy<VaultClientService>
-  let config: DeepMockProxy<ConfigurationService>
+  let config: DeepMockProxy<NexusConfig>
+  let baseConfig: DeepMockProxy<BaseConfig>
 
   beforeEach(async () => {
     client = mockDeep<NexusClientService>({
@@ -45,7 +49,8 @@ describe('nexusService', () => {
     vault = mockDeep<VaultClientService>({
       read: vi.fn().mockRejectedValue(new VaultError('NotFound', 'Not Found')),
     })
-    config = mockDeep<ConfigurationService>({ projectRootDir: 'forge' })
+    config = mockDeep<NexusConfig>({})
+    baseConfig = mockDeep<BaseConfig>({ projectsRootDir: 'forge' })
 
     const module = await Test.createTestingModule({
       providers: [
@@ -53,7 +58,8 @@ describe('nexusService', () => {
         { provide: NexusClientService, useValue: client },
         { provide: NexusDatastoreService, useValue: datastore },
         { provide: VaultClientService, useValue: vault },
-        { provide: ConfigurationService, useValue: config },
+        { provide: nexusConfigFactory.KEY, useValue: config },
+        { provide: baseConfigFactory.KEY, useValue: baseConfig },
       ],
     }).compile()
 
@@ -86,7 +92,7 @@ describe('nexusService', () => {
     )
   })
 
-  it('handleDelete should delete project', async () => {
+  it('delete should delete project', async () => {
     const project = makeProjectWithDetails()
     await service.handleDelete(project)
     expect(client.deleteSecurityRoles).toHaveBeenCalledWith(`${project.slug}-ID`)
@@ -94,7 +100,7 @@ describe('nexusService', () => {
     expect(vault.delete).toHaveBeenCalledWith(`forge/${project.slug}/tech/NEXUS`)
   })
 
-  it('handleCron should reconcile all projects', async () => {
+  it('apply should reconcile all projects', async () => {
     const projects = [
       makeProjectWithDetails({ plugins: [{ pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED }] }),
       makeProjectWithDetails({ plugins: [{ pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: ENABLED }] }),

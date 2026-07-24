@@ -1,8 +1,9 @@
+import type { BaseConfig } from '../../config/base'
 import type { PluginResults } from '../plugin/plugin.utils'
 import type { ProjectWithDetails } from '../project/project-queries.utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { InjectBaseConfig } from '../../config/base'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { LogService } from '../log/log.service'
 import { getFailedPlugins, mergePluginResults } from '../plugin/plugin.utils'
@@ -46,7 +47,7 @@ export class AppEventsService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(EventEmitter2) private readonly eventEmitter: EventEmitter2,
     @Inject(LogService) private readonly logs: LogService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @InjectBaseConfig() private readonly config: BaseConfig,
   ) {}
 
   /**

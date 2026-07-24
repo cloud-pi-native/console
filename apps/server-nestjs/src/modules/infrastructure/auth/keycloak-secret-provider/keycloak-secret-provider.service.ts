@@ -1,10 +1,11 @@
 import type { Cache } from 'cache-manager'
+import type { KeycloakConfig } from '../../../../config/keycloak'
 import { createPublicKey } from 'node:crypto'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { JwtSecretRequestType } from '@nestjs/jwt'
 import { z } from 'zod'
-import { ConfigurationService } from '../../configuration/configuration.service'
+import keycloakConfigFactory from '../../../../config/keycloak'
 import { createKeycloakSecretProviderOpenIdConfigurationCacheKey, createKeycloakSecretProviderPublicKeyCacheKey } from './keycloak-secret-provider.utils'
 
 const OpenidConfigurationSchema = z.object({
@@ -35,16 +36,22 @@ export class KeycloakSecretProviderService {
   private readonly logger = new Logger(KeycloakSecretProviderService.name)
 
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
+    @Inject(keycloakConfigFactory.KEY) private readonly config: KeycloakConfig,
   ) {}
 
+  private getKeycloakOpenidConfigurationUrl() {
+    if (!this.config.keycloakDomain || !this.config.keycloakRealm) return undefined
+    const protocol = this.config.keycloakProtocol ?? 'https'
+    return `${protocol}://${this.config.keycloakDomain}/realms/${this.config.keycloakRealm}/.well-known/openid-configuration`
+  }
+
   async fetchOpenIdConfig(): Promise<OpenidConfiguration | undefined> {
-    const cacheKey = createKeycloakSecretProviderOpenIdConfigurationCacheKey(this.config.getKeycloakOpenidConfigurationUrl())
+    const cacheKey = createKeycloakSecretProviderOpenIdConfigurationCacheKey(this.getKeycloakOpenidConfigurationUrl())
     const cached = await this.cache.get<OpenidConfiguration>(cacheKey)
     if (cached) return cached
 
-    const response = await fetch(this.config.getKeycloakOpenidConfigurationUrl())
+    const response = await fetch(this.getKeycloakOpenidConfigurationUrl())
     if (!response.ok) {
       this.logger.error(`Failed to fetch openid-configuration: ${response.status} ${response.statusText}`)
       return undefined

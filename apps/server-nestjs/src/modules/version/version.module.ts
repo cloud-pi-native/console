@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common'
-import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
+import { ConfigModule } from '@nestjs/config'
+import baseConfigFactory from '../../config/base'
 import { VersionController } from './version.controller'
 
 @Module({
-  imports: [ConfigurationModule],
+  imports: [ConfigModule.forFeature([baseConfigFactory])],
   controllers: [VersionController],
 })
 export class VersionModule {}

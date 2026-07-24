@@ -2,12 +2,13 @@ import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
 import { BadRequestException, NotFoundException } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import baseConfig from '../src/config/base'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
-import { ConfigurationModule } from '../src/modules/infrastructure/configuration/configuration.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
@@ -36,7 +37,7 @@ describeWithProjectMembers('ProjectMembersService (e2e)', {}, () => {
     keycloakClient.getUserByEmail.mockResolvedValue(undefined)
 
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigurationModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectMembersModule],
+      imports: [ConfigModule.forRoot({ envFilePath: [...(process.env.DOCKER !== 'true' ? ['.env'] : []), ...(process.env.INTEGRATION === 'true' ? ['.env.integ'] : [])], isGlobal: true, load: [baseConfig] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectMembersModule],
       providers: [
         { provide: KeycloakClientService, useValue: keycloakClient },
       ],

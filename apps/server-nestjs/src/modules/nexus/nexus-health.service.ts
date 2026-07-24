@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { nexusConfigFactory } from '../../config/nexus'
+import type { NexusConfig } from '../../config/nexus'
 
 @Injectable()
 export class NexusHealthService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(nexusConfigFactory.KEY) private readonly config: NexusConfig,
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 

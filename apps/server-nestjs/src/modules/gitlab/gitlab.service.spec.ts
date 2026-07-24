@@ -5,7 +5,8 @@ import { AccessLevel } from '@gitbeaker/core'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { gitlabConfigFactory } from '../../config/gitlab'
+import type { GitlabConfig } from '../../config/gitlab'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
 import { GitlabDatastoreService } from './gitlab-datastore.service'
@@ -33,7 +34,7 @@ describe('gitlabService', () => {
       readTechnReadOnlyCreds: vi.fn().mockResolvedValue(null),
       readGitlabMirrorCreds: vi.fn().mockResolvedValue(null),
     })
-    const config = mockDeep<ConfigurationService>({ projectRootDir: 'forge' })
+    const config = mockDeep<GitlabConfig>({ projectRootDir: 'forge' })
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -41,7 +42,7 @@ describe('gitlabService', () => {
         { provide: GitlabClientService, useValue: gitlab },
         { provide: GitlabDatastoreService, useValue: datastore },
         { provide: VaultClientService, useValue: vault },
-        { provide: ConfigurationService, useValue: config },
+        { provide: gitlabConfigFactory.KEY, useValue: config },
       ],
     }).compile()
 

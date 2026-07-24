@@ -1,12 +1,12 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
+import type { VaultConfig } from '../../config/vault'
 import { Inject, Injectable } from '@nestjs/common'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import vaultConfigFactory from '../../config/vault'
 
 @Injectable()
 export class VaultPluginService {
   constructor(
-    @Inject(ConfigurationService)
-    private readonly config: ConfigurationService,
+    @Inject(vaultConfigFactory.KEY) private readonly config: VaultConfig,
   ) {}
 
   infos(): ServiceInfos {

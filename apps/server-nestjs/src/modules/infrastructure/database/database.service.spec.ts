@@ -1,8 +1,8 @@
 import type { TestingModule } from '@nestjs/testing'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { MainModule } from '../../../main.module'
 
-import { ConfigurationModule } from '../configuration/configuration.module'
 import { DatabaseService } from './database.service'
 import { PrismaService } from './prisma.service'
 
@@ -11,7 +11,7 @@ describe('databaseService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ConfigurationModule],
+      imports: [MainModule],
       providers: [
         DatabaseService,
         {

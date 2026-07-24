@@ -1,13 +1,15 @@
 import type { projectContract } from '@cpn-console/shared'
 import type { Prisma } from '@prisma/client'
+import type { BaseConfig } from '../../config/base'
+import type { VaultConfig } from '../../config/vault'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import type { ProjectDataExport, ProjectUpdateContext, ProjectWithDetails } from './project-queries.utils'
 import { AdminAuthorized } from '@cpn-console/shared'
 import { BadRequestException, ForbiddenException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
+import { InjectBaseConfig } from '../../config/base'
+import { vaultConfigFactory } from '../../config/vault'
 import { AppEventsService } from '../events/app-events.service'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
-import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { LogService } from '../log/log.service'
 import { createProjectMember, deleteProjectMember } from '../project-members/project-members-queries.utils'
@@ -30,7 +32,8 @@ export class ProjectService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AppEventsService) private readonly appEvents: AppEventsService,
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @InjectBaseConfig() private readonly baseConfig: BaseConfig,
+    @Inject(vaultConfigFactory.KEY) private readonly vaultConfig: VaultConfig,
     @Inject(LogService) private readonly logs: LogService,
   ) {}
 
@@ -62,7 +65,7 @@ export class ProjectService {
     const whereAnd = generateProjectWhereInput({
       query,
       requestorUserId: user.userId,
-      appVersion: this.config.appVersion,
+      appVersion: this.baseConfig.APP_VERSION,
     })
 
     this.logger.debug(`project.list started (requestorUserId=${user.userId}, filter=${filter})`)

@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common'
 import { AuthModule } from '../infrastructure/auth/auth.module'
-import { ConfigurationModule } from '../infrastructure/configuration/configuration.module'
 import { DatabaseModule } from '../infrastructure/database/database.module'
 import { EventsModule } from '../infrastructure/events/events.module'
 import { UserPermissionModule } from '../infrastructure/permission/user/user.module'
@@ -11,7 +10,6 @@ import { ServiceChainService } from './service-chain.service'
 @Module({
   imports: [
     AuthModule,
-    ConfigurationModule,
     DatabaseModule,
     EventsModule,
     UserPermissionModule,

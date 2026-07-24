@@ -2,16 +2,17 @@ import type { DeepMockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { nexusConfigFactory } from '../../config/nexus'
+import type { NexusConfig } from '../../config/nexus'
 import { makeToUrlParams } from '../plugin/plugin.utils'
 import { NexusPluginService } from './nexus-plugin.service'
 
 describe('nexusPluginService', () => {
   let service: NexusPluginService
-  let config: DeepMockProxy<ConfigurationService>
+  let config: DeepMockProxy<NexusConfig>
 
   beforeEach(async () => {
-    config = mockDeep<ConfigurationService>({
+    config = mockDeep<NexusConfig>({
       nexusUrl: 'https://nexus.public/',
       nexusInternalUrl: 'https://nexus.internal/',
     })
@@ -19,7 +20,7 @@ describe('nexusPluginService', () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         NexusPluginService,
-        { provide: ConfigurationService, useValue: config },
+        { provide: nexusConfigFactory.KEY, useValue: config },
       ],
     }).compile()
 

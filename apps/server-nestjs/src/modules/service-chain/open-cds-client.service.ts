@@ -1,7 +1,8 @@
 import type { Dispatcher, HeadersInit } from 'undici'
+import type { OpenCdsConfig } from '../../config/configuration.utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Agent, fetch, Headers, ProxyAgent } from 'undici'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { openCdsConfigFactory } from '../../config/opencds'
 import { throwIfNotOk } from './service-chain.utils'
 
 const openCdsDisabledMessage
@@ -24,14 +25,13 @@ export class OpenCdsClientError extends Error {
     public readonly body?: string,
   ) {
     super(`OpenCDS request failed with ${status} ${statusText}`)
-    this.name = 'OpenCdsClientError'
   }
 }
 
 @Injectable()
 export class OpenCdsClientService {
   constructor(
-    @Inject(ConfigurationService) private readonly config: ConfigurationService,
+    @Inject(openCdsConfigFactory.KEY) private readonly config: OpenCdsConfig,
   ) {}
 
   private readonly logger = new Logger(OpenCdsClientService.name)
@@ -76,13 +76,13 @@ export class OpenCdsClientService {
     path: string,
     query?: OpenCdsRequestOptions['query'],
   ): string {
-    if (!this.config.openCdsUrl) {
+    if (!this.config.OPENCDS_URL) {
       throw new Error(openCdsDisabledMessage)
     }
 
     const resolvedPath = URL_REGEX.test(path)
       ? path
-      : `${this.config.openCdsUrl.replace(END_SLASHES_REGEX, '')}/${path.replace(START_SLASHES_REGEX, '')}`
+      : `${this.config.OPENCDS_URL.replace(END_SLASHES_REGEX, '')}/${path.replace(START_SLASHES_REGEX, '')}`
 
     const url = new URL(resolvedPath)
 
@@ -100,7 +100,7 @@ export class OpenCdsClientService {
     hasJsonBody = false,
   ): Headers {
     const mergedHeaders = new Headers(headers)
-    mergedHeaders.set('X-API-Key', this.config.openCdsApiToken ?? '')
+    mergedHeaders.set('X-API-Key', this.config.OPENCDS_API_TOKEN ?? '')
 
     if (hasJsonBody) {
       mergedHeaders.set('Content-Type', 'application/json')
@@ -110,18 +110,20 @@ export class OpenCdsClientService {
   }
 
   private buildDispatcher(): Dispatcher {
-    if (process.env.HTTP_PROXY) {
+    const httpProxy = this.config.HTTP_PROXY
+
+    if (httpProxy) {
       return new ProxyAgent({
         requestTls: {
-          rejectUnauthorized: this.config.openCdsApiTlsRejectUnauthorized,
+          rejectUnauthorized: this.config.OPENCDS_API_TLS_REJECT_UNAUTHORIZED,
         },
-        uri: process.env.HTTP_PROXY,
+        uri: httpProxy,
       })
     }
 
     return new Agent({
       connect: {
-        rejectUnauthorized: this.config.openCdsApiTlsRejectUnauthorized,
+        rejectUnauthorized: this.config.OPENCDS_API_TLS_REJECT_UNAUTHORIZED,
       },
     })
   }

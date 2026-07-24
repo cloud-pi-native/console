@@ -1,9 +1,12 @@
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { BaseConfig } from '../../config/base'
+import type { VaultConfig } from '../../config/vault'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
+import { baseConfigFactory } from '../../config/base'
+import { vaultConfigFactory } from '../../config/vault'
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
 import { makeProjectWithDetails, makeVaultSecret, makeZoneWithDetails } from './vault-testing.utils'
@@ -15,7 +18,8 @@ describe('vaultService', () => {
   let service: VaultService
   let datastore: DeepMockProxy<VaultDatastoreService>
   let client: DeepMockProxy<VaultClientService>
-  let config: DeepMockProxy<ConfigurationService>
+  let vaultConfig: DeepMockProxy<VaultConfig>
+  let baseConfig: DeepMockProxy<BaseConfig>
 
   beforeEach(async () => {
     datastore = mockDeep<VaultDatastoreService>({
@@ -36,9 +40,11 @@ describe('vaultService', () => {
       listKvMetadata: vi.fn().mockResolvedValue([]),
       delete: vi.fn().mockResolvedValue(undefined),
     })
-    config = mockDeep<ConfigurationService>({
-      projectRootDir: 'forge',
+    vaultConfig = mockDeep<VaultConfig>({
       vaultKvName: 'kv',
+    })
+    baseConfig = mockDeep<BaseConfig>({
+      projectsRootDir: 'forge',
     })
 
     const module = await Test.createTestingModule({
@@ -46,7 +52,8 @@ describe('vaultService', () => {
         VaultService,
         { provide: VaultClientService, useValue: client },
         { provide: VaultDatastoreService, useValue: datastore },
-        { provide: ConfigurationService, useValue: config },
+        { provide: vaultConfigFactory.KEY, useValue: vaultConfig },
+        { provide: baseConfigFactory.KEY, useValue: baseConfig },
       ],
     }).compile()
 
