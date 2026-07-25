@@ -1,0 +1,16 @@
+import type { Hook } from './hook.js'
+import type { UserObject } from './index.js'
+import { createHook } from './hook.js'
+
+export interface AdminRole {
+  id: string
+  name: string
+  permissions: bigint
+  position: number
+  oidcGroup: string
+  type?: string
+  members: UserObject[]
+}
+
+export const upsertAdminRole: Hook<AdminRole> = createHook()
+export const deleteAdminRole: Hook<AdminRole> = createHook()

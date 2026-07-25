@@ -1,0 +1,546 @@
+{
+  "uuid": "b263d1c1-3103-4a17-940c-1c92215bb3b8",
+  "lastMigration": 33,
+  "name": "Opencds api",
+  "endpointPrefix": "api/v1/",
+  "latency": 0,
+  "port": 3003,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "210c5fa6-22dc-4c79-a89e-4289fd2b84bb",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "requests",
+      "responses": [
+        {
+          "uuid": "28bd3efb-d903-44c3-b728-66db3af526bc",
+          "body": "{{setVar 'networks' (array 'RIE' 'INTERNET')}}\n{{setVar 'state' (array 'opened' 'pending' 'success' 'failed')}}\n[\n  {{#repeat 50 100 comma=true}}\n  {{setVar 'createdAt' (date '2024-01-01' (now) \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")}}\n  {{setVar 'updatedAt' (date (getVar 'createdAt') (now) \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")}}\n  {\n    \"id\": \"{{faker 'string.uuid'}}\",\n    \"state\": \"{{oneOf (getVar 'state')}}\",\n    \"commonName\": \"{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.minint.fr\",\n    \"pai\": \"{{faker 'string.alpha' '{ length: 3, casing: \\\"upper\\\" }'}}\",\n    \"network\": \"{{oneOf (getVar 'networks')}}\",\n    \"createdAt\": \"{{getVar 'createdAt'}}\",\n    \"updatedAt\": \"{{getVar 'updatedAt'}}\"\n  }\n  {{/repeat}}\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "token",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "0d39381e-e815-40a9-9d47-cc739a8b582c",
+          "body": "",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "8f00d8d7-7df4-4401-b751-6440ee0e1658",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "requests/:request_id",
+      "responses": [
+        {
+          "uuid": "410bd286-4377-47e5-ae3f-e4131fcb0b68",
+          "body": "{{setVar 'networks' (array 'RIE' 'INTERNET')}}\n{{setVar 'state' (array 'opened' 'pending' 'success' 'failed')}}\n{{setVar 'createdAt' (date '2024-01-01' (now) \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")}}\n{{setVar 'updatedAt' (date (getVar 'createdAt') (now) \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")}}\n{{setVar 'location' (array 'SIR' 'SIL')}}\n{{setVar 'environment' (array 'INT' 'PROD' 'BAS')}}\n{\n    \"id\": \"{{urlParam 'request_id'}}\",\n    \n    \"state\": \"{{oneOf (getVar 'state')}}\",\n    \"commonName\": \"{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.minint.fr\",\n    \"pai\": \"{{faker 'string.alpha' '{ length: 3, casing: \\\"upper\\\" }'}}\",\n    \"network\": \"{{oneOf (getVar 'networks')}}\",\n    \"createdAt\": \"{{getVar 'createdAt'}}\",\n    \"updatedAt\": \"{{getVar 'updatedAt'}}\",\n\n    \"validationId\": \"{{faker 'string.uuid'}}\",\n    \"validatedBy\": \"{{faker 'string.uuid'}}\",\n    \"ref\": \"{{faker 'string.uuid'}}\",\n    \"location\": \"{{oneOf (getVar 'location')}}\",\n    \"targetAddress\": \"{{faker 'internet.ipv4'}}\",\n    \"projectId\": \"{{faker 'string.uuid'}}\",\n    \"env\": \"{{oneOf (getVar 'environment')}}\",\n    \"subjectAlternativeName\": [{{#repeat 0 50 comma=true}}\"{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.{{faker 'string.alpha' '{ length: 3, casing: \\\"lower\\\" }'}}.minint.fr\"{{/repeat}}],\n    \"redirect\": {{boolean}},\n    \"antivirus\": {{#if (eq (boolean) true)}}{\n        \"maxFileSize\": {{int 1 100}}\n    }{{else}}null{{/if}},\n    \"websocket\": {{boolean}},\n    \"ipWhiteList\": [{{#repeat 0 10 comma=true}}\"{{faker 'internet.ipv4'}}/{{int 8 32}}\"{{/repeat}}],\n    \"sslOutgoing\": {{boolean}}\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "token",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "41f0a982-3b94-44d7-8177-e120d4741dee",
+          "body": "",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "904ddbb0-480b-442d-b251-d008d10fa832",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "8ff2f39f-a82f-4364-90ed-135b5ec8f19b",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "requests/:request_id/flows",
+      "responses": [
+        {
+          "uuid": "b24f3f54-b45c-4749-a134-dc1fa003a417",
+          "body": "{{setVar 'state' (array 'opened' 'pending' 'success' 'failed')}}\n{{setVar 'createdAt' (date '2024-01-01' (now) \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")}}\n{{setVar 'updatedAt' (date (getVar 'createdAt') (now) \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\")}}\n{{setVar 'json' '' }}\n{\n  \"reserve_ip\": {\n    \"state\": \"{{oneOf (getVar 'state')}}\",\n    \"input\": \"{ \\\"foo\\\": 0, \\\"bar\\\": true, \\\"qux\\\": \\\"test\\\" }\",\n    \"output\": \"{ \\\"foo\\\": 0, \\\"bar\\\": true, \\\"qux\\\": \\\"test\\\" }\",\n    \"updatedAt\": \"{{getVar 'updatedAt'}}\"\n  },\n  \"create_cert\": {\n    \"state\": \"{{oneOf (getVar 'state')}}\",\n    \"input\": \"{ \\\"foo\\\": 0, \\\"bar\\\": true, \\\"qux\\\": \\\"test\\\" }\",\n    \"output\": \"{ \\\"foo\\\": 0, \\\"bar\\\": true, \\\"qux\\\": \\\"test\\\" }\",\n    \"updatedAt\": \"{{getVar 'updatedAt'}}\"\n  },\n  \"call_exec\": {\n    \"state\": \"{{oneOf (getVar 'state')}}\",\n    \"input\": \"{ \\\"foo\\\": 0, \\\"bar\\\": true, \\\"qux\\\": \\\"test\\\" }\",\n    \"output\": \"{ \\\"foo\\\": 0, \\\"bar\\\": true, \\\"qux\\\": \\\"test\\\" }\",\n    \"updatedAt\": \"{{getVar 'updatedAt'}}\"\n  },\n  \"activate_ip\": {\n    \"state\": \"{{oneOf (getVar 'state')}}\",\n    \"input\": \"{ \\\"foo\\\": 0, \\\"bar\\\": true, \\\"qux\\\": \\\"test\\\" }\",\n    \"output\": \"{ \\\"foo\\\": 0, \\\"bar\\\": true, \\\"qux\\\": \\\"test\\\" }\",\n    \"updatedAt\": \"{{getVar 'updatedAt'}}\"\n  },\n  \"dns_request\": {\n    \"state\": \"{{oneOf (getVar 'state')}}\",\n    \"input\": \"{ \\\"foo\\\": 0, \\\"bar\\\": true, \\\"qux\\\": \\\"test\\\" }\",\n    \"output\": \"{ \\\"foo\\\": 0, \\\"bar\\\": true, \\\"qux\\\": \\\"test\\\" }\",\n    \"updatedAt\": \"{{getVar 'updatedAt'}}\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "token",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "e392c78f-a345-4b96-bf0d-74c8094c4097",
+          "body": "",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "c926d20b-b30f-4293-b583-3eb169943967",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "9cc0eae4-eef1-44ec-92cd-47819501695f",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "validate/:validation_id",
+      "responses": [
+        {
+          "uuid": "69bc6592-1208-40a9-a3c0-f8b445fc9f4c",
+          "body": "",
+          "latency": 0,
+          "statusCode": 204,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "token",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "179726cf-4c32-4d07-aabf-ead6d4646e17",
+          "body": "",
+          "latency": 0,
+          "statusCode": 429,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "fce2e6b6-0894-4f05-873d-77d8965c4c67",
+          "body": "",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "79f5ce5f-bf70-4995-bad4-6e82fc72f55f",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "bb61c12f-8185-43fe-9498-22b6661e998c",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "requests/:request_id/retry",
+      "responses": [
+        {
+          "uuid": "b703c7f4-7325-448a-ab57-5b122896c3cc",
+          "body": "",
+          "latency": 0,
+          "statusCode": 204,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "token",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "e6abdf74-3191-4140-b6ba-3922c52e4c15",
+          "body": "",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "7b5d5713-0b5c-49d3-b3a2-af6cd366654d",
+          "body": "",
+          "latency": 0,
+          "statusCode": 409,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "5d168446-71d6-456b-9de8-6b6100bd2f8a",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-Key",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "1055fe07-2f29-4dec-8412-2066fb330b3c",
+      "type": "http",
+      "documentation": "OpenCDS Mockoon healthcheck",
+      "method": "get",
+      "endpoint": "health",
+      "responses": [
+        {
+          "uuid": "0d7f2acf-8006-4995-a5e5-39d8ba1858ef",
+          "body": "{\"status\":\"OK\"}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "210c5fa6-22dc-4c79-a89e-4289fd2b84bb"
+    },
+    {
+      "type": "route",
+      "uuid": "8f00d8d7-7df4-4401-b751-6440ee0e1658"
+    },
+    {
+      "type": "route",
+      "uuid": "8ff2f39f-a82f-4364-90ed-135b5ec8f19b"
+    },
+    {
+      "type": "route",
+      "uuid": "9cc0eae4-eef1-44ec-92cd-47819501695f"
+    },
+    {
+      "type": "route",
+      "uuid": "bb61c12f-8185-43fe-9498-22b6661e998c"
+    },
+    {
+      "type": "route",
+      "uuid": "1055fe07-2f29-4dec-8412-2066fb330b3c"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "name": "server",
+    "build": {
+      "context": "./",
+      "dockerfile": "./apps/server/Dockerfile",
+      "target": "prod"
+    }
+  },
+  {
+    "name": "nginx-strangler",
+    "build": {
+      "context": "./",
+      "dockerfile": "./apps/nginx-strangler/Dockerfile",
+      "target": "prod"
+    }
+  },
+  {
+    "name": "server-nestjs",
+    "build": {
+      "context": "./",
+      "dockerfile": "./apps/server-nestjs/Dockerfile",
+      "target": "prod"
+    }
+  },
+  {
+    "name": "client",
+    "build": {
+      "context": "./",
+      "dockerfile": "./apps/client/Dockerfile",
+      "target": "prod"
+    }
+  },
+  {
+    "name": "opencds-mockoon",
+    "build": {
+      "context": "./",
+      "dockerfile": "./packages/opencds/Dockerfile",
+      "target": "prod"
+    }
+  }
+]

@@ -1,0 +1,25 @@
+name: Add labels on PR
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  workflow_call:
+    inputs:
+      CONF_PATH:
+        required: true
+        type: string
+
+jobs:
+  label:
+    name: Add labels on PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Add pull request label
+        uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b # v6.0.1
+        with:
+          configuration-path: ${{ inputs.CONF_PATH }}

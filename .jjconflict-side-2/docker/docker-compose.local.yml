@@ -1,0 +1,146 @@
+services:
+  keycloak-fetch-theme:
+    restart: no
+    image: docker.io/curlimages/curl:8.8.0
+    container_name: dso-console_keycloak-fetch
+    volumes:
+      - dso-keycloak-dsfr-theme:/tmp:rw
+    command: -LfS -o /tmp/keycloak-theme-dsfr.jar https://github.com/codegouvfr/keycloak-theme-dsfr/releases/download/v2.3.3/keycloak-theme-for-kc-26.0-to-26.1.jar
+    networks:
+      - dso-network
+    attach: false
+
+  keycloak:
+    restart: unless-stopped
+    image: docker.io/bitnamilegacy/keycloak:26.1.3-debian-12-r0
+    container_name: dso-console_keycloak
+    depends_on:
+      keycloak-fetch-theme:
+        condition: service_completed_successfully
+    ports:
+      - 127.0.0.1:8090:8080
+    volumes:
+      - ../keycloak/realms:/opt/bitnami/keycloak/data/import
+      - ../keycloak/data/dev:/opt/bitnami/keycloak/data/h2
+      - type: volume
+        source: dso-keycloak-dsfr-theme
+        target: /opt/bitnami/keycloak/providers/keycloak-theme-dsfr.jar
+        volume:
+          subpath: keycloak-theme-dsfr.jar
+    user: root
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: true
+      DSFR_THEME_HOME_URL: http://localhost:8080
+      DSFR_THEME_SERVICE_TITLE: Console Cloud π Native
+      DSFR_THEME_BRAND_TOP: Ministère<br/>de l'Intérieur</br>et des Outre-Mer
+      DSFR_THEME_TOS_URL:
+      DSFR_THEME_CONTACT_EMAIL: cloudpinative-relations@interieur.gouv.fr
+    entrypoint: /opt/bitnami/keycloak/bin/kc.sh
+    command: start-dev --import-realm
+    healthcheck:
+      test: [CMD, curl, --head, fsS, "http://localhost:8080/health/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dso-network
+    attach: false
+
+  postgres:
+    restart: unless-stopped
+    image: docker.io/postgres:15.3
+    container_name: dso-console_postgres
+    environment:
+      POSTGRES_DB: dso-console-db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - 5432:5432
+    volumes:
+      - dso-postgres-data-local:/var/lib/postgresql/data
+    networks:
+      - dso-network
+    attach: false
+
+  opencds-mockoon:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: packages/opencds/Dockerfile
+    image: dso-console/opencds-mockoon:local
+    container_name: dso-opencds_mockoon
+    user: root
+    ports:
+      - 3100:3100
+    networks:
+      - dso-network
+
+  pgadmin:
+    restart: unless-stopped
+    image: docker.io/dpage/pgadmin4:latest
+    container_name: dso-console_pgadmin
+    depends_on:
+      postgres:
+        condition: service_started
+    volumes:
+      - ../pgadmin/servers-docker.json:/pgadmin4/servers.json
+      - dso-pgadmin-data-local:/var/lib/pgadmin
+    ports:
+      - 8081:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@dso.fr
+      PGADMIN_DEFAULT_PASSWORD: admin
+    networks:
+      - dso-network
+    attach: false
+
+  nginx-strangler:
+    # En mode local (pnpm dev), server et server-nestjs tournent nativement sur la machine.
+    # Le nginx-strangler reste en Docker et atteint les processes natifs via host.docker.internal.
+    # (voir .env-example de chaque app).
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: apps/nginx-strangler/Dockerfile
+    image: dso-console/nginx-strangler:local
+    container_name: dso-console_nginx-strangler
+    extra_hosts:
+      - host.docker.internal:${HOST_GATEWAY_IP:-host-gateway}
+    ports:
+      - 4000:8080
+    environment:
+      LEGACY_UPSTREAM: "host.docker.internal:4001"
+      NESTJS_UPSTREAM: "host.docker.internal:3001"
+    networks:
+      - dso-network
+    attach: false
+
+  jaeger:
+    restart: unless-stopped
+    image: jaegertracing/all-in-one:1.76.0
+    container_name: dso-console_jaeger
+    environment:
+      COLLECTOR_ZIPKIN_HOST_PORT: :9411
+    ports:
+      - 16686:16686
+      - 4317:4317
+      - 4318:4318
+      - 14250:14250
+      - 14268:14268
+      - 14269:14269
+      - 9411:9411
+    networks:
+      - dso-network
+    attach: false
+
+networks:
+  dso-network:
+    driver: bridge
+
+volumes:
+  dso-keycloak-dsfr-theme:
+  dso-keycloak-data-local:
+  dso-pgadmin-data-local:
+  dso-postgres-data-local:

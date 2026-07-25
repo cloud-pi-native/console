@@ -1,0 +1,150 @@
+name: Continuous Integration
+
+permissions:
+  contents: read
+  # Needed for build job
+  packages: write
+  # Needed for build-label and scan-vuln jobs
+  pull-requests: write
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+    branches:
+      - "**"
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: 24.13.1
+  REGISTRY: ghcr.io
+  NAMESPACE: "${{ github.repository }}"
+  BUILD_AMD64: true
+  BUILD_ARM64: false
+  USE_QEMU: false
+
+jobs:
+  path-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.filter.outputs.apps }}
+      packages: ${{ steps.filter.outputs.packages }}
+      e2e: ${{ steps.filter.outputs.e2e }}
+      ci: ${{ steps.filter.outputs.ci }}
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Check updated files paths
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        id: filter
+        with:
+          filters: |
+            apps:
+              - 'apps/**'
+            packages:
+              - 'packages/**'
+              - 'plugins/**'
+            ci:
+              - '.github/workflows/**'
+            e2e:
+              - 'playwright/**'
+
+  expose-vars:
+    runs-on: ubuntu-latest
+    outputs:
+      NODE_VERSION: ${{ env.NODE_VERSION }}
+      REGISTRY: ${{ env.REGISTRY }}
+      NAMESPACE: ${{ env.NAMESPACE }}
+      BUILD_AMD64: ${{ env.BUILD_AMD64 }}
+      BUILD_ARM64: ${{ env.BUILD_ARM64 }}
+      USE_QEMU: ${{ env.USE_QEMU }}
+    steps:
+      - name: Exposing env vars
+        run: echo "Exposing env vars."
+
+  lint:
+    uses: ./.github/workflows/job-lint.yml
+    needs:
+      - expose-vars
+    with:
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+
+  unit-tests:
+    uses: ./.github/workflows/job-tests-unit.yml
+    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' }}
+    needs:
+      - path-filter
+      - expose-vars
+    with:
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+    secrets:
+      SONAR_HOST_URL: "${{ secrets.SONAR_HOST_URL }}"
+      SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
+      SONAR_PROJECT_KEY: "${{ secrets.SONAR_PROJECT_KEY }}"
+
+  build:
+    uses: ./.github/workflows/job-build.yml
+    if: ${{ github.event.pull_request.number && (needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true') }}
+    needs:
+      - path-filter
+      - expose-vars
+    with:
+      REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
+      NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
+      TAG: pr-${{ github.event.pull_request.number || github.event.number }}
+      BUILD_AMD64: ${{ needs.expose-vars.outputs.BUILD_AMD64 == 'true' }}
+      BUILD_ARM64: ${{ needs.expose-vars.outputs.BUILD_ARM64 == 'true' }}
+      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.number }}
+    secrets:
+      ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
+
+  build-label:
+    uses: ./.github/workflows/job-label.yml
+    needs:
+      - expose-vars
+      - build
+    with:
+      CONF_PATH: ./.github/labeler/build.yml
+
+  scan-vuln:
+    uses: ./.github/workflows/job-scan.yml
+    needs:
+      - expose-vars
+      - build
+    with:
+      REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
+      NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
+      TAG: pr-${{ github.event.pull_request.number || github.event.number }}
+
+  # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
+  all-jobs-passed:
+    name: Check jobs status
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs:
+      - path-filter
+      - expose-vars
+      - lint
+      - unit-tests
+      - build
+      - scan-vuln
+    steps:
+      - name: Check status of all required jobs
+        run: |-
+          NEEDS_CONTEXT='${{ toJson(needs) }}'
+          JOB_IDS=$(echo "$NEEDS_CONTEXT" | jq -r 'keys[]')
+          for JOB_ID in $JOB_IDS; do
+            RESULT=$(echo "$NEEDS_CONTEXT" | jq -r ".[\"$JOB_ID\"].result")
+            echo "$JOB_ID job result: $RESULT"
+            if [[ $RESULT != "success" && $RESULT != "skipped" ]]; then
+              echo "***"
+              echo "Error: The $JOB_ID job did not pass."
+              exit 1
+            fi
+          done
+          echo "All jobs passed or were skipped."

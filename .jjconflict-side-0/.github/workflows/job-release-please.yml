@@ -1,0 +1,84 @@
+name: Release
+
+permissions:
+  contents: write
+  pull-requests: write
+
+on:
+  workflow_call:
+    outputs:
+      release-created:
+        description: Has the releease been created
+        value: ${{ jobs.release.outputs.release-created }}
+      major-tag:
+        description: Major version tag
+        value: ${{ jobs.release.outputs.major-tag }}
+      minor-tag:
+        description: Minor version tag
+        value: ${{ jobs.release.outputs.minor-tag }}
+      patch-tag:
+        description: Patch version tag
+        value: ${{ jobs.release.outputs.patch-tag }}
+
+jobs:
+  release:
+    name: Create new release
+    runs-on: ubuntu-latest
+    outputs:
+      release-created: ${{ steps.release.outputs.release_created }}
+      major-tag: ${{ steps.release.outputs.major }}
+      minor-tag: ${{ steps.release.outputs.minor }}
+      patch-tag: ${{ steps.release.outputs.patch }}
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Update release-please config for hotfix branches
+        if: startsWith(github.ref_name, 'hotfix/')
+        run: |
+          # Update versioning to always-bump-patch for hotfix branches
+          jq '.versioning = "always-bump-patch"' release-please-config.json > tmp.json && mv tmp.json release-please-config.json
+          echo "Updated release-please-config.json versioning to always-bump-patch"
+        shell: bash
+
+      - name: Create merge request for new release
+        uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
+        id: release
+        with:
+          config-file: release-please-config.json
+          target-branch: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Edit packages versions
+        if: ${{ ! steps.release.outputs.release_created && steps.release.outputs.pr }}
+        run: |
+          export BRANCH=release-please--branches--main--components--console
+          git fetch
+          git checkout "$BRANCH"
+          VERSION=$(jq -r .version package.json)
+          for pkg in $(jq -r '.apps | map(.path + "/package.json") | .[]' < ./ci/matrix-npm.json); do
+            yq e -i ".version |= \"$VERSION\"" $pkg
+            yq e -i ".publishConfig.tag |= \"latest\"" $pkg
+          done
+          git add .
+          # Emulate the author of the existing commit (the bot).
+          git config user.email "$(git log -n 1 --format='%ae')"
+          git config user.name "$(git log -n 1 --format='%an')"
+          # Update the PR.
+          git commit --amend --no-edit
+          git push -f
+
+      - name: Tag major and minor versions
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git remote add gh-token "https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git tag -d v${{ steps.release.outputs.major }} || true
+          git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
+          git push origin :v${{ steps.release.outputs.major }} || true
+          git push origin :v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
+          git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
+          git tag -a v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
+          git push origin v${{ steps.release.outputs.major }}
+          git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}

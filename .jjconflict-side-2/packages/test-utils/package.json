@@ -1,0 +1,42 @@
+{
+  "name": "@cpn-console/test-utils",
+  "type": "module",
+  "version": "1.0.1",
+  "private": false,
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cloud-pi-native/console"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "types/index.d.ts",
+  "files": [
+    "dist",
+    "types"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
+    "format": "eslint ./ --fix",
+    "kube:e2e-ci": "echo 'check cache'",
+    "lint": "eslint ./",
+    "test:e2e-ci": "echo 'check cache'"
+  },
+  "dependencies": {
+    "@cpn-console/shared": "workspace:^",
+    "@faker-js/faker": "catalog:test"
+  },
+  "devDependencies": {
+    "@cpn-console/eslint-config": "workspace:^",
+    "@cpn-console/ts-config": "workspace:^",
+    "@types/node": "catalog:types",
+    "rimraf": "catalog:tools",
+    "typescript": "catalog:build"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "latest"
+  }
+}

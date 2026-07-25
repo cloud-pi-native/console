@@ -1,0 +1,326 @@
+{
+  // Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
+  // Pointez pour afficher la description des attributs existants.
+  // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Server (Integ)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@cpn-console/server",
+        "run",
+        "integ"
+      ],
+      "envFile": "${workspaceFolder}/apps/server/.env.integ",
+      "console": "integratedTerminal",
+      "restart": true,
+      "presentation": {
+        "hidden": true
+      },
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
+    },
+    {
+      "name": "Launch Server (Dev)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@cpn-console/server",
+        "run",
+        "dev"
+      ],
+      "envFile": "${workspaceFolder}/apps/server/.env",
+      "console": "integratedTerminal",
+      "restart": true,
+      "presentation": {
+        "hidden": true
+      },
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
+    },
+    {
+      "name": "Launch Infra (Integ)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "run",
+        "integ"
+      ],
+      "console": "internalConsole",
+      "restart": true,
+      "presentation": {
+        "hidden": true
+      },
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
+    },
+    {
+      "name": "Launch Infra (Dev)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "run",
+        "dev"
+      ],
+      "console": "internalConsole",
+      "restart": true,
+      "presentation": {
+        "hidden": true
+      },
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
+    },
+    {
+      "name": "Launch Server NestJS (Integ)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@cpn-console/server-nestjs",
+        "run",
+        "start:dev"
+      ],
+      "envFile": "${workspaceFolder}/apps/server-nestjs/.env.integ",
+      "console": "integratedTerminal",
+      "restart": true,
+      "presentation": {
+        "hidden": true
+      },
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
+    },
+    {
+      "name": "Launch Server NestJS (Dev)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@cpn-console/server-nestjs",
+        "run",
+        "start:dev"
+      ],
+      "envFile": "${workspaceFolder}/apps/server-nestjs/.env",
+      "console": "integratedTerminal",
+      "restart": true,
+      "presentation": {
+        "hidden": true
+      },
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
+    },
+    {
+      "name": "Attach Server",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "address": "127.0.0.1",
+      "localRoot": "${workspaceFolder}/apps/server",
+      "remoteRoot": "/app/apps/server",
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ],
+      "presentation": {
+        "hidden": true
+      }
+    },
+    {
+      "name": "Serve Client (Chrome) (Integ)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@cpn-console/client",
+        "run",
+        "integ",
+        "--",
+        "--port",
+        "8080",
+        "--strictPort"
+      ],
+      "envFile": "${workspaceFolder}/apps/client/.env.integ",
+      "console": "integratedTerminal",
+      "restart": true,
+      "serverReadyAction": {
+        "pattern": "Local:.*(http://localhost:[0-9]+)",
+        "action": "startDebugging",
+        "name": "Launch Client (Chrome)"
+      },
+      "presentation": {
+        "hidden": true
+      }
+    },
+    {
+      "name": "Serve Client (Chrome) (Dev)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@cpn-console/client",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "8080",
+        "--strictPort"
+      ],
+      "envFile": "${workspaceFolder}/apps/client/.env",
+      "console": "integratedTerminal",
+      "restart": true,
+      "serverReadyAction": {
+        "pattern": "Local:.*(http://localhost:[0-9]+)",
+        "action": "startDebugging",
+        "name": "Launch Client (Chrome)"
+      },
+      "presentation": {
+        "hidden": true
+      }
+    },
+    {
+      "name": "Serve Client (Firefox) (Integ)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@cpn-console/client",
+        "run",
+        "integ",
+        "--",
+        "--port",
+        "8080",
+        "--strictPort"
+      ],
+      "envFile": "${workspaceFolder}/apps/client/.env.integ",
+      "console": "integratedTerminal",
+      "restart": true,
+      "serverReadyAction": {
+        "pattern": "Local:.*(http://localhost:[0-9]+)",
+        "action": "startDebugging",
+        "name": "Launch Client (Firefox)"
+      },
+      "presentation": {
+        "hidden": true
+      }
+    },
+    {
+      "name": "Serve Client (Firefox) (Dev)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@cpn-console/client",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "8080",
+        "--strictPort"
+      ],
+      "envFile": "${workspaceFolder}/apps/client/.env",
+      "console": "integratedTerminal",
+      "restart": true,
+      "serverReadyAction": {
+        "pattern": "Local:.*(http://localhost:[0-9]+)",
+        "action": "startDebugging",
+        "name": "Launch Client (Firefox)"
+      },
+      "presentation": {
+        "hidden": true
+      }
+    },
+    {
+      "name": "Launch Client (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}/apps/client",
+      "presentation": {
+        "hidden": true
+      }
+    },
+    {
+      "name": "Launch Client (Firefox)",
+      "type": "firefox",
+      "request": "launch",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}/apps/client",
+      "presentation": {
+        "hidden": true
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Launch (Chrome) (Integ)",
+      "configurations": [
+        "Launch Infra (Integ)",
+        "Launch Server (Integ)",
+        "Launch Server NestJS (Integ)",
+        "Serve Client (Chrome) (Integ)"
+      ]
+    },
+    {
+      "name": "Launch (Chrome) (Dev)",
+      "configurations": [
+        "Launch Infra (Dev)",
+        "Launch Server (Dev)",
+        "Launch Server NestJS (Dev)",
+        "Serve Client (Chrome) (Dev)"
+      ]
+    },
+    {
+      "name": "Launch (Firefox) (Integ)",
+      "configurations": [
+        "Launch Infra (Integ)",
+        "Launch Server (Integ)",
+        "Launch Server NestJS (Integ)",
+        "Serve Client (Firefox) (Integ)"
+      ]
+    },
+    {
+      "name": "Launch (Firefox) (Dev)",
+      "configurations": [
+        "Launch Infra (Dev)",
+        "Launch Server (Dev)",
+        "Launch Server NestJS (Dev)",
+        "Serve Client (Firefox) (Dev)"
+      ]
+    }
+  ]
+}

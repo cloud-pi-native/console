@@ -1,0 +1,120 @@
+{
+  // visuals
+  "window.autoDetectColorScheme": true,
+  "editor.fontLigatures": "'ss01', 'ss02', 'ss03', 'ss06', 'zero'",
+  "editor.cursorBlinking": "phase",
+  "editor.suggestSelection": "first",
+  "editor.wordWrap": "on",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.tabSize": 2,
+  "search.exclude": {
+    "**/.git": true,
+    "**/.nuxt": true,
+    "**/.pnpm": true,
+    "**/.yarn": true,
+    "**/.turbo": true,
+    "**/dist/**": true,
+    "**/out/**": true,
+    "**/logs": true,
+    "**/node_modules": true,
+    "**/package-lock.json": true,
+    "**/pnpm-lock.yaml": true,
+    "**/yarn.lock": true
+  },
+  // general
+  "editor.unicodeHighlight.invisibleCharacters": false,
+  "workbench.startupEditor": "none",
+  // git
+  "git.autofetch": true,
+  "git.untrackedChanges": "separate",
+  // github
+  "githubPullRequests.pullBranch": "never",
+  // eslint
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "vue",
+    "html",
+    "markdown",
+    "json",
+    "jsonc",
+    "yaml",
+    "github-actions-workflow",
+    "toml",
+    "xml",
+    "gql",
+    "graphql",
+    "astro",
+    "svelte",
+    "css",
+    "less",
+    "scss",
+    "pcss",
+    "postcss"
+  ],
+  // stylelint
+  "css.validate": true,
+  "less.validate": true,
+  "scss.validate": true,
+  "files.associations": {
+    "*.css": "css"
+  },
+  // languages
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "javascript.preferences.quoteStyle": "single",
+  "javascript.preferences.importModuleSpecifierEnding": "js",
+  "javascript.suggest.completeJSDocs": true,
+  "javascript.suggest.jsdoc.generateReturns": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.preferences.importModuleSpecifierEnding": "js",
+  "typescript.suggest.completeJSDocs": true,
+  "typescript.suggest.jsdoc.generateReturns": true,
+  "[vue]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "stylelint.vscode-stylelint"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[markdown]": {
+    "editor.quickSuggestions": {
+      "other": true,
+      "comments": true,
+      "strings": true
+    },
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.defaultFormatter": "yzhang.markdown-all-in-one"
+  },
+  // conventional commits
+  "conventionalCommits.showNewVersionNotes": false,
+  // kubernetes
+  "vs-kubernetes": {
+    "vs-kubernetes.crd-code-completion": "enabled"
+  },
+  "vscode-kubernetes.log-viewer.follow": true,
+  "vscode-kubernetes.log-viewer.timestamp": false,
+  "vscode-kubernetes.log-viewer.since": -1,
+  "vscode-kubernetes.log-viewer.tail": -1,
+  "vscode-kubernetes.log-viewer.destination": "Webview",
+  "vscode-kubernetes.log-viewer.wrap": true,
+  // sonarqube
+  "sonarlint.connectedMode.project": {
+    "connectionId": "https-sonarqube-fabrique-numerique-fr",
+    "projectKey": "cloud-pi-native_console_AYsa46O31ebDtzs-pYyZ"
+  },
+  "prisma-smart-formatter.typescript.defaultFormatter": "dbaeumer.vscode-eslint",
+  "prisma-smart-formatter.prisma.defaultFormatter": "Prisma.prisma"
+}

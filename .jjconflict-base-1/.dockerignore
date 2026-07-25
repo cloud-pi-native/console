@@ -1,0 +1,26 @@
+# Npm
+node_modules
+npm-debug.log
+
+# Git
+.gitkeep
+
+# Lint
+.eslintrc.js
+.eslintrc.cjs
+.eslintrc.json
+.eslintignore
+.stylelintrc.js
+.stylelintrc.cjs
+
+# Tests
+.turbo/
+coverage/
+
+# Docker
+**/Dockerfile
+.dockerignore
+docker/
+
+# Env
+.env*

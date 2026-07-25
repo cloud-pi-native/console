@@ -1,0 +1,21 @@
+{
+  "name": "@cpn-console/eslint-config",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cloud-pi-native/console"
+  },
+  "type": "module",
+  "version": "1.0.2",
+  "license": "ISC",
+  "main": "src/index.js",
+  "types": "types/index.d.ts",
+  "devDependencies": {
+    "@antfu/eslint-config": "catalog:tools",
+    "eslint": "catalog:tools"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "latest"
+  }
+}

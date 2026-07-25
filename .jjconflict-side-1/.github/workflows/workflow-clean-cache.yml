@@ -1,0 +1,94 @@
+name: Clean cache
+
+permissions:
+  contents: read
+  # For cache cleaning
+  actions: write
+  # For artifacts deletion
+  packages: write
+
+on:
+  pull_request:
+    types:
+      - closed
+  workflow_dispatch:
+    inputs:
+      PR_NUMBER:
+        description: Related pull request Id
+        required: false
+        type: number
+      BRANCH_NAME:
+        description: Related branch name
+        required: false
+        type: string
+
+jobs:
+  cleanup-cache:
+    name: Delete github cache
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Clean cache for closed branch
+        run: |
+          REPO=${{ github.repository }}
+          if [ -n "${{ inputs.BRANCH_NAME }}" ]; then
+            BRANCH="${{ inputs.BRANCH_NAME }}"
+          else
+            BRANCH="refs/pull/${{ github.event.pull_request.number || inputs.PR_NUMBER }}/merge"
+          fi
+
+          echo "Fetching list of cache key"
+          cacheKeysForPR=$(gh cache list -R $REPO --ref $BRANCH -L 100 | cut -f 1 )
+
+          ## Setting this to not fail the workflow while deleting cache keys.
+          set +e
+          echo "Deleting caches..."
+          for cacheKey in $cacheKeysForPR; do
+            gh cache delete $cacheKey -R $REPO
+          done
+          echo "Done"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  matrix:
+    name: Generate matrix
+    runs-on: ubuntu-latest
+    outputs:
+      build-matrix: ${{ steps.build-matrix.outputs.BUILD_MATRIX }}
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Generate matrix
+        id: build-matrix
+        run: |
+          echo "BUILD_MATRIX=$(jq -c . < ./ci/matrix-docker.json)" >> $GITHUB_OUTPUT
+
+  cleanup-image:
+    name: Delete image from ghcr.io
+    runs-on: ubuntu-latest
+    needs:
+      - matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        images: ${{ fromJSON(needs.matrix.outputs.build-matrix) }}
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Get repository owner and name
+        id: image-infos
+        run: |
+          echo "ORG_NAME=$(echo '${{ github.repository }}' | cut -d "/" -f 1)" >> $GITHUB_OUTPUT
+          echo "REPO_NAME=$(echo '${{ github.repository }}' | cut -d "/" -f 2)" >> $GITHUB_OUTPUT
+
+      - name: Delete ${{ matrix.images.name }} image
+        run: |
+          ./ci/scripts/delete-image.sh \
+            -o "${{ steps.image-infos.outputs.ORG_NAME }}" \
+            -i "${{ steps.image-infos.outputs.REPO_NAME }}/${{ matrix.images.name }}" \
+            -t "pr-${{ github.event.pull_request.number || github.event.number }}" \
+            -g "${{ secrets.GITHUB_TOKEN }}"

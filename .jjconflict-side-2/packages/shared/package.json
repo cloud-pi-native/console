@@ -1,0 +1,58 @@
+{
+  "name": "@cpn-console/shared",
+  "type": "module",
+  "version": "1.4.0",
+  "private": false,
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cloud-pi-native/console"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "types"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
+    "dev": "nodemon --watch src --ext .ts --exec 'pnpm run build'",
+    "format": "eslint ./ --fix",
+    "kube:e2e-ci": "echo 'check cache'",
+    "lint": "eslint ./",
+    "test": "vitest run",
+    "test:cov": "vitest run --coverage",
+    "test:e2e-ci": "echo 'check cache'",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@cpn-console/logger": "workspace:*",
+    "@ts-rest/core": "catalog:runtime",
+    "short-uuid": "catalog:runtime",
+    "zod": "catalog:runtime",
+    "zod-validation-error": "catalog:runtime"
+  },
+  "devDependencies": {
+    "@cpn-console/eslint-config": "workspace:^",
+    "@cpn-console/ts-config": "workspace:^",
+    "@faker-js/faker": "catalog:test",
+    "@types/node": "catalog:types",
+    "@vitest/coverage-v8": "catalog:test",
+    "nodemon": "catalog:tools",
+    "rimraf": "catalog:tools",
+    "typescript": "catalog:build",
+    "vite": "catalog:build",
+    "vite-node": "catalog:build",
+    "vitest": "catalog:test"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "latest"
+  }
+}

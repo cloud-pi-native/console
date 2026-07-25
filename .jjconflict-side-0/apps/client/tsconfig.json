@@ -1,0 +1,62 @@
+{
+  "extends": [
+    "@cpn-console/ts-config/tsconfig.base.json"
+  ],
+  "compilerOptions": {
+    "incremental": true,
+    // Module
+    "target": "ESNext",
+
+    "jsx": "preserve",
+    "lib": ["DOM", "ESNext"],
+    // Base
+    "baseUrl": "./",
+    "rootDir": "./src",
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    },
+    "resolveJsonModule": true,
+    "types": [
+      "vitest",
+      "vite/client",
+      "vite-plugin-pwa/vue",
+      "vite-plugin-pwa/client"
+    ],
+    "allowImportingTsExtensions": false,
+    "allowJs": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "alwaysStrict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "useUnknownInCatchVariables": true,
+    "declaration": true,
+    "declarationDir": "./types",
+    "emitDeclarationOnly": false,
+    "noEmit": false,
+    "outDir": "./dist",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "vueCompilerOptions": {},
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.js",
+    "./src/**/*.vue",
+    "./src/**/*.d.ts"
+  ],
+  "exclude": [
+    "./src/**/*.spec.ts",
+    "./src/**/__mocks__"
+  ]
+}

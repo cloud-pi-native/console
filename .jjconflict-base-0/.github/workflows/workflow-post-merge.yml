@@ -1,0 +1,56 @@
+name: Post-merge
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  NODE_VERSION: 24.13.1
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  path-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.filter.outputs.apps }}
+      packages: ${{ steps.filter.outputs.packages }}
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Check updated files paths
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        id: filter
+        with:
+          filters: |
+            apps:
+              - 'apps/**'
+            packages:
+              - 'packages/**'
+              - 'plugins/**'
+
+  expose-vars:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request.draft }}
+    outputs:
+      NODE_VERSION: ${{ env.NODE_VERSION }}
+    steps:
+      - name: Exposing env vars
+        run: echo "Exposing env vars."
+
+  npm-publish:
+    uses: ./.github/workflows/job-npm.yml
+    needs:
+      - path-filter
+      - expose-vars
+    with:
+      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
+      PUBLISH_PACKAGES: true
+      PUBLISH_PLUGINS: true
+      CHECK_CHANGES: true
+      # Deprecated variable: we never publish the apps on NPM registry
+      PUBLISH_APPS: false

@@ -1,0 +1,41 @@
+{
+  "extends": ["@cpn-console/ts-config/tsconfig.base.json"],
+  "compilerOptions": {
+    "incremental": true,
+    // Module
+    "target": "ESNext",
+
+    "jsx": "preserve",
+    "lib": ["DOM", "ESNext"],
+    // Base
+    "baseUrl": "./",
+    "rootDir": "./",
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "types": ["node"],
+    "allowImportingTsExtensions": false,
+    "allowJs": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "alwaysStrict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "useUnknownInCatchVariables": true,
+    "declaration": true,
+    "declarationDir": "./types",
+    "emitDeclarationOnly": false,
+    "noEmit": false,
+    "outDir": "./dist",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": ["./playwright.config.ts", "./config/**/*.ts", "./e2e-tests/**/*.ts", "./helpers/**/*.ts", "./integration-tests/**/*.ts"],
+  "exclude": []
+}

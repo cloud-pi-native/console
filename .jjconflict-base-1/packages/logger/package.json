@@ -1,0 +1,53 @@
+{
+  "name": "@cpn-console/logger",
+  "type": "module",
+  "version": "1.0.1",
+  "private": false,
+  "description": "Cloud PI Native internal logger for legacy code",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cloud-pi-native/console"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "browser": "./dist/browser.js",
+      "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./types/browser.d.ts",
+      "default": "./dist/browser.js"
+    },
+    "./hooks": {
+      "types": "./types/hooks.d.ts",
+      "default": "./dist/hooks.js"
+    }
+  },
+  "files": [
+    "dist",
+    "types"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
+    "format": "eslint ./ --fix",
+    "lint": "eslint ./"
+  },
+  "dependencies": {
+    "pino": "catalog:tools",
+    "pino-pretty": "catalog:tools",
+    "zod": "catalog:runtime"
+  },
+  "devDependencies": {
+    "@cpn-console/eslint-config": "workspace:^",
+    "@cpn-console/ts-config": "workspace:^",
+    "@types/node": "catalog:types",
+    "rimraf": "catalog:tools",
+    "typescript": "catalog:build"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "latest"
+  }
+}

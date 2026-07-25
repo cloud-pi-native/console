@@ -1,0 +1,151 @@
+services:
+  keycloak:
+    restart: unless-stopped
+    image: docker.io/bitnamilegacy/keycloak:26.1.3-debian-12-r0
+    container_name: dso-console_keycloak
+    ports:
+      - 8090:8080
+    volumes:
+      - ../keycloak/realms:/opt/bitnami/keycloak/data/import
+      - /opt/bitnami/keycloak/data/h2
+    user: root
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: true
+    entrypoint: /opt/bitnami/keycloak/bin/kc.sh
+    command: start-dev --import-realm
+    healthcheck:
+      test: [CMD, curl, --head, fsS, "http://localhost:8080/health/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dso-network
+    attach: false
+
+  postgres:
+    restart: unless-stopped
+    image: docker.io/postgres:15.3
+    container_name: dso-console_postgres
+    ports:
+      - 8081:80
+    environment:
+      POSTGRES_DB: dso-console-db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    networks:
+      - dso-network
+    attach: false
+
+  server:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: apps/server/Dockerfile
+      target: prod
+    image: dso-console/server:ci
+    container_name: dso-console_server
+    user: root
+    depends_on:
+      postgres:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
+    volumes:
+      - ../packages/test-utils/src/imports/data.ts:/app/dist/init/db/imports/data.js
+    env_file:
+      - ../apps/server/.env.docker
+    environment:
+      NODE_ENV: production
+      CI: "true"
+      DEV_SETUP: "true"
+    networks:
+      - dso-network
+
+  server-nestjs:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: apps/server-nestjs/Dockerfile
+      target: prod
+    image: dso-console/server-nestjs:ci
+    container_name: dso-console_server-nestjs
+    depends_on:
+      postgres:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
+      opencds-mockoon:
+        condition: service_healthy
+    env_file:
+      - ../apps/server-nestjs/.env.docker
+    environment:
+      NODE_ENV: "production"
+      CI: "true"
+      DEV_SETUP: "true"
+      OPENCDS_URL: "http://dso-opencds_mockoon:3100/api/v1"
+      OPENCDS_API_TOKEN: "token"
+      OPENCDS_API_TLS_REJECT_UNAUTHORIZED: "false"
+    networks:
+      - dso-network
+
+  nginx-strangler:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: apps/nginx-strangler/Dockerfile
+    image: dso-console/nginx-strangler:ci
+    container_name: dso-console_nginx-strangler
+    depends_on:
+      server:
+        condition: service_started
+      server-nestjs:
+        condition: service_healthy
+    environment:
+      LEGACY_UPSTREAM: "server:8080"
+      NESTJS_UPSTREAM: "server-nestjs:3001"
+    networks:
+      - dso-network
+
+  client:
+    build:
+      context: ..
+      dockerfile: apps/client/Dockerfile
+      target: prod
+    image: dso-console/client:ci
+    container_name: dso-console_client
+    depends_on:
+      nginx-strangler:
+        condition: service_started
+    ports:
+      - 8080:8080
+    user: root
+    volumes:
+      - ../apps/client/nginx/default.docker.conf:/etc/nginx/conf.d/default.conf
+    env_file:
+      - ../apps/client/.env.docker
+    environment:
+      OPENCDS_ENABLED: "true"
+    networks:
+      - dso-network
+
+  opencds-mockoon:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: packages/opencds/Dockerfile
+    image: dso-console/opencds-mockoon:ci
+    container_name: dso-opencds_mockoon
+    user: root
+    ports:
+      - 3100:3100
+    networks:
+      - dso-network
+
+networks:
+  dso-network:
+    name: dso-network
+
+volumes:
+  dso-keycloak-dsfr-theme:

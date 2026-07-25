@@ -1,0 +1,194 @@
+@font-face {
+  font-family: Marianne;
+  src: url('@/assets/fonts/Marianne-Regular.otf');
+}
+
+@font-face {
+  font-family: Marianne;
+  src: url('@/assets/fonts/Marianne-RegularItalic.otf');
+  font-style: italic;
+}
+
+@font-face {
+  font-family: Marianne;
+  src: url('@/assets/fonts/Marianne-Bold.otf');
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: Marianne;
+  src: url('@/assets/fonts/Marianne-BoldItalic.otf');
+  font-weight: 700;
+  font-style: italic;
+}
+
+
+html,
+body,
+#app {
+  font-family: Marianne, sans-serif;
+  height: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.disabled {
+  color: var(--text-disabled-grey);
+  cursor: not-allowed;
+}
+
+.fr-fieldset {
+  margin: 1rem 0 0;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.fr-checkbox-group {
+  margin-bottom: 1rem;
+}
+
+.dso-footer.fr-footer {
+  box-shadow: inset 0 2px 0 0 var(--border-plain-blue-france);
+}
+
+.dso-footer .fr-footer__bottom {
+  display: none;
+}
+
+.dso-footer .fr-footer__content-desc {
+  text-align: right;
+  margin-right: 25px;
+}
+
+.danger-zone {
+  border-bottom: solid var(--border-plain-warning);
+  margin-top: 2rem;
+  padding: 2rem;
+  background-color: var(--background-alt-grey);
+}
+
+.fr-alert {
+  background-color: var(--background-alt-grey);
+}
+
+.fr-alert pre {
+  white-space: normal;
+}
+
+.log-panel, .log-btn {
+  background-color: var(--background-default-grey);
+}
+
+.log-panel {
+  box-shadow: inset 0 0 0 1px var(--border-action-high-blue-france);
+}
+
+.log-box--success{
+  border-color: var(--background-contrast-success);
+}
+
+.log-box--warning{
+  border-color: var(--background-contrast-warning);
+}
+
+.log-box--error{
+  border-color: var(--background-contrast-error);
+}
+
+.danger-zone-btns {
+  @apply flex justify-between items-center gap-4 <md:flex-col;
+}
+
+.json-box.jv-container span.jv-item.jv-object,
+.json-box.jv-container span.jv-key {
+  color: var(--text-default-grey);
+}
+
+.json-box.jv-container {
+  @apply my-6;
+
+  background-color: var(--background-default-grey);
+}
+
+.fr-h2 a {
+  --underline-img: none;
+}
+
+.fr-h2 a:hover {
+  --underline-img: linear-gradient(0deg, currentcolor, currentcolor);
+}
+
+.fr-h2 a:hover::after {
+  content: "#";
+  display: inline-flex;
+  margin-left: 4px;
+}
+
+.section-separator {
+  @apply my-10;
+
+  background-image: none;
+}
+
+.tile-button {
+  @apply h-full flex flex-col justify-start items-center;
+}
+
+.fr-share__title {
+  @apply mb-6;
+
+  font-size: 1.2rem;
+}
+
+.fr-btn--cloud-pi-native::before {
+  mask-image: url("/icons/government-fill-blue.svg");
+  mask-size: 100% 100%;
+}
+
+.fr-tabs__list {
+  @apply <md:flex <md:flex-col !<md:items-center;
+}
+
+.fr-tabs__list li {
+  @apply <md:my-1;
+}
+
+div.fr-tile__img {
+  @apply h-auto;
+}
+
+.fr-tile__img img {
+  @apply w-9;
+}
+
+.dso-landing-footer.fr-footer {
+  box-shadow: inset 0 2px 0 0 var(--border-plain-blue-france);
+}
+
+.dso-landing-footer .fr-footer__bottom {
+  display: none;
+}
+
+.fr-icon-clipboard-line.icon {
+  @apply cursor-pointer ml-2 p-1;
+
+  color: var(--text-action-high-blue-france);
+}
+
+.fr-icon-clipboard-line.icon:hover {
+  background-color: var(--hover);
+}
+
+.fr-icon-clipboard-line.icon:active {
+  background-color: var(--active);
+}
+
+.horizontal-table table {
+  @apply flex flex-row;
+}
+
+.horizontal-table tr {
+  @apply flex flex-col;
+}
