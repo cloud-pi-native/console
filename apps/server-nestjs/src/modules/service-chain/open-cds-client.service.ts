@@ -1,10 +1,11 @@
 import type { HttpStatus } from '@nestjs/common'
-import type { ConfigType } from '@nestjs/config'
 import type { Dispatcher, HeadersInit } from 'undici'
+import type { BaseConfig } from '../infrastructure/config/base.config'
+import type { OpenCdsConfig } from '../opencds/opencds.module-definition'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Agent, fetch, Headers, ProxyAgent } from 'undici'
-import { baseConfigFactory } from '../../config/base.config'
-import { opencdsConfigFactory } from '../../config/opencds.config'
+import { BASE_CONFIG } from '../infrastructure/config/base.config'
+import { OPENCDS_CONFIG } from '../opencds/opencds.module-definition'
 import { throwIfNotOk } from './service-chain.utils'
 
 const openCdsDisabledMessage
@@ -33,8 +34,8 @@ export class OpenCdsClientError extends Error {
 @Injectable()
 export class OpenCdsClientService {
   constructor(
-    @Inject(opencdsConfigFactory.KEY) private readonly opencdsConfig: ConfigType<typeof opencdsConfigFactory>,
-    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
+    @Inject(OPENCDS_CONFIG) private readonly opencdsConfig: OpenCdsConfig,
+    @Inject(BASE_CONFIG) private readonly baseConfig: BaseConfig,
   ) {}
 
   private readonly logger = new Logger(OpenCdsClientService.name)

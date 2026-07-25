@@ -1,14 +1,15 @@
-import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { BaseConfig } from '../infrastructure/config/base.config'
+import type { VaultConfig } from '../vault/vault.module-definition'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { baseConfigFactory } from '../../config/base.config'
-import { vaultConfigFactory } from '../../config/vault.config'
+import { BASE_CONFIG } from '../infrastructure/config/base.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { makeProject } from '../project/project-testing.utils'
 import { VaultClientService } from '../vault/vault-client.service'
+import { VAULT_CONFIG } from '../vault/vault.module-definition'
 import { VaultService } from '../vault/vault.service'
 import { makeVaultSecret } from './project-secrets-testing.utils'
 import { ProjectSecretsService } from './project-secrets.service'
@@ -19,22 +20,22 @@ describe('projectSecretsService', () => {
   let prisma: DeepMockProxy<PrismaService>
   let vault: DeepMockProxy<VaultService>
   let vaultClient: DeepMockProxy<VaultClientService>
-  let config: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
-  let vaultConfig: DeepMockProxy<ConfigType<typeof vaultConfigFactory>>
+  let config: DeepMockProxy<BaseConfig>
+  let vaultConfig: DeepMockProxy<VaultConfig>
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
     vault = mockDeep<VaultService>()
     vaultClient = mockDeep<VaultClientService>()
-    config = mockDeep<ConfigType<typeof baseConfigFactory>>({ projectsRootDir: '/vault' })
-    vaultConfig = mockDeep<ConfigType<typeof vaultConfigFactory>>()
+    config = mockDeep<BaseConfig>({ projectsRootDir: '/vault' })
+    vaultConfig = mockDeep<VaultConfig>()
 
     module = await Test.createTestingModule({
       providers: [
         ProjectSecretsService,
         { provide: PrismaService, useValue: prisma },
-        { provide: baseConfigFactory.KEY, useValue: config },
-        { provide: vaultConfigFactory.KEY, useValue: vaultConfig },
+        { provide: BASE_CONFIG, useValue: config },
+        { provide: VAULT_CONFIG, useValue: vaultConfig },
         { provide: VaultService, useValue: vault },
         { provide: VaultClientService, useValue: vaultClient },
       ],

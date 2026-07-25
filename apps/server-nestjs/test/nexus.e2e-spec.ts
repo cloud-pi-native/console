@@ -1,5 +1,5 @@
-import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
+import type { BaseConfig } from '../src/config/base.config'
 import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
@@ -39,7 +39,7 @@ describeWithNexus('NexusController (e2e)', () => {
   let nexusController: NexusService
   let nexusClient: NexusClientService
   let vaultService: VaultClientService
-  let config: ConfigType<typeof baseConfigFactory>
+  let config: BaseConfig
   let prisma: PrismaService
 
   let ownerId: string
@@ -56,7 +56,7 @@ describeWithNexus('NexusController (e2e)', () => {
     nexusController = moduleRef.get<NexusService>(NexusService)
     nexusClient = moduleRef.get<NexusClientService>(NexusClientService)
     vaultService = moduleRef.get<VaultClientService>(VaultClientService)
-    config = moduleRef.get(baseConfigFactory.KEY)
+    config = moduleRef.get(baseConfigFactory)
     prisma = moduleRef.get<PrismaService>(PrismaService)
 
     ownerId = faker.string.uuid()

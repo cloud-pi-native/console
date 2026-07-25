@@ -27,6 +27,4 @@ const registryFeatureSchema = z.object({
   internalOrPublicUrl: raw.REGISTRY_INTERNAL_URL || raw.REGISTRY_URL || undefined,
 }))
 
-export type RegistryConfig = z.infer<typeof registryFeatureSchema>
-
 export const registryConfigFactory = registerAs('registry', () => registryFeatureSchema.parse(process.env))

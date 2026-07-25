@@ -1,16 +1,18 @@
-import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { BaseConfig } from '../infrastructure/config/base.config'
+import type { VaultConfig } from '../vault/vault.module-definition'
+import type { HarborConfig } from './harbor.module-definition'
 import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { baseConfigFactory } from '../../config/base.config'
-import { harborConfigFactory } from '../../config/harbor.config'
-import { vaultConfigFactory } from '../../config/vault.config'
+import { BASE_CONFIG } from '../infrastructure/config/base.config'
 import { VaultClientService } from '../vault/vault-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
+import { VAULT_CONFIG } from '../vault/vault.module-definition'
+import { HARBOR_CONFIG } from './harbor.module-definition'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
 import { makeCreatedResponse, makeNoContent, makeOkResponse, makeProjectWithDetails } from './registry-testing.utils'
@@ -27,9 +29,9 @@ describe('registryService', () => {
   let client: DeepMockProxy<RegistryClientService>
   let datastore: DeepMockProxy<RegistryDatastoreService>
   let vault: DeepMockProxy<VaultClientService>
-  let harborConfig: DeepMockProxy<ConfigType<typeof harborConfigFactory>>
-  let baseConfig: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
-  let vaultConfig: DeepMockProxy<ConfigType<typeof vaultConfigFactory>>
+  let harborConfig: DeepMockProxy<HarborConfig>
+  let baseConfig: DeepMockProxy<BaseConfig>
+  let vaultConfig: DeepMockProxy<VaultConfig>
 
   beforeEach(async () => {
     client = mockDeep<RegistryClientService>({
@@ -57,7 +59,7 @@ describe('registryService', () => {
       })),
       write: vi.fn().mockResolvedValue(undefined),
     })
-    harborConfig = mockDeep<ConfigType<typeof harborConfigFactory>>({
+    harborConfig = mockDeep<HarborConfig>({
       url: 'https://harbor.example',
       internalUrl: 'https://harbor.example',
       admin: 'admin',
@@ -67,10 +69,10 @@ describe('registryService', () => {
       retentionCron: '0 22 2 * * *',
       robotRotationThresholdDays: 90,
     })
-    baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>({
+    baseConfig = mockDeep<BaseConfig>({
       projectsRootDir: 'forge',
     })
-    vaultConfig = mockDeep<ConfigType<typeof vaultConfigFactory>>({})
+    vaultConfig = mockDeep<VaultConfig>({})
 
     const module = await Test.createTestingModule({
       providers: [
@@ -78,9 +80,9 @@ describe('registryService', () => {
         { provide: RegistryClientService, useValue: client },
         { provide: RegistryDatastoreService, useValue: datastore },
         { provide: VaultClientService, useValue: vault },
-        { provide: harborConfigFactory.KEY, useValue: harborConfig },
-        { provide: baseConfigFactory.KEY, useValue: baseConfig },
-        { provide: vaultConfigFactory.KEY, useValue: vaultConfig },
+        { provide: HARBOR_CONFIG, useValue: harborConfig },
+        { provide: BASE_CONFIG, useValue: baseConfig },
+        { provide: VAULT_CONFIG, useValue: vaultConfig },
       ],
     }).compile()
 

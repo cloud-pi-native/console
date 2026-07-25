@@ -1,3 +1,4 @@
+import type { BaseConfig } from '../modules/infrastructure/config/base.config'
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
 import { flag, nonEmpty, truthySchema } from './config.utils'
@@ -19,32 +20,29 @@ const baseFeatureSchema = z.object({
   PLUGINS_DIR: z.string().default('/plugins'),
   HTTP_PROXY: nonEmpty(z.string().url()),
   HTTPS_PROXY: nonEmpty(z.string().url()),
-}).transform((raw) => {
-  const nodeEnv = raw.NODE_ENV ?? 'production'
-  return {
-    nodeEnv,
-    isTest: raw.NODE_ENV === 'test',
-    isDev: raw.NODE_ENV === 'development',
-    isCI: raw.CI,
-    isProd: nodeEnv === 'production',
-    integration: raw.INTEGRATION,
-    ci: raw.CI,
-    devSetup: raw.DEV_SETUP,
-    docker: raw.DOCKER,
-    serverHost: raw.SERVER_HOST,
-    serverPort: raw.SERVER_PORT,
-    appVersion: raw.NODE_ENV === 'production' ? raw.APP_VERSION : 'dev',
-    dbUrl: raw.DB_URL,
-    sessionSecret: raw.SESSION_SECRET,
-    contactEmail: raw.CONTACT_EMAIL,
-    mockPlugins: raw.MOCK_PLUGINS,
-    projectsRootDir: raw.PROJECTS_ROOT_DIR,
-    pluginsDir: raw.PLUGINS_DIR,
-    httpProxy: raw.HTTP_PROXY,
-    httpsProxy: raw.HTTPS_PROXY,
-  }
-})
-
-export type BaseConfig = z.infer<typeof baseFeatureSchema>
+}).transform((raw): BaseConfig => ({
+  nodeEnv: raw.NODE_ENV === 'test' ? 'test' : raw.NODE_ENV === 'development' ? 'development' : 'production',
+  isTest: raw.NODE_ENV === 'test',
+  isDev: raw.NODE_ENV === 'development',
+  isCI: raw.CI,
+  isProd: raw.NODE_ENV === 'production',
+  integration: raw.INTEGRATION,
+  ci: raw.CI,
+  devSetup: raw.DEV_SETUP,
+  docker: raw.DOCKER,
+  serverHost: raw.SERVER_HOST,
+  serverPort: raw.SERVER_PORT,
+  appVersion: raw.NODE_ENV === 'production' ? raw.APP_VERSION : 'dev',
+  dbUrl: raw.DB_URL,
+  sessionSecret: raw.SESSION_SECRET,
+  contactEmail: raw.CONTACT_EMAIL,
+  mockPlugins: raw.MOCK_PLUGINS,
+  projectsRootDir: raw.PROJECTS_ROOT_DIR,
+  pluginsDir: raw.PLUGINS_DIR,
+  httpProxy: raw.HTTP_PROXY,
+  httpsProxy: raw.HTTPS_PROXY,
+}))
 
 export const baseConfigFactory = registerAs('base', () => baseFeatureSchema.parse(process.env))
+
+export type { BaseConfig } from '../modules/infrastructure/config/base.config'

@@ -1,11 +1,11 @@
-import type { ConfigType } from '@nestjs/config'
+import type { BaseConfig } from '../infrastructure/config/base.config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
+import type { VaultConfig } from './vault.module-definition'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
-import { baseConfigFactory } from '../../config/base.config'
-import { vaultConfigFactory } from '../../config/vault.config'
+import { BASE_CONFIG } from '../infrastructure/config/base.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from './vault-client.service'
@@ -36,6 +36,7 @@ import {
   PROJECT_SECURITY_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   SECURITY_GROUP_PATH_PLUGIN_KEY,
 } from './vault.constants'
+import { VAULT_CONFIG } from './vault.module-definition'
 import { generateProjectPath } from './vault.utils'
 
 type ProjectScope = 'admin' | 'devops' | 'developer' | 'readonly' | 'security'
@@ -45,8 +46,8 @@ export class VaultService {
   private readonly logger = new Logger(VaultService.name)
 
   constructor(
-    @Inject(vaultConfigFactory.KEY) private readonly vaultConfig: ConfigType<typeof vaultConfigFactory>,
-    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
+    @Inject(VAULT_CONFIG) private readonly vaultConfig: VaultConfig,
+    @Inject(BASE_CONFIG) private readonly baseConfig: BaseConfig,
     @Inject(VaultDatastoreService) private readonly datastore: VaultDatastoreService,
     @Inject(VaultClientService) private readonly client: VaultClientService,
   ) {

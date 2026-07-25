@@ -1,15 +1,15 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
-import type { ConfigType } from '@nestjs/config'
+import type { GitlabConfig } from './gitlab.module-definition'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
-import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { DEFAULT_ADMIN_GROUP_PATH, DEFAULT_AUDITOR_GROUP_PATH, DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX, PURGE_PLUGIN_KEY } from './gitlab.constants'
+import { GITLAB_CONFIG } from './gitlab.module-definition'
 
 @Injectable()
 export class GitlabPluginService {
   constructor(
-    @Inject(gitlabConfigFactory.KEY)
-    private readonly gitlabConfig: ConfigType<typeof gitlabConfigFactory>,
+    @Inject(GITLAB_CONFIG)
+    private readonly gitlabConfig: GitlabConfig,
   ) {}
 
   infos(): ServiceInfos {

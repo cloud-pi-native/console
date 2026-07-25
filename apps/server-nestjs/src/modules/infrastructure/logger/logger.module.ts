@@ -1,15 +1,15 @@
-import type { ConfigType } from '@nestjs/config'
+import type { BaseConfig } from '../config/base.config'
 import { getLoggerOptions } from '@cpn-console/logger'
 import { Module } from '@nestjs/common'
 import { LoggerModule as PinoLoggerModule } from 'nestjs-pino'
-import { baseConfigFactory } from '../../../config/base.config'
+import { BASE_CONFIG } from '../config/base.config'
 
 @Module({
   imports: [
     PinoLoggerModule.forRootAsync({
       imports: [],
-      inject: [baseConfigFactory.KEY],
-      useFactory: async (baseConfig: ConfigType<typeof baseConfigFactory>) => {
+      inject: [BASE_CONFIG],
+      useFactory: async (baseConfig: BaseConfig) => {
         return {
           pinoHttp: {
             ...getLoggerOptions(baseConfig.isProd ? 'production' : 'development', baseConfig.isTest ? 'info' : 'debug'),

@@ -1,9 +1,8 @@
-import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { SonarqubeConfig } from './sonarqube.module-definition'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
 import { generateProjectKey } from '../../utils/crypto.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
@@ -19,6 +18,7 @@ import {
   makeUserToken,
 } from './sonarqube-testing.utils'
 import { PLUGIN_NAME, SONARQUBE_PROJECT_QUALIFIER_PROJECT } from './sonarqube.constants'
+import { SONARQUBE_CONFIG } from './sonarqube.module-definition'
 import { SonarqubeService } from './sonarqube.service'
 
 describe('sonarqubeService', () => {
@@ -26,7 +26,7 @@ describe('sonarqubeService', () => {
   let client: DeepMockProxy<SonarqubeClientService>
   let datastore: DeepMockProxy<SonarqubeDatastoreService>
   let vault: DeepMockProxy<VaultClientService>
-  let config: DeepMockProxy<ConfigType<typeof sonarqubeConfigFactory>>
+  let config: DeepMockProxy<SonarqubeConfig>
 
   beforeEach(async () => {
     client = mockDeep<SonarqubeClientService>({
@@ -54,7 +54,7 @@ describe('sonarqubeService', () => {
       writeSonarqubeUser: vi.fn().mockResolvedValue(undefined),
       deleteSonarqubeUser: vi.fn().mockResolvedValue(undefined),
     })
-    config = mockDeep<ConfigType<typeof sonarqubeConfigFactory>>({
+    config = mockDeep<SonarqubeConfig>({
       internalOrPublicUrl: 'https://sonarqube.internal',
     })
 
@@ -64,7 +64,7 @@ describe('sonarqubeService', () => {
         { provide: SonarqubeClientService, useValue: client },
         { provide: SonarqubeDatastoreService, useValue: datastore },
         { provide: VaultClientService, useValue: vault },
-        { provide: sonarqubeConfigFactory.KEY, useValue: config },
+        { provide: SONARQUBE_CONFIG, useValue: config },
       ],
     }).compile()
 

@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { baseConfigFactory } from '../../config/base.config'
+import { openCdsConfigFactory } from '../../config/opencds.config'
 import { AuthModule } from '../infrastructure/auth/auth.module'
 import { DatabaseModule } from '../infrastructure/database/database.module'
 import { EventsModule } from '../infrastructure/events/events.module'
 import { UserPermissionModule } from '../infrastructure/permission/user/user.module'
-import { opencdsConfigFactory } from '../../config/opencds.config'
-import { baseConfigFactory } from '../../config/base.config'
 import { OpenCdsClientService } from './open-cds-client.service'
 import { ServiceChainController } from './service-chain.controller'
 import { ServiceChainService } from './service-chain.service'
@@ -16,7 +16,7 @@ import { ServiceChainService } from './service-chain.service'
     DatabaseModule,
     EventsModule,
     UserPermissionModule,
-    ConfigModule.forFeature(opencdsConfigFactory),
+    ConfigModule.forFeature(openCdsConfigFactory),
     ConfigModule.forFeature(baseConfigFactory),
   ],
   controllers: [ServiceChainController],

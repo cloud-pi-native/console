@@ -9,6 +9,7 @@ import { VaultDatastoreService } from './vault-datastore.service'
 import { VaultHealthService } from './vault-health.service'
 import { VaultHttpClientService } from './vault-http-client.service'
 import { VaultPluginService } from './vault-plugin.service'
+import { ConfigurableModuleClass } from './vault.module-definition'
 import { VaultService } from './vault.service'
 
 @Module({
@@ -23,4 +24,4 @@ import { VaultService } from './vault.service'
   ],
   exports: [VaultClientService, VaultHealthService, VaultPluginService, VaultService],
 })
-export class VaultModule {}
+export class VaultModule extends ConfigurableModuleClass {}

@@ -1,11 +1,12 @@
 import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { nexusConfigFactory } from '../../config/nexus.config'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { nexusConfigFactory } from '../../config/nexus.config'
 import { makeToUrlParams } from '../plugin/plugin.utils'
 import { NexusPluginService } from './nexus-plugin.service'
+import { NEXUS_CONFIG } from './nexus.module-definition'
 
 describe('nexusPluginService', () => {
   let service: NexusPluginService
@@ -20,7 +21,7 @@ describe('nexusPluginService', () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         NexusPluginService,
-        { provide: nexusConfigFactory.KEY, useValue: config },
+        { provide: NEXUS_CONFIG, useValue: config },
       ],
     }).compile()
 

@@ -1,12 +1,12 @@
-import type { ConfigType } from '@nestjs/config'
+import type { OpenCdsConfig } from './opencds.module-definition'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { opencdsConfigFactory } from '../../config/opencds.config'
+import { OPENCDS_CONFIG } from './opencds.module-definition'
 
 @Injectable()
 export class OpenCdsHealthService {
   constructor(
-    @Inject(opencdsConfigFactory.KEY) private readonly opencdsConfig: ConfigType<typeof opencdsConfigFactory>,
+    @Inject(OPENCDS_CONFIG) private readonly opencdsConfig: OpenCdsConfig,
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 

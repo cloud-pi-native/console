@@ -1,6 +1,7 @@
-import type { ConfigType } from '@nestjs/config'
+import type { BaseConfig } from '../infrastructure/config/base.config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { VaultSecret } from '../vault/vault-client.service'
+import type { HarborConfig } from './harbor.module-definition'
 import type {
   HarborAccess,
   HarborGroupMemberRequest,
@@ -15,13 +16,13 @@ import { specificallyEnabled } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
-import { baseConfigFactory } from '../../config/base.config'
-import { harborConfigFactory } from '../../config/harbor.config'
 import { find } from '../../utils/iterable.utils'
+import { BASE_CONFIG } from '../infrastructure/config/base.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultError } from '../vault/vault-http-client.service'
+import { HARBOR_CONFIG } from './harbor.module-definition'
 import { RegistryClientService, roAccess, rwAccess } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
 import {
@@ -58,8 +59,8 @@ export class RegistryService {
   constructor(
     @Inject(RegistryClientService) private readonly client: RegistryClientService,
     @Inject(RegistryDatastoreService) private readonly datastore: RegistryDatastoreService,
-    @Inject(harborConfigFactory.KEY) private readonly harborConfig: ConfigType<typeof harborConfigFactory>,
-    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
+    @Inject(HARBOR_CONFIG) private readonly harborConfig: HarborConfig,
+    @Inject(BASE_CONFIG) private readonly baseConfig: BaseConfig,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
   ) {
     this.logger.log('RegistryService initialized')

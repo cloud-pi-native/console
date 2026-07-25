@@ -1,5 +1,6 @@
 import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { nexusConfigFactory } from '../../config/nexus.config'
 import { faker } from '@faker-js/faker'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
@@ -7,9 +8,9 @@ import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { nexusConfigFactory } from '../../config/nexus.config'
 import { NexusClientService } from './nexus-client.service'
 import { NexusHttpClientService } from './nexus-http-client.service'
+import { NEXUS_CONFIG } from './nexus.module-definition'
 
 const nexusUrl = 'https://nexus.internal'
 
@@ -36,7 +37,7 @@ describe('nexusClientService', () => {
         NexusClientService,
         NexusHttpClientService,
         {
-          provide: nexusConfigFactory.KEY,
+          provide: NEXUS_CONFIG,
           useValue: config,
         },
       ],

@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
 import { TerminusModule } from '@nestjs/terminus'
-import { opencdsConfigFactory } from '../../config/opencds.config'
 import { OpenCdsHealthService } from './opencds-health.service'
+import { ConfigurableModuleClass } from './opencds.module-definition'
 
 @Module({
-  imports: [TerminusModule, ConfigModule.forFeature(opencdsConfigFactory)],
+  imports: [TerminusModule],
   providers: [OpenCdsHealthService],
   exports: [OpenCdsHealthService],
 })
-export class OpenCdsModule {}
+export class OpenCdsModule extends ConfigurableModuleClass {}

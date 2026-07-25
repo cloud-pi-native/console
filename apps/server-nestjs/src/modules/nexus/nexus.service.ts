@@ -1,7 +1,8 @@
-import type { ConfigType } from '@nestjs/config'
+import type { BaseConfig } from '../infrastructure/config/base.config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { NexusPrivilege } from './nexus-client.service'
 import type { ProjectWithDetails } from './nexus-datastore.service'
+import type { NexusConfig } from './nexus.module-definition'
 import type {
   MavenHostedRepoKind,
 } from './nexus.utils'
@@ -9,8 +10,7 @@ import { specificallyEnabled } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
-import { baseConfigFactory } from '../../config/base.config'
-import { nexusConfigFactory } from '../../config/nexus.config'
+import { BASE_CONFIG } from '../infrastructure/config/base.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -36,6 +36,7 @@ import {
   PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
 } from './nexus.constants'
+import { NEXUS_CONFIG } from './nexus.module-definition'
 import {
   generateMavenHostedRepoName,
   generateNpmHostedRepoName,
@@ -57,8 +58,8 @@ export class NexusService {
     @Inject(NexusDatastoreService) private readonly datastore: NexusDatastoreService,
     @Inject(NexusClientService) private readonly client: NexusClientService,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
-    @Inject(nexusConfigFactory.KEY) private readonly nexusConfig: ConfigType<typeof nexusConfigFactory>,
-    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
+    @Inject(NEXUS_CONFIG) private readonly nexusConfig: NexusConfig,
+    @Inject(BASE_CONFIG) private readonly baseConfig: BaseConfig,
   ) {
     this.logger.log('NexusService initialized')
   }

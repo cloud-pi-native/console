@@ -1,15 +1,16 @@
-import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { BaseConfig } from '../infrastructure/config/base.config'
+import type { VaultConfig } from '../vault/vault.module-definition'
+import type { NexusConfig } from './nexus.module-definition'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { baseConfigFactory } from '../../config/base.config'
-import { nexusConfigFactory } from '../../config/nexus.config'
-import { vaultConfigFactory } from '../../config/vault.config'
+import { BASE_CONFIG } from '../infrastructure/config/base.config'
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultError } from '../vault/vault-http-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
+import { VAULT_CONFIG } from '../vault/vault.module-definition'
 import { NexusClientService } from './nexus-client.service'
 import { NexusDatastoreService } from './nexus-datastore.service'
 import { makeProjectWithDetails } from './nexus-testing.utils'
@@ -22,6 +23,7 @@ import {
   PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
 } from './nexus.constants'
+import { NEXUS_CONFIG } from './nexus.module-definition'
 import { NexusService } from './nexus.service'
 
 describe('nexusService', () => {
@@ -29,9 +31,9 @@ describe('nexusService', () => {
   let client: DeepMockProxy<NexusClientService>
   let datastore: DeepMockProxy<NexusDatastoreService>
   let vault: DeepMockProxy<VaultClientService>
-  let config: DeepMockProxy<ConfigType<typeof nexusConfigFactory>>
-  let baseConfig: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
-  let vaultConfig: DeepMockProxy<ConfigType<typeof vaultConfigFactory>>
+  let config: DeepMockProxy<NexusConfig>
+  let baseConfig: DeepMockProxy<BaseConfig>
+  let vaultConfig: DeepMockProxy<VaultConfig>
 
   beforeEach(async () => {
     client = mockDeep<NexusClientService>({
@@ -50,9 +52,9 @@ describe('nexusService', () => {
     vault = mockDeep<VaultClientService>({
       read: vi.fn().mockRejectedValue(new VaultError('NotFound', 'Not Found')),
     })
-    config = mockDeep<ConfigType<typeof nexusConfigFactory>>({})
-    baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>({ projectsRootDir: 'forge' })
-    vaultConfig = mockDeep<ConfigType<typeof vaultConfigFactory>>({})
+    config = mockDeep<NexusConfig>({})
+    baseConfig = mockDeep<BaseConfig>({ projectsRootDir: 'forge' })
+    vaultConfig = mockDeep<VaultConfig>({})
 
     const module = await Test.createTestingModule({
       providers: [
@@ -60,9 +62,9 @@ describe('nexusService', () => {
         { provide: NexusClientService, useValue: client },
         { provide: NexusDatastoreService, useValue: datastore },
         { provide: VaultClientService, useValue: vault },
-        { provide: nexusConfigFactory.KEY, useValue: config },
-        { provide: baseConfigFactory.KEY, useValue: baseConfig },
-        { provide: vaultConfigFactory.KEY, useValue: vaultConfig },
+        { provide: NEXUS_CONFIG, useValue: config },
+        { provide: BASE_CONFIG, useValue: baseConfig },
+        { provide: VAULT_CONFIG, useValue: vaultConfig },
       ],
     }).compile()
 

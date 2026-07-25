@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
-import { EventEmitterModule } from '@nestjs/event-emitter'
 import { ConfigModule } from '@nestjs/config'
+import { EventEmitterModule } from '@nestjs/event-emitter'
 import { baseConfigFactory } from '../../../config/base.config'
 
 @Module({

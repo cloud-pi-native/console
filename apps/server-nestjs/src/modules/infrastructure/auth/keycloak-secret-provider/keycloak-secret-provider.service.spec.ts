@@ -1,6 +1,6 @@
-import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { KeycloakConfig } from '../../../keycloak/keycloak.module-definition'
 import { faker } from '@faker-js/faker'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { JwtSecretRequestType } from '@nestjs/jwt'
@@ -8,7 +8,7 @@ import { Test } from '@nestjs/testing'
 import { createCache } from 'cache-manager'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { keycloakConfigFactory } from '../../../../config/keycloak.config'
+import { KEYCLOAK_CONFIG } from '../../../keycloak/keycloak.module-definition'
 import { makeJwksResponse } from './keycloak-secret-provider-testing.utils'
 import { KeycloakSecretProviderService } from './keycloak-secret-provider.service'
 import { createKeycloakSecretProviderPublicKeyCacheKey } from './keycloak-secret-provider.utils'
@@ -16,7 +16,7 @@ import { createKeycloakSecretProviderPublicKeyCacheKey } from './keycloak-secret
 describe('keycloakSecretProviderService', () => {
   let module: TestingModule
   let service: KeycloakSecretProviderService
-  let config: DeepMockProxy<ConfigType<typeof keycloakConfigFactory>>
+  let config: DeepMockProxy<KeycloakConfig>
   let fetchMock: ReturnType<typeof vi.fn>
   let cache: ReturnType<typeof createCache>
 
@@ -25,7 +25,7 @@ describe('keycloakSecretProviderService', () => {
     const keycloakRealm = faker.lorem.word()
     const openidConfigurationUrl = `https://${keycloakDomain}/realms/${keycloakRealm}/.well-known/openid-configuration`
 
-    config = mockDeep<ConfigType<typeof keycloakConfigFactory>>({
+    config = mockDeep<KeycloakConfig>({
       protocol: 'https',
       domain: keycloakDomain,
       realm: keycloakRealm,
@@ -44,7 +44,7 @@ describe('keycloakSecretProviderService', () => {
     module = await Test.createTestingModule({
       providers: [
         KeycloakSecretProviderService,
-        { provide: keycloakConfigFactory.KEY, useValue: config },
+        { provide: KEYCLOAK_CONFIG, useValue: config },
         { provide: CACHE_MANAGER, useValue: cache },
       ],
     }).compile()

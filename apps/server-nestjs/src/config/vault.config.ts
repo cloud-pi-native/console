@@ -21,6 +21,4 @@ const vaultFeatureSchema = z.object({
   }
 })
 
-export type VaultConfig = z.infer<typeof vaultFeatureSchema>
-
 export const vaultConfigFactory = registerAs('vault', () => vaultFeatureSchema.parse(process.env))

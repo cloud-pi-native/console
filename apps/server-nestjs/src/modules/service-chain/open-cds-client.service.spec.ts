@@ -1,14 +1,15 @@
-import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import type { Dispatcher, RequestInit } from 'undici'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { BaseConfig } from '../infrastructure/config/base.config'
+import type { OpenCdsConfig } from '../opencds/opencds.module-definition'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { Agent, fetch, Headers, ProxyAgent, Response } from 'undici'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { baseConfigFactory } from '../../config/base.config'
-import { opencdsConfigFactory } from '../../config/opencds.config'
+import { BASE_CONFIG } from '../infrastructure/config/base.config'
+import { OPENCDS_CONFIG } from '../opencds/opencds.module-definition'
 import { OpenCdsClientError, OpenCdsClientService } from './open-cds-client.service'
 
 vi.mock('undici', async (importOriginal) => {
@@ -34,8 +35,8 @@ function getLastFetchCall(): [string, RequestInit] {
 describe('openCdsClientService', () => {
   let module: TestingModule
   let service: OpenCdsClientService
-  let openCdsConfig: Partial<ConfigType<typeof opencdsConfigFactory>>
-  let baseConfig: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
+  let openCdsConfig: Partial<OpenCdsConfig>
+  let baseConfig: DeepMockProxy<BaseConfig>
   let tlsDispatcher: Pick<Dispatcher, 'dispatch'>
   let proxyDispatcher: Pick<Dispatcher, 'dispatch'>
 
@@ -62,13 +63,13 @@ describe('openCdsClientService', () => {
       apiToken: 'test-token',
       apiTlsRejectUnauthorized: true,
     }
-    baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>({ httpProxy: undefined })
+    baseConfig = mockDeep<BaseConfig>({ httpProxy: undefined })
 
     module = await Test.createTestingModule({
       providers: [
         OpenCdsClientService,
-        { provide: opencdsConfigFactory.KEY, useValue: openCdsConfig },
-        { provide: baseConfigFactory.KEY, useValue: baseConfig },
+        { provide: OPENCDS_CONFIG, useValue: openCdsConfig },
+        { provide: BASE_CONFIG, useValue: baseConfig },
       ],
     }).compile()
 
@@ -100,7 +101,7 @@ describe('openCdsClientService', () => {
   })
 
   it('uses ProxyAgent when HTTP_PROXY is configured and preserves TLS settings for the upstream request', async () => {
-    baseConfig.httpProxy = 'https://proxy.internal:3128'
+    baseConfig.httpProxy = 'http://proxy.internal:3128'
     mockFetchResponse(new Response(JSON.stringify({ ok: true }), {
       status: HttpStatus.OK,
       headers: {
@@ -114,7 +115,7 @@ describe('openCdsClientService', () => {
       requestTls: {
         rejectUnauthorized: true,
       },
-      uri: 'https://proxy.internal:3128',
+      uri: 'http://proxy.internal:3128',
     })
     const [url, init] = getLastFetchCall()
     expect(url).toBe('https://opencds.example.com/root/api/requests')

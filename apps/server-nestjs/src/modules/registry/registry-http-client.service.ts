@@ -1,7 +1,7 @@
-import type { ConfigType } from '@nestjs/config'
+import type { HarborConfig } from './harbor.module-definition'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { harborConfigFactory } from '../../config/harbor.config'
+import { HARBOR_CONFIG } from './harbor.module-definition'
 import { encodeBasicAuth } from './registry.utils'
 
 export type RegistryQuery = Record<string, string | number | undefined>
@@ -47,7 +47,7 @@ export class RegistryError extends Error {
 @Injectable()
 export class RegistryHttpClientService {
   constructor(
-    @Inject(harborConfigFactory.KEY) private readonly harborConfig: ConfigType<typeof harborConfigFactory>,
+    @Inject(HARBOR_CONFIG) private readonly harborConfig: HarborConfig,
   ) {}
 
   private get baseUrl() {

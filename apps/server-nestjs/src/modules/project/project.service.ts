@@ -1,18 +1,19 @@
 import type { projectContract } from '@cpn-console/shared'
-import type { ConfigType } from '@nestjs/config'
 import type { Prisma } from '@prisma/client'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
+import type { BaseConfig } from '../infrastructure/config/base.config'
+import type { VaultConfig } from '../vault/vault.module-definition'
 import type { ProjectDataExport, ProjectUpdateContext, ProjectWithDetails } from './project-queries.utils'
 import { AdminAuthorized } from '@cpn-console/shared'
 import { BadRequestException, ForbiddenException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { baseConfigFactory } from '../../config/base.config'
-import { vaultConfigFactory } from '../../config/vault.config'
 import { AppEventsService } from '../events/app-events.service'
+import { BASE_CONFIG } from '../infrastructure/config/base.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { LogService } from '../log/log.service'
 import { createProjectMember, deleteProjectMember } from '../project-members/project-members-queries.utils'
+import { VAULT_CONFIG } from '../vault/vault.module-definition'
 import {
   createProject,
   deleteProjectDependencies,
@@ -32,8 +33,8 @@ export class ProjectService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AppEventsService) private readonly appEvents: AppEventsService,
-    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
-    @Inject(vaultConfigFactory.KEY) private readonly vaultConfig: ConfigType<typeof vaultConfigFactory>,
+    @Inject(BASE_CONFIG) private readonly baseConfig: BaseConfig,
+    @Inject(VAULT_CONFIG) private readonly vaultConfig: VaultConfig,
     @Inject(LogService) private readonly logs: LogService,
   ) {}
 

@@ -23,6 +23,4 @@ const nexusFeatureSchema = z.object({
   }
 })
 
-export type NexusConfig = z.infer<typeof nexusFeatureSchema>
-
 export const nexusConfigFactory = registerAs('nexus', () => nexusFeatureSchema.parse(process.env))

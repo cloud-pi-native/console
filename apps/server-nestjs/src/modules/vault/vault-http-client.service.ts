@@ -1,9 +1,9 @@
-import type { ConfigType } from '@nestjs/config'
+import type { VaultConfig } from './vault.module-definition'
 import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
-import { vaultConfigFactory } from '../../config/vault.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { VAULT_CONFIG } from './vault.module-definition'
 
 export interface VaultFetchOptions {
   method?: string
@@ -47,7 +47,7 @@ export class VaultHttpClientService {
   private readonly logger = new Logger(VaultHttpClientService.name)
 
   constructor(
-    @Inject(vaultConfigFactory.KEY) private readonly vaultConfig: ConfigType<typeof vaultConfigFactory>,
+    @Inject(VAULT_CONFIG) private readonly vaultConfig: VaultConfig,
   ) {}
 
   @StartActiveSpan()

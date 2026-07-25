@@ -1,5 +1,5 @@
-import type { ConfigType } from '@nestjs/config'
 import type { NestFastifyApplication } from '@nestjs/platform-fastify'
+import type { BaseConfig } from './modules/infrastructure/config/base.config'
 import { NestFactory } from '@nestjs/core'
 import { FastifyAdapter } from '@nestjs/platform-fastify'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
@@ -9,8 +9,8 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { NodeSDK, resources } from '@opentelemetry/sdk-node'
 import { Logger } from 'nestjs-pino'
-import { baseConfigFactory } from './config/base.config'
 import { MainModule } from './main.module'
+import { BASE_CONFIG } from './modules/infrastructure/config/base.module'
 
 const SERVICE_NAME = 'console-pi-native-console'
 
@@ -44,7 +44,7 @@ async function bootstrap() {
     await telemetry.shutdown()
   })
 
-  const config = app.get<ConfigType<typeof baseConfigFactory>>(baseConfigFactory.KEY)
+  const config = app.get<BaseConfig>(BASE_CONFIG)
 
   // Setup swagger-ui route
   const swaggerConfig = new DocumentBuilder()

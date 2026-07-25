@@ -1,12 +1,12 @@
-import type { ConfigType } from '@nestjs/config'
+import type { SonarqubeConfig } from './sonarqube.module-definition'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
+import { SONARQUBE_CONFIG } from './sonarqube.module-definition'
 
 @Injectable()
 export class SonarqubeHealthService {
   constructor(
-    @Inject(sonarqubeConfigFactory.KEY) private readonly sonarqubeConfig: ConfigType<typeof sonarqubeConfigFactory>,
+    @Inject(SONARQUBE_CONFIG) private readonly sonarqubeConfig: SonarqubeConfig,
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 

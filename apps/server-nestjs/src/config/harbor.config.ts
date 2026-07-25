@@ -1,3 +1,4 @@
+import type { HarborConfig } from '../modules/registry/harbor.module-definition'
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
 import { flag, nonEmpty, truthySchema } from './config.utils'
@@ -31,6 +32,6 @@ const harborFeatureSchema = z.object({
   }
 })
 
-export type HarborConfig = z.infer<typeof harborFeatureSchema>
+export type HarborAppConfig = HarborConfig
 
 export const harborConfigFactory = registerAs('harbor', () => harborFeatureSchema.parse(process.env))

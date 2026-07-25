@@ -1,7 +1,7 @@
-import type { ConfigType } from '@nestjs/config'
+import type { SonarqubeConfig } from './sonarqube.module-definition'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
+import { SONARQUBE_CONFIG } from './sonarqube.module-definition'
 
 export interface SonarqubeFetchOptions {
   method?: string
@@ -38,7 +38,7 @@ export class SonarqubeError extends Error {
 @Injectable()
 export class SonarqubeHttpClientService {
   constructor(
-    @Inject(sonarqubeConfigFactory.KEY) private readonly sonarqubeConfig: ConfigType<typeof sonarqubeConfigFactory>,
+    @Inject(SONARQUBE_CONFIG) private readonly sonarqubeConfig: SonarqubeConfig,
   ) {}
 
   private get baseUrl(): string {

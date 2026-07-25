@@ -1,13 +1,13 @@
-import type { ConfigType } from '@nestjs/config'
+import type { KeycloakConfig } from './keycloak.module-definition'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { keycloakConfigFactory } from '../../config/keycloak.config'
+import { KEYCLOAK_CONFIG } from './keycloak.module-definition'
 
 @Injectable()
 export class KeycloakHealthService {
   constructor(
-    @Inject(keycloakConfigFactory.KEY)
-    private readonly keycloakConfig: ConfigType<typeof keycloakConfigFactory>,
+    @Inject(KEYCLOAK_CONFIG)
+    private readonly keycloakConfig: KeycloakConfig,
     @Inject(HealthIndicatorService)
     private readonly healthIndicator: HealthIndicatorService,
   ) {}

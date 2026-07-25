@@ -2,7 +2,7 @@ import { registerAs } from '@nestjs/config'
 import z from 'zod'
 import { flag, nonEmpty, truthySchema } from './config.utils'
 
-const keycloakFeatureSchema = z.object({
+const keycloakRawSchema = z.object({
   USE_KEYCLOAK: flag(truthySchema.default('true')),
   KEYCLOAK_PROTOCOL: z.string().default('https'),
   KEYCLOAK_DOMAIN: nonEmpty(z.string()),
@@ -22,7 +22,9 @@ const keycloakFeatureSchema = z.object({
     value => (typeof value === 'string' ? value.split(',').map(part => part.trim()).filter(Boolean) : value),
     z.array(z.string()).default([]),
   ),
-}).transform((raw) => {
+})
+
+function mapKeycloakConfig(raw: z.infer<typeof keycloakRawSchema>) {
   const keycloakUrl = `${raw.KEYCLOAK_PROTOCOL}://${raw.KEYCLOAK_DOMAIN}`
   const keycloakRealmUrl = `${keycloakUrl}/realms/${raw.KEYCLOAK_REALM}`
   return {
@@ -46,8 +48,8 @@ const keycloakFeatureSchema = z.object({
     realmUrl: keycloakRealmUrl,
     openidConfigurationUrl: `${keycloakRealmUrl}/.well-known/openid-configuration`,
   }
-})
+}
 
-export type KeycloakConfig = z.infer<typeof keycloakFeatureSchema>
+const keycloakConfigSchema = keycloakRawSchema.transform(mapKeycloakConfig)
 
-export const keycloakConfigFactory = registerAs('keycloak', () => keycloakFeatureSchema.parse(process.env))
+export const keycloakConfigFactory = registerAs('keycloak', () => keycloakConfigSchema.parse(process.env))

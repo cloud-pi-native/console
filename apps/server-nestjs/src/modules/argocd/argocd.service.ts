@@ -1,20 +1,21 @@
 import type { CommitAction, CondensedProjectSchema, ProjectSchema, SimpleProjectSchema } from '@gitbeaker/core'
-import type { ConfigType } from '@nestjs/config'
+import type { BaseConfig } from '../infrastructure/config/base.config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
+import type { VaultConfig } from '../vault/vault.module-definition'
 import type { ProjectWithDetails } from './argocd-datastore.service'
+import type { ArgocdConfig } from './argocd.module-definition'
 import { createHmac } from 'node:crypto'
 import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { stringify } from 'yaml'
-import { argocdConfigFactory } from '../../config/argocd.config'
-import { baseConfigFactory } from '../../config/base.config'
-import { vaultConfigFactory } from '../../config/vault.config'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
+import { BASE_CONFIG } from '../infrastructure/config/base.module'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
+import { VAULT_CONFIG } from '../vault/vault.module-definition'
 import { ArgoCDDatastoreService } from './argocd-datastore.service'
 import {
   CONSOLE_ADMIN_GROUP_PATH,
@@ -27,6 +28,7 @@ import {
   PROJECT_READONLY_GROUP_PATH_SUFFIX,
   PROJECT_SECURITY_GROUP_PATH_SUFFIX,
 } from './argocd.constants'
+import { ARGOCD_CONFIG } from './argocd.module-definition'
 
 @Injectable()
 export class ArgoCDService {
@@ -34,9 +36,9 @@ export class ArgoCDService {
 
   constructor(
     @Inject(ArgoCDDatastoreService) private readonly datastore: ArgoCDDatastoreService,
-    @Inject(argocdConfigFactory.KEY) private readonly argocdConfig: ConfigType<typeof argocdConfigFactory>,
-    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
-    @Inject(vaultConfigFactory.KEY) private readonly vaultConfig: ConfigType<typeof vaultConfigFactory>,
+    @Inject(ARGOCD_CONFIG) private readonly argocdConfig: ArgocdConfig,
+    @Inject(BASE_CONFIG) private readonly baseConfig: BaseConfig,
+    @Inject(VAULT_CONFIG) private readonly vaultConfig: VaultConfig,
     @Inject(GitlabClientService) private readonly gitlab: GitlabClientService,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
   ) {

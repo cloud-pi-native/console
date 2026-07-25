@@ -1,5 +1,5 @@
-import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
+import type { KeycloakConfig } from './keycloak.module-definition'
 import KcAdminClient from '@keycloak/keycloak-admin-client'
 import { ScheduleModule } from '@nestjs/schedule'
 import { Test } from '@nestjs/testing'
@@ -7,9 +7,9 @@ import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { keycloakConfigFactory } from '../../config/keycloak.config'
 import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from './keycloak-client.service'
 import { ADMIN_TOKEN_REFRESH_INTERVAL_MS } from './keycloak.constants'
+import { KEYCLOAK_CONFIG } from './keycloak.module-definition'
 
 const keycloakUrl = 'https://keycloak.internal'
 const projectRealm = 'project-realm'
@@ -38,15 +38,15 @@ function useTokenEndpoint({ rejectGrant = () => false }: { rejectGrant?: (grantT
   return tokenRequests
 }
 
-function createKeycloakClientServiceTestingModule(config: Partial<ConfigType<typeof keycloakConfigFactory>> = {}) {
+function createKeycloakClientServiceTestingModule(config: Partial<KeycloakConfig> = {}) {
   return Test.createTestingModule({
     imports: [ScheduleModule.forRoot()],
     providers: [
       KeycloakClientService,
       { provide: KEYCLOAK_ADMIN_CLIENT, useValue: new KcAdminClient({ baseUrl: keycloakUrl }) },
       {
-        provide: keycloakConfigFactory.KEY,
-        useValue: mockDeep<ConfigType<typeof keycloakConfigFactory>>({
+        provide: KEYCLOAK_CONFIG,
+        useValue: mockDeep<KeycloakConfig>({
           realm: projectRealm,
           admin: 'admin',
           adminPassword: 'admin-password',

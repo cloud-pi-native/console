@@ -1,13 +1,13 @@
-import type { ConfigType } from '@nestjs/config'
 import type { Cache } from 'cache-manager'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { HarborConfig } from './harbor.module-definition'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { harborConfigFactory } from '../../config/harbor.config'
 import { makeToUrlParams } from '../plugin/plugin.utils'
+import { HARBOR_CONFIG } from './harbor.module-definition'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
 import { RegistryPluginService } from './registry-plugin.service'
@@ -15,13 +15,13 @@ import { makeProjectWithDetails } from './registry-testing.utils'
 
 describe('registryPluginService', () => {
   let service: RegistryPluginService
-  let harborConfig: DeepMockProxy<ConfigType<typeof harborConfigFactory>>
+  let harborConfig: DeepMockProxy<HarborConfig>
   let datastore: DeepMockProxy<RegistryDatastoreService>
   let registryClient: DeepMockProxy<RegistryClientService>
   let cache: DeepMockProxy<Cache>
 
   beforeEach(async () => {
-    harborConfig = mockDeep<ConfigType<typeof harborConfigFactory>>({
+    harborConfig = mockDeep<HarborConfig>({
       url: 'https://harbor.example/',
       projectSlugCacheTtlMs: 300000,
     })
@@ -32,7 +32,7 @@ describe('registryPluginService', () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         RegistryPluginService,
-        { provide: harborConfigFactory.KEY, useValue: harborConfig },
+        { provide: HARBOR_CONFIG, useValue: harborConfig },
         { provide: RegistryDatastoreService, useValue: datastore },
         { provide: RegistryClientService, useValue: registryClient },
         { provide: CACHE_MANAGER, useValue: cache },

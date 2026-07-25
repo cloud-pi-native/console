@@ -23,6 +23,4 @@ const argocdFeatureSchema = z.object({
   internalOrPublicUrl: raw.ARGOCD_INTERNAL_URL || raw.ARGOCD_URL || undefined,
 }))
 
-export type ArgocdConfig = z.infer<typeof argocdFeatureSchema>
-
 export const argocdConfigFactory = registerAs('argocd', () => argocdFeatureSchema.parse(process.env))

@@ -1,10 +1,11 @@
-import type { ConfigType } from '@nestjs/config'
+import type { BaseConfig } from '../infrastructure/config/base.config'
+import type { VaultConfig } from './vault.module-definition'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { baseConfigFactory } from '../../config/base.config'
-import { vaultConfigFactory } from '../../config/vault.config'
+import { BASE_CONFIG } from '../infrastructure/config/base.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
+import { VAULT_CONFIG } from './vault.module-definition'
 import { generateGitlabMirrorCredPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath } from './vault.utils'
 
 export interface VaultSysPoliciesAclUpsertRequest {
@@ -116,8 +117,8 @@ export class VaultClientService {
   private readonly logger = new Logger(VaultClientService.name)
 
   constructor(
-    @Inject(vaultConfigFactory.KEY) private readonly vaultConfig: ConfigType<typeof vaultConfigFactory>,
-    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
+    @Inject(VAULT_CONFIG) private readonly vaultConfig: VaultConfig,
+    @Inject(BASE_CONFIG) private readonly baseConfig: BaseConfig,
     @Inject(VaultHttpClientService) private readonly http: VaultHttpClientService,
   ) {
   }

@@ -10,6 +10,7 @@ import { NexusDatastoreService } from './nexus-datastore.service'
 import { NexusHealthService } from './nexus-health.service'
 import { NexusHttpClientService } from './nexus-http-client.service'
 import { NexusPluginService } from './nexus-plugin.service'
+import { ConfigurableModuleClass } from './nexus.module-definition'
 import { NexusService } from './nexus.service'
 
 @Module({
@@ -24,4 +25,4 @@ import { NexusService } from './nexus.service'
   ],
   exports: [NexusClientService, NexusHealthService, NexusPluginService, NexusService],
 })
-export class NexusModule {}
+export class NexusModule extends ConfigurableModuleClass {}

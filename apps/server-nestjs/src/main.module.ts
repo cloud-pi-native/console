@@ -3,9 +3,11 @@ import { ConditionalModule, ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
 import { TerminusModule } from '@nestjs/terminus'
 import { baseConfigFactory } from './config/base.config'
+import { keycloakConfigFactory } from './config/keycloak.config'
 import { DeploymentModule } from './modules/deployment/deployment.module'
 import { EnvironmentModule } from './modules/environment/environment.module'
 import { HealthzModule } from './modules/healthz/healthz.module'
+import { BaseModule } from './modules/infrastructure/config/base.module'
 import { InfrastructureModule } from './modules/infrastructure/infrastructure.module'
 import { KeycloakModule } from './modules/keycloak/keycloak.module'
 import { LogModule } from './modules/log/log.module'
@@ -19,19 +21,15 @@ import { ProjectModule } from './modules/project/project.module'
 import { ServiceChainModule } from './modules/service-chain/service-chain.module'
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module'
 import { VersionModule } from './modules/version/version.module'
-import { getDotenvPaths } from './utils/dotenv.utils'
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      envFilePath: getDotenvPaths(),
-      isGlobal: true,
-      load: [baseConfigFactory],
-    }),
+    ConfigModule.forRoot(),
+    BaseModule.forRoot(baseConfigFactory.asProvider()),
     TerminusModule.forRoot(),
     InfrastructureModule,
     HealthzModule,
-    ConditionalModule.registerWhen(KeycloakModule, 'USE_KEYCLOAK'),
+    ConditionalModule.registerWhen(KeycloakModule.forRoot(keycloakConfigFactory.asProvider()), 'USE_KEYCLOAK'),
     ScheduleModule.forRoot(),
     SystemSettingsModule,
     ServiceChainModule,

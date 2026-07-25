@@ -1,4 +1,4 @@
-import type { ConfigType } from '@nestjs/config'
+import type { HarborConfig } from './harbor.module-definition'
 import { faker } from '@faker-js/faker'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
@@ -6,8 +6,8 @@ import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { harborConfigFactory } from '../../config/harbor.config'
 import { VaultClientService } from '../vault/vault-client.service'
+import { HARBOR_CONFIG } from './harbor.module-definition'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryHttpClientService } from './registry-http-client.service'
 
@@ -23,7 +23,7 @@ describe('registryService', () => {
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 
   beforeEach(async () => {
-    const harborConfig = mockDeep<ConfigType<typeof harborConfigFactory>>({
+    const harborConfig = mockDeep<HarborConfig>({
       url: harborUrl,
       internalUrl: harborUrl,
       admin: 'admin',
@@ -42,7 +42,7 @@ describe('registryService', () => {
           useValue: {},
         },
         {
-          provide: harborConfigFactory.KEY,
+          provide: HARBOR_CONFIG,
           useValue: harborConfig,
         },
       ],

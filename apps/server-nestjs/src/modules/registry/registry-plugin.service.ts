@@ -1,10 +1,10 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
-import type { ConfigType } from '@nestjs/config'
 import type { Cache } from 'cache-manager'
+import type { HarborConfig } from './harbor.module-definition'
 import { DISABLED } from '@cpn-console/shared'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { harborConfigFactory } from '../../config/harbor.config'
+import { HARBOR_CONFIG } from './harbor.module-definition'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
 import { createProjectSlugCacheKey } from './registry.utils'
@@ -14,8 +14,8 @@ export class RegistryPluginService {
   private readonly logger = new Logger(RegistryPluginService.name)
 
   constructor(
-    @Inject(harborConfigFactory.KEY)
-    private readonly harborConfig: ConfigType<typeof harborConfigFactory>,
+    @Inject(HARBOR_CONFIG)
+    private readonly harborConfig: HarborConfig,
     @Inject(RegistryDatastoreService)
     private readonly datastore: RegistryDatastoreService,
     @Inject(RegistryClientService)

@@ -19,6 +19,4 @@ const sonarqubeFeatureSchema = z.object({
   }
 })
 
-export type SonarqubeConfig = z.infer<typeof sonarqubeFeatureSchema>
-
 export const sonarqubeConfigFactory = registerAs('sonarqube', () => sonarqubeFeatureSchema.parse(process.env))

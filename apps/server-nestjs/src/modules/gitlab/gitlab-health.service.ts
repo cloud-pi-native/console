@@ -1,12 +1,12 @@
-import type { ConfigType } from '@nestjs/config'
+import type { GitlabConfig } from './gitlab.module-definition'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { gitlabConfigFactory } from '../../config/gitlab.config'
+import { GITLAB_CONFIG } from './gitlab.module-definition'
 
 @Injectable()
 export class GitlabHealthService {
   constructor(
-    @Inject(gitlabConfigFactory.KEY) private readonly gitlabConfig: ConfigType<typeof gitlabConfigFactory>,
+    @Inject(GITLAB_CONFIG) private readonly gitlabConfig: GitlabConfig,
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 

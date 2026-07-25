@@ -1,13 +1,13 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
-import type { ConfigType } from '@nestjs/config'
+import type { SonarqubeConfig } from './sonarqube.module-definition'
 import { Inject, Injectable } from '@nestjs/common'
-import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
+import { SONARQUBE_CONFIG } from './sonarqube.module-definition'
 
 @Injectable()
 export class SonarqubePluginService {
   constructor(
-    @Inject(sonarqubeConfigFactory.KEY)
-    private readonly sonarqubeConfig: ConfigType<typeof sonarqubeConfigFactory>,
+    @Inject(SONARQUBE_CONFIG)
+    private readonly sonarqubeConfig: SonarqubeConfig,
   ) {}
 
   infos(): ServiceInfos {

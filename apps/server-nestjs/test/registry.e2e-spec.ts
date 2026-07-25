@@ -1,5 +1,6 @@
 import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
+import type { BaseConfig } from '../src/config/base.config'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
@@ -32,7 +33,7 @@ describeWithRegistry('RegistryService (e2e)', () => {
   let registry: RegistryService
   let client: RegistryClientService
   let vault: VaultClientService
-  let config: ConfigType<typeof baseConfigFactory>
+  let config: BaseConfig
   let harborConfig: ConfigType<typeof harborConfigFactory>
   let projectSlug: string
 
@@ -47,8 +48,8 @@ describeWithRegistry('RegistryService (e2e)', () => {
     registry = moduleRef.get(RegistryService)
     client = moduleRef.get(RegistryClientService)
     vault = moduleRef.get(VaultClientService)
-    config = moduleRef.get(baseConfigFactory.KEY)
-    harborConfig = moduleRef.get(harborConfigFactory.KEY)
+    config = moduleRef.get(baseConfigFactory)
+    harborConfig = moduleRef.get(harborConfigFactory)
 
     projectSlug = faker.helpers.slugify(`test-project-${faker.string.alphanumeric({ length: 10 }).toLowerCase()}`).slice(0, 50)
   })

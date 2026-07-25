@@ -14,11 +14,10 @@ import type {
   PipelineTriggerTokenSchema,
   SimpleUserSchema,
 } from '@gitbeaker/core'
-import type { ConfigType } from '@nestjs/config'
+import type { GitlabConfig } from './gitlab.module-definition'
 import { join } from 'node:path'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { find } from '../../utils/iterable.utils'
 import {
   GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY,
@@ -31,6 +30,7 @@ import {
   TOPIC_PLUGIN_MANAGED,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
+import { GITLAB_CONFIG } from './gitlab.module-definition'
 import { generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged } from './gitlab.utils'
 
 export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
@@ -52,7 +52,7 @@ export class GitlabClientService {
   private readonly logger = new Logger(GitlabClientService.name)
 
   constructor(
-    @Inject(gitlabConfigFactory.KEY) readonly config: ConfigType<typeof gitlabConfigFactory>,
+    @Inject(GITLAB_CONFIG) readonly config: GitlabConfig,
     @Inject(GITLAB_REST_CLIENT) private readonly client: Gitlab,
   ) {
   }

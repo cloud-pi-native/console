@@ -1,8 +1,9 @@
-import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import type { Prisma } from '@prisma/client'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
+import type { BaseConfig } from '../infrastructure/config/base.config'
+import type { VaultConfig } from '../vault/vault.module-definition'
 import { faker } from '@faker-js/faker'
 import {
   ForbiddenException,
@@ -12,11 +13,11 @@ import {
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { baseConfigFactory } from '../../config/base.config'
-import { vaultConfigFactory } from '../../config/vault.config'
 import { AppEventsService } from '../events/app-events.service'
+import { BASE_CONFIG } from '../infrastructure/config/base.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { LogService } from '../log/log.service'
+import { VAULT_CONFIG } from '../vault/vault.module-definition'
 import {
   makeCreateProjectBody,
   makeListProjectsQuery,
@@ -35,15 +36,15 @@ describe('projectService', () => {
   let service: ProjectService
   let prisma: DeepMockProxy<PrismaService>
   let appEvents: DeepMockProxy<AppEventsService>
-  let config: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
-  let vaultConfig: DeepMockProxy<ConfigType<typeof vaultConfigFactory>>
+  let config: DeepMockProxy<BaseConfig>
+  let vaultConfig: DeepMockProxy<VaultConfig>
   let logs: DeepMockProxy<LogService>
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
     appEvents = mockDeep<AppEventsService>()
-    config = mockDeep<ConfigType<typeof baseConfigFactory>>({ appVersion: 'dev' })
-    vaultConfig = mockDeep<ConfigType<typeof vaultConfigFactory>>()
+    config = mockDeep<BaseConfig>({ appVersion: 'dev' })
+    vaultConfig = mockDeep<VaultConfig>()
     logs = mockDeep<LogService>()
 
     module = await Test.createTestingModule({
@@ -51,8 +52,8 @@ describe('projectService', () => {
         ProjectService,
         { provide: PrismaService, useValue: prisma },
         { provide: AppEventsService, useValue: appEvents },
-        { provide: baseConfigFactory.KEY, useValue: config },
-        { provide: vaultConfigFactory.KEY, useValue: vaultConfig },
+        { provide: BASE_CONFIG, useValue: config },
+        { provide: VAULT_CONFIG, useValue: vaultConfig },
         { provide: LogService, useValue: logs },
       ],
     }).compile()

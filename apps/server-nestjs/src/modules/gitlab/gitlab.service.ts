@@ -1,14 +1,13 @@
 import type { CondensedGroupSchema, MemberSchema, ProjectSchema } from '@gitbeaker/core'
-import type { ConfigType } from '@nestjs/config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { VaultSecret } from '../vault/vault-client.service'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
+import type { GitlabConfig } from './gitlab.module-definition'
 import { specificallyEnabled } from '@cpn-console/hooks'
 import { AccessLevel } from '@gitbeaker/core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
-import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { getAll } from '../../utils/iterable.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
@@ -30,6 +29,7 @@ import {
   PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PURGE_PLUGIN_KEY,
 } from './gitlab.constants'
+import { GITLAB_CONFIG } from './gitlab.module-definition'
 import {
   adminRoleFlag,
   daysAgoFromNow,
@@ -55,7 +55,7 @@ export class GitlabService {
     @Inject(GitlabDatastoreService) private readonly datastore: GitlabDatastoreService,
     @Inject(GitlabClientService) private readonly gitlab: GitlabClientService,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
-    @Inject(gitlabConfigFactory.KEY) private readonly gitlabConfig: ConfigType<typeof gitlabConfigFactory>,
+    @Inject(GITLAB_CONFIG) private readonly gitlabConfig: GitlabConfig,
   ) {
     this.logger.log('GitLabService initialized')
   }

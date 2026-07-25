@@ -25,6 +25,4 @@ const gitlabFeatureSchema = z.object({
   }
 })
 
-export type GitlabConfig = z.infer<typeof gitlabFeatureSchema>
-
 export const gitlabConfigFactory = registerAs('gitlab', () => gitlabFeatureSchema.parse(process.env))

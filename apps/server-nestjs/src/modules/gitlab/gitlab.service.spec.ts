@@ -1,17 +1,17 @@
-import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { GitlabConfig } from './gitlab.module-definition'
 import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { AccessLevel } from '@gitbeaker/core'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
 import { GitlabDatastoreService } from './gitlab-datastore.service'
 import { makeAccessTokenExposedSchema, makeExpandedUserSchema, makeGroupSchema, makeMemberSchema, makePipelineTriggerToken, makeProjectSchema, makeProjectWithDetails } from './gitlab-testing.utils'
 import { PLUGIN_NAME, TOPIC_PLUGIN_MANAGED } from './gitlab.constants'
+import { GITLAB_CONFIG } from './gitlab.module-definition'
 import { GitlabService } from './gitlab.service'
 
 describe('gitlabService', () => {
@@ -34,7 +34,7 @@ describe('gitlabService', () => {
       readTechnReadOnlyCreds: vi.fn().mockResolvedValue(null),
       readGitlabMirrorCreds: vi.fn().mockResolvedValue(null),
     })
-    const config = mockDeep<ConfigType<typeof gitlabConfigFactory>>({ projectRootDir: 'forge' })
+    const config = mockDeep<GitlabConfig>({ projectRootDir: 'forge' })
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -42,7 +42,7 @@ describe('gitlabService', () => {
         { provide: GitlabClientService, useValue: gitlab },
         { provide: GitlabDatastoreService, useValue: datastore },
         { provide: VaultClientService, useValue: vault },
-        { provide: gitlabConfigFactory.KEY, useValue: config },
+        { provide: GITLAB_CONFIG, useValue: config },
       ],
     }).compile()
 

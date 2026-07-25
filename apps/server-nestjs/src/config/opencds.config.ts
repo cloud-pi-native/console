@@ -20,6 +20,4 @@ const opencdsFeatureSchema = z.object({
   }
 })
 
-export type OpenCdsConfig = z.infer<typeof opencdsFeatureSchema>
-
-export const opencdsConfigFactory = registerAs('opencds', () => opencdsFeatureSchema.parse(process.env))
+export const openCdsConfigFactory = registerAs('opencds', () => opencdsFeatureSchema.parse(process.env))

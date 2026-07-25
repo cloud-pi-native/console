@@ -1,12 +1,12 @@
-import type { ConfigType } from '@nestjs/config'
+import type { VaultConfig } from './vault.module-definition'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { vaultConfigFactory } from '../../config/vault.config'
+import { VAULT_CONFIG } from './vault.module-definition'
 
 @Injectable()
 export class VaultHealthService {
   constructor(
-    @Inject(vaultConfigFactory.KEY) private readonly vaultConfig: ConfigType<typeof vaultConfigFactory>,
+    @Inject(VAULT_CONFIG) private readonly vaultConfig: VaultConfig,
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 

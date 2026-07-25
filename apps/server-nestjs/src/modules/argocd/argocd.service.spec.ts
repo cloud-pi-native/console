@@ -1,18 +1,20 @@
-import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { BaseConfig } from '../infrastructure/config/base.config'
+import type { VaultConfig } from '../vault/vault.module-definition'
+import type { ArgocdConfig } from './argocd.module-definition'
 import { generateNamespaceName } from '@cpn-console/shared'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { stringify } from 'yaml'
-import { argocdConfigFactory } from '../../config/argocd.config'
-import { baseConfigFactory } from '../../config/base.config'
-import { vaultConfigFactory } from '../../config/vault.config'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
 import { makeCommitAction, makeProjectSchema, makeRepositoryTreeSchema } from '../gitlab/gitlab-testing.utils'
+import { BASE_CONFIG } from '../infrastructure/config/base.module'
 import { VaultClientService } from '../vault/vault-client.service'
+import { VAULT_CONFIG } from '../vault/vault.module-definition'
 import { ArgoCDDatastoreService } from './argocd-datastore.service'
 import { makeProjectDeployment, makeProjectDeploymentSource, makeProjectEnvironment, makeProjectRepository, makeProjectWithDetails } from './argocd-testing.utils'
+import { ARGOCD_CONFIG } from './argocd.module-definition'
 import { ArgoCDService } from './argocd.service'
 
 describe('argoCDService', () => {
@@ -20,16 +22,15 @@ describe('argoCDService', () => {
   let datastore: DeepMockProxy<ArgoCDDatastoreService>
   let gitlab: DeepMockProxy<GitlabClientService>
   let vault: DeepMockProxy<VaultClientService>
-  let argocdConfig: DeepMockProxy<ConfigType<typeof argocdConfigFactory>>
-  let baseConfig: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
-  let vaultConfig: DeepMockProxy<ConfigType<typeof vaultConfigFactory>>
+  let argocdConfig: DeepMockProxy<ArgocdConfig>
+  let baseConfig: DeepMockProxy<BaseConfig>
+  let vaultConfig: DeepMockProxy<VaultConfig>
 
   beforeEach(async () => {
     datastore = mockDeep<ArgoCDDatastoreService>()
     gitlab = mockDeep<GitlabClientService>()
     vault = mockDeep<VaultClientService>()
-    argocdConfig = mockDeep<ConfigType<typeof argocdConfigFactory>>({
-      enabled: true,
+    argocdConfig = mockDeep<ArgocdConfig>({
       namespace: 'argocd',
       url: 'https://argocd.internal',
       internalUrl: undefined,
@@ -39,10 +40,10 @@ describe('argoCDService', () => {
       vaultDeployVaultConnectionInNs: false,
       internalOrPublicUrl: undefined,
     })
-    baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>({
+    baseConfig = mockDeep<BaseConfig>({
       projectsRootDir: 'forge',
     })
-    vaultConfig = mockDeep<ConfigType<typeof vaultConfigFactory>>({
+    vaultConfig = mockDeep<VaultConfig>({
       url: 'https://vault.internal',
       kvName: 'kv',
       internalUrl: undefined,
@@ -52,9 +53,9 @@ describe('argoCDService', () => {
       providers: [
         ArgoCDService,
         { provide: ArgoCDDatastoreService, useValue: datastore },
-        { provide: argocdConfigFactory.KEY, useValue: argocdConfig },
-        { provide: baseConfigFactory.KEY, useValue: baseConfig },
-        { provide: vaultConfigFactory.KEY, useValue: vaultConfig },
+        { provide: ARGOCD_CONFIG, useValue: argocdConfig },
+        { provide: BASE_CONFIG, useValue: baseConfig },
+        { provide: VAULT_CONFIG, useValue: vaultConfig },
         { provide: GitlabClientService, useValue: gitlab },
         { provide: VaultClientService, useValue: vault },
       ],

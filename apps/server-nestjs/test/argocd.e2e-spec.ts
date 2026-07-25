@@ -1,6 +1,6 @@
 import type { CommitAction, Gitlab } from '@gitbeaker/core'
-import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
+import type { BaseConfig } from '../src/config/base.config'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
@@ -38,7 +38,7 @@ describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
   let gitlabClient: Gitlab
   let vault: VaultClientService
   let prisma: PrismaService
-  let config: ConfigType<typeof baseConfigFactory>
+  let config: BaseConfig
 
   let ownerId: string
   let testProjectId: string
@@ -71,7 +71,7 @@ describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
     gitlabClient = moduleRef.get<Gitlab>(GITLAB_REST_CLIENT)
     vault = moduleRef.get<VaultClientService>(VaultClientService)
     prisma = moduleRef.get<PrismaService>(PrismaService)
-    config = moduleRef.get(baseConfigFactory.KEY)
+    config = moduleRef.get(baseConfigFactory)
 
     ownerId = faker.string.uuid()
     testProjectId = faker.string.uuid()

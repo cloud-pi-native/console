@@ -1,22 +1,23 @@
 import { CacheModule } from '@nestjs/cache-manager'
 import { Module } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
 import { TerminusModule } from '@nestjs/terminus'
-import { registryConfigFactory } from '../../config/registry.config'
-import { harborConfigFactory } from '../../config/harbor.config'
-import { baseConfigFactory } from '../../config/base.config'
 import { DatabaseModule } from '../infrastructure/database/database.module'
 import { VaultModule } from '../vault/vault.module'
+import { ConfigurableModuleClass as HarborConfigurableModuleClass } from './harbor.module-definition'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
 import { RegistryHealthService } from './registry-health.service'
 import { RegistryHttpClientService } from './registry-http-client.service'
 import { RegistryPluginService } from './registry-plugin.service'
+import { ConfigurableModuleClass } from './registry.module-definition'
 import { RegistryService } from './registry.service'
 
+@Module({})
+export class HarborModule extends HarborConfigurableModuleClass {}
+
 @Module({
-  imports: [DatabaseModule, TerminusModule, VaultModule, CacheModule.register(), ConfigModule.forFeature(registryConfigFactory), ConfigModule.forFeature(harborConfigFactory), ConfigModule.forFeature(baseConfigFactory)],
+  imports: [DatabaseModule, TerminusModule, VaultModule, HarborModule, CacheModule.register()],
   providers: [RegistryHealthService, RegistryPluginService, RegistryService, RegistryDatastoreService, RegistryHttpClientService, RegistryClientService],
   exports: [RegistryHealthService, RegistryPluginService, RegistryService],
 })
-export class RegistryModule {}
+export class RegistryModule extends ConfigurableModuleClass {}

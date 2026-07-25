@@ -1,13 +1,12 @@
 import type { OnModuleInit } from '@nestjs/common'
-import type { ConfigType } from '@nestjs/config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { SonarqubeUserSecret } from '../vault/vault-client.service'
 import type { SonarqubeProjectResult, SonarqubeUser } from './sonarqube-client.service'
 import type { ProjectWithDetails } from './sonarqube-datastore.service'
+import type { SonarqubeConfig } from './sonarqube.module-definition'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
-import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
 import { generateProjectKey, generateRandomPassword } from '../../utils/crypto.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
@@ -42,6 +41,7 @@ import {
   ROBOT_PROJECT_PERMISSIONS,
   SECURITY_GROUP_PATH_PLUGIN_KEY,
 } from './sonarqube.constants'
+import { SONARQUBE_CONFIG } from './sonarqube.module-definition'
 
 interface SonarqubeRolePaths {
   admin: string[]
@@ -58,7 +58,7 @@ export class SonarqubeService implements OnModuleInit {
   constructor(
     @Inject(SonarqubeDatastoreService) private readonly datastore: SonarqubeDatastoreService,
     @Inject(SonarqubeClientService) private readonly client: SonarqubeClientService,
-    @Inject(sonarqubeConfigFactory.KEY) private readonly sonarqubeConfig: ConfigType<typeof sonarqubeConfigFactory>,
+    @Inject(SONARQUBE_CONFIG) private readonly sonarqubeConfig: SonarqubeConfig,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
   ) {
     this.logger.log('SonarqubeService initialized')

@@ -1,11 +1,11 @@
-import type { ConfigType } from '@nestjs/config'
 import type { Cache } from 'cache-manager'
+import type { KeycloakConfig } from '../../../keycloak/keycloak.module-definition'
 import { createPublicKey } from 'node:crypto'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { JwtSecretRequestType } from '@nestjs/jwt'
 import { z } from 'zod'
-import { keycloakConfigFactory } from '../../../../config/keycloak.config'
+import { KEYCLOAK_CONFIG } from '../../../keycloak/keycloak.module-definition'
 import { createKeycloakSecretProviderOpenIdConfigurationCacheKey, createKeycloakSecretProviderPublicKeyCacheKey } from './keycloak-secret-provider.utils'
 
 const OpenidConfigurationSchema = z.object({
@@ -37,7 +37,7 @@ export class KeycloakSecretProviderService {
 
   constructor(
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
-    @Inject(keycloakConfigFactory.KEY) private readonly keycloakConfig: ConfigType<typeof keycloakConfigFactory>,
+    @Inject(KEYCLOAK_CONFIG) private readonly keycloakConfig: KeycloakConfig,
   ) {}
 
   async fetchOpenIdConfig(): Promise<OpenidConfiguration | undefined> {

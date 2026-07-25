@@ -1,12 +1,12 @@
-import type { HarborConfig } from '../../config/harbor.config'
+import type { HarborConfig } from './harbor.module-definition'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
-import { harborConfigFactory } from '../../config/harbor.config'
+import { HARBOR_CONFIG } from './harbor.module-definition'
 
 @Injectable()
 export class RegistryHealthService {
   constructor(
-    @Inject(harborConfigFactory.KEY) private readonly harborConfig: HarborConfig,
+    @Inject(HARBOR_CONFIG) private readonly harborConfig: HarborConfig,
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 

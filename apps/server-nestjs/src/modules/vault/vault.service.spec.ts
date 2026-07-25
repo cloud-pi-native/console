@@ -1,13 +1,15 @@
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { BaseConfig } from '../infrastructure/config/base.config'
+import type { VaultConfig } from './vault.module-definition'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { baseConfigFactory } from '../../config/base.config'
-import { vaultConfigFactory } from '../../config/vault.config'
+import { BASE_CONFIG } from '../infrastructure/config/base.module'
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
 import { makeProjectWithDetails, makeVaultSecret, makeZoneWithDetails } from './vault-testing.utils'
+import { VAULT_CONFIG } from './vault.module-definition'
 import { VaultService } from './vault.service'
 
 const projectRoleGroupNameRegex = /^project-(.*)-(admin|devops|developer|readonly|security)$/
@@ -37,13 +39,16 @@ describe('vaultService', () => {
       delete: vi.fn().mockResolvedValue(undefined),
     })
 
+    const vaultConfig = mockDeep<VaultConfig>({ kvName: 'kv' })
+    const baseConfig = mockDeep<BaseConfig>({ projectsRootDir: 'forge' })
+
     const module = await Test.createTestingModule({
       providers: [
         VaultService,
         { provide: VaultClientService, useValue: client },
         { provide: VaultDatastoreService, useValue: datastore },
-        { provide: vaultConfigFactory.KEY, useValue: vaultConfigFactory },
-        { provide: baseConfigFactory.KEY, useValue: baseConfigFactory },
+        { provide: VAULT_CONFIG, useValue: vaultConfig },
+        { provide: BASE_CONFIG, useValue: baseConfig },
       ],
     }).compile()
 

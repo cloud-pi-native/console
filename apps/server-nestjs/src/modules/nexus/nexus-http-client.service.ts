@@ -1,8 +1,8 @@
-import type { ConfigType } from '@nestjs/config'
+import type { NexusConfig } from './nexus.module-definition'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { nexusConfigFactory } from '../../config/nexus.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { NEXUS_CONFIG } from './nexus.module-definition'
 
 export interface NexusFetchOptions {
   method?: string
@@ -45,7 +45,7 @@ export class NexusError extends Error {
 @Injectable()
 export class NexusHttpClientService {
   constructor(
-    @Inject(nexusConfigFactory.KEY) private readonly nexusConfig: ConfigType<typeof nexusConfigFactory>,
+    @Inject(NEXUS_CONFIG) private readonly nexusConfig: NexusConfig,
   ) {}
 
   @StartActiveSpan()
