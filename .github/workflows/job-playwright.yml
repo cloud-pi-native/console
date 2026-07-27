@@ -37,58 +37,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
-        with:
-          node-version: "${{ inputs.NODE_VERSION }}"
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-        id: pnpm-install
-        with:
-          run_install: false
-
-      - name: Get pnpm store directory
-        id: pnpm-store
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Cache Node.js files
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-        with:
-          path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
-          key: node-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            node-${{ runner.os }}-${{ runner.arch }}-
-
-      - name: Install Node.js dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build internal dependencies
-        run: pnpm --filter "./packages/**" build
-
-      - name: Get used Playwright version
-        id: playwright-version
-        run: echo "PLAYWRIGHT_VERSION=$(pnpm --dir playwright exec playwright -V | awk '{ print $2 }')" >> $GITHUB_ENV
-
-      - name: Restore cache - Playwright browser binaries
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-        id: playwright-cache
-        with:
-          path: |
-            ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
-
-      - name: Install Playwright system dependencies
-        run: pnpm --dir playwright exec playwright install
-
-      - name: Save cache - Playwright browser binaries
-        if: always() && steps.playwright-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-        with:
-          path: |
-            ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+      - name: Ensure Playwright browsers
+        run: pnpm --dir playwright exec playwright install chromium firefox
 
       - name: Initialize application environment for tests
         run: |
