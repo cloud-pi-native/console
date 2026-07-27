@@ -1,19 +1,28 @@
 <script lang="ts" setup>
-import type { Cluster, Deployment, Environment, Stage, UpdateDeployment, Zone } from '@cpn-console/shared'
+import type {
+  Cluster,
+  Deployment,
+  Environment,
+  Stage,
+  UpdateDeployment,
+  UpdateDeploymentSource,
+  Zone,
+} from '@cpn-console/shared'
 import type { DsfrRadioButtonProps } from '@gouvminint/vue-dsfr'
 import type { Project } from '@/utils/project-utils.js'
-import { CreateDeploymentSchema, DeploymentSchema, longestDeploymentName } from '@cpn-console/shared'
-import { useSnackbarStore } from '@/stores/snackbar.js'
-import { scrollToFirstError } from '@/utils/func.js'
+import { CreateDeploymentSchema, DeploymentSchema, longestDeploymentName, UpdateDeploymentSchema } from '@cpn-console/shared'
+import { useSnackbarStore } from '@/stores/snackbar'
+import { toDeploymentDraft } from '@/utils/deployment-draft'
+import { scrollToFirstError } from '@/utils/func'
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   opened: boolean
   environments: (Environment & { cluster?: Cluster, zone?: Zone, stage?: Stage })[]
   repoOptions: { text: string, value: string }[]
   deployment?: Deployment
   project: Project
-  disabled?: boolean
-}>(), { opened: false, disabled: false })
+  disabled: boolean
+}>()
 
 const emit = defineEmits<{ close: [] }>()
 
@@ -31,16 +40,16 @@ const options: ComputedRef<Omit<DsfrRadioButtonProps, 'modelValue'>[]> = compute
 )
 
 const deployment = ref<Partial<UpdateDeployment & { id: string }>>(
-  props.deployment ? { ...props.deployment } : { projectId: props.project.id, autosync: true },
+  props.deployment ? toDeploymentDraft(props.deployment) : { projectId: props.project.id, autosync: true },
 )
 
 watch(() => props.deployment, (newValue) => {
-  deployment.value = newValue ? { ...newValue } : { projectId: props.project.id, autosync: true }
+  deployment.value = newValue ? toDeploymentDraft(newValue) : { projectId: props.project.id, autosync: true }
 }, { deep: true })
 
 const deploymentSourcesModel = computed({
   get: () => deployment.value?.deploymentSources ?? [],
-  set: (value: UpdateDeployment['deploymentSources']) =>
+  set: (value: UpdateDeploymentSource[]) =>
     deployment.value = { ...deployment.value, deploymentSources: value },
 })
 
@@ -67,31 +76,29 @@ const environmentErrorMessage = computed(() => {
 function upsertDeployment() {
   if (isLoading.value) return
 
-  const body = CreateDeploymentSchema.safeParse(deployment.value)
+  const id = deployment.value.id
+  const body = id
+    ? UpdateDeploymentSchema.safeParse(deployment.value)
+    : CreateDeploymentSchema.safeParse(deployment.value)
+
   if (!body.success) {
     isDirty.value = true
     scrollToFirstError(formContainer)
     return
   }
 
+  const request = id
+    ? props.project.Deployments.update(id, body.data)
+    : props.project.Deployments.create(body.data)
+
   isLoading.value = true
-  if (deployment.value.id) {
-    props.project.Deployments.update(deployment.value.id, body.data)
-      .then(() => {
-        closeModal()
-        snackbarStore.setMessage('Déploiement enregistré, opérations en cours en arrière-plan...')
-      })
-      .catch(error => snackbarStore.setMessage(error, 'error'))
-      .finally(() => isLoading.value = false)
-  } else {
-    props.project.Deployments.create(body.data)
-      .then(() => {
-        closeModal()
-        snackbarStore.setMessage('Déploiement enregistré, opérations en cours en arrière-plan...')
-      })
-      .catch(error => snackbarStore.setMessage(error, 'error'))
-      .finally(() => isLoading.value = false)
-  }
+  request
+    .then(() => {
+      closeModal()
+      snackbarStore.setMessage('Déploiement enregistré, opérations en cours en arrière-plan...')
+    })
+    .catch((error: string) => snackbarStore.setMessage(error, 'error'))
+    .finally(() => isLoading.value = false)
 }
 
 function deleteDeployment() {
@@ -158,7 +165,12 @@ function closeModal() {
       <h6 class="fr-mb-0">
         Dépôts à inclure
       </h6>
-      <DeploymentRepoSelect v-model="deploymentSourcesModel" :is-dirty :repo-options="repoOptions" :disabled="props.disabled" />
+      <DeploymentRepoSelect
+        v-model="deploymentSourcesModel"
+        :is-dirty
+        :repo-options="repoOptions"
+        :disabled="props.disabled"
+      />
     </div>
     <div class="w-full flex justify-end gap-4">
       <DsfrButton

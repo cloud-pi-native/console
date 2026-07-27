@@ -1,32 +1,29 @@
 <script setup lang="ts">
-import type { UpdateDeployment } from '@cpn-console/shared'
+import type { UpdateDeploymentSource } from '@cpn-console/shared'
 import { DeploymentSourceSchema } from '@cpn-console/shared'
 
-withDefaults(defineProps<{
+type DeploymentSourceDraft = Partial<UpdateDeploymentSource>
+
+const props = withDefaults(defineProps<{
   cantDelete: boolean
   options: { text: string, value: string }[]
-  disabled?: boolean
-  isDirty?: boolean
+  disabled: boolean
+  isDirty: boolean
 }>(), {
   options: () => [],
-  cantDelete: false,
-  disabled: false,
-  isDirty: false,
 })
 defineEmits<{ delete: [] }>()
 
-const model = defineModel<Partial<UpdateDeployment['deploymentSources'][0]>>(
+const model = defineModel<DeploymentSourceDraft>(
   {
     default: {
-      id: undefined,
       type: 'git',
-      repositoryId: undefined,
-      targetRevision: undefined,
-      path: undefined,
-      helmValuesFiles: undefined,
+      valueSources: [],
     },
   },
 )
+
+const valueSourceRepoOptions = computed(() => props.options.filter(option => option.value !== model.value.repositoryId))
 </script>
 
 <template>
@@ -51,16 +48,11 @@ const model = defineModel<Partial<UpdateDeployment['deploymentSources'][0]>>(
       label-visible
       :disabled="$props.disabled"
     />
-    <DsfrInputGroup
-      v-model="model.helmValuesFiles"
-      class="mb-2"
-      is-textarea
-      label="Fichiers values (Helm)"
-      label-visible
-      hint="Un fichier par ligne, chemin relatif par rapport au répertoire à déployer. L'ordre des fichiers est déterminant pour la surcharge des valeurs communes. Champ optionnel."
-      placeholder="values/extra.yaml
-values-<env>/custom.yaml"
+    <DeploymentValueSources
+      v-model="model.valueSources"
+      :repo-options="valueSourceRepoOptions"
       :disabled="$props.disabled"
+      :is-dirty="$props.isDirty"
     />
   </div>
 </template>

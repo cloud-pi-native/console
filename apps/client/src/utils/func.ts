@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useSnackbarStore } from '@/stores/snackbar'
 
 const LOCALE = navigator.language.slice(0, 2)
 // Get the thousands and decimal separator characters used in the locale.
@@ -85,6 +85,25 @@ export function localeParseFloat(s: string): number {
   const delocalizedInput = s.replaceAll(THOUSANDS_SEPARATOR, '').replaceAll(DECIMAL_SEPARATOR, '.')
   // Now it can be parsed
   return Number.parseFloat(delocalizedInput)
+}
+
+// DSFR inputs emit `string | number | undefined`; coerce to a plain string for
+// string-typed form fields (empty string when the value is cleared).
+export function toStringValue(value: string | number | undefined): string {
+  return value === undefined ? '' : String(value)
+}
+
+// Swaps an item with its neighbour and returns a new array. Out-of-bounds moves are
+// a no-op, returning the original array so callers can skip the update.
+export function swapItems<T>(items: T[], index: number, direction: -1 | 1): T[] {
+  const target = index + direction
+  if (target < 0 || target >= items.length) return items
+
+  const reordered = [...items]
+  const moved = reordered[index]
+  reordered[index] = reordered[target]
+  reordered[target] = moved
+  return reordered
 }
 
 export async function scrollToFirstError(container: Ref<HTMLDivElement | null>) {
