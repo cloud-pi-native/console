@@ -1,4 +1,12 @@
-import type { Deployment, DeploymentSource, Environment, Prisma, Repository } from '@prisma/client'
+import type {
+  Deployment,
+  DeploymentExternalValueSource,
+  DeploymentInternalValueSource,
+  DeploymentSource,
+  Environment,
+  Prisma,
+  Repository,
+} from '@prisma/client'
 import { faker } from '@faker-js/faker'
 
 export function makeDeployment(overrides: Partial<Deployment> = {}): Deployment {
@@ -49,7 +57,38 @@ export function makeRepository(overrides: Partial<Repository> = {}): Repository 
   }
 }
 
-type DeploymentSourceWithRepository = DeploymentSource & { repository: Repository }
+type DeploymentSourceWithRepository = DeploymentSource & {
+  repository: Repository
+  internalValueSources: DeploymentInternalValueSource[]
+  externalValueSource: DeploymentExternalValueSource | null
+}
+
+export function makeDeploymentInternalValueSource(overrides: Partial<DeploymentInternalValueSource> = {}): DeploymentInternalValueSource {
+  return {
+    id: faker.string.uuid(),
+    createdAt: faker.date.past(),
+    updatedAt: faker.date.past(),
+    deploymentSourceId: faker.string.uuid(),
+    order: 0,
+    path: 'values.yaml',
+    ...overrides,
+  }
+}
+
+export function makeDeploymentExternalValueSource(overrides: Partial<DeploymentExternalValueSource> = {}): DeploymentExternalValueSource {
+  return {
+    id: faker.string.uuid(),
+    createdAt: faker.date.past(),
+    updatedAt: faker.date.past(),
+    deploymentSourceId: faker.string.uuid(),
+    order: 0,
+    path: 'values.yaml',
+    ref: 'main',
+    targetRevision: '',
+    repositoryId: faker.string.uuid(),
+    ...overrides,
+  }
+}
 
 export function makeDeploymentSource(overrides: Partial<DeploymentSourceWithRepository> = {}): DeploymentSourceWithRepository {
   const repositoryId = overrides.repositoryId ?? faker.string.uuid()
@@ -64,6 +103,8 @@ export function makeDeploymentSource(overrides: Partial<DeploymentSourceWithRepo
     path: '/app',
     helmValuesFiles: '',
     repository: makeRepository({ id: repositoryId }),
+    internalValueSources: [],
+    externalValueSource: null,
     ...overrides,
   }
 }
@@ -71,7 +112,13 @@ export function makeDeploymentSource(overrides: Partial<DeploymentSourceWithRepo
 export type DeploymentWithRelations = Prisma.DeploymentGetPayload<{
   include: {
     environment: true
-    deploymentSources: { include: { repository: true } }
+    deploymentSources: {
+      include: {
+        repository: true
+        internalValueSources: true
+        externalValueSource: true
+      }
+    }
   }
 }>
 

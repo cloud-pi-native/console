@@ -1,7 +1,9 @@
 import type { CreateDeployment, UpdateDeployment } from '@cpn-console/shared'
+import type { Deployment } from '@prisma/client'
 import type { FastifyRequest } from 'fastify'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import type { ProjectContext } from '../infrastructure/permission/project/project.guard'
+import type { SerializedDeployment } from './deployment.utils'
 import { CreateDeploymentSchema, UpdateDeploymentSchema } from '@cpn-console/shared'
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, Post, Put, Req, UseGuards } from '@nestjs/common'
 import { AuthUser } from '../infrastructure/auth/auth-user.decorator'
@@ -20,7 +22,7 @@ export class DeploymentController {
   @Get('')
   @RequireAdminPermission('ListProjects')
   @RequireProjectPermission('ListDeployments')
-  list(@Project() project: ProjectContext) {
+  list(@Project() project: ProjectContext): Promise<SerializedDeployment[]> {
     return this.deploymentService.listByProjectId(project.id)
   }
 
@@ -32,7 +34,7 @@ export class DeploymentController {
     @Project() project: ProjectContext,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
-  ) {
+  ): Promise<Deployment> {
     return this.deploymentService.createDeployment(project.id, data, user.userId, request.id)
   }
 
@@ -45,7 +47,7 @@ export class DeploymentController {
     @Project() project: ProjectContext,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
-  ) {
+  ): Promise<Deployment> {
     return this.deploymentService.updateDeployment(project.id, deploymentId, data, user.userId, request.id)
   }
 
@@ -57,7 +59,7 @@ export class DeploymentController {
     @Project() project: ProjectContext,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
-  ) {
+  ): Promise<void> {
     return this.deploymentService.deleteDeployment(project.id, deploymentId, user.userId, request.id)
   }
 }

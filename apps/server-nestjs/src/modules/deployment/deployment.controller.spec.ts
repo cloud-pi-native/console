@@ -11,6 +11,7 @@ import { ProjectGuard } from '../infrastructure/permission/project/project.guard
 import { makeDeployment, makeDeploymentWithRelations } from './deployment-testing.utils'
 import { DeploymentController } from './deployment.controller'
 import { DeploymentService } from './deployment.service'
+import { serializeDeployment } from './deployment.utils'
 
 describe('deploymentController', () => {
   let module: TestingModule
@@ -36,6 +37,7 @@ describe('deploymentController', () => {
         type: 'git',
         targetRevision: 'main',
         path: '/app',
+        valueSources: [],
       },
     ],
   } satisfies CreateDeployment
@@ -49,6 +51,7 @@ describe('deploymentController', () => {
         type: 'git',
         targetRevision: 'develop',
         path: '/updated-app',
+        valueSources: [],
       },
     ],
   } satisfies UpdateDeployment
@@ -75,7 +78,7 @@ describe('deploymentController', () => {
 
   describe('list', () => {
     it('should call deploymentService.listByProjectId with projectId', async () => {
-      const expectedResult = [makeDeploymentWithRelations({ projectId })]
+      const expectedResult = [makeDeploymentWithRelations({ projectId })].map(serializeDeployment)
 
       service.listByProjectId.mockResolvedValue(expectedResult)
 

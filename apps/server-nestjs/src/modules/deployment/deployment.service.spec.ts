@@ -8,6 +8,7 @@ import { AppEventsService } from '../events/app-events.service'
 import { DeploymentDatastoreService } from './deployment-datastore.service'
 import { makeDeployment, makeDeploymentSource, makeDeploymentWithRelations } from './deployment-testing.utils'
 import { DeploymentService } from './deployment.service'
+import { serializeDeployment } from './deployment.utils'
 
 describe('deploymentService', () => {
   let module: TestingModule
@@ -34,6 +35,7 @@ describe('deploymentService', () => {
         targetRevision: 'main',
         path: '/app',
         helmValuesFiles: 'values.yaml',
+        valueSources: [],
       },
     ],
   } satisfies CreateDeployment
@@ -48,6 +50,7 @@ describe('deploymentService', () => {
         targetRevision: 'develop',
         path: '/updated-app',
         helmValuesFiles: 'updated-values.yaml',
+        valueSources: [],
       },
     ],
   } satisfies UpdateDeployment
@@ -79,7 +82,7 @@ describe('deploymentService', () => {
       const result = await service.listByProjectId(projectId)
 
       expect(datastore.getDeploymentsByProjectId).toHaveBeenCalledWith(projectId)
-      expect(result).toEqual(deployments)
+      expect(result).toEqual(deployments.map(serializeDeployment))
     })
   })
 
@@ -98,15 +101,14 @@ describe('deploymentService', () => {
         autosync: validCreateDeployment.autosync,
         environment: { connect: { id: validCreateDeployment.environmentId } },
         deploymentSources: {
-          createMany: {
-            data: validCreateDeployment.deploymentSources.map(source => ({
-              type: source.type,
-              repositoryId: source.repositoryId,
-              targetRevision: source.targetRevision,
-              path: source.path,
-              helmValuesFiles: source.helmValuesFiles,
-            })),
-          },
+          create: validCreateDeployment.deploymentSources.map(source => ({
+            type: source.type,
+            repository: { connect: { id: source.repositoryId } },
+            targetRevision: source.targetRevision,
+            path: source.path,
+            helmValuesFiles: source.helmValuesFiles,
+            internalValueSources: { create: [] },
+          })),
         },
       })
 
@@ -122,6 +124,52 @@ describe('deploymentService', () => {
       const result = await service.createDeployment(projectId, validCreateDeployment, userId, requestId)
 
       expect(result).toEqual(createdDeployment)
+    })
+
+    it('should nest internal and external value sources', async () => {
+      const valueRepositoryId = '77777777-7777-7777-7777-777777777777'
+      const createWithValueSources = {
+        ...validCreateDeployment,
+        deploymentSources: [
+          {
+            ...validCreateDeployment.deploymentSources[0],
+            valueSources: [
+              { type: 'internal' as const, path: 'values.yaml' },
+              { type: 'external' as const, ref: 'infra-values', path: 'values-<env>.yaml', targetRevision: 'main', repositoryId: valueRepositoryId },
+            ],
+          },
+        ],
+      } satisfies CreateDeployment
+
+      datastore.createDeployment.mockResolvedValue(makeDeployment({ id: deploymentId, projectId }))
+      appEvents.emitProjectEvent.mockResolvedValue(okArgoCDResults)
+
+      await service.createDeployment(projectId, createWithValueSources, userId, requestId)
+
+      expect(datastore.createDeployment).toHaveBeenCalledWith(
+        expect.objectContaining({
+          deploymentSources: {
+            create: [
+              expect.objectContaining({
+                internalValueSources: {
+                  create: [
+                    { order: 0, path: 'values.yaml' },
+                  ],
+                },
+                externalValueSource: {
+                  create: {
+                    order: 1,
+                    path: 'values-<env>.yaml',
+                    ref: 'infra-values',
+                    targetRevision: 'main',
+                    repository: { connect: { id: valueRepositoryId } },
+                  },
+                },
+              }),
+            ],
+          },
+        }),
+      )
     })
   })
 
@@ -152,7 +200,8 @@ describe('deploymentService', () => {
             deleteMany: {
               id: { in: ['66666666-6666-6666-6666-666666666666'] },
             },
-            upsert: expect.any(Array),
+            create: expect.any(Array),
+            update: expect.any(Array),
           },
         }),
       )
@@ -161,12 +210,12 @@ describe('deploymentService', () => {
       expect(result).toEqual(updatedDeployment)
     })
 
-    it('should throw if deployment does not exist', async () => {
-      datastore.getDeploymentById.mockResolvedValue(null)
+    it('should not update when the deployment does not exist', async () => {
+      datastore.getDeploymentById.mockRejectedValue(new Error('No Deployment found'))
 
       await expect(
         service.updateDeployment(projectId, deploymentId, validUpdateDeployment, userId, requestId),
-      ).rejects.toThrow(`Deployment with id ${deploymentId} not found`)
+      ).rejects.toThrow('No Deployment found')
 
       expect(datastore.updateDeployment).not.toHaveBeenCalled()
     })
