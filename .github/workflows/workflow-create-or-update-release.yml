@@ -53,6 +53,7 @@ jobs:
       BUILD_AMD64: ${{ needs.expose-vars.outputs.BUILD_AMD64 == 'true' }}
       BUILD_ARM64: false
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+      SKIP_MERGE: true
 
   build-arm64:
     uses: ./.github/workflows/job-build.yml
@@ -70,6 +71,55 @@ jobs:
       BUILD_AMD64: false
       BUILD_ARM64: ${{ needs.expose-vars.outputs.BUILD_ARM64 == 'true' }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+      SKIP_MERGE: true
+
+  merge-manifests:
+    name: Merge digest
+    runs-on: ubuntu-latest
+    if: ${{ needs.release.outputs.release-created == 'true' }}
+    needs:
+      - expose-vars
+      - release
+      - build-amd64
+      - build-arm64
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: digests-*.*.digest
+          path: /tmp/digests
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf
+        with:
+          images: ${{ needs.expose-vars.outputs.REGISTRY }}/${{ needs.expose-vars.outputs.NAMESPACE }}/server
+          tags: |
+            type=raw,value=${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }}
+            type=raw,value=${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}
+            type=raw,value=${{ needs.release.outputs.major-tag }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121
+        with:
+          registry: ${{ needs.expose-vars.outputs.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          logout: true
+
+      - name: Create manifest list and push
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ needs.expose-vars.outputs.REGISTRY }}/${{ needs.expose-vars.outputs.NAMESPACE }}/server@sha256:%s ' *)
+
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ needs.expose-vars.outputs.REGISTRY }}/${{ needs.expose-vars.outputs.NAMESPACE }}/server:${{ steps.meta.outputs.version }}
 
   update-chart:
     runs-on: ubuntu-latest
