@@ -83,28 +83,43 @@ jobs:
       - build-amd64
       - build-arm64
     steps:
+      - name: Checks-out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Generate matrix
+        id: build-matrix
+        run: |
+          echo "BUILD_MATRIX=$(jq -c . < ./ci/matrix-docker.json)" >> $GITHUB_OUTPUT
+
+      - name: Get lowercase branch name
+        id: lower-branch
+        run: |
+          echo "LOWER_BRANCH=$(echo '${{ github.head_ref || github.ref_name }}' | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Download digests
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: digests-*.*.digest
           path: /tmp/digests
           merge-multiple: true
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6.0.0
         with:
-          images: ${{ needs.expose-vars.outputs.REGISTRY }}/${{ needs.expose-vars.outputs.NAMESPACE }}/server
+          images: ${{ needs.expose-vars.outputs.REGISTRY }}/${{ needs.expose-vars.outputs.NAMESPACE }}/${{ matrix.images.name }}
           tags: |
+            type=raw,value=${{ steps.lower-branch.outputs.LOWER_BRANCH }},enable=${{ github.head_ref != 'main' }}
             type=raw,value=${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }}
-            type=raw,value=${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}
-            type=raw,value=${{ needs.release.outputs.major-tag }}
+            type=raw,value=${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }},enable=${{ needs.release.outputs.major-tag != '' && needs.release.outputs.minor-tag != '' }}
+            type=raw,value=${{ needs.release.outputs.major-tag }},enable=${{ needs.release.outputs.major-tag != '' }}
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           registry: ${{ needs.expose-vars.outputs.REGISTRY }}
           username: ${{ github.actor }}
@@ -112,14 +127,18 @@ jobs:
           logout: true
 
       - name: Create manifest list and push
-        working-directory: /tmp/digests
+        working-directory: /tmp/digests/${{ matrix.images.name }}
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ needs.expose-vars.outputs.REGISTRY }}/${{ needs.expose-vars.outputs.NAMESPACE }}/server@sha256:%s ' *)
+            $(printf '${{ needs.expose-vars.outputs.REGISTRY }}/${{ needs.expose-vars.outputs.NAMESPACE }}/${{ matrix.images.name }}@sha256:%s ' *)
 
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ needs.expose-vars.outputs.REGISTRY }}/${{ needs.expose-vars.outputs.NAMESPACE }}/server:${{ steps.meta.outputs.version }}
+          docker buildx imagetools inspect ${{ needs.expose-vars.outputs.REGISTRY }}/${{ needs.expose-vars.outputs.NAMESPACE }}/${{ matrix.images.name }}:${{ steps.meta.outputs.version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        images: ${{ fromJSON(steps.build-matrix.outputs.BUILD_MATRIX) }}
 
   update-chart:
     runs-on: ubuntu-latest
@@ -128,6 +147,7 @@ jobs:
       - release
       - build-amd64
       - build-arm64
+      - merge-manifests
     steps:
       - name: Generate a token
         id: generate-token

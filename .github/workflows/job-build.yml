@@ -39,6 +39,7 @@ on:
         required: false
         type: string
       SKIP_MERGE:
+        description: Skip merge step when called from a parent release workflow that merges later
         required: false
         type: boolean
         default: false
@@ -256,6 +257,7 @@ jobs:
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer *** secrets.ARGOCD_TOKEN }}" \
             -d '${{ steps.feed-template.outputs.ARGOCD_SYNC_PAYLOAD }}')
+
           echo "HTTP response code: $RESPONSE_CODE"
 
           if [ "$RESPONSE_CODE" -ne 200 ]; then
