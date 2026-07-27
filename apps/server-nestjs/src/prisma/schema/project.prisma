@@ -12,17 +12,43 @@ model Deployment {
 }
 
 model DeploymentSource {
-  id              String               @id @unique @default(uuid()) @db.Uuid
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  deploymentId    String               @db.Uuid
-  repositoryId    String               @db.Uuid
-  type            DeploymentSourceType
-  targetRevision  String               @default("")
-  path            String               @default("")
-  helmValuesFiles String               @default("")
-  repository      Repository           @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
-  deployment      Deployment           @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+  id                   String                          @id @unique @default(uuid()) @db.Uuid
+  createdAt            DateTime                        @default(now())
+  updatedAt            DateTime                        @updatedAt
+  deploymentId         String                          @db.Uuid
+  repositoryId         String                          @db.Uuid
+  type                 DeploymentSourceType
+  targetRevision       String                          @default("")
+  path                 String                          @default("")
+  helmValuesFiles      String                          @default("")
+  repository           Repository                      @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  deployment           Deployment                      @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+  internalValueSources DeploymentInternalValueSource[]
+  externalValueSource  DeploymentExternalValueSource?
+}
+
+model DeploymentInternalValueSource {
+  id                 String           @id @unique @default(uuid()) @db.Uuid
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  deploymentSourceId String           @db.Uuid
+  order              Int
+  path               String           @default("")
+  deploymentSource   DeploymentSource @relation(fields: [deploymentSourceId], references: [id], onDelete: Cascade)
+}
+
+model DeploymentExternalValueSource {
+  id                 String           @id @unique @default(uuid()) @db.Uuid
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  deploymentSourceId String           @unique @db.Uuid
+  order              Int
+  path               String           @default("")
+  ref                String
+  targetRevision     String           @default("")
+  repositoryId       String           @db.Uuid
+  deploymentSource   DeploymentSource @relation(fields: [deploymentSourceId], references: [id], onDelete: Cascade)
+  repository         Repository       @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
 }
 
 model Environment {
@@ -46,20 +72,21 @@ model Environment {
 }
 
 model Repository {
-  id                String             @id @default(uuid()) @db.Uuid
-  projectId         String             @db.Uuid
-  internalRepoName  String
-  externalRepoUrl   String             @default("")
-  externalUserName  String             @default("")
-  isInfra           Boolean            @default(false)
-  isPrivate         Boolean            @default(false)
-  deployRevision    String             @default("")
-  deployPath        String             @default("")
-  helmValuesFiles   String             @default("")
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  project           Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  deploymentSources DeploymentSource[]
+  id                             String                          @id @default(uuid()) @db.Uuid
+  projectId                      String                          @db.Uuid
+  internalRepoName               String
+  externalRepoUrl                String                          @default("")
+  externalUserName               String                          @default("")
+  isInfra                        Boolean                         @default(false)
+  isPrivate                      Boolean                         @default(false)
+  deployRevision                 String                          @default("")
+  deployPath                     String                          @default("")
+  helmValuesFiles                String                          @default("")
+  createdAt                      DateTime                        @default(now())
+  updatedAt                      DateTime                        @updatedAt
+  project                        Project                         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  deploymentSources              DeploymentSource[]
+  deploymentExternalValueSources DeploymentExternalValueSource[]
 }
 
 model ProjectClusterHistory {
