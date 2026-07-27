@@ -35,10 +35,7 @@ on:
         required: true
         type: boolean
       PR_NUMBER:
-      SKIP_MERGE:
-        required: false
-        type: boolean
-        default: false
+        description: ID number of the pull request to use for deploy preview app
         required: false
         type: string
     secrets:
@@ -72,10 +69,6 @@ on:
         type: boolean
         default: false
       PR_NUMBER:
-      SKIP_MERGE:
-        required: false
-        type: boolean
-        default: false
         description: ID number of the pull request to use for deploy preview app
         required: false
         type: string
@@ -182,7 +175,6 @@ jobs:
           retention-days: 1
 
   merge:
-    if: ${{ !inputs.SKIP_MERGE }}
     name: Merge digest
     runs-on: ubuntu-latest
     needs:
@@ -252,9 +244,8 @@ jobs:
 
           RESPONSE_CODE=$(curl -s -w "%{http_code}" -o >(RESPONSE_BODY=$(cat)) -X POST ${{ vars.ARGOCD_URL }}/api/v1/applications/${{ steps.feed-template.outputs.ARGOCD_APP_NAME }}/sync \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.ARGOCD_TOKEN }}" \
+            -H "Authorization: Bearer *** secrets.ARGOCD_TOKEN }}" \
             -d '${{ steps.feed-template.outputs.ARGOCD_SYNC_PAYLOAD }}')
-
           echo "HTTP response code: $RESPONSE_CODE"
 
           if [ "$RESPONSE_CODE" -ne 200 ]; then
