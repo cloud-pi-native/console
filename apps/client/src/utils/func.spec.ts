@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { swapItems } from './func'
 
 describe('localeParseFloat EN tests', () => {
   let localeParseFloatEN: (s: string) => number
@@ -40,5 +41,27 @@ describe('localeParseFloat FR tests', () => {
   it('should parse valid float EN in locale FR', async () => {
     const result = localeParseFloatFR('4.25')
     expect(result).toBe(4.25)
+  })
+})
+
+describe('swapItems', () => {
+  it('should swap the item with its neighbour in the given direction', () => {
+    expect(swapItems(['a', 'b', 'c'], 0, 1)).toEqual(['b', 'a', 'c'])
+    expect(swapItems(['a', 'b', 'c'], 2, -1)).toEqual(['a', 'c', 'b'])
+  })
+
+  it('should return the same array reference when the move falls off either end', () => {
+    const items = ['a', 'b', 'c']
+
+    expect(swapItems(items, 0, -1)).toBe(items)
+    expect(swapItems(items, 2, 1)).toBe(items)
+  })
+
+  it('should not mutate the input array', () => {
+    const items = ['a', 'b', 'c']
+
+    swapItems(items, 0, 1)
+
+    expect(items).toEqual(['a', 'b', 'c'])
   })
 })

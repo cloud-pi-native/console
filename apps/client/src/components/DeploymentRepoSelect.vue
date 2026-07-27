@@ -1,13 +1,15 @@
 <script lang="ts" setup>
-import type { UpdateDeployment } from '@cpn-console/shared'
+import type { UpdateDeploymentSource } from '@cpn-console/shared'
 
-withDefaults(defineProps<{
+type DeploymentSourceDraft = Partial<UpdateDeploymentSource>
+
+defineProps<{
   repoOptions: { text: string, value: string }[]
-  disabled?: boolean
-  isDirty?: boolean
-}>(), { disabled: false, isDirty: false })
+  disabled: boolean
+  isDirty: boolean
+}>()
 
-const depots = defineModel<Partial<UpdateDeployment['deploymentSources'][0]>[]>({ default: [] })
+const depots = defineModel<DeploymentSourceDraft[]>({ default: [] })
 
 if (depots.value.length === 0) {
   addDepot()
@@ -17,12 +19,8 @@ function addDepot() {
   depots.value = [
     ...depots.value,
     {
-      id: undefined,
       type: 'git',
-      repositoryId: undefined,
-      targetRevision: undefined,
-      path: undefined,
-      helmValuesFiles: undefined,
+      valueSources: [],
     },
   ]
 }
@@ -31,7 +29,7 @@ function removeDepot(index: number) {
   depots.value = depots.value.filter((_, i) => i !== index)
 }
 
-function updateDepot(index: number, value: Partial<UpdateDeployment['deploymentSources'][0]>) {
+function updateDepot(index: number, value: DeploymentSourceDraft) {
   depots.value[index] = value
 }
 </script>
@@ -48,7 +46,7 @@ function updateDepot(index: number, value: Partial<UpdateDeployment['deploymentS
         :cant-delete="index === 0"
         :disabled="$props.disabled"
         :is-dirty="$props.isDirty"
-        @update:model-value="(value :Partial<UpdateDeployment['deploymentSources'][0]>) => updateDepot(index, value)"
+        @update:model-value="(value: DeploymentSourceDraft) => updateDepot(index, value)"
         @delete="removeDepot(index)"
       />
     </div>
