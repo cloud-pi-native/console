@@ -147,6 +147,26 @@ export const projectSelect = {
               internalRepoName: true,
             },
           },
+          internalValueSources: {
+            orderBy: { order: 'asc' },
+            select: {
+              order: true,
+              path: true,
+            },
+          },
+          externalValueSource: {
+            select: {
+              order: true,
+              path: true,
+              ref: true,
+              targetRevision: true,
+              repository: {
+                select: {
+                  internalRepoName: true,
+                },
+              },
+            },
+          },
         },
       },
     },
