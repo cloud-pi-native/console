@@ -41,18 +41,14 @@ jobs:
         run: pnpm --dir playwright exec playwright install chromium firefox
 
       - name: Initialize application environment for tests
+        env:
+          GHCR_CACHE: registry-cache-ghcr:5000
         run: |
           ./ci/scripts/init-env.sh
-          docker pull ghcr.io/cloud-pi-native/console/server:${{ inputs.TAG }}
-          docker tag ghcr.io/cloud-pi-native/console/server:${{ inputs.TAG }} dso-console/server:ci
-          docker pull ghcr.io/cloud-pi-native/console/nginx-strangler:${{ inputs.TAG }}
-          docker tag ghcr.io/cloud-pi-native/console/nginx-strangler:${{ inputs.TAG }} dso-console/nginx-strangler:ci
-          docker pull ghcr.io/cloud-pi-native/console/server-nestjs:${{ inputs.TAG }}
-          docker tag ghcr.io/cloud-pi-native/console/server-nestjs:${{ inputs.TAG }} dso-console/server-nestjs:ci
-          docker pull ghcr.io/cloud-pi-native/console/client:${{ inputs.TAG }}
-          docker tag ghcr.io/cloud-pi-native/console/client:${{ inputs.TAG }} dso-console/client:ci
-          docker pull ghcr.io/cloud-pi-native/console/opencds-mockoon:${{ inputs.TAG }}
-          docker tag ghcr.io/cloud-pi-native/console/opencds-mockoon:${{ inputs.TAG }} dso-console/opencds-mockoon:ci
+          for img in server nginx-strangler server-nestjs client opencds-mockoon; do
+            docker pull "${GHCR_CACHE}/cloud-pi-native/console/${img}:${{ inputs.TAG }}"
+            docker tag  "${GHCR_CACHE}/cloud-pi-native/console/${img}:${{ inputs.TAG }}" "dso-console/${img}:ci"
+          done
           docker compose -f ./docker/docker-compose.ci.yml up --no-build -d --remove-orphans
 
       - name: Run Playwright tests
