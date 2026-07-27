@@ -37,22 +37,28 @@ describe('deploymentDatastoreService', () => {
     service = module.get(DeploymentDatastoreService)
   })
 
+  const deploymentRelations = {
+    environment: true,
+    deploymentSources: {
+      include: {
+        repository: true,
+        internalValueSources: { orderBy: { order: 'asc' } },
+        externalValueSource: true,
+      },
+    },
+  }
+
   describe('getDeploymentById', () => {
-    it('should return a deployment with sources and repository', async () => {
+    it('should return a deployment with sources and value sources', async () => {
       const deployment = { ...mockDeployment }
 
-      prisma.deployment.findUnique.mockResolvedValue(deployment)
+      prisma.deployment.findUniqueOrThrow.mockResolvedValue(deployment)
 
       const result = await service.getDeploymentById('dep1')
 
-      expect(prisma.deployment.findUnique).toHaveBeenCalledWith({
+      expect(prisma.deployment.findUniqueOrThrow).toHaveBeenCalledWith({
         where: { id: 'dep1' },
-        include: {
-          environment: true,
-          deploymentSources: {
-            include: { repository: true },
-          },
-        },
+        include: deploymentRelations,
       })
       expect(result).toEqual(deployment)
     })
@@ -68,12 +74,7 @@ describe('deploymentDatastoreService', () => {
 
       expect(prisma.deployment.findMany).toHaveBeenCalledWith({
         where: { projectId: 'project1' },
-        include: {
-          environment: true,
-          deploymentSources: {
-            include: { repository: true },
-          },
-        },
+        include: deploymentRelations,
         orderBy: { createdAt: 'asc' },
       })
       expect(result).toEqual(deployments)
