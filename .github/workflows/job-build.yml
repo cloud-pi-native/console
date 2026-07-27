@@ -38,11 +38,6 @@ on:
         description: ID number of the pull request to use for deploy preview app
         required: false
         type: string
-      SKIP_MERGE:
-        description: Skip merge step when called from a parent release workflow that merges later
-        required: false
-        type: boolean
-        default: false
     secrets:
       ARGOCD_TOKEN:
         required: false
@@ -77,11 +72,6 @@ on:
         description: ID number of the pull request to use for deploy preview app
         required: false
         type: string
-      SKIP_MERGE:
-        description: Skip merge step when called from a parent release workflow that merges later
-        required: false
-        type: boolean
-        default: false
 
 jobs:
   matrix:
@@ -186,7 +176,6 @@ jobs:
 
   merge:
     name: Merge digest
-    if: ${{ !inputs.SKIP_MERGE }}
     runs-on: ubuntu-latest
     needs:
       - matrix
@@ -255,7 +244,7 @@ jobs:
 
           RESPONSE_CODE=$(curl -s -w "%{http_code}" -o >(RESPONSE_BODY=$(cat)) -X POST ${{ vars.ARGOCD_URL }}/api/v1/applications/${{ steps.feed-template.outputs.ARGOCD_APP_NAME }}/sync \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer *** secrets.ARGOCD_TOKEN }}" \
+            -H "Authorization: Bearer ${{ secrets.ARGOCD_TOKEN }}" \
             -d '${{ steps.feed-template.outputs.ARGOCD_SYNC_PAYLOAD }}')
 
           echo "HTTP response code: $RESPONSE_CODE"
