@@ -11,8 +11,33 @@ export function makeProjectDeploymentSource(
     targetRevision: 'HEAD',
     helmValuesFiles: '',
     repository: makeProjectRepository(),
+    internalValueSources: [],
+    externalValueSource: null,
     ...overrides,
   } satisfies ProjectWithDetails['deployments'][number]['deploymentSources'][number]
+}
+
+export function makeProjectInternalValueSource(
+  overrides: Partial<ProjectWithDetails['deployments'][number]['deploymentSources'][number]['internalValueSources'][number]> = {},
+): ProjectWithDetails['deployments'][number]['deploymentSources'][number]['internalValueSources'][number] {
+  return {
+    order: 0,
+    path: 'values.yaml',
+    ...overrides,
+  } satisfies ProjectWithDetails['deployments'][number]['deploymentSources'][number]['internalValueSources'][number]
+}
+
+export function makeProjectExternalValueSource(
+  overrides: Partial<NonNullable<ProjectWithDetails['deployments'][number]['deploymentSources'][number]['externalValueSource']>> = {},
+): NonNullable<ProjectWithDetails['deployments'][number]['deploymentSources'][number]['externalValueSource']> {
+  return {
+    order: 0,
+    path: 'values.yaml',
+    ref: '',
+    targetRevision: '',
+    repository: { internalRepoName: faker.word.noun() },
+    ...overrides,
+  } satisfies NonNullable<ProjectWithDetails['deployments'][number]['deploymentSources'][number]['externalValueSource']>
 }
 
 export function makeProjectDeployment(
@@ -30,6 +55,8 @@ export function makeProjectDeployment(
         targetRevision: 'HEAD',
         helmValuesFiles: '',
         repository: makeProjectRepository(),
+        internalValueSources: [],
+        externalValueSource: null,
       },
     ],
     ...overrides,

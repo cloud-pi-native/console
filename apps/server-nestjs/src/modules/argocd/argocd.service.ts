@@ -350,6 +350,10 @@ export class ArgoCDService {
   }
 }
 
+type ValueSource
+  = | { type: 'internal', path: string }
+    | { type: 'external', ref: string, repoURL: string, targetRevision: string, path: string }
+
 interface ValuesSchema {
   common: {
     'dso/project': string
@@ -401,6 +405,7 @@ interface ValuesSchema {
       targetRevision: string
       path: string
       valueFiles: string[]
+      valueSources: ValueSource[]
     }[]
   }
   features: {
@@ -459,8 +464,36 @@ function formatRepositoriesValues(
         targetRevision: repository.deployRevision || 'HEAD',
         path: repository.deployPath || '.',
         valueFiles,
+        valueSources: [],
       } satisfies ValuesSchema['application']['repositories'][number]
     })
+}
+
+type DeploymentSource = ProjectWithDetails['deployments'][number]['deploymentSources'][number]
+
+function formatDeploymentSourceValueSources(
+  source: DeploymentSource,
+  gitlabPublicProjectUrl: string,
+): ValueSource[] {
+  const internalValueSources = source.internalValueSources.map(valueSource => ({
+    order: valueSource.order,
+    value: { type: 'internal', path: valueSource.path } satisfies ValueSource,
+  }))
+  const externalValueSource = source.externalValueSource
+    ? [{
+        order: source.externalValueSource.order,
+        value: {
+          type: 'external',
+          ref: source.externalValueSource.ref,
+          repoURL: `${gitlabPublicProjectUrl}/${source.externalValueSource.repository.internalRepoName}.git`,
+          targetRevision: source.externalValueSource.targetRevision || 'HEAD',
+          path: source.externalValueSource.path,
+        } satisfies ValueSource,
+      }]
+    : []
+  return [...internalValueSources, ...externalValueSource]
+    .sort((a, b) => a.order - b.order)
+    .map(entry => entry.value)
 }
 
 function formatRepositoriesValuesFromDeployments(
@@ -472,6 +505,7 @@ function formatRepositoriesValuesFromDeployments(
     deployment.deploymentSources
       .map((source) => {
         const valueFiles = splitExtraRepositories(source.helmValuesFiles?.replaceAll('<env>', envName))
+        const valueSources = formatDeploymentSourceValueSources(source, gitlabPublicProjectUrl)
         return {
           name: source.repository.internalRepoName,
           id: source.repository.id,
@@ -479,6 +513,7 @@ function formatRepositoriesValuesFromDeployments(
           targetRevision: source.targetRevision || 'HEAD',
           path: source.path || '.',
           valueFiles,
+          valueSources,
         } satisfies ValuesSchema['application']['repositories'][number]
       }),
   )

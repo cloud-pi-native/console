@@ -3,13 +3,21 @@ import { generateNamespaceName } from '@cpn-console/shared'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { stringify } from 'yaml'
+import { parse, stringify } from 'yaml'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
 import { makeCommitAction, makeProjectSchema, makeRepositoryTreeSchema } from '../gitlab/gitlab-testing.utils'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { ArgoCDDatastoreService } from './argocd-datastore.service'
-import { makeProjectDeployment, makeProjectDeploymentSource, makeProjectEnvironment, makeProjectRepository, makeProjectWithDetails } from './argocd-testing.utils'
+import {
+  makeProjectDeployment,
+  makeProjectDeploymentSource,
+  makeProjectEnvironment,
+  makeProjectExternalValueSource,
+  makeProjectInternalValueSource,
+  makeProjectRepository,
+  makeProjectWithDetails,
+} from './argocd-testing.utils'
 import { ArgoCDService } from './argocd.service'
 
 describe('argoCDService', () => {
@@ -206,6 +214,7 @@ describe('argoCDService', () => {
                   targetRevision: 'HEAD',
                   path: '.',
                   valueFiles: [],
+                  valueSources: [],
                 },
               ],
             },
@@ -281,6 +290,7 @@ describe('argoCDService', () => {
                   targetRevision: 'HEAD',
                   path: '.',
                   valueFiles: [],
+                  valueSources: [],
                 },
               ],
             },
@@ -541,6 +551,7 @@ describe('argoCDService', () => {
                   targetRevision: 'dev',
                   path: '.',
                   valueFiles: [],
+                  valueSources: [],
                 },
                 {
                   name: 'infra-repo',
@@ -549,6 +560,7 @@ describe('argoCDService', () => {
                   targetRevision: '1.0.0',
                   path: 'service-1',
                   valueFiles: [],
+                  valueSources: [],
                 },
               ],
             },
@@ -569,5 +581,78 @@ describe('argoCDService', () => {
     })
 
     expect(gitlab.generateCreateOrUpdateAction).toHaveBeenCalledTimes(4) // 2 environments + 2 deployments
+  })
+
+  it('should generate multi-source valueSources (internal + external) for a deployment', async () => {
+    const mockDevEnv = makeProjectEnvironment({
+      name: 'dev',
+      cluster: {
+        id: 'c1',
+        label: 'cluster-1',
+        zone: { slug: 'zone-1' },
+      },
+    })
+    const mockAppRepo = makeProjectRepository({ internalRepoName: 'app-repo' })
+    const mockValueRepo = makeProjectRepository({ internalRepoName: 'infra-values' })
+    const mockProject = makeProjectWithDetails({
+      name: 'Project 1',
+      slug: 'project-1',
+      environments: [mockDevEnv],
+      repositories: [mockAppRepo, mockValueRepo],
+      plugins: [],
+      deployments: [
+        makeProjectDeployment({
+          environment: mockDevEnv,
+          deploymentSources: [
+            makeProjectDeploymentSource({
+              repository: mockAppRepo,
+              targetRevision: 'dev',
+              internalValueSources: [
+                makeProjectInternalValueSource({ order: 0, path: 'values.yaml' }),
+              ],
+              externalValueSource: makeProjectExternalValueSource({
+                order: 1,
+                ref: 'infra-values',
+                path: 'envs/dev/values.yaml',
+                targetRevision: 'main',
+                repository: { internalRepoName: 'infra-values' },
+              }),
+            }),
+          ],
+        }),
+      ],
+    })
+
+    const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
+    datastore.getAllProjects.mockResolvedValue([mockProject])
+    gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
+    gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+    gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+    gitlab.listFiles.mockResolvedValue([])
+    vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
+    vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
+    gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
+      return makeCommitAction({ filePath, content })
+    })
+
+    await expect(service.handleCron()).resolves.not.toThrow()
+
+    const actions = gitlab.maybeCreateCommit.mock.calls[0][2]
+    const parsedValues = actions
+      .filter((action): action is typeof action & { content: string } => 'content' in action)
+      .map(action => parse(action.content))
+    const values = parsedValues.find(v => v.application?.repositories?.[0]?.valueSources?.length)
+    expect(values).toBeDefined()
+
+    expect(values.application.repositories[0].valueSources).toStrictEqual([
+      { type: 'internal', path: 'values.yaml' },
+      {
+        type: 'external',
+        ref: 'infra-values',
+        repoURL: 'https://gitlab.internal/group/project-1/infra-values.git',
+        targetRevision: 'main',
+        path: 'envs/dev/values.yaml',
+      },
+    ])
   })
 })
