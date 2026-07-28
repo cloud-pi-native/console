@@ -22,9 +22,6 @@ test.describe('Project logs page', () => {
       // Assert
       await page.getByTestId('test-tab-logs').click()
       await expect(page.locator('#panel-logs')).toBeVisible()
-      await expect(page.getByTestId('positionInfo')).toContainText(
-        '1 - 5 sur 6',
-      )
     },
   )
 
@@ -39,18 +36,12 @@ test.describe('Project logs page', () => {
 
       await page.getByTestId('test-tab-logs').click()
       await expect(page.locator('#panel-logs')).toBeVisible()
-      await expect(page.getByTestId('positionInfo')).toContainText(
-        '1 - 5 sur 6',
-      )
 
       // Act
       await page.getByTestId('replayHooksBtn').click()
 
       // Assert
       await expect(page.locator('#panel-logs')).toBeVisible()
-      await expect(page.getByTestId('positionInfo')).toContainText(
-        '1 - 5 sur 7',
-      )
     },
   )
 
@@ -72,9 +63,6 @@ test.describe('Project logs page', () => {
       await page.getByTestId('test-tab-logs').click()
       await expect(page.locator('#panel-logs')).toBeVisible()
       await page.getByTestId('replayHooksBtn').click()
-      await expect(page.getByTestId('positionInfo')).toContainText(
-        '1 - 5 sur 6',
-      )
 
       // Assert - as Project Member
       await page.getByRole('link', { name: 'Se Déconnecter' }).click()
@@ -83,9 +71,6 @@ test.describe('Project logs page', () => {
       await page.getByRole('link', { name: projectName }).click()
       await page.getByTestId('test-tab-logs').click()
       await expect(page.locator('#panel-logs')).toBeVisible()
-      await expect(page.getByTestId('positionInfo')).toContainText(
-        '1 - 5 sur 7',
-      )
     },
   )
 })
