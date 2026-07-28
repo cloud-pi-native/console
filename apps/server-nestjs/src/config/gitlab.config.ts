@@ -9,7 +9,7 @@ const gitlabFeatureSchema = z.object({
   GITLAB_MIRROR_TOKEN_EXPIRATION_DAYS: z.coerce.number().int().positive().default(180),
   GITLAB_MIRROR_TOKEN_ROTATION_THRESHOLD_DAYS: z.coerce.number().int().positive().default(90),
   GITLAB__SECRET_EXPOSE_INTERNAL_URL: truthySchema.default('false').transform(v => v === 'true' || v === '1'),
-  PROJECTS_ROOT_DIR: z.string().min(1),
+  PROJECTS_ROOT_DIR: z.string().optional(),
 }).transform((raw) => {
   const urlBase = raw.GITLAB_INTERNAL_URL ?? raw.GITLAB_URL
   return {
@@ -19,7 +19,7 @@ const gitlabFeatureSchema = z.object({
     secretExposeInternalUrl: raw.GITLAB__SECRET_EXPOSE_INTERNAL_URL,
     mirrorTokenExpirationDays: raw.GITLAB_MIRROR_TOKEN_EXPIRATION_DAYS,
     mirrorTokenRotationThresholdDays: raw.GITLAB_MIRROR_TOKEN_ROTATION_THRESHOLD_DAYS,
-    projectRootDir: raw.PROJECTS_ROOT_DIR,
+    projectRootDir: raw.PROJECTS_ROOT_DIR ?? '',
     internalOrPublicUrl: urlBase,
     probeUrl: new URL('/-/health', urlBase).toString(),
   }

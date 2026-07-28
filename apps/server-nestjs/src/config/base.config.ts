@@ -9,7 +9,7 @@ const baseFeatureSchema = z.object({
   SERVER_PORT: z.string().transform(Number).default('0'),
   APP_VERSION: z.string().optional().default('unknown'),
   DB_URL: z.string().url().optional(),
-  PROJECTS_ROOT_DIR: z.string().min(1, 'PROJECTS_ROOT_DIR is required'),
+  PROJECTS_ROOT_DIR: z.string().optional(),
   HTTP_PROXY: z.string().url().optional(),
 }).transform((raw) => {
   const nodeEnv = raw.NODE_ENV ?? 'production'
@@ -22,7 +22,7 @@ const baseFeatureSchema = z.object({
     serverPort: raw.SERVER_PORT,
     appVersion: raw.NODE_ENV === 'production' ? raw.APP_VERSION : 'dev',
     dbUrl: raw.DB_URL,
-    projectsRootDir: raw.PROJECTS_ROOT_DIR,
+    projectsRootDir: raw.PROJECTS_ROOT_DIR ?? '',
     httpProxy: raw.HTTP_PROXY,
   }
 })
