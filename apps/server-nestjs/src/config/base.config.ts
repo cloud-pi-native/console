@@ -9,7 +9,7 @@ const baseFeatureSchema = z.object({
   SERVER_PORT: z.string().transform(Number).default('0'),
   APP_VERSION: z.string().optional().default('unknown'),
   DB_URL: z.string().url().optional(),
-  PROJECTS_ROOT_DIR: z.string().min(1, 'PROJECTS_ROOT_DIR is required'),
+  PROJECTS_ROOT_DIR: z.string().optional(),
 }).transform((raw) => {
   const nodeEnv = raw.NODE_ENV ?? 'production'
   return {

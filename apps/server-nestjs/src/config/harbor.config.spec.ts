@@ -49,7 +49,7 @@ describe('harborConfig', () => {
     expect(cfg.retentionCron).toBe('0 22 2 * * *')
   })
 
-  it('throws when a required var is missing', () => {
-    expect(() => harborConfigFactory()).toThrow()
+  it('parses with empty vars (Harbor disabled, probeUrl undefined)', () => {
+    expect(harborConfigFactory().probeUrl).toBeUndefined()
   })
 })

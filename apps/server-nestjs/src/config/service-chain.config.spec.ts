@@ -42,7 +42,7 @@ describe('serviceChainConfig', () => {
     expect(serviceChainConfigFactory().apiTlsRejectUnauthorized).toBe(true)
   })
 
-  it('throws when a required var is missing', () => {
-    expect(() => serviceChainConfigFactory()).toThrow()
+  it('parses with empty vars (OpenCDS disabled, probeUrl undefined)', () => {
+    expect(serviceChainConfigFactory().probeUrl).toBeUndefined()
   })
 })

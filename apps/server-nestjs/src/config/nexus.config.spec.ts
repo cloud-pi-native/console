@@ -40,7 +40,7 @@ describe('nexusConfig', () => {
     expect(nexusConfigFactory().secretExposeInternalUrl).toBe(true)
   })
 
-  it('throws when a required var is missing', () => {
-    expect(() => nexusConfigFactory()).toThrow()
+  it('parses with empty vars (Nexus disabled, probeUrl undefined)', () => {
+    expect(nexusConfigFactory().probeUrl).toBeUndefined()
   })
 })

@@ -35,7 +35,7 @@ describe('gitlabConfig', () => {
     expect(cfg.internalOrPublicUrl).toBe('https://gitlab.example.com')
   })
 
-  it('throws when a required var is missing', () => {
-    expect(() => gitlabConfigFactory()).toThrow()
+  it('parses with empty vars (GitLab disabled, probeUrl undefined)', () => {
+    expect(gitlabConfigFactory().probeUrl).toBeUndefined()
   })
 })

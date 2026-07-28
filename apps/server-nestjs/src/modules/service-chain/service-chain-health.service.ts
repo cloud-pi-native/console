@@ -12,6 +12,9 @@ export class ServiceChainHealthService {
 
   async check(key: string) {
     const indicator = this.healthIndicator.check(key)
+    if (!this.opencdsConfig.probeUrl) {
+      return indicator.down('Service chain (OpenCDS) is not configured')
+    }
     try {
       const headers: Record<string, string> = {}
       headers.Authorization = `Bearer ${this.opencdsConfig.apiToken}`

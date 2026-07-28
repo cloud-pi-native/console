@@ -1,12 +1,12 @@
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
-import { truthySchema } from './config.utils'
+import { optionalUrl, optionalValue, truthySchema } from './config.utils'
 
 const nexusFeatureSchema = z.object({
-  NEXUS_URL: z.string().url(),
-  NEXUS_INTERNAL_URL: z.string().url().optional(),
-  NEXUS_ADMIN: z.string().min(1),
-  NEXUS_ADMIN_PASSWORD: z.string().min(1),
+  NEXUS_URL: optionalUrl,
+  NEXUS_INTERNAL_URL: optionalUrl,
+  NEXUS_ADMIN: optionalValue,
+  NEXUS_ADMIN_PASSWORD: optionalValue,
   NEXUS__SECRET_EXPOSE_INTERNAL_URL: truthySchema.default('false').transform(v => v === 'true' || v === '1'),
 }).transform((raw) => {
   const urlBase = raw.NEXUS_INTERNAL_URL ?? raw.NEXUS_URL
@@ -17,7 +17,7 @@ const nexusFeatureSchema = z.object({
     adminPassword: raw.NEXUS_ADMIN_PASSWORD,
     secretExposeInternalUrl: raw.NEXUS__SECRET_EXPOSE_INTERNAL_URL,
     internalOrPublicUrl: urlBase,
-    probeUrl: new URL('/service/rest/v1/status', urlBase).toString(),
+    probeUrl: urlBase ? new URL('/service/rest/v1/status', urlBase).toString() : undefined,
   }
 })
 

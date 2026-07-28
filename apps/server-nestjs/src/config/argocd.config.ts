@@ -1,11 +1,11 @@
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
-import { csv, truthySchema } from './config.utils'
+import { csv, optionalUrl, truthySchema } from './config.utils'
 
 const argocdFeatureSchema = z.object({
   ARGO_NAMESPACE: z.string().default('argocd'),
-  ARGOCD_URL: z.string().url(),
-  ARGOCD_INTERNAL_URL: z.string().url().optional(),
+  ARGOCD_URL: optionalUrl,
+  ARGOCD_INTERNAL_URL: optionalUrl,
   ARGOCD_EXTRA_REPOSITORIES: csv(z.string()),
   DSO_ENV_CHART_VERSION: z.string().default('dso-env-1.6.0'),
   DSO_NS_CHART_VERSION: z.string().default('dso-ns-1.1.5'),
@@ -19,7 +19,7 @@ const argocdFeatureSchema = z.object({
   dsoNsChartVersion: raw.DSO_NS_CHART_VERSION,
   vaultDeployVaultConnectionInNs: raw.VAULT__DEPLOY_VAULT_CONNECTION_IN_NS,
   internalOrPublicUrl: raw.ARGOCD_INTERNAL_URL ?? raw.ARGOCD_URL,
-  probeUrl: new URL('/api/version', raw.ARGOCD_URL).toString(),
+  probeUrl: raw.ARGOCD_URL ? new URL('/api/version', raw.ARGOCD_URL).toString() : undefined,
 }))
 
 export type ArgocdConfig = z.infer<typeof argocdFeatureSchema>

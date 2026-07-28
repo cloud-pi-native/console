@@ -12,6 +12,9 @@ export class ArgoCDHealthService {
 
   async check(key: string) {
     const indicator = this.healthIndicator.check(key)
+    if (!this.argocdConfig.probeUrl) {
+      return indicator.down('ArgoCD is not configured')
+    }
     try {
       const response = await fetch(this.argocdConfig.probeUrl)
       if (response.status < HttpStatus.INTERNAL_SERVER_ERROR) return indicator.up({ httpStatus: response.status })

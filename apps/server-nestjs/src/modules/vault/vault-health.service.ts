@@ -12,6 +12,9 @@ export class VaultHealthService {
 
   async check(key: string) {
     const indicator = this.healthIndicator.check(key)
+    if (!this.vaultConfig.probeUrl) {
+      return indicator.down('Vault is not configured')
+    }
     try {
       const response = await fetch(this.vaultConfig.probeUrl)
       if (response.status < HttpStatus.INTERNAL_SERVER_ERROR) return indicator.up({ httpStatus: response.status })

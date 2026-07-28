@@ -28,7 +28,7 @@ describe('vaultConfig', () => {
     expect(cfg.internalOrPublicUrl).toBe('https://vault.example.com')
   })
 
-  it('throws when a required var is missing', () => {
-    expect(() => vaultConfigFactory()).toThrow()
+  it('parses with empty vars (Vault disabled, probeUrl undefined)', () => {
+    expect(vaultConfigFactory().probeUrl).toBeUndefined()
   })
 })

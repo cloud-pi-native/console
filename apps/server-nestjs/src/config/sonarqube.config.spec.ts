@@ -27,7 +27,7 @@ describe('sonarqubeConfig', () => {
     expect(cfg.internalOrPublicUrl).toBe('https://sonar.example.com')
   })
 
-  it('throws when a required var is missing', () => {
-    expect(() => sonarqubeConfigFactory()).toThrow()
+  it('parses with empty vars (SonarQube disabled, probeUrl undefined)', () => {
+    expect(sonarqubeConfigFactory().probeUrl).toBeUndefined()
   })
 })

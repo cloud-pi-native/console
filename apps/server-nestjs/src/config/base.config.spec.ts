@@ -60,7 +60,8 @@ describe('baseConfig', () => {
     })
   })
 
-  it('throws when PROJECTS_ROOT_DIR is missing', () => {
-    expect(() => baseConfigFactory()).toThrow()
+  it('parses with an empty PROJECTS_ROOT_DIR (disabled integrations)', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    expect(baseConfigFactory()).toMatchObject({ projectsRootDir: undefined, isProd: true })
   })
 })

@@ -14,6 +14,9 @@ export class KeycloakHealthService {
 
   async check(key: string) {
     const indicator = this.healthIndicator.check(key)
+    if (!this.keycloakConfig.openidConfigurationUrl) {
+      return indicator.down('Keycloak is not configured')
+    }
     try {
       const response = await fetch(this.keycloakConfig.openidConfigurationUrl)
       if (response.status < HttpStatus.INTERNAL_SERVER_ERROR) return indicator.up({ httpStatus: response.status })

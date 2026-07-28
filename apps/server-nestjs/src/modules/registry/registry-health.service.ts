@@ -12,6 +12,9 @@ export class RegistryHealthService {
 
   async check(key: string) {
     const indicator = this.healthIndicator.check(key)
+    if (!this.harborConfig.probeUrl) {
+      return indicator.down('Harbor is not configured')
+    }
     const headers: Record<string, string> = {}
     const credentials = `${this.harborConfig.admin}:${this.harborConfig.adminPassword}`
     const base64 = Buffer.from(credentials).toString('base64')

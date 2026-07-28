@@ -12,6 +12,9 @@ export class SonarqubeHealthService {
 
   async check(key: string) {
     const indicator = this.healthIndicator.check(key)
+    if (!this.sonarqubeConfig.probeUrl) {
+      return indicator.down('SonarQube is not configured')
+    }
     const headers: Record<string, string> = {}
     const bearerToken = Buffer.from(`${this.sonarqubeConfig.apiToken}:`, 'utf-8').toString('base64')
     headers.Authorization = `Bearer ${bearerToken}`

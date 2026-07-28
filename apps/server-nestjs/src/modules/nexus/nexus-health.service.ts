@@ -12,6 +12,9 @@ export class NexusHealthService {
 
   async check(key: string) {
     const indicator = this.healthIndicator.check(key)
+    if (!this.nexusConfig.probeUrl) {
+      return indicator.down('Nexus is not configured')
+    }
     const headers: Record<string, string> = {}
     const credentials = `${this.nexusConfig.admin}:${this.nexusConfig.adminPassword}`
     const encoded = Buffer.from(credentials).toString('base64')

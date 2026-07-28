@@ -1,10 +1,11 @@
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
+import { optionalUrl, optionalValue } from './config.utils'
 
 const sonarqubeFeatureSchema = z.object({
-  SONARQUBE_URL: z.string().url(),
-  SONARQUBE_INTERNAL_URL: z.string().url().optional(),
-  SONAR_API_TOKEN: z.string().min(1),
+  SONARQUBE_URL: optionalUrl,
+  SONARQUBE_INTERNAL_URL: optionalUrl,
+  SONAR_API_TOKEN: optionalValue,
 }).transform((raw) => {
   const urlBase = raw.SONARQUBE_INTERNAL_URL ?? raw.SONARQUBE_URL
   return {
@@ -12,7 +13,7 @@ const sonarqubeFeatureSchema = z.object({
     internalUrl: raw.SONARQUBE_INTERNAL_URL,
     apiToken: raw.SONAR_API_TOKEN,
     internalOrPublicUrl: urlBase,
-    probeUrl: new URL('/api/system/health', urlBase).toString(),
+    probeUrl: urlBase ? new URL('/api/system/health', urlBase).toString() : undefined,
   }
 })
 

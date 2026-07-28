@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
-import { cronSchema } from './config.utils'
+import { cronSchema, optionalUrl, optionalValue } from './config.utils'
 
 const ruleTemplateSchema = z.enum([
   'always',
@@ -13,10 +13,10 @@ const ruleTemplateSchema = z.enum([
 export type RuleTemplate = z.infer<typeof ruleTemplateSchema>
 
 const harborFeatureSchema = z.object({
-  HARBOR_URL: z.string().url(),
-  HARBOR_INTERNAL_URL: z.string().url().optional(),
-  HARBOR_ADMIN: z.string().min(1),
-  HARBOR_ADMIN_PASSWORD: z.string().min(1),
+  HARBOR_URL: optionalUrl,
+  HARBOR_INTERNAL_URL: optionalUrl,
+  HARBOR_ADMIN: optionalValue,
+  HARBOR_ADMIN_PASSWORD: optionalValue,
   HARBOR_RULE_TEMPLATE: ruleTemplateSchema.optional(),
   HARBOR_RULE_COUNT: z.coerce.number().int().positive().optional(),
   HARBOR_RETENTION_CRON: cronSchema.default('0 22 2 * * *'),
@@ -35,7 +35,7 @@ const harborFeatureSchema = z.object({
     robotRotationThresholdDays: raw.HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS,
     projectSlugCacheTtlMs: raw.HARBOR_PROJECT_SLUG_CACHE_TTL_MS,
     internalOrPublicUrl: urlBase,
-    probeUrl: new URL('/api/v2.0/ping', urlBase).toString(),
+    probeUrl: urlBase ? new URL('/api/v2.0/ping', urlBase).toString() : undefined,
   }
 })
 

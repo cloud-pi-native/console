@@ -48,7 +48,7 @@ describe('argocdConfig', () => {
     expect(argocdConfigFactory().extraRepositories).toEqual([])
   })
 
-  it('throws when a required var is missing', () => {
-    expect(() => argocdConfigFactory()).toThrow()
+  it('parses with empty vars (ArgoCD disabled, probeUrl undefined)', () => {
+    expect(argocdConfigFactory().probeUrl).toBeUndefined()
   })
 })

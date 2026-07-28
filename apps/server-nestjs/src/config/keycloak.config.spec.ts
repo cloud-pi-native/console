@@ -44,7 +44,11 @@ describe('keycloakConfig', () => {
     expect(keycloakConfigFactory().protocol).toBe('https')
   })
 
-  it('throws when a required var is missing', () => {
-    expect(() => keycloakConfigFactory()).toThrow()
+  it('parses with empty vars (Keycloak disabled, urls undefined)', () => {
+    vi.stubEnv('KEYCLOAK_PROTOCOL', 'https')
+    const cfg = keycloakConfigFactory()
+    expect(cfg.url).toBeUndefined()
+    expect(cfg.realmUrl).toBeUndefined()
+    expect(cfg.openidConfigurationUrl).toBeUndefined()
   })
 })

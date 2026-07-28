@@ -92,3 +92,17 @@ export function csv<T extends z.ZodType<string, z.ZodTypeDef, unknown>>(schema: 
     )
     .pipe(z.array(schema))
 }
+
+// Integration URL/secret fields may legitimately be empty in some environments
+// (e.g. the preview container ships empty integration vars). An empty string is
+// normalized to undefined so the integration is treated as disabled rather than
+// failing validation at bootstrap.
+export const optionalUrl = z.preprocess(
+  val => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+  z.string().url().optional(),
+)
+
+export const optionalValue = z.preprocess(
+  val => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+  z.string().min(1).optional(),
+)
