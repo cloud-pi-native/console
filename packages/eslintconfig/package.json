@@ -9,9 +9,15 @@
   "license": "ISC",
   "main": "src/index.js",
   "types": "types/index.d.ts",
+  "scripts": {
+    "test": "vitest run",
+    "format": "eslint src --fix"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:tools",
-    "eslint": "catalog:tools"
+    "eslint": "catalog:tools",
+    "eslint-plugin-format": "catalog:tools",
+    "vitest": "catalog:test"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",

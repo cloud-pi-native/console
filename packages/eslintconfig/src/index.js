@@ -24,6 +24,12 @@ export default antfu(
         'yaml/indent': ['error', 2, { indentBlockSequences: true, indicatorValueIndent: 2 }],
       },
     },
+    formatters: {
+      markdown: true,
+      json: true,
+      // jsonc is already covered by the json formatter (prettier keeps comments).
+      // html: true,  // only if apps/client/index.html should be formatted (single file today)
+    },
     ignores: [
       '**/node_modules',
       '**/prisma/migrations',
