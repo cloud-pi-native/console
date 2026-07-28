@@ -19,7 +19,8 @@ export default defineConfig({
 
   retries: 3,
 
-  workers: process.env.CI ? 1 : undefined, // Default is 50% logical cores
+  // Let Playwright automatically handle parallelism
+  workers: process.env.CI ? 2 : undefined, // Default is 50% logical cores
 
   // The maximum number of test failures forthe whole test suite run.
   // After reaching this number, testing will stop and exit with an error.
