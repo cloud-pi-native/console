@@ -1,7 +1,7 @@
 import type { HttpStatus } from '@nestjs/common'
 import type { Dispatcher, HeadersInit } from 'undici'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { Agent, fetch, Headers, ProxyAgent } from 'undici'
+import { Agent, fetch, Headers } from 'undici'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { throwIfNotOk } from './service-chain.utils'
 
@@ -110,20 +110,13 @@ export class OpenCdsClientService {
     return mergedHeaders
   }
 
-  private buildDispatcher(): Dispatcher {
-    if (process.env.HTTP_PROXY) {
-      return new ProxyAgent({
-        requestTls: {
-          rejectUnauthorized: this.config.openCdsApiTlsRejectUnauthorized,
-        },
-        uri: process.env.HTTP_PROXY,
-      })
+  private buildDispatcher(): Dispatcher | undefined {
+    // Only the TLS-verify-disabled case needs a local dispatcher; proxy bypass on
+    // that rare path is accepted. Security default (apiTlsRejectUnauthorized=true) keeps cert verification ON.
+    if (!this.config.openCdsApiTlsRejectUnauthorized) {
+      return new Agent({ connect: { rejectUnauthorized: false } })
     }
 
-    return new Agent({
-      connect: {
-        rejectUnauthorized: this.config.openCdsApiTlsRejectUnauthorized,
-      },
-    })
+    return undefined
   }
 }

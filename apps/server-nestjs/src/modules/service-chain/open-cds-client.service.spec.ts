@@ -1,8 +1,8 @@
 import type { TestingModule } from '@nestjs/testing'
-import type { Dispatcher, RequestInit } from 'undici'
+import type { RequestInit } from 'undici'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
-import { Agent, fetch, Headers, ProxyAgent, Response } from 'undici'
+import { Agent, fetch, Headers, Response } from 'undici'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConfigurationService } from '../infrastructure/configuration/configuration.service'
 import { OpenCdsClientError, OpenCdsClientService } from './open-cds-client.service'
@@ -14,7 +14,6 @@ vi.mock('undici', async (importOriginal) => {
     ...actual,
     Agent: vi.fn(),
     fetch: vi.fn(),
-    ProxyAgent: vi.fn(),
   }
 })
 
@@ -31,26 +30,10 @@ describe('openCdsClientService', () => {
   let module: TestingModule
   let service: OpenCdsClientService
   let config: Partial<ConfigurationService>
-  let tlsDispatcher: Pick<Dispatcher, 'dispatch'>
-  let proxyDispatcher: Pick<Dispatcher, 'dispatch'>
 
   beforeEach(async () => {
     vi.clearAllMocks()
     vi.unstubAllEnvs()
-
-    tlsDispatcher = { dispatch: vi.fn() }
-    proxyDispatcher = { dispatch: vi.fn() }
-
-    class MockAgent {
-      dispatch = tlsDispatcher
-    };
-
-    class ProxyMockAgent {
-      dispatch = proxyDispatcher
-    };
-
-    vi.mocked(Agent).mockImplementation(MockAgent as any)
-    vi.mocked(ProxyAgent).mockImplementation(ProxyMockAgent as any)
 
     config = {
       openCdsUrl: 'https://opencds.example.com/root/api/',
@@ -68,7 +51,7 @@ describe('openCdsClientService', () => {
     service = module.get<OpenCdsClientService>(OpenCdsClientService)
   })
 
-  it('builds GET requests with an Axios-compatible URL, API key header and TLS-aware dispatcher', async () => {
+  it('builds GET requests with an Axios-compatible URL, API key header and global dispatcher', async () => {
     mockFetchResponse(new Response(JSON.stringify({ ok: true }), {
       status: HttpStatus.OK,
       headers: {
@@ -78,43 +61,13 @@ describe('openCdsClientService', () => {
 
     const result = await service.get<{ ok: boolean }>('/requests')
 
-    expect(Agent).toHaveBeenCalledWith({
-      connect: {
-        rejectUnauthorized: true,
-      },
-    })
     const [url, init] = getLastFetchCall()
     expect(url).toBe('https://opencds.example.com/root/api/requests')
-    expect(init.dispatcher?.dispatch).toBe(tlsDispatcher)
+    expect(init.dispatcher).toBeUndefined()
     expect(init.method).toBe('GET')
     expect(init.signal).toBeUndefined()
     expect(new Headers(init.headers).get('X-API-Key')).toBe('test-token')
     expect(result).toEqual({ ok: true })
-  })
-
-  it('uses ProxyAgent when HTTP_PROXY is configured and preserves TLS settings for the upstream request', async () => {
-    vi.stubEnv('HTTP_PROXY', 'http://proxy.internal:3128')
-    mockFetchResponse(new Response(JSON.stringify({ ok: true }), {
-      status: HttpStatus.OK,
-      headers: {
-        'content-type': 'application/json',
-      },
-    }))
-
-    await service.get('/requests')
-
-    expect(ProxyAgent).toHaveBeenCalledWith({
-      requestTls: {
-        rejectUnauthorized: true,
-      },
-      uri: 'http://proxy.internal:3128',
-    })
-    const [url, init] = getLastFetchCall()
-    expect(url).toBe('https://opencds.example.com/root/api/requests')
-    expect(init.dispatcher?.dispatch).toBe(proxyDispatcher)
-    expect(init.method).toBe('GET')
-    expect(init.signal).toBeUndefined()
-    expect(new Headers(init.headers).get('X-API-Key')).toBe('test-token')
   })
 
   it('applies query parameters and omits undefined values on GET', async () => {
@@ -145,7 +98,7 @@ describe('openCdsClientService', () => {
 
     const [url, init] = getLastFetchCall()
     expect(url).toBe('https://opencds.example.com/root/api/validate/id')
-    expect(init.dispatcher?.dispatch).toBe(tlsDispatcher)
+    expect(init.dispatcher).toBeUndefined()
     expect(init.method).toBe('POST')
     expect(init.signal).toBeUndefined()
     expect(init.body).toBeUndefined()
@@ -167,7 +120,7 @@ describe('openCdsClientService', () => {
       requestId: '123',
       enabled: true,
     }))
-    expect(init.dispatcher?.dispatch).toBe(tlsDispatcher)
+    expect(init.dispatcher).toBeUndefined()
     expect(init.method).toBe('POST')
     expect(init.signal).toBeUndefined()
     expect(new Headers(init.headers).get('X-API-Key')).toBe('test-token')
@@ -193,5 +146,30 @@ describe('openCdsClientService', () => {
       status: HttpStatus.BAD_GATEWAY,
       statusText: 'Bad Gateway',
     })
+  })
+
+  it('uses a local Agent with rejectUnauthorized:false when TLS verification is disabled', async () => {
+    config = {
+      ...config,
+      openCdsApiTlsRejectUnauthorized: false,
+    }
+    module = await Test.createTestingModule({
+      providers: [
+        OpenCdsClientService,
+        { provide: ConfigurationService, useValue: config },
+      ],
+    }).compile()
+    service = module.get<OpenCdsClientService>(OpenCdsClientService)
+
+    mockFetchResponse(new Response(JSON.stringify({ ok: true }), {
+      status: HttpStatus.OK,
+      headers: { 'content-type': 'application/json' },
+    }))
+
+    await service.get<{ ok: boolean }>('/requests')
+
+    expect(Agent).toHaveBeenCalledWith({ connect: { rejectUnauthorized: false } })
+    const [, init] = getLastFetchCall()
+    expect(init.dispatcher).toBeDefined()
   })
 })

@@ -8,6 +8,7 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { NodeSDK, resources } from '@opentelemetry/sdk-node'
 import { Logger } from 'nestjs-pino'
+import { EnvHttpProxyAgent, setGlobalDispatcher } from 'undici'
 import { MainModule } from './main.module'
 import { ConfigurationService } from './modules/infrastructure/configuration/configuration.service'
 
@@ -30,6 +31,8 @@ const telemetry = new NodeSDK({
 })
 
 async function bootstrap() {
+  setGlobalDispatcher(new EnvHttpProxyAgent())
+
   telemetry.start()
 
   const app = await NestFactory.create<NestFastifyApplication>(MainModule, new FastifyAdapter(), {
