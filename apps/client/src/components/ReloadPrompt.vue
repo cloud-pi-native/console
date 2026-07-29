@@ -16,7 +16,7 @@ async function close() {
     class="w-full flex justify-center"
   >
     <DsfrAlert
-      data-testid="snackbar"
+      data-testid="refresh-application"
       type="info"
       class="dso-snackbar max-w-300"
       small
