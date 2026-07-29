@@ -51,6 +51,7 @@ jobs:
           done
           docker compose -f ./docker/docker-compose.ci.yml up --no-build -d --remove-orphans
 
+      # See https://playwright.dev/docs/test-sharding for how Playwright handles test sharding
       - name: Run Playwright tests
         run: pnpm --dir playwright exec playwright test --grep @e2e --shard=${{ matrix.shard }}/4 --reporter=blob
 
