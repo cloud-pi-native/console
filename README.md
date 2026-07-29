@@ -297,6 +297,8 @@ Le serveur Node.js expose le port de débogage `9229` lorsqu'il est lancé en mo
 3. Cliquez sur "Open dedicated DevTools for Node" ou attendez que votre target apparaisse sous "Remote Target".
 4. Vous pouvez maintenant mettre des points d'arrêt, inspecter les variables, etc.
 
+La documentation NestJS propose un outil de développement intégré : [NestJS DevTools](https://docs.nestjs.com/devtools/overview) — supervision, profiling et débogage des applications NestJS.
+
 ### Construction des images
 
 Ce dépôt utilise des fichiers docker-compose pour construire les images docker:
