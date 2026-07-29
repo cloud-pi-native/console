@@ -116,6 +116,9 @@ catalogs:
     vue-tsc: ^2.2.12
     workbox-window: ^7.4.0
   test:
+    # Ensure Playwright version is the same as the one in this Dockerfile:
+    # https://github.com/cloud-pi-native/Dockerfile/tree/main/docker/actions-runner-pw/Dockerfile
+    # Because this is the image used by our Github Self-Hosted Runner that handles Playwright tests
     "@playwright/test": ^1.59.1
     "@faker-js/faker": ^9.9.0
     "@vitest/coverage-v8": ^4.1.5
