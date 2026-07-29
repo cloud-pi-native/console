@@ -12,8 +12,8 @@ import { RegistryPluginService } from './registry-plugin.service'
 import { RegistryService } from './registry.service'
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule, TerminusModule, VaultModule, CacheModule.register()],
-  providers: [RegistryHealthService, RegistryPluginService, RegistryService, RegistryDatastoreService, RegistryHttpClientService, RegistryClientService],
+  imports: [CacheModule.register(), ConfigurationModule, DatabaseModule, TerminusModule, VaultModule],
+  providers: [RegistryClientService, RegistryDatastoreService, RegistryHealthService, RegistryHttpClientService, RegistryPluginService, RegistryService],
   exports: [RegistryHealthService, RegistryPluginService, RegistryService],
 })
 export class RegistryModule {}

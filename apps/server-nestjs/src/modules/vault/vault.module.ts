@@ -12,12 +12,12 @@ import { VaultService } from './vault.service'
 @Module({
   imports: [ConfigurationModule, DatabaseModule, TerminusModule],
   providers: [
+    VaultClientService,
+    VaultDatastoreService,
     VaultHealthService,
     VaultHttpClientService,
-    VaultClientService,
     VaultPluginService,
     VaultService,
-    VaultDatastoreService,
   ],
   exports: [VaultClientService, VaultHealthService, VaultPluginService, VaultService],
 })

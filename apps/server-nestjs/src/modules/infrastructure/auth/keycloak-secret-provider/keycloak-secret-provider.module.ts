@@ -4,7 +4,7 @@ import { ConfigurationModule } from '../../configuration/configuration.module'
 import { KeycloakSecretProviderService } from './keycloak-secret-provider.service'
 
 @Module({
-  imports: [ConfigurationModule, CacheModule.register()],
+  imports: [CacheModule.register(), ConfigurationModule],
   providers: [KeycloakSecretProviderService],
   exports: [KeycloakSecretProviderService],
 })

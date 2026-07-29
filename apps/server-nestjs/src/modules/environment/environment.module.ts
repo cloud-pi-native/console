@@ -11,8 +11,8 @@ import { EnvironmentService } from './environment.service'
   controllers: [EnvironmentController],
   providers: [
     EnvironmentDatastoreService,
-    EnvironmentValidationService,
     EnvironmentService,
+    EnvironmentValidationService,
   ],
 })
 export class EnvironmentModule {}

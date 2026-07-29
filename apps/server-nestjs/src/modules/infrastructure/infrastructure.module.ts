@@ -8,7 +8,7 @@ import { PermissionModule } from './permission/permission.module'
 
 @Module({
   providers: [],
-  imports: [AuthModule, DatabaseModule, ConfigurationModule, EventsModule, LoggerModule, PermissionModule],
-  exports: [AuthModule, DatabaseModule, ConfigurationModule, EventsModule, LoggerModule, PermissionModule],
+  imports: [AuthModule, ConfigurationModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+  exports: [AuthModule, ConfigurationModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
 })
 export class InfrastructureModule {}

@@ -15,15 +15,15 @@ import { HealthzService } from './healthz.service'
 
 @Module({
   imports: [
-    TerminusModule,
-    DatabaseModule,
-    KeycloakModule,
     ConditionalModule.registerWhen(ArgoCDModule, 'USE_ARGOCD'),
     ConditionalModule.registerWhen(GitlabModule, 'USE_GITLAB'),
     ConditionalModule.registerWhen(NexusModule, 'USE_NEXUS'),
     ConditionalModule.registerWhen(RegistryModule, 'USE_HARBOR'),
     ConditionalModule.registerWhen(ServiceChainModule, optIn('USE_SERVICE_CHAIN')),
     ConditionalModule.registerWhen(VaultModule, 'USE_VAULT'),
+    DatabaseModule,
+    KeycloakModule,
+    TerminusModule,
   ],
   controllers: [HealthzController],
   providers: [HealthzService],

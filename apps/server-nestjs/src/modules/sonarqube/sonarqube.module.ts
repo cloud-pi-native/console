@@ -13,10 +13,10 @@ import { SonarqubeService } from './sonarqube.service'
 @Module({
   imports: [ConfigurationModule, DatabaseModule, TerminusModule, VaultModule],
   providers: [
-    SonarqubeHealthService,
-    SonarqubeHttpClientService,
     SonarqubeClientService,
     SonarqubeDatastoreService,
+    SonarqubeHealthService,
+    SonarqubeHttpClientService,
     SonarqubePluginService,
     SonarqubeService,
   ],

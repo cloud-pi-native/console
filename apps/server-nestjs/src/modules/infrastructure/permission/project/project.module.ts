@@ -14,14 +14,14 @@ import { ProjectPermissionService } from './project.service'
   providers: [
     ProjectGuard,
     ProjectPermissionLoaderService,
-    ProjectPermissionService,
     ProjectPermissionPolicy,
+    ProjectPermissionService,
   ],
   exports: [
     ProjectGuard,
     ProjectPermissionLoaderService,
-    ProjectPermissionService,
     ProjectPermissionPolicy,
+    ProjectPermissionService,
   ],
 })
 export class ProjectPermissionModule {}

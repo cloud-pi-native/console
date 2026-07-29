@@ -9,7 +9,7 @@ import { ProjectSecretsController } from './project-secrets.controller'
 import { ProjectSecretsService } from './project-secrets.service'
 
 @Module({
-  imports: [AuthModule, ConfigurationModule, DatabaseModule, ProjectPermissionModule, ConditionalModule.registerWhen(VaultModule, 'USE_VAULT')],
+  imports: [AuthModule, ConditionalModule.registerWhen(VaultModule, 'USE_VAULT'), ConfigurationModule, DatabaseModule, ProjectPermissionModule],
   controllers: [ProjectSecretsController],
   providers: [ProjectSecretsService],
   exports: [ProjectSecretsService],

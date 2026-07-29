@@ -21,6 +21,6 @@ import { ServiceChainService } from './service-chain.service'
   ],
   controllers: [ServiceChainController],
   providers: [OpenCdsClientService, ServiceChainHealthService, ServiceChainService],
-  exports: [ServiceChainService, ServiceChainHealthService],
+  exports: [ServiceChainHealthService, ServiceChainService],
 })
 export class ServiceChainModule {}

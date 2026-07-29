@@ -150,6 +150,7 @@ catalogs:
     chalk: ^5.6.2
     eslint: ^10.5.0
     eslint-plugin-vue: ^10.8.0
+    '@darraghor/eslint-plugin-nestjs-typed': ^7.2.9
     husky: ^9.1.7
     js-yaml: ^4.1.0
     lint-staged: ^16.4.0

@@ -11,7 +11,7 @@ import { ArgoCDService } from './argocd.service'
 
 @Module({
   imports: [ConfigurationModule, DatabaseModule, GitlabModule, TerminusModule, VaultModule],
-  providers: [ArgoCDHealthService, ArgoCDPluginService, ArgoCDService, ArgoCDDatastoreService],
+  providers: [ArgoCDDatastoreService, ArgoCDHealthService, ArgoCDPluginService, ArgoCDService],
   exports: [ArgoCDHealthService, ArgoCDPluginService, ArgoCDService],
 })
 export class ArgoCDModule {}

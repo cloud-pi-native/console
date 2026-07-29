@@ -13,12 +13,12 @@ import { NexusService } from './nexus.service'
 @Module({
   imports: [ConfigurationModule, DatabaseModule, TerminusModule, VaultModule],
   providers: [
+    NexusClientService,
+    NexusDatastoreService,
     NexusHealthService,
+    NexusHttpClientService,
     NexusPluginService,
     NexusService,
-    NexusDatastoreService,
-    NexusHttpClientService,
-    NexusClientService,
   ],
   exports: [NexusClientService, NexusHealthService, NexusPluginService, NexusService],
 })

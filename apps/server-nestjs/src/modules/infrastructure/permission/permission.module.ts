@@ -3,7 +3,7 @@ import { ProjectPermissionModule } from './project/project.module'
 import { UserPermissionModule } from './user/user.module'
 
 @Module({
-  imports: [UserPermissionModule, ProjectPermissionModule],
-  exports: [UserPermissionModule, ProjectPermissionModule],
+  imports: [ProjectPermissionModule, UserPermissionModule],
+  exports: [ProjectPermissionModule, UserPermissionModule],
 })
 export class PermissionModule {}

@@ -12,13 +12,13 @@ import { UserPermissionService } from './user.service'
   ],
   providers: [
     UserGuard,
-    UserPermissionService,
     UserPermissionPolicy,
+    UserPermissionService,
   ],
   exports: [
     UserGuard,
-    UserPermissionService,
     UserPermissionPolicy,
+    UserPermissionService,
   ],
 })
 export class UserPermissionModule {}

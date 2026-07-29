@@ -29,6 +29,6 @@ import { KeycloakJwtService } from './keycloak-jwt.service'
     }),
   ],
   providers: [KeycloakJwtService],
-  exports: [KeycloakJwtService, JwtModule],
+  exports: [JwtModule, KeycloakJwtService],
 })
 export class KeycloakJwtModule {}
