@@ -75,7 +75,7 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
 
       - name: Install Playwright system dependencies
-        run: pnpm --dir playwright exec playwright install --with-deps
+        run: pnpm --dir playwright exec playwright install
 
       - name: Save cache - Playwright browser binaries
         if: always() && steps.playwright-cache.outputs.cache-hit != 'true'
