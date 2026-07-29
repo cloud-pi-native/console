@@ -34,6 +34,11 @@ services:
       POSTGRES_DB: dso-console-db
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d dso-console-db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - dso-network
     attach: false
@@ -49,7 +54,7 @@ services:
     user: root
     depends_on:
       postgres:
-        condition: service_started
+        condition: service_healthy
       keycloak:
         condition: service_healthy
     volumes:
@@ -73,7 +78,7 @@ services:
     container_name: dso-console_server-nestjs
     depends_on:
       postgres:
-        condition: service_started
+        condition: service_healthy
       keycloak:
         condition: service_healthy
       opencds-mockoon:
