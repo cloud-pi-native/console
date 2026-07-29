@@ -101,4 +101,11 @@ export class ArgoCDDatastoreService {
       select: projectSelect,
     })
   }
+
+  async getAllZoneSlugs(): Promise<string[]> {
+    const zones = await this.prisma.zone.findMany({
+      select: { slug: true },
+    })
+    return zones.map(zone => zone.slug)
+  }
 }

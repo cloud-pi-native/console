@@ -34,6 +34,8 @@ describe('argoCDService', () => {
       deployVaultConnectionInNamespaces: false,
     })
 
+    datastore.getAllZoneSlugs.mockResolvedValue(['zone-1'])
+
     const module = await Test.createTestingModule({
       providers: [
         ArgoCDService,
@@ -350,6 +352,53 @@ describe('argoCDService', () => {
     )
 
     expect(gitlab.generateCreateOrUpdateAction).toHaveBeenCalledTimes(1)
+  })
+
+  it('should delete leftover values files when the project has no environments', async () => {
+    const mockProject = makeProjectWithDetails({
+      slug: 'project-1',
+      name: 'Project 1',
+      environments: [],
+      repositories: [makeProjectRepository({ internalRepoName: 'infra-repo', isInfra: true })],
+      deployments: [],
+    })
+
+    const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
+    datastore.getAllProjects.mockResolvedValue([mockProject])
+    // The project no longer has any environment, so the zone must be discovered
+    // from the platform zone list rather than from the project's environments.
+    datastore.getAllZoneSlugs.mockResolvedValue(['zone-1'])
+    gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
+    gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+    gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+    gitlab.listFiles.mockResolvedValue([
+      makeRepositoryTreeSchema(
+        { name: 'values.yaml', path: 'Project 1/cluster-1/dev/values.yaml' },
+      ),
+      makeRepositoryTreeSchema(
+        { name: 'values.yaml', path: 'Project 1/cluster-1/prod/values.yaml' },
+      ),
+    ])
+
+    await expect(service.handleCron()).resolves.not.toThrow()
+
+    expect(gitlab.maybeCreateCommit).toHaveBeenCalledTimes(1)
+    expect(gitlab.maybeCreateCommit).toHaveBeenCalledWith(
+      infraProject,
+      'ci: :robot_face: Sync project-1',
+      expect.arrayContaining([
+        {
+          action: 'delete',
+          filePath: 'Project 1/cluster-1/dev/values.yaml',
+        },
+        {
+          action: 'delete',
+          filePath: 'Project 1/cluster-1/prod/values.yaml',
+        },
+      ]),
+    )
+
+    expect(gitlab.generateCreateOrUpdateAction).not.toHaveBeenCalled()
   })
 
   it('should not commit when there is no diff', async () => {
