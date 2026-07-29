@@ -20,7 +20,7 @@ export class Monitor {
 
   constructor(callback: (instance: Monitor) => Promise<MonitorInfos>, interval: number = 5 * 60 * 1000) {
     this.intervalTime = interval
-    this.monitorFn = () => {
+    this.monitorFn = async () => {
       this.lastStatus.cause = undefined
       return callback(this)
     }
@@ -36,7 +36,9 @@ export class Monitor {
   async refresh() {
     if (this.intervalID)
       clearInterval(this.intervalID)
-    this.intervalID = setInterval(() => this.monitorFn(this), this.intervalTime)
+    this.intervalID = setInterval(() => {
+      void this.monitorFn(this)
+    }, this.intervalTime)
     return this.monitorFn(this)
   }
 }

@@ -102,8 +102,9 @@ export async function countRolesMembers(projectId: Project['id']) {
   const members = await listMembers(projectId)
   const rolesCounts: Record<ProjectRole['id'], number> = Object.fromEntries(roles.map(role => [role.id, 0])) // {role uuid: 0}
   for (const { roleIds } of members) {
+    if (!roleIds) continue
     for (const roleId of roleIds) {
-      rolesCounts[roleId]++
+      rolesCounts[roleId]!++
     }
   }
   return rolesCounts

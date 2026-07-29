@@ -203,8 +203,8 @@ onBeforeMount(async () => {
                 :style="`background-color: ${user.bgColor};`"
               >
                 {{
-                  user.firstName[0].toUpperCase()
-                    + user.lastName[0].toUpperCase()
+                  (user.firstName[0] ?? '').toUpperCase()
+                    + (user.lastName[0] ?? '').toUpperCase()
                 }}
               </div>
             </td>

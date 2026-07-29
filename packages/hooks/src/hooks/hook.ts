@@ -8,6 +8,7 @@ export type PluginResultStore = Record<string, PluginResultStoreValue>
 export interface PluginResult {
   status: { result: 'OK', message?: string } | { result: 'KO' | 'WARNING', message: string }
   store?: PluginResultStore
+  executionTime?: Record<string, number>
   [key: string]: any
 }
 
@@ -52,13 +53,13 @@ function generateMessageResume<Args extends DefaultArgs>(payload: HookPayload<Ar
   if (Array.isArray(payload.failed)) {
     for (const pluginName of payload.failed) {
       messageResume += 'Errors:'
-      messageResume += `\n${pluginName}: ${payload.results[pluginName].status.message};`
+      messageResume += `\n${pluginName}: ${payload.results[pluginName]!.status.message};`
     }
   }
   if (payload.warning.length) {
     for (const pluginName of payload.warning) {
       messageResume += 'Warnings:'
-      messageResume += `\n${pluginName}: ${payload.results[pluginName].status.message};`
+      messageResume += `\n${pluginName}: ${payload.results[pluginName]!.status.message};`
     }
   }
   return messageResume || undefined
@@ -112,27 +113,34 @@ function handleStepResult<Args extends DefaultArgs>(
   const result = settled.status === 'fulfilled'
     ? handleFulfilledStepResult(settled.value, name, stepName, payload)
     : handleRejectedStepResult(settled.reason, name, stepName, payload)
-  return { ...result, executionTime: payload.results[name].executionTime }
+  return result
 }
 
 export async function executeStep<Args extends DefaultArgs>(step: HookStep, payload: HookPayload<Args>, stepName: string) {
   const names = Object.keys(step)
   const fns = names.map(async (name) => {
-    if (payload.results[name]?.executionTime) {
-      payload.results[name].executionTime[stepName] = Date.now()
+    const existingResult = payload.results[name]
+    if (existingResult !== undefined) {
+      if (existingResult.executionTime !== undefined) {
+        existingResult.executionTime[stepName] = Date.now()
+      } else {
+        existingResult.executionTime = { [stepName]: Date.now() }
+      }
     } else {
       payload.results[name] = {
         status: { result: 'OK' },
         executionTime: { [stepName]: Date.now() },
       }
     }
-    const fnResult = await step[name](payload)
-    payload.results[name].executionTime[stepName] = Date.now() - payload.results[name].executionTime[stepName]
+    const fnResult = await step[name]!(payload)
+    const resultEntry = payload.results[name]!
+    resultEntry.executionTime = resultEntry.executionTime ?? {}
+    resultEntry.executionTime[stepName] = Date.now() - (resultEntry.executionTime[stepName] ?? 0)
     return fnResult
   })
   const results = await Promise.allSettled(fns)
   names.forEach((name, index) => {
-    payload.results[name] = handleStepResult(results[index], name, stepName, payload)
+    payload.results[name] = handleStepResult(results[index]!, name, stepName, payload)
   })
   return payload
 }
@@ -164,7 +172,7 @@ export function createHook<E extends DefaultArgs>(unique = false) {
     const executeSteps = ['pre', 'main', 'post'] as const
     for (const step of executeSteps) {
       payload = await executeStep(steps[step], payload, step)
-      if (payload.failed) {
+      if (payload.failed === true) {
         payload = await executeStep(steps.revert, payload, 'revert')
         break
       }

@@ -177,15 +177,16 @@ export const upsertZone: StepCall<ZoneObject> = async ({ args: zone, apis }) => 
     }
     const result = await kcClient.clients.find({ clientId, max: 1 })
     let outcome: 'updated' | 'created'
-    if (result.length > 0 && result[0].id) {
-      await kcClient.clients.update({ id: result[0].id }, client)
+    const existing = result[0]!
+    if (existing.id) {
+      await kcClient.clients.update({ id: existing.id }, client)
       outcome = 'updated'
     } else {
       const password = generateRandomPassword(30)
       await apis.vault.write({ clientSecret: password }, 'keycloak')
       await kcClient.clients.create({
         secret: password,
-        ...client,
+        ...existing,
       })
       outcome = 'created'
     }
@@ -214,8 +215,9 @@ export const deleteZone: StepCall<ZoneObject> = async ({ args: zone }) => {
     const kcClient = await getkcClient()
     const clientId = getClientZoneId(zone)
     const result = await kcClient.clients.find({ clientId, max: 1 })
-    if (result.length > 0 && result[0].id) {
-      await kcClient.clients.del({ id: result[0].id })
+    const existing = result[0]!
+    if (existing.id) {
+      await kcClient.clients.del({ id: existing.id })
       logger.info({ action: 'deleteZone', zoneSlug, clientId, outcome: 'deleted' }, 'Hook done')
       return {
         status: {

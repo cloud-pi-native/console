@@ -12,5 +12,9 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public",
     "tag": "latest"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "catalog:",
+    "@tsconfig/strictest": "catalog:"
   }
 }

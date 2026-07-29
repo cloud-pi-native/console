@@ -97,7 +97,7 @@ describe('test calls with ID passed', () => {
   it('calling method with exclusion in progress', async () => {
     const proxied = genericProxy(target, { fetchData: ['otherMethod'] })
     // Simuler une exécution en cours pour la méthode exclue
-    proxied.otherMethod('456')
+    void proxied.otherMethod('456')
 
     // Maintenant, tenter d'appeler fetchData pour le même ID devrait échouer
     await expect(proxied.fetchData('456')).rejects.toThrow(
@@ -148,7 +148,7 @@ describe('test calls with ID passed', () => {
 
     // Tentative de définir une nouvelle propriété sur le proxy
     const setAttempt = () => {
-      proxied.fetchData = () => new Promise(resolve => resolve('illegal'))
+      proxied.fetchData = async () => new Promise(resolve => resolve('illegal'))
     }
 
     // Vérification que la tentative de set est rejetée

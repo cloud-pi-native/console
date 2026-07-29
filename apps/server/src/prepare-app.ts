@@ -1,6 +1,3 @@
-import { rm } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { logger } from '@cpn-console/logger'
 import app from './app.js'
 import { getConnection } from './connect.js'
@@ -10,8 +7,9 @@ import { isCI, isDev, isDevSetup, isInt, isProd, isTest, port } from './utils/en
 
 async function initializeDB(path: string) {
   logger.info('Starting init DB...')
-  const { data } = await import(path)
-  await initDb(data)
+  const dataModule = await import(path)
+  const data = dataModule.data ?? dataModule.default
+  await initDb(data as Record<string, unknown>)
   logger.info('initDb invoked successfully')
 }
 
@@ -24,7 +22,7 @@ export async function startServer(defaultPort: number = (port ? +port : 8080)) {
     throw error
   }
 
-  initPm()
+  void initPm()
 
   logger.info('Reading init database file')
 
@@ -41,7 +39,7 @@ export async function startServer(defaultPort: number = (port ? +port : 8080)) {
       logger.info(`Successfully deleted '${dataPath}'`)
     }
   } catch (err) {
-    if (err?.code === 'ERR_MODULE_NOT_FOUND' || err?.message?.includes('Failed to load') || err?.message?.includes('Cannot find module')) {
+    if (err instanceof Error && (err.code === 'ERR_MODULE_NOT_FOUND' || /Failed to load|Cannot find module/.test(err.message))) {
       logger.info('No initDb file, skipping')
     } else {
       logger.warn({ err }, 'Init DB failed')
@@ -66,7 +64,7 @@ export async function getPreparedApp() {
     throw error
   }
 
-  initPm()
+  void initPm()
 
   logger.info('Reading init database file')
 
@@ -83,7 +81,7 @@ export async function getPreparedApp() {
       logger.info(`Successfully deleted '${dataPath}'`)
     }
   } catch (err) {
-    if (err?.code === 'ERR_MODULE_NOT_FOUND' || err?.message?.includes('Failed to load') || err?.message?.includes('Cannot find module')) {
+    if (err instanceof Error && (err.code === 'ERR_MODULE_NOT_FOUND' || /Failed to load|Cannot find module/.test(err.message))) {
       logger.info('No initDb file, skipping')
     } else {
       logger.warn({ err }, 'Init DB failed')

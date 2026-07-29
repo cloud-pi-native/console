@@ -150,7 +150,7 @@ export class Project implements ProjectV2 {
       const callback = this.addOperation('update')
       try {
         const project = await apiClient.Projects.updateProject({ body: data, params: { projectId: this.id } })
-          .then((response: any) => extractData(response, 200))
+          .then((response) => extractData(response, 200))
           .finally(() => callback())
         return this.Commands.updateData(project)
       } finally {
@@ -167,7 +167,7 @@ export class Project implements ProjectV2 {
     },
     refresh: async () => {
       const project = await apiClient.Projects.getProject({ params: { projectId: this.id } })
-        .then((response: any) => extractData(response, 200))
+        .then((response) => extractData(response, 200))
       this.Commands.updateData(project)
       await Promise.all([
         this.Repositories.list(),
@@ -179,7 +179,7 @@ export class Project implements ProjectV2 {
       const callback = this.addOperation('update')
       try {
         await apiClient.Projects.replayHooksForProject({ params: { projectId: this.id } })
-          .then((response: any) => extractData(response, 204))
+          .then((response) => extractData(response, 204))
         return this.Commands.refresh()
       } finally {
         callback()
@@ -189,7 +189,7 @@ export class Project implements ProjectV2 {
       const callback = this.addOperation('delete')
       try {
         await apiClient.Projects.archiveProject({ params: { projectId: this.id } })
-          .then((response: any) => extractData(response, 204))
+          .then((response) => extractData(response, 204))
         this.status = 'archived'
       } catch {
         await this.Commands.refresh()
@@ -202,14 +202,14 @@ export class Project implements ProjectV2 {
   Members = {
     list: async () => {
       this.members = await apiClient.ProjectsMembers.listMembers({ params: { projectId: this.id } })
-        .then((response: any) => extractData(response, 200))
+        .then((response) => extractData(response, 200))
       return this.members
     },
     create: async (email: string) => {
       const callback = this.addOperation('teamManagement')
       try {
         await apiClient.ProjectsMembers.addMember({ params: { projectId: this.id }, body: { email } })
-          .then((response: any) => extractData(response, 201))
+          .then((response) => extractData(response, 201))
         return this.Members.list()
       } finally { callback() }
     },
@@ -217,7 +217,7 @@ export class Project implements ProjectV2 {
       const callback = this.addOperation('teamManagement')
       try {
         await apiClient.ProjectsMembers.removeMember({ params: { projectId: this.id, userId } })
-          .then((response: any) => extractData(response, 200))
+          .then((response) => extractData(response, 200))
         return this.Members.list()
       } finally { callback() }
     },
@@ -225,20 +225,20 @@ export class Project implements ProjectV2 {
       const callback = this.addOperation('teamManagement')
       try {
         await apiClient.ProjectsMembers.patchMembers({ params: { projectId: this.id }, body })
-          .then((response: any) => extractData(response, 200))
+          .then((response) => extractData(response, 200))
         return this.Members.list()
       } finally { callback() }
     },
     getCandidateUsers: async (letters: string) => {
       return apiClient.Users.getMatchingUsers({ query: { letters, notInProjectId: this.id } })
-        .then((response: any) => extractData(response, 200))
+        .then((response) => extractData(response, 200))
     },
   }
 
   Deployments = {
     list: async () => {
       this.deployments.value = await apiClient.Deployments.listDeployments({ params: { projectId: this.id } })
-        .then((response: any) => extractData(response, 200))
+        .then((response) => extractData(response, 200))
       return this.deployments.value
     },
     create: async (deploymentData: Omit<CreateDeploymentBody, 'projectId'>) => {
@@ -248,7 +248,7 @@ export class Project implements ProjectV2 {
           params: { projectId: this.id },
           body: { ...deploymentData, projectId: this.id },
         })
-          .then((response: any) => extractData(response, 201))
+          .then((response) => extractData(response, 201))
       } finally { callback() }
     },
     update: async (id: Deployment['id'], deployment: UpdateDeploymentBody) => {
@@ -258,7 +258,7 @@ export class Project implements ProjectV2 {
           params: { projectId: this.id, deploymentId: id },
           body: deployment,
         })
-          .then((response: any) => extractData(response, 200))
+          .then((response) => extractData(response, 200))
       } finally { callback() }
     },
     delete: async (deploymentId: Deployment['id']) => {
@@ -267,7 +267,7 @@ export class Project implements ProjectV2 {
         await apiClient.Deployments.deleteDeployment({
           params: { projectId: this.id, deploymentId },
         })
-          .then((response: any) => extractData(response, 204))
+          .then((response) => extractData(response, 204))
       } finally { callback() }
     },
   }
@@ -275,14 +275,14 @@ export class Project implements ProjectV2 {
   Environments = {
     list: async () => {
       this.environments.value = await apiClient.Environments.listEnvironments({ query: { projectId: this.id } })
-        .then((response: any) => extractData(response, 200))
+        .then((response) => extractData(response, 200))
       return this.environments.value
     },
     create: async (envData: Omit<CreateEnvironmentBody, 'projectId'>) => {
       const callback = this.addOperation('envManagement')
       try {
         await apiClient.Environments.createEnvironment({ body: { ...envData, projectId: this.id } })
-          .then((response: any) => extractData(response, 201))
+          .then((response) => extractData(response, 201))
         return this.Environments.list()
       } finally { callback() }
     },
@@ -290,7 +290,7 @@ export class Project implements ProjectV2 {
       const callback = this.addOperation('envManagement')
       try {
         await apiClient.Environments.updateEnvironment({ body: environment, params: { environmentId: id } })
-          .then((response: any) => extractData(response, 200))
+          .then((response) => extractData(response, 200))
         await this.Environments.list()
         return this.environments
       } finally { callback() }
@@ -299,7 +299,7 @@ export class Project implements ProjectV2 {
       const callback = this.addOperation('envManagement')
       try {
         await apiClient.Environments.deleteEnvironment({ params: { environmentId } })
-          .then((response: any) => extractData(response, 204))
+          .then((response) => extractData(response, 204))
         await this.Environments.list()
         return this.environments
       } finally { callback() }
@@ -309,7 +309,7 @@ export class Project implements ProjectV2 {
   Repositories = {
     list: async () => {
       this.repositories.value = await apiClient.Repositories.listRepositories({ query: { projectId: this.id } })
-        .then((response: any) => extractData(response, 200))
+        .then((response) => extractData(response, 200))
       return this.repositories.value
     },
     sync: async (repositoryId: Repo['id'], { branchName, syncAllBranches = false }: { branchName?: string, syncAllBranches?: boolean }) => {
@@ -319,14 +319,14 @@ export class Project implements ProjectV2 {
           params: { repositoryId },
           body: { branchName, syncAllBranches },
         })
-          .then((response: any) => extractData(response, 204))
+          .then((response) => extractData(response, 204))
       } finally { callback() }
     },
     create: async (repoData: Omit<CreateRepositoryBody, 'projectId'>) => {
       const callback = this.addOperation('repoManagement')
       try {
         await apiClient.Repositories.createRepository({ body: { ...repoData, projectId: this.id } })
-          .then((response: any) => extractData(response, 201))
+          .then((response) => extractData(response, 201))
         return this.Repositories.list()
       } finally { callback() }
     },
@@ -334,7 +334,7 @@ export class Project implements ProjectV2 {
       const callback = this.addOperation('repoManagement')
       try {
         await apiClient.Repositories.updateRepository({ body: { ...repoData, projectId: this.id }, params: { repositoryId: id } })
-          .then((response: any) => extractData(response, 200))
+          .then((response) => extractData(response, 200))
         return this.Repositories.list()
       } finally { callback() }
     },
@@ -342,7 +342,7 @@ export class Project implements ProjectV2 {
       const callback = this.addOperation('repoManagement')
       try {
         await apiClient.Repositories.deleteRepository({ params: { repositoryId } })
-          .then((response: any) => extractData(response, 204))
+          .then((response) => extractData(response, 204))
         return this.Repositories.list()
       } finally { callback() }
     },
@@ -351,11 +351,11 @@ export class Project implements ProjectV2 {
   Roles = {
     countMembers: async () => {
       return apiClient.ProjectsRoles.projectRoleMemberCounts({ params: { projectId: this.id } })
-        .then((response: any) => extractData(response, 200))
+        .then((response) => extractData(response, 200))
     },
     list: async () => {
       this.roles = await apiClient.ProjectsRoles.listProjectRoles({ params: { projectId: this.id } })
-        .then((response: any) => extractData(response, 200))
+        .then((response) => extractData(response, 200))
       this.computePerms()
       return this.roles
     },
@@ -363,14 +363,14 @@ export class Project implements ProjectV2 {
       const callback = this.addOperation('roleManagement')
       try {
         this.roles = await apiClient.ProjectsRoles.patchProjectRoles({ body, params: { projectId: this.id } })
-          .then((response: any) => extractData(response, 200))
+          .then((response) => extractData(response, 200))
         this.computePerms()
         return this.roles
       } finally { callback() }
     },
     create: async (body: typeof projectRoleContract.createProjectRole.body._type) => {
       this.roles = await apiClient.ProjectsRoles.createProjectRole({ body, params: { projectId: this.id } })
-        .then((response: any) => extractData(response, 201))
+        .then((response) => extractData(response, 201))
       this.computePerms()
       return this.roles
     },
@@ -378,7 +378,7 @@ export class Project implements ProjectV2 {
       const callback = this.addOperation('roleManagement')
       try {
         await apiClient.ProjectsRoles.deleteProjectRole({ params: { projectId: this.id, roleId } })
-          .then((response: any) => extractData(response, 204))
+          .then((response) => extractData(response, 204))
         this.computePerms()
         return this.Roles.list()
       } finally { callback() }
@@ -388,18 +388,18 @@ export class Project implements ProjectV2 {
   Services = {
     getSecrets: async () => {
       return apiClient.Projects.getProjectSecrets({ params: { projectId: this.id } })
-        .then((response: any) => extractData(response, 200))
+        .then((response) => extractData(response, 200))
     },
     list: async (permissionTarget: PermissionTarget = 'user') => {
       this.services = await apiClient.ProjectServices.getServices({ params: { projectId: this.id }, query: { permissionTarget } })
-        .then((response: any) => extractData(response, 200))
+        .then((response) => extractData(response, 200))
       return this.services
     },
     update: async (body: PluginsUpdateBody) => {
       const callback = this.addOperation('saveServices')
       try {
         await apiClient.ProjectServices.updateProjectServices({ params: { projectId: this.id }, body })
-          .then((response: any) => extractData(response, 204))
+          .then((response) => extractData(response, 204))
         return this.Services.list()
       } finally { callback() }
     },
@@ -408,7 +408,7 @@ export class Project implements ProjectV2 {
   Logs = {
     list: async ({ offset, limit, clean }: GetLogsQuery = { offset: 0, limit: 10 }) => {
       return apiClient.Logs.getLogs({ query: { offset, limit, clean, projectId: this.id } })
-        .then((response: any) => extractData(response, 200))
+        .then((response) => extractData(response, 200))
     },
   }
 }

@@ -55,7 +55,7 @@ onBeforeMount(() => {
 
 function update(data: { value: string, key: string, plugin: string }) {
   if (!updated.value[data.plugin]) updated.value[data.plugin] = {}
-  updated.value[data.plugin][data.key] = data.value
+  updated.value[data.plugin]![data.key] = data.value
 }
 
 const servicesWrapableLength = computed(() => services.value.filter(({ wrapable }) => wrapable).length)

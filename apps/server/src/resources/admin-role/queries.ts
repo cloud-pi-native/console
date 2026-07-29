@@ -4,9 +4,9 @@ import type {
 } from '@prisma/client'
 import prisma from '@/prisma.js'
 
-export const listAdminRoles = () => prisma.adminRole.findMany({ orderBy: { position: 'asc' } })
+export const listAdminRoles = async () => prisma.adminRole.findMany({ orderBy: { position: 'asc' } })
 
-export function createAdminRole(data: Pick<Prisma.AdminRoleUncheckedCreateInput, 'name' | 'position'>) {
+export async function createAdminRole(data: Pick<Prisma.AdminRoleUncheckedCreateInput, 'name' | 'position'>) {
   return prisma.adminRole.create({
     data: {
       name: data.name,
@@ -17,14 +17,14 @@ export function createAdminRole(data: Pick<Prisma.AdminRoleUncheckedCreateInput,
   })
 }
 
-export function updateAdminRole(id: AdminRole['id'], data: Pick<Prisma.AdminRoleUncheckedUpdateInput, 'permissions' | 'name' | 'position' | 'id'>) {
+export async function updateAdminRole(id: AdminRole['id'], data: Pick<Prisma.AdminRoleUncheckedUpdateInput, 'permissions' | 'name' | 'position' | 'id'>) {
   return prisma.adminRole.updateMany({
     where: { id },
     data,
   })
 }
 
-export function deleteAdminRole(id: AdminRole['id']) {
+export async function deleteAdminRole(id: AdminRole['id']) {
   return prisma.adminRole.delete({
     where: {
       id,

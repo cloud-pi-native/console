@@ -7,21 +7,21 @@ export const useAdminTokenStore = defineStore('adminToken', () => {
     query: typeof adminTokenContract.listAdminTokens.query._type = {},
   ) => {
     return apiClient.AdminTokens.listAdminTokens({ query }).then(
-      (response: any) => extractData(response, 200),
+      (response) => extractData(response, 200),
     )
   }
 
   const createToken = async (
     body: typeof adminTokenContract.createAdminToken.body._type,
   ) => {
-    return apiClient.AdminTokens.createAdminToken({ body }).then((res: any) =>
+    return apiClient.AdminTokens.createAdminToken({ body }).then((res) =>
       extractData(res, 201),
     )
   }
 
   const deleteToken = async (tokenId: AdminToken['id']) => {
     await apiClient.AdminTokens.deleteAdminToken({ params: { tokenId } }).then(
-      (res: any) => extractData(res, 204),
+      (res) => extractData(res, 204),
     )
   }
 

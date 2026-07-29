@@ -46,8 +46,7 @@ export async function getConnection(triesLeft = 5): Promise<void> {
     }
 
     logger.error({ err }, 'Out of retries connecting to Postgres')
-    err.message = `Out of retries connecting to Postgres, last error: ${err.message}`
-    throw err
+    throw new Error(`Out of retries connecting to Postgres, last error: ${err instanceof Error ? err.message : String(err)}`)
   }
 }
 

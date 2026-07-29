@@ -1,20 +1,16 @@
 // import Joi from 'joi'
-import type { SafeParseReturnType, ZodError, ZodObject } from 'zod'
+import type { SafeParseReturnType, ZodError, ZodObject, ZodRawShape } from 'zod'
 import { fromZodError } from 'zod-validation-error'
 
 export type SharedZodError = ZodError
 export type SharedSafeParseReturnType = SafeParseReturnType<unknown, unknown>
 export const parseZodError = (zodError: ZodError) => fromZodError(zodError).toString()
 
-export function instanciateSchema<T extends ZodObject<any>, V extends boolean>(schema: T, value: V): Record<keyof T['_type'], V | boolean> {
-  const keys = schema.keyof()._def.values
-  // @ts-ignore
+export function instanciateSchema<T extends ZodObject<ZodRawShape>, V extends boolean>(schema: T, value: V): Record<keyof T['_type'], V | boolean> {
+  const keys = Object.keys(schema.shape)
   if (keys.length) {
-    // @ts-ignore
-    const entries = schema.keyof()._def.values?.map(key => [key, value])
-    // @ts-ignore
-    return Object.fromEntries(entries)
+    const entries = keys.map(key => [key, value])
+    return Object.fromEntries(entries) as Record<keyof T['_type'], V | boolean>
   }
-  // @ts-ignore
-  return {}
+  return {} as Record<keyof T['_type'], V | boolean>
 }

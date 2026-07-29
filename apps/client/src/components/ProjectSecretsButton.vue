@@ -72,7 +72,7 @@ function closeModal(e?: MouseEvent | TouchEvent) {
       </h6>
       <DsfrTable
         class="horizontal-table"
-        :headers="Object.keys(projectSecrets[service])"
+        :headers="Object.keys(projectSecrets[service] ?? {})"
         title=""
       >
         <tr

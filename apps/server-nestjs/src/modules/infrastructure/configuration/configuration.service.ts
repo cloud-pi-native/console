@@ -13,9 +13,9 @@ export class ConfigurationService {
   isDevSetup = process.env.DEV_SETUP === 'true'
 
   // app
-  host = process.env.SERVER_HOST ?? 'localhost'
+  host = process.env.SERVER_HOST ?? ''
   port = process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 0 // dynamically allocate an available ephemeral port
-  appVersion = this.isProd ? (process.env.APP_VERSION ?? 'unknown') : 'dev'
+  appVersion = this.isProd ? (process.env.APP_VERSION ?? '') : 'dev'
 
   // db
   dbUrl = process.env.DB_URL
@@ -47,7 +47,7 @@ export class ConfigurationService {
 
   contactEmail
     = process.env.CONTACT_EMAIL
-      ?? 'cloudpinative-relations@interieur.gouv.fr'
+      ?? ''
 
   // argocd
   argoNamespace = process.env.ARGO_NAMESPACE ?? 'argocd'
@@ -171,9 +171,7 @@ export class ConfigurationService {
   }
 
   NODE_ENV
-    = process.env.NODE_ENV === 'test'
-      ? 'test'
-      : process.env.NODE_ENV === 'development'
-        ? 'development'
-        : 'production'
+    = process.env.NODE_ENV != null
+      ? process.env.NODE_ENV
+      : 'production'
 }

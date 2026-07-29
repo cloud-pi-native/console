@@ -1,0 +1,7 @@
+{
+  "extends": ["./tsconfig.base.json"],
+  "compilerOptions": {
+    "strictNullChecks": true
+  },
+  "include": ["./vitest.config.ts"]
+}

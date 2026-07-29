@@ -27,7 +27,7 @@ export function createRandomDbSetup({ nbUsers = 1, nbRepo = 3, envs = basicStage
     ...getRandomRole(user.id, project.id),
     user,
   }))
-  project.roles[0].role = projectRoles[0]
+  project.roles[0]!.role = projectRoles[0]
   const ownerId = project.roles.find(role => role.role === 'owner')?.userId
 
   // @ts-ignore
@@ -43,7 +43,7 @@ export function createRandomDbSetup({ nbUsers = 1, nbRepo = 3, envs = basicStage
   const zones = [getRandomZone()]
 
   // Create cluster
-  const clusters = [getRandomCluster({ projectIds: [project.id], zoneId: zones[0].id })]
+  const clusters = [getRandomCluster({ projectIds: [project.id], zoneId: zones[0]!.id })]
   // @ts-ignore
   project.clusters = clusters
 
@@ -59,7 +59,7 @@ export function createRandomDbSetup({ nbUsers = 1, nbRepo = 3, envs = basicStage
 
   // Create environment
   project.environments = envs
-    .map(env => getRandomEnv(env, project.id, stages[0].id, clusters[0].id))
+    .map(env => getRandomEnv(env, project.id, stages[0]!.id, clusters[0]!.id))
 
   // Create permissions
   project.environments.forEach((env) => {

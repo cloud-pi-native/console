@@ -16,7 +16,15 @@ export default antfu(
         'ts/ban-ts-comment': 'off',
       },
     },
-    typescript: true,
+    typescript: {
+      tsconfigPath: 'tsconfig.json',
+      parserOptions: {
+        tsconfigRootDir: process.cwd(),
+        projectService: {
+          allowDefaultProject: ['*.js', '*.cjs', '*.mjs'],
+        },
+      },
+    },
     vue: true,
     yaml: {
       overrides: {

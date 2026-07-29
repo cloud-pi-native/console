@@ -20,23 +20,24 @@ import { logger as baseLogger } from '@cpn-console/logger'
 const logger = baseLogger.child({ scope: 'utils:permissions' })
 
 export function getPermsByUserRoles(userRoles: string[] | undefined, rolesById: ResourceById<{ id: string, permissions: bigint | string }>, basePerms?: bigint | string) {
-  if (!userRoles) {
-    return basePerms ? BigInt(basePerms) : 0n
+  if (userRoles === undefined) {
+    return basePerms != null ? BigInt(basePerms) : 0n
   }
   return userRoles.reduce((acc, curr) => {
-    if (!rolesById[curr]) {
+    const role = rolesById[curr]
+    if (role === undefined) {
       logger.warn(`Role ${curr} not found in rolesById`)
       return acc
     }
-    return acc | BigInt(rolesById[curr].permissions)
-  }, basePerms ? BigInt(basePerms) : 0n)
+    return acc | BigInt(role.permissions)
+  }, basePerms != null ? BigInt(basePerms) : 0n)
 }
 
 function permissionsParser(a: Record<string, bigint>) {
   const valuesRegistered = [] as bigint[]
   for (const [k, v] of Object.entries(a)) {
     if (typeof v !== 'bigint')
-      throw new Error(`${k} has a invalid value: ${v}, which is not a bigint`)
+      throw new Error(`${k} has a invalid value: ${String(v)}, which is not a bigint`)
     if (valuesRegistered.includes(v))
       throw new Error(`${k} has a duplicated value: ${v}`)
     valuesRegistered.push(v)
@@ -93,7 +94,7 @@ permissionsParser(PROJECT_PERMS)
 
 interface ProjectAuthorizedParams { adminPermissions?: bigint | string | null, projectPermissions?: bigint | string }
 
-export const toBigInt = (value?: bigint | number | string | undefined | null) => value ? BigInt(value) : 0n
+export const toBigInt = (value?: bigint | number | string | undefined | null) => value != null ? BigInt(value) : 0n
 
 export const AdminAuthorized = {
   Manage: (perms?: bigint | string | null) => !!(toBigInt(perms) & ADMIN_PERMS.MANAGE),

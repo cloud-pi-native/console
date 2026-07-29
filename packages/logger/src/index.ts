@@ -44,6 +44,7 @@ const redact: LoggerOptions['redact'] = {
 export function getLoggerOptions(env: Env, level: LogLevel): LoggerOptions {
   switch (env) {
     case 'development':
+    case 'test':
       return {
         transport: {
           target: 'pino-pretty',

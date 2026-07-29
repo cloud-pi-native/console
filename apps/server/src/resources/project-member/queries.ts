@@ -6,9 +6,9 @@ import type {
 
 import prisma from '@/prisma.js'
 
-export const listMembers = (projectId: Project['id']) => prisma.projectMembers.findMany({ where: { projectId }, include: { user: true } })
+export const listMembers = async (projectId: Project['id']) => prisma.projectMembers.findMany({ where: { projectId }, include: { user: true } })
 
-export function upsertMember(data: Prisma.ProjectMembersUncheckedCreateInput) {
+export async function upsertMember(data: Prisma.ProjectMembersUncheckedCreateInput) {
   return prisma.projectMembers.upsert({
     where: {
       projectId_userId: {
@@ -24,7 +24,7 @@ export function upsertMember(data: Prisma.ProjectMembersUncheckedCreateInput) {
   })
 }
 
-export function deleteMember(data: Prisma.ProjectMembersWhereUniqueInput['projectId_userId']) {
+export async function deleteMember(data: Prisma.ProjectMembersWhereUniqueInput['projectId_userId']) {
   return prisma.projectMembers.delete({
     where: {
       projectId_userId: data,

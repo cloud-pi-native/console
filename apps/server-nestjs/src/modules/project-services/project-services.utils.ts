@@ -52,10 +52,10 @@ interface ServiceManifestParams {
 }
 
 export function populateServiceManifest({ service, data, select, permissionTarget }: ServiceManifestParams): Partial<PluginConfig> {
-  const manifest = structuredClone(service.config)
+  const manifest = structuredClone(service.config) as PluginConfig
 
   const selected: Partial<PluginConfig> = {}
-  for (const [scope] of Object.entries(select).filter(([_scope, bool]) => bool)) {
+  for (const [scope] of Object.entries(select).filter(([_scope, bool]) => bool === true)) {
     if (!manifest?.[scope]) continue
     selected[scope] = manifest[scope].filter(item => item.permissions[permissionTarget].read || item.permissions[permissionTarget].write).map((item) => {
       const row = data[scope]?.find(candidate => candidate.pluginName === service.name && candidate.key === item.key)
@@ -71,6 +71,7 @@ export function populateServiceManifest({ service, data, select, permissionTarge
   return selected
 }
 
+interface ServiceUrlResponse { title?: string; description?: string; to: string }
 export function normalizeServiceUrls(toResponse: unknown): ServiceUrl[] {
   if (Array.isArray(toResponse)) {
     return toResponse.map(res => ({ name: res.title ?? '', description: res.description ?? '', to: res.to }))
@@ -80,8 +81,9 @@ export function normalizeServiceUrls(toResponse: unknown): ServiceUrl[] {
     return [{ to: toResponse, name: '' }]
   }
 
-  if (toResponse) {
-    return [{ name: (toResponse as { title?: string }).title ?? '', to: (toResponse as { to: string }).to }]
+  if (toResponse != null && typeof toResponse === 'object') {
+    const resp = toResponse as { title?: string; to: string }
+    return [{ name: resp.title ?? '', to: resp.to }]
   }
 
   return []

@@ -1,0 +1,5 @@
+{
+  "extends": ["@cpn-console/ts-config/tsconfig.base.json"],
+  "include": ["**/*.ts", "**/*.js"],
+  "exclude": ["node_modules", "dist", "types", "coverage"]
+}

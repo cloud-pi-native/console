@@ -136,7 +136,7 @@ const headers = [
         <span :data-testid="`clusterZone-${(cell as Cluster).label}`">
           <Badge
             type="zone"
-            :name="zoneStore.zonesById[(cell as Cluster).zoneId]?.label"
+            :name="zoneStore.zonesById[(cell as Cluster).zoneId!]?.label ?? ''"
           />
         </span>
       </template>

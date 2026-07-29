@@ -87,7 +87,7 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
       services.value = await (displayCause.value
         ? apiClient.Services.getCompleteServiceHealth()
         : apiClient.Services.getServiceHealth())
-        .then((res: any) => extractData(res, 200))
+        .then((res) => extractData(res, 200))
       callStastus.value = 'ok'
     } catch {
       callStastus.value = 'error'
@@ -96,7 +96,7 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
 
   const refreshServicesHealth = async () => {
     await apiClient.Services.refreshServiceHealth()
-      .then((res: any) => extractData(res, 200))
+      .then((res) => extractData(res, 200))
     return checkServicesHealth()
   }
 

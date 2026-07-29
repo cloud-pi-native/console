@@ -4,7 +4,7 @@ import prisma from '@/prisma.js'
 type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>
 
 // SELECT
-export const getUsers = (where?: Prisma.UserWhereInput) => prisma.user.findMany({ where })
+export const getUsers = async (where?: Prisma.UserWhereInput) => prisma.user.findMany({ where })
 
 export async function getUserInfos(id: User['id']) {
   return prisma.user.findMany({
@@ -15,24 +15,24 @@ export async function getUserInfos(id: User['id']) {
   })
 }
 
-export function getMatchingUsers(where: Prisma.UserWhereInput) {
+export async function getMatchingUsers(where: Prisma.UserWhereInput) {
   return prisma.user.findMany({
     where,
     take: 5,
   })
 }
 
-export function getUserById(id: User['id']) {
+export async function getUserById(id: User['id']) {
   return prisma.user.findUnique({ where: { id } })
 }
 
-export function getUserOrThrow(id: User['id']) {
+export async function getUserOrThrow(id: User['id']) {
   return prisma.user.findUniqueOrThrow({
     where: { id },
   })
 }
 
-export function getUserByEmail(email: User['email']) {
+export async function getUserByEmail(email: User['email']) {
   return prisma.user.findUnique({ where: { email } })
 }
 
@@ -55,6 +55,6 @@ export async function updateUserById({ id, email, firstName, lastName }: UserCre
 }
 
 // TECH
-export function _createUser(data: Prisma.UserCreateInput) {
+export async function _createUser(data: Prisma.UserCreateInput) {
   return prisma.user.upsert({ where: { id: data.id }, create: data, update: data })
 }

@@ -164,3 +164,6 @@ catalogs:
     stylelint-config-standard: ^40.0.0
     typescript-eslint: ^8.57.0
     vue-eslint-parser: ^10.4.0
+catalog:
+  '@tsconfig/node24': ^24.0.4
+  '@tsconfig/strictest': ^2.0.8

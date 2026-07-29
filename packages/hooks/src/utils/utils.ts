@@ -7,7 +7,7 @@ export function objectEntries<Obj extends Record<string, unknown>>(obj: Obj): ([
   return Object.entries(obj) as ([keyof Obj, Obj[keyof Obj]])[]
 }
 export function objectKeys<Obj extends Record<string, unknown>>(obj: Obj): (keyof Obj)[] {
-  return Object.keys(obj) as (keyof Obj)[]
+  return Object.keys(obj)
 }
 export function objectValues<Obj extends Record<string, unknown>>(obj: Obj): (Obj[keyof Obj])[] {
   return Object.values(obj) as (Obj[keyof Obj])[]
@@ -21,11 +21,11 @@ export type DeclareModuleGenerator<Infos extends ServiceInfos & Pick<Required<Se
   }
 }
 
-export const enabledOrDefaultOrNullish = (value?: string): boolean | undefined => value ? [ENABLED, DEFAULT].includes(value) : true
-export const disabledOrDefaultOrNullish = (value?: string): boolean | undefined => value ? [DISABLED, DEFAULT].includes(value) : true
-export const specificallyDisabled = (value?: string): boolean | undefined => value ? value === DISABLED : undefined
-export const specificallyEnabled = (value?: string): boolean | undefined => value ? value === ENABLED : undefined
-export const defaultOrNullish = (value?: string): boolean | undefined => value ? DEFAULT === value : true
+export const enabledOrDefaultOrNullish = (value?: string): boolean | undefined => value != null && [ENABLED, DEFAULT].includes(value)
+export const disabledOrDefaultOrNullish = (value?: string): boolean | undefined => value != null && [DISABLED, DEFAULT].includes(value)
+export const specificallyDisabled = (value?: string): boolean | undefined => value != null && value === DISABLED
+export const specificallyEnabled = (value?: string): boolean | undefined => value != null && value === ENABLED
+export const defaultOrNullish = (value?: string): boolean | undefined => value != null && DEFAULT === value
 
 export const okStatus = { status: { result: 'OK' } } as const
 

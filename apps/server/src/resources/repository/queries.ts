@@ -2,11 +2,11 @@ import type { Project, Repository } from '@prisma/client'
 import prisma from '@/prisma.js'
 
 // SELECT
-export function getRepositoryById(id: Repository['id']) {
+export async function getRepositoryById(id: Repository['id']) {
   return prisma.repository.findUniqueOrThrow({ where: { id } })
 }
 
-export function getProjectRepositories(projectId: Project['id']) {
+export async function getProjectRepositories(projectId: Project['id']) {
   return prisma.repository.findMany({ where: { projectId } })
 }
 
@@ -14,7 +14,7 @@ export function getProjectRepositories(projectId: Project['id']) {
 type RepositoryCreate = Pick<Repository, 'projectId' | 'internalRepoName' | 'isInfra' | 'isPrivate'>
   & Partial<Pick<Repository, 'externalUserName' | 'externalRepoUrl' | 'deployRevision' | 'deployPath' | 'helmValuesFiles'>>
 
-export function initializeRepository({ projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName, deployRevision, deployPath, helmValuesFiles }: RepositoryCreate) {
+export async function initializeRepository({ projectId, internalRepoName, externalRepoUrl, isInfra, isPrivate, externalUserName, deployRevision, deployPath, helmValuesFiles }: RepositoryCreate) {
   return prisma.repository.create({
     data: {
       projectId,
@@ -30,7 +30,7 @@ export function initializeRepository({ projectId, internalRepoName, externalRepo
   })
 }
 
-export function getHookRepository(id: Repository['id']) {
+export async function getHookRepository(id: Repository['id']) {
   return prisma.repository.findUniqueOrThrow({
     where: {
       id,
@@ -42,7 +42,7 @@ export function getHookRepository(id: Repository['id']) {
 }
 
 // UPDATE
-export function updateRepository(id: Repository['id'], infos: Partial<Repository>) {
+export async function updateRepository(id: Repository['id'], infos: Partial<Repository>) {
   return prisma.repository.update({ where: { id }, data: { ...infos } })
 }
 
@@ -53,10 +53,10 @@ export async function deleteRepository(id: Repository['id']) {
   return prisma.repository.delete({ where: { id } })
 }
 
-export function deleteAllRepositoryForProject(id: Project['id']) {
+export async function deleteAllRepositoryForProject(id: Project['id']) {
   return prisma.repository.deleteMany({ where: { projectId: id } })
 }
 
-export function _createRepository(data: Parameters<typeof prisma.repository.upsert>[0]['create']) {
+export async function _createRepository(data: Parameters<typeof prisma.repository.upsert>[0]['create']) {
   return prisma.repository.upsert({ create: data, update: data, where: { id: data.id } })
 }

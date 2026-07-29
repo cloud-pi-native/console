@@ -45,11 +45,11 @@ export async function getServiceChainDetails(
 }
 
 export async function retryServiceChain(serviceChainId: ServiceChain['id']) {
-  return await getClient().post(`/requests/${serviceChainId}/retry`)
+  return getClient().post(`/requests/${serviceChainId}/retry`)
 }
 
 export async function validateServiceChain(validationId: string) {
-  return await getClient().post(`/validate/${validationId}`)
+  return getClient().post(`/validate/${validationId}`)
 }
 
 export async function getServiceChainFlows(serviceChainId: ServiceChain['id']) {

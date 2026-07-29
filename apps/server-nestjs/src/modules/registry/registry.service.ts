@@ -83,7 +83,7 @@ export class RegistryService {
     const created = await this.client.createRobot(
       generateRobotPermissions(project, robotName, access),
     )
-    if (created.status >= 300 || !created.data) {
+    if (created.status != null && (created.status >= 300 || !created.data)) {
       throw new Error(`Harbor create robot failed (${created.status})`)
     }
     return created.data
@@ -103,7 +103,7 @@ export class RegistryService {
       'project.slug': project.slug,
       'registry.robot.name': robotName,
     })
-    if (!this.config.projectRootDir) {
+    if (this.config.projectRootDir == null) {
       throw new Error('PROJECTS_ROOT_DIR is required')
     }
     const relativeVaultPath = `REGISTRY/${robotName}`
@@ -122,7 +122,7 @@ export class RegistryService {
       'registry.robot.secret.expiring': expiring,
     })
 
-    if (vaultRobotSecret?.data?.HOST === this.host && !expiring) {
+    if (vaultRobotSecret && !expiring && vaultRobotSecret.data.HOST === this.host) {
       span?.setAttribute('vault.secret.reused', true)
       return vaultRobotSecret.data
     }
@@ -188,14 +188,14 @@ export class RegistryService {
     span?.setAttribute('project.slug', project.slug)
 
     const members = await this.client.getGroupMembers(project.slug)
-    if (members.status !== 200 || !members.data) {
+    if (members.status != null && members.status !== 200 || !members.data) {
       throw new Error(`Harbor list members failed (${members.status})`)
     }
 
     const membersByName = new Map<string, HarborMember>()
     for (const member of members.data) {
       const name = member?.entity_name
-      if (name) membersByName.set(name, member)
+      if (name != null) membersByName.set(name, member)
     }
 
     const byGroupName = await this.generateAccessLevelMapping(project)
@@ -322,7 +322,7 @@ export class RegistryService {
     this.logger.log(`Handling project upsert for ${project.slug}`)
     const quotaConfigRaw = getPluginConfig(project, REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT)
     const publishConfig = getPluginConfig(project, REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT)
-    const parsedQuota = quotaConfigRaw ? parseBytes(String(quotaConfigRaw)) : undefined
+    const parsedQuota = quotaConfigRaw != null ? parseBytes(String(quotaConfigRaw)) : undefined
     const storageLimitBytes = parsedQuota ?? -1
     const publishProjectRobot = specificallyEnabled(publishConfig)
     await this.ensureProject(project, { storageLimitBytes, publishProjectRobot })
@@ -483,7 +483,7 @@ function generateRetentionPolicy(
 
   const rawCount = Number(options.harborRuleCount)
   let count: number
-  if (Number.isFinite(rawCount) && rawCount > 0) {
+  if (rawCount != null && Number.isFinite(rawCount) && rawCount > 0) {
     count = rawCount
   } else if (template === 'always') {
     count = 1

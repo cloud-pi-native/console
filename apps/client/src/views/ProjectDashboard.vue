@@ -137,6 +137,7 @@ const saveProjectState = ref({
 const currentRoute = useRoute()
 
 async function refreshMembers() {
+  if (!project.value) return
   await project.value.Members.list()
   teamId.value = getRandomId('team')
 }
@@ -153,7 +154,7 @@ watch(currentRoute, () => {
 })
 
 watch(activeTab, (tabIndex) => {
-  const tabId = tabTitles[tabIndex].tabId
+  const tabId = tabTitles[tabIndex]?.tabId
   if (tabId) {
     router.replace({
       query: {
@@ -165,6 +166,7 @@ watch(activeTab, (tabIndex) => {
 })
 
 async function saveProject() {
+  if (!project.value) return
   saveProjectState.value.isProcessing = true
   await project.value.Commands.update({
     description: project.value.description,
@@ -175,7 +177,7 @@ async function saveProject() {
     prodMemory: project.value.prodMemory,
     prodCpu: project.value.prodCpu,
     prodGpu: project.value.prodGpu,
-  }).finally(() => project.value.Commands.refresh())
+  }).finally(() => project.value?.Commands.refresh())
   saveProjectState.value.isProcessing = false
 }
 </script>
@@ -203,6 +205,7 @@ async function saveProject() {
         "
         @update:model-value="
           (desc: string | undefined) => {
+            if (!project) return
             project.description = desc;
           }
         "

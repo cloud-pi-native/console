@@ -15,12 +15,12 @@ export const useSystemSettingsStore = defineStore('systemSettings', () => {
 
   const listSystemSettings = async (query: typeof systemSettingsContract.listSystemSettings.query._type = {}) => {
     systemSettings.value = await apiClient.SystemSettings.listSystemSettings(query)
-      .then((response: any) => extractData(response, 200))
+      .then((response) => extractData(response, 200))
   }
 
   const upsertSystemSetting = async (newSystemSetting: UpsertSystemSettingBody) => {
     const res = await apiClient.SystemSettings.upsertSystemSetting({ body: newSystemSetting })
-      .then((response: any) => extractData(response, 201))
+      .then((response) => extractData(response, 201))
     systemSettings.value = systemSettings.value
       .toSpliced(systemSettings.value
         .findIndex(systemSetting => systemSetting.key === res.key), 1, res)

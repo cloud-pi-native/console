@@ -1,5 +1,6 @@
 import type { projectContract } from '@cpn-console/shared'
 import type { Project, User } from '@prisma/client'
+import type { PluginResult } from '@cpn-console/hooks'
 import type { UserDetails } from '@/types/index.js'
 import type { ErrorResType } from '@/utils/errors.js'
 import { servicesInfos } from '@cpn-console/hooks'
@@ -62,10 +63,8 @@ export async function getProjectSecrets(projectId: string) {
 
   return Object.fromEntries(
     Object.entries(hookReply.results)
-      // @ts-ignore
-      .filter(([_key, value]) => Object.keys(value.secrets).length)
-      // @ts-ignore
-      .map(([key, value]) => [servicesInfos[key]?.title, value.secrets]),
+      .filter(([_key, value]) => value != null && typeof value === 'object' && Object.keys((value as PluginResult).store?.secrets ?? {}).length)
+      .map(([key, value]) => [servicesInfos[key]?.title, (value as PluginResult).store?.secrets ?? {}]),
   )
 }
 
@@ -274,19 +273,19 @@ export async function bulkActionProject(data: typeof projectContract.bulkActionP
       where: { status: { not: 'archived' } },
     })).map(({ id }) => id)
   }
-  bulkExector(data.projectIds
+  await bulkExector(data.projectIds
     .map((projectId) => {
       if (data.action === 'archive') {
-        return () => archiveProject(projectId, requestor, requestId)
+        return async () => archiveProject(projectId, requestor, requestId)
       }
       if (data.action === 'lock') {
-        return () => updateProject({ locked: true }, projectId, requestor, requestId)
+        return async () => updateProject({ locked: true }, projectId, requestor, requestId)
       }
       if (data.action === 'unlock') {
-        return () => updateProject({ locked: false }, projectId, requestor, requestId)
+        return async () => updateProject({ locked: false }, projectId, requestor, requestId)
       }
       if (data.action === 'replay') {
-        return () => replayHooks({ projectId, userId: requestor.id, requestId })
+        return async () => replayHooks({ projectId, userId: requestor.id, requestId })
       }
       // should never been called
       return async () => {}
@@ -301,6 +300,6 @@ export function chunk<T>(arr: T[], size: number): T[][] {
 async function bulkExector(toExecute: Array<() => Promise<any>>) {
   const toExecuteChunked = chunk(toExecute, parallelBulkLimit)
   for (const chunkToExecute of toExecuteChunked) {
-    await Promise.allSettled(chunkToExecute.map(fn => fn()))
+    await Promise.allSettled(chunkToExecute.map(async fn => fn()))
   }
 }

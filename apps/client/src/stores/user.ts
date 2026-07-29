@@ -27,7 +27,7 @@ export const useUserStore = defineStore('user', () => {
     userProfile.value = getUserProfile()
     await systemSettingsStore.listSystemSettings().catch(() => undefined)
     await apiClient.Users.auth()
-      .then((res: any) => apiAuthInfos.value = extractData(res, 200))
+      .then((res) => apiAuthInfos.value = extractData(res, 200))
   }
 
   const setIsLoggedIn = async () => {

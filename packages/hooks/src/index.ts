@@ -63,7 +63,7 @@ function pluginManager(options: PluginManagerOptions): PluginManager {
       plugin.monitor.monitorFn = async (instance: Monitor) => instance.lastStatus
     }
     if (plugin.monitor)
-      plugin.monitor.refresh()
+      void plugin.monitor.refresh()
     servicesInfos[plugin.infos.name] = {
       ...plugin.infos,
       monitor: plugin.monitor,

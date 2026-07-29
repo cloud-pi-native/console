@@ -22,5 +22,5 @@ const sdk = new NodeSDK({
 sdk.start()
 
 process.once('beforeExit', () => {
-  sdk.shutdown()
+  void sdk.shutdown()
 })

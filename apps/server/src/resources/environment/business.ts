@@ -11,7 +11,7 @@ import {
 import { Result } from '@/utils/business.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
-export function getProjectEnvironments(projectId: Project['id']) {
+export async function getProjectEnvironments(projectId: Project['id']) {
   return getEnvironmentsByProjectId(projectId)
 }
 

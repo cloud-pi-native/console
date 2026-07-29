@@ -1,4 +1,4 @@
-import type { KubeCluster, KubeUser, Project as ProjectPayload, Store } from '@cpn-console/hooks'
+import type { Project as ProjectPayload, Store } from '@cpn-console/hooks'
 import type { ProjectInfos, ReposCreds } from './hook-wrapper.ts'
 import { describe, expect, it } from 'vitest'
 import { transformToHookProject } from './hook-wrapper.ts'
@@ -215,8 +215,8 @@ describe('transformToHookProject', () => {
 
     // Assert sur la transformation des clusters
     expect(result.clusters).toEqual([associatedCluster, nonAssociatedCluster].map(({ kubeconfig, ...cluster }) => ({
-      user: kubeconfig.user as unknown as KubeUser,
-      cluster: kubeconfig.cluster as unknown as KubeCluster,
+      user: kubeconfig.user,
+      cluster: kubeconfig.cluster,
       ...cluster,
       privacy: cluster.privacy,
     })))

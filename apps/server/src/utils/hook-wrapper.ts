@@ -146,17 +146,17 @@ async function manageProjectStatus(projectId: Project['id'], hookReply: HookResu
 const cluster = {
   upsert: async (clusterId: Cluster['id'], previousZoneId: Cluster['zoneId']) => {
     const cluster = await getClusterByIdOrThrow(clusterId)
-    const clusterObject = cluster as unknown as ClusterObject
+    const clusterObject = cluster as unknown as ClusterObject satisfies ClusterObject
     const store = dbToObj(await getAdminPlugin())
     if (cluster.zoneId !== previousZoneId) {
       // Upsert on the old zone to remove cluster
       const previousClusterObject = {
         ...cluster,
-      } as unknown as ClusterObject
+      } as unknown as ClusterObject satisfies ClusterObject
       previousClusterObject.zone = await getZoneByIdOrThrow(previousZoneId)
       previousClusterObject.zone.clusterNames = await getClusterNamesByZoneId(previousZoneId)
       const hookResult = await hooks.upsertCluster.execute({
-        ...cluster.kubeconfig as unknown as Pick<ClusterObject, 'cluster' | 'user'>,
+        ...cluster.kubeconfig as unknown as Pick<ClusterObject, 'cluster' | 'user'> satisfies Pick<ClusterObject, 'cluster' | 'user'>,
         ...previousClusterObject,
       }, store)
       if (hookResult.failed) {
@@ -165,18 +165,18 @@ const cluster = {
     }
     clusterObject.zone.clusterNames = await getClusterNamesByZoneId(cluster.zoneId)
     return hooks.upsertCluster.execute({
-      ...cluster.kubeconfig as unknown as Pick<ClusterObject, 'cluster' | 'user'>,
+      ...cluster.kubeconfig as unknown as Pick<ClusterObject, 'cluster' | 'user'> satisfies Pick<ClusterObject, 'cluster' | 'user'>,
       ...clusterObject,
     }, store)
   },
   delete: async (clusterId: Cluster['id']) => {
     const cluster = await getClusterByIdOrThrow(clusterId)
-    const clusterObject = cluster as unknown as ClusterObject
+    const clusterObject = cluster as unknown as ClusterObject satisfies ClusterObject
     const clusterNames = await getClusterNamesByZoneId(cluster.zoneId)
     clusterObject.zone.clusterNames = clusterNames.filter(c => c !== cluster.label)
     const store = dbToObj(await getAdminPlugin())
     return hooks.deleteCluster.execute({
-      ...cluster.kubeconfig as unknown as ClusterObject,
+      ...cluster.kubeconfig as unknown as ClusterObject satisfies ClusterObject,
       ...clusterObject,
     }, store)
   },
@@ -214,7 +214,7 @@ const projectMember = {
       firstName: member.user.firstName,
       lastName: member.user.lastName,
       email: member.user.email,
-      type: member.user.type as 'human' | 'bot' | 'ghost',
+      type: member.user.type,
       createdAt: member.user.createdAt.toISOString(),
       updatedAt: member.user.updatedAt.toISOString(),
       lastLogin: member.user.lastLogin?.toISOString(),
@@ -249,7 +249,7 @@ const projectMember = {
       firstName: member.user.firstName,
       lastName: member.user.lastName,
       email: member.user.email,
-      type: member.user.type as 'human' | 'bot' | 'ghost',
+      type: member.user.type,
       createdAt: member.user.createdAt.toISOString(),
       updatedAt: member.user.updatedAt.toISOString(),
       lastLogin: member.user.lastLogin?.toISOString(),
@@ -365,8 +365,8 @@ export const hook = {
 function formatClusterInfos({ kubeconfig, ...cluster }: Omit<Cluster, 'updatedAt' | 'createdAt' | 'zoneId' | 'kubeConfigId'>
   & { kubeconfig: Kubeconfig, zone: Pick<Zone, 'id' | 'slug' | 'label' | 'argocdUrl'> }) {
   return {
-    user: kubeconfig.user as unknown as KubeUser,
-    cluster: kubeconfig.cluster as unknown as KubeCluster,
+    user: kubeconfig.user as unknown as KubeUser satisfies KubeUser,
+    cluster: kubeconfig.cluster as unknown as KubeCluster satisfies KubeCluster,
     ...cluster,
     privacy: cluster.privacy,
   }

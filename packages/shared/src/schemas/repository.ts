@@ -41,15 +41,15 @@ export const UpdateRepoFormSchema = RepoFormSchema
   .refine(
     ({ isPrivate, externalToken, externalUserName }) => {
       if (isPrivate) {
-        if (!externalToken && !externalUserName) return false
-        return true
+        if ((externalToken != null && externalToken !== '') || (externalUserName != null && externalUserName !== '')) return true
+        return false
       }
       return true
     },
     { message: missingCredentials, path: ['credentials'] },
   )
   .refine(({ isStandalone, externalRepoUrl }) => {
-    if (!isStandalone && !externalRepoUrl) {
+    if (!isStandalone && (externalRepoUrl == null || externalRepoUrl === '')) {
       return false
     }
     return true
@@ -59,13 +59,13 @@ export const CreateRepoFormSchema = RepoFormSchema
   .omit({ id: true, projectId: true })
   .refine(({ isPrivate, externalToken, externalUserName }) => {
     if (isPrivate) {
-      if (!externalToken && !externalUserName) return false
-      return true
+      if ((externalToken != null && externalToken !== '') || (externalUserName != null && externalUserName !== '')) return true
+      return false
     }
     return true
   }, { message: missingCredentials, path: ['credentials'] })
   .refine(({ isStandalone, externalRepoUrl }) => {
-    if (!isStandalone && !externalRepoUrl) {
+    if (!isStandalone && (externalRepoUrl == null || externalRepoUrl === '')) {
       return false
     }
     return true

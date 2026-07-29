@@ -132,10 +132,10 @@ export function generateProjectWhereInput(opts: {
   const { status, statusIn, statusNotIn, filter = 'member', ...rest } = opts.query
 
   const whereAnd: Prisma.ProjectWhereInput[] = []
-  if (rest.id) whereAnd.push({ id: rest.id })
+  if (rest.id != null) whereAnd.push({ id: rest.id })
   if (rest.locked !== undefined) whereAnd.push({ locked: rest.locked })
-  if (rest.name) whereAnd.push({ name: rest.name })
-  if (rest.description) whereAnd.push({ description: { contains: rest.description } })
+  if (rest.name != null) whereAnd.push({ name: rest.name })
+  if (rest.description != null) whereAnd.push({ description: { contains: rest.description } })
 
   const statusWhere = parseEnumWhereFilter({
     enumValues: projectStatus,
@@ -148,14 +148,14 @@ export function generateProjectWhereInput(opts: {
   if (rest.lastSuccessProvisionningVersion) {
     if (rest.lastSuccessProvisionningVersion === 'outdated') {
       whereAnd.push({ lastSuccessProvisionningVersion: { not: opts.appVersion } })
-    } else if (rest.lastSuccessProvisionningVersion === 'last') {
+    } else if (rest.lastSuccessProvisionningVersion === 'last' && opts.appVersion != null) {
       whereAnd.push({ lastSuccessProvisionningVersion: { equals: opts.appVersion } })
     } else {
       whereAnd.push({ lastSuccessProvisionningVersion: rest.lastSuccessProvisionningVersion })
     }
   }
 
-  if (rest.search) {
+  if (rest.search != null) {
     whereAnd.push({
       OR: [
         { name: { contains: rest.search } },

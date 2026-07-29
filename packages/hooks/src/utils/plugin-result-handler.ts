@@ -8,12 +8,12 @@ export class PluginResultBuilder {
   public store: PluginResultStore = {}
 
   constructor(okMessage: string | undefined) {
-    if (okMessage) {
+    if (okMessage != null && okMessage !== '') {
       this.okMessages.push(okMessage)
     }
   }
 
-  addExtra(key: string, value: any) {
+  addExtra(key: string, value: unknown) {
     this.extras[key] = value
     return this
   }

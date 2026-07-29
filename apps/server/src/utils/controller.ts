@@ -83,7 +83,7 @@ export async function authUser(req: FastifyRequest, projectUnique: ProjectUnique
 export async function authUser(req: FastifyRequest, projectUnique?: ProjectUniqueFinder): Promise<UserProfile | UserProjectProfile> {
   let adminPermissions: bigint = 0n
   let tokenId: string | undefined
-  const reqUser: UserTrial = req.session.user as unknown as UserTrial
+  const reqUser = req.session.user as UserTrial satisfies UserTrial
   let user: UserDetails | undefined
 
   if (req.session.user) {

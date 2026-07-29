@@ -13,28 +13,28 @@ export const useClusterStore = defineStore('cluster', () => {
 
   const getClusters = async () => {
     clusters.value = await apiClient.Clusters.listClusters().then(
-      (response: any) => extractData(response, 200),
+      (response) => extractData(response, 200),
     )
     return clusters.value
   }
 
   const getClusterDetails = async (clusterId: Cluster['id']) =>
     apiClient.Clusters.getClusterDetails({ params: { clusterId } }).then(
-      (response: any) => extractData(response, 200),
+      (response) => extractData(response, 200),
     )
 
   const getClusterUsage = async (clusterId: Cluster['id']) =>
     apiClient.Clusters.getClusterUsage({ params: { clusterId } }).then(
-      (response: any) => extractData(response, 200),
+      (response) => extractData(response, 200),
     )
 
   const getClusterAssociatedEnvironments = (clusterId: Cluster['id']) =>
     apiClient.Clusters.getClusterEnvironments({ params: { clusterId } }).then(
-      (response: any) => extractData(response, 200),
+      (response) => extractData(response, 200),
     )
 
   const addCluster = (cluster: CreateClusterBody) =>
-    apiClient.Clusters.createCluster({ body: cluster }).then((response: any) =>
+    apiClient.Clusters.createCluster({ body: cluster }).then((response) =>
       extractData(response, 201),
     )
 
@@ -43,12 +43,12 @@ export const useClusterStore = defineStore('cluster', () => {
     ...body
   }: UpdateClusterBody & { id: Cluster['id'] }) =>
     apiClient.Clusters.updateCluster({ body, params: { clusterId: id } }).then(
-      (response: any) => extractData(response, 200),
+      (response) => extractData(response, 200),
     )
 
   const deleteCluster = (clusterId: Cluster['id']) =>
     apiClient.Clusters.deleteCluster({ params: { clusterId } }).then(
-      (response: any) => extractData(response, 204),
+      (response) => extractData(response, 204),
     )
 
   return {

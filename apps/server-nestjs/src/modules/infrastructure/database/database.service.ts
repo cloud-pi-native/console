@@ -43,7 +43,7 @@ export class DatabaseService {
       if (triesLeft > 0) {
         this.loggerService.error(error)
         this.loggerService.log(
-          `Could not connect to Postgres: ${error.message}`,
+          `Could not connect to Postgres: ${error instanceof Error ? error.message : String(error)}`,
         )
         this.loggerService.log(`Retrying (${triesLeft} tries left)`)
         await setTimeout(this.DELAY_BEFORE_RETRY)
@@ -51,11 +51,11 @@ export class DatabaseService {
       }
 
       this.loggerService.log(
-        `Could not connect to Postgres: ${error.message}`,
+        `Could not connect to Postgres: ${error instanceof Error ? error.message : String(error)}`,
       )
       this.loggerService.log('Out of retries')
-      error.message = `Out of retries, last error: ${error.message}`
-      throw error
+      const outOfRetriesError = new Error(`Out of retries, last error: ${error instanceof Error ? error.message : String(error)}`)
+      throw outOfRetriesError
     }
   }
 

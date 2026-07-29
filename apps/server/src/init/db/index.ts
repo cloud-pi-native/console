@@ -16,7 +16,7 @@ export async function initDb(data: Imports) {
   const dataStringified = JSON.stringify(data)
   const dataParsed = JSON.parse(dataStringified, (key, value) => {
     try {
-      if (['permissions', 'everyonePerms'].includes(key)) {
+      if (typeof key === 'string' && ['permissions', 'everyonePerms'].includes(key)) {
         return BigInt(value.slice(0, value.length - 1))
       }
     } catch {
@@ -38,7 +38,7 @@ export async function initDb(data: Imports) {
   for (const [modelKey, rows] of dataParsed.associations) {
     for (const row of rows) {
       const idKey = 'id'
-      const connectKeys = Object.keys(row).filter(key => key !== idKey)
+      const connectKeys = Object.keys(row).filter((key): key is string => typeof key === 'string' && key !== idKey)
       const dataConnects = connectKeys.reduce((acc, curr) => {
         acc[curr] = { connect: row[curr] }
         return acc

@@ -3,7 +3,7 @@ import type { ConfigRecords } from './business.js'
 import prisma from '@/prisma.js'
 
 // CONFIG
-export function getProjectStore(projectId: Project['id']) {
+export async function getProjectStore(projectId: Project['id']) {
   return prisma.projectPlugin.findMany({
     where: { projectId },
     select: {

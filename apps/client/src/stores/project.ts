@@ -38,7 +38,7 @@ export const useProjectStore = defineStore('project', () => {
   const updateStore = async (projectsRecieved: ProjectV2[]) => {
     return projectsRecieved.map((project) => {
       if (project.slug in projectsBySlug.value) {
-        return projectsBySlug.value[project.slug].Commands.updateData(project)
+        return projectsBySlug.value[project.slug]!.Commands.updateData(project)
       }
       const newProject = new Project(project)
       projectsBySlug.value[project.slug] = newProject
@@ -49,13 +49,13 @@ export const useProjectStore = defineStore('project', () => {
   const selectFromStore = (slugs: ProjectV2['slug'][]) => {
     return slugs
       .filter(slug => slug in projectsBySlug.value)
-      .map(slug => projectsBySlug.value[slug])
+      .map(slug => projectsBySlug.value[slug]!)
   }
 
   const getProject = async (projectId: ProjectV2['id']) => {
     const res = await apiClient.Projects.getProject({
       params: { projectId },
-    }).then((response: any) => extractData(response, 200))
+    }).then((response) => extractData(response, 200))
     return (await updateStore([res]))[0]
   }
 
@@ -66,16 +66,17 @@ export const useProjectStore = defineStore('project', () => {
     },
   ) => {
     const res = await apiClient.Projects.listProjects({ query }).then(
-      (response: any) => extractData(response, 200),
+      (response) => extractData(response, 200),
     )
     await updateStore(res)
-    return selectFromStore(res.map((project: any) => project.slug))
+    const slugs = res.map((project) => project.slug as ProjectV2['slug'])
+    return selectFromStore(slugs)
   }
 
   const listMyProjects = pDebounce(async () => {
     const res = await apiClient.Projects.listProjects({
       query: { filter: 'member', statusNotIn: 'archived' },
-    }).then((response: any) => extractData(response, 200))
+    }).then((response) => extractData(response, 200))
     for (const storedProject of myProjects.value) {
       if (
         !res.some((responseProject: any) => responseProject.id === storedProject.id)
@@ -89,14 +90,14 @@ export const useProjectStore = defineStore('project', () => {
 
   const createProject = async (body: CreateProjectBody) => {
     const project = await apiClient.Projects.createProject({ body }).then(
-      (response: any) => extractData(response, 201),
+      (response) => extractData(response, 201),
     )
     projectsBySlug.value[project.slug] = new Project(project)
     return project
   }
 
   const generateProjectsData = () =>
-    apiClient.Projects.getProjectsData().then((response: any) =>
+    apiClient.Projects.getProjectsData().then((response) =>
       extractData(response, 200),
     )
 

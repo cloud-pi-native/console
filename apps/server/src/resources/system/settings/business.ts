@@ -4,6 +4,6 @@ import {
   upsertSystemSetting as upsertSystemSettingQuery,
 } from './queries.js'
 
-export const getSystemSettings = (key?: string) => getSystemSettingsQuery({ key })
+export const getSystemSettings = async (key?: string) => getSystemSettingsQuery({ key })
 
-export const upsertSystemSetting = (newSystemSetting: UpsertSystemSettingBody) => upsertSystemSettingQuery(newSystemSetting)
+export const upsertSystemSetting = async (newSystemSetting: UpsertSystemSettingBody) => upsertSystemSettingQuery(newSystemSetting)

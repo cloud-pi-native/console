@@ -26,8 +26,8 @@ export type ConfigRecords = {
 export function dbToObj(records: Omit<ProjectPlugin, 'projectId'>[]): PluginsUpdateBody {
   const obj: PluginsUpdateBody = {}
   for (const record of records) {
-    if (!obj[record.pluginName]) obj[record.pluginName] = {}
-    obj[record.pluginName][record.key] = record.value
+    const plugin = obj[record.pluginName] ??= {}
+    plugin[record.key] = record.value
   }
   return obj
 }

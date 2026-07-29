@@ -15,7 +15,7 @@ vi.mock('./prepare-app.js', () => {
     close: vi.fn(async () => {}),
   }
   return {
-    getPreparedApp: () => Promise.resolve(app),
+    getPreparedApp: async () => Promise.resolve(app),
   }
 })
 vi.spyOn(logger, 'warn')

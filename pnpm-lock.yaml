@@ -67,6 +67,13 @@ catalogs:
     workbox-window:
       specifier: ^7.4.0
       version: 7.4.0
+  default:
+    '@tsconfig/node24':
+      specifier: ^24.0.4
+      version: 24.0.4
+    '@tsconfig/strictest':
+      specifier: ^2.0.8
+      version: 2.0.8
   otel:
     '@opentelemetry/api':
       specifier: ^1.9.0
@@ -895,7 +902,7 @@ importers:
         version: link:../../packages/tsconfig
       '@darraghor/eslint-plugin-nestjs-typed':
         specifier: catalog:tools
-        version: 7.2.9(@typescript-eslint/parser@8.59.2(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3))(class-validator@0.15.1)(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3)
+        version: 7.2.9(@typescript-eslint/parser@8.59.2(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3))(class-validator@0.15.1)(eslint@10.5.0(jiti@2.6.1))(supports-color@5.5.0)(typescript@5.9.3)
       '@eslint/eslintrc':
         specifier: catalog:tools
         version: 3.3.5(supports-color@5.5.0)
@@ -1117,7 +1124,14 @@ importers:
         specifier: catalog:build
         version: 5.9.3
 
-  packages/tsconfig: {}
+  packages/tsconfig:
+    devDependencies:
+      '@tsconfig/node24':
+        specifier: 'catalog:'
+        version: 24.0.4
+      '@tsconfig/strictest':
+        specifier: 'catalog:'
+        version: 2.0.8
 
   playwright:
     devDependencies:
@@ -4304,6 +4318,12 @@ packages:
     peerDependencies:
       '@ts-rest/core': ~3.52.0
       zod: ^3.22.3
+
+  '@tsconfig/node24@24.0.4':
+    resolution: {integrity: sha512-2A933l5P5oCbv6qSxHs7ckKwobs8BDAe9SJ/Xr2Hy+nDlwmLE1GhFh/g/vXGRZWgxBg9nX/5piDtHR9Dkw/XuA==}
+
+  '@tsconfig/strictest@2.0.8':
+    resolution: {integrity: sha512-XnQ7vNz5HRN0r88GYf1J9JJjqtZPiHt2woGJOo2dYqyHGGcd6OLGqSlBB6p1j9mpzja6Oe5BoPqWmeDx6X9rLw==}
 
   '@tybys/wasm-util@0.10.2':
     resolution: {integrity: sha512-RoBvJ2X0wuKlWFIjrwffGw1IqZHKQqzIchKaadZZfnNpsAYp2mM0h36JtPCjNDAHGgYez/15uMBpfGwchhiMgg==}
@@ -10522,11 +10542,11 @@ snapshots:
     dependencies:
       postcss-selector-parser: 7.1.1
 
-  '@darraghor/eslint-plugin-nestjs-typed@7.2.9(@typescript-eslint/parser@8.59.2(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3))(class-validator@0.15.1)(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3)':
+  '@darraghor/eslint-plugin-nestjs-typed@7.2.9(@typescript-eslint/parser@8.59.2(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3))(class-validator@0.15.1)(eslint@10.5.0(jiti@2.6.1))(supports-color@5.5.0)(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/parser': 8.59.2(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/scope-manager': 8.65.0
-      '@typescript-eslint/type-utils': 8.65.0(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/type-utils': 8.65.0(eslint@10.5.0(jiti@2.6.1))(supports-color@5.5.0)(typescript@5.9.3)
       '@typescript-eslint/utils': 8.65.0(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3)
       class-validator: 0.15.1
       eslint: 10.5.0(jiti@2.6.1)
@@ -12542,7 +12562,7 @@ snapshots:
   '@stylistic/eslint-plugin@5.10.0(eslint@10.5.0(jiti@2.6.1))':
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@10.5.0(jiti@2.6.1))
-      '@typescript-eslint/types': 8.61.1
+      '@typescript-eslint/types': 8.65.0
       eslint: 10.5.0(jiti@2.6.1)
       eslint-visitor-keys: 4.2.1
       espree: 10.4.0
@@ -12587,6 +12607,10 @@ snapshots:
       '@ts-rest/core': 3.52.1(@types/node@24.12.0)(zod@3.25.76)
       openapi3-ts: 2.0.2
       zod: 3.25.76
+
+  '@tsconfig/node24@24.0.4': {}
+
+  '@tsconfig/strictest@2.0.8': {}
 
   '@tybys/wasm-util@0.10.2':
     dependencies:
@@ -12795,8 +12819,8 @@ snapshots:
 
   '@typescript-eslint/project-service@8.59.2(typescript@5.9.3)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.59.2(typescript@5.9.3)
-      '@typescript-eslint/types': 8.61.1
+      '@typescript-eslint/tsconfig-utils': 8.65.0(typescript@5.9.3)
+      '@typescript-eslint/types': 8.65.0
       debug: 4.4.3(supports-color@5.5.0)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -12876,7 +12900,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/type-utils@8.65.0(eslint@10.5.0(jiti@2.6.1))(typescript@5.9.3)':
+  '@typescript-eslint/type-utils@8.65.0(eslint@10.5.0(jiti@2.6.1))(supports-color@5.5.0)(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/types': 8.65.0
       '@typescript-eslint/typescript-estree': 8.65.0(typescript@5.9.3)

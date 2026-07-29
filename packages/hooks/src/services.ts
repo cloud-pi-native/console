@@ -31,10 +31,12 @@ export const services = {
       return [...acc, { ...serviceInfos.monitor.lastStatus, name: serviceInfos.title }]
     }, [] as Array<ServiceStatus>)
   },
-  refreshStatus: (): Array<Promise<MonitorInfos>> => {
-    // @ts-ignore obligé d'ignore TS ne comprend pas l'interet du filter
-    return Object.values(servicesInfos)
-      .filter(servicesInfos => servicesInfos.monitor)
-      .map(serviceInfos => serviceInfos.monitor?.refresh())
+  refreshStatus: async (): Promise<MonitorInfos[]> => {
+    const results = await Promise.all(
+      Object.values(servicesInfos)
+        .filter(serviceInfos => serviceInfos.monitor)
+        .map(async serviceInfos => serviceInfos.monitor!.refresh()),
+    )
+    return results
   },
 }

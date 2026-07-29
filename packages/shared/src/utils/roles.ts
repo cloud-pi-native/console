@@ -9,7 +9,7 @@ export function isSystemRoleType(type: string | null | undefined) {
 }
 
 export function getBaseRoleType(type: string | null | undefined) {
-  if (!type) return undefined
+  if (type == null) return undefined
   return isSystemRoleType(type) ? type.slice(`${SYSTEM_ROLE_TYPE}:`.length) : type
 }
 

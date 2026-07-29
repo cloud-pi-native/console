@@ -23,7 +23,7 @@ export const editStrippersGenerator = pluginConfig.transform((arg) => {
     }
   }
 
-  for (const item of arg.global || []) {
+  for (const item of arg.global ?? []) {
     if (item.permissions.admin.write) {
       const zAny = atomicValidators[item.kind].optional()
       global = global.merge(z.object({ [item.key]: zAny }))

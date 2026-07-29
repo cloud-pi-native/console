@@ -108,7 +108,8 @@ function excludeCircular(value: unknown, keys: string[], inPath: WeakSet<object>
 
     if ('toJSON' in value && typeof value.toJSON === 'function') {
       try {
-        const serialized = value.toJSON()
+        const toJSON = value as { toJSON: () => unknown }
+        const serialized: unknown = toJSON.toJSON()
         const out = excludeCircular(serialized, keys, inPath, inArray)
         inPath.delete(value)
         return out
@@ -118,9 +119,11 @@ function excludeCircular(value: unknown, keys: string[], inPath: WeakSet<object>
       }
     }
 
-    const proto = Object.getPrototypeOf(value)
+    const proto = Object.getPrototypeOf(value) as object | null
     if (proto !== Object.prototype && proto !== null) {
-      const ctorName = (value as any)?.constructor?.name
+      const ctorName = typeof proto === 'object' && proto !== null && 'constructor' in proto
+        ? (proto as { constructor?: { name?: unknown } }).constructor?.name
+        : undefined
       const tag = typeof ctorName === 'string' && ctorName.length ? ctorName : 'Object'
       try {
         const s = String(value)
@@ -134,6 +137,9 @@ function excludeCircular(value: unknown, keys: string[], inPath: WeakSet<object>
     }
 
     const obj = value as Record<string, unknown>
+    if (typeof obj !== 'object' || obj === null) {
+      return String(value)
+    }
     const newObj: Record<string, unknown> = {}
     for (const [k, v] of Object.entries(obj)) {
       if (keys.includes(k)) continue
@@ -160,7 +166,7 @@ export function objectEntries<Obj extends Record<string, unknown>>(obj: Obj): ([
   return Object.entries(obj) as ([keyof Obj, Obj[keyof Obj]])[]
 }
 export function objectKeys<Obj extends Record<string, unknown>>(obj: Obj): (keyof Obj)[] {
-  return Object.keys(obj) as (keyof Obj)[]
+  return Object.keys(obj)
 }
 export function objectValues<Obj extends Record<string, unknown>>(obj: Obj): (Obj[keyof Obj])[] {
   return Object.values(obj) as (Obj[keyof Obj])[]
@@ -168,7 +174,7 @@ export function objectValues<Obj extends Record<string, unknown>>(obj: Obj): (Ob
 
 export function requiredEnv(envName: string): string {
   const envValue = process.env[envName]
-  if (envValue) return envValue
+  if (envValue !== undefined) return envValue
 
   throw new Error(`env: ${envName} is not defined !`)
 }
@@ -282,8 +288,8 @@ const uuidTranslator = shortUUID(shortUUID.constants.uuid25Base36, {
   consistentLength: false,
 })
 
-export const compressUUID = uuidTranslator.fromUUID
-export const expandUUID = uuidTranslator.toUUID
+export const compressUUID = uuidTranslator.fromUUID.bind(uuidTranslator)
+export const expandUUID = uuidTranslator.toUUID.bind(uuidTranslator)
 
 export function generateNamespaceName(projectId: string, envId: string) {
   return `${compressUUID(envId)}--${compressUUID(projectId)}`

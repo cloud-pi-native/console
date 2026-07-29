@@ -11,11 +11,11 @@ export class Result<T> {
   ) {}
 
   static succeed<T>(value: T): Success<T> {
-    return new Result(true, value) as Success<T>
+    return new Result(true, value)
   }
 
-  static fail(message: string): Failure {
-    return new Result(false, message) as Failure
+  static fail<T>(message: string): Result<T> {
+    return new Result<T>(false, message)
   }
 
   get isSuccess(): boolean {

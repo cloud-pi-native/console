@@ -8,7 +8,7 @@ import { apiClient, extractData } from '../api/xhr-client.js'
 export const useTokenStore = defineStore('token', () => {
   const listPersonalAccessTokens = async () => {
     return apiClient.PersonalAccessTokens.listPersonalAccessTokens().then(
-      (response: any) => extractData(response, 200),
+      (response) => extractData(response, 200),
     )
   }
 
@@ -17,7 +17,7 @@ export const useTokenStore = defineStore('token', () => {
   ) => {
     return apiClient.PersonalAccessTokens.createPersonalAccessToken({
       body,
-    }).then((res: any) => extractData(res, 201))
+    }).then((res) => extractData(res, 201))
   }
 
   const deletePersonalAccessToken = async (
@@ -25,7 +25,7 @@ export const useTokenStore = defineStore('token', () => {
   ) => {
     await apiClient.PersonalAccessTokens.deletePersonalAccessToken({
       params: { tokenId },
-    }).then((res: any) => extractData(res, 204))
+    }).then((res) => extractData(res, 204))
   }
 
   return {

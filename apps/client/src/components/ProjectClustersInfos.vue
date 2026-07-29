@@ -34,7 +34,7 @@ onMounted(async () => {
       <div
         title="Zone"
       >
-        <v-icon name="ri:focus-3-line" />: {{ zoneStore.zonesById[cluster.zoneId].label }}
+        <v-icon name="ri:focus-3-line" />: {{ zoneStore.zonesById[cluster.zoneId]?.label }}
       </div>
       <div
         title="Confidentialité"

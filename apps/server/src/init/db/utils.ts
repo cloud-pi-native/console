@@ -49,7 +49,7 @@ function sort() {
           || (relationField.isRequired && !field.isRequired)
         ) {
           const moveRes = moveBefore(ModelsOrder, model, field.type)
-          if (moveRes) {
+          if (moveRes !== false) {
             hasChanged = true
             ModelsOrder = moveRes
           }
@@ -72,11 +72,11 @@ sort()
 
 // special case to study
 const logUserCase = moveBefore(ModelsOrder, 'User', 'Log')
-if (logUserCase) {
+if (logUserCase !== false) {
   ModelsOrder = logUserCase
 }
 const logProjectCase = moveBefore(ModelsOrder, 'Project', 'Log')
-if (logProjectCase) {
+if (logProjectCase !== false) {
   ModelsOrder = logProjectCase
 }
 

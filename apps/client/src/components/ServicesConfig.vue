@@ -30,7 +30,7 @@ function groupManifest(configItems: PluginConfigItem[] = []) {
   return configItems.reduce((acc, curr) => {
     if (!curr.section) curr.section = 'default'
     if (curr.section in acc.items) {
-      acc.items[curr.section].push(curr as PluginConfigItem)
+      acc.items[curr.section]!.push(curr as PluginConfigItem)
     } else {
       acc.items[curr.section] = [curr as PluginConfigItem]
       acc.sectionNumber++
@@ -55,7 +55,7 @@ const updated = ref<PluginsUpdateBody>({})
 
 function update(data: { value: string, key: string, plugin: string }) {
   if (!updated.value[data.plugin]) updated.value[data.plugin] = {}
-  updated.value[data.plugin][data.key] = data.value
+  updated.value[data.plugin]![data.key] = data.value
 }
 
 function getItemsToShowLength(items: PluginConfigItem[] | (PluginConfigItem & { value: any })[] | undefined, scope: PermissionTarget): number | undefined {

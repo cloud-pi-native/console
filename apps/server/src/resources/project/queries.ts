@@ -13,7 +13,7 @@ import { appVersion } from '@/utils/env.js'
 import { uuid } from '@/utils/queries-tools.js'
 
 type ProjectUpdate = Partial<Pick<Project, 'description' | 'ownerId' | 'everyonePerms' | 'locked'>>
-export function updateProject(id: Project['id'], data: ProjectUpdate) {
+export async function updateProject(id: Project['id'], data: ProjectUpdate) {
   return prisma.project.update({
     where: { id },
     data,
@@ -83,7 +83,7 @@ export async function listProjects({
   })
 }
 
-export function getProjectOrThrow(id: Project['id'] | Project['slug']) {
+export async function getProjectOrThrow(id: Project['id'] | Project['slug']) {
   return prisma.project.findFirstOrThrow({
     where: uuid.test(id)
       ? { id }
@@ -97,7 +97,7 @@ export function getProjectOrThrow(id: Project['id'] | Project['slug']) {
   })
 }
 
-export function getProjectInfosByIdOrThrow(projectId: Project['id']) {
+export async function getProjectInfosByIdOrThrow(projectId: Project['id']) {
   return prisma.project.findUniqueOrThrow({
     where: {
       id: projectId,
@@ -109,7 +109,7 @@ export function getProjectInfosByIdOrThrow(projectId: Project['id']) {
   })
 }
 
-export function getProjectMembers(projectId: Project['id']) {
+export async function getProjectMembers(projectId: Project['id']) {
   return prisma.projectMembers.findMany({
     where: {
       projectId,
@@ -118,7 +118,7 @@ export function getProjectMembers(projectId: Project['id']) {
   })
 }
 
-export function getProjectById(id: Project['id']) {
+export async function getProjectById(id: Project['id']) {
   return prisma.project.findUnique({ where: { id } })
 }
 
@@ -129,21 +129,21 @@ export const baseProjectIncludes = {
   owner: true,
 } as const
 
-export function getProjectInfos(id: Project['id']) {
+export async function getProjectInfos(id: Project['id']) {
   return prisma.project.findUnique({
     where: { id },
     include: baseProjectIncludes,
   })
 }
 
-export function getProjectInfosOrThrow(id: Project['id']) {
+export async function getProjectInfosOrThrow(id: Project['id']) {
   return prisma.project.findUniqueOrThrow({
     where: { id },
     include: baseProjectIncludes,
   })
 }
 
-export function getProjectInfosAndRepos(id: Project['id']) {
+export async function getProjectInfosAndRepos(id: Project['id']) {
   return prisma.project.findUniqueOrThrow({
     where: { id },
     include: {
@@ -153,7 +153,7 @@ export function getProjectInfosAndRepos(id: Project['id']) {
   })
 }
 
-export function getSlugs(slugPrefix: string) {
+export async function getSlugs(slugPrefix: string) {
   return prisma.project.findMany({
     where: {
       slug: { startsWith: slugPrefix },
@@ -161,7 +161,7 @@ export function getSlugs(slugPrefix: string) {
   })
 }
 
-export function getAllProjectsDataForExport() {
+export async function getAllProjectsDataForExport() {
   return prisma.project.findMany({
     select: {
       name: true,
@@ -182,7 +182,7 @@ export function getAllProjectsDataForExport() {
   })
 }
 
-export function getRolesByProjectId(projectId: Project['id']) {
+export async function getRolesByProjectId(projectId: Project['id']) {
   return prisma.projectRole.findMany({
     where: { projectId },
   })
@@ -208,7 +208,7 @@ const clusterInfosSelect = {
     },
   },
 }
-export function getHookProjectInfos(id: Project['id']) {
+export async function getHookProjectInfos(id: Project['id']) {
   return prisma.project.findUniqueOrThrow({
     where: { id },
     include: {
@@ -251,7 +251,7 @@ interface CreateProjectParams {
   prodMemory: number
 }
 
-export function initializeProject(params: CreateProjectParams) {
+export async function initializeProject(params: CreateProjectParams) {
   return prisma.project.create({
     data: {
       description: params.description ?? '',
@@ -302,14 +302,14 @@ export function initializeProject(params: CreateProjectParams) {
 }
 
 // UPDATE
-export function lockProject(id: Project['id']) {
+export async function lockProject(id: Project['id']) {
   return prisma.project.update({
     where: { id },
     data: { locked: true },
   })
 }
 
-export function updateProjectCreated(id: Project['id']) {
+export async function updateProjectCreated(id: Project['id']) {
   return prisma.project.update({
     where: { id },
     data: {
@@ -320,7 +320,7 @@ export function updateProjectCreated(id: Project['id']) {
   })
 }
 
-export function updateProjectFailed(id: Project['id']) {
+export async function updateProjectFailed(id: Project['id']) {
   return prisma.project.update({
     where: { id },
     data: { status: ProjectStatus.failed },
@@ -328,7 +328,7 @@ export function updateProjectFailed(id: Project['id']) {
   })
 }
 
-export function updateProjectWarning(id: Project['id']) {
+export async function updateProjectWarning(id: Project['id']) {
   return prisma.project.update({
     where: { id },
     data: { status: ProjectStatus.warning },
@@ -336,7 +336,7 @@ export function updateProjectWarning(id: Project['id']) {
   })
 }
 
-export function addUserToProject({ project, user }: { project: Project, user: User }) {
+export async function addUserToProject({ project, user }: { project: Project, user: User }) {
   return prisma.projectMembers.create({
     data: {
       userId: user.id,
@@ -345,7 +345,7 @@ export function addUserToProject({ project, user }: { project: Project, user: Us
   })
 }
 
-export function removeUserFromProject({ projectId, userId }: { projectId: Project['id'], userId: User['id'] }) {
+export async function removeUserFromProject({ projectId, userId }: { projectId: Project['id'], userId: User['id'] }) {
   return prisma.projectMembers.delete({
     where: {
       projectId_userId: {

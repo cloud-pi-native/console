@@ -2,11 +2,11 @@ import type { Environment, Prisma, Project } from '@prisma/client'
 import prisma from '@/prisma.js'
 
 // SELECT
-export function getEnvironmentByIdOrThrow(id: Environment['id']) {
+export async function getEnvironmentByIdOrThrow(id: Environment['id']) {
   return prisma.environment.findUniqueOrThrow({ where: { id }, include: { stage: true } })
 }
 
-export function getEnvironmentInfos(id: Environment['id']) {
+export async function getEnvironmentInfos(id: Environment['id']) {
   return prisma.environment.findUniqueOrThrow({
     where: { id },
     include: {
@@ -44,7 +44,7 @@ export async function getEnvironmentsByProjectId(projectId: Project['id']) {
   })
 }
 
-export function getEnvironmentByIdWithCluster(id: Environment['id']) {
+export async function getEnvironmentByIdWithCluster(id: Environment['id']) {
   return prisma.environment.findUnique({
     where: { id },
     include: {
@@ -56,7 +56,7 @@ export function getEnvironmentByIdWithCluster(id: Environment['id']) {
 }
 
 // INSERT
-export function initializeEnvironment(data: Prisma.EnvironmentUncheckedCreateInput) {
+export async function initializeEnvironment(data: Prisma.EnvironmentUncheckedCreateInput) {
   return prisma.environment.create({
     data,
     include: {
@@ -71,7 +71,7 @@ export function initializeEnvironment(data: Prisma.EnvironmentUncheckedCreateInp
   })
 }
 
-export function updateEnvironment({ id, cpu, gpu, memory, autosync }: { id: Environment['id'], cpu: Environment['cpu'], gpu: Environment['gpu'], memory: Environment['memory'], autosync: Environment['autosync'] }) {
+export async function updateEnvironment({ id, cpu, gpu, memory, autosync }: { id: Environment['id'], cpu: Environment['cpu'], gpu: Environment['gpu'], memory: Environment['memory'], autosync: Environment['autosync'] }) {
   return prisma.environment.update({
     where: {
       id,
@@ -86,13 +86,13 @@ export function updateEnvironment({ id, cpu, gpu, memory, autosync }: { id: Envi
 }
 
 // DELETE
-export function deleteEnvironment(id: Environment['id']) {
+export async function deleteEnvironment(id: Environment['id']) {
   return prisma.environment.delete({
     where: { id },
   })
 }
 
-export function deleteAllEnvironmentForProject(id: Project['id']) {
+export async function deleteAllEnvironmentForProject(id: Project['id']) {
   return prisma.environment.deleteMany({
     where: { projectId: id },
   })

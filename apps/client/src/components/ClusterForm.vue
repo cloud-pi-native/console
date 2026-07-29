@@ -73,7 +73,7 @@ const clusterToDelete = ref('')
 const isDeletingCluster = ref(false)
 
 if (!localCluster.value.zoneId && props.allZones.length) {
-  localCluster.value.zoneId = props.allZones[0].id
+  localCluster.value.zoneId = props.allZones[0]!.id
 }
 
 const schema = computed(() => {
@@ -113,7 +113,7 @@ function updateKubeconfig(files: FileList) {
         snackbarStore.setMessage('Pas de current-context. Choisissez un contexte.')
       }
     }
-    reader.readAsText(files[0])
+    reader.readAsText(files[0]!)
   } catch (error) {
     // @ts-ignore
     kConfigError.value = error?.message

@@ -14,13 +14,13 @@ export function genericProxy<T>(proxied: T, excludes: Excludes<T> = {}): T {
     get({ methods, tracker }, property: string) {
       if (!(property in methods)) return
       return async (...args) => {
-        const id = args[0] as string
+        const id = args[0] as string | undefined
 
-        if (!id && args.length > 0) {
+        if (id != null && args.length > 0) {
           throw new Error('ID is required when args are provided')
         }
 
-        if (!id) {
+        if (id == null) {
           if (tracker[property] instanceof Promise) {
             return tracker[property]
           }
@@ -29,37 +29,36 @@ export function genericProxy<T>(proxied: T, excludes: Excludes<T> = {}): T {
             tracker[property] = p
             p.then(() => {
               delete tracker[property]
-            })
+            }).catch(() => {})
           }
           return p
         }
-        if (!tracker[property]) {
+        if (tracker[property] == null) {
           tracker[property] = {}
         }
 
         for (const testExclude of excludes[property] ?? []) {
-        // @ts-ignore
-          if (tracker?.[testExclude]?.[id]?.currentExec) {
+          if (tracker[testExclude]?.[id]?.currentExec) {
             throw new Error(`${String(testExclude)} in progress on ${id}, can't ${String(property)}`)
           }
         }
 
         if (id in tracker[property]) {
-          if (args[1]) {
+          if (args[1] != null) {
             tracker[property][id].nextArgs = {
               ...(tracker[property][id].nextArgs ?? {}),
               ...args[1],
             }
           }
-          if (tracker[property][id].currentExec) {
+          if (tracker[property][id].currentExec != null) {
             return new Promise((resolve) => {
-              tracker[property][id].currentExec.then(() => {
+              tracker[property][id].currentExec!.then(() => {
                 resolve(tracker[property][id].currentExec ?? methods[property](id, tracker[property][id].nextArgs))
               })
             })
           }
         }
-        const p = methods[property](...args)
+        const p = methods[property](...(args as [string, ...unknown[]]))
         tracker[property][id] = {
           currentExec: p,
           nextArgs: undefined,
@@ -67,7 +66,7 @@ export function genericProxy<T>(proxied: T, excludes: Excludes<T> = {}): T {
         tracker[property][id].currentExec = p
         p.then(() => {
           tracker[property][id].currentExec = undefined
-        })
+        }).catch(() => {})
         return p
       }
     },

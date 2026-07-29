@@ -127,11 +127,14 @@ export class GitlabClientService {
   async createGroup(path: string) {
     this.logger.log(`Creating a GitLab group at path ${path}`)
     const created = await this.client.Groups.create(path, path)
-    if (this.config.projectRootDir && created.full_path === this.config.projectRootDir) {
-      await this.setManagedRootGroupAttributes(created.id)
-    }
-    if (this.config.projectRootDir && created.full_path === `${this.config.projectRootDir}/${INFRA_GROUP_PATH}`) {
-      await this.setManagedInfraGroupAttributes(created.id)
+    const rootDir = this.config.projectRootDir
+    if (rootDir) {
+      if (created.full_path === rootDir) {
+        await this.setManagedRootGroupAttributes(created.id)
+      }
+      if (created.full_path === `${rootDir}/${INFRA_GROUP_PATH}`) {
+        await this.setManagedInfraGroupAttributes(created.id)
+      }
     }
     return created
   }
@@ -340,7 +343,7 @@ export class GitlabClientService {
   }
 
   async deleteGroup(group: CondensedGroupSchemaWith<'id' | 'full_path'>): Promise<void> {
-    this.logger.verbose(`Deleting GitLab group ${group.full_path} (groupId=${group.id})`)
+    this.logger.verbose(`Deleting GitLab group ${group.full_path} (groupId=${Number(group.id)})`)
     await this.client.Groups.remove(group.id)
   }
 
@@ -513,7 +516,7 @@ export class GitlabClientService {
     this.logger.debug(`Pagination start (page=${page})`)
 
     while (page !== null) {
-      if (options?.maxPages && pagesFetched >= options.maxPages) {
+      if (options?.maxPages != null && pagesFetched >= options.maxPages) {
         page = null
         continue
       }

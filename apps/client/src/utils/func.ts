@@ -82,7 +82,7 @@ export function toKebabCase(value: string) {
  */
 export function localeParseFloat(s: string): number {
   // Remove thousand separators, and put a point where the decimal separator occurs
-  const delocalizedInput = s.replaceAll(THOUSANDS_SEPARATOR, '').replaceAll(DECIMAL_SEPARATOR, '.')
+  const delocalizedInput = s.replaceAll(THOUSANDS_SEPARATOR ?? '', '').replaceAll(DECIMAL_SEPARATOR ?? '.', '.')
   // Now it can be parsed
   return Number.parseFloat(delocalizedInput)
 }
@@ -101,7 +101,8 @@ export function swapItems<T>(items: T[], index: number, direction: -1 | 1): T[] 
 
   const reordered = [...items]
   const moved = reordered[index]
-  reordered[index] = reordered[target]
+  if (!moved) return items
+  reordered[index] = reordered[target]!
   reordered[target] = moved
   return reordered
 }
