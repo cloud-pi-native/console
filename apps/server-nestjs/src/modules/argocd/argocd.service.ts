@@ -101,7 +101,9 @@ export class ArgoCDService {
   ): Promise<void> {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
-    const zones = getDistinctZones(project)
+    // Visit every zone, not only those with a current environment, so leftover
+    // values files are purged from zones the project no longer deploys to.
+    const zones = await this.argoCDDatastore.getAllZoneSlugs()
     span?.setAttribute('argocd.zones.count', zones.length)
     this.logger.verbose(`Reconciling ArgoCD zones for project ${project.slug} (count=${zones.length})`)
     await Promise.all(zones.map(zoneSlug => this.ensureZone(project, zoneSlug)))
@@ -167,11 +169,6 @@ export class ArgoCDService {
     zoneSlug: string,
   ): Promise<CommitAction[]> {
     const neededFiles = new Set<string>()
-    const clusterLabelsInZone = new Set(
-      project.environments
-        .filter(e => e.cluster.zone.slug === zoneSlug)
-        .map(e => e.cluster.label),
-    )
 
     project.environments.forEach((env) => {
       if (env.cluster?.zone.slug !== zoneSlug) return
@@ -188,10 +185,6 @@ export class ArgoCDService {
       .filter((existingFile) => {
         if (existingFile.name !== 'values.yaml') return false
         if (!existingFile.path.startsWith(projectPrefix)) return false
-
-        const remaining = existingFile.path.slice(projectPrefix.length)
-        const clusterLabel = remaining.split('/')[0]
-        if (!clusterLabel || !clusterLabelsInZone.has(clusterLabel)) return false
 
         return !neededFiles.has(existingFile.path)
       })
@@ -443,12 +436,6 @@ function formatAppProjectName(projectSlug: string, env: string) {
 
 function formatEnvironmentValuesFilePath(project: { name: string }, cluster: { label: string }, env: { name: string }): string {
   return `${project.name}/${cluster.label}/${env.name}/values.yaml`
-}
-
-function getDistinctZones(project: ProjectWithDetails) {
-  const zones = new Set<string>()
-  project.environments.forEach(e => zones.add(e.cluster.zone.slug))
-  return [...zones]
 }
 
 function splitExtraRepositories(extraRepositories: string | undefined): string[] {
