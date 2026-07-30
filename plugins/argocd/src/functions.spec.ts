@@ -3,6 +3,10 @@ import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { stringify } from 'yaml'
 import { deleteProject, upsertProject } from './functions.js'
+import {
+  DEFAULT_DSO_ENV_CHART_VERSION,
+  DEFAULT_DSO_NS_CHART_VERSION,
+} from './infos.js'
 
 vi.mock('./utils.js', () => ({
   generateAppProjectName: vi.fn(() => 'app-project-name'),
@@ -130,8 +134,8 @@ describe('argocd functions', () => {
         cluster: 'in-cluster',
         namespace: 'argocd',
         project: 'app-project-name',
-        envChartVersion: 'dso-env-1.6.0',
-        nsChartVersion: 'dso-ns-1.1.5',
+        envChartVersion: DEFAULT_DSO_ENV_CHART_VERSION,
+        nsChartVersion: DEFAULT_DSO_NS_CHART_VERSION,
       },
       environment: {
         valueFileRepository: infraProjectUrl,
