@@ -27,15 +27,21 @@ function splitExtraRepositories(repos?: string): string[] {
   return repos ? repos.split(',').map(repo => repo.trim()) : []
 }
 
+const DSO_NS_CHART_VERSION = process.env.DSO_NS_CHART_VERSION ?? DEFAULT_DSO_NS_CHART_VERSION
+const DSO_ENV_CHART_VERSION
+  = process.env.DSO_ENV_CHART_VERSION ?? DEFAULT_DSO_ENV_CHART_VERSION
+
 function getValueFilePath(p: Project, c: ClusterObject, e: Environment): string {
   return `${p.name}/${c.label}/${e.name}/values.yaml`
 }
 
 export const upsertProject: StepCall<Project> = async (payload) => {
   const project = payload.args
-  const gitlabApi = payload.apis.gitlab as unknown as GitlabProjectApi
-  const keycloakApi = payload.apis.keycloak as any
-  const vaultApi = payload.apis.vault as unknown as VaultProjectApi
+  const {
+    gitlab: gitlabApi,
+    keycloak: keycloakApi,
+    vault: vaultApi,
+  } = payload.apis
 
   try {
     const infraRepositories = project.repositories.filter(
@@ -123,8 +129,6 @@ async function ensureInfraEnvValues(
   const projectDevopsGroupSuffix = config.argocd?.projectDevopsGroupPathSuffix ?? DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX
   const projectDevelopperGroupSuffix = config.argocd?.projectDevelopperGroupPathSuffix ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
   const projectReadonlyGroupSuffix = config.argocd?.projectReadonlyGroupPathSuffix ?? DEFAULT_PROJECT_READONLY_GROUP_PATH_SUFFIX
-  const dsoEnvChartVersion = config.argocd?.dsoEnvChartVersion ?? DEFAULT_DSO_ENV_CHART_VERSION
-  const dsoNsChartVersion = config.argocd?.dsoNsChartVersion ?? DEFAULT_DSO_NS_CHART_VERSION
   const cluster = getCluster(project, environment)
   const infraProject = await gitlabApi.getProjectById(repoId)
   const valueFilePath = getValueFilePath(project, cluster, environment)
@@ -162,8 +166,8 @@ async function ensureInfraEnvValues(
       cluster: inClusterLabel,
       namespace: getConfig().namespace,
       project: appProjectName,
-      envChartVersion: dsoEnvChartVersion,
-      nsChartVersion: dsoNsChartVersion,
+      envChartVersion: DSO_ENV_CHART_VERSION,
+      nsChartVersion: DSO_NS_CHART_VERSION,
     },
     environment: {
       valueFileRepository: infraProject.http_url_to_repo,
