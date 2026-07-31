@@ -39,7 +39,9 @@ jobs:
 
   build-amd64:
     uses: ./.github/workflows/job-build.yml
-    if: ${{ needs.release.outputs.release-created == 'true' }}
+    # We want to build for every push on `main` to update the `latest` tag
+    # which will then be automatically deployed on our Integration environment(s)
+    if: ${{ needs.release.outputs.release-created == 'true' || github.ref == format('refs/heads/{0}', 'main') }}
     needs:
       - expose-vars
       - release
