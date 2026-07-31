@@ -17,6 +17,7 @@ import type {
 import type { ConfigType } from '@nestjs/config'
 import { join } from 'node:path'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
+import { Gitlab as GitlabRest } from '@gitbeaker/rest'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { find } from '../../utils/iterable.utils'
@@ -241,6 +242,7 @@ export class GitlabClientService {
         path: repoName,
         namespaceId: parentGroup.id,
         defaultBranch: 'main',
+        ciConfigPath: '.gitlab-ci-dso.yml',
       })
       this.logger.log(`Created a GitLab project repository (path=${fullPath}, repoId=${created.id})`)
       return created
@@ -334,7 +336,7 @@ export class GitlabClientService {
 
   async getProjectGroup(projectSlug: string): Promise<GroupSchema | undefined> {
     const parentGroup = await this.getOrCreateProjectGroup()
-    return find(
+    return await find(
       this.offsetPaginate(opts => this.client.Groups.allSubgroups(parentGroup.id, opts)),
       g => g.name === projectSlug,
     )
@@ -375,6 +377,9 @@ export class GitlabClientService {
     this.logger.log(`Creating a GitLab user (email=${user.email}, username=${user.username})`)
     return await this.client.Users.create({
       ...user,
+      canCreateGroup: false,
+      forceRandomPassword: true,
+      projectsLimit: 0,
       skipConfirmation: true,
     }) as UserSchema
   }
@@ -461,30 +466,43 @@ export class GitlabClientService {
     return this.upsertProjectGroupRepo(projectSlug, MIRROR_REPO_NAME)
   }
 
-  async getProjectToken(projectSlug: string) {
-    const group = await this.getProjectGroup(projectSlug)
-    if (!group) throw new Error('Unable to retrieve gitlab project group')
+  async getProjectToken(group: CondensedGroupSchemaWith<'id'>, projectSlug: string) {
     return find(
-      this.offsetPaginate<{ name: string }>(
-        opts => this.client.GroupAccessTokens.all(group.id, opts) as unknown as Promise<{ data: { name: string }[], paginationInfo: OffsetPagination }>,
+      this.offsetPaginate<{ name: string, id: number }>(
+        opts => this.client.GroupAccessTokens.all(group.id, opts) as unknown as Promise<{ data: { name: string, id: number }[], paginationInfo: OffsetPagination }>,
       ),
       token => token.name === `${projectSlug}-bot`,
     )
   }
 
-  async createProjectToken(projectSlug: string, tokenName: string, scopes: AccessTokenScopes[]) {
-    const group = await this.getProjectGroup(projectSlug)
-    if (!group) throw new Error('Unable to retrieve gitlab project group')
-    const expirationDays = Number(this.config.mirrorTokenExpirationDays)
-    const effectiveExpirationDays = Number.isFinite(expirationDays) && expirationDays > 0 ? expirationDays : 30
-    const expiryDate = new Date(Date.now() + effectiveExpirationDays * 24 * 60 * 60 * 1000)
-    this.logger.log(`Creating a GitLab group access token (projectSlug=${projectSlug}, tokenName=${tokenName}, expiry=${expiryDate.toISOString().slice(0, 10)})`)
+  async createProjectToken(group: CondensedGroupSchemaWith<'id'>, tokenName: string, scopes: AccessTokenScopes[]) {
+    const expiryDate = new Date(Date.now() + this.config.mirrorTokenExpirationDays * 24 * 60 * 60 * 1000)
+    this.logger.log(`Creating a GitLab group access token (groupId=${group.id}, tokenName=${tokenName}, expiry=${expiryDate.toISOString().slice(0, 10)})`)
     return this.client.GroupAccessTokens.create(group.id, tokenName, scopes, expiryDate.toISOString().slice(0, 10))
   }
 
   async createMirrorAccessToken(projectSlug: string) {
     const tokenName = `${projectSlug}-bot`
-    return this.createProjectToken(projectSlug, tokenName, ['write_repository', 'read_repository', 'read_api'])
+    const group = await this.getProjectGroup(projectSlug)
+    if (!group) throw new Error(`Unable to retrieve gitlab project group for ${projectSlug}`)
+    return this.createProjectToken(group, tokenName, ['write_repository', 'read_repository', 'read_api'])
+  }
+
+  async revokeProjectToken(group: CondensedGroupSchemaWith<'id'>, tokenId: number): Promise<void> {
+    this.logger.log(`Revoking a GitLab group access token (groupId=${group.id}, tokenId=${tokenId})`)
+    await this.client.GroupAccessTokens.revoke(group.id, tokenId)
+  }
+
+  async validateProjectToken(token: string): Promise<boolean> {
+    // gitbeaker has no per-call auth override, so validation needs a client bound to the candidate token
+    const client = new GitlabRest({ token, host: this.config.internalUrl ?? this.config.url })
+    try {
+      const self = await client.PersonalAccessTokens.show()
+      return self.active && !self.revoked
+    } catch (error) {
+      if (error instanceof GitbeakerRequestError && error.cause?.response.status === 401) return false
+      throw error
+    }
   }
 
   async getOrCreateMirrorPipelineTriggerToken(projectSlug: string): Promise<PipelineTriggerTokenSchema> {

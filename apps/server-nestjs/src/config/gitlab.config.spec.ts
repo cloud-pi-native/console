@@ -17,8 +17,7 @@ describe('gitlabConfig', () => {
       url: 'https://gitlab.internal',
       internalUrl: 'https://gitlab.internal:8080',
       secretExposeInternalUrl: true,
-      mirrorTokenExpirationDays: 180,
-      mirrorTokenRotationThresholdDays: 90,
+      mirrorTokenExpirationDays: 365,
       projectRootDir: 'forge-test/projects',
     })
   })

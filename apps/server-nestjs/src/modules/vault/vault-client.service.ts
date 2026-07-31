@@ -76,6 +76,11 @@ export interface SonarqubeUserSecret {
   SONAR_TOKEN: string
 }
 
+export interface MirrorUserSecret {
+  MIRROR_USER: string
+  MIRROR_TOKEN: string
+}
+
 export interface VaultMetadata {
   created_time: string
   custom_metadata: Record<string, any> | null
