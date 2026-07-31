@@ -1,7 +1,7 @@
 import type { CondensedGroupSchema, MemberSchema, ProjectSchema } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
-import type { VaultSecret } from '../vault/vault-client.service'
+import type { MirrorUserSecret } from '../vault/vault-client.service'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
 import { specificallyEnabled } from '@cpn-console/hooks'
 import { AccessLevel } from '@gitbeaker/core'
@@ -32,7 +32,6 @@ import {
 } from './gitlab.constants'
 import {
   adminRoleFlag,
-  daysAgoFromNow,
   generateAccessLevelMapping,
   generateAdminRoleMapping,
   generateName,
@@ -84,8 +83,12 @@ export class GitlabService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project delete event for ${project.slug}`)
-    await this.ensureProjectGroup(project)
-    this.logger.log(`GitLab sync completed for project ${project.slug}`)
+    const projectGroupPath = `${this.gitlabConfig.projectRootDir}/${project.slug}`
+    const group = await this.gitlab.getGroupByPath(projectGroupPath)
+    if (group) {
+      await this.gitlab.deleteGroup(group)
+    }
+    this.logger.log(`GitLab cleanup completed for project ${project.slug}`)
   }
 
   // @Cron(CronExpression.EVERY_HOUR)
@@ -427,7 +430,7 @@ export class GitlabService {
     span?.setAttribute('repository.externalRepoUrn', externalRepoUrn)
     span?.setAttribute('repository.internalRepoUrn', internalRepoUrn)
 
-    const projectMirrorCreds = await this.getOrRotateMirrorCreds(project.slug)
+    const projectMirrorCreds = await this.getOrRotateMirrorCreds(project)
 
     const mirrorSecretData = {
       GIT_INPUT_URL: externalRepoUrn,
@@ -449,30 +452,30 @@ export class GitlabService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     await Promise.all([
-      this.ensureInfraAppsRepo(project.slug),
-      this.ensureMirrorRepo(project.slug),
+      this.ensureInfraAppsRepo(project),
+      this.ensureMirrorRepo(project),
     ])
   }
 
-  private async ensureInfraAppsRepo(projectSlug: string) {
-    await this.gitlab.upsertProjectGroupRepo(projectSlug, INFRA_APPS_REPO_NAME)
+  private async ensureInfraAppsRepo(project: ProjectWithDetails) {
+    await this.gitlab.upsertProjectGroupRepo(project.slug, INFRA_APPS_REPO_NAME)
   }
 
-  private async ensureMirrorRepo(projectSlug: string) {
-    const mirrorRepo = await this.gitlab.upsertProjectMirrorRepo(projectSlug)
+  private async ensureMirrorRepo(project: ProjectWithDetails) {
+    const mirrorRepo = await this.gitlab.upsertProjectMirrorRepo(project.slug)
     if (mirrorRepo.empty_repo) {
       await this.gitlab.commitMirror(mirrorRepo.id)
     }
-    await this.ensureMirrorRepoTriggerToken(projectSlug)
+    await this.ensureMirrorRepoTriggerToken(project)
   }
 
   @StartActiveSpan()
-  private async ensureMirrorRepoTriggerToken(projectSlug: string) {
+  private async ensureMirrorRepoTriggerToken(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
-    span?.setAttribute('project.slug', projectSlug)
-    const triggerToken = await this.gitlab.getOrCreateMirrorPipelineTriggerToken(projectSlug)
+    span?.setAttribute('project.slug', project.slug)
+    const triggerToken = await this.gitlab.getOrCreateMirrorPipelineTriggerToken(project.slug)
     const gitlabSecret = {
-      PROJECT_SLUG: projectSlug,
+      PROJECT_SLUG: project.slug,
       GIT_MIRROR_PROJECT_ID: triggerToken.repoId,
       GIT_MIRROR_TOKEN: triggerToken.token,
     }
@@ -481,40 +484,52 @@ export class GitlabService {
   }
 
   @StartActiveSpan()
-  private async getOrRotateMirrorCreds(projectSlug: string) {
+  private async getOrRotateMirrorCreds(project: ProjectWithDetails): Promise<MirrorUserSecret> {
     const span = trace.getActiveSpan()
-    span?.setAttribute('project.slug', projectSlug)
-    const vaultSecret = await this.vault.readTechnReadOnlyCreds(projectSlug)
-    if (!vaultSecret) return this.createMirrorAccessToken(projectSlug)
-
-    const isExpiring = this.isMirrorCredsExpiring(vaultSecret)
-    span?.setAttribute('mirror.creds.expiring', isExpiring)
-    if (!isExpiring) {
-      span?.setAttribute('mirror.creds.rotated', false)
-      return vaultSecret.data as { MIRROR_USER: string, MIRROR_TOKEN: string }
+    span?.setAttribute('project.slug', project.slug)
+    const group = await this.gitlab.getProjectGroup(project.slug)
+    if (!group) throw new Error(`No group found for project ${project.slug}`)
+    const currentToken = await this.gitlab.getProjectToken(group, project.slug)
+    if (currentToken) {
+      const vaultSecret = await this.getMirrorTokenFromVault(project)
+      if (vaultSecret) {
+        span?.setAttribute('mirror.creds.rotated', false)
+        return vaultSecret
+      }
+      this.logger.warn(`Mirror token invalid or vault secret missing, revoking (projectSlug=${project.slug}, tokenId=${currentToken.id})`)
+      span?.setAttribute('mirror.creds.revoking', true)
+      await this.gitlab.revokeProjectToken(group, currentToken.id).catch((err) => {
+        this.logger.error(`Failed to revoke stale mirror token (projectSlug=${project.slug}, tokenId=${currentToken.id}): ${err}`)
+        span?.setAttribute('mirror.creds.revoke.failed', true)
+      })
     }
-    return this.createMirrorAccessToken(projectSlug)
+    return this.createMirrorAccessToken(project)
+  }
+
+  private async getMirrorTokenFromVault(project: ProjectWithDetails): Promise<MirrorUserSecret | undefined> {
+    const vaultSecret = await this.vault.readTechnReadOnlyCreds(project.slug)
+    const vaultToken = vaultSecret?.data?.MIRROR_TOKEN
+    if (vaultToken) {
+      const isValid = await this.gitlab.validateProjectToken(vaultToken)
+      if (isValid) {
+        return vaultSecret.data
+      }
+    }
   }
 
   @StartActiveSpan()
-  private async createMirrorAccessToken(projectSlug: string) {
+  private async createMirrorAccessToken(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
-    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('project.slug', project.slug)
     span?.setAttribute('mirror.creds.rotated', true)
-    const token = await this.gitlab.createMirrorAccessToken(projectSlug)
+    const token = await this.gitlab.createMirrorAccessToken(project.slug)
     const creds = {
       MIRROR_USER: token.name,
       MIRROR_TOKEN: token.token,
     }
-    await this.vault.writeTechReadOnlyCreds(projectSlug, creds)
+    await this.vault.writeTechReadOnlyCreds(project.slug, creds)
     span?.setAttribute('vault.secret.written', true)
     return creds
-  }
-
-  private isMirrorCredsExpiring(vaultSecret: VaultSecret): boolean {
-    if (!vaultSecret?.metadata?.created_time) return false
-    const createdTime = new Date(vaultSecret.metadata.created_time)
-    return daysAgoFromNow(createdTime) > this.gitlabConfig.mirrorTokenRotationThresholdDays
   }
 
   private getExternalRepoHost(externalRepoUrl: string | null | undefined): string | undefined {

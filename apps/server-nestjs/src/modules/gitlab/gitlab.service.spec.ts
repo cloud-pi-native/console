@@ -443,6 +443,8 @@ describe('gitlabService', () => {
 
       gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.getProjectGroup.mockResolvedValue(group)
+      gitlab.getProjectToken.mockResolvedValue(undefined)
       gitlab.getRepos.mockReturnValue((async function* () { yield gitlabRepo })())
       gitlab.getOrCreateProjectGroupInternalRepoUrl.mockResolvedValue('https://gitlab.internal/group/repo-1.git')
       gitlab.createMirrorAccessToken.mockResolvedValue(accessToken)
@@ -487,6 +489,31 @@ describe('gitlabService', () => {
 
       expect(datastore.getAllProjects).toHaveBeenCalled()
       expect(gitlab.getOrCreateProjectSubGroup).toHaveBeenCalledWith('project-1')
+    })
+  })
+
+  describe('handleDelete', () => {
+    it('should delete project group from GitLab', async () => {
+      const project = makeProjectWithDetails({ slug: 'project-1' })
+      const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+
+      gitlab.getGroupByPath.mockResolvedValue(group)
+      gitlab.deleteGroup.mockResolvedValue(undefined)
+
+      await service.handleDelete(project)
+
+      expect(gitlab.getGroupByPath).toHaveBeenCalledWith('forge/project-1')
+      expect(gitlab.deleteGroup).toHaveBeenCalledWith(group)
+    })
+
+    it('should not throw when project group does not exist', async () => {
+      const project = makeProjectWithDetails({ slug: 'project-1' })
+
+      gitlab.getGroupByPath.mockResolvedValue(undefined)
+
+      await expect(service.handleDelete(project)).resolves.not.toThrow()
+
+      expect(gitlab.deleteGroup).not.toHaveBeenCalled()
     })
   })
 })

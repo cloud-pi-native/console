@@ -1,10 +1,12 @@
-import type { ExpandedGroupSchema, Gitlab as GitlabApi, ProjectSchema } from '@gitbeaker/core'
+import type { Gitlab as GitlabApi } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import type { MockedFunction } from 'vitest'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { http, HttpResponse } from 'msw'
+import { setupServer } from 'msw/node'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { GITLAB_REST_CLIENT, GitlabClientService } from './gitlab-client.service'
@@ -54,6 +56,10 @@ describe('gitlab-client', () => {
     service = module.get(GitlabClientService)
   })
 
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it('should be defined', () => {
     expect(service).toBeDefined()
   })
@@ -71,14 +77,14 @@ describe('gitlab-client', () => {
         paginationInfo: { next: null },
       })
 
-      gitlabApi.Groups.show.mockResolvedValueOnce({ id: rootId, full_path: 'forge' } as ExpandedGroupSchema)
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
 
       gitlabGroupsAllMock.mockResolvedValueOnce({
         data: [],
         paginationInfo: { next: null },
       })
 
-      gitlabApi.Groups.create.mockResolvedValue({ id: infraGroupId, full_path: 'forge/infra' } as ExpandedGroupSchema)
+      gitlabApi.Groups.create.mockResolvedValue(makeExpandedGroupSchema({ id: infraGroupId, full_path: 'forge/infra' }))
 
       const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
       gitlabProjectsAllMock.mockResolvedValueOnce({
@@ -86,19 +92,19 @@ describe('gitlab-client', () => {
         paginationInfo: { next: null },
       })
 
-      gitlabApi.Projects.create.mockResolvedValue({
+      gitlabApi.Projects.create.mockResolvedValue(makeProjectSchema({
         id: projectId,
         path_with_namespace: 'forge/infra/zone-1',
         http_url_to_repo: 'https://gitlab.internal/infra/zone-1.git',
-      } as ProjectSchema)
+      }))
 
       const result = await service.getOrCreateInfraGroupRepo(zoneSlug)
 
-      expect(result).toEqual({
+      expect(result).toEqual(expect.objectContaining({
         id: projectId,
         http_url_to_repo: 'https://gitlab.internal/infra/zone-1.git',
         path_with_namespace: 'forge/infra/zone-1',
-      })
+      }))
       expect(gitlabApi.Groups.create).toHaveBeenCalledWith('infra', 'infra', expect.any(Object))
       expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(rootId, GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY, 'true')
       expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(infraGroupId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
@@ -257,11 +263,11 @@ describe('gitlab-client', () => {
         paginationInfo: { next: null },
       })
 
-      gitlabApi.Projects.edit.mockResolvedValue({ id: repoId, name: 'mirror' } as ProjectSchema)
+      gitlabApi.Projects.edit.mockResolvedValue(makeProjectSchema({ id: repoId, name: 'mirror' }))
 
       const result = await service.upsertProjectMirrorRepo(projectSlug)
 
-      expect(result).toEqual({ id: repoId, name: 'mirror' })
+      expect(result).toEqual(expect.objectContaining({ id: repoId, name: 'mirror' }))
       expect(gitlabApi.Projects.edit).toHaveBeenCalledWith(repoId, expect.objectContaining({
         name: 'mirror',
         path: 'mirror',
@@ -274,11 +280,11 @@ describe('gitlab-client', () => {
       const repoId = 101
 
       gitlabApi.Projects.show.mockResolvedValue(makeProjectSchema({ id: repoId }))
-      gitlabApi.Projects.edit.mockResolvedValue({ id: repoId, name: repoName } as ProjectSchema)
+      gitlabApi.Projects.edit.mockResolvedValue(makeProjectSchema({ id: repoId, name: repoName }))
 
       const result = await service.upsertProjectGroupRepo(projectSlug, repoName, 'desc')
 
-      expect(result).toEqual({ id: repoId, name: repoName })
+      expect(result).toEqual(expect.objectContaining({ id: repoId, name: repoName }))
       expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(repoId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
     })
 
@@ -407,7 +413,7 @@ describe('gitlab-client', () => {
         data: [{ id: repoId, path_with_namespace: 'forge/project-1/mirror' }],
         paginationInfo: { next: null },
       })
-      gitlabApi.Projects.edit.mockResolvedValue({ id: repoId, name: 'mirror' } as ProjectSchema)
+      gitlabApi.Projects.edit.mockResolvedValue(makeProjectSchema({ id: repoId, name: 'mirror' }))
 
       const gitlabPipelineTriggerTokensAllMock = gitlabApi.PipelineTriggerTokens.all as MockedFunction<typeof gitlabApi.PipelineTriggerTokens.all>
       gitlabPipelineTriggerTokensAllMock.mockResolvedValue({
@@ -471,7 +477,7 @@ describe('gitlab-client', () => {
         data: [{ id: 123, full_path: 'forge' }],
         paginationInfo: { next: null },
       })
-      gitlabApi.Groups.show.mockResolvedValueOnce({ id: 123, full_path: 'forge' } as ExpandedGroupSchema)
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: 123, full_path: 'forge' }))
 
       const gitlabGroupsAllSubgroupsMock = gitlabApi.Groups.allSubgroups as MockedFunction<typeof gitlabApi.Groups.allSubgroups>
       gitlabGroupsAllSubgroupsMock.mockResolvedValueOnce({
@@ -538,7 +544,7 @@ describe('gitlab-client', () => {
         paginationInfo: { next: null },
       })
 
-      gitlabApi.Projects.create.mockResolvedValue({ id: projectId, name: repoName } as ProjectSchema)
+      gitlabApi.Projects.create.mockResolvedValue(makeProjectSchema({ id: projectId, name: repoName }))
 
       const result = await service.getOrCreateProjectGroupRepo(subGroupPath, fullPath)
 
@@ -621,6 +627,7 @@ describe('gitlab-client', () => {
     it('should return specific token', async () => {
       const projectSlug = 'project-1'
       const groupId = 456
+      const group = makeGroupSchema({ id: groupId })
       const tokenName = `${projectSlug}-bot`
       const token = makeAccessTokenSchema({ id: 1, name: tokenName })
 
@@ -629,7 +636,7 @@ describe('gitlab-client', () => {
         data: [{ id: 123, full_path: 'forge' }],
         paginationInfo: { next: null },
       })
-      gitlabApi.Groups.show.mockResolvedValueOnce({ id: 123, full_path: 'forge' } as ExpandedGroupSchema)
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: 123, full_path: 'forge' }))
       const gitlabGroupsAllSubgroupsMock = gitlabApi.Groups.allSubgroups as MockedFunction<typeof gitlabApi.Groups.allSubgroups>
       gitlabGroupsAllSubgroupsMock.mockResolvedValueOnce({
         data: [{ id: groupId, name: projectSlug, parent_id: 123, full_path: `forge/${projectSlug}` }],
@@ -642,8 +649,95 @@ describe('gitlab-client', () => {
         paginationInfo: makeOffsetPagination({ next: null }),
       })
 
-      const result = await service.getProjectToken(projectSlug)
+      const result = await service.getProjectToken(group, projectSlug)
       expect(result).toEqual(token)
+    })
+  })
+
+  describe('revokeProjectToken', () => {
+    it('should revoke a project access token by group id and token id', async () => {
+      const projectSlug = 'project-1'
+      const groupId = 456
+      const tokenId = 789
+      const group = makeGroupSchema({ id: groupId, name: projectSlug, path: projectSlug, full_path: `forge/${projectSlug}`, full_name: `forge/${projectSlug}`, parent_id: 123 })
+
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: 123, full_path: 'forge' }],
+        paginationInfo: { next: null },
+      })
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: 123, full_path: 'forge' }))
+      const gitlabGroupsAllSubgroupsMock = gitlabApi.Groups.allSubgroups as MockedFunction<typeof gitlabApi.Groups.allSubgroups>
+      gitlabGroupsAllSubgroupsMock.mockResolvedValueOnce({
+        data: [group],
+        paginationInfo: { next: null },
+      })
+
+      await service.revokeProjectToken(group, tokenId)
+
+      expect(gitlabApi.GroupAccessTokens.revoke).toHaveBeenCalledWith(groupId, tokenId)
+    })
+  })
+
+  describe('getProjectGroup', () => {
+    it('should return undefined when the project group is not found', async () => {
+      const projectSlug = 'missing'
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({ data: [{ id: 123, full_path: 'forge' }], paginationInfo: { next: null } })
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: 123, full_path: 'forge' }))
+      const gitlabGroupsAllSubgroupsMock = gitlabApi.Groups.allSubgroups as MockedFunction<typeof gitlabApi.Groups.allSubgroups>
+      gitlabGroupsAllSubgroupsMock.mockResolvedValueOnce({ data: [], paginationInfo: { next: null } })
+
+      await expect(service.getProjectGroup(projectSlug)).resolves.toBeUndefined()
+    })
+  })
+
+  describe('validateProjectToken', () => {
+    const server = setupServer()
+    beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+    afterEach(() => server.resetHandlers())
+    afterAll(() => server.close())
+
+    function stubPersonalAccessTokenSelf(body: object, status = 200) {
+      server.use(
+        http.get('https://gitlab.internal/api/v4/personal_access_tokens/self', () =>
+          HttpResponse.json(body, { status })),
+      )
+    }
+
+    it('should send the candidate token and not the integration token', async () => {
+      let capturedToken: string | null = null
+      server.use(
+        http.get('https://gitlab.internal/api/v4/personal_access_tokens/self', ({ request }) => {
+          capturedToken = request.headers.get('private-token')
+          return HttpResponse.json({ id: 1, active: true, revoked: false })
+        }),
+      )
+
+      await expect(service.validateProjectToken('valid-token')).resolves.toBe(true)
+
+      expect(capturedToken).toBe('valid-token')
+    })
+
+    it.each([
+      { active: false, revoked: false },
+      { active: true, revoked: true },
+    ])('should return false for an inactive or revoked token (%o)', async (state) => {
+      stubPersonalAccessTokenSelf({ id: 1, ...state })
+
+      await expect(service.validateProjectToken('stale-token')).resolves.toBe(false)
+    })
+
+    it('should return false when GitLab rejects the token', async () => {
+      stubPersonalAccessTokenSelf({ message: '401 Unauthorized' }, 401)
+
+      await expect(service.validateProjectToken('invalid-token')).resolves.toBe(false)
+    })
+
+    it('should throw on transient failures instead of reporting an invalid token', async () => {
+      stubPersonalAccessTokenSelf({ message: '502 Bad Gateway' }, 502)
+
+      await expect(service.validateProjectToken('valid-token')).rejects.toThrow()
     })
   })
 
