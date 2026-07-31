@@ -1,5 +1,62 @@
 # Changelog
 
+## [9.23.0](https://github.com/cloud-pi-native/console/compare/v9.22.2...v9.23.0) (2026-07-31)
+
+
+### Features
+
+* **argocd:** emit deployment value sources in generated values ([11bbac6](https://github.com/cloud-pi-native/console/commit/11bbac67c1236427943cf78e786fcdd4e4e0a41d))
+* **client:** add deployment value sources editor ([2151771](https://github.com/cloud-pi-native/console/commit/2151771724f19c9d3aa231ee74b43b062f9d4a05))
+* **deployment:** add DeploymentValueSource model ([94bee56](https://github.com/cloud-pi-native/console/commit/94bee56b7b1d1140544655eb0b80ddf9e3e1d8d3))
+* **deployment:** persist and validate deployment value sources ([235e73b](https://github.com/cloud-pi-native/console/commit/235e73b20b1c6b735dc12d9a3e026a8b629b1f3c))
+
+
+### Bug Fixes
+
+* client dockerfile is missing hook package.json ([a0034b3](https://github.com/cloud-pi-native/console/commit/a0034b3c4ed48f2d964b1009db475b002ccc01da))
+* **client:** rename new version snackbar test-id to avoid clashes with tests ([554b266](https://github.com/cloud-pi-native/console/commit/554b2666da0bf4b28c972ef19a91bfdd9d31fc29))
+* **playwright:** remove expect that are too flaky for parallel work ([ba39584](https://github.com/cloud-pi-native/console/commit/ba39584996069d0661dd3ce91a1bedbd06c5a539))
+* **server-nestjs/argocd:** purge orphaned values files when a project has no environment ([6e9be76](https://github.com/cloud-pi-native/console/commit/6e9be76ffd9c6f01d48a806c9c4500f6abc7a6b1))
+
+
+### Miscellaneous Chores
+
+* add docker compose health check on pg ([076d303](https://github.com/cloud-pi-native/console/commit/076d30311e31915080ee5ca1d63e704f12c2ce11))
+* **ci:** avoid installing Playwright browsers ([c5e116e](https://github.com/cloud-pi-native/console/commit/c5e116e785ff41ef274957e31ef22a0ed47a08d7))
+* **ci:** ensure hotfixes always produce patch, main produces minor versions ([707c10c](https://github.com/cloud-pi-native/console/commit/707c10cc58ce2de8d05f64ffa83fbb1c53ef9760))
+* **ci:** force 2 Playwright workers ([2a7c330](https://github.com/cloud-pi-native/console/commit/2a7c330f41db3d9a702397b40a0af8d64fe7e04b))
+* **ci:** improve Playwright merge-reports ([bf77307](https://github.com/cloud-pi-native/console/commit/bf77307f7ec2579e11e999d2c8a50bb8c6c3fffc))
+* **ci:** never install system deps for Playwright ([653c3d5](https://github.com/cloud-pi-native/console/commit/653c3d5cdcecfb3d4df57cf7ddf48d5af8903c9a))
+* **ci:** remove node.js/pnpm install since they should be in base image ([2110063](https://github.com/cloud-pi-native/console/commit/211006383d919fdb1e91a577c825f47ff094985e))
+* **ci:** remove noisy comment ([17b2dac](https://github.com/cloud-pi-native/console/commit/17b2dac36561910e16e0ae3f50556076b1fb8d06))
+* **ci:** shard Playwright tests across 4 runners and merge reports ([551c800](https://github.com/cloud-pi-native/console/commit/551c800531f191d43b0b415a5f303366e9342cd1))
+* **ci:** use PAX runner for Playwright tests ([c36af60](https://github.com/cloud-pi-native/console/commit/c36af6001547975222d1cc4370f7df18f261b779))
+* **ci:** use self-hosted ghcr.io cache for Playwright tests ([1bc77e7](https://github.com/cloud-pi-native/console/commit/1bc77e7c20e1f97ea773a4b0c8ba64d1cda5f3bf))
+* **doc:** insist on backported tags issues for release-please changelog management ([370bcc3](https://github.com/cloud-pi-native/console/commit/370bcc3a1f5503da8f73c29f5fb8b54151d78a8b))
+* offload projects to nestjs ([0887de1](https://github.com/cloud-pi-native/console/commit/0887de174489baaeade055ff9a4d088d0d85ad24))
+
+
+### Docs
+
+* **ci:** document Playwright sharding behaviour ([067c5c3](https://github.com/cloud-pi-native/console/commit/067c5c37b4019928dc5ccfa4f7a676d06778d786))
+* **nestjs:** correct migration stats in MODULARISATION-STATUT ([cfb2d48](https://github.com/cloud-pi-native/console/commit/cfb2d48e4a070fd7c34bdf268defbb94b0fb5b19))
+* **playwright:** alert devs regarding Playwright version between here and Dockerfile repo ([521abbd](https://github.com/cloud-pi-native/console/commit/521abbdc88b258f27841a2347ce801218cb50662))
+
+
+### Refactoring
+
+* conditional module activation ([273fe3e](https://github.com/cloud-pi-native/console/commit/273fe3ec68554ee7208389786ecdd8a770adb4bb))
+* configuration to nestjs system ([0808a93](https://github.com/cloud-pi-native/console/commit/0808a9377b22834b35bfed960d1e56a85f48759f))
+* healthcheck in service ([f9f2e25](https://github.com/cloud-pi-native/console/commit/f9f2e258e9a421a44d71dc3b581a8efb59b8cd28))
+* merge OpenCds healthcheck into ServiceChain module ([dcb34fd](https://github.com/cloud-pi-native/console/commit/dcb34fd6ece6f4533a5d63ca9ee29c13a313f699))
+* migrate exploded deps management to central catalog ([387db22](https://github.com/cloud-pi-native/console/commit/387db227bfba8e2f2c42ef4194f3657d8f2104f2))
+* use standard undici env based proxy ([1d6da38](https://github.com/cloud-pi-native/console/commit/1d6da38afe5b6a83d8922c16c5cbe73e109cfd86))
+
+
+### Reverted commits
+
+* chore: upstream static env var to infos ([0cce923](https://github.com/cloud-pi-native/console/commit/0cce923a17cfa4b340f799d2c3cff372200cdad4))
+
 ## [9.22.2](https://github.com/cloud-pi-native/console/compare/v9.22.1...v9.22.2) (2026-07-24)
 
 
