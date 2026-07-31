@@ -75,6 +75,7 @@ jobs:
 
   update-chart:
     runs-on: ubuntu-latest
+    if: ${{ needs.release.outputs.release-created == 'true' }}
     needs:
       - expose-vars
       - release
