@@ -9,6 +9,7 @@ import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
 import { generateProjectKey, generateRandomPassword } from '../../utils/crypto.utils'
+import { getAll } from '../../utils/iterable.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -154,14 +155,14 @@ export class SonarqubeService implements OnModuleInit {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
 
-    const sonarProjects = await this.findProjectsForSlug(project.slug)
-    span?.setAttribute('sonarqube.projects.count', sonarProjects.length)
-    this.logger.log(`Deleting ${sonarProjects.length} SonarQube repositories for project ${project.slug}`)
-
-    await Promise.all(sonarProjects.map(async (sp) => {
-      await this.client.deleteProject({ project: sp.key })
-      this.logger.verbose(`Deleted SonarQube repository (key=${sp.key})`)
+    const sonarProjects = await getAll(this.findProjectsForSlug(project.slug))
+    const keys = sonarProjects.map(sp => sp.key)
+    await Promise.all(keys.map(async (key) => {
+      await this.client.deleteProject({ project: key })
+      this.logger.verbose(`Deleted SonarQube repository (key=${key})`)
     }))
+    span?.setAttribute('sonarqube.projects.count', keys.length)
+    this.logger.log(`Deleting ${keys.length} SonarQube repositories for project ${project.slug}`)
 
     const user = await this.findUser(project.slug)
     if (user) {
@@ -242,7 +243,7 @@ export class SonarqubeService implements OnModuleInit {
     const [readonlyGroupPath, securityGroupPath, existingSonarProjects] = await Promise.all([
       this.getReadonlyGroupPath(),
       this.getSecurityGroupPath(),
-      this.findProjectsForSlug(project.slug),
+      getAll(this.findProjectsForSlug(project.slug)),
     ])
 
     const orphans = existingSonarProjects.filter(sp => !project.repositories.some(r => r.internalRepoName === sp.repository))
@@ -380,29 +381,16 @@ export class SonarqubeService implements OnModuleInit {
   }
 
   private async findUser(login: string): Promise<SonarqubeUser | undefined> {
-    let page = 1
-    const pageSize = 100
-    while (true) {
-      const response = await this.client.searchUsers({ q: login, ps: pageSize, p: page })
-      const found = response.users.find(u => u.login === login)
-      if (found) return found
-      if (!response.users.length || response.paging.pageIndex * response.paging.pageSize >= response.paging.total) return undefined
-      page++
+    for await (const user of this.client.searchUsers({ q: login })) {
+      if (user.login === login) return user
     }
+    return undefined
   }
 
-  private async findProjectsForSlug(projectSlug: string): Promise<SonarqubeProjectResult[]> {
-    let found: SonarqubeProjectResult[] = []
-    let page = 0
-    const pageSize = 100
-    let total = 0
-    do {
-      page++
-      const result = await this.client.searchProject({ q: projectSlug, p: page, ps: pageSize })
-      total = result.paging.total
-      found = [...found, ...filterProjectsOwningSlug(result.components, projectSlug)]
-    } while (page * pageSize < total)
-    return found
+  private async* findProjectsForSlug(projectSlug: string): AsyncGenerator<SonarqubeProjectResult> {
+    for await (const project of this.client.searchProject({ q: projectSlug })) {
+      yield* filterProjectsOwningSlug([project], projectSlug)
+    }
   }
 }
 

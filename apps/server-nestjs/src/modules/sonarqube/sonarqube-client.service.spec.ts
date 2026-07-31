@@ -7,6 +7,7 @@ import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
+import { getAll } from '../../utils/iterable.utils'
 import { SonarqubeClientService } from './sonarqube-client.service'
 import { SonarqubeHttpClientService } from './sonarqube-http-client.service'
 import { makeSonarqubeGeneratedToken, makeSonarqubeGroup, makeSonarqubePaging, makeSonarqubeProject, makeSonarqubeUser } from './sonarqube-testing.utils'
@@ -80,8 +81,9 @@ describe('sonarqubeClientService', () => {
         http.get(`${sonarUrl}/api/users/search`, () =>
           HttpResponse.json({ paging: makeSonarqubePaging({ total: 1 }), users: [user] })),
       )
-      const result = await service.searchUsers({ q: 'my-user' })
-      expect(result.users).toEqual([user])
+      const result = await getAll(service.searchUsers({ q: 'my-user' }))
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual(user)
     })
   })
 
@@ -155,8 +157,9 @@ describe('sonarqubeClientService', () => {
         http.get(`${sonarUrl}/api/projects/search`, () =>
           HttpResponse.json({ paging: makeSonarqubePaging({ total: 1 }), components: [project] })),
       )
-      const result = await service.searchProject({ q: project.name })
-      expect(result.components).toEqual([project])
+      const result = await getAll(service.searchProject({ q: project.name }))
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual(project)
     })
   })
 
