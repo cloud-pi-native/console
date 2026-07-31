@@ -1,6 +1,11 @@
 export const PLUGIN_NAME = 'sonarqube'
 export const DEFAULT_PERMISSION_TEMPLATE_NAME = 'Forge Default'
 
+// SonarQube search API page size (server caps `ps` at 500)
+export const SONARQUBE_PAGE_SIZE = 100
+// Defensive upper bound on fetched pages (page size 100 -> 100k items) to stop a misbehaving endpoint from looping forever
+export const SONARQUBE_MAX_PAGES = 1000
+
 // SonarQube global permission names
 export const GLOBAL_ADMIN_PERMISSIONS = ['admin', 'profileadmin', 'gateadmin', 'scan', 'provisioning'] as const
 

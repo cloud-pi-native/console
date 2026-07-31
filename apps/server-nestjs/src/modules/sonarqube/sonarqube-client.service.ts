@@ -9,9 +9,10 @@ import type {
   SONARQUBE_PROJECT_QUALIFIER_UNIT_TEST,
   SONARQUBE_PROJECT_QUALIFIER_VIEW,
 } from './sonarqube.constants'
-import { Inject, Injectable } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { SonarqubeHttpClientService } from './sonarqube-http-client.service'
+import { SONARQUBE_MAX_PAGES, SONARQUBE_PAGE_SIZE } from './sonarqube.constants'
 
 export interface SonarqubePaging {
   pageIndex: number
@@ -196,9 +197,36 @@ export interface SearchProjectResponse {
 
 @Injectable()
 export class SonarqubeClientService {
+  private readonly logger = new Logger(SonarqubeClientService.name)
+
   constructor(
     @Inject(SonarqubeHttpClientService) private readonly http: SonarqubeHttpClientService,
   ) {}
+
+  private async* paginate<T>(fetchPage: (page: number, pageSize: number) => Promise<T[]>): AsyncGenerator<T> {
+    const pageSize = SONARQUBE_PAGE_SIZE
+    let page = 1
+    let pagesFetched = 0
+    this.logger.debug('Pagination start', { action: 'paginate' })
+    // ponytail: hard cap (1000 * 100) guards a misbehaving endpoint that always returns a full page; raise if a project legitimately exceeds 100k items
+    while (pagesFetched < SONARQUBE_MAX_PAGES) {
+      try {
+        const items = await fetchPage(page, pageSize)
+        pagesFetched += 1
+        this.logger.debug('Pagination page fetched', { action: 'paginate', page, items: items.length, pageSize, pagesFetched })
+        for (const item of items) yield item
+        if (items.length < pageSize) break
+        page += 1
+      } catch (error) {
+        this.logger.error('Pagination request failed', { action: 'paginate', page, err: error })
+        throw error
+      }
+    }
+    if (pagesFetched >= SONARQUBE_MAX_PAGES) {
+      this.logger.error('Pagination hit max page cap, stopping early', { action: 'paginate', pagesFetched })
+    }
+    this.logger.debug('Pagination done', { action: 'paginate', pagesFetched })
+  }
 
   @StartActiveSpan()
   searchUserGroup(params: SearchUserGroupParams) {
@@ -246,8 +274,11 @@ export class SonarqubeClientService {
   }
 
   @StartActiveSpan()
-  searchUsers(params: SearchUsersParams) {
-    return this.http.fetch<SearchUsersResponse>('users/search', { query: params }).then(res => res.data!)
+  async* searchUsers(params: SearchUsersParams): AsyncGenerator<SonarqubeUser> {
+    yield* this.paginate(async (page, pageSize) => {
+      const res = await this.http.fetch<SearchUsersResponse>('users/search', { query: { ...params, p: page, ps: pageSize } })
+      return res.data!.users
+    })
   }
 
   @StartActiveSpan()
@@ -271,8 +302,11 @@ export class SonarqubeClientService {
   }
 
   @StartActiveSpan()
-  searchProject(params: SearchProjectParams) {
-    return this.http.fetch<SearchProjectResponse>('projects/search', { query: params }).then(res => res.data!)
+  async* searchProject(params: SearchProjectParams): AsyncGenerator<SonarqubeProject> {
+    yield* this.paginate(async (page, pageSize) => {
+      const res = await this.http.fetch<SearchProjectResponse>('projects/search', { query: { ...params, p: page, ps: pageSize } })
+      return res.data!.components
+    })
   }
 
   @StartActiveSpan()
