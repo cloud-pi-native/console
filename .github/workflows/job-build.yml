@@ -237,7 +237,7 @@ jobs:
           echo "ARGOCD_APP_NAME=$(echo '${{ vars.ARGOCD_PREVIEW_APP_NAME_TEMPLATE }}' | sed 's|<pr_number>|${{ inputs.PR_NUMBER }}|g')" >> $GITHUB_OUTPUT
           echo "ARGOCD_SYNC_PAYLOAD=$(echo '${{ vars.ARGOCD_PREVIEW_SYNC_PAYLOAD_TEMPLATE }}' | sed 's|<pr_number>|${{ inputs.PR_NUMBER }}|g')" >> $GITHUB_OUTPUT
 
-      - name: Deploy new image
+      - name: Deploy preview images
         run: |
           set -e
 
@@ -262,14 +262,14 @@ jobs:
     needs:
       - merge
     steps:
-      - name: Deploy new image
+      - name: Deploy latest images
         run: |
           set -e
 
-          RESPONSE_CODE=$(curl -s -w "%{http_code}" -o >(RESPONSE_BODY=$(cat)) -X POST ${{ vars.ARGOCD_URL }}/api/v1/applications/${{ vars.ARGOCD_MAIN_APP_NAME_TEMPLATE }}/sync \
+          RESPONSE_CODE=$(curl -s -w "%{http_code}" -o >(RESPONSE_BODY=$(cat)) -X POST ${{ vars.ARGOCD_URL }}/api/v1/applications/${{ vars.ARGOCD_MAIN_APP_NAME }}/sync \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.ARGOCD_TOKEN }}" \
-            -d '${{ vars.ARGOCD_MAIN_SYNC_PAYLOAD_TEMPLATE }}')
+            -d '${{ vars.ARGOCD_MAIN_SYNC_PAYLOAD }}')
 
           echo "HTTP response code: $RESPONSE_CODE"
 
