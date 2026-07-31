@@ -234,8 +234,8 @@ jobs:
       - name: Replace template fields
         id: feed-template
         run: |
-          echo "ARGOCD_APP_NAME=$(echo '${{ vars.ARGOCD_APP_NAME_TEMPLATE }}' | sed 's|<pr_number>|${{ inputs.PR_NUMBER }}|g')" >> $GITHUB_OUTPUT
-          echo "ARGOCD_SYNC_PAYLOAD=$(echo '${{ vars.ARGOCD_SYNC_PAYLOAD_TEMPLATE }}' | sed 's|<pr_number>|${{ inputs.PR_NUMBER }}|g')" >> $GITHUB_OUTPUT
+          echo "ARGOCD_APP_NAME=$(echo '${{ vars.ARGOCD_PREVIEW_APP_NAME_TEMPLATE }}' | sed 's|<pr_number>|${{ inputs.PR_NUMBER }}|g')" >> $GITHUB_OUTPUT
+          echo "ARGOCD_SYNC_PAYLOAD=$(echo '${{ vars.ARGOCD_PREVIEW_SYNC_PAYLOAD_TEMPLATE }}' | sed 's|<pr_number>|${{ inputs.PR_NUMBER }}|g')" >> $GITHUB_OUTPUT
 
       - name: Deploy new image
         run: |
