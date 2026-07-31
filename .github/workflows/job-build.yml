@@ -201,7 +201,7 @@ jobs:
           images: ${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }}
           tags: |
             type=raw,value=${{ needs.matrix.outputs.lower-branch }},enable=${{ github.head_ref != 'main' }}
-            type=raw,value=${{ inputs.TAG }},enable=${{ inputs.TAG != '' }}
+            type=raw,value=${{ inputs.TAG }},enable=${{ inputs.TAG != '' && inputs.TAG != '..' }}
             type=raw,value=${{ inputs.MAJOR_TAG }}.${{ inputs.MINOR_TAG }},enable=${{ inputs.MAJOR_TAG != '' && inputs.MINOR_TAG != '' }}
             type=raw,value=${{ inputs.MAJOR_TAG }},enable=${{ inputs.MAJOR_TAG != '' }}
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
