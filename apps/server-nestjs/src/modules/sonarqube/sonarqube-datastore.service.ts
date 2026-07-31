@@ -18,6 +18,11 @@ export const projectSelect = {
       value: true,
     },
   },
+  owner: {
+    select: {
+      email: true,
+    },
+  },
 } satisfies Prisma.ProjectSelect
 
 export type ProjectWithDetails = Prisma.ProjectGetPayload<{

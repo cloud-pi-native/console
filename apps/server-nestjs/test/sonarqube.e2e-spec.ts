@@ -19,6 +19,7 @@ import { SonarqubeService } from '../src/modules/sonarqube/sonarqube.service'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
+import { getAll } from '../src/utils/iterable.utils'
 
 const canRunSonarqubeE2E
   = Boolean(process.env.E2E)
@@ -143,13 +144,13 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
     }
 
     // Robot/CI user should exist
-    const usersResult = await sonarqubeClient.searchUsers({ q: testProjectSlug })
-    expect(usersResult.users.some(u => u.login === testProjectSlug)).toBe(true)
+    const usersResult = await getAll(sonarqubeClient.searchUsers({ q: testProjectSlug }))
+    expect(usersResult.some(u => u.login === testProjectSlug)).toBe(true)
 
     // SonarQube analysis project for the repository should exist
     const projectKey = generateProjectKey(testProjectSlug, testRepoName)
-    const projectsResult = await sonarqubeClient.searchProject({ q: testProjectSlug })
-    expect(projectsResult.components.some(p => p.key === projectKey)).toBe(true)
+    const projectsResult = await getAll(sonarqubeClient.searchProject({ q: testProjectSlug }))
+    expect(projectsResult.some(p => p.key === projectKey)).toBe(true)
 
     // Vault credentials should be written with correct username and token
     const vaultSecret = await vaultService.readSonarqubeUser(testProjectSlug)
@@ -168,8 +169,8 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
 
     // SonarQube analysis project should be removed
     const projectKey = generateProjectKey(testProjectSlug, testRepoName)
-    const projectsResult = await sonarqubeClient.searchProject({ q: testProjectSlug })
-    expect(projectsResult.components.some(p => p.key === projectKey)).toBe(false)
+    const projectsResult = await getAll(sonarqubeClient.searchProject({ q: testProjectSlug }))
+    expect(projectsResult.some(p => p.key === projectKey)).toBe(false)
 
     // Vault credentials should be removed
     const vaultSecret = await vaultService.readSonarqubeUser(testProjectSlug)
