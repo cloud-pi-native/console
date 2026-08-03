@@ -55,6 +55,8 @@ jobs:
       BUILD_AMD64: ${{ needs.expose-vars.outputs.BUILD_AMD64 == 'true' }}
       BUILD_ARM64: false
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+    secrets:
+      ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
 
   build-arm64:
     uses: ./.github/workflows/job-build.yml
@@ -72,6 +74,8 @@ jobs:
       BUILD_AMD64: false
       BUILD_ARM64: ${{ needs.expose-vars.outputs.BUILD_ARM64 == 'true' }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+    secrets:
+      ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
 
   update-chart:
     runs-on: ubuntu-latest

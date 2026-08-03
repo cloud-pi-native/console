@@ -71,9 +71,6 @@ on:
         description: ID number of the pull request to use for deploy preview app
         required: false
         type: string
-    secrets:
-      ARGOCD_TOKEN:
-        required: false
 
 jobs:
   matrix:
