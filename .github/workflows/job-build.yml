@@ -256,7 +256,6 @@ jobs:
             echo "Response body: $RESPONSE_BODY"
             exit 1
           fi
-        continue-on-error: true
 
   latest:
     name: Redeploy latest
@@ -281,4 +280,3 @@ jobs:
             echo "Response body: $RESPONSE_BODY"
             exit 1
           fi
-        continue-on-error: true
