@@ -25,9 +25,9 @@ const canRunArgoCDE2E
 
 const describeWithArgoCD = describe.runIf(canRunArgoCDE2E)
 
-describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
+describeWithArgoCD('ArgoCDService (e2e)', {}, () => {
   let moduleRef: TestingModule
-  let argocdController: ArgoCDService
+  let argocdService: ArgoCDService
   let gitlab: GitlabClientService
   let gitlabClient: Gitlab
   let vault: VaultClientService
@@ -60,7 +60,7 @@ describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
 
     await moduleRef.init()
 
-    argocdController = moduleRef.get<ArgoCDService>(ArgoCDService)
+    argocdService = moduleRef.get<ArgoCDService>(ArgoCDService)
     gitlab = moduleRef.get<GitlabClientService>(GitlabClientService)
     gitlabClient = moduleRef.get<Gitlab>(GITLAB_REST_CLIENT)
     vault = moduleRef.get<VaultClientService>(VaultClientService)
@@ -252,7 +252,7 @@ describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
     const staleAction = await gitlab.generateCreateOrUpdateAction(infraProject, 'main', staleFilePath, 'stale: true\n')
     await gitlab.maybeCreateCommit(infraProject, 'ci: :robot_face: Seed stale values', staleAction ? [staleAction] : [])
 
-    await argocdController.handleUpsert(project)
+    await argocdService.handleUpsert(project)
 
     const expectedFilePath = `${project.name}/${clusterLabel}/${envDevName}/values.yaml`
     const file = await gitlabClient.RepositoryFiles.show(infraRepoId, expectedFilePath, 'main')
@@ -294,7 +294,7 @@ describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
       select: projectSelect,
     })
 
-    await argocdController.handleUpsert(after)
+    await argocdService.handleUpsert(after)
 
     const updatedDev = await gitlabClient.RepositoryFiles.show(infraRepoId, devFilePath, 'main')
     const devRaw = Buffer.from(updatedDev.content, 'base64').toString('utf8')

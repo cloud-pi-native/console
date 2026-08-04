@@ -22,9 +22,9 @@ const canRunVaultE2E
 
 const describeWithVault = describe.runIf(canRunVaultE2E)
 
-describeWithVault('VaultController (e2e)', () => {
+describeWithVault('VaultService (e2e)', () => {
   let moduleRef: TestingModule
-  let vaultController: VaultService
+  let vaultService: VaultService
   let vaultClient: VaultClientService
   let prisma: PrismaService
 
@@ -39,7 +39,7 @@ describeWithVault('VaultController (e2e)', () => {
 
     await moduleRef.init()
 
-    vaultController = moduleRef.get<VaultService>(VaultService)
+    vaultService = moduleRef.get<VaultService>(VaultService)
     vaultClient = moduleRef.get<VaultClientService>(VaultClientService)
     prisma = moduleRef.get<PrismaService>(PrismaService)
 
@@ -60,7 +60,7 @@ describeWithVault('VaultController (e2e)', () => {
 
   afterAll(async () => {
     if (testProjectSlug) {
-      await vaultController.handleDelete(makeProjectWithDetails({ slug: testProjectSlug })).catch(() => {})
+      await vaultService.handleDelete(makeProjectWithDetails({ slug: testProjectSlug })).catch(() => {})
     }
 
     if (prisma) {
@@ -95,7 +95,7 @@ describeWithVault('VaultController (e2e)', () => {
       select: projectSelect,
     })
 
-    await vaultController.handleUpsert(project)
+    await vaultService.handleUpsert(project)
 
     const group = await vaultClient.getIdentityGroupName(testProjectSlug)
     expect(group.data?.id).toBeTruthy()

@@ -25,10 +25,10 @@ const canRunGitlabE2E
 
 const describeWithGitLab = describe.runIf(canRunGitlabE2E)
 
-describeWithGitLab('GitlabController (e2e)', {}, () => {
+describeWithGitLab('GitlabService (e2e)', {}, () => {
   let moduleRef: TestingModule
-  let gitlabController: GitlabService
-  let gitlabService: GitlabClientService
+  let gitlabService: GitlabService
+  let gitlabClientService: GitlabClientService
   let gitlabClient: Gitlab
   let vaultService: VaultClientService
   let prisma: PrismaService
@@ -46,8 +46,8 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
 
     await moduleRef.init()
 
-    gitlabController = moduleRef.get<GitlabService>(GitlabService)
-    gitlabService = moduleRef.get<GitlabClientService>(GitlabClientService)
+    gitlabService = moduleRef.get<GitlabService>(GitlabService)
+    gitlabClientService = moduleRef.get<GitlabClientService>(GitlabClientService)
     gitlabClient = moduleRef.get<Gitlab>(GITLAB_REST_CLIENT)
     vaultService = moduleRef.get<VaultClientService>(VaultClientService)
     prisma = moduleRef.get<PrismaService>(PrismaService)
@@ -109,9 +109,9 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
     // Clean GitLab group
     if (testProjectSlug && config.projectsRootDir) {
       const fullPath = `${config.projectsRootDir}/${testProjectSlug}`
-      const group = await gitlabService.getGroupByPath(fullPath)
+      const group = await gitlabClientService.getGroupByPath(fullPath)
       if (group) {
-        await gitlabService.deleteGroup(group).catch(() => {})
+        await gitlabClientService.deleteGroup(group).catch(() => {})
       }
     }
 
@@ -146,7 +146,7 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
     })
 
     // Act
-    await gitlabController.handleUpsert(project)
+    await gitlabService.handleUpsert(project)
 
     // Assert
     const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
@@ -155,11 +155,11 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
       name: z.string(),
       full_path: z.string(),
       web_url: z.string(),
-    }).parse(await gitlabService.getGroupByPath(groupPath))
+    }).parse(await gitlabClientService.getGroupByPath(groupPath))
     expect(group.full_path).toBe(groupPath)
 
     // Check membership
-    const members = await gitlabService.getGroupMembers(group)
+    const members = await gitlabClientService.getGroupMembers(group)
     const isMember = members.some(m => m.id === ownerUser.id)
     expect(isMember).toBe(true)
 
@@ -219,16 +219,16 @@ describeWithGitLab('GitlabController (e2e)', {}, () => {
         select: projectSelect,
       })
 
-      await gitlabController.handleUpsert(project)
+      await gitlabService.handleUpsert(project)
 
       const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
       const group = z.object({
         id: z.number(),
         name: z.string(),
         web_url: z.string(),
-      }).parse(await gitlabService.getGroupByPath(groupPath))
+      }).parse(await gitlabClientService.getGroupByPath(groupPath))
 
-      const members = await gitlabService.getGroupMembers(group)
+      const members = await gitlabClientService.getGroupMembers(group)
       const isNewMemberPresent = members.some(m => m.id === newUserGitlabId)
       expect(isNewMemberPresent).toBe(true)
     }, 72000)

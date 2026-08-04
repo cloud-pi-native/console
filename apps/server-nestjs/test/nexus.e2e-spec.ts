@@ -28,9 +28,9 @@ const canRunNexusE2E
 
 const describeWithNexus = describe.runIf(canRunNexusE2E)
 
-describeWithNexus('NexusController (e2e)', () => {
+describeWithNexus('NexusService (e2e)', () => {
   let moduleRef: TestingModule
-  let nexusController: NexusService
+  let nexusService: NexusService
   let nexusClient: NexusClientService
   let vaultService: VaultClientService
   let config: ConfigType<typeof baseConfigFactory>
@@ -47,7 +47,7 @@ describeWithNexus('NexusController (e2e)', () => {
 
     await moduleRef.init()
 
-    nexusController = moduleRef.get<NexusService>(NexusService)
+    nexusService = moduleRef.get<NexusService>(NexusService)
     nexusClient = moduleRef.get<NexusClientService>(NexusClientService)
     vaultService = moduleRef.get<VaultClientService>(VaultClientService)
     config = moduleRef.get(baseConfigFactory.KEY)
@@ -70,7 +70,7 @@ describeWithNexus('NexusController (e2e)', () => {
 
   afterAll(async () => {
     if (testProjectSlug) {
-      await nexusController.handleDelete(makeProjectWithDetails({ slug: testProjectSlug })).catch(() => {})
+      await nexusService.handleDelete(makeProjectWithDetails({ slug: testProjectSlug })).catch(() => {})
     }
 
     if (prisma) {
@@ -112,7 +112,7 @@ describeWithNexus('NexusController (e2e)', () => {
       select: projectSelect,
     })
 
-    await nexusController.handleUpsert(project)
+    await nexusService.handleUpsert(project)
 
     const mavenReleaseRepo = `${testProjectSlug}-repository-release`
     const mavenSnapshotRepo = `${testProjectSlug}-repository-snapshot`
