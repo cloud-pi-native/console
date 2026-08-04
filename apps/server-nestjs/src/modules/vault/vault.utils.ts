@@ -13,3 +13,7 @@ export function generateTechReadOnlyCredPath(projectRootDir: string, projectSlug
 export function generateSonarqubeCredPath(projectRootDir: string, projectSlug: string) {
   return `${generateProjectPath(projectRootDir, projectSlug)}/SONAR`
 }
+
+export function generateGitlabTriggerTokenPath(projectRootDir: string, projectSlug: string) {
+  return `${generateProjectPath(projectRootDir, projectSlug)}/GITLAB`
+}

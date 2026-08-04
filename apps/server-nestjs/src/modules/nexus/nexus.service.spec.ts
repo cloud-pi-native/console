@@ -91,7 +91,7 @@ describe('nexusService', () => {
         NEXUS_USERNAME: project.slug,
         NEXUS_PASSWORD: expect.any(String),
       }),
-      `forge/${project.slug}/tech/NEXUS`,
+      `forge/${project.slug}/NEXUS`,
     )
   })
 
@@ -100,7 +100,7 @@ describe('nexusService', () => {
     await service.handleDelete(project)
     expect(client.deleteSecurityRoles).toHaveBeenCalledWith(`${project.slug}-ID`)
     expect(client.deleteSecurityUsers).toHaveBeenCalledWith(project.slug)
-    expect(vault.delete).toHaveBeenCalledWith(`forge/${project.slug}/tech/NEXUS`)
+    expect(vault.delete).toHaveBeenCalledWith(`forge/${project.slug}/NEXUS`)
   })
 
   it('handleCron should reconcile all projects', async () => {
@@ -116,7 +116,7 @@ describe('nexusService', () => {
     expect(client.createSecurityUsers).toHaveBeenCalledTimes(2)
   })
 
-  it('reuses existing vault password and does not rotate Nexus user password', async () => {
+  it('reuses existing vault password at the new path and does not rotate', async () => {
     const project = makeProjectWithDetails({
       owner: { email: 'owner@example.com', firstName: 'Owner', lastName: 'User' },
       plugins: [{ pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED }],
@@ -138,7 +138,38 @@ describe('nexusService', () => {
     expect(vault.write).toHaveBeenCalledWith(expect.objectContaining({
       NEXUS_USERNAME: project.slug,
       NEXUS_PASSWORD: 'existing',
-    }), `forge/${project.slug}/tech/NEXUS`)
+    }), `forge/${project.slug}/NEXUS`)
+  })
+
+  it('generates a new password when no existing credential is found', async () => {
+    const project = makeProjectWithDetails({
+      owner: { email: 'owner@example.com', firstName: 'Owner', lastName: 'User' },
+      plugins: [{ pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED }],
+    })
+
+    datastore.getAdminPluginConfig.mockImplementation(async (_plugin, key) => {
+      if (key === PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY) return ' '
+      if (key === PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY) return ' '
+      return null
+    })
+
+    vault.read.mockImplementation(async (path: string) => {
+      if (path === `forge/${project.slug}/NEXUS`) throw new VaultError('NotFound', 'Not Found')
+      throw new VaultError('NotFound', 'Not Found')
+    })
+    client.getSecurityUsers.mockResolvedValue([{ userId: project.slug }])
+
+    await service.handleUpsert(project)
+
+    expect(client.updateSecurityUsersChangePassword).toHaveBeenCalledWith(project.slug, expect.any(String))
+    expect(client.createSecurityUsers).not.toHaveBeenCalled()
+    expect(vault.write).toHaveBeenCalledWith(
+      expect.objectContaining({
+        NEXUS_USERNAME: project.slug,
+        NEXUS_PASSWORD: expect.any(String),
+      }),
+      `forge/${project.slug}/NEXUS`,
+    )
   })
 
   it('deletes group repos before their hosted members', async () => {

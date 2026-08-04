@@ -18,7 +18,7 @@ import { makeProjectWithDetails } from '../src/modules/nexus/nexus-testing.utils
 import { NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, PLUGIN_NAME } from '../src/modules/nexus/nexus.constants'
 import { NexusModule } from '../src/modules/nexus/nexus.module'
 import { NexusService } from '../src/modules/nexus/nexus.service'
-import { getProjectVaultPath } from '../src/modules/nexus/nexus.utils'
+import { generateNexusCredPath } from '../src/modules/nexus/nexus.utils'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
@@ -142,7 +142,7 @@ describeWithNexus('NexusController (e2e)', () => {
     const users = await nexusClient.getSecurityUsers(testProjectSlug)
     expect(users.some(u => u.userId === testProjectSlug)).toBe(true)
 
-    const vaultPath = getProjectVaultPath(config.projectsRootDir, testProjectSlug, 'tech/NEXUS')
+    const vaultPath = generateNexusCredPath(config.projectsRootDir, testProjectSlug)
     const secret = await vaultService.read(vaultPath)
     expect(secret.data?.NEXUS_USERNAME).toBe(testProjectSlug)
     expect(secret.data?.NEXUS_PASSWORD).toBeTruthy()
