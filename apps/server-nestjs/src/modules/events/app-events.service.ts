@@ -25,6 +25,7 @@ export type EventLogAction
     | 'Create Deployment' | 'Update Deployment' | 'Delete Deployment'
     | 'Delete all project deployments'
     | 'Create Environment' | 'Update Environment' | 'Delete Environment'
+    | 'Create Repository' | 'Update Repository' | 'Delete Repository'
     | 'Add Project Member' | 'Update Project Member' | 'Remove Project Member'
 
 export interface EventContext {
