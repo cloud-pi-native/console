@@ -144,7 +144,7 @@ export class SonarqubeService implements OnModuleInit {
     span?.setAttribute('project.slug', project.slug)
     const rolePaths = await this.getProjectRoleGroupPaths(project)
     await Promise.all([
-      this.ensureUser(project.slug, project.slug),
+      this.ensureUser(project),
       this.ensureProjectSonarGroups(rolePaths),
       this.ensureProjectRepositories(project, rolePaths),
     ])
@@ -162,7 +162,7 @@ export class SonarqubeService implements OnModuleInit {
       this.logger.verbose(`Deleted SonarQube repository (key=${key})`)
     }))
     span?.setAttribute('sonarqube.projects.count', keys.length)
-    this.logger.log(`Deleting ${keys.length} SonarQube repositories for project ${project.slug}`)
+    this.logger.log(`Deleted ${keys.length} SonarQube repositories for project ${project.slug}`)
 
     const user = await this.findUser(project.slug)
     if (user) {
@@ -198,28 +198,28 @@ export class SonarqubeService implements OnModuleInit {
   }
 
   @StartActiveSpan()
-  private async ensureUser(username: string, projectSlug: string): Promise<void> {
-    const existingSecret = await this.vault.readSonarqubeUser(projectSlug)
-    const user = await this.findUser(username)
+  private async ensureUser(project: ProjectWithDetails): Promise<void> {
+    const existingSecret = await this.vault.readSonarqubeUser(project.slug)
+    const user = await this.findUser(project.slug)
     let newSecret: SonarqubeUserSecret | undefined
 
     if (!user) {
-      this.logger.log(`Creating SonarQube user (login=${username})`)
+      this.logger.log(`Creating SonarQube user (login=${project.slug}, email=${project.owner.email})`)
       const password = generateRandomPassword(30)
-      await this.client.createUser({ email: `${projectSlug}@${projectSlug}`, local: 'true', login: username, name: username, password })
-      const token = await this.rotateToken(username)
-      newSecret = { SONAR_USERNAME: username, SONAR_PASSWORD: password, SONAR_TOKEN: token }
+      await this.client.createUser({ email: project.owner.email, local: 'true', login: project.slug, name: project.slug, password })
+      const token = await this.rotateToken(project.slug)
+      newSecret = { SONAR_USERNAME: project.slug, SONAR_PASSWORD: password, SONAR_TOKEN: token }
     } else if (existingSecret) {
-      this.logger.verbose(`SonarQube user already exists with vault credentials (login=${username})`)
+      this.logger.verbose(`SonarQube user already exists with vault credentials (login=${project.slug})`)
     } else {
-      this.logger.warn(`SonarQube user exists but vault secret is missing, rotating token (login=${username})`)
-      const token = await this.rotateToken(username)
-      newSecret = { SONAR_USERNAME: username, SONAR_PASSWORD: 'not initialized', SONAR_TOKEN: token }
+      this.logger.warn(`SonarQube user exists but vault secret is missing, rotating token (login=${project.slug})`)
+      const token = await this.rotateToken(project.slug)
+      newSecret = { SONAR_USERNAME: project.slug, SONAR_TOKEN: token }
     }
 
     if (newSecret) {
-      await this.vault.writeSonarqubeUser(projectSlug, newSecret)
-      this.logger.log(`Stored SonarQube credentials in vault (slug=${projectSlug})`)
+      await this.vault.writeSonarqubeUser(project.slug, newSecret)
+      this.logger.log(`Stored SonarQube credentials in vault (slug=${project.slug})`)
     }
   }
 

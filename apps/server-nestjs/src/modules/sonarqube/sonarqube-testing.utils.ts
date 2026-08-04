@@ -30,6 +30,7 @@ export function makeProjectWithDetails(overrides: Partial<ProjectWithDetails> = 
     slug: faker.internet.domainWord(),
     repositories: [],
     plugins: [],
+    owner: { email: faker.internet.email() },
     ...overrides,
   } satisfies ProjectWithDetails
 }
