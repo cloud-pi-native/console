@@ -3,6 +3,7 @@ import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
 import { Logger } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import z from 'zod'
@@ -16,7 +17,6 @@ import { PermissionModule } from '../src/modules/infrastructure/permission/permi
 import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from '../src/modules/keycloak/keycloak-client.service'
 import { projectSelect } from '../src/modules/keycloak/keycloak-datastore.service'
 import { KeycloakModule } from '../src/modules/keycloak/keycloak.module'
-import { KeycloakService } from '../src/modules/keycloak/keycloak.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunKeycloakE2E
@@ -26,7 +26,7 @@ const describeWithKeycloak = describe.runIf(canRunKeycloakE2E)
 
 describeWithKeycloak('KeycloakService (e2e)', () => {
   let moduleRef: TestingModule
-  let keycloakService: KeycloakService
+  let eventEmitter: EventEmitter2
   let keycloak: KeycloakClientService
   let keycloakAdminClient: KcAdminClient
   let prisma: PrismaService
@@ -44,10 +44,10 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
 
     await moduleRef.init()
 
-    keycloakService = moduleRef.get<KeycloakService>(KeycloakService)
     keycloak = moduleRef.get<KeycloakClientService>(KeycloakClientService)
     keycloakAdminClient = moduleRef.get<KcAdminClient>(KEYCLOAK_ADMIN_CLIENT)
     prisma = moduleRef.get<PrismaService>(PrismaService)
+    eventEmitter = moduleRef.get<EventEmitter2>(EventEmitter2)
 
     ownerId = faker.string.uuid()
     testProjectId = faker.string.uuid()
@@ -147,7 +147,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     })
 
     // Act
-    await keycloakService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     // Assert
     // Check main project group
@@ -215,7 +215,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     })
 
     // Act
-    await keycloakService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     // Assert
     const projectGroup = z.object({
@@ -278,7 +278,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     })
 
     // Sync add
-    await keycloakService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     // Verify added
     const projectGroup = z.object({
@@ -303,7 +303,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     })
 
     // Sync remove
-    await keycloakService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     // Verify removed
     members = await keycloak.getGroupMembers(projectGroup.id)
@@ -343,7 +343,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     })
 
     // Act - should not throw
-    await expect(keycloakService.handleUpsert(project)).resolves.not.toThrow()
+    await expect(eventEmitter.emitAsync('project.upsert', project)).resolves.not.toThrow()
 
     // Cleanup
     await prisma.projectMembers.deleteMany({ where: { userId: fakeUserId } })
@@ -387,7 +387,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     })
 
     // Sync to ensure they are added initially
-    await keycloakService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     const projectGroup = z.object({
       id: z.string(),
@@ -401,7 +401,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     expect(members.some(m => m.id === kcUser.id)).toBe(false)
 
     // Sync again
-    await keycloakService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     // Verify added back
     members = await keycloak.getGroupMembers(projectGroup.id)
@@ -447,7 +447,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     })
 
     // Sync to create group
-    await keycloakService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     // Manually add user to Keycloak group
     const projectGroup = z.object({
@@ -460,7 +460,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     expect(members.some(m => m.id === kcUser.id)).toBe(true)
 
     // Sync again to remove user
-    await keycloakService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     // Verify removed
     members = await keycloak.getGroupMembers(projectGroup.id)
@@ -478,7 +478,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
       where: { id: testProjectId },
       select: projectSelect,
     })
-    await keycloakService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     const projectGroup = z.object({
       id: z.string(),
@@ -492,7 +492,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     expect(deletedProjectGroup).toBeUndefined()
 
     // Sync
-    await keycloakService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     // Verify recreated
     const recreatedProjectGroup = z.object({
@@ -507,7 +507,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
       where: { id: testProjectId },
       select: projectSelect,
     })
-    await keycloakService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     const roleGroup = z.object({
       id: z.string(),
@@ -521,7 +521,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     expect(deletedRoleGroup).toBeUndefined()
 
     // Sync
-    await keycloakService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     // Verify recreated
     const recreatedRoleGroup = z.object({
@@ -536,7 +536,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
       select: projectSelect,
     })
 
-    await keycloakService.handleDelete(project)
+    await eventEmitter.emitAsync('project.delete', project)
 
     const deletedProjectGroup = await keycloak.getGroupByPath(`/${testProjectSlug}`)
     expect(deletedProjectGroup).toBeUndefined()

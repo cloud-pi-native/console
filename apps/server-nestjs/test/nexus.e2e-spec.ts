@@ -3,6 +3,7 @@ import type { TestingModule } from '@nestjs/testing'
 import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
@@ -17,7 +18,6 @@ import { projectSelect } from '../src/modules/nexus/nexus-datastore.service'
 import { makeProjectWithDetails } from '../src/modules/nexus/nexus-testing.utils'
 import { NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, PLUGIN_NAME } from '../src/modules/nexus/nexus.constants'
 import { NexusModule } from '../src/modules/nexus/nexus.module'
-import { NexusService } from '../src/modules/nexus/nexus.service'
 import { generateNexusCredPath } from '../src/modules/nexus/nexus.utils'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultModule } from '../src/modules/vault/vault.module'
@@ -30,7 +30,7 @@ const describeWithNexus = describe.runIf(canRunNexusE2E)
 
 describeWithNexus('NexusService (e2e)', () => {
   let moduleRef: TestingModule
-  let nexusService: NexusService
+  let eventEmitter: EventEmitter2
   let nexusClient: NexusClientService
   let vaultService: VaultClientService
   let config: ConfigType<typeof baseConfigFactory>
@@ -47,11 +47,11 @@ describeWithNexus('NexusService (e2e)', () => {
 
     await moduleRef.init()
 
-    nexusService = moduleRef.get<NexusService>(NexusService)
     nexusClient = moduleRef.get<NexusClientService>(NexusClientService)
     vaultService = moduleRef.get<VaultClientService>(VaultClientService)
     config = moduleRef.get(baseConfigFactory.KEY)
     prisma = moduleRef.get<PrismaService>(PrismaService)
+    eventEmitter = moduleRef.get<EventEmitter2>(EventEmitter2)
 
     ownerId = faker.string.uuid()
     testProjectId = faker.string.uuid()
@@ -70,7 +70,7 @@ describeWithNexus('NexusService (e2e)', () => {
 
   afterAll(async () => {
     if (testProjectSlug) {
-      await nexusService.handleDelete(makeProjectWithDetails({ slug: testProjectSlug })).catch(() => {})
+      await eventEmitter.emitAsync('project.delete', makeProjectWithDetails({ slug: testProjectSlug })).catch(() => {})
     }
 
     if (prisma) {
@@ -112,7 +112,7 @@ describeWithNexus('NexusService (e2e)', () => {
       select: projectSelect,
     })
 
-    await nexusService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     const mavenReleaseRepo = `${testProjectSlug}-repository-release`
     const mavenSnapshotRepo = `${testProjectSlug}-repository-snapshot`
@@ -154,7 +154,7 @@ describeWithNexus('NexusService (e2e)', () => {
       select: projectSelect,
     })
 
-    await nexusService.handleDelete(project)
+    await eventEmitter.emitAsync('project.delete', project)
 
     const mavenReleaseRepo = `${testProjectSlug}-repository-release`
     const repo = await nexusClient.getRepositoriesMavenHosted(mavenReleaseRepo)

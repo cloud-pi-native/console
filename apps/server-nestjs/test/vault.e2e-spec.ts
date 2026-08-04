@@ -1,6 +1,7 @@
 import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
@@ -14,7 +15,6 @@ import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { projectSelect } from '../src/modules/vault/vault-datastore.service'
 import { makeProjectWithDetails } from '../src/modules/vault/vault-testing.utils'
 import { VaultModule } from '../src/modules/vault/vault.module'
-import { VaultService } from '../src/modules/vault/vault.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunVaultE2E
@@ -24,7 +24,7 @@ const describeWithVault = describe.runIf(canRunVaultE2E)
 
 describeWithVault('VaultService (e2e)', () => {
   let moduleRef: TestingModule
-  let vaultService: VaultService
+  let eventEmitter: EventEmitter2
   let vaultClient: VaultClientService
   let prisma: PrismaService
 
@@ -39,9 +39,9 @@ describeWithVault('VaultService (e2e)', () => {
 
     await moduleRef.init()
 
-    vaultService = moduleRef.get<VaultService>(VaultService)
     vaultClient = moduleRef.get<VaultClientService>(VaultClientService)
     prisma = moduleRef.get<PrismaService>(PrismaService)
+    eventEmitter = moduleRef.get<EventEmitter2>(EventEmitter2)
 
     ownerId = faker.string.uuid()
     testProjectId = faker.string.uuid()
@@ -60,7 +60,7 @@ describeWithVault('VaultService (e2e)', () => {
 
   afterAll(async () => {
     if (testProjectSlug) {
-      await vaultService.handleDelete(makeProjectWithDetails({ slug: testProjectSlug })).catch(() => {})
+      await eventEmitter.emitAsync('project.delete', makeProjectWithDetails({ slug: testProjectSlug })).catch(() => {})
     }
 
     if (prisma) {
@@ -95,7 +95,7 @@ describeWithVault('VaultService (e2e)', () => {
       select: projectSelect,
     })
 
-    await vaultService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     const adminGroupName = `project-${testProjectSlug}-admin`
     const group = await vaultClient.getIdentityGroupName(adminGroupName)
@@ -109,7 +109,7 @@ describeWithVault('VaultService (e2e)', () => {
       select: projectSelect,
     })
 
-    await vaultService.handleDelete(project)
+    await eventEmitter.emitAsync('project.delete', project)
 
     const adminGroupName = `project-${testProjectSlug}-admin`
     await expect(vaultClient.getIdentityGroupName(adminGroupName)).rejects.toThrow('Not Found')

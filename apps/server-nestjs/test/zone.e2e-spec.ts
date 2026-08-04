@@ -1,6 +1,7 @@
 import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
@@ -22,6 +23,7 @@ const describeWithZone = describe.runIf(canRunZoneE2E)
 
 describeWithZone('Zone lifecycle (e2e)', () => {
   let moduleRef: TestingModule
+  let eventEmitter: EventEmitter2
   let vaultService: VaultService
   let vaultClient: VaultClientService
   let prisma: PrismaService
@@ -39,6 +41,7 @@ describeWithZone('Zone lifecycle (e2e)', () => {
     vaultService = moduleRef.get<VaultService>(VaultService)
     vaultClient = moduleRef.get<VaultClientService>(VaultClientService)
     prisma = moduleRef.get<PrismaService>(PrismaService)
+    eventEmitter = moduleRef.get<EventEmitter2>(EventEmitter2)
 
     zoneId = faker.string.uuid()
     zoneSlug = faker.helpers.slugify(`test-zone-${faker.string.alphanumeric({ length: 10 }).toLowerCase()}`)
@@ -61,7 +64,7 @@ describeWithZone('Zone lifecycle (e2e)', () => {
   it('should provision zone secrets space in Vault (mount, policy, approle)', async () => {
     const zone = makeZoneWithDetails({ id: zoneId, slug: zoneSlug })
 
-    await vaultService.handleUpsertZone(zone)
+    await eventEmitter.emitAsync('zone.upsert', zone)
 
     const kvName = `zone-${zoneSlug}`
     const roleId = await vaultClient.getAuthApproleRoleRoleId(kvName)
@@ -71,7 +74,7 @@ describeWithZone('Zone lifecycle (e2e)', () => {
   it('should remove zone from Vault on delete', async () => {
     const zone = makeZoneWithDetails({ id: zoneId, slug: zoneSlug })
 
-    await vaultService.handleDeleteZone(zone)
+    await eventEmitter.emitAsync('zone.delete', zone)
 
     const kvName = `zone-${zoneSlug}`
     await expect(vaultClient.getAuthApproleRoleRoleId(kvName)).rejects.toThrow()
