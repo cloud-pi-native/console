@@ -25,6 +25,7 @@ export async function getContract() {
     ProjectServices: (await import('./contracts/index.js'))
       .projectServiceContract,
     Repositories: (await import('./contracts/index.js')).repositoryContract,
+    RepositoriesV2: (await import('./contracts/index.js')).repositoryContractV2,
     Stages: (await import('./contracts/index.js')).stageContract,
     Services: (await import('./contracts/index.js')).serviceContract,
     Users: (await import('./contracts/index.js')).userContract,
