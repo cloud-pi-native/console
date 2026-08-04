@@ -81,6 +81,15 @@ export interface MirrorUserSecret {
   MIRROR_TOKEN: string
 }
 
+export interface GitlabMirrorSecret {
+  GIT_INPUT_URL: string
+  GIT_INPUT_USER: string
+  GIT_INPUT_PASSWORD: string
+  GIT_OUTPUT_URL: string
+  GIT_OUTPUT_USER: string
+  GIT_OUTPUT_PASSWORD: string
+}
+
 export interface VaultMetadata {
   created_time: string
   custom_metadata: Record<string, any> | null
@@ -170,28 +179,28 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  async readGitlabMirrorCreds(projectSlug: string, repoName: string): Promise<VaultSecret | null> {
+  async readGitlabMirrorCreds(projectSlug: string, repoName: string): Promise<VaultSecret<Partial<GitlabMirrorSecret>> | null> {
     const vaultCredsPath = generateGitlabMirrorCredPath(this.baseConfig.projectsRootDir, projectSlug, repoName)
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', projectSlug)
     span?.setAttribute('repo.name', repoName)
     span?.setAttribute('vault.kv.path', vaultCredsPath)
     this.logger.verbose(`Reading Vault GitLab mirror credentials (projectSlug=${projectSlug}, repoName=${repoName})`)
-    return await this.read(vaultCredsPath).catch((error) => {
+    return await this.read<Partial<GitlabMirrorSecret>>(vaultCredsPath).catch((error) => {
       if (error instanceof VaultError && error.kind === 'NotFound') return null
       throw error
     })
   }
 
   @StartActiveSpan()
-  async writeGitlabMirrorCreds(projectSlug: string, repoName: string, data: Record<string, any>): Promise<void> {
+  async writeGitlabMirrorCreds(projectSlug: string, repoName: string, creds: Partial<GitlabMirrorSecret>): Promise<void> {
     const vaultCredsPath = generateGitlabMirrorCredPath(this.baseConfig.projectsRootDir, projectSlug, repoName)
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', projectSlug)
     span?.setAttribute('repo.name', repoName)
     span?.setAttribute('vault.kv.path', vaultCredsPath)
     this.logger.verbose(`Writing Vault GitLab mirror credentials (projectSlug=${projectSlug}, repoName=${repoName})`)
-    await this.write(data, vaultCredsPath)
+    await this.write(creds, vaultCredsPath)
   }
 
   @StartActiveSpan()
