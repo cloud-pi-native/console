@@ -2,7 +2,7 @@ import type { CreateRepository, UpdateRepository } from '@cpn-console/shared'
 import type { Repository } from '@prisma/client'
 import type { EventLogAction } from '../events/app-events.service'
 import type { RepositoryMirrorCredentialUpdate } from './repository.utils'
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common'
 import { AppEventsService } from '../events/app-events.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { RepositoryDatastoreService } from './repository-datastore.service'
@@ -15,7 +15,7 @@ export class RepositoryService {
   constructor(
     @Inject(RepositoryDatastoreService) private readonly repositoryDatastoreService: RepositoryDatastoreService,
     @Inject(AppEventsService) private readonly appEvents: AppEventsService,
-    @Inject(VaultClientService) private readonly vault: VaultClientService,
+    @Inject(VaultClientService) @Optional() private readonly vault?: VaultClientService,
   ) {}
 
   listByProjectId(projectId: string): Promise<Repository[]> {
@@ -38,10 +38,14 @@ export class RepositoryService {
       // GIT_INPUT_PASSWORD from Vault (it never receives the token), and the reconcile
       // runs fire-and-forget. A token written after — or racing — the reconcile would
       // be lost, since it exists nowhere else once this request returns.
-      await this.vault.writeGitlabMirrorCreds(projectSlug, repository.internalRepoName, {
-        GIT_INPUT_USER: repositoryToCreate.externalUserName,
-        GIT_INPUT_PASSWORD: repositoryToCreate.externalToken,
-      })
+      if (this.vault) {
+        await this.vault.writeGitlabMirrorCreds(projectSlug, repository.internalRepoName, {
+          GIT_INPUT_USER: repositoryToCreate.externalUserName,
+          GIT_INPUT_PASSWORD: repositoryToCreate.externalToken,
+        })
+      } else {
+        this.logger.warn(`mirror credentials not stored (repositoryId=${repository.id}): vault not configured`)
+      }
     }
 
     this.reconcileProject(projectId, 'Create Repository', userId, requestId)
@@ -71,6 +75,13 @@ export class RepositoryService {
     repository: Repository,
     credentialUpdate: RepositoryMirrorCredentialUpdate,
   ): Promise<void> {
+    if (!this.vault) {
+      if (credentialUpdate.kind !== 'keep') {
+        this.logger.warn(`mirror credentials not ${credentialUpdate.kind === 'set' ? 'stored' : 'cleared'} (repositoryId=${repository.id}): vault not configured`)
+      }
+      return
+    }
+
     switch (credentialUpdate.kind) {
       case 'set':
         // The mirror username comes from the just-updated row (legacy reads it from the

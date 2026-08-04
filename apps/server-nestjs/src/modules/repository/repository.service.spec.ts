@@ -236,4 +236,58 @@ describe('repositoryService', () => {
       expect(appEvents.emitProjectEvent).not.toHaveBeenCalled()
     })
   })
+
+  describe('without vault configured', () => {
+    let vaultlessService: RepositoryService
+
+    beforeEach(async () => {
+      const vaultlessModule = await Test.createTestingModule({
+        providers: [
+          RepositoryService,
+          { provide: RepositoryDatastoreService, useValue: datastore },
+          { provide: AppEventsService, useValue: appEvents },
+        ],
+      }).compile()
+
+      vaultlessService = vaultlessModule.get<RepositoryService>(RepositoryService)
+    })
+
+    it('creates a private repository without storing the mirror credentials', async () => {
+      const repository = makeRepository({ id: repositoryId, projectId, internalRepoName: validCreateRepository.internalRepoName, isPrivate: true })
+      datastore.hasRepositoryWithName.mockResolvedValue(false)
+      datastore.createRepository.mockResolvedValue(repository)
+      appEvents.emitProjectEvent.mockResolvedValue({})
+
+      const result = await vaultlessService.createRepository(projectId, projectSlug, validCreateRepository, userId, requestId)
+
+      expect(result).toEqual(repository)
+      expect(vault.writeGitlabMirrorCreds).not.toHaveBeenCalled()
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, expect.objectContaining({ action: 'Create Repository' }))
+    })
+
+    it('updates a repository without applying the credential intent', async () => {
+      const updated = makeRepository({ id: repositoryId, projectId, isPrivate: true })
+      datastore.getRepositoryById.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
+      datastore.updateRepository.mockResolvedValue(updated)
+      appEvents.emitProjectEvent.mockResolvedValue({})
+
+      const result = await vaultlessService.updateRepository(projectId, projectSlug, repositoryId, { isPrivate: true, externalToken: faker.string.alphanumeric(16) }, userId, requestId)
+
+      expect(result).toEqual(updated)
+      expect(vault.writeGitlabMirrorCreds).not.toHaveBeenCalled()
+      expect(vault.deleteGitlabMirrorCreds).not.toHaveBeenCalled()
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, expect.objectContaining({ action: 'Update Repository' }))
+    })
+
+    it('deletes a repository', async () => {
+      datastore.getRepositoryById.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
+      datastore.deleteRepository.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
+      appEvents.emitProjectEvent.mockResolvedValue({})
+
+      await vaultlessService.deleteRepository(projectId, repositoryId, userId, requestId)
+
+      expect(datastore.deleteRepository).toHaveBeenCalledWith(repositoryId)
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, expect.objectContaining({ action: 'Delete Repository' }))
+    })
+  })
 })
