@@ -16,6 +16,7 @@ import { ProjectRolesModule } from './modules/project-roles/project-roles.module
 import { ProjectSecretsModule } from './modules/project-secrets/project-secrets.module'
 import { ProjectServicesModule } from './modules/project-services/project-services.module'
 import { ProjectModule } from './modules/project/project.module'
+import { RepositoryModule } from './modules/repository/repository.module'
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module'
 import { VersionModule } from './modules/version/version.module'
 import { getDotenvPaths } from './utils/dotenv.utils'
@@ -41,6 +42,7 @@ import { getDotenvPaths } from './utils/dotenv.utils'
     ProjectRolesModule,
     ProjectSecretsModule,
     ProjectServicesModule,
+    RepositoryModule,
     ScheduleModule.forRoot(),
     SystemSettingsModule,
     VersionModule,
