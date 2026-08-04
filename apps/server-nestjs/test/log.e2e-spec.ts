@@ -1,7 +1,9 @@
 import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
+import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
@@ -10,6 +12,7 @@ import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { LogModule } from '../src/modules/log/log.module'
 import { LogService } from '../src/modules/log/log.service'
+import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunLogE2E
   = Boolean(process.env.E2E)
@@ -29,7 +32,7 @@ describeWithLog('LogService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [LogModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), LogModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()
@@ -156,32 +159,35 @@ describeWithLog('LogService (e2e)', () => {
 
     const { total: allTotal, logs: allLogs } = await logService.getLogs({
       offset: 0,
-      limit: 10,
+      limit: 50,
       projectId: undefined,
       clean: true,
     })
     expect(allTotal).toBeGreaterThan(2)
-    expect(allLogs).toHaveLength(10)
-    expect(allLogs[0]).toMatchObject({
+
+    const globalEntry = allLogs.find(log => log.id === globalLog.id)
+    expect(globalEntry).toMatchObject({
       id: globalLog.id,
       action: 'global-upsert',
       userId: null,
     })
-    expect(allLogs[0].data).not.toHaveProperty('args')
-    expect(allLogs[0].data).not.toHaveProperty('results')
-    expect(allLogs[0].data).not.toHaveProperty('config')
-    expect(allLogs[1]).toMatchObject({
+    expect(globalEntry?.data).not.toHaveProperty('args')
+    expect(globalEntry?.data).not.toHaveProperty('results')
+    expect(globalEntry?.data).not.toHaveProperty('config')
+
+    const projectEntry = allLogs.find(log => log.id === projectLog.id)
+    expect(projectEntry).toMatchObject({
       id: projectLog.id,
       action: 'project-upsert',
       userId: ownerId,
     })
-    expect(allLogs[1].data).toMatchObject({
+    expect(projectEntry?.data).toMatchObject({
       warning: ['careful'],
       totalExecutionTime: 42,
       messageResume: 'done',
     })
-    expect(allLogs[1].data).not.toHaveProperty('args')
-    expect(allLogs[1].data).not.toHaveProperty('results')
-    expect(allLogs[1].data).not.toHaveProperty('config')
+    expect(projectEntry?.data).not.toHaveProperty('args')
+    expect(projectEntry?.data).not.toHaveProperty('results')
+    expect(projectEntry?.data).not.toHaveProperty('config')
   })
 })

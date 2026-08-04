@@ -19,11 +19,11 @@ import { ProjectMembersModule } from '../src/modules/project-members/project-mem
 import { ProjectMembersService } from '../src/modules/project-members/project-members.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
-const canRunProjectMembersE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
+const canRunProjectMembersE2E = Boolean(process.env.E2E)
 
 const describeWithProjectMembers = describe.runIf(canRunProjectMembersE2E)
 
-describeWithProjectMembers('ProjectMembersService (e2e)', {}, () => {
+describeWithProjectMembers('ProjectMembersService (e2e)', () => {
   let moduleRef: TestingModule
   let prisma: PrismaService
   let service: ProjectMembersService

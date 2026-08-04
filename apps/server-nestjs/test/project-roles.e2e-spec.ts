@@ -16,11 +16,11 @@ import { ProjectRolesModule } from '../src/modules/project-roles/project-roles.m
 import { ProjectRolesService } from '../src/modules/project-roles/project-roles.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
-const canRunProjectRolesE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
+const canRunProjectRolesE2E = Boolean(process.env.E2E)
 
 const describeWithProjectRoles = describe.runIf(canRunProjectRolesE2E)
 
-describeWithProjectRoles('ProjectRolesService (e2e)', {}, () => {
+describeWithProjectRoles('ProjectRolesService (e2e)', () => {
   let moduleRef: TestingModule
   let prisma: PrismaService
   let service: ProjectRolesService
