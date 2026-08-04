@@ -3,13 +3,13 @@ import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { parse } from 'yaml'
 import { baseConfigFactory } from '../src/config/base.config'
 import { projectSelect } from '../src/modules/argocd/argocd-datastore.service'
 import { ArgoCDModule } from '../src/modules/argocd/argocd.module'
-import { ArgoCDService } from '../src/modules/argocd/argocd.service'
 import { GITLAB_REST_CLIENT, GitlabClientService } from '../src/modules/gitlab/gitlab-client.service'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
@@ -27,7 +27,7 @@ const describeWithArgoCD = describe.runIf(canRunArgoCDE2E)
 
 describeWithArgoCD('ArgoCDService (e2e)', () => {
   let moduleRef: TestingModule
-  let argocdService: ArgoCDService
+  let eventEmitter: EventEmitter2
   let gitlab: GitlabClientService
   let gitlabClient: Gitlab
   let vault: VaultClientService
@@ -60,11 +60,11 @@ describeWithArgoCD('ArgoCDService (e2e)', () => {
 
     await moduleRef.init()
 
-    argocdService = moduleRef.get<ArgoCDService>(ArgoCDService)
     gitlab = moduleRef.get<GitlabClientService>(GitlabClientService)
     gitlabClient = moduleRef.get<Gitlab>(GITLAB_REST_CLIENT)
     vault = moduleRef.get<VaultClientService>(VaultClientService)
     prisma = moduleRef.get<PrismaService>(PrismaService)
+    eventEmitter = moduleRef.get<EventEmitter2>(EventEmitter2)
     config = moduleRef.get(baseConfigFactory.KEY)
 
     ownerId = faker.string.uuid()
@@ -252,7 +252,7 @@ describeWithArgoCD('ArgoCDService (e2e)', () => {
     const staleAction = await gitlab.generateCreateOrUpdateAction(infraProject, 'main', staleFilePath, 'stale: true\n')
     await gitlab.maybeCreateCommit(infraProject, 'ci: :robot_face: Seed stale values', staleAction ? [staleAction] : [])
 
-    await argocdService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     const expectedFilePath = `${project.name}/${clusterLabel}/${envDevName}/values.yaml`
     const file = await gitlabClient.RepositoryFiles.show(infraRepoId, expectedFilePath, 'main')
@@ -294,7 +294,7 @@ describeWithArgoCD('ArgoCDService (e2e)', () => {
       select: projectSelect,
     })
 
-    await argocdService.handleUpsert(after)
+    await eventEmitter.emitAsync('project.upsert', after)
 
     const updatedDev = await gitlabClient.RepositoryFiles.show(infraRepoId, devFilePath, 'main')
     const devRaw = Buffer.from(updatedDev.content, 'base64').toString('utf8')

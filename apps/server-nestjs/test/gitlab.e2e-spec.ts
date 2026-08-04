@@ -3,6 +3,7 @@ import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import z from 'zod'
@@ -10,7 +11,6 @@ import { baseConfigFactory } from '../src/config/base.config'
 import { GITLAB_REST_CLIENT, GitlabClientService } from '../src/modules/gitlab/gitlab-client.service'
 import { projectSelect } from '../src/modules/gitlab/gitlab-datastore.service'
 import { GitlabModule } from '../src/modules/gitlab/gitlab.module'
-import { GitlabService } from '../src/modules/gitlab/gitlab.service'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
@@ -27,7 +27,7 @@ const describeWithGitLab = describe.runIf(canRunGitlabE2E)
 
 describeWithGitLab('GitlabService (e2e)', () => {
   let moduleRef: TestingModule
-  let gitlabService: GitlabService
+  let eventEmitter: EventEmitter2
   let gitlabClientService: GitlabClientService
   let gitlabClient: Gitlab
   let vaultService: VaultClientService
@@ -46,11 +46,11 @@ describeWithGitLab('GitlabService (e2e)', () => {
 
     await moduleRef.init()
 
-    gitlabService = moduleRef.get<GitlabService>(GitlabService)
     gitlabClientService = moduleRef.get<GitlabClientService>(GitlabClientService)
     gitlabClient = moduleRef.get<Gitlab>(GITLAB_REST_CLIENT)
     vaultService = moduleRef.get<VaultClientService>(VaultClientService)
     prisma = moduleRef.get<PrismaService>(PrismaService)
+    eventEmitter = moduleRef.get<EventEmitter2>(EventEmitter2)
     config = moduleRef.get(baseConfigFactory.KEY)
 
     ownerId = faker.string.uuid()
@@ -146,7 +146,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
     })
 
     // Act
-    await gitlabService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     // Assert
     const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
@@ -219,7 +219,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
         select: projectSelect,
       })
 
-      await gitlabService.handleUpsert(project)
+      await eventEmitter.emitAsync('project.upsert', project)
 
       const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
       const group = z.object({
@@ -240,7 +240,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
       select: projectSelect,
     })
 
-    await gitlabService.handleDelete(project)
+    await eventEmitter.emitAsync('project.delete', project)
 
     const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
     const group = await gitlabClientService.getGroupByPath(groupPath)

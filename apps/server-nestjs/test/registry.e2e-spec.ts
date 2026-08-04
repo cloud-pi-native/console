@@ -2,10 +2,12 @@ import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
 import { harborConfigFactory } from '../src/config/harbor.config'
+import { EventsModule } from '../src/modules/infrastructure/events/events.module'
 import { RegistryClientService } from '../src/modules/registry/registry-client.service'
 import { makeProjectWithDetails } from '../src/modules/registry/registry-testing.utils'
 import { ROBOT_NAME_PROJECT, ROBOT_NAME_RO, ROBOT_NAME_RW } from '../src/modules/registry/registry.constants'
@@ -23,6 +25,7 @@ const describeWithRegistry = describe.runIf(canRunRegistryE2E)
 
 describeWithRegistry('RegistryService (e2e)', () => {
   let moduleRef: TestingModule
+  let eventEmitter: EventEmitter2
   let registry: RegistryService
   let client: RegistryClientService
   let vault: VaultClientService
@@ -32,13 +35,14 @@ describeWithRegistry('RegistryService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory, harborConfigFactory] }), RegistryModule],
+      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory, harborConfigFactory] }), RegistryModule, EventsModule],
     })
       .compile()
 
     await moduleRef.init()
 
     registry = moduleRef.get(RegistryService)
+    eventEmitter = moduleRef.get<EventEmitter2>(EventEmitter2)
     client = moduleRef.get(RegistryClientService)
     vault = moduleRef.get(VaultClientService)
     config = moduleRef.get(baseConfigFactory.KEY)
@@ -84,9 +88,7 @@ describeWithRegistry('RegistryService (e2e)', () => {
   })
 
   it('should remove project from Harbor on delete', async () => {
-    const result = await registry.handleDelete(makeProjectWithDetails({ slug: projectSlug }))
-
-    expect(result.harbor?.status).toBe('OK')
+    await eventEmitter.emitAsync('project.delete', makeProjectWithDetails({ slug: projectSlug }))
 
     const project = await client.getProjectByName(projectSlug)
     expect(project.status).toBe(404)

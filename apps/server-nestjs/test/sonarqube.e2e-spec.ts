@@ -2,6 +2,7 @@ import type { TestingModule } from '@nestjs/testing'
 import { generateProjectKey } from '@cpn-console/hooks'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
@@ -28,6 +29,7 @@ const describeWithSonarqube = describe.runIf(canRunSonarqubeE2E)
 
 describeWithSonarqube('SonarqubeService (e2e)', () => {
   let moduleRef: TestingModule
+  let eventEmitter: EventEmitter2
   let sonarqubeService: SonarqubeService
   let sonarqubeClient: SonarqubeClientService
   let vaultService: VaultClientService
@@ -49,6 +51,7 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
     sonarqubeClient = moduleRef.get<SonarqubeClientService>(SonarqubeClientService)
     vaultService = moduleRef.get<VaultClientService>(VaultClientService)
     prisma = moduleRef.get<PrismaService>(PrismaService)
+    eventEmitter = moduleRef.get<EventEmitter2>(EventEmitter2)
 
     ownerId = faker.string.uuid()
     testProjectId = faker.string.uuid()
@@ -68,9 +71,7 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
 
   afterAll(async () => {
     if (sonarqubeService && testProjectSlug) {
-      await sonarqubeService.handleDelete(
-        makeProjectWithDetails({ slug: testProjectSlug, repositories: [] }),
-      ).catch(() => {})
+      await eventEmitter.emitAsync('project.delete', makeProjectWithDetails({ slug: testProjectSlug, repositories: [] })).catch(() => {})
     }
 
     if (prisma) {
@@ -128,7 +129,7 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
       select: projectSelect,
     })
 
-    await sonarqubeService.handleUpsert(project)
+    await eventEmitter.emitAsync('project.upsert', project)
 
     // All 5 project role groups should exist in SonarQube
     const projectGroupNames = [
@@ -165,7 +166,7 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
       select: projectSelect,
     })
 
-    await sonarqubeService.handleDelete(project)
+    await eventEmitter.emitAsync('project.delete', project)
 
     // SonarQube analysis project should be removed
     const projectKey = generateProjectKey(testProjectSlug, testRepoName)
