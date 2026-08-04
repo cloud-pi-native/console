@@ -97,9 +97,21 @@ describeWithVault('VaultService (e2e)', () => {
 
     await vaultService.handleUpsert(project)
 
-    const group = await vaultClient.getIdentityGroupName(testProjectSlug)
+    const adminGroupName = `project-${testProjectSlug}-admin`
+    const group = await vaultClient.getIdentityGroupName(adminGroupName)
     expect(group.data?.id).toBeTruthy()
-    expect(group.data?.name).toBe(testProjectSlug)
-    expect(group.data?.alias?.name).toBe(`/${testProjectSlug}`)
+    expect(group.data?.name).toBe(adminGroupName)
+  }, 180000)
+
+  it('should remove project from Vault on delete', async () => {
+    const project = await prisma.project.findUniqueOrThrow({
+      where: { id: testProjectId },
+      select: projectSelect,
+    })
+
+    await vaultService.handleDelete(project)
+
+    const adminGroupName = `project-${testProjectSlug}-admin`
+    await expect(vaultClient.getIdentityGroupName(adminGroupName)).rejects.toThrow('Not Found')
   }, 180000)
 })

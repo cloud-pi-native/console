@@ -82,4 +82,13 @@ describeWithRegistry('RegistryService (e2e)', () => {
     expect(rwSecret.data?.USERNAME).toBe(`robot$${projectSlug}+${ROBOT_NAME_RW}`)
     expect(projectSecret.data?.USERNAME).toBe(`robot$${projectSlug}+${ROBOT_NAME_PROJECT}`)
   })
+
+  it('should remove project from Harbor on delete', async () => {
+    const result = await registry.handleDelete(makeProjectWithDetails({ slug: projectSlug }))
+
+    expect(result.harbor?.status).toBe('OK')
+
+    const project = await client.getProjectByName(projectSlug)
+    expect(project.status).toBe(404)
+  })
 })

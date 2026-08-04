@@ -25,7 +25,7 @@ const canRunArgoCDE2E
 
 const describeWithArgoCD = describe.runIf(canRunArgoCDE2E)
 
-describeWithArgoCD('ArgoCDService (e2e)', {}, () => {
+describeWithArgoCD('ArgoCDService (e2e)', () => {
   let moduleRef: TestingModule
   let argocdService: ArgoCDService
   let gitlab: GitlabClientService
@@ -212,7 +212,7 @@ describeWithArgoCD('ArgoCDService (e2e)', {}, () => {
 
     vaultProjectValuesPath = `${config.projectsRootDir}/${testProjectId}`
     await vault.write({ e2e: true }, vaultProjectValuesPath)
-  })
+  }, 144000)
 
   afterAll(async () => {
     if (vaultProjectValuesPath) {

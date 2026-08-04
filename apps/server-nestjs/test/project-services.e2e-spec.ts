@@ -11,18 +11,15 @@ import { PrismaService } from '../src/modules/infrastructure/database/prisma.ser
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
 import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
+import { NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, PLUGIN_NAME } from '../src/modules/nexus/nexus.constants'
 import { ProjectServicesModule } from '../src/modules/project-services/project-services.module'
 import { ProjectServicesService } from '../src/modules/project-services/project-services.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
-const canRunServicesE2E
-  = Boolean(process.env.E2E)
-
+const canRunServicesE2E = Boolean(process.env.E2E)
 const describeWithServices = describe.runIf(canRunServicesE2E)
 
-const PLUGIN_NAME = 'gitlab'
-
-describeWithServices('ProjectServicesService (e2e)', {}, () => {
+describeWithServices('ProjectServicesService (e2e)', () => {
   let moduleRef: TestingModule
   let prisma: PrismaService
   let service: ProjectServicesService
@@ -103,8 +100,8 @@ describeWithServices('ProjectServicesService (e2e)', {}, () => {
 
   it('update stores project configuration', async () => {
     await service.update(projectId, {
-      gitlab: {
-        enabled: 'enabled',
+      nexus: {
+        activateNpmRepo: 'enabled',
       },
     }, ['user'])
 
@@ -113,7 +110,7 @@ describeWithServices('ProjectServicesService (e2e)', {}, () => {
         projectId_pluginName_key: {
           projectId,
           pluginName: PLUGIN_NAME,
-          key: 'user.enabled',
+          key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO,
         },
       },
       select: {

@@ -19,11 +19,11 @@ import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultService } from '../src/modules/vault/vault.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
-const canRunProjectHooksE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
+const canRunProjectHooksE2E = Boolean(process.env.E2E)
 
 const describeWithProjectHooks = describe.runIf(canRunProjectHooksE2E)
 
-describeWithProjectHooks('ProjectHooksService (e2e)', {}, () => {
+describeWithProjectHooks('ProjectHooksService (e2e)', () => {
   let moduleRef: TestingModule
   let prisma: PrismaService
   let service: ProjectHooksService

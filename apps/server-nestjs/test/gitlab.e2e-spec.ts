@@ -25,7 +25,7 @@ const canRunGitlabE2E
 
 const describeWithGitLab = describe.runIf(canRunGitlabE2E)
 
-describeWithGitLab('GitlabService (e2e)', {}, () => {
+describeWithGitLab('GitlabService (e2e)', () => {
   let moduleRef: TestingModule
   let gitlabService: GitlabService
   let gitlabClientService: GitlabClientService
@@ -233,4 +233,17 @@ describeWithGitLab('GitlabService (e2e)', {}, () => {
       expect(isNewMemberPresent).toBe(true)
     }, 72000)
   })
+
+  it('should remove project group from GitLab on delete', async () => {
+    const project = await prisma.project.findUniqueOrThrow({
+      where: { id: testProjectId },
+      select: projectSelect,
+    })
+
+    await gitlabService.handleDelete(project)
+
+    const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
+    const group = await gitlabClientService.getGroupByPath(groupPath)
+    expect(group).toBeUndefined()
+  }, 72000)
 })

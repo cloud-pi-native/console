@@ -147,4 +147,24 @@ describeWithNexus('NexusService (e2e)', () => {
     expect(secret.data?.NEXUS_USERNAME).toBe(testProjectSlug)
     expect(secret.data?.NEXUS_PASSWORD).toBeTruthy()
   })
+
+  it('should remove project from Nexus on delete', async () => {
+    const project = await prisma.project.findUniqueOrThrow({
+      where: { id: testProjectId },
+      select: projectSelect,
+    })
+
+    await nexusService.handleDelete(project)
+
+    const mavenReleaseRepo = `${testProjectSlug}-repository-release`
+    const repo = await nexusClient.getRepositoriesMavenHosted(mavenReleaseRepo)
+    expect(repo).toBeNull()
+
+    const roleId = `${testProjectSlug}-ID`
+    const role = await nexusClient.getSecurityRoles(roleId)
+    expect(role).toBeNull()
+
+    const users = await nexusClient.getSecurityUsers(testProjectSlug)
+    expect(users.some(u => u.userId === testProjectSlug)).toBe(false)
+  })
 })

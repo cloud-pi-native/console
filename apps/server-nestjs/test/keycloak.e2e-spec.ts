@@ -529,4 +529,19 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     }).parse(await keycloak.getGroupByPath(`/${testProjectSlug}/console/${testRoleName}`))
     expect(recreatedRoleGroup?.name).toBe(testRoleName)
   }, 60000)
+
+  it('should remove project groups from Keycloak on delete', async () => {
+    const project = await prisma.project.findUniqueOrThrow({
+      where: { id: testProjectId },
+      select: projectSelect,
+    })
+
+    await keycloakService.handleDelete(project)
+
+    const deletedProjectGroup = await keycloak.getGroupByPath(`/${testProjectSlug}`)
+    expect(deletedProjectGroup).toBeUndefined()
+
+    const deletedConsoleGroup = await keycloak.getGroupByPath(`/${testProjectSlug}/console`)
+    expect(deletedConsoleGroup).toBeUndefined()
+  }, 60000)
 })

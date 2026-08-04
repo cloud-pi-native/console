@@ -13,16 +13,16 @@ import { PrismaService } from '../src/modules/infrastructure/database/prisma.ser
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
 import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
-import { ProjectPermissionModule } from '../src/modules/infrastructure/permission/project/project.module'
 import { makeCreateProjectBody } from '../src/modules/project/project-testing.utils'
+import { ProjectModule } from '../src/modules/project/project.module'
 import { ProjectService } from '../src/modules/project/project.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
-const canRunProjectE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
+const canRunProjectE2E = Boolean(process.env.E2E)
 
 const describeWithProject = describe.runIf(canRunProjectE2E)
 
-describeWithProject('ProjectService (e2e)', {}, () => {
+describeWithProject('ProjectService (e2e)', () => {
   let moduleRef: TestingModule
   let prisma: PrismaService
   let service: ProjectService
@@ -32,7 +32,7 @@ describeWithProject('ProjectService (e2e)', {}, () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectPermissionModule],
+      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectModule],
     }).compile()
 
     await moduleRef.init()

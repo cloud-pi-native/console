@@ -15,11 +15,11 @@ import { ProjectBulkModule } from '../src/modules/project-bulk/project-bulk.modu
 import { ProjectBulkService } from '../src/modules/project-bulk/project-bulk.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
-const canRunProjectBulkE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
+const canRunProjectBulkE2E = Boolean(process.env.E2E)
 
 const describeWithProjectBulk = describe.runIf(canRunProjectBulkE2E)
 
-describeWithProjectBulk('ProjectBulkService (e2e)', {}, () => {
+describeWithProjectBulk('ProjectBulkService (e2e)', () => {
   let moduleRef: TestingModule
   let prisma: PrismaService
   let service: ProjectBulkService

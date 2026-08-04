@@ -21,7 +21,7 @@ const canRunProjectSecretsE2E
 
 const describeWithProjectSecrets = describe.runIf(canRunProjectSecretsE2E)
 
-describeWithProjectSecrets('ProjectSecretsService (e2e)', {}, () => {
+describeWithProjectSecrets('ProjectSecretsService (e2e)', () => {
   let moduleRef: TestingModule
   let prisma: PrismaService
   let service: ProjectSecretsService
