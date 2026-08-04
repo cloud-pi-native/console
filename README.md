@@ -407,3 +407,9 @@ $ pnpm update caniuse-lite -r
 ### Dépendances Helm
 
 La console embarque une dépendance avec le Helm Chart utilisé par ArgoCD pour consommer le fichier values qu'elle construit. Afin d'assurer la compatibilité, il faut toujours que la version du Helm chart associé ait été publiée au préalable (voir [la documentation dédiée](https://github.com/cloud-pi-native/helm-charts?tab=readme-ov-file#contribution)).
+
+## Contribuer
+
+Vous envisagez de contribuer au produit `cloud-pi-native` ? 🤩
+
+Toutes les infos à ce sujet sont [dans le fichier CONTRIBUTING.md](./CONTRIBUTING.md) !
