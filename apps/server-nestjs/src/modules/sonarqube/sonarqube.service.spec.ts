@@ -187,7 +187,8 @@ describe('sonarqubeService', () => {
 
       expect(client.createUser).not.toHaveBeenCalled()
       expect(client.generateUserToken).toHaveBeenCalledWith(expect.objectContaining({ login: project.slug }))
-      expect(vault.writeSonarqubeUser).toHaveBeenCalledWith(project.slug, expect.objectContaining({ SONAR_PASSWORD: 'not initialized' }))
+      expect(vault.writeSonarqubeUser).toHaveBeenCalledWith(project.slug, expect.not.objectContaining({ SONAR_PASSWORD: expect.anything() }))
+      expect(vault.writeSonarqubeUser).toHaveBeenCalledWith(project.slug, expect.objectContaining({ SONAR_USERNAME: project.slug, SONAR_TOKEN: expect.any(String) }))
     })
 
     it('should delete sonarqube projects for removed repositories', async () => {
@@ -262,6 +263,16 @@ describe('sonarqubeService', () => {
 
       expect(client.deactivateUser).not.toHaveBeenCalled()
       expect(vault.deleteSonarqubeUser).toHaveBeenCalledWith('no-user')
+    })
+
+    it('should use owner email when creating user', async () => {
+      const project = makeProjectWithDetails({ slug: 'with-owner', owner: { email: 'owner@example.com' } as any })
+      client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
+      client.searchUsers.mockImplementation(async function* () {})
+
+      await service.handleUpsert(project)
+
+      expect(client.createUser).toHaveBeenCalledWith(expect.objectContaining({ email: 'owner@example.com', login: 'with-owner' }))
     })
   })
 

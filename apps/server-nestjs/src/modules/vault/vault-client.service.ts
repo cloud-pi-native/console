@@ -72,7 +72,7 @@ export interface VaultIdentityGroupResponse {
 
 export interface SonarqubeUserSecret {
   SONAR_USERNAME: string
-  SONAR_PASSWORD: string
+  SONAR_PASSWORD?: string
   SONAR_TOKEN: string
 }
 
@@ -209,7 +209,7 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  async readTechnReadOnlyCreds(projectSlug: string): Promise<VaultSecret | null> {
+  async readTechnReadOnlyCreds(projectSlug: string): Promise<VaultSecret<MirrorUserSecret> | null> {
     const vaultPath = generateTechReadOnlyCredPath(this.baseConfig.projectsRootDir, projectSlug)
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', projectSlug)
@@ -221,7 +221,7 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  async writeTechReadOnlyCreds(projectSlug: string, creds: Record<string, any>): Promise<void> {
+  async writeTechReadOnlyCreds(projectSlug: string, creds: MirrorUserSecret): Promise<void> {
     const vaultPath = generateTechReadOnlyCredPath(this.baseConfig.projectsRootDir, projectSlug)
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', projectSlug)

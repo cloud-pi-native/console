@@ -329,12 +329,10 @@ Les utilisateurs faisant parti du group `admin` ont également accès à l'inter
 | __Openshift__    |                              | Namespace     |                                         |                      |
 | __ArgoCD__       |                              |               | (infra) Secret, AppProject, Application |                      |
 | __Gitlab__       | Group                        |               | Repository (Dépôt)                      | User                 |
-| __Harbor__       | Project                      |               | Repository [1]                          |                      |
+| __Harbor__       | Project                      |               | Repository                              |                      |
 | __Keycloak__     |                              | Group         |                                         | User / member        |
 | __Sonar__        | User                         |               |                                         |                      |
 | __Nexus__        | Repositories, role, user ... |               |                                         |                      |
-
-[1] N'est pas crée par la console mais par le produit de la CI
 
 ## Architecture du dépôt
 
