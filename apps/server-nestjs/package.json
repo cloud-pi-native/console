@@ -96,6 +96,7 @@
     "eslint": "catalog:tools",
     "globals": "catalog:test",
     "msw": "catalog:test",
+    "@mswjs/data": "catalog:test",
     "pino-pretty": "catalog:tools",
     "rimraf": "catalog:tools",
     "ts-patch": "catalog:build",
