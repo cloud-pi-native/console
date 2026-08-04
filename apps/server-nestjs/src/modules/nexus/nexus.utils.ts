@@ -10,9 +10,8 @@ export function generateRandomPassword(length: number) {
   return raw.slice(0, length)
 }
 
-export function getProjectVaultPath(projectRootDir: string, projectSlug: string, relativePath: string) {
-  const normalized = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath
-  return `${projectRootDir}/${projectSlug}/${normalized}`
+export function generateNexusCredPath(projectRootDir: string, projectSlug: string) {
+  return `${projectRootDir}/${projectSlug}/NEXUS`
 }
 
 export type MavenHostedRepoKind = 'release' | 'snapshot'

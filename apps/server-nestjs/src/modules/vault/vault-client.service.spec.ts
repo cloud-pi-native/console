@@ -104,4 +104,18 @@ describe('vault', () => {
       await expect(service.delete('path')).resolves.toBeUndefined()
     })
   })
+
+  describe('writeMirrorTriggerToken', () => {
+    it('writes under the project path', async () => {
+      let capturedPath: string | undefined
+      server.use(
+        http.post(`${vaultUrl}/v1/kv/data/*`, ({ request }) => {
+          capturedPath = new URL(request.url).pathname.replace('/v1/kv/data/', '')
+          return HttpResponse.json({})
+        }),
+      )
+      await service.writeMirrorTriggerToken('my-project', { PROJECT_SLUG: 'my-project' })
+      expect(capturedPath).toBe('forge/my-project/GITLAB')
+    })
+  })
 })

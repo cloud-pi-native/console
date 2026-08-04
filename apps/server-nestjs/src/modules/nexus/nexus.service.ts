@@ -38,10 +38,10 @@ import {
 } from './nexus.constants'
 import {
   generateMavenHostedRepoName,
+  generateNexusCredPath,
   generateNpmHostedRepoName,
   generateRandomPassword,
   getPluginConfig,
-  getProjectVaultPath,
 } from './nexus.utils'
 
 export interface EnsureMavenReposOptions {
@@ -432,7 +432,7 @@ export class NexusService {
   }
 
   private async ensureUser(project: ProjectWithDetails) {
-    const vaultPath = getProjectVaultPath(this.baseConfig.projectsRootDir, project.slug, 'tech/NEXUS')
+    const vaultPath = generateNexusCredPath(this.baseConfig.projectsRootDir, project.slug)
     let existingPassword: string | undefined
     try {
       existingPassword = await this.vault.read(vaultPath).then(res => res.data?.NEXUS_PASSWORD)
@@ -577,7 +577,7 @@ export class NexusService {
       this.client.deleteSecurityUsers(project.slug),
     ])
 
-    const vaultPath = getProjectVaultPath(this.baseConfig.projectsRootDir, project.slug, 'tech/NEXUS')
+    const vaultPath = generateNexusCredPath(this.baseConfig.projectsRootDir, project.slug)
     try {
       await this.vault.delete(vaultPath)
     } catch (error) {

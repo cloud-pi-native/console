@@ -5,7 +5,7 @@ import { baseConfigFactory } from '../../config/base.config'
 import { vaultConfigFactory } from '../../config/vault.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
-import { generateGitlabMirrorCredPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath } from './vault.utils'
+import { generateGitlabMirrorCredPath, generateGitlabTriggerTokenPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath } from './vault.utils'
 
 export interface VaultSysPoliciesAclUpsertRequest {
   policy: string
@@ -266,10 +266,13 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  async writeMirrorTriggerToken(secret: Record<string, any>): Promise<void> {
+  async writeMirrorTriggerToken(projectSlug: string, secret: Record<string, any>): Promise<void> {
+    const vaultPath = generateGitlabTriggerTokenPath(this.baseConfig.projectsRootDir, projectSlug)
     const span = trace.getActiveSpan()
-    span?.setAttribute('vault.kv.path', 'GITLAB')
-    await this.write(secret, 'GITLAB')
+    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('vault.kv.path', vaultPath)
+    this.logger.verbose(`Writing Vault GitLab mirror trigger token (projectSlug=${projectSlug})`)
+    await this.write(secret, vaultPath)
   }
 
   @StartActiveSpan()

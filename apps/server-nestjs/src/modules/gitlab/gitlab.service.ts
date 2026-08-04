@@ -479,7 +479,7 @@ export class GitlabService {
       GIT_MIRROR_PROJECT_ID: triggerToken.repoId,
       GIT_MIRROR_TOKEN: triggerToken.token,
     }
-    await this.vault.writeMirrorTriggerToken(gitlabSecret)
+    await this.vault.writeMirrorTriggerToken(project.slug, gitlabSecret)
     span?.setAttribute('vault.secret.written', true)
   }
 
