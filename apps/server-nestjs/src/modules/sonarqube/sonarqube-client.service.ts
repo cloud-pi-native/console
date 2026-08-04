@@ -208,7 +208,7 @@ export class SonarqubeClientService {
     let page = 1
     let pagesFetched = 0
     this.logger.debug('Pagination start', { action: 'paginate' })
-    // ponytail: hard cap (1000 * 100) guards a misbehaving endpoint that always returns a full page; raise if a project legitimately exceeds 100k items
+    // hard cap (1000 * 100) guards a misbehaving endpoint that always returns a full page; raise if a project legitimately exceeds 100k items
     while (pagesFetched < SONARQUBE_MAX_PAGES) {
       try {
         const items = await fetchPage(page, pageSize)
