@@ -2,7 +2,7 @@
 import type { CleanedCluster, Cluster, CreateEnvironmentBody, Environment, Repo, Stage, UpdateEnvironmentBody, Zone } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
 import { logger } from '@cpn-console/logger/browser'
-import { AdminAuthorized, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
+import { AdminAuthorized, defaultBranchName, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
 import { useClusterStore } from '@/stores/cluster.js'
@@ -32,7 +32,6 @@ const projectUsage = ref<({
   prod: { cpu: number, gpu: number, memory: number }
 })>()
 
-const defaultBranchName = 'main'
 const branchName = ref<string>(defaultBranchName)
 
 const environmentsCtKey = ref(getRandomId('environment'))

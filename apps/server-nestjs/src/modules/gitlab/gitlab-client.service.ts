@@ -16,6 +16,7 @@ import type {
 } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
 import { join } from 'node:path'
+import { defaultBranchName } from '@cpn-console/shared'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { Gitlab as GitlabRest } from '@gitbeaker/rest'
 import { Inject, Injectable, Logger } from '@nestjs/common'
@@ -256,7 +257,7 @@ export class GitlabClientService {
         name: repoName,
         path: repoName,
         namespaceId: parentGroup.id,
-        defaultBranch: 'main',
+        defaultBranch: defaultBranchName,
         ciConfigPath: '.gitlab-ci-dso.yml',
       })
       this.logger.log(`Created a GitLab project repository (path=${fullPath}, repoId=${created.id})`)
@@ -291,7 +292,7 @@ export class GitlabClientService {
       path: repoName,
       namespaceId: groupId,
       description,
-      defaultBranch: 'main',
+      defaultBranch: defaultBranchName,
     })
     return created
   }
