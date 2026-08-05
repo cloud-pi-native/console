@@ -1,6 +1,7 @@
 import type { CommitAction, Gitlab } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
+import { defaultBranchName } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
@@ -205,7 +206,7 @@ describeWithArgoCD('ArgoCDController (e2e)', {}, () => {
         path: zoneSlug,
         namespaceId: infraGroup.id,
         initializeWithReadme: true,
-        defaultBranch: 'main',
+        defaultBranch: defaultBranchName,
       })
       infraRepoId = created.id
     }
