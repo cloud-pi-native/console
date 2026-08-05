@@ -29,7 +29,7 @@ describe('observabilityService', () => {
       deleteProjectConfig: vi.fn().mockResolvedValue(undefined),
     })
     gitlab = mockDeep<GitlabClientService>({
-      upsertProjectGroupRepo: vi.fn().mockResolvedValue(undefined),
+      upsertProjectGroupRepo: vi.fn().mockResolvedValue({ id: 42 }),
       getOrCreateProjectGroupRepo: vi.fn().mockResolvedValue({ id: 42 }),
       getOrCreateProjectGroupPublicUrl: vi.fn().mockResolvedValue('https://gitlab.test/proj'),
       generateCreateOrUpdateAction: vi.fn().mockResolvedValue(null),
