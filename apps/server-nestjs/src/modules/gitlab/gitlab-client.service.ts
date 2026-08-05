@@ -128,30 +128,45 @@ export class GitlabClientService {
 
   async createGroup(path: string) {
     this.logger.log(`Creating a GitLab group at path ${path}`)
-    const created = await this.client.Groups.create(path, path)
-    if (this.config.projectRootDir && created.full_path === this.config.projectRootDir) {
-      await this.setManagedRootGroupAttributes(created.id)
+    try {
+      const created = await this.client.Groups.create(path, path)
+      if (created.full_path === this.config.projectRootDir) {
+        await this.setManagedRootGroupAttributes(created.id)
+      }
+      if (created.full_path === `${this.config.projectRootDir}/${INFRA_GROUP_PATH}`) {
+        await this.setManagedInfraGroupAttributes(created.id)
+      }
+      return created
+    } catch (error) {
+      if (error instanceof GitbeakerRequestError && error.cause?.description?.includes('has already been taken')) {
+        this.logger.warn(`GitLab group already exists (race); reloading ${path}`)
+        const existing = await this.getGroupByPath(path)
+        if (existing) return existing
+      }
+      throw error
     }
-    if (this.config.projectRootDir && created.full_path === `${this.config.projectRootDir}/${INFRA_GROUP_PATH}`) {
-      await this.setManagedInfraGroupAttributes(created.id)
-    }
-    return created
   }
 
   async createSubGroup(parentGroup: CondensedGroupSchemaWith<'id' | 'full_path'>, name: string, fullPath: string) {
     this.logger.log(`Creating a GitLab subgroup ${fullPath} (parentId=${parentGroup.id})`)
-    const created = await this.client.Groups.create(name, name, { parentId: parentGroup.id })
-    if (this.config.projectRootDir && fullPath === this.config.projectRootDir) {
-      await this.setManagedRootGroupAttributes(created.id)
-    } else if (this.config.projectRootDir && fullPath === `${this.config.projectRootDir}/${INFRA_GROUP_PATH}`) {
-      await this.setManagedInfraGroupAttributes(created.id)
-    } else if (this.config.projectRootDir && fullPath.startsWith(`${this.config.projectRootDir}/`) && !fullPath.slice(this.config.projectRootDir.length + 1).includes('/')) {
-      const projectSlug = fullPath.slice(this.config.projectRootDir.length + 1)
-      if (projectSlug && projectSlug !== INFRA_GROUP_PATH) {
-        await this.setManagedProjectGroupAttributes(created.id, projectSlug)
+    try {
+      const created = await this.client.Groups.create(name, name, { parentId: parentGroup.id })
+      if (fullPath === this.config.projectRootDir) {
+        await this.setManagedRootGroupAttributes(created.id)
+      } else if (fullPath === `${this.config.projectRootDir}/${INFRA_GROUP_PATH}`) {
+        await this.setManagedInfraGroupAttributes(created.id)
+      } else if (fullPath.startsWith(`${this.config.projectRootDir}/`) && !fullPath.slice(this.config.projectRootDir.length + 1).includes('/')) {
+        await this.setManagedProjectGroupAttributes(created.id, fullPath.slice(this.config.projectRootDir.length + 1))
       }
+      return created
+    } catch (error) {
+      if (error instanceof GitbeakerRequestError && error.cause?.description?.includes('has already been taken')) {
+        this.logger.warn(`GitLab subgroup already exists (race); reloading ${fullPath}`)
+        const existing = await this.getGroupByPath(fullPath)
+        if (existing) return existing
+      }
+      throw error
     }
-    return created
   }
 
   async getOrCreateGroupByPath(path: string) {

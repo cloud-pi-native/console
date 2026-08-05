@@ -113,7 +113,7 @@ export class ObservabilityService {
   }
 
   private async syncChartFiles(project: ProjectWithDetails) {
-    const projectRepo = await this.gitlab.getOrCreateProjectGroupRepo(project.slug, OBSERVABILITY_REPOSITORY)
+    const projectRepo = await this.gitlab.upsertProjectGroupRepo(project.slug, OBSERVABILITY_REPOSITORY)
     const actions = await this.buildChartActions(projectRepo)
     await this.gitlab.maybeCreateCommit(projectRepo, 'ci: :robot_face: Sync observability chart', actions)
   }
