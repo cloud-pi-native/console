@@ -212,9 +212,11 @@ export class SonarqubeService implements OnModuleInit {
     } else if (existingSecret) {
       this.logger.verbose(`SonarQube user already exists with vault credentials (login=${project.slug})`)
     } else {
-      this.logger.warn(`SonarQube user exists but vault secret is missing, rotating token (login=${project.slug})`)
+      this.logger.warn(`SonarQube user exists but vault secret is missing, regenerating password and rotating token (login=${project.slug})`)
+      const password = generateRandomPassword(30)
+      await this.client.updateUser({ login: project.slug, password })
       const token = await this.rotateToken(project.slug)
-      newSecret = { SONAR_USERNAME: project.slug, SONAR_TOKEN: token }
+      newSecret = { SONAR_USERNAME: project.slug, SONAR_PASSWORD: password, SONAR_TOKEN: token }
     }
 
     if (newSecret) {

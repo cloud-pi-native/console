@@ -40,6 +40,7 @@ describe('sonarqubeService', () => {
       addPermissionUser: vi.fn().mockResolvedValue(undefined),
       searchUsers: vi.fn().mockImplementation(async function* () { yield* makeEmptyUsersResponse().users }),
       createUser: vi.fn().mockResolvedValue(undefined),
+      updateUser: vi.fn().mockResolvedValue(undefined),
       deactivateUser: vi.fn().mockResolvedValue(undefined),
       revokeUserToken: vi.fn().mockResolvedValue(undefined),
       searchProject: vi.fn().mockImplementation(async function* () { yield* makeEmptyProjectsResponse().components }),
@@ -178,7 +179,7 @@ describe('sonarqubeService', () => {
       expect(vault.writeSonarqubeUser).not.toHaveBeenCalled()
     })
 
-    it('should rotate token when user exists but vault secret is missing', async () => {
+    it('should regenerate password and rotate token when user exists but vault secret is missing', async () => {
       const project = makeProjectWithDetails({ repositories: [] })
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
       client.searchUsers.mockImplementation(async function* () { yield makeSonarqubeUser({ login: project.slug }) })
@@ -186,9 +187,9 @@ describe('sonarqubeService', () => {
       await service.handleUpsert(project)
 
       expect(client.createUser).not.toHaveBeenCalled()
+      expect(client.updateUser).toHaveBeenCalledWith(expect.objectContaining({ login: project.slug, password: expect.any(String) }))
       expect(client.generateUserToken).toHaveBeenCalledWith(expect.objectContaining({ login: project.slug }))
-      expect(vault.writeSonarqubeUser).toHaveBeenCalledWith(project.slug, expect.not.objectContaining({ SONAR_PASSWORD: expect.anything() }))
-      expect(vault.writeSonarqubeUser).toHaveBeenCalledWith(project.slug, expect.objectContaining({ SONAR_USERNAME: project.slug, SONAR_TOKEN: expect.any(String) }))
+      expect(vault.writeSonarqubeUser).toHaveBeenCalledWith(project.slug, expect.objectContaining({ SONAR_USERNAME: project.slug, SONAR_PASSWORD: expect.any(String), SONAR_TOKEN: expect.any(String) }))
     })
 
     it('should delete sonarqube projects for removed repositories', async () => {
