@@ -1,7 +1,7 @@
-# Contribuer à Console Cloud Pi Native
+# Contribuer à Console Cloud Pi Native (CPIN)
 
 Merci de contribuer à la Console Cloud Pi Native. Ce guide s'applique aux
-contributions internes et externes, qu'elles concernent du code, de la
+contributions quelles qu'elles soient, qu'elles concernent du code, de la
 configuration, des dépendances ou de la documentation.
 
 ## Principes
@@ -19,18 +19,23 @@ sa feuille de route ne peut pas être acceptée.
 
 Toute contribution de code doit être adossée à un ticket. Ce ticket décrit :
 
-- le besoin traité et son alignement avec la vision produit ou la feuille de route ;
-- le périmètre fonctionnel et technique de la contribution ;
-- les critères d'acceptation ;
-- les impacts connus sur la sécurité, les contrats API, les données, l'exploitation et la documentation.
+- Le besoin traité et son alignement avec la vision produit ou la feuille de route ;
+- Le périmètre fonctionnel et technique de la contribution ;
+- Les critères d'acceptation ;
+- Les impacts connus sur la sécurité, les contrats API, les données, l'exploitation et la documentation.
 
-Pour une correction de bug, une procédure de reproduction, un test automatisé
-de non-régression et, pour une interface, des captures d'écran sont fortement
-recommandés lorsqu'ils sont pertinents. Leur absence ne bloque pas la
-contribution lorsqu'ils ne peuvent pas s'appliquer. Pour une fonctionnalité,
-joindre des maquettes ou croquis, même rudimentaires, est encouragé.
+Les [modèles de ticket GitHub](https://github.com/cloud-pi-native/console/tree/main/.github/ISSUE_TEMPLATE) sont à utiliser afin de nous aider à correctement catégoriser les demandes.
 
-Les corrections strictement documentaires ou typographiques, sans impact
+Pour une contribution de code qui corrige un bug, une procédure de
+reproduction, un test automatisé de non-régression et, pour une interface, des
+captures d'écran sont fortement recommandés lorsqu'ils sont pertinents. Leur
+absence ne bloque pas la contribution lorsqu'ils ne peuvent pas s'appliquer.
+
+Pour une contribution de code qui permet de rajouter une nouvelle
+fonctionnalité, joindre des maquettes ou croquis, même rudimentaires, est
+encouragé.
+
+Les contributions strictement documentaires ou typographiques, sans impact
 fonctionnel, sont les seules contributions qui ne nécessitent pas de ticket.
 Elles restent soumises au contrôle de périmètre et aux exigences de qualité
 adaptées.
@@ -48,11 +53,11 @@ présenter le comportement modifié et les informations utiles à la revue. Son
 
 ## Obtenir les validations requises
 
-Une approbation explicite de l'équipe Socle est obligatoire pour toute
+Une approbation explicite de l'équipe Co est obligatoire pour toute
 contribution de code qui n'est ni une correction de bug ni un changement
 trivial.
 
-L'approbation explicite de l'équipe Socle est obligatoire dans tous les cas
+L'approbation explicite de l'équipe CPIN est obligatoire dans tous les cas
 pour :
 
 - l'ajout, la suppression ou la mise à niveau d'une dépendance Node.js ;
@@ -62,7 +67,7 @@ pour :
 Les corrections de bugs et les changements triviaux ne dispensent ni du
 contrôle de périmètre, ni de la revue de code, ni des contrôles qualité. Une
 dépendance ajoutée pour corriger un bug doit donc recevoir l'approbation
-explicite de l'équipe Socle.
+explicite de l'équipe CPIN.
 
 ## Cibler le backend approuvé
 
@@ -71,7 +76,7 @@ Toute pull request ou merge request qui modifie ce dossier est rejetée, y
 compris pour une correction de bug.
 
 Les évolutions backend ciblent exclusivement `apps/server-nestjs`. Elles
-suivent le [plan de modularisation backend vers NestJS](apps/server-nestjs/documentation/Modularisation-de-console-server/README.md), l'[état de migration](apps/server-nestjs/documentation/Modularisation-de-console-server/MODULARISATION-STATUT.md), les conventions NestJS et la stratégie de tests associée. Toute dérogation est une décision explicite de l'équipe Socle, hors du flux normal de contribution.
+suivent le [plan de modularisation backend vers NestJS](apps/server-nestjs/documentation/Modularisation-de-console-server/README.md), l'[état de migration](apps/server-nestjs/documentation/Modularisation-de-console-server/MODULARISATION-STATUT.md), les conventions NestJS et la stratégie de tests associée. Toute dérogation est une décision explicite de l'équipe CPIN, hors du flux normal de contribution.
 
 ## Respecter l'architecture et la qualité
 
@@ -106,9 +111,9 @@ avant la demande de fusion.
 
 Consultez et citez les références appropriées dans le ticket :
 
-- la [documentation publique Cloud Pi Native](https://github.com/cloud-pi-native/documentation), notamment l'[introduction de la plateforme](https://github.com/cloud-pi-native/documentation/blob/main/docs/platform/introduction.md) et la [feuille de route](https://github.com/cloud-pi-native/documentation/blob/main/docs/platform/roadmap.md) ;
-- l'[architecture et les conventions du dépôt](README.md) ;
-- le [plan de modularisation NestJS](apps/server-nestjs/documentation/Modularisation-de-console-server/README.md) ;
+- La [documentation publique Cloud Pi Native](https://github.com/cloud-pi-native/documentation), notamment l'[introduction de la plateforme](https://github.com/cloud-pi-native/documentation/blob/main/docs/platform/introduction.md) et la [feuille de route](https://github.com/cloud-pi-native/documentation/blob/main/docs/platform/roadmap.md) ;
+- L'[architecture et les conventions du dépôt](README.md) ;
+- Le [plan de modularisation NestJS](apps/server-nestjs/documentation/Modularisation-de-console-server/README.md) ;
 
 La feuille de route publique est actuellement en cours de rédaction. Son
 indisponibilité ne bloque pas la qualification : le ticket doit alors exposer
