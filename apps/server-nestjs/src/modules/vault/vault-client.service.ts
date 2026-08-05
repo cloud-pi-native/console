@@ -72,7 +72,7 @@ export interface VaultIdentityGroupResponse {
 
 export interface SonarqubeUserSecret {
   SONAR_USERNAME: string
-  SONAR_PASSWORD?: string
+  SONAR_PASSWORD: string
   SONAR_TOKEN: string
 }
 
