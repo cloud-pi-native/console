@@ -138,6 +138,11 @@ export interface CreateUserParams extends BaseParams {
   password: string
 }
 
+export interface UpdateUserParams extends BaseParams {
+  login: string
+  password: string
+}
+
 export interface DeactivateUserParams extends BaseParams {
   login: string
   anonymize: boolean
@@ -284,6 +289,11 @@ export class SonarqubeClientService {
   @StartActiveSpan()
   async createUser(params: CreateUserParams) {
     await this.http.fetch('users/create', { method: 'POST', query: params })
+  }
+
+  @StartActiveSpan()
+  async updateUser(params: UpdateUserParams) {
+    await this.http.fetch('users/update', { method: 'POST', query: params })
   }
 
   @StartActiveSpan()
