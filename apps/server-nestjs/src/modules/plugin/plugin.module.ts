@@ -5,6 +5,7 @@ import { ArgoCDModule } from '../argocd/argocd.module'
 import { GitlabModule } from '../gitlab/gitlab.module'
 import { KeycloakModule } from '../keycloak/keycloak.module'
 import { NexusModule } from '../nexus/nexus.module'
+import { ObservabilityModule } from '../observability/observability.module'
 import { RegistryModule } from '../registry/registry.module'
 import { ServiceChainModule } from '../service-chain/service-chain.module'
 import { SonarqubeModule } from '../sonarqube/sonarqube.module'
@@ -17,6 +18,7 @@ import { PluginService } from './plugin.service'
     ConditionalModule.registerWhen(GitlabModule, 'USE_GITLAB'),
     KeycloakModule,
     ConditionalModule.registerWhen(NexusModule, 'USE_NEXUS'),
+    ConditionalModule.registerWhen(ObservabilityModule, 'USE_OBSERVABILITY'),
     ConditionalModule.registerWhen(RegistryModule, 'USE_HARBOR'),
     ConditionalModule.registerWhen(ServiceChainModule, optIn('USE_SERVICE_CHAIN')),
     ConditionalModule.registerWhen(SonarqubeModule, 'USE_SONARQUBE'),

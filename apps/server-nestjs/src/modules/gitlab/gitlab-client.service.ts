@@ -269,6 +269,18 @@ export class GitlabClientService {
     return repo
   }
 
+  async createGroupRepo(groupId: number, repoName: string, description?: string) {
+    this.logger.log(`Creating a GitLab repository in a standalone group (groupId=${groupId}, repoName=${repoName})`)
+    const created = await this.client.Projects.create({
+      name: repoName,
+      path: repoName,
+      namespaceId: groupId,
+      description,
+      defaultBranch: 'main',
+    })
+    return created
+  }
+
   async getFile(repo: CondensedProjectSchemaWith<'id'>, filePath: string, ref: string = 'main') {
     try {
       return await this.client.RepositoryFiles.show(repo.id, filePath, ref)
@@ -412,7 +424,11 @@ export class GitlabClientService {
 
   async* getRepos(projectSlug: string) {
     const group = await this.getOrCreateProjectSubGroup(projectSlug)
-    const repos = this.offsetPaginate(opts => this.client.Groups.allProjects(group.id, { simple: false, ...opts }))
+    yield* this.getGroupRepos(group.id)
+  }
+
+  async* getGroupRepos(groupId: number) {
+    const repos = this.offsetPaginate(opts => this.client.Groups.allProjects(groupId, { simple: false, ...opts }))
     for await (const repo of repos) {
       yield repo
     }

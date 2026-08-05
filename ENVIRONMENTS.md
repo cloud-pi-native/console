@@ -287,6 +287,14 @@ pnpm docker:dev
 | `SONARQUBE_INTERNAL_URL` | — | URL interne SonarQube |
 | `SONAR_API_TOKEN` | — | Token d'API SonarQube |
 
+### Variables Observability (Grafana)
+
+| Variable | Default | Description |
+||----------|--------|-------------|
+|| `USE_OBSERVABILITY` | `false` | Active le plugin Observability/Grafana (`true`) |
+|| `GRAFANA_URL` | — | URL publique Grafana |
+|| `DSO_OBSERVABILITY_CHART_VERSION` | `dso-observability-0.1.7` | Version du chart Helm dso-observability |
+
 ### Variables Service Chain
 
 | Variable | Défaut | Description |
