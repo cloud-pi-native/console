@@ -4,6 +4,7 @@ import { ArgoCDPluginService } from '../argocd/argocd-plugin.service'
 import { GitlabPluginService } from '../gitlab/gitlab-plugin.service'
 import { KeycloakPluginService } from '../keycloak/keycloak-plugin.service'
 import { NexusPluginService } from '../nexus/nexus-plugin.service'
+import { ObservabilityPluginService } from '../observability/observability-plugin.service'
 import { RegistryPluginService } from '../registry/registry-plugin.service'
 import { SonarqubePluginService } from '../sonarqube/sonarqube-plugin.service'
 import { VaultPluginService } from '../vault/vault-plugin.service'
@@ -20,6 +21,7 @@ export class PluginService {
     @Inject(NexusPluginService) @Optional() private readonly nexusPlugin?: NexusPluginService,
     @Inject(RegistryPluginService) @Optional() private readonly registryPlugin?: RegistryPluginService,
     @Inject(SonarqubePluginService) @Optional() private readonly sonarqubePlugin?: SonarqubePluginService,
+    @Inject(ObservabilityPluginService) @Optional() private readonly observabilityPlugin?: ObservabilityPluginService,
   ) {}
 
   async infos(projectId: string): Promise<ServiceInfos[]> {
@@ -31,6 +33,7 @@ export class PluginService {
       ['nexus', () => this.nexusPlugin?.infos()],
       ['sonarqube', () => this.sonarqubePlugin?.infos()],
       ['vault', () => this.vaultPlugin?.infos()],
+      ['observability', () => this.observabilityPlugin?.infos()],
     ]
 
     const settled = await Promise.allSettled(plugins.map(([, fn]) => fn()))
