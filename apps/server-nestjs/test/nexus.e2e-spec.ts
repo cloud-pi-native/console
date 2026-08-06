@@ -154,9 +154,11 @@ describeWithNexus('NexusService (e2e)', () => {
       select: projectSelect,
     })
 
+    const mavenReleaseRepo = `${testProjectSlug}-repository-release`
+    expect(await nexusClient.getRepositoriesMavenHosted(mavenReleaseRepo)).not.toBeNull()
+
     await eventEmitter.emitAsync('project.delete', project)
 
-    const mavenReleaseRepo = `${testProjectSlug}-repository-release`
     const repo = await nexusClient.getRepositoriesMavenHosted(mavenReleaseRepo)
     expect(repo).toBeNull()
 

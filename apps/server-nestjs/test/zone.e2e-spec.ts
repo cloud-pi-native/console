@@ -16,6 +16,7 @@ import { makeZoneWithDetails } from '../src/modules/vault/vault-testing.utils'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { VaultService } from '../src/modules/vault/vault.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
+import { E2E_TIMEOUT } from './e2e-timeout'
 
 const canRunZoneE2E = Boolean(process.env.E2E)
 
@@ -69,14 +70,16 @@ describeWithZone('Zone lifecycle (e2e)', () => {
     const kvName = `zone-${zoneSlug}`
     const roleId = await vaultClient.getAuthApproleRoleRoleId(kvName)
     expect(roleId).toBeTruthy()
-  }, 180000)
+  }, E2E_TIMEOUT.provisionHeavy)
 
   it('should remove zone from Vault on delete', async () => {
     const zone = makeZoneWithDetails({ id: zoneId, slug: zoneSlug })
 
+    const kvName = `zone-${zoneSlug}`
+    expect(await vaultClient.getAuthApproleRoleRoleId(kvName)).toBeTruthy()
+
     await eventEmitter.emitAsync('zone.delete', zone)
 
-    const kvName = `zone-${zoneSlug}`
     await expect(vaultClient.getAuthApproleRoleRoleId(kvName)).rejects.toThrow()
-  }, 180000)
+  }, E2E_TIMEOUT.provisionHeavy)
 })
