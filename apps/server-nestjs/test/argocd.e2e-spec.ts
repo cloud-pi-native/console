@@ -19,6 +19,7 @@ import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
+import { E2E_TIMEOUT } from './e2e-timeout'
 
 const canRunArgoCDE2E
   = Boolean(process.env.E2E)
@@ -212,7 +213,7 @@ describeWithArgoCD('ArgoCDService (e2e)', () => {
 
     vaultProjectValuesPath = `${config.projectsRootDir}/${testProjectId}`
     await vault.write({ e2e: true }, vaultProjectValuesPath)
-  }, 144000)
+  }, E2E_TIMEOUT.gitReconcile)
 
   afterAll(async () => {
     if (vaultProjectValuesPath) {
@@ -267,7 +268,7 @@ describeWithArgoCD('ArgoCDService (e2e)', () => {
 
     const shouldBeDeleted = await gitlab.getFile(infraProject, staleFilePath, 'main')
     expect(shouldBeDeleted).toBeUndefined()
-  }, 144000)
+  }, E2E_TIMEOUT.gitReconcile)
 
   it('should update existing values and delete values of a removed environment', async () => {
     const before = await prisma.project.findUniqueOrThrow({
@@ -304,5 +305,5 @@ describeWithArgoCD('ArgoCDService (e2e)', () => {
 
     const prodFile = await gitlab.getFile(infraProject, prodFilePath, 'main')
     expect(prodFile).toBeUndefined()
-  }, 72000)
+  }, E2E_TIMEOUT.syncExternal)
 })
