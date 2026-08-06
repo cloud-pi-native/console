@@ -21,7 +21,7 @@ import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { getAll } from '../src/utils/iterable.utils'
-import { E2E_TIMEOUT } from './e2e-timeout'
+import { SONARQUBE_PROJECT_TIMEOUT } from './e2e-timeout'
 
 const canRunSonarqubeE2E
   = Boolean(process.env.E2E)
@@ -159,7 +159,7 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
     expect(vaultSecret?.data?.SONAR_USERNAME).toBe(testProjectSlug)
     expect(vaultSecret?.data?.SONAR_TOKEN).toBeTruthy()
     expect(vaultSecret?.data?.SONAR_PASSWORD).toBeTruthy()
-  }, E2E_TIMEOUT.provision)
+  }, SONARQUBE_PROJECT_TIMEOUT)
 
   it('should delete the project from SonarQube and remove vault credentials', async () => {
     const project = await prisma.project.findUniqueOrThrow({
@@ -180,5 +180,5 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
     // Vault credentials should be removed
     const vaultSecret = await vaultService.readSonarqubeUser(testProjectSlug)
     expect(vaultSecret).toBeNull()
-  }, E2E_TIMEOUT.provision)
+  }, SONARQUBE_PROJECT_TIMEOUT)
 })

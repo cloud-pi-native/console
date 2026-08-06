@@ -18,7 +18,7 @@ import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from '../src/modules/key
 import { projectSelect } from '../src/modules/keycloak/keycloak-datastore.service'
 import { KeycloakModule } from '../src/modules/keycloak/keycloak.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
-import { E2E_TIMEOUT } from './e2e-timeout'
+import { KEYCLOAK_GROUP_SYNC_TIMEOUT } from './e2e-timeout'
 
 const canRunKeycloakE2E
   = Boolean(process.env.E2E)
@@ -174,7 +174,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     const members = await keycloak.getGroupMembers(projectGroup.id)
     const isMember = members.some(m => m.id === ownerId)
     expect(isMember).toBe(true)
-  }, E2E_TIMEOUT.syncGroups)
+  }, KEYCLOAK_GROUP_SYNC_TIMEOUT)
 
   it('should add member to project group when added in DB', async () => {
     // Create another user in Keycloak and DB
@@ -238,7 +238,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     await keycloakAdminClient.users.del({ id: kcUser.id })
     await prisma.projectMembers.deleteMany({ where: { userId: kcUser.id } })
     await prisma.user.delete({ where: { id: kcUser.id } })
-  }, E2E_TIMEOUT.syncGroups)
+  }, KEYCLOAK_GROUP_SYNC_TIMEOUT)
 
   it('should remove member from project group when removed in DB', async () => {
     const newUserId = faker.string.uuid()
@@ -314,7 +314,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     await keycloakAdminClient.users.del({ id: kcUser.id })
     await prisma.projectMembers.deleteMany({ where: { userId: kcUser.id } })
     await prisma.user.delete({ where: { id: kcUser.id } })
-  }, E2E_TIMEOUT.syncGroups)
+  }, KEYCLOAK_GROUP_SYNC_TIMEOUT)
 
   it('should handle non-existent users gracefully', async () => {
     // Add a member in DB that does not exist in Keycloak
@@ -349,7 +349,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     // Cleanup
     await prisma.projectMembers.deleteMany({ where: { userId: fakeUserId } })
     await prisma.user.delete({ where: { id: fakeUserId } })
-  }, E2E_TIMEOUT.syncGroups)
+  }, KEYCLOAK_GROUP_SYNC_TIMEOUT)
 
   it('should add user back to Keycloak group if missing but present in DB', async () => {
     // Create user and add to project in DB
@@ -412,7 +412,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     await keycloakAdminClient.users.del({ id: kcUser.id })
     await prisma.projectMembers.deleteMany({ where: { userId: kcUser.id } })
     await prisma.user.delete({ where: { id: kcUser.id } })
-  }, E2E_TIMEOUT.syncGroups)
+  }, KEYCLOAK_GROUP_SYNC_TIMEOUT)
 
   it('should remove user from Keycloak group if present but missing in DB', async () => {
     // Create user
@@ -471,7 +471,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
     await keycloakAdminClient.users.del({ id: kcUser.id })
     await prisma.projectMembers.deleteMany({ where: { userId: kcUser.id } })
     await prisma.user.delete({ where: { id: kcUser.id } })
-  }, E2E_TIMEOUT.syncGroups)
+  }, KEYCLOAK_GROUP_SYNC_TIMEOUT)
 
   it('should recreate project group if deleted in Keycloak', async () => {
     // Ensure project exists and is synced
@@ -500,7 +500,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
       name: z.string(),
     }).parse(await keycloak.getGroupByPath(`/${testProjectSlug}`))
     expect(recreatedProjectGroup?.name).toBe(testProjectSlug)
-  }, E2E_TIMEOUT.syncGroups)
+  }, KEYCLOAK_GROUP_SYNC_TIMEOUT)
 
   it('should recreate role group if deleted in Keycloak', async () => {
     // Ensure project exists and is synced
@@ -529,7 +529,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
       name: z.string(),
     }).parse(await keycloak.getGroupByPath(`/${testProjectSlug}/console/${testRoleName}`))
     expect(recreatedRoleGroup?.name).toBe(testRoleName)
-  }, E2E_TIMEOUT.syncGroups)
+  }, KEYCLOAK_GROUP_SYNC_TIMEOUT)
 
   it('should remove project groups from Keycloak on delete', async () => {
     const project = await prisma.project.findUniqueOrThrow({
@@ -546,5 +546,5 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
 
     const deletedConsoleGroup = await keycloak.getGroupByPath(`/${testProjectSlug}/console`)
     expect(deletedConsoleGroup).toBeUndefined()
-  }, E2E_TIMEOUT.syncGroups)
+  }, KEYCLOAK_GROUP_SYNC_TIMEOUT)
 })
