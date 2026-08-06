@@ -47,7 +47,7 @@ catalogs:
     "@nestjs/cache-manager": ^3.1.2
     "@nestjs/common": ^11.1.16
     "@nestjs/config": ^4.0.3
-    "@nestjs/core": ^11.1.16
+    "@nestjs/core": ^11.1.18
     "@nestjs/event-emitter": ^3.0.1
     "@nestjs/jwt": ^11.0.2
     "@nestjs/platform-fastify": ^11.1.16
@@ -58,13 +58,13 @@ catalogs:
     "@ts-rest/core": ^3.52.1
     "@ts-rest/fastify": ^3.52.1
     "@ts-rest/open-api": ^3.52.1
-    axios: ^1.15.1
+    axios: ^1.18.0
     cache-manager: ^7.2.8
     date-fns: ^4.1.0
     fastify: ^5.8.5
     fastify-keycloak-adapter: ^3.0.0
     javascript-time-ago: ^2.6.4
-    json-2-csv: ^5.5.10
+    json-2-csv: ^5.5.11
     json-schema: ^0.4.0
     jszip: ^3.10.1
     keycloak-js: ^26.2.3
@@ -77,7 +77,7 @@ catalogs:
     reflect-metadata: ^0.2.2
     rxjs: ^7.8.2
     short-uuid: ^5.2.0
-    undici: ^7.24.0
+    undici: ^7.29.0
     vitest-mock-extended: ^2.0.2
     vue: ^3.5.30
     vue-router: ^4.6.4
@@ -103,14 +103,14 @@ catalogs:
     "@vitejs/plugin-vue": ^6.0.4
     "@vue/tsconfig": ^0.7.0
     fastify-plugin: ^5.1.0
-    swagger-typescript-api: ^13.3.1
+    swagger-typescript-api: ^13.12.2
     ts-patch: ^3.3.0
     typescript: ^5.9.3
     typescript-transform-paths: ^3.5.6
     unocss: ^66.6.6
     unplugin-auto-import: ^0.18.6
     unplugin-vue-components: ^0.27.5
-    vite: ^7.3.2
+    vite: ^7.3.5
     vite-node: ^6.0.0
     vite-plugin-pwa: ^1.2.0
     vue-tsc: ^2.2.12
@@ -133,13 +133,13 @@ catalogs:
     undici-types: ^7.16.0
   otel:
     "@opentelemetry/api": ^1.9.0
-    "@opentelemetry/auto-instrumentations-node": ^0.70.1
+    "@opentelemetry/auto-instrumentations-node": ^0.79.0
     "@opentelemetry/exporter-metrics-otlp-proto": ^0.213.0
     "@opentelemetry/exporter-trace-otlp-proto": ^0.213.0
     "@opentelemetry/instrumentation-nestjs-core": ^0.58.0
     "@opentelemetry/instrumentation-pino": ^0.59.0
     "@opentelemetry/sdk-metrics": ^2.5.1
-    "@opentelemetry/sdk-node": ^0.212.0
+    "@opentelemetry/sdk-node": ^0.217.0
   tools:
     "@antfu/eslint-config": ^8.2.0
     "@commitlint/cli": ^20.5.3
@@ -151,7 +151,7 @@ catalogs:
     eslint: ^10.5.0
     eslint-plugin-vue: ^10.8.0
     husky: ^9.1.7
-    js-yaml: ^4.1.0
+    js-yaml: ^4.3.0
     lint-staged: ^16.4.0
     nodemon: ^3.1.14
     pino: ^9.14.0
