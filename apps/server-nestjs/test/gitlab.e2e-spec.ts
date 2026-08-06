@@ -19,7 +19,7 @@ import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
-import { E2E_TIMEOUT } from './e2e-timeout'
+import { EXTERNAL_SYNC_TIMEOUT } from './e2e-timeout'
 
 const canRunGitlabE2E
   = Boolean(process.env.E2E)
@@ -168,7 +168,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
     const repoSecret = await vaultService.read(repoVaultPath)
     expect(repoSecret?.data?.GIT_OUTPUT_USER).toBeTruthy()
     expect(repoSecret?.data?.GIT_OUTPUT_PASSWORD).toBeTruthy()
-  }, E2E_TIMEOUT.syncExternal)
+  }, EXTERNAL_SYNC_TIMEOUT)
 
   describe('project members', () => {
     let newUserId: string | undefined
@@ -232,7 +232,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
       const members = await gitlabClientService.getGroupMembers(group)
       const isNewMemberPresent = members.some(m => m.id === newUserGitlabId)
       expect(isNewMemberPresent).toBe(true)
-    }, E2E_TIMEOUT.extended)
+    }, EXTERNAL_SYNC_TIMEOUT)
   })
 
   it('should remove project group from GitLab on delete', async () => {
@@ -248,5 +248,5 @@ describeWithGitLab('GitlabService (e2e)', () => {
 
     const group = await gitlabClientService.getGroupByPath(groupPath)
     expect(group).toBeUndefined()
-  }, E2E_TIMEOUT.extended)
+  }, EXTERNAL_SYNC_TIMEOUT)
 })
