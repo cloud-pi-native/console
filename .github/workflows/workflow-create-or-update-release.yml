@@ -18,7 +18,7 @@ env:
   BUILD_AMD64: true
   BUILD_ARM64: true
   USE_QEMU: false
-  NODE_VERSION: 24.13.1
+  NODE_VERSION: 26.7.0
 
 jobs:
   expose-vars:
