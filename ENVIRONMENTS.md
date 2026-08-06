@@ -215,14 +215,6 @@ pnpm docker:dev
 |----------|--------|-------------|
 | `DB_URL` | — | URL PostgreSQL (Prisma) |
 
-### Variables OpenCDS
-
-| Variable | Défaut | Description |
-|----------|--------|-------------|
-| `OPENCDS_URL` | — | URL de l'API OpenCDS (vide = désactivé) |
-| `OPENCDS_API_TOKEN` | — | Token d'authentification |
-| `OPENCDS_API_TLS_REJECT_UNAUTHORIZED` | `true` | Vérification TLS (true / false) |
-
 ### Variables client (Vite)
 
 | Variable | Défaut | Description |
@@ -300,6 +292,9 @@ pnpm docker:dev
 | Variable | Défaut | Description |
 |----------|--------|-------------|
 | `USE_SERVICE_CHAIN` | `false` | Active le plugin Service Chain (`true`) |
+| `OPENCDS_URL` | — | URL de l'API OpenCDS |
+| `OPENCDS_API_TOKEN` | — | Token d'authentification |
+| `OPENCDS_API_TLS_REJECT_UNAUTHORIZED` | `true` | Vérification TLS (true / false) |
 
 ### Variables Vault
 
