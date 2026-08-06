@@ -1,4 +1,4 @@
-FROM node:24-alpine AS prod
+FROM node:26-alpine AS prod
 
 RUN npm install -g @mockoon/cli@9.3.0
 

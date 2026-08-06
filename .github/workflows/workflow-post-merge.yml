@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  NODE_VERSION: 24.13.1
+  NODE_VERSION: 26.7.0
 
 permissions:
   contents: read

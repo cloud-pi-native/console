@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: 24.13.1
+  NODE_VERSION: 26.7.0
   REGISTRY: ghcr.io
   NAMESPACE: "${{ github.repository }}"
   BUILD_AMD64: true
