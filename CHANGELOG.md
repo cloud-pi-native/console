@@ -1,5 +1,69 @@
 # Changelog
 
+## [9.24.0](https://github.com/cloud-pi-native/console/compare/v9.23.0...v9.24.0) (2026-08-07)
+
+
+### Features
+
+* **client:** switch environments to API v2 ([f89055b](https://github.com/cloud-pi-native/console/commit/f89055b179a997258ae22dc97e2945fdf6c447af))
+* **client:** switch repositories to API v2 ([7431511](https://github.com/cloud-pi-native/console/commit/74315115ef4aed1938f184f098002a880089d1df))
+* **server-nestjs:** add repository datastore service ([5d9d2df](https://github.com/cloud-pi-native/console/commit/5d9d2df726b858308b2f594ca191a998f939b82f))
+* **server-nestjs:** add repository service and mapping utils ([ea59932](https://github.com/cloud-pi-native/console/commit/ea59932bb5163b713b851dce9f8a41d2b3d92c2f))
+* **server-nestjs:** await project reconciliation on environment mutations ([f26207a](https://github.com/cloud-pi-native/console/commit/f26207a7511fa8aa8c8afe8317d8bf2dfd7cf19b))
+* **server-nestjs:** await project reconciliation on repositories mutations ([df8900e](https://github.com/cloud-pi-native/console/commit/df8900ed2a780c7903124d0c8c44f95b591646b3))
+* **server-nestjs:** expose repository API v2 routes ([a3d6a53](https://github.com/cloud-pi-native/console/commit/a3d6a533ac4a5d652ed6ccad22e4f593da7e653b))
+* **server-nestjs:** migrate observability plugin to NestJS module ([ab5c0eb](https://github.com/cloud-pi-native/console/commit/ab5c0ebd4c4968b8af7979e6a50883b7b8e3ea88))
+* **server-nestjs:** migrate repository sync route to API v2 ([41744dd](https://github.com/cloud-pi-native/console/commit/41744ddc758e32d1f0b43f4400c70cde4ccc4a90))
+* **server-nestjs:** paginate sonarqube search via async generators ([1860bd8](https://github.com/cloud-pi-native/console/commit/1860bd85bdb08efb3014a1fded1046ef27cc1cdc))
+* **shared:** add repository v2 ts-rest contract ([87ba2f4](https://github.com/cloud-pi-native/console/commit/87ba2f47e62a8c11fe13ba03dbe1f5e68972583c))
+* **shared:** add repository v2 write schemas ([f2793d4](https://github.com/cloud-pi-native/console/commit/f2793d41d7d3301f50b708ff9c0b3fa94e99144d))
+
+
+### Bug Fixes
+
+* **ci:** allow latest redeploy to be manually triggered ([92c3873](https://github.com/cloud-pi-native/console/commit/92c3873717f3172da2c79f42fb30f9b3ae095412))
+* **ci:** avoid error when build only-latest manifests ([8ea188e](https://github.com/cloud-pi-native/console/commit/8ea188ec2c75832b7f0c3087a543d3cf7fdfa585))
+* **ci:** do not create a new chart version for latest images ([6faff5c](https://github.com/cloud-pi-native/console/commit/6faff5c229e741275650a6ac2d03b7b4afb6bff8))
+* **ci:** ensure client has a readable version for latest deployments ([e7180cb](https://github.com/cloud-pi-native/console/commit/e7180cbcc8e86f62e4fda5766faedcd016a702f4))
+* **ci:** fix main app variable names for latest images redeployment ([d54a755](https://github.com/cloud-pi-native/console/commit/d54a75524380bd937f9db015359de19b9fe86592))
+* **ci:** fix preview client version ([dd3049d](https://github.com/cloud-pi-native/console/commit/dd3049dfc3e5ea470c0694adc9950b302cd53c4a))
+* **deps:** bump direct catalog dependencies to patched versions ([738806f](https://github.com/cloud-pi-native/console/commit/738806ff5ee164255e3eb72c0ec84f9122bd9dc9))
+* **deps:** pin vulnerable transitive dependencies via pnpm overrides ([a812b23](https://github.com/cloud-pi-native/console/commit/a812b238614aa3b0be910d70ddfde22e9e8b25fc))
+* race condition protection ([172cc0a](https://github.com/cloud-pi-native/console/commit/172cc0a6ce037f32a6550ef417c23b85c0cdee18))
+* remove root group from Dockerfile copy ([16b66eb](https://github.com/cloud-pi-native/console/commit/16b66eb7a3a4ff413f79b328a67f417ab0b4fd30))
+* **server-nestjs:** harden gitlab token and user handling ([27f5a95](https://github.com/cloud-pi-native/console/commit/27f5a9513a76bb30296e5a489efef2449495b258))
+* **server-nestjs:** make sonarqube SONAR_PASSWORD required ([4508631](https://github.com/cloud-pi-native/console/commit/4508631390353218beefb1a786a4b3cd8809fb36))
+* **server-nestjs:** regenerate sonarqube password when vault secret is missing ([8744ccb](https://github.com/cloud-pi-native/console/commit/8744ccbdec3b8b7affa3ed7176265d472689910a))
+* **server-nestjs:** use project owner email for sonarqube user creation ([44d6d27](https://github.com/cloud-pi-native/console/commit/44d6d2700a0eca9e05dccbcf6af45d3e19f0fd1a))
+* **shared:** accept a private repository carrying a single credential ([15c1ffa](https://github.com/cloud-pi-native/console/commit/15c1ffa9a8e0d704788a26bfb8059a80a67f8759))
+* vault secret path ([6ea6379](https://github.com/cloud-pi-native/console/commit/6ea6379f41741a53a9af3f064a26c9dd3c2efba2))
+
+
+### Miscellaneous Chores
+
+* bump Node.js to v26 LTS ([952068d](https://github.com/cloud-pi-native/console/commit/952068dfa199ff0ac0a2960fe7be82c03c3ef2ea))
+* **ci:** avoid hiding errors when latest/preview redeploy fails ([6795bdd](https://github.com/cloud-pi-native/console/commit/6795bddc9d24c53aedf6ef318dd067932d87c47f))
+* **ci:** ensure latest images are always build on main branch update ([2ab1eb8](https://github.com/cloud-pi-native/console/commit/2ab1eb854b91f3733581d56cc8052fa1eedcaffb))
+* **ci:** fix ARGOCD_TOKEN transfer from create-or-update-release workflow ([7c3a449](https://github.com/cloud-pi-native/console/commit/7c3a4495d9392901520f5cee452d66884de3c631))
+* **ci:** redeploy latest images to main cpin-hp console application ([a95ce24](https://github.com/cloud-pi-native/console/commit/a95ce24897f7f880e978b699067357700d8651e2))
+* **ci:** rename preview GH variables with explicit PREVIEW slug ([fb48927](https://github.com/cloud-pi-native/console/commit/fb48927861fb8be0ac63d01075a0f779d8c41632))
+* remove dangling agent comment ([99b2b24](https://github.com/cloud-pi-native/console/commit/99b2b24818d18e4619195520f556e80ebe7b900a))
+* **server:** fix funky value for default external plugin path ([2828b90](https://github.com/cloud-pi-native/console/commit/2828b90b6069fc95674b066b1041f48598d9611a))
+* shared branch constant ([5ba3bf8](https://github.com/cloud-pi-native/console/commit/5ba3bf87327598f85e3cf360ac8cf8fd61156ce0))
+
+
+### Docs
+
+* mention CONTIBUTING.md file in README ([573418c](https://github.com/cloud-pi-native/console/commit/573418cece69200c1473a8d307a9fa9d77f1cbf9))
+* update CONTRIBUTING ([11adaa4](https://github.com/cloud-pi-native/console/commit/11adaa4cb2578f65845601070e5442d85c8423ab))
+
+
+### Refactoring
+
+* **server-nestjs:** drive e2e specs via event emission ([e8043ce](https://github.com/cloud-pi-native/console/commit/e8043ce832faf382aa83eaf29d5d9e9f1b7326cc))
+* **server-nestjs:** make e2e timeout composable and fix undefined gitlab timeout ([9187d32](https://github.com/cloud-pi-native/console/commit/9187d3277664e389fce78eae061969f9b5d2ea71))
+* **server-nestjs:** rename Controller vars to Service in e2e specs ([4d58366](https://github.com/cloud-pi-native/console/commit/4d5836661a12223d86973c674db2adbc80f14982))
+
 ## [9.23.0](https://github.com/cloud-pi-native/console/compare/v9.22.2...v9.23.0) (2026-07-31)
 
 
