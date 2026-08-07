@@ -68,6 +68,10 @@ describe('repositoryService', () => {
     service = module.get<RepositoryService>(RepositoryService)
   })
 
+  const failedReconciliation = {
+    gitlab: { status: 'KO', message: 'Unable to provision repository', executionTime: 1, error: new Error('boom') },
+  } as const
+
   it('should be defined', () => {
     expect(service).toBeDefined()
   })
@@ -108,7 +112,7 @@ describe('repositoryService', () => {
         GIT_INPUT_USER: validCreateRepository.isPrivate ? validCreateRepository.externalUserName : undefined,
         GIT_INPUT_PASSWORD: validCreateRepository.isPrivate ? validCreateRepository.externalToken : undefined,
       })
-      // The token must reach Vault before the (fire-and-forget) reconciliation reads it.
+      // The token must reach Vault before the reconciliation reads it.
       expect(vault.writeGitlabMirrorCreds.mock.invocationCallOrder[0])
         .toBeLessThan(appEvents.emitProjectEvent.mock.invocationCallOrder[0])
       expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, {
@@ -166,6 +170,33 @@ describe('repositoryService', () => {
 
       expect(vault.writeGitlabMirrorCreds).not.toHaveBeenCalled()
       expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, expect.objectContaining({ action: 'Create Repository' }))
+    })
+
+    it('waits for the reconciliation and rejects with 422 when a plugin fails', async () => {
+      const repository = makeRepository({ id: repositoryId, projectId, internalRepoName: validCreateRepository.internalRepoName })
+      datastore.hasRepositoryWithName.mockResolvedValue(false)
+      datastore.createRepository.mockResolvedValue(repository)
+      vault.writeGitlabMirrorCreds.mockResolvedValue(undefined)
+      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
+
+      await expect(service.createRepository(projectId, projectSlug, validCreateRepository, userId, requestId))
+        .rejects.toThrow(UnprocessableEntityException)
+      expect(datastore.createRepository).toHaveBeenCalled()
+      // A failed reconciliation stops the request before the mirror sync, as in v1.
+      expect(appEvents.emitRepositoryEvent).not.toHaveBeenCalled()
+    })
+
+    it('still returns the repository when the post-creation mirror sync fails', async () => {
+      const repository = makeRepository({ id: repositoryId, projectId, internalRepoName: validCreateRepository.internalRepoName })
+      datastore.hasRepositoryWithName.mockResolvedValue(false)
+      datastore.createRepository.mockResolvedValue(repository)
+      vault.writeGitlabMirrorCreds.mockResolvedValue(undefined)
+      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitRepositoryEvent.mockRejectedValue(new Error('mirror unreachable'))
+
+      const result = await service.createRepository(projectId, projectSlug, validCreateRepository, userId, requestId)
+
+      expect(result).toEqual(repository)
     })
 
     it('rejects when a repository with the same internal name already exists', async () => {
@@ -229,6 +260,17 @@ describe('repositoryService', () => {
       expect(vault.writeGitlabMirrorCreds).not.toHaveBeenCalled()
       expect(vault.deleteGitlabMirrorCreds).not.toHaveBeenCalled()
       expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, expect.objectContaining({ action: 'Update Repository' }))
+    })
+
+    it('waits for the reconciliation and rejects with 422 when a plugin fails', async () => {
+      const repository = makeRepository({ id: repositoryId, projectId })
+      datastore.getRepositoryById.mockResolvedValue(repository)
+      datastore.updateRepository.mockResolvedValue(repository)
+      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
+
+      await expect(service.updateRepository(projectId, projectSlug, repositoryId, validUpdateRepository, userId, requestId))
+        .rejects.toThrow(UnprocessableEntityException)
+      expect(datastore.updateRepository).toHaveBeenCalled()
     })
 
     it('rejects when the repository belongs to another project', async () => {
@@ -314,6 +356,16 @@ describe('repositoryService', () => {
         userId,
         requestId,
       })
+    })
+
+    it('waits for the reconciliation and rejects with 422 when a plugin fails', async () => {
+      datastore.getRepositoryById.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
+      datastore.deleteRepository.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
+      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
+
+      await expect(service.deleteRepository(projectId, repositoryId, userId, requestId))
+        .rejects.toThrow(UnprocessableEntityException)
+      expect(datastore.deleteRepository).toHaveBeenCalledWith(repositoryId)
     })
 
     it('rejects when the repository belongs to another project', async () => {

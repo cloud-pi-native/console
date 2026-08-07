@@ -37,9 +37,8 @@ export class RepositoryService {
       // The external token is never persisted in the database — it only lives in Vault
       // as the mirror input credentials. We must write it BEFORE emitting the
       // reconciliation: the GitLab reconciler only reads and *preserves* the existing
-      // GIT_INPUT_PASSWORD from Vault (it never receives the token), and the reconcile
-      // runs fire-and-forget. A token written after — or racing — the reconcile would
-      // be lost, since it exists nowhere else once this request returns.
+      // GIT_INPUT_PASSWORD from Vault (it never receives the token), so a token written
+      // after the reconcile would never reach the mirror.
       if (this.vault) {
         await this.vault.writeGitlabMirrorCreds(projectSlug, repository.internalRepoName, {
           GIT_INPUT_USER: repositoryToCreate.externalUserName,
@@ -50,14 +49,20 @@ export class RepositoryService {
       }
     }
 
-    this.reconcileProject(projectId, 'Create Repository', userId, requestId)
+    await this.reconcileProjectAndThrowOnFailure(
+      projectId,
+      'Create Repository',
+      userId,
+      requestId,
+      'Echec des services lors de la création du dépôt',
+    )
 
     // Legacy parity: a repository declared with an external source is mirrored right
-    // away, so the first sync doesn't wait for a manual trigger. Fire-and-forget like
-    // the reconciliation above — the creation itself succeeded, and the mirror pipeline
-    // is a downstream effect whose failure is reported in the admin log.
+    // away, so the first sync doesn't wait for a manual trigger. v1 awaits this sync but
+    // discards its outcome — the creation itself succeeded, and the mirror pipeline is a
+    // downstream effect whose failure is reported in the admin log, not in the response.
     if (repositoryToCreate.externalRepoUrl) {
-      this.syncRepositoryMirror(
+      await this.syncRepositoryMirror(
         { projectId, projectSlug, internalRepoName: repository.internalRepoName, syncAllBranches: true },
         userId,
         requestId,
@@ -112,12 +117,18 @@ export class RepositoryService {
     )
 
     // Apply the credential intent to Vault BEFORE emitting the reconciliation, for the
-    // same reason as on create: the token lives nowhere but Vault, the reconciler only
-    // preserves the GIT_INPUT_PASSWORD already stored there, and the reconcile is
-    // fire-and-forget — so the new token (or its removal) must be persisted first.
+    // same reason as on create: the token lives nowhere but Vault and the reconciler only
+    // preserves the GIT_INPUT_PASSWORD already stored there, so the new token (or its
+    // removal) must be persisted first.
     await this.applyMirrorCredentialUpdate(projectSlug, repository, parseRepositoryCredentialUpdate(repositoryToUpdate))
 
-    this.reconcileProject(projectId, 'Update Repository', userId, requestId)
+    await this.reconcileProjectAndThrowOnFailure(
+      projectId,
+      'Update Repository',
+      userId,
+      requestId,
+      'Echec des services à la mise à jour du dépôt',
+    )
     return repository
   }
 
@@ -153,7 +164,13 @@ export class RepositoryService {
   async deleteRepository(projectId: string, repositoryId: string, userId: string, requestId: string): Promise<void> {
     await this.getProjectRepositoryOrThrow(projectId, repositoryId)
     await this.repositoryDatastoreService.deleteRepository(repositoryId)
-    this.reconcileProject(projectId, 'Delete Repository', userId, requestId)
+    await this.reconcileProjectAndThrowOnFailure(
+      projectId,
+      'Delete Repository',
+      userId,
+      requestId,
+      'Echec des services à la suppression du dépôt',
+    )
   }
 
   /** Ensures the repository exists and belongs to the project addressed in the route. */
@@ -166,13 +183,23 @@ export class RepositoryService {
   }
 
   /**
-   * Triggers the project reconciliation without blocking the response: listener
-   * outcomes (including failures) are persisted in the admin log by AppEventsService.
+   * Runs the project reconciliation and waits for it before answering: a repository
+   * change is only meaningful once the services have applied it, so a failing plugin
+   * must surface as a 422 (legacy v1 behavior) instead of leaving the caller with a
+   * success on a project that AppEventsService just marked `failed`. The row change
+   * stays committed — the reconciliation is replayable.
    */
-  private reconcileProject(projectId: string, action: EventLogAction, userId: string, requestId: string): void {
-    this.appEvents.emitProjectEvent('project.upsert', projectId, { action, userId, requestId })
-      .catch((error: unknown) => {
-        this.logger.error(`project.upsert reconciliation failed (projectId=${projectId})`, error instanceof Error ? error.stack : String(error))
-      })
+  private async reconcileProjectAndThrowOnFailure(
+    projectId: string,
+    action: EventLogAction,
+    userId: string,
+    requestId: string,
+    failureMessage: string,
+  ): Promise<void> {
+    const results = await this.appEvents.emitProjectEvent('project.upsert', projectId, { action, userId, requestId })
+
+    if (getFailedPlugins(results).length) {
+      throw new UnprocessableEntityException(failureMessage)
+    }
   }
 }
