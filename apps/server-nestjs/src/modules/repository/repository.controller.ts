@@ -1,9 +1,9 @@
-import type { CreateRepository, UpdateRepository } from '@cpn-console/shared'
+import type { CreateRepository, SyncRepository, UpdateRepository } from '@cpn-console/shared'
 import type { Repository } from '@prisma/client'
 import type { FastifyRequest } from 'fastify'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import type { ProjectContext } from '../infrastructure/permission/project/project.guard'
-import { CreateRepositorySchema, UpdateRepositorySchema } from '@cpn-console/shared'
+import { CreateRepositorySchema, SyncRepositorySchema, UpdateRepositorySchema } from '@cpn-console/shared'
 import {
   Body,
   Controller,
@@ -49,12 +49,12 @@ export class RepositoryController {
   @RequireUserType('human')
   @HttpCode(HttpStatus.CREATED)
   create(
-    @Body(new ZodValidationPipe(CreateRepositorySchema)) data: CreateRepository,
+    @Body(new ZodValidationPipe(CreateRepositorySchema)) repositoryToCreate: CreateRepository,
     @Project() project: ProjectContext,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
   ): Promise<Repository> {
-    return this.repositoryService.createRepository(project.id, project.slug, data, user.userId, request.id)
+    return this.repositoryService.createRepository(project.id, project.slug, repositoryToCreate, user.userId, request.id)
   }
 
   @Put(':repositoryId')
@@ -65,12 +65,28 @@ export class RepositoryController {
   @HttpCode(HttpStatus.OK)
   update(
     @Param('repositoryId', ParseUUIDPipe) repositoryId: string,
-    @Body(new ZodValidationPipe(UpdateRepositorySchema)) data: UpdateRepository,
+    @Body(new ZodValidationPipe(UpdateRepositorySchema)) repositoryToUpdate: UpdateRepository,
     @Project() project: ProjectContext,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
   ): Promise<Repository> {
-    return this.repositoryService.updateRepository(project.id, project.slug, repositoryId, data, user.userId, request.id)
+    return this.repositoryService.updateRepository(project.id, project.slug, repositoryId, repositoryToUpdate, user.userId, request.id)
+  }
+
+  @Post(':repositoryId/sync')
+  @RequireProjectPermission('ManageRepositories')
+  @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
+  @RequireProjectLocked(false)
+  @RequireUserType('human')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  sync(
+    @Param('repositoryId', ParseUUIDPipe) repositoryId: string,
+    @Body(new ZodValidationPipe(SyncRepositorySchema)) syncRequest: SyncRepository,
+    @Project() project: ProjectContext,
+    @AuthUser() user: UserContext,
+    @Req() request: FastifyRequest,
+  ): Promise<void> {
+    return this.repositoryService.syncRepository(project.id, project.slug, repositoryId, syncRequest, user.userId, request.id)
   }
 
   @Delete(':repositoryId')

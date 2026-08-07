@@ -7,6 +7,9 @@ export const INFRA_GROUP_PATH = 'infra'
 export const INFRA_APPS_REPO_NAME = 'infra-apps'
 export const MIRROR_REPO_NAME = 'mirror'
 
+/** Console-managed plumbing repositories, never a valid mirroring target. */
+export const SPECIAL_REPO_NAMES: string[] = [INFRA_APPS_REPO_NAME, MIRROR_REPO_NAME]
+
 // Managed resources sentinel
 export const TOPIC_PLUGIN_MANAGED = 'plugin-managed'
 export const TOKEN_DESCRIPTION = 'mirroring-from-external-repo'

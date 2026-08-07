@@ -2,7 +2,7 @@ import type { CreateRepository, UpdateRepository } from '@cpn-console/shared'
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
-import { BadRequestException, NotFoundException } from '@nestjs/common'
+import { BadRequestException, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
@@ -52,6 +52,9 @@ describe('repositoryService', () => {
     datastore = mockDeep<RepositoryDatastoreService>()
     appEvents = mockDeep<AppEventsService>()
     vault = mockDeep<VaultClientService>()
+    // Creating a repository with an external source fires a sync; give every test a
+    // resolving default so only the tests that assert on it have to care.
+    appEvents.emitRepositoryEvent.mockResolvedValue({})
 
     module = await Test.createTestingModule({
       providers: [
@@ -114,6 +117,35 @@ describe('repositoryService', () => {
         requestId,
       })
       expect(result).toEqual(repository)
+    })
+
+    it('triggers a full mirror sync when the repository declares an external source', async () => {
+      const repository = makeRepository({ id: repositoryId, projectId, internalRepoName: validCreateRepository.internalRepoName })
+      datastore.hasRepositoryWithName.mockResolvedValue(false)
+      datastore.createRepository.mockResolvedValue(repository)
+      vault.writeGitlabMirrorCreds.mockResolvedValue(undefined)
+      appEvents.emitProjectEvent.mockResolvedValue({})
+
+      await service.createRepository(projectId, projectSlug, validCreateRepository, userId, requestId)
+
+      expect(appEvents.emitRepositoryEvent).toHaveBeenCalledWith(
+        'repository.sync',
+        expect.objectContaining({ internalRepoName: repository.internalRepoName, syncAllBranches: true }),
+        expect.objectContaining({ action: 'Sync Repository' }),
+      )
+    })
+
+    it('does not trigger a sync when no external source is declared', async () => {
+      const withoutExternalSource = { ...validCreateRepository, externalRepoUrl: '' }
+      const repository = makeRepository({ id: repositoryId, projectId, internalRepoName: withoutExternalSource.internalRepoName })
+      datastore.hasRepositoryWithName.mockResolvedValue(false)
+      datastore.createRepository.mockResolvedValue(repository)
+      vault.writeGitlabMirrorCreds.mockResolvedValue(undefined)
+      appEvents.emitProjectEvent.mockResolvedValue({})
+
+      await service.createRepository(projectId, projectSlug, withoutExternalSource, userId, requestId)
+
+      expect(appEvents.emitRepositoryEvent).not.toHaveBeenCalled()
     })
 
     it('does not touch Vault when creating a public repository', async () => {
@@ -208,6 +240,63 @@ describe('repositoryService', () => {
       expect(vault.writeGitlabMirrorCreds).not.toHaveBeenCalled()
       expect(vault.deleteGitlabMirrorCreds).not.toHaveBeenCalled()
       expect(appEvents.emitProjectEvent).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('syncRepository', () => {
+    const syncRequest = { syncAllBranches: true } as const
+
+    it('emits the sync event with the repository addressed by slug and name', async () => {
+      const repository = makeRepository({ id: repositoryId, projectId })
+      datastore.getRepositoryById.mockResolvedValue(repository)
+      appEvents.emitRepositoryEvent.mockResolvedValue({ gitlab: { status: 'OK', message: 'Up to date', executionTime: 1 } })
+
+      await service.syncRepository(projectId, projectSlug, repositoryId, syncRequest, userId, requestId)
+
+      // A full sync carries no branch key at all — not an undefined one.
+      expect(appEvents.emitRepositoryEvent).toHaveBeenCalledWith(
+        'repository.sync',
+        {
+          projectId,
+          projectSlug,
+          internalRepoName: repository.internalRepoName,
+          syncAllBranches: true,
+        },
+        { action: 'Sync Repository', userId, requestId },
+      )
+    })
+
+    it('forwards the requested branch when not syncing every branch', async () => {
+      const repository = makeRepository({ id: repositoryId, projectId })
+      const branchName = faker.git.branch()
+      datastore.getRepositoryById.mockResolvedValue(repository)
+      appEvents.emitRepositoryEvent.mockResolvedValue({})
+
+      await service.syncRepository(projectId, projectSlug, repositoryId, { syncAllBranches: false, branchName }, userId, requestId)
+
+      expect(appEvents.emitRepositoryEvent).toHaveBeenCalledWith(
+        'repository.sync',
+        expect.objectContaining({ syncAllBranches: false, branchName }),
+        expect.objectContaining({ action: 'Sync Repository' }),
+      )
+    })
+
+    it('rejects with 422 when a plugin fails the synchronization', async () => {
+      datastore.getRepositoryById.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
+      appEvents.emitRepositoryEvent.mockResolvedValue({
+        gitlab: { status: 'KO', message: 'Unable to find mirror repository', executionTime: 1, error: new Error('boom') },
+      })
+
+      await expect(service.syncRepository(projectId, projectSlug, repositoryId, syncRequest, userId, requestId))
+        .rejects.toThrow(UnprocessableEntityException)
+    })
+
+    it('rejects when the repository belongs to another project', async () => {
+      datastore.getRepositoryById.mockResolvedValue(makeRepository({ id: repositoryId, projectId: faker.string.uuid() }))
+
+      await expect(service.syncRepository(projectId, projectSlug, repositoryId, syncRequest, userId, requestId))
+        .rejects.toThrow(NotFoundException)
+      expect(appEvents.emitRepositoryEvent).not.toHaveBeenCalled()
     })
   })
 

@@ -55,5 +55,16 @@ export const UpdateRepositorySchema = RepoSchema.pick({
   helmValuesFiles: true,
 }).partial()
 
+export const SyncRepositorySchema = z.discriminatedUnion('syncAllBranches', [
+  z.object({
+    syncAllBranches: z.literal(true),
+  }),
+  z.object({
+    syncAllBranches: z.literal(false),
+    branchName: z.string().min(1, { message: 'branchName est requis lorsque syncAllBranches vaut false' }),
+  }),
+])
+
 export type CreateRepository = Zod.infer<typeof CreateRepositorySchema>
 export type UpdateRepository = Zod.infer<typeof UpdateRepositorySchema>
+export type SyncRepository = Zod.infer<typeof SyncRepositorySchema>

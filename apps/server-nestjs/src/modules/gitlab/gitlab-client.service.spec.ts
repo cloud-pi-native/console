@@ -19,6 +19,7 @@ import {
   makeGroupSchema,
   makeMemberSchema,
   makeOffsetPagination,
+  makePipeline,
   makePipelineTriggerToken,
   makeProjectSchema,
   makeRepositoryFileExpandedSchema,
@@ -29,6 +30,7 @@ import {
   INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY,
   MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY,
   PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY,
+  SPECIAL_REPO_NAMES,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
 
@@ -286,6 +288,89 @@ describe('gitlab-client', () => {
 
       expect(result).toEqual(expect.objectContaining({ id: repoId, name: repoName }))
       expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(repoId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+    })
+
+    describe('triggerMirror', () => {
+      const projectSlug = 'project-1'
+      const mirrorId = 10
+
+      function mockProjectGroupRepos(repos: { id: number, name: string }[]) {
+        const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+        gitlabGroupsAllMock.mockResolvedValueOnce({
+          data: [{ id: 123, full_path: 'forge' }],
+          paginationInfo: { next: null },
+        })
+        gitlabGroupsAllMock.mockResolvedValueOnce({
+          data: [{ id: 1, full_path: `forge/${projectSlug}` }],
+          paginationInfo: { next: null },
+        })
+        const gitlabGroupsAllProjectsMock = gitlabApi.Groups.allProjects as MockedFunction<typeof gitlabApi.Groups.allProjects>
+        gitlabGroupsAllProjectsMock.mockResolvedValue({
+          data: repos,
+          paginationInfo: { next: null },
+        })
+      }
+
+      const populatedGroup = [
+        { id: 9, name: 'infra-apps' },
+        { id: mirrorId, name: 'mirror' },
+        { id: 11, name: 'repo-1' },
+        { id: 12, name: 'repo-2' },
+      ]
+
+      it('should start the pipeline on the mirror repo with the target as variable', async () => {
+        mockProjectGroupRepos(populatedGroup)
+        gitlabApi.Pipelines.create.mockResolvedValue(makePipeline({ id: 42 }))
+
+        const pipeline = await service.triggerMirror(projectSlug, 'repo-1', false, 'feat/x')
+
+        expect(pipeline.id).toBe(42)
+        // The pipeline runs on the *mirror* repo, never on the target itself.
+        expect(gitlabApi.Pipelines.create).toHaveBeenCalledWith(mirrorId, 'main', {
+          variables: [
+            { key: 'SYNC_ALL', value: 'false' },
+            { key: 'GIT_BRANCH_DEPLOY', value: 'feat/x' },
+            { key: 'PROJECT_NAME', value: 'repo-1' },
+          ],
+        })
+      })
+
+      it('should send an empty branch when syncing every branch', async () => {
+        mockProjectGroupRepos(populatedGroup)
+        gitlabApi.Pipelines.create.mockResolvedValue(makePipeline())
+
+        await service.triggerMirror(projectSlug, 'repo-1', true)
+
+        expect(gitlabApi.Pipelines.create).toHaveBeenCalledWith(mirrorId, 'main', {
+          variables: [
+            { key: 'SYNC_ALL', value: 'true' },
+            { key: 'GIT_BRANCH_DEPLOY', value: '' },
+            { key: 'PROJECT_NAME', value: 'repo-1' },
+          ],
+        })
+      })
+
+      it.each(SPECIAL_REPO_NAMES)('should refuse to mirror the special repository %s', async (specialRepo) => {
+        await expect(service.triggerMirror(projectSlug, specialRepo, true))
+          .rejects.toThrow('User requested for invalid mirroring')
+        expect(gitlabApi.Pipelines.create).not.toHaveBeenCalled()
+      })
+
+      it('should fail when the target repository is absent from the group', async () => {
+        mockProjectGroupRepos([{ id: mirrorId, name: 'mirror' }, { id: 12, name: 'repo-2' }])
+
+        await expect(service.triggerMirror(projectSlug, 'repo-1', true))
+          .rejects.toThrow('Unable to find target repository')
+        expect(gitlabApi.Pipelines.create).not.toHaveBeenCalled()
+      })
+
+      it('should fail when the project group has no mirror repository', async () => {
+        mockProjectGroupRepos([{ id: 11, name: 'repo-1' }, { id: 12, name: 'repo-2' }])
+
+        await expect(service.triggerMirror(projectSlug, 'repo-1', true))
+          .rejects.toThrow('Unable to find mirror repository')
+        expect(gitlabApi.Pipelines.create).not.toHaveBeenCalled()
+      })
     })
 
     describe('upsertUser', () => {

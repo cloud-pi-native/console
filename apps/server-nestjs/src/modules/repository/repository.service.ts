@@ -1,9 +1,11 @@
-import type { CreateRepository, UpdateRepository } from '@cpn-console/shared'
+import type { CreateRepository, SyncRepository, UpdateRepository } from '@cpn-console/shared'
 import type { Repository } from '@prisma/client'
-import type { EventLogAction } from '../events/app-events.service'
+import type { EventLogAction, RepositorySyncEventPayload } from '../events/app-events.service'
+import type { PluginResults } from '../plugin/plugin.utils'
 import type { RepositoryMirrorCredentialUpdate } from './repository.utils'
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common'
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException, Optional, UnprocessableEntityException } from '@nestjs/common'
 import { AppEventsService } from '../events/app-events.service'
+import { getFailedPlugins } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { RepositoryDatastoreService } from './repository-datastore.service'
 import { buildRepositoryCreateData, buildRepositoryUpdateData, parseRepositoryCredentialUpdate } from './repository.utils'
@@ -49,7 +51,56 @@ export class RepositoryService {
     }
 
     this.reconcileProject(projectId, 'Create Repository', userId, requestId)
+
+    // Legacy parity: a repository declared with an external source is mirrored right
+    // away, so the first sync doesn't wait for a manual trigger. Fire-and-forget like
+    // the reconciliation above — the creation itself succeeded, and the mirror pipeline
+    // is a downstream effect whose failure is reported in the admin log.
+    if (repositoryToCreate.externalRepoUrl) {
+      this.syncRepositoryMirror(
+        { projectId, projectSlug, internalRepoName: repository.internalRepoName, syncAllBranches: true },
+        userId,
+        requestId,
+      ).catch((error: unknown) => {
+        this.logger.error(`repository.sync after creation failed (repositoryId=${repository.id})`, error instanceof Error ? error.stack : String(error))
+      })
+    }
+
     return repository
+  }
+
+  /**
+   * Triggers the GitLab mirror for one repository and waits for the outcome: unlike the
+   * project reconciliation, this is the user's whole intent for the request, so a
+   * failing plugin must surface as a 422 rather than a silent log entry.
+   */
+  async syncRepository(projectId: string, projectSlug: string, repositoryId: string, syncRequest: SyncRepository, userId: string, requestId: string): Promise<void> {
+    const repository = await this.getProjectRepositoryOrThrow(projectId, repositoryId)
+
+    const results = await this.syncRepositoryMirror(
+      {
+        projectId,
+        projectSlug,
+        internalRepoName: repository.internalRepoName,
+        ...(syncRequest.syncAllBranches
+          ? { syncAllBranches: true }
+          : { syncAllBranches: false, branchName: syncRequest.branchName }),
+      },
+      userId,
+      requestId,
+    )
+
+    if (getFailedPlugins(results).length) {
+      throw new UnprocessableEntityException('Echec des services à la synchronisation du dépôt')
+    }
+  }
+
+  private syncRepositoryMirror(payload: RepositorySyncEventPayload, userId: string, requestId: string): Promise<PluginResults> {
+    return this.appEvents.emitRepositoryEvent('repository.sync', payload, {
+      action: 'Sync Repository',
+      userId,
+      requestId,
+    })
   }
 
   async updateRepository(projectId: string, projectSlug: string, repositoryId: string, repositoryToUpdate: UpdateRepository, userId: string, requestId: string): Promise<Repository> {

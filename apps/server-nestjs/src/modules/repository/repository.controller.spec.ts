@@ -107,6 +107,18 @@ describe('repositoryController', () => {
     })
   })
 
+  describe('sync', () => {
+    it('calls repositoryService.syncRepository with the body and request context', async () => {
+      const syncRequest = { syncAllBranches: false, branchName: faker.git.branch() }
+      service.syncRepository.mockResolvedValue(undefined)
+
+      const result = await controller.sync(repositoryId, syncRequest, project, user, request)
+
+      expect(service.syncRepository).toHaveBeenCalledWith(projectId, projectSlug, repositoryId, syncRequest, userId, requestId)
+      expect(result).toBeUndefined()
+    })
+  })
+
   describe('delete', () => {
     it('calls repositoryService.deleteRepository with the repository id and request context', async () => {
       service.deleteRepository.mockResolvedValue(undefined)

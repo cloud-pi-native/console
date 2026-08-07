@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { describe, expect, it } from 'vitest'
-import { CreateRepositorySchema } from './repository.js'
+import { CreateRepositorySchema, SyncRepositorySchema } from './repository.js'
 
 describe('createRepositorySchema', () => {
   const gitUrl = `https://${faker.internet.domainName()}/repo.git`
@@ -127,6 +127,43 @@ describe('createRepositorySchema', () => {
       isPrivate: true,
       externalToken: faker.string.alphanumeric(16),
     })
+
+    expect(result.success).toBe(false)
+  })
+})
+
+describe('syncRepositorySchema', () => {
+  it('accepts a full sync without a branch', () => {
+    const result = SyncRepositorySchema.safeParse({ syncAllBranches: true })
+
+    expect(result.success).toBe(true)
+  })
+
+  // The discriminated union makes a full sync incapable of carrying a branch: the key is
+  // stripped at the boundary rather than reaching the mirror pipeline.
+  it('strips a branch smuggled into a full sync', () => {
+    const result = SyncRepositorySchema.safeParse({ syncAllBranches: true, branchName: 'main' })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toEqual({ syncAllBranches: true })
+  })
+
+  it('accepts a partial sync naming its branch', () => {
+    const result = SyncRepositorySchema.safeParse({ syncAllBranches: false, branchName: 'main' })
+
+    expect(result.success).toBe(true)
+  })
+
+  // A partial sync with no branch designates nothing to mirror: rejected at the boundary
+  // rather than reaching GitLab as an empty GIT_BRANCH_DEPLOY.
+  it('rejects a partial sync without a branch', () => {
+    const result = SyncRepositorySchema.safeParse({ syncAllBranches: false })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects a missing syncAllBranches', () => {
+    const result = SyncRepositorySchema.safeParse({ branchName: 'main' })
 
     expect(result.success).toBe(false)
   })
