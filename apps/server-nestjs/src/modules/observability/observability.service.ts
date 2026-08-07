@@ -25,12 +25,15 @@ import {
   generateGrafanaProdRbacGroupPaths,
   generateKeycloakRootGroupPath,
   generateObservabilityProject,
+  generateProjectRbacGroupPath,
   getListPerms,
+  getRbacPerms,
   grafanaRbacMembershipMappings,
   grafanaRbacSubGroupNames,
   isPluginDisabled,
   observabilityChartContent,
   observabilityTemplateContent,
+  projectRbacRoles,
 } from './observability.utils'
 
 @Injectable()
@@ -88,6 +91,7 @@ export class ObservabilityService {
 
     await Promise.all([
       this.deleteKeycloakGroups(project),
+      this.deleteRbacGroups(project),
       this.deleteProjectConfig(project),
     ])
 
@@ -133,6 +137,8 @@ export class ObservabilityService {
       repositoryUrl: `${repositoryUrl}/${OBSERVABILITY_REPOSITORY}`,
       tenantRbacProd: generateGrafanaProdRbacGroupPaths(projectGroupPath),
       tenantRbacHProd: generateGrafanaHprodRbacGroupPaths(projectGroupPath),
+      // ADR 014 migration: new role groups published alongside the legacy ones
+      rbacGroups: projectRbacRoles().map(role => generateProjectRbacGroupPath(project, role)),
     })
 
     await this.client.updateProjectConfig(valuesRepo, project, projectValue)
@@ -162,6 +168,40 @@ export class ObservabilityService {
 
     const subgroups = await this.ensureGrafanaSubGroups(projectGroup.id)
     await this.reconcileGroupMembership(subgroups, listPerms)
+    await this.syncRbacGroups(project)
+  }
+
+  @StartActiveSpan()
+  private async syncRbacGroups(project: ProjectWithDetails) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    this.logger.verbose(`Syncing fine-grained RBAC Keycloak groups for ${project.slug}`)
+
+    const rbacPerms = getRbacPerms(project)
+    for (const role of projectRbacRoles()) {
+      const name = generateProjectRbacGroupPath(project, role)
+      const group = await this.keycloak.getOrCreateGroupByPath(name)
+      if (!group.id) {
+        throw new Error(`Unable to resolve RBAC Keycloak group ${name}`)
+      }
+      const members = await this.keycloak.getGroupMembers(group.id)
+      await this.reconcileMembers(group.id, members.flatMap(m => m.id ? [m.id] : []), rbacPerms[role])
+    }
+  }
+
+  @StartActiveSpan()
+  private async deleteRbacGroups(project: ProjectWithDetails) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    this.logger.verbose(`Deleting fine-grained RBAC Keycloak groups for ${project.slug}`)
+
+    for (const role of projectRbacRoles()) {
+      const name = generateProjectRbacGroupPath(project, role)
+      const group = await this.keycloak.getGroupByPath(name)
+      if (!group?.id) continue
+      await this.keycloak.deleteGroup(group.id)
+      this.logger.log(`Deleted RBAC Keycloak group ${name} (project=${project.slug})`)
+    }
   }
 
   @StartActiveSpan()
@@ -216,23 +256,18 @@ export class ObservabilityService {
     subgroups: Record<GrafanaSubGroupName, { id: string, members: { id: string }[] }>,
     listPerms: ListPerms,
   ): Promise<void> {
-    const promises: Promise<void>[] = []
-    for (const { subgroup, desired } of grafanaRbacMembershipMappings(listPerms)) {
+    await Promise.all(grafanaRbacMembershipMappings(listPerms).map(({ subgroup, desired }) => {
       const group = subgroups[subgroup]
-      const desiredSet = new Set(desired)
+      return this.reconcileMembers(group.id, group.members.map(m => m.id), desired)
+    }))
+  }
 
-      for (const userId of desired) {
-        if (!group.members.some(m => m.id === userId)) {
-          promises.push(this.keycloak.addUserToGroup(userId, group.id).then(() => undefined))
-        }
-      }
-
-      for (const member of group.members) {
-        if (!desiredSet.has(member.id)) {
-          promises.push(this.keycloak.removeUserFromGroup(member.id, group.id).then(() => undefined))
-        }
-      }
-    }
-    await Promise.all(promises)
+  private async reconcileMembers(groupId: string, current: string[], desired: string[]): Promise<void> {
+    const desiredSet = new Set(desired)
+    const currentSet = new Set(current)
+    await Promise.all([
+      ...desired.filter(userId => !currentSet.has(userId)).map(userId => this.keycloak.addUserToGroup(userId, groupId)),
+      ...current.filter(userId => !desiredSet.has(userId)).map(userId => this.keycloak.removeUserFromGroup(userId, groupId)),
+    ])
   }
 }

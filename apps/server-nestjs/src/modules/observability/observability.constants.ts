@@ -21,6 +21,11 @@ export const GRAFANA_SUBGROUP_HPROD_RO = 'hprod-RO'
 export const GRAFANA_SUBGROUP_PROD_RW = 'prod-RW'
 export const GRAFANA_SUBGROUP_PROD_RO = 'prod-RO'
 
+// Fine-grained RBAC Keycloak groups (ADR 014): /<slug>/console/<role>
+export const PROJECT_RBAC_ROLE_ADMIN = 'admin'
+export const PROJECT_RBAC_ROLE_DEVOPS = 'devops'
+export const PROJECT_RBAC_ROLE_READONLY = 'readonly'
+
 // Plugin configuration keys
 export const ENABLED_PLUGIN_KEY = 'enabled'
 export const INSTANCES_PLUGIN_KEY = 'instances'
