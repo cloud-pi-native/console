@@ -1,12 +1,12 @@
 import { createRandomDbSetup, getRandomMember, getRandomProject } from '@cpn-console/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { apiClient } from '../api/xhr-client'
-import { useProjectStore } from './project'
+import { apiClient } from '../api/xhr-client.js'
+import { useProjectStore } from './project.js'
 
 const getProject = vi.spyOn(apiClient.Projects, 'getProject')
 const listProjects = vi.spyOn(apiClient.Projects, 'listProjects')
-const listEnvironments = vi.spyOn(apiClient.Environments, 'listEnvironments')
+const listEnvironments = vi.spyOn(apiClient.EnvironmentsV2, 'listEnvironmentsV2')
 const listRepositories = vi.spyOn(apiClient.Repositories, 'listRepositories')
 const apiClientPost = vi.spyOn(apiClient.Projects, 'createProject')
 
