@@ -7,10 +7,63 @@ import {
   generateGrafanaHprodRbacGroupPaths,
   generateGrafanaProdRbacGroupPaths,
   generateObservabilityProject,
+  generateProjectRbacGroupPath,
   generateTenantId,
   getListPerms,
+  getRbacPerms,
   isPluginDisabled,
 } from './observability.utils'
+
+describe('getRbacPerms', () => {
+  it('puts owner in the admin group only', () => {
+    const perms = getRbacPerms(makeProject({ ownerId: 'owner-1' }))
+    expect(perms.admin).toContain('owner-1')
+    expect(perms.devops).not.toContain('owner-1')
+    expect(perms.readonly).not.toContain('owner-1')
+  })
+
+  it('maps MANAGE_ENVIRONMENTS to devops and LIST_ENVIRONMENTS to readonly', () => {
+    const project = makeProject({
+      ownerId: 'owner-1',
+      members: [
+        { roleIds: ['role-rw'], user: { id: 'user-rw', email: 'rw@test.com' } },
+        { roleIds: ['role-ro'], user: { id: 'user-ro', email: 'ro@test.com' } },
+      ],
+      roles: [
+        { id: 'role-rw', permissions: PROJECT_PERMS.MANAGE_ENVIRONMENTS, oidcGroup: '', type: 'managed' },
+        { id: 'role-ro', permissions: PROJECT_PERMS.LIST_ENVIRONMENTS, oidcGroup: '', type: 'managed' },
+      ],
+    })
+    const perms = getRbacPerms(project)
+    expect(perms.devops).toEqual(['user-rw'])
+    expect(perms.readonly).toEqual(['user-ro'])
+  })
+
+  it('maps PROJECT_PERMS.MANAGE to admin', () => {
+    const project = makeProject({
+      ownerId: 'owner-1',
+      members: [{ roleIds: ['role-manage'], user: { id: 'user-admin', email: 'a@test.com' } }],
+      roles: [{ id: 'role-manage', permissions: PROJECT_PERMS.MANAGE, oidcGroup: '', type: 'managed' }],
+    })
+    expect(getRbacPerms(project).admin).toContain('user-admin')
+  })
+
+  it('excludes members without any environment permission', () => {
+    const project = makeProject({
+      ownerId: 'owner-1',
+      members: [{ roleIds: ['role-none'], user: { id: 'user-none', email: 'n@test.com' } }],
+      roles: [{ id: 'role-none', permissions: 0n, oidcGroup: '', type: 'managed' }],
+    })
+    const perms = getRbacPerms(project)
+    expect([...perms.admin, ...perms.devops, ...perms.readonly]).not.toContain('user-none')
+  })
+})
+
+describe('generateProjectRbacGroupPath', () => {
+  it('builds a hierarchical group path /<slug>/console/<role>', () => {
+    expect(generateProjectRbacGroupPath({ slug: 'my-proj' }, 'devops')).toBe('/my-proj/console/devops')
+  })
+})
 
 const PROD_STAGE = { name: 'prod' } as const
 const HPROD_STAGE = { name: 'hprod' } as const

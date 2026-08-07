@@ -11,6 +11,9 @@ import {
   GRAFANA_SUBGROUP_PROD_RO,
   GRAFANA_SUBGROUP_PROD_RW,
   PLUGIN_NAME,
+  PROJECT_RBAC_ROLE_ADMIN,
+  PROJECT_RBAC_ROLE_DEVOPS,
+  PROJECT_RBAC_ROLE_READONLY,
 } from './observability.constants'
 
 export type GrafanaSubGroupName
@@ -83,16 +86,50 @@ function resolveUserPerms(
   rolesById: Record<string, ProjectWithDetails['roles'][number]>,
   userId: string,
 ) {
-  if (userId === project.ownerId) return { ro: true, rw: true }
+  if (userId === project.ownerId) return { ro: true, rw: true, manage: true }
 
   const member = project.members.find(m => m.user.id === userId)
-  if (!member) return { ro: false, rw: false }
+  if (!member) return { ro: false, rw: false, manage: false }
 
   const projectPermissions = getPermsByUserRoles(member.roleIds, rolesById, project.everyonePerms)
   return {
     ro: ProjectAuthorized.ListEnvironments({ adminPermissions: 0n, projectPermissions }),
     rw: ProjectAuthorized.ManageEnvironments({ adminPermissions: 0n, projectPermissions }),
+    manage: ProjectAuthorized.Manage({ adminPermissions: 0n, projectPermissions }),
   }
+}
+
+export type ProjectRbacRole
+  = | typeof PROJECT_RBAC_ROLE_ADMIN
+    | typeof PROJECT_RBAC_ROLE_DEVOPS
+    | typeof PROJECT_RBAC_ROLE_READONLY
+
+export type RbacPerms = Record<ProjectRbacRole, string[]>
+
+// ADR 014: hierarchical group path matching the other fine-grained modules (/<slug>/console/<role>)
+export function generateProjectRbacGroupPath(project: { slug: string }, role: ProjectRbacRole): string {
+  return `/${project.slug}/console/${role}`
+}
+
+export function projectRbacRoles(): ProjectRbacRole[] {
+  return [PROJECT_RBAC_ROLE_ADMIN, PROJECT_RBAC_ROLE_DEVOPS, PROJECT_RBAC_ROLE_READONLY]
+}
+
+// Grafana mapping (ADR 014): admin/devops -> Editor, readonly -> Viewer
+export function getRbacPerms(project: ProjectWithDetails): RbacPerms {
+  const rolesById = Object.fromEntries(project.roles.map(r => [r.id, r]))
+  const projectUserIds = new Set([project.ownerId, ...project.members.map(m => m.user.id)])
+
+  const perms: RbacPerms = { admin: [], devops: [], readonly: [] }
+
+  for (const userId of projectUserIds) {
+    const { ro, rw, manage } = resolveUserPerms(project, rolesById, userId)
+    if (manage) perms.admin.push(userId)
+    else if (rw) perms.devops.push(userId)
+    else if (ro) perms.readonly.push(userId)
+  }
+
+  return perms
 }
 
 export function generateGrafanaGroupPath(keycloakRootGroupPath: string, subGroupName: GrafanaSubGroupName): string {
@@ -126,6 +163,7 @@ export function generateObservabilityProject(
     repositoryUrl: string
     tenantRbacProd: [string, string]
     tenantRbacHProd: [string, string]
+    rbacGroups?: string[]
   },
 ): ObservabilityProject {
   const projectValue: ObservabilityProject = {
@@ -136,11 +174,11 @@ export function generateObservabilityProject(
     },
     envs: {
       hprod: {
-        groups: options.tenantRbacHProd,
+        groups: [...options.tenantRbacHProd, ...options.rbacGroups ?? []],
         tenants: {},
       },
       prod: {
-        groups: options.tenantRbacProd,
+        groups: [...options.tenantRbacProd, ...options.rbacGroups ?? []],
         tenants: {},
       },
     },

@@ -84,6 +84,15 @@ describe('observabilityService', () => {
       expect(client.deleteProjectConfig).toHaveBeenCalled()
     })
 
+    it('deletes the fine-grained RBAC groups', async () => {
+      keycloak.getGroupByPath.mockResolvedValue({ id: 'group-1' })
+      await service.handleDelete(makeProject({ slug: 'my-proj' }))
+      expect(keycloak.getGroupByPath).toHaveBeenCalledWith('/my-proj/console/admin')
+      expect(keycloak.getGroupByPath).toHaveBeenCalledWith('/my-proj/console/devops')
+      expect(keycloak.getGroupByPath).toHaveBeenCalledWith('/my-proj/console/readonly')
+      expect(keycloak.deleteGroup).toHaveBeenCalled()
+    })
+
     it('skips cleanup when plugin disabled', async () => {
       const project = makeProject({
         plugins: [{ pluginName: 'observability', key: ENABLED_PLUGIN_KEY, value: DISABLED }],
