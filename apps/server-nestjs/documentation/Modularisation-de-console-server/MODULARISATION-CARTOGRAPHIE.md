@@ -275,7 +275,7 @@ les premiers modules via Nginx.
 
 ---
 
-### 3. system/config
+### 3. system/config — ✅ MIGRE
 
 | Attribut | Valeur |
 |----------|--------|
@@ -285,8 +285,8 @@ les premiers modules via Nginx.
 | **Dev** | A |
 
 **Routes** :
-- `GET /api/v1/admin/plugins-config` - Configuration des plugins
-- `PUT /api/v1/admin/plugins-config` - Mise a jour de la configuration
+- `GET /api/v1/system/plugins` - Configuration des plugins
+- `POST /api/v1/system/plugins` - Mise a jour de la configuration
 
 **Dependances sortantes** : Aucune (queries propres)
 **Dependances entrantes** : Aucune
