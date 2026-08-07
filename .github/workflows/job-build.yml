@@ -145,7 +145,7 @@ jobs:
           platforms: ${{ (inputs.BUILD_AMD64 && inputs.BUILD_ARM64 && inputs.USE_QEMU && 'linux/amd64,linux/arm64') || (inputs.BUILD_ARM64 && 'linux/arm64') || (inputs.BUILD_AMD64 && 'linux/amd64') }}
           outputs: type=image,name=${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }},push-by-digest=true,name-canonical=true,push=true
           build-args: |
-            APP_VERSION=${{ ( inputs.TAG && inputs.TAG != '..' ) || steps.short-sha.outputs.SHORT_SHA }}
+            APP_VERSION=${{ ( inputs.TAG && inputs.TAG != '..' ) && inputs.TAG || steps.short-sha.outputs.SHORT_SHA }}
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
           cache-from: type=local,src=/tmp/.buildx-cache
