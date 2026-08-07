@@ -10,6 +10,12 @@ const props = defineProps<{
 
 const snackbarStore = useSnackbarStore()
 
+// Per-member serialization: rapid successive role toggles on the same member
+// must complete (read-modify-write + PATCH + list() refresh) before the next
+// starts, otherwise both read a stale snapshot and the second PATCH overwrites
+// the first (issue #2089).
+const memberPatchLocks = new Map<string, Promise<void>>()
+
 const selectedId = ref<string>()
 
 type RoleItem = Omit<ProjectRole, 'permissions'> & { permissions: bigint, memberCounts: number, isEveryone: boolean }
@@ -39,17 +45,28 @@ async function deleteRole(roleId: Role['id']) {
 }
 
 async function updateMember(checked: boolean, userId: Member['userId']) {
-  if (!selectedRole.value) return
-  const matchingMember = props.project.members.find(member => member.userId === userId)
-  if (!matchingMember) return
+  const selectedRoleId = selectedRole.value?.id
+  if (!selectedRoleId) return
 
-  const newRoleList = checked
-    ? [...matchingMember.roleIds, selectedRole.value.id]
-    : matchingMember.roleIds.filter(id => id !== selectedRole.value?.id)
+  const prev = memberPatchLocks.get(userId)
+  const chain = (async () => {
+    if (prev) await prev
 
-  await props.project.Members.patch([{ userId, roles: newRoleList }])
-  reload()
-  snackbarStore.setMessage('Rôle mis à jour', 'success')
+    // Read-modify-write must happen AFTER the previous patch's list() refresh
+    // lands, so we always compute from server-confirmed state (issue #2089).
+    const matchingMember = props.project.members.find(member => member.userId === userId)
+    if (!matchingMember) return
+
+    const newRoleList = checked
+      ? [...matchingMember.roleIds, selectedRoleId]
+      : matchingMember.roleIds.filter(id => id !== selectedRoleId)
+
+    await props.project.Members.patch([{ userId, roles: newRoleList }])
+    reload()
+    snackbarStore.setMessage('Rôle mis à jour', 'success')
+  })()
+  memberPatchLocks.set(userId, chain)
+  await chain
 }
 
 async function saveEveryoneRole(role: { permissions: bigint }) {

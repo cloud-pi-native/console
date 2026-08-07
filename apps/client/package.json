@@ -59,6 +59,7 @@
     "@vitejs/plugin-vue": "catalog:build",
     "@vitest/coverage-v8": "catalog:test",
     "@vue/eslint-config-typescript": "catalog:tools",
+    "@vue/test-utils": "catalog:",
     "chalk": "catalog:tools",
     "eslint": "catalog:tools",
     "eslint-plugin-vue": "catalog:tools",

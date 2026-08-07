@@ -59,6 +59,7 @@
     "@commitlint/cli": "catalog:tools",
     "@commitlint/config-conventional": "catalog:tools",
     "@cpn-console/eslint-config": "workspace:^",
+    "@vue/test-utils": "catalog:",
     "eslint": "catalog:tools",
     "husky": "catalog:tools",
     "lint-staged": "catalog:tools"
