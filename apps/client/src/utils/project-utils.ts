@@ -1,7 +1,7 @@
 import type {
   CreateDeploymentBody,
   CreateEnvironment,
-  CreateRepositoryBody,
+  CreateRepositoryBodyV2,
   Deployment,
   Environment,
   GetLogsQuery,
@@ -13,11 +13,11 @@ import type {
   ProjectService,
   ProjectV2,
   Repo,
-  RepositoryParams,
   Role,
+  SyncRepositoryBodyV2,
   UpdateDeploymentBody,
   UpdateEnvironment,
-  UpdateRepositoryBody,
+  UpdateRepositoryBodyV2,
   User,
 } from '@cpn-console/shared'
 import type { Ref } from 'vue'
@@ -308,32 +308,32 @@ export class Project implements ProjectV2 {
 
   Repositories = {
     list: async () => {
-      this.repositories.value = await apiClient.Repositories.listRepositories({ query: { projectId: this.id } })
+      this.repositories.value = await apiClient.RepositoriesV2.listRepositoriesV2({ params: { projectId: this.id } })
         .then((response: any) => extractData(response, 200))
       return this.repositories.value
     },
-    sync: async (repositoryId: Repo['id'], { branchName, syncAllBranches = false }: { branchName?: string, syncAllBranches?: boolean }) => {
+    sync: async (repositoryId: Repo['id'], syncRequest: SyncRepositoryBodyV2) => {
       const callback = this.addOperation('repoManagement')
       try {
-        return apiClient.Repositories.syncRepository({
-          params: { repositoryId },
-          body: { branchName, syncAllBranches },
+        return apiClient.RepositoriesV2.syncRepositoryV2({
+          params: { projectId: this.id, repositoryId },
+          body: syncRequest,
         })
           .then((response: any) => extractData(response, 204))
       } finally { callback() }
     },
-    create: async (repoData: Omit<CreateRepositoryBody, 'projectId'>) => {
+    create: async (repoData: CreateRepositoryBodyV2) => {
       const callback = this.addOperation('repoManagement')
       try {
-        await apiClient.Repositories.createRepository({ body: { ...repoData, projectId: this.id } })
+        await apiClient.RepositoriesV2.createRepositoryV2({ params: { projectId: this.id }, body: repoData })
           .then((response: any) => extractData(response, 201))
         return this.Repositories.list()
       } finally { callback() }
     },
-    update: async (id: RepositoryParams['repositoryId'], repoData: Omit<UpdateRepositoryBody, 'projectId'>) => {
+    update: async (id: Repo['id'], repoData: UpdateRepositoryBodyV2) => {
       const callback = this.addOperation('repoManagement')
       try {
-        await apiClient.Repositories.updateRepository({ body: { ...repoData, projectId: this.id }, params: { repositoryId: id } })
+        await apiClient.RepositoriesV2.updateRepositoryV2({ params: { projectId: this.id, repositoryId: id }, body: repoData })
           .then((response: any) => extractData(response, 200))
         return this.Repositories.list()
       } finally { callback() }
@@ -341,7 +341,7 @@ export class Project implements ProjectV2 {
     delete: async (repositoryId: Repo['id']) => {
       const callback = this.addOperation('repoManagement')
       try {
-        await apiClient.Repositories.deleteRepository({ params: { repositoryId } })
+        await apiClient.RepositoriesV2.deleteRepositoryV2({ params: { projectId: this.id, repositoryId } })
           .then((response: any) => extractData(response, 204))
         return this.Repositories.list()
       } finally { callback() }
