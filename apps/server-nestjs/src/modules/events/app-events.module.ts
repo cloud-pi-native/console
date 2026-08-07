@@ -1,10 +1,15 @@
 import { Module } from '@nestjs/common'
-import { InfrastructureModule } from '../infrastructure/infrastructure.module'
+import { DatabaseModule } from '../infrastructure/database/database.module'
+import { EventsModule } from '../infrastructure/events/events.module'
 import { LogModule } from '../log/log.module'
 import { AppEventsService } from './app-events.service'
 
 @Module({
-  imports: [InfrastructureModule, LogModule],
+  imports: [
+    DatabaseModule,
+    EventsModule,
+    LogModule,
+  ],
   providers: [AppEventsService],
   exports: [AppEventsService],
 })
