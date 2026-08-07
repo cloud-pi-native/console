@@ -1,0 +1,3 @@
+[tasks.install]
+description="install dependencies"
+run="pnpm install --frozen-lockfile"
