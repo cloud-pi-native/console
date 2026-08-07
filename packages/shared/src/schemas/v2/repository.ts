@@ -29,8 +29,8 @@ const RepositoryWriteBaseSchema = z.object({
   helmValuesFiles: z.string().default(''),
 })
 
-// Union discriminée sur `isPrivate` : dans le type, les credentials sont requis pour
-// un dépôt privé et absents d'un dépôt public. Un dépôt public ne peut pas transporter
+// Union discriminée sur `isPrivate` : dans le type, les credentials sont portés par le
+// dépôt privé et absents d'un dépôt public. Un dépôt public ne peut pas transporter
 // de token au-delà du boundary (zod retire les clés inconnues de la branche publique).
 export const CreateRepositorySchema = z.discriminatedUnion('isPrivate', [
   RepositoryWriteBaseSchema.extend({
@@ -38,10 +38,15 @@ export const CreateRepositorySchema = z.discriminatedUnion('isPrivate', [
   }),
   RepositoryWriteBaseSchema.extend({
     isPrivate: z.literal(true),
-    externalUserName: z.string().min(1, { message: missingCredentials }),
-    externalToken: z.string().min(1, { message: missingCredentials }),
+    externalUserName: z.string().default(''),
+    externalToken: z.string().default(''),
   }),
 ])
+  // Un dépôt privé exige au moins un des deux credentials, et non les deux.
+  .refine(
+    repository => !repository.isPrivate || Boolean(repository.externalUserName || repository.externalToken),
+    { message: missingCredentials, path: ['externalUserName'] },
+  )
 
 // Champs modifiables d'un dépôt (internalRepoName exclu : non modifiable après création).
 export const UpdateRepositorySchema = RepoSchema.pick({

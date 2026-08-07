@@ -107,25 +107,52 @@ describe('createRepositorySchema', () => {
     expect(parsed).toMatchObject({ isPrivate: true, externalUserName, externalToken })
   })
 
-  it('rejects a private repository missing the token', () => {
+  // Un seul credential suffit : l'autre est collapsé en chaîne vide au boundary.
+  it('accepts a private repository providing only a token', () => {
+    const externalToken = faker.string.alphanumeric(16)
+    const parsed = CreateRepositorySchema.parse({
+      internalRepoName: 'my-repo',
+      externalRepoUrl: gitUrl,
+      isInfra: false,
+      isPrivate: true,
+      externalToken,
+    })
+
+    expect(parsed).toMatchObject({ isPrivate: true, externalUserName: '', externalToken })
+  })
+
+  it('accepts a private repository providing only a username', () => {
+    const externalUserName = faker.internet.username()
+    const parsed = CreateRepositorySchema.parse({
+      internalRepoName: 'my-repo',
+      externalRepoUrl: gitUrl,
+      isInfra: false,
+      isPrivate: true,
+      externalUserName,
+    })
+
+    expect(parsed).toMatchObject({ isPrivate: true, externalUserName, externalToken: '' })
+  })
+
+  it('rejects a private repository without any credential', () => {
     const result = CreateRepositorySchema.safeParse({
       internalRepoName: 'my-repo',
       externalRepoUrl: gitUrl,
       isInfra: false,
       isPrivate: true,
-      externalUserName: faker.internet.username(),
     })
 
     expect(result.success).toBe(false)
   })
 
-  it('rejects a private repository missing the username', () => {
+  it('rejects a private repository whose credentials are both empty', () => {
     const result = CreateRepositorySchema.safeParse({
       internalRepoName: 'my-repo',
       externalRepoUrl: gitUrl,
       isInfra: false,
       isPrivate: true,
-      externalToken: faker.string.alphanumeric(16),
+      externalUserName: '',
+      externalToken: '',
     })
 
     expect(result.success).toBe(false)
