@@ -10,7 +10,7 @@ import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
 import { GitlabDatastoreService } from './gitlab-datastore.service'
-import { makeAccessTokenExposedSchema, makeExpandedUserSchema, makeGroupSchema, makeMemberSchema, makePipelineTriggerToken, makeProjectSchema, makeProjectWithDetails } from './gitlab-testing.utils'
+import { makeAccessTokenExposedSchema, makeExpandedUserSchema, makeGroupSchema, makeMemberSchema, makePipeline, makePipelineTriggerToken, makeProjectSchema, makeProjectWithDetails } from './gitlab-testing.utils'
 import { PLUGIN_NAME, TOPIC_PLUGIN_MANAGED } from './gitlab.constants'
 import { GitlabService } from './gitlab.service'
 
@@ -470,6 +470,36 @@ describe('gitlabService', () => {
         MIRROR_USER: 'bot',
         MIRROR_TOKEN: accessToken.token,
       })
+    })
+  })
+
+  describe('handleRepositorySync', () => {
+    const payload = {
+      projectId: 'p1',
+      projectSlug: 'project-1',
+      internalRepoName: 'repo-1',
+      syncAllBranches: false,
+      branchName: 'main',
+    }
+
+    it('should trigger the mirror and report an OK plugin result', async () => {
+      gitlab.triggerMirror.mockResolvedValue(makePipeline())
+
+      const result = await service.handleRepositorySync(payload)
+
+      expect(gitlab.triggerMirror).toHaveBeenCalledWith('project-1', 'repo-1', false, 'main')
+      expect(result.gitlab.status).toBe('OK')
+    })
+
+    // capturePluginResult swallows the throw so the emitter can merge every listener's
+    // outcome; the failure has to surface as a KO result, not as a rejected promise.
+    it('should report a KO plugin result when the mirror cannot be triggered', async () => {
+      gitlab.triggerMirror.mockRejectedValue(new Error('Unable to find mirror repository'))
+
+      const result = await service.handleRepositorySync(payload)
+
+      expect(result.gitlab.status).toBe('KO')
+      expect(result.gitlab.message).toBe('Unable to find mirror repository')
     })
   })
 

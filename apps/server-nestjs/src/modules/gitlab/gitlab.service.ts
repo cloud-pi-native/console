@@ -1,5 +1,6 @@
 import type { CondensedGroupSchema, MemberSchema, ProjectSchema } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
+import type { RepositorySyncEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { MirrorUserSecret } from '../vault/vault-client.service'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
@@ -76,6 +77,29 @@ export class GitlabService {
   @OnEvent('project.delete')
   async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'gitlab'>> {
     return capturePluginResult('gitlab', () => this.cleanupProject(project))
+  }
+
+  @OnEvent('repository.sync')
+  async handleRepositorySync(payload: RepositorySyncEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', () => this.syncRepositoryMirror(payload))
+  }
+
+  @StartActiveSpan()
+  private async syncRepositoryMirror(payload: RepositorySyncEventPayload) {
+    const { projectSlug, internalRepoName, syncAllBranches } = payload
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('repository.name', internalRepoName)
+    this.logger.log(`Handling a repository sync event for ${projectSlug}/${internalRepoName}`)
+    // A full sync has no branch to designate; the client turns that into an empty
+    // GIT_BRANCH_DEPLOY, which is what the mirror pipeline expects.
+    await this.gitlab.triggerMirror(
+      projectSlug,
+      internalRepoName,
+      syncAllBranches,
+      payload.syncAllBranches ? undefined : payload.branchName,
+    )
+    this.logger.log(`GitLab mirror pipeline triggered for ${projectSlug}/${internalRepoName}`)
   }
 
   @StartActiveSpan()

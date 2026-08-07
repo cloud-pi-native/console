@@ -2,13 +2,12 @@ import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefixV2, contractInstance } from '../../api-client.js'
 import { RepoSchema } from '../../schemas/repository.js'
-import { CreateRepositorySchema, UpdateRepositorySchema } from '../../schemas/v2/repository.js'
+import { CreateRepositorySchema, SyncRepositorySchema, UpdateRepositorySchema } from '../../schemas/v2/repository.js'
 import { baseHeaders, ErrorSchema } from '../_utils.js'
 
 // Contrat des dépôts pour l'API v2 (server-nestjs). projectId est porté par le chemin.
 // NB: les clés de routes servent d'operationId OpenAPI (setOperationId: true) et
 // doivent être uniques sur l'ensemble du contrat, d'où le suffixe V2.
-// La route de synchronisation reste servie par le serveur legacy pour l'instant.
 export const repositoryContractV2 = contractInstance.router({
   createRepositoryV2: {
     method: 'POST',
@@ -58,6 +57,28 @@ export const repositoryContractV2 = contractInstance.router({
       401: ErrorSchema,
       403: ErrorSchema,
       404: ErrorSchema,
+      500: ErrorSchema,
+    },
+  },
+
+  syncRepositoryV2: {
+    method: 'POST',
+    path: '/:repositoryId/sync',
+    contentType: 'application/json',
+    summary: 'Sync repository',
+    description: 'Trigger a GitLab mirror synchronization for a repository.',
+    pathParams: z.object({
+      repositoryId: z.string()
+        .uuid(),
+    }),
+    body: SyncRepositorySchema,
+    responses: {
+      204: null,
+      400: ErrorSchema,
+      401: ErrorSchema,
+      403: ErrorSchema,
+      404: ErrorSchema,
+      422: ErrorSchema,
       500: ErrorSchema,
     },
   },

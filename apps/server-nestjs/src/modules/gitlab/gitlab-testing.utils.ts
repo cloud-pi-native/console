@@ -3,6 +3,7 @@ import type {
   AccessTokenSchema,
   CommitAction,
   ExpandedGroupSchema,
+  ExpandedPipelineSchema,
   ExpandedUserSchema,
   GroupSchema,
   MemberSchema,
@@ -313,6 +314,46 @@ export function makePipelineTriggerToken(overrides: Partial<PipelineTriggerToken
     repoId: 1,
     ...overrides,
   } satisfies PipelineTriggerTokenSchema
+}
+
+export function makePipeline(overrides: Partial<ExpandedPipelineSchema> = {}) {
+  const createdAt = faker.date.past().toISOString()
+  return {
+    id: 42,
+    iid: 1,
+    project_id: 1,
+    sha: faker.git.commitSha(),
+    before_sha: faker.git.commitSha(),
+    ref: 'main',
+    tag: false,
+    status: 'created',
+    source: 'api',
+    user: {
+      id: 1,
+      name: 'Console',
+      username: 'console',
+      state: 'active',
+      avatar_url: 'https://gitlab.internal/uploads/-/system/user/avatar/1/avatar.png',
+      web_url: 'https://gitlab.internal/console',
+    },
+    created_at: createdAt,
+    updated_at: createdAt,
+    started_at: createdAt,
+    finished_at: createdAt,
+    duration: 0,
+    detailed_status: {
+      icon: 'status_created',
+      text: 'created',
+      label: 'created',
+      group: 'created',
+      tooltip: 'created',
+      has_details: false,
+      details_path: '/forge/project-1/mirror/-/pipelines/42',
+      favicon: 'favicon_status_created',
+    },
+    web_url: 'https://gitlab.internal/forge/project-1/mirror/-/pipelines/42',
+    ...overrides,
+  } satisfies ExpandedPipelineSchema
 }
 
 export function makeOffsetPagination(overrides: Partial<OffsetPagination> = {}) {

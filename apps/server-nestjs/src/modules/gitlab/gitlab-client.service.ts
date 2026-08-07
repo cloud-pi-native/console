@@ -29,6 +29,7 @@ import {
   MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY,
   MIRROR_REPO_NAME,
   PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY,
+  SPECIAL_REPO_NAMES,
   TOKEN_DESCRIPTION,
   TOPIC_PLUGIN_MANAGED,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
@@ -551,6 +552,40 @@ export class GitlabClientService {
     const created = await this.client.PipelineTriggerTokens.create(mirrorRepo.id, TOKEN_DESCRIPTION)
     this.logger.log(`GitLab pipeline trigger token created (projectSlug=${projectSlug}, repoId=${mirrorRepo.id})`)
     return created
+  }
+
+  /**
+   * Triggers the mirroring pipeline for one repository of a project.
+   *
+   * The mirroring is not performed against the target repo directly: the project's
+   * `mirror` repo carries the pipeline, which is started with the target designated by the `PROJECT_NAME` variable.
+   * `SPECIAL_REPO_NAMES` are the console's own plumbing repositories — mirroring one of
+   * them would have the pipeline act on itself or on the infra repo, so it is refused.
+   */
+  async triggerMirror(projectSlug: string, targetRepo: string, syncAllBranches: boolean, branchName?: string) {
+    if (SPECIAL_REPO_NAMES.includes(targetRepo)) {
+      throw new Error('User requested for invalid mirroring')
+    }
+    this.logger.log(`Triggering a GitLab mirror pipeline (projectSlug=${projectSlug}, targetRepo=${targetRepo}, syncAllBranches=${syncAllBranches})`)
+
+    let mirror: CondensedProjectSchemaWith<'id'> | undefined
+    let target: CondensedProjectSchemaWith<'id'> | undefined
+    for await (const repo of this.getRepos(projectSlug)) {
+      if (repo.name === MIRROR_REPO_NAME) mirror = repo
+      if (repo.name === targetRepo) target = repo
+    }
+    if (!mirror) throw new Error('Unable to find mirror repository')
+    if (!target) throw new Error('Unable to find target repository')
+
+    const pipeline = await this.client.Pipelines.create(mirror.id, 'main', {
+      variables: [
+        { key: 'SYNC_ALL', value: syncAllBranches.toString() },
+        { key: 'GIT_BRANCH_DEPLOY', value: branchName ?? '' },
+        { key: 'PROJECT_NAME', value: targetRepo },
+      ],
+    })
+    this.logger.verbose(`GitLab mirror pipeline created (projectSlug=${projectSlug}, targetRepo=${targetRepo}, pipelineId=${pipeline.id})`)
+    return pipeline
   }
 
   private async* offsetPaginate<T>(

@@ -12,11 +12,21 @@ import { formatEventLogData, isPluginResults } from './app-events.utils'
 
 export type ProjectEventName = 'project.upsert' | 'project.delete'
 export type ProjectMemberEventName = 'projectMember.upsert' | 'projectMember.delete'
+export type RepositoryEventName = 'repository.sync'
 
 export interface ProjectMemberEventPayload {
   projectId: string
   userId: string
 }
+
+export type RepositorySyncEventPayload = {
+  projectId: string
+  projectSlug: string
+  internalRepoName: string
+} & (
+  { syncAllBranches: true }
+  | { syncAllBranches: false, branchName: string }
+)
 
 /** Admin-log action labels (legacy hooks wording). */
 export type EventLogAction
@@ -25,7 +35,7 @@ export type EventLogAction
     | 'Create Deployment' | 'Update Deployment' | 'Delete Deployment'
     | 'Delete all project deployments'
     | 'Create Environment' | 'Update Environment' | 'Delete Environment'
-    | 'Create Repository' | 'Update Repository' | 'Delete Repository'
+    | 'Create Repository' | 'Update Repository' | 'Delete Repository' | 'Sync Repository'
     | 'Add Project Member' | 'Update Project Member' | 'Remove Project Member'
 
 export interface EventContext {
@@ -81,6 +91,19 @@ export class AppEventsService {
   async emitProjectMemberEvent(
     event: ProjectMemberEventName,
     payload: ProjectMemberEventPayload,
+    context: EventContext,
+  ): Promise<PluginResults> {
+    return this.emitAndLog(event, payload, payload.projectId, context)
+  }
+
+  /**
+   * Emits a repository event. Unlike `project.upsert`, the caller awaits the merged
+   * results and decides what to do with a failure — a sync is a user-triggered action
+   * whose outcome belongs in the response, not only in the admin log.
+   */
+  async emitRepositoryEvent(
+    event: RepositoryEventName,
+    payload: RepositorySyncEventPayload,
     context: EventContext,
   ): Promise<PluginResults> {
     return this.emitAndLog(event, payload, payload.projectId, context)
