@@ -1,13 +1,21 @@
 import type { CreateEnvironment, UpdateEnvironment } from '@cpn-console/shared'
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
-import { BadRequestException, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { AppEventsService } from '../events/app-events.service'
 import { EnvironmentDatastoreService } from './environment-datastore.service'
-import { makeEnvironment, makeEnvironmentWithCluster, makeEnvironmentWithStage } from './environment-testing.utils'
+import {
+  makeEnvironment,
+  makeEnvironmentWithCluster,
+  makeEnvironmentWithStage,
+} from './environment-testing.utils'
 import { EnvironmentValidationService } from './environment-validation.service'
 import { EnvironmentService } from './environment.service'
 
@@ -34,6 +42,10 @@ describe('environmentService', () => {
     memory: 4,
     autosync: true,
   } satisfies CreateEnvironment
+
+  const failedReconciliation = {
+    gitlab: { status: 'KO', message: 'Unable to provision environment', executionTime: 1, error: new Error('boom') },
+  } as const
 
   const validUpdateEnvironment = {
     cpu: 4,
@@ -103,6 +115,17 @@ describe('environmentService', () => {
       expect(result).toEqual(environment)
     })
 
+    it('should wait for the reconciliation and reject when a service fails', async () => {
+      const environment = makeEnvironment({ id: environmentId, projectId, clusterId, stageId })
+      validation.validateCreate.mockResolvedValue(undefined)
+      datastore.createEnvironment.mockResolvedValue(environment)
+      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
+
+      await expect(service.createEnvironment(projectId, validCreateEnvironment, userId, requestId))
+        .rejects.toThrow(InternalServerErrorException)
+      expect(datastore.createEnvironment).toHaveBeenCalled()
+    })
+
     it('should not create the environment when the validation fails', async () => {
       validation.validateCreate.mockRejectedValue(new BadRequestException('Cluster invalide.'))
 
@@ -132,6 +155,18 @@ describe('environmentService', () => {
         requestId,
       })
       expect(result).toEqual(updated)
+    })
+
+    it('should wait for the reconciliation and reject when a service fails', async () => {
+      const existing = makeEnvironmentWithCluster({ id: environmentId, projectId })
+      datastore.getProjectEnvironment.mockResolvedValue(existing)
+      validation.validateUpdate.mockResolvedValue(undefined)
+      datastore.updateEnvironment.mockResolvedValue(makeEnvironment({ id: environmentId, projectId, ...validUpdateEnvironment }))
+      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
+
+      await expect(service.updateEnvironment(projectId, environmentId, validUpdateEnvironment, userId, requestId))
+        .rejects.toThrow(InternalServerErrorException)
+      expect(datastore.updateEnvironment).toHaveBeenCalled()
     })
 
     it('should reject when the environment is not found in the project', async () => {
@@ -169,6 +204,16 @@ describe('environmentService', () => {
         userId,
         requestId,
       })
+    })
+
+    it('should wait for the reconciliation and reject when a service fails', async () => {
+      datastore.getProjectEnvironment.mockResolvedValue(makeEnvironmentWithCluster({ id: environmentId, projectId }))
+      datastore.deleteEnvironment.mockResolvedValue(makeEnvironment({ id: environmentId, projectId }))
+      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
+
+      await expect(service.deleteEnvironment(projectId, environmentId, userId, requestId))
+        .rejects.toThrow(InternalServerErrorException)
+      expect(datastore.deleteEnvironment).toHaveBeenCalledWith(environmentId)
     })
 
     it('should reject when the environment is not found in the project', async () => {
