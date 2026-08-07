@@ -1,3 +1,4 @@
+import type { ClientInferRequest } from '@ts-rest/core'
 import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefixV2, contractInstance } from '../../api-client.js'
@@ -109,3 +110,11 @@ export const repositoryContractV2 = contractInstance.router({
     projectId: z.string().uuid(),
   }),
 })
+
+// Types de corps de requête : côté appelant ce sont les entrées des schémas
+// (avant transformations), d'où leur dérivation du contrat plutôt que de `z.infer`.
+export type CreateRepositoryBodyV2 = ClientInferRequest<typeof repositoryContractV2.createRepositoryV2>['body']
+
+export type UpdateRepositoryBodyV2 = ClientInferRequest<typeof repositoryContractV2.updateRepositoryV2>['body']
+
+export type SyncRepositoryBodyV2 = ClientInferRequest<typeof repositoryContractV2.syncRepositoryV2>['body']

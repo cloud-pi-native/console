@@ -7,7 +7,7 @@ import { useProjectStore } from './project.js'
 const getProject = vi.spyOn(apiClient.Projects, 'getProject')
 const listProjects = vi.spyOn(apiClient.Projects, 'listProjects')
 const listEnvironments = vi.spyOn(apiClient.EnvironmentsV2, 'listEnvironmentsV2')
-const listRepositories = vi.spyOn(apiClient.Repositories, 'listRepositories')
+const listRepositories = vi.spyOn(apiClient.RepositoriesV2, 'listRepositoriesV2')
 const apiClientPost = vi.spyOn(apiClient.Projects, 'createProject')
 
 describe('project Store', () => {

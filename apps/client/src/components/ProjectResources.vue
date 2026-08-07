@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CleanedCluster, Cluster, CreateEnvironment, Environment, Repo, Stage, UpdateEnvironment, Zone } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
+import type { RepoFormResult } from '@/utils/repository-utils.js'
 import { logger } from '@cpn-console/logger/browser'
 import { AdminAuthorized, defaultBranchName, ProjectAuthorized, projectIsLockedInfo } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
@@ -11,6 +12,7 @@ import { useStageStore } from '@/stores/stage.js'
 import { useUserStore } from '@/stores/user.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { clickInDialog, getRandomId } from '@/utils/func.js'
+import { toCreateRepositoryBody, toUpdateRepositoryBody } from '@/utils/repository-utils.js'
 
 type Source = 'Privée extérieure' | 'Publique extérieure' | 'Interne'
 
@@ -96,15 +98,15 @@ async function addEnvironment(environment: CreateEnvironment) {
 
 const isAllSyncing = ref<boolean>(false)
 
-async function saveRepo(repo: Repo) {
+async function saveRepo(repo: RepoFormResult) {
   selectedRepo.value = undefined
   newResource.value = undefined
   if (repo.id) {
-    props.project.Repositories.update(repo.id, repo)
+    props.project.Repositories.update(repo.id, toUpdateRepositoryBody(repo))
       .catch(reason => snackbarStore.setMessage(reason, 'error'))
       .finally(reload)
   } else {
-    props.project.Repositories.create(repo)
+    props.project.Repositories.create(toCreateRepositoryBody(repo))
       .catch(reason => snackbarStore.setMessage(reason, 'error'))
       .finally(reload)
   }
@@ -120,7 +122,12 @@ async function deleteRepo(repoId: Repo['id']) {
 async function syncRepository() {
   if (!selectedRepo.value) return
   if (!isAllSyncing.value && !branchName.value) branchName.value = defaultBranchName
-  await props.project.Repositories.sync(selectedRepo.value.id, { syncAllBranches: isAllSyncing.value, branchName: branchName.value })
+  await props.project.Repositories.sync(
+    selectedRepo.value.id,
+    isAllSyncing.value
+      ? { syncAllBranches: true }
+      : { syncAllBranches: false, branchName: branchName.value },
+  )
   snackbarStore.setMessage(`Travail de synchronisation lancé pour le dépôt ${selectedRepo.value.internalRepoName}`)
 }
 
