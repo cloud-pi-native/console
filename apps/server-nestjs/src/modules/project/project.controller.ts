@@ -1,6 +1,7 @@
 import type { ProjectV2 } from '@cpn-console/shared'
 import type { FastifyRequest } from 'fastify'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
+import type { CreateProjectBody, UpdateProjectBody } from '../infrastructure/clean-types/controller-body.types'
 import type { ProjectContext } from '../infrastructure/permission/project/project.guard'
 import { AdminAuthorized, projectContract } from '@cpn-console/shared'
 import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Inject, Post, Put, Query, Req, UseGuards } from '@nestjs/common'
@@ -47,7 +48,7 @@ export class ProjectController {
   @UseGuards(UserGuard)
   @RequireAdminPermission('ManageProjects')
   async create(
-    @Body(new ZodValidationPipe(projectContract.createProject.body)) body: typeof projectContract.createProject.body._type,
+    @Body(new ZodValidationPipe(projectContract.createProject.body)) body: CreateProjectBody,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
   ): Promise<ProjectV2> {
@@ -69,7 +70,7 @@ export class ProjectController {
   @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
   @RequireProjectPermission('Manage')
   async update(
-    @Body(new ZodValidationPipe(projectContract.updateProject.body)) data: typeof projectContract.updateProject.body._type,
+    @Body(new ZodValidationPipe(projectContract.updateProject.body)) data: UpdateProjectBody,
     @Project() project: ProjectContext,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,

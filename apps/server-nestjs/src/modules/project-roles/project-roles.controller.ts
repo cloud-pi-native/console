@@ -1,3 +1,4 @@
+import type { CreateProjectRoleBody, PatchProjectRolesBody } from '../infrastructure/clean-types/controller-body.types'
 import type { ProjectContext } from '../infrastructure/permission/project/project.guard'
 import { projectRoleContract } from '@cpn-console/shared'
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, Patch, Post, UseGuards } from '@nestjs/common'
@@ -30,7 +31,7 @@ export class ProjectRolesController {
   @RequireProjectLocked(false)
   @RequireProjectPermission('ManageRoles')
   async create(
-    @Body(new ZodValidationPipe(projectRoleContract.createProjectRole.body)) body: typeof projectRoleContract.createProjectRole.body._type,
+    @Body(new ZodValidationPipe(projectRoleContract.createProjectRole.body)) body: CreateProjectRoleBody,
     @Project() project: ProjectContext,
   ) {
     return this.projectRoles.create(project.id, body)
@@ -42,7 +43,7 @@ export class ProjectRolesController {
   @RequireProjectLocked(false)
   @RequireProjectPermission('ManageRoles')
   async update(
-    @Body(new ZodValidationPipe(projectRoleContract.patchProjectRoles.body)) body: typeof projectRoleContract.patchProjectRoles.body._type,
+    @Body(new ZodValidationPipe(projectRoleContract.patchProjectRoles.body)) body: PatchProjectRolesBody,
     @Project() project: ProjectContext,
   ) {
     return this.projectRoles.update(project.id, body)
