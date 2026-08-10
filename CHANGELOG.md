@@ -1,5 +1,20 @@
 # Changelog
 
+## [9.24.1](https://github.com/cloud-pi-native/console/compare/v9.24.0...v9.24.1) (2026-08-10)
+
+
+### Bug Fixes
+
+* **ci:** fix package versions bumps not being done for hotfixes ([4b5a293](https://github.com/cloud-pi-native/console/commit/4b5a29309c22fa3bca0c33016b93ff61fd829f07))
+* Keycloak group null check ([028be68](https://github.com/cloud-pi-native/console/commit/028be68ef42458fe91fe3471916f139c1cbeade0))
+* missing observability icon ([d69597b](https://github.com/cloud-pi-native/console/commit/d69597be854e63b25c71f94ba99e34473173e177))
+* missing stage in observability ([1ad1428](https://github.com/cloud-pi-native/console/commit/1ad142835d8e53c8738281f9b7b029d2321fd01b))
+
+
+### Miscellaneous Chores
+
+* **ci:** fix release-please versioning strategy ([e48ce6a](https://github.com/cloud-pi-native/console/commit/e48ce6ae16dec34613eacc898f335ec4eabc2f15))
+
 ## [9.24.0](https://github.com/cloud-pi-native/console/compare/v9.23.0...v9.24.0) (2026-08-07)
 
 
