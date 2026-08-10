@@ -35,7 +35,7 @@ export class ObservabilityPluginService {
         return urls
       },
       title: 'Grafana',
-      imgSrc: '/img/grafana.svg',
+      imgSrc: '/img/grafana.png',
       description: 'Grafana est un outil de visualisation de métriques et de logs',
       config: {
         global: [{
