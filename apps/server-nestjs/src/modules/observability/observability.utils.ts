@@ -10,7 +10,9 @@ import {
   GRAFANA_SUBGROUP_HPROD_RW,
   GRAFANA_SUBGROUP_PROD_RO,
   GRAFANA_SUBGROUP_PROD_RW,
+  HPROD_ENV,
   PLUGIN_NAME,
+  PROD_ENV,
 } from './observability.constants'
 
 export type GrafanaSubGroupName
@@ -20,6 +22,10 @@ export type GrafanaSubGroupName
     | typeof GRAFANA_SUBGROUP_PROD_RO
 
 export type EnvType = 'prod' | 'hprod'
+
+export function isProdStage(stage?: { name?: string } | null): boolean {
+  return stage?.name === PROD_ENV
+}
 
 const tenantMapSchema = z.record(z.string(), z.record(z.string(), z.unknown()))
 
@@ -69,7 +75,7 @@ export function getListPerms(project: ProjectWithDetails): ListPerms {
 
   for (const userId of projectUserIds) {
     const { ro, rw } = resolveUserPerms(project, rolesById, userId)
-    const hasProd = project.environments.some(e => e.stage.name === 'prod')
+    const hasProd = project.environments.some(e => isProdStage(e.stage))
     const bucket = hasProd ? perms.prod : perms['hors-prod']
     if (rw && !bucket.edit.includes(userId)) bucket.edit.push(userId)
     if (ro && !bucket.view.includes(userId)) bucket.view.push(userId)
@@ -147,7 +153,7 @@ export function generateObservabilityProject(
   }
 
   for (const environment of project.environments) {
-    const env: EnvType = environment.stage.name === 'prod' ? 'prod' : 'hprod'
+    const env: EnvType = isProdStage(environment.stage) ? PROD_ENV : HPROD_ENV
     const envConfig = projectValue.envs[env]
     if (envConfig) {
       envConfig.tenants[generateTenantId(env, project.id)] = {}

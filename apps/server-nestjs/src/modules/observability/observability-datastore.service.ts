@@ -51,14 +51,29 @@ export type ProjectWithDetails = Prisma.ProjectGetPayload<{
   select: typeof projectSelect
 }>
 
+const projectInfosSelect = {
+  slug: true,
+  environments: {
+    select: {
+      stage: {
+        select: { name: true },
+      },
+    },
+  },
+} satisfies Prisma.ProjectSelect
+
+export type ProjectForInfos = Prisma.ProjectGetPayload<{
+  select: typeof projectInfosSelect
+}>
+
 @Injectable()
 export class ObservabilityDatastoreService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  async getProject(id: string): Promise<ProjectWithDetails | null> {
+  async getProjectForInfos(id: string): Promise<ProjectForInfos | null> {
     return this.prisma.project.findUnique({
       where: { id },
-      select: projectSelect,
+      select: projectInfosSelect,
     })
   }
 }
