@@ -40,7 +40,7 @@ jobs:
           config-file: release-please-config.json
           target-branch: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          versioning-strategy: ${{ startsWith(github.ref_name, 'hotfix/') && 'always-bump-patch' || 'always-bump-minor' }}
+          versioning-strategy: ${{ github.ref == format('refs/heads/{0}', 'main') && 'always-bump-minor' || 'always-bump-patch' }}
 
       - name: Edit packages versions
         if: ${{ ! steps.release.outputs.release_created && steps.release.outputs.pr }}
