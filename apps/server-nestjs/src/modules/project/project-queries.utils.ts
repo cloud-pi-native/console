@@ -93,6 +93,11 @@ export const projectSelect = {
       autosync: true,
       clusterId: true,
       stageId: true,
+      stage: {
+        select: {
+          name: true,
+        },
+      },
       cluster: {
         select: {
           id: true,
