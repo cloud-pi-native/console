@@ -45,7 +45,7 @@ jobs:
       - name: Edit packages versions
         if: ${{ ! steps.release.outputs.release_created && steps.release.outputs.pr }}
         run: |
-          export BRANCH=release-please--branches--main--components--console
+          export BRANCH=release-please--branches--${{ github.ref_name }}--components--console
           git fetch
           git checkout "$BRANCH"
           VERSION=$(jq -r .version package.json)
