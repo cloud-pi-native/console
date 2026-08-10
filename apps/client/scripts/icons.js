@@ -8,6 +8,9 @@ const riIconNames = [
   'account-circle-line',
   'add-line',
   'admin-line',
+  'alert-line',
+  'archive-line',
+  'arrow-down-line',
   'arrow-drop-left-line',
   'arrow-drop-right-line',
   'arrow-go-back-line',
@@ -15,15 +18,18 @@ const riIconNames = [
   'arrow-right-double-line',
   'arrow-right-line',
   'arrow-right-s-line',
+  'arrow-up-line',
   'award-line',
   'building-line',
   'checkbox-blank-circle-fill',
   'checkbox-circle-line',
+  'check-line',
   'clipboard-line',
   'close-line',
   'code-s-slash-line',
   'dashboard-line',
   'delete-bin-7-line',
+  'door-open-line',
   'exchange-line',
   'eye-line',
   'eye-off-line',
@@ -42,6 +48,7 @@ const riIconNames = [
   'git-repository-private-line',
   'global-line',
   'key-2-line',
+  'links-line',
   'loader-4-line',
   'lock-line',
   'lock-unlock-line',
@@ -55,8 +62,10 @@ const riIconNames = [
   'send-plane-line',
   'server-line',
   'settings-3-line',
+  'settings-5-line',
   'shapes-line',
   'shield-check-line',
+  'shield-keyhole-line',
   'sound-module-line',
   'stock-line',
   'sun-line',
@@ -70,6 +79,4 @@ const riIconNames = [
 /**
  * @type {[import('@iconify/vue').IconifyJSON, string[]][]}
  */
-export const collectionsToFilter = [
-  [riCollection, riIconNames],
-]
+export const collectionsToFilter = [[riCollection, riIconNames]]
