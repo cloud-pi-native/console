@@ -1,5 +1,20 @@
 # Changelog
 
+## [9.24.1](https://github.com/cloud-pi-native/console/compare/v9.24.0...v9.24.1) (2026-08-10)
+
+
+### Bug Fixes
+
+* **ci:** change how hotfixes or main branch are detected for release-please ([20cb79a](https://github.com/cloud-pi-native/console/commit/20cb79a65fb893a69d661c2187f54187dbf0a92f))
+* **ci:** fix package versions bumps not being done for hotfixes ([31dc7bb](https://github.com/cloud-pi-native/console/commit/31dc7bbf61679e1f0ea898ca22e0675a9fb08b46))
+* missing observability icon ([ec767f4](https://github.com/cloud-pi-native/console/commit/ec767f4ce51e3370274da5b7061761fe8a8bfd6f))
+* missing stage in observability ([13d9866](https://github.com/cloud-pi-native/console/commit/13d986683d1fca5c157b30ccd5b4a9ff5a9e26ee))
+
+
+### Miscellaneous Chores
+
+* **ci:** fix release-please versioning strategy ([3759ffe](https://github.com/cloud-pi-native/console/commit/3759ffeca0d24e0777a74f014f7816ef1b37bde1))
+
 ## [9.24.0](https://github.com/cloud-pi-native/console/compare/v9.23.0...v9.24.0) (2026-08-07)
 
 
