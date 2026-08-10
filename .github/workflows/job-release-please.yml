@@ -33,6 +33,14 @@ jobs:
       - name: Checks-out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Update release-please config for hotfix branches
+        if: startsWith(github.ref_name, 'hotfix/')
+        run: |
+          # Update versioning to always-bump-patch for hotfix branches
+          jq '.versioning = "always-bump-patch"' release-please-config.json > tmp.json && mv tmp.json release-please-config.json
+          echo "Updated release-please-config.json versioning to always-bump-patch"
+        shell: bash
+
       - name: Create merge request for new release
         uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
         id: release
@@ -40,12 +48,12 @@ jobs:
           config-file: release-please-config.json
           target-branch: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          versioning-strategy: ${{ github.ref == format('refs/heads/{0}', 'main') && 'always-bump-minor' || 'always-bump-patch' }}
 
       - name: Edit packages versions
         if: ${{ ! steps.release.outputs.release_created && steps.release.outputs.pr }}
         run: |
           export BRANCH=release-please--branches--${{ github.ref_name }}--components--console
+          git checkout release-please-config.json
           git fetch
           git checkout "$BRANCH"
           VERSION=$(jq -r .version package.json)
