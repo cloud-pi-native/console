@@ -24,3 +24,7 @@ export const GRAFANA_SUBGROUP_PROD_RO = 'prod-RO'
 // Plugin configuration keys
 export const ENABLED_PLUGIN_KEY = 'enabled'
 export const INSTANCES_PLUGIN_KEY = 'instances'
+
+// Environment stage names
+export const PROD_ENV = 'prod'
+export const HPROD_ENV = 'hprod'

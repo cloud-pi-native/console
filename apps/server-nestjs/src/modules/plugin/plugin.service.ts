@@ -33,7 +33,7 @@ export class PluginService {
       ['nexus', () => this.nexusPlugin?.infos()],
       ['sonarqube', () => this.sonarqubePlugin?.infos()],
       ['vault', () => this.vaultPlugin?.infos()],
-      ['observability', () => this.observabilityPlugin?.infos()],
+      ['observability', () => this.observabilityPlugin?.infos(projectId)],
     ]
 
     const settled = await Promise.allSettled(plugins.map(([, fn]) => fn()))
