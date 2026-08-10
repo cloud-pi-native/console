@@ -15,7 +15,7 @@
     "dev": "vite --mode=development",
     "format": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' eslint ./ --fix",
     "format:style": "stylelint ./src/**/*.{css,vue} --fix",
-    "icons": "vue-dsfr-icons -s scripts/icons.js -t src/icon-collections.ts",
+    "icons": "./scripts/generate-icons.sh",
     "integ": "vite --mode=integration",
     "lint": "pnpm run --parallel \"/^lint:.*/\"",
     "lint:style": "stylelint ./src/**/*.{css,vue}",
