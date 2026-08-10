@@ -138,12 +138,12 @@ export class KeycloakClientService implements OnModuleInit {
   async* getSubGroups(parentId: string) {
     let first = 0
     while (true) {
-      const page = await this.client.groups.listSubGroups({
+      const page = (await this.client.groups.listSubGroups({
         parentId,
         briefRepresentation: false,
         max: SUBGROUPS_PAGINATE_QUERY_MAX,
         first,
-      })
+      })) ?? []
       this.logger.verbose(`Loaded a Keycloak subgroups page (parentId=${parentId}, first=${first}, count=${page.length})`)
       if (page.length === 0) break
       for (const subgroup of page) {
