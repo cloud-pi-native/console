@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.24.2](https://github.com/cloud-pi-native/console/compare/v9.24.1...v9.24.2) (2026-08-11)
+
+
+### Bug Fixes
+
+* observability hprod and prod icon not displayed ([b07ad0a](https://github.com/cloud-pi-native/console/commit/b07ad0a47d9a0aee9c47a4af6ecb52fd65a4d678))
+
 ## [9.24.1](https://github.com/cloud-pi-native/console/compare/v9.24.0...v9.24.1) (2026-08-10)
 
 
