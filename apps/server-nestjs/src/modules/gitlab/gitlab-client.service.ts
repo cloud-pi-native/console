@@ -221,7 +221,7 @@ export class GitlabClientService {
     return `${urlBase}/${projectGroup.full_path}/${repoName}.git`
   }
 
-  private async getOrCreateRepo(subGroupPath: string) {
+  private async getOrCreateRepo(subGroupPath: string, ciConfigPath?: string) {
     const fullPath = this.config.projectRootDir
       ? `${this.config.projectRootDir}/${subGroupPath}`
       : subGroupPath
@@ -259,7 +259,7 @@ export class GitlabClientService {
         path: repoName,
         namespaceId: parentGroup.id,
         defaultBranch: defaultBranchName,
-        ciConfigPath: '.gitlab-ci-dso.yml',
+        ciConfigPath,
       })
       this.logger.log(`Created a GitLab project repository (path=${fullPath}, repoId=${created.id})`)
       return created
@@ -273,8 +273,8 @@ export class GitlabClientService {
     }
   }
 
-  async getOrCreateProjectGroupRepo(projectSlug: string, subGroupPath: string) {
-    const repo = await this.getOrCreateRepo(subGroupPath)
+  async getOrCreateProjectGroupRepo(projectSlug: string, subGroupPath: string, ciConfigPath?: string) {
+    const repo = await this.getOrCreateRepo(subGroupPath, ciConfigPath)
     await this.setManagedProjectAttributes(repo.id, projectSlug)
     return repo
   }
@@ -451,14 +451,15 @@ export class GitlabClientService {
     }
   }
 
-  async upsertProjectGroupRepo(projectSlug: string, repoName: string, description?: string) {
+  async upsertProjectGroupRepo(projectSlug: string, repoName: string, description?: string, ciConfigPath?: string) {
     const fullPath = `${projectSlug}/${repoName}`
-    const repo = await this.getOrCreateProjectGroupRepo(projectSlug, fullPath)
+    const repo = await this.getOrCreateProjectGroupRepo(projectSlug, fullPath, ciConfigPath)
     const updated = await this.client.Projects.edit(repo.id, {
       name: repoName,
       path: repoName,
       topics: [TOPIC_PLUGIN_MANAGED],
       description,
+      ciConfigPath: ciConfigPath ?? '',
     })
     return updated
   }

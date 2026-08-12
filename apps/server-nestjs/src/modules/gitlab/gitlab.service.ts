@@ -24,6 +24,7 @@ import {
   DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX,
+  GITLAB_CI_CONFIG_PATH,
   INFRA_APPS_REPO_NAME,
   PLUGIN_NAME,
   PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
@@ -359,8 +360,6 @@ export class GitlabService {
       'project.slug': project.slug,
       'repositories.count': project.repositories.length,
     })
-    const gitlabRepositories = await getAll(this.gitlab.getRepos(project.slug))
-    span?.setAttribute('gitlab.repositories.count', gitlabRepositories.length)
     let mirroringEnabledCount = 0
     let mirroringDisabledCount = 0
     for (const repo of project.repositories) {
@@ -371,7 +370,12 @@ export class GitlabService {
         ...(externalHost ? { 'repository.external.host': externalHost } : {}),
         'repository.external': !!repo.externalRepoUrl,
       })
-      await this.ensureRepository(project, repo, gitlabRepositories)
+      await this.gitlab.upsertProjectGroupRepo(
+        project.slug,
+        repo.internalRepoName,
+        undefined,
+        repo.externalRepoUrl ? GITLAB_CI_CONFIG_PATH : undefined,
+      )
 
       if (repo.externalRepoUrl) {
         span?.setAttribute('repository.mirroring', true)
@@ -416,18 +420,6 @@ export class GitlabService {
       }
       span?.setAttribute('managed.repositories.warned.count', warnedCount)
     }
-  }
-
-  private async ensureRepository(
-    project: ProjectWithDetails,
-    repo: ProjectWithDetails['repositories'][number],
-    gitlabRepositories: ProjectSchema[],
-  ) {
-    return gitlabRepositories.find(r => r.name === repo.internalRepoName)
-      ?? await this.gitlab.upsertProjectGroupRepo(
-        project.slug,
-        repo.internalRepoName,
-      )
   }
 
   @StartActiveSpan()
