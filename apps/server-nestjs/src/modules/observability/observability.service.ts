@@ -100,7 +100,7 @@ export class ObservabilityService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.verbose(`Ensuring observability project repository for ${project.slug}`)
-    await this.gitlab.upsertProjectGroupRepo(project.slug, OBSERVABILITY_REPOSITORY)
+    await this.gitlab.upsertProjectGroupRepo(project.slug, { repoName: OBSERVABILITY_REPOSITORY })
   }
 
   @StartActiveSpan()
@@ -114,14 +114,14 @@ export class ObservabilityService {
   }
 
   private async syncChartFiles(project: ProjectWithDetails) {
-    const projectRepo = await this.gitlab.upsertProjectGroupRepo(project.slug, OBSERVABILITY_REPOSITORY)
+    const projectRepo = await this.gitlab.upsertProjectGroupRepo(project.slug, { repoName: OBSERVABILITY_REPOSITORY })
     const actions = await this.buildChartActions(projectRepo)
-    await this.gitlab.maybeCreateCommit(projectRepo, 'ci: :robot_face: Sync observability chart', actions)
+    await this.gitlab.maybeCreateCommit(projectRepo, { message: 'ci: :robot_face: Sync observability chart', actions })
   }
 
   private async buildChartActions(repo: CondensedProjectSchemaWith<'id'>) {
-    const chartAction = await this.gitlab.generateCreateOrUpdateAction(repo, 'main', OBSERVABILITY_CHART_FILE, observabilityChartContent(this.config.chartVersion))
-    const templateAction = await this.gitlab.generateCreateOrUpdateAction(repo, 'main', OBSERVABILITY_TEMPLATE_FILE, observabilityTemplateContent)
+    const chartAction = await this.gitlab.generateCreateOrUpdateAction(repo, { ref: 'main', filePath: OBSERVABILITY_CHART_FILE, content: observabilityChartContent(this.config.chartVersion) })
+    const templateAction = await this.gitlab.generateCreateOrUpdateAction(repo, { ref: 'main', filePath: OBSERVABILITY_TEMPLATE_FILE, content: observabilityTemplateContent })
     return [chartAction, templateAction].filter((a): a is NonNullable<typeof a> => a !== null)
   }
 

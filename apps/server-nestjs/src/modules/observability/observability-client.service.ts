@@ -59,16 +59,12 @@ export class ObservabilityClientService {
     })
     const action = await this.gitlab.generateCreateOrUpdateAction(
       repo,
-      OBSERVABILITY_VALUES_BRANCH,
-      OBSERVABILITY_VALUES_PATH,
-      yamlString,
+      { ref: OBSERVABILITY_VALUES_BRANCH, filePath: OBSERVABILITY_VALUES_PATH, content: yamlString },
     )
     if (action) {
       await this.gitlab.maybeCreateCommit(
         repo,
-        commitMessage,
-        [action],
-        OBSERVABILITY_VALUES_BRANCH,
+        { message: commitMessage, actions: [action], ref: OBSERVABILITY_VALUES_BRANCH },
       )
     }
   }

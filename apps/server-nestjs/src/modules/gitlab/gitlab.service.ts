@@ -30,6 +30,7 @@ import {
   PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PURGE_PLUGIN_KEY,
+  GITLAB_CI_CONFIG_PATH,
 } from './gitlab.constants'
 import {
   adminRoleFlag,
@@ -95,9 +96,11 @@ export class GitlabService {
     // GIT_BRANCH_DEPLOY, which is what the mirror pipeline expects.
     await this.gitlab.triggerMirror(
       projectSlug,
-      internalRepoName,
-      syncAllBranches,
-      payload.syncAllBranches ? undefined : payload.branchName,
+      {
+        targetRepo: internalRepoName,
+        syncAllBranches,
+        branchName: payload.syncAllBranches ? undefined : payload.branchName,
+      },
     )
     this.logger.log(`GitLab mirror pipeline triggered for ${projectSlug}/${internalRepoName}`)
   }
@@ -426,7 +429,10 @@ export class GitlabService {
     return gitlabRepositories.find(r => r.name === repo.internalRepoName)
       ?? await this.gitlab.upsertProjectGroupRepo(
         project.slug,
-        repo.internalRepoName,
+        {
+          repoName: repo.internalRepoName,
+          ciConfigPath: repo.externalRepoUrl ? GITLAB_CI_CONFIG_PATH : undefined,
+        },
       )
   }
 
@@ -482,7 +488,7 @@ export class GitlabService {
   }
 
   private async ensureInfraAppsRepo(project: ProjectWithDetails) {
-    await this.gitlab.upsertProjectGroupRepo(project.slug, INFRA_APPS_REPO_NAME)
+    await this.gitlab.upsertProjectGroupRepo(project.slug, { repoName: INFRA_APPS_REPO_NAME })
   }
 
   private async ensureMirrorRepo(project: ProjectWithDetails) {

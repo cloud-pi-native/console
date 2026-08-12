@@ -487,7 +487,7 @@ describe('gitlabService', () => {
 
       const result = await service.handleRepositorySync(payload)
 
-      expect(gitlab.triggerMirror).toHaveBeenCalledWith('project-1', 'repo-1', false, 'main')
+      expect(gitlab.triggerMirror).toHaveBeenCalledWith('project-1', { targetRepo: 'repo-1', syncAllBranches: false, branchName: 'main' })
       expect(result.gitlab.status).toBe('OK')
     })
 

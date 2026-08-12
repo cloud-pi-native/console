@@ -32,6 +32,7 @@ import {
   PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY,
   SPECIAL_REPO_NAMES,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
+  GITLAB_CI_CONFIG_PATH,
 } from './gitlab.constants'
 
 describe('gitlab-client', () => {
@@ -132,8 +133,8 @@ describe('gitlab-client', () => {
       const notFoundError = makeGitbeakerRequestError({ description: '404 File Not Found' })
       gitlabRepositoryFilesShowMock.mockRejectedValue(notFoundError)
 
-      const action = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
-      await service.maybeCreateCommit(repo, message, action ? [action] : [])
+      const action = await service.generateCreateOrUpdateAction(repo, { ref: 'main', filePath, content })
+      await service.maybeCreateCommit(repo, { message, actions: action ? [action] : [] })
 
       expect(gitlabApi.Commits.create).toHaveBeenCalledWith(
         repoId,
@@ -154,8 +155,8 @@ describe('gitlab-client', () => {
       const gitlabRepositoryFilesShowMock = gitlabApi.RepositoryFiles.show as MockedFunction<typeof gitlabApi.RepositoryFiles.show>
       gitlabRepositoryFilesShowMock.mockResolvedValue(makeRepositoryFileExpandedSchema({ content_sha256: oldHash }))
 
-      const action = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
-      await service.maybeCreateCommit(repo, message, action ? [action] : [])
+      const action = await service.generateCreateOrUpdateAction(repo, { ref: 'main', filePath, content })
+      await service.maybeCreateCommit(repo, { message, actions: action ? [action] : [] })
 
       expect(gitlabApi.Commits.create).toHaveBeenCalledWith(
         repoId,
@@ -176,8 +177,8 @@ describe('gitlab-client', () => {
       const gitlabRepositoryFilesShowMock = gitlabApi.RepositoryFiles.show as MockedFunction<typeof gitlabApi.RepositoryFiles.show>
       gitlabRepositoryFilesShowMock.mockResolvedValue(makeRepositoryFileExpandedSchema({ content_sha256: hash }))
 
-      const action = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
-      await service.maybeCreateCommit(repo, message, action ? [action] : [])
+      const action = await service.generateCreateOrUpdateAction(repo, { ref: 'main', filePath, content })
+      await service.maybeCreateCommit(repo, { message, actions: action ? [action] : [] })
 
       expect(gitlabApi.Commits.create).not.toHaveBeenCalled()
     })
@@ -284,10 +285,48 @@ describe('gitlab-client', () => {
       gitlabApi.Projects.show.mockResolvedValue(makeProjectSchema({ id: repoId }))
       gitlabApi.Projects.edit.mockResolvedValue(makeProjectSchema({ id: repoId, name: repoName }))
 
-      const result = await service.upsertProjectGroupRepo(projectSlug, repoName, 'desc')
+      const result = await service.upsertProjectGroupRepo(projectSlug, { repoName, description: 'desc' })
 
       expect(result).toEqual(expect.objectContaining({ id: repoId, name: repoName }))
       expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(repoId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+    })
+
+    it('should forward a custom ciConfigPath to repo creation and edit', async () => {
+      const projectSlug = 'project-1'
+      const repoName = 'repo-1'
+      const repoId = 101
+      const groupId = 456
+      const rootId = 123
+
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
+      gitlabProjectsAllMock.mockResolvedValueOnce({
+        data: [],
+        paginationInfo: { next: null },
+      })
+
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: rootId, full_path: 'forge' }],
+        paginationInfo: { next: null },
+      })
+
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: groupId, name: projectSlug, parent_id: rootId, full_path: `forge/${projectSlug}` }],
+        paginationInfo: { next: null },
+      })
+
+      gitlabApi.Projects.create.mockResolvedValue(makeProjectSchema({ id: repoId, name: repoName }))
+      gitlabApi.Projects.edit.mockResolvedValue(makeProjectSchema({ id: repoId, name: repoName }))
+
+      const result = await service.upsertProjectGroupRepo(projectSlug, { repoName, ciConfigPath: GITLAB_CI_CONFIG_PATH })
+
+      expect(result).toEqual(expect.objectContaining({ id: repoId, name: repoName }))
+      expect(gitlabApi.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
+        ciConfigPath: GITLAB_CI_CONFIG_PATH,
+      }))
+      expect(gitlabApi.Projects.edit).toHaveBeenCalledWith(repoId, expect.objectContaining({
+        ciConfigPath: GITLAB_CI_CONFIG_PATH,
+      }))
     })
 
     describe('triggerMirror', () => {
@@ -322,7 +361,7 @@ describe('gitlab-client', () => {
         mockProjectGroupRepos(populatedGroup)
         gitlabApi.Pipelines.create.mockResolvedValue(makePipeline({ id: 42 }))
 
-        const pipeline = await service.triggerMirror(projectSlug, 'repo-1', false, 'feat/x')
+        const pipeline = await service.triggerMirror(projectSlug, { targetRepo: 'repo-1', syncAllBranches: false, branchName: 'feat/x' })
 
         expect(pipeline.id).toBe(42)
         // The pipeline runs on the *mirror* repo, never on the target itself.
@@ -339,7 +378,7 @@ describe('gitlab-client', () => {
         mockProjectGroupRepos(populatedGroup)
         gitlabApi.Pipelines.create.mockResolvedValue(makePipeline())
 
-        await service.triggerMirror(projectSlug, 'repo-1', true)
+        await service.triggerMirror(projectSlug, { targetRepo: 'repo-1', syncAllBranches: true })
 
         expect(gitlabApi.Pipelines.create).toHaveBeenCalledWith(mirrorId, 'main', {
           variables: [
@@ -351,7 +390,7 @@ describe('gitlab-client', () => {
       })
 
       it.each(SPECIAL_REPO_NAMES)('should refuse to mirror the special repository %s', async (specialRepo) => {
-        await expect(service.triggerMirror(projectSlug, specialRepo, true))
+        await expect(service.triggerMirror(projectSlug, { targetRepo: specialRepo, syncAllBranches: true }))
           .rejects.toThrow('User requested for invalid mirroring')
         expect(gitlabApi.Pipelines.create).not.toHaveBeenCalled()
       })
@@ -359,7 +398,7 @@ describe('gitlab-client', () => {
       it('should fail when the target repository is absent from the group', async () => {
         mockProjectGroupRepos([{ id: mirrorId, name: 'mirror' }, { id: 12, name: 'repo-2' }])
 
-        await expect(service.triggerMirror(projectSlug, 'repo-1', true))
+        await expect(service.triggerMirror(projectSlug, { targetRepo: 'repo-1', syncAllBranches: true }))
           .rejects.toThrow('Unable to find target repository')
         expect(gitlabApi.Pipelines.create).not.toHaveBeenCalled()
       })
@@ -367,7 +406,7 @@ describe('gitlab-client', () => {
       it('should fail when the project group has no mirror repository', async () => {
         mockProjectGroupRepos([{ id: 11, name: 'repo-1' }, { id: 12, name: 'repo-2' }])
 
-        await expect(service.triggerMirror(projectSlug, 'repo-1', true))
+        await expect(service.triggerMirror(projectSlug, { targetRepo: 'repo-1', syncAllBranches: true }))
           .rejects.toThrow('Unable to find mirror repository')
         expect(gitlabApi.Pipelines.create).not.toHaveBeenCalled()
       })

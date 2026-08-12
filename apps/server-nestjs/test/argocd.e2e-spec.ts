@@ -251,8 +251,8 @@ describeWithArgoCD('ArgoCDService (e2e)', () => {
 
     const staleFilePath = `${project.name}/${clusterLabel}/stale/values.yaml`
     if (!infraRepoId) throw new Error('Missing infra repo id')
-    const staleAction = await gitlab.generateCreateOrUpdateAction(infraProject, 'main', staleFilePath, 'stale: true\n')
-    await gitlab.maybeCreateCommit(infraProject, 'ci: :robot_face: Seed stale values', staleAction ? [staleAction] : [])
+    const staleAction = await gitlab.generateCreateOrUpdateAction(infraProject, { ref: 'main', filePath: staleFilePath, content: 'stale: true\n' })
+    await gitlab.maybeCreateCommit(infraProject, { message: 'ci: :robot_face: Seed stale values', actions: staleAction ? [staleAction] : [] })
 
     await eventEmitter.emitAsync('project.upsert', project)
 
@@ -284,10 +284,10 @@ describeWithArgoCD('ArgoCDService (e2e)', () => {
     const prodFilePath = `${before.name}/${clusterLabel}/${envProdName}/values.yaml`
 
     const seededActions = (await Promise.all([
-      gitlab.generateCreateOrUpdateAction(infraProject, 'main', devFilePath, 'old: true\n'),
-      gitlab.generateCreateOrUpdateAction(infraProject, 'main', prodFilePath, 'old: true\n'),
+      gitlab.generateCreateOrUpdateAction(infraProject, { ref: 'main', filePath: devFilePath, content: 'old: true\n' }),
+      gitlab.generateCreateOrUpdateAction(infraProject, { ref: 'main', filePath: prodFilePath, content: 'old: true\n' }),
     ])).filter((action): action is NonNullable<typeof action> => action !== null)
-    await gitlab.maybeCreateCommit(infraProject, 'ci: :robot_face: Seed existing values', seededActions as CommitAction[])
+    await gitlab.maybeCreateCommit(infraProject, { message: 'ci: :robot_face: Seed existing values', actions: seededActions as CommitAction[] })
 
     await prisma.environment.deleteMany({ where: { id: envProdId } })
 

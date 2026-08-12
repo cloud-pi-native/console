@@ -153,7 +153,7 @@ describe('argoCDService', () => {
     gitlab.listFiles.mockResolvedValue([])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
     vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
-    gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
+    gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repo, { filePath, content }: { filePath: string, content: string }) => {
       return makeCommitAction({ filePath, content })
     })
 
@@ -163,8 +163,9 @@ describe('argoCDService', () => {
     expect(gitlab.maybeCreateCommit).toHaveBeenCalledTimes(1)
     expect(gitlab.maybeCreateCommit).toHaveBeenCalledWith(
       infraProject,
-      'ci: :robot_face: Sync project-1',
-      expect.arrayContaining([
+      {
+        message: 'ci: :robot_face: Sync project-1',
+        actions: expect.arrayContaining([
         {
           action: 'create',
           content: stringify({
@@ -316,6 +317,7 @@ describe('argoCDService', () => {
           filePath: 'Project 1/cluster-1/prod/values.yaml',
         },
       ]),
+      },
     )
 
     expect(gitlab.listFiles).toHaveBeenCalledWith(infraProject, {
@@ -352,7 +354,7 @@ describe('argoCDService', () => {
     ])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
     vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
-    gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
+    gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repo, { filePath, content }: { filePath: string, content: string }) => {
       return makeCommitAction({ filePath, content })
     })
 
@@ -361,8 +363,9 @@ describe('argoCDService', () => {
     expect(gitlab.maybeCreateCommit).toHaveBeenCalledTimes(1)
     expect(gitlab.maybeCreateCommit).toHaveBeenCalledWith(
       infraProject,
-      'ci: :robot_face: Sync project-1',
-      expect.arrayContaining([
+      {
+        message: 'ci: :robot_face: Sync project-1',
+        actions: expect.arrayContaining([
         expect.objectContaining({
           action: 'create',
           filePath: 'Project 1/cluster-1/dev/values.yaml',
@@ -372,6 +375,7 @@ describe('argoCDService', () => {
           filePath: 'Project 1/cluster-1/prod/values.yaml',
         },
       ]),
+      },
     )
 
     expect(gitlab.generateCreateOrUpdateAction).toHaveBeenCalledTimes(1)
@@ -408,8 +412,9 @@ describe('argoCDService', () => {
     expect(gitlab.maybeCreateCommit).toHaveBeenCalledTimes(1)
     expect(gitlab.maybeCreateCommit).toHaveBeenCalledWith(
       infraProject,
-      'ci: :robot_face: Sync project-1',
-      expect.arrayContaining([
+      {
+        message: 'ci: :robot_face: Sync project-1',
+        actions: expect.arrayContaining([
         {
           action: 'delete',
           filePath: 'Project 1/cluster-1/dev/values.yaml',
@@ -419,6 +424,7 @@ describe('argoCDService', () => {
           filePath: 'Project 1/cluster-1/prod/values.yaml',
         },
       ]),
+      },
     )
 
     expect(gitlab.generateCreateOrUpdateAction).not.toHaveBeenCalled()
@@ -488,7 +494,7 @@ describe('argoCDService', () => {
     gitlab.listFiles.mockResolvedValue([])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
     vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
-    gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
+    gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repo, { filePath, content }: { filePath: string, content: string }) => {
       return makeCommitAction({ filePath, content })
     })
 
@@ -498,8 +504,9 @@ describe('argoCDService', () => {
     expect(gitlab.maybeCreateCommit).toHaveBeenCalledTimes(1)
     expect(gitlab.maybeCreateCommit).toHaveBeenCalledWith(
       infraProject,
-      'ci: :robot_face: Sync project-1',
-      expect.arrayContaining([
+      {
+        message: 'ci: :robot_face: Sync project-1',
+        actions: expect.arrayContaining([
         {
           action: 'create',
           content: stringify({
@@ -585,6 +592,7 @@ describe('argoCDService', () => {
           filePath: 'Project 1/cluster-1/dev/values.yaml',
         },
       ]),
+      },
     )
 
     expect(gitlab.listFiles).toHaveBeenCalledWith(infraProject, {
@@ -643,13 +651,13 @@ describe('argoCDService', () => {
     gitlab.listFiles.mockResolvedValue([])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
     vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
-    gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
+    gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repo, { filePath, content }: { filePath: string, content: string }) => {
       return makeCommitAction({ filePath, content })
     })
 
     await expect(service.handleCron()).resolves.not.toThrow()
 
-    const actions = gitlab.maybeCreateCommit.mock.calls[0][2]
+    const actions = gitlab.maybeCreateCommit.mock.calls[0][1].actions
     const parsedValues = actions
       .filter((action): action is typeof action & { content: string } => 'content' in action)
       .map(action => parse(action.content))

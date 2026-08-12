@@ -144,7 +144,7 @@ export class ArgoCDService {
     }
 
     this.logger.log(`Applying ArgoCD changes for project ${project.slug} in zone ${zoneSlug} (actions=${actions.length})`)
-    await this.gitlab.maybeCreateCommit(infraProject, `ci: :robot_face: Sync ${project.slug}`, actions)
+    await this.gitlab.maybeCreateCommit(infraProject, { message: `ci: :robot_face: Sync ${project.slug}`, actions })
   }
 
   private async generateEnvironmentActions(
@@ -262,9 +262,7 @@ export class ArgoCDService {
 
     return this.gitlab.generateCreateOrUpdateAction(
       infraProject,
-      'main',
-      valueFilePath,
-      stringify(values),
+      { ref: 'main', filePath: valueFilePath, content: stringify(values) },
     )
   }
 
@@ -335,9 +333,7 @@ export class ArgoCDService {
 
     return this.gitlab.generateCreateOrUpdateAction(
       infraProject,
-      'main',
-      valueFilePath,
-      stringify(values),
+      { ref: 'main', filePath: valueFilePath, content: stringify(values) },
     )
   }
 

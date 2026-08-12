@@ -19,6 +19,7 @@ import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
+import { getAll } from '../src/utils/iterable.utils'
 import { EXTERNAL_SYNC_TIMEOUT } from './e2e-timeout'
 
 const canRunGitlabE2E
@@ -170,6 +171,31 @@ describeWithGitLab('GitlabService (e2e)', () => {
     expect(repoSecret?.data?.GIT_OUTPUT_PASSWORD).toBeTruthy()
   }, EXTERNAL_SYNC_TIMEOUT)
 
+  it('should trigger the mirror pipeline using the mirror repo default CI config', async () => {
+    const project = await prisma.project.findUniqueOrThrow({
+      where: { id: testProjectId },
+      select: projectSelect,
+    })
+    await eventEmitter.emitAsync('project.upsert', project)
+
+    const allRepos = await getAll(gitlabClientService.getRepos(testProjectSlug))
+    const mirror = allRepos.find(repo => repo.name === 'mirror')
+    if (!mirror) throw new Error('mirror repo not found')
+
+    // The mirror pipeline includes mirror.yml ($CATALOG_PATH) from the DSO catalog
+    // project forge-mi/projects/catalog. The integration GitLab sets CATALOG_PATH at
+    // the instance/group level but not on the ephemeral test projects under
+    // forge-dev/projects, so set it (and its project-level permission) here.
+    await gitlabClient.ProjectVariables.create(mirror.id, 'CATALOG_PATH', 'forge-mi/projects/catalog', {
+      variableType: 'env_var',
+      masked: false,
+      protected: false,
+      raw: true,
+    })
+
+    const pipeline = await gitlabClientService.triggerMirror(testProjectSlug, { targetRepo: 'app', syncAllBranches: false, branchName: 'main' })
+    expect(pipeline.id).toBeTruthy()
+  }, EXTERNAL_SYNC_TIMEOUT)
   describe('project members', () => {
     let newUserId: string | undefined
     let newUserGitlabId: number | undefined
