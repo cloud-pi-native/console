@@ -49,7 +49,10 @@ export class KeycloakService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project delete event for ${project.slug}`)
-    await this.purgeOrphanGroups([project])
+    const group = await this.keycloak.getGroupByPath(`/${project.slug}`)
+    if (group?.id) {
+      await this.keycloak.deleteGroup(group.id)
+    }
     this.logger.log(`Keycloak cleanup completed for project ${project.slug}`)
   }
 
