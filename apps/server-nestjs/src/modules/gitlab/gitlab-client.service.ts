@@ -538,7 +538,11 @@ export class GitlabClientService {
     }
   }
 
-  async getOrCreateMirrorPipelineTriggerToken(projectSlug: string): Promise<PipelineTriggerTokenSchema> {
+  /**
+   * The `mirror` repo id travels with the token: it is what callers persist as
+   * `GIT_MIRROR_PROJECT_ID`, and `PipelineTriggerTokenSchema` does not carry it.
+   */
+  async getOrCreateMirrorPipelineTriggerToken(projectSlug: string): Promise<PipelineTriggerTokenSchema & { repoId: number }> {
     const mirrorRepo = await this.upsertProjectMirrorRepo(projectSlug)
     this.logger.verbose(`Resolving a GitLab pipeline trigger token (projectSlug=${projectSlug}, repoId=${mirrorRepo.id})`)
     const currentTriggerToken = await find(
@@ -547,11 +551,11 @@ export class GitlabClientService {
     )
     if (currentTriggerToken) {
       this.logger.verbose(`GitLab pipeline trigger token found (projectSlug=${projectSlug}, repoId=${mirrorRepo.id})`)
-      return currentTriggerToken
+      return { ...currentTriggerToken, repoId: mirrorRepo.id }
     }
     const created = await this.client.PipelineTriggerTokens.create(mirrorRepo.id, TOKEN_DESCRIPTION)
     this.logger.log(`GitLab pipeline trigger token created (projectSlug=${projectSlug}, repoId=${mirrorRepo.id})`)
-    return created
+    return { ...created, repoId: mirrorRepo.id }
   }
 
   /**
