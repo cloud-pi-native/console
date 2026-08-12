@@ -537,9 +537,10 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
       select: projectSelect,
     })
 
-    await eventEmitter.emitAsync('project.delete', project)
-
+    // Assert the group exists before the on-delete checks
     expect(await keycloak.getGroupByPath(`/${testProjectSlug}`)).toBeTruthy()
+
+    await eventEmitter.emitAsync('project.delete', project)
 
     const deletedProjectGroup = await keycloak.getGroupByPath(`/${testProjectSlug}`)
     expect(deletedProjectGroup).toBeUndefined()
