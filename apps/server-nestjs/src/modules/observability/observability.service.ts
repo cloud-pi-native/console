@@ -11,6 +11,7 @@ import { observabilityConfigFactory } from '../../config/observability.config'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { KeycloakClientService } from '../keycloak/keycloak-client.service'
+import { getErrorResponseStatus } from '../../utils/http.utils'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { ObservabilityClientService } from './observability-client.service'
 import { ObservabilityDatastoreService } from './observability-datastore.service'
@@ -223,16 +224,34 @@ export class ObservabilityService {
 
       for (const userId of desired) {
         if (!group.members.some(m => m.id === userId)) {
-          promises.push(this.keycloak.addUserToGroup(userId, group.id).then(() => undefined))
+          promises.push(this.maybeAddUserToGroup(userId, group.id))
         }
       }
 
       for (const member of group.members) {
         if (!desiredSet.has(member.id)) {
-          promises.push(this.keycloak.removeUserFromGroup(member.id, group.id).then(() => undefined))
+          promises.push(this.maybeRemoveUserFromGroup(member.id, group.id))
         }
       }
     }
     await Promise.all(promises)
+  }
+
+  private async maybeAddUserToGroup(userId: string, groupId: string): Promise<void> {
+    try {
+      await this.keycloak.addUserToGroup(userId, groupId)
+    } catch (err) {
+      if (getErrorResponseStatus(err) !== 404) throw err
+      this.logger.warn(`User ${userId} exists in the database but has no Keycloak account; skipping Grafana group add (groupId=${groupId})`)
+    }
+  }
+
+  private async maybeRemoveUserFromGroup(userId: string, groupId: string): Promise<void> {
+    try {
+      await this.keycloak.removeUserFromGroup(userId, groupId)
+    } catch (err) {
+      if (getErrorResponseStatus(err) !== 404) throw err
+      this.logger.warn(`User ${userId} exists in the database but has no Keycloak account; skipping Grafana group remove (groupId=${groupId})`)
+    }
   }
 }
