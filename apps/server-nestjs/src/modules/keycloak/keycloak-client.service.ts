@@ -92,6 +92,13 @@ export class KeycloakClientService implements OnModuleInit {
     const span = trace.getActiveSpan()
     span?.setAttribute('keycloak.group.id', id)
     this.logger.log(`Deleting Keycloak group (groupId=${id})`)
+    // ponytail: Keycloak 26.7.0 returns HTTP 500 `unknown_error` when deleting a group
+    // that still has subgroups, so delete children depth-first before the parent.
+    for await (const subgroup of this.getSubGroups(id)) {
+      if (subgroup.id) {
+        await this.deleteGroup(subgroup.id)
+      }
+    }
     await this.client.groups.del({ id })
   }
 
