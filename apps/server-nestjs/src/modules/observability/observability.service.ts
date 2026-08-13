@@ -176,7 +176,7 @@ export class ObservabilityService {
     if (!projectGroup?.id) return
 
     for await (const subgroup of this.findGrafanaSubGroups(projectGroup.id)) {
-      await this.maybeDeleteGroup(subgroup.id)
+      await this.keycloak.deleteGroup(subgroup.id)
       this.logger.log(`Deleted Grafana Keycloak group (groupId=${subgroup.id}, project=${project.slug})`)
     }
   }
@@ -235,15 +235,6 @@ export class ObservabilityService {
       }
     }
     await Promise.all(promises)
-  }
-
-  private async maybeDeleteGroup(groupId: string): Promise<void> {
-    try {
-      await this.keycloak.deleteGroup(groupId)
-    } catch (err) {
-      if (getErrorResponseStatus(err) !== 404) throw err
-      this.logger.warn(`Group ${groupId} does not exist in Keycloak; skipping delete`)
-    }
   }
 
   private async maybeAddUserToGroup(userId: string, groupId: string): Promise<void> {
