@@ -43,17 +43,11 @@ describe('ProjectSecretsService', () => {
   })
 
   describe('get', () => {
-    async function seedGitlabGroup(data: Record<string, string>) {
-      prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug }) as unknown as ProjectSlug)
-      vault.listProjectSecrets.mockResolvedValue(['GITLAB'])
-      vaultClient.read.mockResolvedValue(makeVaultSecret({ data }))
-    }
-
     describe('CURL COMMAND injection', () => {
-      const mirrorData = { GIT_MIRROR_PROJECT_ID: '42', GIT_MIRROR_TOKEN: 'secret-token' }
-
       beforeEach(async () => {
-        await seedGitlabGroup(mirrorData)
+        prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug }) as unknown as ProjectSlug)
+        vault.listProjectSecrets.mockResolvedValue(['GITLAB'])
+        vaultClient.read.mockResolvedValue(makeVaultSecret({ data: { GIT_MIRROR_PROJECT_ID: '42', GIT_MIRROR_TOKEN: 'secret-token' } }))
       })
 
       it('injects the hint when displayTriggerHint is enabled (default)', async () => {
@@ -79,7 +73,9 @@ describe('ProjectSecretsService', () => {
 
     describe('without mirror credentials', () => {
       beforeEach(async () => {
-        await seedGitlabGroup({})
+        prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug }) as unknown as ProjectSlug)
+        vault.listProjectSecrets.mockResolvedValue(['GITLAB'])
+        vaultClient.read.mockResolvedValue(makeVaultSecret({ data: {} }))
       })
 
       it('does not inject the CURL COMMAND', async () => {
