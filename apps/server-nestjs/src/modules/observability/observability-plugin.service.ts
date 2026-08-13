@@ -4,8 +4,8 @@ import { ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { observabilityConfigFactory } from '../../config/observability.config'
 import { ObservabilityDatastoreService } from './observability-datastore.service'
-import { isProdStage } from './observability.utils'
 import { ENABLED_PLUGIN_KEY, INSTANCES_PLUGIN_KEY } from './observability.constants'
+import { isProdStage } from './observability.utils'
 
 @Injectable()
 export class ObservabilityPluginService {
