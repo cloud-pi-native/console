@@ -18,6 +18,7 @@ import { ProjectServicesModule } from './modules/project-services/project-servic
 import { ProjectModule } from './modules/project/project.module'
 import { RepositoryModule } from './modules/repository/repository.module'
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module'
+import { UserModule } from './modules/user/user.module'
 import { VersionModule } from './modules/version/version.module'
 import { getDotenvPaths } from './utils/dotenv.utils'
 
@@ -45,6 +46,7 @@ import { getDotenvPaths } from './utils/dotenv.utils'
     RepositoryModule,
     ScheduleModule.forRoot(),
     SystemSettingsModule,
+    UserModule,
     VersionModule,
   ],
   controllers: [],
