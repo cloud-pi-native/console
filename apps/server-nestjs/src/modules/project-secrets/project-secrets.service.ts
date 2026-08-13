@@ -75,18 +75,15 @@ export class ProjectSecretsService {
   // (adminPlugin table, default ENABLED) was not explicitly disabled. The GITLAB group already carries
   // GIT_MIRROR_PROJECT_ID / GIT_MIRROR_TOKEN from the raw Vault read; we only synthesize the curl
   // one-liner here and never re-expose any other credential.
-  private async formatGitlabTriggerHint(result: Record<string, Record<string, string>>, projectId: string): Promise<void> {
+  private async formatGitlabTriggerHint(gitlabProjectId: string, token: string): Promise<string | undefined> {
     const adminPlugin = await this.prisma.adminPlugin.findUnique({
       where: { pluginName_key: { pluginName: 'gitlab', key: 'displayTriggerHint' } },
       select: { value: true },
     }).catch(() => null)
     if (specificallyDisabled(adminPlugin?.value)) return
-    const gitlab = result.GITLAB
-    const gitlabProjectId = gitlab?.GIT_MIRROR_PROJECT_ID
-    const token = gitlab?.GIT_MIRROR_TOKEN
     if (!gitlabProjectId || !token) return
     const apiUrl = this.gitlabConfig.url
-    result.GITLAB['CURL COMMAND'] = [
+    return [
       'curl -k',
       `--header "PRIVATE-TOKEN: ${token}"`,
       '-X POST',
@@ -95,7 +92,7 @@ export class ProjectSecretsService {
       '-F ref=main',
       `-F "variables[GIT_MIRROR_PROJECT_ID]=${gitlabProjectId}"`,
       `"${apiUrl}/api/v4/projects/${gitlabProjectId}/trigger/pipeline"`,
-    ].join(' \\\n    ')
+    ].join(' \\\\\\n    ')
   }
 
   private async listProjectSecretPaths(projectId: string, slug: string): Promise<string[]> {
@@ -136,7 +133,8 @@ export class ProjectSecretsService {
     }
 
     if (result.GITLAB) {
-      await this.formatGitlabTriggerHint(result, projectId)
+      const hint = await this.formatGitlabTriggerHint(result.GITLAB.GIT_MIRROR_PROJECT_ID, result.GITLAB.GIT_MIRROR_TOKEN)
+      if (hint) result.GITLAB['CURL COMMAND'] = hint
     }
 
     return result
