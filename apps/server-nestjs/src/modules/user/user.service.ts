@@ -1,16 +1,34 @@
-import type { AllUsersQuerySchema, LettersQuery, PatchUsersBody } from '@cpn-console/shared'
-import type { User } from '@prisma/client'
-import type { z } from 'zod'
-import { Inject, Injectable } from '@nestjs/common'
+import type { userContract } from '@cpn-console/shared'
+import type { Prisma, User } from '@prisma/client'
+import type { ClientInferResponseBody } from '@ts-rest/core'
+import { BadRequestException, Inject, Injectable } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import {
-  buildAllUsersWhere,
-  buildMatchingUsersWhere,
-  getMatchingUsers,
+  createUser as createUserQuery,
+  getAdminRolesByName,
+  getMatchingUsers as getMatchingUsersQuery,
   getUsers,
-  patchUsers,
+  updateUserAdminRoleIds,
 } from './user-queries.utils'
+
+type AllUsersResponse = ClientInferResponseBody<typeof userContract.getAllUsers, 200>
+type MatchingUsersResponse = ClientInferResponseBody<typeof userContract.getMatchingUsers, 200>
+type PatchUsersResponse = ClientInferResponseBody<typeof userContract.patchUsers, 200>
+
+function toContractUser(user: User): AllUsersResponse[number] {
+  return {
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    adminRoleIds: user.adminRoleIds,
+    type: user.type,
+    lastLogin: user.lastLogin ? user.lastLogin.toISOString() : null,
+    createdAt: user.createdAt.toISOString(),
+    updatedAt: user.updatedAt.toISOString(),
+  }
+}
 
 @Injectable()
 export class UserService {
@@ -19,52 +37,92 @@ export class UserService {
     @Inject(EventEmitter2) private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  async getAllUsers(query: z.infer<typeof AllUsersQuerySchema>): Promise<User[]> {
-    const where = await buildAllUsersWhere(this.prisma, query)
-    return getUsers(this.prisma, where)
+  async getAllUsers(
+    query: typeof userContract.getAllUsers.query._type,
+    relationType: 'OR' | 'AND' = 'AND',
+  ): Promise<AllUsersResponse> {
+    const whereInputs: Prisma.UserWhereInput[] = []
+    if (query.adminRoleIds?.length) {
+      whereInputs.push({ adminRoleIds: { hasEvery: query.adminRoleIds } })
+    }
+    if (query.adminRoles?.length) {
+      const roles = query.adminRoles
+        ? await getAdminRolesByName(this.prisma, query.adminRoles)
+        : []
+
+      const adminRoleNameNotFound = query.adminRoles?.find(nameQueried => !roles.some(({ name }) => name === nameQueried))
+      if (adminRoleNameNotFound) {
+        throw new BadRequestException(`Unable to find adminRole ${adminRoleNameNotFound}`)
+      }
+      whereInputs.push({ adminRoleIds: { hasEvery: roles.map(({ id }) => id) } })
+    }
+    if (query.memberOfIds) {
+      whereInputs.push({
+        AND: query.memberOfIds.map(id => ({
+          OR: [
+            { projectsOwned: { some: { id } } },
+            { ProjectMembers: { some: { project: { id } } } },
+          ],
+        })),
+      })
+    }
+
+    return (await getUsers(this.prisma, { [relationType]: whereInputs })).map(toContractUser)
   }
 
   async getMatchingUsers(
-    query: LettersQuery,
-  ): Promise<User[]> {
-    const where = buildMatchingUsersWhere(query)
-    return getMatchingUsers(this.prisma, where)
+    query: typeof userContract.getMatchingUsers.query._type,
+  ): Promise<MatchingUsersResponse> {
+    const AND: Prisma.UserWhereInput[] = []
+    if (query.notInProjectId) {
+      AND.push({ projectMembers: { none: { projectId: query.notInProjectId } } })
+      AND.push({ projectsOwned: { none: { id: query.notInProjectId } } })
+    }
+    const filter = { contains: query.letters, mode: 'insensitive' } as const
+    if (query.letters) {
+      AND.push({
+        OR: [{
+          email: filter,
+        }, {
+          firstName: filter,
+        }, {
+          lastName: filter,
+        }],
+      })
+      AND.push({ type: 'human' })
+    }
+
+    return (await getMatchingUsersQuery(this.prisma, { AND })).map(toContractUser)
+  }
+
+  async createUser(
+    data: Omit<User, 'createdAt' | 'updatedAt'>,
+  ): Promise<User> {
+    return createUserQuery(this.prisma, data)
   }
 
   async patchUsers(
-    users: PatchUsersBody,
-  ): Promise<User[]> {
+    users: { id: string, adminRoleIds: string[] | null }[],
+  ): Promise<PatchUsersResponse> {
     const usersBefore = await getUsers(this.prisma, { id: { in: users.map(({ id }) => id) } })
-    await this.prisma.$transaction(tx => patchUsers(tx, users))
-    await this.emitImpactedRoleEvents(users, usersBefore)
-    return getUsers(this.prisma, { id: { in: users.map(({ id }) => id) } })
-  }
 
-  private async emitImpactedRoleEvents(
-    users: PatchUsersBody,
-    usersBefore: User[],
-  ): Promise<void> {
+    for (const user of users) {
+      if (user.adminRoleIds) {
+        await updateUserAdminRoleIds(this.prisma, user.id, user.adminRoleIds)
+      }
+    }
+
+    // Mirror legacy: hook.adminRole.upsert per impacted user, over the union of
+    // before/after adminRoleIds so revocations are synced too
     const impactedRoleIds = new Set<string>()
     for (const user of users) {
       usersBefore.find(({ id }) => id === user.id)?.adminRoleIds.forEach(roleId => impactedRoleIds.add(roleId))
       user.adminRoleIds?.forEach(roleId => impactedRoleIds.add(roleId))
     }
-    const roles = await this.prisma.adminRole.findMany({
-      where: { id: { in: [...impactedRoleIds] } },
-      select: { id: true, oidcGroup: true },
-    })
-    const members = await this.prisma.user.findMany({
-      where: { adminRoleIds: { hasSome: [...impactedRoleIds] } },
-      select: { id: true, email: true, firstName: true, lastName: true, adminRoleIds: true },
-    })
-    for (const role of roles) {
-      await this.eventEmitter.emitAsync('adminRole.upsert', {
-        id: role.id,
-        oidcGroup: role.oidcGroup,
-        members: members
-          .filter(({ adminRoleIds }) => adminRoleIds.includes(role.id))
-          .map(({ id, email, firstName, lastName }) => ({ id, email, firstName, lastName })),
-      })
+    for (const roleId of impactedRoleIds) {
+      await this.eventEmitter.emitAsync('adminRole.upsert', { roleId })
     }
+
+    return (await getUsers(this.prisma, { id: { in: users.map(({ id }) => id) } })).map(toContractUser)
   }
 }

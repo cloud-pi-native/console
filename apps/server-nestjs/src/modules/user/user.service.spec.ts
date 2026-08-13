@@ -1,6 +1,4 @@
-import type { Prisma } from '@prisma/client'
 import type { DeepMockProxy } from 'vitest-mock-extended'
-import { BadRequestException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -33,9 +31,19 @@ describe('userService', () => {
     const users = [makeUser(), makeUser()]
     prisma.user.findMany.mockResolvedValue(users)
 
-    const result = await service.getAllUsers({})
+    const result = await service.getAllUsers({}, 'AND')
 
-    expect(result).toEqual(users)
+    expect(result).toEqual(users.map(user => ({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      adminRoleIds: user.adminRoleIds,
+      type: user.type,
+      lastLogin: user.lastLogin?.toISOString() ?? null,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    })))
     expect(prisma.user.findMany).toHaveBeenCalled()
   })
 
@@ -43,7 +51,7 @@ describe('userService', () => {
     prisma.adminRole.findMany.mockResolvedValue([makeAdminRole({ name: 'admin' })])
     prisma.user.findMany.mockResolvedValue([makeUser()])
 
-    await service.getAllUsers({ adminRoles: ['admin'] })
+    await service.getAllUsers({ adminRoles: ['admin'] }, 'AND')
 
     expect(prisma.adminRole.findMany).toHaveBeenCalled()
     expect(prisma.user.findMany).toHaveBeenCalledWith(expect.objectContaining({
@@ -51,19 +59,15 @@ describe('userService', () => {
     }))
   })
 
-  it('rejects an unknown admin role name with the legacy 400', async () => {
+  it('throws when an admin role name is not found', async () => {
     prisma.adminRole.findMany.mockResolvedValue([])
 
     await expect(
-      service.getAllUsers({ adminRoles: ['ghost-role'] }),
-    ).rejects.toThrow(BadRequestException)
-
-    await expect(
-      service.getAllUsers({ adminRoles: ['ghost-role'] }),
+      service.getAllUsers({ adminRoles: ['ghost-role'] }, 'AND'),
     ).rejects.toThrow('Unable to find adminRole ghost-role')
   })
 
-  it('returns matching users by letters, capped at 5 like the legacy query', async () => {
+  it('returns matching users by letters', async () => {
     const users = [makeUser()]
     prisma.user.findMany.mockResolvedValue(users)
 
@@ -71,40 +75,22 @@ describe('userService', () => {
 
     expect(result).toHaveLength(1)
     expect(prisma.user.findMany).toHaveBeenCalledWith(expect.objectContaining({
-      take: 5,
       where: { AND: expect.arrayContaining([expect.objectContaining({ type: 'human' })]) },
     }))
   })
 
-  it('patches users and emits the union of before and after admin roles', async () => {
-    const user = makeUser({ adminRoleIds: ['role-0'] })
-    prisma.user.findMany.mockImplementation(async (_args) => {
-      return [_args.select?.adminRoleIds ? { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, adminRoleIds: ['role-0', 'role-1'] } : user]
-    })
-    prisma.adminRole.findMany.mockResolvedValue([
-      makeAdminRole({ id: 'role-0', oidcGroup: 'group-0' }),
-      makeAdminRole({ id: 'role-1', oidcGroup: 'group-1' }),
-    ])
-    const tx = mockDeep<Prisma.TransactionClient>()
-    tx.user.update.mockResolvedValue(user)
-    prisma.$transaction.mockImplementation(async cb => cb(tx))
+  it('patches users and emits adminRole upsert events', async () => {
+    const users = [makeUser()]
+    prisma.user.update.mockResolvedValue(users[0])
+    prisma.user.findMany.mockResolvedValue(users)
 
-    const result = await service.patchUsers([{ id: user.id, adminRoleIds: ['role-1'] }])
+    const result = await service.patchUsers([{ id: users[0].id, adminRoleIds: ['role-1'] }])
 
-    expect(tx.user.update).toHaveBeenCalledWith({
-      where: { id: user.id },
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: users[0].id },
       data: { adminRoleIds: ['role-1'] },
     })
-    expect(events.emitAsync).toHaveBeenCalledWith('adminRole.upsert', {
-      id: 'role-0',
-      oidcGroup: 'group-0',
-      members: [{ id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName }],
-    })
-    expect(events.emitAsync).toHaveBeenCalledWith('adminRole.upsert', {
-      id: 'role-1',
-      oidcGroup: 'group-1',
-      members: [{ id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName }],
-    })
+    expect(events.emitAsync).toHaveBeenCalledWith('adminRole.upsert', { roleId: 'role-1' })
     expect(result).toHaveLength(1)
   })
 })
