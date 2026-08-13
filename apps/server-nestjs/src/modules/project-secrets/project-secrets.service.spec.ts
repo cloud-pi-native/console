@@ -9,7 +9,7 @@ import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultService } from '../vault/vault.service'
-import { makeAdminPlugin, makeProjectSlug, makeVaultSecret, type ProjectSlug } from './project-secrets-testing.utils'
+import { makeAdminPlugin, makeProjectSlug, makeVaultSecret } from './project-secrets-testing.utils'
 import { ProjectSecretsService } from './project-secrets.service'
 
 describe('ProjectSecretsService', () => {
@@ -43,7 +43,7 @@ describe('ProjectSecretsService', () => {
   it('returns parsed secrets from vault', async () => {
     const projectId = faker.string.uuid()
     const slug = faker.lorem.slug()
-    prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug }) as unknown as ProjectSlug)
+    prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug }))
     vault.listProjectSecrets.mockResolvedValue(['group1/secret1'])
     vaultClient.read.mockResolvedValue(makeVaultSecret({ data: { key1: 'value1', key2: 42, key3: true, key4: null } }))
 
@@ -60,7 +60,7 @@ describe('ProjectSecretsService', () => {
 
   it('handles nested secret paths', async () => {
     const slug = faker.lorem.slug()
-    prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug }) as unknown as ProjectSlug)
+    prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug }))
     vault.listProjectSecrets.mockResolvedValue(['group1/sub/path'])
     vaultClient.read.mockResolvedValue(makeVaultSecret({ data: { nested: 'value' } }))
 
@@ -70,7 +70,7 @@ describe('ProjectSecretsService', () => {
   })
 
   it('returns empty object when no secrets exist', async () => {
-    prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug: faker.lorem.slug() }) as unknown as ProjectSlug)
+    prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug: faker.lorem.slug() }))
     vault.listProjectSecrets.mockResolvedValue([])
 
     const result = await service.get(faker.string.uuid())
@@ -79,7 +79,7 @@ describe('ProjectSecretsService', () => {
   })
 
   it('returns empty object when secret listing fails', async () => {
-    prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug: faker.lorem.slug() }) as unknown as ProjectSlug)
+    prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug: faker.lorem.slug() }))
     vault.listProjectSecrets.mockRejectedValue(new Error('vault unavailable'))
 
     const result = await service.get(faker.string.uuid())
@@ -89,7 +89,7 @@ describe('ProjectSecretsService', () => {
 
   it('skips secrets that fail to read', async () => {
     const slug = faker.lorem.slug()
-    prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug }) as unknown as ProjectSlug)
+    prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug }))
     vault.listProjectSecrets.mockResolvedValue(['group1/s1', 'group1/s2'])
     vaultClient.read
       .mockRejectedValueOnce(new Error('vault error'))
@@ -102,7 +102,7 @@ describe('ProjectSecretsService', () => {
 
   describe('CURL COMMAND injection', () => {
     beforeEach(async () => {
-      prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug: faker.lorem.slug() }) as unknown as ProjectSlug)
+      prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug: faker.lorem.slug() }))
       vault.listProjectSecrets.mockResolvedValue(['GITLAB'])
       vaultClient.read.mockResolvedValue(
         makeVaultSecret({ data: { GIT_MIRROR_PROJECT_ID: '42', GIT_MIRROR_TOKEN: 'secret-token' } }),
@@ -132,7 +132,7 @@ describe('ProjectSecretsService', () => {
 
   describe('without mirror credentials', () => {
     beforeEach(async () => {
-      prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug: faker.lorem.slug() }) as unknown as ProjectSlug)
+      prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug: faker.lorem.slug() }))
       vault.listProjectSecrets.mockResolvedValue(['GITLAB'])
       vaultClient.read.mockResolvedValue(makeVaultSecret({ data: {} }))
     })

@@ -10,11 +10,12 @@ export function makeVaultSecret<T extends Record<string, unknown> = Record<strin
   } satisfies VaultSecret<T>
 }
 
-export function makeProjectSlug(overrides: Partial<{ slug: string }> = {}): { slug: string } {
+export function makeProjectSlug(overrides: Partial<{ slug: string }> = {}): ProjectSlug {
+  const slug = faker.helpers.slugify(`test-project-${faker.string.uuid()}`)
   return {
-    slug: faker.helpers.slugify(`test-project-${faker.string.uuid()}`),
+    slug,
     ...overrides,
-  }
+  } satisfies ProjectSlug
 }
 
 export interface AdminPluginConfig {
