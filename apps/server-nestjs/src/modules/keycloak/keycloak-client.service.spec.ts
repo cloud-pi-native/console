@@ -249,3 +249,63 @@ describe('getOrCreateSubGroupByName', () => {
     expect(listCalls).toBe(1)
   })
 })
+
+describe('deleteGroup', () => {
+  let module: TestingModule
+  let service: KeycloakClientService
+
+  const groupUrl = `${keycloakUrl}/admin/realms/${projectRealm}/groups/:id`
+
+  beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+  beforeEach(async () => {
+    module = await createKeycloakClientServiceTestingModule().compile()
+    service = module.get(KeycloakClientService)
+    useTokenEndpoint()
+    await module.init()
+  })
+  afterEach(async () => {
+    await module.close()
+    server.resetHandlers()
+  })
+  afterAll(() => server.close())
+
+  it('should delete a group without subgroups', async () => {
+    const delGroup = vi.fn(() => HttpResponse.text(null, { status: 204 }))
+    server.use(
+      http.get(childrenUrl, () => HttpResponse.json([])),
+      http.delete(groupUrl, delGroup),
+    )
+
+    await service.deleteGroup('group-id')
+
+    expect(delGroup).toHaveBeenCalledTimes(1)
+  })
+
+  it('should delete subgroups before the parent to avoid the Keycloak 26.7.0 HTTP 500 on non-empty groups', async () => {
+    const deleted: string[] = []
+    // Only the parent returns a child; the child itself has no children
+    server.use(
+      http.get(childrenUrl, ({ params }) =>
+        params.parentId === 'parent-id'
+          ? HttpResponse.json([{ id: 'child-id', name: 'child' }])
+          : HttpResponse.json([])),
+      http.delete(groupUrl, ({ params }) => {
+        deleted.push(params.id as string)
+        return HttpResponse.text(null, { status: 204 })
+      }),
+    )
+
+    await service.deleteGroup('parent-id')
+
+    expect(deleted).toEqual(['child-id', 'parent-id'])
+  })
+
+  it('should swallow a 404 as the group is already gone', async () => {
+    server.use(
+      http.get(childrenUrl, () => HttpResponse.json([])),
+      http.delete(groupUrl, () => HttpResponse.json({ error: 'Not found' }, { status: 404 })),
+    )
+
+    await expect(service.deleteGroup('gone-id')).resolves.toBeUndefined()
+  })
+})
