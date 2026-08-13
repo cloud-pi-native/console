@@ -23,6 +23,7 @@ import { RepositoryModule } from './modules/repository/repository.module'
 import { SystemConfigModule } from './modules/system-config/system-config.module'
 import { StageModule } from './modules/stage/stage.module'
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module'
+import { UserModule } from './modules/user/user.module'
 import { VersionModule } from './modules/version/version.module'
 import { ZoneModule } from './modules/zone/zone.module'
 import { getDotenvPaths } from './utils/dotenv.utils'
@@ -56,6 +57,7 @@ import { getDotenvPaths } from './utils/dotenv.utils'
     StageModule,
     SystemConfigModule,
     SystemSettingsModule,
+    UserModule,
     VersionModule,
     ZoneModule,
   ],
