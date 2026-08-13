@@ -1,4 +1,5 @@
 import type { ConfigType } from '@nestjs/config'
+import { defaultOrNullish, specificallyDisabled, specificallyEnabled } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { baseConfigFactory } from '../../config/base.config'
@@ -8,7 +9,6 @@ import { nexusConfigFactory } from '../../config/nexus.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultClientService } from '../vault/vault-client.service'
-import { specificallyDisabled, specificallyEnabled } from '@cpn-console/hooks'
 import { VaultService } from '../vault/vault.service'
 import { generateProjectPath } from '../vault/vault.utils'
 import { getAdminPlugin, getProjectPlugins, getProjectSlug } from './project-secrets-queries.utils'
@@ -117,11 +117,9 @@ export class ProjectSecretsService {
     }
   }
 
-  // The raw read exposed the admin NEXUS_USERNAME / NEXUS_PASSWORD — the legacy nexus getSecrets
-  // hook never returned these. Scrub them and restore the computed repo URLs instead.
   private async synthesizeNexus(
     group: Record<string, string>,
-    slug: string,
+    projectSlug: string,
     projectId: string,
   ): Promise<Record<string, string>> {
     if (!hasEntries(group)) return group
@@ -129,36 +127,42 @@ export class ProjectSecretsService {
     const nexusFlags = Object.fromEntries(
       (plugins?.plugins ?? []).filter(p => p.pluginName === 'nexus').map(p => [p.key, p.value]),
     )
-    const { NEXUS_USERNAME, NEXUS_PASSWORD, ...rest } = group
-    // ponytail: global nexus default (activateMavenRepoDefaultValue) is not wired in nestjs config yet;
-    // only an explicit per-project enable is honored.
     const nexusUrl = this.nexusConfig.secretExposeInternalUrl && this.nexusConfig.internalUrl
       ? this.nexusConfig.internalUrl
       : this.nexusConfig.url
-    if (specificallyEnabled(nexusFlags.activateMavenRepo)) {
-      rest.MAVEN_REPO_RELEASE = `${nexusUrl}/${slug}-repository-release`
-      rest.MAVEN_REPO_SNAPSHOT = `${nexusUrl}/${slug}-repository-snapshot`
+    const [mavenDefault, npmDefault] = await Promise.all([
+      getAdminPlugin(this.prisma, 'nexus', 'activateMavenRepoDefaultValue').catch(() => null),
+      getAdminPlugin(this.prisma, 'nexus', 'activateNpmRepoDefaultValue').catch(() => null),
+    ])
+    const mavenEnabled = specificallyEnabled(nexusFlags.activateMavenRepo)
+      || (defaultOrNullish(nexusFlags.activateMavenRepo) && specificallyEnabled(mavenDefault?.value))
+    const npmEnabled = specificallyEnabled(nexusFlags.activateNpmRepo)
+      || (defaultOrNullish(nexusFlags.activateNpmRepo) && specificallyEnabled(npmDefault?.value))
+    const out: Record<string, string> = {}
+    if (mavenEnabled) {
+      out.MAVEN_REPO_RELEASE = new URL(`${projectSlug}-repository-release`, nexusUrl).toString()
+      out.MAVEN_REPO_SNAPSHOT = new URL(`${projectSlug}-repository-snapshot`, nexusUrl).toString()
     }
-    if (specificallyEnabled(nexusFlags.activateNpmRepo)) {
-      rest.NPM_REPO = `${nexusUrl}/${slug}-npm`
+    if (npmEnabled) {
+      out.NPM_REPO = new URL(`${projectSlug}-npm`, nexusUrl).toString()
     }
-    return rest
+    return out
   }
 
-  private synthesizeHarbor(group: Record<string, string>, slug: string): Record<string, string> {
+  private synthesizeHarbor(group: Record<string, string>, projectSlug: string): Record<string, string> {
     if (!hasEntries(group)) return group
-    const harborHost = this.harborConfig.url.split('://')[1]
+    const harborUrl = new URL(`${projectSlug}/`, this.harborConfig.url)
     return {
       ...group,
-      'Registry base path': `${harborHost}/${slug}/`,
+      'Registry base path': `${harborUrl.host}${harborUrl.pathname}`,
     }
   }
 
-  private synthesizeVault(group: Record<string, string>, slug: string): Record<string, string> {
+  private synthesizeVault(group: Record<string, string>, projectSlug: string): Record<string, string> {
     if (!hasEntries(group)) return group
     return {
       ...group,
-      '.spec.mount': slug,
+      '.spec.mount': projectSlug,
       '.spec.vaultAuthRef': 'vault-auth',
     }
   }

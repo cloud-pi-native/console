@@ -1,9 +1,9 @@
 import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
-import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { mockDeep } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
+import { Test } from '@nestjs/testing'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { mockDeep } from 'vitest-mock-extended'
 import { baseConfigFactory } from '../../config/base.config'
 import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { harborConfigFactory } from '../../config/harbor.config'
@@ -14,7 +14,7 @@ import { VaultService } from '../vault/vault.service'
 import { makeAdminPlugin, makeProject, makeVaultSecret } from './project-secrets-testing.utils'
 import { ProjectSecretsService } from './project-secrets.service'
 
-describe('ProjectSecretsService', () => {
+describe('projectSecretsService', () => {
   let service: ProjectSecretsService
   let prisma: DeepMockProxy<PrismaService>
   let vault: DeepMockProxy<VaultService>
@@ -71,7 +71,8 @@ describe('ProjectSecretsService', () => {
     expect(result.GITLAB).toHaveProperty('key2', '42')
     expect(result.GITLAB).toHaveProperty('key3', 'true')
     expect(result.GITLAB).toHaveProperty('key4', '')
-    expect(result.NEXUS).toHaveProperty('NEXUS_SOME_TOKEN', 'ok')
+    // nexus group is whitelisted: with no repo flags, nothing is emitted
+    expect(result.NEXUS).toBeUndefined()
     expect(result.REGISTRY).toHaveProperty('REGISTRY_ROBOT_SECRET', 'robot')
     expect(result.VAULT).toHaveProperty('VAULT_ROLE', 'role')
   })
@@ -97,7 +98,7 @@ describe('ProjectSecretsService', () => {
     expect(result).toEqual({ GITLAB: { key1: 'value1' } })
   })
 
-  describe('GitLab trigger hint (CURL COMMAND)', () => {
+  describe('gitLab trigger hint (CURL COMMAND)', () => {
     beforeEach(() => {
       const project = makeProject()
       prisma.project.findUnique.mockResolvedValue(project)
@@ -152,6 +153,7 @@ describe('ProjectSecretsService', () => {
             { pluginName: 'nexus', key: 'activateNpmRepo', value: 'enabled' },
           ],
         })) // getProjectPlugins
+      prisma.adminPlugin.findUnique.mockResolvedValue(null) // nexus global defaults
       vaultClient.read
         .mockResolvedValueOnce(makeVaultSecret({ data: { GIT_MIRROR_PROJECT_ID: '42', GIT_MIRROR_TOKEN: 'secret-token' } })) // GITLAB
         .mockResolvedValueOnce(makeVaultSecret({ // NEXUS
@@ -161,15 +163,17 @@ describe('ProjectSecretsService', () => {
         .mockResolvedValueOnce(makeVaultSecret({ data: { VAULT_ROLE: 'role' } })) // VAULT
     })
 
-    it('scrubs leaked Nexus admin credentials and restores repo URLs', async () => {
+    it('outputs only the computed Nexus repo URLs, never raw vault keys', async () => {
       const result = await service.get(faker.string.uuid())
 
+      expect(result.NEXUS).toEqual({
+        MAVEN_REPO_RELEASE: `https://nexus.example.com/${project.slug}-repository-release`,
+        MAVEN_REPO_SNAPSHOT: `https://nexus.example.com/${project.slug}-repository-snapshot`,
+        NPM_REPO: `https://nexus.example.com/${project.slug}-npm`,
+      })
       expect(result.NEXUS.NEXUS_USERNAME).toBeUndefined()
       expect(result.NEXUS.NEXUS_PASSWORD).toBeUndefined()
-      expect(result.NEXUS.NEXUS_SOME_TOKEN).toBe('ok')
-      expect(result.NEXUS.MAVEN_REPO_RELEASE).toBe(`https://nexus.example.com/${project.slug}-repository-release`)
-      expect(result.NEXUS.MAVEN_REPO_SNAPSHOT).toBe(`https://nexus.example.com/${project.slug}-repository-snapshot`)
-      expect(result.NEXUS.NPM_REPO).toBe(`https://nexus.example.com/${project.slug}-npm`)
+      expect(result.NEXUS.NEXUS_SOME_TOKEN).toBeUndefined()
     })
 
     it('restores the Harbor registry base path hint', async () => {
@@ -181,6 +185,73 @@ describe('ProjectSecretsService', () => {
       const result = await service.get(faker.string.uuid())
       expect(result.VAULT['.spec.mount']).toBe(project.slug)
       expect(result.VAULT['.spec.vaultAuthRef']).toBe('vault-auth')
+    })
+  })
+
+  describe('nexus global default fallback', () => {
+    let project: ReturnType<typeof makeProject>
+
+    beforeEach(() => {
+      project = makeProject()
+      prisma.project.findUnique
+        .mockResolvedValueOnce(project) // getProjectSlug
+      vaultClient.read
+        .mockResolvedValueOnce(makeVaultSecret({ data: { GIT_MIRROR_PROJECT_ID: '42', GIT_MIRROR_TOKEN: 'secret-token' } })) // GITLAB
+        .mockResolvedValueOnce(makeVaultSecret({ data: { NEXUS_SOME_TOKEN: 'ok' } })) // NEXUS
+        .mockResolvedValueOnce(makeVaultSecret({ data: { REGISTRY_ROBOT_SECRET: 'robot' } })) // REGISTRY
+        .mockResolvedValueOnce(makeVaultSecret({ data: { VAULT_ROLE: 'role' } })) // VAULT
+    })
+
+    it('emits repo URLs when per-project flags are default and global defaults are enabled', async () => {
+      prisma.project.findUnique
+        .mockResolvedValueOnce(makeProject({
+          plugins: [],
+        })) // getProjectPlugins — no nexus flags = default/nullish
+      // gitlab displayTriggerHint, nexus maven default, nexus npm default
+      prisma.adminPlugin.findUnique
+        .mockResolvedValueOnce(null) // gitlab displayTriggerHint
+        .mockResolvedValueOnce(makeAdminPlugin({ pluginName: 'nexus', key: 'activateMavenRepoDefaultValue', value: 'enabled' }))
+        .mockResolvedValueOnce(makeAdminPlugin({ pluginName: 'nexus', key: 'activateNpmRepoDefaultValue', value: 'enabled' }))
+
+      const result = await service.get(faker.string.uuid())
+
+      expect(result.NEXUS.MAVEN_REPO_RELEASE).toBe(`https://nexus.example.com/${project.slug}-repository-release`)
+      expect(result.NEXUS.MAVEN_REPO_SNAPSHOT).toBe(`https://nexus.example.com/${project.slug}-repository-snapshot`)
+      expect(result.NEXUS.NPM_REPO).toBe(`https://nexus.example.com/${project.slug}-npm`)
+    })
+
+    it('does not emit repo URLs when per-project flags are default and global defaults are disabled', async () => {
+      prisma.project.findUnique
+        .mockResolvedValueOnce(makeProject({
+          plugins: [],
+        })) // getProjectPlugins — no nexus flags = default/nullish
+      prisma.adminPlugin.findUnique
+        .mockResolvedValueOnce(null) // gitlab displayTriggerHint
+        .mockResolvedValueOnce(null) // nexus maven default (absent = disabled)
+        .mockResolvedValueOnce(null) // nexus npm default (absent = disabled)
+
+      const result = await service.get(faker.string.uuid())
+
+      // whitelisted output: no URLs emitted, and raw vault keys are never re-exposed
+      expect(result.NEXUS).toBeUndefined()
+    })
+
+    it('does not emit repo URLs when per-project flags are explicitly disabled even if global defaults are enabled', async () => {
+      prisma.project.findUnique
+        .mockResolvedValueOnce(makeProject({
+          plugins: [
+            { pluginName: 'nexus', key: 'activateMavenRepo', value: 'disabled' },
+            { pluginName: 'nexus', key: 'activateNpmRepo', value: 'disabled' },
+          ],
+        }))
+      prisma.adminPlugin.findUnique
+        .mockResolvedValueOnce(null) // gitlab displayTriggerHint
+        .mockResolvedValueOnce(makeAdminPlugin({ pluginName: 'nexus', key: 'activateMavenRepoDefaultValue', value: 'enabled' }))
+        .mockResolvedValueOnce(makeAdminPlugin({ pluginName: 'nexus', key: 'activateNpmRepoDefaultValue', value: 'enabled' }))
+
+      const result = await service.get(faker.string.uuid())
+
+      expect(result.NEXUS).toBeUndefined()
     })
   })
 })
