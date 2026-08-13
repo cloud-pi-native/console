@@ -61,7 +61,6 @@ export class ProjectSecretsService {
     }
 
     const result = await this.aggregateProjectSecrets(projectId, project.slug, relativePaths)
-    await this.injectGitlabTriggerHint(result, projectId)
     const groupCount = Object.keys(result).length
     const keyCount = Object.values(result).reduce((acc, group) => acc + Object.keys(group).length, 0)
     span?.setAttributes({
@@ -72,14 +71,11 @@ export class ProjectSecretsService {
     return result
   }
 
-  /**
-   * Restores the legacy `CURL COMMAND` computed hint (see plugins/gitlab/src/functions.ts) into the
-   * `GITLAB` group. Historically emitted only when the `displayTriggerHint` global admin switch
-   * (adminPlugin table, default ENABLED) was not explicitly disabled. The GITLAB group already carries
-   * GIT_MIRROR_PROJECT_ID / GIT_MIRROR_TOKEN from the raw Vault read; we only synthesize the curl
-   * one-liner here and never re-expose any other credential.
-   */
-  private async injectGitlabTriggerHint(result: Record<string, Record<string, string>>, projectId: string): Promise<void> {
+  // Historically emitted only when the `displayTriggerHint` global admin switch
+  // (adminPlugin table, default ENABLED) was not explicitly disabled. The GITLAB group already carries
+  // GIT_MIRROR_PROJECT_ID / GIT_MIRROR_TOKEN from the raw Vault read; we only synthesize the curl
+  // one-liner here and never re-expose any other credential.
+  private async addGitlabTriggerHint(result: Record<string, Record<string, string>>, projectId: string): Promise<void> {
     const adminPlugin = await this.prisma.adminPlugin.findUnique({
       where: { pluginName_key: { pluginName: 'gitlab', key: 'displayTriggerHint' } },
       select: { value: true },
@@ -137,6 +133,10 @@ export class ProjectSecretsService {
       for (const [key, value] of Object.entries(secret.data)) {
         groupObj[`${prefix}${key}`] = parseSecretValue(value)
       }
+    }
+
+    if (result.GITLAB) {
+      await this.addGitlabTriggerHint(result, projectId)
     }
 
     return result
