@@ -5,6 +5,8 @@ import { DISABLED } from '@cpn-console/shared'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { harborConfigFactory } from '../../config/harbor.config'
+import { hasEntries } from '../../utils/record.utils'
+import { VaultClientService } from '../vault/vault-client.service'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
 import { createProjectSlugCacheKey } from './registry.utils'
@@ -22,6 +24,7 @@ export class RegistryPluginService {
     private readonly registryClient: RegistryClientService,
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache,
+    @Inject(VaultClientService) private readonly vault: VaultClientService,
   ) {}
 
   private async resolveProjectSlug(projectId: string): Promise<string | undefined> {
@@ -139,5 +142,17 @@ export class RegistryPluginService {
         }],
       },
     } as const satisfies ServiceInfos
+  }
+
+  async secrets(projectId: string): Promise<Record<string, string>> {
+    const project = await this.datastore.getProject(projectId)
+    if (!project) return {}
+    const group = await this.vault.readRegistrySecrets(project.slug)
+    if (!hasEntries(group)) return group
+    const harborUrl = new URL(`${project.slug}/`, this.harborConfig.url)
+    return {
+      ...group,
+      'Registry base path': `${harborUrl.host}${harborUrl.pathname}`,
+    }
   }
 }

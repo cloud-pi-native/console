@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common'
-import { ConditionalModule, ConfigModule } from '@nestjs/config'
-import { gitlabConfigFactory } from '../../config/gitlab.config'
-import { harborConfigFactory } from '../../config/harbor.config'
-import { nexusConfigFactory } from '../../config/nexus.config'
+import { ConditionalModule } from '@nestjs/config'
+import { GitlabModule } from '../gitlab/gitlab.module'
 import { AuthModule } from '../infrastructure/auth/auth.module'
 import { DatabaseModule } from '../infrastructure/database/database.module'
 import { ProjectPermissionModule } from '../infrastructure/permission/project/project.module'
+import { NexusModule } from '../nexus/nexus.module'
+import { RegistryModule } from '../registry/registry.module'
 import { VaultModule } from '../vault/vault.module'
 import { ProjectSecretsController } from './project-secrets.controller'
 import { ProjectSecretsService } from './project-secrets.service'
@@ -15,10 +15,10 @@ import { ProjectSecretsService } from './project-secrets.service'
     AuthModule,
     DatabaseModule,
     ProjectPermissionModule,
+    ConditionalModule.registerWhen(GitlabModule, 'USE_GITLAB'),
+    ConditionalModule.registerWhen(NexusModule, 'USE_NEXUS'),
+    ConditionalModule.registerWhen(RegistryModule, 'USE_HARBOR'),
     ConditionalModule.registerWhen(VaultModule, 'USE_VAULT'),
-    ConfigModule.forFeature(gitlabConfigFactory),
-    ConfigModule.forFeature(harborConfigFactory),
-    ConfigModule.forFeature(nexusConfigFactory),
   ],
   controllers: [ProjectSecretsController],
   providers: [ProjectSecretsService],

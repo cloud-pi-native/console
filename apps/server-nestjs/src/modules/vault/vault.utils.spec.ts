@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { generateGitlabTriggerTokenPath } from './vault.utils'
+import { generateSecretGroupPath } from './vault.utils'
 
 describe('vault path helpers', () => {
-  it('scopes the GitLab trigger token to the project', () => {
-    expect(generateGitlabTriggerTokenPath('forge', 'my-project')).toBe('forge/my-project/GITLAB')
+  it('scopes a group to the project path', () => {
+    expect(generateSecretGroupPath('forge', 'my-project', 'GITLAB')).toBe('forge/my-project/GITLAB')
   })
 })

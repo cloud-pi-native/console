@@ -14,6 +14,6 @@ export function generateSonarqubeCredPath(projectRootDir: string, projectSlug: s
   return `${generateProjectPath(projectRootDir, projectSlug)}/SONAR`
 }
 
-export function generateGitlabTriggerTokenPath(projectRootDir: string, projectSlug: string) {
-  return `${generateProjectPath(projectRootDir, projectSlug)}/GITLAB`
+export function generateSecretGroupPath(projectRootDir: string, projectSlug: string, group: string): string {
+  return `${generateProjectPath(projectRootDir, projectSlug)}/${group}`
 }
