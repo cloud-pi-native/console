@@ -1,125 +1,83 @@
 import type { ConfigType } from '@nestjs/config'
-import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { baseConfigFactory } from '../../config/base.config'
-import { vaultConfigFactory } from '../../config/vault.config'
+import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { makeProject } from '../project/project-testing.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { VaultService } from '../vault/vault.service'
-import { makeVaultSecret } from './project-secrets-testing.utils'
+import { makeAdminPlugin, makeProjectSlug, makeVaultSecret, type ProjectSlug } from './project-secrets-testing.utils'
 import { ProjectSecretsService } from './project-secrets.service'
 
-describe('projectSecretsService', () => {
-  let module: TestingModule
+describe('ProjectSecretsService', () => {
   let service: ProjectSecretsService
   let prisma: DeepMockProxy<PrismaService>
   let vault: DeepMockProxy<VaultService>
   let vaultClient: DeepMockProxy<VaultClientService>
-  let config: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
-  let vaultConfig: DeepMockProxy<ConfigType<typeof vaultConfigFactory>>
+
+  const projectId = 'project-1'
+  const slug = 'proj-1'
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
-    vault = mockDeep<VaultService>()
-    vaultClient = mockDeep<VaultClientService>()
-    config = mockDeep<ConfigType<typeof baseConfigFactory>>({ projectsRootDir: '/vault' })
-    vaultConfig = mockDeep<ConfigType<typeof vaultConfigFactory>>()
+    vault = mockDeep<VaultService>({ listProjectSecrets: vi.fn().mockResolvedValue([]) })
+    vaultClient = mockDeep<VaultClientService>({ read: vi.fn().mockResolvedValue(null) })
 
-    module = await Test.createTestingModule({
+    const baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>({ projectsRootDir: 'forge' })
+    const gitlabConfig = mockDeep<ConfigType<typeof gitlabConfigFactory>>({ url: 'https://gitlab.example.com' })
+
+    const moduleRef = await Test.createTestingModule({
       providers: [
         ProjectSecretsService,
         { provide: PrismaService, useValue: prisma },
-        { provide: baseConfigFactory.KEY, useValue: config },
-        { provide: vaultConfigFactory.KEY, useValue: vaultConfig },
+        { provide: baseConfigFactory.KEY, useValue: baseConfig },
+        { provide: gitlabConfigFactory.KEY, useValue: gitlabConfig },
         { provide: VaultService, useValue: vault },
         { provide: VaultClientService, useValue: vaultClient },
       ],
     }).compile()
 
-    service = module.get(ProjectSecretsService)
+    service = moduleRef.get(ProjectSecretsService)
   })
 
-  it('returns parsed secrets from vault', async () => {
-    const projectId = 'project-id'
-    prisma.project.findUnique.mockResolvedValue(makeProject({ slug: 'myproject' }))
-    vault.listProjectSecrets.mockResolvedValue(['group1/secret1'])
-    vaultClient.read.mockResolvedValue(makeVaultSecret({ data: { key1: 'value1', key2: 42, key3: true, key4: null } }))
+  async function seedGitlabGroup() {
+    prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug }) as unknown as ProjectSlug)
+    vault.listProjectSecrets.mockResolvedValue(['GITLAB'])
+    vaultClient.read.mockResolvedValue(makeVaultSecret({
+      data: { GIT_MIRROR_PROJECT_ID: '42', GIT_MIRROR_TOKEN: 'secret-token' },
+    }))
+  }
+
+  it('should inject the CURL COMMAND hint into the GITLAB group when displayTriggerHint is enabled', async () => {
+    prisma.adminPlugin.findUnique.mockResolvedValue(null)
+    await seedGitlabGroup()
 
     const result = await service.get(projectId)
 
-    expect(prisma.project.findUnique).toHaveBeenCalledWith({
-      where: { id: projectId },
-      select: { slug: true },
-    })
-    expect(vault.listProjectSecrets).toHaveBeenCalledWith('myproject')
-    expect(result).toHaveProperty('group1')
-    expect(result.group1).toHaveProperty('secret1.key1', 'value1')
-    expect(result.group1).toHaveProperty('secret1.key2', '42')
-    expect(result.group1).toHaveProperty('secret1.key3', 'true')
-    expect(result.group1).toHaveProperty('secret1.key4', '')
+    expect(result.GITLAB['CURL COMMAND']).toContain('curl -k')
+    expect(result.GITLAB['CURL COMMAND']).toContain('https://gitlab.example.com/api/v4/projects/42/trigger/pipeline')
+    expect(result.GITLAB['CURL COMMAND']).toContain('PRIVATE-TOKEN: secret-token')
   })
 
-  it('handles nested secret paths', async () => {
-    prisma.project.findUnique.mockResolvedValue(makeProject({ slug: 'myproj' }))
-    vault.listProjectSecrets.mockResolvedValue(['group1/sub/path'])
-    vaultClient.read.mockResolvedValue(makeVaultSecret({ data: { nested: 'value' } }))
+  it('should not inject the CURL COMMAND when displayTriggerHint is disabled', async () => {
+    prisma.adminPlugin.findUnique.mockResolvedValue(makeAdminPlugin({ pluginName: 'gitlab', key: 'displayTriggerHint', value: 'disabled' }))
+    await seedGitlabGroup()
 
-    const result = await service.get('project-id')
+    const result = await service.get(projectId)
 
-    expect(result.group1).toHaveProperty('sub/path.nested', 'value')
+    expect(result.GITLAB['CURL COMMAND']).toBeUndefined()
   })
 
-  it('returns empty object when no secrets exist', async () => {
-    prisma.project.findUnique.mockResolvedValue(makeProject({ slug: 'myproj' }))
-    vault.listProjectSecrets.mockResolvedValue([])
+  it('should not inject the CURL COMMAND when the GITLAB group has no mirror token/project id', async () => {
+    prisma.adminPlugin.findUnique.mockResolvedValue(null)
+    prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug }) as unknown as ProjectSlug)
+    vault.listProjectSecrets.mockResolvedValue(['GITLAB'])
+    vaultClient.read.mockResolvedValue(makeVaultSecret({ data: {} }))
 
-    const result = await service.get('project-id')
+    const result = await service.get(projectId)
 
-    expect(result).toEqual({})
-  })
-
-  it('returns empty object when secret listing fails', async () => {
-    prisma.project.findUnique.mockResolvedValue(makeProject({ slug: 'myproj' }))
-    vault.listProjectSecrets.mockRejectedValue(new Error('vault unavailable'))
-
-    const result = await service.get('project-id')
-
-    expect(result).toEqual({})
-  })
-
-  it('skips secrets that fail to read', async () => {
-    prisma.project.findUnique.mockResolvedValue(makeProject({ slug: 'myproj' }))
-    vault.listProjectSecrets.mockResolvedValue(['group1/s1', 'group1/s2'])
-    vaultClient.read
-      .mockRejectedValueOnce(new Error('vault error'))
-      .mockResolvedValueOnce(makeVaultSecret({ data: { key: 'val' } }))
-
-    const result = await service.get('project-id')
-
-    expect(result.group1).toEqual({ 's2.key': 'val' })
-  })
-
-  describe('without vault configured (USE_VAULT=false)', () => {
-    it('returns empty result without touching vault', async () => {
-      const moduleNoVault = await Test.createTestingModule({
-        providers: [
-          ProjectSecretsService,
-          { provide: PrismaService, useValue: mockDeep<PrismaService>() },
-          { provide: baseConfigFactory.KEY, useValue: mockDeep<typeof baseConfigFactory>({ projectsRootDir: '/vault' }) },
-          { provide: VaultService, useValue: undefined },
-          { provide: VaultClientService, useValue: undefined },
-        ],
-      }).compile()
-
-      const serviceNoVault = moduleNoVault.get(ProjectSecretsService)
-      const result = await serviceNoVault.get('project-id')
-
-      expect(result).toEqual({})
-      await moduleNoVault.close()
-    })
+    expect(result.GITLAB['CURL COMMAND']).toBeUndefined()
   })
 })

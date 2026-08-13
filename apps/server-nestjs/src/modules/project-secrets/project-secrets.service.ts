@@ -3,9 +3,11 @@ import { Inject, Injectable, Logger, NotFoundException, Optional } from '@nestjs
 import { trace } from '@opentelemetry/api'
 import { z } from 'zod'
 import { baseConfigFactory } from '../../config/base.config'
+import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultClientService } from '../vault/vault-client.service'
+import { specificallyDisabled } from '@cpn-console/hooks'
 import { VaultService } from '../vault/vault.service'
 import { generateProjectPath } from '../vault/vault.utils'
 import { getProjectSlug } from './project-secrets-queries.utils'
@@ -30,6 +32,7 @@ export class ProjectSecretsService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
+    @Inject(gitlabConfigFactory.KEY) private readonly gitlabConfig: ConfigType<typeof gitlabConfigFactory>,
     @Inject(VaultService) @Optional() private readonly vault?: VaultService,
     @Inject(VaultClientService) @Optional() private readonly vaultClient?: VaultClientService,
   ) {}
@@ -58,6 +61,7 @@ export class ProjectSecretsService {
     }
 
     const result = await this.aggregateProjectSecrets(projectId, project.slug, relativePaths)
+    await this.injectGitlabTriggerHint(result, projectId)
     const groupCount = Object.keys(result).length
     const keyCount = Object.values(result).reduce((acc, group) => acc + Object.keys(group).length, 0)
     span?.setAttributes({
@@ -66,6 +70,36 @@ export class ProjectSecretsService {
     })
     this.logger.log(`project.get completed (projectId=${projectId}, slug=${project.slug}, groupCount=${groupCount}, keyCount=${keyCount})`)
     return result
+  }
+
+  /**
+   * Restores the legacy `CURL COMMAND` computed hint (see plugins/gitlab/src/functions.ts) into the
+   * `GITLAB` group. Historically emitted only when the `displayTriggerHint` global admin switch
+   * (adminPlugin table, default ENABLED) was not explicitly disabled. The GITLAB group already carries
+   * GIT_MIRROR_PROJECT_ID / GIT_MIRROR_TOKEN from the raw Vault read; we only synthesize the curl
+   * one-liner here and never re-expose any other credential.
+   */
+  private async injectGitlabTriggerHint(result: Record<string, Record<string, string>>, projectId: string): Promise<void> {
+    const adminPlugin = await this.prisma.adminPlugin.findUnique({
+      where: { pluginName_key: { pluginName: 'gitlab', key: 'displayTriggerHint' } },
+      select: { value: true },
+    }).catch(() => null)
+    if (specificallyDisabled(adminPlugin?.value)) return
+    const gitlab = result.GITLAB
+    const gitlabProjectId = gitlab?.GIT_MIRROR_PROJECT_ID
+    const token = gitlab?.GIT_MIRROR_TOKEN
+    if (!gitlabProjectId || !token) return
+    const apiUrl = this.gitlabConfig.url
+    result.GITLAB['CURL COMMAND'] = [
+      'curl -k',
+      `--header "PRIVATE-TOKEN: ${token}"`,
+      '-X POST',
+      '--fail',
+      `-F token=${token}`,
+      '-F ref=main',
+      `-F "variables[GIT_MIRROR_PROJECT_ID]=${gitlabProjectId}"`,
+      `"${apiUrl}/api/v4/projects/${gitlabProjectId}/trigger/pipeline"`,
+    ].join(' \\\n    ')
   }
 
   private async listProjectSecretPaths(projectId: string, slug: string): Promise<string[]> {
