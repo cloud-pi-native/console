@@ -75,7 +75,7 @@ export class ProjectSecretsService {
   // (adminPlugin table, default ENABLED) was not explicitly disabled. The GITLAB group already carries
   // GIT_MIRROR_PROJECT_ID / GIT_MIRROR_TOKEN from the raw Vault read; we only synthesize the curl
   // one-liner here and never re-expose any other credential.
-  private async addGitlabTriggerHint(result: Record<string, Record<string, string>>, projectId: string): Promise<void> {
+  private async formatGitlabTriggerHint(result: Record<string, Record<string, string>>, projectId: string): Promise<void> {
     const adminPlugin = await this.prisma.adminPlugin.findUnique({
       where: { pluginName_key: { pluginName: 'gitlab', key: 'displayTriggerHint' } },
       select: { value: true },
@@ -136,7 +136,7 @@ export class ProjectSecretsService {
     }
 
     if (result.GITLAB) {
-      await this.addGitlabTriggerHint(result, projectId)
+      await this.formatGitlabTriggerHint(result, projectId)
     }
 
     return result
