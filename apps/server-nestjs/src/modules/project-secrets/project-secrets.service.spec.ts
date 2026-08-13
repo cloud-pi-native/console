@@ -42,42 +42,53 @@ describe('ProjectSecretsService', () => {
     service = moduleRef.get(ProjectSecretsService)
   })
 
-  async function seedGitlabGroup() {
-    prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug }) as unknown as ProjectSlug)
-    vault.listProjectSecrets.mockResolvedValue(['GITLAB'])
-    vaultClient.read.mockResolvedValue(makeVaultSecret({
-      data: { GIT_MIRROR_PROJECT_ID: '42', GIT_MIRROR_TOKEN: 'secret-token' },
-    }))
-  }
+  describe('get', () => {
+    async function seedGitlabGroup(data: Record<string, string>) {
+      prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug }) as unknown as ProjectSlug)
+      vault.listProjectSecrets.mockResolvedValue(['GITLAB'])
+      vaultClient.read.mockResolvedValue(makeVaultSecret({ data }))
+    }
 
-  it('should inject the CURL COMMAND hint into the GITLAB group when displayTriggerHint is enabled', async () => {
-    prisma.adminPlugin.findUnique.mockResolvedValue(null)
-    await seedGitlabGroup()
+    describe('CURL COMMAND injection', () => {
+      const mirrorData = { GIT_MIRROR_PROJECT_ID: '42', GIT_MIRROR_TOKEN: 'secret-token' }
 
-    const result = await service.get(projectId)
+      beforeEach(async () => {
+        await seedGitlabGroup(mirrorData)
+      })
 
-    expect(result.GITLAB['CURL COMMAND']).toContain('curl -k')
-    expect(result.GITLAB['CURL COMMAND']).toContain('https://gitlab.example.com/api/v4/projects/42/trigger/pipeline')
-    expect(result.GITLAB['CURL COMMAND']).toContain('PRIVATE-TOKEN: secret-token')
-  })
+      it('injects the hint when displayTriggerHint is enabled (default)', async () => {
+        prisma.adminPlugin.findUnique.mockResolvedValue(null)
 
-  it('should not inject the CURL COMMAND when displayTriggerHint is disabled', async () => {
-    prisma.adminPlugin.findUnique.mockResolvedValue(makeAdminPlugin({ pluginName: 'gitlab', key: 'displayTriggerHint', value: 'disabled' }))
-    await seedGitlabGroup()
+        const result = await service.get(projectId)
 
-    const result = await service.get(projectId)
+        expect(result.GITLAB['CURL COMMAND']).toContain('curl -k')
+        expect(result.GITLAB['CURL COMMAND']).toContain('https://gitlab.example.com/api/v4/projects/42/trigger/pipeline')
+        expect(result.GITLAB['CURL COMMAND']).toContain('PRIVATE-TOKEN: secret-token')
+      })
 
-    expect(result.GITLAB['CURL COMMAND']).toBeUndefined()
-  })
+      it('does not inject when displayTriggerHint is disabled', async () => {
+        prisma.adminPlugin.findUnique.mockResolvedValue(
+          makeAdminPlugin({ pluginName: 'gitlab', key: 'displayTriggerHint', value: 'disabled' }),
+        )
 
-  it('should not inject the CURL COMMAND when the GITLAB group has no mirror token/project id', async () => {
-    prisma.adminPlugin.findUnique.mockResolvedValue(null)
-    prisma.project.findUnique.mockResolvedValue(makeProjectSlug({ slug }) as unknown as ProjectSlug)
-    vault.listProjectSecrets.mockResolvedValue(['GITLAB'])
-    vaultClient.read.mockResolvedValue(makeVaultSecret({ data: {} }))
+        const result = await service.get(projectId)
 
-    const result = await service.get(projectId)
+        expect(result.GITLAB['CURL COMMAND']).toBeUndefined()
+      })
+    })
 
-    expect(result.GITLAB['CURL COMMAND']).toBeUndefined()
+    describe('without mirror credentials', () => {
+      beforeEach(async () => {
+        await seedGitlabGroup({})
+      })
+
+      it('does not inject the CURL COMMAND', async () => {
+        prisma.adminPlugin.findUnique.mockResolvedValue(null)
+
+        const result = await service.get(projectId)
+
+        expect(result.GITLAB['CURL COMMAND']).toBeUndefined()
+      })
+    })
   })
 })
