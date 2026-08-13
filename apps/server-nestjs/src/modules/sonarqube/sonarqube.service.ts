@@ -315,23 +315,27 @@ export class SonarqubeService implements OnModuleInit {
     return token
   }
 
+  private async getAdminPluginConfig(key: string): Promise<string | null> {
+    return await this.datastore.getAdminPluginConfig(PLUGIN_NAME, key)
+  }
+
   private async getAdminGroupPath(): Promise<string> {
-    const config = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, ADMIN_GROUP_PATH_PLUGIN_KEY)
+    const config = await this.getAdminPluginConfig(ADMIN_GROUP_PATH_PLUGIN_KEY)
     return config ?? DEFAULT_ADMIN_GROUP_PATH
   }
 
   private async getReadonlyGroupPath(): Promise<string> {
-    const config = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, READONLY_GROUP_PATH_PLUGIN_KEY)
+    const config = await this.getAdminPluginConfig(READONLY_GROUP_PATH_PLUGIN_KEY)
     return config ?? DEFAULT_READONLY_GROUP_PATH
   }
 
   private async getSecurityGroupPath(): Promise<string> {
-    const config = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, SECURITY_GROUP_PATH_PLUGIN_KEY)
+    const config = await this.getAdminPluginConfig(SECURITY_GROUP_PATH_PLUGIN_KEY)
     return config ?? DEFAULT_SECURITY_GROUP_PATH
   }
 
   private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
-    const adminPluginConfig = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, key)
+    const adminPluginConfig = await this.getAdminPluginConfig(key)
     if (adminPluginConfig) return adminPluginConfig
     return getProjectPluginConfig(project, key) ?? undefined
   }

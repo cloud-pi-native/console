@@ -19,6 +19,7 @@ describe('gitlabService', () => {
   let gitlab: DeepMockProxy<GitlabClientService>
   let vault: DeepMockProxy<VaultClientService>
   let datastore: DeepMockProxy<GitlabDatastoreService>
+  let config: DeepMockProxy<ConfigType<typeof gitlabConfigFactory>>
 
   beforeEach(async () => {
     gitlab = mockDeep<GitlabClientService>()
@@ -34,7 +35,7 @@ describe('gitlabService', () => {
       readTechnReadOnlyCreds: vi.fn().mockResolvedValue(null),
       readGitlabMirrorCreds: vi.fn().mockResolvedValue(null),
     })
-    const config = mockDeep<ConfigType<typeof gitlabConfigFactory>>({ projectRootDir: 'forge' })
+    config = mockDeep<ConfigType<typeof gitlabConfigFactory>>({ projectRootDir: 'forge', url: 'https://gitlab.example.com' })
 
     const moduleRef = await Test.createTestingModule({
       providers: [
