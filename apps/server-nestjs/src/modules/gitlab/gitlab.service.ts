@@ -1,4 +1,4 @@
-import type { CondensedGroupSchema, MemberSchema, ProjectSchema } from '@gitbeaker/core'
+import type { CondensedGroupSchema, MemberSchema } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
 import type { RepositorySyncEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
