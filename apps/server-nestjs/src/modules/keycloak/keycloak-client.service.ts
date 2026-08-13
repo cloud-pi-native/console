@@ -91,8 +91,20 @@ export class KeycloakClientService implements OnModuleInit {
   async deleteGroup(id: string): Promise<void> {
     const span = trace.getActiveSpan()
     span?.setAttribute('keycloak.group.id', id)
+    // Keycloak 26.7.0 returns HTTP 500 unknown_error when deleting a group that
+    // still has subgroups, so recurse depth-first into children first.
+    for await (const subgroup of this.getSubGroups(id)) {
+      await this.deleteGroup(subgroup.id as string)
+    }
     this.logger.log(`Deleting Keycloak group (groupId=${id})`)
-    await this.client.groups.del({ id })
+    try {
+      await this.client.groups.del({ id })
+    } catch (err) {
+      // The group may already be gone (deleted concurrently or pruned in a
+      // prior pass); a 404 is not a failure worth surfacing to the caller.
+      if (getErrorResponseStatus(err) !== 404) throw err
+      this.logger.warn(`Keycloak group ${id} was already deleted; skipping`)
+    }
   }
 
   async getGroupMembers(groupId: string) {
