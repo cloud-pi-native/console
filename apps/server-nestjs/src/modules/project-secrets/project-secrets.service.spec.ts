@@ -3,6 +3,7 @@ import type { DeepMockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { faker } from '@faker-js/faker'
 import { baseConfigFactory } from '../../config/base.config'
 import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
@@ -17,8 +18,8 @@ describe('ProjectSecretsService', () => {
   let vault: DeepMockProxy<VaultService>
   let vaultClient: DeepMockProxy<VaultClientService>
 
-  const projectId = 'project-1'
-  const slug = 'proj-1'
+  const projectId = faker.string.uuid()
+  const slug = faker.lorem.slug()
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
