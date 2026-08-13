@@ -5,7 +5,7 @@ import { baseConfigFactory } from '../../config/base.config'
 import { vaultConfigFactory } from '../../config/vault.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
-import { generateGitlabMirrorCredPath, generateGitlabTriggerTokenPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath } from './vault.utils'
+import { generateGitlabMirrorCredPath, generateSecretGroupPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath } from './vault.utils'
 
 export interface VaultSysPoliciesAclUpsertRequest {
   policy: string
@@ -90,6 +90,15 @@ export interface GitlabMirrorSecret {
   GIT_OUTPUT_PASSWORD: string
 }
 
+export interface GitlabMirrorGroupSecret {
+  PROJECT_SLUG: string
+  GIT_MIRROR_PROJECT_ID: string
+  GIT_MIRROR_TOKEN: string
+}
+
+export type RegistryGroupSecret = Record<string, string>
+export type NexusGroupSecret = Record<string, string>
+
 export interface VaultMetadata {
   created_time: string
   custom_metadata: Record<string, any> | null
@@ -162,6 +171,26 @@ export class VaultClientService {
   async read<T = any>(path: string): Promise<VaultSecret<T>> {
     this.logger.debug(`Reading Vault KV secret at ${path}`)
     return await this.getKvData<T>(this.vaultConfig.kvName, path)
+  }
+
+  @StartActiveSpan()
+  async readGitlabSecrets(projectSlug: string): Promise<Record<string, any>> {
+    const fullPath = generateSecretGroupPath(this.baseConfig.projectsRootDir, projectSlug, 'GITLAB')
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('vault.kv.path', fullPath)
+    const secret = await this.read<Record<string, any>>(fullPath).catch(() => null)
+    return secret?.data ?? {}
+  }
+
+  @StartActiveSpan()
+  async readRegistrySecrets(projectSlug: string): Promise<Record<string, any>> {
+    const fullPath = generateSecretGroupPath(this.baseConfig.projectsRootDir, projectSlug, 'REGISTRY')
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('vault.kv.path', fullPath)
+    const secret = await this.read<Record<string, any>>(fullPath).catch(() => null)
+    return secret?.data ?? {}
   }
 
   @StartActiveSpan()
@@ -276,7 +305,7 @@ export class VaultClientService {
 
   @StartActiveSpan()
   async writeMirrorTriggerToken(projectSlug: string, secret: Record<string, any>): Promise<void> {
-    const vaultPath = generateGitlabTriggerTokenPath(this.baseConfig.projectsRootDir, projectSlug)
+    const vaultPath = generateSecretGroupPath(this.baseConfig.projectsRootDir, projectSlug, 'GITLAB')
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', projectSlug)
     span?.setAttribute('vault.kv.path', vaultPath)

@@ -348,8 +348,12 @@ export class RegistryService {
     await Promise.all(projects.map(p => this.ensureProject(p)))
   }
 
-  private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string) {
-    const adminPluginConfig = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, key)
+  private async getAdminPluginConfig(key: string): Promise<string | null> {
+    return await this.datastore.getAdminPluginConfig(PLUGIN_NAME, key)
+  }
+
+  private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
+    const adminPluginConfig = await this.getAdminPluginConfig(key)
     if (adminPluginConfig) return adminPluginConfig
     return getPluginConfig(project, key)
   }

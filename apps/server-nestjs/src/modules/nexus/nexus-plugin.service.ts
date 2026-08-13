@@ -1,13 +1,21 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
 import type { ConfigType } from '@nestjs/config'
+import type { ProjectWithDetails } from './nexus-datastore.service'
+import { defaultOrNullish, specificallyEnabled } from '@cpn-console/hooks'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { nexusConfigFactory } from '../../config/nexus.config'
+import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { VaultClientService } from '../vault/vault-client.service'
+import { NexusDatastoreService } from './nexus-datastore.service'
+import { PLUGIN_NAME } from './nexus.constants'
 
 @Injectable()
 export class NexusPluginService {
   constructor(
     @Inject(nexusConfigFactory.KEY) private readonly nexusConfig: ConfigType<typeof nexusConfigFactory>,
+    @Inject(NexusDatastoreService) private readonly datastore: NexusDatastoreService,
+    @Inject(VaultClientService) private readonly vault: VaultClientService,
   ) {}
 
   infos(): ServiceInfos {
@@ -172,5 +180,48 @@ export class NexusPluginService {
         ],
       },
     } as const satisfies ServiceInfos
+  }
+
+  private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
+    const adminPluginConfig = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, key)
+    if (adminPluginConfig) return adminPluginConfig
+    if (!project) return undefined
+    return project.plugins?.find(p => p.pluginName === PLUGIN_NAME && p.key === key)?.value
+  }
+
+  private getNexusUrl(): string {
+    return this.nexusConfig.secretExposeInternalUrl && this.nexusConfig.internalUrl
+      ? this.nexusConfig.internalUrl
+      : this.nexusConfig.url
+  }
+
+  private async isMavenEnabled(project: ProjectWithDetails): Promise<boolean | undefined> {
+    const mavenDefault = await this.getAdminOrProjectPluginConfig(project, 'activateMavenRepoDefaultValue')
+    const mavenEnabled = project.plugins?.find(p => p.pluginName === PLUGIN_NAME && p.key === 'activateMavenRepo')?.value
+    return specificallyEnabled(mavenEnabled)
+      || (defaultOrNullish(mavenEnabled) && specificallyEnabled(mavenDefault ?? undefined))
+  }
+
+  private async isNpmEnabled(project: ProjectWithDetails): Promise<boolean | undefined> {
+    const npmDefault = await this.getAdminOrProjectPluginConfig(project, 'activateNpmRepoDefaultValue')
+    const npmEnabled = project.plugins?.find(p => p.pluginName === PLUGIN_NAME && p.key === 'activateNpmRepo')?.value
+    return specificallyEnabled(npmEnabled)
+      || (defaultOrNullish(npmEnabled) && specificallyEnabled(npmDefault ?? undefined))
+  }
+
+  @StartActiveSpan()
+  async secrets(projectId: string): Promise<Record<string, string>> {
+    const project = await this.datastore.getProject(projectId)
+    if (!project) return {}
+    const nexusUrl = this.getNexusUrl()
+    const out: Record<string, string> = {}
+    if (await this.isMavenEnabled(project)) {
+      out.MAVEN_REPO_RELEASE = new URL(`${project.slug}-repository-release`, nexusUrl).toString()
+      out.MAVEN_REPO_SNAPSHOT = new URL(`${project.slug}-repository-snapshot`, nexusUrl).toString()
+    }
+    if (await this.isNpmEnabled(project)) {
+      out.NPM_REPO = new URL(`${project.slug}-npm`, nexusUrl).toString()
+    }
+    return out
   }
 }

@@ -1,15 +1,21 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
 import type { ConfigType } from '@nestjs/config'
+import { specificallyDisabled } from '@cpn-console/hooks'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { gitlabConfigFactory } from '../../config/gitlab.config'
-import { DEFAULT_ADMIN_GROUP_PATH, DEFAULT_AUDITOR_GROUP_PATH, DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX, PURGE_PLUGIN_KEY } from './gitlab.constants'
+import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { VaultClientService } from '../vault/vault-client.service'
+import { GitlabDatastoreService } from './gitlab-datastore.service'
+import { DEFAULT_ADMIN_GROUP_PATH, DEFAULT_AUDITOR_GROUP_PATH, DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX, DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX, PLUGIN_NAME, PURGE_PLUGIN_KEY } from './gitlab.constants'
 
 @Injectable()
 export class GitlabPluginService {
   constructor(
     @Inject(gitlabConfigFactory.KEY)
     private readonly gitlabConfig: ConfigType<typeof gitlabConfigFactory>,
+    @Inject(GitlabDatastoreService) private readonly datastore: GitlabDatastoreService,
+    @Inject(VaultClientService) private readonly vault: VaultClientService,
   ) {}
 
   infos(): ServiceInfos {
@@ -109,5 +115,31 @@ export class GitlabPluginService {
         project: [],
       },
     } as const satisfies ServiceInfos
+  }
+
+  @StartActiveSpan()
+  async secrets(projectId: string): Promise<Record<string, string>> {
+    const project = await this.datastore.getProject(projectId)
+    if (!project) return {}
+    const group = await this.vault.readGitlabSecrets(project.slug)
+    const gitlabProjectId = group.GIT_MIRROR_PROJECT_ID
+    const token = group.GIT_MIRROR_TOKEN
+    const displayTriggerHint = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, 'displayTriggerHint').catch(() => null)
+    if (specificallyDisabled(displayTriggerHint ?? undefined)) return group
+    if (!gitlabProjectId || !token) return group
+    const apiUrl = this.gitlabConfig.url
+    return {
+      ...group,
+      'CURL COMMAND': [
+        'curl -k',
+        `--header "PRIVATE-TOKEN: ${token}"`,
+        '-X POST',
+        '--fail',
+        `-F token=${token}`,
+        '-F ref=main',
+        `-F "variables[GIT_MIRROR_PROJECT_ID]=${gitlabProjectId}"`,
+        `"${apiUrl}/api/v4/projects/${gitlabProjectId}/trigger/pipeline"`,
+      ].join(' \\\n    '),
+    }
   }
 }
