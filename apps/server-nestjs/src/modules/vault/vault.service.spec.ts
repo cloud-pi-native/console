@@ -54,6 +54,32 @@ describe('vaultService', () => {
     expect(service).toBeDefined()
   })
 
+  describe('getSecrets', () => {
+    it('restores the Vault ExternalSecret spec hints', async () => {
+      const project = makeProjectWithDetails()
+      datastore.getProject.mockResolvedValue(project)
+      client.readSecretGroup.mockResolvedValue({ VAULT_ROLE: 'role' })
+
+      const result = await service.getSecrets(faker.string.uuid())
+
+      expect(result).toEqual({
+        VAULT_ROLE: 'role',
+        '.spec.mount': project.slug,
+        '.spec.vaultAuthRef': 'vault-auth',
+      })
+    })
+
+    it('returns the raw group unchanged when it is empty', async () => {
+      const project = makeProjectWithDetails()
+      datastore.getProject.mockResolvedValue(project)
+      client.readSecretGroup.mockResolvedValue({})
+
+      const result = await service.getSecrets(faker.string.uuid())
+
+      expect(result).toEqual({})
+    })
+  })
+
   it('should reconcile on cron', async () => {
     const projects = faker.helpers.multiple(() => makeProjectWithDetails())
     const zones = faker.helpers.multiple(() => makeZoneWithDetails())

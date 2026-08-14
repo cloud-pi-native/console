@@ -6,6 +6,7 @@ import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { baseConfigFactory } from '../../config/base.config'
 import { vaultConfigFactory } from '../../config/vault.config'
+import { hasEntries } from '../../utils/record.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from './vault-client.service'
@@ -51,6 +52,18 @@ export class VaultService {
     @Inject(VaultClientService) private readonly client: VaultClientService,
   ) {
     this.logger.log('VaultService initialized')
+  }
+
+  async getSecrets(projectId: string): Promise<Record<string, string>> {
+    const project = await this.datastore.getProject(projectId)
+    if (!project) return {}
+    const group = await this.client.readSecretGroup(project.slug, 'VAULT')
+    if (!hasEntries(group)) return group
+    return {
+      ...group,
+      '.spec.mount': project.slug,
+      '.spec.vaultAuthRef': 'vault-auth',
+    }
   }
 
   @OnEvent('project.upsert')

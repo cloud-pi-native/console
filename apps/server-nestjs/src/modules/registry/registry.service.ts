@@ -19,6 +19,7 @@ import { trace } from '@opentelemetry/api'
 import { baseConfigFactory } from '../../config/base.config'
 import { harborConfigFactory } from '../../config/harbor.config'
 import { find } from '../../utils/iterable.utils'
+import { hasEntries } from '../../utils/record.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -63,6 +64,18 @@ export class RegistryService {
     @Inject(VaultClientService) private readonly vault: VaultClientService,
   ) {
     this.logger.log('RegistryService initialized')
+  }
+
+  async getSecrets(projectId: string): Promise<Record<string, string>> {
+    const project = await this.datastore.getProject(projectId)
+    if (!project) return {}
+    const group = await this.vault.readSecretGroup(project.slug, 'REGISTRY')
+    if (!hasEntries(group)) return group
+    const harborUrl = new URL(`${project.slug}/`, this.harborConfig.url)
+    return {
+      ...group,
+      'Registry base path': `${harborUrl.host}${harborUrl.pathname}`,
+    }
   }
 
   private get host() {

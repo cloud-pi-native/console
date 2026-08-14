@@ -1,6 +1,7 @@
 import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { DISABLED, ENABLED } from '@cpn-console/shared'
+import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
@@ -71,6 +72,113 @@ describe('nexusService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined()
+  })
+
+  describe('getSecrets', () => {
+    it('emits repo URLs when per-project flags are enabled, never raw vault keys', async () => {
+      const project = makeProjectWithDetails({
+        plugins: [
+          { pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED },
+          { pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: ENABLED },
+        ],
+      })
+      datastore.getProject.mockResolvedValue(project)
+      datastore.getAdminPluginConfig.mockResolvedValue(null)
+      vault.readSecretGroup.mockResolvedValue({ NEXUS_USERNAME: 'admin', NEXUS_PASSWORD: 'super-secret', NEXUS_SOME_TOKEN: 'ok' })
+      config.url = 'https://nexus.example.com'
+      config.secretExposeInternalUrl = false
+
+      const result = await service.getSecrets(faker.string.uuid())
+
+      expect(result).toEqual({
+        MAVEN_REPO_RELEASE: `https://nexus.example.com/${project.slug}-repository-release`,
+        MAVEN_REPO_SNAPSHOT: `https://nexus.example.com/${project.slug}-repository-snapshot`,
+        NPM_REPO: `https://nexus.example.com/${project.slug}-npm`,
+      })
+      expect(result.NEXUS_USERNAME).toBeUndefined()
+      expect(result.NEXUS_PASSWORD).toBeUndefined()
+    })
+
+    it('uses the internal URL when secretExposeInternalUrl is enabled', async () => {
+      const project = makeProjectWithDetails({
+        plugins: [{ pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: ENABLED }],
+      })
+      datastore.getProject.mockResolvedValue(project)
+      datastore.getAdminPluginConfig.mockResolvedValue(null)
+      vault.readSecretGroup.mockResolvedValue({ NEXUS_SOME_TOKEN: 'ok' })
+      config.url = 'https://nexus.example.com'
+      config.internalUrl = 'https://nexus.internal'
+      config.secretExposeInternalUrl = true
+
+      const result = await service.getSecrets(faker.string.uuid())
+
+      expect(result.NPM_REPO).toBe(`https://nexus.internal/${project.slug}-npm`)
+    })
+
+    it('emits repo URLs when per-project flags are default and global defaults are enabled', async () => {
+      const project = makeProjectWithDetails({ plugins: [] })
+      datastore.getProject.mockResolvedValue(project)
+      datastore.getAdminPluginConfig.mockImplementation(async (_plugin, key) => {
+        if (key === 'activateMavenRepoDefaultValue') return ENABLED
+        if (key === 'activateNpmRepoDefaultValue') return ENABLED
+        return null
+      })
+      config.url = 'https://nexus.example.com'
+      config.secretExposeInternalUrl = false
+      vault.readSecretGroup.mockResolvedValue({ NEXUS_SOME_TOKEN: 'ok' })
+
+      const result = await service.getSecrets(faker.string.uuid())
+
+      expect(result.MAVEN_REPO_RELEASE).toBe(`https://nexus.example.com/${project.slug}-repository-release`)
+      expect(result.MAVEN_REPO_SNAPSHOT).toBe(`https://nexus.example.com/${project.slug}-repository-snapshot`)
+      expect(result.NPM_REPO).toBe(`https://nexus.example.com/${project.slug}-npm`)
+    })
+
+    it('does not emit repo URLs when per-project flags are default and global defaults are disabled', async () => {
+      const project = makeProjectWithDetails({ plugins: [] })
+      datastore.getProject.mockResolvedValue(project)
+      datastore.getAdminPluginConfig.mockResolvedValue(null)
+      config.url = 'https://nexus.example.com'
+      config.secretExposeInternalUrl = false
+      vault.readSecretGroup.mockResolvedValue({ NEXUS_SOME_TOKEN: 'ok' })
+
+      const result = await service.getSecrets(faker.string.uuid())
+
+      expect(result).toEqual({})
+    })
+
+    it('does not emit repo URLs when per-project flags are explicitly disabled even if global defaults are enabled', async () => {
+      const project = makeProjectWithDetails({
+        plugins: [
+          { pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: DISABLED },
+          { pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, value: DISABLED },
+        ],
+      })
+      datastore.getProject.mockResolvedValue(project)
+      datastore.getAdminPluginConfig.mockImplementation(async (_plugin, key) => {
+        if (key === 'activateMavenRepoDefaultValue') return ENABLED
+        if (key === 'activateNpmRepoDefaultValue') return ENABLED
+        return null
+      })
+      config.url = 'https://nexus.example.com'
+      config.secretExposeInternalUrl = false
+      vault.readSecretGroup.mockResolvedValue({ NEXUS_SOME_TOKEN: 'ok' })
+
+      const result = await service.getSecrets(faker.string.uuid())
+
+      expect(result).toEqual({})
+    })
+
+    it('returns the raw group unchanged when it is empty', async () => {
+      const project = makeProjectWithDetails()
+      datastore.getProject.mockResolvedValue(project)
+      vault.readSecretGroup.mockResolvedValue({})
+
+      const result = await service.getSecrets(faker.string.uuid())
+
+      expect(result).toEqual({})
+      expect(datastore.getProject).toHaveBeenCalled()
+    })
   })
 
   it('handleUpsert should reconcile based on computed flags', async () => {

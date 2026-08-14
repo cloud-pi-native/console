@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import type { ConfigType } from '@nestjs/config'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
@@ -5,7 +6,7 @@ import { baseConfigFactory } from '../../config/base.config'
 import { vaultConfigFactory } from '../../config/vault.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
-import { generateGitlabMirrorCredPath, generateGitlabTriggerTokenPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath } from './vault.utils'
+import { generateGitlabMirrorCredPath, generateGitlabTriggerTokenPath, generateProjectPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath } from './vault.utils'
 
 export interface VaultSysPoliciesAclUpsertRequest {
   policy: string
@@ -162,6 +163,40 @@ export class VaultClientService {
   async read<T = any>(path: string): Promise<VaultSecret<T>> {
     this.logger.debug(`Reading Vault KV secret at ${path}`)
     return await this.getKvData<T>(this.vaultConfig.kvName, path)
+  }
+
+  @StartActiveSpan()
+  async readSecretGroup(projectSlug: string, group: string): Promise<Record<string, string>> {
+    const fullPath = this.buildSecretGroupPath(projectSlug, group)
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('vault.kv.path', fullPath)
+    const secret = await this.read<Record<string, any>>(fullPath).catch(() => null)
+    return this.stringifySecretData(secret?.data ?? {})
+  }
+
+  private buildSecretGroupPath(projectSlug: string, group: string): string {
+    return `${generateProjectPath(this.baseConfig.projectsRootDir, projectSlug)}/${group}`
+  }
+
+  private parseSecretValue(value: unknown): string {
+    const schema = z.union([
+      z.string(),
+      z.undefined().transform(() => ''),
+      z.number().transform(String),
+      z.bigint().transform(String),
+      z.boolean().transform(String),
+      z.null().transform(() => ''),
+    ]).catch('')
+    return schema.parse(value)
+  }
+
+  private stringifySecretData(data: Record<string, any>): Record<string, string> {
+    const out: Record<string, string> = {}
+    for (const [key, value] of Object.entries(data)) {
+      out[key] = this.parseSecretValue(value)
+    }
+    return out
   }
 
   @StartActiveSpan()

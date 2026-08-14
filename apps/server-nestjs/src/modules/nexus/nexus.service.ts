@@ -5,12 +5,13 @@ import type { ProjectWithDetails } from './nexus-datastore.service'
 import type {
   MavenHostedRepoKind,
 } from './nexus.utils'
-import { specificallyEnabled } from '@cpn-console/hooks'
+import { defaultOrNullish, specificallyEnabled } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { baseConfigFactory } from '../../config/base.config'
 import { nexusConfigFactory } from '../../config/nexus.config'
+import { hasEntries } from '../../utils/record.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -61,6 +62,37 @@ export class NexusService {
     @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
   ) {
     this.logger.log('NexusService initialized')
+  }
+
+  @StartActiveSpan()
+  async getSecrets(projectId: string): Promise<Record<string, string>> {
+    const project = await this.datastore.getProject(projectId)
+    if (!project) return {}
+    const group = await this.vault.readSecretGroup(project.slug, 'NEXUS')
+    if (!hasEntries(group)) return group
+    const nexusFlags = Object.fromEntries(
+      (project.plugins ?? []).filter(p => p.pluginName === PLUGIN_NAME).map(p => [p.key, p.value]),
+    )
+    const nexusUrl = this.nexusConfig.secretExposeInternalUrl && this.nexusConfig.internalUrl
+      ? this.nexusConfig.internalUrl
+      : this.nexusConfig.url
+    const [mavenDefault, npmDefault] = await Promise.all([
+      this.datastore.getAdminPluginConfig(PLUGIN_NAME, 'activateMavenRepoDefaultValue').catch(() => null),
+      this.datastore.getAdminPluginConfig(PLUGIN_NAME, 'activateNpmRepoDefaultValue').catch(() => null),
+    ])
+    const mavenEnabled = specificallyEnabled(nexusFlags.activateMavenRepo)
+      || (defaultOrNullish(nexusFlags.activateMavenRepo) && specificallyEnabled(mavenDefault ?? undefined))
+    const npmEnabled = specificallyEnabled(nexusFlags.activateNpmRepo)
+      || (defaultOrNullish(nexusFlags.activateNpmRepo) && specificallyEnabled(npmDefault ?? undefined))
+    const out: Record<string, string> = {}
+    if (mavenEnabled) {
+      out.MAVEN_REPO_RELEASE = new URL(`${project.slug}-repository-release`, nexusUrl).toString()
+      out.MAVEN_REPO_SNAPSHOT = new URL(`${project.slug}-repository-snapshot`, nexusUrl).toString()
+    }
+    if (npmEnabled) {
+      out.NPM_REPO = new URL(`${project.slug}-npm`, nexusUrl).toString()
+    }
+    return out
   }
 
   @OnEvent('project.upsert')

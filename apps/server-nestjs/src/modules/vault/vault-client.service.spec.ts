@@ -77,6 +77,37 @@ describe('vault', () => {
     })
   })
 
+  describe('readSecretGroup', () => {
+    it('reads a project group and stringifies every value', async () => {
+      server.use(
+        http.get(`${vaultUrl}/v1/kv/data/*`, () => {
+          return HttpResponse.json({ data: { data: { key1: 'value1', key2: 42, key3: false, key4: null }, metadata: { created_time: '2023-01-01T00:00:00.000Z', version: 1 } } })
+        }),
+      )
+
+      const result = await service.readSecretGroup('my-project', 'GITLAB')
+
+      expect(result).toEqual({
+        key1: 'value1',
+        key2: '42',
+        key3: 'false',
+        key4: '',
+      })
+    })
+
+    it('returns {} when the secret is missing', async () => {
+      server.use(
+        http.get(`${vaultUrl}/v1/kv/data/*`, () => {
+          return HttpResponse.json({}, { status: HttpStatus.NOT_FOUND })
+        }),
+      )
+
+      const result = await service.readSecretGroup('my-project', 'GITLAB')
+
+      expect(result).toEqual({})
+    })
+  })
+
   describe('write', () => {
     it('should write secret', async () => {
       await expect(service.write({ secret: 'value' }, 'path')).resolves.toBeUndefined()

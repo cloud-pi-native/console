@@ -91,6 +91,31 @@ describe('registryService', () => {
     expect(service).toBeDefined()
   })
 
+  describe('getSecrets', () => {
+    it('restores the Harbor registry base path hint', async () => {
+      const project = makeProjectWithDetails()
+      datastore.getProject.mockResolvedValue(project)
+      vault.readSecretGroup.mockResolvedValue({ REGISTRY_ROBOT_SECRET: 'robot' })
+
+      const result = await service.getSecrets(faker.string.uuid())
+
+      expect(result).toEqual({
+        REGISTRY_ROBOT_SECRET: 'robot',
+        'Registry base path': `harbor.example/${project.slug}/`,
+      })
+    })
+
+    it('returns the raw group unchanged when it is empty', async () => {
+      const project = makeProjectWithDetails()
+      datastore.getProject.mockResolvedValue(project)
+      vault.readSecretGroup.mockResolvedValue({})
+
+      const result = await service.getSecrets(faker.string.uuid())
+
+      expect(result).toEqual({})
+    })
+  })
+
   describe('handleUpsert', () => {
     it('adds expected Harbor group memberships based on defaults', async () => {
       const project = makeProjectWithDetails()
