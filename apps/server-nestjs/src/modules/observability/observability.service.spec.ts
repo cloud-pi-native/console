@@ -78,6 +78,20 @@ describe('observabilityService', () => {
     })
   })
 
+  describe('syncValuesFile', () => {
+    it('scopes the repository url by project slug with a .git suffix', async () => {
+      const project = makeProject({ slug: 'infra-observability' })
+      await service.handleUpsert(project)
+      expect(client.updateProjectConfig).toHaveBeenCalledWith(
+        { id: 1 },
+        project,
+        expect.objectContaining({
+          projectRepository: { url: 'https://gitlab.test/proj/infra-observability/infra-observability.git', path: '.' },
+        }),
+      )
+    })
+  })
+
   describe('handleDelete', () => {
     it('cleans up keycloak groups and values', async () => {
       await service.handleDelete(makeProject())

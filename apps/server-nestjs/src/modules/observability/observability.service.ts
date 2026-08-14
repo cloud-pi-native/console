@@ -131,7 +131,7 @@ export class ObservabilityService {
     const projectGroupPath = generateKeycloakRootGroupPath(project)
 
     const projectValue = generateObservabilityProject(project, {
-      repositoryUrl: `${repositoryUrl}/${OBSERVABILITY_REPOSITORY}`,
+      repositoryUrl: `${repositoryUrl}/${project.slug}/${OBSERVABILITY_REPOSITORY}.git`,
       tenantRbacProd: generateGrafanaProdRbacGroupPaths(projectGroupPath),
       tenantRbacHProd: generateGrafanaHprodRbacGroupPaths(projectGroupPath),
     })
