@@ -5,7 +5,7 @@ import { baseConfigFactory } from '../../config/base.config'
 import { vaultConfigFactory } from '../../config/vault.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
-import { generateGitlabMirrorCredPath, generateGitlabTriggerTokenPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath } from './vault.utils'
+import { generateGitlabMirrorCredPath, generateGitlabTriggerTokenPath, generateProjectPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath, parseSecretValue } from './vault.utils'
 
 export interface VaultSysPoliciesAclUpsertRequest {
   policy: string
@@ -162,6 +162,21 @@ export class VaultClientService {
   async read<T = any>(path: string): Promise<VaultSecret<T>> {
     this.logger.debug(`Reading Vault KV secret at ${path}`)
     return await this.getKvData<T>(this.vaultConfig.kvName, path)
+  }
+
+  @StartActiveSpan()
+  async readSecretGroup(projectSlug: string, group: string): Promise<Record<string, string>> {
+    const fullPath = `${generateProjectPath(this.baseConfig.projectsRootDir, projectSlug)}/${group}`
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', projectSlug)
+    span?.setAttribute('vault.kv.path', fullPath)
+    const secret = await this.read<Record<string, any>>(fullPath).catch(() => null)
+    const data = secret?.data ?? {}
+    const out: Record<string, string> = {}
+    for (const [key, value] of Object.entries(data)) {
+      out[key] = parseSecretValue(value)
+    }
+    return out
   }
 
   @StartActiveSpan()

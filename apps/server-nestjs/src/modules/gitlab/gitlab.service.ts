@@ -4,7 +4,7 @@ import type { RepositorySyncEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { MirrorUserSecret } from '../vault/vault-client.service'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
-import { specificallyEnabled } from '@cpn-console/hooks'
+import { specificallyDisabled, specificallyEnabled } from '@cpn-console/hooks'
 import { AccessLevel } from '@gitbeaker/core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
@@ -59,6 +59,32 @@ export class GitlabService {
     @Inject(gitlabConfigFactory.KEY) private readonly gitlabConfig: ConfigType<typeof gitlabConfigFactory>,
   ) {
     this.logger.log('GitLabService initialized')
+  }
+
+  @StartActiveSpan()
+  async getSecrets(projectId: string): Promise<Record<string, string>> {
+    const project = await this.datastore.getProject(projectId)
+    if (!project) return {}
+    const group = await this.vault.readSecretGroup(project.slug, 'GITLAB')
+    const gitlabProjectId = group.GIT_MIRROR_PROJECT_ID
+    const token = group.GIT_MIRROR_TOKEN
+    const displayTriggerHint = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, 'displayTriggerHint').catch(() => null)
+    if (specificallyDisabled(displayTriggerHint ?? undefined)) return group
+    if (!gitlabProjectId || !token) return group
+    const apiUrl = this.gitlabConfig.url
+    return {
+      ...group,
+      'CURL COMMAND': [
+        'curl -k',
+        `--header "PRIVATE-TOKEN: ${token}"`,
+        '-X POST',
+        '--fail',
+        `-F token=${token}`,
+        '-F ref=main',
+        `-F "variables[GIT_MIRROR_PROJECT_ID]=${gitlabProjectId}"`,
+        `"${apiUrl}/api/v4/projects/${gitlabProjectId}/trigger/pipeline"`,
+      ].join(' \\\n    '),
+    }
   }
 
   @OnEvent('project.upsert')

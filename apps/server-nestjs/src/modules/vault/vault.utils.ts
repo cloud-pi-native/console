@@ -1,3 +1,18 @@
+import { z } from 'zod'
+
+const SecretValueSchema = z.union([
+  z.string(),
+  z.undefined().transform(() => ''),
+  z.number().transform(String),
+  z.bigint().transform(String),
+  z.boolean().transform(String),
+  z.null().transform(() => ''),
+]).catch('')
+
+export function parseSecretValue(value: string): string {
+  return SecretValueSchema.parse(value)
+}
+
 export function generateProjectPath(projectRootDir: string, projectSlug: string) {
   return `${projectRootDir}/${projectSlug}`
 }
