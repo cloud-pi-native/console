@@ -1,5 +1,21 @@
 # Changelog
 
+## [9.24.3](https://github.com/cloud-pi-native/console/compare/v9.24.2...v9.24.3) (2026-08-18)
+
+
+### Bug Fixes
+
+* delete Keycloak subgroups before the parent to avoid HTTP 500 on delete ([dd80880](https://github.com/cloud-pi-native/console/commit/dd80880ba9c1c408af13140f7c73e9b3553faf70))
+* **gitlab:** set ci_config_path only on externally mirrored repos ([27d4180](https://github.com/cloud-pi-native/console/commit/27d41807f42fd582a79adcf92dbceb370c4f2b54))
+* **observability:** scope repository url by project slug with .git suffix ([2c4c191](https://github.com/cloud-pi-native/console/commit/2c4c19195c67aef447de207a67488be2f1031ad6))
+* **observability:** skip Grafana group add for users with no Keycloak account ([4f925a9](https://github.com/cloud-pi-native/console/commit/4f925a97d7d2fce9c4e43e872e029dd4c859d6b1))
+* **project-secrets:** honor Nexus global repo defaults ([e6d6181](https://github.com/cloud-pi-native/console/commit/e6d6181bd15e668278de683af91f33f3e02263bd))
+* **project-secrets:** restore GitLab CURL COMMAND trigger hint ([bc08285](https://github.com/cloud-pi-native/console/commit/bc082853bc6058820286ba2446b170c09decb529))
+* remove Keycloak project groups on delete ([f2a4826](https://github.com/cloud-pi-native/console/commit/f2a4826f6f9789ef05f08a0c7919cba67c0c0913))
+* **server-nestjs:** carry the mirror repo id with the pipeline trigger token ([0c301b7](https://github.com/cloud-pi-native/console/commit/0c301b747b9478e677cb6220448cfd8f77efa84d))
+* **server-nestjs:** delete Keycloak subgroups before the parent group ([ad14ed4](https://github.com/cloud-pi-native/console/commit/ad14ed49b6f5894efb4a5238e472ac5b8bf7b19b)), closes [#2500](https://github.com/cloud-pi-native/console/issues/2500)
+* **server-nestjs:** surface GitLab error details in serialized errors ([ea0d8b1](https://github.com/cloud-pi-native/console/commit/ea0d8b1b76520879132ad83e508cda6b44b8923c))
+
 ## [9.24.2](https://github.com/cloud-pi-native/console/compare/v9.24.1...v9.24.2) (2026-08-11)
 
 
