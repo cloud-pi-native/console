@@ -2,7 +2,7 @@ import type { OnModuleInit } from '@nestjs/common'
 import type { ConfigType } from '@nestjs/config'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { SonarqubeUserSecret } from '../vault/vault-client.service'
-import type { SonarqubeProjectResult, SonarqubeUser } from './sonarqube-client.service'
+import type { SonarqubeProjectResult, SonarqubeUser, UpdateUserParams } from './sonarqube-client.service'
 import type { ProjectWithDetails } from './sonarqube-datastore.service'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
@@ -199,24 +199,39 @@ export class SonarqubeService implements OnModuleInit {
 
   @StartActiveSpan()
   private async ensureUser(project: ProjectWithDetails): Promise<void> {
-    const existingSecret = await this.vault.readSonarqubeUser(project.slug)
     const user = await this.findUser(project.slug)
+    const email = `${project.slug}@cloud-pi-native.fr`
     let newSecret: SonarqubeUserSecret | undefined
 
     if (!user) {
-      this.logger.log(`Creating SonarQube user (login=${project.slug}, email=${project.owner.email})`)
+      this.logger.log(`Creating SonarQube user (login=${project.slug}, email=${email})`)
       const password = generateRandomPassword(30)
-      await this.client.createUser({ email: project.owner.email, local: 'true', login: project.slug, name: project.slug, password })
+      await this.client.createUser({ email, local: 'true', login: project.slug, name: project.slug, password })
       const token = await this.rotateToken(project.slug)
       newSecret = { SONAR_USERNAME: project.slug, SONAR_PASSWORD: password, SONAR_TOKEN: token }
-    } else if (existingSecret) {
-      this.logger.verbose(`SonarQube user already exists with vault credentials (login=${project.slug})`)
     } else {
-      this.logger.warn(`SonarQube user exists but vault secret is missing, regenerating password and rotating token (login=${project.slug})`)
-      const password = generateRandomPassword(30)
-      await this.client.updateUser({ login: project.slug, password })
-      const token = await this.rotateToken(project.slug)
-      newSecret = { SONAR_USERNAME: project.slug, SONAR_PASSWORD: password, SONAR_TOKEN: token }
+      const updateParams: UpdateUserParams = { login: project.slug }
+      // Existing robot accounts created before the per-project email fix still carry the owner's real
+      // email, which collides with the owner's SSO login ("already associated with another
+      // authentication method", see #2510). Rewrite it to the per-project email on every reconcile.
+      // SonarqubeUser.email is derived from the API and can be blank on a collision account; never
+      // push a blank email into users/update, which would erase the value instead of fixing it.
+      if (user.email !== email && user.email) {
+        updateParams.email = email
+        this.logger.log(`Reconciling SonarQube user email to ${email} (login=${project.slug})`)
+      }
+      const existingSecret = await this.vault.readSonarqubeUser(project.slug)
+      if (existingSecret) {
+        this.logger.verbose(`SonarQube user already exists with vault credentials (login=${project.slug})`)
+      } else {
+        this.logger.warn(`SonarQube user exists but vault secret is missing, regenerating password and rotating token (login=${project.slug})`)
+        updateParams.password = generateRandomPassword(30)
+        const token = await this.rotateToken(project.slug)
+        newSecret = { SONAR_USERNAME: project.slug, SONAR_PASSWORD: updateParams.password, SONAR_TOKEN: token }
+      }
+      if (updateParams.email || updateParams.password) {
+        await this.client.updateUser(updateParams)
+      }
     }
 
     if (newSecret) {

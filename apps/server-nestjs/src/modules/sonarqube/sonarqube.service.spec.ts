@@ -192,6 +192,56 @@ describe('sonarqubeService', () => {
       expect(vault.writeSonarqubeUser).toHaveBeenCalledWith(project.slug, expect.objectContaining({ SONAR_USERNAME: project.slug, SONAR_PASSWORD: expect.any(String), SONAR_TOKEN: expect.any(String) }))
     })
 
+    it('should reconcile the email of an existing robot account stamped with the owner real email (#2510 mitigation)', async () => {
+      const project = makeProjectWithDetails({ slug: 'with-owner', owner: { email: 'owner@example.com' } as any })
+      vault.readSonarqubeUser.mockResolvedValue(makeVaultSecret({ data: { SONAR_USERNAME: 'with-owner', SONAR_PASSWORD: 'old', SONAR_TOKEN: 'old' } }))
+      client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
+      client.searchUsers.mockImplementation(async function* () {
+        yield makeSonarqubeUser({ login: 'with-owner', email: 'owner@example.com' })
+      })
+
+      await service.handleUpsert(project)
+
+      expect(client.createUser).not.toHaveBeenCalled()
+      expect(client.updateUser).toHaveBeenCalledWith(expect.objectContaining({
+        login: 'with-owner',
+        email: 'with-owner@cloud-pi-native.fr',
+      }))
+      expect(client.updateUser).not.toHaveBeenCalledWith(expect.objectContaining({ password: expect.any(String) }))
+    })
+
+    it('should not call updateUser when an existing robot account already has the cloud-pi-native.fr email', async () => {
+      const project = makeProjectWithDetails({ slug: 'clean' })
+      vault.readSonarqubeUser.mockResolvedValue(makeVaultSecret({ data: { SONAR_USERNAME: 'clean', SONAR_PASSWORD: 'old', SONAR_TOKEN: 'old' } }))
+      client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
+      client.searchUsers.mockImplementation(async function* () {
+        yield makeSonarqubeUser({ login: 'clean', email: 'clean@cloud-pi-native.fr' })
+      })
+
+      await service.handleUpsert(project)
+
+      expect(client.updateUser).not.toHaveBeenCalled()
+    })
+
+    it('should update both email and password when an existing robot account has a stale email and the vault secret is missing', async () => {
+      const project = makeProjectWithDetails({ slug: 'stale', owner: { email: 'owner@example.com' } as any })
+      vault.readSonarqubeUser.mockResolvedValue(null)
+      client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
+      client.searchUsers.mockImplementation(async function* () {
+        yield makeSonarqubeUser({ login: 'stale', email: 'owner@example.com' })
+      })
+
+      await service.handleUpsert(project)
+
+      expect(client.createUser).not.toHaveBeenCalled()
+      expect(client.updateUser).toHaveBeenCalledWith(expect.objectContaining({
+        login: 'stale',
+        email: 'stale@cloud-pi-native.fr',
+        password: expect.any(String),
+      }))
+      expect(vault.writeSonarqubeUser).toHaveBeenCalledWith('stale', expect.objectContaining({ SONAR_USERNAME: 'stale', SONAR_PASSWORD: expect.any(String), SONAR_TOKEN: expect.any(String) }))
+    })
+
     it('should delete sonarqube projects for removed repositories', async () => {
       const project = makeProjectWithDetails({ repositories: [{ internalRepoName: 'kept' }] })
       const keptKey = generateProjectKey(project.slug, 'kept')
@@ -266,14 +316,21 @@ describe('sonarqubeService', () => {
       expect(vault.deleteSonarqubeUser).toHaveBeenCalledWith('no-user')
     })
 
-    it('should use owner email when creating user', async () => {
+    it('should use a per-project cloud-pi-native.fr email (never the owner real email) when creating user', async () => {
       const project = makeProjectWithDetails({ slug: 'with-owner', owner: { email: 'owner@example.com' } as any })
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
       client.searchUsers.mockImplementation(async function* () {})
 
       await service.handleUpsert(project)
 
-      expect(client.createUser).toHaveBeenCalledWith(expect.objectContaining({ email: 'owner@example.com', login: 'with-owner' }))
+      // Regression guard for #2510: using the owner's real email on a `local: true` robot account
+      // makes the owner's SSO login collide ("already associated with another authentication
+      // method"). The email must be derived from the slug, never from the owner identity.
+      expect(client.createUser).toHaveBeenCalledWith(expect.objectContaining({
+        login: project.slug,
+        email: `${project.slug}@cloud-pi-native.fr`,
+      }))
+      expect(client.createUser).not.toHaveBeenCalledWith(expect.objectContaining({ email: project.owner.email }))
     })
   })
 
