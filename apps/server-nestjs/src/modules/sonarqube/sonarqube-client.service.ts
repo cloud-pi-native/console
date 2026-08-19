@@ -140,7 +140,8 @@ export interface CreateUserParams extends BaseParams {
 
 export interface UpdateUserParams extends BaseParams {
   login: string
-  password: string
+  password?: string
+  email?: string
 }
 
 export interface DeactivateUserParams extends BaseParams {
