@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.24.4](https://github.com/cloud-pi-native/console/compare/v9.24.3...v9.24.4) (2026-08-19)
+
+
+### Bug Fixes
+
+* **server-nestjs:** use per-project cloud-pi-native.fr email for sonarqube robot account ([ac4e7e3](https://github.com/cloud-pi-native/console/commit/ac4e7e377d0752833dfb766edcd76a4e821e7e33))
+
 ## [9.24.3](https://github.com/cloud-pi-native/console/compare/v9.24.2...v9.24.3) (2026-08-18)
 
 
