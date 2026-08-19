@@ -266,14 +266,14 @@ describe('sonarqubeService', () => {
       expect(vault.deleteSonarqubeUser).toHaveBeenCalledWith('no-user')
     })
 
-    it('should use owner email when creating user', async () => {
+    it('should use a per-project cloud-pi-native.fr email when creating user', async () => {
       const project = makeProjectWithDetails({ slug: 'with-owner', owner: { email: 'owner@example.com' } as any })
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
       client.searchUsers.mockImplementation(async function* () {})
 
       await service.handleUpsert(project)
 
-      expect(client.createUser).toHaveBeenCalledWith(expect.objectContaining({ email: 'owner@example.com', login: 'with-owner' }))
+      expect(client.createUser).toHaveBeenCalledWith(expect.objectContaining({ email: 'with-owner@cloud-pi-native.fr', login: 'with-owner' }))
     })
   })
 

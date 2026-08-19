@@ -204,9 +204,10 @@ export class SonarqubeService implements OnModuleInit {
     let newSecret: SonarqubeUserSecret | undefined
 
     if (!user) {
-      this.logger.log(`Creating SonarQube user (login=${project.slug}, email=${project.owner.email})`)
+      const email = `${project.slug}@cloud-pi-native.fr`
+      this.logger.log(`Creating SonarQube user (login=${project.slug}, email=${email})`)
       const password = generateRandomPassword(30)
-      await this.client.createUser({ email: project.owner.email, local: 'true', login: project.slug, name: project.slug, password })
+      await this.client.createUser({ email, local: 'true', login: project.slug, name: project.slug, password })
       const token = await this.rotateToken(project.slug)
       newSecret = { SONAR_USERNAME: project.slug, SONAR_PASSWORD: password, SONAR_TOKEN: token }
     } else if (existingSecret) {
