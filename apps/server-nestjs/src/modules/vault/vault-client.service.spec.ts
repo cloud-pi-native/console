@@ -30,7 +30,7 @@ const server = setupServer(
 describe('vault', () => {
   let service: VaultClientService
 
-  beforeAll(() => server.listen())
+  beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
   beforeEach(async () => {
     const config = mockDeep<ConfigType<typeof vaultConfigFactory>>({
       token: 'token',
