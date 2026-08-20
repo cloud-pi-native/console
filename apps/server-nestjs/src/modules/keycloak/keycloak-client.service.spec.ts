@@ -184,18 +184,19 @@ describe('getOrCreateSubGroupByName', () => {
     server.use(
       http.get(childrenUrl, ({ params }) => {
         expect(params.parentId).toBe('parent-id')
-        return HttpResponse.json([{ id: 'sub-id', name: 'sub' }])
+        return HttpResponse.json([{ id: 'sub-id', name: 'sub', path: '/parent/sub' }])
       }),
     )
 
     const result = await service.getOrCreateSubGroupByName('parent-id', 'sub')
 
-    expect(result).toMatchObject({ id: 'sub-id', name: 'sub' })
+    expect(result).toMatchObject({ id: 'sub-id', name: 'sub', path: '/parent/sub' })
   })
 
-  it('should create the subgroup when it does not exist', async () => {
+  it('should create the subgroup and re-fetch its representation when it does not exist', async () => {
     server.use(
-      http.get(childrenUrl, () => HttpResponse.json([])),
+      http.get(childrenUrl, () => HttpResponse.json([]), { once: true }),
+      http.get(childrenUrl, () => HttpResponse.json([{ id: 'created-id', name: 'sub', path: '/parent/sub' }])),
       http.post(childrenUrl, async ({ request, params }) => {
         expect(params.parentId).toBe('parent-id')
         expect(await request.json()).toEqual({ name: 'sub' })
@@ -208,13 +209,13 @@ describe('getOrCreateSubGroupByName', () => {
 
     const result = await service.getOrCreateSubGroupByName('parent-id', 'sub')
 
-    expect(result).toEqual({ id: 'created-id', name: 'sub' })
+    expect(result).toEqual({ id: 'created-id', name: 'sub', path: '/parent/sub' })
   })
 
   it('should re-fetch the subgroup when a concurrent creation causes a 409', async () => {
     server.use(
       http.get(childrenUrl, () => HttpResponse.json([]), { once: true }),
-      http.get(childrenUrl, () => HttpResponse.json([{ id: 'concurrent-id', name: 'sub' }])),
+      http.get(childrenUrl, () => HttpResponse.json([{ id: 'concurrent-id', name: 'sub', path: '/parent/sub' }])),
       http.post(childrenUrl, () =>
         HttpResponse.json({ errorMessage: 'Sibling group named \'sub\' already exists.' }, { status: 409 })),
     )
