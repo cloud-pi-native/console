@@ -1,6 +1,7 @@
 import type { CondensedGroupSchema, MemberSchema } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
 import type { RepositorySyncEventPayload } from '../events/app-events.service'
+import { AppEventsService } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { MirrorUserSecret } from '../vault/vault-client.service'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
@@ -57,6 +58,7 @@ export class GitlabService {
     @Inject(GitlabClientService) private readonly gitlab: GitlabClientService,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
     @Inject(gitlabConfigFactory.KEY) private readonly gitlabConfig: ConfigType<typeof gitlabConfigFactory>,
+    @Inject(AppEventsService) private readonly appEvents: AppEventsService,
   ) {
     this.logger.log('GitLabService initialized')
   }
@@ -149,7 +151,28 @@ export class GitlabService {
     await this.ensureProjectRepos(project)
     await this.purgeOrphanRepos(project)
     await this.ensureSystemRepos(project)
+    // Emit after ensureSystemRepos so the mirror repo + trigger token exist before
+    // triggerMirror runs. Repos added via the manifest are configured here but never
+    // launched by the HTTP create path, so they need the kick during reconciliation.
+    await this.emitMirrorSyncs(project)
     this.logger.verbose(`GitLab project group reconciled (${project.slug})`)
+  }
+
+  @StartActiveSpan()
+  private async emitMirrorSyncs(project: ProjectWithDetails) {
+    const externalRepos = project.repositories.filter(repo => repo.externalRepoUrl)
+    await Promise.all(externalRepos.map(repo =>
+      this.appEvents.emitRepositoryEvent('repository.sync', {
+        projectId: project.id,
+        projectSlug: project.slug,
+        internalRepoName: repo.internalRepoName,
+        syncAllBranches: true,
+      }, { action: 'Sync Repository' })
+        .catch(error => this.logger.warn(
+          `Mirror sync emit failed during reconcile (project=${project.slug}, repo=${repo.internalRepoName})`,
+          error,
+        )),
+    ))
   }
 
   @StartActiveSpan()

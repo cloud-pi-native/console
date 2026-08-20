@@ -283,6 +283,36 @@ describe('repositoryService', () => {
       expect(vault.deleteGitlabMirrorCreds).not.toHaveBeenCalled()
       expect(appEvents.emitProjectEvent).not.toHaveBeenCalled()
     })
+
+    it('triggers a full mirror sync when the external URL first appears on update', async () => {
+      const before = makeRepository({ id: repositoryId, projectId, externalRepoUrl: '' })
+      const updated = makeRepository({ id: repositoryId, projectId, externalRepoUrl: `https://${faker.internet.domainName()}/repo.git` })
+      datastore.getRepositoryById.mockResolvedValue(before)
+      datastore.updateRepository.mockResolvedValue(updated)
+      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitRepositoryEvent.mockResolvedValue({})
+
+      await service.updateRepository(projectId, projectSlug, repositoryId, { externalRepoUrl: updated.externalRepoUrl }, userId, requestId)
+
+      expect(appEvents.emitRepositoryEvent).toHaveBeenCalledWith(
+        'repository.sync',
+        expect.objectContaining({ projectId, internalRepoName: updated.internalRepoName, syncAllBranches: true }),
+        expect.objectContaining({ action: 'Sync Repository' }),
+      )
+    })
+
+    it('does not trigger a mirror sync when the external URL is unchanged', async () => {
+      const externalRepoUrl = `https://${faker.internet.domainName()}/repo.git`
+      const before = makeRepository({ id: repositoryId, projectId, externalRepoUrl })
+      const updated = makeRepository({ id: repositoryId, projectId, externalRepoUrl })
+      datastore.getRepositoryById.mockResolvedValue(before)
+      datastore.updateRepository.mockResolvedValue(updated)
+      appEvents.emitProjectEvent.mockResolvedValue({})
+
+      await service.updateRepository(projectId, projectSlug, repositoryId, { deployRevision: faker.git.branch() }, userId, requestId)
+
+      expect(appEvents.emitRepositoryEvent).not.toHaveBeenCalled()
+    })
   })
 
   describe('syncRepository', () => {

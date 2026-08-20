@@ -1,6 +1,6 @@
 import type { CreateRepositoryBody, UpdateRepositoryBody } from '@cpn-console/shared'
 import type { Project, Repository, User } from '@prisma/client'
-import { addLogs, deleteRepository as deleteRepositoryQuery, getProjectInfosAndRepos, getProjectRepositories as getProjectRepositoriesQuery, initializeRepository, updateRepository as updateRepositoryQuery } from '@/resources/queries-index.js'
+import { addLogs, getRepositoryById, deleteRepository as deleteRepositoryQuery, getProjectInfosAndRepos, getProjectRepositories as getProjectRepositoriesQuery, initializeRepository, updateRepository as updateRepositoryQuery } from '@/resources/queries-index.js'
 import { BadRequest400, Unprocessable422 } from '@/utils/errors.js'
 import { hook } from '@/utils/hook-wrapper.js'
 
@@ -59,7 +59,13 @@ export async function createRepository({
   }
 
   if (data.externalRepoUrl) {
-    await syncRepository({ repositoryId: repo.id, requestId, syncAllBranches: true, userId })
+    const syncResult = await syncRepository({ repositoryId: repo.id, requestId, syncAllBranches: true, userId })
+    // The mirror pipeline is a downstream effect of creation; its failure must stay
+    // observable instead of being silently discarded (syncRepository already logs the
+    // hook reply — this markers it under the create action for operator scans).
+    if (syncResult instanceof Unprocessable422) {
+      await addLogs({ action: 'Create Repository', data: { mirrorSync: 'failed', repositoryId: repo.id }, userId, requestId, projectId: repo.projectId })
+    }
   }
   return repo
 }
@@ -75,6 +81,7 @@ export async function updateRepository({
   userId: User['id']
   requestId: string
 }) {
+  const before = await getRepositoryById(repositoryId)
   const dbData = { ...data }
   delete dbData.externalToken
   const repo = await updateRepositoryQuery(repositoryId, dbData)
@@ -90,6 +97,13 @@ export async function updateRepository({
     return new Unprocessable422('Echec des services à la mise à jour du dépôt')
   }
 
+  // Auto-trigger the mirror when the external URL first appears or changes. The console
+  // creates repos without externalRepoUrl and sets it in a later update, which is the
+  // exact "ajout d'un repo" path that previously never launched the pipeline.
+  if (before.externalRepoUrl !== repo.externalRepoUrl && repo.externalRepoUrl) {
+    await syncRepository({ repositoryId: repo.id, requestId, syncAllBranches: true, userId })
+      .catch(error => addLogs({ action: 'Update Repository', data: { mirrorSync: 'failed', repositoryId: repo.id, error }, userId, requestId, projectId: repo.projectId }))
+  }
   return repo
 }
 

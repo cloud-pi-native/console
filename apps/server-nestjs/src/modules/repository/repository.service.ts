@@ -109,7 +109,7 @@ export class RepositoryService {
   }
 
   async updateRepository(projectId: string, projectSlug: string, repositoryId: string, repositoryToUpdate: UpdateRepository, userId: string, requestId: string): Promise<Repository> {
-    await this.getProjectRepositoryOrThrow(projectId, repositoryId)
+    const before = await this.getProjectRepositoryOrThrow(projectId, repositoryId)
 
     const repository = await this.repositoryDatastoreService.updateRepository(
       repositoryId,
@@ -129,6 +129,19 @@ export class RepositoryService {
       requestId,
       'Echec des services à la mise à jour du dépôt',
     )
+
+    // Auto-trigger the mirror when the external URL first appears or changes. The console
+    // creates repos without externalRepoUrl and sets it in a later update, which is the
+    // exact "ajout d'un repo" path that previously never launched the pipeline.
+    if (before.externalRepoUrl !== repository.externalRepoUrl && repository.externalRepoUrl) {
+      await this.syncRepositoryMirror(
+        { projectId, projectSlug, internalRepoName: repository.internalRepoName, syncAllBranches: true },
+        userId,
+        requestId,
+      ).catch((error: unknown) => {
+        this.logger.error(`repository.sync after update failed (repositoryId=${repository.id})`, error instanceof Error ? error.stack : String(error))
+      })
+    }
     return repository
   }
 

@@ -7,6 +7,7 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { gitlabConfigFactory } from '../../config/gitlab.config'
+import { AppEventsService } from '../events/app-events.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
 import { GitlabDatastoreService } from './gitlab-datastore.service'
@@ -20,6 +21,7 @@ describe('gitlabService', () => {
   let vault: DeepMockProxy<VaultClientService>
   let datastore: DeepMockProxy<GitlabDatastoreService>
   let config: DeepMockProxy<ConfigType<typeof gitlabConfigFactory>>
+  let appEvents: DeepMockProxy<AppEventsService>
 
   beforeEach(async () => {
     gitlab = mockDeep<GitlabClientService>()
@@ -36,6 +38,9 @@ describe('gitlabService', () => {
       readGitlabMirrorCreds: vi.fn().mockResolvedValue(null),
     })
     config = mockDeep<ConfigType<typeof gitlabConfigFactory>>({ projectRootDir: 'forge', url: 'https://gitlab.example.com' })
+    appEvents = mockDeep<AppEventsService>({
+      emitRepositoryEvent: vi.fn().mockResolvedValue({}),
+    })
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -44,6 +49,7 @@ describe('gitlabService', () => {
         { provide: GitlabDatastoreService, useValue: datastore },
         { provide: VaultClientService, useValue: vault },
         { provide: gitlabConfigFactory.KEY, useValue: config },
+        { provide: AppEventsService, useValue: appEvents },
       ],
     }).compile()
 
@@ -80,6 +86,47 @@ describe('gitlabService', () => {
       expect(gitlab.getOrCreateProjectSubGroup).toHaveBeenCalledWith(project.slug)
       expect(gitlab.getGroupMembers).toHaveBeenCalledWith(group)
       expect(gitlab.getRepos).toHaveBeenCalledWith(project.slug)
+    })
+
+    it('emits repository.sync for external repos after the mirror repo is provisioned', async () => {
+      const group = makeGroupSchema({
+        id: 123,
+        full_path: 'forge/console/project-1',
+        full_name: 'forge/console/project-1',
+        name: 'project-1',
+        path: 'project-1',
+        parent_id: 1,
+      })
+      const project = makeProjectWithDetails({
+        repositories: [
+          { id: faker.string.uuid(), internalRepoName: 'app', isInfra: false, isPrivate: false, externalRepoUrl: 'https://github.com/org/app.git', externalUserName: '' },
+          { id: faker.string.uuid(), internalRepoName: 'internal', isInfra: false, isPrivate: false, externalRepoUrl: '', externalUserName: '' },
+        ],
+      })
+
+      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.getProjectGroup.mockResolvedValue(group)
+      gitlab.getProjectToken.mockResolvedValue(undefined)
+      gitlab.createMirrorAccessToken.mockResolvedValue(makeAccessTokenExposedSchema({ name: 'mirror-bot', token: 'secret-token' }))
+      gitlab.validateProjectToken.mockResolvedValue(true)
+      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.upsertProjectGroupRepo.mockResolvedValue(makeProjectSchema({ id: 1 }))
+      gitlab.getOrCreateProjectGroupInternalRepoUrl.mockResolvedValue('https://gitlab.internal/console/project-1/app')
+      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 2, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.upsertUser.mockResolvedValue(makeExpandedUserSchema({ id: 123, username: 'user' }))
+
+      await service.handleUpsert(project)
+
+      // Only the external repo should be kicked, and only after ensureSystemRepos ran.
+      expect(appEvents.emitRepositoryEvent).toHaveBeenCalledTimes(1)
+      expect(appEvents.emitRepositoryEvent).toHaveBeenCalledWith(
+        'repository.sync',
+        expect.objectContaining({ projectSlug: project.slug, internalRepoName: 'app', syncAllBranches: true }),
+        expect.objectContaining({ action: 'Sync Repository' }),
+      )
+      expect(gitlab.upsertProjectMirrorRepo).toHaveBeenCalledBefore(appEvents.emitRepositoryEvent as any)
     })
 
     it('should remove orphan member if purge enabled', async () => {
