@@ -1,3 +1,4 @@
+import z from 'zod'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation'
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
 import type { ProjectWithDetails } from './keycloak-datastore.service'
@@ -5,6 +6,14 @@ import { CONSOLE_GROUP_NAME } from './keycloak.constants'
 
 type With<T, K extends keyof T> = T & Required<Pick<T, K>>
 export type GroupRepresentationWith<T extends keyof GroupRepresentation> = With<GroupRepresentation, T>
+
+// Groups handed out by this client always carry id/name/path.
+export type GroupRepresentationWithIdNamePath = GroupRepresentationWith<'id' | 'name' | 'path'>
+
+// Groups handed out by this client always carry id/name/path: parse at the
+// boundary so callers use the representation Keycloak computed, never a
+// locally synthesized path.
+export const groupSchema = z.object({ id: z.string(), name: z.string(), path: z.string() }).and(z.record(z.string(), z.unknown()))
 
 export function isMember(project: ProjectWithDetails, member: UserRepresentation): boolean {
   return project.members.some(m => m.user.id === member.id) || project.ownerId === member.id

@@ -1,7 +1,7 @@
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
-import type { GroupRepresentationWith } from './keycloak.utils'
+import type { GroupRepresentationWith, GroupRepresentationWithIdNamePath } from './keycloak.utils'
 import { getBaseRoleType, getPermsByUserRoles, isExternalRoleType, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
@@ -99,10 +99,7 @@ export class KeycloakService {
     })
     this.logger.verbose(`Reconciling Keycloak project group (${project.slug}): members=${project.members.length} roles=${project.roles.length}`)
 
-    const projectGroup = z.object({
-      id: z.string(),
-      name: z.string(),
-    }).parse(await this.keycloak.getOrCreateGroupByPath(`/${project.slug}`))
+    const projectGroup = await this.keycloak.getOrCreateGroupByPath(`/${project.slug}`)
 
     span?.setAttribute('keycloak.project_group.id', projectGroup.id)
 
@@ -117,11 +114,7 @@ export class KeycloakService {
   private async ensureConsoleGroup(project: ProjectWithDetails, group: GroupRepresentationWith<'id'>) {
     const span = trace.getActiveSpan()
     span?.setAttribute('keycloak.console_group.id', group.id)
-    const consoleGroup = z.object({
-      id: z.string(),
-      name: z.string(),
-      path: z.string(),
-    }).parse(await this.keycloak.getOrCreateConsoleGroup(group))
+    const consoleGroup = await this.keycloak.getOrCreateConsoleGroup(group)
     this.logger.verbose(`Reconciling Keycloak console group (${project.slug}): projectGroupId=${group.id} consoleGroupId=${consoleGroup.id}`)
     await Promise.all([
       this.ensureRoleGroups(project, consoleGroup),
@@ -157,10 +150,7 @@ export class KeycloakService {
     if (!roleGroupPath) return
 
     span?.setAttribute('keycloak.group.path', roleGroupPath)
-    const roleGroup = z.object({
-      id: z.string(),
-      name: z.string(),
-    }).parse(await this.keycloak.getOrCreateGroupByPath(roleGroupPath))
+    const roleGroup = await this.keycloak.getOrCreateGroupByPath(roleGroupPath)
     span?.setAttribute('keycloak.group.id', roleGroup.id)
 
     const groupMembers = await this.keycloak.getGroupMembers(roleGroup.id)
@@ -292,7 +282,7 @@ export class KeycloakService {
   @StartActiveSpan()
   private async ensureRoleGroups(
     project: ProjectWithDetails,
-    group: GroupRepresentationWith<'id' | 'name' | 'path'>,
+    group: GroupRepresentationWithIdNamePath,
   ) {
     const span = trace.getActiveSpan()
     span?.setAttributes({
@@ -311,7 +301,7 @@ export class KeycloakService {
   private async ensureRoleGroup(
     project: ProjectWithDetails,
     role: ProjectWithDetails['roles'][number],
-    group: GroupRepresentationWith<'id' | 'name' | 'path'>,
+    group: GroupRepresentationWithIdNamePath,
   ) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
@@ -352,7 +342,7 @@ export class KeycloakService {
   private async ensureRoleGroupMembers(
     project: ProjectWithDetails,
     role: ProjectWithDetails['roles'][number],
-    group: GroupRepresentationWith<'id' | 'name' | 'path'>,
+    group: GroupRepresentationWithIdNamePath,
     members: UserRepresentation[],
   ) {
     const span = trace.getActiveSpan()
@@ -383,7 +373,7 @@ export class KeycloakService {
   private async purgeOrphanRoleGroupMembers(
     project: ProjectWithDetails,
     role: ProjectWithDetails['roles'][number],
-    group: GroupRepresentationWith<'id' | 'name' | 'path'>,
+    group: GroupRepresentationWithIdNamePath,
     members: UserRepresentation[],
   ) {
     const span = trace.getActiveSpan()
@@ -428,16 +418,7 @@ export class KeycloakService {
       'project.roles.count': project.roles.length,
     })
 
-    const { roGroup, rwGroup } = z.object({
-      roGroup: z.object({
-        id: z.string(),
-        name: z.string(),
-      }),
-      rwGroup: z.object({
-        id: z.string(),
-        name: z.string(),
-      }),
-    }).parse(await this.keycloak.getOrCreateEnvironmentGroups(group, environment))
+    const { roGroup, rwGroup } = await this.keycloak.getOrCreateEnvironmentGroups(group, environment)
 
     span?.setAttribute('keycloak.env_group.ro.id', roGroup.id)
     span?.setAttribute('keycloak.env_group.rw.id', rwGroup.id)
