@@ -12,7 +12,7 @@ import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
-import { isMember, isNonEmptyGroupPath, isOwnedProjectGroup, normalizeGroupPath } from './keycloak.utils'
+import { isMember, isNonEmptyGroupPath, isOwnedProjectGroup, splitGroupPath, toGroupPath, toRoleRelativeGroupPath } from './keycloak.utils'
 
 @Injectable()
 export class KeycloakService {
@@ -120,6 +120,7 @@ export class KeycloakService {
     const consoleGroup = z.object({
       id: z.string(),
       name: z.string(),
+      path: z.string(),
     }).parse(await this.keycloak.getOrCreateConsoleGroup(group))
     this.logger.verbose(`Reconciling Keycloak console group (${project.slug}): projectGroupId=${group.id} consoleGroupId=${consoleGroup.id}`)
     await Promise.all([
@@ -152,7 +153,7 @@ export class KeycloakService {
     const span = trace.getActiveSpan()
     span?.setAttribute('admin_role.id', role.id)
     span?.setAttribute('admin_role.oidc_group.present', isNonEmptyGroupPath(role.oidcGroup))
-    const roleGroupPath = normalizeGroupPath(role.oidcGroup)
+    const roleGroupPath = toGroupPath(role.oidcGroup)
     if (!roleGroupPath) return
 
     span?.setAttribute('keycloak.group.path', roleGroupPath)
@@ -291,7 +292,7 @@ export class KeycloakService {
   @StartActiveSpan()
   private async ensureRoleGroups(
     project: ProjectWithDetails,
-    group: GroupRepresentationWith<'id' | 'name'>,
+    group: GroupRepresentationWith<'id' | 'name' | 'path'>,
   ) {
     const span = trace.getActiveSpan()
     span?.setAttributes({
@@ -310,7 +311,7 @@ export class KeycloakService {
   private async ensureRoleGroup(
     project: ProjectWithDetails,
     role: ProjectWithDetails['roles'][number],
-    group: GroupRepresentationWith<'id' | 'name'>,
+    group: GroupRepresentationWith<'id' | 'name' | 'path'>,
   ) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
@@ -319,9 +320,10 @@ export class KeycloakService {
     span?.setAttribute('role.oidc_group.present', isNonEmptyGroupPath(role.oidcGroup))
     if (!isNonEmptyGroupPath(role.oidcGroup)) return
 
-    span?.setAttribute('role.oidc_group.depth', role.oidcGroup.split('/').filter(Boolean).length)
+    span?.setAttribute('role.oidc_group.depth', splitGroupPath(role.oidcGroup).length)
 
-    const roleGroup = await this.keycloak.getOrCreateRoleGroup(group, role.oidcGroup)
+    const relativeOidcGroup = toRoleRelativeGroupPath(role, group)
+    const roleGroup = await this.keycloak.getOrCreateRoleGroup(group, relativeOidcGroup)
     span?.setAttribute('keycloak.group.id', roleGroup.id)
     span?.setAttribute('keycloak.group.path', roleGroup.path)
 

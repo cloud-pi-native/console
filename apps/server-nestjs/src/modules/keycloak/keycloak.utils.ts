@@ -14,7 +14,7 @@ export function isNonEmptyGroupPath(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0
 }
 
-export function normalizeGroupPath(value: unknown): string | undefined {
+export function toGroupPath(value: unknown): string | undefined {
   if (!isNonEmptyGroupPath(value)) return undefined
   const trimmed = value.trim()
   return trimmed.startsWith('/') ? trimmed : `/${trimmed}`
@@ -22,4 +22,19 @@ export function normalizeGroupPath(value: unknown): string | undefined {
 
 export function isOwnedProjectGroup(group: GroupRepresentationWith<'subGroups'>): boolean {
   return !!group.subGroups.some(sg => sg.name === CONSOLE_GROUP_NAME)
+}
+
+export function splitGroupPath(path: string): string[] {
+  return path.split('/').filter(Boolean)
+}
+
+export function joinGroupPath(...parts: string[]): string {
+  return `/${parts.flatMap(splitGroupPath).join('/')}`
+}
+
+export function toRoleRelativeGroupPath(
+  role: Pick<ProjectWithDetails['roles'][number], 'oidcGroup'>,
+  consoleGroup: GroupRepresentationWith<'path'>,
+): string {
+  return role.oidcGroup.replace(consoleGroup.path, '')
 }
