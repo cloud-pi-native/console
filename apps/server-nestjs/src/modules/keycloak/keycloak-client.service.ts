@@ -14,6 +14,7 @@ import { keycloakConfigFactory } from '../../config/keycloak.config'
 import { getErrorResponseStatus } from '../../utils/http.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { ADMIN_AUTH_REALM, ADMIN_TOKEN_REFRESH_INTERVAL_MS, CONSOLE_GROUP_NAME, PASSWORD_GRANT_TYPE, REFRESH_TOKEN_GRANT_TYPE, SUBGROUPS_PAGINATE_QUERY_MAX } from './keycloak.constants'
+import { joinGroupPath, splitGroupPath } from './keycloak.utils'
 
 export const KEYCLOAK_ADMIN_CLIENT = Symbol('KEYCLOAK_ADMIN_CLIENT')
 
@@ -52,7 +53,7 @@ export class KeycloakClientService implements OnModuleInit {
   }
 
   async getGroupByPath(path: string): Promise<GroupRepresentation | undefined> {
-    const parts = path.split('/').filter(Boolean)
+    const parts = splitGroupPath(path)
     this.logger.verbose(`Resolving Keycloak group path ${path} (depth=${parts.length})`)
     let current: GroupRepresentationWith<'id'> | undefined
     if (parts.length === 0) return undefined
@@ -168,7 +169,7 @@ export class KeycloakClientService implements OnModuleInit {
 
   async getOrCreateGroupByPath(path: string) {
     const span = trace.getActiveSpan()
-    span?.setAttribute('group.path.depth', path.split('/').filter(Boolean).length)
+    span?.setAttribute('group.path.depth', splitGroupPath(path).length)
     this.logger.verbose(`Ensuring Keycloak group path exists: ${path}`)
     const existingGroup = await this.getGroupByPath(path)
     if (existingGroup) {
@@ -176,7 +177,7 @@ export class KeycloakClientService implements OnModuleInit {
       return existingGroup
     }
 
-    const parts = path.split('/').filter(Boolean)
+    const parts = splitGroupPath(path)
     let parentId: string | undefined
     let current: GroupRepresentationWith<'id' | 'name'> | undefined
 
@@ -238,16 +239,16 @@ export class KeycloakClientService implements OnModuleInit {
   }
 
   async getOrCreateRoleGroup(
-    consoleGroup: GroupRepresentationWith<'id' | 'name'>,
+    consoleGroup: GroupRepresentationWith<'id' | 'name' | 'path'>,
     oidcGroup: string,
   ) {
     const span = trace.getActiveSpan()
     span?.setAttributes({
       'keycloak.group.id': consoleGroup.id,
       'role.oidc_group.present': !!oidcGroup,
-      'role.oidc_group.depth': oidcGroup.split('/').filter(Boolean).length,
+      'role.oidc_group.depth': splitGroupPath(oidcGroup).length,
     })
-    const parts = oidcGroup.split('/').filter(Boolean)
+    const parts = splitGroupPath(oidcGroup)
     if (parts.length === 0) {
       throw new Error(`Invalid oidcGroup for project role: "${oidcGroup}"`)
     }
@@ -264,7 +265,7 @@ export class KeycloakClientService implements OnModuleInit {
       }).parse(await this.getOrCreateSubGroupByName(current.id, name))
     }
 
-    return { ...current, path: `/${consoleGroup.name}/${parts.join('/')}` } satisfies GroupRepresentation
+    return { ...current, path: joinGroupPath(consoleGroup.path, ...parts) } satisfies GroupRepresentation
   }
 
   async getOrCreateEnvironmentGroups(consoleGroup: GroupRepresentationWith<'id'>, environment: ProjectWithDetails['environments'][number]) {
