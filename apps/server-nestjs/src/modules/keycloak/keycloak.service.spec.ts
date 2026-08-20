@@ -188,7 +188,7 @@ describe('keycloakService', () => {
 
       keycloak.getOrCreateGroupByPath.mockImplementation((path) => {
         if (path === '/test-project') return Promise.resolve(projectGroup)
-        return Promise.resolve({})
+        throw new Error(`Unexpected getOrCreateGroupByPath call: ${path}`)
       })
       keycloak.getOrCreateConsoleGroup.mockResolvedValue(consoleGroup)
       keycloak.getOrCreateRoleGroup.mockResolvedValue(roleGroup)
@@ -229,7 +229,8 @@ describe('keycloakService', () => {
       keycloak.getGroupMembers.mockResolvedValue([])
 
       // Mock console group retrieval
-      keycloak.getOrCreateConsoleGroup.mockResolvedValue(makeGroupRepresentation({ id: 'console-id', name: 'console', path: '/test-project/console' }))
+      const consoleGroup = makeGroupRepresentation({ id: 'console-id', name: 'console', path: '/test-project/console' })
+      keycloak.getOrCreateConsoleGroup.mockResolvedValue(consoleGroup)
       keycloak.getOrCreateEnvironmentGroups.mockResolvedValue({
         roGroup: makeGroupRepresentation({ id: 'dev-ro-id', name: 'RO' }),
         rwGroup: makeGroupRepresentation({ id: 'dev-rw-id', name: 'RW' }),
@@ -256,9 +257,9 @@ describe('keycloakService', () => {
       await service.handleCron()
 
       // Should create dev group
-      expect(keycloak.getOrCreateConsoleGroup).toHaveBeenCalledWith({ id: 'group-id', name: 'test-project' })
+      expect(keycloak.getOrCreateConsoleGroup).toHaveBeenCalledWith(projectGroup)
       // Should create RO/RW groups
-      expect(keycloak.getOrCreateEnvironmentGroups).toHaveBeenCalledWith({ id: 'console-id', name: 'console', path: '/test-project/console' }, projectWithEnv.environments[0])
+      expect(keycloak.getOrCreateEnvironmentGroups).toHaveBeenCalledWith(consoleGroup, projectWithEnv.environments[0])
       // Should delete staging group
       expect(keycloak.deleteGroup).toHaveBeenCalledWith('staging-id')
     })
@@ -359,7 +360,7 @@ describe('keycloakService', () => {
 
       keycloak.getOrCreateGroupByPath.mockImplementation((path) => {
         if (path === '/test-project') return Promise.resolve(projectGroup)
-        return Promise.resolve({})
+        throw new Error(`Unexpected getOrCreateGroupByPath call: ${path}`)
       })
       keycloak.getOrCreateConsoleGroup.mockResolvedValue(consoleGroup)
       keycloak.getOrCreateRoleGroup.mockImplementation((_consoleGroup, oidcGroup) => {
@@ -424,7 +425,7 @@ describe('keycloakService', () => {
 
       keycloak.getOrCreateGroupByPath.mockImplementation((path) => {
         if (path === '/test-project') return Promise.resolve(projectGroup)
-        return Promise.resolve({})
+        throw new Error(`Unexpected getOrCreateGroupByPath call: ${path}`)
       })
       keycloak.getOrCreateConsoleGroup.mockResolvedValue(consoleGroup)
       keycloak.getOrCreateRoleGroup.mockResolvedValue({ ...systemManagedGroup, path: '/test-project/console/system-managed-group' })
