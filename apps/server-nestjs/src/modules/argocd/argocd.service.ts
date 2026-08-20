@@ -73,8 +73,63 @@ export class ArgoCDService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling a project delete event for ${project.slug}`)
-    await this.ensureProject(project)
-    this.logger.log(`ArgoCD sync completed for project ${project.slug}`)
+    await this.purgeZones(project)
+    this.logger.log(`ArgoCD cleanup completed for project ${project.slug}`)
+  }
+
+  @StartActiveSpan()
+  private async purgeZones(project: ProjectWithDetails): Promise<void> {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    // Purge every zone, not only those with a current environment, so leftover
+    // values files are removed even from zones the project no longer deploys to.
+    const zones = await this.datastore.getAllZoneSlugs()
+    span?.setAttribute('argocd.zones.count', zones.length)
+    this.logger.verbose(`Purging ArgoCD zones for project ${project.slug} (count=${zones.length})`)
+    await Promise.all(zones.map(zoneSlug => this.purgeZone(project, zoneSlug)))
+  }
+
+  @StartActiveSpan()
+  private async purgeZone(project: ProjectWithDetails, zoneSlug: string): Promise<void> {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    const infraProject = await this.gitlab.getOrCreateInfraGroupRepo(zoneSlug)
+    span?.setAttributes({
+      'argocd.repo.id': infraProject.id,
+      'argocd.repo.path': infraProject.path_with_namespace,
+      'zone.slug': zoneSlug,
+    })
+
+    const actions = await this.generateDeleteProjectActions(project, infraProject, zoneSlug)
+
+    span?.setAttribute('argocd.repo.actions.count', actions.length)
+    if (actions.length === 0) {
+      this.logger.verbose(`No ArgoCD files to delete for project ${project.slug} in zone ${zoneSlug}`)
+      return
+    }
+
+    this.logger.log(`Deleting ArgoCD files for project ${project.slug} in zone ${zoneSlug} (actions=${actions.length})`)
+    await this.gitlab.maybeCreateCommit(infraProject, `ci: :robot_face: Delete ${project.slug}`, actions)
+  }
+
+  private async generateDeleteProjectActions(
+    project: ProjectWithDetails,
+    infraProject: CondensedProjectSchema,
+    zoneSlug: string,
+  ): Promise<CommitAction[]> {
+    const projectPrefix = `${project.name}/`
+    const existingFiles = await this.gitlab.listFiles(infraProject, {
+      path: projectPrefix,
+      recursive: true,
+    })
+
+    const actions = existingFiles
+      .filter(existingFile => existingFile.name === 'values.yaml' && existingFile.path.startsWith(projectPrefix))
+      .map(existingFile => ({ action: 'delete', filePath: existingFile.path } satisfies CommitAction))
+
+    this.logger.verbose(`Computed ArgoCD delete actions for project ${project.slug} in zone ${zoneSlug} (actions=${actions.length})`)
+
+    return actions
   }
 
   // @Cron(CronExpression.EVERY_HOUR)

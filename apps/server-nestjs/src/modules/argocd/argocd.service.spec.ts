@@ -37,7 +37,6 @@ describe('argoCDService', () => {
     gitlab = mockDeep<GitlabClientService>()
     vault = mockDeep<VaultClientService>()
     argocdConfig = mockDeep<ConfigType<typeof argocdConfigFactory>>({
-      enabled: true,
       namespace: 'argocd',
       url: 'https://argocd.internal',
       internalUrl: undefined,
@@ -120,6 +119,103 @@ describe('argoCDService', () => {
       gitlab.getOrCreateInfraGroupRepo.mockRejectedValue(error)
 
       const result = await service.handleUpsert(mockProject)
+
+      expect(result).toEqual({
+        argocd: expect.objectContaining({
+          status: 'KO',
+          message: 'GitLab unreachable',
+          executionTime: expect.any(Number),
+          error,
+        }),
+      })
+    })
+  })
+
+  describe('handleDelete', () => {
+    it('should delete every project values file in every zone', async () => {
+      const mockProject = makeProjectWithDetails({
+        slug: 'project-1',
+        name: 'Project 1',
+        environments: [
+          makeProjectEnvironment({ name: 'dev', cluster: { id: 'c1', label: 'cluster-1', zone: { slug: 'zone-1' } } }),
+        ],
+        repositories: [makeProjectRepository({ internalRepoName: 'infra-repo', isInfra: true })],
+        deployments: [],
+      })
+
+      const zone1InfraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra-1' })
+      const zone2InfraProject = makeProjectSchema({ id: 200, http_url_to_repo: 'https://gitlab.internal/infra-2' })
+      // The project has no environment left in zone-2, its leftovers must still be purged.
+      datastore.getAllZoneSlugs.mockResolvedValue(['zone-1', 'zone-2'])
+      gitlab.getOrCreateInfraGroupRepo.mockImplementation(async zoneSlug =>
+        zoneSlug === 'zone-1' ? zone1InfraProject : zone2InfraProject,
+      )
+      gitlab.listFiles.mockImplementation(async repo => repo.id === 100
+        ? [
+            makeRepositoryTreeSchema({ name: 'values.yaml', path: 'Project 1/cluster-1/dev/values.yaml' }),
+            makeRepositoryTreeSchema({ name: 'README.md', path: 'Project 1/README.md' }),
+          ]
+        : [
+            makeRepositoryTreeSchema({ name: 'values.yaml', path: 'Project 1/cluster-2/prod/values.yaml' }),
+          ])
+
+      const result = await service.handleDelete(mockProject)
+
+      expect(result).toEqual({
+        argocd: expect.objectContaining({ status: 'OK' }),
+      })
+
+      expect(gitlab.generateCreateOrUpdateAction).not.toHaveBeenCalled()
+      expect(gitlab.listFiles).toHaveBeenCalledWith(zone1InfraProject, { path: 'Project 1/', recursive: true })
+      expect(gitlab.listFiles).toHaveBeenCalledWith(zone2InfraProject, { path: 'Project 1/', recursive: true })
+      expect(gitlab.maybeCreateCommit).toHaveBeenCalledTimes(2)
+      expect(gitlab.maybeCreateCommit).toHaveBeenCalledWith(
+        zone1InfraProject,
+        'ci: :robot_face: Delete project-1',
+        [{ action: 'delete', filePath: 'Project 1/cluster-1/dev/values.yaml' }],
+      )
+      expect(gitlab.maybeCreateCommit).toHaveBeenCalledWith(
+        zone2InfraProject,
+        'ci: :robot_face: Delete project-1',
+        [{ action: 'delete', filePath: 'Project 1/cluster-2/prod/values.yaml' }],
+      )
+    })
+
+    it('should not commit when values files are already absent', async () => {
+      const mockProject = makeProjectWithDetails({
+        slug: 'project-1',
+        name: 'Project 1',
+        environments: [
+          makeProjectEnvironment({ name: 'dev', cluster: { id: 'c1', label: 'cluster-1', zone: { slug: 'zone-1' } } }),
+        ],
+        repositories: [],
+        deployments: [],
+      })
+
+      gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(makeProjectSchema({ id: 100 }))
+      gitlab.listFiles.mockResolvedValue([])
+
+      const result = await service.handleDelete(mockProject)
+
+      expect(result).toEqual({
+        argocd: expect.objectContaining({ status: 'OK' }),
+      })
+      expect(gitlab.maybeCreateCommit).not.toHaveBeenCalled()
+    })
+
+    it('should return KO result when the cleanup throws', async () => {
+      const mockProject = makeProjectWithDetails({
+        slug: 'project-1',
+        name: 'Project 1',
+        environments: [],
+        repositories: [],
+        deployments: [],
+      })
+
+      const error = new Error('GitLab unreachable')
+      gitlab.getOrCreateInfraGroupRepo.mockRejectedValue(error)
+
+      const result = await service.handleDelete(mockProject)
 
       expect(result).toEqual({
         argocd: expect.objectContaining({
