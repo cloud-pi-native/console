@@ -8,8 +8,8 @@ describe('gitlabConfig', () => {
 
   it('parses a full config', () => {
     vi.stubEnv('GITLAB_TOKEN', 'token')
-    vi.stubEnv('GITLAB_URL', 'https://gitlab.internal')
-    vi.stubEnv('GITLAB_INTERNAL_URL', 'https://gitlab.internal:8080')
+    vi.stubEnv('GITLAB_URL', 'https://gitlab.internal/')
+    vi.stubEnv('GITLAB_INTERNAL_URL', 'https://gitlab.internal:8080/')
     vi.stubEnv('PROJECTS_ROOT_DIR', 'forge-test/projects')
     vi.stubEnv('GITLAB__SECRET_EXPOSE_INTERNAL_URL', '1')
     expect(gitlabConfigFactory()).toMatchObject({
@@ -24,7 +24,7 @@ describe('gitlabConfig', () => {
 
   it('falls back to public url when internal url is absent', () => {
     vi.stubEnv('GITLAB_TOKEN', 'token')
-    vi.stubEnv('GITLAB_URL', 'https://gitlab.internal')
+    vi.stubEnv('GITLAB_URL', 'https://gitlab.internal/')
     vi.stubEnv('PROJECTS_ROOT_DIR', 'forge-test/projects')
     vi.stubEnv('GITLAB__SECRET_EXPOSE_INTERNAL_URL', '1')
     const cfg = gitlabConfigFactory()

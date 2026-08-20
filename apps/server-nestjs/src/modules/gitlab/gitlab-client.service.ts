@@ -218,7 +218,7 @@ export class GitlabClientService {
     const projectGroup = await this.getOrCreateProjectSubGroup(subGroupPath)
     const urlBase = this.config.internalUrl ?? this.config.url
     if (!urlBase) throw new Error('GITLAB_URL is required')
-    return `${urlBase}/${projectGroup.full_path}/${repoName}.git`
+    return new URL(`${projectGroup.full_path}/${repoName}.git`, urlBase).toString()
   }
 
   private async getOrCreateRepo(subGroupPath: string, ciConfigPath?: string) {
