@@ -34,7 +34,7 @@ import {
   TOPIC_PLUGIN_MANAGED,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
-import { generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged } from './gitlab.utils'
+import { generateGitlabCIConfigContent, generateMirrorScriptContent, generateUsernameCandidates, hasFileContentChanged } from './gitlab.utils'
 
 export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
 
@@ -402,15 +402,41 @@ export class GitlabClientService {
     return users[0] as UserSchema
   }
 
+  // GitLab usernames are derived from the email local part, so distinct emails
+  // with the same local part collide. On 409, retry with a unique suffixed
+  // username (see generateUsernameCandidates) instead of failing the whole sync.
   async createUser(user: EditUserOptions) {
     this.logger.log(`Creating a GitLab user (email=${user.email}, username=${user.username})`)
-    return await this.client.Users.create({
-      ...user,
-      canCreateGroup: false,
-      forceRandomPassword: true,
-      projectsLimit: 0,
-      skipConfirmation: true,
-    }) as UserSchema
+    try {
+      return await this.client.Users.create({
+        ...user,
+        canCreateGroup: false,
+        forceRandomPassword: true,
+        projectsLimit: 0,
+        skipConfirmation: true,
+      }) as UserSchema
+    } catch (error) {
+      if (error instanceof GitbeakerRequestError && error.cause?.description?.includes('has already been taken')) {
+        this.logger.warn(`GitLab username already taken (email=${user.email}, username=${user.username}); retrying with a unique username`)
+        for (const candidate of generateUsernameCandidates(user.email ?? '').slice(1)) {
+          try {
+            return await this.client.Users.create({
+              ...user,
+              username: candidate,
+              canCreateGroup: false,
+              forceRandomPassword: true,
+              projectsLimit: 0,
+              skipConfirmation: true,
+            }) as UserSchema
+          } catch (retryError) {
+            if (!(retryError instanceof GitbeakerRequestError && retryError.cause?.description?.includes('has already been taken'))) {
+              throw retryError
+            }
+          }
+        }
+      }
+      throw error
+    }
   }
 
   async upsertUser(
@@ -424,6 +450,8 @@ export class GitlabClientService {
       externUid: user.email,
       provider: 'openid_connect',
     }
+    // Email lookup resolves same-email users; createUser() absorbs cross-email
+    // username collisions (same local part) via its own 409 retry.
     const gitlabUser = existing ?? await this.createUser(editOptions)
 
     if (existing) {

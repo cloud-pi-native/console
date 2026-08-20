@@ -917,6 +917,36 @@ describe('gitlab-client', () => {
         skipConfirmation: true,
       }))
     })
+
+    it('should retry with a unique username when the derived username is taken (cross-email collision)', async () => {
+      const email = 'alice@other.com'
+      const username = 'alice'
+      const name = 'Alice Other'
+      const takenError = makeGitbeakerRequestError({ status: 409, description: 'Username has already been taken' })
+      const created = makeExpandedUserSchema({ id: 42, email, username: 'alice_1', name })
+
+      gitlabApi.Users.create
+        .mockRejectedValueOnce(takenError)
+        .mockResolvedValueOnce(created)
+
+      const result = await service.createUser({ email, username, name })
+
+      expect(result).toEqual(created)
+      expect(gitlabApi.Users.create).toHaveBeenNthCalledWith(1, expect.objectContaining({ username: 'alice' }))
+      expect(gitlabApi.Users.create).toHaveBeenNthCalledWith(2, expect.objectContaining({ username: 'alice_1' }))
+    })
+
+    it('should propagate a non-collision error', async () => {
+      const email = 'user@example.com'
+      const username = 'user'
+      const name = 'User Name'
+      const otherError = makeGitbeakerRequestError({ status: 500, description: 'Internal Server Error' })
+
+      gitlabApi.Users.create.mockRejectedValue(otherError)
+
+      await expect(service.createUser({ email, username, name })).rejects.toThrow()
+      expect(gitlabApi.Users.create).toHaveBeenCalledTimes(1)
+    })
   })
 
   describe('commitMirror', () => {
