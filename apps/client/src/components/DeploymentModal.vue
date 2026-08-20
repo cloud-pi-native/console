@@ -24,7 +24,7 @@ const props = defineProps<{
   disabled: boolean
 }>()
 
-const emit = defineEmits<{ close: [] }>()
+const emit = defineEmits<{ close: [], changed: [] }>()
 
 const snackbarStore = useSnackbarStore()
 
@@ -39,13 +39,18 @@ const options: ComputedRef<Omit<DsfrRadioButtonProps, 'modelValue'>[]> = compute
   })),
 )
 
-const deployment = ref<Partial<UpdateDeployment & { id: string }>>(
-  props.deployment ? toDeploymentDraft(props.deployment) : { projectId: props.project.id, autosync: true },
-)
+function toDraft(source?: Deployment) {
+  return source ? toDeploymentDraft(source) : { projectId: props.project.id, autosync: true }
+}
 
-watch(() => props.deployment, (newValue) => {
-  deployment.value = newValue ? toDeploymentDraft(newValue) : { projectId: props.project.id, autosync: true }
-}, { deep: true })
+const deployment = ref<Partial<UpdateDeployment & { id: string }>>(toDraft(props.deployment))
+
+// Also watch `opened`: reopening the same card leaves props.deployment identical,
+// so the form must be rebuilt on open, not only when the selection changes.
+watch([() => props.deployment, () => props.opened], ([newValue, isOpened]) => {
+  if (!isOpened) return
+  deployment.value = toDraft(newValue)
+}, { deep: true, immediate: true })
 
 const deploymentSourcesModel = computed({
   get: () => deployment.value?.deploymentSources ?? [],
@@ -94,6 +99,7 @@ function upsertDeployment() {
   isLoading.value = true
   request
     .then(() => {
+      emit('changed')
       closeModal()
       snackbarStore.setMessage('Déploiement enregistré, opérations en cours en arrière-plan...')
     })
@@ -107,6 +113,7 @@ function deleteDeployment() {
   isDeleting.value = true
   props.project.Deployments.delete(deployment.value.id)
     .then(() => {
+      emit('changed')
       closeModal()
       snackbarStore.setMessage('Suppression du déploiement enregistrée, opérations en cours en arrière-plan...')
     })

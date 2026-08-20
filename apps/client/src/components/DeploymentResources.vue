@@ -11,6 +11,8 @@ const props = defineProps<{
   asProfile: 'user' | 'admin'
 }>()
 
+const emit = defineEmits<{ changed: [] }>()
+
 const snackbarStore = useSnackbarStore()
 
 const deployments = ref<Deployment[]>([])
@@ -42,8 +44,14 @@ function openModal(deployment?: Deployment) {
 }
 
 function closeModal() {
-  loadDeployments()
   isModalOpen.value = false
+}
+
+// Deployments changed: refresh the list here and let the parent refresh the
+// environments, whose deployments count drives the deletion warning.
+function onDeploymentChanged() {
+  loadDeployments()
+  emit('changed')
 }
 
 async function loadDeployments() {
@@ -52,9 +60,16 @@ async function loadDeployments() {
 
 onMounted(loadDeployments)
 
-watch([() => props.environments, () => props.repositories], () => {
-  loadDeployments()
-})
+// Keyed on ids, not array refs: a parent reload hands down new arrays with the same content.
+watch(
+  () => [
+    props.environments.map(({ id }) => id).join(','),
+    props.repositories.map(({ id }) => id).join(','),
+  ],
+  () => {
+    loadDeployments()
+  },
+)
 </script>
 
 <template>
@@ -91,6 +106,7 @@ watch([() => props.environments, () => props.repositories], () => {
     :project="props.project"
     :deployment="selectedDeployment"
     :disabled="!canManageDeploy"
+    @changed="onDeploymentChanged"
     @close="closeModal"
   />
 </template>

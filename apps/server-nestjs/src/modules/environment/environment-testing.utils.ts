@@ -1,5 +1,5 @@
 import type { Cluster, Environment, Project, Stage } from '@prisma/client'
-import type { EnvironmentWithCluster, EnvironmentWithStage } from './environment-datastore.service'
+import type { EnvironmentWithCluster, EnvironmentWithDeploymentsCount, EnvironmentWithStage, EnvironmentWithStageAndCount } from './environment-datastore.service'
 import { faker } from '@faker-js/faker'
 
 export function makeEnvironment(overrides: Partial<Environment> = {}): Environment {
@@ -83,5 +83,19 @@ export function makeEnvironmentWithStage(overrides: Partial<EnvironmentWithStage
   return {
     ...base,
     stage: overrides.stage ?? makeStage({ id: base.stageId }),
+  }
+}
+
+export function makeEnvironmentWithStageAndCount(overrides: Partial<EnvironmentWithStageAndCount> = {}): EnvironmentWithStageAndCount {
+  return {
+    ...makeEnvironmentWithStage(overrides),
+    _count: overrides._count ?? { deployments: 0 },
+  }
+}
+
+export function makeEnvironmentWithDeploymentsCount(overrides: Partial<EnvironmentWithDeploymentsCount> = {}): EnvironmentWithDeploymentsCount {
+  return {
+    ...makeEnvironmentWithStage(overrides),
+    deploymentsCount: overrides.deploymentsCount ?? 0,
   }
 }

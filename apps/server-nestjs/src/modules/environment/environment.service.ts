@@ -1,7 +1,7 @@
 import type { CreateEnvironment, UpdateEnvironment } from '@cpn-console/shared'
 import type { Environment } from '@prisma/client'
 import type { EventLogAction } from '../events/app-events.service'
-import type { EnvironmentWithCluster, EnvironmentWithStage } from './environment-datastore.service'
+import type { EnvironmentWithCluster, EnvironmentWithDeploymentsCount } from './environment-datastore.service'
 import {
   Inject,
   Injectable,
@@ -21,8 +21,12 @@ export class EnvironmentService {
     @Inject(AppEventsService) private readonly appEvents: AppEventsService,
   ) {}
 
-  async listByProjectId(projectId: string): Promise<EnvironmentWithStage[]> {
-    return this.environmentDatastoreService.getEnvironmentsByProjectId(projectId)
+  async listByProjectId(projectId: string): Promise<EnvironmentWithDeploymentsCount[]> {
+    const environments = await this.environmentDatastoreService.getEnvironmentsByProjectId(projectId)
+    return environments.map(({ _count, ...environment }) => ({
+      ...environment,
+      deploymentsCount: _count.deployments,
+    }))
   }
 
   async createEnvironment(projectId: string, environmentToCreate: CreateEnvironment, userId: string, requestId: string): Promise<Environment> {

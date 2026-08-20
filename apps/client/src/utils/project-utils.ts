@@ -4,6 +4,7 @@ import type {
   CreateRepositoryBodyV2,
   Deployment,
   Environment,
+  EnvironmentWithDeploymentsCount,
   GetLogsQuery,
   PermissionTarget,
   PluginsUpdateBody,
@@ -83,7 +84,7 @@ export class Project implements ProjectV2 {
   operationsInProgress: Ref<ProjectOperations[]>
   myPerms: bigint
   repositories: Ref<Repo[]>
-  environments: Ref<Environment[]>
+  environments: Ref<EnvironmentWithDeploymentsCount[]>
   deployments: Ref<Deployment[]>
   services: ProjectService[] = []
   lastSuccessProvisionningVersion: string | null
