@@ -917,6 +917,37 @@ describe('gitlab-client', () => {
         skipConfirmation: true,
       }))
     })
+
+    it('should return the existing user on 409 (already auto-provisioned via OIDC)', async () => {
+      const email = 'user@example.com'
+      const username = 'user'
+      const name = 'User Name'
+      const existing = makeExpandedUserSchema({ id: 2, email, username })
+
+      gitlabApi.Users.create.mockRejectedValueOnce(
+        makeGitbeakerRequestError({ status: 409, description: 'Username has already been taken' }),
+      )
+      const allMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
+      allMock.mockResolvedValueOnce([existing])
+
+      const result = await service.createUser({ email, username, name })
+
+      expect(result).toEqual(existing)
+      expect(gitlabApi.Users.create).toHaveBeenCalledTimes(1)
+    })
+
+    it('should propagate a non-collision error', async () => {
+      const email = 'user@example.com'
+      const username = 'user'
+      const name = 'User Name'
+
+      gitlabApi.Users.create.mockRejectedValue(
+        makeGitbeakerRequestError({ status: 500, description: 'Internal Server Error' }),
+      )
+
+      await expect(service.createUser({ email, username, name })).rejects.toThrow()
+      expect(gitlabApi.Users.create).toHaveBeenCalledTimes(1)
+    })
   })
 
   describe('commitMirror', () => {
