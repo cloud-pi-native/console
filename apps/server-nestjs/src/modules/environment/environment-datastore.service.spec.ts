@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { EnvironmentDatastoreService } from './environment-datastore.service'
-import { makeCluster, makeEnvironment, makeStage } from './environment-testing.utils'
+import { makeCluster, makeEnvironment, makeEnvironmentWithStageAndCount, makeStage } from './environment-testing.utils'
 
 describe('environmentDatastoreService', () => {
   let module: TestingModule
@@ -41,15 +41,18 @@ describe('environmentDatastoreService', () => {
   })
 
   describe('getEnvironmentsByProjectId', () => {
-    it('should return environments for a project with their stage', async () => {
-      const environments = [makeEnvironment({ projectId: 'project1' })]
+    it('should return environments for a project with their stage and their deployments count', async () => {
+      const environments = [makeEnvironmentWithStageAndCount({ projectId: 'project1', _count: { deployments: 2 } })]
       prisma.environment.findMany.mockResolvedValue(environments)
 
       const result = await service.getEnvironmentsByProjectId('project1')
 
       expect(prisma.environment.findMany).toHaveBeenCalledWith({
         where: { projectId: 'project1' },
-        include: { stage: true },
+        include: {
+          stage: true,
+          _count: { select: { deployments: true } },
+        },
       })
       expect(result).toEqual(environments)
     })

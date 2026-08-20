@@ -14,7 +14,7 @@ import { EnvironmentDatastoreService } from './environment-datastore.service'
 import {
   makeEnvironment,
   makeEnvironmentWithCluster,
-  makeEnvironmentWithStage,
+  makeEnvironmentWithStageAndCount,
 } from './environment-testing.utils'
 import { EnvironmentValidationService } from './environment-validation.service'
 import { EnvironmentService } from './environment.service'
@@ -77,13 +77,14 @@ describe('environmentService', () => {
 
   describe('listByProjectId', () => {
     it('should return environments by projectId', async () => {
-      const environments = [makeEnvironmentWithStage({ id: environmentId, projectId })]
+      const environments = [makeEnvironmentWithStageAndCount({ id: environmentId, projectId, _count: { deployments: 3 } })]
       datastore.getEnvironmentsByProjectId.mockResolvedValue(environments)
 
       const result = await service.listByProjectId(projectId)
 
       expect(datastore.getEnvironmentsByProjectId).toHaveBeenCalledWith(projectId)
-      expect(result).toEqual(environments)
+      const { _count, ...environment } = environments[0]
+      expect(result).toEqual([{ ...environment, deploymentsCount: 3 }])
     })
   })
 
