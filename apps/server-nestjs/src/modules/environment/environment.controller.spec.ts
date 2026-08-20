@@ -8,7 +8,7 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { ProjectGuard } from '../infrastructure/permission/project/project.guard'
-import { makeEnvironment, makeEnvironmentWithStage } from './environment-testing.utils'
+import { makeEnvironment, makeEnvironmentWithDeploymentsCount } from './environment-testing.utils'
 import { EnvironmentController } from './environment.controller'
 import { EnvironmentService } from './environment.service'
 
@@ -64,7 +64,7 @@ describe('environmentController', () => {
 
   describe('list', () => {
     it('should call environmentService.listByProjectId with projectId', async () => {
-      const expectedResult = [makeEnvironmentWithStage({ projectId })]
+      const expectedResult = [makeEnvironmentWithDeploymentsCount({ projectId })]
 
       service.listByProjectId.mockResolvedValue(expectedResult)
 

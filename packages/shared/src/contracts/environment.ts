@@ -5,6 +5,7 @@ import { apiPrefix, apiPrefixV2, contractInstance } from '../api-client.js'
 import {
   CreateEnvironmentSchema,
   EnvironmentSchema,
+  EnvironmentWithDeploymentsCountSchema,
   UpdateEnvironmentSchema,
 } from '../schemas/index.js'
 import { baseHeaders, ErrorSchema } from './_utils.js'
@@ -118,7 +119,7 @@ export const environmentContractV2 = contractInstance.router({
     summary: 'Get environments',
     description: 'Retrieved project environments.',
     responses: {
-      200: EnvironmentSchema.array(),
+      200: EnvironmentWithDeploymentsCountSchema.array(),
       400: ErrorSchema,
       401: ErrorSchema,
       403: ErrorSchema,

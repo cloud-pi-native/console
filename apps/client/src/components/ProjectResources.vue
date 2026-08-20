@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CleanedCluster, Cluster, CreateEnvironment, Environment, Repo, Stage, UpdateEnvironment, Zone } from '@cpn-console/shared'
+import type { CleanedCluster, Cluster, CreateEnvironment, Environment, EnvironmentWithDeploymentsCount, Repo, Stage, UpdateEnvironment, Zone } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
 import type { RepoFormResult } from '@/utils/repository-utils.js'
 import { logger } from '@cpn-console/logger/browser'
@@ -27,7 +27,7 @@ const snackbarStore = useSnackbarStore()
 const stageStore = useStageStore()
 const userStore = useUserStore()
 
-const environments = ref<(Environment & { cluster?: Cluster, zone?: Zone, stage?: Stage })[]>([])
+const environments = ref<(EnvironmentWithDeploymentsCount & { cluster?: Cluster, zone?: Zone, stage?: Stage })[]>([])
 const repositories = ref<(Repo & { source: Source })[]>([])
 const projectUsage = ref<({
   hprod: { cpu: number, gpu: number, memory: number }
@@ -45,7 +45,7 @@ const repositoriesId = 'repositoriesTable'
 const environmentsId = 'environmentsTable'
 const syncFormId = 'syncFormId'
 const selectedRepo = ref<Repo>()
-const selectedEnv = ref<Environment>()
+const selectedEnv = ref<EnvironmentWithDeploymentsCount>()
 const newResource = ref<'repo' | 'env'>()
 const hideEnvs = computed(() => props.asProfile === 'user' && !ProjectAuthorized.ListEnvironments({ projectPermissions: props.project.myPerms }))
 const hideRepos = computed(() => props.asProfile === 'user' && !ProjectAuthorized.ListRepositories({ projectPermissions: props.project.myPerms }))
@@ -139,7 +139,7 @@ const timeAgo = new TimeAgo('fr-FR')
 
 async function reload() {
   environments.value = await props.project.Environments.list()
-    .then(envs => envs.map((environment: Environment) => {
+    .then(envs => envs.map((environment: EnvironmentWithDeploymentsCount) => {
       const cluster = clusterStore.clusters.find(cluster => cluster.id === environment.clusterId)
       const zone = zoneStore.zones.find(zone => zone.id === cluster?.zoneId)
       const stage = stageStore.stages.find(stage => stage.id === environment.stageId)
