@@ -493,8 +493,9 @@ export class VaultService {
   }
 
   async ensureTechReadOnlyPolicy(name: string, projectSlug: string): Promise<void> {
+    const robotSecretPath = generateProjectPath(this.baseConfig.projectsRootDir, `${projectSlug}/REGISTRY/ro-robot`)
     await this.client.upsertSysPoliciesAcl(name, {
-      policy: `path "${this.vaultConfig.kvName}/data/${projectSlug}/REGISTRY/ro-robot" { capabilities = ["read"] }`,
+      policy: `path "${this.vaultConfig.kvName}/data/${robotSecretPath}" { capabilities = ["read"] }`,
     })
   }
 
