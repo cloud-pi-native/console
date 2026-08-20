@@ -83,7 +83,7 @@ export class KeycloakClientService implements OnModuleInit {
 
   private async getRootGroupByName(name: string): Promise<GroupRepresentationWith<'id'> | undefined> {
     const candidates = await this.client.groups.find({ search: name, briefRepresentation: false }) ?? []
-    const match = candidates.find(g => g.path === `/${name}`) ?? candidates.find(g => g.name === name)
+    const match = candidates.find(g => g.path === `/${name}`)
     const parsed = z.object({ id: z.string() }).and(z.record(z.string(), z.unknown())).safeParse(match)
     return parsed.success ? parsed.data : undefined
   }
@@ -186,7 +186,7 @@ export class KeycloakClientService implements OnModuleInit {
         const next = z.object({ id: z.string(), name: z.string() }).safeParse(await this.getOrCreateSubGroupByName(parentId, name))
         if (next.success) current = next.data
       } else {
-        const next = z.object({ id: z.string(), name: z.string() }).safeParse(await this.getGroupByName(name) ?? await this.createGroup(name))
+        const next = z.object({ id: z.string(), name: z.string() }).safeParse(await this.getRootGroupByName(name) ?? await this.createGroup(name))
         if (next.success) current = next.data
       }
       parentId = current?.id
