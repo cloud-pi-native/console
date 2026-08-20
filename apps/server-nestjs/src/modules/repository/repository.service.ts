@@ -57,20 +57,6 @@ export class RepositoryService {
       'Echec des services lors de la création du dépôt',
     )
 
-    // Legacy parity: a repository declared with an external source is mirrored right
-    // away, so the first sync doesn't wait for a manual trigger. v1 awaits this sync but
-    // discards its outcome — the creation itself succeeded, and the mirror pipeline is a
-    // downstream effect whose failure is reported in the admin log, not in the response.
-    if (repositoryToCreate.externalRepoUrl) {
-      await this.syncRepositoryMirror(
-        { projectId, projectSlug, internalRepoName: repository.internalRepoName, syncAllBranches: true },
-        userId,
-        requestId,
-      ).catch((error: unknown) => {
-        this.logger.error(`repository.sync after creation failed (repositoryId=${repository.id})`, error instanceof Error ? error.stack : String(error))
-      })
-    }
-
     return repository
   }
 
@@ -109,7 +95,7 @@ export class RepositoryService {
   }
 
   async updateRepository(projectId: string, projectSlug: string, repositoryId: string, repositoryToUpdate: UpdateRepository, userId: string, requestId: string): Promise<Repository> {
-    const before = await this.getProjectRepositoryOrThrow(projectId, repositoryId)
+    await this.getProjectRepositoryOrThrow(projectId, repositoryId)
 
     const repository = await this.repositoryDatastoreService.updateRepository(
       repositoryId,
@@ -130,18 +116,6 @@ export class RepositoryService {
       'Echec des services à la mise à jour du dépôt',
     )
 
-    // Auto-trigger the mirror when the external URL first appears or changes. The console
-    // creates repos without externalRepoUrl and sets it in a later update, which is the
-    // exact "ajout d'un repo" path that previously never launched the pipeline.
-    if (before.externalRepoUrl !== repository.externalRepoUrl && repository.externalRepoUrl) {
-      await this.syncRepositoryMirror(
-        { projectId, projectSlug, internalRepoName: repository.internalRepoName, syncAllBranches: true },
-        userId,
-        requestId,
-      ).catch((error: unknown) => {
-        this.logger.error(`repository.sync after update failed (repositoryId=${repository.id})`, error instanceof Error ? error.stack : String(error))
-      })
-    }
     return repository
   }
 

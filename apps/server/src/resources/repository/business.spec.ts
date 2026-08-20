@@ -101,6 +101,21 @@ describe('repository business', () => {
       expect(mockedSyncHook).toHaveBeenCalledWith(repositoryId, { syncAllBranches: true, branchName: undefined })
     })
 
+    it('marks a failed mirror sync under the update action instead of discarding it', async () => {
+      mockedGetRepositoryById.mockResolvedValue(makeRepo({ externalRepoUrl: '' }))
+      mockedUpdateQuery.mockResolvedValue(makeRepo({ externalRepoUrl: 'https://x.com/r.git' }))
+      // syncRepository returns Unprocessable422 when the hook reports failure.
+      vi.spyOn(hookWrapper.hook.misc, 'syncRepository').mockResolvedValueOnce({ args: { id: repositoryId }, failed: true } as any)
+
+      await updateRepository({ repositoryId, data: { externalRepoUrl: 'https://x.com/r.git' }, userId, requestId })
+
+      expect(mockedAddLogs).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'Update Repository',
+        data: expect.objectContaining({ mirrorSync: 'failed' }),
+        projectId,
+      }))
+    })
+
     it('does not trigger a mirror sync when the external URL is unchanged', async () => {
       const url = 'https://x.com/r.git'
       mockedGetRepositoryById.mockResolvedValue(makeRepo({ externalRepoUrl: url }))

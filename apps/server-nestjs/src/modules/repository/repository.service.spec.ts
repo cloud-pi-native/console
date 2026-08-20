@@ -123,7 +123,7 @@ describe('repositoryService', () => {
       expect(result).toEqual(repository)
     })
 
-    it('triggers a full mirror sync when the repository declares an external source', async () => {
+    it('reconciles (which auto-triggers the mirror) when the repository declares an external source', async () => {
       const repository = makeRepository({ id: repositoryId, projectId, internalRepoName: validCreateRepository.internalRepoName })
       datastore.hasRepositoryWithName.mockResolvedValue(false)
       datastore.createRepository.mockResolvedValue(repository)
@@ -132,11 +132,11 @@ describe('repositoryService', () => {
 
       await service.createRepository(projectId, projectSlug, validCreateRepository, userId, requestId)
 
-      expect(appEvents.emitRepositoryEvent).toHaveBeenCalledWith(
-        'repository.sync',
-        expect.objectContaining({ internalRepoName: repository.internalRepoName, syncAllBranches: true }),
-        expect.objectContaining({ action: 'Sync Repository' }),
-      )
+      // The mirror is no longer kicked directly from createRepository; the
+      // project.upsert reconcile (emitMirrorSyncs) fires repository.sync for every
+      // external repo after ensureSystemRepos. Single trigger source, no duplicate.
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, expect.any(Object))
+      expect(appEvents.emitRepositoryEvent).not.toHaveBeenCalled()
     })
 
     it('does not trigger a sync when no external source is declared', async () => {
@@ -284,24 +284,23 @@ describe('repositoryService', () => {
       expect(appEvents.emitProjectEvent).not.toHaveBeenCalled()
     })
 
-    it('triggers a full mirror sync when the external URL first appears on update', async () => {
+    it('reconciles (which auto-triggers the mirror) when the external URL first appears on update', async () => {
       const before = makeRepository({ id: repositoryId, projectId, externalRepoUrl: '' })
       const updated = makeRepository({ id: repositoryId, projectId, externalRepoUrl: `https://${faker.internet.domainName()}/repo.git` })
       datastore.getRepositoryById.mockResolvedValue(before)
       datastore.updateRepository.mockResolvedValue(updated)
       appEvents.emitProjectEvent.mockResolvedValue({})
-      appEvents.emitRepositoryEvent.mockResolvedValue({})
 
       await service.updateRepository(projectId, projectSlug, repositoryId, { externalRepoUrl: updated.externalRepoUrl }, userId, requestId)
 
-      expect(appEvents.emitRepositoryEvent).toHaveBeenCalledWith(
-        'repository.sync',
-        expect.objectContaining({ projectId, internalRepoName: updated.internalRepoName, syncAllBranches: true }),
-        expect.objectContaining({ action: 'Sync Repository' }),
-      )
+      // The mirror is no longer kicked directly here; the project.upsert reconcile
+      // (emitMirrorSyncs) fires repository.sync for every external repo after
+      // ensureSystemRepos. A single trigger source avoids duplicate pipelines.
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, expect.any(Object))
+      expect(appEvents.emitRepositoryEvent).not.toHaveBeenCalled()
     })
 
-    it('does not trigger a mirror sync when the external URL is unchanged', async () => {
+    it('does not directly trigger a mirror sync when the external URL is unchanged', async () => {
       const externalRepoUrl = `https://${faker.internet.domainName()}/repo.git`
       const before = makeRepository({ id: repositoryId, projectId, externalRepoUrl })
       const updated = makeRepository({ id: repositoryId, projectId, externalRepoUrl })

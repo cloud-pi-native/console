@@ -101,8 +101,12 @@ export async function updateRepository({
   // creates repos without externalRepoUrl and sets it in a later update, which is the
   // exact "ajout d'un repo" path that previously never launched the pipeline.
   if (before.externalRepoUrl !== repo.externalRepoUrl && repo.externalRepoUrl) {
-    await syncRepository({ repositoryId: repo.id, requestId, syncAllBranches: true, userId })
-      .catch(error => addLogs({ action: 'Update Repository', data: { mirrorSync: 'failed', repositoryId: repo.id, error }, userId, requestId, projectId: repo.projectId }))
+    const syncResult = await syncRepository({ repositoryId: repo.id, requestId, syncAllBranches: true, userId })
+    // syncRepository returns (never throws) the 422 on a failed hook; surface it under
+    // the update action so the operator scan catches the swallowed mirror failure.
+    if (syncResult instanceof Unprocessable422) {
+      await addLogs({ action: 'Update Repository', data: { mirrorSync: 'failed', repositoryId: repo.id }, userId, requestId, projectId: repo.projectId })
+    }
   }
   return repo
 }
