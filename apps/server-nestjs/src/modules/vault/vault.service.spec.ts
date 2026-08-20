@@ -1,3 +1,4 @@
+import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
@@ -16,6 +17,8 @@ describe('vaultService', () => {
   let service: VaultService
   let datastore: DeepMockProxy<VaultDatastoreService>
   let client: DeepMockProxy<VaultClientService>
+  let vaultConfig: DeepMockProxy<ConfigType<typeof vaultConfigFactory>>
+  let baseConfig: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
 
   beforeEach(async () => {
     datastore = mockDeep<VaultDatastoreService>({
@@ -37,13 +40,16 @@ describe('vaultService', () => {
       delete: vi.fn().mockResolvedValue(undefined),
     })
 
+    vaultConfig = mockDeep<ConfigType<typeof vaultConfigFactory>>({ kvName: 'forge-dso' })
+    baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>({ projectsRootDir: 'forge' })
+
     const module = await Test.createTestingModule({
       providers: [
         VaultService,
         { provide: VaultClientService, useValue: client },
         { provide: VaultDatastoreService, useValue: datastore },
-        { provide: vaultConfigFactory.KEY, useValue: vaultConfigFactory },
-        { provide: baseConfigFactory.KEY, useValue: baseConfigFactory },
+        { provide: vaultConfigFactory.KEY, useValue: vaultConfig },
+        { provide: baseConfigFactory.KEY, useValue: baseConfig },
       ],
     }).compile()
 
@@ -114,16 +120,21 @@ describe('vaultService', () => {
     expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`, expect.any(Object))
     expect(client.createIdentityGroupAlias).not.toHaveBeenCalled()
 
-    const policyCalls = client.upsertSysPoliciesAcl.mock.calls as Array<[string, { policy: string }]>
-    expect(policyCalls.find(([name]) => name === `project--${project.slug}--developer`)?.[1].policy)
-      .toBe(`path "${project.slug}/data/*" { capabilities = ["list"] }`)
-    expect(policyCalls.find(([name]) => name === `project--${project.slug}--readonly`)?.[1].policy)
-      .toBe(`path "${project.slug}/data/*" { capabilities = ["list"] }`)
-    expect(policyCalls.find(([name]) => name === `project--${project.slug}--security`)?.[1].policy)
-      .toBe([
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`, {
+      policy: `path "${project.slug}/data/*" { capabilities = ["list"] }`,
+    })
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--readonly`, {
+      policy: `path "${project.slug}/data/*" { capabilities = ["list"] }`,
+    })
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--security`, {
+      policy: [
         `path "${project.slug}/metadata/*" { capabilities = ["list"] }`,
         `path "transit/keys/${project.slug}/*" { capabilities = ["list"] }`,
-      ].join('\n'))
+      ].join('\n'),
+    })
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`tech--${project.slug}--ro`, {
+      policy: `path "forge-dso/data/forge/${project.slug}/REGISTRY/ro-robot" { capabilities = ["read"] }`,
+    })
   })
 
   it('should delete project and destroy secrets on event', async () => {
