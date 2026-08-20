@@ -404,13 +404,24 @@ export class GitlabClientService {
 
   async createUser(user: EditUserOptions) {
     this.logger.log(`Creating a GitLab user (email=${user.email}, username=${user.username})`)
-    return await this.client.Users.create({
-      ...user,
-      canCreateGroup: false,
-      forceRandomPassword: true,
-      projectsLimit: 0,
-      skipConfirmation: true,
-    }) as UserSchema
+    try {
+      return await this.client.Users.create({
+        ...user,
+        canCreateGroup: false,
+        forceRandomPassword: true,
+        projectsLimit: 0,
+        skipConfirmation: true,
+      }) as UserSchema
+    } catch (error) {
+      // GitLab auto-provisions users via OIDC, so a 409 means the user already
+      // exists (email index race in getUserByEmail). Return it instead of failing.
+      if (error instanceof GitbeakerRequestError && error.cause?.description?.includes('has already been taken')) {
+        const existing = user.email ? await this.getUserByEmail(user.email) : null
+        if (existing) return existing as UserSchema
+        throw error
+      }
+      throw error
+    }
   }
 
   async upsertUser(
