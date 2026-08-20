@@ -250,6 +250,89 @@ describe('getOrCreateSubGroupByName', () => {
   })
 })
 
+describe('getOrCreateGroupByPath', () => {
+  let module: TestingModule
+  let service: KeycloakClientService
+
+  const groupsSearchUrl = `${keycloakUrl}/admin/realms/${projectRealm}/groups`
+  const createGroupUrl = `${keycloakUrl}/admin/realms/${projectRealm}/groups`
+
+  beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+  beforeEach(async () => {
+    module = await createKeycloakClientServiceTestingModule().compile()
+    service = module.get(KeycloakClientService)
+    useTokenEndpoint()
+    await module.init()
+  })
+  afterEach(async () => {
+    await module.close()
+    server.resetHandlers()
+  })
+  afterAll(() => server.close())
+
+  it('should reuse an existing top-level group matching by path', async () => {
+    const projectSlug = 'myproject'
+    server.use(
+      http.get(groupsSearchUrl, () =>
+        HttpResponse.json([{ id: 'root-id', name: projectSlug, path: `/${projectSlug}` }])),
+    )
+
+    const result = await service.getOrCreateGroupByPath(`/${projectSlug}`)
+
+    expect(result.id).toBe('root-id')
+  })
+
+  it('should create a new top-level group when no group exists at the root path', async () => {
+    const projectSlug = 'newproject'
+    const postGroup = vi.fn(async ({ request }) => {
+      const body = await request.json()
+      if (body && (body as any).name === projectSlug) {
+        return new HttpResponse(null, {
+          status: 201,
+          headers: { location: `${keycloakUrl}/admin/realms/${projectRealm}/groups/new-id` },
+        })
+      }
+      return HttpResponse.json({ error: 'unexpected' }, { status: 400 })
+    })
+    server.use(
+      // getGroupByPath → getRootGroupByName → find returns only a subgroup at a different path
+      http.get(groupsSearchUrl, () =>
+        HttpResponse.json([{ id: 'sub-id', name: projectSlug, path: '/console/other/newproject' }])),
+      // getOrCreateGroupByPath → getGroupByName returns undefined → falls to getRootGroupByName
+      // getRootGroupByName finds no match by path or name → returns undefined
+      // Then createGroup is called
+      http.post(createGroupUrl, postGroup),
+    )
+
+    const result = await service.getOrCreateGroupByPath(`/${projectSlug}`)
+
+    expect(result.id).toBe('new-id')
+    expect(postGroup).toHaveBeenCalledTimes(1)
+  })
+
+  it('should not reuse a subgroup at a different path as the project root group', async () => {
+    const projectSlug = 'shared-name'
+    server.use(
+      // Keycloak search returns a subgroup at /console/other/shared-name — NOT a root group
+      http.get(groupsSearchUrl, () =>
+        HttpResponse.json([{ id: 'stale-subgroup-id', name: projectSlug, path: '/console/other/shared-name' }])),
+      // The stale subgroup should NOT be used. A new top-level group should be created.
+      http.post(createGroupUrl, async ({ request }) => {
+        const body = await request.json()
+        expect(body).toEqual({ name: projectSlug })
+        return new HttpResponse(null, {
+          status: 201,
+          headers: { location: `${keycloakUrl}/admin/realms/${projectRealm}/groups/fresh-root-id` },
+        })
+      }),
+    )
+
+    const result = await service.getOrCreateGroupByPath(`/${projectSlug}`)
+
+    expect(result.id).toBe('fresh-root-id')
+  })
+})
+
 describe('deleteGroup', () => {
   let module: TestingModule
   let service: KeycloakClientService
