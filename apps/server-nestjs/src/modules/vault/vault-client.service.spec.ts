@@ -1,6 +1,7 @@
 import type { ConfigType } from '@nestjs/config'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
+import { factory, primaryKey } from '@mswjs/data'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
@@ -12,17 +13,32 @@ import { VaultError, VaultHttpClientService } from './vault-http-client.service'
 
 const vaultUrl = 'https://vault.internal'
 
+const db = factory({
+  token: { id: primaryKey(() => 'created'), client_token: String },
+  secret: { path: primaryKey(String), data: Object, metadata: Object },
+})
+
 const server = setupServer(
   http.post(`${vaultUrl}/v1/auth/token/create`, () => {
-    return HttpResponse.json({ auth: { client_token: 'token' } })
+    const token = db.token.create({ client_token: 'token' })
+    return HttpResponse.json({ auth: { client_token: token.client_token } })
   }),
-  http.get(`${vaultUrl}/v1/kv/data/:path`, () => {
-    return HttpResponse.json({ data: { data: { secret: 'value' }, metadata: { created_time: '2023-01-01T00:00:00.000Z', version: 1 } } })
+  http.get(`${vaultUrl}/v1/kv/data/:path`, ({ params }) => {
+    const secret = db.secret.findFirst({ where: { path: { equals: params.path as string } } })
+    if (!secret) return HttpResponse.json({}, { status: HttpStatus.NOT_FOUND })
+    return HttpResponse.json({ data: { data: secret.data, metadata: secret.metadata } })
   }),
-  http.post(`${vaultUrl}/v1/kv/data/:path`, () => {
+  http.post(`${vaultUrl}/v1/kv/data/:path`, async ({ request, params }) => {
+    const body = await request.json() as { data: Record<string, unknown> }
+    db.secret.create({
+      path: params.path as string,
+      data: body.data,
+      metadata: { created_time: '2023-01-01T00:00:00.000Z', version: 1 },
+    })
     return HttpResponse.json({})
   }),
-  http.delete(`${vaultUrl}/v1/kv/metadata/:path`, () => {
+  http.delete(`${vaultUrl}/v1/kv/metadata/:path`, ({ params }) => {
+    db.secret.deleteMany({ where: { path: { equals: params.path as string } } })
     return new HttpResponse(null, { status: HttpStatus.NO_CONTENT })
   }),
 )
@@ -58,6 +74,12 @@ describe('vault', () => {
 
   describe('read', () => {
     it('should read secret', async () => {
+      db.secret.create({
+        path: 'path',
+        data: { secret: 'value' },
+        metadata: { created_time: '2023-01-01T00:00:00.000Z', version: 1 },
+      })
+
       const result = await service.read('path')
       expect(result).toEqual({
         data: { secret: 'value' },
@@ -66,11 +88,7 @@ describe('vault', () => {
     })
 
     it('should throw if 404', async () => {
-      server.use(
-        http.get(`${vaultUrl}/v1/kv/data/:path`, () => {
-          return HttpResponse.json({}, { status: HttpStatus.NOT_FOUND })
-        }),
-      )
+      db.secret.deleteMany({ where: { path: { equals: 'path' } } })
 
       await expect(service.read('path')).rejects.toBeInstanceOf(VaultError)
       await expect(service.read('path')).rejects.toMatchObject({ kind: 'NotFound', status: HttpStatus.NOT_FOUND })
@@ -106,13 +124,13 @@ describe('vault', () => {
   describe('write', () => {
     it('should write secret', async () => {
       await expect(service.write({ secret: 'value' }, 'path')).resolves.toBeUndefined()
+      expect(db.secret.count({ where: { path: { equals: 'path' } } })).toBe(1)
     })
 
     it('should expose reasons on error', async () => {
       server.use(
-        http.post(`${vaultUrl}/v1/kv/data/:path`, () => {
-          return HttpResponse.json({ errors: ['No secret engine mount at test-project/'] }, { status: HttpStatus.BAD_REQUEST })
-        }),
+        http.post(`${vaultUrl}/v1/kv/data/:path`, () =>
+          HttpResponse.json({ errors: ['No secret engine mount at test-project/'] }, { status: HttpStatus.BAD_REQUEST })),
       )
 
       await expect(service.write({ secret: 'value' }, 'path')).rejects.toBeInstanceOf(VaultError)
