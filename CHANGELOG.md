@@ -1,5 +1,48 @@
 # Changelog
 
+## [9.25.0](https://github.com/cloud-pi-native/console/compare/v9.24.0...v9.25.0) (2026-08-21)
+
+
+### Features
+
+* **sonarqube:** provision SONAR_TOKEN as GitLab group CI variable ([71632fe](https://github.com/cloud-pi-native/console/commit/71632fed46b845b2d3e0fe8dc67b1f515b4235d1))
+
+
+### Bug Fixes
+
+* **ci:** change how hotfixes or main branch are detected for release-please ([20cb79a](https://github.com/cloud-pi-native/console/commit/20cb79a65fb893a69d661c2187f54187dbf0a92f))
+* **ci:** fix package versions bumps not being done for hotfixes ([31dc7bb](https://github.com/cloud-pi-native/console/commit/31dc7bbf61679e1f0ea898ca22e0675a9fb08b46))
+* delete Keycloak subgroups before the parent to avoid HTTP 500 on delete ([94c49bf](https://github.com/cloud-pi-native/console/commit/94c49bfe75cd33db6319720f6b0d3b9cd070c5ee))
+* **gitlab:** return existing user on 409 instead of failing sync ([50c9c79](https://github.com/cloud-pi-native/console/commit/50c9c7903e3c9991ca256b809a1f172d288235a4))
+* **gitlab:** set ci_config_path only on externally mirrored repos ([0d4a0db](https://github.com/cloud-pi-native/console/commit/0d4a0dba6384bdf2bf9dd7d50b016ad5bff89dd6))
+* Keycloak group null check ([0a36ead](https://github.com/cloud-pi-native/console/commit/0a36ead953e1b2d4158ecd0cc2c88f3d252b857c))
+* **keycloak:** preserve full path when creating role groups ([b243721](https://github.com/cloud-pi-native/console/commit/b243721c93f5b15e181850c30ee8d11cd511df36))
+* missing observability icon ([ec767f4](https://github.com/cloud-pi-native/console/commit/ec767f4ce51e3370274da5b7061761fe8a8bfd6f))
+* missing stage in observability ([13d9866](https://github.com/cloud-pi-native/console/commit/13d986683d1fca5c157b30ccd5b4a9ff5a9e26ee))
+* observability hprod and prod icon not displayed ([0f0b377](https://github.com/cloud-pi-native/console/commit/0f0b3774caa1fd0c358ca05d8354f76b7f3c1c59))
+* **observability:** scope repository url by project slug with .git suffix ([869e318](https://github.com/cloud-pi-native/console/commit/869e3183b0ecacae59fb96075c4278b752df8ae7))
+* **observability:** skip Grafana group add for users with no Keycloak account ([1d303c2](https://github.com/cloud-pi-native/console/commit/1d303c243db870a1cedf0fbaca380b2b307edf1d))
+* **project-secrets:** honor Nexus global repo defaults ([39a81f4](https://github.com/cloud-pi-native/console/commit/39a81f4d8cef8090941f704bb82eb5779eb2b109))
+* **project-secrets:** restore GitLab CURL COMMAND trigger hint ([f21cb93](https://github.com/cloud-pi-native/console/commit/f21cb93aff9b70b9146e9dea776b0bc279707855))
+* remove Keycloak project groups on delete ([f69ee86](https://github.com/cloud-pi-native/console/commit/f69ee86d28a77494c419dcffb7abca4bddf55987))
+* **server-nestjs:** carry the mirror repo id with the pipeline trigger token ([07f7e3a](https://github.com/cloud-pi-native/console/commit/07f7e3a15b298aaa44cfa7bb1f53d1e5b15c6879))
+* **server-nestjs:** delete Keycloak subgroups before the parent group ([42848bc](https://github.com/cloud-pi-native/console/commit/42848bc63389751638cd06ebed14368dcf30aaa6)), closes [#2500](https://github.com/cloud-pi-native/console/issues/2500)
+* **server-nestjs:** include projectsRootDir in vault techRO policy path ([a947e17](https://github.com/cloud-pi-native/console/commit/a947e1798137a8292f24a54e10d7f983f0681933))
+* **server-nestjs:** purge argocd values files on project delete ([108caf5](https://github.com/cloud-pi-native/console/commit/108caf5e4d61f63613c9fbe76fadf3cac18d640e))
+* **server-nestjs:** surface GitLab error details in serialized errors ([6ca31e9](https://github.com/cloud-pi-native/console/commit/6ca31e9131ec8aadc6b38a9c17c09ea4293d8927))
+* **server-nestjs:** use per-project cloud-pi-native.fr email for sonarqube robot account ([d55564f](https://github.com/cloud-pi-native/console/commit/d55564f61a6afc39f4878eea23fd1a64f3be5b74))
+
+
+### Miscellaneous Chores
+
+* **ci:** do not use versioning-strategy on release-please GHA ([6af01cb](https://github.com/cloud-pi-native/console/commit/6af01cbeb97c5149375bfac565fc1f0d0c09d289))
+* **ci:** fix release-please versioning strategy ([3759ffe](https://github.com/cloud-pi-native/console/commit/3759ffeca0d24e0777a74f014f7816ef1b37bde1))
+
+
+### Refactoring
+
+* **keycloak:** parse group representations at the client boundary ([e9f2501](https://github.com/cloud-pi-native/console/commit/e9f25012f2cf2e8acade19a878ea33c932c06bc3))
+
 ## [9.24.0](https://github.com/cloud-pi-native/console/compare/v9.23.0...v9.24.0) (2026-08-07)
 
 
