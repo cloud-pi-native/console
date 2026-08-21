@@ -20,6 +20,7 @@ import {
 } from './sonarqube-testing.utils'
 import { PLUGIN_NAME, SONARQUBE_PROJECT_QUALIFIER_PROJECT } from './sonarqube.constants'
 import { SonarqubeService } from './sonarqube.service'
+import { GitlabClientService } from '../gitlab/gitlab-client.service'
 
 describe('sonarqubeService', () => {
   let service: SonarqubeService
@@ -27,6 +28,7 @@ describe('sonarqubeService', () => {
   let datastore: DeepMockProxy<SonarqubeDatastoreService>
   let vault: DeepMockProxy<VaultClientService>
   let config: DeepMockProxy<ConfigType<typeof sonarqubeConfigFactory>>
+  let gitlab: DeepMockProxy<GitlabClientService>
 
   beforeEach(async () => {
     client = mockDeep<SonarqubeClientService>({
@@ -57,6 +59,12 @@ describe('sonarqubeService', () => {
     })
     config = mockDeep<ConfigType<typeof sonarqubeConfigFactory>>({
     })
+    gitlab = mockDeep<GitlabClientService>({
+      setGitlabGroupVariable: vi.fn().mockResolvedValue(undefined),
+      setGitlabRepoVariable: vi.fn().mockResolvedValue(undefined),
+      getOrCreateProjectGroup: vi.fn().mockResolvedValue({ id: 42, full_path: 'root', name: 'root' }),
+      getOrCreateProjectGroupRepo: vi.fn().mockResolvedValue({ id: 99 }),
+    })
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -64,6 +72,7 @@ describe('sonarqubeService', () => {
         { provide: SonarqubeClientService, useValue: client },
         { provide: SonarqubeDatastoreService, useValue: datastore },
         { provide: VaultClientService, useValue: vault },
+        { provide: GitlabClientService, useValue: gitlab },
         { provide: sonarqubeConfigFactory.KEY, useValue: config },
       ],
     }).compile()
@@ -164,6 +173,22 @@ describe('sonarqubeService', () => {
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: '/console/security' }))
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/developer`, permission: 'issueadmin' }))
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/developer`, permission: 'securityhotspotadmin' }))
+    })
+
+    it('should provision GitLab CI variables for each repository and the shared group token', async () => {
+      const project = makeProjectWithDetails({ repositories: [{ internalRepoName: 'repo' }] })
+      const groupId = 42
+      const repoId = 99
+      client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
+      vault.readSonarqubeUser.mockResolvedValue(makeVaultSecret({ data: { SONAR_USERNAME: project.slug, SONAR_PASSWORD: 'pw', SONAR_TOKEN: 'tok' } }))
+
+      await service.handleUpsert(project)
+
+      const key = generateProjectKey(project.slug, 'repo')
+      expect(gitlab.setGitlabRepoVariable).toHaveBeenCalledWith(repoId, 'PROJECT_KEY', key, expect.objectContaining({ masked: false, variableType: 'env_var', environmentScope: '*' }))
+      expect(gitlab.setGitlabRepoVariable).toHaveBeenCalledWith(repoId, 'PROJECT_NAME', `${project.slug}-repo`, expect.objectContaining({ masked: false, variableType: 'env_var', environmentScope: '*' }))
+      expect(gitlab.setGitlabRepoVariable).toHaveBeenCalledWith(repoId, 'SONAR_PROJECT_PROPERTIES', expect.stringContaining(`sonar.projectKey=${key}`), expect.objectContaining({ masked: false, variableType: 'file', environmentScope: '*' }))
+      expect(gitlab.setGitlabGroupVariable).toHaveBeenCalledWith(groupId, 'SONAR_TOKEN', 'tok', expect.objectContaining({ masked: true, variableType: 'env_var' }))
     })
 
     it('should not recreate user or write vault when both user and secret exist', async () => {

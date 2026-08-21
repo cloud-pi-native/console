@@ -1,3 +1,4 @@
+import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import { generateProjectKey } from '@cpn-console/hooks'
 import { faker } from '@faker-js/faker'
@@ -17,6 +18,9 @@ import { projectSelect } from '../src/modules/sonarqube/sonarqube-datastore.serv
 import { makeProjectWithDetails } from '../src/modules/sonarqube/sonarqube-testing.utils'
 import { SonarqubeModule } from '../src/modules/sonarqube/sonarqube.module'
 import { SonarqubeService } from '../src/modules/sonarqube/sonarqube.service'
+import { GitlabClientService } from '../src/modules/gitlab/gitlab-client.service'
+import { gitlabConfigFactory } from '../src/config/gitlab.config'
+import { GitlabModule } from '../src/modules/gitlab/gitlab.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
@@ -34,6 +38,8 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
   let sonarqubeService: SonarqubeService
   let sonarqubeClient: SonarqubeClientService
   let vaultService: VaultClientService
+  let gitlabClient: GitlabClientService
+  let gitlabConfig: ConfigType<typeof gitlabConfigFactory>
   let prisma: PrismaService
 
   let ownerId: string
@@ -43,7 +49,7 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [SonarqubeModule, VaultModule, ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+      imports: [SonarqubeModule, GitlabModule, VaultModule, ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory, gitlabConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()
@@ -51,6 +57,8 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
     sonarqubeService = moduleRef.get<SonarqubeService>(SonarqubeService)
     sonarqubeClient = moduleRef.get<SonarqubeClientService>(SonarqubeClientService)
     vaultService = moduleRef.get<VaultClientService>(VaultClientService)
+    gitlabClient = moduleRef.get<GitlabClientService>(GitlabClientService)
+    gitlabConfig = moduleRef.get<ConfigType<typeof gitlabConfigFactory>>(gitlabConfigFactory.KEY)
     prisma = moduleRef.get<PrismaService>(PrismaService)
     eventEmitter = moduleRef.get<EventEmitter2>(EventEmitter2)
 
@@ -159,6 +167,28 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
     expect(vaultSecret?.data?.SONAR_USERNAME).toBe(testProjectSlug)
     expect(vaultSecret?.data?.SONAR_TOKEN).toBeTruthy()
     expect(vaultSecret?.data?.SONAR_PASSWORD).toBeTruthy()
+
+    // SONAR_TOKEN must be exposed at the project GitLab group level so every repo inherits it
+    const sonarGroupPath = `${gitlabConfig.projectRootDir}/${testProjectSlug}`
+    const sonarGroup = (gitlabClient.getGroupByPath
+      ? await gitlabClient.getGroupByPath(sonarGroupPath)
+      : undefined) ?? await gitlabClient.getProjectGroup(testProjectSlug)
+    if (!sonarGroup) throw new Error(`GitLab group ${sonarGroupPath} not found`)
+    const groupVar = await gitlabClient.readGroupVariable(sonarGroup.id, 'SONAR_TOKEN')
+    expect(groupVar?.value).toBe(vaultSecret?.data?.SONAR_TOKEN)
+    expect(groupVar?.masked).toBe(true)
+
+    // Per-repo CI variables must be provisioned for the repository
+    const sonarProjectKey = generateProjectKey(testProjectSlug, testRepoName)
+    const repo = await gitlabClient.getOrCreateProjectGroupRepo(testProjectSlug, `${testProjectSlug}/${testRepoName}`)
+    const repoVars = await gitlabClient.readProjectVariables(repo.id, '*')
+    const expectedRepoVars = ['PROJECT_KEY', 'PROJECT_NAME', 'SONAR_PROJECT_PROPERTIES', 'SONAR_TOKEN']
+    for (const key of expectedRepoVars) {
+      const variable = repoVars.find(v => v.key === key)
+      expect(variable, `repo CI variable ${key} should exist`).toBeTruthy()
+    }
+    expect(repoVars.find(v => v.key === 'PROJECT_KEY')?.value).toBe(sonarProjectKey)
+    expect(repoVars.find(v => v.key === 'SONAR_TOKEN')?.value).toBe(vaultSecret?.data?.SONAR_TOKEN)
   }, SONARQUBE_PROJECT_TIMEOUT)
 
   it('should delete the project from SonarQube and remove vault credentials', async () => {
