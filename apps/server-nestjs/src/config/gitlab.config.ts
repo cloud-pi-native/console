@@ -1,11 +1,11 @@
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
-import { truthySchema } from './config.utils'
+import { truthySchema, urlSchema } from './config.utils'
 
 const gitlabFeatureSchema = z.object({
   GITLAB_TOKEN: z.string().min(1),
-  GITLAB_URL: z.string().url(),
-  GITLAB_INTERNAL_URL: z.string().url().optional(),
+  GITLAB_URL: urlSchema,
+  GITLAB_INTERNAL_URL: urlSchema.optional(),
   GITLAB_MIRROR_TOKEN_EXPIRATION_DAYS: z.coerce.number().int().positive().default(365),
   GITLAB__SECRET_EXPOSE_INTERNAL_URL: truthySchema.default('false').transform(v => v === 'true' || v === '1'),
   PROJECTS_ROOT_DIR: z.string().min(1),

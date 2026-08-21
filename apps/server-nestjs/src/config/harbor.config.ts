@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
-import { cronSchema } from './config.utils'
+import { cronSchema, urlSchema } from './config.utils'
 
 const ruleTemplateSchema = z.enum([
   'always',
@@ -13,8 +13,8 @@ const ruleTemplateSchema = z.enum([
 export type RuleTemplate = z.infer<typeof ruleTemplateSchema>
 
 const harborFeatureSchema = z.object({
-  HARBOR_URL: z.string().url(),
-  HARBOR_INTERNAL_URL: z.string().url().optional(),
+  HARBOR_URL: urlSchema,
+  HARBOR_INTERNAL_URL: urlSchema.optional(),
   HARBOR_ADMIN: z.string().min(1),
   HARBOR_ADMIN_PASSWORD: z.string().min(1),
   HARBOR_RULE_TEMPLATE: ruleTemplateSchema.optional(),
