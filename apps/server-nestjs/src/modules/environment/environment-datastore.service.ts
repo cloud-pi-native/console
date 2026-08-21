@@ -5,6 +5,8 @@ import { PROD_STAGE_NAME } from './environment.constants'
 
 export type EnvironmentWithCluster = Environment & { cluster: Cluster }
 export type EnvironmentWithStage = Environment & { stage: Stage }
+export type EnvironmentWithStageAndCount = EnvironmentWithStage & { _count: { deployments: number } }
+export type EnvironmentWithDeploymentsCount = EnvironmentWithStage & { deploymentsCount: number }
 
 export interface EnvironmentResourcesSum {
   _sum: {
@@ -25,10 +27,13 @@ export class EnvironmentDatastoreService {
     })
   }
 
-  getEnvironmentsByProjectId(projectId: string): Promise<EnvironmentWithStage[]> {
+  getEnvironmentsByProjectId(projectId: string): Promise<EnvironmentWithStageAndCount[]> {
     return this.prisma.environment.findMany({
       where: { projectId },
-      include: { stage: true },
+      include: {
+        stage: true,
+        _count: { select: { deployments: true } },
+      },
     })
   }
 

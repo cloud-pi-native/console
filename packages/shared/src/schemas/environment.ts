@@ -21,6 +21,10 @@ export const EnvironmentSchema = z.object({
   autosync: z.boolean(),
 }).extend(AtDatesToStringExtend)
 
+export const EnvironmentWithDeploymentsCountSchema = EnvironmentSchema.extend({
+  deploymentsCount: z.number().int().gte(0),
+})
+
 export const CreateEnvironmentSchema = EnvironmentSchema.omit({
   id: true,
   createdAt: true,
@@ -36,5 +40,6 @@ export const UpdateEnvironmentSchema = EnvironmentSchema.pick({
 })
 
 export type Environment = Zod.infer<typeof EnvironmentSchema>
+export type EnvironmentWithDeploymentsCount = Zod.infer<typeof EnvironmentWithDeploymentsCountSchema>
 export type CreateEnvironment = Zod.infer<typeof CreateEnvironmentSchema>
 export type UpdateEnvironment = Zod.infer<typeof UpdateEnvironmentSchema>

@@ -3,6 +3,7 @@ import type {
   CleanedCluster,
   CreateEnvironment,
   Environment,
+  EnvironmentWithDeploymentsCount,
 } from '@cpn-console/shared'
 import {
   deleteValidationInput,
@@ -24,7 +25,7 @@ interface OptionType {
 }
 
 const props = withDefaults(defineProps<{
-  environment?: Partial<Omit<Environment, 'updatedAt' | 'createdAt'>>
+  environment?: Partial<Omit<EnvironmentWithDeploymentsCount, 'updatedAt' | 'createdAt'>>
   isEditable?: boolean
   canManage: boolean
   isProjectLocked?: boolean
@@ -343,6 +344,14 @@ watch(localEnvironment.value, () => {
         v-if="isDeletingEnvironment"
         class="fr-mt-4w"
       >
+        <DsfrAlert
+          v-if="localEnvironment.deploymentsCount"
+          data-testid="linkedDeploymentsAlert"
+          class="fr-mb-2w"
+          :description="`Cet environnement est lié à ${localEnvironment.deploymentsCount} déploiement${localEnvironment.deploymentsCount > 1 ? 's' : ''}. Leur suppression sera également effectuée et est irréversible.`"
+          type="warning"
+          small
+        />
         <DsfrInput
           v-model="environmentToDelete"
           data-testid="deleteEnvironmentInput"
