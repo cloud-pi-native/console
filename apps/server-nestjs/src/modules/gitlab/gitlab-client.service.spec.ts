@@ -3,6 +3,7 @@ import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
 import type { MockedFunction } from 'vitest'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
@@ -965,6 +966,63 @@ describe('gitlab-client', () => {
           expect.objectContaining({ filePath: 'mirror.sh', action: 'create' }),
         ]),
       )
+    })
+  })
+
+  describe('cI variables', () => {
+    const groupId = 42
+    const repoId = 99
+
+    it('should create a missing group variable', async () => {
+      gitlabApi.GroupVariables.show.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 Group variable Not Found', status: 404 }))
+
+      await service.setGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' })
+
+      expect(gitlabApi.GroupVariables.create).toHaveBeenCalledWith(groupId, 'SONAR_TOKEN', 'secret', expect.objectContaining({ masked: true, variableType: 'env_var' }))
+      expect(gitlabApi.GroupVariables.edit).not.toHaveBeenCalled()
+    })
+
+    it('should update a group variable when value differs', async () => {
+      gitlabApi.GroupVariables.show.mockResolvedValueOnce({ key: 'SONAR_TOKEN', value: 'old', variable_type: 'env_var', masked: true, protected: false })
+
+      await service.setGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'new', { masked: true, protected: false, variableType: 'env_var' })
+
+      expect(gitlabApi.GroupVariables.edit).toHaveBeenCalledWith(groupId, 'SONAR_TOKEN', 'new', expect.objectContaining({ variableType: 'env_var' }))
+      expect(gitlabApi.GroupVariables.create).not.toHaveBeenCalled()
+    })
+
+    it('should skip write when group variable matches', async () => {
+      gitlabApi.GroupVariables.show.mockResolvedValueOnce({ key: 'SONAR_TOKEN', value: 'secret', variable_type: 'env_var', masked: true, protected: false })
+
+      await service.setGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' })
+
+      expect(gitlabApi.GroupVariables.create).not.toHaveBeenCalled()
+      expect(gitlabApi.GroupVariables.edit).not.toHaveBeenCalled()
+    })
+
+    it('should create a missing repo variable', async () => {
+      gitlabApi.ProjectVariables.show.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 Project variable Not Found', status: 404 }))
+
+      await service.setGitlabRepoVariable(repoId, 'PROJECT_KEY', 'key', { masked: false, protected: false, variableType: 'env_var', environmentScope: '*' })
+
+      expect(gitlabApi.ProjectVariables.create).toHaveBeenCalledWith(repoId, 'PROJECT_KEY', 'key', expect.objectContaining({ variableType: 'env_var', environmentScope: '*' }))
+    })
+
+    it('should skip write when repo variable matches', async () => {
+      gitlabApi.ProjectVariables.show.mockResolvedValueOnce({ key: 'PROJECT_KEY', value: 'key', variable_type: 'env_var', masked: false, protected: false, environment_scope: '*' })
+
+      await service.setGitlabRepoVariable(repoId, 'PROJECT_KEY', 'key', { masked: false, protected: false, variableType: 'env_var', environmentScope: '*' })
+
+      expect(gitlabApi.ProjectVariables.create).not.toHaveBeenCalled()
+    })
+
+    it('should tolerate a non-string cause.description (regression: .includes is not a function)', async () => {
+      const error = new GitbeakerRequestError('boom', { cause: { description: 404 as unknown as string, request: new Request('https://gitlab.internal.example/api'), response: new Response(null, { status: 404 }) } })
+      gitlabApi.GroupVariables.show.mockRejectedValueOnce(error)
+
+      await service.setGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' })
+
+      expect(gitlabApi.GroupVariables.create).toHaveBeenCalledWith(groupId, 'SONAR_TOKEN', 'secret', expect.objectContaining({ masked: true, variableType: 'env_var' }))
     })
   })
 })

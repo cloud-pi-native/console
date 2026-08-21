@@ -2,6 +2,7 @@ import type { MemberSchema, ProjectSchema } from '@gitbeaker/core'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
 import { createHash } from 'node:crypto'
 import { AccessLevel } from '@gitbeaker/core'
+import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { stringify } from 'yaml'
 import { TOPIC_PLUGIN_MANAGED } from './gitlab.constants'
 
@@ -230,4 +231,15 @@ export function daysAgoFromNow(date: Date) {
 
 export function adminRoleFlag(user: ProjectWithDetails['members'][0]['user'], adminRoleId?: string) {
   return adminRoleId ? user.adminRoleIds?.includes(adminRoleId) : undefined
+}
+
+export function isGitbeakerNotFound(error: unknown): error is GitbeakerRequestError {
+  // gitbeaker's typed `cause.description` is a string, but some paths emit a non-string one — key 404 off status, not text.
+  return error instanceof GitbeakerRequestError && error.cause?.response?.status === 404
+}
+
+export function hasGitbeakerCause(error: unknown, substring: string): error is GitbeakerRequestError {
+  return error instanceof GitbeakerRequestError
+    && typeof error.cause?.description === 'string'
+    && error.cause.description.includes(substring)
 }
