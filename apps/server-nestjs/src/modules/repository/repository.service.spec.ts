@@ -186,13 +186,28 @@ describe('repositoryService', () => {
       expect(appEvents.emitRepositoryEvent).not.toHaveBeenCalled()
     })
 
-    it('still returns the repository when the post-creation mirror sync fails', async () => {
+    // Legacy parity: v1 returned 422 when the post-creation sync failed. The DB row
+    // stays committed — the sync is replayable via the dedicated endpoint.
+    it('rejects with 422 when the post-creation mirror sync fails', async () => {
       const repository = makeRepository({ id: repositoryId, projectId, internalRepoName: validCreateRepository.internalRepoName })
       datastore.hasRepositoryWithName.mockResolvedValue(false)
       datastore.createRepository.mockResolvedValue(repository)
       vault.writeGitlabMirrorCreds.mockResolvedValue(undefined)
       appEvents.emitProjectEvent.mockResolvedValue({})
-      appEvents.emitRepositoryEvent.mockRejectedValue(new Error('mirror unreachable'))
+      appEvents.emitRepositoryEvent.mockResolvedValue({
+        gitlab: { status: 'KO', message: 'Unable to find mirror repository', executionTime: 1, error: new Error('boom') },
+      })
+
+      await expect(service.createRepository(projectId, projectSlug, validCreateRepository, userId, requestId))
+        .rejects.toThrow(UnprocessableEntityException)
+    })
+
+    it('still returns the repository when no sync plugin is enabled (empty results)', async () => {
+      const repository = makeRepository({ id: repositoryId, projectId, internalRepoName: validCreateRepository.internalRepoName })
+      datastore.hasRepositoryWithName.mockResolvedValue(false)
+      datastore.createRepository.mockResolvedValue(repository)
+      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitRepositoryEvent.mockResolvedValue({})
 
       const result = await service.createRepository(projectId, projectSlug, validCreateRepository, userId, requestId)
 
