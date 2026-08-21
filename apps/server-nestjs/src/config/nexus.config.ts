@@ -1,10 +1,10 @@
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
-import { truthySchema } from './config.utils'
+import { truthySchema, urlSchema } from './config.utils'
 
 const nexusFeatureSchema = z.object({
-  NEXUS_URL: z.string().url(),
-  NEXUS_INTERNAL_URL: z.string().url().optional(),
+  NEXUS_URL: urlSchema,
+  NEXUS_INTERNAL_URL: urlSchema.optional(),
   NEXUS_ADMIN: z.string().min(1),
   NEXUS_ADMIN_PASSWORD: z.string().min(1),
   NEXUS__SECRET_EXPOSE_INTERNAL_URL: truthySchema.default('false').transform(v => v === 'true' || v === '1'),

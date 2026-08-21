@@ -1,8 +1,9 @@
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
+import { urlSchema } from './config.utils'
 
 const observabilityFeatureSchema = z.object({
-  GRAFANA_URL: z.string().url(),
+  GRAFANA_URL: urlSchema,
   DSO_OBSERVABILITY_CHART_VERSION: z.string().min(1),
 }).transform(raw => ({
   grafanaUrl: raw.GRAFANA_URL,

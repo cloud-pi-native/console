@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import z from 'zod'
-import { csv, flag, truthySchema } from './config.utils'
+import { csv, flag, truthySchema, urlSchema } from './config.utils'
 
 describe('config.utils', () => {
   describe('flag', () => {
@@ -20,6 +20,18 @@ describe('config.utils', () => {
     it('falls back to the schema default when missing', () => {
       expect(flag(truthySchema.default('false')).parse(undefined)).toBe(false)
       expect(flag(truthySchema.default('true')).parse(undefined)).toBe(true)
+    })
+  })
+
+  describe('urlSchema', () => {
+    it('normalizes and strips the trailing slash', () => {
+      expect(urlSchema.parse('https://gitlab.internal/')).toBe('https://gitlab.internal')
+      expect(urlSchema.parse('HTTPS://GITLAB.INTERNAL:443')).toBe('https://gitlab.internal')
+    })
+
+    it('keeps path segments and rejects invalid urls', () => {
+      expect(urlSchema.parse('https://gitlab.internal/api/')).toBe('https://gitlab.internal/api')
+      expect(() => urlSchema.parse('not-a-url')).toThrow()
     })
   })
 
