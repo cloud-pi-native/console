@@ -16,7 +16,7 @@ services:
     entrypoint: /opt/bitnami/keycloak/bin/kc.sh
     command: start-dev --import-realm
     healthcheck:
-      test: [CMD, curl, --head, -fsS, "http://localhost:8080/health/ready"]
+      test: [CMD, curl, --head, -fsS, "http://localhost:9000/health/ready"]
       interval: 5s
       timeout: 5s
       retries: 10
