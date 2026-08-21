@@ -13,6 +13,7 @@ import type {
   PaginationRequestOptions,
   PipelineTriggerTokenSchema,
   SimpleUserSchema,
+  VariableType,
 } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
 import { join } from 'node:path'
@@ -34,7 +35,7 @@ import {
   TOPIC_PLUGIN_MANAGED,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
-import { generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged } from './gitlab.utils'
+import { generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged, hasGitbeakerCause, isGitbeakerNotFound } from './gitlab.utils'
 
 export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
 
@@ -140,7 +141,7 @@ export class GitlabClientService {
       }
       return created
     } catch (error) {
-      if (error instanceof GitbeakerRequestError && error.cause?.description?.includes('has already been taken')) {
+      if (hasGitbeakerCause(error, 'has already been taken')) {
         this.logger.warn(`GitLab group already exists (race); reloading ${path}`)
         const existing = await this.getGroupByPath(path)
         if (existing) return existing
@@ -162,7 +163,7 @@ export class GitlabClientService {
       }
       return created
     } catch (error) {
-      if (error instanceof GitbeakerRequestError && error.cause?.description?.includes('has already been taken')) {
+      if (hasGitbeakerCause(error, 'has already been taken')) {
         this.logger.warn(`GitLab subgroup already exists (race); reloading ${fullPath}`)
         const existing = await this.getGroupByPath(fullPath)
         if (existing) return existing
@@ -233,7 +234,7 @@ export class GitlabClientService {
         return existingRepo
       }
     } catch (error) {
-      if (!(error instanceof GitbeakerRequestError) || !error.cause?.description?.includes('404')) {
+      if (!isGitbeakerNotFound(error)) {
         throw error
       }
     }
@@ -264,7 +265,7 @@ export class GitlabClientService {
       this.logger.log(`Created a GitLab project repository (path=${fullPath}, repoId=${created.id})`)
       return created
     } catch (error) {
-      if (error instanceof GitbeakerRequestError && error.cause?.description?.includes('has already been taken')) {
+      if (hasGitbeakerCause(error, 'has already been taken')) {
         this.logger.warn(`GitLab project repository already exists (race); reloading ${fullPath}`)
         const reloaded = await this.client.Projects.show(fullPath)
         return reloaded
@@ -302,7 +303,7 @@ export class GitlabClientService {
     try {
       return await this.client.RepositoryFiles.show(repo.id, filePath, ref)
     } catch (error) {
-      if (error instanceof GitbeakerRequestError && error.cause?.description?.includes('Not Found')) {
+      if (hasGitbeakerCause(error, 'Not Found')) {
         this.logger.debug(`GitLab file not found (repoId=${repo.id}, ref=${ref}, filePath=${filePath})`)
         return
       }
@@ -353,10 +354,7 @@ export class GitlabClientService {
       this.logger.verbose(`Listed GitLab repository tree (repoId=${repo.id}, ref=${ref}, path=${path}, count=${files.length})`)
       return files
     } catch (error) {
-      if (error instanceof GitbeakerRequestError && error.cause?.description?.includes('Not Found')) {
-        return []
-      }
-      if (error instanceof GitbeakerRequestError && error.cause?.description?.includes('404 Tree Not Found')) {
+      if (hasGitbeakerCause(error, 'Not Found') || hasGitbeakerCause(error, '404 Tree Not Found')) {
         return []
       }
       throw error
@@ -479,6 +477,85 @@ export class GitlabClientService {
     const fullPath = `${projectSlug}/${repoName}`
     const repo = await this.getOrCreateProjectGroupRepo(projectSlug, fullPath)
     return this.client.Projects.remove(repo.id)
+  }
+
+  // CI Variables
+  public async setGitlabGroupVariable(
+    groupId: number,
+    key: string,
+    value: string,
+    options: { masked: boolean, protected: boolean, variableType: VariableType },
+  ): Promise<void> {
+    const current = await this.client.GroupVariables.show(groupId, key).catch((error) => {
+      if (isGitbeakerNotFound(error)) return undefined
+      throw error
+    })
+    if (!current) {
+      await this.client.GroupVariables.create(groupId, key, value, {
+        variableType: options.variableType,
+        masked: options.masked,
+        protected: options.protected,
+      })
+      return
+    }
+    if (current.masked === options.masked
+      && current.value === value
+      && current.protected === options.protected
+      && current.variable_type === options.variableType) {
+      return
+    }
+    await this.client.GroupVariables.edit(groupId, key, value, {
+      variableType: options.variableType,
+      masked: options.masked,
+      protected: options.protected,
+      filter: { environment_scope: '*' },
+    })
+  }
+
+  public async setGitlabRepoVariable(
+    repoId: number,
+    key: string,
+    value: string,
+    options: { masked: boolean, protected: boolean, variableType: VariableType, environmentScope: string },
+  ): Promise<void> {
+    const current = await this.client.ProjectVariables.show(repoId, key, { filter: { environment_scope: options.environmentScope } }).catch((error) => {
+      if (isGitbeakerNotFound(error)) return undefined
+      throw error
+    })
+    if (!current) {
+      await this.client.ProjectVariables.create(repoId, key, value, {
+        variableType: options.variableType,
+        masked: options.masked,
+        protected: options.protected,
+        environmentScope: options.environmentScope,
+      })
+      return
+    }
+    if (current.masked === options.masked
+      && current.value === value
+      && current.protected === options.protected
+      && current.variable_type === options.variableType) {
+      return
+    }
+    await this.client.ProjectVariables.edit(repoId, key, value, {
+      variableType: options.variableType,
+      masked: options.masked,
+      protected: options.protected,
+      environmentScope: options.environmentScope,
+      filter: { environment_scope: options.environmentScope },
+    })
+  }
+
+  async readGroupVariable(groupId: number, key: string) {
+    return this.client.GroupVariables.show(groupId, key).catch((error) => {
+      if (isGitbeakerNotFound(error)) return undefined
+      throw error
+    })
+  }
+
+  async readProjectVariables(repoId: number, environmentScope: string) {
+    const all = await this.client.ProjectVariables.all(repoId)
+    return all.filter(variable => variable.environment_scope === environmentScope)
   }
 
   async commitMirror(repoId: number) {

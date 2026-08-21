@@ -10,6 +10,7 @@ import { trace } from '@opentelemetry/api'
 import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
 import { generateProjectKey, generateRandomPassword } from '../../utils/crypto.utils'
 import { getAll } from '../../utils/iterable.utils'
+import { GitlabClientService } from '../gitlab/gitlab-client.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -61,6 +62,7 @@ export class SonarqubeService implements OnModuleInit {
     @Inject(SonarqubeClientService) private readonly client: SonarqubeClientService,
     @Inject(sonarqubeConfigFactory.KEY) private readonly sonarqubeConfig: ConfigType<typeof sonarqubeConfigFactory>,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
+    @Inject(GitlabClientService) private readonly gitlab: GitlabClientService,
   ) {
     this.logger.log('SonarqubeService initialized')
   }
@@ -257,11 +259,26 @@ export class SonarqubeService implements OnModuleInit {
     span?.setAttribute('project.slug', project.slug)
     span?.setAttribute('repositories.count', project.repositories.length)
 
-    const [readonlyGroupPath, securityGroupPath, existingSonarProjects] = await Promise.all([
+    const [readonlyGroupPath, securityGroupPath, existingSonarProjects, sonarSecret, gitlabGroup] = await Promise.all([
       this.getReadonlyGroupPath(),
       this.getSecurityGroupPath(),
       getAll(this.findProjectsForSlug(project.slug)),
+      this.vault.readSonarqubeUser(project.slug),
+      this.gitlab.getOrCreateProjectGroup(),
     ])
+
+    // SONAR_TOKEN is shared across every repository of the project; expose it once at the group level.
+    if (sonarSecret?.data?.SONAR_TOKEN) {
+      await this.gitlab.setGitlabGroupVariable(
+        gitlabGroup.id,
+        'SONAR_TOKEN',
+        sonarSecret.data.SONAR_TOKEN,
+        { masked: true, protected: false, variableType: 'env_var' },
+      )
+      this.logger.log(`GitLab group CI variable SONAR_TOKEN set (group=${gitlabGroup.full_path})`)
+    } else {
+      this.logger.warn(`Skipping GitLab CI variable provisioning (no SONAR_TOKEN in vault, project=${project.slug})`)
+    }
 
     const orphans = existingSonarProjects.filter(sp => !project.repositories.some(r => r.internalRepoName === sp.repository))
     if (orphans.length) this.logger.log(`Removing ${orphans.length} orphan SonarQube repositories for project ${project.slug}`)
@@ -284,8 +301,35 @@ export class SonarqubeService implements OnModuleInit {
         }
         await this.ensureProjectPermissions(projectKey, project.slug, rolePaths, readonlyGroupPath, securityGroupPath)
         this.logger.verbose(`Ensured permissions on SonarQube repository (key=${projectKey})`)
+        await this.ensureGitlabCiVariables(project, repository, projectKey, sonarSecret)
       }),
     ])
+  }
+
+  private async ensureGitlabCiVariables(
+    project: ProjectWithDetails,
+    repository: ProjectWithDetails['repositories'][number],
+    projectKey: string,
+    sonarSecret: { data: SonarqubeUserSecret } | null,
+  ): Promise<void> {
+    const repo = await this.gitlab.getOrCreateProjectGroupRepo(project.slug, `${project.slug}/${repository.internalRepoName}`)
+    const variables: { key: string, value: string, variableType: 'env_var' | 'file', masked: boolean }[] = [
+      { key: 'PROJECT_KEY', value: projectKey, variableType: 'env_var', masked: false },
+      { key: 'PROJECT_NAME', value: `${project.slug}-${repository.internalRepoName}`, variableType: 'env_var', masked: false },
+      { key: 'SONAR_PROJECT_PROPERTIES', value: `sonar.projectKey=${projectKey}\nsonar.qualitygate.wait=true\n`, variableType: 'file', masked: false },
+    ]
+    if (sonarSecret?.data?.SONAR_TOKEN) {
+      variables.push({ key: 'SONAR_TOKEN', value: sonarSecret.data.SONAR_TOKEN, variableType: 'env_var', masked: true })
+    }
+    await Promise.all(variables.map(async (variable) => {
+      await this.gitlab.setGitlabRepoVariable(repo.id, variable.key, variable.value, {
+        masked: variable.masked,
+        protected: false,
+        variableType: variable.variableType,
+        environmentScope: '*',
+      })
+      this.logger.log(`GitLab CI variable ${variable.key} set (repoId=${repo.id})`)
+    }))
   }
 
   private async ensureProjectPermissions(
