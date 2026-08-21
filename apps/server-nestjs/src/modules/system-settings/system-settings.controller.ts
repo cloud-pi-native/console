@@ -1,6 +1,6 @@
 import type { SystemSetting } from '@cpn-console/shared'
 import { SystemSettingSchema } from '@cpn-console/shared'
-import { Body, Controller, Get, Inject, Put, Query } from '@nestjs/common'
+import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { SystemSettingsService } from './system-settings.service'
 
@@ -15,7 +15,7 @@ export class SystemSettingsController {
     return this.service.list(query)
   }
 
-  @Put(':key')
+  @Post()
   async upsert(
     @Body(new ZodValidationPipe(SystemSettingSchema)) data: SystemSetting,
   ) {
