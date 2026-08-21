@@ -58,17 +58,20 @@ export class RepositoryService {
     )
 
     // Legacy parity: a repository declared with an external source is mirrored right
-    // away, so the first sync doesn't wait for a manual trigger. v1 awaits this sync but
-    // discards its outcome — the creation itself succeeded, and the mirror pipeline is a
-    // downstream effect whose failure is reported in the admin log, not in the response.
+    // away, so the first sync doesn't wait for a manual trigger, and a failed sync
+    // surfaces as 422 (business.ts returned Unprocessable422 in v1). The DB row stays
+    // committed — the sync is replayable via the dedicated endpoint.
     if (repositoryToCreate.externalRepoUrl) {
-      await this.syncRepositoryMirror(
+      const results = await this.syncRepositoryMirror(
         { projectId, projectSlug, internalRepoName: repository.internalRepoName, syncAllBranches: true },
         userId,
         requestId,
-      ).catch((error: unknown) => {
-        this.logger.error(`repository.sync after creation failed (repositoryId=${repository.id})`, error instanceof Error ? error.stack : String(error))
-      })
+      )
+      if (!Object.keys(results).length) {
+        this.logger.warn(`repository.sync after creation had no listener (repositoryId=${repository.id}): no sync plugin is enabled`)
+      } else if (getFailedPlugins(results).length) {
+        throw new UnprocessableEntityException('Echec des services à la synchronisation du dépôt')
+      }
     }
 
     return repository
