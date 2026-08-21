@@ -55,6 +55,13 @@ jobs:
       - name: Run Playwright tests
         run: pnpm --dir playwright exec playwright test --grep @e2e --shard=${{ matrix.shard }}/4 --reporter=blob
 
+      - name: Dump docker compose state on failure
+        if: ${{ failure() }}
+        run: |
+          docker compose -f ./docker/docker-compose.ci.yml ps -a
+          docker compose -f ./docker/docker-compose.ci.yml logs --no-color keycloak
+          docker inspect dso-console_keycloak --format '{{json .State}}'
+
       - name: Clean up docker resources (containers, volumes)
         run: docker compose -f ./docker/docker-compose.ci.yml down -v --remove-orphans
 
