@@ -45,7 +45,10 @@ describe('userTokensService', () => {
       const result = await service.list(userId)
 
       expect(prisma.personalAccessToken.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { userId } }),
+        expect.objectContaining({
+          where: { userId },
+          orderBy: [{ status: 'asc' }, { createdAt: 'asc' }],
+        }),
       )
       expect(result).toHaveLength(1)
       expect(result[0].id).toBe(tokenId)
