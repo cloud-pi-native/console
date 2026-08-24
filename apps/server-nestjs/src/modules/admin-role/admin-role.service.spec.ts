@@ -5,6 +5,7 @@ import { mockDeep } from 'vitest-mock-extended'
 import {
   makeAdminRole,
   makeCreateAdminRoleBody,
+  makePatchAdminRoleBody,
 } from './admin-role-testing.utils'
 import { AdminRoleService } from './admin-role.service'
 
@@ -74,5 +75,21 @@ describe('adminRoleService', () => {
       type: 'managed',
       members: [],
     })
+  })
+
+  it('patch does not throw on coherent positions and emits upsert per role', async () => {
+    const roleA = makeAdminRole({ id: 'a', name: 'A', position: 1 })
+    const roleB = makeAdminRole({ id: 'b', name: 'B', position: 2 })
+    const patchedA = makePatchAdminRoleBody(roleA, { name: 'A-renamed' })
+    const patchedB = makePatchAdminRoleBody(roleB, { name: 'B-renamed' })
+
+    prisma.adminRole.findMany.mockResolvedValue([roleA, roleB])
+    prisma.adminRole.findFirst.mockResolvedValueOnce(roleA).mockResolvedValueOnce(roleB)
+    prisma.user.findMany.mockResolvedValue([])
+    prisma.$transaction.mockImplementation(async (cb: (tx: unknown) => unknown) => cb(prisma))
+
+    const service = new AdminRoleService(prisma, eventEmitter)
+    await expect(service.patch([patchedA, patchedB])).resolves.toBeDefined()
+    expect(eventEmitter.emitAsync).toHaveBeenCalledTimes(2)
   })
 })
