@@ -377,6 +377,7 @@ overrides:
   '@grpc/grpc-js@1.14.3': '>=1.14.4 <2'
   '@opentelemetry/core@2.5.1': '>=2.8.0 <3'
   '@opentelemetry/core@2.6.0': '>=2.8.0 <3'
+  '@anatine/zod-openapi>zod': 3.25.76
   '@opentelemetry/core@2.7.1': '>=2.8.0 <3'
   '@opentelemetry/exporter-prometheus@0.212.0': '>=0.217.0 <1'
   '@opentelemetry/propagator-jaeger@2.5.1': '>=2.9.0 <3'
@@ -863,15 +864,6 @@ importers:
       '@prisma/client':
         specifier: catalog:runtime
         version: 6.19.2(prisma@6.19.2(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
-      '@ts-rest/core':
-        specifier: catalog:runtime
-        version: 3.52.1(@types/node@26.1.2)(zod@3.25.76)
-      '@ts-rest/fastify':
-        specifier: catalog:runtime
-        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.1.2)(zod@3.25.76))(fastify@5.8.5)(zod@3.25.76)
-      '@ts-rest/open-api':
-        specifier: catalog:runtime
-        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.1.2)(zod@3.25.76))(zod@3.25.76)
       cache-manager:
         specifier: catalog:runtime
         version: 7.2.8
@@ -912,8 +904,8 @@ importers:
         specifier: catalog:runtime
         version: 2.9.0
       zod:
-        specifier: catalog:runtime
-        version: 3.25.76
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@cpn-console/eslint-config':
         specifier: workspace:^
@@ -1541,7 +1533,7 @@ packages:
     resolution: {integrity: sha512-q0qHfnuNYVKu0Swrnnvfj9971AEyW7c8v9jCOZGCl5ZbyGMNG4RPyJkRcMi/JC8CRfdOe0IDfNm1nNsi2avprg==}
     peerDependencies:
       openapi3-ts: ^2.0.0 || ^3.0.0
-      zod: ^3.20.0
+      zod: 3.25.76
 
   '@angular-devkit/core@19.2.17':
     resolution: {integrity: sha512-Ah008x2RJkd0F+NLKqIpA34/vUGwjlprRCkvddjDopAWRzYn6xCkz1Tqwuhn0nR1Dy47wTLKYD999TYl5ONOAQ==}
@@ -9602,6 +9594,9 @@ packages:
 
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -19120,5 +19115,7 @@ snapshots:
       zod: 3.25.76
 
   zod@3.25.76: {}
+
+  zod@4.4.3: {}
 
   zwitch@2.0.4: {}

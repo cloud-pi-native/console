@@ -1,9 +1,8 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
 import type { PermissionTarget, PluginConfig, PluginsUpdateBody, ServiceUrl } from '@cpn-console/shared'
 import type { PrismaService } from '../infrastructure/database/prisma.service'
-import { editStrippersGenerator } from '@cpn-console/hooks'
-import { atomicValidators, DEFAULT } from '@cpn-console/shared'
 import { z } from 'zod'
+import { atomicValidators, DEFAULT, editStrippersGenerator } from '../../config/validators.js'
 
 export interface PluginRecord {
   pluginName: string

@@ -63,9 +63,6 @@
     "@opentelemetry/sdk-metrics": "catalog:otel",
     "@opentelemetry/sdk-node": "catalog:otel",
     "@prisma/client": "catalog:runtime",
-    "@ts-rest/core": "catalog:runtime",
-    "@ts-rest/fastify": "catalog:runtime",
-    "@ts-rest/open-api": "catalog:runtime",
     "cache-manager": "catalog:runtime",
     "date-fns": "catalog:runtime",
     "fastify": "catalog:runtime",
@@ -79,7 +76,7 @@
     "undici": "catalog:runtime",
     "vitest-mock-extended": "catalog:runtime",
     "yaml": "catalog:runtime",
-    "zod": "catalog:runtime"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",

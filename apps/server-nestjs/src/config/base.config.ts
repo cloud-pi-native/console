@@ -6,7 +6,7 @@ const baseFeatureSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
   CI: flag(truthySchema.default('false')),
   SERVER_HOST: z.string().default('localhost'),
-  SERVER_PORT: z.string().transform(Number).default('0'),
+  SERVER_PORT: z.string().transform(Number).default(0),
   APP_VERSION: z.string().default('unknown'),
   DB_URL: z.string().url(),
   PROJECTS_ROOT_DIR: z.string().default(''),

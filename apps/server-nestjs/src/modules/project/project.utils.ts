@@ -76,9 +76,11 @@ export function generateProjectCreateInput(
   }
 }
 
-export const ProjectV2ResponseSchema = ProjectSchemaV2.omit({ name: true }).extend({
-  name: z.string(),
-})
+// ProjectSchemaV2 is a zod-3 schema from @cpn-console/shared. We must not
+// compose it with local zod-4 builders (e.g. .extend({ name: z.string() })),
+// which crosses the dual zod-major boundary. The response name already
+// satisfies ProjectSchemaV2's constraints, so we validate against it directly.
+export const ProjectV2ResponseSchema = ProjectSchemaV2
 
 export function generateProjectV2(project: ProjectWithDetails) {
   const payload = {

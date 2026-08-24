@@ -28,6 +28,12 @@ overrides:
   "@grpc/grpc-js@1.14.3": ">=1.14.4 <2"
   "@opentelemetry/core@2.5.1": ">=2.8.0 <3"
   "@opentelemetry/core@2.6.0": ">=2.8.0 <3"
+  # Keep @ts-rest/open-api's zod-openapi on zod 3. Its peer range is
+  # `^3.22 || ^4`; with zod 4 present elsewhere in the workspace pnpm would
+  # resolve it to zod 4, which then drags @ts-rest/core (apps/server) onto
+  # zod 4 and breaks the AppRouter contract typing. apps/server must stay
+  # on zod 3.
+  "@anatine/zod-openapi>zod": "3.25.76"
   "@opentelemetry/core@2.7.1": ">=2.8.0 <3"
   "@opentelemetry/exporter-prometheus@0.212.0": ">=0.217.0 <1"
   "@opentelemetry/propagator-jaeger@2.5.1": ">=2.9.0 <3"
