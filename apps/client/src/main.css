@@ -62,6 +62,12 @@ body,
   margin-right: 25px;
 }
 
+/* Fixes footer "open a new tab" icon from appearing over the snackback */
+.dso-footer .fr-footer__content-link::after {
+  position: relative;
+  z-index: -1;
+}
+
 .danger-zone {
   border-bottom: solid var(--border-plain-warning);
   margin-top: 2rem;
