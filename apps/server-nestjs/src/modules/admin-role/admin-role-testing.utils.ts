@@ -2,16 +2,6 @@ import type { AdminRole } from './admin-role-queries.utils'
 import type { AdminRoleService } from './admin-role.service'
 import type { CreateAdminRoleBody, PatchAdminRolesBody } from './admin-role.utils'
 
-export type AdminRoleContract = Parameters<AdminRoleService['patch']>[0][number]
-export type AdminRoleResponse = NonNullable<Awaited<ReturnType<AdminRoleService['list']>>>[number]
-
-export interface AdminRoleMember {
-  id: string
-  email: string
-  firstName: string
-  lastName: string
-}
-
 export function makeAdminRole(overrides: Partial<AdminRole> = {}): AdminRole {
   return {
     id: overrides.id ?? crypto.randomUUID(),
@@ -20,16 +10,6 @@ export function makeAdminRole(overrides: Partial<AdminRole> = {}): AdminRole {
     position: overrides.position ?? 0,
     oidcGroup: overrides.oidcGroup ?? '',
     type: overrides.type ?? 'managed',
-    ...overrides,
-  }
-}
-
-export function makeAdminRoleMember(overrides: Partial<AdminRoleMember> = {}): AdminRoleMember {
-  return {
-    id: crypto.randomUUID(),
-    email: 'user@example.com',
-    firstName: 'First',
-    lastName: 'Last',
     ...overrides,
   }
 }

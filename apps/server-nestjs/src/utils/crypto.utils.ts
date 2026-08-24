@@ -20,18 +20,16 @@ const TOKEN_ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123
 const TOKEN_LENGTH = 48
 
 export interface TokenPair {
-  /** Plaintext token. Returned to the caller once and never stored. */
+  // Plaintext token, returned to the caller once and never stored
   password: string
-  /** SHA-256 hex digest of the token (64 lowercase hex chars). */
+  // SHA-256 hex digest of the token (64 lowercase hex chars)
   hash: string
 }
 
-/**
- * Generate a secure random access token and its SHA-256 storage hash.
- * The plaintext token is shown to the caller exactly once; only the hash is
- * persisted. This keeps the storage format compatible with the Fastify server
- * (unsalted `sha256(token)` hex digest).
- */
+// Generate a secure random access token and its SHA-256 storage hash.
+// The plaintext token is shown to the caller exactly once; only the hash is
+// persisted. This keeps the storage format compatible with the Fastify server
+// (unsalted `sha256(token)` hex digest).
 export function generateTokenPair(length: number = TOKEN_LENGTH): TokenPair {
   const password = generateRandomPassword(length, TOKEN_ALPHABET)
   const hash = createHash('sha256').update(password).digest('hex')
