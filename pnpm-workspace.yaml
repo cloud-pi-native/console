@@ -74,7 +74,7 @@ catalogs:
     "@gitbeaker/requester-utils": ^40.6.0
     "@gitbeaker/rest": ^40.6.0
     "@gouvfr/dsfr": ^1.14.4
-    "@gouvminint/vue-dsfr": ^8.15.0
+    "@gouvminint/vue-dsfr": ^8.19.0
     "@himenon/argocd-typescript-openapi": ^1.2.2
     "@iconify-json/ri": ^1.2.10
     "@iconify/vue": ^4.3.0
