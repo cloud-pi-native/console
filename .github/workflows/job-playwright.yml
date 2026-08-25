@@ -59,8 +59,11 @@ jobs:
         if: ${{ failure() }}
         run: |
           docker compose -f ./docker/docker-compose.ci.yml ps -a
-          docker compose -f ./docker/docker-compose.ci.yml logs --no-color keycloak
-          docker inspect dso-console_keycloak --format '{{json .State}}'
+          for service in keycloak postgres server server-nestjs client nginx-strangler opencds-mockoon; do
+            echo -e "\nInspecting ${service}..."
+            docker compose -f ./docker/docker-compose.ci.yml logs --no-color ${service}
+            docker inspect dso-console_${service} --format '{{json .State}}'
+          done
 
       - name: Clean up docker resources (containers, volumes)
         run: docker compose -f ./docker/docker-compose.ci.yml down -v --remove-orphans
