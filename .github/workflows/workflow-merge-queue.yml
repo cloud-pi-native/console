@@ -45,6 +45,8 @@ jobs:
         id: filter
         with:
           filters: |
+            docker:
+              - 'docker/**'
             apps:
               - 'apps/**'
             packages:
@@ -117,7 +119,7 @@ jobs:
 
   playwright-tests:
     uses: ./.github/workflows/job-playwright.yml
-    if: ${{ needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' ||  needs.path-filter.outputs.e2e == 'true' }}
+    if: ${{ needs.path-filter.outputs.docker == 'true' || needs.path-filter.outputs.apps == 'true' || needs.path-filter.outputs.packages == 'true' || needs.path-filter.outputs.ci == 'true' || needs.path-filter.outputs.e2e == 'true' }}
     needs:
       - path-filter
       - expose-vars
