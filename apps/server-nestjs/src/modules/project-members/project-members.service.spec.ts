@@ -16,6 +16,74 @@ import {
   makeUser,
 } from '../project/project-testing.utils'
 import { ProjectMembersService } from './project-members.service'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// --- Migration parity: projectMember event consumer surface --------------------
+// Legacy apps/server fires `hook.projectMember.upsert` (add/patch) and
+// `hook.projectMember.delete` (remove) in resources/project-member/business.ts.
+// The NestJS rewrite emits the equivalent `projectMember.upsert` / `projectMember.delete`
+// events from ProjectMembersService (add/patch/remove) but has NO
+// `@OnEvent('projectMember.*')` consumer — the events are emitted and dropped.
+// See apps/server-nestjs/documentation/MIGRATION-PARITY-MATRIX.md (the
+// projectMember.* row and the "Redundant emission" note). This guard pins that
+// gap so a half-migration (a listener for one verb but not the other, or a
+// listener added without intent) is caught and forces a deliberate decision.
+//
+// The emit side is already locked by the add/patch/remove tests below
+// (appEvents.emitProjectMemberEvent is called with projectMember.upsert /
+// projectMember.delete at the correct call sites).
+
+const PROJECT_MEMBER_EVENT_RE = /@OnEvent\(\s*['"](projectMember\.(upsert|delete))['"]/
+const ANY_ON_EVENT_RE = /@OnEvent\(\s*['"]([^'"]+)['"]/
+
+function collectSourceFiles(dir: string): string[] {
+  const out: string[] = []
+  for (const entry of readdirSync(dir)) {
+    if (entry === 'node_modules' || entry === 'dist') continue
+    const full = resolve(dir, entry)
+    if (statSync(full).isDirectory()) {
+      out.push(...collectSourceFiles(full))
+    } else if (entry.endsWith('.ts') && !entry.endsWith('.spec.ts') && !entry.endsWith('.e2e-spec.ts')) {
+      out.push(full)
+    }
+  }
+  return out
+}
+
+function readEventConsumers(re: RegExp): string[] {
+  const srcRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../')
+  const found: string[] = []
+  for (const file of collectSourceFiles(srcRoot)) {
+    const m = readFileSync(file, 'utf8').match(re)
+    if (m) found.push(m[1])
+  }
+  return found
+}
+
+describe('migration parity: projectMember consumer', () => {
+  const projectMemberConsumers = readEventConsumers(PROJECT_MEMBER_EVENT_RE)
+  const allConsumers = readEventConsumers(ANY_ON_EVENT_RE)
+
+  it('scanner detects real @OnEvent consumers (guard against a vacuous negative test)', () => {
+    // Sanity: the walker must find live consumers (e.g. project.upsert) so the
+    // absence of projectMember.* consumers below is meaningful, not a broken scan.
+    expect(allConsumers).toContain('project.upsert')
+  })
+
+  it('documents the gap: no @OnEvent(\'projectMember.upsert\') consumer', () => {
+    // Legacy hook.projectMember.upsert fires on add/patch; nestjs emits
+    // projectMember.upsert but nothing listens. See MIGRATION-PARITY-MATRIX.md.
+    expect(projectMemberConsumers).not.toContain('projectMember.upsert')
+  })
+
+  it('documents the gap: no @OnEvent(\'projectMember.delete\') consumer', () => {
+    // Legacy hook.projectMember.delete fires on remove; nestjs emits
+    // projectMember.delete but nothing listens. See MIGRATION-PARITY-MATRIX.md.
+    expect(projectMemberConsumers).not.toContain('projectMember.delete')
+  })
+})
 
 describe('projectMembersService', () => {
   let module: TestingModule
