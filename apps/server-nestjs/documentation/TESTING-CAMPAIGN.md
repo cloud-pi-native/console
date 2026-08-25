@@ -104,3 +104,19 @@ Seed the campaign by writing the first concrete, runnable-here test for the most
 impactful gap with a runnable-here unit spec: **vault upsert/delete end-to-end
 parity** (unit exists; assert the `zone.*/`projectMember.*` latent gaps). This
 locks `full` Ponytail: shortest diff that actually fails when the logic breaks.
+
+## Cahier traceability (functional cahier ↔ automated specs)
+
+Mapping between `documentation-interne-socle/Tests Fonctionnels/cahier-tests-fonctionnels-cpin.md`
+scenarios and the automated twins delivered in this campaign. Statuses in the
+cahier remain the source of truth until the CI e2e job lands; this table is the
+review index.
+
+| Cahier ID | Scenario | Automated twin (spec) | PR | Coverage |
+|---|---|---|---|---|
+| PROJ-001 / PROJ-010 | Project create/delete + admin logs | `test/project.e2e-spec.ts` (existing), `test/argocd.e2e-spec.ts` (teardown contract) | existing + #2582 | API + plugin side; UI steps stay manual |
+| PROJ-003 (steps 9–13) | Full validation: logs, services, membership | unit: `project.service.spec.ts`, `project-members.service.spec.ts`; e2e: project/argocd specs | #2579, #2582 | API controls automated; DevTools/UI steps manual |
+| PLUG-004 + ZONE-001 | Vault provision, zone mount/policy/approle | `vault.service.spec.ts` (zone contract) + `test/vault.e2e-spec.ts` (lifecycle) | #2578 | full |
+| GIT-006 | Mirror repository sync | `test/repository.e2e-spec.ts` (`repository.sync` consumer) | #2580 | full |
+| ADMIN-003 | Error management (failed-plugin marking) | `app-events.service.spec.ts` (KO → status failed) | #2578 | full |
+| TODO-003 | Reprise après incident de provisionnement | argocd rollback case (no partial state after failed ensureProject) | #2582 | behavior now defined — cahier TODO can reference it |
