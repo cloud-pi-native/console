@@ -10,8 +10,8 @@ services:
       - ../keycloak/data/dev:/opt/keycloak/data/h2
     user: root
     environment:
-      KC_BOOTSTRAP_ADMIN: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
       KC_HEALTH_ENABLED: true
     command: start-dev --import-realm
     healthcheck:
