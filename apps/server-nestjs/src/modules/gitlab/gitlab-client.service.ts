@@ -413,7 +413,7 @@ export class GitlabClientService {
     } catch (error) {
       // GitLab auto-provisions users via OIDC, so a 409 means the user already
       // exists (email index race in getUserByEmail). Return it instead of failing.
-      if (error instanceof GitbeakerRequestError && error.cause?.description?.includes('has already been taken')) {
+      if (hasGitbeakerCause(error, 'has already been taken')) {
         const existing = user.email ? await this.getUserByEmail(user.email) : null
         if (existing) return existing as UserSchema
         throw error
