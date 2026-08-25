@@ -1,6 +1,7 @@
 import type { CommitAction, Gitlab } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
+import type { PluginResults } from '../src/modules/plugin/plugin.utils'
 import { defaultBranchName } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
@@ -18,6 +19,7 @@ import { PrismaService } from '../src/modules/infrastructure/database/prisma.ser
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
 import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
+import { mergePluginResults } from '../src/modules/plugin/plugin.utils'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { ARGOCD_RECONCILE_TIMEOUT, EXTERNAL_SYNC_TIMEOUT } from './e2e-timeout'
@@ -307,4 +309,62 @@ describeWithArgoCD('ArgoCDService (e2e)', () => {
     const prodFile = await gitlab.getFile(infraProject, prodFilePath, 'main')
     expect(prodFile).toBeUndefined()
   }, EXTERNAL_SYNC_TIMEOUT)
+
+  describe('teardown and failure paths', () => {
+    it('should leave the zone infra repo untouched when reconciliation fails', async () => {
+      const project = await prisma.project.findUniqueOrThrow({
+        where: { id: testProjectId },
+        select: projectSelect,
+      })
+
+      const infraProject = await gitlab.getOrCreateInfraGroupRepo(zoneSlug)
+      infraRepoId = infraProject.id
+
+      const headBefore = await gitlabClient.Branches.show(infraRepoId, 'main')
+
+      // Values actions are all computed before the single per-zone commit, so a
+      // GitLab failure while computing one leaves the repo at its previous head:
+      // no revert step is needed to undo a half-applied sync.
+      const spy = vi.spyOn(gitlab, 'generateCreateOrUpdateAction')
+        .mockRejectedValue(new Error('GitLab unreachable while computing values'))
+
+      const results = mergePluginResults(await eventEmitter.emitAsync('project.upsert', project) as PluginResults[])
+      spy.mockRestore()
+
+      expect(results.argocd?.status).toBe('KO')
+
+      const headAfter = await gitlabClient.Branches.show(infraRepoId, 'main')
+      expect(headAfter.commit.id).toBe(headBefore.commit.id)
+    }, ARGOCD_RECONCILE_TIMEOUT)
+
+    it('should purge every project values file on delete and no-op on the archived name', async () => {
+      const project = await prisma.project.findUniqueOrThrow({
+        where: { id: testProjectId },
+        select: projectSelect,
+      })
+
+      const infraProject = await gitlab.getOrCreateInfraGroupRepo(zoneSlug)
+      infraRepoId = infraProject.id
+
+      await eventEmitter.emitAsync('project.upsert', project)
+
+      const devFilePath = `${project.name}/${clusterLabel}/${envDevName}/values.yaml`
+      expect(await gitlab.getFile(infraProject, devFilePath, 'main')).toBeDefined()
+
+      const deleteResults = mergePluginResults(await eventEmitter.emitAsync('project.delete', project) as PluginResults[])
+      expect(deleteResults.argocd?.status).toBe('OK')
+
+      expect(await gitlab.getFile(infraProject, devFilePath, 'main')).toBeUndefined()
+      const leftovers = await gitlab.listFiles(infraProject, { path: `${project.name}/`, recursive: true })
+      expect(leftovers.filter(file => file.name === 'values.yaml')).toHaveLength(0)
+
+      // Legacy parity: archiveProject renames the project to
+      // `${name}_${Date.now()}_archived` only after hook.project.delete resolved,
+      // so the purge must run on the pre-archive snapshot. Replaying the delete
+      // with the archived name matches no file and must still succeed.
+      const archived = { ...project, name: `${project.name}_${Date.now()}_archived` }
+      const archivedResults = mergePluginResults(await eventEmitter.emitAsync('project.delete', archived) as PluginResults[])
+      expect(archivedResults.argocd?.status).toBe('OK')
+    }, ARGOCD_RECONCILE_TIMEOUT)
+  })
 })
