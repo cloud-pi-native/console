@@ -20,7 +20,16 @@ const adminRoleStore = useAdminRoleStore()
 
 const isLoggedIn = ref<boolean | undefined>(keycloak.authenticated)
 
-const appVersion: string = process.env.APP_VERSION ? `v${process.env.APP_VERSION}` : 'vpr-dev'
+const rawAppVersion = process.env.APP_VERSION
+const appVersion = rawAppVersion ? `v${rawAppVersion}` : 'vpr-dev'
+// ponytail: APP_VERSION is a semver release tag (9.24.4) or a PR deploy label (pr-2565); map to tag/PR, else releases index
+const appVersionUrl = !rawAppVersion
+  ? 'https://github.com/cloud-pi-native/console/releases'
+  : /^pr-\d+$/.test(rawAppVersion)
+    ? `https://github.com/cloud-pi-native/console/pull/${rawAppVersion.slice(3)}`
+    : /^\d+\.\d+\.\d+/.test(rawAppVersion)
+      ? `https://github.com/cloud-pi-native/console/releases/tag/v${rawAppVersion}`
+      : 'https://github.com/cloud-pi-native/console/releases'
 
 const quickLinks = computed(() => [{
   label: isLoggedIn.value ? 'Se déconnecter' : 'Se connecter',
@@ -107,7 +116,7 @@ watch(userStore, async () => {
           </a>
           <a
             data-testid="appVersionUrl"
-            :href="`https://github.com/cloud-pi-native/console/releases/tag/${appVersion}`"
+            :href="appVersionUrl"
             title="accéder au code source"
           >
             {{ appVersion }}
