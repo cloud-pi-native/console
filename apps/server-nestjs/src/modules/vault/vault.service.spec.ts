@@ -8,10 +8,15 @@ import { baseConfigFactory } from '../../config/base.config'
 import { vaultConfigFactory } from '../../config/vault.config'
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
+import { VaultError } from './vault-http-client.service'
 import { makeProjectWithDetails, makeVaultSecret, makeZoneWithDetails } from './vault-testing.utils'
 import { VaultService } from './vault.service'
 
 const projectRoleGroupNameRegex = /^project-(.*)-(admin|devops|developer|readonly|security)$/
+
+function httpError(status: number): VaultError {
+  return new VaultError('HttpError', 'Request failed', { status })
+}
 
 describe('vaultService', () => {
   let service: VaultService
@@ -155,5 +160,127 @@ describe('vaultService', () => {
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`)
+  })
+
+  describe('zone lifecycle', () => {
+    it('upserts mount, tech policy and approle for a zone', async () => {
+      await service.upsertZone('prod')
+
+      expect(client.createSysMount).toHaveBeenCalledWith('zone-prod', expect.objectContaining({ type: 'kv', options: { version: 2 } }))
+      expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('tech--zone-prod--ro', {
+        policy: 'path "zone-prod/*" { capabilities = ["read"] }',
+      })
+      expect(client.upsertAuthApproleRole).toHaveBeenCalledWith('zone-prod', expect.objectContaining({
+        token_type: 'batch',
+        token_policies: ['tech--zone-prod--ro'],
+      }))
+    })
+
+    it('falls back to tuning the mount when creation reports 400', async () => {
+      client.createSysMount.mockRejectedValue(httpError(400))
+
+      await service.upsertZone('prod')
+
+      expect(client.tuneSysMount).toHaveBeenCalledWith('zone-prod', { options: { version: 2 } })
+      expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('tech--zone-prod--ro', expect.any(Object))
+      expect(client.upsertAuthApproleRole).toHaveBeenCalled()
+    })
+
+    it('does not tune and rethrows when creation fails with another status', async () => {
+      client.createSysMount.mockRejectedValue(httpError(403))
+
+      await expect(service.upsertZone('prod')).rejects.toSatisfy((error: unknown) =>
+        error instanceof VaultError && error.kind === 'HttpError' && error.status === 403)
+      expect(client.tuneSysMount).not.toHaveBeenCalled()
+      expect(client.upsertSysPoliciesAcl).not.toHaveBeenCalled()
+    })
+
+    it('deletes mount, policy and approle for a zone', async () => {
+      await service.deleteZone('prod')
+
+      expect(client.deleteSysMounts).toHaveBeenCalledWith('zone-prod')
+      expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('tech--zone-prod--ro')
+      expect(client.deleteAuthApproleRole).toHaveBeenCalledWith('zone-prod')
+    })
+
+    it('tolerates NotFound on every zone teardown call', async () => {
+      client.deleteSysMounts.mockRejectedValue(new VaultError('NotFound', 'Not Found'))
+      client.deleteSysPoliciesAcl.mockRejectedValue(new VaultError('NotFound', 'Not Found'))
+      client.deleteAuthApproleRole.mockRejectedValue(new VaultError('NotFound', 'Not Found'))
+
+      await expect(service.deleteZone('prod')).resolves.toBeUndefined()
+    })
+
+    it('surfaces a partial failure when a teardown call fails with HttpError', async () => {
+      client.deleteAuthApproleRole.mockRejectedValue(httpError(500))
+
+      await expect(service.deleteZone('prod')).rejects.toSatisfy((error: unknown) =>
+        error instanceof VaultError && error.kind === 'HttpError' && error.status === 500)
+      // mount deletion still happened before the failure surfaced
+      expect(client.deleteSysMounts).toHaveBeenCalledWith('zone-prod')
+      expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith('tech--zone-prod--ro')
+    })
+
+    it('reports OK plugin results on the zone events', async () => {
+      const zone = makeZoneWithDetails({ slug: 'prod' })
+
+      const upsertResult = await service.handleUpsertZone(zone)
+      const deleteResult = await service.handleDeleteZone(zone)
+
+      expect(upsertResult.vault.status).toBe('OK')
+      expect(deleteResult.vault.status).toBe('OK')
+    })
+  })
+
+  describe('project secrets cleanup', () => {
+    it('lists project secrets recursively across nested folders', async () => {
+      client.listKvMetadata.mockImplementation(async (_kvName: string, path: string) => {
+        if (path === 'forge/my-project') return ['SONAR', 'envs/']
+        if (path === 'forge/my-project/envs') return ['dev/', 'prod/GITLAB']
+        if (path === 'forge/my-project/envs/dev') return ['TOKEN']
+        return []
+      })
+
+      await expect(service.listProjectSecrets('my-project')).resolves.toEqual([
+        'SONAR',
+        'envs/dev/TOKEN',
+        'envs/prod/GITLAB',
+      ])
+    })
+
+    it('returns [] when the project has no secrets', async () => {
+      client.listKvMetadata.mockResolvedValue([])
+
+      await expect(service.listProjectSecrets('my-project')).resolves.toEqual([])
+    })
+
+    it('deletes each secret under the full project path', async () => {
+      client.listKvMetadata.mockResolvedValue(['SONAR', 'GITLAB'])
+
+      await service.deleteProjectSecrets('my-project')
+
+      expect(client.delete).toHaveBeenCalledWith('forge/my-project/SONAR')
+      expect(client.delete).toHaveBeenCalledWith('forge/my-project/GITLAB')
+    })
+
+    it('tolerates NotFound on individual secret deletes', async () => {
+      client.listKvMetadata.mockResolvedValue(['SONAR'])
+      client.delete.mockRejectedValue(new VaultError('NotFound', 'Not Found'))
+
+      await expect(service.deleteProjectSecrets('my-project')).resolves.toBeUndefined()
+    })
+
+    // ponytail-bug: Promise.allSettled results are never inspected in
+    // deleteProjectSecrets, so a partial batch failure (e.g. HttpError 500) resolves
+    // successfully and the hook reports OK. Legacy fail-fast propagated the first error
+    // and returned KO (plugins/vault/src/functions.ts:37 archiveDsoProject).
+    it('silently swallows a partial batch delete failure', async () => {
+      client.listKvMetadata.mockResolvedValue(['SONAR', 'GITLAB'])
+      client.delete.mockImplementation(async (path: string) => {
+        if (path === 'forge/my-project/GITLAB') throw httpError(500)
+      })
+
+      await expect(service.deleteProjectSecrets('my-project')).resolves.toBeUndefined()
+    })
   })
 })
