@@ -1,4 +1,5 @@
 import type { TestingModule } from '@nestjs/testing'
+import type { Prisma } from '@prisma/client'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
@@ -12,8 +13,7 @@ import { EventsModule } from '../src/modules/infrastructure/events/events.module
 import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
-import { projectSelect } from '../src/modules/vault/vault-datastore.service'
-import { makeProjectWithDetails } from '../src/modules/vault/vault-testing.utils'
+import { ZoneWithDetails, projectSelect } from '../src/modules/vault/vault-datastore.service'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { VAULT_PROVISION_TIMEOUT } from './e2e-timeout'
@@ -22,6 +22,13 @@ const canRunVaultE2E
   = Boolean(process.env.E2E)
 
 const describeWithVault = describe.runIf(canRunVaultE2E)
+
+const zoneSelectForTest = {
+  id: true,
+  slug: true,
+  label: true,
+  clusters: { select: { projects: { select: { id: true } } } },
+} satisfies Prisma.ZoneSelect
 
 describeWithVault('VaultService (e2e)', () => {
   let moduleRef: TestingModule
@@ -32,6 +39,9 @@ describeWithVault('VaultService (e2e)', () => {
   let ownerId: string
   let testProjectId: string
   let testProjectSlug: string
+
+  let testZoneId: string
+  let testZoneSlug: string
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
@@ -60,11 +70,21 @@ describeWithVault('VaultService (e2e)', () => {
   })
 
   afterAll(async () => {
+    // Zone cleanup mirrors the legacy hook.zone.delete contract.
+    if (testZoneSlug) {
+      const zone = await prisma.zone.findUnique({ where: { slug: testZoneSlug } }).catch(() => null)
+      if (zone) {
+        await eventEmitter.emitAsync('zone.delete', { ...zone, clusters: [] } as unknown as ZoneWithDetails).catch(() => {})
+      }
+    }
+
+    // Project cleanup
     if (testProjectSlug) {
-      await eventEmitter.emitAsync('project.delete', makeProjectWithDetails({ slug: testProjectSlug })).catch(() => {})
+      await eventEmitter.emitAsync('project.delete', { slug: testProjectSlug } as never).catch(() => {})
     }
 
     if (prisma) {
+      await prisma.zone.deleteMany({ where: { id: testZoneId } }).catch(() => {})
       await prisma.project.deleteMany({ where: { id: testProjectId } }).catch(() => {})
       await prisma.user.deleteMany({ where: { id: ownerId } }).catch(() => {})
     }
@@ -96,8 +116,10 @@ describeWithVault('VaultService (e2e)', () => {
       select: projectSelect,
     })
 
+    // Act
     await eventEmitter.emitAsync('project.upsert', project)
 
+    // Assert
     const adminGroupName = `project-${testProjectSlug}-admin`
     const group = await vaultClient.getIdentityGroupName(adminGroupName)
     expect(group.data?.id).toBeTruthy()
@@ -109,12 +131,56 @@ describeWithVault('VaultService (e2e)', () => {
       where: { id: testProjectId },
       select: projectSelect,
     })
-
     const adminGroupName = `project-${testProjectSlug}-admin`
     expect(await vaultClient.getIdentityGroupName(adminGroupName)).toBeTruthy()
 
+    // Act
     await eventEmitter.emitAsync('project.delete', project)
 
+    // Assert: identity group was destroyed (legacy hook.project.delete contract).
     await expect(vaultClient.getIdentityGroupName(adminGroupName)).rejects.toThrow('Not Found')
   }, VAULT_PROVISION_TIMEOUT)
+
+  // Zone parity: the zone route still lives on legacy apps/server (hook.zone.*).
+  // AppEventsService has no emitZoneEvent (see app-events.service.spec.ts), so
+  // this e2e emits zone.upsert/zone.delete directly through EventEmitter2 to
+  // exercise the real Vault external contract (mount + policy + approle +
+  // tech-readonly policy) end-to-end. When the zone module migrates and adds
+  // emitZoneEvent, this same flow becomes the customer-facing path.
+  describe('zone reconciliation (external parity vs legacy hook.zone.*)', () => {
+    let zoneId: string
+    let zoneSlug: string
+
+    beforeAll(async () => {
+      zoneId = faker.string.uuid()
+      zoneSlug = faker.helpers.slugify(`zone-${faker.string.uuid()}`).slice(0, 10)
+      testZoneId = zoneId
+      testZoneSlug = zoneSlug
+      await prisma.zone.create({ data: { id: zoneId, slug: zoneSlug, label: zoneSlug } })
+    })
+
+    it('should provision the zone Vault mount, policy and approle on zone.upsert', async () => {
+      const zoneRow = await prisma.zone.findUniqueOrThrow({ where: { id: zoneId }, select: zoneSelectForTest })
+      const zone = { ...zoneRow, clusters: [] } as unknown as ZoneWithDetails
+
+      // Act
+      await eventEmitter.emitAsync('zone.upsert', zone)
+
+      // Assert: upsertZone created the zone mount's approle role; reading its
+      // role-id proves the mount + approle + tech-readonly policy landed.
+      const roleId = await vaultClient.getAuthApproleRoleRoleId(`zone-${zoneSlug}`)
+      expect(roleId).toBeTruthy()
+    }, VAULT_PROVISION_TIMEOUT)
+
+    it('should tear down the zone Vault mount, policy and approle on zone.delete', async () => {
+      const zoneRow = await prisma.zone.findUniqueOrThrow({ where: { id: zoneId }, select: zoneSelectForTest })
+      const zone = { ...zoneRow, clusters: [] } as unknown as ZoneWithDetails
+
+      await eventEmitter.emitAsync('zone.upsert', zone)
+      await eventEmitter.emitAsync('zone.delete', zone)
+
+      // Assert: mount deleted → approle role-id is gone (legacy hook.zone.delete contract).
+      await expect(vaultClient.getAuthApproleRoleRoleId(`zone-${zoneSlug}`)).rejects.toThrow('Not Found')
+    }, VAULT_PROVISION_TIMEOUT)
+  })
 })
