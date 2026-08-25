@@ -156,7 +156,10 @@ describe('gitlabService', () => {
       expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledTimes(1)
     })
 
-    it('should not delete orphan repositories if purge disabled', async () => {
+    it('should delete owned orphan repositories even when purge is disabled', async () => {
+      // Aligns with the legacy Fastify server: an explicit repository deletion drops the
+      // DB row and relies on this reconciliation to remove the GitLab project. The opt-in
+      // `purge` gate must not block that path, so owned orphans are always deleted.
       const project = makeProjectWithDetails({
         repositories: [],
       })
@@ -168,12 +171,14 @@ describe('gitlabService', () => {
       gitlab.getRepos.mockImplementation(() => (async function* () {
         yield orphanRepo
       })())
+      gitlab.deleteProjectGroupRepo.mockResolvedValue(undefined)
       gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
-      expect(gitlab.deleteProjectGroupRepo).not.toHaveBeenCalled()
+      expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledWith(project.slug, 'orphan-repo')
+      expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledTimes(1)
     })
 
     it('should not delete orphan repositories without the correct topic even if purge enabled', async () => {
