@@ -20,16 +20,35 @@ const adminRoleStore = useAdminRoleStore()
 
 const isLoggedIn = ref<boolean | undefined>(keycloak.authenticated)
 
+const REPO_URL = 'https://github.com/cloud-pi-native/console'
 const rawAppVersion = process.env.APP_VERSION
-const appVersion = rawAppVersion ? `v${rawAppVersion}` : 'vpr-dev'
-// ponytail: APP_VERSION is a semver release tag (9.24.4) or a PR deploy label (pr-2565); map to tag/PR, else releases index
-const appVersionUrl = !rawAppVersion
-  ? 'https://github.com/cloud-pi-native/console/releases'
-  : /^pr-\d+$/.test(rawAppVersion)
-    ? `https://github.com/cloud-pi-native/console/pull/${rawAppVersion.slice(3)}`
-    : /^\d+\.\d+\.\d+/.test(rawAppVersion)
-      ? `https://github.com/cloud-pi-native/console/releases/tag/v${rawAppVersion}`
-      : 'https://github.com/cloud-pi-native/console/releases'
+
+function isPullRequestPreview(version: string): boolean {
+  return /^pr-\d+$/.test(version)
+}
+function isDeployedCommit(version: string): boolean {
+  return /^[0-9a-f]{7,40}$/.test(version.replace(/^sha-/, ''))
+}
+function isReleaseTag(version: string): boolean {
+  return /^v?\d+\.\d+\.\d+/.test(version)
+}
+
+function appVersionLabel(version: string | undefined): string {
+  if (!version) return 'pr-dev'
+  if (isReleaseTag(version)) return version.startsWith('v') ? version : `v${version}`
+  return version
+}
+
+function appVersionUrlFor(version: string | undefined): string {
+  if (!version) return `${REPO_URL}/releases`
+  if (isPullRequestPreview(version)) return `${REPO_URL}/pull/${version.slice(3)}`
+  if (isDeployedCommit(version)) return `${REPO_URL}/commit/${version.replace(/^sha-/, '')}`
+  if (isReleaseTag(version)) return `${REPO_URL}/releases/tag/v${version.replace(/^v/, '')}`
+  return `${REPO_URL}/releases`
+}
+
+const appVersion = appVersionLabel(rawAppVersion)
+const appVersionUrl = appVersionUrlFor(rawAppVersion)
 
 const quickLinks = computed(() => [{
   label: isLoggedIn.value ? 'Se déconnecter' : 'Se connecter',
