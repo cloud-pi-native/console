@@ -15,7 +15,11 @@ services:
       KC_HEALTH_ENABLED: true
     command: start-dev --import-realm
     healthcheck:
-      test: [CMD, curl, --head, -fsS, "http://localhost:9000/health/ready"]
+      test:
+        [
+          'CMD-SHELL',
+          'exec 3<>/dev/tcp/0.0.0.0/9000; echo -e "GET /health/ready HTTP/1.1\nhost: 0.0.0.0:9000\n" >&3; timeout --preserve-status 1 cat <&3 | grep -m 1 status | grep -m 1 UP; ERROR=$?; exec 3<&-; exec 3>&-; exit $ERROR',
+        ]
       interval: 5s
       timeout: 5s
       retries: 10
