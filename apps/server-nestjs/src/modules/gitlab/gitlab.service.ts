@@ -398,28 +398,18 @@ export class GitlabService {
     const gitlabRepositories = await getAll(this.gitlab.getRepos(project.slug))
     span?.setAttribute('gitlab.repositories.count', gitlabRepositories.length)
 
+    // Delete console-owned repos no longer tracked (e.g. console repository deletion).
     const orphanRepos = gitlabRepositories.filter(r => isOwnedRepo(r) && !isSystemRepo(project, r))
     span?.setAttribute('orphan.repositories.count', orphanRepos.length)
 
-    if (specificallyEnabled(getProjectPluginConfig(project, PURGE_PLUGIN_KEY))) {
-      span?.setAttribute('purge.enabled', true)
-      let removedCount = 0
-      await Promise.all(orphanRepos.map(async (orphan) => {
-        await this.gitlab.deleteProjectGroupRepo(project.slug, orphan.name)
-        removedCount++
-        this.logger.log(`Removed a repository from the GitLab project (project=${project.slug}, repoName=${orphan.name})`)
-      }))
+    let removedCount = 0
+    await Promise.all(orphanRepos.map(async (orphan) => {
+      await this.gitlab.deleteProjectGroupRepo(project.slug, orphan.name)
+      removedCount++
+      this.logger.log(`Removed a repository from the GitLab project (project=${project.slug}, repoName=${orphan.name})`)
+    }))
 
-      span?.setAttribute('orphan.repositories.removed.count', removedCount)
-    } else {
-      span?.setAttribute('purge.enabled', false)
-      let warnedCount = 0
-      for (const orphan of orphanRepos) {
-        warnedCount++
-        this.logger.warn(`Repository is in GitLab but not in the project definition (purge disabled, project=${project.slug}, repoName=${orphan.name})`)
-      }
-      span?.setAttribute('managed.repositories.warned.count', warnedCount)
-    }
+    span?.setAttribute('orphan.repositories.removed.count', removedCount)
   }
 
   @StartActiveSpan()
