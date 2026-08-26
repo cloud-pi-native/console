@@ -1,5 +1,5 @@
 import type { PluginsUpdateBody } from '@cpn-console/shared'
-import type { PrismaService } from '../infrastructure/database/prisma.service'
+import { PrismaService } from '../infrastructure/database/prisma.service'
 import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
 import { BadRequestException, Injectable } from '@nestjs/common'
 
