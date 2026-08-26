@@ -310,3 +310,64 @@ describe('deleteGroup', () => {
     await expect(service.deleteGroup('gone-id')).resolves.toBeUndefined()
   })
 })
+
+describe('getOrCreateGroupByPath root resolution (issue #2518)', () => {
+  let module: TestingModule
+  let service: KeycloakClientService
+
+  const groupsUrl = `${keycloakUrl}/admin/realms/${projectRealm}/groups`
+  const rootChildrenUrl = `${keycloakUrl}/admin/realms/${projectRealm}/groups/root-id/children`
+
+  beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+  beforeEach(async () => {
+    module = await createKeycloakClientServiceTestingModule().compile()
+    service = module.get(KeycloakClientService)
+    useTokenEndpoint()
+    await module.init()
+  })
+  afterEach(async () => {
+    await module.close()
+    server.resetHandlers()
+  })
+  afterAll(() => server.close())
+
+  it('should resolve the root group by exact path, not a same-named subgroup elsewhere', async () => {
+    // A subgroup at a different path shares the slug name; the name-fallback
+    // must not pick it up as the project root (was the #2518 bug).
+    server.use(
+      http.get(groupsUrl, () => HttpResponse.json([
+        { id: 'wrong-id', name: 'myproject', path: '/console/other/myproject' },
+        { id: 'root-id', name: 'myproject', path: '/myproject' },
+      ])),
+      http.get(rootChildrenUrl, () => HttpResponse.json([])),
+    )
+
+    const result = await service.getOrCreateGroupByPath('/myproject')
+
+    expect(result).toMatchObject({ id: 'root-id', path: '/myproject' })
+  })
+
+  it('should create the root group when only a wrong-path subgroup matches the name', async () => {
+    let created = false
+    server.use(
+      http.get(groupsUrl, () => HttpResponse.json(
+        created
+          ? [{ id: 'created-id', name: 'myproject', path: '/myproject' }]
+          : [{ id: 'wrong-id', name: 'myproject', path: '/console/other/myproject' }],
+      )),
+      http.post(groupsUrl, async ({ request }) => {
+        expect(await request.json()).toEqual({ name: 'myproject' })
+        created = true
+        return new HttpResponse(null, {
+          status: 201,
+          headers: { location: `${keycloakUrl}/admin/realms/${projectRealm}/groups/created-id` },
+        })
+      }),
+      http.get(rootChildrenUrl, () => HttpResponse.json([])),
+    )
+
+    const result = await service.getOrCreateGroupByPath('/myproject')
+
+    expect(result).toMatchObject({ id: 'created-id', path: '/myproject' })
+  })
+})
