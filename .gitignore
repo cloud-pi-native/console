@@ -75,3 +75,6 @@ playwright/test-results/
 playwright/playwright-report/
 playwright/blob-report/
 playwright/playwright/.cache/
+
+# local worktrees
+.worktrees/
