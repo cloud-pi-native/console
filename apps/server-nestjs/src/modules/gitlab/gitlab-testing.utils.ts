@@ -423,8 +423,7 @@ export function makeGitbeakerRequestError(params: { message?: string, status?: n
   const response = new Response(null, { status: params.status ?? 404, statusText: params.statusText ?? 'Not Found' })
   return new GitbeakerRequestError(params.message ?? params.statusText ?? 'Error', {
     cause: {
-      // gitbeaker types `description` as string but carries the raw object at runtime.
-      description: params.description as unknown as string,
+      description: params.description as string,
       request,
       response,
     },
