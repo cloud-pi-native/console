@@ -2,19 +2,20 @@
 
 Ce document décrit comment est géré le versionnement de `console`, c'est-à-dire :
 
-- Préparer la création d'une nouvelle version de `console` au fur et à mesure des ajouts
-- Créer effectivement la nouvelle version
+- Préparer les pré-releases et les releases stables de `console`
+- Créer effectivement les versions correspondantes
 - Mettre à jour le chart Helm concerné
 - Publier les nouvelles versions de modules NPM concernés
 
 ## Incrémentation des versions
 
-Afin d'éviter une confusion entre les hotfixes, qui sont des versions `PATCH` qui ensuite rétroportées sur la branche principale (`main`), et les versions régulières qui n'ont que des commits `fix:` (et donc produisent par défaut, elles aussi, des versions `PATCH`), nous avons décidé d'adopter le protocole de versionnement suivant :
+Afin d'éviter une confusion entre les hotfixes — historiquement des versions `PATCH` rétroportées sur `main` — et les versions régulières produites par des commits `fix:`, les releases stables adoptent le protocole suivant :
 
-- Les versions régulières sur `main` sont par défaut des `MINOR` (et très rarement des `MAJOR`)
-- Les versions de hotfix d'une version en particulier sont **forcément** des `PATCH` (ceci est forcé dans le [flux de travail GitHub `Create new release`](https://github.com/cloud-pi-native/console/tree/main/.github/workflows/job-release-please.yml#L39))
+- Les versions régulières sur `main` sont par défaut des `MINOR` (et très rarement des `MAJOR`).
+- Une release candidate utilise la version stable visée, suffixée par `-rc`, puis `-rc.N` pour les candidates suivantes.
+- Les hotfixes restent des versions `PATCH`, mais leur automatisation est actuellement suspendue ; voir la section [Hotfixes](#hotfixes).
 
-La structure de versionnement de `console` est donc **`MAJOR`.`MINOR`.`HOTFIX`**
+La structure de versionnement stable de `console` est donc **`MAJOR`.`MINOR`.`HOTFIX`**. Les RC ont la forme **`MAJOR`.`MINOR`.`HOTFIX`-rc** ou **`MAJOR`.`MINOR`.`HOTFIX`-rc.`N`**.
 
 ## Schéma récapitulatif
 
@@ -22,67 +23,52 @@ Les sections suivantes vont expliciter ce schéma:
 
 ```mermaid
 gitGraph
-    commit id: "…previous commits"
-    commit id: "Add basic features"
+    commit id: "… commits sur main"
 
     branch release-please-main
     checkout release-please-main
-    commit id:"bump to v1.2.0" tag: "v1.2.0"
-
-    checkout main
-    merge  release-please-main
-    checkout  release-please-main
-    branch "hotfix/urgent-fix-for-v1.2.0"
-    commit id: "Fix stuff"
-    branch release-please-hotfix_v1.2.1
-    commit id:"bump to v1.2.1" tag: "v1.2.1"
-    checkout "hotfix/urgent-fix-for-v1.2.0"
-    merge release-please-hotfix_v1.2.1
-
-    checkout main
-    commit id: "Add features"
-    checkout release-please-main
-    commit id:"bump to v1.3.0" tag: "v1.3.0"
-    merge main
-    commit id:"bump to v1.3.0" tag: "v1.3.0"
-    checkout main
-    commit id: "More features"
-    checkout release-please-main
-    merge main
-    commit id:"bump to v1.3.0 (recreated)" tag: "v1.3.0 (recreated)"
+    commit id: "Prépare v1.3.0-rc"
     checkout main
     merge release-please-main
+    commit id: "Publie v1.3.0-rc" tag: "v1.3.0-rc"
 
-    checkout main
-    merge "hotfix/urgent-fix-for-v1.2.0"
-    commit id:"backport v1.2.1 fix onto main"
     checkout release-please-main
-    commit id:"bump to v1.4.0" tag: "v1.4.0"
-    merge main
-    commit id:"bump to v1.4.0" tag: "v1.4.0"
+    commit id: "Prépare v1.3.0"
     checkout main
     merge release-please-main
+    commit id: "Publie v1.3.0" tag: "v1.3.0"
+    commit id: "… commits du cycle suivant"
 ```
 
 ## Versionnement de Console
 
-Le flux de travail qui créé les nouvelles versions s'intitule [`create-or-update-release`](https://github.com/cloud-pi-native/console/blob/main/.github/workflows/workflow-create-or-update-release.yml) et est déclenché à chaque nouveau commit sur `main` (soit lorsqu'on fusionne une requête de fusion, soit un commit poussé en outrepassant l'interdiction de pousser sur `main`) ou sur une branche `hotfix/*`.
+Le flux de travail [`create-or-update-release`](https://github.com/cloud-pi-native/console/blob/main/.github/workflows/workflow-create-or-update-release.yml) est déclenché à chaque nouveau commit sur `main`.
 
-Le flux de travail utilise [release-please-action](https://github.com/googleapis/release-please-action) pour automatiquement générer les tags Git ainsi que les nouvelles versions sur GitHub. À chaque fois que du code est poussé dans la branche `main` ou un branche `hotfix/*`, une requête de fusion de version est créée en analysant les messages de commits pour déterminer le numéro de version à créer (`PATCH`, `MINOR`, ou `MAJOR`). Si une requête de fusion de nouvelle version existe déjà, elle est mise à jour afin de refléter les nouveaux changements ajoutés à la future nouvelle version.
+Il utilise le job réutilisable [`Next Prerelease and Release`](https://github.com/cloud-pi-native/console/blob/main/.github/workflows/job-release-please.yml) et [release-please-action](https://github.com/googleapis/release-please-action). Deux configurations isolent les états de version :
 
-Les différent types de commits (`chore:`, `feat:`, `fix:` etc.) vont alimenter différentes sections de la `CHANGELOG`. Ces sections sont décrites dans la configuration de release-please, [`./release-please-config.json`](./release-please-config.json)
+- [`.github/prerelease-please-config.json`](./.github/prerelease-please-config.json) et son [manifest](./.github/prerelease-please-manifest.json) gèrent les RC ;
+- [`.github/release-please-config.json`](./.github/release-please-config.json) et son [manifest](./.github/release-please-manifest.json) gèrent les releases stables. La release stable met aussi à jour le manifest de pré-release afin d'initialiser le cycle suivant depuis cette version.
 
-Lorsqu'une requête de fusion de version (sur `main` ou `hotfix/*`) est fusionnée, les images de conteneur des applications (`client`, `server`, etc.) sont alors créées et hébergées dans la [registry Github associée au dépôt](https://github.com/orgs/cloud-pi-native/packages?repo_name=console) avec les tags appropriés (qui reflètent les tags git concernés).
+À chaque exécution, le job `prepare` publie d'abord toute requête de fusion de release déjà fusionnée, puis crée ou met à jour la prochaine requête de fusion. Le cycle est le suivant :
 
-> Seuls les tags "complets" (`vX.Y.Z`) sont immutables, les tags "partiels" (`vX` et `vX.Y`) sont recréés pour relier la dernière version concernée. C'est pour ça que lorsque vous tirez les changements de `main` il est recommandé de faire un `git pull --tags --force` afin de forcer la recréation de vos tags locaux pour ces tags partiels.
+1. Les commits sur `main` créent ou mettent à jour une MR de pré-release.
+2. La fusion de cette MR crée la release GitHub et le tag `vX.Y.Z-rc` ; les RC suivantes de la même version sont taguées `vX.Y.Z-rc.N`.
+3. Après la création d'une RC, une MR de release stable `vX.Y.Z` est créée ou mise à jour.
+4. La fusion de cette MR crée la release GitHub stable `vX.Y.Z`, puis prépare la prochaine MR de pré-release.
+
+Les différents types de commits (`chore:`, `feat:`, `fix:`, etc.) alimentent les sections du `CHANGELOG.md` selon les deux configurations release-please ci-dessus.
+
+Lorsqu'une RC ou une release stable est créée, les images de conteneur des applications (`client`, `server`, etc.) sont publiées dans la [registry GitHub du dépôt](https://github.com/orgs/cloud-pi-native/packages?repo_name=console) avec le tag complet correspondant. Une release stable met aussi à jour les tags partiels `vX` et `vX.Y` ; les RC ne les déplacent jamais.
+
+> Les tags complets (`vX.Y.Z`, `vX.Y.Z-rc` et `vX.Y.Z-rc.N`) sont immutables. Seuls les tags partiels stables (`vX` et `vX.Y`) sont recréés pour référencer la dernière release stable. Après une release stable, il est recommandé d'exécuter `git pull --tags --force` afin de recréer localement ces tags partiels.
 
 ## Versionnement du chart Helm `dso-console`
 
 Le déploiement de `console` se fait préférablement à l'aide de son chart Helm, nommé [`dso-console`](https://github.com/cloud-pi-native/helm-charts/tree/main/charts/dso-console).
 
-La dernière étape du flux de travail de création de nouvelles versions (cf. section ci-dessus) est la création automatique d'une requête de fusion dans le dépôt `helm-charts` pour la mise à jour du chart Helm `dso-console`. Une fusion manuelle sur ce dépôt est alors nécessaire pour déclencher la publication de la nouvelle version du chart Helm (embarquant donc la nouvelle version de `console`). Exemple d'une telle requête de fusion de nouvelle version du chart Helm : https://github.com/cloud-pi-native/helm-charts/pull/204.
+Lorsqu'une RC ou une release stable est créée, le flux de travail déclenche automatiquement une requête de fusion dans le dépôt `helm-charts` afin de mettre à jour le chart Helm `dso-console` avec l'`APP_VERSION` complète correspondante. Une fusion manuelle sur ce dépôt reste nécessaire pour publier la nouvelle version du chart. Exemple de requête de fusion : https://github.com/cloud-pi-native/helm-charts/pull/204.
 
-> Les versions "régulières" (`MAJOR` ou `MINOR` depuis `main`) et les versions "hotfixes" (`PATCH` depuis `hotfix/*`) produisent le même type de requête de fusion côté `helm-charts`, car du point de vue de ce dépôt toute mise à jour de l'application est un `PATCH` bump côté chart.
+> Une RC et une release stable produisent le même type de requête de fusion côté `helm-charts`. Le chart référence cependant l'`APP_VERSION` complète : une RC conserve donc son suffixe `-rc` ou `-rc.N`.
 
 ## Versionnement des modules NPM
 
@@ -96,15 +82,6 @@ Autant que faire se peut il vaut mieux privilégier le "Fix Forward" avec de nou
 
 Ceci étant dit, il arrivera, hélas, qu'un hotfix soit nécessaire sur une version livrée.
 
-Voici donc le processus compatible avec l'utilisation de `release-please`:
-
-- Se placer localement sur le tag de la version concernée: `$ git checkout v1.2.0` (`v1.2.0` est ici la version à hotfixer)
-- En tirer une branche dédiée au hotfix: `$ git checkout -b hotfix/my-urgent-hotfix-for-v1.2.0` (Note: Il n'est pas nécessaire de spécifier la version dans le nom de la branche, mais ça peut aider à la lecture et ainsi confirmer la version concernée)
-- Faire les modifications nécessaires, committer, etc.
-- Pousser la nouvelle branche sur le dépôt Github
-- ⚠ Si vous voulez faire une "preview" de cette branche il faudra très probablement créer une **autre branche** qui cible `main` et y résoudre les conflits avant de faire une `preview`. En effet il est fortement probable que si vous faites un hotfix, la branche `main` aura déjà une nouvelle version (sinon vous ne feriez pas un hotfix, vous feriez simplement une nouvelle version 😁). Or il faut savoir que [Github ne permet pas l'exécution des workflows en cas de conflits](https://github.com/orgs/community/discussions/26304). Donc si vous voulez une `preview` du hotfix il faudra une MR dédiée, et dont vous aurez résolu les hotfixes (ça devrait être normalement limité aux fichiers contenant la version comme `CHANGELOG.md`). C'est pénible, mais c'est comme ça.
-- Une fois la nouvelle branche poussée, `release-please` va être déclenché par le flux de travail Github `create-or-update-release` afin de créer une requête de fusion pour la nouvelle version hotfixée (avec comme cible la branche de hotfix). Il est d'ailleurs à noter que dans le cas d'un hotfix **on ne fait qu'une montée du "PATCH"** (ici on obtiendra donc la version `v1.2.1`, qui est alors le premier hotfix de la version `v1.2.0`) quelque soit les commits (donc même un `feat!` ne fera pas de montée majeure)
-- Valider la MR de version hotfixée (créée donc par `release-please`) à l'aide du flux de travail Github `Continuous Integration`
-- Une fois la MR de version hotfixée validée et fusionnée, la nouvelle version est créée et, comme pour les versions traditionnelles, une requête de fusion est crée dans le dépôt `helm-charts` pour avoir là aussi une version hotfixée (mais, pour le chart Helm, c'est considéré comme une version classique)
-- Il faudra ensuite faire des picorages (`git cherry-pick`) ou une MR de la branche de hotfix vers `main` afin d'intégrer le ou les commits de hotfix dans la prochaine version officielle
-- ⚠ Il faut retagger le commit de hotfix quand on a backporté le fix + le commit de bump de la release hotfix sur `main`, car sinon la Release côté GitHub pointe vers un tag dont le commit n'est pas sur `main` (le SHA a logiquement changé lorsqu'il a été backporté). Refaire donc localement un `git tag vX.Y.Z commit-de-release-backporté-sur-main` et pusher avec `git push --tags --force` pour forcer la mise à jour du tag. SI VOUS NE FAITES PAS ÇA LES CHANGELOG VONT TOTALEMENT PARTIR EN VRILLE ⚠
+> ⚠ Les branches `hotfix/*` ne déclenchent actuellement plus le flux `create-or-update-release`. La procédure automatisée de hotfix est donc suspendue.
+>
+> En attendant son rétablissement, un correctif destiné à une version livrée doit être intégré à `main` et livré via le prochain cycle de pré-release puis de release stable. Il suit donc la stratégie de « Fix Forward ».
