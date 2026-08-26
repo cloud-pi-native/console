@@ -33,6 +33,7 @@ import {
   SPECIAL_REPO_NAMES,
   TOKEN_DESCRIPTION,
   TOPIC_PLUGIN_MANAGED,
+  TOPIC_SYSTEM_MANAGED,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
 import { generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged, hasGitbeakerCause, isGitbeakerNotFound } from './gitlab.utils'
@@ -42,6 +43,12 @@ export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
 type With<T, K extends keyof T> = T & Required<Pick<T, K>>
 export type CondensedGroupSchemaWith<T extends keyof CondensedGroupSchema> = With<CondensedGroupSchema, T>
 export type CondensedProjectSchemaWith<T extends keyof CondensedProjectSchema> = With<CondensedProjectSchema, T>
+
+export interface UpsertProjectGroupRepoOptions {
+  description?: string
+  ciConfigPath?: string
+  extraTopics?: string[]
+}
 export type EditUserOptionsWith<T extends keyof EditUserOptions> = With<EditUserOptions, T>
 type UserSchema = SimpleUserSchema | ExpandedUserSchema
 
@@ -460,13 +467,14 @@ export class GitlabClientService {
     }
   }
 
-  async upsertProjectGroupRepo(projectSlug: string, repoName: string, description?: string, ciConfigPath?: string) {
+  async upsertProjectGroupRepo(projectSlug: string, repoName: string, options: UpsertProjectGroupRepoOptions = {}) {
+    const { description, ciConfigPath, extraTopics = [] } = options
     const fullPath = `${projectSlug}/${repoName}`
     const repo = await this.getOrCreateProjectGroupRepo(projectSlug, fullPath, ciConfigPath)
     const updated = await this.client.Projects.edit(repo.id, {
       name: repoName,
       path: repoName,
-      topics: [TOPIC_PLUGIN_MANAGED],
+      topics: [TOPIC_PLUGIN_MANAGED, ...extraTopics],
       description,
       ciConfigPath: ciConfigPath ?? '',
     })
@@ -585,7 +593,7 @@ export class GitlabClientService {
   }
 
   async upsertProjectMirrorRepo(projectSlug: string) {
-    return this.upsertProjectGroupRepo(projectSlug, MIRROR_REPO_NAME)
+    return this.upsertProjectGroupRepo(projectSlug, MIRROR_REPO_NAME, { extraTopics: [TOPIC_SYSTEM_MANAGED] })
   }
 
   async getProjectToken(group: CondensedGroupSchemaWith<'id'>, projectSlug: string) {

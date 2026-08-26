@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto'
 import { AccessLevel } from '@gitbeaker/core'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { stringify } from 'yaml'
-import { TOPIC_PLUGIN_MANAGED } from './gitlab.constants'
+import { TOPIC_PLUGIN_MANAGED, TOPIC_SYSTEM_MANAGED } from './gitlab.constants'
 
 export type ProjectAccessLevel = Exclude<AccessLevel, (typeof AccessLevel)['ADMIN']>
 
@@ -219,7 +219,11 @@ export function isOwnedRepo(repo: ProjectSchema) {
 }
 
 export function isSystemRepo(project: ProjectWithDetails, repo: ProjectSchema) {
-  return project.repositories.some(r => r.internalRepoName === repo.name)
+  // Console-owned plumbing repos (infra-apps, mirror, observability values, ...) carry the
+  // `system-managed` topic and are never listed in project.repositories; protect them from purge.
+  // Topic-based instead of a hardcoded name list so any plugin can opt its system repo in.
+  return repo.topics?.includes(TOPIC_SYSTEM_MANAGED)
+    || project.repositories.some(r => r.internalRepoName === repo.name)
 }
 
 export function getProjectPluginConfig(project: ProjectWithDetails, key: string) {

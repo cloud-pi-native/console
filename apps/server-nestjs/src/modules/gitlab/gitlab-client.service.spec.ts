@@ -287,7 +287,7 @@ describe('gitlab-client', () => {
       gitlabApi.Projects.show.mockResolvedValue(makeProjectSchema({ id: repoId }))
       gitlabApi.Projects.edit.mockResolvedValue(makeProjectSchema({ id: repoId, name: repoName }))
 
-      const result = await service.upsertProjectGroupRepo(projectSlug, repoName, 'desc')
+      const result = await service.upsertProjectGroupRepo(projectSlug, repoName, { description: 'desc' })
 
       expect(result).toEqual(expect.objectContaining({ id: repoId, name: repoName }))
       expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(repoId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
