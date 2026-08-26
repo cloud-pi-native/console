@@ -239,7 +239,10 @@ export function isGitbeakerNotFound(error: unknown): error is GitbeakerRequestEr
 }
 
 export function hasGitbeakerCause(error: unknown, substring: string): error is GitbeakerRequestError {
-  return error instanceof GitbeakerRequestError
-    && typeof error.cause?.description === 'string'
-    && error.cause.description.includes(substring)
+  if (!(error instanceof GitbeakerRequestError)) return false
+  // gitbeaker types `cause.description` as a string but copies the raw GitLab `message` field,
+  // which can be an object on validation errors (e.g. {"path": ["has already been taken"]}).
+  const description = error.cause?.description
+  if (typeof description === 'string') return description.includes(substring)
+  return JSON.stringify(description ?? '').includes(substring)
 }
