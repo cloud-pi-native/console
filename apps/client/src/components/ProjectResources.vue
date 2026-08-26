@@ -120,15 +120,16 @@ async function deleteRepo(repoId: Repo['id']) {
 }
 
 async function syncRepository() {
-  if (!selectedRepo.value) return
+  const repo = selectedRepo.value
+  if (!repo) return
   if (!isAllSyncing.value && !branchName.value) branchName.value = defaultBranchName
   await props.project.Repositories.sync(
-    selectedRepo.value.id,
+    repo.id,
     isAllSyncing.value
       ? { syncAllBranches: true }
       : { syncAllBranches: false, branchName: branchName.value },
   )
-  snackbarStore.setMessage(`Travail de synchronisation lancé pour le dépôt ${selectedRepo.value.internalRepoName}`)
+  snackbarStore.setMessage(`Travail de synchronisation lancé pour le dépôt ${repo.internalRepoName}`)
 }
 
 // Add locale-specific relative date/time formatting rules.
