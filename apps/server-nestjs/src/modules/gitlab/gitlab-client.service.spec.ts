@@ -715,6 +715,49 @@ describe('gitlab-client', () => {
         ciConfigPath: expect.anything(),
       }))
     })
+
+    it('should reload the existing repo when create fails with an object description', async () => {
+      const subGroupPath = 'project-1'
+      const repoName = 'repo-1'
+      const fullPath = `${subGroupPath}/${repoName}`
+      const projectId = 789
+      const groupId = 456
+      const rootId = 123
+
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
+      gitlabProjectsAllMock.mockResolvedValueOnce({
+        data: [],
+        paginationInfo: { next: null },
+      })
+
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: rootId, full_path: 'forge' }],
+        paginationInfo: { next: null },
+      })
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: groupId, name: subGroupPath, parent_id: rootId, full_path: `forge/${subGroupPath}` }],
+        paginationInfo: { next: null },
+      })
+
+      // GitLab validation errors carry an object `message`, which gitbeaker copies
+      // verbatim into `cause.description` despite the string type.
+      gitlabApi.Projects.create.mockRejectedValueOnce(makeGitbeakerRequestError({
+        status: 400,
+        statusText: 'Bad Request',
+        description: {
+          'project_namespace.name': ['has already been taken'],
+          name: ['has already been taken'],
+          path: ['has already been taken'],
+        },
+      }))
+      gitlabApi.Projects.show.mockResolvedValue(makeProjectSchema({ id: projectId, name: repoName }))
+
+      const result = await service.getOrCreateProjectGroupRepo(subGroupPath, fullPath)
+
+      expect(gitlabApi.Projects.show).toHaveBeenCalledWith(`forge/${fullPath}`)
+      expect(result).toEqual(expect.objectContaining({ id: projectId }))
+    })
   })
 
   describe('getFile', () => {
