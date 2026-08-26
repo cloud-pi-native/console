@@ -1,4 +1,5 @@
 import type { ConfigType } from '@nestjs/config'
+import type { HarborRepository } from './registry-client.service'
 import { faker } from '@faker-js/faker'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
@@ -97,5 +98,36 @@ describe('registryService', () => {
     const res = await service.getProjectByName('myproj')
 
     expect(res).toMatchObject({ status: HttpStatus.OK, data: { project_id: 123 } })
+  })
+
+  it('should list repositories with page_size', async () => {
+    server.use(
+      http.get(`${harborUrl}/api/v2.0/projects/:projectName/repositories`, async ({ request }) => {
+        expect(request.url).toContain('page_size=100')
+        return HttpResponse.json([{ name: 'myproj/repo-a' }])
+      }),
+    )
+
+    const res: HarborRepository[] = []
+    for await (const item of service.getRepositories('myproj')) {
+      res.push(item)
+    }
+
+    expect(res).toMatchObject([{ name: 'myproj/repo-a' }])
+  })
+
+  it('should delete a repository by name', async () => {
+    server.use(
+      http.delete(`${harborUrl}/api/v2.0/projects/:projectName/repositories/:repositoryName`, async ({ request, params }) => {
+        expect(request.method).toBe('DELETE')
+        expect(params.projectName).toBe('myproj')
+        expect(params.repositoryName).toBe('repo-a')
+        return new HttpResponse(null, { status: HttpStatus.NO_CONTENT })
+      }),
+    )
+
+    const res = await service.deleteRepository('myproj', 'repo-a')
+
+    expect(res).toMatchObject({ status: HttpStatus.NO_CONTENT })
   })
 })

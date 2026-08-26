@@ -42,6 +42,8 @@ describe('registryService', () => {
       ensureGroupMember: vi.fn(),
       removeGroupMember: vi.fn().mockResolvedValue(makeNoContent()),
       deleteProjectByName: vi.fn().mockResolvedValue(makeNoContent()),
+      getRepositories: vi.fn(async function* () {}),
+      deleteRepository: vi.fn().mockResolvedValue(makeNoContent()),
     })
     datastore = mockDeep<RegistryDatastoreService>({
       getAdminPluginConfig: vi.fn().mockResolvedValue(null),
@@ -308,6 +310,33 @@ describe('registryService', () => {
       const project = makeProjectWithDetails()
       await service.handleDelete(project)
       expect(client.deleteProjectByName).toHaveBeenCalledWith(project.slug)
+    })
+
+    it('should purge repositories before deleting the project', async () => {
+      const project = makeProjectWithDetails()
+      client.getRepositories.mockImplementation(async function* () {
+        yield { name: `${project.slug}/repo-a` }
+        yield { name: `${project.slug}/repo-b` }
+      })
+
+      await service.handleDelete(project)
+
+      expect(client.deleteRepository).toHaveBeenCalledTimes(2)
+      expect(client.deleteRepository).toHaveBeenCalledWith(project.slug, 'repo-a')
+      expect(client.deleteRepository).toHaveBeenCalledWith(project.slug, 'repo-b')
+      expect(client.deleteProjectByName).toHaveBeenCalledWith(project.slug)
+    })
+
+    it('should surface a Harbor rejection as a KO result', async () => {
+      const project = makeProjectWithDetails()
+      client.deleteProjectByName.mockResolvedValueOnce({ status: HttpStatus.PRECONDITION_FAILED, data: null })
+
+      await expect(service.handleDelete(project)).resolves.toEqual({
+        harbor: expect.objectContaining({
+          status: 'KO',
+          message: 'Harbor delete project failed (412)',
+        }),
+      })
     })
 
     it('should not delete project when it does not exist', async () => {

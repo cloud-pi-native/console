@@ -1,5 +1,36 @@
 import type { ProjectWithDetails } from './registry-datastore.service'
+import type { RegistryResponse } from './registry-http-client.service'
 import { removeTrailingSlash } from '@cpn-console/shared'
+import { HttpStatus } from '@nestjs/common'
+
+// Whether a Harbor response signals an entity already existing (race collision):
+// a 409 conflict on the create call.
+export function isRegistryConflict(response: RegistryResponse<unknown>): boolean {
+  return response.status === HttpStatus.CONFLICT
+}
+
+// Runs an idempotent write: tries `create`, and on a Harbor race collision
+// reloads via `reload` and returns the existing state instead of failing.
+// `onCollision` is invoked once when a collision is detected. If the reload
+// finds nothing, the error is rethrown so genuine failures are not swallowed.
+export async function ensure<T>({
+  create,
+  reload,
+  onCollision,
+}: {
+  create: () => Promise<RegistryResponse<T>>
+  reload: () => Promise<void>
+  onCollision?: (response: RegistryResponse<T>) => void
+}): Promise<void> {
+  const created = await create()
+  if (created.status >= HttpStatus.BAD_REQUEST) {
+    if (isRegistryConflict(created)) {
+      onCollision?.(created)
+      return reload()
+    }
+    throw new Error(`Harbor request failed (${created.status})`)
+  }
+}
 
 export function createProjectSlugCacheKey(projectId: string) {
   return `registry:project-slug:${projectId}`
