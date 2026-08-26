@@ -937,6 +937,28 @@ describe('gitlab-client', () => {
       expect(gitlabApi.Users.create).toHaveBeenCalledTimes(1)
     })
 
+    it('should tolerate a non-string cause.description on 409 (regression: .includes is not a function, #2544)', async () => {
+      // GitLab validation errors serialize `message` as an object; gitbeaker copies
+      // it verbatim into cause.description despite typing it as string.
+      const email = 'user@example.com'
+      const username = 'user'
+      const name = 'User Name'
+
+      gitlabApi.Users.create.mockRejectedValueOnce(
+        new GitbeakerRequestError('Error', {
+          cause: {
+            description: { 'project_namespace.name': ['has already been taken'] } as unknown as string,
+            request: new Request('https://gitlab.internal.example/api'),
+            response: new Response(null, { status: 400 }),
+          },
+        }),
+      )
+
+      await expect(service.createUser({ email, username, name }))
+        .rejects.toThrow(GitbeakerRequestError)
+      expect(gitlabApi.Users.all).not.toHaveBeenCalled()
+    })
+
     it('should propagate a non-collision error', async () => {
       const email = 'user@example.com'
       const username = 'user'
