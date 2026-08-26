@@ -2,6 +2,7 @@ import type { RegistryQuery, RegistryResponse } from './registry-http-client.ser
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { RegistryHttpClientService } from './registry-http-client.service'
 import { ROBOT_LIST_PAGE_SIZE } from './registry.constants'
+import { ensure } from './registry.utils'
 
 export const roAccess: HarborAccess[] = [
   { resource: 'repository', action: 'pull' },
@@ -58,6 +59,10 @@ export interface HarborGroupMemberRequest {
     group_name: string
     group_type: number
   }
+}
+
+export interface HarborRepository {
+  name?: string
 }
 
 export interface HarborProjectQuota {
@@ -141,6 +146,16 @@ export class RegistryClientService {
     })
   }
 
+  getRepositories(projectName: string): AsyncGenerator<HarborRepository> {
+    return this.paginate<HarborRepository>(`projects/${encodeURIComponent(projectName)}/repositories`)
+  }
+
+  async deleteRepository(projectName: string, repositoryName: string) {
+    return this.http.fetch(`projects/${encodeURIComponent(projectName)}/repositories/${encodeURIComponent(repositoryName)}`, {
+      method: 'DELETE',
+    })
+  }
+
   async listQuotas(projectId: number) {
     return this.http.fetch<HarborProjectQuota[]>(`quotas?reference_id=${encodeURIComponent(String(projectId))}`, {
       method: 'GET',
@@ -215,21 +230,20 @@ export class RegistryClientService {
   }
 
   async ensureRetention(projectName: string, body: HarborRetentionPolicy) {
-     const created = await this.createRetention(body)
-     if (created.status === HttpStatus.CONFLICT) {
-       const racedId = await this.getRetentionId(projectName)
-       if (racedId) {
-         const result = await this.updateRetention(racedId, body)
-         if (result.status >= HttpStatus.BAD_REQUEST) {
-           throw new Error(`Harbor retention policy failed (${result.status})`)
-         }
-       }
-       return
-     }
-     if (created.status >= HttpStatus.BAD_REQUEST) {
-       throw new Error(`Harbor retention policy failed (${created.status})`)
-     }
-   }
+    return ensure({
+      create: () => this.createRetention(body),
+      reload: async () => {
+        const racedId = await this.getRetentionId(projectName)
+        if (racedId) {
+          const result = await this.updateRetention(racedId, body)
+          if (result.status >= HttpStatus.BAD_REQUEST) {
+            throw new Error(`Harbor retention policy failed (${result.status})`)
+          }
+        }
+      },
+    })
+  }
+
   async createRetention(body: HarborRetentionPolicy) {
     return this.http.fetch('retentions', {
       method: 'POST',
@@ -244,7 +258,7 @@ export class RegistryClientService {
     })
   }
 
-  private async* paginate<T>(path: string, query: RegistryQuery): AsyncGenerator<T> {
+  private async* paginate<T>(path: string, query?: RegistryQuery): AsyncGenerator<T> {
     for (let page = 1; ; page++) {
       const response = await this.http.fetch<T[]>(path, {
         method: 'GET',
