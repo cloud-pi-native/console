@@ -10,7 +10,6 @@ on:
   push:
     branches:
       - main
-      - hotfix/*
 
 env:
   REGISTRY: ghcr.io
@@ -41,14 +40,15 @@ jobs:
     uses: ./.github/workflows/job-build.yml
     # We want to build for every push on `main` to update the `latest` tag
     # which will then be automatically deployed on our Integration environment(s)
-    if: ${{ needs.release.outputs.release-created == 'true' || github.ref == format('refs/heads/{0}', 'main') }}
+    if: ${{ github.ref == format('refs/heads/{0}', 'main') }}
     needs:
       - expose-vars
       - release
     with:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
-      TAG: ${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }}
+      RELEASE_CREATED: ${{ needs.release.outputs.releases-created }}
+      TAG: ${{ needs.release.outputs.tag-name }}
       MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
       MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
       PATCH_TAG: ${{ needs.release.outputs.patch-tag }}
@@ -60,14 +60,15 @@ jobs:
 
   build-arm64:
     uses: ./.github/workflows/job-build.yml
-    if: ${{ needs.release.outputs.release-created == 'true' }}
+    if: ${{ needs.release.outputs.release-created == 'true' || needs.release.outputs.prerelease-created == 'true' }}
     needs:
       - expose-vars
       - release
     with:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
-      TAG: ${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }}
+      RELEASE_CREATED: ${{ needs.release.outputs.releases-created }}
+      TAG: ${{ needs.release.outputs.tag-name }}
       MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
       MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
       PATCH_TAG: ${{ needs.release.outputs.patch-tag }}
@@ -79,7 +80,7 @@ jobs:
 
   update-chart:
     runs-on: ubuntu-latest
-    if: ${{ needs.release.outputs.release-created == 'true' }}
+    if: ${{ needs.release.outputs.prerelease-created == 'true' || needs.release.outputs.release-created == 'true' }}
     needs:
       - expose-vars
       - release
@@ -93,8 +94,9 @@ jobs:
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: helm-charts
+
       - name: Trigger helm-charts update
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
-          gh workflow --repo cloud-pi-native/helm-charts run update-chart.yaml -f APP_VERSION=${{ needs.release.outputs.major-tag }}.${{ needs.release.outputs.minor-tag }}.${{ needs.release.outputs.patch-tag }} -f CHART_NAME=dso-console
+          gh workflow --repo cloud-pi-native/helm-charts run update-chart.yaml -f APP_VERSION=${{ needs.release.outputs.tag-name }} -f CHART_NAME=dso-console

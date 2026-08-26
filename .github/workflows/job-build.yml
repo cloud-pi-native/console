@@ -19,6 +19,9 @@ on:
       BUILD_ARM64:
         required: true
         type: boolean
+      RELEASE_CREATED:
+        required: false
+        type: boolean
       TAG:
         required: true
         type: string
@@ -202,8 +205,8 @@ jobs:
           tags: |
             type=raw,value=${{ needs.matrix.outputs.lower-branch }},enable=${{ github.head_ref != 'main' }}
             type=raw,value=${{ inputs.TAG }},enable=${{ inputs.TAG != '' && inputs.TAG != '..' }}
-            type=raw,value=${{ inputs.MAJOR_TAG }}.${{ inputs.MINOR_TAG }},enable=${{ inputs.MAJOR_TAG != '' && inputs.MINOR_TAG != '' }}
-            type=raw,value=${{ inputs.MAJOR_TAG }},enable=${{ inputs.MAJOR_TAG != '' }}
+            type=raw,value=v${{ inputs.MAJOR_TAG }}.${{ inputs.MINOR_TAG }},enable=${{ inputs.MAJOR_TAG != '' && inputs.MINOR_TAG != '' && inputs.RELEASE_CREATED  }}
+            type=raw,value=v${{ inputs.MAJOR_TAG }},enable=${{ inputs.MAJOR_TAG != '' && inputs.RELEASE_CREATED }}
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
 
       - name: Login to GitHub Container Registry

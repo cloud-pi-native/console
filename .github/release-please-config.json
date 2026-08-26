@@ -1,0 +1,49 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "node",
+  "versioning": "always-bump-minor",
+
+  "prerelease": false,
+
+  "pull-request-title-pattern": "chore${scope}: Release${component} v${version}",
+
+  "changelog-type": "default",
+  "changelog-sections": [
+    { "type": "feat", "hidden": false, "section": "Features" },
+    { "type": "feature", "hidden": false, "section": "Features" },
+    { "type": "fix", "hidden": false, "section": "Bug Fixes" },
+    { "type": "chore", "hidden": false, "section": "Miscellaneous Chores" },
+    { "type": "build", "hidden": false, "section": "Miscellaneous Chores" },
+    { "type": "docs", "hidden": false, "section": "Docs" },
+    { "type": "refactor", "hidden": false, "section": "Refactoring" },
+    { "type": "revert", "hidden": false, "section": "Reverted commits" }
+  ],
+
+  "packages": {
+    ".": {
+      "package-name": "console",
+      "include-component-in-tag": false,
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "apps/client/package.json",
+          "jsonpath": "$.version"
+        }, {
+          "type": "json",
+          "path": "apps/server/package.json",
+          "jsonpath": "$.version"
+        }, {
+          "type": "json",
+          "path": "apps/server-nestjs/package.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": ".github/prerelease-please-manifest.json",
+          "jsonpath": "$[\".\"]"
+        }
+      ]
+    }
+  }
+
+}
