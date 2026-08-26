@@ -418,12 +418,13 @@ export function makeRepositoryTreeSchema(overrides: Partial<RepositoryTreeSchema
   } satisfies RepositoryTreeSchema
 }
 
-export function makeGitbeakerRequestError(params: { message?: string, status?: number, statusText?: string, description: string }) {
+export function makeGitbeakerRequestError(params: { message?: string, status?: number, statusText?: string, description: string | Record<string, string[]> }) {
   const request = new Request('https://gitlab.internal.example/api')
   const response = new Response(null, { status: params.status ?? 404, statusText: params.statusText ?? 'Not Found' })
   return new GitbeakerRequestError(params.message ?? params.statusText ?? 'Error', {
     cause: {
-      description: params.description,
+      // gitbeaker types `description` as string but carries the raw object at runtime.
+      description: params.description as unknown as string,
       request,
       response,
     },
