@@ -1,7 +1,7 @@
-import z from 'zod'
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation'
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
 import type { ProjectWithDetails } from './keycloak-datastore.service'
+import z from 'zod'
 import { CONSOLE_GROUP_NAME } from './keycloak.constants'
 
 type With<T, K extends keyof T> = T & Required<Pick<T, K>>

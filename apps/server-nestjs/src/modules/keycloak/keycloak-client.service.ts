@@ -8,7 +8,6 @@ import type { GroupRepresentationWith, GroupRepresentationWithIdNamePath } from 
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Interval } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
-import z from 'zod'
 import { keycloakConfigFactory } from '../../config/keycloak.config'
 import { getErrorResponseStatus } from '../../utils/http.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
