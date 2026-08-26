@@ -10,6 +10,7 @@ import { trace } from '@opentelemetry/api'
 import { observabilityConfigFactory } from '../../config/observability.config'
 import { getErrorResponseStatus } from '../../utils/http.utils'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
+import { TOPIC_SYSTEM_MANAGED } from '../gitlab/gitlab.constants'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { KeycloakClientService } from '../keycloak/keycloak-client.service'
 import { capturePluginResult } from '../plugin/plugin.utils'
@@ -100,7 +101,7 @@ export class ObservabilityService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.verbose(`Ensuring observability project repository for ${project.slug}`)
-    await this.gitlab.upsertProjectGroupRepo(project.slug, OBSERVABILITY_REPOSITORY)
+    await this.gitlab.upsertProjectGroupRepo(project.slug, OBSERVABILITY_REPOSITORY, { extraTopics: [TOPIC_SYSTEM_MANAGED] })
   }
 
   @StartActiveSpan()
@@ -114,7 +115,7 @@ export class ObservabilityService {
   }
 
   private async syncChartFiles(project: ProjectWithDetails) {
-    const projectRepo = await this.gitlab.upsertProjectGroupRepo(project.slug, OBSERVABILITY_REPOSITORY)
+    const projectRepo = await this.gitlab.upsertProjectGroupRepo(project.slug, OBSERVABILITY_REPOSITORY, { extraTopics: [TOPIC_SYSTEM_MANAGED] })
     const actions = await this.buildChartActions(projectRepo)
     await this.gitlab.maybeCreateCommit(projectRepo, 'ci: :robot_face: Sync observability chart', actions)
   }
