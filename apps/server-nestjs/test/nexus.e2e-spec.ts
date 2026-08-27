@@ -22,6 +22,7 @@ import { generateNexusCredPath } from '../src/modules/nexus/nexus.utils'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
+import { NEXUS_SYNC_TIMEOUT } from './constants'
 
 const canRunNexusE2E
   = Boolean(process.env.E2E)
@@ -146,7 +147,7 @@ describeWithNexus('NexusService (e2e)', () => {
     const secret = await vaultService.read(vaultPath)
     expect(secret.data?.NEXUS_USERNAME).toBe(testProjectSlug)
     expect(secret.data?.NEXUS_PASSWORD).toBeTruthy()
-  })
+  }, NEXUS_SYNC_TIMEOUT)
 
   it('should remove project from Nexus on delete', async () => {
     const project = await prisma.project.findUniqueOrThrow({
@@ -168,5 +169,5 @@ describeWithNexus('NexusService (e2e)', () => {
 
     const users = await nexusClient.getSecurityUsers(testProjectSlug)
     expect(users.some(u => u.userId === testProjectSlug)).toBe(false)
-  })
+  }, NEXUS_SYNC_TIMEOUT)
 })
