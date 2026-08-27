@@ -1,5 +1,40 @@
 # Changelog
 
+## [9.25.0](https://github.com/cloud-pi-native/console/compare/v9.24.4...v9.25.0) (2026-08-27)
+
+
+### Features
+
+* **sonarqube:** provision SONAR_TOKEN as GitLab group CI variable ([201b64f](https://github.com/cloud-pi-native/console/commit/201b64fbfe0526becca903f5ce38725cfc7b5307))
+
+
+### Bug Fixes
+
+* **ci:** correct keycloak healthcheck flag typo (fsS -&gt; -fsS) ([f43a04a](https://github.com/cloud-pi-native/console/commit/f43a04a3ff17698ecb9062196d2601b47a094ba8))
+* **ci:** query keycloak health endpoint on management port 9000 ([5f27716](https://github.com/cloud-pi-native/console/commit/5f2771658cc72b45bb6b987bddae872345a280f1))
+* **ci:** surface keycloak boot logs on Playwright failure ([d5166e3](https://github.com/cloud-pi-native/console/commit/d5166e3a737d57335a19fa3e99823e357c169815))
+* **client:** map footer version label and link to pr/sha/tag ([f54017a](https://github.com/cloud-pi-native/console/commit/f54017a62240d7ad02b89b58604cc85e2add3059))
+* **client:** map footer version link to release tag or PR instead of 404 ([738cf6e](https://github.com/cloud-pi-native/console/commit/738cf6ed092cd578081b87f3156004a9611c553a)), closes [#2566](https://github.com/cloud-pi-native/console/issues/2566)
+* **gitlab:** return existing user on 409 instead of failing sync ([c7c0ad2](https://github.com/cloud-pi-native/console/commit/c7c0ad2f3b2cb12826f0a3e0e17ee5af74c69c0f))
+* **keycloak:** preserve full path when creating role groups ([a79bb5a](https://github.com/cloud-pi-native/console/commit/a79bb5a1b41a212d503fa7ffa4fd47d95614bc69))
+* **server-nestjs:** delete owned GitLab repos on explicit repository deletion ([64613b3](https://github.com/cloud-pi-native/console/commit/64613b32ebcaf5bdb948fbfdc5b452724906b8ec))
+* **server-nestjs:** guard createUser against non-string GitLab error descriptions ([97dff7a](https://github.com/cloud-pi-native/console/commit/97dff7a4046c57a0b6f5786a64304960fc3be580))
+* **server-nestjs:** include projectsRootDir in vault techRO policy path ([e4356e9](https://github.com/cloud-pi-native/console/commit/e4356e92dc6d45bba39cc8f4c2a672317925d079))
+* **server-nestjs:** match GitLab validation errors with object descriptions ([6b86d7e](https://github.com/cloud-pi-native/console/commit/6b86d7efd1a7a45be418187d0cc23064165d7b98)), closes [#2544](https://github.com/cloud-pi-native/console/issues/2544)
+* **server-nestjs:** purge argocd values files on project delete ([33e93db](https://github.com/cloud-pi-native/console/commit/33e93db74972ed1382375eb75d41fc81c329a690))
+* **server-nestjs:** resolve Keycloak root group by path, not name ([a42f090](https://github.com/cloud-pi-native/console/commit/a42f0905bbf152657497e25a27ffcbfd8f8d98e9))
+* **server-nestjs:** surface post-creation repository sync failure ([4547c08](https://github.com/cloud-pi-native/console/commit/4547c087a203b910c4789479cfd9b1af68500125))
+
+
+### Miscellaneous Chores
+
+* **hotfix/9.24.5:** cherry-pick PR [#2608](https://github.com/cloud-pi-native/console/issues/2608) ([a0bd156](https://github.com/cloud-pi-native/console/commit/a0bd15647558a97dc0d9fdcc82c99c39af174d62))
+
+
+### Refactoring
+
+* **keycloak:** parse group representations at the client boundary ([a261fb6](https://github.com/cloud-pi-native/console/commit/a261fb62aefcaf17f0eee047313c879cfbd0c7f2))
+
 ## [9.24.4](https://github.com/cloud-pi-native/console/compare/v9.24.3...v9.24.4) (2026-08-19)
 
 
