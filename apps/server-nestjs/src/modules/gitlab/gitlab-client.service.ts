@@ -481,6 +481,14 @@ export class GitlabClientService {
     return updated
   }
 
+  // System repos (mirror, infra-apps, observability values, ...) are console-owned plumbing:
+  // created in the project subgroup but never listed in project.repositories, so the orphan
+  // purge must never delete them. They carry the dedicated system-managed topic; any plugin
+  // can opt its system repo in by upserting it through this wrapper.
+  async upsertProjectGroupSystemRepo(projectSlug: string, repoName: string, options: Omit<UpsertProjectGroupRepoOptions, 'extraTopics'> = {}) {
+    return this.upsertProjectGroupRepo(projectSlug, repoName, { ...options, extraTopics: [TOPIC_SYSTEM_MANAGED] })
+  }
+
   async deleteProjectGroupRepo(projectSlug: string, repoName: string) {
     const fullPath = `${projectSlug}/${repoName}`
     const repo = await this.getOrCreateProjectGroupRepo(projectSlug, fullPath)
@@ -593,7 +601,7 @@ export class GitlabClientService {
   }
 
   async upsertProjectMirrorRepo(projectSlug: string) {
-    return this.upsertProjectGroupRepo(projectSlug, MIRROR_REPO_NAME, { extraTopics: [TOPIC_SYSTEM_MANAGED] })
+    return this.upsertProjectGroupSystemRepo(projectSlug, MIRROR_REPO_NAME)
   }
 
   async getProjectToken(group: CondensedGroupSchemaWith<'id'>, projectSlug: string) {

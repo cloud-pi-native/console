@@ -31,7 +31,6 @@ import {
   PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PURGE_PLUGIN_KEY,
-  TOPIC_SYSTEM_MANAGED,
 } from './gitlab.constants'
 import {
   adminRoleFlag,
@@ -474,7 +473,7 @@ export class GitlabService {
   }
 
   private async ensureInfraAppsRepo(project: ProjectWithDetails) {
-    await this.gitlab.upsertProjectGroupRepo(project.slug, INFRA_APPS_REPO_NAME, { extraTopics: [TOPIC_SYSTEM_MANAGED] })
+    await this.gitlab.upsertProjectGroupSystemRepo(project.slug, INFRA_APPS_REPO_NAME)
   }
 
   private async ensureMirrorRepo(project: ProjectWithDetails) {
