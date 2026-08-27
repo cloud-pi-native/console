@@ -25,7 +25,7 @@ import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { getAll } from '../src/utils/iterable.utils'
-import { SONARQUBE_PROJECT_TIMEOUT } from './e2e-timeout'
+import { SONARQUBE_PROJECT_TIMEOUT } from './constants'
 
 const canRunSonarqubeE2E
   = Boolean(process.env.E2E)

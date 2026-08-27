@@ -10,7 +10,7 @@ import z from 'zod'
 import { baseConfigFactory } from '../src/config/base.config'
 import { GITLAB_REST_CLIENT, GitlabClientService } from '../src/modules/gitlab/gitlab-client.service'
 import { projectSelect } from '../src/modules/gitlab/gitlab-datastore.service'
-import { GITLAB_CI_CONFIG_PATH } from '../src/modules/gitlab/gitlab.constants'
+import { GITLAB_CI_CONFIG_PATH, INFRA_APPS_REPO_NAME, MIRROR_REPO_NAME, TOPIC_PLUGIN_MANAGED, TOPIC_SYSTEM_MANAGED } from '../src/modules/gitlab/gitlab.constants'
 import { GitlabModule } from '../src/modules/gitlab/gitlab.module'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
@@ -21,7 +21,7 @@ import { PermissionModule } from '../src/modules/infrastructure/permission/permi
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { getAll } from '../src/utils/iterable.utils'
-import { EXTERNAL_SYNC_TIMEOUT } from './e2e-timeout'
+import { GITLAB_PURGE_SYNC_TIMEOUT, GITLAB_SYNC_TIMEOUT } from './constants'
 
 const canRunGitlabE2E
   = Boolean(process.env.E2E)
@@ -170,7 +170,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
     const repoSecret = await vaultService.read(repoVaultPath)
     expect(repoSecret?.data?.GIT_OUTPUT_USER).toBeTruthy()
     expect(repoSecret?.data?.GIT_OUTPUT_PASSWORD).toBeTruthy()
-  }, EXTERNAL_SYNC_TIMEOUT)
+  }, GITLAB_SYNC_TIMEOUT)
 
   it('system repos use the default CI file, user repos mirroring an external URL use the custom one', async () => {
     const project = await prisma.project.findUniqueOrThrow({
@@ -200,7 +200,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
     // commitMirror wrote the default CI file into the mirror repo
     const ciFile = await gitlabClientService.getFile(mirror, '.gitlab-ci.yml', 'main')
     expect(ciFile).toBeTruthy()
-  }, EXTERNAL_SYNC_TIMEOUT)
+  }, GITLAB_SYNC_TIMEOUT)
 
   it('should trigger the mirror pipeline using the mirror repo default CI config', async () => {
     const project = await prisma.project.findUniqueOrThrow({
@@ -226,7 +226,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
 
     const pipeline = await gitlabClientService.triggerMirror(testProjectSlug, 'app', false, 'main')
     expect(pipeline.id).toBeTruthy()
-  }, EXTERNAL_SYNC_TIMEOUT)
+  }, GITLAB_SYNC_TIMEOUT)
 
   describe('project members', () => {
     let newUserId: string | undefined
@@ -290,7 +290,111 @@ describeWithGitLab('GitlabService (e2e)', () => {
       const members = await gitlabClientService.getGroupMembers(group)
       const isNewMemberPresent = members.some(m => m.id === newUserGitlabId)
       expect(isNewMemberPresent).toBe(true)
-    }, EXTERNAL_SYNC_TIMEOUT)
+    }, GITLAB_SYNC_TIMEOUT)
+  })
+
+  describe('system repo purge protection', () => {
+    it('system repos (mirror, infra-apps) survive a reprovisioning that purges an orphan', async () => {
+      const project = await prisma.project.findUniqueOrThrow({
+        where: { id: testProjectId },
+        select: projectSelect,
+      })
+      await eventEmitter.emitAsync('project.upsert', project)
+
+      const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
+      const group = z.object({ id: z.number() }).parse(await gitlabClientService.getGroupByPath(groupPath))
+      const reposBefore = await getAll(gitlabClientService.getRepos(testProjectSlug))
+      const mirror = reposBefore.find(repo => repo.name === MIRROR_REPO_NAME)
+      const infraApps = reposBefore.find(repo => repo.name === INFRA_APPS_REPO_NAME)
+      if (!mirror) throw new Error('mirror repo not found')
+      if (!infraApps) throw new Error('infra-apps repo not found')
+
+      // System repos must carry the protection topic
+      expect(mirror.topics).toContain(TOPIC_SYSTEM_MANAGED)
+      expect(infraApps.topics).toContain(TOPIC_SYSTEM_MANAGED)
+
+      // Create an orphan plugin-managed repo directly in GitLab (simulates a repo the
+      // console no longer tracks: DB row removed, GitLab project left behind)
+      const orphanName = `orphan-${faker.string.uuid().slice(0, 8)}`
+      const orphan = await gitlabClient.Projects.create({
+        name: orphanName,
+        path: orphanName,
+        namespaceId: group.id,
+      })
+      await gitlabClient.Projects.edit(orphan.id, { topics: [TOPIC_PLUGIN_MANAGED] })
+
+      // Second reconciliation: the orphan must be purged, system repos must survive
+      const project2 = await prisma.project.findUniqueOrThrow({
+        where: { id: testProjectId },
+        select: projectSelect,
+      })
+      await eventEmitter.emitAsync('project.upsert', project2)
+
+      const reposAfter = await getAll(gitlabClientService.getRepos(testProjectSlug))
+      const namesAfter = reposAfter.map(repo => repo.name)
+
+      expect(namesAfter).not.toContain(orphanName)
+      expect(namesAfter).toContain(MIRROR_REPO_NAME)
+      expect(namesAfter).toContain(INFRA_APPS_REPO_NAME)
+      expect(namesAfter).toContain('app')
+    }, GITLAB_PURGE_SYNC_TIMEOUT)
+
+    it('declared user repos are never purged even without the system-managed topic', async () => {
+      const project = await prisma.project.findUniqueOrThrow({
+        where: { id: testProjectId },
+        select: projectSelect,
+      })
+      await eventEmitter.emitAsync('project.upsert', project)
+
+      const repos = await getAll(gitlabClientService.getRepos(testProjectSlug))
+      const app = repos.find(repo => repo.name === 'app')
+      if (!app) throw new Error('app repo not found')
+
+      // The declared user repo carries plugin-managed but NOT system-managed; the
+      // declared-in-project guard must keep it alive across reconciliations.
+      expect(app.topics).toContain(TOPIC_PLUGIN_MANAGED)
+      expect(app.topics).not.toContain(TOPIC_SYSTEM_MANAGED)
+
+      const project2 = await prisma.project.findUniqueOrThrow({
+        where: { id: testProjectId },
+        select: projectSelect,
+      })
+      await eventEmitter.emitAsync('project.upsert', project2)
+
+      const reposAfter = await getAll(gitlabClientService.getRepos(testProjectSlug))
+      expect(reposAfter.some(repo => repo.name === 'app')).toBe(true)
+    }, GITLAB_PURGE_SYNC_TIMEOUT)
+
+    it('purge does not fail when a repo is already marked for deletion', async () => {
+      // Create a NEW orphan repo in GitLab, then delete it directly (async). The
+      // subsequent reconcile's purge observes it as still present and DELETEs again
+      // → GitLab answers 400 "Already Marked for Deletion" which must be swallowed
+      // so the whole reconciliation succeeds and the system repos survive.
+      const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
+      const group = z.object({ id: z.number() }).parse(await gitlabClientService.getGroupByPath(groupPath))
+      const orphanName = `orphan-race-${faker.string.uuid().slice(0, 8)}`
+      const orphan = await gitlabClient.Projects.create({
+        name: orphanName,
+        path: orphanName,
+        namespaceId: group.id,
+      })
+      await gitlabClient.Projects.edit(orphan.id, { topics: [TOPIC_PLUGIN_MANAGED] })
+
+      // Simulate the async-deletion race: DELETE the orphan directly (not through
+      // the reconcile) so it is marked for deletion, then reconcile immediately.
+      await gitlabClientService.deleteProjectGroupRepo(testProjectSlug, orphanName).catch(() => {})
+
+      const project = await prisma.project.findUniqueOrThrow({
+        where: { id: testProjectId },
+        select: projectSelect,
+      })
+      await expect(eventEmitter.emitAsync('project.upsert', project)).resolves.not.toThrow()
+
+      const namesAfter = (await getAll(gitlabClientService.getRepos(testProjectSlug))).map(repo => repo.name)
+      expect(namesAfter).toContain(MIRROR_REPO_NAME)
+      expect(namesAfter).toContain(INFRA_APPS_REPO_NAME)
+      expect(namesAfter).toContain('app')
+    }, GITLAB_PURGE_SYNC_TIMEOUT)
   })
 
   it('should remove project group from GitLab on delete', async () => {
@@ -306,5 +410,5 @@ describeWithGitLab('GitlabService (e2e)', () => {
 
     const group = await gitlabClientService.getGroupByPath(groupPath)
     expect(group).toBeUndefined()
-  }, EXTERNAL_SYNC_TIMEOUT)
+  }, GITLAB_SYNC_TIMEOUT)
 })
