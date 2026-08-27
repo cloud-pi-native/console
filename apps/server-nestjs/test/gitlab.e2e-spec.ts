@@ -12,7 +12,6 @@ import { GITLAB_REST_CLIENT, GitlabClientService } from '../src/modules/gitlab/g
 import { projectSelect } from '../src/modules/gitlab/gitlab-datastore.service'
 import { GITLAB_CI_CONFIG_PATH, INFRA_APPS_REPO_NAME, MIRROR_REPO_NAME, TOPIC_PLUGIN_MANAGED, TOPIC_SYSTEM_MANAGED } from '../src/modules/gitlab/gitlab.constants'
 import { GitlabModule } from '../src/modules/gitlab/gitlab.module'
-import { GitlabService } from '../src/modules/gitlab/gitlab.service'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
@@ -33,7 +32,6 @@ describeWithGitLab('GitlabService (e2e)', () => {
   let moduleRef: TestingModule
   let eventEmitter: EventEmitter2
   let gitlabClientService: GitlabClientService
-  let gitlabService: GitlabService
   let gitlabClient: Gitlab
   let vaultService: VaultClientService
   let prisma: PrismaService
@@ -52,7 +50,6 @@ describeWithGitLab('GitlabService (e2e)', () => {
     await moduleRef.init()
 
     gitlabClientService = moduleRef.get<GitlabClientService>(GitlabClientService)
-    gitlabService = moduleRef.get<GitlabService>(GitlabService)
     gitlabClient = moduleRef.get<Gitlab>(GITLAB_REST_CLIENT)
     vaultService = moduleRef.get<VaultClientService>(VaultClientService)
     prisma = moduleRef.get<PrismaService>(PrismaService)
@@ -298,13 +295,11 @@ describeWithGitLab('GitlabService (e2e)', () => {
 
   describe('system repo purge protection', () => {
     it('system repos (mirror, infra-apps) survive a reprovisioning that purges an orphan', async () => {
-      // Call the gitlab plugin directly (not the full project.upsert chain) so the
-      // purge assertions don't depend on Keycloak/Vault/ArgoCD being reachable.
       const project = await prisma.project.findUniqueOrThrow({
         where: { id: testProjectId },
         select: projectSelect,
       })
-      await gitlabService.handleUpsert(project)
+      await eventEmitter.emitAsync('project.upsert', project)
 
       const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
       const group = z.object({ id: z.number() }).parse(await gitlabClientService.getGroupByPath(groupPath))
@@ -333,7 +328,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
         where: { id: testProjectId },
         select: projectSelect,
       })
-      await gitlabService.handleUpsert(project2)
+      await eventEmitter.emitAsync('project.upsert', project2)
 
       const reposAfter = await getAll(gitlabClientService.getRepos(testProjectSlug))
       const namesAfter = reposAfter.map(repo => repo.name)
@@ -349,7 +344,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
         where: { id: testProjectId },
         select: projectSelect,
       })
-      await gitlabService.handleUpsert(project)
+      await eventEmitter.emitAsync('project.upsert', project)
 
       const repos = await getAll(gitlabClientService.getRepos(testProjectSlug))
       const app = repos.find(repo => repo.name === 'app')
@@ -364,7 +359,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
         where: { id: testProjectId },
         select: projectSelect,
       })
-      await gitlabService.handleUpsert(project2)
+      await eventEmitter.emitAsync('project.upsert', project2)
 
       const reposAfter = await getAll(gitlabClientService.getRepos(testProjectSlug))
       expect(reposAfter.some(repo => repo.name === 'app')).toBe(true)
@@ -393,7 +388,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
         where: { id: testProjectId },
         select: projectSelect,
       })
-      await expect(gitlabService.handleUpsert(project)).resolves.not.toThrow()
+      await expect(eventEmitter.emitAsync('project.upsert', project)).resolves.not.toThrow()
 
       const namesAfter = (await getAll(gitlabClientService.getRepos(testProjectSlug))).map(repo => repo.name)
       expect(namesAfter).toContain(MIRROR_REPO_NAME)
