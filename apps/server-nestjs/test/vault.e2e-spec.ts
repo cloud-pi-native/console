@@ -16,7 +16,7 @@ import { projectSelect } from '../src/modules/vault/vault-datastore.service'
 import { makeProjectWithDetails } from '../src/modules/vault/vault-testing.utils'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
-import { VAULT_PROVISION_TIMEOUT } from './e2e-timeout'
+import { VAULT_PROVISION_TIMEOUT } from './constants'
 
 const canRunVaultE2E
   = Boolean(process.env.E2E)

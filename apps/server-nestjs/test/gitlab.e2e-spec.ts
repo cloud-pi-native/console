@@ -22,7 +22,7 @@ import { PermissionModule } from '../src/modules/infrastructure/permission/permi
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { getAll } from '../src/utils/iterable.utils'
-import { EXTERNAL_SYNC_TIMEOUT, GITLAB_PURGE_RECONCILE_TIMEOUT } from './e2e-timeout'
+import { EXTERNAL_SYNC_TIMEOUT, VAULT_PROVISION_TIMEOUT } from './constants'
 
 const canRunGitlabE2E
   = Boolean(process.env.E2E)
@@ -342,7 +342,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
       expect(namesAfter).toContain(MIRROR_REPO_NAME)
       expect(namesAfter).toContain(INFRA_APPS_REPO_NAME)
       expect(namesAfter).toContain('app')
-    }, GITLAB_PURGE_RECONCILE_TIMEOUT)
+    }, VAULT_PROVISION_TIMEOUT)
 
     it('declared user repos are never purged even without the system-managed topic', async () => {
       const project = await prisma.project.findUniqueOrThrow({
@@ -368,7 +368,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
 
       const reposAfter = await getAll(gitlabClientService.getRepos(testProjectSlug))
       expect(reposAfter.some(repo => repo.name === 'app')).toBe(true)
-    }, GITLAB_PURGE_RECONCILE_TIMEOUT)
+    }, VAULT_PROVISION_TIMEOUT)
 
     it('purge does not fail when a repo is already marked for deletion', async () => {
       // Create a NEW orphan repo in GitLab, then delete it directly (async). The
@@ -399,7 +399,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
       expect(namesAfter).toContain(MIRROR_REPO_NAME)
       expect(namesAfter).toContain(INFRA_APPS_REPO_NAME)
       expect(namesAfter).toContain('app')
-    }, GITLAB_PURGE_RECONCILE_TIMEOUT)
+    }, VAULT_PROVISION_TIMEOUT)
   })
 
   it('should remove project group from GitLab on delete', async () => {
