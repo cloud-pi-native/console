@@ -16,7 +16,7 @@ import { makeZoneWithDetails } from '../src/modules/vault/vault-testing.utils'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { VaultService } from '../src/modules/vault/vault.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
-import { VAULT_PROVISION_TIMEOUT } from './e2e-timeout'
+import { VAULT_PROVISION_TIMEOUT } from './constants'
 
 const canRunZoneE2E = Boolean(process.env.E2E)
 
