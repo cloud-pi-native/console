@@ -1,5 +1,49 @@
 # Changelog
 
+## [9.25.0](https://github.com/cloud-pi-native/console/compare/v9.24.4...v9.25.0) (2026-08-27)
+
+
+### Features
+
+* **sonarqube:** provision SONAR_TOKEN as GitLab group CI variable ([0041167](https://github.com/cloud-pi-native/console/commit/004116778abd4765277497133bd1bd333f314f86))
+
+
+### Bug Fixes
+
+* **ci:** change how hotfixes or main branch are detected for release-please ([d13acb3](https://github.com/cloud-pi-native/console/commit/d13acb315def5597e40c9c328e64424bc0f5b304))
+* **ci:** correct keycloak healthcheck flag typo (fsS -&gt; -fsS) ([9f3d631](https://github.com/cloud-pi-native/console/commit/9f3d631c1fa13205b6709a81fdddb40e300c8c86))
+* **ci:** query keycloak health endpoint on management port 9000 ([4d949c6](https://github.com/cloud-pi-native/console/commit/4d949c6570cfbae4570460568fc2ad71964014b8))
+* **ci:** surface keycloak boot logs on Playwright failure ([16af455](https://github.com/cloud-pi-native/console/commit/16af45552c2f6f9451bfa7df682e0c9741950ff5))
+* **client:** map footer version label and link to pr/sha/tag ([3f48049](https://github.com/cloud-pi-native/console/commit/3f48049595f0a8af7493ebae89b5636bd3c4f980))
+* **client:** map footer version link to release tag or PR instead of 404 ([04eb1df](https://github.com/cloud-pi-native/console/commit/04eb1dffc86e5cffdffc3e9598d1e7b24c84163b)), closes [#2566](https://github.com/cloud-pi-native/console/issues/2566)
+* **gitlab:** return existing user on 409 instead of failing sync ([14932f3](https://github.com/cloud-pi-native/console/commit/14932f3149b8423fc7efa2a8f2fc484722fde251))
+* **keycloak:** preserve full path when creating role groups ([352ab56](https://github.com/cloud-pi-native/console/commit/352ab56dd463fc1cd2f15c435e2b721bff35d579))
+* **server-nestjs:** delete owned GitLab repos on explicit repository deletion ([517fb32](https://github.com/cloud-pi-native/console/commit/517fb32af670dd3710d5bed8a7d1cea9531df723))
+* **server-nestjs:** guard createUser against non-string GitLab error descriptions ([826154d](https://github.com/cloud-pi-native/console/commit/826154da0b7a9d6e9c1f8323a97b2c7f8b27e1bc))
+* **server-nestjs:** include projectsRootDir in vault techRO policy path ([ea43bae](https://github.com/cloud-pi-native/console/commit/ea43bae256d860cd39328edbaa26a2cbeec3e3e8))
+* **server-nestjs:** match GitLab validation errors with object descriptions ([09d8cac](https://github.com/cloud-pi-native/console/commit/09d8caca76090c22af954e7cf2df4d698c44ffd8)), closes [#2544](https://github.com/cloud-pi-native/console/issues/2544)
+* **server-nestjs:** never purge system GitLab repos (infra-apps, mirror) on reconciliation ([94ccb65](https://github.com/cloud-pi-native/console/commit/94ccb654688f6f954f04683e904fedb200ecdeb1))
+* **server-nestjs:** purge argocd values files on project delete ([3bf56df](https://github.com/cloud-pi-native/console/commit/3bf56dfce878ce8b2d66749880a773f633146538))
+* **server-nestjs:** resolve Keycloak root group by path, not name ([71ba0e8](https://github.com/cloud-pi-native/console/commit/71ba0e8f94d441d4838f76da9c4d072c7211b595))
+* **server-nestjs:** surface post-creation repository sync failure ([e0e8c3e](https://github.com/cloud-pi-native/console/commit/e0e8c3e889387b572152335c0eeddd088277bd1d))
+
+
+### Miscellaneous Chores
+
+* **ci:** do not use versioning-strategy on release-please GHA ([74298f4](https://github.com/cloud-pi-native/console/commit/74298f4feba20ddab25000e6618cc88b713f00f5))
+* **server-nestjs:** align gitlab constants comment style ([8ff4d34](https://github.com/cloud-pi-native/console/commit/8ff4d346d006aeaf9f7c0c65fac633819d30d1b3))
+
+
+### Refactoring
+
+* **keycloak:** parse group representations at the client boundary ([a4e4902](https://github.com/cloud-pi-native/console/commit/a4e4902cf546117b8acd2607646d783f239db69e))
+* **server-nestjs:** add upsertProjectGroupSystemRepo wrapper ([c11a4e4](https://github.com/cloud-pi-native/console/commit/c11a4e4f068e60d3f6a64b8f1a0da9e66d86d322))
+* **server-nestjs:** name gitlab purge e2e timeout constant ([22bed7e](https://github.com/cloud-pi-native/console/commit/22bed7e1c86d38b15729db72772d22640840c4f0))
+* **server-nestjs:** rename isInternalRepo to isDeclaredRepo ([9326580](https://github.com/cloud-pi-native/console/commit/9326580eaf782ab156e9128e5f65a6cffb7403b1))
+* **server-nestjs:** reuse VAULT_PROVISION_TIMEOUT, rename e2e-timeout to constants ([fb7bc9d](https://github.com/cloud-pi-native/console/commit/fb7bc9d70dc51624f8d278f985c12a7baaa52c05))
+* **server-nestjs:** specialize e2e timeouts per service ([729819b](https://github.com/cloud-pi-native/console/commit/729819b5b55076b30e6cf7aed6ccf2edffb5146b))
+* **server-nestjs:** split isSystemRepo into isSystemRepo and isInternalRepo ([17b5e39](https://github.com/cloud-pi-native/console/commit/17b5e391d49fa2fcb08eede136c1e25422d4235b))
+
 ## [9.24.4](https://github.com/cloud-pi-native/console/compare/v9.24.3...v9.24.4) (2026-08-19)
 
 
