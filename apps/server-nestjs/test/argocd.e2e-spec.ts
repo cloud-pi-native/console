@@ -20,7 +20,7 @@ import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
-import { ARGOCD_RECONCILE_TIMEOUT, EXTERNAL_SYNC_TIMEOUT } from './constants'
+import { ARGOCD_RECONCILE_TIMEOUT, GITLAB_SYNC_TIMEOUT } from './constants'
 
 const canRunArgoCDE2E
   = Boolean(process.env.E2E)
@@ -306,5 +306,5 @@ describeWithArgoCD('ArgoCDService (e2e)', () => {
 
     const prodFile = await gitlab.getFile(infraProject, prodFilePath, 'main')
     expect(prodFile).toBeUndefined()
-  }, EXTERNAL_SYNC_TIMEOUT)
+  }, GITLAB_SYNC_TIMEOUT)
 })

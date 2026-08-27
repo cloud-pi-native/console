@@ -22,7 +22,7 @@ import { PermissionModule } from '../src/modules/infrastructure/permission/permi
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { getAll } from '../src/utils/iterable.utils'
-import { EXTERNAL_SYNC_TIMEOUT, VAULT_PROVISION_TIMEOUT } from './constants'
+import { GITLAB_PURGE_SYNC_TIMEOUT, GITLAB_SYNC_TIMEOUT } from './constants'
 
 const canRunGitlabE2E
   = Boolean(process.env.E2E)
@@ -173,7 +173,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
     const repoSecret = await vaultService.read(repoVaultPath)
     expect(repoSecret?.data?.GIT_OUTPUT_USER).toBeTruthy()
     expect(repoSecret?.data?.GIT_OUTPUT_PASSWORD).toBeTruthy()
-  }, EXTERNAL_SYNC_TIMEOUT)
+  }, GITLAB_SYNC_TIMEOUT)
 
   it('system repos use the default CI file, user repos mirroring an external URL use the custom one', async () => {
     const project = await prisma.project.findUniqueOrThrow({
@@ -203,7 +203,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
     // commitMirror wrote the default CI file into the mirror repo
     const ciFile = await gitlabClientService.getFile(mirror, '.gitlab-ci.yml', 'main')
     expect(ciFile).toBeTruthy()
-  }, EXTERNAL_SYNC_TIMEOUT)
+  }, GITLAB_SYNC_TIMEOUT)
 
   it('should trigger the mirror pipeline using the mirror repo default CI config', async () => {
     const project = await prisma.project.findUniqueOrThrow({
@@ -229,7 +229,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
 
     const pipeline = await gitlabClientService.triggerMirror(testProjectSlug, 'app', false, 'main')
     expect(pipeline.id).toBeTruthy()
-  }, EXTERNAL_SYNC_TIMEOUT)
+  }, GITLAB_SYNC_TIMEOUT)
 
   describe('project members', () => {
     let newUserId: string | undefined
@@ -293,7 +293,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
       const members = await gitlabClientService.getGroupMembers(group)
       const isNewMemberPresent = members.some(m => m.id === newUserGitlabId)
       expect(isNewMemberPresent).toBe(true)
-    }, EXTERNAL_SYNC_TIMEOUT)
+    }, GITLAB_SYNC_TIMEOUT)
   })
 
   describe('system repo purge protection', () => {
@@ -342,7 +342,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
       expect(namesAfter).toContain(MIRROR_REPO_NAME)
       expect(namesAfter).toContain(INFRA_APPS_REPO_NAME)
       expect(namesAfter).toContain('app')
-    }, VAULT_PROVISION_TIMEOUT)
+    }, GITLAB_PURGE_SYNC_TIMEOUT)
 
     it('declared user repos are never purged even without the system-managed topic', async () => {
       const project = await prisma.project.findUniqueOrThrow({
@@ -368,7 +368,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
 
       const reposAfter = await getAll(gitlabClientService.getRepos(testProjectSlug))
       expect(reposAfter.some(repo => repo.name === 'app')).toBe(true)
-    }, VAULT_PROVISION_TIMEOUT)
+    }, GITLAB_PURGE_SYNC_TIMEOUT)
 
     it('purge does not fail when a repo is already marked for deletion', async () => {
       // Create a NEW orphan repo in GitLab, then delete it directly (async). The
@@ -399,7 +399,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
       expect(namesAfter).toContain(MIRROR_REPO_NAME)
       expect(namesAfter).toContain(INFRA_APPS_REPO_NAME)
       expect(namesAfter).toContain('app')
-    }, VAULT_PROVISION_TIMEOUT)
+    }, GITLAB_PURGE_SYNC_TIMEOUT)
   })
 
   it('should remove project group from GitLab on delete', async () => {
@@ -415,5 +415,5 @@ describeWithGitLab('GitlabService (e2e)', () => {
 
     const group = await gitlabClientService.getGroupByPath(groupPath)
     expect(group).toBeUndefined()
-  }, EXTERNAL_SYNC_TIMEOUT)
+  }, GITLAB_SYNC_TIMEOUT)
 })
