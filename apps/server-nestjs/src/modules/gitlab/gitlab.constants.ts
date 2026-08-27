@@ -16,10 +16,7 @@ export const GITLAB_CI_CONFIG_PATH = '.gitlab-ci-dso.yml'
 // Managed resources sentinel
 export const TOPIC_PLUGIN_MANAGED = 'plugin-managed'
 
-// Console-owned plumbing/infra repositories (infra-apps, mirror, observability values...).
-// Created in the project subgroup but never listed in project.repositories, so the
-// orphan-repo purge must never delete them. Protected via this dedicated topic instead of a
-// hardcoded name list, so any plugin can opt its own system repo in by tagging it here.
+// Console-owned plumbing repos (mirror, infra-apps, observability...), protected from orphan purge
 export const TOPIC_SYSTEM_MANAGED = 'system-managed'
 export const TOKEN_DESCRIPTION = 'mirroring-from-external-repo'
 
