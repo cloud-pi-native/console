@@ -43,7 +43,7 @@ import {
   generateUsernameCandidates,
   getProjectPluginConfig,
   hasGitbeakerCause,
-  isInternalRepo,
+  isDeclaredRepo,
   isOwnedRepo,
   isOwnedUser,
   isSystemRepo,
@@ -399,7 +399,7 @@ export class GitlabService {
     span?.setAttribute('gitlab.repositories.count', gitlabRepositories.length)
 
     // Delete console-owned repos no longer tracked (e.g. console repository deletion).
-    const orphanRepos = gitlabRepositories.filter(r => isOwnedRepo(r) && !isSystemRepo(r) && !isInternalRepo(project, r))
+    const orphanRepos = gitlabRepositories.filter(r => isOwnedRepo(r) && !isSystemRepo(r) && !isDeclaredRepo(project, r))
     span?.setAttribute('orphan.repositories.count', orphanRepos.length)
 
     let removedCount = 0
