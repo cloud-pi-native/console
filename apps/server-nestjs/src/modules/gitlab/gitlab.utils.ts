@@ -225,12 +225,12 @@ export function isSystemRepo(repo: ProjectSchema) {
   return repo.topics?.includes(TOPIC_SYSTEM_MANAGED) ?? false
 }
 
-export function isInternalRepo(project: ProjectWithDetails, repo: ProjectSchema) {
+export function isDeclaredRepo(project: ProjectWithDetails, repo: ProjectSchema) {
   // A repo declared in project.repositories is managed by the console and must never be purged,
   // even though it may not carry the `system-managed` topic yet (e.g. repos created before the
-  // topic existed). The orphan purge only targets repos that are neither system- nor internally
-  // declared; keeping this check makes the purge safe for pre-existing repos until the next
-  // reconciliation tags them.
+  // topic existed). The orphan purge only targets repos that are neither system- nor declared
+  // in the project; keeping this check makes the purge safe for pre-existing repos until the
+  // next reconciliation tags them.
   return project.repositories.some(r => r.internalRepoName === repo.name)
 }
 
