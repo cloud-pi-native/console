@@ -18,7 +18,7 @@ import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from '../src/modules/key
 import { projectSelect } from '../src/modules/keycloak/keycloak-datastore.service'
 import { KeycloakModule } from '../src/modules/keycloak/keycloak.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
-import { KEYCLOAK_GROUP_SYNC_TIMEOUT } from './e2e-timeout'
+import { KEYCLOAK_GROUP_SYNC_TIMEOUT } from './constants'
 
 const canRunKeycloakE2E
   = Boolean(process.env.E2E)
