@@ -7,11 +7,12 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { gitlabConfigFactory } from '../../config/gitlab.config'
+import { OBSERVABILITY_REPOSITORY } from '../observability/observability.constants'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
 import { GitlabDatastoreService } from './gitlab-datastore.service'
 import { makeAccessTokenExposedSchema, makeExpandedUserSchema, makeGroupSchema, makeMemberSchema, makePipeline, makePipelineTriggerToken, makeProjectSchema, makeProjectWithDetails } from './gitlab-testing.utils'
-import { PLUGIN_NAME, TOPIC_PLUGIN_MANAGED } from './gitlab.constants'
+import { INFRA_APPS_REPO_NAME, MIRROR_REPO_NAME, PLUGIN_NAME, TOPIC_PLUGIN_MANAGED, TOPIC_SYSTEM_MANAGED } from './gitlab.constants'
 import { GitlabService } from './gitlab.service'
 
 describe('gitlabService', () => {
@@ -179,6 +180,55 @@ describe('gitlabService', () => {
 
       expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledWith(project.slug, 'orphan-repo')
       expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledTimes(1)
+    })
+
+    it('should never delete system repositories (infra-apps, mirror) even though they are not in project.repositories', async () => {
+      const project = makeProjectWithDetails({ repositories: [] })
+      const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+      const infraApps = makeProjectSchema({ name: INFRA_APPS_REPO_NAME, topics: [TOPIC_PLUGIN_MANAGED, TOPIC_SYSTEM_MANAGED] })
+      const mirror = makeProjectSchema({ name: MIRROR_REPO_NAME, topics: [TOPIC_PLUGIN_MANAGED, TOPIC_SYSTEM_MANAGED] })
+      const userRepo = makeProjectSchema({ name: 'user-repo', topics: [TOPIC_PLUGIN_MANAGED] })
+
+      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.getRepos.mockImplementation(() => (async function* () {
+        yield infraApps
+        yield mirror
+        yield userRepo
+      })())
+      gitlab.deleteProjectGroupRepo.mockResolvedValue(undefined)
+      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+
+      await service.handleUpsert(project)
+
+      expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledTimes(1)
+      expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledWith(project.slug, 'user-repo')
+      expect(gitlab.deleteProjectGroupRepo).not.toHaveBeenCalledWith(project.slug, INFRA_APPS_REPO_NAME)
+      expect(gitlab.deleteProjectGroupRepo).not.toHaveBeenCalledWith(project.slug, MIRROR_REPO_NAME)
+    })
+
+    it('should never delete the observability system repository (infra-observability) even though it is not in project.repositories', async () => {
+      const project = makeProjectWithDetails({ repositories: [] })
+      const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+      const observabilityRepo = makeProjectSchema({ name: OBSERVABILITY_REPOSITORY, topics: [TOPIC_PLUGIN_MANAGED, TOPIC_SYSTEM_MANAGED] })
+      const userRepo = makeProjectSchema({ name: 'user-repo', topics: [TOPIC_PLUGIN_MANAGED] })
+
+      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.getRepos.mockImplementation(() => (async function* () {
+        yield observabilityRepo
+        yield userRepo
+      })())
+      gitlab.deleteProjectGroupRepo.mockResolvedValue(undefined)
+      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+
+      await service.handleUpsert(project)
+
+      expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledTimes(1)
+      expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledWith(project.slug, 'user-repo')
+      expect(gitlab.deleteProjectGroupRepo).not.toHaveBeenCalledWith(project.slug, OBSERVABILITY_REPOSITORY)
     })
 
     it('should not delete orphan repositories without the correct topic even if purge enabled', async () => {

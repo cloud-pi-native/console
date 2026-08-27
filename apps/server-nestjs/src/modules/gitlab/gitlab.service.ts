@@ -41,6 +41,8 @@ import {
   generateUsername,
   generateUsernameCandidates,
   getProjectPluginConfig,
+  hasGitbeakerCause,
+  isDeclaredRepo,
   isOwnedRepo,
   isOwnedUser,
   isSystemRepo,
@@ -146,9 +148,9 @@ export class GitlabService {
     const members = await this.gitlab.getGroupMembers(group)
     this.logger.verbose(`Loaded GitLab project group state (${project.slug}): groupId=${group.id} members=${members.length}`)
     await this.ensureProjectGroupMembers(project, group, members)
+    await this.ensureSystemRepos(project)
     await this.ensureProjectRepos(project)
     await this.purgeOrphanRepos(project)
-    await this.ensureSystemRepos(project)
     this.logger.verbose(`GitLab project group reconciled (${project.slug})`)
   }
 
@@ -370,12 +372,9 @@ export class GitlabService {
         ...(externalHost ? { 'repository.external.host': externalHost } : {}),
         'repository.external': !!repo.externalRepoUrl,
       })
-      await this.gitlab.upsertProjectGroupRepo(
-        project.slug,
-        repo.internalRepoName,
-        undefined,
-        repo.externalRepoUrl ? GITLAB_CI_CONFIG_PATH : undefined,
-      )
+      await this.gitlab.upsertProjectGroupRepo(project.slug, repo.internalRepoName, {
+        ciConfigPath: repo.externalRepoUrl ? GITLAB_CI_CONFIG_PATH : undefined,
+      })
 
       if (repo.externalRepoUrl) {
         span?.setAttribute('repository.mirroring', true)
@@ -399,12 +398,22 @@ export class GitlabService {
     span?.setAttribute('gitlab.repositories.count', gitlabRepositories.length)
 
     // Delete console-owned repos no longer tracked (e.g. console repository deletion).
-    const orphanRepos = gitlabRepositories.filter(r => isOwnedRepo(r) && !isSystemRepo(project, r))
+    const orphanRepos = gitlabRepositories.filter(r => isOwnedRepo(r) && !isSystemRepo(r) && !isDeclaredRepo(project, r))
     span?.setAttribute('orphan.repositories.count', orphanRepos.length)
 
     let removedCount = 0
     await Promise.all(orphanRepos.map(async (orphan) => {
-      await this.gitlab.deleteProjectGroupRepo(project.slug, orphan.name)
+      try {
+        await this.gitlab.deleteProjectGroupRepo(project.slug, orphan.name)
+      } catch (err) {
+        // GitLab deletion is asynchronous: a repo already marked for deletion by a
+        // prior run surfaces a transient 400. Ignore only that; let real errors propagate.
+        if (hasGitbeakerCause(err, /already marked for deletion/)) {
+          this.logger.warn(`Repository already marked for deletion, skipping (project=${project.slug}, repoName=${orphan.name})`)
+          return
+        }
+        throw err
+      }
       removedCount++
       this.logger.log(`Removed a repository from the GitLab project (project=${project.slug}, repoName=${orphan.name})`)
     }))
@@ -464,7 +473,7 @@ export class GitlabService {
   }
 
   private async ensureInfraAppsRepo(project: ProjectWithDetails) {
-    await this.gitlab.upsertProjectGroupRepo(project.slug, INFRA_APPS_REPO_NAME)
+    await this.gitlab.upsertProjectGroupSystemRepo(project.slug, INFRA_APPS_REPO_NAME)
   }
 
   private async ensureMirrorRepo(project: ProjectWithDetails) {
