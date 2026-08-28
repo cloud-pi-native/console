@@ -1,12 +1,13 @@
 import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { observabilityConfigFactory } from '../../config/observability.config'
 import { ObservabilityDatastoreService } from './observability-datastore.service'
-import { makeProject } from './observability-testing.utils'
 import { ObservabilityPluginService } from './observability-plugin.service'
+import { makeProject } from './observability-testing.utils'
 
 describe('observabilityPluginService', () => {
   let service: ObservabilityPluginService
@@ -49,7 +50,7 @@ describe('observabilityPluginService', () => {
     datastore.getProjectForInfos.mockResolvedValue(makeProject({
       slug: 'myproj',
       // stage names other than PROD count as hprod
-      environments: [{ stage: { name: 'dev' } }] as never,
+      environments: [{ id: faker.string.uuid(), name: faker.string.alphanumeric(8), stage: { name: 'dev' } }],
     }))
 
     const infos = await service.infos('project-id')
@@ -63,7 +64,7 @@ describe('observabilityPluginService', () => {
   it('exposes a prod url only when a prod-stage environment exists', async () => {
     datastore.getProjectForInfos.mockResolvedValue(makeProject({
       slug: 'myproj',
-      environments: [{ stage: { name: 'prod' } }] as never,
+      environments: [{ id: faker.string.uuid(), name: faker.string.alphanumeric(8), stage: { name: 'prod' } }],
     }))
 
     const infos = await service.infos('project-id')
@@ -74,7 +75,10 @@ describe('observabilityPluginService', () => {
   it('exposes both urls when both environment kinds exist', async () => {
     datastore.getProjectForInfos.mockResolvedValue(makeProject({
       slug: 'full',
-      environments: [{ stage: { name: 'prod' } }, { stage: { name: 'hprod' } }] as never,
+      environments: [
+        { id: faker.string.uuid(), name: faker.string.alphanumeric(8), stage: { name: 'prod' } },
+        { id: faker.string.uuid(), name: faker.string.alphanumeric(8), stage: { name: 'hprod' } },
+      ],
     }))
 
     const infos = await service.infos('project-id')

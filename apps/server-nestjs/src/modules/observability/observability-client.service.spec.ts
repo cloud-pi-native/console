@@ -3,6 +3,7 @@ import type { CondensedProjectSchemaWith } from '../gitlab/gitlab-client.service
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
+import { makeProjectSchema } from '../gitlab/gitlab-testing.utils'
 import { ObservabilityClientService } from './observability-client.service'
 import { observabilityYamlInitData } from './observability.utils'
 
@@ -17,7 +18,7 @@ describe('observabilityClientService', () => {
     maybeCreateCommit: ReturnType<typeof vi.fn>
   }
 
-  const repo = { id: 1, name: 'values' } as unknown as CondensedProjectSchemaWith<'id'>
+  const repo = makeProjectSchema({ name: 'values' }) as unknown as CondensedProjectSchemaWith<'id'>
 
   beforeEach(async () => {
     gitlab = {
@@ -68,7 +69,7 @@ describe('observabilityClientService', () => {
       const data = await service.getValuesFile(repo)
       expect(data).toEqual({ global: { tenants: {} } })
       // must be a clone: mutating the result must not corrupt the shared init constant
-      data.global!.tenants!['x'] = {}
+      data.global!.tenants!.x = {}
       expect(observabilityYamlInitData.global.tenants).toEqual({})
     })
 
