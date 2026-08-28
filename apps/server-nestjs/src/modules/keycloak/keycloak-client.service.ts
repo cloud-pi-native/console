@@ -125,11 +125,22 @@ export class KeycloakClientService implements OnModuleInit {
   }
 
   @StartActiveSpan()
-  async createGroup(name: string) {
+  async ensureGroup(name: string) {
     const span = trace.getActiveSpan()
     span?.setAttribute('group.name', name)
     this.logger.debug(`Creating Keycloak group ${name}`)
-    await this.client.groups.create({ name })
+    try {
+      await this.client.groups.create({ name })
+    } catch (err) {
+      // A concurrent reconciliation (e.g. the cron sync and a project upsert)
+      // may have created the root group between the read and the create; treat
+      // the 409 as "already exists" and re-fetch it.
+      if (getErrorResponseStatus(err) !== 409) throw err
+      this.logger.verbose(`Keycloak group ${name} was created concurrently, fetching it`)
+      const existing = await this.getRootGroupByName(name)
+      if (!existing) throw err
+      return existing
+    }
     const created = await this.getRootGroupByName(name)
     if (!created) throw new Error(`Created Keycloak group ${name} but could not fetch it back`)
     return created
@@ -184,7 +195,7 @@ export class KeycloakClientService implements OnModuleInit {
     }
 
     const [rootName, ...rest] = parts
-    let current = await this.getRootGroupByName(rootName) ?? await this.createGroup(rootName)
+    let current = await this.ensureGroup(rootName)
     for (const name of rest) {
       current = await this.getOrCreateSubGroupByName(current.id, name)
     }

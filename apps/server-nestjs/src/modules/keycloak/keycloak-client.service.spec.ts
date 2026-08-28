@@ -370,4 +370,21 @@ describe('getOrCreateGroupByPath root resolution (issue #2518)', () => {
 
     expect(result).toMatchObject({ id: 'created-id', path: '/myproject' })
   })
+
+  it('should re-fetch the existing root group when a concurrent creation causes a 409', async () => {
+    // Two initial reads (getGroupByPath then the line-187 re-read) see no root
+    // group; the create then races a concurrent sync and 409s, after which the
+    // existing root group is re-fetched and returned (issue #2618).
+    server.use(
+      http.get(groupsUrl, () => HttpResponse.json([]), { once: true }),
+      http.get(groupsUrl, () => HttpResponse.json([{ id: 'concurrent-root-id', name: 'myproject', path: '/myproject' }])),
+      http.post(groupsUrl, () =>
+        HttpResponse.json({ errorMessage: 'Top level groups must have unique names' }, { status: 409 })),
+      http.get(rootChildrenUrl, () => HttpResponse.json([])),
+    )
+
+    const result = await service.getOrCreateGroupByPath('/myproject')
+
+    expect(result).toMatchObject({ id: 'concurrent-root-id', path: '/myproject' })
+  })
 })
