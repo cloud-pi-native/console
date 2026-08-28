@@ -1,5 +1,6 @@
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
+import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
@@ -450,11 +451,12 @@ describe('keycloakService', () => {
   })
 
   describe('migration parity: admin-role event path (legacy hook.adminRole.*)', () => {
+    const adminRoleId = faker.string.uuid()
     const adminRoles: AdminRoleWithDetails[] = [
-      { id: 'admin-role-id', name: 'admin', permissions: 0n, position: 0, oidcGroup: '/admin-group', type: 'managed' },
+      { id: adminRoleId, name: faker.string.alphanumeric(8), permissions: 0n, position: 0, oidcGroup: '/admin-group', type: 'managed' },
     ]
     const users: UserWithAdminRoles[] = [
-      { id: 'user-1', adminRoleIds: ['admin-role-id'] },
+      { id: faker.string.uuid(), adminRoleIds: [adminRoleId] },
     ]
 
     it('syncs admin-role OIDC groups via cron reconcile ONLY (no event path exists)', async () => {
