@@ -1,5 +1,5 @@
 import type { RegistryQuery, RegistryResponse } from './registry-http-client.service'
-import { Inject, Injectable } from '@nestjs/common'
+import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { RegistryHttpClientService } from './registry-http-client.service'
 import { ROBOT_LIST_PAGE_SIZE } from './registry.constants'
 
@@ -115,8 +115,8 @@ export class RegistryClientService {
     })
   }
 
-  async createProject(projectName: string, storageLimit: number) {
-    return this.http.fetch('projects', {
+  async ensureProject(projectName: string, storageLimit: number): Promise<HarborProject> {
+    const created = await this.http.fetch('projects', {
       method: 'POST',
       body: {
         project_name: projectName,
@@ -124,6 +124,15 @@ export class RegistryClientService {
         storage_limit: storageLimit,
       },
     })
+    if (created.status >= HttpStatus.BAD_REQUEST && created.status !== HttpStatus.CONFLICT) {
+      throw new Error(`Harbor create project failed (${created.status})`)
+    }
+    // 409: project already exists (concurrent reconcile) — fall through to get
+    const fetched = await this.getProjectByName(projectName)
+    if (fetched.status !== HttpStatus.OK || !fetched.data) {
+      throw new Error(`Harbor get project failed (${fetched.status})`)
+    }
+    return fetched.data
   }
 
   async deleteProjectByName(projectName: string) {
@@ -157,12 +166,16 @@ export class RegistryClientService {
     })
   }
 
-  async addGroupMember(projectName: string, body: HarborGroupMemberRequest) {
-    return this.http.fetch(`projects/${encodeURIComponent(projectName)}/members`, {
+  async ensureGroupMember(projectName: string, body: HarborGroupMemberRequest) {
+    const created = await this.http.fetch(`projects/${encodeURIComponent(projectName)}/members`, {
       method: 'POST',
       headers: { 'X-Is-Resource-Name': 'true' },
       body,
     })
+    if (created.status >= HttpStatus.BAD_REQUEST && created.status !== HttpStatus.CONFLICT) {
+      throw new Error(`Harbor create member failed (${created.status})`)
+    }
+    // 409: member already exists (concurrent reconcile) — no-op
   }
 
   async removeGroupMember(projectName: string, memberId: number) {
@@ -178,11 +191,17 @@ export class RegistryClientService {
     })
   }
 
-  async createRobot(body: HarborRobotCreateRequest) {
-    return this.http.fetch<HarborRobotCreated>('robots', {
+  // 409 → robot already exists, secret unrecoverable; caller rotates for a fresh secret.
+  async ensureRobot(body: HarborRobotCreateRequest): Promise<HarborRobotCreated | null> {
+    const created = await this.http.fetch<HarborRobotCreated>('robots', {
       method: 'POST',
       body,
     })
+    if (created.status === HttpStatus.CONFLICT) return null
+    if (created.status >= HttpStatus.BAD_REQUEST || !created.data) {
+      throw new Error(`Harbor create robot failed (${created.status})`)
+    }
+    return created.data
   }
 
   async deleteRobot(robotId: number): Promise<RegistryResponse> {
@@ -198,6 +217,23 @@ export class RegistryClientService {
     return Number.isFinite(retentionId) ? retentionId : null
   }
 
+  // 409 → already exists; re-read id and update instead.
+  async ensureRetention(projectName: string, body: HarborRetentionPolicy) {
+     const created = await this.createRetention(body)
+     if (created.status === HttpStatus.CONFLICT) {
+       const racedId = await this.getRetentionId(projectName)
+       if (racedId) {
+         const result = await this.updateRetention(racedId, body)
+         if (result.status >= HttpStatus.BAD_REQUEST) {
+           throw new Error(`Harbor retention policy failed (${result.status})`)
+         }
+       }
+       return
+     }
+     if (created.status >= HttpStatus.BAD_REQUEST) {
+       throw new Error(`Harbor retention policy failed (${created.status})`)
+     }
+   }
   async createRetention(body: HarborRetentionPolicy) {
     return this.http.fetch('retentions', {
       method: 'POST',
