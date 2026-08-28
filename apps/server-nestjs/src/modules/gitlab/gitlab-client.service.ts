@@ -520,7 +520,7 @@ export class GitlabClientService {
       if (isGitbeakerNotFound(error)) return undefined
       throw error
     })
-    if (current && current.masked === options.masked
+    if (current?.masked === options.masked
       && current.value === value
       && current.protected === options.protected
       && current.variable_type === options.variableType) {
@@ -560,7 +560,7 @@ export class GitlabClientService {
       if (isGitbeakerNotFound(error)) return undefined
       throw error
     })
-    if (current && current.masked === options.masked
+    if (current?.masked === options.masked
       && current.value === value
       && current.protected === options.protected
       && current.variable_type === options.variableType) {
