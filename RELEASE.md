@@ -84,4 +84,4 @@ Ceci étant dit, il arrivera, hélas, qu'un hotfix soit nécessaire sur une vers
 
 > ⚠ Les branches `hotfix/*` ne déclenchent actuellement plus le flux `create-or-update-release`. La procédure automatisée de hotfix est donc suspendue.
 >
-> En attendant son rétablissement, un correctif destiné à une version livrée doit être intégré à `main` et livré via le prochain cycle de pré-release puis de release stable. Il suit donc la stratégie de « Fix Forward ».
+> En attendant son rétablissement (cf https://github.com/cloud-pi-native/console/issues/2610), un correctif destiné à une version livrée doit être intégré à `main` et livré via le prochain cycle de pré-release puis de release stable. Il suit donc la stratégie de « Fix Forward ».
