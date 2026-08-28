@@ -127,7 +127,6 @@ export class RegistryClientService {
     if (created.status >= HttpStatus.BAD_REQUEST && created.status !== HttpStatus.CONFLICT) {
       throw new Error(`Harbor create project failed (${created.status})`)
     }
-    // 409: project already exists (concurrent reconcile) — fall through to get
     const fetched = await this.getProjectByName(projectName)
     if (fetched.status !== HttpStatus.OK || !fetched.data) {
       throw new Error(`Harbor get project failed (${fetched.status})`)
@@ -175,7 +174,6 @@ export class RegistryClientService {
     if (created.status >= HttpStatus.BAD_REQUEST && created.status !== HttpStatus.CONFLICT) {
       throw new Error(`Harbor create member failed (${created.status})`)
     }
-    // 409: member already exists (concurrent reconcile) — no-op
   }
 
   async removeGroupMember(projectName: string, memberId: number) {
@@ -191,7 +189,6 @@ export class RegistryClientService {
     })
   }
 
-  // 409 → robot already exists, secret unrecoverable; caller rotates for a fresh secret.
   async ensureRobot(body: HarborRobotCreateRequest): Promise<HarborRobotCreated | null> {
     const created = await this.http.fetch<HarborRobotCreated>('robots', {
       method: 'POST',
@@ -217,7 +214,6 @@ export class RegistryClientService {
     return Number.isFinite(retentionId) ? retentionId : null
   }
 
-  // 409 → already exists; re-read id and update instead.
   async ensureRetention(projectName: string, body: HarborRetentionPolicy) {
      const created = await this.createRetention(body)
      if (created.status === HttpStatus.CONFLICT) {
