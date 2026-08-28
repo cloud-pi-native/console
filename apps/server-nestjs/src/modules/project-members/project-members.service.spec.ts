@@ -1,6 +1,9 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { Prisma } from '@prisma/client'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { faker } from '@faker-js/faker'
 import { NotFoundException } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
@@ -16,9 +19,6 @@ import {
   makeUser,
 } from '../project/project-testing.utils'
 import { ProjectMembersService } from './project-members.service'
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 // --- Migration parity: projectMember event consumer surface --------------------
 // Legacy apps/server fires `hook.projectMember.upsert` (add/patch) and
