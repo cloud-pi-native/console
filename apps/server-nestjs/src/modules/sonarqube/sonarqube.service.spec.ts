@@ -5,11 +5,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
 import { generateProjectKey } from '../../utils/crypto.utils'
+import { GitlabClientService } from '../gitlab/gitlab-client.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
 import { SonarqubeClientService } from './sonarqube-client.service'
-import { SonarqubeError } from './sonarqube-http-client.service'
 import { SonarqubeDatastoreService } from './sonarqube-datastore.service'
+import { SonarqubeError } from './sonarqube-http-client.service'
 import {
   makeEmptyGroupsResponse,
   makeEmptyProjectsResponse,
@@ -21,7 +22,6 @@ import {
 } from './sonarqube-testing.utils'
 import { PLUGIN_NAME, SONARQUBE_PROJECT_QUALIFIER_PROJECT } from './sonarqube.constants'
 import { SonarqubeService } from './sonarqube.service'
-import { GitlabClientService } from '../gitlab/gitlab-client.service'
 
 describe('sonarqubeService', () => {
   let service: SonarqubeService

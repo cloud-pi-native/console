@@ -11,8 +11,8 @@ import { VaultClientService } from '../vault/vault-client.service'
 import { VaultError } from '../vault/vault-http-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
 import { NexusClientService } from './nexus-client.service'
-import { NexusError } from './nexus-http-client.service'
 import { NexusDatastoreService } from './nexus-datastore.service'
+import { NexusError } from './nexus-http-client.service'
 import { makeProjectWithDetails } from './nexus-testing.utils'
 import {
   NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO,
