@@ -1,6 +1,8 @@
 name: Create/update next release
 
 permissions:
+  # Needed for release job
+  issues: write
   contents: write
   pull-requests: write
   # Needed for build job
