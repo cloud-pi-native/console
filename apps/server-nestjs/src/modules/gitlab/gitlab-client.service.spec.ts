@@ -464,11 +464,81 @@ describe('gitlab-client', () => {
           makeExpandedUserSchema({ id: 1000, email: consoleUser.email, is_admin: true }),
         ])
 
-        await service.upsertUser({ ...gitlabUser, auditor: true }, { cpnUserId: con
+        await service.upsertUser({ ...gitlabUser, auditor: true }, { cpnUserId: consoleUser.id })
 
-... [OUTPUT TRUNCATED - 3,224 chars omitted out of 53,152 total] ...
+        expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
+          admin: true,
+        }))
+      })
 
+      it('should not disable existing auditor flag when enabling admin flag', async () => {
+        const consoleUser = { id: 'u1', email: 'auditor-admin@example.com', firstName: 'Auditor', lastName: 'Admin' }
+        const gitlabUser = {
+          email: consoleUser.email,
+          username: 'auditor-admin',
+          name: 'Auditor Admin',
+        }
+        const gitlabUsersAllMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
+        gitlabUsersAllMock.mockResolvedValue([
+          makeExpandedUserSchema({ id: 1000, email: consoleUser.email, is_auditor: true }),
+        ])
 
+        await service.upsertUser({ ...gitlabUser, admin: true }, { cpnUserId: consoleUser.id })
+
+        expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
+          auditor: true,
+        }))
+      })
+    })
+
+    it('should create pipeline trigger token if not exists', async () => {
+      const projectSlug = 'project-1'
+      const repoId = 1
+      const tokenDescription = 'mirroring-from-external-repo'
+
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
+      gitlabProjectsAllMock.mockResolvedValue({
+        data: [{ id: repoId, path_with_namespace: 'forge/project-1/mirror' }],
+        paginationInfo: { next: null },
+      })
+      gitlabApi.Projects.edit.mockResolvedValue(makeProjectSchema({ id: repoId, name: 'mirror' }))
+
+      const gitlabPipelineTriggerTokensAllMock = gitlabApi.PipelineTriggerTokens.all as MockedFunction<typeof gitlabApi.PipelineTriggerTokens.all>
+      gitlabPipelineTriggerTokensAllMock.mockResolvedValue({
+        data: [],
+        paginationInfo: makeOffsetPagination({ next: null }),
+      })
+
+      gitlabApi.PipelineTriggerTokens.create.mockResolvedValue(makePipelineTriggerToken({ id: 2, description: tokenDescription }))
+
+      const result = await service.getOrCreateMirrorPipelineTriggerToken(projectSlug)
+
+      expect(result).toEqual(expect.objectContaining({ id: 2, description: tokenDescription }))
+      expect(gitlabApi.PipelineTriggerTokens.create).toHaveBeenCalledWith(repoId, tokenDescription)
+    })
+  })
+
+  describe('group Members', () => {
+    it('should get group members', async () => {
+      const groupId = 1
+      const group = makeGroupSchema({ id: groupId })
+      const members = [makeMemberSchema({ id: 1, name: 'user' })]
+      const gitlabGroupMembersAllMock = gitlabApi.GroupMembers.all as MockedFunction<typeof gitlabApi.GroupMembers.all>
+      gitlabGroupMembersAllMock.mockResolvedValue(members)
+
+      const result = await service.getGroupMembers(group)
+      expect(result).toEqual(members)
+      expect(gitlabApi.GroupMembers.all).toHaveBeenCalledWith(groupId)
+    })
+
+    it('should add group member', async () => {
+      const groupId = 1
+      const group = makeGroupSchema({ id: groupId })
+      const userId = 2
+      const accessLevel = 30
+      gitlabApi.GroupMembers.add.mockResolvedValue(makeMemberSchema({ id: userId }))
+
+      await service.addGroupMember(group, userId, accessLevel)
       expect(gitlabApi.GroupMembers.add).toHaveBeenCalledWith(groupId, userId, accessLevel)
     })
 
