@@ -27,3 +27,7 @@ export function isVaultNotFound(error: unknown): error is VaultError {
 export function isVaultBadRequest(error: unknown): error is VaultError {
   return error instanceof VaultError && error.kind === 'HttpError' && error.status === 400
 }
+
+export function generateAppRoleSecretIdPath(projectRootDir: string, projectSlug: string) {
+  return `${generateProjectPath(projectRootDir, projectSlug)}/APPROLE_SECRET_ID`
+}
