@@ -259,3 +259,7 @@ export function hasGitbeakerCause(error: unknown, pattern: string | RegExp): err
     : JSON.stringify(error.cause?.description ?? '')
   return typeof pattern === 'string' ? description.includes(pattern) : pattern.test(description)
 }
+
+export function isGitbeakerUnauthorized(error: unknown): error is GitbeakerRequestError {
+  return error instanceof GitbeakerRequestError && error.cause?.response?.status === 401
+}

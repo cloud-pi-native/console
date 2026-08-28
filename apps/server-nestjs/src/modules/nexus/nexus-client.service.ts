@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
-import { NexusError, NexusHttpClientService } from './nexus-http-client.service'
+import { NexusHttpClientService } from './nexus-http-client.service'
+import { isNexusNotFound } from './nexus.utils'
 
 interface NexusRepositoryStorage {
   blobStoreName: string
@@ -114,7 +115,7 @@ export class NexusClientService {
       const res = await this.http.fetch<NexusMavenHostedRepository>(`repositories/maven/hosted/${name}`)
       return res.data
     } catch (error) {
-      if (error instanceof NexusError && error.status === 404) return null
+      if (isNexusNotFound(error)) return null
       throw error
     }
   }
@@ -145,7 +146,7 @@ export class NexusClientService {
       const res = await this.http.fetch<NexusMavenGroupRepository>(`repositories/maven/group/${name}`)
       return res.data
     } catch (error) {
-      if (error instanceof NexusError && error.status === 404) return null
+      if (isNexusNotFound(error)) return null
       throw error
     }
   }
@@ -156,7 +157,7 @@ export class NexusClientService {
       const res = await this.http.fetch<NexusNpmHostedRepository>(`repositories/npm/hosted/${name}`)
       return res.data
     } catch (error) {
-      if (error instanceof NexusError && error.status === 404) return null
+      if (isNexusNotFound(error)) return null
       throw error
     }
   }
@@ -177,7 +178,7 @@ export class NexusClientService {
       const res = await this.http.fetch<NexusNpmGroupRepository>(`repositories/npm/group/${name}`)
       return res.data
     } catch (error) {
-      if (error instanceof NexusError && error.status === 404) return null
+      if (isNexusNotFound(error)) return null
       throw error
     }
   }
@@ -198,7 +199,7 @@ export class NexusClientService {
       const res = await this.http.fetch<NexusPrivilege>(`security/privileges/${name}`)
       return res.data
     } catch (error) {
-      if (error instanceof NexusError && error.status === 404) return null
+      if (isNexusNotFound(error)) return null
       throw error
     }
   }
@@ -218,7 +219,7 @@ export class NexusClientService {
     try {
       await this.http.fetch(`security/privileges/${name}`, { method: 'DELETE' })
     } catch (error) {
-      if (error instanceof NexusError && error.status === 404) return
+      if (isNexusNotFound(error)) return
       throw error
     }
   }
@@ -229,7 +230,7 @@ export class NexusClientService {
       const res = await this.http.fetch<NexusRole>(`security/roles/${id}`)
       return res.data
     } catch (error) {
-      if (error instanceof NexusError && error.status === 404) return null
+      if (isNexusNotFound(error)) return null
       throw error
     }
   }
@@ -249,7 +250,7 @@ export class NexusClientService {
     try {
       await this.http.fetch(`security/roles/${id}`, { method: 'DELETE' })
     } catch (error) {
-      if (error instanceof NexusError && error.status === 404) return
+      if (isNexusNotFound(error)) return
       throw error
     }
   }
@@ -280,7 +281,7 @@ export class NexusClientService {
     try {
       await this.http.fetch(`security/users/${userId}`, { method: 'DELETE' })
     } catch (error) {
-      if (error instanceof NexusError && error.status === 404) return
+      if (isNexusNotFound(error)) return
       throw error
     }
   }
@@ -290,7 +291,7 @@ export class NexusClientService {
     try {
       await this.http.fetch(`repositories/${name}`, { method: 'DELETE' })
     } catch (error) {
-      if (error instanceof NexusError && error.status === 404) return
+      if (isNexusNotFound(error)) return
       throw error
     }
   }

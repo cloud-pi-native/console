@@ -1,3 +1,5 @@
+import { VaultError } from './vault-http-client.service'
+
 export function generateProjectPath(projectRootDir: string, projectSlug: string) {
   return `${projectRootDir}/${projectSlug}`
 }
@@ -16,4 +18,12 @@ export function generateSonarqubeCredPath(projectRootDir: string, projectSlug: s
 
 export function generateSecretGroupPath(projectRootDir: string, projectSlug: string, group: string): string {
   return `${generateProjectPath(projectRootDir, projectSlug)}/${group}`
+}
+
+export function isVaultNotFound(error: unknown): error is VaultError {
+  return error instanceof VaultError && error.kind === 'NotFound'
+}
+
+export function isVaultBadRequest(error: unknown): error is VaultError {
+  return error instanceof VaultError && error.kind === 'HttpError' && error.status === 400
 }

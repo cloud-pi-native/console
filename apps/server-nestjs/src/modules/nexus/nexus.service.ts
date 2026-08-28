@@ -14,7 +14,7 @@ import { nexusConfigFactory } from '../../config/nexus.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
-import { VaultError } from '../vault/vault-http-client.service'
+import { isVaultNotFound } from '../vault/vault.utils'
 import { NexusClientService } from './nexus-client.service'
 import { NexusDatastoreService } from './nexus-datastore.service'
 import {
@@ -437,7 +437,7 @@ export class NexusService {
     try {
       existingPassword = await this.vault.read(vaultPath).then(res => res.data?.NEXUS_PASSWORD)
     } catch (error) {
-      if (error instanceof VaultError && error.kind === 'NotFound') {
+      if (isVaultNotFound(error)) {
         existingPassword = undefined
       } else {
         throw error
@@ -581,7 +581,7 @@ export class NexusService {
     try {
       await this.vault.delete(vaultPath)
     } catch (error) {
-      if (error instanceof VaultError && error.kind === 'NotFound') return
+      if (isVaultNotFound(error)) return
       throw error
     }
   }
