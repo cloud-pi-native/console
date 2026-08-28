@@ -22,7 +22,7 @@ import { find } from '../../utils/iterable.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
-import { VaultError } from '../vault/vault-http-client.service'
+import { isVaultNotFound } from '../vault/vault.utils'
 import { RegistryClientService, roAccess, rwAccess } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
 import {
@@ -106,7 +106,7 @@ export class RegistryService {
     const relativeVaultPath = `REGISTRY/${robotName}`
     const vaultPath = getProjectVaultPath(project, this.baseConfig.projectsRootDir, relativeVaultPath)
     const vaultRobotSecret = await this.vault.read<VaultRobotSecret>(vaultPath).catch((error) => {
-      if (error instanceof VaultError && error.kind === 'NotFound') return null
+      if (isVaultNotFound(error)) return null
       throw error
     })
 

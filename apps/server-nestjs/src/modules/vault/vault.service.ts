@@ -36,7 +36,7 @@ import {
   PROJECT_SECURITY_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   SECURITY_GROUP_PATH_PLUGIN_KEY,
 } from './vault.constants'
-import { generateProjectPath } from './vault.utils'
+import { generateProjectPath, isVaultBadRequest, isVaultNotFound } from './vault.utils'
 
 type ProjectScope = 'admin' | 'devops' | 'developer' | 'readonly' | 'security'
 
@@ -223,7 +223,7 @@ export class VaultService {
       await this.client.createSysMount(kvName, createBody)
       this.logger.log(`Created Vault mount ${kvName}`)
     } catch (error) {
-      if (error instanceof VaultError && error.kind === 'HttpError' && error.status === 400) {
+      if (isVaultBadRequest(error)) {
         await this.client.tuneSysMount(kvName, tuneBody)
         this.logger.log(`Vault mount ${kvName} already existed, so it was tuned to the expected settings`)
         return
@@ -237,7 +237,7 @@ export class VaultService {
       await this.client.deleteSysMounts(kvName)
       this.logger.log(`Deleted Vault mount ${kvName}`)
     } catch (error) {
-      if (error instanceof VaultError && error.kind === 'NotFound') {
+      if (isVaultNotFound(error)) {
         this.logger.warn(`Vault mount ${kvName} was already missing`)
         return
       }
@@ -279,7 +279,7 @@ export class VaultService {
     for (const result of settled) {
       if (result.status !== 'rejected') continue
       const error = result.reason
-      if (error instanceof VaultError && error.kind === 'NotFound') continue
+      if (isVaultNotFound(error)) continue
       throw error
     }
   }
@@ -381,7 +381,7 @@ export class VaultService {
     for (const result of settled) {
       if (result.status !== 'rejected') continue
       const error = result.reason
-      if (error instanceof VaultError && error.kind === 'NotFound') continue
+      if (isVaultNotFound(error)) continue
       throw error
     }
   }
@@ -423,7 +423,7 @@ export class VaultService {
         canonical_id: groupResult.data.id,
       })
     } catch (error) {
-      if (error instanceof VaultError && error.kind === 'HttpError' && error.status === 400) return
+      if (isVaultBadRequest(error)) return
       throw error
     }
   }
@@ -520,7 +520,7 @@ export class VaultService {
       try {
         await this.client.delete(fullPath)
       } catch (error) {
-        if (error instanceof VaultError && error.kind === 'NotFound') return
+        if (isVaultNotFound(error)) return
         throw error
       }
     }))

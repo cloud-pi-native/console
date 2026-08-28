@@ -5,7 +5,7 @@ import { baseConfigFactory } from '../../config/base.config'
 import { vaultConfigFactory } from '../../config/vault.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
-import { generateGitlabMirrorCredPath, generateSecretGroupPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath } from './vault.utils'
+import { generateGitlabMirrorCredPath, generateSecretGroupPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath, isVaultNotFound } from './vault.utils'
 
 export interface VaultSysPoliciesAclUpsertRequest {
   policy: string
@@ -216,7 +216,7 @@ export class VaultClientService {
     span?.setAttribute('vault.kv.path', vaultCredsPath)
     this.logger.verbose(`Reading Vault GitLab mirror credentials (projectSlug=${projectSlug}, repoName=${repoName})`)
     return await this.read<Partial<GitlabMirrorSecret>>(vaultCredsPath).catch((error) => {
-      if (error instanceof VaultError && error.kind === 'NotFound') return null
+      if (isVaultNotFound(error)) return null
       throw error
     })
   }
@@ -241,7 +241,7 @@ export class VaultClientService {
     span?.setAttribute('vault.kv.path', vaultCredsPath)
     this.logger.verbose(`Deleting Vault GitLab mirror credentials (projectSlug=${projectSlug}, repoName=${repoName})`)
     await this.delete(vaultCredsPath).catch((error) => {
-      if (error instanceof VaultError && error.kind === 'NotFound') return
+      if (isVaultNotFound(error)) return
       throw error
     })
   }
@@ -253,7 +253,7 @@ export class VaultClientService {
     span?.setAttribute('project.slug', projectSlug)
     span?.setAttribute('vault.kv.path', vaultPath)
     return await this.read(vaultPath).catch((error) => {
-      if (error instanceof VaultError && error.kind === 'NotFound') return null
+      if (isVaultNotFound(error)) return null
       throw error
     })
   }
@@ -275,7 +275,7 @@ export class VaultClientService {
     span?.setAttribute('vault.kv.path', vaultPath)
     this.logger.verbose(`Reading Vault SonarQube user credentials (projectSlug=${projectSlug})`)
     return await this.read<SonarqubeUserSecret>(vaultPath).catch((error) => {
-      if (error instanceof VaultError && error.kind === 'NotFound') return null
+      if (isVaultNotFound(error)) return null
       throw error
     })
   }
@@ -298,7 +298,7 @@ export class VaultClientService {
     span?.setAttribute('vault.kv.path', vaultPath)
     this.logger.verbose(`Deleting Vault SonarQube user credentials (projectSlug=${projectSlug})`)
     await this.delete(vaultPath).catch((error) => {
-      if (error instanceof VaultError && error.kind === 'NotFound') return
+      if (isVaultNotFound(error)) return
       throw error
     })
   }
@@ -321,7 +321,7 @@ export class VaultClientService {
     try {
       await this.http.fetch(`${kvName}/metadata/${path}`, { method: 'DELETE' })
     } catch (error) {
-      if (error instanceof VaultError && error.kind === 'NotFound') return
+      if (isVaultNotFound(error)) return
       throw error
     }
   }
@@ -339,7 +339,7 @@ export class VaultClientService {
       }
       return response.data.keys
     } catch (error) {
-      if (error instanceof VaultError && error.kind === 'NotFound') return []
+      if (isVaultNotFound(error)) return []
       throw error
     }
   }

@@ -18,7 +18,6 @@ import type {
 import type { ConfigType } from '@nestjs/config'
 import { join } from 'node:path'
 import { defaultBranchName } from '@cpn-console/shared'
-import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 import { Gitlab as GitlabRest } from '@gitbeaker/rest'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { gitlabConfigFactory } from '../../config/gitlab.config'
@@ -36,7 +35,7 @@ import {
   TOPIC_SYSTEM_MANAGED,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
-import { generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged, hasGitbeakerCause, isGitbeakerNotFound } from './gitlab.utils'
+import { generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged, hasGitbeakerCause, isGitbeakerNotFound, isGitbeakerUnauthorized } from './gitlab.utils'
 
 export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
 
@@ -638,7 +637,7 @@ export class GitlabClientService {
       const self = await client.PersonalAccessTokens.show()
       return self.active && !self.revoked
     } catch (error) {
-      if (error instanceof GitbeakerRequestError && error.cause?.response.status === 401) return false
+      if (isGitbeakerUnauthorized(error)) return false
       throw error
     }
   }
