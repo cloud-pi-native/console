@@ -170,7 +170,7 @@ export class NexusService {
   private async upsertPrivilege(body: NexusPrivilege) {
     const existing = await this.client.getSecurityPrivileges(body.name)
     if (!existing) {
-      await this.client.createSecurityPrivilegesRepositoryView(body)
+      await this.client.ensureSecurityPrivilegesRepositoryView(body)
       return
     }
     await this.client.updateSecurityPrivilegesRepositoryView(body.name, body)
@@ -194,7 +194,7 @@ export class NexusService {
       },
     }
     if (!existing) {
-      await this.client.createRepositoriesMavenHosted(body)
+      await this.client.ensureRepositoriesMavenHosted(body)
       return
     }
     await this.client.updateRepositoriesMavenHosted(repoName, body)
@@ -213,7 +213,7 @@ export class NexusService {
       component: { proprietaryComponents: true },
     }
     if (!existing) {
-      await this.client.createRepositoriesNpmHosted(body)
+      await this.client.ensureRepositoriesNpmHosted(body)
       return
     }
     await this.client.updateRepositoriesNpmHosted(repoName, body)
@@ -233,7 +233,7 @@ export class NexusService {
       },
     }
     if (!existing) {
-      await this.client.postRepositoriesNpmGroup(body)
+      await this.client.ensureRepositoriesNpmGroup(body)
       return
     }
     await this.client.putRepositoriesNpmGroup(repoName, body)
@@ -317,7 +317,7 @@ export class NexusService {
       },
     }
     if (!existing) {
-      await this.client.createRepositoriesMavenGroup(body)
+      await this.client.ensureRepositoriesMavenGroup(body)
       return
     }
     await this.client.updateRepositoriesMavenGroup(repoName, body)
@@ -416,7 +416,7 @@ export class NexusService {
     const roleId = `${project.slug}-ID`
     const role = await this.client.getSecurityRoles(roleId)
     if (!role) {
-      await this.client.createSecurityRoles({
+      await this.client.ensureSecurityRoles({
         id: roleId,
         name: `${project.slug}-role`,
         description: 'desc',
@@ -452,7 +452,7 @@ export class NexusService {
         await this.client.updateSecurityUsersChangePassword(project.slug, ensuredPassword)
       }
     } else {
-      await this.client.createSecurityUsers({
+      await this.client.ensureSecurityUsers({
         userId: project.slug,
         firstName: project.owner.firstName,
         lastName: project.owner.lastName,
@@ -472,7 +472,7 @@ export class NexusService {
   private async ensureSecurityRole(id: string, privileges: string[]) {
     const role = await this.client.getSecurityRoles(id)
     if (!role) {
-      await this.client.createSecurityRoles({
+      await this.client.ensureSecurityRoles({
         id,
         name: id,
         description: 'desc',

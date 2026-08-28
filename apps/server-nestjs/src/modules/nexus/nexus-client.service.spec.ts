@@ -77,4 +77,61 @@ describe('nexusClientService', () => {
 
     await service.updateSecurityUsersChangePassword('u1', 'pw123')
   })
+
+  it('should re-fetch the existing role when ensureSecurityRoles hits a 409', async () => {
+    const role = { id: 'proj-role-id', name: 'proj-role-id', description: 'desc', privileges: ['nx-app'] }
+    server.use(
+      http.post(`${nexusUrl}/service/rest/v1/security/roles`, () =>
+        HttpResponse.json({ errorMessage: 'Role already exists' }, { status: HttpStatus.CONFLICT })),
+      http.get(`${nexusUrl}/service/rest/v1/security/roles/:id`, () => HttpResponse.json(role)),
+    )
+
+    await expect(service.ensureSecurityRoles(role)).resolves.toEqual(role)
+  })
+
+  it('should rethrow non-collision errors from ensureSecurityRoles without re-fetching', async () => {
+    let fetches = 0
+    server.use(
+      http.post(`${nexusUrl}/service/rest/v1/security/roles`, () => {
+        fetches++
+        return HttpResponse.json({ errorMessage: 'Internal error' }, { status: HttpStatus.INTERNAL_SERVER_ERROR })
+      }),
+    )
+
+    await expect(service.ensureSecurityRoles({ id: 'r', name: 'r', description: 'desc', privileges: [] }))
+      .rejects.toThrow('responded 500')
+    expect(fetches).toBe(1)
+  })
+
+  it('should re-fetch the existing repository when ensureRepositoriesMavenHosted hits a 400 already-exists', async () => {
+    const repo = {
+      name: 'proj-hosted',
+      online: true,
+      storage: { blobStoreName: 'default', strictContentTypeValidation: true, writePolicy: 'ALLOW' },
+      component: { proprietaryComponents: true },
+      maven: { versionPolicy: 'MIXED', layoutPolicy: 'STRICT', contentDisposition: 'ATTACHMENT' },
+    }
+    server.use(
+      http.post(`${nexusUrl}/service/rest/v1/repositories/maven/hosted`, () =>
+        new HttpResponse(null, { status: HttpStatus.BAD_REQUEST, statusText: 'Repository already exists' })),
+      http.get(`${nexusUrl}/service/rest/v1/repositories/maven/hosted/:name`, () => HttpResponse.json(repo)),
+    )
+
+    await expect(service.ensureRepositoriesMavenHosted(repo)).resolves.toEqual(repo)
+  })
+
+  it('should rethrow a 400 without an already-exists message from ensureRepositoriesMavenHosted', async () => {
+    server.use(
+      http.post(`${nexusUrl}/service/rest/v1/repositories/maven/hosted`, () =>
+        new HttpResponse(null, { status: HttpStatus.BAD_REQUEST, statusText: 'Bad Request' })),
+    )
+
+    await expect(service.ensureRepositoriesMavenHosted({
+      name: 'proj-hosted',
+      online: true,
+      storage: { blobStoreName: 'default', strictContentTypeValidation: true, writePolicy: 'ALLOW' },
+      component: { proprietaryComponents: true },
+      maven: { versionPolicy: 'MIXED', layoutPolicy: 'STRICT', contentDisposition: 'ATTACHMENT' },
+    })).rejects.toThrow('responded 400')
+  })
 })
