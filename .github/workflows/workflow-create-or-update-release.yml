@@ -82,7 +82,7 @@ jobs:
 
   update-chart:
     runs-on: ubuntu-latest
-    if: ${{ needs.release.outputs.prerelease-created == 'true' || needs.release.outputs.release-created == 'true' }}
+    if: ${{ needs.release.outputs.tag-name != '' }}
     needs:
       - expose-vars
       - release
