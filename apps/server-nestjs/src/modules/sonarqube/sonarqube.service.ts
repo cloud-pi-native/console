@@ -269,7 +269,7 @@ export class SonarqubeService implements OnModuleInit {
 
     // SONAR_TOKEN is shared across every repository of the project; expose it once at the group level.
     if (sonarSecret?.data?.SONAR_TOKEN) {
-      await this.gitlab.setGitlabGroupVariable(
+      await this.gitlab.ensureGitlabGroupVariable(
         gitlabGroup.id,
         'SONAR_TOKEN',
         sonarSecret.data.SONAR_TOKEN,
@@ -322,7 +322,7 @@ export class SonarqubeService implements OnModuleInit {
       variables.push({ key: 'SONAR_TOKEN', value: sonarSecret.data.SONAR_TOKEN, variableType: 'env_var', masked: true })
     }
     await Promise.all(variables.map(async (variable) => {
-      await this.gitlab.setGitlabRepoVariable(repo.id, variable.key, variable.value, {
+      await this.gitlab.ensureGitlabRepoVariable(repo.id, variable.key, variable.value, {
         masked: variable.masked,
         protected: false,
         variableType: variable.variableType,

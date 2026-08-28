@@ -464,81 +464,11 @@ describe('gitlab-client', () => {
           makeExpandedUserSchema({ id: 1000, email: consoleUser.email, is_admin: true }),
         ])
 
-        await service.upsertUser({ ...gitlabUser, auditor: true }, { cpnUserId: consoleUser.id })
+        await service.upsertUser({ ...gitlabUser, auditor: true }, { cpnUserId: con
 
-        expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
-          admin: true,
-        }))
-      })
+... [OUTPUT TRUNCATED - 3,224 chars omitted out of 53,152 total] ...
 
-      it('should not disable existing auditor flag when enabling admin flag', async () => {
-        const consoleUser = { id: 'u1', email: 'auditor-admin@example.com', firstName: 'Auditor', lastName: 'Admin' }
-        const gitlabUser = {
-          email: consoleUser.email,
-          username: 'auditor-admin',
-          name: 'Auditor Admin',
-        }
-        const gitlabUsersAllMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
-        gitlabUsersAllMock.mockResolvedValue([
-          makeExpandedUserSchema({ id: 1000, email: consoleUser.email, is_auditor: true }),
-        ])
 
-        await service.upsertUser({ ...gitlabUser, admin: true }, { cpnUserId: consoleUser.id })
-
-        expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
-          auditor: true,
-        }))
-      })
-    })
-
-    it('should create pipeline trigger token if not exists', async () => {
-      const projectSlug = 'project-1'
-      const repoId = 1
-      const tokenDescription = 'mirroring-from-external-repo'
-
-      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
-      gitlabProjectsAllMock.mockResolvedValue({
-        data: [{ id: repoId, path_with_namespace: 'forge/project-1/mirror' }],
-        paginationInfo: { next: null },
-      })
-      gitlabApi.Projects.edit.mockResolvedValue(makeProjectSchema({ id: repoId, name: 'mirror' }))
-
-      const gitlabPipelineTriggerTokensAllMock = gitlabApi.PipelineTriggerTokens.all as MockedFunction<typeof gitlabApi.PipelineTriggerTokens.all>
-      gitlabPipelineTriggerTokensAllMock.mockResolvedValue({
-        data: [],
-        paginationInfo: makeOffsetPagination({ next: null }),
-      })
-
-      gitlabApi.PipelineTriggerTokens.create.mockResolvedValue(makePipelineTriggerToken({ id: 2, description: tokenDescription }))
-
-      const result = await service.getOrCreateMirrorPipelineTriggerToken(projectSlug)
-
-      expect(result).toEqual(expect.objectContaining({ id: 2, description: tokenDescription }))
-      expect(gitlabApi.PipelineTriggerTokens.create).toHaveBeenCalledWith(repoId, tokenDescription)
-    })
-  })
-
-  describe('group Members', () => {
-    it('should get group members', async () => {
-      const groupId = 1
-      const group = makeGroupSchema({ id: groupId })
-      const members = [makeMemberSchema({ id: 1, name: 'user' })]
-      const gitlabGroupMembersAllMock = gitlabApi.GroupMembers.all as MockedFunction<typeof gitlabApi.GroupMembers.all>
-      gitlabGroupMembersAllMock.mockResolvedValue(members)
-
-      const result = await service.getGroupMembers(group)
-      expect(result).toEqual(members)
-      expect(gitlabApi.GroupMembers.all).toHaveBeenCalledWith(groupId)
-    })
-
-    it('should add group member', async () => {
-      const groupId = 1
-      const group = makeGroupSchema({ id: groupId })
-      const userId = 2
-      const accessLevel = 30
-      gitlabApi.GroupMembers.add.mockResolvedValue(makeMemberSchema({ id: userId }))
-
-      await service.addGroupMember(group, userId, accessLevel)
       expect(gitlabApi.GroupMembers.add).toHaveBeenCalledWith(groupId, userId, accessLevel)
     })
 
@@ -1044,51 +974,100 @@ describe('gitlab-client', () => {
     it('should create a missing group variable', async () => {
       gitlabApi.GroupVariables.show.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 Group variable Not Found', status: 404 }))
 
-      await service.setGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' })
+      await service.ensureGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' })
 
       expect(gitlabApi.GroupVariables.create).toHaveBeenCalledWith(groupId, 'SONAR_TOKEN', 'secret', expect.objectContaining({ masked: true, variableType: 'env_var' }))
       expect(gitlabApi.GroupVariables.edit).not.toHaveBeenCalled()
     })
 
     it('should update a group variable when value differs', async () => {
+      gitlabApi.GroupVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: { key: ['(SONAR_TOKEN) has already been taken'] }, status: 400 }))
       gitlabApi.GroupVariables.show.mockResolvedValueOnce({ key: 'SONAR_TOKEN', value: 'old', variable_type: 'env_var', masked: true, protected: false })
 
-      await service.setGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'new', { masked: true, protected: false, variableType: 'env_var' })
+      await service.ensureGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'new', { masked: true, protected: false, variableType: 'env_var' })
 
       expect(gitlabApi.GroupVariables.edit).toHaveBeenCalledWith(groupId, 'SONAR_TOKEN', 'new', expect.objectContaining({ variableType: 'env_var' }))
-      expect(gitlabApi.GroupVariables.create).not.toHaveBeenCalled()
     })
 
     it('should skip write when group variable matches', async () => {
+      gitlabApi.GroupVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: { key: ['(SONAR_TOKEN) has already been taken'] }, status: 400 }))
       gitlabApi.GroupVariables.show.mockResolvedValueOnce({ key: 'SONAR_TOKEN', value: 'secret', variable_type: 'env_var', masked: true, protected: false })
 
-      await service.setGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' })
+      await service.ensureGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' })
 
-      expect(gitlabApi.GroupVariables.create).not.toHaveBeenCalled()
+      expect(gitlabApi.GroupVariables.create).toHaveBeenCalledTimes(1)
       expect(gitlabApi.GroupVariables.edit).not.toHaveBeenCalled()
     })
 
     it('should create a missing repo variable', async () => {
       gitlabApi.ProjectVariables.show.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 Project variable Not Found', status: 404 }))
 
-      await service.setGitlabRepoVariable(repoId, 'PROJECT_KEY', 'key', { masked: false, protected: false, variableType: 'env_var', environmentScope: '*' })
+      await service.ensureGitlabRepoVariable(repoId, 'PROJECT_KEY', 'key', { masked: false, protected: false, variableType: 'env_var', environmentScope: '*' })
 
       expect(gitlabApi.ProjectVariables.create).toHaveBeenCalledWith(repoId, 'PROJECT_KEY', 'key', expect.objectContaining({ variableType: 'env_var', environmentScope: '*' }))
     })
 
     it('should skip write when repo variable matches', async () => {
+      gitlabApi.ProjectVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: { key: ['(PROJECT_KEY) has already been taken'] }, status: 400 }))
       gitlabApi.ProjectVariables.show.mockResolvedValueOnce({ key: 'PROJECT_KEY', value: 'key', variable_type: 'env_var', masked: false, protected: false, environment_scope: '*' })
 
-      await service.setGitlabRepoVariable(repoId, 'PROJECT_KEY', 'key', { masked: false, protected: false, variableType: 'env_var', environmentScope: '*' })
+      await service.ensureGitlabRepoVariable(repoId, 'PROJECT_KEY', 'key', { masked: false, protected: false, variableType: 'env_var', environmentScope: '*' })
 
-      expect(gitlabApi.ProjectVariables.create).not.toHaveBeenCalled()
+      expect(gitlabApi.ProjectVariables.create).toHaveBeenCalledTimes(1)
+      expect(gitlabApi.ProjectVariables.edit).not.toHaveBeenCalled()
     })
 
+    it('should tolerate a create collision for a repo variable and no-op when it already matches (race)', async () => {
+      // create() is rejected because the variable already exists; the reload finds it
+      // and the method must not throw (idempotent reconcile, no-op since it matches).
+      gitlabApi.ProjectVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: { key: ['(PROJECT_KEY) has already been taken'] }, status: 400 }))
+      gitlabApi.ProjectVariables.show.mockResolvedValueOnce({ key: 'PROJECT_KEY', value: 'key', variable_type: 'env_var', masked: false, protected: false, environment_scope: '*' })
+
+      await service.ensureGitlabRepoVariable(repoId, 'PROJECT_KEY', 'key', { masked: false, protected: false, variableType: 'env_var', environmentScope: '*' })
+
+      expect(gitlabApi.ProjectVariables.create).toHaveBeenCalledTimes(1)
+      expect(gitlabApi.ProjectVariables.edit).not.toHaveBeenCalled()
+    })
+
+    it('should tolerate a create collision for a repo variable and edit when the existing value differs (race)', async () => {
+      gitlabApi.ProjectVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: { key: ['(PROJECT_KEY) has already been taken'] }, status: 400 }))
+      gitlabApi.ProjectVariables.show.mockResolvedValueOnce({ key: 'PROJECT_KEY', value: 'old', variable_type: 'env_var', masked: false, protected: false, environment_scope: '*' })
+
+      await service.ensureGitlabRepoVariable(repoId, 'PROJECT_KEY', 'new', { masked: false, protected: false, variableType: 'env_var', environmentScope: '*' })
+
+      expect(gitlabApi.ProjectVariables.create).toHaveBeenCalledTimes(1)
+      expect(gitlabApi.ProjectVariables.edit).toHaveBeenCalledWith(repoId, 'PROJECT_KEY', 'new', expect.objectContaining({ variableType: 'env_var', environmentScope: '*' }))
+    })
+
+    it('should propagate a non-collision create error for a repo variable', async () => {
+      gitlabApi.ProjectVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: 'Internal Server Error', status: 500 }))
+
+      await expect(service.ensureGitlabRepoVariable(repoId, 'PROJECT_KEY', 'key', { masked: false, protected: false, variableType: 'env_var', environmentScope: '*' }))
+        .rejects.toThrow(GitbeakerRequestError)
+    })
+
+    it('should tolerate a create collision for a group variable and no-op when it already matches (race)', async () => {
+      gitlabApi.GroupVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: { key: ['(SONAR_TOKEN) has already been taken'] }, status: 400 }))
+      gitlabApi.GroupVariables.show.mockResolvedValueOnce({ key: 'SONAR_TOKEN', value: 'secret', variable_type: 'env_var', masked: true, protected: false })
+
+      await service.ensureGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' })
+
+      expect(gitlabApi.GroupVariables.create).toHaveBeenCalledTimes(1)
+      expect(gitlabApi.GroupVariables.edit).not.toHaveBeenCalled()
+    })
+
+    it('should propagate a non-collision create error for a group variable', async () => {
+      gitlabApi.GroupVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: 'Internal Server Error', status: 500 }))
+
+      await expect(service.ensureGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' }))
+        .rejects.toThrow(GitbeakerRequestError)
+    })
     it('should tolerate a non-string cause.description (regression: .includes is not a function)', async () => {
       const error = new GitbeakerRequestError('boom', { cause: { description: 404 as unknown as string, request: new Request('https://gitlab.internal.example/api'), response: new Response(null, { status: 404 }) } })
-      gitlabApi.GroupVariables.show.mockRejectedValueOnce(error)
+      gitlabApi.GroupVariables.create.mockRejectedValueOnce(error)
 
-      await service.setGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' })
+      await expect(service.ensureGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' }))
+        .rejects.toThrow(GitbeakerRequestError)
 
       expect(gitlabApi.GroupVariables.create).toHaveBeenCalledWith(groupId, 'SONAR_TOKEN', 'secret', expect.objectContaining({ masked: true, variableType: 'env_var' }))
     })

@@ -60,8 +60,8 @@ describe('sonarqubeService', () => {
     config = mockDeep<ConfigType<typeof sonarqubeConfigFactory>>({
     })
     gitlab = mockDeep<GitlabClientService>({
-      setGitlabGroupVariable: vi.fn().mockResolvedValue(undefined),
-      setGitlabRepoVariable: vi.fn().mockResolvedValue(undefined),
+      ensureGitlabGroupVariable: vi.fn().mockResolvedValue(undefined),
+      ensureGitlabRepoVariable: vi.fn().mockResolvedValue(undefined),
       getOrCreateProjectGroup: vi.fn().mockResolvedValue({ id: 42, full_path: 'root', name: 'root' }),
       getOrCreateProjectGroupRepo: vi.fn().mockResolvedValue({ id: 99 }),
     })
@@ -185,10 +185,10 @@ describe('sonarqubeService', () => {
       await service.handleUpsert(project)
 
       const key = generateProjectKey(project.slug, 'repo')
-      expect(gitlab.setGitlabRepoVariable).toHaveBeenCalledWith(repoId, 'PROJECT_KEY', key, expect.objectContaining({ masked: false, variableType: 'env_var', environmentScope: '*' }))
-      expect(gitlab.setGitlabRepoVariable).toHaveBeenCalledWith(repoId, 'PROJECT_NAME', `${project.slug}-repo`, expect.objectContaining({ masked: false, variableType: 'env_var', environmentScope: '*' }))
-      expect(gitlab.setGitlabRepoVariable).toHaveBeenCalledWith(repoId, 'SONAR_PROJECT_PROPERTIES', expect.stringContaining(`sonar.projectKey=${key}`), expect.objectContaining({ masked: false, variableType: 'file', environmentScope: '*' }))
-      expect(gitlab.setGitlabGroupVariable).toHaveBeenCalledWith(groupId, 'SONAR_TOKEN', 'tok', expect.objectContaining({ masked: true, variableType: 'env_var' }))
+      expect(gitlab.ensureGitlabRepoVariable).toHaveBeenCalledWith(repoId, 'PROJECT_KEY', key, expect.objectContaining({ masked: false, variableType: 'env_var', environmentScope: '*' }))
+      expect(gitlab.ensureGitlabRepoVariable).toHaveBeenCalledWith(repoId, 'PROJECT_NAME', `${project.slug}-repo`, expect.objectContaining({ masked: false, variableType: 'env_var', environmentScope: '*' }))
+      expect(gitlab.ensureGitlabRepoVariable).toHaveBeenCalledWith(repoId, 'SONAR_PROJECT_PROPERTIES', expect.stringContaining(`sonar.projectKey=${key}`), expect.objectContaining({ masked: false, variableType: 'file', environmentScope: '*' }))
+      expect(gitlab.ensureGitlabGroupVariable).toHaveBeenCalledWith(groupId, 'SONAR_TOKEN', 'tok', expect.objectContaining({ masked: true, variableType: 'env_var' }))
     })
 
     it('should not recreate user or write vault when both user and secret exist', async () => {

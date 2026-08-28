@@ -495,25 +495,32 @@ export class GitlabClientService {
   }
 
   // CI Variables
-  public async setGitlabGroupVariable(
+  public async ensureGitlabGroupVariable(
     groupId: number,
     key: string,
     value: string,
     options: { masked: boolean, protected: boolean, variableType: VariableType },
   ): Promise<void> {
-    const current = await this.client.GroupVariables.show(groupId, key).catch((error) => {
-      if (isGitbeakerNotFound(error)) return undefined
-      throw error
-    })
-    if (!current) {
+    try {
       await this.client.GroupVariables.create(groupId, key, value, {
         variableType: options.variableType,
         masked: options.masked,
         protected: options.protected,
       })
       return
+    } catch (error) {
+      // GitLab enforces (key, environment_scope) uniqueness; a concurrent or prior
+      // reconcile may have created the variable between our read and this create.
+      // Tolerate it like every other ensure* writer: re-read once and reconcile
+      // instead of failing the whole sync.
+      if (!hasGitbeakerCause(error, 'has already been taken')) throw error
+      this.logger.warn(`GitLab group variable already exists (race); reloading (groupId=${groupId}, key=${key})`)
     }
-    if (current.masked === options.masked
+    const current = await this.client.GroupVariables.show(groupId, key).catch((error) => {
+      if (isGitbeakerNotFound(error)) return undefined
+      throw error
+    })
+    if (current && current.masked === options.masked
       && current.value === value
       && current.protected === options.protected
       && current.variable_type === options.variableType) {
@@ -527,17 +534,13 @@ export class GitlabClientService {
     })
   }
 
-  public async setGitlabRepoVariable(
+  public async ensureGitlabRepoVariable(
     repoId: number,
     key: string,
     value: string,
     options: { masked: boolean, protected: boolean, variableType: VariableType, environmentScope: string },
   ): Promise<void> {
-    const current = await this.client.ProjectVariables.show(repoId, key, { filter: { environment_scope: options.environmentScope } }).catch((error) => {
-      if (isGitbeakerNotFound(error)) return undefined
-      throw error
-    })
-    if (!current) {
+    try {
       await this.client.ProjectVariables.create(repoId, key, value, {
         variableType: options.variableType,
         masked: options.masked,
@@ -545,8 +548,19 @@ export class GitlabClientService {
         environmentScope: options.environmentScope,
       })
       return
+    } catch (error) {
+      // GitLab enforces (key, environment_scope) uniqueness; a concurrent or prior
+      // reconcile may have created the variable between our read and this create.
+      // Tolerate it like every other ensure* writer: re-read once and reconcile
+      // instead of failing the whole sync.
+      if (!hasGitbeakerCause(error, 'has already been taken')) throw error
+      this.logger.warn(`GitLab repo variable already exists (race); reloading (repoId=${repoId}, key=${key})`)
     }
-    if (current.masked === options.masked
+    const current = await this.client.ProjectVariables.show(repoId, key, { filter: { environment_scope: options.environmentScope } }).catch((error) => {
+      if (isGitbeakerNotFound(error)) return undefined
+      throw error
+    })
+    if (current && current.masked === options.masked
       && current.value === value
       && current.protected === options.protected
       && current.variable_type === options.variableType) {
