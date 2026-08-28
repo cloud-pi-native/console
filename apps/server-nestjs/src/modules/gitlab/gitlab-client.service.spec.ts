@@ -14,6 +14,7 @@ import { GITLAB_REST_CLIENT, GitlabClientService } from './gitlab-client.service
 import {
   makeAccessTokenExposedSchema,
   makeAccessTokenSchema,
+  makeCommitAction,
   makeExpandedGroupSchema,
   makeExpandedUserSchema,
   makeGitbeakerRequestError,
@@ -182,6 +183,54 @@ describe('gitlab-client', () => {
       await service.maybeCreateCommit(repo, message, action ? [action] : [])
 
       expect(gitlabApi.Commits.create).not.toHaveBeenCalled()
+    })
+
+    it('should tolerate an already-applied commit (race) when the file now exists', async () => {
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const message = 'ci: :robot_face: Sync file'
+      const alreadyExistsError = makeGitbeakerRequestError({ description: 'has already been taken', status: 400, statusText: 'Bad Request' })
+      gitlabApi.Commits.create.mockRejectedValue(alreadyExistsError)
+      gitlabApi.RepositoryFiles.show.mockResolvedValue(makeRepositoryFileExpandedSchema())
+
+      await expect(service.maybeCreateCommit(repo, message, [makeCommitAction({ action: 'create' })]))
+        .resolves.toBeUndefined()
+      expect(gitlabApi.Commits.create).toHaveBeenCalledOnce()
+    })
+
+    it('should rethrow when the file is still absent after an already-exists commit error', async () => {
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const message = 'ci: :robot_face: Sync file'
+      const alreadyExistsError = makeGitbeakerRequestError({ description: 'has already been taken', status: 400, statusText: 'Bad Request' })
+      gitlabApi.Commits.create.mockRejectedValue(alreadyExistsError)
+      gitlabApi.RepositoryFiles.show.mockRejectedValue(makeGitbeakerRequestError({ description: '404 File Not Found' }))
+
+      await expect(service.maybeCreateCommit(repo, message, [makeCommitAction({ action: 'create' })]))
+        .rejects.toThrow()
+      expect(gitlabApi.Commits.create).toHaveBeenCalledOnce()
+    })
+  })
+
+  describe('ensureGroupRepo', () => {
+    it('should reload the existing repo on a create collision (race)', async () => {
+      const groupId = 99
+      const repoName = 'observability-values'
+      const existingRepo = makeProjectSchema({ id: 42, name: repoName, path_with_namespace: `forge/${repoName}` })
+      const collisionError = makeGitbeakerRequestError({ description: 'has already been taken', status: 400, statusText: 'Bad Request' })
+      gitlabApi.Projects.create.mockRejectedValue(collisionError)
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
+      gitlabProjectsAllMock.mockResolvedValueOnce({ data: [existingRepo], paginationInfo: { next: null } })
+
+      const result = await service.ensureGroupRepo(groupId, repoName)
+
+      expect(result).toEqual(existingRepo)
+      expect(gitlabApi.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
+        name: repoName,
+        path: repoName,
+        namespaceId: groupId,
+      }))
+      expect(gitlabProjectsAllMock).toHaveBeenCalledOnce()
     })
   })
 

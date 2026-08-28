@@ -35,7 +35,7 @@ export class ObservabilityClientService {
     }
 
     this.logger.log(`Creating GitLab observability values repository ${OBSERVABILITY_REPO_NAME}`)
-    return this.gitlab.createGroupRepo(group.id, OBSERVABILITY_REPO_NAME)
+    return this.gitlab.ensureGroupRepo(group.id, OBSERVABILITY_REPO_NAME)
   }
 
   async getValuesFile(repo: CondensedProjectSchemaWith<'id'>): Promise<ObservabilityData> {

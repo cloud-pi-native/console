@@ -135,7 +135,7 @@ export class GitlabClientService {
     )
   }
 
-  async createGroup(path: string) {
+  async ensureGroup(path: string) {
     this.logger.log(`Creating a GitLab group at path ${path}`)
     try {
       const created = await this.client.Groups.create(path, path)
@@ -156,7 +156,7 @@ export class GitlabClientService {
     }
   }
 
-  async createSubGroup(parentGroup: CondensedGroupSchemaWith<'id' | 'full_path'>, name: string, fullPath: string) {
+  async ensureSubGroup(parentGroup: CondensedGroupSchemaWith<'id' | 'full_path'>, name: string, fullPath: string) {
     this.logger.log(`Creating a GitLab subgroup ${fullPath} (parentId=${parentGroup.id})`)
     try {
       const created = await this.client.Groups.create(name, name, { parentId: parentGroup.id })
@@ -184,7 +184,7 @@ export class GitlabClientService {
     if (!rootGroupPath) throw new Error('Invalid projects root dir')
 
     this.logger.verbose(`Resolving GitLab group path ${path} (depth=${1 + parts.length})`)
-    let parentGroup = await this.getGroupByPath(rootGroupPath) ?? await this.createGroup(rootGroupPath)
+    let parentGroup = await this.getGroupByPath(rootGroupPath) ?? await this.ensureGroup(rootGroupPath)
     if (this.config.projectRootDir && parentGroup.full_path === this.config.projectRootDir) {
       await this.setManagedRootGroupAttributes(parentGroup.id)
     }
@@ -192,7 +192,7 @@ export class GitlabClientService {
     let currentFullPath: string
     for (const part of parts) {
       currentFullPath = `${parentGroup.full_path}/${part}`
-      parentGroup = await this.getGroupByPath(currentFullPath) ?? await this.createSubGroup(parentGroup, part, currentFullPath)
+      parentGroup = await this.getGroupByPath(currentFullPath) ?? await this.ensureSubGroup(parentGroup, part, currentFullPath)
     }
 
     this.logger.verbose(`GitLab group path resolved (path=${path}, groupId=${parentGroup.id})`)
@@ -293,16 +293,32 @@ export class GitlabClientService {
     return repo
   }
 
-  async createGroupRepo(groupId: number, repoName: string, description?: string) {
+  async ensureGroupRepo(groupId: number, repoName: string, description?: string) {
     this.logger.log(`Creating a GitLab repository in a standalone group (groupId=${groupId}, repoName=${repoName})`)
-    const created = await this.client.Projects.create({
-      name: repoName,
-      path: repoName,
-      namespaceId: groupId,
-      description,
-      defaultBranch: defaultBranchName,
-    })
-    return created
+    try {
+      const created = await this.client.Projects.create({
+        name: repoName,
+        path: repoName,
+        namespaceId: groupId,
+        description,
+        defaultBranch: defaultBranchName,
+      })
+      return created
+    } catch (error) {
+      if (hasGitbeakerCause(error, 'has already been taken')) {
+        this.logger.warn(`GitLab repository already exists (race); reloading (groupId=${groupId}, repoName=${repoName})`)
+        const existing = await find(
+          this.offsetPaginate(opts => this.client.Projects.all({
+            search: repoName,
+            orderBy: 'path',
+            ...opts,
+          })),
+          p => p.name === repoName,
+        )
+        if (existing) return existing
+      }
+      throw error
+    }
   }
 
   async getFile(repo: CondensedProjectSchemaWith<'id'>, filePath: string, ref: string = 'main') {
@@ -328,7 +344,24 @@ export class GitlabClientService {
       return
     }
     this.logger.log(`Creating a GitLab commit (repoId=${repo.id}, ref=${ref}, actions=${actions.length})`)
-    await this.client.Commits.create(repo.id, ref, message, actions)
+    try {
+      await this.client.Commits.create(repo.id, ref, message, actions)
+    } catch (error) {
+      // Two overlapping syncs can both see a file absent and both emit a `create`
+      // action; the loser's Commits.create collides with the winner's commit (400).
+      // Treat that as already-committed and continue when the file is now present.
+      const alreadyCommitted = hasGitbeakerCause(error, 'has already been taken')
+        || hasGitbeakerCause(error, /already exists/i)
+        || (error instanceof GitbeakerRequestError && error.cause?.response?.status === 400)
+      if (alreadyCommitted) {
+        const createAction = actions.find(action => action.action === 'create')
+        if (!createAction || await this.getFile(repo, createAction.filePath, ref)) {
+          this.logger.warn(`GitLab commit already applied (race); continuing (repoId=${repo.id}, ref=${ref})`)
+          return
+        }
+      }
+      throw error
+    }
     this.logger.verbose(`GitLab commit created (repoId=${repo.id}, ref=${ref}, actions=${actions.length})`)
   }
 
