@@ -49,7 +49,7 @@ jobs:
     with:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
-      RELEASE_CREATED: ${{ needs.release.outputs.releases-created }}
+      RELEASE_CREATED: ${{ needs.release.outputs.releases-created == 'true' }}
       TAG: ${{ needs.release.outputs.tag-name }}
       MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
       MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
@@ -69,7 +69,7 @@ jobs:
     with:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
-      RELEASE_CREATED: ${{ needs.release.outputs.releases-created }}
+      RELEASE_CREATED: ${{ needs.release.outputs.releases-created == 'true' }}
       TAG: ${{ needs.release.outputs.tag-name }}
       MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
       MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
