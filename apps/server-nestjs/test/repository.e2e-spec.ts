@@ -1,13 +1,14 @@
 import type { ExpandedUserSchema, Gitlab } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
-import type { RepositorySyncEventPayload } from '../src/modules/events/app-events.service'
 import type { TestingModule } from '@nestjs/testing'
+import type { RepositorySyncEventPayload } from '../src/modules/events/app-events.service'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
+import { isPluginResults } from '../src/modules/events/app-events.utils'
 import { GITLAB_REST_CLIENT, GitlabClientService } from '../src/modules/gitlab/gitlab-client.service'
 import { projectSelect } from '../src/modules/gitlab/gitlab-datastore.service'
 import { GitlabModule } from '../src/modules/gitlab/gitlab.module'
@@ -17,9 +18,8 @@ import { PrismaService } from '../src/modules/infrastructure/database/prisma.ser
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
 import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
-import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { getFailedPlugins, mergePluginResults } from '../src/modules/plugin/plugin.utils'
-import { isPluginResults } from '../src/modules/events/app-events.utils'
+import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { getAll } from '../src/utils/iterable.utils'
 import { EXTERNAL_SYNC_TIMEOUT } from './e2e-timeout'
@@ -172,7 +172,7 @@ describeWithRepository('RepositoryService (e2e) — repository.sync mirror parit
     const responses = await eventEmitter.emitAsync('repository.sync', payload)
 
     // Assert the GitLab consumer ran the mirror sync without reporting a failure.
-    const merged = mergePluginResults((responses as unknown[]).filter(isPluginResults))
+    const merged = mergePluginResults(responses.filter(isPluginResults))
     expect(getFailedPlugins(merged)).toHaveLength(0)
 
     // Assert the mirror pipeline was actually provisioned in GitLab by the consumer.
