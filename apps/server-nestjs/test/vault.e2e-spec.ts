@@ -13,7 +13,8 @@ import { EventsModule } from '../src/modules/infrastructure/events/events.module
 import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
-import { ZoneWithDetails, projectSelect } from '../src/modules/vault/vault-datastore.service'
+import { projectSelect } from '../src/modules/vault/vault-datastore.service'
+import { makeProjectWithDetails } from '../src/modules/vault/vault-testing.utils'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { VAULT_PROVISION_TIMEOUT } from './e2e-timeout'
@@ -74,13 +75,13 @@ describeWithVault('VaultService (e2e)', () => {
     if (testZoneSlug) {
       const zone = await prisma.zone.findUnique({ where: { slug: testZoneSlug } }).catch(() => null)
       if (zone) {
-        await eventEmitter.emitAsync('zone.delete', { ...zone, clusters: [] } as unknown as ZoneWithDetails).catch(() => {})
+        await eventEmitter.emitAsync('zone.delete', { ...zone, clusters: [] }).catch(() => {})
       }
     }
 
     // Project cleanup
     if (testProjectSlug) {
-      await eventEmitter.emitAsync('project.delete', { slug: testProjectSlug } as never).catch(() => {})
+      await eventEmitter.emitAsync('project.delete', makeProjectWithDetails({ slug: testProjectSlug })).catch(() => {})
     }
 
     if (prisma) {
@@ -161,7 +162,7 @@ describeWithVault('VaultService (e2e)', () => {
 
     it('should provision the zone Vault mount, policy and approle on zone.upsert', async () => {
       const zoneRow = await prisma.zone.findUniqueOrThrow({ where: { id: zoneId }, select: zoneSelectForTest })
-      const zone = { ...zoneRow, clusters: [] } as unknown as ZoneWithDetails
+      const zone = { ...zoneRow, clusters: [] }
 
       // Act
       await eventEmitter.emitAsync('zone.upsert', zone)
@@ -174,7 +175,7 @@ describeWithVault('VaultService (e2e)', () => {
 
     it('should tear down the zone Vault mount, policy and approle on zone.delete', async () => {
       const zoneRow = await prisma.zone.findUniqueOrThrow({ where: { id: zoneId }, select: zoneSelectForTest })
-      const zone = { ...zoneRow, clusters: [] } as unknown as ZoneWithDetails
+      const zone = { ...zoneRow, clusters: [] }
 
       await eventEmitter.emitAsync('zone.upsert', zone)
       await eventEmitter.emitAsync('zone.delete', zone)
