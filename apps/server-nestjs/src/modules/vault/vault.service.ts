@@ -515,7 +515,7 @@ export class VaultService {
     span?.setAttribute('vault.secrets.count', secrets.length)
 
     const projectPath = generateProjectPath(this.baseConfig.projectsRootDir, projectSlug)
-    await Promise.allSettled(secrets.map(async (relativePath) => {
+    const results = await Promise.allSettled(secrets.map(async (relativePath) => {
       const fullPath = `${projectPath}/${relativePath}`
       try {
         await this.client.delete(fullPath)
@@ -524,6 +524,8 @@ export class VaultService {
         throw error
       }
     }))
+    const rejected = results.find(result => result.status === 'rejected')
+    if (rejected) throw rejected.reason
   }
 
   private async listRecursive(

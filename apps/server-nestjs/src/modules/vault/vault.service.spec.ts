@@ -14,7 +14,7 @@ import { VaultService } from './vault.service'
 
 const projectRoleGroupNameRegex = /^project-(.*)-(admin|devops|developer|readonly|security)$/
 
-function httpError(status: number): VaultError {
+function makeVaultError(status: number): VaultError {
   return new VaultError('HttpError', 'Request failed', { status })
 }
 
@@ -177,7 +177,7 @@ describe('vaultService', () => {
     })
 
     it('falls back to tuning the mount when creation reports 400', async () => {
-      client.createSysMount.mockRejectedValue(httpError(400))
+      client.createSysMount.mockRejectedValue(makeVaultError(400))
 
       await service.upsertZone('prod')
 
@@ -187,7 +187,7 @@ describe('vaultService', () => {
     })
 
     it('does not tune and rethrows when creation fails with another status', async () => {
-      client.createSysMount.mockRejectedValue(httpError(403))
+      client.createSysMount.mockRejectedValue(makeVaultError(403))
 
       await expect(service.upsertZone('prod')).rejects.toSatisfy((error: unknown) =>
         error instanceof VaultError && error.kind === 'HttpError' && error.status === 403)
@@ -212,7 +212,7 @@ describe('vaultService', () => {
     })
 
     it('surfaces a partial failure when a teardown call fails with HttpError', async () => {
-      client.deleteAuthApproleRole.mockRejectedValue(httpError(500))
+      client.deleteAuthApproleRole.mockRejectedValue(makeVaultError(500))
 
       await expect(service.deleteZone('prod')).rejects.toSatisfy((error: unknown) =>
         error instanceof VaultError && error.kind === 'HttpError' && error.status === 500)
@@ -270,17 +270,16 @@ describe('vaultService', () => {
       await expect(service.deleteProjectSecrets('my-project')).resolves.toBeUndefined()
     })
 
-    // ponytail-bug: Promise.allSettled results are never inspected in
-    // deleteProjectSecrets, so a partial batch failure (e.g. HttpError 500) resolves
-    // successfully and the hook reports OK. Legacy fail-fast propagated the first error
-    // and returned KO (plugins/vault/src/functions.ts:37 archiveDsoProject).
-    it('silently swallows a partial batch delete failure', async () => {
+    it('propagates a partial batch delete failure', async () => {
       client.listKvMetadata.mockResolvedValue(['SONAR', 'GITLAB'])
       client.delete.mockImplementation(async (path: string) => {
-        if (path === 'forge/my-project/GITLAB') throw httpError(500)
+        if (path === 'forge/my-project/GITLAB') throw makeVaultError(500)
       })
 
-      await expect(service.deleteProjectSecrets('my-project')).resolves.toBeUndefined()
+      await expect(service.deleteProjectSecrets('my-project')).rejects.toMatchObject({
+        kind: 'HttpError',
+        status: 500,
+      })
     })
   })
 })

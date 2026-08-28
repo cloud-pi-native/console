@@ -170,7 +170,7 @@ describe('vault', () => {
     })
   })
 
-  describe('HTTP error mapping', () => {
+  describe('http error mapping', () => {
     it.each([
       HttpStatus.FORBIDDEN,
       HttpStatus.CONFLICT,
@@ -219,36 +219,28 @@ describe('vault', () => {
       })
     })
 
-    // ponytail-bug: a non-JSON error body (proxy HTML page) makes response.json() in
-    // throwForStatus throw a bare SyntaxError, escaping the VaultError contract — callers
-    // matching `error instanceof VaultError` (e.g. deleteKvMetadata's NotFound swallow)
-    // no longer recognize the failure. Legacy axios wrapped every HTTP failure in a typed
-    // AxiosError (plugins/vault/src/vault-api.ts:22). Locked as-is.
-    it('escapes as SyntaxError when an error body is not JSON', async () => {
+    it('wraps a non-JSON error body (proxy HTML page) in HttpError', async () => {
       server.use(
         http.post(`${vaultUrl}/v1/kv/data/:path`, () => {
           return new HttpResponse('<html>gateway error</html>', { status: HttpStatus.SERVICE_UNAVAILABLE, headers: { 'content-type': 'text/html' } })
         }),
       )
 
-      const error = await service.write({}, 'path').then(() => null, (error: unknown) => error)
-      expect(error).toBeInstanceOf(SyntaxError)
-      expect(error).not.toBeInstanceOf(VaultError)
+      await expect(service.write({}, 'path')).rejects.toMatchObject({
+        kind: 'HttpError',
+        status: HttpStatus.SERVICE_UNAVAILABLE,
+        method: 'POST',
+      })
     })
 
-    // ponytail-bug: same parse hole on 404 means deleteKvMetadata's NotFound swallow does not
-    // fire and the raw SyntaxError propagates out of service.delete(). Legacy swallowed all
-    // typed failures at the axios layer (plugins/vault/src/vault-api.ts:88-96). Locked as-is.
-    it('escapes as SyntaxError on a non-JSON 404, defeating NotFound swallows', async () => {
+    it('swallows a non-JSON 404 via the NotFound guard', async () => {
       server.use(
         http.delete(`${vaultUrl}/v1/kv/metadata/:path`, () => {
           return new HttpResponse('not json', { status: HttpStatus.NOT_FOUND })
         }),
       )
 
-      const error = await service.delete('path').then(() => null, (error: unknown) => error)
-      expect(error).toBeInstanceOf(SyntaxError)
-      expect(error).not.toBeInstanceOf(VaultError)
+      await expect(service.delete('path')).resolves.toBeUndefined()
     })
 
     it('maps network failure to Unexpected', async () => {
