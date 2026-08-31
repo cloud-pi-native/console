@@ -40,7 +40,7 @@ import { generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileCont
 export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
 
 type With<T, K extends keyof T> = T & Required<Pick<T, K>>
-export type CondensedGroupSchemaWith<T extends keyof GroupSchema> = With<CondensedGroupSchema, T>
+export type GroupSchemaWith<T extends keyof GroupSchema> = With<GroupSchema, T>
 export type CondensedProjectSchemaWith<T extends keyof CondensedProjectSchema> = With<CondensedProjectSchema, T>
 
 export interface UpsertProjectGroupRepoOptions {
@@ -156,7 +156,7 @@ export class GitlabClientService {
     }
   }
 
-  async createSubGroup(parentGroup: CondensedGroupSchemaWith<'id' | 'full_path'>, name: string, fullPath: string) {
+  async createSubGroup(parentGroup: GroupSchemaWith<'id' | 'full_path'>, name: string, fullPath: string) {
     this.logger.log(`Creating a GitLab subgroup ${fullPath} (parentId=${parentGroup.id})`)
     try {
       const created = await this.client.Groups.create(name, name, { parentId: parentGroup.id })
@@ -375,7 +375,7 @@ export class GitlabClientService {
     )
   }
 
-  async deleteGroup(group: CondensedGroupSchemaWith<'id' | 'full_path'>): Promise<void> {
+  async deleteGroup(group: GroupSchemaWith<'id' | 'full_path'>): Promise<void> {
     this.logger.verbose(`Deleting GitLab group ${group.full_path} (groupId=${group.id})`)
     await this.client.Groups.remove(group.id)
     return this.client.Groups.remove(group.id, {
@@ -384,22 +384,22 @@ export class GitlabClientService {
     })
   }
 
-  async getGroupMembers(group: CondensedGroupSchemaWith<'id'>) {
+  async getGroupMembers(group: GroupSchemaWith<'id'>) {
     this.logger.verbose(`Loading GitLab group members (groupId=${group.id})`)
     return this.client.GroupMembers.all(group.id)
   }
 
-  async addGroupMember(group: CondensedGroupSchemaWith<'id'>, userId: number, accessLevel: Exclude<AccessLevel, AccessLevel.ADMIN>) {
+  async addGroupMember(group: GroupSchemaWith<'id'>, userId: number, accessLevel: Exclude<AccessLevel, AccessLevel.ADMIN>) {
     this.logger.verbose(`Adding a GitLab group member (groupId=${group.id}, userId=${userId}, accessLevel=${accessLevel})`)
     return this.client.GroupMembers.add(group.id, userId, accessLevel)
   }
 
-  async editGroupMember(group: CondensedGroupSchemaWith<'id'>, userId: number, accessLevel: Exclude<AccessLevel, AccessLevel.ADMIN>) {
+  async editGroupMember(group: GroupSchemaWith<'id'>, userId: number, accessLevel: Exclude<AccessLevel, AccessLevel.ADMIN>) {
     this.logger.verbose(`Editing a GitLab group member (groupId=${group.id}, userId=${userId}, accessLevel=${accessLevel})`)
     return this.client.GroupMembers.edit(group.id, userId, accessLevel)
   }
 
-  async removeGroupMember(group: CondensedGroupSchemaWith<'id'>, userId: number) {
+  async removeGroupMember(group: GroupSchemaWith<'id'>, userId: number) {
     this.logger.verbose(`Removing a GitLab group member (groupId=${group.id}, userId=${userId})`)
     return this.client.GroupMembers.remove(group.id, userId)
   }
@@ -622,7 +622,7 @@ export class GitlabClientService {
     return this.upsertProjectGroupSystemRepo(projectSlug, MIRROR_REPO_NAME)
   }
 
-  async getProjectToken(group: CondensedGroupSchemaWith<'id'>, projectSlug: string) {
+  async getProjectToken(group: GroupSchemaWith<'id'>, projectSlug: string) {
     return find(
       this.offsetPaginate<{ name: string, id: number }>(
         opts => this.client.GroupAccessTokens.all(group.id, opts) as unknown as Promise<{ data: { name: string, id: number }[], paginationInfo: OffsetPagination }>,
@@ -631,7 +631,7 @@ export class GitlabClientService {
     )
   }
 
-  async createProjectToken(group: CondensedGroupSchemaWith<'id'>, tokenName: string, scopes: AccessTokenScopes[]) {
+  async createProjectToken(group: GroupSchemaWith<'id'>, tokenName: string, scopes: AccessTokenScopes[]) {
     const expiryDate = new Date(Date.now() + this.config.mirrorTokenExpirationDays * 24 * 60 * 60 * 1000)
     this.logger.log(`Creating a GitLab group access token (groupId=${group.id}, tokenName=${tokenName}, expiry=${expiryDate.toISOString().slice(0, 10)})`)
     return this.client.GroupAccessTokens.create(group.id, tokenName, scopes, expiryDate.toISOString().slice(0, 10))
@@ -644,7 +644,7 @@ export class GitlabClientService {
     return this.createProjectToken(group, tokenName, ['write_repository', 'read_repository', 'read_api'])
   }
 
-  async revokeProjectToken(group: CondensedGroupSchemaWith<'id'>, tokenId: number): Promise<void> {
+  async revokeProjectToken(group: GroupSchemaWith<'id'>, tokenId: number): Promise<void> {
     this.logger.log(`Revoking a GitLab group access token (groupId=${group.id}, tokenId=${tokenId})`)
     await this.client.GroupAccessTokens.revoke(group.id, tokenId)
   }
