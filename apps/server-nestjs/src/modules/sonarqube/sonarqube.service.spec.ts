@@ -219,7 +219,7 @@ describe('sonarqubeService', () => {
     })
 
     it('should reconcile the email of an existing robot account stamped with the owner real email (#2510 mitigation)', async () => {
-      const project = makeProjectWithDetails({ slug: 'with-owner', owner: { email: 'owner@example.com' } as any })
+      const project = makeProjectWithDetails({ slug: 'with-owner', owner: { email: 'owner@example.com' } })
       vault.readSonarqubeUser.mockResolvedValue(makeVaultSecret({ data: { SONAR_USERNAME: 'with-owner', SONAR_PASSWORD: 'old', SONAR_TOKEN: 'old' } }))
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
       client.searchUsers.mockImplementation(async function* () {
@@ -250,7 +250,7 @@ describe('sonarqubeService', () => {
     })
 
     it('should update both email and password when an existing robot account has a stale email and the vault secret is missing', async () => {
-      const project = makeProjectWithDetails({ slug: 'stale', owner: { email: 'owner@example.com' } as any })
+      const project = makeProjectWithDetails({ slug: 'stale', owner: { email: 'owner@example.com' } })
       vault.readSonarqubeUser.mockResolvedValue(null)
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
       client.searchUsers.mockImplementation(async function* () {
@@ -343,7 +343,7 @@ describe('sonarqubeService', () => {
     })
 
     it('should use a per-project cloud-pi-native.fr email (never the owner real email) when creating user', async () => {
-      const project = makeProjectWithDetails({ slug: 'with-owner', owner: { email: 'owner@example.com' } as any })
+      const project = makeProjectWithDetails({ slug: 'with-owner', owner: { email: 'owner@example.com' } })
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
       client.searchUsers.mockImplementation(async function* () {})
 
