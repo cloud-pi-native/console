@@ -248,7 +248,7 @@ describe('argoCDService', () => {
     gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
-    vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
+    vault.ensureAuthApproleRoleSecret.mockResolvedValue({ secret_id: 'secret-id' })
     gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
       return makeCommitAction({ filePath, content })
     })
@@ -447,7 +447,7 @@ describe('argoCDService', () => {
       ),
     ])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
-    vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
+    vault.ensureAuthApproleRoleSecret.mockResolvedValue({ secret_id: 'secret-id' })
     gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
       return makeCommitAction({ filePath, content })
     })
@@ -538,7 +538,7 @@ describe('argoCDService', () => {
     gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
-    vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
+    vault.ensureAuthApproleRoleSecret.mockResolvedValue({ secret_id: 'secret-id' })
 
     gitlab.generateCreateOrUpdateAction.mockResolvedValue(null)
 
@@ -583,7 +583,7 @@ describe('argoCDService', () => {
     gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
-    vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
+    vault.ensureAuthApproleRoleSecret.mockResolvedValue({ secret_id: 'secret-id' })
     gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
       return makeCommitAction({ filePath, content })
     })
@@ -738,7 +738,7 @@ describe('argoCDService', () => {
     gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
-    vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
+    vault.ensureAuthApproleRoleSecret.mockResolvedValue({ secret_id: 'secret-id' })
     gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
       return makeCommitAction({ filePath, content })
     })

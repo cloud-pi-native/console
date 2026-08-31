@@ -401,15 +401,14 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  async createAuthApproleRoleSecretId(roleName: string) {
+  async ensureAuthApproleRoleSecret(roleName: string): Promise<VaultSecretIdResponse['data']> {
     const path = `auth/approle/role/${roleName}/secret-id`
-    this.logger.verbose(`Creating Vault AppRole secret-id for ${roleName}`)
+    this.logger.verbose(`Ensuring Vault AppRole secret-id for ${roleName}`)
     const response = await this.http.fetch<VaultSecretIdResponse>(path, { method: 'POST' })
-    const secretId = response?.data?.secret_id
-    if (!secretId) {
+    if (!response?.data?.secret_id) {
       throw new VaultError('InvalidResponse', `Vault secret-id not generated for role ${roleName}`, { method: 'POST', path })
     }
-    return secretId
+    return response.data
   }
 
   async getSysAuth(): Promise<Record<string, VaultAuthMethod>> {

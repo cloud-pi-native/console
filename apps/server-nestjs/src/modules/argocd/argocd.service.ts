@@ -402,16 +402,17 @@ export class ArgoCDService {
       this.logger.warn(`Couldn't find app role (project=${projectSlug})`)
       return undefined
     })
-    const secretId = await this.vault.createAuthApproleRoleSecretId(projectSlug).catch(() => {
+    const secretId = await this.vault.ensureAuthApproleRoleSecret(projectSlug).catch(() => {
       this.logger.warn(`Couldn't find secret (project=${projectSlug})`)
       return undefined
     })
+    const secretIdValue = secretId?.secret_id
     return {
       projectsRootDir: this.baseConfig.projectsRootDir,
       url: this.argocdConfig.vaultDeployVaultConnectionInNs ? this.vaultConfig.url : '',
       coreKvName: this.vaultConfig.kvName,
       roleId: roleId ?? 'none',
-      secretId: secretId ?? 'none',
+      secretId: secretIdValue ?? 'none',
     }
   }
 }
