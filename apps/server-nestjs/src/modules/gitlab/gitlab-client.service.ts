@@ -195,7 +195,7 @@ export class GitlabClientService {
     }
 
     this.logger.verbose(`GitLab group path resolved (path=${path}, groupId=${parentGroup.id})`)
-    return parentGroup
+    return parentGroup as GroupSchemaWith<'id'>
   }
 
   async getOrCreateProjectGroup() {

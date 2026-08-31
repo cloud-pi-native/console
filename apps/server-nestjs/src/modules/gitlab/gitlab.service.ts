@@ -1,4 +1,5 @@
 import type { CondensedGroupSchema, MemberSchema } from '@gitbeaker/core'
+import type { GroupSchemaWith } from './gitlab-client.service'
 import type { ConfigType } from '@nestjs/config'
 import type { RepositorySyncEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
@@ -157,7 +158,7 @@ export class GitlabService {
   @StartActiveSpan()
   private async ensureProjectGroupMembers(
     project: ProjectWithDetails,
-    group: CondensedGroupSchema,
+    group: GroupSchemaWith<'id'>,
     members: MemberSchema[],
   ) {
     const span = trace.getActiveSpan()
@@ -171,7 +172,7 @@ export class GitlabService {
 
   private async addMissingMembers(
     project: ProjectWithDetails,
-    group: CondensedGroupSchema,
+    group: GroupSchemaWith<'id'>,
     members: MemberSchema[],
     adminRoleId?: string,
     auditorRoleId?: string,
@@ -200,7 +201,7 @@ export class GitlabService {
   }
 
   private async ensureGroupMemberAccessLevel(
-    group: CondensedGroupSchema,
+    group: GroupSchemaWith<'id'>,
     gitlabUserId: number,
     accessLevel: ProjectAccessLevel,
     membersById: Map<number, MemberSchema>,
@@ -226,7 +227,7 @@ export class GitlabService {
 
   private async addMissingOwnerMember(
     project: ProjectWithDetails,
-    group: CondensedGroupSchema,
+    group: GroupSchemaWith<'id'>,
     members: MemberSchema[],
     adminRoleId?: string,
     auditorRoleId?: string,
@@ -308,7 +309,7 @@ export class GitlabService {
   @StartActiveSpan()
   private async purgeOrphanMembers(
     project: ProjectWithDetails,
-    group: CondensedGroupSchema,
+    group: GroupSchemaWith<'id'>,
     members: MemberSchema[],
   ) {
     const span = trace.getActiveSpan()
