@@ -79,7 +79,7 @@ export class RegistryService {
     return find(this.client.getProjectRobots(harborProjectId), r => r?.name === fullName)
   }
 
-  private async createProjectRobot(project: ProjectWithDetails, robotName: string, access: HarborAccess[]) {
+  private async ensureProjectRobot(project: ProjectWithDetails, robotName: string, access: HarborAccess[]) {
     const created = await this.client.ensureRobot(
       generateRobotPermissions(project, robotName, access),
     )
@@ -94,7 +94,7 @@ export class RegistryService {
     if (existing?.id) {
       await this.client.deleteRobot(existing.id)
     }
-    return this.createProjectRobot(project, robotName, access)
+    return this.ensureProjectRobot(project, robotName, access)
   }
 
   private async ensureRobotSecret(project: ProjectWithDetails, harborProjectId: number, robotName: string, access: HarborAccess[]) {
@@ -127,7 +127,7 @@ export class RegistryService {
     const existing = await this.getRobot(project, harborProjectId, robotName)
     const created = existing
       ? await this.rotateRobot(project, harborProjectId, robotName, access)
-      : await this.createProjectRobot(project, robotName, access)
+      : await this.ensureProjectRobot(project, robotName, access)
     const fullName = generateRobotFullName(project, robotName)
     const secret = generateVaultRobotSecret(this.host, fullName, created.secret)
     await this.vault.write(secret, vaultPath)
