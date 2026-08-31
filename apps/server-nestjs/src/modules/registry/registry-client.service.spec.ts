@@ -57,7 +57,7 @@ describe('registryService', () => {
     expect(service).toBeDefined()
   })
 
-  it('should send basic auth and JSON body on createProject', async () => {
+  it('should send basic auth and JSON body on ensureProject', async () => {
     server.use(
       http.post(`${harborUrl}/api/v2.0/projects`, async ({ request }) => {
         expect(request.method).toBe('POST')
@@ -72,9 +72,15 @@ describe('registryService', () => {
         })
         return HttpResponse.json({}, { status: HttpStatus.CREATED })
       }),
+      http.get(`${harborUrl}/api/v2.0/projects/:projectName`, async ({ request, params }) => {
+        expect(request.headers.get('authorization')).toBe(basicAuth)
+        expect(params.projectName).toBe('myproj')
+        return HttpResponse.json({ project_id: 123, metadata: {} })
+      }),
     )
 
-    await service.createProject('myproj', -1)
+    const result = await service.ensureProject('myproj', -1)
+    expect(result).toEqual({ project_id: 123, metadata: {} })
   })
 
   it('should send X-Is-Resource-Name on getProjectByName', async () => {
