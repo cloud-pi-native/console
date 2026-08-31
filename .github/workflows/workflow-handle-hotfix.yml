@@ -1,0 +1,103 @@
+name: Handle next hotfix
+
+permissions:
+  # Needed for release job
+  issues: write
+  contents: write
+  pull-requests: write
+  # Needed for build job
+  packages: write
+
+on:
+  push:
+    branches:
+      - hotfix/*
+
+env:
+  REGISTRY: ghcr.io
+  NAMESPACE: "${{ github.repository }}"
+  BUILD_AMD64: true
+  BUILD_ARM64: true
+  USE_QEMU: false
+  NODE_VERSION: 26.7.0
+
+jobs:
+  expose-vars:
+    runs-on: ubuntu-latest
+    outputs:
+      REGISTRY: ${{ env.REGISTRY }}
+      NAMESPACE: ${{ env.NAMESPACE }}
+      BUILD_AMD64: ${{ env.BUILD_AMD64 }}
+      BUILD_ARM64: ${{ env.BUILD_ARM64 }}
+      USE_QEMU: ${{ env.USE_QEMU }}
+      NODE_VERSION: ${{ env.NODE_VERSION }}
+    steps:
+      - name: Exposing env vars
+        run: echo "Exposing env vars"
+
+  release-hotfix:
+    uses: ./.github/workflows/job-release-please-hotfixes.yml
+
+  build-amd64:
+    uses: ./.github/workflows/job-build.yml
+    # We only build (images+chart update MR) when we create a new hotfix
+    if: ${{ needs.release-hotfix.outputs.release-created == 'true' }}
+    needs:
+      - expose-vars
+      - release-hotfix
+    with:
+      REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
+      NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
+      RELEASE_CREATED: ${{ needs.release-hotfix.outputs.release-created == 'true' }}
+      TAG: ${{ needs.release-hotfix.outputs.tag-name }}
+      MAJOR_TAG: ${{ needs.release-hotfix.outputs.major-tag }}
+      MINOR_TAG: ${{ needs.release-hotfix.outputs.minor-tag }}
+      PATCH_TAG: ${{ needs.release-hotfix.outputs.patch-tag }}
+      BUILD_AMD64: ${{ needs.expose-vars.outputs.BUILD_AMD64 == 'true' }}
+      BUILD_ARM64: false
+      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+    secrets:
+      ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
+
+  build-arm64:
+    uses: ./.github/workflows/job-build.yml
+    if: ${{ needs.release-hotfix.outputs.release-created == 'true' }}
+    needs:
+      - expose-vars
+      - release-hotfix
+    with:
+      REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
+      NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
+      RELEASE_CREATED: ${{ needs.release-hotfix.outputs.release-created == 'true' }}
+      TAG: ${{ needs.release-hotfix.outputs.tag-name }}
+      MAJOR_TAG: ${{ needs.release-hotfix.outputs.major-tag }}
+      MINOR_TAG: ${{ needs.release-hotfix.outputs.minor-tag }}
+      PATCH_TAG: ${{ needs.release-hotfix.outputs.patch-tag }}
+      BUILD_AMD64: false
+      BUILD_ARM64: ${{ needs.expose-vars.outputs.BUILD_ARM64 == 'true' }}
+      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+    secrets:
+      ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
+
+  update-chart:
+    runs-on: ubuntu-latest
+    if: ${{ needs.release-hotfix.outputs.tag-name != '' }}
+    needs:
+      - expose-vars
+      - release-hotfix
+      - build-amd64
+    steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: helm-charts
+
+      - name: Trigger helm-charts update
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: |
+          gh workflow --repo cloud-pi-native/helm-charts run update-chart.yaml -f APP_VERSION=${{ needs.release-hotfix.outputs.tag-name }} -f CHART_NAME=dso-console
