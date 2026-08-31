@@ -16,7 +16,6 @@ import type {
   VariableType,
 } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
-import { ok as assert } from 'node:assert/strict'
 import { join } from 'node:path'
 import { defaultBranchName } from '@cpn-console/shared'
 import { Gitlab as GitlabRest } from '@gitbeaker/rest'
@@ -380,7 +379,9 @@ export class GitlabClientService {
     this.logger.verbose(`Deleting GitLab group ${group.full_path} (groupId=${group.id})`)
     await this.client.Groups.remove(group.id)
     const fullPath = group.full_path
-    assert(typeof fullPath === 'string' && fullPath.length > 0, 'Group full_path is required for permanent removal')
+    if (typeof fullPath !== 'string' || fullPath.length === 0) {
+      throw new Error(`Group full_path is required for permanent removal (groupId=${group.id})`)
+    }
     return this.client.Groups.remove(group.id, {
       permanentlyRemove: true,
       fullPath: `${fullPath}-deletion_scheduled-${group.id}`,
