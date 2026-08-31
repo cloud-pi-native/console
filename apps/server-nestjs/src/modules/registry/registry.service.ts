@@ -80,13 +80,13 @@ export class RegistryService {
   }
 
   private async createProjectRobot(project: ProjectWithDetails, robotName: string, access: HarborAccess[]) {
-    const created = await this.client.createRobot(
+    const created = await this.client.ensureRobot(
       generateRobotPermissions(project, robotName, access),
     )
-    if (created.status >= 300 || !created.data) {
-      throw new Error(`Harbor create robot failed (${created.status})`)
+    if (!created) {
+      throw new Error(`Harbor robot already exists (${robotName})`)
     }
-    return created.data
+    return created
   }
 
   private async rotateRobot(project: ProjectWithDetails, harborProjectId: number, robotName: string, access: HarborAccess[]) {
@@ -173,10 +173,7 @@ export class RegistryService {
         group_type: 3,
       },
     }
-    const created = await this.client.addGroupMember(projectSlug, body)
-    if (created.status >= 300) {
-      throw new Error(`Harbor create member failed (${created.status})`)
-    }
+    await this.client.ensureGroupMember(projectSlug, body)
     span?.setAttribute('registry.member.created', true)
   }
 
@@ -245,14 +242,7 @@ export class RegistryService {
       harborRuleCount: this.harborConfig.ruleCount,
       harborRetentionCron: this.harborConfig.retentionCron,
     })
-    const retentionId = await this.client.getRetentionId(project.slug)
-    span?.setAttribute('registry.retention.exists', !!retentionId)
-    const result = retentionId
-      ? await this.client.updateRetention(retentionId, policy)
-      : await this.client.createRetention(policy)
-    if (result.status >= 300) {
-      throw new Error(`Harbor retention policy failed (${result.status})`)
-    }
+    await this.client.ensureRetention(project.slug, policy)
   }
 
   @StartActiveSpan()
