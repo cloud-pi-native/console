@@ -397,6 +397,35 @@ describeWithGitLab('GitlabService (e2e)', () => {
     }, GITLAB_PURGE_SYNC_TIMEOUT)
   })
 
+  describe('repo deletion', () => {
+    it('deleteProjectGroupRepo permanently removes the repo immediately', async () => {
+      // Create a plugin-managed repo, then delete it through the service.
+      // With permanentlyRemove the project must be gone right away: still
+      // present-but-marked would mean the hard delete was skipped.
+      const project = await prisma.project.findUniqueOrThrow({
+        where: { id: testProjectId },
+        select: projectSelect,
+      })
+      await eventEmitter.emitAsync('project.upsert', project)
+
+      const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
+      const group = z.object({ id: z.number() }).parse(await gitlabClientService.getGroupByPath(groupPath))
+      const repoName = `to-delete-${faker.string.uuid().slice(0, 8)}`
+      const repo = await gitlabClient.Projects.create({
+        name: repoName,
+        path: repoName,
+        namespaceId: group.id,
+      })
+      await gitlabClient.Projects.edit(repo.id, { topics: [TOPIC_PLUGIN_MANAGED] })
+
+      await gitlabClientService.deleteProjectGroupRepo(testProjectSlug, repoName)
+
+      await expect(gitlabClient.Projects.show(repo.id)).rejects.toThrow()
+      const names = (await getAll(gitlabClientService.getRepos(testProjectSlug))).map(r => r.name)
+      expect(names).not.toContain(repoName)
+    }, GITLAB_SYNC_TIMEOUT)
+  })
+
   it('should remove project group from GitLab on delete', async () => {
     const project = await prisma.project.findUniqueOrThrow({
       where: { id: testProjectId },
