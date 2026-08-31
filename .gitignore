@@ -76,5 +76,6 @@ playwright/playwright-report/
 playwright/blob-report/
 playwright/playwright/.cache/
 
-# local worktrees
+# local worktrees, tasks, etc.
 .worktrees/
+tasks/
