@@ -153,16 +153,18 @@ describeWithGitLab('GitlabService (e2e)', () => {
 
     // Assert
     const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
+    const rawGroup = await gitlabClientService.getGroupByPath(groupPath)
+    if (!rawGroup) throw new Error(`group ${groupPath} not found`)
     const group = z.object({
       id: z.number(),
       name: z.string(),
       full_path: z.string(),
       web_url: z.string(),
-    }).parse(await gitlabClientService.getGroupByPath(groupPath))
+    }).parse(rawGroup)
     expect(group.full_path).toBe(groupPath)
 
     // Check membership
-    const members = await gitlabClientService.getGroupMembers(group)
+    const members = await gitlabClientService.getGroupMembers(rawGroup)
     const isMember = members.some(m => m.id === ownerUser.id)
     expect(isMember).toBe(true)
 
@@ -281,13 +283,15 @@ describeWithGitLab('GitlabService (e2e)', () => {
       await eventEmitter.emitAsync('project.upsert', project)
 
       const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
-      const group = z.object({
+      const rawGroup = await gitlabClientService.getGroupByPath(groupPath)
+      if (!rawGroup) throw new Error(`group ${groupPath} not found`)
+      z.object({
         id: z.number(),
         name: z.string(),
         web_url: z.string(),
-      }).parse(await gitlabClientService.getGroupByPath(groupPath))
+      }).parse(rawGroup)
 
-      const members = await gitlabClientService.getGroupMembers(group)
+      const members = await gitlabClientService.getGroupMembers(rawGroup)
       const isNewMemberPresent = members.some(m => m.id === newUserGitlabId)
       expect(isNewMemberPresent).toBe(true)
     }, GITLAB_SYNC_TIMEOUT)
@@ -398,55 +402,37 @@ describeWithGitLab('GitlabService (e2e)', () => {
   })
 
   describe('repo deletion', () => {
-    it('deleteProjectGroupRepo permanently removes the repo immediately', async () => {
-      // Create a plugin-managed repo, then delete it through the service.
-      // With permanentlyRemove the project must be gone right away: still
-      // present-but-marked would mean the hard delete was skipped.
+    it('should remove project group from GitLab on delete', async () => {
       const project = await prisma.project.findUniqueOrThrow({
         where: { id: testProjectId },
         select: projectSelect,
       })
-      await eventEmitter.emitAsync('project.upsert', project)
 
       const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
+      expect(await gitlabClientService.getGroupByPath(groupPath)).toBeTruthy()
+      const namesBefore = (await getAll(gitlabClientService.getRepos(testProjectSlug))).map(r => r.name)
+      expect(namesBefore.length).toBeGreaterThan(0)
+
+      // A deleted repo must disappear immediately, not stay deletion-scheduled.
+      const repoName = `doomed-${faker.string.uuid().slice(0, 8)}`
       const group = z.object({ id: z.number() }).parse(await gitlabClientService.getGroupByPath(groupPath))
-      const repoName = `to-delete-${faker.string.uuid().slice(0, 8)}`
       const repo = await gitlabClient.Projects.create({
         name: repoName,
         path: repoName,
         namespaceId: group.id,
       })
       await gitlabClient.Projects.edit(repo.id, { topics: [TOPIC_PLUGIN_MANAGED] })
-
       await gitlabClientService.deleteProjectGroupRepo(testProjectSlug, repoName)
-
       await expect(gitlabClient.Projects.show(repo.id)).rejects.toThrow()
-      const names = (await getAll(gitlabClientService.getRepos(testProjectSlug))).map(r => r.name)
-      expect(names).not.toContain(repoName)
+      expect((await getAll(gitlabClientService.getRepos(testProjectSlug))).map(r => r.name)).not.toContain(repoName)
+
+      // The project deletion must take the whole group and every repo with it.
+      await eventEmitter.emitAsync('project.delete', project)
+
+      expect(await gitlabClientService.getGroupByPath(groupPath)).toBeUndefined()
+      for (const name of namesBefore) {
+        expect((await getAll(gitlabClientService.getRepos(testProjectSlug))).map(r => r.name)).not.toContain(name)
+      }
     }, GITLAB_SYNC_TIMEOUT)
   })
-
-  it('should remove project group from GitLab on delete', async () => {
-    const project = await prisma.project.findUniqueOrThrow({
-      where: { id: testProjectId },
-      select: projectSelect,
-    })
-
-    const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
-    expect(await gitlabClientService.getGroupByPath(groupPath)).toBeTruthy()
-
-    // A repo living inside the project must not survive the project deletion.
-    const group = z.object({ id: z.number() }).parse(await gitlabClientService.getGroupByPath(groupPath))
-    const repo = await gitlabClient.Projects.create({
-      name: 'doomed-with-project',
-      path: 'doomed-with-project',
-      namespaceId: group.id,
-    })
-    await gitlabClient.Projects.edit(repo.id, { topics: [TOPIC_PLUGIN_MANAGED] })
-
-    await eventEmitter.emitAsync('project.delete', project)
-
-    expect(await gitlabClientService.getGroupByPath(groupPath)).toBeUndefined()
-    await expect(gitlabClient.Projects.show(repo.id)).rejects.toThrow()
-  }, GITLAB_SYNC_TIMEOUT)
 })
