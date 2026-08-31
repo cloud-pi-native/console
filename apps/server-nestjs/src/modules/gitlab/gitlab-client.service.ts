@@ -40,7 +40,7 @@ import { generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileCont
 export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
 
 type With<T, K extends keyof T> = T & Required<Pick<T, K>>
-export type CondensedGroupSchemaWith<T extends keyof CondensedGroupSchema> = With<CondensedGroupSchema, T>
+export type CondensedGroupSchemaWith<T extends keyof GroupSchema> = With<CondensedGroupSchema, T>
 export type CondensedProjectSchemaWith<T extends keyof CondensedProjectSchema> = With<CondensedProjectSchema, T>
 
 export interface UpsertProjectGroupRepoOptions {
@@ -378,13 +378,9 @@ export class GitlabClientService {
   async deleteGroup(group: CondensedGroupSchemaWith<'id' | 'full_path'>): Promise<void> {
     this.logger.verbose(`Deleting GitLab group ${group.full_path} (groupId=${group.id})`)
     await this.client.Groups.remove(group.id)
-    const fullPath = group.full_path
-    if (typeof fullPath !== 'string' || fullPath.length === 0) {
-      throw new Error(`Group full_path is required for permanent removal (groupId=${group.id})`)
-    }
     return this.client.Groups.remove(group.id, {
       permanentlyRemove: true,
-      fullPath: `${fullPath}-deletion_scheduled-${group.id}`,
+      fullPath: `${group.full_path}-deletion_scheduled-${group.id}`,
     })
   }
 

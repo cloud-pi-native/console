@@ -435,9 +435,18 @@ describeWithGitLab('GitlabService (e2e)', () => {
     const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
     expect(await gitlabClientService.getGroupByPath(groupPath)).toBeTruthy()
 
+    // A repo living inside the project must not survive the project deletion.
+    const group = z.object({ id: z.number() }).parse(await gitlabClientService.getGroupByPath(groupPath))
+    const repo = await gitlabClient.Projects.create({
+      name: 'doomed-with-project',
+      path: 'doomed-with-project',
+      namespaceId: group.id,
+    })
+    await gitlabClient.Projects.edit(repo.id, { topics: [TOPIC_PLUGIN_MANAGED] })
+
     await eventEmitter.emitAsync('project.delete', project)
 
-    const group = await gitlabClientService.getGroupByPath(groupPath)
-    expect(group).toBeUndefined()
+    expect(await gitlabClientService.getGroupByPath(groupPath)).toBeUndefined()
+    await expect(gitlabClient.Projects.show(repo.id)).rejects.toThrow()
   }, GITLAB_SYNC_TIMEOUT)
 })
