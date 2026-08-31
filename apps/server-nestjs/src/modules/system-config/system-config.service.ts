@@ -1,11 +1,11 @@
 import type { PluginsUpdateBody } from '@cpn-console/shared'
-import { PrismaService } from '../infrastructure/database/prisma.service'
 import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Inject, Injectable } from '@nestjs/common'
+import { PrismaService } from '../infrastructure/database/prisma.service'
 
 @Injectable()
 export class SystemConfigService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   async list() {
     const globalConfig = await this.prisma.adminPlugin.findMany({
