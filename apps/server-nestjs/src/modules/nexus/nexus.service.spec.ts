@@ -242,9 +242,11 @@ describe('nexusService', () => {
     client.getRepositoriesMavenHosted.mockResolvedValue({
       name: `${project.slug}-repository-release`,
       online: true,
-      storage: { blobStoreName: 'default', strictContentTypeValidation: true },
+      storage: { blobStoreName: 'default', strictContentTypeValidation: true, writePolicy: 'ALLOW' },
+      cleanup: { policyNames: [] },
       component: { proprietaryComponents: true },
-    } as any)
+      maven: { versionPolicy: 'RELEASE', layoutPolicy: 'STRICT', contentDisposition: 'INLINE' },
+    })
 
     await service.handleUpsert(project)
 
