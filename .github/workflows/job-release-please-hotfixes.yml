@@ -1,0 +1,79 @@
+name: Next Hotfix
+
+permissions:
+  issues: write
+  contents: write
+  pull-requests: write
+
+on:
+  workflow_call:
+
+    outputs:
+
+      release-created:
+        description: Has a new hotfix been created ?
+        value: ${{ jobs.prepare.outputs.releases-created }}
+
+      # Complete tag (e.g: `X.Y.Z`)
+      tag-name:
+        description: Version tag
+        value: ${{ jobs.prepare.outputs.tag-name }}
+      # For instance X.Y.Z -> X
+      major-tag:
+        description: Major version tag
+        value: ${{ jobs.prepare.outputs.major-tag }}
+      # For instance X.Y.Z -> Y
+      minor-tag:
+        description: Minor version tag
+        value: ${{ jobs.prepare.outputs.minor-tag }}
+      # For instance X.Y.Z -> Z
+      patch-tag:
+        description: Patch version tag
+        value: ${{ jobs.prepare.outputs.patch-tag }}
+
+jobs:
+
+  # This job ensure the necessary labels for release-please exist.
+  # https://github.com/googleapis/release-please-action/issues/1074
+  label-check:
+    name: Create release-please PR labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Add labels to the repository if not present
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create "autorelease: pending" -c FBCA04 -d "release-please PR tagging - Pending release" || true
+          gh label create "autorelease: tagged" -c D4C5F9 -d "release-please PR tagging - Ready for release" || true
+          gh label create "autorelease: snapshot" -c D4C5F9 -d "release-please PR tagging - Ready for release" || true
+          gh label create "autorelease: published" -c 0E8A16 -d "release-please PR tagging - Released" || true
+
+  # This job handles (thus the `prepare` name) a hotfix release MR,
+  # It will :
+  # - Upsert a hotfix release MR after a commit has been added to the target branch that triggerd this workflow (e.g: `hotfix/my-urgent-hotfix`)
+  # - Create a hotfix release, if this workflow has been triggered by the related MR merge (release-please-hotfit -> hotfix/my-urgent-hotfix)
+  # - In both cases "Create" means:
+  #   - Updating the CHANGLOG accordingly (with the related commits)
+  #   - Updating the apps package.json versions
+  #   - Generating and push the git tag
+  #   - Creating the related GitHub Release
+  prepare:
+    name: Handle hotfix release MR
+    runs-on: ubuntu-latest
+    needs: [ label-check ]
+    outputs:
+      releases-created: ${{ steps.release.outputs.releases_created }}
+      tag-name: ${{ steps.release.outputs.tag_name }}
+      major-tag: ${{ steps.release.outputs.major }}
+      minor-tag: ${{ steps.release.outputs.minor }}
+      patch-tag: ${{ steps.release.outputs.patch }}
+    steps:
+      - id: release
+        name: Run release-please
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          config-file: ".github/hotfix-release-please-config.json"
+          manifest-file: ".github/release-please-manifest.json"

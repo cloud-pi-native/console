@@ -1,4 +1,4 @@
-name: Create/update next release
+name: Handle next prerelease or release
 
 permissions:
   # Needed for release job
@@ -40,8 +40,9 @@ jobs:
 
   build-amd64:
     uses: ./.github/workflows/job-build.yml
-    # We want to build for every push on `main` to update the `latest` tag
-    # which will then be automatically deployed on our Integration environment(s)
+    # We build:
+    # - Whenever we push a commit on `main` branch, for CI purposes (we automatically push the build on our `cpin-hp` env)
+    # - Whenever we issue a new release, prerelease (both done on `main`)
     if: ${{ github.ref == format('refs/heads/{0}', 'main') }}
     needs:
       - expose-vars
@@ -49,7 +50,7 @@ jobs:
     with:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
-      RELEASE_CREATED: ${{ needs.release.outputs.releases-created == 'true' }}
+      RELEASE_CREATED: ${{ needs.release.outputs.release-created == 'true' }}
       TAG: ${{ needs.release.outputs.tag-name }}
       MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
       MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
@@ -69,7 +70,7 @@ jobs:
     with:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
-      RELEASE_CREATED: ${{ needs.release.outputs.releases-created == 'true' }}
+      RELEASE_CREATED: ${{ needs.release.outputs.release-created == 'true' }}
       TAG: ${{ needs.release.outputs.tag-name }}
       MAJOR_TAG: ${{ needs.release.outputs.major-tag }}
       MINOR_TAG: ${{ needs.release.outputs.minor-tag }}
