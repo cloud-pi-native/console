@@ -1154,8 +1154,9 @@ describe('gitlab-client', () => {
 
       await expect(service.deleteProjectGroupRepo(projectSlug, repoName)).resolves.toBeUndefined()
 
-      expect(gitlabApi.Projects.remove).toHaveBeenCalledWith(99, {
-        fullPath: `${projectSlug}/${repoName}`,
+      expect(gitlabApi.Projects.remove).toHaveBeenNthCalledWith(1, 99)
+      expect(gitlabApi.Projects.remove).toHaveBeenNthCalledWith(2, 99, {
+        fullPath: `${projectSlug}/${repoName}-deletion_scheduled-99`,
         permanentlyRemove: true,
       })
     })
@@ -1165,12 +1166,13 @@ describe('gitlab-client', () => {
     it('should delete a group with permanent removal', async () => {
       const group = makeGroupSchema({ id: 77, full_path: 'forge/project-b' })
 
-      gitlabApi.Groups.remove.mockResolvedValueOnce(undefined)
+      gitlabApi.Groups.remove.mockResolvedValue(undefined)
 
       await expect(service.deleteGroup(group)).resolves.toBeUndefined()
 
-      expect(gitlabApi.Groups.remove).toHaveBeenCalledWith(77, {
-        fullPath: 'forge/project-b',
+      expect(gitlabApi.Groups.remove).toHaveBeenNthCalledWith(1, 77)
+      expect(gitlabApi.Groups.remove).toHaveBeenNthCalledWith(2, 77, {
+        fullPath: `forge/project-b-deletion_scheduled-77`,
         permanentlyRemove: true,
       })
     })
