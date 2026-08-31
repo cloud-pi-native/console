@@ -377,8 +377,10 @@ export class GitlabClientService {
 
   async deleteGroup(group: CondensedGroupSchemaWith<'id' | 'full_path'>): Promise<void> {
     this.logger.verbose(`Deleting GitLab group ${group.full_path} (groupId=${group.id})`)
-    await this.client.Groups.remove(group.id)
-    return this.client.Groups.remove(group.id, { permanentlyRemove: true })
+    await this.client.Groups.remove(group.id, {
+      permanentlyRemove: true,
+      fullPath: group.full_path as string,
+    })
   }
 
   async getGroupMembers(group: CondensedGroupSchemaWith<'id'>) {
