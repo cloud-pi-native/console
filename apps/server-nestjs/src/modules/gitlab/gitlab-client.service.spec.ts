@@ -1156,7 +1156,7 @@ describe('gitlab-client', () => {
 
       expect(gitlabApi.Projects.remove).toHaveBeenNthCalledWith(1, 99)
       expect(gitlabApi.Projects.remove).toHaveBeenNthCalledWith(2, 99, {
-        fullPath: `${projectSlug}/${repoName}-deletion_scheduled-99`,
+        fullPath: `forge/${projectSlug}/${repoName}-deletion_scheduled-99`,
         permanentlyRemove: true,
       })
     })

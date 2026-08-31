@@ -3,7 +3,6 @@ import type {
   AccessTokenScopes,
   BaseRequestOptions,
   CommitAction,
-  CondensedGroupSchema,
   CondensedProjectSchema,
   EditUserOptions,
   ExpandedUserSchema,
@@ -496,7 +495,8 @@ export class GitlabClientService {
     const fullPath = `${projectSlug}/${repoName}`
     const repo = await this.getOrCreateProjectGroupRepo(projectSlug, fullPath)
     await this.client.Projects.remove(repo.id)
-    return this.client.Projects.remove(repo.id, { permanentlyRemove: true, fullPath: `${fullPath}-deletion_scheduled-${repo.id}` })
+    // GitLab requires the full path (including the projects root group), not the group-relative one.
+    return this.client.Projects.remove(repo.id, { permanentlyRemove: true, fullPath: `${this.config.projectRootDir}/${fullPath}-deletion_scheduled-${repo.id}` })
   }
 
   // CI Variables
