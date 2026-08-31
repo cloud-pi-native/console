@@ -13,7 +13,7 @@ import { VaultClientService } from '../vault/vault-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
-import { makeCreatedResponse, makeNoContent, makeOkResponse, makeProjectWithDetails } from './registry-testing.utils'
+import { makeNoContent, makeOkResponse, makeProjectWithDetails } from './registry-testing.utils'
 import {
   PLUGIN_NAME,
   REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT,
@@ -36,10 +36,10 @@ describe('registryService', () => {
       getProjectByName: vi.fn().mockResolvedValue(makeOkResponse({ project_id: 123, metadata: {} })),
       listQuotas: vi.fn().mockResolvedValue(makeOkResponse([{ ref: { id: 123 }, hard: { storage: -1 } }])),
       getRetentionId: vi.fn().mockResolvedValue(null),
-      createRetention: vi.fn().mockResolvedValue(makeCreatedResponse(null)),
+      ensureRetention: vi.fn(),
       getGroupMembers: vi.fn().mockResolvedValue(makeOkResponse([])),
       getProjectRobots: vi.fn(async function* () {}),
-      addGroupMember: vi.fn().mockResolvedValue(makeCreatedResponse(null)),
+      ensureGroupMember: vi.fn(),
       removeGroupMember: vi.fn().mockResolvedValue(makeNoContent()),
       deleteProjectByName: vi.fn().mockResolvedValue(makeNoContent()),
     })
@@ -109,9 +109,9 @@ describe('registryService', () => {
         { groupName: `/${project.slug}/console/admin`, roleId: 2 },
       ]
 
-      expect(client.addGroupMember).toHaveBeenCalledTimes(expected.length)
+      expect(client.ensureGroupMember).toHaveBeenCalledTimes(expected.length)
       for (const e of expected) {
-        expect(client.addGroupMember).toHaveBeenCalledWith(project.slug, {
+        expect(client.ensureGroupMember).toHaveBeenCalledWith(project.slug, {
           role_id: e.roleId,
           member_group: {
             group_name: e.groupName,
@@ -130,7 +130,7 @@ describe('registryService', () => {
       await service.handleUpsert(project)
 
       expect(client.removeGroupMember).toHaveBeenCalledWith(project.slug, 10)
-      expect(client.addGroupMember).toHaveBeenCalledWith(project.slug, {
+      expect(client.ensureGroupMember).toHaveBeenCalledWith(project.slug, {
         role_id: 2,
         member_group: {
           group_name: `/${project.slug}/console/admin`,
@@ -141,11 +141,10 @@ describe('registryService', () => {
 
     it('returns a KO result when project admin membership creation fails', async () => {
       const project = makeProjectWithDetails()
-      client.addGroupMember.mockImplementation(async (_projectName, body) => {
+      client.ensureGroupMember.mockImplementation(async (_projectName, body) => {
         if (body.member_group.group_name === `/${project.slug}/console/admin` && body.role_id === 2) {
-          return { status: HttpStatus.BAD_REQUEST, data: null }
+          throw new Error('Harbor create member failed (400)')
         }
-        return { status: HttpStatus.CREATED, data: null }
       })
 
       await expect(service.handleUpsert(project)).resolves.toEqual({
@@ -155,7 +154,7 @@ describe('registryService', () => {
         }),
       })
 
-      expect(client.addGroupMember).toHaveBeenCalledWith(project.slug, {
+      expect(client.ensureGroupMember).toHaveBeenCalledWith(project.slug, {
         role_id: 2,
         member_group: {
           group_name: `/${project.slug}/console/admin`,
@@ -186,7 +185,7 @@ describe('registryService', () => {
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/ro-robot`)
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/rw-robot`)
       expect(client.getProjectRobots).not.toHaveBeenCalled()
-      expect(client.createRobot).not.toHaveBeenCalled()
+      expect(client.ensureRobot).not.toHaveBeenCalled()
       expect(client.deleteRobot).not.toHaveBeenCalled()
       expect(vault.write).not.toHaveBeenCalled()
     })
@@ -218,12 +217,12 @@ describe('registryService', () => {
         yield { id: 11, name: `robot$${project.slug}+ro-robot` }
       })
       client.deleteRobot.mockResolvedValue(makeNoContent())
-      client.createRobot.mockResolvedValue(makeCreatedResponse({ id: 22, name: `robot$${project.slug}+ro-robot`, secret: 'newsecret' }))
+      client.ensureRobot.mockResolvedValue({ id: 22, name: `robot$${project.slug}+ro-robot`, secret: 'newsecret' })
 
       await service.handleUpsert(project)
 
       expect(client.deleteRobot).toHaveBeenCalledWith(11)
-      expect(client.createRobot).toHaveBeenCalledWith(expect.objectContaining({ name: 'ro-robot' }))
+      expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({ name: 'ro-robot' }))
       expect(vault.write).toHaveBeenCalledWith(expect.objectContaining({
         HOST: 'harbor.example',
         USERNAME: `robot$${project.slug}+ro-robot`,
@@ -259,12 +258,12 @@ describe('registryService', () => {
         yield { id: 11, name: `robot$${project.slug}+ro-robot` }
       })
       client.deleteRobot.mockResolvedValue(makeNoContent())
-      client.createRobot.mockResolvedValue(makeCreatedResponse({ id: 22, name: `robot$${project.slug}+ro-robot`, secret: 'newsecret' }))
+      client.ensureRobot.mockResolvedValue({ id: 22, name: `robot$${project.slug}+ro-robot`, secret: 'newsecret' })
 
       await service.handleUpsert(project)
 
       expect(client.deleteRobot).toHaveBeenCalledWith(11)
-      expect(client.createRobot).toHaveBeenCalledWith(expect.objectContaining({ name: 'ro-robot' }))
+      expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({ name: 'ro-robot' }))
       expect(vault.write).toHaveBeenCalledWith(expect.objectContaining({
         HOST: 'harbor.example',
         USERNAME: `robot$${project.slug}+ro-robot`,
