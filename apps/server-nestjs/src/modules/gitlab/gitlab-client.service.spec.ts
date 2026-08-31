@@ -1156,7 +1156,22 @@ describe('gitlab-client', () => {
 
       expect(gitlabApi.Projects.remove).toHaveBeenCalledWith(99, {
         fullPath: `${projectSlug}/${repoName}`,
-        permanentlyRemove: true
+        permanentlyRemove: true,
+      })
+    })
+  })
+
+  describe('deleteGroup', () => {
+    it('should delete a group with permanent removal', async () => {
+      const group = makeGroupSchema({ id: 77, full_path: 'forge/project-b' })
+
+      gitlabApi.Groups.remove.mockResolvedValueOnce(undefined)
+
+      await expect(service.deleteGroup(group)).resolves.toBeUndefined()
+
+      expect(gitlabApi.Groups.remove).toHaveBeenCalledWith(77, {
+        fullPath: 'forge/project-b',
+        permanentlyRemove: true,
       })
     })
   })
