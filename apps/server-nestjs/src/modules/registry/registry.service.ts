@@ -229,10 +229,17 @@ export class RegistryService {
       return existing.data
     }
 
-    const created = await this.client.ensureProject(project.slug, storageLimit)
+    const created = await this.client.createProject(project.slug, storageLimit)
+    if (created.status >= 300) {
+      throw new Error(`Harbor create project failed (${created.status})`)
+    }
     span?.setAttribute('registry.project.created', true)
 
-    return created
+    const fetched = await this.client.getProjectByName(project.slug)
+    if (fetched.status !== 200 || !fetched.data) {
+      throw new Error(`Harbor get project failed (${fetched.status})`)
+    }
+    return fetched.data
   }
 
   private async ensureRetentionPolicy(project: ProjectWithDetails, harborProjectId: number) {
