@@ -401,38 +401,36 @@ describeWithGitLab('GitlabService (e2e)', () => {
     }, GITLAB_PURGE_SYNC_TIMEOUT)
   })
 
-  describe('repo deletion', () => {
-    it('should remove project group from GitLab on delete', async () => {
-      const project = await prisma.project.findUniqueOrThrow({
-        where: { id: testProjectId },
-        select: projectSelect,
-      })
+  it('should remove project group from GitLab on delete', async () => {
+    const project = await prisma.project.findUniqueOrThrow({
+      where: { id: testProjectId },
+      select: projectSelect,
+    })
 
-      const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
-      expect(await gitlabClientService.getGroupByPath(groupPath)).toBeTruthy()
-      const namesBefore = (await getAll(gitlabClientService.getRepos(testProjectSlug))).map(r => r.name)
-      expect(namesBefore.length).toBeGreaterThan(0)
+    const groupPath = `${config.projectsRootDir}/${testProjectSlug}`
+    expect(await gitlabClientService.getGroupByPath(groupPath)).toBeTruthy()
+    const namesBefore = (await getAll(gitlabClientService.getRepos(testProjectSlug))).map(r => r.name)
+    expect(namesBefore.length).toBeGreaterThan(0)
 
-      // A deleted repo must disappear immediately, not stay deletion-scheduled.
-      const repoName = `doomed-${faker.string.uuid().slice(0, 8)}`
-      const group = z.object({ id: z.number() }).parse(await gitlabClientService.getGroupByPath(groupPath))
-      const repo = await gitlabClient.Projects.create({
-        name: repoName,
-        path: repoName,
-        namespaceId: group.id,
-      })
-      await gitlabClient.Projects.edit(repo.id, { topics: [TOPIC_PLUGIN_MANAGED] })
-      await gitlabClientService.deleteProjectGroupRepo(testProjectSlug, repoName)
-      await expect(gitlabClient.Projects.show(repo.id)).rejects.toThrow()
-      expect((await getAll(gitlabClientService.getRepos(testProjectSlug))).map(r => r.name)).not.toContain(repoName)
+    // A deleted repo must disappear immediately, not stay deletion-scheduled.
+    const repoName = `doomed-${faker.string.uuid().slice(0, 8)}`
+    const group = z.object({ id: z.number() }).parse(await gitlabClientService.getGroupByPath(groupPath))
+    const repo = await gitlabClient.Projects.create({
+      name: repoName,
+      path: repoName,
+      namespaceId: group.id,
+    })
+    await gitlabClient.Projects.edit(repo.id, { topics: [TOPIC_PLUGIN_MANAGED] })
+    await gitlabClientService.deleteProjectGroupRepo(testProjectSlug, repoName)
+    await expect(gitlabClient.Projects.show(repo.id)).rejects.toThrow()
+    expect((await getAll(gitlabClientService.getRepos(testProjectSlug))).map(r => r.name)).not.toContain(repoName)
 
-      // The project deletion must take the whole group and every repo with it.
-      await eventEmitter.emitAsync('project.delete', project)
+    // The project deletion must take the whole group and every repo with it.
+    await eventEmitter.emitAsync('project.delete', project)
 
-      expect(await gitlabClientService.getGroupByPath(groupPath)).toBeUndefined()
-      for (const name of namesBefore) {
-        expect((await getAll(gitlabClientService.getRepos(testProjectSlug))).map(r => r.name)).not.toContain(name)
-      }
-    }, GITLAB_SYNC_TIMEOUT)
-  })
+    expect(await gitlabClientService.getGroupByPath(groupPath)).toBeUndefined()
+    for (const name of namesBefore) {
+      expect((await getAll(gitlabClientService.getRepos(testProjectSlug))).map(r => r.name)).not.toContain(name)
+    }
+  }, GITLAB_SYNC_TIMEOUT)
 })
