@@ -1142,4 +1142,22 @@ describe('gitlab-client', () => {
       expect(gitlabApi.GroupVariables.create).toHaveBeenCalledWith(groupId, 'SONAR_TOKEN', 'secret', expect.objectContaining({ masked: true, variableType: 'env_var' }))
     })
   })
+
+  describe('deleteProjectGroupRepo', () => {
+    it('should delete a project repo with permanent removal', async () => {
+      const projectSlug = 'project-b'
+      const repoName = 'web'
+      const repo = makeProjectSchema({ id: 99, name: repoName, path: repoName, path_with_namespace: `${projectSlug}/${repoName}` })
+
+      gitlabApi.Projects.show.mockResolvedValueOnce(repo)
+      gitlabApi.Projects.remove.mockResolvedValueOnce(undefined)
+
+      await expect(service.deleteProjectGroupRepo(projectSlug, repoName)).resolves.toBeUndefined()
+
+      expect(gitlabApi.Projects.remove).toHaveBeenCalledWith(99, {
+        fullPath: `${projectSlug}/${repoName}`,
+        permanentlyRemove: true
+      })
+    })
+  })
 })

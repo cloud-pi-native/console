@@ -378,6 +378,7 @@ export class GitlabClientService {
   async deleteGroup(group: CondensedGroupSchemaWith<'id' | 'full_path'>): Promise<void> {
     this.logger.verbose(`Deleting GitLab group ${group.full_path} (groupId=${group.id})`)
     await this.client.Groups.remove(group.id)
+    return this.client.Groups.remove(group.id, { permanentlyRemove: true })
   }
 
   async getGroupMembers(group: CondensedGroupSchemaWith<'id'>) {
@@ -491,7 +492,8 @@ export class GitlabClientService {
   async deleteProjectGroupRepo(projectSlug: string, repoName: string) {
     const fullPath = `${projectSlug}/${repoName}`
     const repo = await this.getOrCreateProjectGroupRepo(projectSlug, fullPath)
-    return this.client.Projects.remove(repo.id)
+    await this.client.Projects.remove(repo.id)
+    return this.client.Projects.remove(repo.id, { permanentlyRemove: true, fullPath })
   }
 
   // CI Variables
