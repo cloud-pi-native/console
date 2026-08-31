@@ -1,4 +1,3 @@
-import type { ProjectSchema } from '@gitbeaker/core'
 import type { CondensedProjectSchemaWith } from '../gitlab/gitlab-client.service'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -18,7 +17,7 @@ describe('observabilityClientService', () => {
     maybeCreateCommit: ReturnType<typeof vi.fn>
   }
 
-  const repo = makeProjectSchema({ name: 'values' }) as unknown as CondensedProjectSchemaWith<'id'>
+  const repo: CondensedProjectSchemaWith<'id'> = makeProjectSchema({ name: 'values' })
 
   beforeEach(async () => {
     gitlab = {
@@ -55,7 +54,7 @@ describe('observabilityClientService', () => {
     it('creates the repo when absent from the group', async () => {
       gitlab.getOrCreateGroupByPath.mockResolvedValue({ id: 7 })
       gitlab.getGroupRepos.mockImplementation(async function* () {})
-      gitlab.createGroupRepo.mockResolvedValue({ id: 99, name: 'observability' } as ProjectSchema)
+      gitlab.createGroupRepo.mockResolvedValue(makeProjectSchema({ id: 99, name: 'observability' }))
 
       await expect(service.getOrCreateValuesRepo()).resolves.toMatchObject({ id: 99 })
       expect(gitlab.createGroupRepo).toHaveBeenCalledWith(7, 'observability')
@@ -124,7 +123,7 @@ describe('observabilityClientService', () => {
 
       expect(gitlab.maybeCreateCommit).toHaveBeenCalledTimes(1)
       // the service passes the merged yaml as the content arg to generateCreateOrUpdateAction
-      const contentArg = vi.mocked(gitlab.generateCreateOrUpdateAction).mock.calls[0][3] as string
+      const contentArg = vi.mocked(gitlab.generateCreateOrUpdateAction).mock.calls[0][3]
       expect(contentArg).toContain('other-id')
       expect(contentArg).toContain('new-id')
     })
@@ -151,7 +150,7 @@ describe('observabilityClientService', () => {
       await service.deleteProjectConfig(repo, { id: 'drop', slug: 'd', name: 'd' })
 
       expect(gitlab.maybeCreateCommit).toHaveBeenCalledTimes(1)
-      const contentArg = vi.mocked(gitlab.generateCreateOrUpdateAction).mock.calls[0][3] as string
+      const contentArg = vi.mocked(gitlab.generateCreateOrUpdateAction).mock.calls[0][3]
       expect(contentArg).toContain('keep')
       expect(contentArg).not.toContain('drop')
     })
