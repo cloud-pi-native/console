@@ -31,8 +31,12 @@ function isNameItem(item: string, field: number): boolean {
 }
 
 function isRangeOrNumber(token: string, min: number, max: number): boolean {
+  if (token === '') return false
   if (token.includes('-')) {
-    const [lo, hi] = token.split('-').map(Number)
+    const parts = token.split('-')
+    if (parts.length !== 2 || parts.includes('')) return false
+    const [lo, hi] = parts.map(Number)
+    if (Number.isNaN(lo) || Number.isNaN(hi)) return false
     return lo >= min && hi <= max && lo <= hi
   }
   const n = Number(token)
@@ -40,7 +44,9 @@ function isRangeOrNumber(token: string, min: number, max: number): boolean {
 }
 
 function isCronItem(item: string, field: number): boolean {
-  if (item === '*' || item === '?') return true
+  if (item === '*') return true
+  // '?' is Quartz-only (day-of-month and day-of-week); rejected elsewhere.
+  if (item === '?' && (field === 3 || field === 5)) return true
   if (isNameItem(item, field)) return true
   const [min, max] = CRON_FIELD_BOUNDS[field]
   const step = /^(.+)\/(\d+)$/.exec(item)
