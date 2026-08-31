@@ -1,7 +1,7 @@
-import { HttpStatus, Inject, Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { NexusHttpClientService } from './nexus-http-client.service'
-import { isNexusNotFound } from './nexus.utils'
+import { ensure, isNexusNotFound } from './nexus.utils'
 
 interface NexusRepositoryStorage {
   blobStoreName: string
@@ -122,13 +122,13 @@ export class NexusClientService {
 
   @StartActiveSpan()
   async ensureRepositoriesMavenHosted(body: NexusMavenHostedRepositoryUpsertRequest): Promise<NexusMavenHostedRepository | undefined> {
-    try {
-      await this.http.fetch('repositories/maven/hosted', { method: 'POST', body })
-      return undefined
-    } catch (error) {
-      if (!this.isAlreadyExistsError(error)) throw error
-      return await this.getRepositoriesMavenHosted(body.name) ?? undefined
-    }
+    return ensure({
+      create: async () => {
+        await this.http.fetch('repositories/maven/hosted', { method: 'POST', body })
+        return undefined
+      },
+      reload: async () => await this.getRepositoriesMavenHosted(body.name) ?? undefined,
+    })
   }
 
   @StartActiveSpan()
@@ -138,13 +138,13 @@ export class NexusClientService {
 
   @StartActiveSpan()
   async ensureRepositoriesMavenGroup(body: NexusMavenGroupRepositoryUpsertRequest): Promise<NexusMavenGroupRepository | undefined> {
-    try {
-      await this.http.fetch('repositories/maven/group', { method: 'POST', body })
-      return undefined
-    } catch (error) {
-      if (!this.isAlreadyExistsError(error)) throw error
-      return await this.getRepositoriesMavenGroup(body.name) ?? undefined
-    }
+    return ensure({
+      create: async () => {
+        await this.http.fetch('repositories/maven/group', { method: 'POST', body })
+        return undefined
+      },
+      reload: async () => await this.getRepositoriesMavenGroup(body.name) ?? undefined,
+    })
   }
 
   @StartActiveSpan()
@@ -176,13 +176,13 @@ export class NexusClientService {
 
   @StartActiveSpan()
   async ensureRepositoriesNpmHosted(body: NexusNpmHostedRepositoryUpsertRequest): Promise<NexusNpmHostedRepository | undefined> {
-    try {
-      await this.http.fetch('repositories/npm/hosted', { method: 'POST', body })
-      return undefined
-    } catch (error) {
-      if (!this.isAlreadyExistsError(error)) throw error
-      return await this.getRepositoriesNpmHosted(body.name) ?? undefined
-    }
+    return ensure({
+      create: async () => {
+        await this.http.fetch('repositories/npm/hosted', { method: 'POST', body })
+        return undefined
+      },
+      reload: async () => await this.getRepositoriesNpmHosted(body.name) ?? undefined,
+    })
   }
 
   @StartActiveSpan()
@@ -203,13 +203,13 @@ export class NexusClientService {
 
   @StartActiveSpan()
   async ensureRepositoriesNpmGroup(body: NexusNpmGroupRepositoryUpsertRequest): Promise<NexusNpmGroupRepository | undefined> {
-    try {
-      await this.http.fetch('repositories/npm/group', { method: 'POST', body })
-      return undefined
-    } catch (error) {
-      if (!this.isAlreadyExistsError(error)) throw error
-      return await this.getRepositoriesNpmGroup(body.name) ?? undefined
-    }
+    return ensure({
+      create: async () => {
+        await this.http.fetch('repositories/npm/group', { method: 'POST', body })
+        return undefined
+      },
+      reload: async () => await this.getRepositoriesNpmGroup(body.name) ?? undefined,
+    })
   }
 
   @StartActiveSpan()
@@ -230,13 +230,13 @@ export class NexusClientService {
 
   @StartActiveSpan()
   async ensureSecurityPrivilegesRepositoryView(body: NexusRepositoryViewPrivilegeUpsertRequest): Promise<NexusPrivilege | undefined> {
-    try {
-      await this.http.fetch('security/privileges/repository-view', { method: 'POST', body })
-      return undefined
-    } catch (error) {
-      if (!this.isAlreadyExistsError(error)) throw error
-      return await this.getSecurityPrivileges(body.name) ?? undefined
-    }
+    return ensure({
+      create: async () => {
+        await this.http.fetch('security/privileges/repository-view', { method: 'POST', body })
+        return undefined
+      },
+      reload: async () => await this.getSecurityPrivileges(body.name) ?? undefined,
+    })
   }
 
   @StartActiveSpan()
@@ -267,13 +267,13 @@ export class NexusClientService {
 
   @StartActiveSpan()
   async ensureSecurityRoles(body: NexusRoleCreateRequest): Promise<NexusRole | undefined> {
-    try {
-      await this.http.fetch('security/roles', { method: 'POST', body })
-      return undefined
-    } catch (error) {
-      if (!this.isAlreadyExistsError(error)) throw error
-      return await this.getSecurityRoles(body.id) ?? undefined
-    }
+    return ensure({
+      create: async () => {
+        await this.http.fetch('security/roles', { method: 'POST', body })
+        return undefined
+      },
+      reload: async () => await this.getSecurityRoles(body.id) ?? undefined,
+    })
   }
 
   @StartActiveSpan()
@@ -309,14 +309,16 @@ export class NexusClientService {
 
   @StartActiveSpan()
   async ensureSecurityUsers(body: NexusUserCreateRequest): Promise<{ userId: string } | undefined> {
-    try {
-      await this.http.fetch('security/users', { method: 'POST', body })
-      return undefined
-    } catch (error) {
-      if (!this.isAlreadyExistsError(error)) throw error
-      const users = await this.getSecurityUsers(body.userId)
-      return users.find(user => user.userId === body.userId)
-    }
+    return ensure({
+      create: async () => {
+        await this.http.fetch('security/users', { method: 'POST', body })
+        return undefined
+      },
+      reload: async () => {
+        const users = await this.getSecurityUsers(body.userId)
+        return users.find(user => user.userId === body.userId)
+      },
+    })
   }
 
   @StartActiveSpan()
@@ -337,16 +339,5 @@ export class NexusClientService {
       if (isNexusNotFound(error)) return
       throw error
     }
-  }
-
-  /**
-   * A concurrent reconciliation may have created the resource between the
-   * caller's GET and this POST; treat that collision as "already exists" and
-   * let the caller reconcile via its update branch instead of failing the sync.
-   */
-  private isAlreadyExistsError(error: unknown): error is NexusError {
-    if (!(error instanceof NexusError)) return false
-    if (error.status === HttpStatus.CONFLICT) return true
-    return error.status !== undefined && error.status >= 400 && error.status < 500 && /already|exists/i.test(error.message)
   }
 }
