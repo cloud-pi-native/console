@@ -36,6 +36,7 @@ import {
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
 import { generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged, hasGitbeakerCause, isGitbeakerNotFound, isGitbeakerUnauthorized } from './gitlab.utils'
+import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
 
 export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
 
