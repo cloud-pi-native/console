@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import type { Member, ProjectRoleBigint, ProjectV2 } from '@cpn-console/shared'
 import {
-  AdminAuthorized,
   isManagedRoleType,
   isSystemRoleType,
   PROJECT_PERMS,
@@ -9,7 +8,6 @@ import {
   shallowEqual,
 } from '@cpn-console/shared'
 import { computed, ref } from 'vue'
-import { useUserStore } from '@/stores/user'
 
 const props = defineProps<{
   id: string
@@ -28,8 +26,6 @@ defineEmits<{
   save: [value: Omit<ProjectRoleBigint, 'position' | 'projectId'>]
   cancel: []
 }>()
-
-const userStore = useUserStore()
 const router = useRouter()
 const role = ref({
   ...props,
@@ -41,7 +37,6 @@ const role = ref({
 
 const isSystem = computed(() => isSystemRoleType(role.value.type))
 const isManaged = computed(() => isManagedRoleType(role.value.type))
-const isUserAdmin = computed(() => AdminAuthorized.Manage(userStore.adminPerms))
 
 const isUpdated = computed(() => {
   if (role.value.isEveryone)
@@ -96,30 +91,27 @@ function updateChecked(checked: boolean, value: bigint) {
       />
       <h6>Permissions de la Console</h6>
       <div v-for="scope in projectPermsDetails" :key="scope.name">
-        <!-- Déploiements is only visible to admin users -->
-        <template v-if="(scope.name !== 'Déploiements') || isUserAdmin ">
-          <p class="mb-3 ml-2 font-bold font-underline">
-            {{ scope.name }}
-          </p>
-          <DsfrCheckbox
-            v-for="perm in scope.perms"
-            :id="`${perm.key}-cbx`"
-            :key="perm.key"
-            value=""
-            :model-value="!!(PROJECT_PERMS[perm.key] & role.permissions)"
-            :label="perm?.label"
-            :hint="perm?.hint"
-            :name="perm.key"
-            :disabled="
-              isSystem
-                || (role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE')
-            "
-            @update:model-value="
-              (checked: boolean) =>
-                updateChecked(checked, PROJECT_PERMS[perm.key])
-            "
-          />
-        </template>
+        <p class="mb-3 ml-2 font-bold font-underline">
+          {{ scope.name }}
+        </p>
+        <DsfrCheckbox
+          v-for="perm in scope.perms"
+          :id="`${perm.key}-cbx`"
+          :key="perm.key"
+          value=""
+          :model-value="!!(PROJECT_PERMS[perm.key] & role.permissions)"
+          :label="perm?.label"
+          :hint="perm?.hint"
+          :name="perm.key"
+          :disabled="
+            isSystem
+              || (role.permissions & PROJECT_PERMS.MANAGE && perm.key !== 'MANAGE')
+          "
+          @update:model-value="
+            (checked: boolean) =>
+              updateChecked(checked, PROJECT_PERMS[perm.key])
+          "
+        />
       </div>
       <DsfrButton
         label="Enregistrer"
