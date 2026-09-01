@@ -263,3 +263,44 @@ export function hasGitbeakerCause(error: unknown, pattern: string | RegExp): err
 export function isGitbeakerUnauthorized(error: unknown): error is GitbeakerRequestError {
   return error instanceof GitbeakerRequestError && error.cause?.response?.status === 401
 }
+
+// Whether a Gitbeaker error signals an entity already existing (race collision):
+// "has already been taken" / "already exists" messages.
+export function isGitbeakerRace(error: unknown): error is GitbeakerRequestError {
+  return hasGitbeakerCause(error, 'has already been taken')
+    || hasGitbeakerCause(error, /already exists/i)
+}
+
+// Whether a rejected commit request actually landed: GitLab reports name
+// collisions and duplicate commits on the same endpoint signatures, plus a bare
+// 400 (Bad Request) for a duplicate commit payload.
+export function isCommitAlreadyApplied(error: unknown): error is GitbeakerRequestError {
+  return isGitbeakerRace(error)
+    || (error instanceof GitbeakerRequestError && error.cause?.response?.status === 400)
+}
+
+// Runs an idempotent write: tries `create`, and on a GitLab race collision
+// reloads via `reload` and returns the existing entity instead of failing.
+// `onCollision` is invoked once when a collision is detected. If the reload
+// finds nothing, the original error is rethrown so genuine failures are not
+// swallowed.
+export async function ensure<T>({
+  create,
+  reload,
+  onCollision,
+}: {
+  create: () => Promise<T>
+  reload: () => Promise<T | undefined>
+  onCollision?: (error: unknown) => void
+}): Promise<T> {
+  try {
+    return await create()
+  } catch (error) {
+    if (isGitbeakerRace(error)) {
+      onCollision?.(error)
+      const existing = await reload()
+      if (existing) return existing
+    }
+    throw error
+  }
+}
