@@ -24,6 +24,7 @@ import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { isVaultNotFound } from '../vault/vault.utils'
 import { RegistryClientService, roAccess, rwAccess } from './registry-client.service'
+import { ROBOT_LIST_PAGE_SIZE } from './registry.constants'
 import { RegistryDatastoreService } from './registry-datastore.service'
 import {
   DEFAULT_PLATFORM_ADMIN_GROUP_PATHS,
@@ -301,9 +302,18 @@ export class RegistryService {
       span?.setAttribute('registry.project.exists', false)
       return
     }
+    await this.deleteRepositories(projectSlug)
     const deleted = await this.client.deleteProjectByName(projectSlug)
     if (deleted.status >= 300 && deleted.status !== 404) {
       throw new Error(`Harbor delete project failed (${deleted.status})`)
+    }
+  }
+
+  private async deleteRepositories(projectSlug: string) {
+    for await (const repository of this.client.listRepositories(projectSlug)) {
+      const name = repository.name
+      if (!name) continue
+      await this.client.deleteRepository(projectSlug, name.split('/').slice(1).join('/'))
     }
   }
 

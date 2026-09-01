@@ -60,6 +60,10 @@ export interface HarborGroupMemberRequest {
   }
 }
 
+export interface HarborRepository {
+  name?: string
+}
+
 export interface HarborProjectQuota {
   ref?: { id?: number }
   hard?: { storage?: number }
@@ -130,6 +134,16 @@ export class RegistryClientService {
     return this.http.fetch(`projects/${encodeURIComponent(projectName)}`, {
       method: 'DELETE',
       headers: { 'X-Is-Resource-Name': 'true' },
+    })
+  }
+
+  listRepositories(projectName: string, query?: RegistryQuery): AsyncGenerator<HarborRepository> {
+    return this.paginate<HarborRepository>(`projects/${encodeURIComponent(projectName)}/repositories`, query)
+  }
+
+  async deleteRepository(projectName: string, repositoryName: string) {
+    return this.http.fetch(`projects/${encodeURIComponent(projectName)}/repositories/${encodeURIComponent(repositoryName)}`, {
+      method: 'DELETE',
     })
   }
 
@@ -212,7 +226,7 @@ export class RegistryClientService {
     })
   }
 
-  private async* paginate<T>(path: string, query: RegistryQuery): AsyncGenerator<T> {
+  private async* paginate<T>(path: string, query?: RegistryQuery): AsyncGenerator<T> {
     for (let page = 1; ; page++) {
       const response = await this.http.fetch<T[]>(path, {
         method: 'GET',

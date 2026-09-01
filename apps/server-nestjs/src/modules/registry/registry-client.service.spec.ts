@@ -10,6 +10,7 @@ import { harborConfigFactory } from '../../config/harbor.config'
 import { VaultClientService } from '../vault/vault-client.service'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryHttpClientService } from './registry-http-client.service'
+import type { HarborRepository } from './registry-client.service'
 
 const harborUrl = 'https://harbor.example'
 const harborAdminPassword = faker.internet.password()
@@ -91,5 +92,35 @@ describe('registryService', () => {
     const res = await service.getProjectByName('myproj')
 
     expect(res).toMatchObject({ status: HttpStatus.OK, data: { project_id: 123 } })
+  })
+
+  it('should list repositories with page_size', async () => {
+    server.use(
+      http.get(`${harborUrl}/api/v2.0/projects/:projectName/repositories`, async () => {
+        return HttpResponse.json([{ name: 'myproj/repo-a' }])
+      }),
+    )
+
+    const res: HarborRepository[] = []
+    for await (const item of service.listRepositories('myproj')) {
+      res.push(item)
+    }
+
+    expect(res).toMatchObject([{ name: 'myproj/repo-a' }])
+  })
+
+  it('should delete a repository by name', async () => {
+    server.use(
+      http.delete(`${harborUrl}/api/v2.0/projects/:projectName/repositories/:repositoryName`, async ({ request, params }) => {
+        expect(request.method).toBe('DELETE')
+        expect(params.projectName).toBe('myproj')
+        expect(params.repositoryName).toBe('repo-a')
+        return new HttpResponse(null, { status: HttpStatus.NO_CONTENT })
+      }),
+    )
+
+    const res = await service.deleteRepository('myproj', 'repo-a')
+
+    expect(res).toMatchObject({ status: HttpStatus.NO_CONTENT })
   })
 })
