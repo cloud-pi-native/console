@@ -107,6 +107,35 @@ describe('sonarqubeClientService', () => {
       )
       await service.createUser(user)
     })
+
+    it('should re-fetch the existing user on a create race instead of throwing', async () => {
+      const login = faker.internet.username()
+      const existing = makeSonarqubeUser({ login })
+      let createCalls = 0
+      server.use(
+        http.post(`${sonarUrl}/api/users/create`, () => {
+          createCalls += 1
+          return HttpResponse.json({ errors: [{ msg: `User '${login}' already exists` }] }, { status: 400 })
+        }),
+        http.get(`${sonarUrl}/api/users/search`, ({ request }) => {
+          expect(new URL(request.url).searchParams.get('q')).toBe(login)
+          return HttpResponse.json({ users: [existing], paging: { pageIndex: 1, pageSize: 10, total: 1 } })
+        }),
+      )
+
+      await expect(service.createUser({ email: `${login}@example.com`, local: 'true', login, name: login, password: faker.internet.password() })).resolves.toMatchObject({ login })
+
+      expect(createCalls).toBe(1)
+    })
+
+    it('should rethrow when the create fails for a non-collision reason', async () => {
+      const login = faker.internet.username()
+      server.use(
+        http.post(`${sonarUrl}/api/users/create`, () => HttpResponse.json({ errors: [{ msg: 'forbidden' }] }, { status: 403 })),
+      )
+
+      await expect(service.createUser({ email: `${login}@example.com`, local: 'true', login, name: login, password: faker.internet.password() })).rejects.toThrow()
+    })
   })
 
   describe('usersDeactivate', () => {
