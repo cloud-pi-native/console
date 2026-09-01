@@ -34,7 +34,7 @@ import {
   TOPIC_SYSTEM_MANAGED,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
-import { generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged, hasGitbeakerCause, isGitbeakerNotFound, isGitbeakerUnauthorized } from './gitlab.utils'
+import { ensure, generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged, hasGitbeakerCause, isCommitAlreadyApplied, isGitbeakerNotFound, isGitbeakerUnauthorized } from './gitlab.utils'
 
 export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
 
@@ -294,14 +294,24 @@ export class GitlabClientService {
 
   async createGroupRepo(groupId: number, repoName: string, description?: string) {
     this.logger.log(`Creating a GitLab repository in a standalone group (groupId=${groupId}, repoName=${repoName})`)
-    const created = await this.client.Projects.create({
-      name: repoName,
-      path: repoName,
-      namespaceId: groupId,
-      description,
-      defaultBranch: defaultBranchName,
+    return ensure({
+      create: () => this.client.Projects.create({
+        name: repoName,
+        path: repoName,
+        namespaceId: groupId,
+        description,
+        defaultBranch: defaultBranchName,
+      }),
+      reload: () => find(
+        this.offsetPaginate(opts => this.client.Projects.all({
+          search: repoName,
+          orderBy: 'path',
+          ...opts,
+        })),
+        p => p.name === repoName,
+      ),
+      onCollision: () => this.logger.warn(`GitLab repository already exists (race); reloading (groupId=${groupId}, repoName=${repoName})`),
     })
-    return created
   }
 
   async getFile(repo: CondensedProjectSchemaWith<'id'>, filePath: string, ref: string = 'main') {
@@ -327,7 +337,21 @@ export class GitlabClientService {
       return
     }
     this.logger.log(`Creating a GitLab commit (repoId=${repo.id}, ref=${ref}, actions=${actions.length})`)
-    await this.client.Commits.create(repo.id, ref, message, actions)
+    try {
+      await this.client.Commits.create(repo.id, ref, message, actions)
+    } catch (error) {
+      // Two overlapping syncs can both see a file absent and both emit a `create`
+      // action; the loser's Commits.create collides with the winner's commit (400).
+      // Treat that as already-committed and continue when the file is now present.
+      if (isCommitAlreadyApplied(error)) {
+        const createAction = actions.find(action => action.action === 'create')
+        if (!createAction || await this.getFile(repo, createAction.filePath, ref)) {
+          this.logger.warn(`GitLab commit already applied (race); continuing (repoId=${repo.id}, ref=${ref})`)
+          return
+        }
+      }
+      throw error
+    }
     this.logger.verbose(`GitLab commit created (repoId=${repo.id}, ref=${ref}, actions=${actions.length})`)
   }
 
