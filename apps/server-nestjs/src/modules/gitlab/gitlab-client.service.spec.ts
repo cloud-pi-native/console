@@ -14,6 +14,7 @@ import { GITLAB_REST_CLIENT, GitlabClientService } from './gitlab-client.service
 import {
   makeAccessTokenExposedSchema,
   makeAccessTokenSchema,
+  makeCommitAction,
   makeExpandedGroupSchema,
   makeExpandedUserSchema,
   makeGitbeakerRequestError,
@@ -182,6 +183,91 @@ describe('gitlab-client', () => {
       await service.maybeCreateCommit(repo, message, action ? [action] : [])
 
       expect(gitlabApi.Commits.create).not.toHaveBeenCalled()
+    })
+
+    it('should tolerate an already-applied commit (race) when the file now exists', async () => {
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const message = 'ci: :robot_face: Sync file'
+      const alreadyExistsError = makeGitbeakerRequestError({ description: 'has already been taken', status: 400, statusText: 'Bad Request' })
+      gitlabApi.Commits.create.mockRejectedValue(alreadyExistsError)
+      gitlabApi.RepositoryFiles.show.mockResolvedValue(makeRepositoryFileExpandedSchema())
+
+      await expect(service.maybeCreateCommit(repo, message, [makeCommitAction({ action: 'create' })]))
+        .resolves.toBeUndefined()
+      expect(gitlabApi.Commits.create).toHaveBeenCalledOnce()
+    })
+
+    it('should never create a second commit when two syncs race on the same file', async () => {
+      // Sync A creates the file (commits, file now present). Sync B started before
+      // A landed, so B also emits a `create` action: its commit collides and the
+      // guard must swallow it instead of committing again or throwing.
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const content = 'content'
+      const filePath = 'file.txt'
+      const message = 'ci: :robot_face: Sync file'
+      // Sync A: file absent -> create action -> commit succeeds.
+      const gitlabRepositoryFilesShowMock = gitlabApi.RepositoryFiles.show as MockedFunction<typeof gitlabApi.RepositoryFiles.show>
+      gitlabRepositoryFilesShowMock.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 File Not Found' }))
+      const actionA = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
+      await service.maybeCreateCommit(repo, message, actionA ? [actionA] : [])
+
+      // Sync B: still saw the file absent, tries the same `create` and collides.
+      gitlabRepositoryFilesShowMock.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 File Not Found' }))
+      gitlabApi.Commits.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: 'has already been taken', status: 400, statusText: 'Bad Request' }))
+      // The guard's post-collision getFile must see the winner's file.
+      gitlabApi.RepositoryFiles.show.mockResolvedValue(makeRepositoryFileExpandedSchema())
+      const actionB = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
+      await service.maybeCreateCommit(repo, message, actionB ? [actionB] : [])
+
+      expect(gitlabApi.Commits.create).toHaveBeenCalledTimes(2)
+      expect(gitlabApi.Commits.create).toHaveBeenLastCalledWith(
+        repoId,
+        'main',
+        message,
+        [{ action: 'create', filePath, content }],
+      )
+      // A third run sees the file present and unchanged: no commit at all.
+      gitlabRepositoryFilesShowMock.mockResolvedValue(makeRepositoryFileExpandedSchema({ content_sha256: 'ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73' }))
+      const actionC = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
+      await service.maybeCreateCommit(repo, message, actionC ? [actionC] : [])
+      expect(gitlabApi.Commits.create).toHaveBeenCalledTimes(2)
+    })
+
+    it('should rethrow when the file is still absent after an already-exists commit error', async () => {
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const message = 'ci: :robot_face: Sync file'
+      const alreadyExistsError = makeGitbeakerRequestError({ description: 'has already been taken', status: 400, statusText: 'Bad Request' })
+      gitlabApi.Commits.create.mockRejectedValue(alreadyExistsError)
+      gitlabApi.RepositoryFiles.show.mockRejectedValue(makeGitbeakerRequestError({ description: '404 File Not Found' }))
+
+      await expect(service.maybeCreateCommit(repo, message, [makeCommitAction({ action: 'create' })]))
+        .rejects.toThrow()
+      expect(gitlabApi.Commits.create).toHaveBeenCalledOnce()
+    })
+  })
+
+  describe('ensureGroupRepo', () => {
+    it('should reload the existing repo on a create collision (race)', async () => {
+      const groupId = 99
+      const repoName = 'observability-values'
+      const existingRepo = makeProjectSchema({ id: 42, name: repoName, path_with_namespace: `forge/${repoName}` })
+      const collisionError = makeGitbeakerRequestError({ description: 'has already been taken', status: 400, statusText: 'Bad Request' })
+      gitlabApi.Projects.create.mockRejectedValue(collisionError)
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
+      gitlabProjectsAllMock.mockResolvedValueOnce({ data: [existingRepo], paginationInfo: { next: null } })
+
+      const result = await service.createGroupRepo(groupId, repoName)
+
+      expect(result).toEqual(existingRepo)
+      expect(gitlabApi.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
+        name: repoName,
+        path: repoName,
+        namespaceId: groupId,
+      }))
+      expect(gitlabProjectsAllMock).toHaveBeenCalledOnce()
     })
   })
 
@@ -997,7 +1083,8 @@ describe('gitlab-client', () => {
         }),
       )
 
-      gitlabApi.Users.all.mockResolvedValueOnce([] as never)
+      const allMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
+      allMock.mockResolvedValueOnce([])
       // Race path: the flattened description now matches, so the existing-user
       // lookup runs, finds nothing, and the original error is rethrown.
       await expect(service.createUser({ email, username, name }))
