@@ -1,5 +1,57 @@
 # Changelog
 
+## [9.25.0-rc.1](https://github.com/cloud-pi-native/console/compare/v9.25.0-rc...v9.25.0-rc.1) (2026-09-01)
+
+
+### Features
+
+* **ci:** add hotfixes alongside (pre)releases with separate worflows/jobs ([7d9205e](https://github.com/cloud-pi-native/console/commit/7d9205e210498862cf132ba15e360f0dbffaddfb))
+* **environment:** warn about linked deployments before environment deletion ([ce12aaf](https://github.com/cloud-pi-native/console/commit/ce12aaf4b44fa75550da932b5a4d76f0e0ef9105))
+
+
+### Bug Fixes
+
+* group missing full path ([00e259a](https://github.com/cloud-pi-native/console/commit/00e259a60ebdc36aca19fd7b2a62fd1756428e7c))
+* **registry:** point ensureProjectQuota at ensureProject client method ([d93bd75](https://github.com/cloud-pi-native/console/commit/d93bd75b3b0038a8b7d498b66e04447f160ce878))
+* **registry:** rewire service layer to idempotent ensure* client methods ([66aa9a3](https://github.com/cloud-pi-native/console/commit/66aa9a31d07185fe2862c8b7d69be157dcc1e956))
+* **server-nestjs:** assert group full_path before permanent removal ([5a947fa](https://github.com/cloud-pi-native/console/commit/5a947fa970bef95af2802d648f5d4bb930e63338))
+* **server-nestjs:** broken di on systemconfig ([75ebe51](https://github.com/cloud-pi-native/console/commit/75ebe517b27a04aa827e0645ebd1c6c3b5be49fb))
+* **server-nestjs:** delete GitLab repos immediately on cleanup ([7e794cc](https://github.com/cloud-pi-native/console/commit/7e794ccaf5d2c63261f9dffe2272fe97e68d2a1a))
+* **server-nestjs:** make GitLab CI variable provisioning idempotent ([1d38746](https://github.com/cloud-pi-native/console/commit/1d38746c036afdc00ca707f49361f9775a0806c8))
+* **server-nestjs:** make Keycloak root group creation idempotent (409 race) ([2f3aee9](https://github.com/cloud-pi-native/console/commit/2f3aee943f807811e81e75dbd580a1e376fc02e6)), closes [#2618](https://github.com/cloud-pi-native/console/issues/2618)
+* **server-nestjs:** permanently remove GitLab groups and repos on cleanup ([a1ca829](https://github.com/cloud-pi-native/console/commit/a1ca8296b0b37bb3f13cf077a57d0b9f6c5abaaa))
+* **server-nestjs:** permanently remove GitLab groups and repos on cleanup ([87d2343](https://github.com/cloud-pi-native/console/commit/87d2343f3c4fe46fbd35ba4c0be4ba1bd53b77bb))
+* **server-nestjs:** purge Harbor repositories before deleting project ([9c627fb](https://github.com/cloud-pi-native/console/commit/9c627fbf55b534c904a6cd1ef2d9faa7b95f11c2)), closes [#2516](https://github.com/cloud-pi-native/console/issues/2516)
+* **server-nestjs:** resolve CondensedGroupSchema vs GroupSchemaWith type mismatch ([183bfb5](https://github.com/cloud-pi-native/console/commit/183bfb5cdefd9e7a65e340966b7e58a8e8276e91))
+* **server-nestjs:** restore accidentally deleted GitLab client tests ([a835e6e](https://github.com/cloud-pi-native/console/commit/a835e6ec2df6793fc65a117ffe671fb50e65cc32))
+* **server-nestjs:** use full path for repo permanent removal ([9cc6614](https://github.com/cloud-pi-native/console/commit/9cc6614279f4ef3b7ea516ad2406b221081a58bf)), closes [#2636](https://github.com/cloud-pi-native/console/issues/2636)
+* **server-nestjs:** use if guard for group full_path type check ([4315f0a](https://github.com/cloud-pi-native/console/commit/4315f0aaf2bd41c9e1f8b10984641db6685e59a7))
+* **server-nestjs:** use optional chaining in GitLab variable reconcile guards ([899b4be](https://github.com/cloud-pi-native/console/commit/899b4be032cc821f5b542b1ad34fa2294e7cbfa2))
+
+
+### Miscellaneous Chores
+
+* ignore agents tasks directories ([28eb1a0](https://github.com/cloud-pi-native/console/commit/28eb1a040f7f07c7f65183cf44e0e9b20347e9f1))
+* **registry:** make create paths idempotent and clean up comments ([d373c27](https://github.com/cloud-pi-native/console/commit/d373c27fc11311a546132f428172dc96d23d4e28))
+* **registry:** trim redundant JSDoc on ensure* methods ([2868d7a](https://github.com/cloud-pi-native/console/commit/2868d7a1337b1d38c6aa272ae6e8ca8a0faf9f98))
+
+
+### Docs
+
+* **ci:** finalize release doc with lessons learned around prereleases and releases ([ae0b57f](https://github.com/cloud-pi-native/console/commit/ae0b57f630a9b13f4bcddd3058f6156902bacf1c))
+* update RELEASE for quick RC test ([16b1b2a](https://github.com/cloud-pi-native/console/commit/16b1b2a7f8b51b23de1e7e7842a5fb403697d507))
+
+
+### Refactoring
+
+* **registry:** rename createProjectRobot alias to ensureProjectRobot ([e7c9286](https://github.com/cloud-pi-native/console/commit/e7c928663b191ee7b3a43cf7661610f51b0a0f51))
+* **server-nestjs:** uniformize error type guards in module utils ([ff8eb1b](https://github.com/cloud-pi-native/console/commit/ff8eb1b893c4a2f90f881d15f7c5a4fbd9a3fdd1))
+
+
+### Reverted commits
+
+* restrict deployment visibility to console admins ([8045954](https://github.com/cloud-pi-native/console/commit/80459541221207c175922066793a1bd6bee87585))
+
 ## [9.25.0-rc](https://github.com/cloud-pi-native/console/compare/v9.24.0...v9.25.0-rc) (2026-08-28)
 
 
