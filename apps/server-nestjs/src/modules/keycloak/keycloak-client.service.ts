@@ -12,7 +12,7 @@ import { keycloakConfigFactory } from '../../config/keycloak.config'
 import { getErrorResponseStatus } from '../../utils/http.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { ADMIN_AUTH_REALM, ADMIN_TOKEN_REFRESH_INTERVAL_MS, CONSOLE_GROUP_NAME, PASSWORD_GRANT_TYPE, REFRESH_TOKEN_GRANT_TYPE, SUBGROUPS_PAGINATE_QUERY_MAX } from './keycloak.constants'
-import { groupSchema, splitGroupPath } from './keycloak.utils'
+import { ensure, groupSchema, splitGroupPath } from './keycloak.utils'
 
 export const KEYCLOAK_ADMIN_CLIENT = Symbol('KEYCLOAK_ADMIN_CLIENT')
 
@@ -129,21 +129,16 @@ export class KeycloakClientService implements OnModuleInit {
     const span = trace.getActiveSpan()
     span?.setAttribute('group.name', name)
     this.logger.debug(`Creating Keycloak group ${name}`)
-    try {
-      await this.client.groups.create({ name })
-    } catch (err) {
-      // A concurrent reconciliation (e.g. the cron sync and a project upsert)
-      // may have created the root group between the read and the create; treat
-      // the 409 as "already exists" and re-fetch it.
-      if (getErrorResponseStatus(err) !== 409) throw err
-      this.logger.verbose(`Keycloak group ${name} was created concurrently, fetching it`)
-      const existing = await this.getRootGroupByName(name)
-      if (!existing) throw err
-      return existing
-    }
-    const created = await this.getRootGroupByName(name)
-    if (!created) throw new Error(`Created Keycloak group ${name} but could not fetch it back`)
-    return created
+    return ensure({
+      create: async () => {
+        await this.client.groups.create({ name })
+        const created = await this.getRootGroupByName(name)
+        if (!created) throw new Error(`Created Keycloak group ${name} but could not fetch it back`)
+        return created
+      },
+      reload: () => this.getRootGroupByName(name),
+      onCollision: () => this.logger.verbose(`Keycloak group ${name} was created concurrently, fetching it`),
+    })
   }
 
   async addUserToGroup(userId: string, groupId: string) {
@@ -213,22 +208,18 @@ export class KeycloakClientService implements OnModuleInit {
     if (existing) return existing
 
     this.logger.debug(`Creating Keycloak subgroup ${name} under parentId=${parentId}`)
-    try {
-      // createChildGroup only returns the new id; re-list the parent to hand
-      // back the representation Keycloak computed (name, path, subGroups...)
-      await this.client.groups.createChildGroup({ id: parentId }, { name })
-      const created = await this.getSubGroupByName(parentId, name)
-      if (!created) throw new Error(`Created Keycloak subgroup ${name} under parentId=${parentId} but could not fetch it back`)
-      return created
-    } catch (err) {
-      // A concurrent reconciliation may have created the subgroup between the
-      // scan and the create; treat the 409 as "already exists" and re-fetch it
-      if (getErrorResponseStatus(err) !== 409) throw err
-      this.logger.verbose(`Keycloak subgroup ${name} was created concurrently under parentId=${parentId}, fetching it`)
-      const subgroup = await this.getSubGroupByName(parentId, name)
-      if (!subgroup) throw err
-      return subgroup
-    }
+    return ensure({
+      create: async () => {
+        // createChildGroup only returns the new id; re-list the parent to hand
+        // back the representation Keycloak computed (name, path, subGroups...)
+        await this.client.groups.createChildGroup({ id: parentId }, { name })
+        const created = await this.getSubGroupByName(parentId, name)
+        if (!created) throw new Error(`Created Keycloak subgroup ${name} under parentId=${parentId} but could not fetch it back`)
+        return created
+      },
+      reload: () => this.getSubGroupByName(parentId, name),
+      onCollision: () => this.logger.verbose(`Keycloak subgroup ${name} was created concurrently under parentId=${parentId}, fetching it`),
+    })
   }
 
   async getOrCreateConsoleGroup(projectGroup: GroupRepresentationWith<'id'>) {
