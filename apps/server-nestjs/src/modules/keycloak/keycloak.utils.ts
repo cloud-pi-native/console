@@ -1,7 +1,9 @@
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation'
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
 import type { ProjectWithDetails } from './keycloak-datastore.service'
+import { HttpStatus } from '@nestjs/common'
 import z from 'zod'
+import { getErrorResponseStatus } from '../../utils/http.utils'
 import { CONSOLE_GROUP_NAME } from './keycloak.constants'
 
 type With<T, K extends keyof T> = T & Required<Pick<T, K>>
@@ -56,4 +58,38 @@ export function isAdminRole(
   role: Pick<ProjectWithDetails['roles'][number], 'oidcGroup'>,
 ): boolean {
   return role.oidcGroup === `/${project.slug}/${CONSOLE_GROUP_NAME}/admin`
+}
+
+// Whether a Keycloak admin-client error signals an entity already existing
+// (race collision): a 409 conflict on the create call.
+export function isKeycloakConflict(error: unknown): boolean {
+  return getErrorResponseStatus(error) === HttpStatus.CONFLICT
+}
+
+// Runs an idempotent create: `create` only performs the write; the entity is
+// always read back through `reload` so callers get the representation Keycloak
+// computed, never a locally synthesized one. On a race collision (409),
+// `onCollision` is invoked once and `reload` fetches the concurrently created
+// entity; if `reload` still finds nothing there, the original error is
+// rethrown so genuine failures are not swallowed. Returns undefined if
+// `reload` does not find the entity after the write.
+export async function ensure<T>({
+  create,
+  reload,
+  onCollision,
+}: {
+  create: () => Promise<void>
+  reload: () => Promise<T | undefined>
+  onCollision?: (error: unknown) => void
+}): Promise<T | undefined> {
+  try {
+    await create()
+  } catch (error) {
+    if (!isKeycloakConflict(error)) throw error
+    onCollision?.(error)
+    const existing = await reload()
+    if (!existing) throw error
+    return existing
+  }
+  return reload()
 }
