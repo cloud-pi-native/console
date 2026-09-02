@@ -17,14 +17,14 @@ export const PROJECT_ADMIN_PERMISSIONS = ['admin', 'scan', 'user', 'codeviewer',
 export const PROJECT_DEVOPS_PERMISSIONS = ['scan', 'user', 'codeviewer', 'issueadmin', 'securityhotspotadmin'] as const
 export const PROJECT_DEVELOPER_PERMISSIONS = ['scan', 'user', 'codeviewer', 'issueadmin', 'securityhotspotadmin'] as const
 export const PROJECT_SECURITY_PERMISSIONS = ['scan', 'user', 'codeviewer', 'issueadmin', 'securityhotspotadmin'] as const
-export const PROJECT_READONLY_PERMISSIONS = ['user', 'codeviewer'] as const
+export const PROJECT_READER_PERMISSIONS = ['user', 'codeviewer'] as const
 
 // CI robot/service account — needs Execute Analysis + Browse + See Source Code
 export const ROBOT_PROJECT_PERMISSIONS = ['scan', 'user', 'codeviewer'] as const
 
 // Default platform-wide Keycloak group paths
 export const DEFAULT_ADMIN_GROUP_PATH = '/console/admin'
-export const DEFAULT_READONLY_GROUP_PATH = '/console/readonly'
+export const DEFAULT_READER_GROUP_PATH = '/console/reader'
 export const DEFAULT_SECURITY_GROUP_PATH = '/console/security'
 
 // Default project role group path suffixes (appended to /{projectSlug})
@@ -32,17 +32,17 @@ export const DEFAULT_PROJECT_ADMIN_SUFFIX = '/console/admin'
 export const DEFAULT_PROJECT_DEVOPS_SUFFIX = '/console/devops'
 export const DEFAULT_PROJECT_DEVELOPER_SUFFIX = '/console/developer'
 export const DEFAULT_PROJECT_SECURITY_SUFFIX = '/console/security'
-export const DEFAULT_PROJECT_READONLY_SUFFIX = '/console/readonly'
+export const DEFAULT_PROJECT_READER_SUFFIX = '/console/reader'
 
 // Admin plugin config keys for overriding defaults
 export const ADMIN_GROUP_PATH_PLUGIN_KEY = 'adminGroupPath'
-export const READONLY_GROUP_PATH_PLUGIN_KEY = 'readonlyGroupPath'
+export const READER_GROUP_PATH_PLUGIN_KEY = 'readerGroupPath'
 export const SECURITY_GROUP_PATH_PLUGIN_KEY = 'securityGroupPath'
 export const PROJECT_ADMIN_SUFFIX_PLUGIN_KEY = 'projectAdminSuffix'
 export const PROJECT_DEVOPS_SUFFIX_PLUGIN_KEY = 'projectDevopsSuffix'
 export const PROJECT_DEVELOPER_SUFFIX_PLUGIN_KEY = 'projectDeveloperSuffix'
 export const PROJECT_SECURITY_SUFFIX_PLUGIN_KEY = 'projectSecuritySuffix'
-export const PROJECT_READONLY_SUFFIX_PLUGIN_KEY = 'projectReadonlySuffix'
+export const PROJECT_READER_SUFFIX_PLUGIN_KEY = 'projectReaderSuffix'
 
 // SonarQube project qualifier identifiers
 export const SONARQUBE_PROJECT_QUALIFIER_APPLICATION = 'APP'

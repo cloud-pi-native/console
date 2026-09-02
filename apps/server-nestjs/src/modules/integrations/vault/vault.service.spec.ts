@@ -11,7 +11,7 @@ import { VaultDatastoreService } from './vault-datastore.service'
 import { makeProjectWithDetails, makeVaultSecret, makeZoneWithDetails } from './vault-testing.utils'
 import { VaultService } from './vault.service'
 
-const projectRoleGroupNameRegex = /^project-(.*)-(admin|devops|developer|readonly|security)$/
+const projectRoleGroupNameRegex = /^project-(.*)-(admin|devops|developer|reader|security)$/
 
 describe('vaultService', () => {
   let service: VaultService
@@ -93,7 +93,7 @@ describe('vaultService', () => {
       }
 
       if (groupName === 'console-admin') return { data: { id: 'gid', name: groupName, alias: { name: '/console/admin' } } }
-      if (groupName === 'console-readonly') return { data: { id: 'gid', name: groupName, alias: { name: '/console/readonly' } } }
+      if (groupName === 'console-reader') return { data: { id: 'gid', name: groupName, alias: { name: '/console/reader' } } }
       if (groupName === 'console-security') return { data: { id: 'gid', name: groupName, alias: { name: '/console/security' } } }
 
       return { data: { id: 'gid', name: groupName } }
@@ -102,6 +102,7 @@ describe('vaultService', () => {
     await service.handleUpsert(project)
 
     expect(client.createSysMount).toHaveBeenCalledWith(project.slug, expect.any(Object))
+<<<<<<< HEAD
     expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`app--${project.slug}--admin`, expect.any(Object))
     expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`tech--${project.slug}--ro`, expect.any(Object))
     expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--devops`, expect.any(Object))
@@ -119,12 +120,55 @@ describe('vaultService', () => {
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`, expect.any(Object))
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`, expect.any(Object))
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`, expect.any(Object))
+||||||| parent of 82f78dce (chore(server-nestjs): rename role readonly to reader)
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`app--${project.slug}--admin`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`tech--${project.slug}--ro`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--devops`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--readonly`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--security`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--admin', expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--readonly', expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--security', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-admin', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-readonly', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-security', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-admin`, expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-devops`, expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`, expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`, expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`, expect.any(Object))
+=======
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`app--${project.slug}--admin`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`tech--${project.slug}--ro`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--devops`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--reader`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--security`, expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--admin', expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--reader', expect.any(Object))
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--security', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-admin', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-reader', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-security', expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-admin`, expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-devops`, expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`, expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-reader`, expect.any(Object))
+    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`, expect.any(Object))
+>>>>>>> 82f78dce (chore(server-nestjs): rename role readonly to reader)
     expect(client.createIdentityGroupAlias).not.toHaveBeenCalled()
 
     expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`, {
       policy: `path "${project.slug}/data/*" { capabilities = ["list"] }`,
     })
+<<<<<<< HEAD
     expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--readonly`, {
+||||||| parent of 82f78dce (chore(server-nestjs): rename role readonly to reader)
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--readonly`, {
+=======
+    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--reader`, {
+>>>>>>> 82f78dce (chore(server-nestjs): rename role readonly to reader)
       policy: `path "${project.slug}/data/*" { capabilities = ["list"] }`,
     })
     expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--security`, {
@@ -148,13 +192,13 @@ describe('vaultService', () => {
     expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`tech--${project.slug}--ro`)
     expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--devops`)
     expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`)
-    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--readonly`)
+    expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--reader`)
     expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--security`)
     expect(client.deleteAuthApproleRole).toHaveBeenCalledWith(project.slug)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-admin`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-devops`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`)
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`)
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-reader`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`)
   })
 
