@@ -19,12 +19,12 @@ import { ArgoCDDatastoreService } from './argocd-datastore.service'
 import {
   CONSOLE_ADMIN_GROUP_PATH,
   PLATFORM_ADMIN_GROUP_PATH,
-  PLATFORM_READONLY_GROUP_PATH,
+  PLATFORM_READER_GROUP_PATH,
   PLATFORM_SECURITY_GROUP_PATH,
   PROJECT_ADMIN_GROUP_PATH_SUFFIX,
   PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
   PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
-  PROJECT_READONLY_GROUP_PATH_SUFFIX,
+  PROJECT_READER_GROUP_PATH_SUFFIX,
   PROJECT_SECURITY_GROUP_PATH_SUFFIX,
 } from './argocd.constants'
 
@@ -443,13 +443,13 @@ interface ValuesSchema {
     rwGroup: string
     consoleAdminGroup: string
     platformAdminGroup: string
-    platformReadonlyGroup: string
+    platformReaderGroup: string
     platformSecurityGroup: string
     projectAdminGroup: string
     projectDevopsGroup: string
     projectDevelopperGroup: string
     projectSecurityGroup: string
-    projectReadonlyGroup: string
+    projectReaderGroup: string
   }
   application: {
     quota: {
@@ -600,13 +600,13 @@ function formatEnvironmentValues(
     rwGroup,
     consoleAdminGroup: CONSOLE_ADMIN_GROUP_PATH,
     platformAdminGroup: PLATFORM_ADMIN_GROUP_PATH,
-    platformReadonlyGroup: PLATFORM_READONLY_GROUP_PATH,
+    platformReaderGroup: PLATFORM_READER_GROUP_PATH,
     platformSecurityGroup: PLATFORM_SECURITY_GROUP_PATH,
     projectAdminGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_ADMIN_GROUP_PATH_SUFFIX),
     projectDevopsGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_DEVOPS_GROUP_PATH_SUFFIX),
     projectDevelopperGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_DEVELOPER_GROUP_PATH_SUFFIX),
     projectSecurityGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_SECURITY_GROUP_PATH_SUFFIX),
-    projectReadonlyGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_READONLY_GROUP_PATH_SUFFIX),
+    projectReaderGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_READER_GROUP_PATH_SUFFIX),
   } satisfies ValuesSchema['environment']
 }
 

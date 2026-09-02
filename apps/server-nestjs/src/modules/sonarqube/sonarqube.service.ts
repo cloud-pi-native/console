@@ -23,9 +23,9 @@ import {
   DEFAULT_PROJECT_ADMIN_SUFFIX,
   DEFAULT_PROJECT_DEVELOPER_SUFFIX,
   DEFAULT_PROJECT_DEVOPS_SUFFIX,
-  DEFAULT_PROJECT_READONLY_SUFFIX,
+  DEFAULT_PROJECT_READER_SUFFIX,
   DEFAULT_PROJECT_SECURITY_SUFFIX,
-  DEFAULT_READONLY_GROUP_PATH,
+  DEFAULT_READER_GROUP_PATH,
   DEFAULT_SECURITY_GROUP_PATH,
   DEFAULT_TEMPLATE_PERMISSIONS,
   GLOBAL_ADMIN_PERMISSIONS,
@@ -36,11 +36,11 @@ import {
   PROJECT_DEVELOPER_SUFFIX_PLUGIN_KEY,
   PROJECT_DEVOPS_PERMISSIONS,
   PROJECT_DEVOPS_SUFFIX_PLUGIN_KEY,
-  PROJECT_READONLY_PERMISSIONS,
-  PROJECT_READONLY_SUFFIX_PLUGIN_KEY,
+  PROJECT_READER_PERMISSIONS,
+  PROJECT_READER_SUFFIX_PLUGIN_KEY,
   PROJECT_SECURITY_PERMISSIONS,
   PROJECT_SECURITY_SUFFIX_PLUGIN_KEY,
-  READONLY_GROUP_PATH_PLUGIN_KEY,
+  READER_GROUP_PATH_PLUGIN_KEY,
   ROBOT_PROJECT_PERMISSIONS,
   SECURITY_GROUP_PATH_PLUGIN_KEY,
 } from './sonarqube.constants'
@@ -50,7 +50,7 @@ interface SonarqubeRolePaths {
   devops: string[]
   developer: string[]
   security: string[]
-  readonly: string[]
+  reader: string[]
 }
 
 @Injectable()
@@ -75,14 +75,14 @@ export class SonarqubeService implements OnModuleInit {
   async init(): Promise<void> {
     this.logger.log('Initializing SonarQube platform configuration')
     const adminGroupPath = await this.getAdminGroupPath()
-    const [readonlyGroupPath, securityGroupPath] = await Promise.all([
-      this.getReadonlyGroupPath(),
+    const [readerGroupPath, securityGroupPath] = await Promise.all([
+      this.getReaderGroupPath(),
       this.getSecurityGroupPath(),
     ])
     await this.ensureDefaultPermissionTemplate()
     await Promise.all([
       this.ensureGroupWithGlobalPermissions(adminGroupPath, GLOBAL_ADMIN_PERMISSIONS),
-      this.ensureGroup(readonlyGroupPath),
+      this.ensureGroup(readerGroupPath),
       this.ensureGroup(securityGroupPath),
     ])
     this.logger.log('SonarQube platform configuration initialized')
@@ -248,7 +248,7 @@ export class SonarqubeService implements OnModuleInit {
       ...rolePaths.devops,
       ...rolePaths.developer,
       ...rolePaths.security,
-      ...rolePaths.readonly,
+      ...rolePaths.reader,
     ]
     await Promise.all(allGroups.map(group => this.ensureGroup(group)))
   }
@@ -259,8 +259,8 @@ export class SonarqubeService implements OnModuleInit {
     span?.setAttribute('project.slug', project.slug)
     span?.setAttribute('repositories.count', project.repositories.length)
 
-    const [readonlyGroupPath, securityGroupPath, existingSonarProjects, sonarSecret, gitlabGroup] = await Promise.all([
-      this.getReadonlyGroupPath(),
+    const [readerGroupPath, securityGroupPath, existingSonarProjects, sonarSecret, gitlabGroup] = await Promise.all([
+      this.getReaderGroupPath(),
       this.getSecurityGroupPath(),
       getAll(this.findProjectsForSlug(project.slug)),
       this.vault.readSonarqubeUser(project.slug),
@@ -299,7 +299,7 @@ export class SonarqubeService implements OnModuleInit {
           })
           this.logger.log(`Created SonarQube repository (key=${projectKey})`)
         }
-        await this.ensureProjectPermissions(projectKey, project.slug, rolePaths, readonlyGroupPath, securityGroupPath)
+        await this.ensureProjectPermissions(projectKey, project.slug, rolePaths, readerGroupPath, securityGroupPath)
         this.logger.verbose(`Ensured permissions on SonarQube repository (key=${projectKey})`)
         await this.ensureGitlabCiVariables(project, repository, projectKey, sonarSecret)
       }),
@@ -336,14 +336,14 @@ export class SonarqubeService implements OnModuleInit {
     projectKey: string,
     login: string,
     rolePaths: SonarqubeRolePaths,
-    readonlyGroupPath: string,
+    readerGroupPath: string,
     securityGroupPath: string,
   ): Promise<void> {
     await Promise.all([
       ...ROBOT_PROJECT_PERMISSIONS.map(permission =>
         this.client.addPermissionUser({ projectKey, permission, login }),
       ),
-      ...buildGroupPermissions(rolePaths, readonlyGroupPath, securityGroupPath).flatMap(({ groupName, permissions }) =>
+      ...buildGroupPermissions(rolePaths, readerGroupPath, securityGroupPath).flatMap(({ groupName, permissions }) =>
         permissions.map(permission => this.client.addPermissionGroup({ projectKey, permission, groupName })),
       ),
     ])
@@ -383,9 +383,9 @@ export class SonarqubeService implements OnModuleInit {
     return config ?? DEFAULT_ADMIN_GROUP_PATH
   }
 
-  private async getReadonlyGroupPath(): Promise<string> {
-    const config = await this.getAdminPluginConfig(READONLY_GROUP_PATH_PLUGIN_KEY)
-    return config ?? DEFAULT_READONLY_GROUP_PATH
+  private async getReaderGroupPath(): Promise<string> {
+    const config = await this.getAdminPluginConfig(READER_GROUP_PATH_PLUGIN_KEY)
+    return config ?? DEFAULT_READER_GROUP_PATH
   }
 
   private async getSecurityGroupPath(): Promise<string> {
@@ -400,14 +400,14 @@ export class SonarqubeService implements OnModuleInit {
   }
 
   private async getProjectRoleGroupPaths(project: ProjectWithDetails): Promise<SonarqubeRolePaths> {
-    const [admin, devops, developer, security, readonly] = await Promise.all([
+    const [admin, devops, developer, security, reader] = await Promise.all([
       this.getProjectAdminGroupPaths(project),
       this.getProjectDevopsGroupPaths(project),
       this.getProjectDeveloperGroupPaths(project),
       this.getProjectSecurityGroupPaths(project),
-      this.getProjectReadonlyGroupPaths(project),
+      this.getProjectReaderGroupPaths(project),
     ])
-    return { admin, devops, developer, security, readonly }
+    return { admin, devops, developer, security, reader }
   }
 
   private async getProjectAdminGroupPaths(project: ProjectWithDetails): Promise<string[]> {
@@ -438,10 +438,10 @@ export class SonarqubeService implements OnModuleInit {
     return generateProjectRoleGroupPath(project.slug, raw)
   }
 
-  private async getProjectReadonlyGroupPaths(project: ProjectWithDetails): Promise<string[]> {
-    const projectConfig = getProjectPluginConfig(project, PROJECT_READONLY_SUFFIX_PLUGIN_KEY)
-    const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_READONLY_SUFFIX_PLUGIN_KEY)
-    const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_READONLY_SUFFIX
+  private async getProjectReaderGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+    const projectConfig = getProjectPluginConfig(project, PROJECT_READER_SUFFIX_PLUGIN_KEY)
+    const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_READER_SUFFIX_PLUGIN_KEY)
+    const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_READER_SUFFIX
     return generateProjectRoleGroupPath(project.slug, raw)
   }
 
@@ -473,7 +473,7 @@ function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes:
 
 function buildGroupPermissions(
   rolePaths: SonarqubeRolePaths,
-  readonlyGroupPath: string,
+  readerGroupPath: string,
   securityGroupPath: string,
 ): { groupName: string, permissions: readonly string[] }[] {
   return [
@@ -481,9 +481,9 @@ function buildGroupPermissions(
     ...rolePaths.devops.map(groupName => ({ groupName, permissions: PROJECT_DEVOPS_PERMISSIONS })),
     ...rolePaths.developer.map(groupName => ({ groupName, permissions: PROJECT_DEVELOPER_PERMISSIONS })),
     ...rolePaths.security.map(groupName => ({ groupName, permissions: PROJECT_SECURITY_PERMISSIONS })),
-    ...rolePaths.readonly.map(groupName => ({ groupName, permissions: PROJECT_READONLY_PERMISSIONS })),
+    ...rolePaths.reader.map(groupName => ({ groupName, permissions: PROJECT_READER_PERMISSIONS })),
     { groupName: securityGroupPath, permissions: PROJECT_SECURITY_PERMISSIONS },
-    { groupName: readonlyGroupPath, permissions: PROJECT_READONLY_PERMISSIONS },
+    { groupName: readerGroupPath, permissions: PROJECT_READER_PERMISSIONS },
   ]
 }
 

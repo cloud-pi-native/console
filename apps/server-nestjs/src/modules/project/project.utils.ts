@@ -65,10 +65,10 @@ export function generateProjectCreateInput(
           type: 'system:managed',
         },
         {
-          name: 'Lecture seule',
+          name: 'Lecture',
           permissions: PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.LIST_REPOSITORIES,
           position: 3,
-          oidcGroup: `/${slug}/console/readonly`,
+          oidcGroup: `/${slug}/console/reader`,
           type: 'system:managed',
         },
       ],

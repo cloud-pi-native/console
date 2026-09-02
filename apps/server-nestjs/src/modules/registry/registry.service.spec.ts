@@ -103,9 +103,9 @@ describe('registryService', () => {
       const expected = [
         { groupName: `/${project.slug}`, roleId: 5 },
         { groupName: '/console/admin', roleId: 1 },
-        { groupName: '/console/readonly', roleId: 3 },
+        { groupName: '/console/reader', roleId: 3 },
         { groupName: '/console/security', roleId: 3 },
-        { groupName: `/${project.slug}/console/readonly`, roleId: 3 },
+        { groupName: `/${project.slug}/console/reader`, roleId: 3 },
         { groupName: `/${project.slug}/console/security`, roleId: 3 },
         { groupName: `/${project.slug}/console/developer`, roleId: 3 },
         { groupName: `/${project.slug}/console/devops`, roleId: 3 },
