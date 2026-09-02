@@ -1,5 +1,134 @@
 # Changelog
 
+## [9.25.0](https://github.com/cloud-pi-native/console/compare/v9.24.0...v9.25.0) (2026-09-02)
+
+
+### Features
+
+* **ci:** add a prerelease process alongside the release one ([1cad1ef](https://github.com/cloud-pi-native/console/commit/1cad1efd97d74dc93f00ee34d2e8ad64cb3e412e))
+* **ci:** add hotfixes alongside (pre)releases with separate worflows/jobs ([7d9205e](https://github.com/cloud-pi-native/console/commit/7d9205e210498862cf132ba15e360f0dbffaddfb))
+* **client:** add a script to generate src/icon-collections.ts ([ecf8550](https://github.com/cloud-pi-native/console/commit/ecf85505d88f0bd31404e56aa95b1fbffbe17b8d))
+* **environment:** warn about linked deployments before environment deletion ([ce12aaf](https://github.com/cloud-pi-native/console/commit/ce12aaf4b44fa75550da932b5a4d76f0e0ef9105))
+* **sonarqube:** provision SONAR_TOKEN as GitLab group CI variable ([71632fe](https://github.com/cloud-pi-native/console/commit/71632fed46b845b2d3e0fe8dc67b1f515b4235d1))
+
+
+### Bug Fixes
+
+* **ci:** change how hotfixes or main branch are detected for release-please ([20cb79a](https://github.com/cloud-pi-native/console/commit/20cb79a65fb893a69d661c2187f54187dbf0a92f))
+* **ci:** correct keycloak healthcheck flag typo (fsS -&gt; -fsS) ([0983043](https://github.com/cloud-pi-native/console/commit/098304367a3d019c8a83c0f64124026a620c363a))
+* **ci:** ensure update-charts is not called when simply pushing to main ([2af9f8b](https://github.com/cloud-pi-native/console/commit/2af9f8be7df39951dc81eda9d2d768839e79a9a9))
+* **ci:** fix package versions bumps not being done for hotfixes ([31dc7bb](https://github.com/cloud-pi-native/console/commit/31dc7bbf61679e1f0ea898ca22e0675a9fb08b46))
+* **ci:** fix release workflow boolean-as-string error ([7e9aff1](https://github.com/cloud-pi-native/console/commit/7e9aff17af60e7b8eb6c97f5b6dd8c6226d75737))
+* **ci:** grant permissions to top-level release workflow ([c0ee291](https://github.com/cloud-pi-native/console/commit/c0ee29162e7ee3d0fdb7d221a54cadf49f440a10))
+* **ci:** query keycloak health endpoint on management port 9000 ([e3e7008](https://github.com/cloud-pi-native/console/commit/e3e700836b0de943671449bee3deb15baef31ff8))
+* **ci:** surface keycloak boot logs on Playwright failure ([393c6ce](https://github.com/cloud-pi-native/console/commit/393c6ceeaa8977e66acbdf96b272ecabb61c27c1))
+* **client:** avoid footer link icon appearing over snackbar ([66be551](https://github.com/cloud-pi-native/console/commit/66be551998ba8e421c8409f945886006ec57beaa))
+* **client:** fix currently used icons ([803e86e](https://github.com/cloud-pi-native/console/commit/803e86ed4d866b15f4bae91e8d8cdde593993e83))
+* **client:** map footer version label and link to pr/sha/tag ([96a48c4](https://github.com/cloud-pi-native/console/commit/96a48c4484d0c8bc04b06efc05bcac36ac523573))
+* **client:** map footer version link to release tag or PR instead of 404 ([b63a005](https://github.com/cloud-pi-native/console/commit/b63a0050ad2354b345c2fee954a56112766d1855)), closes [#2566](https://github.com/cloud-pi-native/console/issues/2566)
+* delete Keycloak subgroups before the parent to avoid HTTP 500 on delete ([94c49bf](https://github.com/cloud-pi-native/console/commit/94c49bfe75cd33db6319720f6b0d3b9cd070c5ee))
+* **deps:** resolve 17 dependabot alerts via pnpm overrides ([aea614d](https://github.com/cloud-pi-native/console/commit/aea614d57f496d05fd75d1d5d757020d13ee62bf))
+* **gitlab:** return existing user on 409 instead of failing sync ([50c9c79](https://github.com/cloud-pi-native/console/commit/50c9c7903e3c9991ca256b809a1f172d288235a4))
+* **gitlab:** set ci_config_path only on externally mirrored repos ([0d4a0db](https://github.com/cloud-pi-native/console/commit/0d4a0dba6384bdf2bf9dd7d50b016ad5bff89dd6))
+* group missing full path ([00e259a](https://github.com/cloud-pi-native/console/commit/00e259a60ebdc36aca19fd7b2a62fd1756428e7c))
+* Keycloak group null check ([0a36ead](https://github.com/cloud-pi-native/console/commit/0a36ead953e1b2d4158ecd0cc2c88f3d252b857c))
+* **keycloak:** add project owner to the maintainer role group ([62fd5de](https://github.com/cloud-pi-native/console/commit/62fd5de6c6d8bd98b2b9ed5fa66d3558e9df4aa4)), closes [#2644](https://github.com/cloud-pi-native/console/issues/2644)
+* **keycloak:** preserve full path when creating role groups ([b243721](https://github.com/cloud-pi-native/console/commit/b243721c93f5b15e181850c30ee8d11cd511df36))
+* missing observability icon ([ec767f4](https://github.com/cloud-pi-native/console/commit/ec767f4ce51e3370274da5b7061761fe8a8bfd6f))
+* missing stage in observability ([13d9866](https://github.com/cloud-pi-native/console/commit/13d986683d1fca5c157b30ccd5b4a9ff5a9e26ee))
+* observability hprod and prod icon not displayed ([0f0b377](https://github.com/cloud-pi-native/console/commit/0f0b3774caa1fd0c358ca05d8354f76b7f3c1c59))
+* **observability:** scope repository url by project slug with .git suffix ([869e318](https://github.com/cloud-pi-native/console/commit/869e3183b0ecacae59fb96075c4278b752df8ae7))
+* **observability:** skip Grafana group add for users with no Keycloak account ([1d303c2](https://github.com/cloud-pi-native/console/commit/1d303c243db870a1cedf0fbaca380b2b307edf1d))
+* **project-secrets:** honor Nexus global repo defaults ([39a81f4](https://github.com/cloud-pi-native/console/commit/39a81f4d8cef8090941f704bb82eb5779eb2b109))
+* **project-secrets:** restore GitLab CURL COMMAND trigger hint ([f21cb93](https://github.com/cloud-pi-native/console/commit/f21cb93aff9b70b9146e9dea776b0bc279707855))
+* **registry:** point ensureProjectQuota at ensureProject client method ([d93bd75](https://github.com/cloud-pi-native/console/commit/d93bd75b3b0038a8b7d498b66e04447f160ce878))
+* **registry:** rewire service layer to idempotent ensure* client methods ([66aa9a3](https://github.com/cloud-pi-native/console/commit/66aa9a31d07185fe2862c8b7d69be157dcc1e956))
+* remove Keycloak project groups on delete ([f69ee86](https://github.com/cloud-pi-native/console/commit/f69ee86d28a77494c419dcffb7abca4bddf55987))
+* **server-nestjs:** assert group full_path before permanent removal ([5a947fa](https://github.com/cloud-pi-native/console/commit/5a947fa970bef95af2802d648f5d4bb930e63338))
+* **server-nestjs:** broken di on systemconfig ([75ebe51](https://github.com/cloud-pi-native/console/commit/75ebe517b27a04aa827e0645ebd1c6c3b5be49fb))
+* **server-nestjs:** carry the mirror repo id with the pipeline trigger token ([07f7e3a](https://github.com/cloud-pi-native/console/commit/07f7e3a15b298aaa44cfa7bb1f53d1e5b15c6879))
+* **server-nestjs:** delete GitLab repos immediately on cleanup ([7e794cc](https://github.com/cloud-pi-native/console/commit/7e794ccaf5d2c63261f9dffe2272fe97e68d2a1a))
+* **server-nestjs:** delete Keycloak subgroups before the parent group ([42848bc](https://github.com/cloud-pi-native/console/commit/42848bc63389751638cd06ebed14368dcf30aaa6)), closes [#2500](https://github.com/cloud-pi-native/console/issues/2500)
+* **server-nestjs:** delete owned GitLab repos on explicit repository deletion ([a47e7b0](https://github.com/cloud-pi-native/console/commit/a47e7b0e56b898ef6409ec24ed1fe734b10ce116))
+* **server-nestjs:** guard createUser against non-string GitLab error descriptions ([9986fae](https://github.com/cloud-pi-native/console/commit/9986fae31df2dbe4cc68151a1c4cdfa4aa1521bb))
+* **server-nestjs:** import AuthModule in SystemConfigModule to resolve UserGuard dep ([dd61154](https://github.com/cloud-pi-native/console/commit/dd6115490dbac90b022cda2e534aafc50ed399d5))
+* **server-nestjs:** include projectsRootDir in vault techRO policy path ([a947e17](https://github.com/cloud-pi-native/console/commit/a947e1798137a8292f24a54e10d7f983f0681933))
+* **server-nestjs:** make GitLab CI variable provisioning idempotent ([1d38746](https://github.com/cloud-pi-native/console/commit/1d38746c036afdc00ca707f49361f9775a0806c8))
+* **server-nestjs:** make Keycloak root group creation idempotent (409 race) ([2f3aee9](https://github.com/cloud-pi-native/console/commit/2f3aee943f807811e81e75dbd580a1e376fc02e6)), closes [#2618](https://github.com/cloud-pi-native/console/issues/2618)
+* **server-nestjs:** match GitLab validation errors with object descriptions ([4bb2f25](https://github.com/cloud-pi-native/console/commit/4bb2f2541e05421a7656d8d343c8d21fbdcef188)), closes [#2544](https://github.com/cloud-pi-native/console/issues/2544)
+* **server-nestjs:** never purge system GitLab repos (infra-apps, mirror) on reconciliation ([dbe4d7b](https://github.com/cloud-pi-native/console/commit/dbe4d7b2eb31843ed501490a0757827741cbcbb0))
+* **server-nestjs:** permanently remove GitLab groups and repos on cleanup ([a1ca829](https://github.com/cloud-pi-native/console/commit/a1ca8296b0b37bb3f13cf077a57d0b9f6c5abaaa))
+* **server-nestjs:** permanently remove GitLab groups and repos on cleanup ([87d2343](https://github.com/cloud-pi-native/console/commit/87d2343f3c4fe46fbd35ba4c0be4ba1bd53b77bb))
+* **server-nestjs:** purge argocd values files on project delete ([108caf5](https://github.com/cloud-pi-native/console/commit/108caf5e4d61f63613c9fbe76fadf3cac18d640e))
+* **server-nestjs:** purge Harbor repositories before deleting project ([9c627fb](https://github.com/cloud-pi-native/console/commit/9c627fbf55b534c904a6cd1ef2d9faa7b95f11c2)), closes [#2516](https://github.com/cloud-pi-native/console/issues/2516)
+* **server-nestjs:** reconcile single Harbor retention policy on re-sync ([49ae7af](https://github.com/cloud-pi-native/console/commit/49ae7aff86414574540733d806405f4db6edc41b)), closes [#2620](https://github.com/cloud-pi-native/console/issues/2620)
+* **server-nestjs:** register SystemConfigModule to unblock system/plugins routes ([6431d6d](https://github.com/cloud-pi-native/console/commit/6431d6d6864d67382b7c4169a807bb85348b3926))
+* **server-nestjs:** resolve CondensedGroupSchema vs GroupSchemaWith type mismatch ([183bfb5](https://github.com/cloud-pi-native/console/commit/183bfb5cdefd9e7a65e340966b7e58a8e8276e91))
+* **server-nestjs:** resolve Keycloak root group by path, not name ([3fdb90b](https://github.com/cloud-pi-native/console/commit/3fdb90bcdd629d5be0db8e0c3eea0eafdd8d5695))
+* **server-nestjs:** restore accidentally deleted GitLab client tests ([a835e6e](https://github.com/cloud-pi-native/console/commit/a835e6ec2df6793fc65a117ffe671fb50e65cc32))
+* **server-nestjs:** surface GitLab error details in serialized errors ([6ca31e9](https://github.com/cloud-pi-native/console/commit/6ca31e9131ec8aadc6b38a9c17c09ea4293d8927))
+* **server-nestjs:** surface post-creation repository sync failure ([3ccc052](https://github.com/cloud-pi-native/console/commit/3ccc0525c3dafc6717fe03fd3567f5eb75732343))
+* **server-nestjs:** tolerate Harbor create races (400 CONFLICT / 409) in ensure paths ([d853e96](https://github.com/cloud-pi-native/console/commit/d853e96d13da71a4a7fb0666436cb65a10b09b13)), closes [#2620](https://github.com/cloud-pi-native/console/issues/2620)
+* **server-nestjs:** use full path for repo permanent removal ([9cc6614](https://github.com/cloud-pi-native/console/commit/9cc6614279f4ef3b7ea516ad2406b221081a58bf)), closes [#2636](https://github.com/cloud-pi-native/console/issues/2636)
+* **server-nestjs:** use if guard for group full_path type check ([4315f0a](https://github.com/cloud-pi-native/console/commit/4315f0aaf2bd41c9e1f8b10984641db6685e59a7))
+* **server-nestjs:** use optional chaining in GitLab variable reconcile guards ([899b4be](https://github.com/cloud-pi-native/console/commit/899b4be032cc821f5b542b1ad34fa2294e7cbfa2))
+* **server-nestjs:** use per-project cloud-pi-native.fr email for sonarqube robot account ([d55564f](https://github.com/cloud-pi-native/console/commit/d55564f61a6afc39f4878eea23fd1a64f3be5b74))
+* **server-nestjs:** use POST for SystemSettings upsert to match contract ([fd71f58](https://github.com/cloud-pi-native/console/commit/fd71f58ecd58dcccf35d590cc24e6503509078b2))
+* **server-nestjs:** use value import for PrismaService in SystemConfigService ([8ac74ee](https://github.com/cloud-pi-native/console/commit/8ac74eecb0150e8c8b4a32210f2e643aedd2ca83))
+
+
+### Miscellaneous Chores
+
+* add a CODEOWNERS ([b3f6dd2](https://github.com/cloud-pi-native/console/commit/b3f6dd234f3886061bda5e60b887f0a4d1b2e15c))
+* **ci:** do not use versioning-strategy on release-please GHA ([6af01cb](https://github.com/cloud-pi-native/console/commit/6af01cbeb97c5149375bfac565fc1f0d0c09d289))
+* **ci:** dump every container docker compose state on Playwright startup failure ([c7161b6](https://github.com/cloud-pi-native/console/commit/c7161b68f29b334e5b64678f9053f8b818969c5c))
+* **ci:** ensure Playwright tests are executed in Merge Queue when a docker-compose is updated ([d8e150a](https://github.com/cloud-pi-native/console/commit/d8e150a45bf363b6e7ed14e7906650d99b2f4b1a))
+* **ci:** fix release-please versioning strategy ([3759ffe](https://github.com/cloud-pi-native/console/commit/3759ffeca0d24e0777a74f014f7816ef1b37bde1))
+* **client:** bump vue-dsfr to 8.19.0 ([5cfe304](https://github.com/cloud-pi-native/console/commit/5cfe30486962f1c6e9670e61bd5de2e3184d80cc))
+* **client:** refresh icons (with icons generation script) ([e5cab81](https://github.com/cloud-pi-native/console/commit/e5cab81d5a560fb9252daa55b38971ee3f3e6276))
+* **client:** remove (apparently) useless script ([0a30ba2](https://github.com/cloud-pi-native/console/commit/0a30ba2b64b0da1b5f3c9fcf784e8227fafd795d))
+* **client:** remove useless chown/chmod from Dockerfile ([93b1690](https://github.com/cloud-pi-native/console/commit/93b169070a37f1f4847a5c74491a4c3cfbc46261))
+* **client:** use new icons generation script ([419399c](https://github.com/cloud-pi-native/console/commit/419399ca246e0c537e312feb52d9dc8a836c96ca))
+* **docker:** migrate keycloak to official quay.io image ([2eadcff](https://github.com/cloud-pi-native/console/commit/2eadcffabb9a8b1548d88acfc639b926c1ac2ea8))
+* **docker:** replace deprecated KEYCLOAK_ADMIN_* with KC_BOOTSTRAP_ADMIN_* ([2bf1769](https://github.com/cloud-pi-native/console/commit/2bf17695f8aad3e742fc8ced870f08e63e00ae4b))
+* fix health-checks in local docker-compose ([802e043](https://github.com/cloud-pi-native/console/commit/802e043ae5f09cb0b1b3781ea9cb956c553e9f2d))
+* harmonize quotes in local docker-compose ([f836f6e](https://github.com/cloud-pi-native/console/commit/f836f6e4fc66107cba081063c03c8400d8a04e83))
+* ignore agents tasks directories ([28eb1a0](https://github.com/cloud-pi-native/console/commit/28eb1a040f7f07c7f65183cf44e0e9b20347e9f1))
+* ignore local worktrees ([2094d60](https://github.com/cloud-pi-native/console/commit/2094d604a346e6f1434171bfadc9aae91649dbb1))
+* **main:** Release v9.25.0-rc ([0293423](https://github.com/cloud-pi-native/console/commit/02934230299f372a5f737f92d04f65c36a74ccc7))
+* **main:** Release v9.25.0-rc.1 ([f52faad](https://github.com/cloud-pi-native/console/commit/f52faad1e3025dbf8c2b5ae056e8e963dc397678))
+* **main:** Release v9.25.0-rc.2 ([3d9f2e1](https://github.com/cloud-pi-native/console/commit/3d9f2e10f6d55b99843c7b02be2312633bbdc226))
+* **registry:** make create paths idempotent and clean up comments ([d373c27](https://github.com/cloud-pi-native/console/commit/d373c27fc11311a546132f428172dc96d23d4e28))
+* **registry:** trim redundant JSDoc on ensure* methods ([2868d7a](https://github.com/cloud-pi-native/console/commit/2868d7a1337b1d38c6aa272ae6e8ca8a0faf9f98))
+* **server-nestjs:** align gitlab constants comment style ([09dd4fc](https://github.com/cloud-pi-native/console/commit/09dd4fc456494ded603bfd8c6c654cd12d96401a))
+
+
+### Docs
+
+* **ci:** describe prerelease release cycle ([4d7b9f1](https://github.com/cloud-pi-native/console/commit/4d7b9f104d2e20bc795859fc9dd3d220814e52a7))
+* **ci:** finalize release doc with lessons learned around prereleases and releases ([ae0b57f](https://github.com/cloud-pi-native/console/commit/ae0b57f630a9b13f4bcddd3058f6156902bacf1c))
+* update RELEASE for quick RC test ([16b1b2a](https://github.com/cloud-pi-native/console/commit/16b1b2a7f8b51b23de1e7e7842a5fb403697d507))
+
+
+### Refactoring
+
+* **keycloak:** parse group representations at the client boundary ([e9f2501](https://github.com/cloud-pi-native/console/commit/e9f25012f2cf2e8acade19a878ea33c932c06bc3))
+* **registry:** rename createProjectRobot alias to ensureProjectRobot ([e7c9286](https://github.com/cloud-pi-native/console/commit/e7c928663b191ee7b3a43cf7661610f51b0a0f51))
+* **server-nestjs:** add upsertProjectGroupSystemRepo wrapper ([39344ef](https://github.com/cloud-pi-native/console/commit/39344eff0540a9d2c73edbe3a131d77900186d03))
+* **server-nestjs:** name gitlab purge e2e timeout constant ([9e8e206](https://github.com/cloud-pi-native/console/commit/9e8e206d8e7b2da0dc3aa8c613b86d54d5553b2d))
+* **server-nestjs:** rename isInternalRepo to isDeclaredRepo ([b71f8d3](https://github.com/cloud-pi-native/console/commit/b71f8d357dfe159f2a9baa886b1f8ed69d69b109))
+* **server-nestjs:** reuse VAULT_PROVISION_TIMEOUT, rename e2e-timeout to constants ([b268e81](https://github.com/cloud-pi-native/console/commit/b268e8120727229f41b556be69b3685ba1f367e7))
+* **server-nestjs:** specialize e2e timeouts per service ([d0735b2](https://github.com/cloud-pi-native/console/commit/d0735b20634e7964128f285017a2741b60b75fe9))
+* **server-nestjs:** split isSystemRepo into isSystemRepo and isInternalRepo ([a7cf22c](https://github.com/cloud-pi-native/console/commit/a7cf22c0d4a2d3c571f4115935e90966ecdddcfd))
+* **server-nestjs:** uniformize error type guards in module utils ([ff8eb1b](https://github.com/cloud-pi-native/console/commit/ff8eb1b893c4a2f90f881d15f7c5a4fbd9a3fdd1))
+
+
+### Reverted commits
+
+* **docker:** replace deprecated KEYCLOAK_ADMIN_* with KC_BOOTSTRAP_ADMIN_* ([f8b73bf](https://github.com/cloud-pi-native/console/commit/f8b73bf1e662b8f4fe7472bb0aabb6e69d0bdd23))
+* remove useless chown/chmod from Dockerfile" ([893f751](https://github.com/cloud-pi-native/console/commit/893f751334118b32a149c8b5b41d313dc1e346ef))
+* restrict deployment visibility to console admins ([8045954](https://github.com/cloud-pi-native/console/commit/80459541221207c175922066793a1bd6bee87585))
+
 ## [9.25.0-rc.2](https://github.com/cloud-pi-native/console/compare/v9.25.0-rc.1...v9.25.0-rc.2) (2026-09-02)
 
 
