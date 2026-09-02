@@ -33,7 +33,7 @@ defineProps<{ deployment: Deployment & { stage?: Stage } }>()
             :key="source.id"
             class="px-2 py-1 shadow fr-background-alt--grey flex items-center gap-2 fr-text--sm mb-0"
           >
-            <v-icon name="mdi:git" class="flex-shrink-0" />
+            <v-icon name="ri:git-repository-line" class="flex-shrink-0" />
             {{ source.repository.internalRepoName }}
             <span class="text-xs fr-m-0 fr-text-mention--grey font-mono leading-none">
               {{ source.targetRevision || 'HEAD' }}
