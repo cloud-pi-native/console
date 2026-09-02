@@ -239,8 +239,8 @@ export const adminPermsDetails: PermDetails<AdminPermsKeys> = [{
     hint: 'Administration globale de toute la console et de ses ressources',
   }, {
     key: 'LIST',
-    label: 'Lecture seule globale',
-    hint: 'Accès en lecture seule à toute la console et ses ressources',
+    label: 'Lecture globale',
+    hint: 'Accès en lecture à toute la console et ses ressources',
   }],
 }, {
   name: 'Gestion des utilisateurs',
