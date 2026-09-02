@@ -58,6 +58,24 @@ describe('registryService', () => {
     expect(service).toBeDefined()
   })
 
+  it('should reconcile a project creation conflict (400 CONFLICT) by reloading the existing project', async () => {
+    server.use(
+      http.post(`${harborUrl}/api/v2.0/projects`, () =>
+        HttpResponse.json({
+          errors: [{ code: 'CONFLICT', message: 'project myproj already exists' }],
+        }, { status: HttpStatus.BAD_REQUEST })),
+      http.get(`${harborUrl}/api/v2.0/projects/:projectName`, async ({ request, params }) => {
+        expect(request.headers.get('x-is-resource-name')).toBe('true')
+        expect(params.projectName).toBe('myproj')
+        return HttpResponse.json({ project_id: 123, metadata: {} })
+      }),
+    )
+
+    const result = await service.ensureProject('myproj', -1)
+
+    expect(result).toEqual({ project_id: 123, metadata: {} })
+  })
+
   it('should send basic auth and JSON body on ensureProject', async () => {
     server.use(
       http.post(`${harborUrl}/api/v2.0/projects`, async ({ request }) => {
@@ -82,6 +100,44 @@ describe('registryService', () => {
 
     const result = await service.ensureProject('myproj', -1)
     expect(result).toEqual({ project_id: 123, metadata: {} })
+  })
+
+  it('should rotate an existing robot when robot creation conflicts (400 CONFLICT)', async () => {
+    let createCalls = 0
+    server.use(
+      http.post(`${harborUrl}/api/v2.0/robots`, async ({ request }) => {
+        createCalls += 1
+        expect(request.headers.get('authorization')).toBe(basicAuth)
+        if (createCalls === 1) {
+          return HttpResponse.json({
+            errors: [{ code: 'CONFLICT', message: 'robot robot$myproj+ro-robot already exists' }],
+          }, { status: HttpStatus.BAD_REQUEST })
+        }
+        return HttpResponse.json({ id: 44, name: 'robot$myproj+ro-robot', secret: 'race-secret' }, { status: HttpStatus.CREATED })
+      }),
+      http.get(`${harborUrl}/api/v2.0/projects/myproj`, ({ request }) => {
+        expect(request.headers.get('x-is-resource-name')).toBe('true')
+        return HttpResponse.json({ project_id: 123, metadata: {} })
+      }),
+      http.get(`${harborUrl}/api/v2.0/robots`, ({ request }) => {
+        expect(request.url).toContain('q=Level%3Dproject,ProjectID%3D123')
+        return HttpResponse.json([{ id: 33, name: 'robot$myproj+ro-robot' }])
+      }),
+      http.delete(`${harborUrl}/api/v2.0/robots/33`, () =>
+        new HttpResponse(null, { status: HttpStatus.NO_CONTENT })),
+    )
+
+    const result = await service.ensureRobot({
+      name: 'ro-robot',
+      duration: -1,
+      description: 'robot for ci builds',
+      disable: false,
+      level: 'project',
+      permissions: [{ namespace: 'myproj', kind: 'project', access: [{ resource: 'repository', action: 'pull' }] }],
+    })
+
+    expect(result).toEqual({ id: 44, name: 'robot$myproj+ro-robot', secret: 'race-secret' })
+    expect(createCalls).toBe(2)
   })
 
   it('should send X-Is-Resource-Name on getProjectByName', async () => {

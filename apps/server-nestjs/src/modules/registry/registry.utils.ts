@@ -4,32 +4,49 @@ import { removeTrailingSlash } from '@cpn-console/shared'
 import { HttpStatus } from '@nestjs/common'
 
 // Whether a Harbor response signals an entity already existing (race collision):
-// a 409 conflict on the create call.
+// a 409, or a 400 whose structured body carries code "CONFLICT" — Harbor
+// reports most "already exists" races as 400:
+// {"errors":[{"code":"CONFLICT","message":"... project already exists"}]}
 export function isRegistryConflict(response: RegistryResponse<unknown>): boolean {
-  return response.status === HttpStatus.CONFLICT
+  if (response.status === HttpStatus.CONFLICT) return true
+  if (response.status !== HttpStatus.BAD_REQUEST) return false
+  const body = response.data as { errors?: Array<{ code?: unknown }> } | null
+  if (!Array.isArray(body?.errors)) return false
+  return body.errors.some(error => typeof error?.code === 'string' && error.code.toUpperCase() === 'CONFLICT')
 }
 
 // Runs an idempotent write: tries `create`, and on a Harbor race collision
-// reloads via `reload` and returns the existing state instead of failing.
-// `onCollision` is invoked once when a collision is detected. If the reload
-// finds nothing, the error is rethrown so genuine failures are not swallowed.
+// (409, or 400 with code CONFLICT) reconciles via `reload` and returns its
+// result instead of failing. `onCollision` is invoked once when a collision is
+// detected. Resolve semantics: a success carrying a body resolves with it
+// (robots); a success with an empty body (projects, members, retentions)
+// resolves with null — the caller fetches when it needs the entity. If a
+// collision reload finds nothing, the error is rethrown so genuine failures
+// are not swallowed.
 export async function ensure<T>({
   create,
   reload,
   onCollision,
 }: {
   create: () => Promise<RegistryResponse<T>>
-  reload: () => Promise<void>
+  reload: () => Promise<T | null | undefined>
   onCollision?: (response: RegistryResponse<T>) => void
-}): Promise<void> {
+}): Promise<T | null> {
   const created = await create()
   if (created.status >= HttpStatus.BAD_REQUEST) {
-    if (isRegistryConflict(created)) {
-      onCollision?.(created)
-      return reload()
+    if (!isRegistryConflict(created)) {
+      throw new Error(`Harbor request failed (${created.status})`)
     }
+    onCollision?.(created)
+    const existing = await reload()
+    if (existing !== null && existing !== undefined) return existing
     throw new Error(`Harbor request failed (${created.status})`)
   }
+  if (created.data !== null && created.data !== undefined && created.data !== ''
+    && !(typeof created.data === 'object' && !Array.isArray(created.data) && Object.keys(created.data).length === 0)) {
+    return created.data
+  }
+  return null
 }
 
 export function createProjectSlugCacheKey(projectId: string) {
