@@ -104,16 +104,16 @@ export class NexusPluginService {
             placeholder: '/console/admin',
           },
           {
-            key: 'platformReadGroupPaths',
+            key: 'platformReaderGroupPaths',
             kind: 'text',
             permissions: {
               admin: { read: true, write: true },
               user: { read: false, write: false },
             },
             title: 'Chemins des groupes OIDC plateforme en lecture',
-            value: '/console/readonly,/console/security',
+            value: '/console/reader,/console/security',
             description: 'Liste séparée par des virgules des chemins des groupes OIDC ayant accès en lecture aux dépôts Nexus de la plateforme',
-            placeholder: '/console/readonly,/console/security',
+            placeholder: '/console/reader,/console/security',
           },
           {
             key: 'projectWriteGroupPathSuffixes',
@@ -128,16 +128,16 @@ export class NexusPluginService {
             placeholder: '/console/admin,/console/devops',
           },
           {
-            key: 'projectReadGroupPathSuffixes',
+            key: 'projectReaderGroupPathSuffixes',
             kind: 'text',
             permissions: {
               admin: { read: true, write: true },
               user: { read: false, write: false },
             },
             title: 'Suffixes des groupes OIDC projet en lecture',
-            value: '/console/readonly,/console/security,/console/developer',
+            value: '/console/reader,/console/security,/console/developer',
             description: 'Liste séparée par des virgules des suffixes des chemins des groupes OIDC ayant accès en lecture aux dépôts Nexus du projet',
-            placeholder: '/console/readonly,/console/security,/console/developer',
+            placeholder: '/console/reader,/console/security,/console/developer',
           },
           {
             key: 'activateNpmRepoDefaultValue',
