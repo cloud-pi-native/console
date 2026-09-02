@@ -288,10 +288,10 @@ export function initializeProject(params: CreateProjectParams) {
             type: 'system:managed',
           },
           {
-            name: 'Lecture seule',
+            name: 'Lecture',
             permissions: PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.LIST_REPOSITORIES,
             position: 4,
-            oidcGroup: `/${params.slug}/console/readonly`,
+            oidcGroup: `/${params.slug}/console/reader`,
             type: 'system:managed',
           },
         ],
