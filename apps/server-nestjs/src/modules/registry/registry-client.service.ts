@@ -121,17 +121,23 @@ export class RegistryClientService {
   }
 
   async ensureProject(projectName: string, storageLimit: number): Promise<HarborProject> {
-    const created = await this.http.fetch('projects', {
-      method: 'POST',
-      body: {
-        project_name: projectName,
-        metadata: { auto_scan: 'true' },
-        storage_limit: storageLimit,
+    const created = await ensure<HarborProject>({
+      create: () => this.http.fetch<HarborProject>('projects', {
+        method: 'POST',
+        body: {
+          project_name: projectName,
+          metadata: { auto_scan: 'true' },
+          storage_limit: storageLimit,
+        },
+      }),
+      reload: async () => {
+        const existing = await this.getProjectByName(projectName)
+        return existing.status === HttpStatus.OK ? existing.data : null
       },
     })
-    if (created.status >= HttpStatus.BAD_REQUEST && created.status !== HttpStatus.CONFLICT) {
-      throw new Error(`Harbor create project failed (${created.status})`)
-    }
+    if (created) return created
+    // Harbor answers 201 with an empty body on a fresh creation: fetch the
+    // project to obtain its id.
     const fetched = await this.getProjectByName(projectName)
     if (fetched.status !== HttpStatus.OK || !fetched.data) {
       throw new Error(`Harbor get project failed (${fetched.status})`)
@@ -181,14 +187,20 @@ export class RegistryClientService {
   }
 
   async ensureGroupMember(projectName: string, body: HarborGroupMemberRequest) {
-    const created = await this.http.fetch(`projects/${encodeURIComponent(projectName)}/members`, {
-      method: 'POST',
-      headers: { 'X-Is-Resource-Name': 'true' },
-      body,
+    await ensure({
+      create: () => this.http.fetch(`projects/${encodeURIComponent(projectName)}/members`, {
+        method: 'POST',
+        headers: { 'X-Is-Resource-Name': 'true' },
+        body,
+      }),
+      reload: async () => {
+        // Membership collision: Harbor already holds what the concurrent run
+        // created; re-listing proves it and adds no other state to reconcile.
+        const members = await this.getGroupMembers(projectName)
+        if (members.status !== HttpStatus.OK || !members.data) return null
+        return members.data.find(member => member?.entity_name === body.member_group.group_name) ?? null
+      },
     })
-    if (created.status >= HttpStatus.BAD_REQUEST && created.status !== HttpStatus.CONFLICT) {
-      throw new Error(`Harbor create member failed (${created.status})`)
-    }
   }
 
   async removeGroupMember(projectName: string, memberId: number) {
@@ -205,15 +217,40 @@ export class RegistryClientService {
   }
 
   async ensureRobot(body: HarborRobotCreateRequest): Promise<HarborRobotCreated | null> {
-    const created = await this.http.fetch<HarborRobotCreated>('robots', {
-      method: 'POST',
-      body,
+    return ensure<HarborRobotCreated>({
+      create: () => this.http.fetch<HarborRobotCreated>('robots', {
+        method: 'POST',
+        body,
+      }),
+      reload: async () => {
+        // 409 race: a concurrent run created the robot. Harbor never re-serves
+        // a robot secret, so reconciling means rotating: delete the existing
+        // robot and recreate it to obtain a fresh usable secret.
+        const existing = await this.findRobot(body)
+        if (existing?.id) {
+          await this.deleteRobot(existing.id)
+        }
+        const recreated = await this.http.fetch<HarborRobotCreated>('robots', {
+          method: 'POST',
+          body,
+        })
+        return recreated.status < HttpStatus.BAD_REQUEST ? recreated.data : null
+      },
     })
-    if (created.status === HttpStatus.CONFLICT) return null
-    if (created.status >= HttpStatus.BAD_REQUEST || !created.data) {
-      throw new Error(`Harbor create robot failed (${created.status})`)
+  }
+
+  private async findRobot(body: HarborRobotCreateRequest): Promise<HarborRobot | undefined> {
+    const namespace = body.permissions[0]?.namespace
+    if (!namespace) return undefined
+    const fullName = `robot$${namespace}+${body.name}`
+    const project = await this.getProjectByName(namespace)
+    if (project.status !== HttpStatus.OK || !project.data) return undefined
+    const projectId = Number(project.data.project_id)
+    if (!Number.isFinite(projectId)) return undefined
+    for await (const robot of this.getProjectRobots(projectId)) {
+      if (robot?.name === fullName) return robot
     }
-    return created.data
+    return undefined
   }
 
   async deleteRobot(robotId: number): Promise<RegistryResponse> {
@@ -230,16 +267,16 @@ export class RegistryClientService {
   }
 
   async ensureRetention(projectName: string, body: HarborRetentionPolicy) {
-    return ensure({
+    return ensure<unknown>({
       create: () => this.createRetention(body),
       reload: async () => {
         const racedId = await this.getRetentionId(projectName)
-        if (racedId) {
-          const result = await this.updateRetention(racedId, body)
-          if (result.status >= HttpStatus.BAD_REQUEST) {
-            throw new Error(`Harbor retention policy failed (${result.status})`)
-          }
+        if (!racedId) return null
+        const result = await this.updateRetention(racedId, body)
+        if (result.status >= HttpStatus.BAD_REQUEST) {
+          throw new Error(`Harbor retention policy failed (${result.status})`)
         }
+        return null
       },
     })
   }
