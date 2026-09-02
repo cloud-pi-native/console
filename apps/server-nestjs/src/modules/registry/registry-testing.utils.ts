@@ -15,6 +15,17 @@ export function makeNoContent(): RegistryResponse<null> {
   return { status: HttpStatus.NO_CONTENT, data: null }
 }
 
+export function makeConflictResponse<T>(): RegistryResponse<T> {
+  return {
+    status: HttpStatus.BAD_REQUEST,
+    data: { errors: [{ code: 'CONFLICT', message: 'already exists' }] } as T,
+  }
+}
+
+export function makeHttpConflictResponse<T>(): RegistryResponse<T> {
+  return { status: HttpStatus.CONFLICT, data: null }
+}
+
 export function makeProjectWithDetails(overrides: Partial<ProjectWithDetails> = {}) {
   return {
     slug: faker.helpers.slugify(`test-project-${faker.string.uuid()}`),

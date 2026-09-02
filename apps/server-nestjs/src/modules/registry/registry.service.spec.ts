@@ -33,6 +33,7 @@ describe('registryService', () => {
 
   beforeEach(async () => {
     client = mockDeep<RegistryClientService>({
+      ensureProject: vi.fn().mockResolvedValue({ project_id: 123, metadata: {} }),
       getProjectByName: vi.fn().mockResolvedValue(makeOkResponse({ project_id: 123, metadata: {} })),
       listQuotas: vi.fn().mockResolvedValue(makeOkResponse([{ ref: { id: 123 }, hard: { storage: -1 } }])),
       getRetentionId: vi.fn().mockResolvedValue(null),
@@ -281,6 +282,7 @@ describe('registryService', () => {
         ],
       })
       client.getProjectByName.mockResolvedValue(makeOkResponse({ project_id: 1, metadata: {} }))
+      client.ensureProject.mockResolvedValue({ project_id: 1, metadata: {} })
 
       await service.handleUpsert(project)
 

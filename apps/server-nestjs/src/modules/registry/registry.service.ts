@@ -6,7 +6,6 @@ import type {
   HarborAccess,
   HarborGroupMemberRequest,
   HarborMember,
-  HarborProjectQuota,
   HarborRetentionPolicy,
   HarborRobotCreateRequest,
 } from './registry-client.service'
@@ -210,25 +209,15 @@ export class RegistryService {
       'project.slug': project.slug,
       'registry.storage_limit.bytes': storageLimit,
     })
-    const existing = await this.client.getProjectByName(project.slug)
-    if (existing.status === 200 && existing.data) {
-      const projectId = Number(existing.data.project_id)
-      if (!Number.isFinite(projectId)) return existing.data
-
+    const harborProject = await this.client.ensureProject(project.slug, storageLimit)
+    if (harborProject === undefined) throw new Error(`Harbor project ${project.slug} not found`)
+    const projectId = Number(harborProject.project_id)
+    if (Number.isFinite(projectId)) {
       const quotas = await this.client.listQuotas(projectId)
-      if (quotas.status === 200 && quotas.data) {
-        const hardQuota = quotas.data.find((q: HarborProjectQuota) => q?.ref?.id === projectId)
-        if (hardQuota?.hard?.storage !== storageLimit) {
-          await this.client.updateQuota(projectId, storageLimit)
-          span?.setAttribute('registry.quota.updated', true)
-        }
-      }
-      return existing.data
+      const hardQuota = quotas.data?.find(q => q?.ref?.id === projectId)
+      if (hardQuota?.hard?.storage !== storageLimit) await this.client.updateQuota(projectId, storageLimit)
     }
-
-    const created = await this.client.ensureProject(project.slug, storageLimit)
-    span?.setAttribute('registry.project.created', true)
-    return created
+    return harborProject
   }
 
   private async ensureRetentionPolicy(project: ProjectWithDetails, harborProjectId: number) {
@@ -254,6 +243,7 @@ export class RegistryService {
     })
     const storageLimit = options.storageLimitBytes ?? -1
     const harborProject = await this.ensureProjectQuota(project, storageLimit)
+    if (harborProject === undefined) throw new Error(`Harbor project ${project.slug} not found`)
     const harborProjectId = Number(harborProject.project_id)
     if (!Number.isFinite(harborProjectId))
       throw new Error('Unable to retrieve Harbor project_id')

@@ -2,36 +2,35 @@ import type { ProjectWithDetails } from './registry-datastore.service'
 import type { RegistryResponse } from './registry-http-client.service'
 import { removeTrailingSlash } from '@cpn-console/shared'
 import { HttpStatus } from '@nestjs/common'
+import z from 'zod'
 
-// Whether a Harbor response signals an entity already existing (race collision):
-// a 409, or a 400 whose structured body carries code "CONFLICT" — Harbor
-// reports most "already exists" races as 400:
-// {"errors":[{"code":"CONFLICT","message":"... project already exists"}]}
+// Harbor signals an "already exists" race either as a plain HTTP 409
+// (project create) or as a 400 whose body carries code CONFLICT.
+const harborErrorBodySchema = z.object({
+  errors: z.array(z.object({
+    code: z.string(),
+  })),
+})
+
 export function isRegistryConflict(response: RegistryResponse<unknown>): boolean {
   if (response.status === HttpStatus.CONFLICT) return true
   if (response.status !== HttpStatus.BAD_REQUEST) return false
-  const body = response.data as { errors?: Array<{ code?: unknown }> } | null
-  if (!Array.isArray(body?.errors)) return false
-  return body.errors.some(error => typeof error?.code === 'string' && error.code.toUpperCase() === 'CONFLICT')
+  const parsed = harborErrorBodySchema.safeParse(response.data)
+  return parsed.success && parsed.data.errors.some(error => error.code === 'CONFLICT')
 }
 
-// Runs an idempotent write: tries `create`, and on a Harbor race collision
-// (409, or 400 with code CONFLICT) reconciles via `reload` and returns its
-// result instead of failing. `onCollision` is invoked once when a collision is
-// detected. Resolve semantics: a success carrying a body resolves with it
-// (robots); a success with an empty body (projects, members, retentions)
-// resolves with null — the caller fetches when it needs the entity. If a
-// collision reload finds nothing, the error is rethrown so genuine failures
-// are not swallowed.
+// Idempotent write: on a race collision, reconciles via `reload` and returns
+// its result; a collision reload that finds nothing rethrows. The created
+// response carries no usable body — reload always provides the fresh object.
 export async function ensure<T>({
   create,
   reload,
   onCollision,
 }: {
-  create: () => Promise<RegistryResponse<T>>
-  reload: () => Promise<T | null | undefined>
-  onCollision?: (response: RegistryResponse<T>) => void
-}): Promise<T | null> {
+  create: () => Promise<RegistryResponse>
+  reload: () => Promise<T | undefined>
+  onCollision?: (response: RegistryResponse) => void
+}): Promise<T | undefined> {
   const created = await create()
   if (created.status >= HttpStatus.BAD_REQUEST) {
     if (!isRegistryConflict(created)) {
@@ -39,14 +38,10 @@ export async function ensure<T>({
     }
     onCollision?.(created)
     const existing = await reload()
-    if (existing !== null && existing !== undefined) return existing
+    if (existing !== undefined) return existing
     throw new Error(`Harbor request failed (${created.status})`)
   }
-  if (created.data !== null && created.data !== undefined && created.data !== ''
-    && !(typeof created.data === 'object' && !Array.isArray(created.data) && Object.keys(created.data).length === 0)) {
-    return created.data
-  }
-  return null
+  return reload()
 }
 
 export function createProjectSlugCacheKey(projectId: string) {
