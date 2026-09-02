@@ -14,11 +14,11 @@ import {
   DEFAULT_DSO_ENV_CHART_VERSION,
   DEFAULT_DSO_NS_CHART_VERSION,
   DEFAULT_PLATFORM_ADMIN_GROUP_PATH,
-  DEFAULT_PLATFORM_READONLY_GROUP_PATH,
+  DEFAULT_PLATFORM_READER_GROUP_PATH,
   DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
   DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
-  DEFAULT_PROJECT_READONLY_GROUP_PATH_SUFFIX,
+  DEFAULT_PROJECT_READER_GROUP_PATH_SUFFIX,
 } from './infos.js'
 import { logger } from './logger.js'
 import { generateAppProjectName, getConfig } from './utils.js'
@@ -124,11 +124,11 @@ async function ensureInfraEnvValues(
   config: Config,
 ) {
   const platformAdminGroupPath = config.argocd?.platformAdminGroupPath ?? DEFAULT_PLATFORM_ADMIN_GROUP_PATH
-  const platformReadonlyGroupPath = config.argocd?.platformReadonlyGroupPath ?? DEFAULT_PLATFORM_READONLY_GROUP_PATH
+  const platformReaderGroupPath = config.argocd?.platformReaderGroupPath ?? DEFAULT_PLATFORM_READER_GROUP_PATH
   const projectAdminGroupSuffix = config.argocd?.projectAdminGroupPathSuffix ?? DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIX
   const projectDevopsGroupSuffix = config.argocd?.projectDevopsGroupPathSuffix ?? DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX
   const projectDevelopperGroupSuffix = config.argocd?.projectDevelopperGroupPathSuffix ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
-  const projectReadonlyGroupSuffix = config.argocd?.projectReadonlyGroupPathSuffix ?? DEFAULT_PROJECT_READONLY_GROUP_PATH_SUFFIX
+  const projectReaderGroupSuffix = config.argocd?.projectReaderGroupPathSuffix ?? DEFAULT_PROJECT_READER_GROUP_PATH_SUFFIX
   const cluster = getCluster(project, environment)
   const infraProject = await gitlabApi.getProjectById(repoId)
   const valueFilePath = getValueFilePath(project, cluster, environment)
@@ -176,11 +176,11 @@ async function ensureInfraEnvValues(
       roGroup,
       rwGroup,
       platformAdminGroup: platformAdminGroupPath,
-      platformReadonlyGroup: platformReadonlyGroupPath,
+      platformReaderGroup: platformReaderGroupPath,
       projectAdminGroup: `/${project.slug}${projectAdminGroupSuffix}`,
       projectDevopsGroup: `/${project.slug}${projectDevopsGroupSuffix}`,
       projectDevelopperGroup: `/${project.slug}${projectDevelopperGroupSuffix}`,
-      projectReadonlyGroup: `/${project.slug}${projectReadonlyGroupSuffix}`,
+      projectReaderGroup: `/${project.slug}${projectReaderGroupSuffix}`,
     },
     application: {
       quota: {
