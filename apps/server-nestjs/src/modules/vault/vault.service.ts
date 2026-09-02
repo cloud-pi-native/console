@@ -16,7 +16,7 @@ import {
   ADMIN_GROUP_PATH_PLUGIN_KEY,
   AUDITOR_GROUP_PATH_PLUGIN_KEY,
   CONSOLE_ADMIN_GROUP_NAME,
-  CONSOLE_READONLY_GROUP_NAME,
+  CONSOLE_READER_GROUP_NAME,
   CONSOLE_SECURITY_GROUP_NAME,
   DEFAULT_ADMIN_GROUP_PATH,
   DEFAULT_AUDITOR_GROUP_PATH,
@@ -27,7 +27,7 @@ import {
   DEFAULT_PROJECT_SECURITY_GROUP_PATH_SUFFIX,
   DEFAULT_SECURITY_GROUP_PATH,
   PLATFORM_ADMIN_POLICY_NAME,
-  PLATFORM_READONLY_POLICY_NAME,
+  PLATFORM_READER_POLICY_NAME,
   PLATFORM_SECURITY_POLICY_NAME,
   PLUGIN_NAME,
   PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
@@ -39,7 +39,7 @@ import {
 } from './vault.constants'
 import { generateProjectPath, isVaultBadRequest, isVaultNotFound } from './vault.utils'
 
-type ProjectScope = 'admin' | 'devops' | 'developer' | 'readonly' | 'security'
+type ProjectScope = 'admin' | 'devops' | 'developer' | 'reader' | 'security'
 
 @Injectable()
 export class VaultService {
@@ -260,7 +260,7 @@ export class VaultService {
     const span = trace.getActiveSpan()
     span?.setAttribute('zone.name', zoneName)
     span?.setAttribute('vault.kv.name', kvName)
-    const policyName = generateZoneTechReadOnlyPolicyName(zoneName)
+    const policyName = generateZoneTechReaderPolicyName(zoneName)
 
     await this.upsertMount(kvName)
     await this.client.upsertSysPoliciesAcl(policyName, {
@@ -275,7 +275,7 @@ export class VaultService {
     const span = trace.getActiveSpan()
     span?.setAttribute('zone.name', zoneName)
     span?.setAttribute('vault.kv.name', kvName)
-    const policyName = generateZoneTechReadOnlyPolicyName(zoneName)
+    const policyName = generateZoneTechReaderPolicyName(zoneName)
     const roleName = kvName
 
     await this.deleteMount(kvName)
@@ -299,10 +299,10 @@ export class VaultService {
     span?.setAttribute('project.slug', project.slug)
     span?.setAttribute('vault.kv.name', project.slug)
     const appPolicyName = generateAppAdminPolicyName(project)
-    const techPolicyName = generateTechReadOnlyPolicyName(project)
+    const techPolicyName = generateTechReaderPolicyName(project)
     const projectDevopsPolicyName = generateProjectPolicyName(project, 'devops')
     const projectDeveloperPolicyName = generateProjectPolicyName(project, 'developer')
-    const projectReadOnlyPolicyName = generateProjectPolicyName(project, 'readonly')
+    const projectReaderPolicyName = generateProjectPolicyName(project, 'reader')
     const projectSecurityPolicyName = generateProjectPolicyName(project, 'security')
     await this.upsertMount(project.slug)
 
@@ -329,21 +329,21 @@ export class VaultService {
     const projectAdminGroupPaths = generateProjectRoleGroupPaths(project, maintainerGroupPathSuffix)
     const projectDevopsGroupPaths = generateProjectRoleGroupPaths(project, devopsGroupPathSuffix)
     const projectDeveloperGroupPaths = generateProjectRoleGroupPaths(project, developerGroupPathSuffix)
-    const projectReadOnlyGroupPaths = generateProjectRoleGroupPaths(project, reporterGroupPathSuffix)
+    const projectReaderGroupPaths = generateProjectRoleGroupPaths(project, reporterGroupPathSuffix)
     const projectSecurityGroupPaths = generateProjectRoleGroupPaths(project, securityGroupPathSuffix)
 
     await Promise.all([
       this.ensureAppAdminPolicy(appPolicyName, project.slug),
-      this.ensureTechReadOnlyPolicy(techPolicyName, project.slug),
+      this.ensureTechReaderPolicy(techPolicyName, project.slug),
       this.ensureProjectDevopsPolicy(projectDevopsPolicyName, project.slug),
-      this.ensureProjectReadOnlyPolicy(projectDeveloperPolicyName, project.slug),
-      this.ensureProjectReadOnlyPolicy(projectReadOnlyPolicyName, project.slug),
+      this.ensureProjectReaderPolicy(projectDeveloperPolicyName, project.slug),
+      this.ensureProjectReaderPolicy(projectReaderPolicyName, project.slug),
       this.createProjectSecurityPolicy(projectSecurityPolicyName, project.slug),
       this.ensurePlatformAdminPolicy(PLATFORM_ADMIN_POLICY_NAME),
-      this.ensurePlatformReadOnlyPolicy(PLATFORM_READONLY_POLICY_NAME),
+      this.ensurePlatformReaderPolicy(PLATFORM_READER_POLICY_NAME),
       this.ensurePlatformSecurityPolicy(PLATFORM_SECURITY_POLICY_NAME),
       this.ensureIdentityGroup(CONSOLE_ADMIN_GROUP_NAME, [PLATFORM_ADMIN_POLICY_NAME], adminGroupPath),
-      this.ensureIdentityGroup(CONSOLE_READONLY_GROUP_NAME, [PLATFORM_READONLY_POLICY_NAME], auditorGroupPath),
+      this.ensureIdentityGroup(CONSOLE_READER_GROUP_NAME, [PLATFORM_READER_POLICY_NAME], auditorGroupPath),
       this.ensureIdentityGroup(CONSOLE_SECURITY_GROUP_NAME, [PLATFORM_SECURITY_POLICY_NAME], securityGroupPath),
       ...projectAdminGroupPaths.map(groupPath =>
         this.ensureIdentityGroup(generateProjectGroupName(project, 'admin'), [appPolicyName], groupPath)),
@@ -351,8 +351,8 @@ export class VaultService {
         this.ensureIdentityGroup(generateProjectGroupName(project, 'devops'), [projectDevopsPolicyName], groupPath)),
       ...projectDeveloperGroupPaths.map(groupPath =>
         this.ensureIdentityGroup(generateProjectGroupName(project, 'developer'), [projectDeveloperPolicyName], groupPath)),
-      ...projectReadOnlyGroupPaths.map(groupPath =>
-        this.ensureIdentityGroup(generateProjectGroupName(project, 'readonly'), [projectReadOnlyPolicyName], groupPath)),
+      ...projectReaderGroupPaths.map(groupPath =>
+        this.ensureIdentityGroup(generateProjectGroupName(project, 'reader'), [projectReaderPolicyName], groupPath)),
       ...projectSecurityGroupPaths.map(groupPath =>
         this.ensureIdentityGroup(generateProjectGroupName(project, 'security'), [projectSecurityPolicyName], groupPath)),
       this.client.upsertAuthApproleRole(project.slug, generateApproleRoleBody([techPolicyName, appPolicyName])),
@@ -365,10 +365,10 @@ export class VaultService {
     span?.setAttribute('project.slug', project.slug)
     span?.setAttribute('vault.kv.name', project.slug)
     const appPolicyName = generateAppAdminPolicyName(project)
-    const techPolicyName = generateTechReadOnlyPolicyName(project)
+    const techPolicyName = generateTechReaderPolicyName(project)
     const projectDevopsPolicyName = generateProjectPolicyName(project, 'devops')
     const projectDeveloperPolicyName = generateProjectPolicyName(project, 'developer')
-    const projectReadOnlyPolicyName = generateProjectPolicyName(project, 'readonly')
+    const projectReaderPolicyName = generateProjectPolicyName(project, 'reader')
     const projectSecurityPolicyName = generateProjectPolicyName(project, 'security')
 
     await this.deleteMount(project.slug)
@@ -378,13 +378,13 @@ export class VaultService {
       this.client.deleteSysPoliciesAcl(techPolicyName),
       this.client.deleteSysPoliciesAcl(projectDevopsPolicyName),
       this.client.deleteSysPoliciesAcl(projectDeveloperPolicyName),
-      this.client.deleteSysPoliciesAcl(projectReadOnlyPolicyName),
+      this.client.deleteSysPoliciesAcl(projectReaderPolicyName),
       this.client.deleteSysPoliciesAcl(projectSecurityPolicyName),
       this.client.deleteAuthApproleRole(project.slug),
       this.client.deleteIdentityGroupName(generateProjectGroupName(project, 'admin')),
       this.client.deleteIdentityGroupName(generateProjectGroupName(project, 'devops')),
       this.client.deleteIdentityGroupName(generateProjectGroupName(project, 'developer')),
-      this.client.deleteIdentityGroupName(generateProjectGroupName(project, 'readonly')),
+      this.client.deleteIdentityGroupName(generateProjectGroupName(project, 'reader')),
       this.client.deleteIdentityGroupName(generateProjectGroupName(project, 'security')),
     ])
     for (const result of settled) {
@@ -455,7 +455,7 @@ export class VaultService {
     })
   }
 
-  async ensureProjectReadOnlyPolicy(name: string, projectSlug: string): Promise<void> {
+  async ensureProjectReaderPolicy(name: string, projectSlug: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
       policy: `path "${projectSlug}/data/*" { capabilities = ["list"] }`,
     })
@@ -476,7 +476,7 @@ export class VaultService {
     })
   }
 
-  async ensurePlatformReadOnlyPolicy(name: string): Promise<void> {
+  async ensurePlatformReaderPolicy(name: string): Promise<void> {
     await this.client.upsertSysPoliciesAcl(name, {
       policy: [
         `path "sys/health" { capabilities = ["read"] }`,
@@ -501,7 +501,7 @@ export class VaultService {
     })
   }
 
-  async ensureTechReadOnlyPolicy(name: string, projectSlug: string): Promise<void> {
+  async ensureTechReaderPolicy(name: string, projectSlug: string): Promise<void> {
     const robotSecretPath = generateProjectPath(this.baseConfig.projectsRootDir, `${projectSlug}/REGISTRY/ro-robot`)
     await this.client.upsertSysPoliciesAcl(name, {
       policy: `path "${this.vaultConfig.kvName}/data/${robotSecretPath}" { capabilities = ["read"] }`,
@@ -558,7 +558,7 @@ export class VaultService {
   }
 }
 
-function generateTechReadOnlyPolicyName(project: ProjectWithDetails) {
+function generateTechReaderPolicyName(project: ProjectWithDetails) {
   return `tech--${project.slug}--ro`
 }
 
@@ -586,7 +586,7 @@ function generateZoneName(name: string) {
   return `zone-${name}`
 }
 
-function generateZoneTechReadOnlyPolicyName(zoneName: string) {
+function generateZoneTechReaderPolicyName(zoneName: string) {
   return `tech--${generateZoneName(zoneName)}--ro`
 }
 
