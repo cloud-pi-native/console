@@ -1,5 +1,5 @@
 import type { ConfigType } from '@nestjs/config'
-import type { HarborRepository } from './registry-client.service'
+import type { HarborRepository, HarborRetentionPolicy } from './registry-client.service'
 import { faker } from '@faker-js/faker'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
@@ -76,6 +76,22 @@ describe('registryService', () => {
     expect(result).toEqual({ project_id: 123, metadata: {} })
   })
 
+  it('should reconcile a real HTTP 409 on project create by reloading the existing project', async () => {
+    server.use(
+      http.post(`${harborUrl}/api/v2.0/projects`, () =>
+        new HttpResponse(null, { status: HttpStatus.CONFLICT })),
+      http.get(`${harborUrl}/api/v2.0/projects/:projectName`, async ({ request, params }) => {
+        expect(request.headers.get('x-is-resource-name')).toBe('true')
+        expect(params.projectName).toBe('myproj')
+        return HttpResponse.json({ project_id: 123, metadata: {} })
+      }),
+    )
+
+    const result = await service.ensureProject('myproj', -1)
+
+    expect(result).toEqual({ project_id: 123, metadata: {} })
+  })
+
   it('should send basic auth and JSON body on ensureProject', async () => {
     server.use(
       http.post(`${harborUrl}/api/v2.0/projects`, async ({ request }) => {
@@ -102,29 +118,21 @@ describe('registryService', () => {
     expect(result).toEqual({ project_id: 123, metadata: {} })
   })
 
-  it('should rotate an existing robot when robot creation conflicts (400 CONFLICT)', async () => {
-    let createCalls = 0
+  it('should not rotate an existing robot on creation conflict (400 CONFLICT)', async () => {
     server.use(
-      http.post(`${harborUrl}/api/v2.0/robots`, async ({ request }) => {
-        createCalls += 1
-        expect(request.headers.get('authorization')).toBe(basicAuth)
-        if (createCalls === 1) {
-          return HttpResponse.json({
-            errors: [{ code: 'CONFLICT', message: 'robot robot$myproj+ro-robot already exists' }],
-          }, { status: HttpStatus.BAD_REQUEST })
-        }
-        return HttpResponse.json({ id: 44, name: 'robot$myproj+ro-robot', secret: 'race-secret' }, { status: HttpStatus.CREATED })
-      }),
+      http.post(`${harborUrl}/api/v2.0/robots`, () => HttpResponse.json({
+        errors: [{ code: 'CONFLICT', message: 'robot robot$myproj+ro-robot already exists' }],
+      }, { status: HttpStatus.BAD_REQUEST })),
       http.get(`${harborUrl}/api/v2.0/projects/myproj`, ({ request }) => {
         expect(request.headers.get('x-is-resource-name')).toBe('true')
         return HttpResponse.json({ project_id: 123, metadata: {} })
       }),
-      http.get(`${harborUrl}/api/v2.0/robots`, ({ request }) => {
-        expect(request.url).toContain('q=Level%3Dproject,ProjectID%3D123')
-        return HttpResponse.json([{ id: 33, name: 'robot$myproj+ro-robot' }])
+      http.get(`${harborUrl}/api/v2.0/robots`, () => {
+        throw new Error('robot listing must not be called on conflict')
       }),
-      http.delete(`${harborUrl}/api/v2.0/robots/33`, () =>
-        new HttpResponse(null, { status: HttpStatus.NO_CONTENT })),
+      http.delete(`${harborUrl}/api/v2.0/robots/33`, () => {
+        throw new Error('robot deletion must not be called on conflict')
+      }),
     )
 
     const result = await service.ensureRobot({
@@ -136,8 +144,7 @@ describe('registryService', () => {
       permissions: [{ namespace: 'myproj', kind: 'project', access: [{ resource: 'repository', action: 'pull' }] }],
     })
 
-    expect(result).toEqual({ id: 44, name: 'robot$myproj+ro-robot', secret: 'race-secret' })
-    expect(createCalls).toBe(2)
+    expect(result).toBeUndefined()
   })
 
   it('should send X-Is-Resource-Name on getProjectByName', async () => {
@@ -185,5 +192,61 @@ describe('registryService', () => {
     const res = await service.deleteRepository('myproj', 'repo-a')
 
     expect(res).toMatchObject({ status: HttpStatus.NO_CONTENT })
+  })
+
+  it('should reconcile the existing retention policy on re-sync without issuing a second create', async () => {
+    const policy: HarborRetentionPolicy = {
+      algorithm: 'or',
+      scope: { level: 'project', ref: 123 },
+      rules: [],
+      trigger: { kind: 'Schedule', settings: { cron: '0 22 2 * * *' }, references: [] },
+    }
+    server.use(
+      http.get(`${harborUrl}/api/v2.0/projects/myproj`, ({ request }) => {
+        expect(request.headers.get('x-is-resource-name')).toBe('true')
+        return HttpResponse.json({ project_id: 123, metadata: { retention_id: '325' } })
+      }),
+      http.put(`${harborUrl}/api/v2.0/retentions/325`, async ({ request }) => {
+        expect(request.method).toBe('PUT')
+        expect(await request.json()).toEqual(policy)
+        return new HttpResponse(null, { status: HttpStatus.OK })
+      }),
+      http.post(`${harborUrl}/api/v2.0/retentions`, () => {
+        throw new Error('a second retention create must not be issued on re-sync')
+      }),
+    )
+
+    const id = await service.ensureRetention('myproj', policy)
+
+    expect(id).toBeUndefined()
+  })
+
+  it('should create a retention policy when none exists yet', async () => {
+    const policy: HarborRetentionPolicy = {
+      algorithm: 'or',
+      scope: { level: 'project', ref: 123 },
+      rules: [],
+      trigger: { kind: 'Schedule', settings: { cron: '0 22 2 * * *' }, references: [] },
+    }
+    let reads = 0
+    server.use(
+      http.get(`${harborUrl}/api/v2.0/projects/myproj`, ({ request }) => {
+        expect(request.headers.get('x-is-resource-name')).toBe('true')
+        reads += 1
+        return HttpResponse.json({ project_id: 123, metadata: {} })
+      }),
+      http.post(`${harborUrl}/api/v2.0/retentions`, async ({ request }) => {
+        expect(await request.json()).toEqual(policy)
+        return HttpResponse.json({ id: 500 }, { status: HttpStatus.CREATED })
+      }),
+      // After a successful create there is no policy to reconcile in place.
+      http.put(`${harborUrl}/api/v2.0/retentions/:id`, () => {
+        throw new Error('a fresh create must not also issue a reconcile PUT')
+      }),
+    )
+
+    await service.ensureRetention('myproj', policy)
+
+    expect(reads).toBe(1)
   })
 })

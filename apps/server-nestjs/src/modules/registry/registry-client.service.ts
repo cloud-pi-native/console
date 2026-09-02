@@ -2,7 +2,7 @@ import type { RegistryQuery, RegistryResponse } from './registry-http-client.ser
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { RegistryHttpClientService } from './registry-http-client.service'
 import { ROBOT_LIST_PAGE_SIZE } from './registry.constants'
-import { ensure } from './registry.utils'
+import { ensure, isRegistryConflict } from './registry.utils'
 
 export const roAccess: HarborAccess[] = [
   { resource: 'repository', action: 'pull' },
@@ -120,8 +120,8 @@ export class RegistryClientService {
     })
   }
 
-  async ensureProject(projectName: string, storageLimit: number): Promise<HarborProject> {
-    const created = await ensure<HarborProject>({
+  async ensureProject(projectName: string, storageLimit: number) {
+    return ensure<HarborProject>({
       create: () => this.http.fetch<HarborProject>('projects', {
         method: 'POST',
         body: {
@@ -131,18 +131,14 @@ export class RegistryClientService {
         },
       }),
       reload: async () => {
-        const existing = await this.getProjectByName(projectName)
-        return existing.status === HttpStatus.OK ? existing.data : null
+        // 201 returns an empty body: fetch by name to obtain the id.
+        const response = await this.getProjectByName(projectName)
+        if (response.status !== HttpStatus.OK || !response.data) {
+          throw new Error(`Harbor get project failed (${response.status})`)
+        }
+        return response.data
       },
     })
-    if (created) return created
-    // Harbor answers 201 with an empty body on a fresh creation: fetch the
-    // project to obtain its id.
-    const fetched = await this.getProjectByName(projectName)
-    if (fetched.status !== HttpStatus.OK || !fetched.data) {
-      throw new Error(`Harbor get project failed (${fetched.status})`)
-    }
-    return fetched.data
   }
 
   async deleteProjectByName(projectName: string) {
@@ -194,11 +190,10 @@ export class RegistryClientService {
         body,
       }),
       reload: async () => {
-        // Membership collision: Harbor already holds what the concurrent run
-        // created; re-listing proves it and adds no other state to reconcile.
+        // Re-listing proves the raced membership exists.
         const members = await this.getGroupMembers(projectName)
-        if (members.status !== HttpStatus.OK || !members.data) return null
-        return members.data.find(member => member?.entity_name === body.member_group.group_name) ?? null
+        if (members.status !== HttpStatus.OK || !members.data) return undefined
+        return members.data.find(member => member?.entity_name === body.member_group.group_name)
       },
     })
   }
@@ -216,41 +211,20 @@ export class RegistryClientService {
     })
   }
 
-  async ensureRobot(body: HarborRobotCreateRequest): Promise<HarborRobotCreated | null> {
-    return ensure<HarborRobotCreated>({
-      create: () => this.http.fetch<HarborRobotCreated>('robots', {
-        method: 'POST',
-        body,
-      }),
-      reload: async () => {
-        // 409 race: a concurrent run created the robot. Harbor never re-serves
-        // a robot secret, so reconciling means rotating: delete the existing
-        // robot and recreate it to obtain a fresh usable secret.
-        const existing = await this.findRobot(body)
-        if (existing?.id) {
-          await this.deleteRobot(existing.id)
-        }
-        const recreated = await this.http.fetch<HarborRobotCreated>('robots', {
-          method: 'POST',
-          body,
-        })
-        return recreated.status < HttpStatus.BAD_REQUEST ? recreated.data : null
-      },
+  async ensureRobot(body: HarborRobotCreateRequest): Promise<HarborRobotCreated | undefined> {
+    const created = await this.http.fetch<HarborRobotCreated>('robots', {
+      method: 'POST',
+      body,
     })
-  }
-
-  private async findRobot(body: HarborRobotCreateRequest): Promise<HarborRobot | undefined> {
-    const namespace = body.permissions[0]?.namespace
-    if (!namespace) return undefined
-    const fullName = `robot$${namespace}+${body.name}`
-    const project = await this.getProjectByName(namespace)
-    if (project.status !== HttpStatus.OK || !project.data) return undefined
-    const projectId = Number(project.data.project_id)
-    if (!Number.isFinite(projectId)) return undefined
-    for await (const robot of this.getProjectRobots(projectId)) {
-      if (robot?.name === fullName) return robot
+    if (isRegistryConflict(created)) {
+      // The raced robot belongs to the concurrent run that owns its secret —
+      // never rotate here; service-level rotation stays the explicit path.
+      return undefined
     }
-    return undefined
+    if (created.status >= HttpStatus.BAD_REQUEST || !created.data) {
+      throw new Error(`Harbor create robot failed (${created.status})`)
+    }
+    return created.data
   }
 
   async deleteRobot(robotId: number): Promise<RegistryResponse> {
@@ -266,23 +240,28 @@ export class RegistryClientService {
     return Number.isFinite(retentionId) ? retentionId : null
   }
 
-  async ensureRetention(projectName: string, body: HarborRetentionPolicy) {
-    return ensure<unknown>({
-      create: () => this.createRetention(body),
-      reload: async () => {
-        const racedId = await this.getRetentionId(projectName)
-        if (!racedId) return null
-        const result = await this.updateRetention(racedId, body)
-        if (result.status >= HttpStatus.BAD_REQUEST) {
-          throw new Error(`Harbor retention policy failed (${result.status})`)
-        }
-        return null
-      },
-    })
+  async ensureRetention(projectName: string, body: HarborRetentionPolicy): Promise<void> {
+    // Harbor keeps a single retention policy per project; a re-sync must not
+    // issue a second create. Reconcile the existing policy in place when it exists.
+    let retentionId = await this.getRetentionId(projectName)
+    if (retentionId === null) {
+      const created = await this.createRetention(body)
+      if (created.status < HttpStatus.BAD_REQUEST) return
+      // A racing sync likely created the policy between our read and create
+      // (Harbor signals the duplicate with 400 BAD_REQUEST): re-read its id.
+      retentionId = await this.getRetentionId(projectName)
+      if (retentionId === null) {
+        throw new Error(`Harbor request failed (${created.status})`)
+      }
+    }
+    const updated = await this.updateRetention(retentionId, body)
+    if (updated.status >= HttpStatus.BAD_REQUEST) {
+      throw new Error(`Harbor retention policy failed (${updated.status})`)
+    }
   }
 
   async createRetention(body: HarborRetentionPolicy) {
-    return this.http.fetch('retentions', {
+    return this.http.fetch<number>('retentions', {
       method: 'POST',
       body,
     })

@@ -1,5 +1,6 @@
 import type { ConfigType } from '@nestjs/config'
 import type { TestingModule } from '@nestjs/testing'
+import { ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
@@ -10,7 +11,7 @@ import { harborConfigFactory } from '../src/config/harbor.config'
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
 import { RegistryClientService } from '../src/modules/registry/registry-client.service'
 import { makeProjectWithDetails } from '../src/modules/registry/registry-testing.utils'
-import { ROBOT_NAME_PROJECT, ROBOT_NAME_RO, ROBOT_NAME_RW } from '../src/modules/registry/registry.constants'
+import { PLUGIN_NAME, REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT, ROBOT_NAME_PROJECT, ROBOT_NAME_RO, ROBOT_NAME_RW } from '../src/modules/registry/registry.constants'
 import { RegistryModule } from '../src/modules/registry/registry.module'
 import { RegistryService } from '../src/modules/registry/registry.service'
 import { getHostFromUrl, getProjectVaultPath } from '../src/modules/registry/registry.utils'
@@ -65,8 +66,15 @@ describeWithRegistry('RegistryService (e2e)', () => {
   })
 
   it('should provision project in Harbor and write robot secrets to Vault', async () => {
-    const result = await registry.ensureProject({ slug: projectSlug, plugins: [] }, { publishProjectRobot: true })
-    expect(result.basePath).toBe(`${getHostFromUrl(harborConfig.url)}/${projectSlug}/`)
+    const result = await eventEmitter.emitAsync('project.upsert', makeProjectWithDetails({
+      slug: projectSlug,
+      plugins: [{
+        pluginName: PLUGIN_NAME,
+        key: REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT,
+        value: ENABLED,
+      }],
+    }))
+    expect(result[0]?.harbor?.status).toBe('OK')
 
     const project = await client.getProjectByName(projectSlug)
     expect(project.status).toBe(200)
@@ -85,6 +93,25 @@ describeWithRegistry('RegistryService (e2e)', () => {
     expect(roSecret.data?.USERNAME).toBe(`robot$${projectSlug}+${ROBOT_NAME_RO}`)
     expect(rwSecret.data?.USERNAME).toBe(`robot$${projectSlug}+${ROBOT_NAME_RW}`)
     expect(projectSecret.data?.USERNAME).toBe(`robot$${projectSlug}+${ROBOT_NAME_PROJECT}`)
+  })
+
+  it('should re-sync an existing project without trippingthe retention duplicate (400)', async () => {
+    // Harbor keeps one retention policy per project: a second POST /retentions
+    // would return 400. A re-sync via the upsert event must reconcile the existing
+    // policy instead of creating a second one..
+    const result = await eventEmitter.emitAsync('project.upsert', makeProjectWithDetails({
+      slug: projectSlug,
+      plugins: [{
+        pluginName: PLUGIN_NAME,
+        key: REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT,
+        value: ENABLED,
+      }],
+    }))
+    expect(result[0]?.harbor?.status).toBe('OK')
+
+    const project = await client.getProjectByName(projectSlug)
+    expect(project.status).toBe(200)
+    expect(project.data?.metadata?.retention_id).toBeTruthy()
   })
 
   it('should remove project from Harbor on delete', async () => {
