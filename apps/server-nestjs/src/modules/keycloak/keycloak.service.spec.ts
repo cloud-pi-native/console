@@ -213,6 +213,84 @@ describe('keycloakService', () => {
       expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-2', 'role-group-id')
     })
 
+    it('should add the owner to the project admin role group', async () => {
+      const adminRole = makeProjectRole({
+        id: 'role-admin',
+        permissions: 0n,
+        oidcGroup: '/test-project/console/admin',
+        type: 'system:managed',
+      })
+      const projectWithAdminRole = makeProjectWithDetails({
+        ...mockProject,
+        members: [],
+        roles: [adminRole],
+      })
+      datastore.getAllProjects.mockResolvedValue([projectWithAdminRole])
+
+      const projectGroup = makeGroupRepresentation({ id: 'group-id', name: 'test-project' })
+      const consoleGroup = { id: 'console-id', name: 'console', path: '/test-project/console' }
+      const adminGroup = makeGroupRepresentation({ id: 'admin-group-id', name: 'admin', path: '/test-project/console/admin' })
+
+      keycloak.getOrCreateGroupByPath.mockImplementation((path) => {
+        if (path === '/test-project') return Promise.resolve(projectGroup)
+        throw new Error(`Unexpected getOrCreateGroupByPath call: ${path}`)
+      })
+      keycloak.getOrCreateConsoleGroup.mockResolvedValue(consoleGroup)
+      keycloak.getOrCreateRoleGroup.mockResolvedValue(adminGroup)
+
+      // Owner is in the project group but missing from the admin role group
+      keycloak.getGroupMembers.mockImplementation((groupId) => {
+        if (groupId === 'group-id') return Promise.resolve([makeUserRepresentation({ id: 'owner-id' })])
+        if (groupId === 'admin-group-id') return Promise.resolve([])
+        return Promise.resolve([])
+      })
+
+      keycloak.getSubGroups.mockImplementation(async function* () { /* empty */ })
+
+      await service.handleCron()
+
+      // Owner implicitly holds the admin role: they must land in the maintainer group
+      expect(keycloak.addUserToGroup).toHaveBeenCalledWith('owner-id', 'admin-group-id')
+    })
+
+    it('should not add the owner to non-admin role groups', async () => {
+      const developerRole = makeProjectRole({
+        id: 'role-developer',
+        permissions: 0n,
+        oidcGroup: '/test-project/console/developer',
+        type: 'system:managed',
+      })
+      const projectWithDeveloperRole = makeProjectWithDetails({
+        ...mockProject,
+        members: [],
+        roles: [developerRole],
+      })
+      datastore.getAllProjects.mockResolvedValue([projectWithDeveloperRole])
+
+      const projectGroup = makeGroupRepresentation({ id: 'group-id', name: 'test-project' })
+      const consoleGroup = { id: 'console-id', name: 'console', path: '/test-project/console' }
+      const developerGroup = makeGroupRepresentation({ id: 'developer-group-id', name: 'developer', path: '/test-project/console/developer' })
+
+      keycloak.getOrCreateGroupByPath.mockImplementation((path) => {
+        if (path === '/test-project') return Promise.resolve(projectGroup)
+        throw new Error(`Unexpected getOrCreateGroupByPath call: ${path}`)
+      })
+      keycloak.getOrCreateConsoleGroup.mockResolvedValue(consoleGroup)
+      keycloak.getOrCreateRoleGroup.mockResolvedValue(developerGroup)
+
+      keycloak.getGroupMembers.mockImplementation((groupId) => {
+        if (groupId === 'group-id') return Promise.resolve([makeUserRepresentation({ id: 'owner-id' })])
+        if (groupId === 'developer-group-id') return Promise.resolve([])
+        return Promise.resolve([])
+      })
+
+      keycloak.getSubGroups.mockImplementation(async function* () { /* empty */ })
+
+      await service.handleCron()
+
+      expect(keycloak.addUserToGroup).not.toHaveBeenCalledWith('owner-id', 'developer-group-id')
+    })
+
     it('should sync environment groups', async () => {
       const projectWithEnv = makeProjectWithDetails({
         ...mockProject,

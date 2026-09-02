@@ -12,7 +12,7 @@ import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
-import { isMember, isNonEmptyGroupPath, isOwnedProjectGroup, splitGroupPath, toGroupPath, toRoleRelativeGroupPath } from './keycloak.utils'
+import { isAdminRole, isMember, isNonEmptyGroupPath, isOwnedProjectGroup, splitGroupPath, toGroupPath, toRoleRelativeGroupPath } from './keycloak.utils'
 
 @Injectable()
 export class KeycloakService {
@@ -365,6 +365,16 @@ export class KeycloakService {
         await this.maybeAddUserToGroup(member.user.id, group.id, group.name)
       }
     }))
+
+    // The owner implicitly holds the project admin role (the maintainer group):
+    // without this they end up in no Keycloak RBAC group, so SonarQube and the
+    // other SSO-group-mapped services grant them no access at all. Only
+    // meaningful for managed roles — the orphan purge would evict them otherwise.
+    // maybeAddUserToGroup tolerates 409, so no membership pre-check is needed.
+    if (isAdminRole(project, role)) {
+      addedCount++
+      await this.maybeAddUserToGroup(project.ownerId, group.id, group.name)
+    }
 
     span?.setAttribute('keycloak.group.members.added', addedCount)
   }
