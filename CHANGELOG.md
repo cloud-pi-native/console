@@ -1,5 +1,19 @@
 # Changelog
 
+## [9.25.0-rc.2](https://github.com/cloud-pi-native/console/compare/v9.25.0-rc.1...v9.25.0-rc.2) (2026-09-02)
+
+
+### Bug Fixes
+
+* **keycloak:** add project owner to the maintainer role group ([62fd5de](https://github.com/cloud-pi-native/console/commit/62fd5de6c6d8bd98b2b9ed5fa66d3558e9df4aa4)), closes [#2644](https://github.com/cloud-pi-native/console/issues/2644)
+* **server-nestjs:** reconcile single Harbor retention policy on re-sync ([49ae7af](https://github.com/cloud-pi-native/console/commit/49ae7aff86414574540733d806405f4db6edc41b)), closes [#2620](https://github.com/cloud-pi-native/console/issues/2620)
+* **server-nestjs:** tolerate Harbor create races (400 CONFLICT / 409) in ensure paths ([d853e96](https://github.com/cloud-pi-native/console/commit/d853e96d13da71a4a7fb0666436cb65a10b09b13)), closes [#2620](https://github.com/cloud-pi-native/console/issues/2620)
+
+
+### Reverted commits
+
+* remove useless chown/chmod from Dockerfile" ([893f751](https://github.com/cloud-pi-native/console/commit/893f751334118b32a149c8b5b41d313dc1e346ef))
+
 ## [9.25.0-rc.1](https://github.com/cloud-pi-native/console/compare/v9.25.0-rc...v9.25.0-rc.1) (2026-09-01)
 
 
