@@ -175,6 +175,30 @@ describe('sonarqubeService', () => {
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/developer`, permission: 'securityhotspotadmin' }))
     })
 
+    it('should grant the owner project-admin permissions on repositories when their SSO account exists', async () => {
+      const project = makeProjectWithDetails({ repositories: [{ internalRepoName: 'repo' }] })
+      client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
+      const ownerLogin = project.owner.email.split('@')[0]
+      client.searchUsers.mockImplementation(async function* () {
+        yield makeSonarqubeUser({ login: ownerLogin, email: project.owner.email })
+      })
+
+      await service.handleUpsert(project)
+
+      expect(client.addPermissionUser).toHaveBeenCalledWith(expect.objectContaining({ login: ownerLogin, permission: 'admin' }))
+      expect(client.addPermissionUser).toHaveBeenCalledWith(expect.objectContaining({ login: ownerLogin, permission: 'issueadmin' }))
+    })
+
+    it('should skip the owner permission grant without failing when the owner has no SonarQube account yet', async () => {
+      const project = makeProjectWithDetails({ repositories: [{ internalRepoName: 'repo' }] })
+      client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
+      client.searchUsers.mockImplementation(async function* () { yield* makeEmptyUsersResponse().users })
+
+      await service.handleUpsert(project)
+
+      expect(client.addPermissionUser).not.toHaveBeenCalledWith(expect.objectContaining({ login: project.owner.email }))
+    })
+
     it('should provision GitLab CI variables for each repository and the shared group token', async () => {
       const project = makeProjectWithDetails({ repositories: [{ internalRepoName: 'repo' }] })
       const groupId = 42

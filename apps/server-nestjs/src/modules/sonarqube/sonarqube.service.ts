@@ -259,13 +259,23 @@ export class SonarqubeService implements OnModuleInit {
     span?.setAttribute('project.slug', project.slug)
     span?.setAttribute('repositories.count', project.repositories.length)
 
-    const [readonlyGroupPath, securityGroupPath, existingSonarProjects, sonarSecret, gitlabGroup] = await Promise.all([
+    const [readonlyGroupPath, securityGroupPath, existingSonarProjects, sonarSecret, gitlabGroup, ownerUser] = await Promise.all([
       this.getReadonlyGroupPath(),
       this.getSecurityGroupPath(),
       getAll(this.findProjectsForSlug(project.slug)),
       this.vault.readSonarqubeUser(project.slug),
       this.gitlab.getOrCreateProjectGroup(),
+      this.findUserByEmail(project.owner.email),
     ])
+
+    // The owner implicitly holds the project admin role. Groups come from Keycloak
+    // OIDC sync, but the owner is in no role group, so grant them directly (same
+    // spirit as GitLab's addMissingOwnerMember). Until the owner has signed in once
+    // (SSO provisioning) they don't exist in SonarQube: warn and skip, the next
+    // reconcile grants them.
+    if (!ownerUser) {
+      this.logger.warn(`Owner SonarQube account not found, skipping owner permission grant until first SSO sign-in (project=${project.slug}, email=${project.owner.email})`)
+    }
 
     // SONAR_TOKEN is shared across every repository of the project; expose it once at the group level.
     if (sonarSecret?.data?.SONAR_TOKEN) {
@@ -300,6 +310,11 @@ export class SonarqubeService implements OnModuleInit {
           this.logger.log(`Created SonarQube repository (key=${projectKey})`)
         }
         await this.ensureProjectPermissions(projectKey, project.slug, rolePaths, readonlyGroupPath, securityGroupPath)
+        if (ownerUser) {
+          await Promise.all(PROJECT_ADMIN_PERMISSIONS.map(permission =>
+            this.client.addPermissionUser({ projectKey, permission, login: ownerUser.login }),
+          ))
+        }
         this.logger.verbose(`Ensured permissions on SonarQube repository (key=${projectKey})`)
         await this.ensureGitlabCiVariables(project, repository, projectKey, sonarSecret)
       }),
@@ -448,6 +463,13 @@ export class SonarqubeService implements OnModuleInit {
   private async findUser(login: string): Promise<SonarqubeUser | undefined> {
     for await (const user of this.client.searchUsers({ q: login })) {
       if (user.login === login) return user
+    }
+    return undefined
+  }
+
+  private async findUserByEmail(email: string): Promise<SonarqubeUser | undefined> {
+    for await (const user of this.client.searchUsers({ q: email })) {
+      if (user.email.toLowerCase() === email.toLowerCase()) return user
     }
     return undefined
   }
