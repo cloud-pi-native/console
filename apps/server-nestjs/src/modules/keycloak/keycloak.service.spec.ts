@@ -1,5 +1,6 @@
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
+import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
@@ -524,6 +525,41 @@ describe('keycloakService', () => {
       expect(keycloak.getOrCreateRoleGroup).toHaveBeenCalledWith(consoleGroup, '/system-managed-group')
       expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'system-managed-id')
       expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-2', 'system-managed-id')
+    })
+  })
+
+  describe('migration parity: admin-role event path (legacy hook.adminRole.*)', () => {
+    const adminRoleId = faker.string.uuid()
+    const adminRoles: AdminRoleWithDetails[] = [
+      { id: adminRoleId, name: faker.string.alphanumeric(8), permissions: 0n, position: 0, oidcGroup: '/admin-group', type: 'managed' },
+    ]
+    const users: UserWithAdminRoles[] = [
+      { id: faker.string.uuid(), adminRoleIds: [adminRoleId] },
+    ]
+
+    it('syncs admin-role OIDC groups via cron reconcile ONLY (no event path exists)', async () => {
+      datastore.getAllProjects.mockResolvedValue([])
+      datastore.getAllAdminRoles.mockResolvedValue(adminRoles)
+      datastore.getAllUsersWithAdminRoleIds.mockResolvedValue(users)
+
+      const adminGroup = makeGroupRepresentation({ id: 'kc-parity-group-id', name: 'admin', path: '/console/parity-admin' })
+      keycloak.getOrCreateGroupByPath.mockResolvedValue(adminGroup)
+      keycloak.getGroupMembers.mockResolvedValue([])
+
+      await service.handleCron()
+
+      // Legacy fires `hook.adminRole.upsert(roleId)` on create/patch and
+      // `hook.adminRole.delete(role)` on delete (admin-role/business.ts).
+      // server-nestjs has NO adminRole.* emitter: group sync happens only in
+      // the periodic reconcile. If this expectation fails, an event path was
+      // added — update MIGRATION-PARITY-MATRIX.md (u5/u9) accordingly.
+      expect(keycloak.getOrCreateGroupByPath).toHaveBeenCalledWith('/admin-group')
+    })
+
+    it('exposes NO adminRole emit entrypoint on AppEventsService (cutover guard)', async () => {
+      const { AppEventsService } = await import('../events/app-events.service')
+      expect(Object.getOwnPropertyNames(AppEventsService.prototype))
+        .not.toContain('emitAdminRoleEvent')
     })
   })
 })
