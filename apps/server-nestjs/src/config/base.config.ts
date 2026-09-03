@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
-import { flag, truthySchema } from './config.utils'
+import { flag, truthySchema, urlSchema } from './config.utils'
 
 const baseFeatureSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
@@ -8,7 +8,7 @@ const baseFeatureSchema = z.object({
   SERVER_HOST: z.string().default('localhost'),
   SERVER_PORT: z.string().transform(Number).default('0'),
   APP_VERSION: z.string().default('unknown'),
-  DB_URL: z.string().url(),
+  DB_URL: urlSchema,
   PROJECTS_ROOT_DIR: z.string().default(''),
 }).transform((raw) => {
   return {

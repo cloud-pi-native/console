@@ -5,12 +5,13 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { JwtSecretRequestType } from '@nestjs/jwt'
 import { z } from 'zod'
+import { urlSchema } from '../../../../config/config.utils'
 import { keycloakConfigFactory } from '../../../../config/keycloak.config'
 import { createKeycloakSecretProviderOpenIdConfigurationCacheKey, createKeycloakSecretProviderPublicKeyCacheKey } from './keycloak-secret-provider.utils'
 
 const OpenidConfigurationSchema = z.object({
-  issuer: z.string().url(),
-  jwks_uri: z.string().url(),
+  issuer: urlSchema,
+  jwks_uri: urlSchema,
 })
 
 type OpenidConfiguration = z.infer<typeof OpenidConfigurationSchema>

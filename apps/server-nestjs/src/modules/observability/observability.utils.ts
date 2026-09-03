@@ -1,6 +1,7 @@
 import type { ProjectWithDetails } from './observability-datastore.service'
 import { specificallyDisabled } from '@cpn-console/hooks'
 import { compressUUID, getPermsByUserRoles, ProjectAuthorized } from '@cpn-console/shared'
+import { urlSchema } from '../../config/config.utils'
 import { stringify } from 'yaml'
 import z from 'zod'
 import {
@@ -201,7 +202,7 @@ const observabilityChartSchema = z.object({
   dependencies: z.array(z.object({
     name: z.string(),
     version: z.string(),
-    repository: z.string().url(),
+    repository: urlSchema,
   })),
 })
 

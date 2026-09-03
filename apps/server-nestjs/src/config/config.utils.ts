@@ -67,6 +67,19 @@ export const cronSchema = z
     }
   })
 
+// URL env var: validates, then normalizes (case, dot-segments, default port)
+// and strips the root trailing slash that new URL() keeps — consumers join
+// paths with '/', so a trailing slash would yield double slashes.
+export const urlSchema = z
+  .string()
+  .url()
+  .transform((s) => {
+    const href = new URL(s).href
+    let end = href.length
+    while (end > 0 && href[end - 1] === '/') end--
+    return href.slice(0, end)
+  })
+
 // Shared truthy enum for flag(): 'true'/'false'/'1'/'0'.
 export const truthySchema = z.enum(['true', 'false', '1', '0'])
 

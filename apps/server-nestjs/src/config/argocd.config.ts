@@ -1,11 +1,11 @@
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
-import { csv, truthySchema } from './config.utils'
+import { csv, truthySchema, urlSchema } from './config.utils'
 
 const argocdFeatureSchema = z.object({
   ARGO_NAMESPACE: z.string().default('argocd'),
-  ARGOCD_URL: z.string().url(),
-  ARGOCD_INTERNAL_URL: z.string().url().optional(),
+  ARGOCD_URL: urlSchema,
+  ARGOCD_INTERNAL_URL: urlSchema.optional(),
   ARGOCD_EXTRA_REPOSITORIES: csv(z.string()),
   DSO_ENV_CHART_VERSION: z.string().default('dso-env-1.6.0'),
   DSO_NS_CHART_VERSION: z.string().default('dso-ns-1.1.5'),

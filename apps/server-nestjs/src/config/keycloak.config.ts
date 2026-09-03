@@ -1,5 +1,6 @@
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
+import { urlSchema } from './config.utils'
 
 const keycloakFeatureSchema = z.object({
   KEYCLOAK_PROTOCOL: z.enum(['http', 'https']).default('https'),
@@ -10,7 +11,7 @@ const keycloakFeatureSchema = z.object({
   KEYCLOAK_ADMIN: z.string().min(1),
   KEYCLOAK_ADMIN_PASSWORD: z.string().min(1),
   KEYCLOAK_ADMIN_CLIENT_ID: z.string().default('admin-cli'),
-  KEYCLOAK_REDIRECT_URI: z.string().url(),
+  KEYCLOAK_REDIRECT_URI: urlSchema,
   KEYCLOAK_JWKS_CACHE_TTL_MS: z.coerce.number().int().positive().default(300_000),
   KEYCLOAK_JWKS_TIMEOUT_MS: z.coerce.number().int().positive().default(5_000),
   KEYCLOAK_OPENID_CONFIGURATION_CACHE_TTL_MS: z.coerce.number().int().positive().default(300_000),
