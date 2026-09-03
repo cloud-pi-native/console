@@ -1,0 +1,12 @@
+[tasks.install]
+description="install dependencies"
+run="pnpm install --frozen-lockfile"
+
+[tasks."build:clean"]
+description="Clean all build artifacts"
+run="pnpm run build:clean"
+
+[tasks.build]
+description="build the plugin"
+run="pnpm run build"
+depends = ["install", "build:clean"]

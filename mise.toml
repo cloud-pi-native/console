@@ -1,0 +1,22 @@
+experimental_monorepo_root = true
+
+[monorepo]
+config_roots = [
+  "packages/*"
+]
+
+[tools]
+node = "24"
+fnox = "latest"
+pnpm = "10"
+
+[env]
+NODE_ENV = "development"
+DATABASE_URL= {value="{{exec(command='fnox get DATABASE_URL')}}"}
+
+[shell_alias]
+node_version="echo {{exec(command='node --version')}}"
+
+[tasks.build]
+description="build the whole stack"
+depends = ["//packages/...:build"]
