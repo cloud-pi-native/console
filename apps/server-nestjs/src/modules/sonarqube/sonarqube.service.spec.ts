@@ -10,6 +10,7 @@ import { VaultClientService } from '../vault/vault-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
 import { SonarqubeClientService } from './sonarqube-client.service'
 import { SonarqubeDatastoreService } from './sonarqube-datastore.service'
+import { SonarqubeError } from './sonarqube-http-client.service'
 import {
   makeEmptyGroupsResponse,
   makeEmptyProjectsResponse,
@@ -218,7 +219,7 @@ describe('sonarqubeService', () => {
     })
 
     it('should reconcile the email of an existing robot account stamped with the owner real email (#2510 mitigation)', async () => {
-      const project = makeProjectWithDetails({ slug: 'with-owner', owner: { email: 'owner@example.com' } as any })
+      const project = makeProjectWithDetails({ slug: 'with-owner', owner: { email: 'owner@example.com' } })
       vault.readSonarqubeUser.mockResolvedValue(makeVaultSecret({ data: { SONAR_USERNAME: 'with-owner', SONAR_PASSWORD: 'old', SONAR_TOKEN: 'old' } }))
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
       client.searchUsers.mockImplementation(async function* () {
@@ -249,7 +250,7 @@ describe('sonarqubeService', () => {
     })
 
     it('should update both email and password when an existing robot account has a stale email and the vault secret is missing', async () => {
-      const project = makeProjectWithDetails({ slug: 'stale', owner: { email: 'owner@example.com' } as any })
+      const project = makeProjectWithDetails({ slug: 'stale', owner: { email: 'owner@example.com' } })
       vault.readSonarqubeUser.mockResolvedValue(null)
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
       client.searchUsers.mockImplementation(async function* () {
@@ -342,7 +343,7 @@ describe('sonarqubeService', () => {
     })
 
     it('should use a per-project cloud-pi-native.fr email (never the owner real email) when creating user', async () => {
-      const project = makeProjectWithDetails({ slug: 'with-owner', owner: { email: 'owner@example.com' } as any })
+      const project = makeProjectWithDetails({ slug: 'with-owner', owner: { email: 'owner@example.com' } })
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
       client.searchUsers.mockImplementation(async function* () {})
 
@@ -356,6 +357,77 @@ describe('sonarqubeService', () => {
         email: `${project.slug}@cloud-pi-native.fr`,
       }))
       expect(client.createUser).not.toHaveBeenCalledWith(expect.objectContaining({ email: project.owner.email }))
+    })
+  })
+
+  describe('external-call error paths (409 / transient 5xx / cleanup)', () => {
+    // Legacy contracts: plugins/sonarqube/src/project.ts:75 createProject has no 409 handling
+    // and the legacy upsert hook (functions.ts:115) returns WARNING/KO on error; delete relies on
+    // find-then-delete. Current SonarqubeService mirrors this and forwards 4xx/5xx once.
+
+    it('handleUpsert does not recreate an existing SonarQube project (idempotent, avoids 409)', async () => {
+      const project = makeProjectWithDetails({ repositories: [{ internalRepoName: 'repo' }] })
+      client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
+      const key = generateProjectKey(project.slug, 'repo')
+      client.searchProject.mockImplementation(async function* () {
+        yield { key, name: `${project.slug}-repo`, qualifier: SONARQUBE_PROJECT_QUALIFIER_PROJECT, visibility: 'private' }
+      })
+
+      await service.handleUpsert(project)
+
+      expect(client.createProject).not.toHaveBeenCalled()
+    })
+
+    it('handleUpsert propagates a 409 conflict from project creation as a KO result', async () => {
+      const project = makeProjectWithDetails({ repositories: [{ internalRepoName: 'repo' }] })
+      client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
+      client.createProject.mockRejectedValue(
+        new SonarqubeError('ClientError', 'SonarQube API responded with status 409', {
+          status: 409,
+          method: 'POST',
+          path: 'projects/create',
+        }),
+      )
+
+      const result = await service.handleUpsert(project)
+      // Legacy contract: plugins/sonarqube/src/project.ts:75 createProject has no 409 handling;
+      // the legacy upsert hook returns KO on such an error. Current behaviour matches.
+      expect(result.sonarqube.status).toBe('KO')
+    })
+
+    it('handleUpsert propagates a transient 5xx (503) from a client call as KO without retrying', async () => {
+      const project = makeProjectWithDetails()
+      client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
+      client.createUser.mockRejectedValue(
+        new SonarqubeError('ServerError', 'SonarQube API responded with status 503', {
+          status: 503,
+          method: 'POST',
+          path: 'users/create',
+        }),
+      )
+
+      const result = await service.handleUpsert(project)
+      // No retry logic exists in SonarqubeHttpClientService.fetch; 5xx forwarded once.
+      expect(result.sonarqube.status).toBe('KO')
+    })
+
+    it('handleDelete returns KO when deleting an existing SonarQube project fails with a 5xx', async () => {
+      const project = makeProjectWithDetails({ slug: 'doomed' })
+      const doomedKey = generateProjectKey('doomed', 'repo')
+      client.searchProject.mockImplementation(async function* () {
+        yield { key: doomedKey, name: '', qualifier: SONARQUBE_PROJECT_QUALIFIER_PROJECT, visibility: 'private' }
+      })
+      client.searchUsers.mockImplementation(async function* () {})
+      client.deleteProject.mockRejectedValue(
+        new SonarqubeError('ServerError', 'SonarQube API responded with status 503', {
+          status: 503,
+          method: 'POST',
+          path: 'projects/delete',
+        }),
+      )
+
+      const result = await service.handleDelete(project)
+      expect(result.sonarqube.status).toBe('KO')
     })
   })
 

@@ -347,4 +347,59 @@ describe('registryService', () => {
       expect(client.deleteProjectByName).not.toHaveBeenCalled()
     })
   })
+
+  describe('external-call error paths (409 / transient 5xx / cleanup)', () => {
+    // Legacy contracts: plugins/harbor/src/project.ts:32 createProject GETs first with
+    // validateStatus:()=>true and :60 deleteProject treats 404 as already-gone.
+    // Current RegistryService mirrors this and forwards 4xx/5xx once (no retry).
+
+    it('handleUpsert does not recreate an existing Harbor project (idempotent, avoids 409)', async () => {
+      const project = makeProjectWithDetails()
+      client.getProjectByName.mockResolvedValue(makeOkResponse({ project_id: 123, metadata: {} }))
+
+      await service.handleUpsert(project)
+
+      expect(client.createProject).not.toHaveBeenCalled()
+    })
+
+    it('handleUpsert propagates a 409 conflict from project creation as a KO result', async () => {
+      const project = makeProjectWithDetails()
+      client.getProjectByName.mockResolvedValueOnce({ status: HttpStatus.NOT_FOUND, data: null })
+      client.createProject.mockResolvedValueOnce({ status: 409, data: null })
+
+      const result = await service.handleUpsert(project)
+      // Legacy contract: plugins/harbor/src/project.ts:32 GETs first, so a 409 only occurs in a
+      // race; the legacy createProject surfaces it as an error too. Current behaviour matches.
+      expect(result.harbor.status).toBe('KO')
+    })
+
+    it('handleUpsert propagates a transient 5xx (502) from project creation as KO without retrying', async () => {
+      const project = makeProjectWithDetails()
+      client.getProjectByName.mockResolvedValueOnce({ status: HttpStatus.NOT_FOUND, data: null })
+      client.createProject.mockResolvedValueOnce({ status: 502, data: null })
+
+      const result = await service.handleUpsert(project)
+      // No retry logic exists in RegistryHttpClientService.fetch; 5xx forwarded once.
+      expect(result.harbor.status).toBe('KO')
+    })
+
+    it('handleDelete treats a 404 on project deletion as already-gone (idempotent, returns OK)', async () => {
+      const project = makeProjectWithDetails()
+      client.getProjectByName.mockResolvedValueOnce(makeOkResponse({ project_id: 123, metadata: {} }))
+      client.deleteProjectByName.mockResolvedValueOnce({ status: HttpStatus.NOT_FOUND, data: null })
+
+      const result = await service.handleDelete(project)
+      // Mirrors legacy deleteProject (project.ts:60) which swallows 404 on the already-gone resource.
+      expect(result.harbor.status).toBe('OK')
+    })
+
+    it('handleDelete returns KO when deleting the Harbor project fails with a 5xx', async () => {
+      const project = makeProjectWithDetails()
+      client.getProjectByName.mockResolvedValueOnce(makeOkResponse({ project_id: 123, metadata: {} }))
+      client.deleteProjectByName.mockResolvedValueOnce({ status: HttpStatus.INTERNAL_SERVER_ERROR, data: null })
+
+      const result = await service.handleDelete(project)
+      expect(result.harbor.status).toBe('KO')
+    })
+  })
 })

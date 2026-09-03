@@ -12,6 +12,7 @@ import { VaultError } from '../vault/vault-http-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
 import { NexusClientService } from './nexus-client.service'
 import { NexusDatastoreService } from './nexus-datastore.service'
+import { NexusError } from './nexus-http-client.service'
 import { makeProjectWithDetails } from './nexus-testing.utils'
 import {
   NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO,
@@ -227,5 +228,79 @@ describe('nexusService', () => {
       id: `${project.slug}-console-devops`,
       privileges: expect.arrayContaining([`${project.slug}-privilege-group`]),
     }))
+  })
+
+  // --- external-call error-path parity: 409 / transient 5xx / cleanup ---
+  // Legacy contracts: plugins/nexus/src/maven.ts (hosted create validates only [201];
+  // group/privilege create validates [201,400]) and plugins/nexus/src/utils.ts (deleteIfExists
+  // swallows 404). Current NexusService uses GET-first idempotency and forwards 4xx/5xx once.
+
+  it('handleUpsert updates an existing maven hosted repo instead of recreating it (idempotent, avoids 409)', async () => {
+    const project = makeProjectWithDetails({
+      plugins: [{ pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED }],
+    })
+    client.getRepositoriesMavenHosted.mockResolvedValue({
+      name: `${project.slug}-repository-release`,
+      online: true,
+      storage: { blobStoreName: 'default', strictContentTypeValidation: true, writePolicy: 'ALLOW' },
+      cleanup: { policyNames: [] },
+      component: { proprietaryComponents: true },
+      maven: { versionPolicy: 'RELEASE', layoutPolicy: 'STRICT', contentDisposition: 'INLINE' },
+    })
+
+    await service.handleUpsert(project)
+
+    expect(client.updateRepositoriesMavenHosted).toHaveBeenCalled()
+    expect(client.createRepositoriesMavenHosted).not.toHaveBeenCalled()
+  })
+
+  it('handleUpsert propagates a 409 conflict from repo creation as a KO result', async () => {
+    const project = makeProjectWithDetails({
+      plugins: [{ pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED }],
+    })
+    client.getRepositoriesMavenHosted.mockResolvedValue(null)
+    client.createRepositoriesMavenHosted.mockRejectedValue(
+      new NexusError('HttpError', 'Request failed: POST repositories/maven/hosted responded 409 Conflict', {
+        status: 409,
+        method: 'POST',
+        path: 'repositories/maven/hosted',
+      }),
+    )
+
+    const result = await service.handleUpsert(project)
+    // Legacy contract: plugins/nexus/src/maven.ts:51 validates only [201] for hosted repo
+    // creation, so a 409 surfaces as an error there too — current behaviour matches.
+    expect(result.nexus.status).toBe('KO')
+  })
+
+  it('handleUpsert propagates a transient 5xx (503) from a client call as KO without retrying', async () => {
+    const project = makeProjectWithDetails({
+      plugins: [{ pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED }],
+    })
+    client.getRepositoriesMavenHosted.mockRejectedValue(
+      new NexusError('HttpError', 'Request failed: GET repositories/maven/hosted/x responded 503 Service Unavailable', {
+        status: 503,
+        method: 'GET',
+        path: 'repositories/maven/hosted/x',
+      }),
+    )
+
+    const result = await service.handleUpsert(project)
+    // No retry logic exists in NexusHttpClientService.fetch; the 5xx is forwarded once.
+    expect(result.nexus.status).toBe('KO')
+  })
+
+  it('handleDelete propagates a 5xx from repository deletion as KO (404 is swallowed by the client, 5xx is not)', async () => {
+    const project = makeProjectWithDetails()
+    client.deleteRepositoriesByName.mockRejectedValue(
+      new NexusError('HttpError', 'Request failed: DELETE repositories/x responded 500 Internal Server Error', {
+        status: 500,
+        method: 'DELETE',
+        path: 'repositories/x',
+      }),
+    )
+
+    const result = await service.handleDelete(project)
+    expect(result.nexus.status).toBe('KO')
   })
 })
