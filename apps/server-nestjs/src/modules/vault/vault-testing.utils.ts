@@ -1,10 +1,44 @@
 import type { HttpHandler } from 'msw'
+import type { VaultSecret } from './vault-client.service'
+import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
 import { faker } from '@faker-js/faker'
 import { Collection } from '@msw/data'
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
 
 export const VAULT_INTERNAL_URL = 'https://vault.internal'
+
+export function makeProjectWithDetails(overrides: Partial<ProjectWithDetails> = {}): ProjectWithDetails {
+  return {
+    id: faker.string.uuid(),
+    slug: faker.helpers.slugify(`test-project-${faker.string.uuid()}`),
+    name: faker.company.name(),
+    description: faker.company.buzzPhrase(),
+    environments: [],
+    plugins: [],
+    ...overrides,
+  } satisfies ProjectWithDetails
+}
+
+export function makeZoneWithDetails(overrides: Partial<ZoneWithDetails> = {}): ZoneWithDetails {
+  return {
+    id: faker.string.uuid(),
+    slug: faker.helpers.slugify(`test-zone-${faker.string.uuid()}`),
+    clusters: [],
+    ...overrides,
+  } satisfies ZoneWithDetails
+}
+
+export function makeVaultSecretMetadata(overrides: Partial<VaultSecret['metadata']> = {}): VaultSecret['metadata'] {
+  return {
+    created_time: faker.date.soon().toISOString(),
+    custom_metadata: null,
+    deletion_time: '',
+    destroyed: false,
+    version: 1,
+    ...overrides,
+  }
+}
 
 const kvSecretSchema = z.object({
   path: z.string(),
@@ -50,53 +84,56 @@ export function makeVaultSecret<T>(data: T): { data: { data: T, metadata: { crea
   }
 }
 
-export function makeVaultHandlers(db: ReturnType<typeof makeVaultDb>): HttpHandler[] {
-  const base = `${VAULT_INTERNAL_URL}/v1`
+type VaultDb = ReturnType<typeof makeVaultDb>
 
-  const findKv = async (path: string) =>
-    db.kv.findFirst((q: any) => q.where({ path }))
+const KV_BASE = `${VAULT_INTERNAL_URL}/v1/kv`
 
-  const upsertKv = async (path: string, body: any) => {
-    const record = await findKv(path)
-    if (record) {
-      await db.kv.update(record, { data: body?.data ?? body })
-    } else {
-      await db.kv.create({
-        path,
-        data: body?.data ?? body,
-        metadata: {
-          created_time: new Date().toISOString(),
-          destroyed: false,
-          version: 1,
-        },
-      })
-    }
+function findKv(db: VaultDb, path: string) {
+  return db.kv.findFirst((q: any) => q.where({ path }))
+}
+
+async function upsertKv(db: VaultDb, path: string, body: any) {
+  const record = await findKv(db, path)
+  if (record) {
+    await db.kv.update(record, { data: body?.data ?? body })
+  } else {
+    await db.kv.create({
+      path,
+      data: body?.data ?? body,
+      metadata: {
+        created_time: new Date().toISOString(),
+        destroyed: false,
+        version: 1,
+      },
+    })
   }
+}
 
+function makeVaultKvHandlers(db: VaultDb): HttpHandler[] {
   return [
     // KV read/write — Vault KV engine uses data/ prefix
-    http.get(`${base}/kv/data/*`, async ({ request }) => {
+    http.get(`${KV_BASE}/data/*`, async ({ request }) => {
       const path = new URL(request.url).pathname.replace('/v1/kv/data/', '')
-      const data = await findKv(path)
+      const data = await findKv(db, path)
       if (!data) return HttpResponse.json({}, { status: 404 })
       return HttpResponse.json({ data: { data: data.data, metadata: data.metadata } })
     }),
-    http.post(`${base}/kv/data/*`, async ({ request }) => {
+    http.post(`${KV_BASE}/data/*`, async ({ request }) => {
       const path = new URL(request.url).pathname.replace('/v1/kv/data/', '')
       const body = await request.json() as any
-      await upsertKv(path, body)
+      await upsertKv(db, path, body)
       return new HttpResponse(null, { status: 204 })
     }),
-    http.put(`${base}/kv/data/*`, async ({ request }) => {
+    http.put(`${KV_BASE}/data/*`, async ({ request }) => {
       const path = new URL(request.url).pathname.replace('/v1/kv/data/', '')
       const body = await request.json() as any
-      await upsertKv(path, body)
+      await upsertKv(db, path, body)
       return new HttpResponse(null, { status: 204 })
     }),
 
     // KV metadata list (GET)
-    http.get(`${base}/kv/metadata/*`, async ({ request }) => {
-      const path = new URL(request.url).pathname.replace(`${base}/kv/metadata/`, '')
+    http.get(`${KV_BASE}/metadata/*`, async ({ request }) => {
+      const path = new URL(request.url).pathname.replace(`${VAULT_INTERNAL_URL}/v1/kv/metadata/`, '')
       const all = await db.kv.findMany()
       const keys = Array.from(new Set(all
         .filter((r: any) => r.path.startsWith(path))
@@ -104,12 +141,12 @@ export function makeVaultHandlers(db: ReturnType<typeof makeVaultDb>): HttpHandl
         .filter(Boolean)))
       return HttpResponse.json({ data: { keys } })
     }),
-    http.delete(`${base}/kv/metadata/*`, () => new HttpResponse(null, { status: 204 })),
+    http.delete(`${KV_BASE}/metadata/*`, () => new HttpResponse(null, { status: 204 })),
 
     // LIST method — Vault uses HTTP LIST for directory listing
-    http.all(`${base}/kv/metadata/*`, async ({ request }) => {
+    http.all(`${KV_BASE}/metadata/*`, async ({ request }) => {
       if (request.method !== 'LIST') return new Response(null, { status: 404 })
-      const path = new URL(request.url).pathname.replace(`${base}/kv/metadata/`, '')
+      const path = new URL(request.url).pathname.replace(`${VAULT_INTERNAL_URL}/v1/kv/metadata/`, '')
       const all = await db.kv.findMany()
       const keys = Array.from(new Set(all
         .filter((r: any) => r.path.startsWith(path))
@@ -117,7 +154,13 @@ export function makeVaultHandlers(db: ReturnType<typeof makeVaultDb>): HttpHandl
         .filter(Boolean)))
       return HttpResponse.json({ data: { keys } })
     }),
+  ]
+}
 
+function makeVaultSysHandlers(db: VaultDb): HttpHandler[] {
+  const base = `${VAULT_INTERNAL_URL}/v1`
+
+  return [
     // Sys policies
     http.post(`${base}/sys/policies/acl/:policy`, () => new HttpResponse(null, { status: 204 })),
     http.delete(`${base}/sys/policies/acl/:policy`, () => new HttpResponse(null, { status: 204 })),
@@ -144,8 +187,13 @@ export function makeVaultHandlers(db: ReturnType<typeof makeVaultDb>): HttpHandl
       })
       return HttpResponse.json({ data: obj })
     }),
+  ]
+}
 
-    // Identity groups
+function makeVaultIdentityHandlers(db: VaultDb): HttpHandler[] {
+  const base = `${VAULT_INTERNAL_URL}/v1`
+
+  return [
     http.get(`${base}/identity/group/name/:name`, async ({ params }) => {
       const data = await db.identityGroups.findFirst((q: any) => q.where({ name: String(params.name) }))
       if (!data) return HttpResponse.json({}, { status: 404 })
@@ -162,9 +210,23 @@ export function makeVaultHandlers(db: ReturnType<typeof makeVaultDb>): HttpHandl
     }),
     http.post(`${base}/identity/group-alias`, () => new HttpResponse(null, { status: 204 })),
     http.delete(`${base}/identity/group/name/:name`, () => new HttpResponse(null, { status: 204 })),
+  ]
+}
 
-    // Token create
+function makeVaultTokenHandlers(): HttpHandler[] {
+  const base = `${VAULT_INTERNAL_URL}/v1`
+
+  return [
     http.post(`${base}/auth/token/create`, () =>
       HttpResponse.json({ auth: { client_token: 'token' } })),
+  ]
+}
+
+export function makeVaultHandlers(db: VaultDb): HttpHandler[] {
+  return [
+    ...makeVaultKvHandlers(db),
+    ...makeVaultSysHandlers(db),
+    ...makeVaultIdentityHandlers(db),
+    ...makeVaultTokenHandlers(),
   ]
 }
