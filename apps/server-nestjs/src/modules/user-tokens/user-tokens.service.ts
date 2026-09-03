@@ -4,7 +4,7 @@ import { trace } from '@opentelemetry/api'
 import { generateTokenPair } from '../../utils/crypto.utils'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
-import { createUserToken, listUserTokens } from './user-tokens-queries.utils'
+import { createUserToken, deleteUserToken, listUserTokens } from './user-tokens-queries.utils'
 
 @Injectable()
 export class UserTokensService {
@@ -63,9 +63,7 @@ export class UserTokensService {
     span?.setAttribute('userTokens.delete.userId', userId)
     this.logger.log(`userTokens.delete started (tokenId=${tokenId}, userId=${userId})`)
 
-    const { count } = await this.prisma.personalAccessToken.deleteMany({
-      where: { id: tokenId, userId },
-    })
+    const { count } = await deleteUserToken(this.prisma, { id: tokenId, userId })
 
     if (count > 0) {
       this.logger.log(`userTokens.delete completed (tokenId=${tokenId})`)

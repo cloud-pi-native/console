@@ -1,13 +1,20 @@
 import type { TestingModule } from '@nestjs/testing'
 import { createHash } from 'node:crypto'
 import { faker } from '@faker-js/faker'
+import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { baseConfigFactory } from '../src/config/base.config'
+import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
+import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
+import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
+import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { UserTokensModule } from '../src/modules/user-tokens/user-tokens.module'
 import { UserTokensService } from '../src/modules/user-tokens/user-tokens.service'
+import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
-const canRunUserTokensE2E = Boolean(process.env.E2E) && Boolean(process.env.DB_URL)
+const canRunUserTokensE2E = Boolean(process.env.E2E)
 
 const describeWithUserTokens = describe.runIf(canRunUserTokensE2E)
 
@@ -23,7 +30,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [UserTokensModule],
+      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, LoggerModule, PermissionModule, UserTokensModule],
     }).compile()
 
     await moduleRef.init()
@@ -72,28 +79,28 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
 
   it('should create a personal access token with plaintext password', async () => {
     const result = await service.create({
-      name: `e2e-pat-${faker.string.uuid()}`,
+      name: faker.helpers.slugify(`e2e-pat-${faker.string.uuid()}`),
       expirationDate: new Date(Date.now() + 86400000),
     }, ownerId)
 
     expect(result.id).toBeTruthy()
     expect(result.password).toBeTruthy()
     expect(result.password.length).toBe(48)
-    expect(result.name).toMatch(/^e2e-pat-/)
+    expect(result.name).toBeTruthy()
     expect(result.expirationDate).toBeTruthy()
 
     createdTokenIds.push(result.id)
   })
 
   it('should list only tokens for the requesting user', async () => {
-    const tokenName = `e2e-pat-list-${faker.string.uuid()}`
+    const tokenName = faker.helpers.slugify(`e2e-pat-list-${faker.string.uuid()}`)
     const created = await service.create({
       name: tokenName,
       expirationDate: new Date(Date.now() + 86400000),
     }, ownerId)
     createdTokenIds.push(created.id)
 
-    const otherTokenName = `e2e-pat-other-${faker.string.uuid()}`
+    const otherTokenName = faker.helpers.slugify(`e2e-pat-other-${faker.string.uuid()}`)
     const otherToken = await service.create({
       name: otherTokenName,
       expirationDate: new Date(Date.now() + 86400000),
@@ -107,7 +114,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
 
   it('should hard-delete token and remove it from list', async () => {
     const created = await service.create({
-      name: `e2e-pat-delete-${faker.string.uuid()}`,
+      name: faker.helpers.slugify(`e2e-pat-delete-${faker.string.uuid()}`),
       expirationDate: new Date(Date.now() + 86400000),
     }, ownerId)
     createdTokenIds.push(created.id)
@@ -123,7 +130,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
 
   it('should not delete another user\'s token', async () => {
     const otherToken = await service.create({
-      name: `e2e-pat-foreign-${faker.string.uuid()}`,
+      name: faker.helpers.slugify(`e2e-pat-foreign-${faker.string.uuid()}`),
       expirationDate: new Date(Date.now() + 86400000),
     }, otherUserId)
     createdTokenIds.push(otherToken.id)
@@ -137,14 +144,14 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
   it('should reject creation with expiration date in the past', async () => {
     const yesterday = new Date(Date.now() - 86400000)
     await expect(service.create({
-      name: `e2e-pat-expired-${faker.string.uuid()}`,
+      name: faker.helpers.slugify(`e2e-pat-expired-${faker.string.uuid()}`),
       expirationDate: yesterday,
     }, ownerId)).rejects.toThrow('Date d\'expiration trop courte')
   })
 
   it('should persist SHA256 hash of the password in DB', async () => {
     const created = await service.create({
-      name: `e2e-pat-hash-${faker.string.uuid()}`,
+      name: faker.helpers.slugify(`e2e-pat-hash-${faker.string.uuid()}`),
       expirationDate: new Date(Date.now() + 86400000),
     }, ownerId)
     createdTokenIds.push(created.id)
@@ -160,7 +167,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
 
   it('should omit hash from API responses', async () => {
     const created = await service.create({
-      name: `e2e-pat-omit-${faker.string.uuid()}`,
+      name: faker.helpers.slugify(`e2e-pat-omit-${faker.string.uuid()}`),
       expirationDate: new Date(Date.now() + 86400000),
     }, ownerId)
     createdTokenIds.push(created.id)

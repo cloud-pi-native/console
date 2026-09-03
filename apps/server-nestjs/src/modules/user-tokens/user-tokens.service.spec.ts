@@ -33,13 +33,13 @@ describe('userTokensService', () => {
       const tokenId = faker.string.uuid()
       prisma.personalAccessToken.findMany.mockResolvedValue([{
         id: tokenId,
-        name: 'my-token',
+        name: faker.word.noun(),
         lastUse: null,
         expirationDate: faker.date.future(),
         status: 'active' as const,
         createdAt: faker.date.past(),
         userId,
-        hash: 'hash-1',
+        hash: faker.string.alphanumeric(64),
       }])
 
       const result = await service.list(userId)
@@ -67,37 +67,40 @@ describe('userTokensService', () => {
 
   describe('create', () => {
     it('rejects a non-parseable expirationDate via the body schema', () => {
-      const result = CreatePersonalAccessTokenBodySchema.safeParse({ name: 'x', expirationDate: 'not-a-date' })
+      const name = faker.word.noun()
+      const result = CreatePersonalAccessTokenBodySchema.safeParse({ name, expirationDate: 'not-a-date' })
       expect(result.success).toBe(false)
     })
 
     it('rejects an expirationDate that is too soon via the body schema', () => {
+      const name = faker.word.noun()
       const today = faker.date.recent()
-      const result = CreatePersonalAccessTokenBodySchema.safeParse({ name: 'x', expirationDate: today.toISOString() })
+      const result = CreatePersonalAccessTokenBodySchema.safeParse({ name, expirationDate: today.toISOString() })
       expect(result.success).toBe(false)
     })
 
     it('returns created token with plaintext password', async () => {
       const userId = faker.string.uuid()
       const tokenId = faker.string.uuid()
+      const tokenName = faker.word.noun()
       prisma.personalAccessToken.create.mockResolvedValue({
         id: tokenId,
-        name: 'my-token',
+        name: tokenName,
         lastUse: null,
         expirationDate: faker.date.future(),
         status: 'active' as const,
         createdAt: faker.date.past(),
         userId,
-        hash: 'hash-2',
+        hash: faker.string.alphanumeric(64),
       })
 
-      const result = await service.create({ name: 'my-token', expirationDate: faker.date.future() }, userId)
+      const result = await service.create({ name: tokenName, expirationDate: faker.date.future() }, userId)
 
       expect(prisma.personalAccessToken.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             userId,
-            name: 'my-token',
+            name: tokenName,
           }),
           select: userTokenSelect,
         }),
@@ -121,12 +124,14 @@ describe('userTokensService', () => {
     })
 
     it('no-ops (count 0) when token is missing or belongs to another user', async () => {
+      const tokenId = faker.string.uuid()
+      const userId = faker.string.uuid()
       prisma.personalAccessToken.deleteMany.mockResolvedValue({ count: 0 })
 
-      await service.delete('unknown', 'user-1')
+      await service.delete(tokenId, userId)
 
       expect(prisma.personalAccessToken.deleteMany).toHaveBeenCalledWith({
-        where: { id: 'unknown', userId: 'user-1' },
+        where: { id: tokenId, userId },
       })
     })
   })

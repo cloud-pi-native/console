@@ -49,3 +49,10 @@ export function createUserToken(tx: Prisma.TransactionClient, data: {
     select: userTokenSelect,
   })
 }
+
+export function deleteUserToken(tx: Prisma.TransactionClient, where: {
+  id: string
+  userId: string
+}) {
+  return tx.personalAccessToken.deleteMany({ where })
+}
