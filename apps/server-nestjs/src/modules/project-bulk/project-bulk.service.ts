@@ -1,4 +1,4 @@
-import type { BulkActionProjectBody } from '../infrastructure/clean-types/controller-body.types'
+import type { projectContract } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { PrismaService } from '../infrastructure/database/prisma.service'
@@ -19,7 +19,7 @@ export class ProjectBulkService {
 
   @StartActiveSpan()
   async bulkAction(
-    data: BulkActionProjectBody,
+    data: typeof projectContract.bulkActionProject.body._type,
     requestorUserId?: string,
     requestId?: string,
   ): Promise<void> {
