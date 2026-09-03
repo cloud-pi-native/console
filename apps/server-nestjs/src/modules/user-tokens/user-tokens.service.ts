@@ -1,10 +1,11 @@
 import type { CreatePersonalAccessTokenBody } from './user-tokens.utils'
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { isAtLeastTomorrow } from '@cpn-console/shared'
+import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { generateTokenPair } from '../../utils/crypto.utils'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
-import { createUserToken, listUserTokens } from './user-tokens-queries.utils'
+import { createUserToken, deleteUserToken, listUserTokens } from './user-tokens-queries.utils'
 
 @Injectable()
 export class UserTokensService {
@@ -31,6 +32,10 @@ export class UserTokensService {
     span?.setAttribute('userTokens.create.name', data.name)
     span?.setAttribute('userTokens.create.userId', userId)
     this.logger.log(`userTokens.create started (tokenName=${data.name}, userId=${userId})`)
+
+    if (!isAtLeastTomorrow(data.expirationDate)) {
+      throw new BadRequestException('Date d\'expiration trop courte')
+    }
 
     try {
       const { password, hash } = generateTokenPair()
@@ -63,9 +68,7 @@ export class UserTokensService {
     span?.setAttribute('userTokens.delete.userId', userId)
     this.logger.log(`userTokens.delete started (tokenId=${tokenId}, userId=${userId})`)
 
-    const { count } = await this.prisma.personalAccessToken.deleteMany({
-      where: { id: tokenId, userId },
-    })
+    const { count } = await deleteUserToken(this.prisma, { id: tokenId, userId })
 
     if (count > 0) {
       this.logger.log(`userTokens.delete completed (tokenId=${tokenId})`)

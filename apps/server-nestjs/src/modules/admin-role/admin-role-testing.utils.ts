@@ -1,5 +1,4 @@
 import type { AdminRole } from './admin-role-queries.utils'
-import type { AdminRoleService } from './admin-role.service'
 import type { CreateAdminRoleBody, PatchAdminRolesBody } from './admin-role.utils'
 
 export function makeAdminRole(overrides: Partial<AdminRole> = {}): AdminRole {

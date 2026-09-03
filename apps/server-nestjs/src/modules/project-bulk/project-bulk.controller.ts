@@ -1,6 +1,5 @@
 import type { FastifyRequest } from 'fastify'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
-import type { BulkActionProjectBody } from '../infrastructure/clean-types/controller-body.types'
 import { projectContract } from '@cpn-console/shared'
 import { Body, Controller, HttpCode, HttpStatus, Inject, Logger, Post, Req, UseGuards } from '@nestjs/common'
 import { AuthUser } from '../infrastructure/auth/auth-user.decorator'
@@ -22,7 +21,7 @@ export class ProjectBulkController {
   @UseGuards(UserGuard)
   @RequireAdminPermission('Manage')
   async bulkAction(
-    @Body(new ZodValidationPipe(projectContract.bulkActionProject.body)) body: BulkActionProjectBody,
+    @Body(new ZodValidationPipe(projectContract.bulkActionProject.body)) body: typeof projectContract.bulkActionProject.body._type,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
   ): Promise<void> {
