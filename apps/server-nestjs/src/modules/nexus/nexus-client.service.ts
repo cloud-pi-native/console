@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { NexusHttpClientService } from './nexus-http-client.service'
-import { isNexusNotFound } from './nexus.utils'
+import { ensure, isNexusNotFound } from './nexus.utils'
 
 interface NexusRepositoryStorage {
   blobStoreName: string
@@ -121,8 +121,14 @@ export class NexusClientService {
   }
 
   @StartActiveSpan()
-  async createRepositoriesMavenHosted(body: NexusMavenHostedRepositoryUpsertRequest) {
-    await this.http.fetch('repositories/maven/hosted', { method: 'POST', body })
+  async ensureRepositoriesMavenHosted(body: NexusMavenHostedRepositoryUpsertRequest): Promise<NexusMavenHostedRepository | undefined> {
+    return ensure({
+      create: async () => {
+        await this.http.fetch('repositories/maven/hosted', { method: 'POST', body })
+        return undefined
+      },
+      reload: async () => await this.getRepositoriesMavenHosted(body.name) ?? undefined,
+    })
   }
 
   @StartActiveSpan()
@@ -131,8 +137,14 @@ export class NexusClientService {
   }
 
   @StartActiveSpan()
-  async createRepositoriesMavenGroup(body: NexusMavenGroupRepositoryUpsertRequest) {
-    await this.http.fetch('repositories/maven/group', { method: 'POST', body })
+  async ensureRepositoriesMavenGroup(body: NexusMavenGroupRepositoryUpsertRequest): Promise<NexusMavenGroupRepository | undefined> {
+    return ensure({
+      create: async () => {
+        await this.http.fetch('repositories/maven/group', { method: 'POST', body })
+        return undefined
+      },
+      reload: async () => await this.getRepositoriesMavenGroup(body.name) ?? undefined,
+    })
   }
 
   @StartActiveSpan()
@@ -163,8 +175,14 @@ export class NexusClientService {
   }
 
   @StartActiveSpan()
-  async createRepositoriesNpmHosted(body: NexusNpmHostedRepositoryUpsertRequest) {
-    await this.http.fetch('repositories/npm/hosted', { method: 'POST', body })
+  async ensureRepositoriesNpmHosted(body: NexusNpmHostedRepositoryUpsertRequest): Promise<NexusNpmHostedRepository | undefined> {
+    return ensure({
+      create: async () => {
+        await this.http.fetch('repositories/npm/hosted', { method: 'POST', body })
+        return undefined
+      },
+      reload: async () => await this.getRepositoriesNpmHosted(body.name) ?? undefined,
+    })
   }
 
   @StartActiveSpan()
@@ -184,8 +202,14 @@ export class NexusClientService {
   }
 
   @StartActiveSpan()
-  async postRepositoriesNpmGroup(body: NexusNpmGroupRepositoryUpsertRequest) {
-    await this.http.fetch('repositories/npm/group', { method: 'POST', body })
+  async ensureRepositoriesNpmGroup(body: NexusNpmGroupRepositoryUpsertRequest): Promise<NexusNpmGroupRepository | undefined> {
+    return ensure({
+      create: async () => {
+        await this.http.fetch('repositories/npm/group', { method: 'POST', body })
+        return undefined
+      },
+      reload: async () => await this.getRepositoriesNpmGroup(body.name) ?? undefined,
+    })
   }
 
   @StartActiveSpan()
@@ -205,8 +229,14 @@ export class NexusClientService {
   }
 
   @StartActiveSpan()
-  async createSecurityPrivilegesRepositoryView(body: NexusRepositoryViewPrivilegeUpsertRequest) {
-    await this.http.fetch('security/privileges/repository-view', { method: 'POST', body })
+  async ensureSecurityPrivilegesRepositoryView(body: NexusRepositoryViewPrivilegeUpsertRequest): Promise<NexusPrivilege | undefined> {
+    return ensure({
+      create: async () => {
+        await this.http.fetch('security/privileges/repository-view', { method: 'POST', body })
+        return undefined
+      },
+      reload: async () => await this.getSecurityPrivileges(body.name) ?? undefined,
+    })
   }
 
   @StartActiveSpan()
@@ -236,8 +266,14 @@ export class NexusClientService {
   }
 
   @StartActiveSpan()
-  async createSecurityRoles(body: NexusRoleCreateRequest) {
-    await this.http.fetch('security/roles', { method: 'POST', body })
+  async ensureSecurityRoles(body: NexusRoleCreateRequest): Promise<NexusRole | undefined> {
+    return ensure({
+      create: async () => {
+        await this.http.fetch('security/roles', { method: 'POST', body })
+        return undefined
+      },
+      reload: async () => await this.getSecurityRoles(body.id) ?? undefined,
+    })
   }
 
   @StartActiveSpan()
@@ -272,8 +308,17 @@ export class NexusClientService {
   }
 
   @StartActiveSpan()
-  async createSecurityUsers(body: NexusUserCreateRequest) {
-    await this.http.fetch('security/users', { method: 'POST', body })
+  async ensureSecurityUsers(body: NexusUserCreateRequest): Promise<{ userId: string } | undefined> {
+    return ensure({
+      create: async () => {
+        await this.http.fetch('security/users', { method: 'POST', body })
+        return undefined
+      },
+      reload: async () => {
+        const users = await this.getSecurityUsers(body.userId)
+        return users.find(user => user.userId === body.userId)
+      },
+    })
   }
 
   @StartActiveSpan()

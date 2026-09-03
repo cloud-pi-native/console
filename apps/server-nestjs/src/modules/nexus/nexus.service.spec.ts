@@ -84,7 +84,7 @@ describe('nexusService', () => {
 
     await service.handleUpsert(project)
 
-    expect(client.createRepositoriesMavenHosted).toHaveBeenCalled()
+    expect(client.ensureRepositoriesMavenHosted).toHaveBeenCalled()
     expect(client.deleteRepositoriesByName).toHaveBeenCalled()
     expect(vault.write).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -113,7 +113,7 @@ describe('nexusService', () => {
 
     await service.handleCron()
 
-    expect(client.createSecurityUsers).toHaveBeenCalledTimes(2)
+    expect(client.ensureSecurityUsers).toHaveBeenCalledTimes(2)
   })
 
   it('reuses existing vault password at the new path and does not rotate', async () => {
@@ -134,7 +134,7 @@ describe('nexusService', () => {
     await service.handleUpsert(project)
 
     expect(client.updateSecurityUsersChangePassword).not.toHaveBeenCalled()
-    expect(client.createSecurityUsers).not.toHaveBeenCalled()
+    expect(client.ensureSecurityUsers).not.toHaveBeenCalled()
     expect(vault.write).toHaveBeenCalledWith(expect.objectContaining({
       NEXUS_USERNAME: project.slug,
       NEXUS_PASSWORD: 'existing',
@@ -162,7 +162,7 @@ describe('nexusService', () => {
     await service.handleUpsert(project)
 
     expect(client.updateSecurityUsersChangePassword).toHaveBeenCalledWith(project.slug, expect.any(String))
-    expect(client.createSecurityUsers).not.toHaveBeenCalled()
+    expect(client.ensureSecurityUsers).not.toHaveBeenCalled()
     expect(vault.write).toHaveBeenCalledWith(
       expect.objectContaining({
         NEXUS_USERNAME: project.slug,
@@ -196,13 +196,13 @@ describe('nexusService', () => {
     })
 
     datastore.getAllProjects.mockResolvedValue([project, staleProject])
-    client.createSecurityRoles.mockImplementation(async (body) => {
+    client.ensureSecurityRoles.mockImplementation(async (body) => {
       if (body.id.startsWith('console-')) throw new Error('Request failed: POST security/roles responded 400 Bad Request')
     })
 
     await expect(service.handleUpsert(project)).resolves.not.toThrow()
 
-    expect(client.createSecurityRoles).toHaveBeenCalledWith(expect.objectContaining({ id: 'console-admin' }))
+    expect(client.ensureSecurityRoles).toHaveBeenCalledWith(expect.objectContaining({ id: 'console-admin' }))
   })
 
   it('dedupes project group roles by role id and keeps the highest privileges', async () => {
@@ -223,7 +223,7 @@ describe('nexusService', () => {
 
     await service.handleUpsert(project)
 
-    expect(client.createSecurityRoles).toHaveBeenCalledWith(expect.objectContaining({
+    expect(client.ensureSecurityRoles).toHaveBeenCalledWith(expect.objectContaining({
       id: `${project.slug}-console-devops`,
       privileges: expect.arrayContaining([`${project.slug}-privilege-group`]),
     }))
