@@ -13,6 +13,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { SonarqubeHttpClientService } from './sonarqube-http-client.service'
 import { SONARQUBE_MAX_PAGES, SONARQUBE_PAGE_SIZE } from './sonarqube.constants'
+import { ensure } from './sonarqube.utils'
 
 export interface SonarqubePaging {
   pageIndex: number
@@ -288,8 +289,19 @@ export class SonarqubeClientService {
   }
 
   @StartActiveSpan()
-  async createUser(params: CreateUserParams) {
-    await this.http.fetch('users/create', { method: 'POST', query: params })
+  async createUser(params: CreateUserParams): Promise<SonarqubeUser | undefined> {
+    return ensure<SonarqubeUser | undefined>({
+      create: async () => {
+        await this.http.fetch('users/create', { method: 'POST', query: params })
+        return undefined
+      },
+      reload: async () => {
+        for await (const user of this.searchUsers({ q: params.login })) {
+          if (user.login === params.login) return user
+        }
+        return undefined
+      },
+    })
   }
 
   @StartActiveSpan()
