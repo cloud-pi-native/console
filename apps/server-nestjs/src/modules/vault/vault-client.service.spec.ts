@@ -1,4 +1,5 @@
 import type { ConfigType } from '@nestjs/config'
+import { faker } from '@faker-js/faker'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
@@ -9,33 +10,23 @@ import { baseConfigFactory } from '../../config/base.config'
 import { vaultConfigFactory } from '../../config/vault.config'
 import { VaultClientService } from './vault-client.service'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
+import { makeVaultDb, makeVaultHandlers, VAULT_INTERNAL_URL } from './vault-testing.utils'
 
-const vaultUrl = 'https://vault.internal'
-
-const server = setupServer(
-  http.post(`${vaultUrl}/v1/auth/token/create`, () => {
-    return HttpResponse.json({ auth: { client_token: 'token' } })
-  }),
-  http.get(`${vaultUrl}/v1/kv/data/:path`, () => {
-    return HttpResponse.json({ data: { data: { secret: 'value' }, metadata: { created_time: '2023-01-01T00:00:00.000Z', version: 1 } } })
-  }),
-  http.post(`${vaultUrl}/v1/kv/data/:path`, () => {
-    return HttpResponse.json({})
-  }),
-  http.delete(`${vaultUrl}/v1/kv/metadata/:path`, () => {
-    return new HttpResponse(null, { status: HttpStatus.NO_CONTENT })
-  }),
-)
+const server = setupServer()
 
 describe('vault', () => {
   let service: VaultClientService
+  let db: ReturnType<typeof makeVaultDb>
 
-  beforeAll(() => server.listen())
+  beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
   beforeEach(async () => {
+    db = makeVaultDb()
+    server.use(...makeVaultHandlers(db))
+
     const config = mockDeep<ConfigType<typeof vaultConfigFactory>>({
-      token: 'token',
-      url: vaultUrl,
-      internalUrl: vaultUrl,
+      token: faker.string.sample(32),
+      url: VAULT_INTERNAL_URL,
+      internalUrl: VAULT_INTERNAL_URL,
       kvName: 'kv',
     })
     const baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>({
@@ -58,90 +49,104 @@ describe('vault', () => {
 
   describe('read', () => {
     it('should read secret', async () => {
-      const result = await service.read('path')
+      const path = faker.string.uuid()
+      const secretValue = faker.string.sample(8)
+      const createdTime = faker.date.past().toISOString()
+      await db.kv.create({
+        path,
+        data: { secret: secretValue },
+        metadata: { created_time: createdTime, destroyed: false, version: 1 },
+      })
+
+      const result = await service.read(path)
       expect(result).toEqual({
-        data: { secret: 'value' },
-        metadata: { created_time: '2023-01-01T00:00:00.000Z', version: 1 },
+        data: { secret: secretValue },
+        metadata: { created_time: createdTime, destroyed: false, version: 1 },
       })
     })
 
     it('should throw if 404', async () => {
-      server.use(
-        http.get(`${vaultUrl}/v1/kv/data/:path`, () => {
-          return HttpResponse.json({}, { status: HttpStatus.NOT_FOUND })
-        }),
-      )
-
-      await expect(service.read('path')).rejects.toBeInstanceOf(VaultError)
-      await expect(service.read('path')).rejects.toMatchObject({ kind: 'NotFound', status: HttpStatus.NOT_FOUND })
+      const path = faker.string.uuid()
+      await expect(service.read(path)).rejects.toBeInstanceOf(VaultError)
+      await expect(service.read(path)).rejects.toMatchObject({ kind: 'NotFound', status: HttpStatus.NOT_FOUND })
     })
   })
 
   describe('readGitlabSecrets', () => {
     it('reads a project group and returns raw vault data', async () => {
-      server.use(
-        http.get(`${vaultUrl}/v1/kv/data/*`, () => {
-          return HttpResponse.json({ data: { data: { key1: 'value1', key2: 42, key3: false, key4: null }, metadata: { created_time: '2023-01-01T00:00:00.000Z', version: 1 } } })
-        }),
-      )
+      const projectSlug = faker.string.uuid()
+      const secretData = {
+        key1: faker.string.sample(8),
+        key2: faker.number.int(),
+        key3: faker.helpers.arrayElement([true, false]),
+        key4: null,
+      }
+      await db.kv.create({
+        path: `forge/${projectSlug}/GITLAB`,
+        data: secretData,
+        metadata: { created_time: faker.date.past().toISOString(), destroyed: false, version: 1 },
+      })
 
-      const result = await service.readGitlabSecrets('my-project')
-
-      expect(result).toEqual({ key1: 'value1', key2: 42, key3: false, key4: null })
+      const result = await service.readGitlabSecrets(projectSlug)
+      expect(result).toEqual(secretData)
     })
 
     it('returns {} when the secret is missing', async () => {
-      server.use(
-        http.get(`${vaultUrl}/v1/kv/data/*`, () => {
-          return HttpResponse.json({}, { status: HttpStatus.NOT_FOUND })
-        }),
-      )
-
-      const result = await service.readGitlabSecrets('my-project')
-
+      const projectSlug = faker.string.uuid()
+      const result = await service.readGitlabSecrets(projectSlug)
       expect(result).toEqual({})
     })
   })
 
   describe('write', () => {
     it('should write secret', async () => {
-      await expect(service.write({ secret: 'value' }, 'path')).resolves.toBeUndefined()
+      const path = faker.string.uuid()
+      const data = { secret: faker.string.sample(8) }
+      await expect(service.write(data, path)).resolves.toBeUndefined()
     })
 
     it('should expose reasons on error', async () => {
+      const path = faker.string.uuid()
+      const reason = faker.lorem.sentence()
       server.use(
-        http.post(`${vaultUrl}/v1/kv/data/:path`, () => {
-          return HttpResponse.json({ errors: ['No secret engine mount at test-project/'] }, { status: HttpStatus.BAD_REQUEST })
-        }),
+        http.post(`${VAULT_INTERNAL_URL}/v1/kv/data/*`, () =>
+          HttpResponse.json({ errors: [reason] }, { status: HttpStatus.BAD_REQUEST })),
       )
 
-      await expect(service.write({ secret: 'value' }, 'path')).rejects.toBeInstanceOf(VaultError)
-      await expect(service.write({ secret: 'value' }, 'path')).rejects.toMatchObject({
+      await expect(service.write({ secret: faker.string.sample(8) }, path)).rejects.toBeInstanceOf(VaultError)
+      await expect(service.write({ secret: faker.string.sample(8) }, path)).rejects.toMatchObject({
         kind: 'HttpError',
         status: HttpStatus.BAD_REQUEST,
-        reasons: ['No secret engine mount at test-project/'],
+        reasons: [reason],
       })
-      await expect(service.write({ secret: 'value' }, 'path')).rejects.toThrow('Request failed')
+      await expect(service.write({ secret: faker.string.sample(8) }, path)).rejects.toThrow('Request failed')
     })
   })
 
   describe('delete', () => {
     it('should delete secret', async () => {
-      await expect(service.delete('path')).resolves.toBeUndefined()
+      const path = faker.string.uuid()
+      await db.kv.create({
+        path,
+        data: {},
+        metadata: { created_time: faker.date.past().toISOString(), destroyed: false, version: 1 },
+      })
+      await expect(service.delete(path)).resolves.toBeUndefined()
     })
   })
 
   describe('writeMirrorTriggerToken', () => {
     it('writes under the project path', async () => {
+      const projectSlug = faker.string.uuid()
       let capturedPath: string | undefined
       server.use(
-        http.post(`${vaultUrl}/v1/kv/data/*`, ({ request }) => {
+        http.post(`${VAULT_INTERNAL_URL}/v1/kv/data/*`, async ({ request }) => {
           capturedPath = new URL(request.url).pathname.replace('/v1/kv/data/', '')
           return HttpResponse.json({})
         }),
       )
-      await service.writeMirrorTriggerToken('my-project', { PROJECT_SLUG: 'my-project' })
-      expect(capturedPath).toBe('forge/my-project/GITLAB')
+      await service.writeMirrorTriggerToken(projectSlug, { PROJECT_SLUG: projectSlug })
+      expect(capturedPath).toBe(`forge/${projectSlug}/GITLAB`)
     })
   })
 })
