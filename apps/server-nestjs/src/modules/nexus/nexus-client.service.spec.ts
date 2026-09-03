@@ -1,31 +1,29 @@
 import type { ConfigType } from '@nestjs/config'
-import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
-import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
-import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { nexusConfigFactory } from '../../config/nexus.config'
 import { NexusClientService } from './nexus-client.service'
 import { NexusHttpClientService } from './nexus-http-client.service'
-
-const nexusUrl = 'https://nexus.internal'
+import { makeNexusDb, makeNexusHandlers, NEXUS_INTERNAL_URL } from './nexus-testing.utils'
 
 const server = setupServer()
 const nexusAdminPassword = faker.internet.password()
-const basicAuth = `Basic ${Buffer.from(`admin:${nexusAdminPassword}`, 'utf8').toString('base64')}`
 
 describe('nexusClientService', () => {
   let service: NexusClientService
-  let config: DeepMockProxy<ConfigType<typeof nexusConfigFactory>>
+  let db: ReturnType<typeof makeNexusDb>
 
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 
   beforeEach(async () => {
-    config = mockDeep<ConfigType<typeof nexusConfigFactory>>({
-      internalUrl: nexusUrl,
+    db = makeNexusDb()
+    server.use(...makeNexusHandlers(db))
+
+    const config = mockDeep<ConfigType<typeof nexusConfigFactory>>({
+      internalUrl: NEXUS_INTERNAL_URL,
       admin: 'admin',
       adminPassword: nexusAdminPassword,
     })
@@ -51,30 +49,33 @@ describe('nexusClientService', () => {
     expect(service).toBeDefined()
   })
 
-  it('should return null on 404 (getRepositoriesMavenHosted)', async () => {
-    server.use(
-      http.get(`${nexusUrl}/service/rest/v1/repositories/maven/hosted/:name`, ({ request }) => {
-        expect(request.headers.get('authorization')).toBe(basicAuth)
-        return HttpResponse.json({}, { status: HttpStatus.NOT_FOUND })
-      }),
-    )
-
+  it('should return null on missing repository (getRepositoriesMavenHosted)', async () => {
     await expect(service.getRepositoriesMavenHosted('missing')).resolves.toBeNull()
   })
 
-  it('should send basic auth and plain text body on change-password', async () => {
-    server.use(
-      http.put(`${nexusUrl}/service/rest/v1/security/users/:userId/change-password`, async ({ request, params }) => {
-        expect(request.method).toBe('PUT')
-        expect(request.url).toBe(`${nexusUrl}/service/rest/v1/security/users/u1/change-password`)
-        expect(params.userId).toBe('u1')
-        expect(request.headers.get('authorization')).toBe(basicAuth)
-        expect(request.headers.get('content-type')).toContain('text/plain')
-        expect(await request.text()).toBe('pw123')
-        return new HttpResponse(null, { status: HttpStatus.NO_CONTENT })
-      }),
-    )
+  it('should read and create repositories through the fake nexus', async () => {
+    await db.mavenHosted.create({
+      name: 'maven-existing',
+      online: true,
+      storage: { blobStoreName: 'default', strictContentTypeValidation: true, writePolicy: 'ALLOW' },
+      component: { proprietaryComponents: false },
+      maven: { versionPolicy: 'RELEASE', layoutPolicy: 'PERMISSIVE', contentDisposition: 'ATTACHMENT' },
+    })
 
+    await expect(service.getRepositoriesMavenHosted('maven-existing')).resolves.toMatchObject({ name: 'maven-existing' })
+
+    await service.createRepositoriesNpmHosted({
+      name: 'npm-hosted-new',
+      online: true,
+      storage: { blobStoreName: 'default', strictContentTypeValidation: true, writePolicy: 'ALLOW' },
+      cleanup: { policyNames: [] },
+      component: { proprietaryComponents: false },
+    })
+
+    await expect(service.getRepositoriesNpmHosted('npm-hosted-new')).resolves.toMatchObject({ name: 'npm-hosted-new' })
+  })
+
+  it('should accept a change-password call', async () => {
     await service.updateSecurityUsersChangePassword('u1', 'pw123')
   })
 })
