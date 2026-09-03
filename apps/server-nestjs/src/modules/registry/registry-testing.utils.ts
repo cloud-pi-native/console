@@ -1,6 +1,9 @@
 import type { HttpHandler } from 'msw'
+import type { ProjectWithDetails } from './registry-datastore.service'
+import type { RegistryResponse } from './registry-http-client.service'
 import { faker } from '@faker-js/faker'
 import { Collection } from '@msw/data'
+import { HttpStatus } from '@nestjs/common'
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
 
@@ -70,6 +73,37 @@ const harborProjectBodySchema = z.object({
   project_name: z.string(),
   storage_limit: z.number().optional(),
 })
+
+export function makeOkResponse<T>(data: T): RegistryResponse<T> {
+  return { status: HttpStatus.OK, data }
+}
+
+export function makeCreatedResponse<T>(data: T): RegistryResponse<T> {
+  return { status: HttpStatus.CREATED, data }
+}
+
+export function makeNoContent(): RegistryResponse<null> {
+  return { status: HttpStatus.NO_CONTENT, data: null }
+}
+
+export function makeConflictResponse<T>(): RegistryResponse<T> {
+  return {
+    status: HttpStatus.BAD_REQUEST,
+    data: { errors: [{ code: 'CONFLICT', message: 'already exists' }] } as T,
+  }
+}
+
+export function makeHttpConflictResponse<T>(): RegistryResponse<T> {
+  return { status: HttpStatus.CONFLICT, data: null }
+}
+
+export function makeProjectWithDetails(overrides: Partial<ProjectWithDetails> = {}): ProjectWithDetails {
+  return {
+    slug: faker.helpers.slugify(`test-project-${faker.string.uuid()}`),
+    plugins: [],
+    ...overrides,
+  } satisfies ProjectWithDetails
+}
 
 export function makeRegistryDb() {
   return {
