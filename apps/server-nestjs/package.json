@@ -1,6 +1,6 @@
 {
   "name": "@cpn-console/server-nestjs",
-  "version": "9.25.0",
+  "version": "9.25.1-rc",
   "private": true,
   "description": "",
   "author": "",

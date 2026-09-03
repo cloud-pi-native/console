@@ -1,7 +1,7 @@
 {
   "name": "@cpn-console/client",
   "type": "module",
-  "version": "9.25.0",
+  "version": "9.25.1-rc",
   "private": false,
   "description": "cpn-console client",
   "repository": {
