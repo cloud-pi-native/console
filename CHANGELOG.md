@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.25.1-rc](https://github.com/cloud-pi-native/console/compare/v9.25.0...v9.25.1-rc) (2026-09-03)
+
+
+### Bug Fixes
+
+* **client:** use bundled ri icon for deployment sources ([9498ecc](https://github.com/cloud-pi-native/console/commit/9498eccbc9435623ef96a42d8bf18adb18c58357))
+
 ## [9.25.0](https://github.com/cloud-pi-native/console/compare/v9.24.0...v9.25.0) (2026-09-02)
 
 
