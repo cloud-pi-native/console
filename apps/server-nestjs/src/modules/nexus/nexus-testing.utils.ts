@@ -82,13 +82,22 @@ export function makeNexusDb() {
   }
 }
 
-export function makeNexusHandlers(db: ReturnType<typeof makeNexusDb>): HttpHandler[] {
+type NexusDb = ReturnType<typeof makeNexusDb>
+
+async function getOr404(collection: Collection<any>, name: string) {
+  const data = await collection.findFirst((q: any) => q.where({ name }))
+  if (!data) return HttpResponse.json({}, { status: 404 })
+  return HttpResponse.json(data)
+}
+
+function makeNexusRepositoriesHandlers(db: NexusDb): HttpHandler[] {
   const url = `${NEXUS_INTERNAL_URL}/service/rest/v1`
 
-  const getOr404 = async (collection: Collection<any>, name: string) => {
-    const data = await collection.findFirst((q: any) => q.where({ name }))
-    if (!data) return HttpResponse.json({}, { status: 404 })
-    return HttpResponse.json(data)
+  const upsertRepository = async (collection: Collection<any>, name: string | undefined, data: any) => {
+    const record = await collection.findFirst((q: any) => q.where({ name }))
+    if (record) await collection.update(record, { data: () => data })
+    else await collection.create(data)
+    return new HttpResponse(null, { status: 204 })
   }
 
   return [
@@ -97,65 +106,77 @@ export function makeNexusHandlers(db: ReturnType<typeof makeNexusDb>): HttpHandl
       await db.mavenHosted.create(await request.json() as any)
       return new HttpResponse(null, { status: 204 })
     }),
-    http.put(`${url}/repositories/maven/hosted/:name`, async ({ request, params }) => {
-      const data = await request.json() as any
-      const record = await db.mavenHosted.findFirst((q: any) => q.where({ name: params.name }))
-      if (record) await db.mavenHosted.update(record, { data: () => data })
-      else await db.mavenHosted.create(data)
-      return new HttpResponse(null, { status: 204 })
-    }),
+    http.put(`${url}/repositories/maven/hosted/:name`, async ({ request, params }) =>
+      upsertRepository(db.mavenHosted, params.name as string, await request.json() as any)),
     http.get(`${url}/repositories/maven/group/:name`, async ({ params }) => getOr404(db.mavenGroup, String(params.name))),
     http.post(`${url}/repositories/maven/group`, async ({ request }) => {
       await db.mavenGroup.create(await request.json() as any)
       return new HttpResponse(null, { status: 204 })
     }),
-    http.put(`${url}/repositories/maven/group/:name`, async ({ request, params }) => {
-      const data = await request.json() as any
-      const record = await db.mavenGroup.findFirst((q: any) => q.where({ name: params.name }))
-      if (record) await db.mavenGroup.update(record, { data: () => data })
-      else await db.mavenGroup.create(data)
-      return new HttpResponse(null, { status: 204 })
-    }),
+    http.put(`${url}/repositories/maven/group/:name`, async ({ request, params }) =>
+      upsertRepository(db.mavenGroup, params.name as string, await request.json() as any)),
     http.get(`${url}/repositories/npm/hosted/:name`, async ({ params }) => getOr404(db.npmHosted, String(params.name))),
     http.post(`${url}/repositories/npm/hosted`, async ({ request }) => {
       await db.npmHosted.create(await request.json() as any)
       return new HttpResponse(null, { status: 204 })
     }),
-    http.put(`${url}/repositories/npm/hosted/:name`, async ({ request, params }) => {
-      const data = await request.json() as any
-      const record = await db.npmHosted.findFirst((q: any) => q.where({ name: params.name }))
-      if (record) await db.npmHosted.update(record, { data: () => data })
-      else await db.npmHosted.create(data)
-      return new HttpResponse(null, { status: 204 })
-    }),
+    http.put(`${url}/repositories/npm/hosted/:name`, async ({ request, params }) =>
+      upsertRepository(db.npmHosted, params.name as string, await request.json() as any)),
     http.get(`${url}/repositories/npm/group/:name`, async ({ params }) => getOr404(db.npmGroup, String(params.name))),
     http.post(`${url}/repositories/npm/group`, async ({ request }) => {
       await db.npmGroup.create(await request.json() as any)
       return new HttpResponse(null, { status: 204 })
     }),
-    http.put(`${url}/repositories/npm/group/:name`, async ({ request, params }) => {
-      const data = await request.json() as any
-      const record = await db.npmGroup.findFirst((q: any) => q.where({ name: params.name }))
-      if (record) await db.npmGroup.update(record, { data: () => data })
-      else await db.npmGroup.create(data)
+    http.put(`${url}/repositories/npm/group/:name`, async ({ request, params }) =>
+      upsertRepository(db.npmGroup, params.name as string, await request.json() as any)),
+    http.delete(`${url}/repositories/:name`, async ({ params }) => {
+      await Promise.all([
+        db.mavenHosted.deleteMany((q: any) => q.where({ name: params.name })),
+        db.mavenGroup.deleteMany((q: any) => q.where({ name: params.name })),
+        db.npmHosted.deleteMany((q: any) => q.where({ name: params.name })),
+        db.npmGroup.deleteMany((q: any) => q.where({ name: params.name })),
+      ])
       return new HttpResponse(null, { status: 204 })
     }),
+  ]
+}
+
+function makeNexusPrivilegesHandlers(db: NexusDb): HttpHandler[] {
+  const url = `${NEXUS_INTERNAL_URL}/service/rest/v1`
+
+  const upsertPrivilege = async (name: string, data: any) => {
+    const record = await db.privileges.findFirst((q: any) => q.where({ name }))
+    if (record) await db.privileges.update(record, { data: () => data })
+    else await db.privileges.create(data)
+    return new HttpResponse(null, { status: 204 })
+  }
+
+  return [
     http.get(`${url}/security/privileges/:name`, async ({ params }) => getOr404(db.privileges, String(params.name))),
     http.post(`${url}/security/privileges/repository-view`, async ({ request }) => {
       await db.privileges.create(await request.json() as any)
       return new HttpResponse(null, { status: 204 })
     }),
-    http.put(`${url}/security/privileges/repository-view/:name`, async ({ request, params }) => {
-      const data = await request.json() as any
-      const record = await db.privileges.findFirst((q: any) => q.where({ name: params.name }))
-      if (record) await db.privileges.update(record, { data: () => data })
-      else await db.privileges.create(data)
-      return new HttpResponse(null, { status: 204 })
-    }),
+    http.put(`${url}/security/privileges/repository-view/:name`, async ({ request, params }) =>
+      upsertPrivilege(params.name as string, await request.json() as any)),
     http.delete(`${url}/security/privileges/:name`, async ({ params }) => {
       await db.privileges.deleteMany((q: any) => q.where({ name: params.name }))
       return new HttpResponse(null, { status: 204 })
     }),
+  ]
+}
+
+function makeNexusRolesHandlers(db: NexusDb): HttpHandler[] {
+  const url = `${NEXUS_INTERNAL_URL}/service/rest/v1`
+
+  const upsertRole = async (id: string, data: any) => {
+    const record = await db.roles.findFirst((q: any) => q.where({ id }))
+    if (record) await db.roles.update(record, { data: () => data })
+    else await db.roles.create(data)
+    return new HttpResponse(null, { status: 204 })
+  }
+
+  return [
     http.get(`${url}/security/roles/:id`, async ({ params }) => {
       const data = await db.roles.findFirst((q: any) => q.where({ id: params.id }))
       if (!data) return HttpResponse.json({}, { status: 404 })
@@ -165,17 +186,19 @@ export function makeNexusHandlers(db: ReturnType<typeof makeNexusDb>): HttpHandl
       await db.roles.create(await request.json() as any)
       return new HttpResponse(null, { status: 204 })
     }),
-    http.put(`${url}/security/roles/:id`, async ({ request, params }) => {
-      const data = await request.json() as any
-      const record = await db.roles.findFirst((q: any) => q.where({ id: params.id }))
-      if (record) await db.roles.update(record, { data: () => data })
-      else await db.roles.create(data)
-      return new HttpResponse(null, { status: 204 })
-    }),
+    http.put(`${url}/security/roles/:id`, async ({ request, params }) =>
+      upsertRole(params.id as string, await request.json() as any)),
     http.delete(`${url}/security/roles/:id`, async ({ params }) => {
       await db.roles.deleteMany((q: any) => q.where({ id: params.id }))
       return new HttpResponse(null, { status: 204 })
     }),
+  ]
+}
+
+function makeNexusSecurityHandlers(db: NexusDb): HttpHandler[] {
+  const url = `${NEXUS_INTERNAL_URL}/service/rest/v1`
+
+  return [
     http.get(`${url}/security/users`, async ({ request }) => {
       const userId = new URL(request.url).searchParams.get('userId')
       const users = userId
@@ -192,14 +215,14 @@ export function makeNexusHandlers(db: ReturnType<typeof makeNexusDb>): HttpHandl
       await db.users.deleteMany((q: any) => q.where({ userId: params.userId }))
       return new HttpResponse(null, { status: 204 })
     }),
-    http.delete(`${url}/repositories/:name`, async ({ params }) => {
-      await Promise.all([
-        db.mavenHosted.deleteMany((q: any) => q.where({ name: params.name })),
-        db.mavenGroup.deleteMany((q: any) => q.where({ name: params.name })),
-        db.npmHosted.deleteMany((q: any) => q.where({ name: params.name })),
-        db.npmGroup.deleteMany((q: any) => q.where({ name: params.name })),
-      ])
-      return new HttpResponse(null, { status: 204 })
-    }),
+  ]
+}
+
+export function makeNexusHandlers(db: NexusDb): HttpHandler[] {
+  return [
+    ...makeNexusRepositoriesHandlers(db),
+    ...makeNexusPrivilegesHandlers(db),
+    ...makeNexusRolesHandlers(db),
+    ...makeNexusSecurityHandlers(db),
   ]
 }
