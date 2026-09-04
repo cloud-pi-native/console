@@ -76,7 +76,7 @@ describe('projectService', () => {
       prisma.$transaction.mockImplementation(async cb => cb(tx))
 
       const pwd = makeProjectWithDetails({ slug: expectedSlug })
-      pwd.roles = Array.from({ length: 4 }, (_, index) => ({
+      pwd.roles = Array.from({ length: 5 }, (_, index) => ({
         id: faker.string.uuid(),
         name: `role-${index}`,
         permissions: 0n,
@@ -100,7 +100,7 @@ describe('projectService', () => {
         userId,
         requestId,
       })
-      expect(logs.addLog).toHaveBeenCalledTimes(4)
+      expect(logs.addLog).toHaveBeenCalledTimes(5)
       expect(result).toBeDefined()
       expect(result.slug).toBe(expectedSlug)
     })
