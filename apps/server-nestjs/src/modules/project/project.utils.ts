@@ -71,6 +71,15 @@ export function generateProjectCreateInput(
           oidcGroup: `/${slug}/console/readonly`,
           type: 'system:managed',
         },
+        {
+          name: 'Sécurité',
+          permissions: PROJECT_PERMS.SEE_SECRETS
+            | PROJECT_PERMS.LIST_ENVIRONMENTS
+            | PROJECT_PERMS.LIST_REPOSITORIES,
+          position: 4,
+          oidcGroup: `/${slug}/console/security`,
+          type: 'system:managed',
+        },
       ],
     },
   }
