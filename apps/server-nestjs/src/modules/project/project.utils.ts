@@ -56,18 +56,27 @@ export function generateProjectCreateInput(
           type: 'system:managed',
         },
         {
+          name: 'Sécurité',
+          permissions: PROJECT_PERMS.SEE_SECRETS
+            | PROJECT_PERMS.LIST_ENVIRONMENTS
+            | PROJECT_PERMS.LIST_REPOSITORIES,
+          position: 2,
+          oidcGroup: `/${slug}/console/security`,
+          type: 'system:managed',
+        },
+        {
           name: 'Développeur',
           permissions: PROJECT_PERMS.MANAGE_REPOSITORIES
             | PROJECT_PERMS.LIST_ENVIRONMENTS
             | PROJECT_PERMS.LIST_REPOSITORIES,
-          position: 2,
+          position: 3,
           oidcGroup: `/${slug}/console/developer`,
           type: 'system:managed',
         },
         {
           name: 'Lecture seule',
           permissions: PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.LIST_REPOSITORIES,
-          position: 3,
+          position: 4,
           oidcGroup: `/${slug}/console/readonly`,
           type: 'system:managed',
         },
