@@ -77,3 +77,4 @@ jobs:
         with:
           config-file: ".github/hotfix-release-please-config.json"
           manifest-file: ".github/release-please-manifest.json"
+          target-branch: ${{ github.ref_name }}
