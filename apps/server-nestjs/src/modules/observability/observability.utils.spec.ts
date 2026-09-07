@@ -26,7 +26,7 @@ describe('getListPerms', () => {
     expect(perms.prod.view).toContain('owner-1')
   })
 
-  it('assigns to prod bucket when a prod environment exists', () => {
+  it('fills the prod bucket when only a prod environment exists', () => {
     const project = makeProject({
       ownerId: 'owner-1',
       environments: [{ id: 'env-1', name: 'prod-env', stage: PROD_STAGE }],
@@ -36,7 +36,7 @@ describe('getListPerms', () => {
     expect(perms['hors-prod'].edit).not.toContain('owner-1')
   })
 
-  it('assigns to hors-prod bucket when no prod environment', () => {
+  it('fills the hors-prod bucket when only non-prod environments exist', () => {
     const project = makeProject({
       ownerId: 'owner-1',
       environments: [{ id: 'env-1', name: 'dev-env', stage: HPROD_STAGE }],
@@ -44,6 +44,42 @@ describe('getListPerms', () => {
     const perms = getListPerms(project)
     expect(perms['hors-prod'].edit).toContain('owner-1')
     expect(perms.prod.edit).not.toContain('owner-1')
+  })
+
+  it('assigns to BOTH buckets when both stages exist (legacy parity)', () => {
+    const project = makeProject({
+      ownerId: 'owner-1',
+      environments: [
+        { id: 'env-prod', name: 'prod', stage: PROD_STAGE },
+        { id: 'env-hprod', name: 'hprod', stage: HPROD_STAGE },
+      ],
+    })
+    const perms = getListPerms(project)
+    expect(perms.prod.edit).toContain('owner-1')
+    expect(perms['hors-prod'].edit).toContain('owner-1')
+    expect(perms.prod.view).toContain('owner-1')
+    expect(perms['hors-prod'].view).toContain('owner-1')
+  })
+
+  it('assigns a RO member to BOTH buckets when both stages exist (legacy parity)', () => {
+    const roRoleId = 'role-ro'
+    const project = makeProject({
+      ownerId: 'owner-1',
+      members: [{
+        roleIds: [roRoleId],
+        user: { id: 'user-ro', email: 'ro@test.com' },
+      }],
+      roles: [{ id: roRoleId, permissions: PROJECT_PERMS.LIST_ENVIRONMENTS, oidcGroup: '', type: 'managed' }],
+      environments: [
+        { id: 'env-prod', name: 'prod', stage: PROD_STAGE },
+        { id: 'env-hprod', name: 'hprod', stage: HPROD_STAGE },
+      ],
+    })
+    const perms = getListPerms(project)
+    expect(perms.prod.view).toContain('user-ro')
+    expect(perms['hors-prod'].view).toContain('user-ro')
+    expect(perms.prod.edit).not.toContain('user-ro')
+    expect(perms['hors-prod'].edit).not.toContain('user-ro')
   })
 
   it('grants ro but not rw to a member with only LIST_ENVIRONMENTS', () => {
