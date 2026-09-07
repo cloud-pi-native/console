@@ -283,7 +283,7 @@ describe('gitlabService', () => {
         expect.objectContaining({ email: 'owner@example.com' }),
         expect.objectContaining({ cpnUserId: 'o1' }),
       )
-      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 999, AccessLevel.GUEST)
+      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 999, AccessLevel.DEVELOPER)
       expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 998, AccessLevel.OWNER)
     })
 
@@ -400,7 +400,7 @@ describe('gitlabService', () => {
       expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 105, AccessLevel.REPORTER)
     })
 
-    it('should downgrade existing member to guest when no role maps to an access level', async () => {
+    it('should downgrade existing member to developer when no role maps to an access level', async () => {
       const project = makeProjectWithDetails({
         roles: [{ id: 'r-unknown', oidcGroup: '/other/group' }],
         members: [{ user: { id: 'u1', email: 'no-access@example.com', firstName: 'No', lastName: 'Access', adminRoleIds: [] }, roleIds: ['r-unknown'] }],
@@ -423,7 +423,7 @@ describe('gitlabService', () => {
 
       await service.handleUpsert(project)
 
-      expect(gitlab.editGroupMember).toHaveBeenCalledWith(group, 105, AccessLevel.GUEST)
+      expect(gitlab.editGroupMember).toHaveBeenCalledWith(group, 105, AccessLevel.DEVELOPER)
       expect(gitlab.removeGroupMember).not.toHaveBeenCalledWith(group, 105)
     })
 
