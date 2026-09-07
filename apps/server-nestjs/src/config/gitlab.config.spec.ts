@@ -12,11 +12,14 @@ describe('gitlabConfig', () => {
     vi.stubEnv('GITLAB_INTERNAL_URL', 'https://gitlab.internal:8080')
     vi.stubEnv('PROJECTS_ROOT_DIR', 'forge-test/projects')
     vi.stubEnv('GITLAB__SECRET_EXPOSE_INTERNAL_URL', '1')
+    vi.stubEnv('GITLAB_MIRROR_TOKEN_ROTATION_THRESHOLD_DAYS', '90')
+    vi.stubEnv('GITLAB_MIRROR_TOKEN_EXPIRATION_DAYS', '365')
     expect(gitlabConfigFactory()).toMatchObject({
       token: 'token',
       url: 'https://gitlab.internal',
       internalUrl: 'https://gitlab.internal:8080',
       secretExposeInternalUrl: true,
+      mirrorTokenRotationThresholdDays: 90,
       mirrorTokenExpirationDays: 365,
       projectRootDir: 'forge-test/projects',
     })
@@ -30,6 +33,26 @@ describe('gitlabConfig', () => {
     const cfg = gitlabConfigFactory()
     expect(cfg.internalUrl).toBeUndefined()
     expect(cfg.url).toBe('https://gitlab.internal')
+    expect(cfg.mirrorTokenRotationThresholdDays).toBe(250)
+    expect(cfg.mirrorTokenExpirationDays).toBe(365)
+  })
+
+  it('throws when rotation threshold is not strictly lower than expiration', () => {
+    vi.stubEnv('GITLAB_TOKEN', 'token')
+    vi.stubEnv('GITLAB_URL', 'https://gitlab.internal')
+    vi.stubEnv('PROJECTS_ROOT_DIR', 'forge-test/projects')
+    vi.stubEnv('GITLAB_MIRROR_TOKEN_ROTATION_THRESHOLD_DAYS', '180')
+    vi.stubEnv('GITLAB_MIRROR_TOKEN_EXPIRATION_DAYS', '180')
+    expect(() => gitlabConfigFactory()).toThrow(/must be strictly lower than GITLAB_MIRROR_TOKEN_EXPIRATION_DAYS/)
+  })
+
+  it('throws when rotation threshold exceeds expiration', () => {
+    vi.stubEnv('GITLAB_TOKEN', 'token')
+    vi.stubEnv('GITLAB_URL', 'https://gitlab.internal')
+    vi.stubEnv('PROJECTS_ROOT_DIR', 'forge-test/projects')
+    vi.stubEnv('GITLAB_MIRROR_TOKEN_ROTATION_THRESHOLD_DAYS', '365')
+    vi.stubEnv('GITLAB_MIRROR_TOKEN_EXPIRATION_DAYS', '90')
+    expect(() => gitlabConfigFactory()).toThrow()
   })
 
   it('throws when a required var is missing', () => {

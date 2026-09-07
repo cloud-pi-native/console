@@ -1,9 +1,9 @@
-import type { CondensedGroupSchema, MemberSchema } from '@gitbeaker/core'
-import type { GroupSchemaWith } from './gitlab-client.service'
+import type { MemberSchema } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
 import type { RepositorySyncEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
-import type { MirrorUserSecret } from '../vault/vault-client.service'
+import type { MirrorUserSecret, VaultSecret } from '../vault/vault-client.service'
+import type { GroupSchemaWith } from './gitlab-client.service'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
 import { specificallyEnabled } from '@cpn-console/hooks'
 import { AccessLevel } from '@gitbeaker/core'
@@ -35,6 +35,7 @@ import {
 } from './gitlab.constants'
 import {
   adminRoleFlag,
+  daysAgoFromNow,
   generateAccessLevelMapping,
   generateAdminRoleMapping,
   generateName,
@@ -507,12 +508,14 @@ export class GitlabService {
     if (!group) throw new Error(`No group found for project ${project.slug}`)
     const currentToken = await this.gitlab.getProjectToken(group, project.slug)
     if (currentToken) {
-      const vaultSecret = await this.getMirrorTokenFromVault(project)
-      if (vaultSecret) {
+      const vaultSecret = await this.vault.readTechnReadOnlyCreds(project.slug)
+      const expired = this.isMirrorTokenExpiring(vaultSecret)
+      span?.setAttribute('mirror.creds.expiring', expired)
+      if (vaultSecret && !expired) {
         span?.setAttribute('mirror.creds.rotated', false)
-        return vaultSecret
+        return vaultSecret.data
       }
-      this.logger.warn(`Mirror token invalid or vault secret missing, revoking (projectSlug=${project.slug}, tokenId=${currentToken.id})`)
+      this.logger.warn(`Mirror token invalid, expiring or vault secret missing, revoking (projectSlug=${project.slug}, tokenId=${currentToken.id})`)
       span?.setAttribute('mirror.creds.revoking', true)
       await this.gitlab.revokeProjectToken(group, currentToken.id).catch((err) => {
         this.logger.error(`Failed to revoke stale mirror token (projectSlug=${project.slug}, tokenId=${currentToken.id}): ${err}`)
@@ -522,15 +525,11 @@ export class GitlabService {
     return this.createMirrorAccessToken(project)
   }
 
-  private async getMirrorTokenFromVault(project: ProjectWithDetails): Promise<MirrorUserSecret | undefined> {
-    const vaultSecret = await this.vault.readTechnReadOnlyCreds(project.slug)
-    const vaultToken = vaultSecret?.data?.MIRROR_TOKEN
-    if (vaultToken) {
-      const isValid = await this.gitlab.validateProjectToken(vaultToken)
-      if (isValid) {
-        return vaultSecret.data
-      }
-    }
+  private isMirrorTokenExpiring(vaultSecret: VaultSecret<MirrorUserSecret> | null | undefined): boolean {
+    const createdTimeRaw = vaultSecret?.metadata?.created_time
+    if (!createdTimeRaw) return false
+    const createdTime = new Date(createdTimeRaw)
+    return daysAgoFromNow(createdTime) > this.gitlabConfig.mirrorTokenRotationThresholdDays
   }
 
   @StartActiveSpan()

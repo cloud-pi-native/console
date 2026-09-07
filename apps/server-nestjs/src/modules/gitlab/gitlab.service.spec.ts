@@ -11,7 +11,7 @@ import { OBSERVABILITY_REPOSITORY } from '../observability/observability.constan
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
 import { GitlabDatastoreService } from './gitlab-datastore.service'
-import { makeAccessTokenExposedSchema, makeExpandedUserSchema, makeGroupSchema, makeMemberSchema, makePipeline, makePipelineTriggerToken, makeProjectSchema, makeProjectWithDetails } from './gitlab-testing.utils'
+import { makeAccessTokenExposedSchema, makeExpandedUserSchema, makeGroupSchema, makeMemberSchema, makePipeline, makePipelineTriggerToken, makeProjectSchema, makeProjectWithDetails, makeVaultSecret } from './gitlab-testing.utils'
 import { INFRA_APPS_REPO_NAME, MIRROR_REPO_NAME, PLUGIN_NAME, TOPIC_PLUGIN_MANAGED, TOPIC_SYSTEM_MANAGED } from './gitlab.constants'
 import { GitlabService } from './gitlab.service'
 
@@ -36,7 +36,7 @@ describe('gitlabService', () => {
       readTechnReadOnlyCreds: vi.fn().mockResolvedValue(null),
       readGitlabMirrorCreds: vi.fn().mockResolvedValue(null),
     })
-    config = mockDeep<ConfigType<typeof gitlabConfigFactory>>({ projectRootDir: 'forge', url: 'https://gitlab.example.com' })
+    config = mockDeep<ConfigType<typeof gitlabConfigFactory>>({ projectRootDir: 'forge', url: 'https://gitlab.example.com', mirrorTokenRotationThresholdDays: 250 })
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -526,6 +526,93 @@ describe('gitlabService', () => {
         MIRROR_USER: 'bot',
         MIRROR_TOKEN: accessToken.token,
       })
+    })
+
+    it('reuses the mirror token when the vault secret is younger than the rotation threshold', async () => {
+      const project = makeProjectWithDetails({
+        slug: 'project-1',
+        repositories: [{
+          id: 'r1',
+          internalRepoName: 'repo-1',
+          externalRepoUrl: 'https://github.com/org/repo.git',
+          isPrivate: true,
+          externalUserName: 'user',
+          isInfra: false,
+        }],
+      })
+      const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+      const gitlabRepo = makeProjectSchema({ id: 101, name: 'repo-1', path: 'repo-1', path_with_namespace: 'forge/console/project-1/repo-1' })
+      const accessToken = makeAccessTokenExposedSchema({ name: 'bot', scopes: ['read_api'], access_level: 40 })
+      const recentSecret = makeVaultSecret({
+        data: { MIRROR_USER: accessToken.name, MIRROR_TOKEN: accessToken.token },
+        metadata: {
+          created_time: faker.date.recent({ days: 30 }).toISOString(),
+          custom_metadata: null,
+          deletion_time: '',
+          destroyed: false,
+          version: 1,
+        },
+      })
+
+      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.getProjectGroup.mockResolvedValue(group)
+      gitlab.getProjectToken.mockResolvedValue({ name: accessToken.name, id: 11 })
+      gitlab.getRepos.mockReturnValue((async function* () { yield gitlabRepo })())
+      gitlab.getOrCreateProjectGroupInternalRepoUrl.mockResolvedValue('https://gitlab.internal/group/repo-1.git')
+      gitlab.createMirrorAccessToken.mockResolvedValue(accessToken)
+      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      vault.readTechnReadOnlyCreds.mockResolvedValue(recentSecret)
+
+      await service.handleUpsert(project)
+
+      expect(gitlab.revokeProjectToken).not.toHaveBeenCalled()
+      expect(gitlab.createMirrorAccessToken).not.toHaveBeenCalled()
+    })
+
+    it('proactively rotates the mirror token when the vault secret is older than the rotation threshold', async () => {
+      const project = makeProjectWithDetails({
+        slug: 'project-1',
+        repositories: [{
+          id: 'r1',
+          internalRepoName: 'repo-1',
+          externalRepoUrl: 'https://github.com/org/repo.git',
+          isPrivate: true,
+          externalUserName: 'user',
+          isInfra: false,
+        }],
+      })
+      const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+      const gitlabRepo = makeProjectSchema({ id: 101, name: 'repo-1', path: 'repo-1', path_with_namespace: 'forge/console/project-1/repo-1' })
+      const accessToken = makeAccessTokenExposedSchema({ name: 'bot', scopes: ['read_api'], access_level: 40 })
+      const staleSecret = makeVaultSecret({
+        data: { MIRROR_USER: accessToken.name, MIRROR_TOKEN: accessToken.token },
+        metadata: {
+          created_time: faker.date.past({ years: 2 }).toISOString(),
+          custom_metadata: null,
+          deletion_time: '',
+          destroyed: false,
+          version: 1,
+        },
+      })
+
+      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.getProjectGroup.mockResolvedValue(group)
+      gitlab.getProjectToken.mockResolvedValue({ name: accessToken.name, id: 11 })
+      gitlab.getRepos.mockReturnValue((async function* () { yield gitlabRepo })())
+      gitlab.getOrCreateProjectGroupInternalRepoUrl.mockResolvedValue('https://gitlab.internal/group/repo-1.git')
+      gitlab.createMirrorAccessToken.mockResolvedValue(accessToken)
+      gitlab.revokeProjectToken.mockResolvedValue(undefined)
+      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      vault.readTechnReadOnlyCreds.mockResolvedValue(staleSecret)
+
+      await service.handleUpsert(project)
+
+      expect(gitlab.revokeProjectToken).toHaveBeenCalledWith(group, 11)
+      expect(gitlab.createMirrorAccessToken).toHaveBeenCalledWith('project-1')
     })
   })
 
