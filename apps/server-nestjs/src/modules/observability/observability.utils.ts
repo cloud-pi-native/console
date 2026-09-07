@@ -73,15 +73,29 @@ export function getListPerms(project: ProjectWithDetails): ListPerms {
     prod: { edit: [], view: [] },
   }
 
+  const hasProd = project.environments.some(e => isProdStage(e.stage))
+  const hasHprod = project.environments.some(e => e.stage?.name != null && !isProdStage(e.stage))
   for (const userId of projectUserIds) {
-    const { ro, rw } = resolveUserPerms(project, rolesById, userId)
-    const hasProd = project.environments.some(e => isProdStage(e.stage))
-    const bucket = hasProd ? perms.prod : perms['hors-prod']
-    if (rw && !bucket.edit.includes(userId)) bucket.edit.push(userId)
-    if (ro && !bucket.view.includes(userId)) bucket.view.push(userId)
+    const userPerms = resolveUserPerms(project, rolesById, userId)
+    // Legacy parity (console-plugin-observability): the permission roster goes
+    // to EVERY stage bucket the project exposes — prod if a prod environment
+    // exists AND hors-prod if a non-prod one does. Reconcile removes anyone
+    // absent from the desired list, so a single-bucket fill would wipe the
+    // other pair's Keycloak memberships on the first sync.
+    if (hasProd) addUserToBucket(perms.prod, userId, userPerms)
+    if (hasHprod) addUserToBucket(perms['hors-prod'], userId, userPerms)
   }
 
   return perms
+}
+
+function addUserToBucket(
+  bucket: ListPerms['prod'],
+  userId: string,
+  { ro, rw }: { ro: boolean, rw: boolean },
+): void {
+  if (rw && !bucket.edit.includes(userId)) bucket.edit.push(userId)
+  if (ro && !bucket.view.includes(userId)) bucket.view.push(userId)
 }
 
 function resolveUserPerms(
