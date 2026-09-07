@@ -1,5 +1,14 @@
 # Changelog
 
+## [9.25.1](https://github.com/cloud-pi-native/console/compare/v9.25.0...v9.25.1) (2026-09-07)
+
+
+### Bug Fixes
+
+* **ci:** fix hotfixes being performed with main as target branch ([1de0576](https://github.com/cloud-pi-native/console/commit/1de05761f6fec2a79f8543108860a5023d554c42))
+* **client:** use bundled ri icon for deployment sources ([8460e23](https://github.com/cloud-pi-native/console/commit/8460e23b2088efb6306756c8436fffea71a26943))
+* mitigation on GitLab legacy default permissions ([13cccb6](https://github.com/cloud-pi-native/console/commit/13cccb6c42d51b5bb93edc85e4f2bace24e0c412))
+
 ## [9.25.0](https://github.com/cloud-pi-native/console/compare/v9.24.0...v9.25.0) (2026-09-02)
 
 
