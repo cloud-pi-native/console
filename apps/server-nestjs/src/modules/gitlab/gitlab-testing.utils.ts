@@ -14,6 +14,7 @@ import type {
   RepositoryTreeSchema,
 } from '@gitbeaker/core'
 import type { AdminRole, Project, User } from '@prisma/client'
+import type { VaultSecret } from '../vault/vault-client.service'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
 import { faker } from '@faker-js/faker'
 import { AccessLevel } from '@gitbeaker/core'
@@ -389,6 +390,20 @@ export function makeAccessTokenExposedSchema(overrides: Partial<AccessTokenExpos
     token: 'secret-token',
     ...overrides,
   } satisfies AccessTokenExposedSchema
+}
+
+export function makeVaultSecret(overrides: Partial<VaultSecret> = {}): VaultSecret {
+  return {
+    data: {},
+    metadata: {
+      created_time: faker.date.recent({ days: 30 }).toISOString(),
+      custom_metadata: null,
+      deletion_time: '',
+      destroyed: false,
+      version: 1,
+    },
+    ...overrides,
+  } satisfies VaultSecret
 }
 
 export function makeRepositoryFileExpandedSchema(overrides: Partial<RepositoryFileExpandedSchema> = {}) {
