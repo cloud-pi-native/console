@@ -69,6 +69,7 @@ describe('registryService', () => {
       ruleCount: 10,
       retentionCron: '0 22 2 * * *',
       robotRotationThresholdDays: 90,
+      robotExpirationDays: 90,
     })
     baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>({
       projectsRootDir: 'forge',
@@ -272,6 +273,35 @@ describe('registryService', () => {
         USERNAME: `robot$${project.slug}+ro-robot`,
         TOKEN: 'newsecret',
       }), `forge/${project.slug}/REGISTRY/ro-robot`)
+    })
+
+    it('creates robots with the configured expiration duration', async () => {
+      const project = makeProjectWithDetails()
+      vault.read.mockImplementation(async () => makeVaultSecret({
+        data: {
+          HOST: 'other.example',
+          DOCKER_CONFIG: '{}',
+          USERNAME: `robot$${project.slug}+robot`,
+          TOKEN: 'old',
+        },
+      }))
+
+      client.getProjectRobots.mockImplementation(async function* () {
+        yield { id: 11, name: `robot$${project.slug}+ro-robot` }
+      })
+      client.deleteRobot.mockResolvedValue(makeNoContent())
+      client.ensureRobot.mockResolvedValue({ id: 22, name: `robot$${project.slug}+ro-robot`, secret: 'newsecret' })
+
+      await service.handleUpsert(project)
+
+      expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'ro-robot',
+        duration: 90,
+      }))
+      expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'rw-robot',
+        duration: 90,
+      }))
     })
 
     it('parses plugin config and enables project robot publishing', async () => {

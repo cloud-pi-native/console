@@ -20,8 +20,18 @@ const harborFeatureSchema = z.object({
   HARBOR_RULE_TEMPLATE: ruleTemplateSchema.optional(),
   HARBOR_RULE_COUNT: z.coerce.number().int().positive().optional(),
   HARBOR_RETENTION_CRON: cronSchema.default('0 22 2 * * *'),
-  HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS: z.coerce.number().int().positive().default(90),
+  HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS: z.coerce.number().int().positive().default(60),
+  HARBOR_ROBOT_EXPIRATION_DAYS: z.coerce.number().int().positive().default(90),
   HARBOR_PROJECT_SLUG_CACHE_TTL_MS: z.coerce.number().int().positive().default(300_000),
+}).superRefine((raw, ctx) => {
+  // Rotation must trigger strictly before expiration, otherwise robots die
+  // before any secret regeneration had a chance to replace them.
+  if (raw.HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS >= raw.HARBOR_ROBOT_EXPIRATION_DAYS) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS (${raw.HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS}) must be strictly lower than HARBOR_ROBOT_EXPIRATION_DAYS (${raw.HARBOR_ROBOT_EXPIRATION_DAYS})`,
+    })
+  }
 }).transform(raw => ({
   url: raw.HARBOR_URL,
   internalUrl: raw.HARBOR_INTERNAL_URL,
@@ -31,6 +41,7 @@ const harborFeatureSchema = z.object({
   ruleCount: raw.HARBOR_RULE_COUNT,
   retentionCron: raw.HARBOR_RETENTION_CRON,
   robotRotationThresholdDays: raw.HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS,
+  robotExpirationDays: raw.HARBOR_ROBOT_EXPIRATION_DAYS,
   projectSlugCacheTtlMs: raw.HARBOR_PROJECT_SLUG_CACHE_TTL_MS,
 }))
 

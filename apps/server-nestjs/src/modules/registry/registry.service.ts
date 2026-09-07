@@ -80,7 +80,7 @@ export class RegistryService {
 
   private async ensureProjectRobot(project: ProjectWithDetails, robotName: string, access: HarborAccess[]) {
     const created = await this.client.ensureRobot(
-      generateRobotPermissions(project, robotName, access),
+      generateRobotPermissions(project, robotName, access, this.harborConfig.robotExpirationDays),
     )
     if (!created) {
       throw new Error(`Harbor robot already exists (${robotName})`)
@@ -435,10 +435,10 @@ function generateRobotFullName(project: ProjectWithDetails, robotName: string) {
   return `robot$${project.slug}+${robotName}`
 }
 
-function generateRobotPermissions(project: ProjectWithDetails, robotName: string, access: HarborAccess[]): HarborRobotCreateRequest {
+function generateRobotPermissions(project: ProjectWithDetails, robotName: string, access: HarborAccess[], durationDays: number): HarborRobotCreateRequest {
   return {
     name: robotName,
-    duration: -1,
+    duration: durationDays,
     description: 'robot for ci builds',
     disable: false,
     level: 'project',
