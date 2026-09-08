@@ -763,4 +763,58 @@ describe('argoCDService', () => {
       },
     ])
   })
+
+  it('should keep deployment source value file paths literal', async () => {
+    const mockDevEnv = makeProjectEnvironment({
+      name: 'dev',
+      cluster: {
+        id: 'c1',
+        label: 'cluster-1',
+        zone: { slug: 'zone-1' },
+      },
+    })
+    const mockAppRepo = makeProjectRepository({ internalRepoName: 'app-repo' })
+    const mockProject = makeProjectWithDetails({
+      name: 'Project 1',
+      slug: 'project-1',
+      environments: [mockDevEnv],
+      repositories: [mockAppRepo],
+      plugins: [],
+      deployments: [
+        makeProjectDeployment({
+          environment: mockDevEnv,
+          deploymentSources: [
+            makeProjectDeploymentSource({
+              repository: mockAppRepo,
+              targetRevision: 'dev',
+              helmValuesFiles: 'values-<env>.yaml',
+            }),
+          ],
+        }),
+      ],
+    })
+
+    const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
+    datastore.getAllProjects.mockResolvedValue([mockProject])
+    gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
+    gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+    gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+    gitlab.listFiles.mockResolvedValue([])
+    vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
+    vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
+    gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
+      return makeCommitAction({ filePath, content })
+    })
+
+    await expect(service.handleCron()).resolves.not.toThrow()
+
+    const actions = gitlab.maybeCreateCommit.mock.calls[0][2]
+    const parsedValues = actions
+      .filter((action): action is typeof action & { content: string } => 'content' in action)
+      .map(action => parse(action.content))
+    const values = parsedValues.find(v => v.application?.repositories?.[0]?.valueFiles?.length)
+    expect(values).toBeDefined()
+
+    expect(values.application.repositories[0].valueFiles).toStrictEqual(['values-<env>.yaml'])
+  })
 })

@@ -565,12 +565,11 @@ function formatDeploymentSourceValueSources(
 function formatRepositoriesValuesFromDeployments(
   deployments: ProjectWithDetails['deployments'][number][],
   gitlabPublicProjectUrl: string,
-  envName: string,
 ) {
   return deployments.flatMap(deployment =>
     deployment.deploymentSources
       .map((source) => {
-        const valueFiles = splitExtraRepositories(source.helmValuesFiles?.replaceAll('<env>', envName))
+        const valueFiles = splitExtraRepositories(source.helmValuesFiles)
         const valueSources = formatDeploymentSourceValueSources(source, gitlabPublicProjectUrl)
         return {
           name: source.repository.internalRepoName,
@@ -718,7 +717,7 @@ function formatValues({
       autosync: environment.autosync,
       vault: vaultValues,
       repositories: deployments
-        ? formatRepositoriesValuesFromDeployments(deployments, gitlabPublicProjectUrl, environment.name)
+        ? formatRepositoriesValuesFromDeployments(deployments, gitlabPublicProjectUrl)
         : formatRepositoriesValues(
             project.repositories,
             gitlabPublicProjectUrl,

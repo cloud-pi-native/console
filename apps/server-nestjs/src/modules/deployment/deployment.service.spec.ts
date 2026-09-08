@@ -135,7 +135,7 @@ describe('deploymentService', () => {
             ...validCreateDeployment.deploymentSources[0],
             valueSources: [
               { type: 'internal' as const, path: 'values.yaml' },
-              { type: 'external' as const, ref: 'infra-values', path: 'values-<env>.yaml', targetRevision: 'main', repositoryId: valueRepositoryId },
+              { type: 'external' as const, ref: 'infra-values', path: 'values-prod.yaml', targetRevision: 'main', repositoryId: valueRepositoryId },
             ],
           },
         ],
@@ -159,7 +159,7 @@ describe('deploymentService', () => {
                 externalValueSource: {
                   create: {
                     order: 1,
-                    path: 'values-<env>.yaml',
+                    path: 'values-prod.yaml',
                     ref: 'infra-values',
                     targetRevision: 'main',
                     repository: { connect: { id: valueRepositoryId } },
