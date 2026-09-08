@@ -136,8 +136,8 @@ function update(patch: ValueSourcePatch): void {
       :model-value="model.path"
       label="Chemin du fichier de valeurs"
       label-visible
-      :placeholder="model.type === 'external' ? 'values-&lt;env&gt;.yaml' : 'values.yaml'"
-      hint="Chemin du fichier relatif à la racine du dépôt. Le motif <env> est remplacé par le nom de l'environnement."
+      placeholder="values.yaml"
+      hint="Chemin du fichier relatif à la racine du dépôt."
       required
       :disabled="props.disabled"
       :error-message="props.isDirty && !model.path ? 'Le chemin du fichier est requis' : undefined"
