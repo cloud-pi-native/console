@@ -17,10 +17,7 @@ import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { generateProjectPath } from '../src/modules/vault/vault.utils'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
-const canRunProjectSecretsE2E
-  = Boolean(process.env.E2E)
-
-const describeWithProjectSecrets = describe.runIf(canRunProjectSecretsE2E)
+import { describeWithProjectSecrets } from './project-secrets.utils'
 
 describeWithProjectSecrets('ProjectSecretsService (e2e)', () => {
   let moduleRef: TestingModule

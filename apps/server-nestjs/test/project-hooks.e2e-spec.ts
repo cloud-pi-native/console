@@ -4,7 +4,7 @@ import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
@@ -19,9 +19,7 @@ import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultService } from '../src/modules/vault/vault.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
-const canRunProjectHooksE2E = Boolean(process.env.E2E)
-
-const describeWithProjectHooks = describe.runIf(canRunProjectHooksE2E)
+import { describeWithProjectHooks } from './project-hooks.utils'
 
 describeWithProjectHooks('ProjectHooksService (e2e)', () => {
   let moduleRef: TestingModule

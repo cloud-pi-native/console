@@ -23,10 +23,7 @@ import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { getAll } from '../src/utils/iterable.utils'
 import { GITLAB_PURGE_SYNC_TIMEOUT, GITLAB_SYNC_TIMEOUT } from './constants'
 
-const canRunGitlabE2E
-  = Boolean(process.env.E2E)
-
-const describeWithGitLab = describe.runIf(canRunGitlabE2E)
+import { describeWithGitLab } from './gitlab.utils'
 
 describeWithGitLab('GitlabService (e2e)', () => {
   let moduleRef: TestingModule

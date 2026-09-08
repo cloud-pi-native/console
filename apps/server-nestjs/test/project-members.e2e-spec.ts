@@ -19,9 +19,7 @@ import { ProjectMembersModule } from '../src/modules/project-members/project-mem
 import { ProjectMembersService } from '../src/modules/project-members/project-members.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
-const canRunProjectMembersE2E = Boolean(process.env.E2E)
-
-const describeWithProjectMembers = describe.runIf(canRunProjectMembersE2E)
+import { describeWithProjectMembers } from './project-members.utils'
 
 describeWithProjectMembers('ProjectMembersService (e2e)', () => {
   let moduleRef: TestingModule

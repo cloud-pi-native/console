@@ -6,7 +6,7 @@ import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import { parse } from 'yaml'
 import { baseConfigFactory } from '../src/config/base.config'
 import { projectSelect } from '../src/modules/argocd/argocd-datastore.service'
@@ -20,12 +20,9 @@ import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
+import { describeWithArgoCD } from './argocd.utils'
+
 import { ARGOCD_RECONCILE_TIMEOUT, GITLAB_SYNC_TIMEOUT } from './constants'
-
-const canRunArgoCDE2E
-  = Boolean(process.env.E2E)
-
-const describeWithArgoCD = describe.runIf(canRunArgoCDE2E)
 
 describeWithArgoCD('ArgoCDService (e2e)', () => {
   let moduleRef: TestingModule

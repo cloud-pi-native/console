@@ -18,9 +18,7 @@ import { ProjectModule } from '../src/modules/project/project.module'
 import { ProjectService } from '../src/modules/project/project.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
-const canRunProjectE2E = Boolean(process.env.E2E)
-
-const describeWithProject = describe.runIf(canRunProjectE2E)
+import { describeWithProject } from './project.utils'
 
 describeWithProject('ProjectService (e2e)', () => {
   let moduleRef: TestingModule
