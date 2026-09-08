@@ -46,8 +46,13 @@ jobs:
         run: |
           ./ci/scripts/init-env.sh
           for img in server nginx-strangler server-nestjs client opencds-mockoon; do
-            docker pull "${GHCR_CACHE}/cloud-pi-native/console/${img}:${{ inputs.TAG }}"
-            docker tag  "${GHCR_CACHE}/cloud-pi-native/console/${img}:${{ inputs.TAG }}" "dso-console/${img}:ci"
+            source="${GHCR_CACHE}/cloud-pi-native/console/${img}:${{ inputs.TAG }}"
+            if ! docker pull "${source}"; then
+              echo "::warning::registry cache ${GHCR_CACHE} unavailable for ${img}, falling back to ghcr.io"
+              source="ghcr.io/cloud-pi-native/console/${img}:${{ inputs.TAG }}"
+              docker pull "${source}"
+            fi
+            docker tag "${source}" "dso-console/${img}:ci"
           done
           docker compose -f ./docker/docker-compose.ci.yml up --no-build -d --remove-orphans
 
