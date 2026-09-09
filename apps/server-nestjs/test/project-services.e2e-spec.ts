@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker'
 import { NotFoundException } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
@@ -16,8 +16,7 @@ import { ProjectServicesModule } from '../src/modules/project-services/project-s
 import { ProjectServicesService } from '../src/modules/project-services/project-services.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
-const canRunServicesE2E = Boolean(process.env.E2E)
-const describeWithServices = describe.runIf(canRunServicesE2E)
+import { describeWithServices } from './project-services.utils'
 
 describeWithServices('ProjectServicesService (e2e)', () => {
   let moduleRef: TestingModule

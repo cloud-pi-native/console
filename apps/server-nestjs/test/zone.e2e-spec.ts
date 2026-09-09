@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
@@ -18,9 +18,7 @@ import { VaultService } from '../src/modules/vault/vault.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { VAULT_PROVISION_TIMEOUT } from './constants'
 
-const canRunZoneE2E = Boolean(process.env.E2E)
-
-const describeWithZone = describe.runIf(canRunZoneE2E)
+import { describeWithZone } from './zone.utils'
 
 describeWithZone('Zone lifecycle (e2e)', () => {
   let moduleRef: TestingModule

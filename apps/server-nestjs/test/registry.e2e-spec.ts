@@ -5,7 +5,7 @@ import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, expect, it } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
 import { harborConfigFactory } from '../src/config/harbor.config'
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
@@ -19,10 +19,7 @@ import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { getAll } from '../src/utils/iterable.utils'
 
-const canRunRegistryE2E
-  = Boolean(process.env.E2E)
-
-const describeWithRegistry = describe.runIf(canRunRegistryE2E)
+import { describeWithRegistry } from './registry.utils'
 
 describeWithRegistry('RegistryService (e2e)', () => {
   let moduleRef: TestingModule

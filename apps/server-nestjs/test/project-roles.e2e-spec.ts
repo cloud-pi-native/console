@@ -4,7 +4,7 @@ import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
@@ -16,9 +16,7 @@ import { ProjectRolesModule } from '../src/modules/project-roles/project-roles.m
 import { ProjectRolesService } from '../src/modules/project-roles/project-roles.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
-const canRunProjectRolesE2E = Boolean(process.env.E2E)
-
-const describeWithProjectRoles = describe.runIf(canRunProjectRolesE2E)
+import { describeWithProjectRoles } from './project-roles.utils'
 
 describeWithProjectRoles('ProjectRolesService (e2e)', () => {
   let moduleRef: TestingModule
