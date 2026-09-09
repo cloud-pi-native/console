@@ -27,7 +27,7 @@ Resource-based organization in `apps/server/src/resources/`. Each resource follo
 API contracts defined in `@cpn-console/shared`, shared with client via @ts-rest.
 Auth: Keycloak + Fastify session. Permissions: BigInt bitmasks (`ProjectAuthorized`, `AdminAuthorized`).
 
-Services receive configuration via injection
+server-nestjs services receive configuration via injection
 (`@Inject(xxxConfigFactory.KEY)` + `ConfigType<typeof xxxConfigFactory>`),
 never `process.env`.
 
@@ -53,9 +53,10 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 ## Environment config
 
 - Files: `.env`, `.env.docker`, `.env.integ` in `apps/client/`, `apps/server/`, `apps/server-nestjs/`
-- Templates: `*-example` suffix (git-tracked), active files gitignored
+- Templates: `*-example` suffix (not `.example`; git-tracked), active files gitignored
 - Override chain (weakest to strongest): `.env` < `.env.docker` (if DOCKER=true) < `.env.integ` (if INTEGRATION=true) < explicit env vars
 - Server loading: `apps/server/src/utils/env.ts` | Client: `apps/client/vite.config.ts`
+- `ci/scripts/init-env.sh` copies `*-example` to active equivalents (non-destructive)
 
 ## Testing
 
@@ -64,7 +65,7 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 - Commands: `pnpm test` (all unit), `pnpm playwright:test`
 - Deterministic tests: a faker draw must never be able to cross a branch
   threshold (pin the draw window), otherwise CI flakes.
-- Tests: always prefer `mockDeep` for mocks (type safety over plain
+- Always prefer `mockDeep` for mocks (type safety over plain
   `vi.fn()`/hand-rolled mocks); no describe-scope calls.
 
 ## Code quality
@@ -100,10 +101,6 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 - Release Please for automated versioning, changelogs, npm publish, Docker images, Helm chart updates
 - PR template: `.github/PULL_REQUEST_TEMPLATE.md`
 
-## Conventions
-
-- Template env files use `-example` suffix (not `.example`)
-- `ci/scripts/init-env.sh` copies `*-example` to active equivalents (non-destructive)
 - Fix at the shared source all callers route through, not a guard duplicated in
   every caller.
 - Before reporting done, format: `pnpm format`, then run the gates — `pnpm lint`
