@@ -16,10 +16,10 @@ import { makeProjectWithDetails } from './nexus-testing.utils'
 import {
   NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO,
   NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO,
-  PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY,
+  PLATFORM_READER_GROUP_PATHS_PLUGIN_KEY,
   PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY,
   PLUGIN_NAME,
-  PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
+  PROJECT_READER_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
 } from './nexus.constants'
 import { NexusService } from './nexus.service'
@@ -123,7 +123,7 @@ describe('nexusService', () => {
     })
 
     datastore.getAdminPluginConfig.mockImplementation(async (_plugin, key) => {
-      if (key === PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY) return ' '
+      if (key === PLATFORM_READER_GROUP_PATHS_PLUGIN_KEY) return ' '
       if (key === PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY) return ' '
       return null
     })
@@ -148,7 +148,7 @@ describe('nexusService', () => {
     })
 
     datastore.getAdminPluginConfig.mockImplementation(async (_plugin, key) => {
-      if (key === PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY) return ' '
+      if (key === PLATFORM_READER_GROUP_PATHS_PLUGIN_KEY) return ' '
       if (key === PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY) return ' '
       return null
     })
@@ -211,12 +211,12 @@ describe('nexusService', () => {
       plugins: [
         { pluginName: PLUGIN_NAME, key: NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO, value: ENABLED },
         { pluginName: PLUGIN_NAME, key: PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY, value: '/console/devops' },
-        { pluginName: PLUGIN_NAME, key: PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY, value: '/console/devops' },
+        { pluginName: PLUGIN_NAME, key: PROJECT_READER_GROUP_PATH_SUFFIXES_PLUGIN_KEY, value: '/console/devops' },
       ],
     })
 
     datastore.getAdminPluginConfig.mockImplementation(async (_plugin, key) => {
-      if (key === PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY) return ' '
+      if (key === PLATFORM_READER_GROUP_PATHS_PLUGIN_KEY) return ' '
       if (key === PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY) return ' '
       return null
     })

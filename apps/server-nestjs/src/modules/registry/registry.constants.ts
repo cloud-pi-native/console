@@ -7,13 +7,13 @@ export const REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT = 'publishProjectRobot'
 
 // Default platform-level group paths
 export const DEFAULT_PLATFORM_ADMIN_GROUP_PATHS = '/console/admin'
-export const DEFAULT_PLATFORM_GUEST_GROUP_PATHS = '/console/security,/console/readonly'
+export const DEFAULT_PLATFORM_GUEST_GROUP_PATHS = '/console/security,/console/reader'
 
 // Default project-level group path suffixes
 export const DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIXES = '/console/admin'
 export const DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIXES = '/console/devops'
 export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIXES = '/console/developer'
-export const DEFAULT_PROJECT_GUEST_GROUP_PATH_SUFFIXES = '/console/security,/console/readonly'
+export const DEFAULT_PROJECT_GUEST_GROUP_PATH_SUFFIXES = '/console/security,/console/reader'
 
 // Platform group path plugin configuration keys
 export const PLATFORM_ADMIN_GROUP_PATH_PLUGIN_KEY = 'platformAdminGroupPath'

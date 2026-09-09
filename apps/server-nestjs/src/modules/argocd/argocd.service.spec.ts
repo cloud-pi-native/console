@@ -286,13 +286,13 @@ describe('argoCDService', () => {
               rwGroup: '/project-1/console/dev/RW',
               consoleAdminGroup: '/console/admin',
               platformAdminGroup: '/console/admin',
-              platformReadonlyGroup: '/console/readonly',
+              platformReaderGroup: '/console/reader',
               platformSecurityGroup: '/console/security',
               projectAdminGroup: '/project-1/console/admin',
               projectDevopsGroup: '/project-1/console/devops',
               projectDevelopperGroup: '/project-1/console/developer',
               projectSecurityGroup: '/project-1/console/security',
-              projectReadonlyGroup: '/project-1/console/readonly',
+              projectReaderGroup: '/project-1/console/reader',
             },
             application: {
               quota: {
@@ -361,13 +361,13 @@ describe('argoCDService', () => {
               rwGroup: '/project-1/console/prod/RW',
               consoleAdminGroup: '/console/admin',
               platformAdminGroup: '/console/admin',
-              platformReadonlyGroup: '/console/readonly',
+              platformReaderGroup: '/console/reader',
               platformSecurityGroup: '/console/security',
               projectAdminGroup: '/project-1/console/admin',
               projectDevopsGroup: '/project-1/console/devops',
               projectDevelopperGroup: '/project-1/console/developer',
               projectSecurityGroup: '/project-1/console/security',
-              projectReadonlyGroup: '/project-1/console/readonly',
+              projectReaderGroup: '/project-1/console/reader',
             },
             application: {
               quota: {
@@ -621,13 +621,13 @@ describe('argoCDService', () => {
               rwGroup: '/project-1/console/dev/RW',
               consoleAdminGroup: '/console/admin',
               platformAdminGroup: '/console/admin',
-              platformReadonlyGroup: '/console/readonly',
+              platformReaderGroup: '/console/reader',
               platformSecurityGroup: '/console/security',
               projectAdminGroup: '/project-1/console/admin',
               projectDevopsGroup: '/project-1/console/devops',
               projectDevelopperGroup: '/project-1/console/developer',
               projectSecurityGroup: '/project-1/console/security',
-              projectReadonlyGroup: '/project-1/console/readonly',
+              projectReaderGroup: '/project-1/console/reader',
             },
             application: {
               quota: {

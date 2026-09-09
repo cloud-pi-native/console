@@ -106,9 +106,9 @@ describe('sonarqubeService', () => {
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: '/console/admin' }))
     })
 
-    it('should create /console/readonly and /console/security platform groups', async () => {
+    it('should create /console/reader and /console/security platform groups', async () => {
       await service.init()
-      expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: '/console/readonly' }))
+      expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: '/console/reader' }))
       expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: '/console/security' }))
     })
 
@@ -143,7 +143,7 @@ describe('sonarqubeService', () => {
       expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/devops` }))
       expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/developer` }))
       expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/security` }))
-      expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/readonly` }))
+      expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/reader` }))
     })
 
     it('should create a new user and write vault credentials', async () => {
@@ -169,7 +169,7 @@ describe('sonarqubeService', () => {
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/admin` }))
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/devops` }))
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/developer` }))
-      expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: '/console/readonly' }))
+      expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: '/console/reader' }))
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: '/console/security' }))
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/developer`, permission: 'issueadmin' }))
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/developer`, permission: 'securityhotspotadmin' }))

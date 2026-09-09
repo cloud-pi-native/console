@@ -21,19 +21,19 @@ import {
   DEFAULT_MAVEN_RELEASE_WRITE_POLICY,
   DEFAULT_MAVEN_SNAPSHOT_WRITE_POLICY,
   DEFAULT_NPM_WRITE_POLICY,
-  DEFAULT_PLATFORM_READ_GROUP_PATHS,
+  DEFAULT_PLATFORM_READER_GROUP_PATHS,
   DEFAULT_PLATFORM_WRITE_GROUP_PATHS,
-  DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES,
+  DEFAULT_PROJECT_READER_GROUP_PATH_SUFFIXES,
   DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES,
   NEXUS_CONFIG_KEY_ACTIVATE_MAVEN_REPO,
   NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO,
   NEXUS_CONFIG_KEY_MAVEN_RELEASE_WRITE_POLICY,
   NEXUS_CONFIG_KEY_MAVEN_SNAPSHOT_WRITE_POLICY,
   NEXUS_CONFIG_KEY_NPM_WRITE_POLICY,
-  PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY,
+  PLATFORM_READER_GROUP_PATHS_PLUGIN_KEY,
   PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY,
   PLUGIN_NAME,
-  PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
+  PROJECT_READER_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
 } from './nexus.constants'
 import {
@@ -497,11 +497,11 @@ export class NexusService {
     const rawWriteSuffixes = await this.getOptionalConfigValue(project, PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY)
       ?? DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES
 
-    const rawReadSuffixes = await this.getOptionalConfigValue(project, PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY)
-      ?? DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES
+    const rawReadSuffixes = await this.getOptionalConfigValue(project, PROJECT_READER_GROUP_PATH_SUFFIXES_PLUGIN_KEY)
+      ?? DEFAULT_PROJECT_READER_GROUP_PATH_SUFFIXES
 
     const writeGroupPaths = generateProjectRoleGroupPath(project, rawWriteSuffixes || DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES)
-    const readGroupPaths = generateProjectRoleGroupPath(project, rawReadSuffixes || DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES)
+    const readGroupPaths = generateProjectRoleGroupPath(project, rawReadSuffixes || DEFAULT_PROJECT_READER_GROUP_PATH_SUFFIXES)
 
     const byId = generateRolePrivilegesMapping({
       readGroupPaths,
@@ -517,8 +517,8 @@ export class NexusService {
     const rawWriteGroupPaths = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY)
       ?? DEFAULT_PLATFORM_WRITE_GROUP_PATHS
 
-    const rawReadGroupPaths = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY)
-      ?? DEFAULT_PLATFORM_READ_GROUP_PATHS
+    const rawReadGroupPaths = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, PLATFORM_READER_GROUP_PATHS_PLUGIN_KEY)
+      ?? DEFAULT_PLATFORM_READER_GROUP_PATHS
 
     const readonlyPrivileges = new Set<string>()
     const writePrivileges = new Set<string>()
@@ -529,7 +529,7 @@ export class NexusService {
     }
 
     const byId = generateRolePrivilegesMapping({
-      readGroupPaths: parseOidcGroupPaths(rawReadGroupPaths || DEFAULT_PLATFORM_READ_GROUP_PATHS),
+      readGroupPaths: parseOidcGroupPaths(rawReadGroupPaths || DEFAULT_PLATFORM_READER_GROUP_PATHS),
       writeGroupPaths: parseOidcGroupPaths(rawWriteGroupPaths || DEFAULT_PLATFORM_WRITE_GROUP_PATHS),
       readOnlyPrivileges: [...readonlyPrivileges],
       writePrivileges: [...writePrivileges],
@@ -550,12 +550,12 @@ export class NexusService {
     const rawWriteSuffixes = await this.getOptionalConfigValue(project, PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY)
       ?? DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES
 
-    const rawReadSuffixes = await this.getOptionalConfigValue(project, PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY)
-      ?? DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES
+    const rawReadSuffixes = await this.getOptionalConfigValue(project, PROJECT_READER_GROUP_PATH_SUFFIXES_PLUGIN_KEY)
+      ?? DEFAULT_PROJECT_READER_GROUP_PATH_SUFFIXES
 
     const groupPaths = [
       ...generateProjectRoleGroupPath(project, rawWriteSuffixes || DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES),
-      ...generateProjectRoleGroupPath(project, rawReadSuffixes || DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES),
+      ...generateProjectRoleGroupPath(project, rawReadSuffixes || DEFAULT_PROJECT_READER_GROUP_PATH_SUFFIXES),
     ]
 
     const ids = [...new Set(groupPaths.map(generateRoleId))]
