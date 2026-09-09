@@ -240,6 +240,7 @@ pnpm docker:dev
 | `ARGOCD_URL` | — | URL publique ArgoCD |
 | `ARGOCD_INTERNAL_URL` | — | URL interne ArgoCD |
 | `ARGOCD_EXTRA_REPOSITORIES` | — | Répôts additionnels (JSON) |
+| `ARGOCD_SHARED_SOURCE_REPOSITORIES` | — | Sources autorisées pour tous les projets, `<project>` remplacé par le slug (ex. `oci://registry.example.com/<project>/**`) |
 
 ### Variables GitLab
 

@@ -41,6 +41,7 @@ describe('argoCDService', () => {
       url: 'https://argocd.internal',
       internalUrl: undefined,
       extraRepositories: ['repo3'],
+      sharedSourceRepositories: ['oci://harbor.internal/<project>/**'],
       dsoEnvChartVersion: 'dso-env-1.6.0',
       dsoNsChartVersion: 'dso-ns-1.1.5',
       vaultDeployVaultConnectionInNs: false,
@@ -302,6 +303,7 @@ describe('argoCDService', () => {
               },
               sourceRepositories: [
                 'https://gitlab.internal/group/project-1/**',
+                'oci://harbor.internal/project-1/**',
                 'repo2',
               ],
               destination: {
@@ -377,6 +379,7 @@ describe('argoCDService', () => {
               },
               sourceRepositories: [
                 'https://gitlab.internal/group/project-1/**',
+                'oci://harbor.internal/project-1/**',
                 'repo2',
               ],
               destination: {
@@ -637,6 +640,7 @@ describe('argoCDService', () => {
               },
               sourceRepositories: [
                 'https://gitlab.internal/group/project-1/**',
+                'oci://harbor.internal/project-1/**',
                 'repo2',
               ],
               destination: {
@@ -816,5 +820,45 @@ describe('argoCDService', () => {
     expect(values).toBeDefined()
 
     expect(values.application.repositories[0].valueFiles).toStrictEqual(['values-<env>.yaml'])
+  })
+
+  it('should omit shared source repositories when none are configured', async () => {
+    argocdConfig.sharedSourceRepositories = []
+    const mockProject = makeProjectWithDetails({
+      slug: 'project-1',
+      name: 'Project 1',
+      environments: [
+        makeProjectEnvironment({ name: 'dev', cluster: { id: 'c1', label: 'cluster-1', zone: { slug: 'zone-1' } } }),
+      ],
+      repositories: [],
+      plugins: [{ pluginName: 'argocd', key: 'extraRepositories', value: 'repo2' }],
+      deployments: [],
+    })
+
+    const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
+    datastore.getAllProjects.mockResolvedValue([mockProject])
+    gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
+    gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+    gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+    gitlab.listFiles.mockResolvedValue([])
+    vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
+    vault.createAuthApproleRoleSecretId.mockResolvedValue('secret-id')
+    gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repoId, _ref, filePath: string, content: string) => {
+      return makeCommitAction({ filePath, content })
+    })
+
+    await expect(service.handleCron()).resolves.not.toThrow()
+
+    const actions = gitlab.maybeCreateCommit.mock.calls[0][2]
+    const values = actions
+      .filter((action): action is typeof action & { content: string } => 'content' in action)
+      .map(action => parse(action.content))
+      .find(v => v.application?.sourceRepositories)
+    expect(values).toBeDefined()
+
+    expect(values.application.sourceRepositories).toStrictEqual([
+      'https://gitlab.internal/group/project-1/**',
+      'repo2',
+    ])
   })
 })
