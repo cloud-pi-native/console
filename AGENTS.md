@@ -6,7 +6,8 @@ pnpm monorepo. Node >= 26, pnpm v11.8
 
 - `apps/client` : Vue 3 + Vite + vue-dsfr (French gov design system), Pinia, UnoCSS
 - `apps/server` : Fastify 4 + Prisma 6 (PostgreSQL), contract-first API via @ts-rest
-- `apps/server-nestjs` : NestJS rewrite (in progress)
+- `apps/server-nestjs` : NestJS rewrite (in progress) — the only modifiable
+  backend target; `apps/server` is frozen (read-only reference)
 - `plugins/*` : argocd, gitlab, harbor, keycloak, kubernetes, nexus, sonarqube, vault
 - `packages/shared` : API contracts (@ts-rest), types, permissions (BigInt bitmasks)
 - `packages/hooks` : plugin hook system (core of plugin architecture)
@@ -26,6 +27,10 @@ Resource-based organization in `apps/server/src/resources/`. Each resource follo
 API contracts defined in `@cpn-console/shared`, shared with client via @ts-rest.
 Auth: Keycloak + Fastify session. Permissions: BigInt bitmasks (`ProjectAuthorized`, `AdminAuthorized`).
 
+Services receive configuration via injection
+(`@Inject(xxxConfigFactory.KEY)` + `ConfigType<typeof xxxConfigFactory>`),
+never `process.env`.
+
 ## Plugin / Hook system
 
 Hook lifecycle: `pre` -> `main` -> `post` (sequential steps, parallel plugin execution). On failure: `revert`.
@@ -33,10 +38,17 @@ Plugins are statically imported in `apps/server/src/plugins.ts`, then external p
 Each plugin: `index.ts` (Plugin interface), `infos.ts` (metadata/config), `functions.ts` (hook handlers).
 Plugins use TS module augmentation to extend `ProjectStore` and `Config` interfaces.
 
+server-nestjs parity: every `eventEmitter.emitAsync('<entity>.<verb>')` must
+have a matching `@OnEvent` consumer bridging to `capturePluginResult`, or
+Keycloak/GitLab group syncs silently stop at cutover.
+
 ## Database (Prisma)
 
 Multi-file schema in `apps/server/src/prisma/schema/*.prisma` (project, user, token, admin, topography).
 Migrations: standard Prisma Migrate. Major version data migrations in `migrations/v9/`.
+
+`deleteMany`/`updateMany` with an `undefined` filter value matches ALL rows —
+always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cascade.
 
 ## Environment config
 
@@ -50,6 +62,10 @@ Migrations: standard Prisma Migrate. Major version data migrations in `migration
 - **Vitest**: unit tests everywhere (server, client, packages, plugins) — colocated `*.spec.ts` files
 - **Playwright**: E2E in `playwright/` (Chromium + Firefox, parallel)
 - Commands: `pnpm test` (all unit), `pnpm playwright:test`
+- Deterministic tests: a faker draw must never be able to cross a branch
+  threshold (pin the draw window), otherwise CI flakes.
+- server-nestjs unit specs use `mockDeep` for Prisma/config and no
+  describe-scope calls.
 
 ## Code quality
 
@@ -64,6 +80,9 @@ Migrations: standard Prisma Migrate. Major version data migrations in `migration
 - Server: extends shared base, uses `ts-patch`/`tspc` for path transform in emitted JS
 - Client: does NOT extend shared base, uses `Bundler` module resolution
 - server-nestjs: standalone config with `emitDecoratorMetadata` + `experimentalDecorators`
+- No `as` casts (including `as any`) to narrow an unknown or optional value —
+  use `if` type guards; include the offending identifier in the error message.
+- Helpers return new objects; do not mutate inputs.
 
 ## Main commands
 
@@ -83,3 +102,7 @@ Migrations: standard Prisma Migrate. Major version data migrations in `migration
 
 - Template env files use `-example` suffix (not `.example`)
 - `ci/scripts/init-env.sh` copies `*-example` to active equivalents (non-destructive)
+- Fix at the shared source all callers route through, not a guard duplicated in
+  every caller.
+- Never report done without running the gates: `pnpm lint` plus the targeted
+  vitest specs.
