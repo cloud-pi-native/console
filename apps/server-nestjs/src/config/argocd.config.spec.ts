@@ -3,7 +3,7 @@ import { argocdConfigFactory } from './argocd.config'
 import { resetEnvs } from './config-testing.utils'
 
 describe('argocdConfig', () => {
-  beforeEach(() => { resetEnvs(['ARGO_NAMESPACE', 'ARGOCD_URL', 'ARGOCD_INTERNAL_URL', 'DSO_ENV_CHART_VERSION', 'DSO_NS_CHART_VERSION', 'VAULT__DEPLOY_VAULT_CONNECTION_IN_NS']) })
+  beforeEach(() => { resetEnvs(['ARGO_NAMESPACE', 'ARGOCD_URL', 'ARGOCD_INTERNAL_URL', 'DSO_ENV_CHART_VERSION', 'DSO_NS_CHART_VERSION', 'VAULT__DEPLOY_VAULT_CONNECTION_IN_NS', 'ARGOCD_SHARED_SOURCE_REPOSITORIES']) })
   afterEach(() => { vi.unstubAllEnvs() })
 
   it('parses a full config', () => {
@@ -44,6 +44,20 @@ describe('argocdConfig', () => {
     vi.stubEnv('ARGOCD_URL', 'https://argocd.internal')
     vi.stubEnv('PROJECTS_ROOT_DIR', 'forge-test/projects')
     expect(argocdConfigFactory().extraRepositories).toEqual([])
+  })
+
+  it('parses shared source repositories', () => {
+    vi.stubEnv('ARGOCD_URL', 'https://argocd.internal')
+    vi.stubEnv('ARGOCD_SHARED_SOURCE_REPOSITORIES', 'oci://registry.internal/<project>/**,https://charts.internal/**')
+    expect(argocdConfigFactory().sharedSourceRepositories).toEqual([
+      'oci://registry.internal/<project>/**',
+      'https://charts.internal/**',
+    ])
+  })
+
+  it('defaults sharedSourceRepositories to an empty array', () => {
+    vi.stubEnv('ARGOCD_URL', 'https://argocd.internal')
+    expect(argocdConfigFactory().sharedSourceRepositories).toEqual([])
   })
 
   it('throws when a required var is missing', () => {

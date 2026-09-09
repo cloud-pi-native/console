@@ -13,7 +13,15 @@ import { ArgoCDPluginService } from './argocd-plugin.service'
 import { ArgoCDService } from './argocd.service'
 
 @Module({
-  imports: [DatabaseModule, GitlabModule, TerminusModule, VaultModule, ConfigModule.forFeature(argocdConfigFactory), ConfigModule.forFeature(vaultConfigFactory), ConfigModule.forFeature(baseConfigFactory)],
+  imports: [
+    DatabaseModule,
+    GitlabModule,
+    TerminusModule,
+    VaultModule,
+    ConfigModule.forFeature(argocdConfigFactory),
+    ConfigModule.forFeature(vaultConfigFactory),
+    ConfigModule.forFeature(baseConfigFactory),
+  ],
   providers: [ArgoCDHealthService, ArgoCDPluginService, ArgoCDService, ArgoCDDatastoreService],
   exports: [ArgoCDHealthService, ArgoCDPluginService, ArgoCDService],
 })

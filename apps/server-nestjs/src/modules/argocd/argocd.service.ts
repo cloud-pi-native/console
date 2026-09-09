@@ -306,6 +306,7 @@ export class ArgoCDService {
       environment,
       cluster,
       gitlabPublicProjectUrl,
+      sharedSourceRepositories: formatSharedSourceRepositories(this.argocdConfig.sharedSourceRepositories, project.slug),
       argocdExtraRepositories: this.getExtraRepositories(project),
       infraProject,
       valueFilePath,
@@ -378,6 +379,7 @@ export class ArgoCDService {
       environment,
       cluster,
       gitlabPublicProjectUrl,
+      sharedSourceRepositories: formatSharedSourceRepositories(this.argocdConfig.sharedSourceRepositories, project.slug),
       argocdExtraRepositories: this.getExtraRepositories(project),
       infraProject,
       valueFilePath,
@@ -611,14 +613,20 @@ function formatEnvironmentValues(
 
 interface FormatSourceRepositoriesValuesOptions {
   gitlabPublicProjectUrl: string
+  sharedSourceRepositories: string[]
   argocdExtraRepositories?: string[]
 }
 
+function formatSharedSourceRepositories(sharedSourceRepositories: string[], projectSlug: string): string[] {
+  return sharedSourceRepositories.map(repository => repository.replaceAll('<project>', projectSlug))
+}
+
 function formatSourceRepositoriesValues(
-  { gitlabPublicProjectUrl, argocdExtraRepositories = [] }: FormatSourceRepositoriesValuesOptions,
+  { gitlabPublicProjectUrl, sharedSourceRepositories, argocdExtraRepositories = [] }: FormatSourceRepositoriesValuesOptions,
 ): string[] {
   return [
     `${gitlabPublicProjectUrl}/**`,
+    ...sharedSourceRepositories,
     ...argocdExtraRepositories,
   ]
 }
@@ -661,6 +669,7 @@ interface FormatValuesOptions {
   environment: ProjectWithDetails['environments'][number]
   cluster: ProjectWithDetails['environments'][number]['cluster']
   gitlabPublicProjectUrl: string
+  sharedSourceRepositories: string[]
   argocdExtraRepositories?: string[]
   vaultValues: Record<string, any>
   infraProject: SimpleProjectSchema
@@ -676,6 +685,7 @@ function formatValues({
   environment,
   cluster,
   gitlabPublicProjectUrl,
+  sharedSourceRepositories,
   argocdExtraRepositories,
   vaultValues,
   infraProject,
@@ -708,6 +718,7 @@ function formatValues({
       },
       sourceRepositories: formatSourceRepositoriesValues({
         gitlabPublicProjectUrl,
+        sharedSourceRepositories,
         argocdExtraRepositories,
       }),
       destination: {
