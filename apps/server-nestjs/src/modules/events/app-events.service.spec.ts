@@ -175,4 +175,16 @@ describe('appEventsService', () => {
       data: expect.objectContaining({ args: payload }),
     }))
   })
+
+  describe('emit surface (migration parity)', () => {
+    const expectedEmitMethods = ['emitProjectEvent', 'emitProjectMemberEvent', 'emitRepositoryEvent'] as const
+
+    it.each(expectedEmitMethods)('exposes %s as a public emit entrypoint', (method) => {
+      expect(typeof service[method]).toBe('function')
+    })
+
+    it('does NOT expose a zone emit entrypoint (zone.* listeners have no emitter yet — legacy owns the route)', () => {
+      expect('emitZoneEvent' in service).toBe(false)
+    })
+  })
 })
