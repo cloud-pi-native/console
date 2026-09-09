@@ -80,8 +80,10 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 - Server: extends shared base, uses `ts-patch`/`tspc` for path transform in emitted JS
 - Client: does NOT extend shared base, uses `Bundler` module resolution
 - server-nestjs: standalone config with `emitDecoratorMetadata` + `experimentalDecorators`
-- No `as` casts (including `as any`) to narrow an unknown or optional value —
-  use `if` type guards; include the offending identifier in the error message.
+- Strict type safety: no `as` casts (including `as any`), no `any`, and no
+  unchecked escapes of `unknown` — anything that breaks the type-checking
+  chain. Narrow with `if` type guards (include the offending identifier in the
+  error message); validate external data at the boundary instead of casting it.
 - Helpers return new objects; do not mutate inputs.
 
 ## Main commands
