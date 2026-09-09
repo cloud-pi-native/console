@@ -589,7 +589,10 @@ describe('gitlabService', () => {
       const staleSecret = makeVaultSecret({
         data: { MIRROR_USER: accessToken.name, MIRROR_TOKEN: accessToken.token },
         metadata: {
-          created_time: faker.date.past({ years: 2 }).toISOString(),
+          // faker.date.past() alone can draw inside the 250-day rotation
+          // threshold and silently skip the rotation branch; a birthdate draw
+          // aged 1–2 years always lands past it.
+          created_time: faker.date.birthdate({ min: 1, max: 2, mode: 'age' }).toISOString(),
           custom_metadata: null,
           deletion_time: '',
           destroyed: false,
