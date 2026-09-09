@@ -89,8 +89,10 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 - Strict type safety: no `as` casts (including `as any`), no `any`, and no
   unchecked escapes of `unknown` — anything that breaks the type-checking
   chain. Narrow with `if` type guards (include the offending identifier in the
-  error message). Parse, don't validate: parse external data at the input
-  boundary into precise types, so nothing downstream re-checks.
+  error message). Parse, don't validate: at the input boundary, turn external
+  data into the most precise type it allows — the returned type is the proof —
+  so nothing downstream re-checks; a check-and-throw that returns nothing
+  preserves nothing.
 - Helpers return new objects; do not mutate inputs.
 
 ## Main commands
