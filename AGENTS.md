@@ -20,6 +20,7 @@ pnpm monorepo. Node >= 26, pnpm v11.8
 ## Server architecture (Fastify)
 
 Resource-based organization in `apps/server/src/resources/`. Each resource follows a 3-file pattern:
+
 - `router.ts` : route handlers (auth, permissions, delegates to business)
 - `business.ts` : business logic, orchestrates queries + hook calls
 - `queries.ts` : Prisma database queries
@@ -74,6 +75,10 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 - Stylelint for CSS/Vue in client
 - Husky hooks: pre-commit (lint-staged), commit-msg (commitlint), pre-push (unit tests)
 - Conventional commits enforced: `feat`, `fix`, `chore`, `docs`, `refactor`, `revert`, `build`
+- Fix at the shared source all callers route through, not a guard duplicated in
+  every caller.
+- Before reporting done, format: `pnpm format`, then run the gates — `pnpm lint`
+  plus the targeted vitest specs.
 
 ## TypeScript
 
@@ -100,8 +105,3 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 - Branches: `main` (protected) + `hotfix/*`
 - Release Please for automated versioning, changelogs, npm publish, Docker images, Helm chart updates
 - PR template: `.github/PULL_REQUEST_TEMPLATE.md`
-
-- Fix at the shared source all callers route through, not a guard duplicated in
-  every caller.
-- Before reporting done, format: `pnpm format`, then run the gates — `pnpm lint`
-  plus the targeted vitest specs.
