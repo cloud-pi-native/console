@@ -1,5 +1,14 @@
 # Changelog
 
+## [9.25.2](https://github.com/cloud-pi-native/console/compare/v9.25.1...v9.25.2) (2026-09-09)
+
+
+### Bug Fixes
+
+* **client:** guard syncRepository against cleared selectedRepo after await ([df8a966](https://github.com/cloud-pi-native/console/commit/df8a966a7a6f225fd03fdc2f3e2ee26ef64d12f8))
+* **deployment:** send value source paths to ArgoCD without &lt;env&gt; substitution ([d4da191](https://github.com/cloud-pi-native/console/commit/d4da19166a8374a935fda7237eda36fafd64eb17))
+* **observability:** restore legacy dual-bucket Grafana RBAC sync ([40987e2](https://github.com/cloud-pi-native/console/commit/40987e2a83a77c6f8d72e8c7ffb78dc3585430bc)), closes [#2686](https://github.com/cloud-pi-native/console/issues/2686)
+
 ## [9.25.1](https://github.com/cloud-pi-native/console/compare/v9.25.0...v9.25.1) (2026-09-07)
 
 
