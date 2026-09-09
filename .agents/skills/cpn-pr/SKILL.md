@@ -1,5 +1,5 @@
 ---
-name: pull-request
+name: cpn-pr
 description:
   "Use when opening or triaging a PR in this repo: French body from the
   template, draft-first, origin-only, review-gated."
@@ -8,6 +8,20 @@ license: Apache-2.0
 ---
 
 # Console pull requests
+
+## Prerequisites
+
+```bash
+gh api user --jq .login # authenticated
+gh api repos/cloud-pi-native/console --jq .viewerPermission # write, origin-only
+git fetch origin && git rebase origin/main # current, no conflicts
+```
+
+- An issue stands behind the change — issue-first norm, no orphan PRs.
+- Quality gates green — see the `cpn-dev-workflow` skill; the `pre-push`
+  Husky hook already runs unit tests.
+
+An unmet requirement is a reported blocker, never a silent scope change.
 
 ## Before opening
 
@@ -20,16 +34,15 @@ gh pr list --state open --json number,title,headRefName \
   --jq '.[] | "\(.number)\t\(.title)\t\(.headRefName)"'
 ```
 
-- Rebase onto `main` first (`jj rebase -d main`); never push a conflicted
-  branch.
-- Quality gates green (see the `dev-workflow` skill); the `pre-push` Husky
-  hook already runs unit tests.
+- Rebase onto `main` first: `git fetch origin && git rebase origin/main`.
+  Never push a conflicted branch.
+- Duplicate work is ruled out and the branch is conflict-free.
 
 ## Opening
 
-- Branches live on the org repo itself (origin-only, no forks). `main` is
+- Branches live on the org repo itself; origin-only, no forks. `main` is
   protected; only `hotfix/*` may bypass the feature-branch rule, and the
-  branch prefix matches the commit type (`feat/`, `fix/`, `docs/`, ...).
+  branch prefix matches the commit type: `feat/`, `fix/`, `docs/`, ...
 - Open as **draft**, title = conventional commit subject, body =
   `.github/PULL_REQUEST_TEMPLATE.md` verbatim, in French, linking the issue
   under `Issues liées`:
@@ -44,7 +57,7 @@ gh pr create --repo cloud-pi-native/console --draft --base main \
 - The body is free text: natural prose, no hard wrapping, never run a
   formatter over it.
 - A literal `@` in prose triggers a user/team mention — wrap it in a code
-  span (inline or fenced).
+  span.
 
 ## Triage after creation
 
@@ -63,10 +76,8 @@ Set each empty, determinable field, additively (`--add-label` /
 
 - Keep it draft until review passes; a human approving review from another
   collaborator is required — never self-merge.
-- The PR title and body restate the commit: the commit is the source of
-  truth; do not add rationale the commit does not carry.
-- CI includes the SonarQube Quality Gate (0 new issues required). When all
-  checks are green but `mergeStateStatus` is `BLOCKED`, enqueue:
+- CI includes the SonarQube Quality Gate. When all checks are green but
+  `mergeStateStatus` is `BLOCKED`, enqueue:
 
 ```bash
 gh workflow run 243523481 --repo cloud-pi-native/console -f PR_NUMBER=<N>
