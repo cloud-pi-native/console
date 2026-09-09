@@ -21,6 +21,7 @@ import { ProjectModule } from './modules/project/project.module'
 import { RepositoryModule } from './modules/repository/repository.module'
 import { SystemConfigModule } from './modules/system-config/system-config.module'
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module'
+import { UserTokensModule } from './modules/user-tokens/user-tokens.module'
 import { VersionModule } from './modules/version/version.module'
 import { getDotenvPaths } from './utils/dotenv.utils'
 
@@ -50,6 +51,7 @@ import { getDotenvPaths } from './utils/dotenv.utils'
     ScheduleModule.forRoot(),
     SystemConfigModule,
     SystemSettingsModule,
+    UserTokensModule,
     VersionModule,
   ],
   controllers: [],
