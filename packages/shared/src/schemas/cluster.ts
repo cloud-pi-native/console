@@ -8,7 +8,8 @@ export const CleanedClusterSchema = z.object({
     .uuid(),
   label: z.string()
     .regex(/^[a-z0-9-]+$/i)
-    .max(50),
+    .max(50)
+    .transform(value => value.toLowerCase()),
   infos: z.string()
     .max(1000)
     .optional()
