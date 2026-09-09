@@ -64,8 +64,8 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 - Commands: `pnpm test` (all unit), `pnpm playwright:test`
 - Deterministic tests: a faker draw must never be able to cross a branch
   threshold (pin the draw window), otherwise CI flakes.
-- server-nestjs unit specs use `mockDeep` for Prisma/config and no
-  describe-scope calls.
+- Tests: always prefer `mockDeep` for mocks (type safety over plain
+  `vi.fn()`/hand-rolled mocks); no describe-scope calls.
 
 ## Code quality
 
