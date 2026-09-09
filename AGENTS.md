@@ -104,5 +104,5 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 - `ci/scripts/init-env.sh` copies `*-example` to active equivalents (non-destructive)
 - Fix at the shared source all callers route through, not a guard duplicated in
   every caller.
-- Never report done without running the gates: `pnpm lint` plus the targeted
-  vitest specs.
+- Before reporting done, format: `pnpm format`, then run the gates — `pnpm lint`
+  plus the targeted vitest specs.
