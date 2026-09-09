@@ -161,6 +161,7 @@ catalogs:
     globals: ^16.5.0
     jsdom: ^25.0.1
     msw: ^2.12.10
+    '@msw/data': ^1.1.8
     vitest: ^4.1.5
   types:
     "@types/jsdom": ^21.1.7

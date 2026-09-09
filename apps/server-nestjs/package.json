@@ -88,6 +88,7 @@
     "@eslint/eslintrc": "catalog:tools",
     "@eslint/js": "catalog:tools",
     "@faker-js/faker": "catalog:test",
+    "@msw/data": "catalog:test",
     "@nestjs/cli": "catalog:build",
     "@nestjs/schematics": "catalog:build",
     "@nestjs/testing": "catalog:build",
