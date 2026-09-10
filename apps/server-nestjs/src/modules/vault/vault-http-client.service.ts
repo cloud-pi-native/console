@@ -108,7 +108,13 @@ export class VaultHttpClientService {
   }
 
   private async throwForStatus(response: Response, method: string, path: string): Promise<never> {
-    const responseBody = await response.json()
+    let responseBody: unknown
+    try {
+      responseBody = await response.json()
+    } catch {
+      // A non-JSON error body (proxy HTML page) must not escape the VaultError contract.
+      responseBody = undefined
+    }
     const vaultErrorBody = z.object({ errors: z.array(z.string()) }).safeParse(responseBody)
     const reasons = vaultErrorBody.success ? vaultErrorBody.data.errors : undefined
     const reasonsPart = reasons?.length ? ` reasons=${reasons.join('; ')}` : ''
