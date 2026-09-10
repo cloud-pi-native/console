@@ -144,4 +144,48 @@ describe('vault', () => {
       expect(capturedPath).toBe('forge/my-project/GITLAB')
     })
   })
+
+  describe('ensureAuthApproleRoleSecretId', () => {
+    it('mints and persists a secret-id on first sync', async () => {
+      let minted = false
+      let persisted: unknown
+      server.use(
+        http.get(`${vaultUrl}/v1/kv/data/*`, () => {
+          return HttpResponse.json({}, { status: HttpStatus.NOT_FOUND })
+        }),
+        http.post(`${vaultUrl}/v1/auth/approle/role/*/secret-id`, () => {
+          minted = true
+          return HttpResponse.json({ data: { secret_id: 'minted-secret' } })
+        }),
+        http.post(`${vaultUrl}/v1/kv/data/*`, async ({ request }) => {
+          persisted = await request.json()
+          return HttpResponse.json({})
+        }),
+      )
+
+      const secretId = await service.ensureAuthApproleRoleSecretId('my-project')
+
+      expect(secretId).toBe('minted-secret')
+      expect(minted).toBe(true)
+      expect(persisted).toEqual({ data: { secret_id: 'minted-secret' } })
+    })
+
+    it('reuses a persisted secret-id on subsequent syncs without minting', async () => {
+      let minted = false
+      server.use(
+        http.get(`${vaultUrl}/v1/kv/data/*`, () => {
+          return HttpResponse.json({ data: { data: { secret_id: 'persisted-secret' }, metadata: { created_time: '2023-01-01T00:00:00.000Z', version: 1 } } })
+        }),
+        http.post(`${vaultUrl}/v1/auth/approle/role/*/secret-id`, () => {
+          minted = true
+          return HttpResponse.json({ data: { secret_id: 'unexpected' } })
+        }),
+      )
+
+      const secretId = await service.ensureAuthApproleRoleSecretId('my-project')
+
+      expect(secretId).toBe('persisted-secret')
+      expect(minted).toBe(false)
+    })
+  })
 })
