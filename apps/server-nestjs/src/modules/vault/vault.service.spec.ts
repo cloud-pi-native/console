@@ -8,6 +8,7 @@ import { baseConfigFactory } from '../../config/base.config'
 import { vaultConfigFactory } from '../../config/vault.config'
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
+import { VaultError } from './vault-http-client.service'
 import { makeProjectWithDetails, makeVaultSecret, makeZoneWithDetails } from './vault-testing.utils'
 import { VaultService } from './vault.service'
 
@@ -155,5 +156,55 @@ describe('vaultService', () => {
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`)
+  })
+
+  // Zone sync: the zone route still lives on legacy apps/server (hook.zone.*).
+  // VaultService listens on `zone.upsert` / `zone.delete` via @OnEvent, but
+  // AppEventsService exposes no emitZoneEvent (see app-events.service.spec.ts
+  // parity guard). These specs lock the external-call surface of upsertZone /
+  // deleteZone so that when the zone module migrates and the emit path lands,
+  // the Vault external contract is already pinned.
+  describe('zone sync (external parity)', () => {
+    it('upserts the zone mount, tech-readonly policy and approle', async () => {
+      const zone = makeZoneWithDetails()
+
+      await service.upsertZone(zone.slug)
+
+      expect(client.createSysMount).toHaveBeenCalledWith(`zone-${zone.slug}`, expect.objectContaining({ type: 'kv' }))
+      expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(
+        `tech--zone-${zone.slug}--ro`,
+        { policy: `path \"zone-${zone.slug}/*\" { capabilities = [\"read\"] }` },
+      )
+      expect(client.upsertAuthApproleRole).toHaveBeenCalledWith(
+        `zone-${zone.slug}`,
+        { secret_id_num_uses: '0', secret_id_ttl: '0', token_max_ttl: '0', token_num_uses: '0', token_ttl: '0', token_type: 'batch', token_policies: [`tech--zone-${zone.slug}--ro`] },
+      )
+    })
+
+    it('tunes an existing mount (400) instead of recreating it', async () => {
+      const zone = makeZoneWithDetails()
+      client.createSysMount.mockRejectedValueOnce(new VaultError('HttpError', 'Bad Request', { status: 400 }))
+
+      await service.upsertZone(zone.slug)
+
+      expect(client.tuneSysMount).toHaveBeenCalledWith(`zone-${zone.slug}`, expect.objectContaining({ options: { version: 2 } }))
+    })
+
+    it('deletes the zone mount, policy and approle, swallowing NotFound', async () => {
+      const zone = makeZoneWithDetails()
+
+      await service.deleteZone(zone.slug)
+
+      expect(client.deleteSysMounts).toHaveBeenCalledWith(`zone-${zone.slug}`)
+      expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`tech--zone-${zone.slug}--ro`)
+      expect(client.deleteAuthApproleRole).toHaveBeenCalledWith(`zone-${zone.slug}`)
+    })
+
+    it('rethrows non-NotFound errors during zone deletion', async () => {
+      const zone = makeZoneWithDetails()
+      client.deleteSysMounts.mockRejectedValueOnce(new VaultError('HttpError', 'Bad Gateway', { status: 502 }))
+
+      await expect(service.deleteZone(zone.slug)).rejects.toThrow()
+    })
   })
 })

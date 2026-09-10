@@ -175,4 +175,28 @@ describe('appEventsService', () => {
       data: expect.objectContaining({ args: payload }),
     }))
   })
+
+  // Parity contract (cpn-dev-workflow migration-parity-checklist): every event a
+  // consumer listens for MUST be emitable from the new stack. VaultService
+  // listens on `zone.upsert` / `zone.delete` but the zone route still lives on
+  // legacy apps/server (which fires `hook.zone.*` directly). AppEventsService
+  // must NOT silently grow a zone emit API here: if it did, the cutover would
+  // drop the emitter-side admin log / project-status update that emitProjectEvent
+  // owns. This test pins the current surface so a future zone-module migration
+  // is forced to add the emit path deliberately rather than by accident.
+  describe('emit surface (migration parity)', () => {
+    const expectedEmitMethods = ['emitProjectEvent', 'emitProjectMemberEvent', 'emitRepositoryEvent'] as const
+
+    it.each(expectedEmitMethods)('exposes %s as a public emit entrypoint', (method) => {
+      expect(typeof service[method]).toBe('function')
+    })
+
+    it('does NOT expose a zone emit entrypoint (zone.* listeners have no emitter yet — legacy owns the route)', () => {
+      // Deliberate negative assertion: no `emitZoneEvent` exists until the zone
+      // module is migrated and wired through AppEventsService. If this fails,
+      // the zone cutover is being introduced without the migration-parity audit
+      // (see MIGRATION-PARITY-MATRIX.md, unit u4/u8).
+      expect('emitZoneEvent' in service).toBe(false)
+    })
+  })
 })
