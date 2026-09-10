@@ -43,6 +43,13 @@ type ValueSourcePatch = Partial<Pick<Extract<UpdateDeploymentValueSource, { type
 function update(patch: ValueSourcePatch): void {
   model.value = { ...model.value, ...patch }
 }
+
+// An internal source lives in the deployed repository: its path is resolved from the
+// deployed directory, like the legacy value files. An external source points to another
+// repository, whose root is the only reference available.
+const pathHint = computed(() => model.value.type === 'external'
+  ? 'Chemin du fichier relatif à la racine du dépôt de valeurs sélectionné.'
+  : 'Chemin du fichier relatif au répertoire à déployer.')
 </script>
 
 <template>
@@ -137,7 +144,7 @@ function update(patch: ValueSourcePatch): void {
       label="Chemin du fichier de valeurs"
       label-visible
       placeholder="values.yaml"
-      hint="Chemin du fichier relatif à la racine du dépôt."
+      :hint="pathHint"
       required
       :disabled="props.disabled"
       :error-message="props.isDirty && !model.path ? 'Le chemin du fichier est requis' : undefined"
