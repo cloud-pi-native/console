@@ -45,7 +45,7 @@ RUN pnpm run build
 # Build @cpn-console/server
 RUN pnpm --filter @cpn-console/server run build
 # Export @cpn-console/server to target build directory
-RUN pnpm --filter @cpn-console/server --prod deploy build
+RUN pnpm --filter @cpn-console/server --prod deploy --legacy build
 
 
 # Prod stage -----------------------------------------------------------------------

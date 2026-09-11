@@ -589,7 +589,7 @@ describe('gitlabService', () => {
       const staleSecret = makeVaultSecret({
         data: { MIRROR_USER: accessToken.name, MIRROR_TOKEN: accessToken.token },
         metadata: {
-          created_time: faker.date.past({ years: 2 }).toISOString(),
+          created_time: faker.date.birthdate({ min: 1, max: 2, mode: 'age' }).toISOString(),
           custom_metadata: null,
           deletion_time: '',
           destroyed: false,

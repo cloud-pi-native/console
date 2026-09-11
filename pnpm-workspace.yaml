@@ -16,7 +16,7 @@ allowBuilds:
   vue-demi: true
 allowUnusedPatches: true
 autoInstallPeers: true
-injectWorkspacePackages: true
+injectWorkspacePackages: false
 # minimum number of minutes that must pass after a version is published before
 # pnpm will install it. This applies to all dependencies, including transitive ones.
 minimumReleaseAge: 1440 # 1 day
