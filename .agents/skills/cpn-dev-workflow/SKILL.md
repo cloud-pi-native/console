@@ -51,7 +51,7 @@ Written artifacts — issues, PR bodies, comments — stay terse: one statement
 per fact, no rephrasing, no filler. Inflation buries signal.
 
 Details live in the `cpn-issue`, `cpn-commit`, `cpn-pr`, `cpn-review`,
-`cpn-land`, and `cpn-delegate` skills.
+`cpn-merge`, and `cpn-delegate` skills.
 
 ## Isolation
 
