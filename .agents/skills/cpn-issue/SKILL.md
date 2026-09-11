@@ -34,9 +34,10 @@ An unmet requirement is a reported blocker, never a silent scope change.
 3. Body in **French**, from the template: problem statement (need, scope,
    impact) plus a `- [ ]` **Définition du fini** acceptance tasklist as the
    work ledger — never the solution; findings and analysis go in comments.
-4. Free-text rules: natural paragraphs, no hard wrapping, never run a
-   formatter over a body; a literal `@` in prose triggers a user/team mention
-   — wrap it in a code span.
+4. Free-text rules: terse — one statement per fact, no rephrasing (full
+   discipline in `cpn-dev-workflow`); natural paragraphs, no hard wrapping,
+   never run a formatter over a body; a literal `@` in prose triggers a
+   user/team mention — wrap it in a code span.
 
 ```bash
 gh issue create --repo cloud-pi-native/console \
