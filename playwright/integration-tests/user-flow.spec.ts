@@ -95,6 +95,21 @@ test.describe('Integration tests user flow: first checks', { tag: '@integ' }, ()
     await expect(page1.getByRole('link', { name: 'forge-dso' })).not.toBeVisible()
   })
 
+  test('Check project secrets', { tag: '@replayable' }, async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await page.getByTestId('menuMyProjects').click()
+    await page.getByRole('link', { name: projectName }).click()
+    await page.getByTestId('showSecretsBtn').click()
+    const modal = page.getByTestId('projectSecretsZone')
+    // Keys only — secret values rotate with the project's provisioning.
+    await expect(modal.getByRole('heading', { name: 'GITLAB' })).toBeVisible()
+    await expect(modal.getByText('GIT_MIRROR_PROJECT_ID')).toBeVisible()
+    await expect(modal.getByText('GIT_MIRROR_TOKEN')).toBeVisible()
+    await expect(modal.locator('pre').first()).not.toBeEmpty()
+    await expect(modal.getByRole('heading', { name: 'VAULT' })).toBeVisible()
+  })
+
   test('Project permissions', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
