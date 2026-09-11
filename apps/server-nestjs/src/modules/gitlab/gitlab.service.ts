@@ -1,6 +1,6 @@
 import type { MemberSchema } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
-import type { RepositorySyncEventPayload } from '../events/app-events.service'
+import type { ProjectMemberEventPayload, RepositorySyncEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { MirrorUserSecret, VaultSecret } from '../vault/vault-client.service'
 import type { GroupSchemaWith } from './gitlab-client.service'
@@ -89,6 +89,16 @@ export class GitlabService {
     return capturePluginResult('gitlab', () => this.syncRepositoryMirror(payload))
   }
 
+  @OnEvent('projectMember.upsert')
+  async handleProjectMemberUpsert(payload: ProjectMemberEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', () => this.syncProjectMembers(payload.projectId))
+  }
+
+  @OnEvent('projectMember.delete')
+  async handleProjectMemberDelete(payload: ProjectMemberEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', () => this.removeProjectMember(payload))
+  }
+
   @StartActiveSpan()
   private async syncRepositoryMirror(payload: RepositorySyncEventPayload) {
     const { projectSlug, internalRepoName, syncAllBranches } = payload
@@ -118,6 +128,49 @@ export class GitlabService {
       await this.gitlab.deleteGroup(group)
     }
     this.logger.log(`GitLab cleanup completed for project ${project.slug}`)
+  }
+
+  @StartActiveSpan()
+  private async syncProjectMembers(projectId: string) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.id', projectId)
+    this.logger.log(`Handling a project member upsert event (projectId=${projectId})`)
+    const project = await this.datastore.getProject(projectId)
+    if (!project) {
+      throw new Error(`Project not found for member sync (projectId=${projectId})`)
+    }
+    const group = await this.gitlab.getOrCreateProjectSubGroup(project.slug)
+    const members = await this.gitlab.getGroupMembers(group)
+    await this.ensureProjectGroupMembers(project, group, members)
+    this.logger.log(`GitLab member sync completed (projectId=${projectId}, slug=${project.slug})`)
+  }
+
+  @StartActiveSpan()
+  private async removeProjectMember(payload: ProjectMemberEventPayload) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.id', payload.projectId)
+    span?.setAttribute('project.member.userId', payload.userId)
+    this.logger.log(`Handling a project member delete event (projectId=${payload.projectId}, userId=${payload.userId})`)
+    const user = await this.datastore.getUser(payload.userId)
+    if (!user) {
+      throw new Error(`User not found for member removal (userId=${payload.userId})`)
+    }
+    const project = await this.datastore.getProject(payload.projectId)
+    if (!project) {
+      throw new Error(`Project not found for member removal (projectId=${payload.projectId})`)
+    }
+    const gitlabUser = await this.gitlab.getUserByEmail(user.email)
+    if (!gitlabUser) {
+      this.logger.log(`User absent from GitLab, nothing to remove (projectId=${payload.projectId}, userId=${payload.userId})`)
+      return
+    }
+    const group = await this.gitlab.getProjectGroup(project.slug)
+    if (!group) {
+      this.logger.log(`No GitLab group for project, nothing to remove (projectId=${payload.projectId}, slug=${project.slug})`)
+      return
+    }
+    await this.gitlab.removeGroupMember(group, gitlabUser.id)
+    this.logger.log(`GitLab member removed (projectId=${payload.projectId}, gitlabUserId=${gitlabUser.id})`)
   }
 
   // @Cron(CronExpression.EVERY_HOUR)
