@@ -47,6 +47,9 @@ behind it; no bare-request implementation.
 6. **Close deliberately**: verify every acceptance box, then close the issue
    with an evidence comment. Never rely on PR-merge auto-close.
 
+Written artifacts — issues, PR bodies, comments — stay terse: one statement
+per fact, no rephrasing, no filler. Inflation buries signal.
+
 Details live in the `cpn-issue`, `cpn-commit`, `cpn-pr`, and `cpn-review`
 skills.
 
@@ -69,5 +72,6 @@ Before opening the PR:
 pnpm format
 pnpm lint
 pnpm test # targeted specs at minimum
-pnpm playwright:test # only if a user journey is affected
+# always — unlinked changes can break E2E; also flags flaky/slow specs
+pnpm playwright:test
 ```
