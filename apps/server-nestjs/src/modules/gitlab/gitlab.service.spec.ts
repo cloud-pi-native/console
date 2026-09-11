@@ -11,7 +11,7 @@ import { OBSERVABILITY_REPOSITORY } from '../observability/observability.constan
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
 import { GitlabDatastoreService } from './gitlab-datastore.service'
-import { makeAccessTokenExposedSchema, makeExpandedUserSchema, makeGroupSchema, makeMemberSchema, makePipeline, makePipelineTriggerToken, makeProjectSchema, makeProjectWithDetails, makeVaultSecret } from './gitlab-testing.utils'
+import { makeAccessTokenExposedSchema, makeExpandedUserSchema, makeGroupSchema, makeMemberSchema, makePipeline, makePipelineTriggerToken, makeProjectSchema, makeProjectWithDetails, makeUser, makeVaultSecret } from './gitlab-testing.utils'
 import { INFRA_APPS_REPO_NAME, MIRROR_REPO_NAME, PLUGIN_NAME, TOPIC_PLUGIN_MANAGED, TOPIC_SYSTEM_MANAGED } from './gitlab.constants'
 import { GitlabService } from './gitlab.service'
 
@@ -53,6 +53,75 @@ describe('gitlabService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined()
+  })
+
+  describe('projectMember events', () => {
+    it('should reconcile project members on projectMember.upsert', async () => {
+      const project = makeProjectWithDetails({
+        members: [{ user: { id: 'u1', email: 'member@example.com', firstName: 'New', lastName: 'User', adminRoleIds: [] }, roleIds: [] }],
+      })
+      const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+      datastore.getProject.mockResolvedValue(project)
+      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.upsertUser.mockImplementation(async user => makeExpandedUserSchema({
+        id: user.email === 'member@example.com' ? 999 : 998,
+        email: user.email,
+        username: user.email.split('@')[0] ?? user.email,
+        name: user.name,
+      }))
+
+      const result = await service.handleProjectMemberUpsert({ projectId: project.id, userId: 'u1' })
+
+      expect(result.gitlab.status).toBe('OK')
+      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 999, AccessLevel.GUEST)
+      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 998, AccessLevel.OWNER)
+    })
+
+    it('should fail with KO when the project no longer exists on projectMember.upsert', async () => {
+      datastore.getProject.mockResolvedValue(null)
+
+      const result = await service.handleProjectMemberUpsert({ projectId: 'missing', userId: 'u1' })
+
+      expect(result.gitlab.status).toBe('KO')
+    })
+
+    it('should remove the group member on projectMember.delete', async () => {
+      const project = makeProjectWithDetails()
+      const group = makeGroupSchema({ id: 321, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+      datastore.getProject.mockResolvedValue(project)
+      datastore.getUser.mockResolvedValue(makeUser({ id: 'u1', email: 'leaver@example.com' }))
+      gitlab.getUserByEmail.mockResolvedValue(makeExpandedUserSchema({ id: 555, email: 'leaver@example.com', username: 'leaver', name: 'Leaver User' }))
+      gitlab.getProjectGroup.mockResolvedValue(group)
+
+      const result = await service.handleProjectMemberDelete({ projectId: project.id, userId: 'u1' })
+
+      expect(result.gitlab.status).toBe('OK')
+      expect(gitlab.removeGroupMember).toHaveBeenCalledWith(group, 555)
+    })
+
+    it('should tolerate a user absent from GitLab on projectMember.delete', async () => {
+      datastore.getProject.mockResolvedValue(makeProjectWithDetails())
+      datastore.getUser.mockResolvedValue(makeUser({ id: 'u1', email: 'ghost@example.com' }))
+      gitlab.getUserByEmail.mockResolvedValue(null)
+
+      const result = await service.handleProjectMemberDelete({ projectId: 'p1', userId: 'u1' })
+
+      expect(result.gitlab.status).toBe('OK')
+      expect(gitlab.removeGroupMember).not.toHaveBeenCalled()
+    })
+
+    it('should tolerate a missing GitLab group on projectMember.delete', async () => {
+      datastore.getProject.mockResolvedValue(makeProjectWithDetails())
+      datastore.getUser.mockResolvedValue(makeUser({ id: 'u1', email: 'leaver@example.com' }))
+      gitlab.getUserByEmail.mockResolvedValue(makeExpandedUserSchema({ id: 555, email: 'leaver@example.com', username: 'leaver', name: 'Leaver User' }))
+      gitlab.getProjectGroup.mockResolvedValue(undefined)
+
+      const result = await service.handleProjectMemberDelete({ projectId: 'p1', userId: 'u1' })
+
+      expect(result.gitlab.status).toBe('OK')
+      expect(gitlab.removeGroupMember).not.toHaveBeenCalled()
+    })
   })
 
   describe('handleUpsert', () => {
