@@ -83,4 +83,4 @@ Set each empty, determinable field, additively (`--add-label` /
 gh workflow run 243523481 --repo cloud-pi-native/console -f PR_NUMBER=<N>
 ```
 
-Landing once gates pass (ledger, threads, CI, human approval): `cpn-land`.
+Landing once gates pass (ledger, threads, CI, human approval): `cpn-merge`.

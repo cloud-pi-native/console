@@ -64,4 +64,4 @@ git status --porcelain # clean before switching units
 ## See also
 
 `cpn-dev-workflow` (lifecycle, quality gates) · `cpn-commit` · `cpn-pr` ·
-`cpn-land` (landing, cleanup).
+`cpn-merge` (landing, cleanup).

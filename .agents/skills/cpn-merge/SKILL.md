@@ -1,5 +1,5 @@
 ---
-name: cpn-land
+name: cpn-merge
 description:
   "Use when merging a reviewed PR in this repo: DoD ledger, threads, CI, and
   human approval gates, then squash-merge."
