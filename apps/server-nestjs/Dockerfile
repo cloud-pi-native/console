@@ -74,7 +74,7 @@ RUN pnpm --filter @cpn-console/server-nestjs install --frozen-lockfile
 RUN pnpm --filter @cpn-console/server-nestjs run build
 
 # Export @cpn-console/server-nestjs to target build directory
-RUN pnpm --filter @cpn-console/server-nestjs --prod deploy build
+RUN pnpm --filter @cpn-console/server-nestjs --prod deploy --legacy build
 
 # Prod stage -----------------------------------------------------------------------
 FROM docker.io/node:26.7.0-bullseye-slim AS prod
