@@ -1,5 +1,65 @@
 # Changelog
 
+## [9.26.0-rc](https://github.com/cloud-pi-native/console/compare/v9.25.0...v9.26.0-rc) (2026-09-11)
+
+
+### Features
+
+* **argocd:** add configurable shared source repositories to projects ([da9576f](https://github.com/cloud-pi-native/console/commit/da9576fcee003aed3b0a304dc7e91c1b59cac3d4))
+* **server-nestjs:** add Sécurité role to project system ([c12f464](https://github.com/cloud-pi-native/console/commit/c12f4647edc3b1c6b8b3974b4b74bb1e77f69f1f))
+* **server-nestjs:** backfill Sécurité project role on existing projects ([c25a048](https://github.com/cloud-pi-native/console/commit/c25a048a611f8b41ac4de28ddefeaab3d6b83b83)), closes [#2676](https://github.com/cloud-pi-native/console/issues/2676)
+* **server-nestjs:** configurable Harbor robot expiration with enforced rotation headroom ([c55fe13](https://github.com/cloud-pi-native/console/commit/c55fe136b40c641e93821c0d64ef32e7d6553bd8)), closes [#2679](https://github.com/cloud-pi-native/console/issues/2679)
+* **server-nestjs:** proactive GitLab mirror token rotation with enforced headroom ([f0139b6](https://github.com/cloud-pi-native/console/commit/f0139b6cf41513ce00a0facccb7c4020d8d01891)), closes [#2691](https://github.com/cloud-pi-native/console/issues/2691)
+
+
+### Bug Fixes
+
+* **ci:** fix hotfixes being performed with main as target branch ([ff26269](https://github.com/cloud-pi-native/console/commit/ff262692fbe1ab90f273bd60b1f7d8450ffdee4f))
+* **client:** clarify values file path hint per value source type ([52ac9a3](https://github.com/cloud-pi-native/console/commit/52ac9a3dd0c1d2187bc82384a2478d543fcfa546))
+* **client:** guard syncRepository against cleared selectedRepo after await ([d647925](https://github.com/cloud-pi-native/console/commit/d647925e5c104bf64c2be696a6df178669c60c02))
+* **client:** use bundled ri icon for deployment sources ([9498ecc](https://github.com/cloud-pi-native/console/commit/9498eccbc9435623ef96a42d8bf18adb18c58357))
+* **deployment:** send value source paths to ArgoCD without &lt;env&gt; substitution ([4e48cbc](https://github.com/cloud-pi-native/console/commit/4e48cbcaaef94548298a45f32893a98eb3340060))
+* **nexus:** re-add NexusError import dropped by idempotence refactor ([749373b](https://github.com/cloud-pi-native/console/commit/749373b7d7e7fbbc8169d577333c5dfa5a9dca1a))
+* **observability:** restore legacy dual-bucket Grafana RBAC sync ([2ad58c1](https://github.com/cloud-pi-native/console/commit/2ad58c1dc9572194dbc818976a6c64143dd227c5)), closes [#2686](https://github.com/cloud-pi-native/console/issues/2686)
+* OpenCDS should have been enabled though plugin service not from main ([2967d92](https://github.com/cloud-pi-native/console/commit/2967d926ea63f9682c81479e490eb3850611853e))
+* revert pnpm link to file protocol ([f4510ee](https://github.com/cloud-pi-native/console/commit/f4510ee0ed79ea721c9bed2f79bdcdbb91957af7))
+* **server-nestjs:** backfill default system roles on roleless projects ([796870c](https://github.com/cloud-pi-native/console/commit/796870c3bcc9f3fb9efe078d8d50808b3169f3fb)), closes [#2684](https://github.com/cloud-pi-native/console/issues/2684)
+* **server-nestjs:** make Nexus create paths idempotent (409 conflict tolerance) ([d1fea06](https://github.com/cloud-pi-native/console/commit/d1fea06b0189582cbe759582d57b49b61b994077)), closes [#2619](https://github.com/cloud-pi-native/console/issues/2619)
+* **server-nestjs:** make SonarQube user creation idempotent on create race ([1b29ad6](https://github.com/cloud-pi-native/console/commit/1b29ad6831e580a3d7293a0b950fa1bc419030c7)), closes [#2633](https://github.com/cloud-pi-native/console/issues/2633)
+* **server-nestjs:** make the gitlab mirror rotation test deterministic ([14a4f74](https://github.com/cloud-pi-native/console/commit/14a4f74e79c475720d17fdebb9c736768d652516)), closes [#2706](https://github.com/cloud-pi-native/console/issues/2706)
+
+
+### Miscellaneous Chores
+
+* **deps:** mitigate Dependabot alerts via lock refresh and overrides ([fa0677c](https://github.com/cloud-pi-native/console/commit/fa0677c2f918e6fdade8683e7570c319b3af97e4)), closes [#2242](https://github.com/cloud-pi-native/console/issues/2242)
+
+
+### Docs
+
+* record recurring agent rules in AGENTS.md ([8cb0413](https://github.com/cloud-pi-native/console/commit/8cb0413505d7d0a104860897d8abb2422e3d2e33))
+* record recurring agent rules in AGENTS.md ([de0eeed](https://github.com/cloud-pi-native/console/commit/de0eeed6fccce2216c428ff6737bb8ce50c910f8))
+* record recurring agent rules in AGENTS.md ([ccc27b1](https://github.com/cloud-pi-native/console/commit/ccc27b12107899ba4cf3961332df7eed895bdc9c))
+* record recurring agent rules in AGENTS.md ([27d9a81](https://github.com/cloud-pi-native/console/commit/27d9a81ec8b4f5fee8db9e5faaaea78a84897ea8))
+* record recurring agent rules in AGENTS.md ([3428d6e](https://github.com/cloud-pi-native/console/commit/3428d6e5b4b805da9884096cee3fb3e615af601d))
+* record recurring agent rules in AGENTS.md ([5c42a1e](https://github.com/cloud-pi-native/console/commit/5c42a1eb690326bc1463c3c633810b2f695639b9))
+* record recurring agent rules in AGENTS.md ([2778677](https://github.com/cloud-pi-native/console/commit/27786773b9c76d492d6685f9e7b8cc267f327a7c))
+* record recurring agent rules in AGENTS.md ([933fd34](https://github.com/cloud-pi-native/console/commit/933fd3416e08307052271458b174ceb346097b75))
+
+
+### Refactoring
+
+* **admin-role:** remove dead testing-utils exports ([9ed26e0](https://github.com/cloud-pi-native/console/commit/9ed26e07577fd057e0cfa0ce8d756baeef9ee1ea))
+* **admin-roles:** migrate from server ([bec5bc9](https://github.com/cloud-pi-native/console/commit/bec5bc99d71e3dd5dd511278a2afa3c7ac6571e5))
+* **gitlab:** rename ensureCreated to ensure and extract race detection ([7ebaf97](https://github.com/cloud-pi-native/console/commit/7ebaf97a6a78c35470f1db0fbce0f57f8c8b945c))
+* **server-nestjs:** route Keycloak group creation through shared ensure util ([f3095b4](https://github.com/cloud-pi-native/console/commit/f3095b4578cfe55bdba80c7849803c7b0ad270b1))
+* **shared:** add token pair generation and expiration schema ([2d8c83b](https://github.com/cloud-pi-native/console/commit/2d8c83b64ac2d1756872a74066d66344cbb8a7aa))
+
+
+### Reverted commits
+
+* mitigate Dependabot alerts via lock refresh and overrides ([11507fa](https://github.com/cloud-pi-native/console/commit/11507faf0a50ae256f6b5469c97764148dcf3e48))
+* revert pnpm link to file protocol ([6c9768f](https://github.com/cloud-pi-native/console/commit/6c9768fea459d8237f9265127716c3cca06681fc))
+
 ## [9.25.0](https://github.com/cloud-pi-native/console/compare/v9.24.0...v9.25.0) (2026-09-02)
 
 
