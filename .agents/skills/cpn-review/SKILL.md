@@ -10,7 +10,7 @@ license: Apache-2.0
 # Console PR review & reconciliation
 
 Review = read + verdict. Reconciliation = threads + DoD ledger + CI report.
-Neither merges — merge follows human approval; see `cpn-pr`.
+Neither merges — merge follows human approval; see `cpn-land`.
 
 ## Prerequisites
 

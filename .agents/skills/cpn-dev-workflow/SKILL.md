@@ -50,15 +50,15 @@ behind it; no bare-request implementation.
 Written artifacts — issues, PR bodies, comments — stay terse: one statement
 per fact, no rephrasing, no filler. Inflation buries signal.
 
-Details live in the `cpn-issue`, `cpn-commit`, `cpn-pr`, and `cpn-review`
-skills.
+Details live in the `cpn-issue`, `cpn-commit`, `cpn-pr`, `cpn-review`,
+`cpn-land`, and `cpn-delegate` skills.
 
 ## Isolation
 
 - One logical change per branch and PR; out-of-scope fixes become follow-up
   issues.
 - When the current checkout holds unrelated work in progress, isolate in a
-  fresh git worktree instead of mixing:
+  fresh git worktree (`cpn-delegate`) instead of mixing:
 
 ```bash
 git worktree add ../console.<topic> -b <branch> origin/main
