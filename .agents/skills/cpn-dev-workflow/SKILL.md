@@ -72,6 +72,5 @@ Before opening the PR:
 pnpm format
 pnpm lint
 pnpm test # targeted specs at minimum
-# always — unlinked changes can break E2E; also flags flaky/slow specs
-pnpm playwright:test
+pnpm playwright:test # always — unlinked changes can break E2E; also flags flaky/slow specs
 ```
