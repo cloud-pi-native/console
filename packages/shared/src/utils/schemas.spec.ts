@@ -346,4 +346,27 @@ describe('schemas utils', () => {
       projectId: true,
     })
   })
+
+  it.each(['cluster', 'cluster-1', '1-cluster', 'a', 'a--b'])(
+    'should validate RFC 1123 cluster label %s without transforming it',
+    (label) => {
+      const result = ClusterDetailsSchema.shape.label.safeParse(label)
+
+      expect(result.success).toBe(true)
+      if (result.success) expect(result.data).toBe(label)
+    },
+  )
+
+  it.each([
+    'Cluster-Tools',
+    '-cluster',
+    'cluster-',
+    'cluster.tools',
+    'cluster_1',
+    'cluster tools',
+    '',
+    'a'.repeat(51),
+  ])('should reject invalid RFC 1123 cluster label %s', (label) => {
+    expect(ClusterDetailsSchema.shape.label.safeParse(label).success).toBe(false)
+  })
 })
