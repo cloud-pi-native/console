@@ -61,7 +61,7 @@ describe('test clusterContract', () => {
         id: faker.string.uuid(),
         clusterResources: true,
         infos: '',
-        label: faker.string.alpha(),
+        label: faker.string.alpha({ casing: 'lower' }),
         privacy: 'public',
         stageIds: [],
         zoneId: faker.string.uuid(),
@@ -163,7 +163,7 @@ describe('test clusterContract', () => {
       id: faker.string.uuid(),
       clusterResources: true,
       infos: '',
-      label: faker.string.alpha(),
+      label: faker.string.alpha({ casing: 'lower' }),
       privacy: 'public',
       stageIds: [],
       zoneId: faker.string.uuid(),
@@ -188,6 +188,18 @@ describe('test clusterContract', () => {
 
       expect(response.json()).toEqual(cluster)
       expect(response.statusCode).toEqual(201)
+    })
+    it('should reject an invalid label before creating a cluster', async () => {
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
+      authUserMock.mockResolvedValueOnce(user)
+
+      const response = await app.inject()
+        .post(clusterContract.createCluster.path)
+        .body({ ...cluster, label: 'Cluster-Tools' })
+        .end()
+
+      expect(response.statusCode).toEqual(400)
+      expect(businessCreateMock).not.toHaveBeenCalled()
     })
     it('should pass business error', async () => {
       const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
@@ -219,7 +231,7 @@ describe('test clusterContract', () => {
     const cluster: Omit<ClusterDetails, 'id'> = {
       clusterResources: true,
       infos: '',
-      label: faker.string.alpha(),
+      label: faker.string.alpha({ casing: 'lower' }),
       privacy: 'public',
       stageIds: [],
       zoneId: faker.string.uuid(),
@@ -244,6 +256,18 @@ describe('test clusterContract', () => {
 
       expect(response.json()).toEqual({ id: clusterId, ...cluster })
       expect(response.statusCode).toEqual(200)
+    })
+    it('should reject an invalid label before updating a cluster', async () => {
+      const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
+      authUserMock.mockResolvedValueOnce(user)
+
+      const response = await app.inject()
+        .put(clusterContract.updateCluster.path.replace(':clusterId', clusterId))
+        .body({ ...cluster, label: '-cluster' })
+        .end()
+
+      expect(response.statusCode).toEqual(400)
+      expect(businessUpdateMock).not.toHaveBeenCalled()
     })
     it('should pass business error', async () => {
       const user = getUserMockInfos(ADMIN_PERMS.MANAGE_CLUSTERS)
