@@ -25,6 +25,22 @@ test.describe('Clusters page', () => {
     )
   })
 
+  test('should not create a cluster with a non RFC 1123 label', { tag: '@e2e' }, async ({ page }) => {
+    const invalidLabels = ['Cluster-Tools', '-cluster', 'cluster-', 'cluster.tools']
+
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: adminUser })
+    await page.getByTestId('menuAdministrationBtn').click()
+    await page.getByTestId('menuAdministrationClusters').click()
+    await page.getByTestId('addClusterLink').click()
+
+    for (const label of invalidLabels) {
+      await page.getByTestId('labelInput').fill(label)
+      await expect(page.getByText('Le nom du cluster doit contenir uniquement des lettres minuscules, des chiffres et des traits d’union, et commencer et terminer par un caractère alphanumérique.')).toBeVisible()
+      await expect(page.getByTestId('addClusterBtn')).toBeDisabled()
+    }
+  })
+
   test('should update a public cluster', { tag: '@e2e' }, async ({ page }) => {
     const clusterName2 = faker.string.alpha(10).toLowerCase()
     await page.goto(clientURL)
