@@ -16,6 +16,7 @@ import { computed, onBeforeMount, ref, watch } from 'vue'
 import { JsonViewer } from 'vue3-json-viewer'
 import { parse } from 'yaml'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { getClusterLabelValidationMessage } from '@/utils/cluster.js'
 import { localeParseFloat, ONE_TENTH_STR } from '@/utils/func.js'
 import ChoiceSelector from './ChoiceSelector.vue'
 
@@ -318,7 +319,7 @@ const isConnectionDetailsShown = ref(true)
       type="text"
       :disabled="props.associatedEnvironments.length !== 0"
       :required="true"
-      :error-message="localCluster.label && !ClusterDetailsSchema.pick({ label: true }).safeParse({ label: localCluster.label }).success ? 'Le nom du cluster ne doit contenir ni espaces ni caractères spéciaux' : undefined"
+      :error-message="getClusterLabelValidationMessage(localCluster.label)"
       label="Nom du cluster applicatif"
       label-visible
       hint="Nom du cluster applicatif utilisable lors des déploiements Argocd. Modifiable uniquement si le cluster ne comporte aucun environnement."
