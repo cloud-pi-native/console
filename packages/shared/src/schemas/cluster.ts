@@ -3,12 +3,16 @@ import { z } from 'zod'
 
 export const ClusterPrivacySchema = z.enum(['public', 'dedicated'])
 
+export const clusterLabelValidationMessage = 'Le nom du cluster doit contenir uniquement des lettres minuscules, des chiffres et des traits d’union, et commencer et terminer par un caractère alphanumérique.'
+
+const ClusterLabelSchema = z.string()
+  .max(50, { message: 'Le nom du cluster ne doit pas dépasser 50 caractères' })
+  .regex(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/, { message: clusterLabelValidationMessage })
+
 export const CleanedClusterSchema = z.object({
   id: z.string()
     .uuid(),
-  label: z.string()
-    .regex(/^[a-z0-9-]+$/i)
-    .max(50),
+  label: ClusterLabelSchema,
   infos: z.string()
     .max(1000)
     .optional()
