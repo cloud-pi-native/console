@@ -2,8 +2,8 @@
 name: cpn-release-patch
 description:
   "Use when cutting a patch hotfix in this repo: the milestone's merged PRs
-  are the backport set, duplicated onto the base tag with jj."
-version: 1.0.0
+  are the backport set, duplicated onto the base tag with plain git."
+version: 1.1.0
 license: Apache-2.0
 ---
 
@@ -19,8 +19,9 @@ in-milestone commits vs 35 from the diff).
 
 - Write access:
   `gh api repos/cloud-pi-native/console --jq .viewerPermission`.
-- Tag exists: `git rev-parse -q --verify <tag>`; sync bookmarks and tags
-  from the console remote before reading them.
+- Tag exists: `git rev-parse -q --verify <tag>`; fetch tags and branches from
+  the console remote before reading them
+  (`git fetch origin --tags --prune`).
 - The next patch milestone exists and is open:
   `gh api 'repos/cloud-pi-native/console/milestones?state=open'`.
 
@@ -33,33 +34,37 @@ An unmet requirement is a reported blocker, never a silent scope change.
    API returns `pull_request.merge_commit_sha: null`:
 
 ```bash
-gh api "repos/cloud-pi-native/console/issues?milestone=<num>&state=closed" \
+gh api "repos/cloud-pi-native/console/issues?milestone=<num>&state=closed&per_page=100" \
   --jq '.[] | select(.pull_request != null) | .number'
 gh api repos/cloud-pi-native/console/pulls/<n> --jq .merge_commit_sha
+# drop nulls / duplicates, keep the result in /tmp/backport-ids.txt (one SHA per line)
 ```
 
-2. **Rebuild the chain on the tag.** Point the working copy at the tag
-   itself, then duplicate the set — no empty scaffold commit:
+2. **Rebuild the chain on the tag.** Detach HEAD at the tag itself, then
+   replay the set with cherry-pick — no empty scaffold commit:
 
 ```bash
-jj goto <tag>
-jj duplicate $(tr '\n' ' ' < /tmp/backport-ids.txt) --onto @
-TIP=$(jj log -r 'heads(@)' --no-graph -T commit_id | head -1)
+git checkout --detach <tag>
+git cherry-pick --empty=keep $(tr '\n' ' ' < /tmp/backport-ids.txt)
+TIP=$(git rev-parse HEAD)
 ```
+
+   On a conflict, resolve it, `git add <file>`, `git cherry-pick --continue`;
+   to drop a broken commit, `git cherry-pick --skip`.
 
 3. **Verify before pushing.** Exact commit count (milestone size, no
    scaffold), zero conflict markers in `<tag>..$TIP`, and
-   `git diff --name-only $TIP origin/main` limited to release-please files
-   (`package.json`, `CHANGELOG.md`, `.release-please-manifest.json`) — any
-   other file means a missed or mis-ordered commit. Subjects must match the
-   milestone PR titles, with zero next-minor leaks.
+   `git diff --name-only $TIP origin/main` limited to release-please
+   files (`package.json`, `CHANGELOG.md`, `.release-please-manifest.json`,
+   `.github/release-please-manifest.json`) — any other file means a missed or
+   mis-ordered commit. Subjects must match the milestone PR titles, with zero
+   next-minor leaks.
 
 4. **Push the branch release-please watches.** `hotfix/*` is the one prefix
    allowed on `main` without a feature branch (`cpn-pr`):
 
 ```bash
-jj bookmark set hotfix/<x.y.z> -r "$TIP"
-jj git push --remote cloud-pi-native --bookmark hotfix/<x.y.z>
+git push origin HEAD:refs/heads/hotfix/<x.y.z>
 ```
 
 Never cut the tag by hand — release-please opens `chore: Release v<x.y.z>`
@@ -68,20 +73,27 @@ follows `cpn-pr` and `cpn-merge`.
 
 ## Pitfalls
 
-- `jj new <tag> -m` leaves an empty ancestor that blocks the push
-  ("no description") — point the working copy at the tag, then duplicate.
-- Stale remote-tracking bookmark blocks the push — fetch from the console
-  remote, re-point with `jj bookmark set --allow-backwards`, push again.
-- Fetching with the wrong remote — this repo's workspaces can carry a
-  second `origin`; always pin `--remote cloud-pi-native` for jj git ops.
+- `git checkout -b <branch> <tag>` leaves the branch anchored at the tag
+  instead of the replayed chain — detach at the tag, cherry-pick, then push
+  `HEAD:refs/heads/<branch>`; never commit onto the tag checkout itself.
+- A stale remote `hotfix/*` branch rejects the push (non-fast-forward). Fetch
+  the branch, then re-push with a lease:
+  `git fetch origin 'refs/heads/hotfix/*:refs/remotes/origin/hotfix/*'`
+  then
+  `git push --force-with-lease=refs/heads/hotfix/<x.y.z>:refs/remotes/origin/hotfix/<x.y.z> cloud-pi-native HEAD:refs/heads/hotfix/<x.y.z>`.
+- This repo's clones can carry a second `origin`; always name the remote
+  `cloud-pi-native` explicitly for fetch and push.
+- Cherry-pick conflicts are expected when a milestone PR touched files that
+  also changed between tags — resolve in favor of the milestone PR's intent,
+  then re-run the step 3 gates before pushing.
 
 ## Verify
 
-`git ls-remote cloud-pi-native refs/heads/hotfix/<x.y.z>` equals `$TIP`, and
+`git ls-remote origin refs/heads/hotfix/<x.y.z>` equals `$TIP`, and
 the release-please PR targets `hotfix/<x.y.z>`.
 
 ## See also
 
-`cpn-release-notes` (consumer notes per tag) · `cpn-pr` (branch
+`cpn-pr` (branch
 conventions) · `cpn-merge` (landing the release PR) ·
 `cpn-dev-workflow` (lifecycle).
