@@ -17,16 +17,16 @@ export const DEFAULT_NPM_WRITE_POLICY = 'allow'
 
 // Default group paths granting write and read access at the platform level
 export const DEFAULT_PLATFORM_WRITE_GROUP_PATHS = '/console/admin'
-export const DEFAULT_PLATFORM_READ_GROUP_PATHS = '/console/readonly,/console/security'
+export const DEFAULT_PLATFORM_READER_GROUP_PATHS = '/console/readonly,/console/security'
 
 // Default group path suffixes granting write and read access at the project level
 export const DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES = '/console/admin,/console/devops'
-export const DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES = '/console/readonly,/console/security,/console/developer'
+export const DEFAULT_PROJECT_READER_GROUP_PATH_SUFFIXES = '/console/readonly,/console/security,/console/developer'
 
 // Plugin configuration keys for platform-level group paths
 export const PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY = 'platformWriteGroupPaths'
-export const PLATFORM_READ_GROUP_PATHS_PLUGIN_KEY = 'platformReadGroupPaths'
+export const PLATFORM_READER_GROUP_PATHS_PLUGIN_KEY = 'platformReadGroupPaths'
 
 // Plugin configuration keys for project-level group path suffixes
 export const PROJECT_WRITE_GROUP_PATH_SUFFIXES_PLUGIN_KEY = 'projectWriteGroupPathSuffixes'
-export const PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY = 'projectReadGroupPathSuffixes'
+export const PROJECT_READER_GROUP_PATH_SUFFIXES_PLUGIN_KEY = 'projectReadGroupPathSuffixes'
