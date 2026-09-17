@@ -58,8 +58,9 @@ export class VaultProjectApi extends VaultApi {
     if (!path.startsWith('/')) path = `/${path}`
 
     const listSecretPath: string[] = []
+    const normalizedPath = path.endsWith('/') ? path : `${path}/`
     const response = await this.axios({
-      url: `/v1/${this.coreKvName}/metadata/${this.projectRootDir}/${this.basePath}${path}/`,
+      url: `/v1/${this.coreKvName}/metadata/${this.projectRootDir}/${this.basePath}${normalizedPath}`,
       headers: {
         'X-Vault-Token': await this.getToken(),
       },
