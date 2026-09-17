@@ -5,7 +5,7 @@ import { baseConfigFactory } from '../../config/base.config'
 import { vaultConfigFactory } from '../../config/vault.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
-import { generateGitlabMirrorCredPath, generateSecretGroupPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath, isVaultNotFound } from './vault.utils'
+import { generateAppRoleSecretIdPath, generateGitlabMirrorCredPath, generateSecretGroupPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath, isVaultNotFound } from './vault.utils'
 
 export interface VaultSysPoliciesAclUpsertRequest {
   policy: string
@@ -401,7 +401,13 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  async createAuthApproleRoleSecretId(roleName: string) {
+  async ensureAuthApproleRoleSecretId(roleName: string) {
+    const kvPath = generateAppRoleSecretIdPath(this.baseConfig.projectsRootDir, roleName)
+    const existing = await this.read<{ secret_id: string }>(kvPath).catch(() => null)
+    if (existing?.data?.secret_id) {
+      this.logger.verbose(`Reusing Vault AppRole secret-id for ${roleName}`)
+      return existing.data.secret_id
+    }
     const path = `auth/approle/role/${roleName}/secret-id`
     this.logger.verbose(`Creating Vault AppRole secret-id for ${roleName}`)
     const response = await this.http.fetch<VaultSecretIdResponse>(path, { method: 'POST' })
@@ -409,6 +415,7 @@ export class VaultClientService {
     if (!secretId) {
       throw new VaultError('InvalidResponse', `Vault secret-id not generated for role ${roleName}`, { method: 'POST', path })
     }
+    await this.write({ secret_id: secretId }, kvPath)
     return secretId
   }
 
