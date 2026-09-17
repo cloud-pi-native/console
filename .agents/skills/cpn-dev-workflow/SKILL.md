@@ -74,3 +74,9 @@ pnpm lint
 pnpm test # targeted specs at minimum
 pnpm playwright:test # always — unlinked changes can break E2E; also flags flaky/slow specs
 ```
+
+## See also
+
+- `cpn-changelog` — carry customer-facing highlights in feature PR bodies;
+  copied into the release PR's CHANGELOG section.
+- `cpn-release-patch` — hotfix backport cutting.
