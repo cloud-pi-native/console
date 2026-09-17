@@ -49,19 +49,19 @@ export class ServiceMonitorService implements OnModuleInit {
 
   private async collect(): Promise<ServiceHealth[]> {
     const { argocd, gitlab, harbor, nexus, sonarqube, vault } = this
-    const probes: Array<[string, (() => Promise<unknown>) | undefined]> = [
-      ['argocd', argocd && (() => argocd.check())],
-      ['gitlab', gitlab && (() => gitlab.check())],
-      ['harbor', harbor && (() => harbor.check())],
-      ['keycloak', () => this.keycloak.check()],
-      ['nexus', nexus && (() => nexus.check())],
-      ['sonarqube', sonarqube && (() => sonarqube.check('sonarqube'))],
-      ['vault', vault && (() => vault.check())],
+    const probes: Array<[string, string, (() => Promise<unknown>) | undefined]> = [
+      ['argocd', 'ArgoCD', argocd && (() => argocd.check())],
+      ['gitlab', 'Gitlab', gitlab && (() => gitlab.check())],
+      ['harbor', 'Harbor', harbor && (() => harbor.check())],
+      ['keycloak', 'Keycloak', () => this.keycloak.check()],
+      ['nexus', 'Nexus', nexus && (() => nexus.check())],
+      ['sonarqube', 'SonarQube', sonarqube && (() => sonarqube.check('sonarqube'))],
+      ['vault', 'Vault', vault && (() => vault.check())],
     ]
 
-    const settled = await Promise.allSettled(probes.map(([, probe]) => probe?.()))
+    const settled = await Promise.allSettled(probes.map(([, , probe]) => probe?.()))
     return settled.flatMap((result, i): ServiceHealth[] => {
-      const [name] = probes[i]
+      const [, name] = probes[i]
       const timestamp = Date.now()
       if (result.status === 'rejected') {
         const message = result.reason instanceof Error ? result.reason.message : String(result.reason)
@@ -78,6 +78,7 @@ export class ServiceMonitorService implements OnModuleInit {
         interval: INTERVAL_MS,
         lastUpdateTimestamp: timestamp,
         message: up ? 'OK' : detail.message ?? 'Service en erreur',
+        cause: up ? undefined : detail.message ?? 'Service en erreur',
       }]
     })
   }

@@ -16,8 +16,8 @@ describe('serviceMonitorService', () => {
     const health = await service.getServiceHealth()
 
     expect(health).toEqual([
-      { name: 'argocd', status: 'OK', interval: expect.any(Number), lastUpdateTimestamp: expect.any(Number), message: 'OK' },
-      { name: 'keycloak', status: 'En échec', interval: expect.any(Number), lastUpdateTimestamp: expect.any(Number), message: 'Service en erreur' },
+      { name: 'ArgoCD', status: 'OK', interval: expect.any(Number), lastUpdateTimestamp: expect.any(Number), message: 'OK' },
+      { name: 'Keycloak', status: 'En échec', interval: expect.any(Number), lastUpdateTimestamp: expect.any(Number), message: 'Service en erreur', cause: 'Service en erreur' },
     ])
   })
 
@@ -28,7 +28,7 @@ describe('serviceMonitorService', () => {
 
     const health = await service.getServiceHealth()
 
-    expect(health.map(entry => entry.name)).toEqual(['keycloak'])
+    expect(health.map(entry => entry.name)).toEqual(['Keycloak'])
   })
 
   it('reports a failing probe as En échec with its cause', async () => {
@@ -39,7 +39,7 @@ describe('serviceMonitorService', () => {
     const health = await service.getCompleteServiceHealth()
 
     expect(health).toEqual([
-      { name: 'keycloak', status: 'En échec', interval: expect.any(Number), lastUpdateTimestamp: expect.any(Number), message: 'boom', cause: 'boom' },
+      { name: 'Keycloak', status: 'En échec', interval: expect.any(Number), lastUpdateTimestamp: expect.any(Number), message: 'boom', cause: 'boom' },
     ])
   })
 
