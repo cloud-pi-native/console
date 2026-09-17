@@ -32,6 +32,7 @@ import { getDotenvPaths } from './utils/dotenv.utils'
       load: [baseConfigFactory],
     }),
     TerminusModule.forRoot(),
+    AdminRoleModule,
     DeploymentModule,
     EnvironmentModule,
     HealthzModule,
