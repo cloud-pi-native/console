@@ -1,12 +1,9 @@
 # Cartographie actuelle de la migration `server` → `server-nestjs`
 
 > **Registre exhaustif :** issue [#1889](https://github.com/cloud-pi-native/console/issues/1889).
->
-> **Méthode et limites :**
-> [`docs/superpowers/specs/2026-09-16-nestjs-modularisation-status-design.md`](../../../../docs/superpowers/specs/2026-09-16-nestjs-modularisation-status-design.md).
 
 Cette cartographie décrit l'état structurel constaté dans `origin/main` à
-`a3568efb`. Le décompte est limité aux 75 routes V1 inscrites dans
+`a3568efb` (2026-09-14). Le décompte est limité aux 75 routes V1 inscrites dans
 `apps/server/src/resources/index.ts` et leurs contrats partagés.
 
 ## Règles de classification
