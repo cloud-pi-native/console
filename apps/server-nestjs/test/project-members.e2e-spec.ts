@@ -18,12 +18,9 @@ import { KeycloakClientService } from '../src/modules/keycloak/keycloak-client.s
 import { ProjectMembersModule } from '../src/modules/project-members/project-members.module'
 import { ProjectMembersService } from '../src/modules/project-members/project-members.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
+import { describeWithE2E } from './utils'
 
-const canRunProjectMembersE2E = Boolean(process.env.E2E)
-
-const describeWithProjectMembers = describe.runIf(canRunProjectMembersE2E)
-
-describeWithProjectMembers('ProjectMembersService (e2e)', () => {
+describeWithE2E('ProjectMembersService (e2e)', () => {
   let moduleRef: TestingModule
   let prisma: PrismaService
   let service: ProjectMembersService

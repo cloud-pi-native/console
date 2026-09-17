@@ -5,7 +5,7 @@ import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
@@ -23,13 +23,9 @@ import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { NEXUS_SYNC_TIMEOUT } from './constants'
+import { describeWithE2E } from './utils'
 
-const canRunNexusE2E
-  = Boolean(process.env.E2E)
-
-const describeWithNexus = describe.runIf(canRunNexusE2E)
-
-describeWithNexus('NexusService (e2e)', () => {
+describeWithE2E('NexusService (e2e)', () => {
   let moduleRef: TestingModule
   let eventEmitter: EventEmitter2
   let nexusClient: NexusClientService

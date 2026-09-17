@@ -22,13 +22,9 @@ import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { getAll } from '../src/utils/iterable.utils'
 import { GITLAB_PURGE_SYNC_TIMEOUT, GITLAB_SYNC_TIMEOUT } from './constants'
+import { describeWithE2E } from './utils'
 
-const canRunGitlabE2E
-  = Boolean(process.env.E2E)
-
-const describeWithGitLab = describe.runIf(canRunGitlabE2E)
-
-describeWithGitLab('GitlabService (e2e)', () => {
+describeWithE2E('GitlabService (e2e)', () => {
   let moduleRef: TestingModule
   let eventEmitter: EventEmitter2
   let gitlabClientService: GitlabClientService

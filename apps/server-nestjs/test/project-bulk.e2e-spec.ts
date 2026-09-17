@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
@@ -14,12 +14,9 @@ import { PermissionModule } from '../src/modules/infrastructure/permission/permi
 import { ProjectBulkModule } from '../src/modules/project-bulk/project-bulk.module'
 import { ProjectBulkService } from '../src/modules/project-bulk/project-bulk.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
+import { describeWithE2E } from './utils'
 
-const canRunProjectBulkE2E = Boolean(process.env.E2E)
-
-const describeWithProjectBulk = describe.runIf(canRunProjectBulkE2E)
-
-describeWithProjectBulk('ProjectBulkService (e2e)', () => {
+describeWithE2E('ProjectBulkService (e2e)', () => {
   let moduleRef: TestingModule
   let prisma: PrismaService
   let service: ProjectBulkService

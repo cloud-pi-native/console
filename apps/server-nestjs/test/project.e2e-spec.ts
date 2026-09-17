@@ -17,12 +17,9 @@ import { makeCreateProjectBody } from '../src/modules/project/project-testing.ut
 import { ProjectModule } from '../src/modules/project/project.module'
 import { ProjectService } from '../src/modules/project/project.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
+import { describeWithE2E } from './utils'
 
-const canRunProjectE2E = Boolean(process.env.E2E)
-
-const describeWithProject = describe.runIf(canRunProjectE2E)
-
-describeWithProject('ProjectService (e2e)', () => {
+describeWithE2E('ProjectService (e2e)', () => {
   let moduleRef: TestingModule
   let prisma: PrismaService
   let service: ProjectService

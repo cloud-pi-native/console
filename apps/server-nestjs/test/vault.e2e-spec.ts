@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
@@ -17,13 +17,9 @@ import { makeProjectWithDetails } from '../src/modules/vault/vault-testing.utils
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { VAULT_PROVISION_TIMEOUT } from './constants'
+import { describeWithE2E } from './utils'
 
-const canRunVaultE2E
-  = Boolean(process.env.E2E)
-
-const describeWithVault = describe.runIf(canRunVaultE2E)
-
-describeWithVault('VaultService (e2e)', () => {
+describeWithE2E('VaultService (e2e)', () => {
   let moduleRef: TestingModule
   let eventEmitter: EventEmitter2
   let vaultClient: VaultClientService

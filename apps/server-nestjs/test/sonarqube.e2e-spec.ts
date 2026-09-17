@@ -5,7 +5,7 @@ import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
 import { gitlabConfigFactory } from '../src/config/gitlab.config'
 import { GitlabClientService } from '../src/modules/gitlab/gitlab-client.service'
@@ -26,13 +26,9 @@ import { VaultModule } from '../src/modules/vault/vault.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { getAll } from '../src/utils/iterable.utils'
 import { SONARQUBE_PROJECT_TIMEOUT } from './constants'
+import { describeWithE2E } from './utils'
 
-const canRunSonarqubeE2E
-  = Boolean(process.env.E2E)
-
-const describeWithSonarqube = describe.runIf(canRunSonarqubeE2E)
-
-describeWithSonarqube('SonarqubeService (e2e)', () => {
+describeWithE2E('SonarqubeService (e2e)', () => {
   let moduleRef: TestingModule
   let eventEmitter: EventEmitter2
   let sonarqubeService: SonarqubeService

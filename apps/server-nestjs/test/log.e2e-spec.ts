@@ -2,7 +2,7 @@ import type { TestingModule } from '@nestjs/testing'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
@@ -13,13 +13,9 @@ import { PermissionModule } from '../src/modules/infrastructure/permission/permi
 import { LogModule } from '../src/modules/log/log.module'
 import { LogService } from '../src/modules/log/log.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
+import { describeWithE2E } from './utils'
 
-const canRunLogE2E
-  = Boolean(process.env.E2E)
-
-const describeWithLog = describe.runIf(canRunLogE2E)
-
-describeWithLog('LogService (e2e)', () => {
+describeWithE2E('LogService (e2e)', () => {
   let moduleRef: TestingModule
   let logService: LogService
   let prisma: PrismaService

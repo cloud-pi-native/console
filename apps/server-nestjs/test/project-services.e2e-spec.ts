@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker'
 import { NotFoundException } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
@@ -15,11 +15,9 @@ import { NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, PLUGIN_NAME } from '../src/modules/
 import { ProjectServicesModule } from '../src/modules/project-services/project-services.module'
 import { ProjectServicesService } from '../src/modules/project-services/project-services.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
+import { describeWithE2E } from './utils'
 
-const canRunServicesE2E = Boolean(process.env.E2E)
-const describeWithServices = describe.runIf(canRunServicesE2E)
-
-describeWithServices('ProjectServicesService (e2e)', () => {
+describeWithE2E('ProjectServicesService (e2e)', () => {
   let moduleRef: TestingModule
   let prisma: PrismaService
   let service: ProjectServicesService

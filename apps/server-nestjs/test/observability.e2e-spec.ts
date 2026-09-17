@@ -6,7 +6,7 @@ import { Logger } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import z from 'zod'
 import { baseConfigFactory } from '../src/config/base.config'
 import { GitlabClientService } from '../src/modules/gitlab/gitlab-client.service'
@@ -29,11 +29,7 @@ import {
 import { ObservabilityModule } from '../src/modules/observability/observability.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { KEYCLOAK_GROUP_SYNC_TIMEOUT } from './constants'
-
-const canRunObservabilityE2E
-  = Boolean(process.env.E2E)
-
-const describeWithObservability = describe.runIf(canRunObservabilityE2E)
+import { describeWithE2E } from './utils'
 
 const ALL_GRAFANA_SUBGROUPS = [
   GRAFANA_SUBGROUP_PROD_RW,
@@ -42,7 +38,7 @@ const ALL_GRAFANA_SUBGROUPS = [
   GRAFANA_SUBGROUP_HPROD_RO,
 ] as const
 
-describeWithObservability('ObservabilityService (e2e)', () => {
+describeWithE2E('ObservabilityService (e2e)', () => {
   let moduleRef: TestingModule
   let eventEmitter: EventEmitter2
   let keycloak: KeycloakClientService
