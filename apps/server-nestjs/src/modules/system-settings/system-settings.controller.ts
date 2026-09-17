@@ -1,6 +1,8 @@
 import type { SystemSetting } from '@cpn-console/shared'
 import { SystemSettingSchema } from '@cpn-console/shared'
-import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common'
+import { Body, Controller, Get, Inject, Post, Query, UseGuards } from '@nestjs/common'
+import { RequireAdminPermission } from '../infrastructure/permission/user/user-admin-permission.decorator'
+import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { SystemSettingsService } from './system-settings.service'
 
@@ -16,6 +18,8 @@ export class SystemSettingsController {
   }
 
   @Post()
+  @UseGuards(UserGuard)
+  @RequireAdminPermission('ManageSystem')
   async upsert(
     @Body(new ZodValidationPipe(SystemSettingSchema)) data: SystemSetting,
   ) {
