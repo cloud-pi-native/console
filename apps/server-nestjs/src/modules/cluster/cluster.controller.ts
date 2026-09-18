@@ -1,3 +1,4 @@
+import type { DeleteClusterQuerySchema, CreateClusterBody, DeleteClusterQuery, UpdateClusterBody } from '@cpn-console/shared'
 import type { CleanedCluster, ClusterAssociatedEnvironments, ClusterDetails, ClusterUsage, CreateClusterBody, DeleteClusterQuery, UpdateClusterBody } from '@cpn-console/shared'
 import type { FastifyRequest } from 'fastify'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
