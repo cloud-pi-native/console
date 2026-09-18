@@ -1,11 +1,10 @@
-import type { CreateAdminTokenBody } from './admin-token.utils'
+import type { CreateAdminTokenBody } from '@cpn-console/shared'
+import { CoerceBooleanSchema, CreateAdminTokenBodySchema } from '@cpn-console/shared'
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common'
-import { CoerceBooleanSchema } from '../../utils/schemas.js'
 import { RequireAdminPermission } from '../infrastructure/permission/user/user-admin-permission.decorator'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { AdminTokenService } from './admin-token.service'
-import { CreateAdminTokenBodySchema } from './admin-token.utils'
 
 @Controller('api/v1/admin/tokens')
 @UseGuards(UserGuard)

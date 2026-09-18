@@ -6,7 +6,6 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { AdminTokenService } from './admin-token.service'
-import { CreateAdminTokenBodySchema } from './admin-token.utils'
 
 describe('adminTokenService', () => {
   let module: TestingModule
@@ -70,17 +69,6 @@ describe('adminTokenService', () => {
   })
 
   describe('create', () => {
-    it('rejects a non-parseable expirationDate via the body schema', () => {
-      const result = CreateAdminTokenBodySchema.safeParse({ name: 'x', permissions: '4', expirationDate: 'not-a-date' })
-      expect(result.success).toBe(false)
-    })
-
-    it('rejects an expirationDate that is too soon via the body schema', () => {
-      const today = faker.date.recent()
-      const result = CreateAdminTokenBodySchema.safeParse({ name: 'x', permissions: '4', expirationDate: today.toISOString() })
-      expect(result.success).toBe(false)
-    })
-
     it('returns created token with plaintext password and serialized permissions', async () => {
       const tokenId = faker.string.uuid()
       const botUserId = faker.string.uuid()

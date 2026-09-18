@@ -1,6 +1,6 @@
 import type Zod from 'zod'
 import { z } from 'zod'
-import { dateToString, permissionLevelSchema } from './_utils.js'
+import { dateToString, ExpirationDateSchema, permissionLevelSchema } from './_utils.js'
 import { UserSchema } from './user.js'
 
 export const TokenSchema = z.object({
@@ -29,8 +29,14 @@ export const ExposedAdminTokenSchema = AdminTokenSchema.extend({
   password: z.string(),
 })
 
+export const CreateAdminTokenBodySchema = AdminTokenSchema
+  .pick({ name: true, permissions: true, expirationDate: true })
+  .extend({ expirationDate: ExpirationDateSchema.nullable() })
+  .required()
+
 export type AdminToken = Zod.infer<typeof AdminTokenSchema>
 export type ExposedAdminToken = Zod.infer<typeof ExposedAdminTokenSchema>
+export type CreateAdminTokenBody = Zod.infer<typeof CreateAdminTokenBodySchema>
 
 // PAT section
 export const PersonalAccessTokenSchema = TokenSchema.extend({
