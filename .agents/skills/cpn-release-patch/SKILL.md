@@ -34,10 +34,11 @@ An unmet requirement is a reported blocker, never a silent scope change.
    API returns `pull_request.merge_commit_sha: null`:
 
 ```bash
-gh api "repos/cloud-pi-native/console/issues?milestone=<num>&state=closed&per_page=100" \
+gh api "repos/cloud-pi-native/console/issues?milestone=<num>&state=closed" \
   --jq '.[] | select(.pull_request != null) | .number'
 gh api repos/cloud-pi-native/console/pulls/<n> --jq .merge_commit_sha
-# drop nulls / duplicates, keep the result in /tmp/backport-ids.txt (one SHA per line)
+# drop nulls / duplicates, keep the result in /tmp/backport-ids.txt
+# (one SHA per line)
 ```
 
 2. **Rebuild the chain on the tag.** Detach HEAD at the tag itself, then
@@ -80,7 +81,10 @@ follows `cpn-pr` and `cpn-merge`.
   the branch, then re-push with a lease:
   `git fetch origin 'refs/heads/hotfix/*:refs/remotes/origin/hotfix/*'`
   then
-  `git push --force-with-lease=refs/heads/hotfix/<x.y.z>:refs/remotes/origin/hotfix/<x.y.z> cloud-pi-native HEAD:refs/heads/hotfix/<x.y.z>`.
+  `git push
+  --force-with-lease=refs/heads/hotfix/<x.y.z>
+    :refs/remotes/origin/hotfix/<x.y.z>
+  cloud-pi-native HEAD:refs/heads/hotfix/<x.y.z>`.
 - This repo's clones can carry a second `origin`; always name the remote
   `cloud-pi-native` explicitly for fetch and push.
 - Cherry-pick conflicts are expected when a milestone PR touched files that
