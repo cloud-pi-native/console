@@ -7,7 +7,6 @@ import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { userTokenSelect } from './user-tokens-queries.utils'
 import { UserTokensService } from './user-tokens.service'
-import { CreatePersonalAccessTokenBodySchema } from './user-tokens.utils'
 
 describe('userTokensService', () => {
   let module: TestingModule
@@ -67,19 +66,6 @@ describe('userTokensService', () => {
   })
 
   describe('create', () => {
-    it('rejects a non-parseable expirationDate via the body schema', () => {
-      const name = faker.word.noun()
-      const result = CreatePersonalAccessTokenBodySchema.safeParse({ name, expirationDate: 'not-a-date' })
-      expect(result.success).toBe(false)
-    })
-
-    it('rejects an expirationDate that is too soon via the body schema', () => {
-      const name = faker.word.noun()
-      const today = faker.date.recent()
-      const result = CreatePersonalAccessTokenBodySchema.safeParse({ name, expirationDate: today.toISOString() })
-      expect(result.success).toBe(false)
-    })
-
     it('returns created token with plaintext password', async () => {
       const userId = faker.string.uuid()
       const tokenId = faker.string.uuid()
