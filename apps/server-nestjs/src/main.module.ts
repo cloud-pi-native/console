@@ -4,6 +4,7 @@ import { ScheduleModule } from '@nestjs/schedule'
 import { TerminusModule } from '@nestjs/terminus'
 import { baseConfigFactory } from './config/base.config'
 import { AdminRoleModule } from './modules/admin-role/admin-role.module'
+import { AdminTokenModule } from './modules/admin-token/admin-token.module'
 import { ClusterModule } from './modules/cluster/cluster.module'
 import { DeploymentModule } from './modules/deployment/deployment.module'
 import { EnvironmentModule } from './modules/environment/environment.module'
@@ -33,6 +34,7 @@ import { getDotenvPaths } from './utils/dotenv.utils'
       load: [baseConfigFactory],
     }),
     TerminusModule.forRoot(),
+    AdminTokenModule,
     ClusterModule,
     DeploymentModule,
     EnvironmentModule,
