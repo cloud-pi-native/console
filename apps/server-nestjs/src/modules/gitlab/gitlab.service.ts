@@ -1,6 +1,6 @@
 import type { MemberSchema } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
-import type { RepositorySyncEventPayload } from '../events/app-events.service'
+import type { AdminRoleEventPayload, RepositorySyncEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { MirrorUserSecret, VaultSecret } from '../vault/vault-client.service'
 import type { GroupSchemaWith } from './gitlab-client.service'
@@ -82,6 +82,44 @@ export class GitlabService {
   @OnEvent('project.delete')
   async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'gitlab'>> {
     return capturePluginResult('gitlab', () => this.cleanupProject(project))
+  }
+
+  @OnEvent('adminRole.upsert')
+  async handleAdminRoleUpsert(role: AdminRoleEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', () => this.syncAdminRole(role))
+  }
+
+  @OnEvent('adminRole.delete')
+  async handleAdminRoleDelete(role: AdminRoleEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', () => this.syncAdminRole(role, false))
+  }
+
+  @StartActiveSpan()
+  private async syncAdminRole(role: AdminRoleEventPayload, enabled = true) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('admin_role.id', role.id)
+    this.logger.log(`Handling an admin role ${enabled ? 'upsert' : 'delete'} event for ${role.id}`)
+
+    const adminGroupPath = await this.getAdminGroupPath()
+    const auditorGroupPath = await this.getAuditorGroupPath()
+    // Split multi-path auditor config the same way legacy deleteAdminRole did.
+    const matchingGroups = [adminGroupPath, ...auditorGroupPath.split(',')].filter(path => path === role.oidcGroup)
+    if (!matchingGroups.length) {
+      this.logger.verbose(`Not a managed role for GitLab plugin (roleId=${role.id})`)
+      return
+    }
+
+    for (const member of role.members) {
+      await this.gitlab.upsertUser({
+        email: member.email,
+        username: generateUsername(member.email),
+        name: generateName(member.firstName, member.lastName),
+        admin: role.oidcGroup === adminGroupPath ? enabled : undefined,
+        auditor: auditorGroupPath.split(',').includes(role.oidcGroup ?? '') ? enabled : undefined,
+      }, {
+        cpnUserId: member.id,
+      })
+    }
   }
 
   @OnEvent('repository.sync')
@@ -257,15 +295,15 @@ export class GitlabService {
     return generateAdminRoleMapping(roles, adminGroupPath, auditorGroupPath)
   }
 
-  private async getAdminGroupPath(project: ProjectWithDetails): Promise<string> {
-    return await this.getAdminOrProjectPluginConfig(project, ADMIN_GROUP_PATH_PLUGIN_KEY) ?? DEFAULT_ADMIN_GROUP_PATH
+  private async getAdminGroupPath(_project?: ProjectWithDetails): Promise<string> {
+    return await this.getAdminOrProjectPluginConfig(_project, ADMIN_GROUP_PATH_PLUGIN_KEY) ?? DEFAULT_ADMIN_GROUP_PATH
   }
 
-  private async getAuditorGroupPath(project: ProjectWithDetails): Promise<string> {
-    return await this.getAdminOrProjectPluginConfig(project, AUDITOR_GROUP_PATH_PLUGIN_KEY) ?? DEFAULT_AUDITOR_GROUP_PATH
+  private async getAuditorGroupPath(_project?: ProjectWithDetails): Promise<string> {
+    return await this.getAdminOrProjectPluginConfig(_project, AUDITOR_GROUP_PATH_PLUGIN_KEY) ?? DEFAULT_AUDITOR_GROUP_PATH
   }
 
-  private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
+  private async getAdminOrProjectPluginConfig(project: ProjectWithDetails | undefined, key: string): Promise<string | undefined> {
     const adminPluginConfig = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, key)
     if (adminPluginConfig) return adminPluginConfig
     if (!project) return undefined

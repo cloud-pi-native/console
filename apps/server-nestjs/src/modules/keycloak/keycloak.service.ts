@@ -56,6 +56,33 @@ export class KeycloakService {
     this.logger.log(`Keycloak cleanup completed for project ${project.slug}`)
   }
 
+  @OnEvent('adminRole.upsert')
+  async handleAdminRoleUpsert(roleId: string): Promise<RequiredPluginResult<'keycloak'>> {
+    return capturePluginResult('keycloak', () => this.syncAdminRole(roleId))
+  }
+
+  @OnEvent('adminRole.delete')
+  async handleAdminRoleDelete(roleId: string): Promise<RequiredPluginResult<'keycloak'>> {
+    return capturePluginResult('keycloak', () => this.syncAdminRole(roleId))
+  }
+
+  @StartActiveSpan()
+  private async syncAdminRole(roleId: string) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('admin_role.id', roleId)
+    this.logger.log(`Handling an admin role event for ${roleId}`)
+    const [roles, users] = await Promise.all([
+      this.datastore.getAllAdminRoles(),
+      this.datastore.getAllUsersWithAdminRoleIds(),
+    ])
+    const role = roles.find(({ id }) => id === roleId)
+    if (!role) {
+      this.logger.warn(`Admin role not found for event (roleId=${roleId})`)
+      return
+    }
+    await this.ensureAdminRoleGroup(role, users)
+  }
+
   // @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
