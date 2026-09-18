@@ -1,12 +1,12 @@
+import type { CreatePersonalAccessTokenBody } from '@cpn-console/shared'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
-import type { CreatePersonalAccessTokenBody } from './user-tokens.utils'
+import { CreatePersonalAccessTokenBodySchema } from '@cpn-console/shared'
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common'
 import { AuthUser } from '../infrastructure/auth/auth-user.decorator'
 import { RequireUserType } from '../infrastructure/permission/user/user-type.decorator'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { UserTokensService } from './user-tokens.service'
-import { CreatePersonalAccessTokenBodySchema } from './user-tokens.utils'
 
 @Controller('api/v1/user/tokens')
 @UseGuards(UserGuard)

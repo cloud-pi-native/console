@@ -1,4 +1,4 @@
-import type { CreatePersonalAccessTokenBody } from './user-tokens.utils'
+import type { CreatePersonalAccessTokenBody } from '@cpn-console/shared'
 import { isAtLeastTomorrow } from '@cpn-console/shared'
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
