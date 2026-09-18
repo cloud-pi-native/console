@@ -33,13 +33,7 @@ import { getDotenvPaths } from './utils/dotenv.utils'
       load: [baseConfigFactory],
     }),
     TerminusModule.forRoot(),
-<<<<<<< HEAD
     AdminRoleModule,
-    AdminTokenModule,
-||||||| parent of 98eb896541 (fix(server-nestjs): drop AdminTokenModule registration, owned by stacked admin-token PR)
-    AdminTokenModule,
-=======
->>>>>>> 98eb896541 (fix(server-nestjs): drop AdminTokenModule registration, owned by stacked admin-token PR)
     ClusterModule,
     DeploymentModule,
     EnvironmentModule,

@@ -1,7 +1,12 @@
+import type { clusterContract, CreateClusterBody, DeleteClusterQuery, UpdateClusterBody } from '@cpn-console/shared'
 import type { ClientInferResponseBody } from '@ts-rest/core'
 import type { FastifyRequest } from 'fastify'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
-import { type CreateClusterBody, clusterContract, type UpdateClusterBody } from '@cpn-console/shared'
+import {
+  CreateClusterBodySchema,
+  DeleteClusterQuerySchema,
+  UpdateClusterBodySchema,
+} from '@cpn-console/shared'
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common'
 import { AuthUser } from '../infrastructure/auth/auth-user.decorator'
 import { RequireAdminPermission } from '../infrastructure/permission/user/user-admin-permission.decorator'
@@ -46,7 +51,7 @@ export class ClusterController {
   @RequireAdminPermission('ManageClusters')
   @HttpCode(HttpStatus.CREATED)
   create(
-    @Body(new ZodValidationPipe(clusterContract.createCluster.body)) data: CreateClusterBody,
+    @Body(new ZodValidationPipe(CreateClusterBodySchema)) data: CreateClusterBody,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
   ): Promise<ClusterDetails> {
@@ -58,7 +63,7 @@ export class ClusterController {
   @HttpCode(HttpStatus.OK)
   update(
     @Param('clusterId') clusterId: string,
-    @Body(new ZodValidationPipe(clusterContract.updateCluster.body)) data: UpdateClusterBody,
+    @Body(new ZodValidationPipe(UpdateClusterBodySchema)) data: UpdateClusterBody,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
   ): Promise<ClusterDetails> {
@@ -70,7 +75,7 @@ export class ClusterController {
   @HttpCode(HttpStatus.NO_CONTENT)
   delete(
     @Param('clusterId') clusterId: string,
-    @Query(new ZodValidationPipe(clusterContract.deleteCluster.query)) { force }: { force?: boolean },
+    @Query(new ZodValidationPipe(DeleteClusterQuerySchema)) { force }: DeleteClusterQuery,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
   ): Promise<string | null> {
