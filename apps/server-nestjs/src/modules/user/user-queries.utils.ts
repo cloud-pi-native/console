@@ -3,7 +3,6 @@ import type { PrismaService } from '../infrastructure/database/prisma.service'
 
 type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>
 
-// ── selects ───────────────────────────────────────────────────────────────────────────
 export const userSelect = {
   id: true,
   firstName: true,
@@ -17,7 +16,6 @@ export const userSelect = {
 } satisfies Prisma.UserSelect
 export type UserRecord = Prisma.UserGetPayload<{ select: typeof userSelect }>
 
-// ── queries ───────────────────────────────────────────────────────────────────────────
 export function getUsers(prisma: PrismaService, where?: Prisma.UserWhereInput) {
   return prisma.user.findMany({ where })
 }
@@ -44,7 +42,6 @@ export function updateUserAdminRoleIds(prisma: PrismaService, id: User['id'], ad
   })
 }
 
-// ── create ─────────────────────────────────────────────────────────────────────────────
 export async function createUser(prisma: PrismaService, { id, email, firstName, lastName, type }: UserCreate) {
   const user = await getUserByEmail(prisma, email)
   if (user) throw new Error('Un utilisateur avec cette adresse e-mail existe déjà')
