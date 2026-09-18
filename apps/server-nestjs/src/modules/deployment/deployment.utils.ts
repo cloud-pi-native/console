@@ -10,7 +10,6 @@ import type {
 import type { Prisma } from '@prisma/client'
 import type { DeploymentWithRelations } from './deployment-datastore.service'
 
-// ---------------------------------------------------------------------------
 // Precise write model (the "parse, don't validate" boundary representation)
 //
 // The wire payloads (CreateDeployment / UpdateDeployment) carry value sources as
@@ -24,7 +23,6 @@ import type { DeploymentWithRelations } from './deployment-datastore.service'
 //     field, not a list);
 //   - an entry is either created or updated (separate buckets, no optional id and
 //     no fabricated placeholder ids downstream).
-// ---------------------------------------------------------------------------
 
 interface InternalValueSource {
   path: string
@@ -183,11 +181,9 @@ export function parseUpdateDeployment(deployment: UpdateDeployment): UpdateDeplo
   }
 }
 
-// ---------------------------------------------------------------------------
 // Prisma write builders — pure translations of the precise model above into
 // nested-write inputs. They perform no partitioning or disambiguation; that has
 // already happened at the boundary.
-// ---------------------------------------------------------------------------
 
 function mapInternalCreate({ path, order }: InternalValueSource): Prisma.DeploymentInternalValueSourceCreateWithoutDeploymentSourceInput {
   return { path, order }
@@ -278,12 +274,10 @@ export function buildDeploymentSourceUpdate(source: UpdateDeploymentSourceModel,
   }
 }
 
-// ---------------------------------------------------------------------------
 // Read serialization — the API exposes value sources the same way it accepts
 // them: a single ordered, discriminated list. The two persisted relations are a
 // storage detail, merged here (by `order`) once, server-side, so no consumer has
 // to reconstruct the list.
-// ---------------------------------------------------------------------------
 
 // A deployment source as loaded from the database, with the relations the read
 // serialization needs.
