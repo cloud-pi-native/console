@@ -1,7 +1,7 @@
 import type { ClientInferResponseBody } from '@ts-rest/core'
 import type { FastifyRequest } from 'fastify'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
-import { clusterContract } from '@cpn-console/shared'
+import { type CreateClusterBody, clusterContract, type UpdateClusterBody } from '@cpn-console/shared'
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common'
 import { AuthUser } from '../infrastructure/auth/auth-user.decorator'
 import { RequireAdminPermission } from '../infrastructure/permission/user/user-admin-permission.decorator'
@@ -12,8 +12,6 @@ import { ClusterService } from './cluster.service'
 type ClusterList = ClientInferResponseBody<typeof clusterContract.listClusters, 200>
 type ClusterDetails = ClientInferResponseBody<typeof clusterContract.getClusterDetails, 200>
 type ClusterUsage = ClientInferResponseBody<typeof clusterContract.getClusterUsage, 200>
-type CreateClusterBody = typeof clusterContract.createCluster.body._type
-type UpdateClusterBody = typeof clusterContract.updateCluster.body._type
 
 @Controller('api/v1/clusters')
 @UseGuards(UserGuard)
