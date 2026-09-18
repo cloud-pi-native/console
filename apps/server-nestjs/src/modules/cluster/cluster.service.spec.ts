@@ -1,11 +1,13 @@
 import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import { faker } from '@faker-js/faker'
+import { UnprocessableEntityException } from '@nestjs/common'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { faker } from '@faker-js/faker'
-import { EventEmitter2 } from '@nestjs/event-emitter'
 import { baseConfigFactory } from '../../config/base.config'
+import { makeEnvironment } from '../environment/environment-testing.utils'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { LogService } from '../log/log.service'
 import {
@@ -13,11 +15,10 @@ import {
   makeClusterDetailsRecord,
   makeClusterEnvironmentsRecord,
   makeClusterListRecord,
-  makeEnvironment,
 } from './cluster-testing.utils'
 import { ClusterService } from './cluster.service'
 
-describe('ClusterService', () => {
+describe('clusterService', () => {
   let service: ClusterService
   let prisma: DeepMockProxy<PrismaService>
   let logs: DeepMockProxy<LogService>
@@ -26,6 +27,7 @@ describe('ClusterService', () => {
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
+    prisma.$transaction.mockImplementation(async (cb: (tx: unknown) => unknown) => cb(prisma))
     logs = mockDeep<LogService>()
     events = mockDeep<EventEmitter2>()
     baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>()
@@ -230,5 +232,17 @@ describe('ClusterService', () => {
       gpu: env.gpu,
       memory: env.memory,
     })))
+  })
+
+  it('propagates upsert hook failure as 422', async () => {
+    const record = makeClusterDetailsRecord()
+    prisma.cluster.findUnique.mockResolvedValue(record as never)
+    prisma.cluster.update.mockResolvedValue(record as never)
+    prisma.zone.update.mockResolvedValue(record as never)
+    prisma.cluster.findUniqueOrThrow.mockResolvedValue({ projects: [] } as never)
+    events.emitAsync.mockRejectedValue(new Error('hook down'))
+
+    await expect(service.updateCluster({ infos: 'x' }, record.id, 'u', 'r'))
+      .rejects.toThrow(new UnprocessableEntityException('Echec des services à la création/mise à jour du cluster'))
   })
 })

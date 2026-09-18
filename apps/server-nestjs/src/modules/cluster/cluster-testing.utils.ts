@@ -1,6 +1,8 @@
-import type { Cluster, Environment, Kubeconfig, ProjectMembers, Stage, User } from '@prisma/client'
-import { faker } from '@faker-js/faker'
+import type { Cluster, Kubeconfig, Stage } from '@prisma/client'
 import type { ClusterDetailsRecord, ClusterEnvironmentsRecord, ClusterListRecord } from './cluster-queries.utils'
+import { faker } from '@faker-js/faker'
+import { makeProjectMembers } from '../project-members/project-members-testing.utils'
+import { makeUser } from '../project/project-testing.utils'
 
 export function makeCluster(overrides: Partial<Cluster> = {}): Cluster {
   return {
@@ -27,30 +29,6 @@ export function makeStage(overrides: Partial<Stage> = {}): Stage {
     name: faker.helpers.slugify(faker.word.sample(3)).toLowerCase(),
     ...overrides,
   } satisfies Stage
-}
-
-export function makeUser(overrides: Partial<User> = {}): User {
-  return {
-    id: faker.string.uuid(),
-    firstName: faker.person.firstName(),
-    lastName: faker.person.lastName(),
-    email: faker.internet.email(),
-    createdAt: faker.date.past(),
-    updatedAt: faker.date.past(),
-    lastLogin: faker.date.past(),
-    adminRoleIds: [],
-    type: 'human',
-    ...overrides,
-  } satisfies User
-}
-
-export function makeProjectMember(overrides: Partial<ProjectMembers> = {}): ProjectMembers {
-  return {
-    projectId: faker.string.uuid(),
-    userId: faker.string.uuid(),
-    roleIds: [],
-    ...overrides,
-  } satisfies ProjectMembers
 }
 
 export function makeClusterListRecord(overrides: Partial<ClusterListRecord> = {}): ClusterListRecord {
@@ -88,7 +66,7 @@ export function makeClusterEnvironmentsRecord(overrides: Partial<ClusterEnvironm
       slug: faker.helpers.slugify(faker.word.sample(3)).toLowerCase(),
       name: faker.company.name(),
       owner: makeUser(),
-      members: [makeProjectMember()],
+      members: [makeProjectMembers()],
     },
     ...overrides,
   } satisfies ClusterEnvironmentsRecord
@@ -109,21 +87,4 @@ export function makeKubeconfig(overrides: Partial<Kubeconfig> = {}): Kubeconfig 
     updatedAt: faker.date.past(),
     ...overrides,
   } satisfies Kubeconfig
-}
-
-export function makeEnvironment(overrides: Partial<Environment> = {}): Environment {
-  return {
-    id: faker.string.uuid(),
-    name: faker.helpers.slugify(faker.word.sample(3)).toLowerCase().slice(0, 11),
-    projectId: faker.string.uuid(),
-    memory: faker.number.int({ min: 0, max: 64 }),
-    cpu: faker.number.int({ min: 0, max: 16 }),
-    gpu: faker.number.int({ min: 0, max: 4 }),
-    autosync: faker.datatype.boolean(),
-    clusterId: faker.string.uuid(),
-    stageId: faker.string.uuid(),
-    createdAt: faker.date.past(),
-    updatedAt: faker.date.past(),
-    ...overrides,
-  } satisfies Environment
 }
