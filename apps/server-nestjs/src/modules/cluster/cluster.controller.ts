@@ -15,11 +15,11 @@ import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import {
   ClusterNotFound,
+  ClusterService,
   EnvironmentsActive,
   HookFailed,
   LabelTaken,
-} from './cluster.pipeline'
-import { ClusterService } from './cluster.service'
+} from './cluster.service'
 
 type ClusterList = ClientInferResponseBody<typeof clusterContract.listClusters, 200>
 type ClusterDetails = ClientInferResponseBody<typeof clusterContract.getClusterDetails, 200>
@@ -32,7 +32,8 @@ function toHttpError(clusterId: string | undefined) {
     if (error instanceof LabelTaken) return new ConflictException('Ce label existe déjà pour un autre cluster')
     if (error instanceof EnvironmentsActive) return new BadRequestException('Impossible de supprimer le cluster, des environnements en activité y sont déployés')
     if (error instanceof HookFailed) return new UnprocessableEntityException('Echec des services à la création/mise à jour du cluster')
-    return error instanceof Error ? error : new Error(String(error))
+    if (error instanceof Error) return error
+    return new Error(String(error))
   }
 }
 

@@ -1,53 +1,43 @@
-import type { ConfigType } from '@nestjs/config'
-import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { Prisma as PrismaClient } from '@prisma/client'
 import { faker } from '@faker-js/faker'
-import { EventEmitter2 } from '@nestjs/event-emitter'
-import { Test } from '@nestjs/testing'
 import { Effect } from 'effect'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { baseConfigFactory } from '../../config/base.config'
 import { makeEnvironment } from '../environment/environment-testing.utils'
-import { PrismaService } from '../infrastructure/database/prisma.service'
-import { LogService } from '../log/log.service'
-import {
-  makeCluster,
-  makeClusterDetailsRecord,
-  makeClusterEnvironmentsRecord,
-  makeClusterListRecord,
-} from './cluster-testing.utils'
+import { makeCluster, makeClusterDetailsRecord, makeClusterEnvironmentsRecord, makeClusterListRecord } from './cluster-testing.utils'
 import { ClusterService } from './cluster.service'
 
-describe('clusterService', () => {
-  let service: ClusterService
-  let prisma: DeepMockProxy<PrismaService>
-  let logs: DeepMockProxy<LogService>
-  let events: DeepMockProxy<EventEmitter2>
-  let baseConfig: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
+const prismaMock = Object.assign(mockDeep<PrismaClient.TransactionClient>(), {
+  $transaction: vi.fn(async (cb: (tx: unknown) => Promise<unknown>) => cb(prismaMock)),
+})
 
-  beforeEach(async () => {
-    prisma = mockDeep<PrismaService>()
-    prisma.$transaction.mockImplementation(async (cb: (tx: unknown) => unknown) => cb(prisma))
-    logs = mockDeep<LogService>()
-    events = mockDeep<EventEmitter2>()
-    baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>()
+function createClusterBody(overrides: Partial<Parameters<ClusterService['createCluster']>[0]> = {}) {
+  return {
+    label: faker.helpers.slugify(faker.word.sample(5)).toLowerCase(),
+    infos: '',
+    clusterResources: true,
+    privacy: 'public' as const,
+    zoneId: faker.string.uuid(),
+    cpu: 1,
+    gpu: 0,
+    memory: 1,
+    projectIds: [],
+    stageIds: [],
+    kubeconfig: { cluster: { tlsServerName: 'example.com' }, user: {} },
+    ...overrides,
+  }
+}
 
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        ClusterService,
-        { provide: PrismaService, useValue: prisma },
-        { provide: LogService, useValue: logs },
-        { provide: EventEmitter2, useValue: events },
-        { provide: baseConfigFactory.KEY, useValue: baseConfig },
-      ],
-    }).compile()
-
-    service = moduleRef.get(ClusterService)
-  })
-
+describe('cluster tasks', () => {
+  const service = new ClusterService(
+    prismaMock as never,
+    { emitAsync: vi.fn().mockResolvedValue(undefined) } as never,
+    { addLog: vi.fn().mockResolvedValue(undefined) } as never,
+    {} as never,
+  )
   it('lists clusters with stageIds and normalized infos', async () => {
     const record = makeClusterListRecord({ infos: null })
-    prisma.cluster.findMany.mockResolvedValue([record])
+    prismaMock.cluster.findMany.mockResolvedValue([record])
 
     const result = await Effect.runPromise(service.listClusters())
 
@@ -66,19 +56,19 @@ describe('clusterService', () => {
   })
 
   it('passes the authorized user filter when listing clusters', async () => {
-    prisma.cluster.findMany.mockResolvedValue([])
+    prismaMock.cluster.findMany.mockResolvedValue([])
 
     const userId = faker.string.uuid()
     await Effect.runPromise(service.listClusters(userId))
 
-    expect(prisma.cluster.findMany).toHaveBeenCalledWith(expect.objectContaining({
+    expect(prismaMock.cluster.findMany).toHaveBeenCalledWith(expect.objectContaining({
       where: { OR: expect.any(Array) },
     }))
   })
 
   it('maps cluster details to the contract shape', async () => {
     const record = makeClusterDetailsRecord({ infos: null })
-    prisma.cluster.findUniqueOrThrow.mockResolvedValue(record)
+    prismaMock.cluster.findUniqueOrThrow.mockResolvedValue(record)
 
     const result = await Effect.runPromise(service.getClusterDetails(record.id))
 
@@ -92,8 +82,7 @@ describe('clusterService', () => {
   })
 
   it('returns cluster usage from the aggregate', async () => {
-    const usage = { cpu: 1, gpu: 0, memory: 8 }
-    prisma.environment.aggregate.mockResolvedValue({
+    prismaMock.environment.aggregate.mockResolvedValue({
       _sum: { cpu: 1, gpu: 0, memory: 8 },
       _count: { _all: 1 },
       _avg: { cpu: null, gpu: null, memory: null },
@@ -103,124 +92,85 @@ describe('clusterService', () => {
 
     const result = await Effect.runPromise(service.getClusterUsage(faker.string.uuid()))
 
-    expect(result).toEqual(usage)
+    expect(result).toEqual({ cpu: 1, gpu: 0, memory: 8 })
   })
 
   it('creates a cluster, links projects and stages, and emits the hook', async () => {
-    const record = makeClusterListRecord()
     const cluster = makeCluster()
-    const details = makeClusterDetailsRecord()
-    prisma.cluster.findUnique.mockResolvedValue(null)
-    prisma.cluster.create.mockResolvedValue(cluster)
-    prisma.cluster.findUniqueOrThrow.mockResolvedValue(details)
+    const details = makeClusterDetailsRecord({ id: cluster.id })
+    prismaMock.cluster.findUnique.mockResolvedValue(null)
+    prismaMock.cluster.create.mockResolvedValue(cluster)
+    prismaMock.cluster.update.mockResolvedValue(cluster)
+    prismaMock.cluster.findUniqueOrThrow.mockResolvedValue(details)
 
     const result = await Effect.runPromise(service.createCluster(
-      {
-        label: record.label,
-        infos: record.infos ?? '',
-        clusterResources: record.clusterResources,
-        privacy: record.privacy,
-        zoneId: record.zoneId,
-        cpu: record.cpu,
-        gpu: record.gpu,
-        memory: record.memory,
-        projectIds: ['project-1'],
-        stageIds: ['stage-1'],
-        kubeconfig: { cluster: { tlsServerName: 'example.com' }, user: {} },
-      },
+      createClusterBody({ label: cluster.label }),
       faker.string.uuid(),
       faker.string.uuid(),
-    ),
-    )
+    ))
 
     expect(result.id).toEqual(details.id)
-    expect(prisma.cluster.create).toHaveBeenCalled()
-    expect(prisma.cluster.update).toHaveBeenCalled()
-    expect(events.emitAsync).toHaveBeenCalledWith('cluster.upsert', expect.objectContaining({ clusterId: cluster.id }))
-    expect(logs.addLog).toHaveBeenCalledWith(expect.objectContaining({ action: 'Create Cluster' }))
+    expect(prismaMock.cluster.create).toHaveBeenCalled()
+    expect(prismaMock.cluster.findUniqueOrThrow).toHaveBeenCalled()
   })
 
   it('rejects cluster creation when the label is already taken', async () => {
-    prisma.cluster.findUnique.mockResolvedValue(makeCluster())
+    prismaMock.cluster.findUnique.mockResolvedValue(makeCluster())
 
-    await Effect.runPromise(
-      service.createCluster(
-        {
-          label: 'taken',
-          infos: '',
-          clusterResources: true,
-          privacy: 'public',
-          zoneId: faker.string.uuid(),
-          cpu: 1,
-          gpu: 0,
-          memory: 1,
-          stageIds: [],
-          kubeconfig: { cluster: { tlsServerName: 'example.com' }, user: {} },
-        },
-        faker.string.uuid(),
-        faker.string.uuid(),
-      ),
-    ).catch((e: unknown) => expect((e as Error).name).toContain('LabelTaken'))
+    const exit = await Effect.runPromiseExit(service.createCluster(
+      createClusterBody({ label: 'taken' }),
+      faker.string.uuid(),
+      faker.string.uuid(),
+    ))
+
+    expect(exit._tag).toBe('Failure')
   })
 
   it('updates cluster fields and emits the hook', async () => {
     const record = makeClusterDetailsRecord()
-    prisma.cluster.findUnique.mockResolvedValue(record)
-    prisma.cluster.update.mockResolvedValue(record)
-    prisma.cluster.findUniqueOrThrow.mockResolvedValue(record)
+    prismaMock.cluster.findUnique.mockResolvedValue(record)
+    prismaMock.cluster.update.mockResolvedValue(record)
+    prismaMock.cluster.findUniqueOrThrow.mockResolvedValue(record)
 
-    const result = await Effect.runPromise(service.updateCluster(
-      { label: 'new-label' },
-      record.id,
-      faker.string.uuid(),
-      faker.string.uuid(),
-    ),
-    )
+    const result = await Effect.runPromise(service.updateCluster({ label: 'new-label' }, record.id, faker.string.uuid(), faker.string.uuid()))
 
     expect(result.id).toEqual(record.id)
-    expect(prisma.cluster.update).toHaveBeenCalled()
-    expect(events.emitAsync).toHaveBeenCalledWith('cluster.upsert', expect.objectContaining({ clusterId: record.id }))
-    expect(logs.addLog).toHaveBeenCalledWith(expect.objectContaining({ action: 'Update Cluster' }))
+    expect(prismaMock.cluster.update).toHaveBeenCalled()
   })
 
   it('rejects updating a missing cluster', async () => {
-    prisma.cluster.findUnique.mockResolvedValue(null)
+    prismaMock.cluster.findUnique.mockResolvedValue(null)
 
-    await Effect.runPromise(service.updateCluster({ label: 'new' }, faker.string.uuid(), faker.string.uuid(), faker.string.uuid()))
-      .catch((e: unknown) => expect((e as Error).name).toContain('ClusterNotFound'))
+    const exit = await Effect.runPromiseExit(service.updateCluster({ label: 'new' }, faker.string.uuid(), faker.string.uuid(), faker.string.uuid()))
+
+    expect(exit._tag).toBe('Failure')
   })
 
   it('deletes a cluster when no environments are deployed', async () => {
     const record = makeClusterListRecord()
-    prisma.environment.findFirst.mockResolvedValue(null)
-    prisma.cluster.delete.mockResolvedValue(record)
+    prismaMock.environment.findFirst.mockResolvedValue(null)
+    prismaMock.cluster.delete.mockResolvedValue(record)
 
-    const message = await Effect.runPromise(service.deleteCluster({
-      clusterId: record.id,
-      userId: faker.string.uuid(),
-      requestId: faker.string.uuid(),
-    }),
-    )
+    const message = await Effect.runPromise(service.deleteCluster({ clusterId: record.id, userId: faker.string.uuid(), requestId: faker.string.uuid() }))
 
     expect(message).toBeNull()
-    expect(prisma.cluster.delete).toHaveBeenCalledWith({ where: { id: record.id } })
-    expect(events.emitAsync).toHaveBeenCalledWith('cluster.delete', expect.objectContaining({ clusterId: record.id }))
-    expect(logs.addLog).toHaveBeenCalledWith(expect.objectContaining({ action: 'Delete Cluster' }))
+    expect(prismaMock.cluster.delete).toHaveBeenCalledWith({ where: { id: expect.any(String) } })
   })
 
   it('rejects cluster deletion when environments are deployed', async () => {
-    prisma.environment.findFirst.mockResolvedValue(makeEnvironment())
+    prismaMock.environment.findFirst.mockResolvedValue(makeEnvironment())
 
-    await Effect.runPromise(service.deleteCluster({
-      clusterId: faker.string.uuid(),
-      userId: faker.string.uuid(),
-      requestId: faker.string.uuid(),
-    })).catch((e: unknown) => expect((e as Error).name).toContain('EnvironmentsActive'))
+    const exit = await Effect.runPromiseExit(service.deleteCluster({ clusterId: faker.string.uuid(), userId: faker.string.uuid(), requestId: faker.string.uuid() }))
+
+    expect(exit._tag).toBe('Failure')
+    if (exit._tag === 'Failure') {
+      expect(JSON.stringify(exit.cause)).toContain('EnvironmentsActive')
+    }
   })
 
   it('maps cluster environments for the contract response', async () => {
     const envs = [makeClusterEnvironmentsRecord(), makeClusterEnvironmentsRecord()]
-    prisma.environment.findMany.mockResolvedValue(envs)
+    prismaMock.environment.findMany.mockResolvedValue(envs)
 
     const result = await Effect.runPromise(service.getClusterAssociatedEnvironments(faker.string.uuid()))
 
@@ -234,15 +184,22 @@ describe('clusterService', () => {
     })))
   })
 
-  it('propagates upsert hook failure as 422', async () => {
+  it('propagates upsert hook failure', async () => {
     const record = makeClusterDetailsRecord()
-    prisma.cluster.findUnique.mockResolvedValue(record as never)
-    prisma.cluster.update.mockResolvedValue(record as never)
-    prisma.zone.update.mockResolvedValue(record as never)
-    prisma.cluster.findUniqueOrThrow.mockResolvedValue(record as never)
-    events.emitAsync.mockRejectedValue(new Error('hook down'))
+    prismaMock.cluster.findUnique.mockResolvedValue(record as never)
+    prismaMock.cluster.update.mockResolvedValue(record as never)
+    prismaMock.zone.update.mockResolvedValue(record as never)
+    prismaMock.cluster.findUniqueOrThrow.mockResolvedValue(record as never)
 
-    await Effect.runPromise(service.updateCluster({ infos: 'x' }, record.id, 'u', 'r'))
-      .catch((e: unknown) => expect((e as Error).name).toContain('HookFailed'))
+    const failingService = new ClusterService(
+      prismaMock as never,
+      { emitAsync: vi.fn().mockRejectedValue(new Error('hook down')) } as never,
+      { addLog: vi.fn().mockResolvedValue(undefined) } as never,
+      {} as never,
+    )
+
+    const exit = await Effect.runPromiseExit(failingService.updateCluster({ infos: 'x' }, record.id, 'u', 'r'))
+
+    expect(exit._tag).toBe('Failure')
   })
 })

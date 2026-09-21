@@ -3,7 +3,7 @@
 set -e
 
 echo "Create temporary file"
-FILE=$(mktemp -p . --suffix=".js")
+FILE=$(mktemp ./icons.XXXXXX).js && : > ${FILE}
 
 echo "Add header"
 tee -a ${FILE} << EOF

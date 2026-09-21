@@ -68,9 +68,9 @@ catalogs:
       specifier: ^7.4.0
       version: 7.4.0
   default:
-    effect:
-      specifier: ^3.22.2
-      version: 3.22.2
+    '@effect/vitest':
+      specifier: ^0.30.0
+      version: 0.30.0
   otel:
     '@opentelemetry/api':
       specifier: ^1.9.0
@@ -202,6 +202,9 @@ catalogs:
     date-fns:
       specifier: ^4.1.0
       version: 4.1.0
+    effect:
+      specifier: ^3.22.2
+      version: 3.22.2
     fastify:
       specifier: ^5.8.5
       version: 5.8.5
@@ -883,7 +886,7 @@ importers:
         specifier: catalog:runtime
         version: 4.1.0
       effect:
-        specifier: 'catalog:'
+        specifier: catalog:runtime
         version: 3.22.2
       fastify:
         specifier: catalog:runtime
@@ -931,6 +934,9 @@ importers:
       '@cpn-console/ts-config':
         specifier: workspace:^
         version: link:../../packages/tsconfig
+      '@effect/vitest':
+        specifier: 'catalog:'
+        version: 0.30.0(effect@3.22.2)(vitest@4.1.5)
       '@eslint/eslintrc':
         specifier: catalog:tools
         version: 3.3.5(supports-color@5.5.0)
@@ -2379,6 +2385,12 @@ packages:
         optional: true
       oxlint:
         optional: true
+
+  '@effect/vitest@0.30.0':
+    resolution: {integrity: sha512-2qcK7F4XSwOn7Ye9vgEkrndHiiHVf9Nl+U5jvvLBKeYx4+8++O5Y8RFezaQzs/rWx8GkdlStv/s+HYMHZ/2/AQ==}
+    peerDependencies:
+      effect: ^3.22.0
+      vitest: ^3.2.0
 
   '@emnapi/core@1.10.0':
     resolution: {integrity: sha512-yq6OkJ4p82CAfPl0u9mQebQHKPJkY7WrIuk205cTYnYe+k2Z8YBh11FrbRG/H6ihirqcacOgl2BIO8oyMQLeXw==}
@@ -10636,6 +10648,11 @@ snapshots:
       eslint-plugin-depend: 1.5.0(eslint@10.5.0(jiti@2.6.1))
     optionalDependencies:
       eslint: 10.5.0(jiti@2.6.1)
+
+  '@effect/vitest@0.30.0(effect@3.22.2)(vitest@4.1.5)':
+    dependencies:
+      effect: 3.22.2
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@26.1.2)(@vitest/coverage-v8@4.1.5)(jsdom@25.0.1)(msw@2.12.10(@types/node@26.1.2)(typescript@5.9.3))(vite@7.3.6(@types/node@26.1.2)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.48.0)(yaml@2.9.0))
 
   '@emnapi/core@1.10.0':
     dependencies:
