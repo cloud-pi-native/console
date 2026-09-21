@@ -192,6 +192,7 @@ export class ProjectService {
       const project = await this.prisma.$transaction(async (tx) => {
         const loaded = await getProject(tx, projectId)
         if (!loaded) throw new NotFoundException('Projet introuvable')
+        if (loaded.status === 'archived') throw new BadRequestException('Le projet est archivé')
 
         await deleteProjectDependencies(tx, projectId)
 
