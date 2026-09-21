@@ -75,6 +75,7 @@ catalogs:
     "@gitbeaker/rest": ^40.6.0
     "@gouvfr/dsfr": ^1.14.4
     "@gouvminint/vue-dsfr": ^8.19.0
+    effect: ^3.22.2
     "@himenon/argocd-typescript-openapi": ^1.2.2
     "@iconify-json/ri": ^1.2.10
     "@iconify/vue": ^4.3.0
@@ -199,3 +200,5 @@ catalogs:
     stylelint-config-standard: ^40.0.0
     typescript-eslint: ^8.57.0
     vue-eslint-parser: ^10.4.0
+catalog:
+  '@effect/vitest': ^0.30.0
