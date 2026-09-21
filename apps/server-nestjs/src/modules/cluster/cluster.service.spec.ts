@@ -1,9 +1,9 @@
 import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
-import { UnprocessableEntityException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
+import { Effect } from 'effect'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { baseConfigFactory } from '../../config/base.config'
@@ -49,7 +49,7 @@ describe('clusterService', () => {
     const record = makeClusterListRecord({ infos: null })
     prisma.cluster.findMany.mockResolvedValue([record])
 
-    const result = await service.listClusters()
+    const result = await Effect.runPromise(service.listClusters())
 
     expect(result).toEqual([{
       id: record.id,
@@ -69,7 +69,7 @@ describe('clusterService', () => {
     prisma.cluster.findMany.mockResolvedValue([])
 
     const userId = faker.string.uuid()
-    await service.listClusters(userId)
+    await Effect.runPromise(service.listClusters(userId))
 
     expect(prisma.cluster.findMany).toHaveBeenCalledWith(expect.objectContaining({
       where: { OR: expect.any(Array) },
@@ -80,7 +80,7 @@ describe('clusterService', () => {
     const record = makeClusterDetailsRecord({ infos: null })
     prisma.cluster.findUniqueOrThrow.mockResolvedValue(record)
 
-    const result = await service.getClusterDetails(record.id)
+    const result = await Effect.runPromise(service.getClusterDetails(record.id))
 
     expect(result).toEqual(expect.objectContaining({
       id: record.id,
@@ -101,7 +101,7 @@ describe('clusterService', () => {
       _max: { cpu: null, gpu: null, memory: null },
     })
 
-    const result = await service.getClusterUsage(faker.string.uuid())
+    const result = await Effect.runPromise(service.getClusterUsage(faker.string.uuid()))
 
     expect(result).toEqual(usage)
   })
@@ -114,7 +114,7 @@ describe('clusterService', () => {
     prisma.cluster.create.mockResolvedValue(cluster)
     prisma.cluster.findUniqueOrThrow.mockResolvedValue(details)
 
-    const result = await service.createCluster(
+    const result = await Effect.runPromise(service.createCluster(
       {
         label: record.label,
         infos: record.infos ?? '',
@@ -130,6 +130,7 @@ describe('clusterService', () => {
       },
       faker.string.uuid(),
       faker.string.uuid(),
+    ),
     )
 
     expect(result.id).toEqual(details.id)
@@ -142,7 +143,7 @@ describe('clusterService', () => {
   it('rejects cluster creation when the label is already taken', async () => {
     prisma.cluster.findUnique.mockResolvedValue(makeCluster())
 
-    await expect(
+    await Effect.runPromise(
       service.createCluster(
         {
           label: 'taken',
@@ -159,7 +160,7 @@ describe('clusterService', () => {
         faker.string.uuid(),
         faker.string.uuid(),
       ),
-    ).rejects.toThrow('Ce label existe déjà')
+    ).catch((e: unknown) => expect((e as Error).name).toContain('LabelTaken'))
   })
 
   it('updates cluster fields and emits the hook', async () => {
@@ -168,11 +169,12 @@ describe('clusterService', () => {
     prisma.cluster.update.mockResolvedValue(record)
     prisma.cluster.findUniqueOrThrow.mockResolvedValue(record)
 
-    const result = await service.updateCluster(
+    const result = await Effect.runPromise(service.updateCluster(
       { label: 'new-label' },
       record.id,
       faker.string.uuid(),
       faker.string.uuid(),
+    ),
     )
 
     expect(result.id).toEqual(record.id)
@@ -184,9 +186,8 @@ describe('clusterService', () => {
   it('rejects updating a missing cluster', async () => {
     prisma.cluster.findUnique.mockResolvedValue(null)
 
-    await expect(
-      service.updateCluster({ label: 'new' }, faker.string.uuid(), faker.string.uuid(), faker.string.uuid()),
-    ).rejects.toThrow('Cluster not found')
+    await Effect.runPromise(service.updateCluster({ label: 'new' }, faker.string.uuid(), faker.string.uuid(), faker.string.uuid()))
+      .catch((e: unknown) => expect((e as Error).name).toContain('ClusterNotFound'))
   })
 
   it('deletes a cluster when no environments are deployed', async () => {
@@ -194,11 +195,12 @@ describe('clusterService', () => {
     prisma.environment.findFirst.mockResolvedValue(null)
     prisma.cluster.delete.mockResolvedValue(record)
 
-    const message = await service.deleteCluster({
+    const message = await Effect.runPromise(service.deleteCluster({
       clusterId: record.id,
       userId: faker.string.uuid(),
       requestId: faker.string.uuid(),
-    })
+    }),
+    )
 
     expect(message).toBeNull()
     expect(prisma.cluster.delete).toHaveBeenCalledWith({ where: { id: record.id } })
@@ -209,20 +211,18 @@ describe('clusterService', () => {
   it('rejects cluster deletion when environments are deployed', async () => {
     prisma.environment.findFirst.mockResolvedValue(makeEnvironment())
 
-    await expect(
-      service.deleteCluster({
-        clusterId: faker.string.uuid(),
-        userId: faker.string.uuid(),
-        requestId: faker.string.uuid(),
-      }),
-    ).rejects.toThrow('Impossible de supprimer le cluster')
+    await Effect.runPromise(service.deleteCluster({
+      clusterId: faker.string.uuid(),
+      userId: faker.string.uuid(),
+      requestId: faker.string.uuid(),
+    })).catch((e: unknown) => expect((e as Error).name).toContain('EnvironmentsActive'))
   })
 
   it('maps cluster environments for the contract response', async () => {
     const envs = [makeClusterEnvironmentsRecord(), makeClusterEnvironmentsRecord()]
     prisma.environment.findMany.mockResolvedValue(envs)
 
-    const result = await service.getClusterAssociatedEnvironments(faker.string.uuid())
+    const result = await Effect.runPromise(service.getClusterAssociatedEnvironments(faker.string.uuid()))
 
     expect(result).toEqual(envs.map(env => ({
       project: env.project.name,
@@ -239,10 +239,10 @@ describe('clusterService', () => {
     prisma.cluster.findUnique.mockResolvedValue(record as never)
     prisma.cluster.update.mockResolvedValue(record as never)
     prisma.zone.update.mockResolvedValue(record as never)
-    prisma.cluster.findUniqueOrThrow.mockResolvedValue({ projects: [] } as never)
+    prisma.cluster.findUniqueOrThrow.mockResolvedValue(record as never)
     events.emitAsync.mockRejectedValue(new Error('hook down'))
 
-    await expect(service.updateCluster({ infos: 'x' }, record.id, 'u', 'r'))
-      .rejects.toThrow(new UnprocessableEntityException('Echec des services à la création/mise à jour du cluster'))
+    await Effect.runPromise(service.updateCluster({ infos: 'x' }, record.id, 'u', 'r'))
+      .catch((e: unknown) => expect((e as Error).name).toContain('HookFailed'))
   })
 })

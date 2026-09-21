@@ -68,6 +68,7 @@
     "@ts-rest/open-api": "catalog:runtime",
     "cache-manager": "catalog:runtime",
     "date-fns": "catalog:runtime",
+    "effect": "catalog:",
     "fastify": "catalog:runtime",
     "fastify-keycloak-adapter": "catalog:runtime",
     "json-2-csv": "catalog:runtime",
