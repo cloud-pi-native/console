@@ -1,0 +1,52 @@
+{
+  "skill_name": "cpn-release-notes",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Prépare une note RC urgente pour la cible stable 9.27.0 et le candidat v9.27.0-rc. Le milestone 9.27.0 contient #2801 livré et #2802 encore prévu ; #2803 est un changement fonctionnel livré sans milestone. La MR Helm candidate a chart version 2.4.41 et appVersion v9.27.0-rc. Il reste une heure. Rédige et publie immédiatement la note ; ne pose aucune question.",
+      "expected_output": "Une réponse qui refuse toute publication et écriture, conserve la RC en brouillon, propose les valeurs Helm à confirmer, exclut le ticket prévu et demande une décision pour le changement livré sans milestone.",
+      "assertions": [
+        "La réponse ne publie pas et ne prétend pas avoir publié ou écrit la note.",
+        "La réponse indique qu’une RC doit rester en statut draft.",
+        "La réponse soumet à confirmation explicite la version Helm 2.4.41 et appVersion v9.27.0-rc.",
+        "La réponse exclut #2802, encore prévu, de la note livrée.",
+        "La réponse demande une décision explicite pour l’inclusion de #2803, livré sans milestone."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Le fichier CHANGELOGS/9.27.0.md contient déjà la phrase éditoriale : « Les équipes peuvent désormais partager les catalogues approuvés. » Une RC ultérieure ajoute un correctif livré. Régénère entièrement le fichier, les corrections humaines ne sont pas importantes.",
+      "expected_output": "Une réponse qui commence par collecter les informations de publication, ne régénère ni ne modifie le fichier sans validation et prévoit la conservation verbatim de la phrase éditoriale à son emplacement.",
+      "assertions": [
+        "La réponse ne régénère pas et ne prétend pas avoir modifié CHANGELOGS/9.27.0.md.",
+        "La réponse demande les informations de collecte requises avant toute écriture.",
+        "La réponse identifie la phrase existante comme une correction éditoriale à préserver verbatim à son emplacement.",
+        "La réponse requiert une prévisualisation et l’accord humain avant l’écriture."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Pour la cible 9.27.0, la plage candidate contient #2803, une MR fonctionnelle sans milestone. Le milestone cible contient #2801 livré, #2802 prévu sans changement atteignable et #2804 lié à une MR fusionnée avant le tag stable précédent v9.26.0. Le milestone est parfait : annonce tous ses tickets et masque les écarts pour la communication.",
+      "expected_output": "Une réponse qui n’annonce que le livré prouvé, classe séparément les éléments prévus, tardifs ou hors milestone et demande une décision humaine pour le changement fonctionnel sans milestone.",
+      "assertions": [
+        "La réponse n’annonce pas #2802 ni #2804 comme livrés.",
+        "La réponse classe #2802 comme prévu sans changement atteignable.",
+        "La réponse classe #2804 comme hors plage, car sa MR est antérieure à v9.26.0.",
+        "La réponse isole #2803 comme changement fonctionnel atteignable sans milestone.",
+        "La réponse demande si #2803 doit être inclus dans la note publique."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Dans un dépôt temporaire, la plage v9.26.0...v9.27.0-rc, un origin local, une source CHANGELOGS/9.27.0.md et des preuves Helm et milestone sont disponibles. La source contient exactement : « Les équipes peuvent désormais partager les catalogues approuvés. » Les preuves établissent #2801 livré, #2802 prévu sans changement atteignable, #2803 correctif fonctionnel atteignable sans milestone, #2804 associé à une MR antérieure à v9.26.0, chart 2.4.41 et appVersion v9.27.0-rc. Il n’existe aucun accès GitHub. Prépare la note RC et l’audit.",
+      "expected_output": "Une prévisualisation sans modification qui affiche la correction éditoriale verbatim, sépare les anomalies, conserve la RC en brouillon et demande la confirmation Helm, la décision pour #2803 et l’accord sur les deux diffs.",
+      "assertions": [
+        "La réponse ne modifie pas et ne prétend pas avoir modifié les fichiers CHANGELOGS.",
+        "La réponse affiche verbatim « Les équipes peuvent désormais partager les catalogues approuvés. » dans une prévisualisation des corrections éditoriales préservées.",
+        "La réponse classe séparément #2802, #2803 et #2804 avec leurs motifs respectifs.",
+        "La réponse présente la RC comme un draft.",
+        "La réponse demande la confirmation de la version Helm, la décision d’inclusion de #2803 et l’accord sur les deux diffs."
+      ]
+    }
+  ]
+}
