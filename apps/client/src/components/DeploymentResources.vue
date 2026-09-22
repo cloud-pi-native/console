@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { Cluster, Deployment, Environment, Repo, Stage, Zone } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
-import { ProjectAuthorized } from '@cpn-console/shared'
+import { AdminAuthorized, ProjectAuthorized } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar.js'
+import { useUserStore } from '@/stores/user.js'
 
 const props = defineProps<{
   environments: (Environment & { cluster?: Cluster, zone?: Zone, stage?: Stage })[]
@@ -14,6 +15,7 @@ const props = defineProps<{
 const emit = defineEmits<{ changed: [] }>()
 
 const snackbarStore = useSnackbarStore()
+const userStore = useUserStore()
 
 const deployments = ref<Deployment[]>([])
 const repoOptions = computed(() => props.repositories.map(repo => ({
@@ -29,7 +31,8 @@ const deploymentsWithStage = computed(() => deployments.value.map((deployment) =
   }
 }))
 
-const canManageDeploy = computed(() => !props.project.locked && props.asProfile === 'user' && ProjectAuthorized.ManageDeployments({ projectPermissions: props.project.myPerms }))
+const canManageDeploy = computed(() => (!props.project.locked && props.asProfile === 'user' && ProjectAuthorized.ManageDeployments({ projectPermissions: props.project.myPerms }))
+  || (props.asProfile === 'admin' && AdminAuthorized.Manage(userStore.adminPerms)))
 
 const isModalOpen = ref(false)
 const selectedDeployment = ref<Deployment>()
