@@ -146,8 +146,8 @@ export const ProjectAuthorized = {
     || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.SEE_SECRETS | PROJECT_PERMS.MANAGE)),
   ManageDeployments: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
     || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.MANAGE_DEPLOYMENTS | PROJECT_PERMS.MANAGE)),
-  ListDeployments: (perms: ProjectAuthorizedParams) => AdminAuthorized.Manage(perms.adminPermissions)
-    || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.LIST_DEPLOYMENTS | PROJECT_PERMS.MANAGE)),
+  ListDeployments: (perms: ProjectAuthorizedParams) => AdminAuthorized.ListProjects(perms.adminPermissions)
+    || !!(toBigInt(perms.projectPermissions) & (PROJECT_PERMS.LIST_DEPLOYMENTS | PROJECT_PERMS.MANAGE_DEPLOYMENTS | PROJECT_PERMS.MANAGE)),
 } as const
 
 interface ScopePerm<T extends string> {
