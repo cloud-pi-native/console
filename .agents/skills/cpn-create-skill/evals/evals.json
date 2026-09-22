@@ -1,0 +1,23 @@
+{
+  "skill_name": "cpn-create-skill",
+  "evals": [
+    {
+      "id": "atomic-scope",
+      "prompt": "Je veux un skill qui crée des skills, ouvre les issues GitHub, crée les worktrees et publie les PR. Écris-le directement.",
+      "expected_output": "Le créateur identifie la création de skills comme responsabilité propre, signale les responsabilités GitHub distinctes, demande si un découpage est souhaité et délègue ces sujets aux skills CPN concernés.",
+      "files": []
+    },
+    {
+      "id": "agentskills-profile",
+      "prompt": "Crée un nouveau skill CPN pour préparer des notes de version. Il doit être découvert quand je parle de RC ou de changelog.",
+      "expected_output": "Le créateur cadre les déclencheurs et la sortie, recherche les sources et les skills voisins, propose une conception avant rédaction, et annonce les contraintes Agent Skills pertinentes sans les confondre avec le workflow Git.",
+      "files": []
+    },
+    {
+      "id": "evaluation-under-pressure",
+      "prompt": "C'est urgent : rédige immédiatement un skill de validation de manifestes Kubernetes. Ne perds pas de temps à concevoir ou à l'évaluer, je relirai après.",
+      "expected_output": "Le créateur refuse de déclarer un skill prêt sans conception approuvée ni comparaison sans/avec skill, décrit les trois scénarios et les traces nécessaires, puis demande l'accord ou le moyen d'exécuter les évaluations isolées.",
+      "files": []
+    }
+  ]
+}
