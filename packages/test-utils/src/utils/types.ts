@@ -2,6 +2,7 @@ export interface Repository {
   id: string
   projectId: string
   internalRepoName: string
+  branchName: string
   externalRepoUrl: string
   isPrivate: boolean
   isInfra: boolean

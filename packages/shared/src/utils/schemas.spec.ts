@@ -2,7 +2,7 @@ import type { Log, ProjectV2 } from '../index.js'
 import { faker } from '@faker-js/faker'
 import { describe, expect, it } from 'vitest'
 import { ZodError } from 'zod'
-import { ClusterDetailsSchema, ClusterPrivacy, ClusterUsageSchema, descriptionMaxLength, EnvironmentSchema, instanciateSchema, LogSchema, parseZodError, ProjectSchemaV2, RepoSchema, StageSchema, UserSchema } from '../index.js'
+import { ClusterDetailsSchema, ClusterPrivacy, ClusterUsageSchema, defaultBranchName, descriptionMaxLength, EnvironmentSchema, instanciateSchema, LogSchema, parseZodError, ProjectSchemaV2, RepoSchema, StageSchema, UserSchema } from '../index.js'
 
 describe('schemas utils', () => {
   it('should delete config in log', () => {
@@ -44,6 +44,7 @@ describe('schemas utils', () => {
       id: faker.string.uuid(),
       projectId: faker.string.uuid(),
       internalRepoName: 'candilib',
+      branchName: defaultBranchName,
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       externalToken: 'eddddsqsq-_',
       isPrivate: true,
@@ -159,6 +160,7 @@ describe('schemas utils', () => {
       id: faker.string.uuid(),
       projectId: faker.string.uuid(),
       internalRepoName: 'candilib',
+      branchName: defaultBranchName,
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       externalUserName: 'clairenlet',
       externalToken: 'myToken',
@@ -213,6 +215,7 @@ describe('schemas utils', () => {
       id: faker.string.uuid(),
       projectId: faker.string.uuid(),
       internalRepoName: '-candilib',
+      branchName: defaultBranchName,
       externalRepoUrl: 'https://github.com/LAB-MI/candilibV2.git',
       isPrivate: false,
       isInfra: false,
