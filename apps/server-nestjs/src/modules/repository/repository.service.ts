@@ -85,6 +85,10 @@ export class RepositoryService {
   async syncRepository(projectId: string, projectSlug: string, repositoryId: string, syncRequest: SyncRepository, userId: string, requestId: string): Promise<void> {
     const repository = await this.getProjectRepositoryOrThrow(projectId, repositoryId)
 
+    if (!syncRequest.syncAllBranches) {
+      await this.repositoryDatastoreService.updateBranchName(repositoryId, syncRequest.branchName)
+    }
+
     const results = await this.syncRepositoryMirror(
       {
         projectId,
