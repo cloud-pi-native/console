@@ -14,6 +14,7 @@ import {
   invalidInternalRepoErrorMessage,
 } from '../helpers/constants'
 import { createProject, projectSlugTextRegexp } from '../helpers/project'
+import { createRepository as createRepositoryThroughUi } from '../helpers/repository'
 
 test.describe('Repositories', () => {
   // @TODO: Rework this Cypress-inherited test (use of following-sibling is a
@@ -501,6 +502,11 @@ test.describe('Repositories', () => {
       await expect(
         page.getByTestId(`repoTr-${repo.internalRepoName}`),
       ).toBeVisible()
+      const secondRepositoryName = await createRepositoryThroughUi({
+        page,
+        repositoryName: 'repo04',
+        externalRepoUrlInput: 'https://github.com/externalUser04/repo04.git',
+      })
 
       // Assert - Update repository
       await page.getByTestId(`repoTr-repo03`).click()
@@ -537,6 +543,17 @@ test.describe('Repositories', () => {
           'Travail de synchronisation lancé pour le dépôt repo03Fermer le message',
         ),
       ).toBeVisible()
+      await page.getByTestId('resource-modal').getByRole('button', { name: 'Fermer' }).click()
+      await page.getByTestId(`repoTr-${repo.internalRepoName}`).click()
+      await expect(page.getByTestId('branchNameInput')).toHaveValue('develop')
+      await page.getByTestId('resource-modal').getByRole('button', { name: 'Fermer' }).click()
+      await page.reload()
+      await expect(page.locator('h1')).toContainText(projectName)
+      await page.getByTestId(`repoTr-${repo.internalRepoName}`).click()
+      await expect(page.getByTestId('branchNameInput')).toHaveValue('develop')
+      await page.getByTestId('resource-modal').getByRole('button', { name: 'Fermer' }).click()
+      await page.getByTestId(`repoTr-${secondRepositoryName}`).click()
+      await expect(page.getByTestId('branchNameInput')).toHaveValue('main')
     },
   )
 
