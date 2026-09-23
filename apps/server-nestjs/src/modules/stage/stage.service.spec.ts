@@ -13,6 +13,7 @@ describe('stageService', () => {
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
+    prisma.$transaction.mockImplementation(fn => fn(prisma))
 
     const moduleRef = await Test.createTestingModule({
       providers: [
