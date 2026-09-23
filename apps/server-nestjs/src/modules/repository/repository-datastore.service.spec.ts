@@ -137,6 +137,20 @@ describe('repositoryDatastoreService', () => {
     })
   })
 
+  describe('updateBranchName', () => {
+    it('updates the persisted synchronization branch', async () => {
+      const repository = makeInternalRepository({ projectId })
+      prisma.repository.update.mockResolvedValue(repository)
+
+      await service.updateBranchName(repository.id, 'develop')
+
+      expect(prisma.repository.update).toHaveBeenCalledWith({
+        where: { id: repository.id },
+        data: { branchName: 'develop' },
+      })
+    })
+  })
+
   describe('deleteRepository', () => {
     it('returns the deleted repository', async () => {
       const repository = makeInternalRepository()
