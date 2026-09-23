@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
@@ -83,10 +84,13 @@ describe('userService', () => {
     const users = [makeUser()]
     prisma.user.update.mockResolvedValue(users[0])
     prisma.user.findMany.mockResolvedValue(users)
+    const tx = mockDeep<Prisma.TransactionClient>()
+    tx.user.update.mockResolvedValue(users[0])
+    prisma.$transaction.mockImplementation(async cb => cb(tx))
 
     const result = await service.patchUsers([{ id: users[0].id, adminRoleIds: ['role-1'] }])
 
-    expect(prisma.user.update).toHaveBeenCalledWith({
+    expect(tx.user.update).toHaveBeenCalledWith({
       where: { id: users[0].id },
       data: { adminRoleIds: ['role-1'] },
     })
