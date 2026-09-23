@@ -1,9 +1,13 @@
-import type { ClientInferRequest, ClientInferResponseBody } from '@ts-rest/core'
+import type { ClientInferResponseBody } from '@ts-rest/core'
 import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import { StageSchema } from '../schemas/index.js'
 import { baseHeaders, ErrorSchema } from './_utils.js'
+
+export const CreateStageBodySchema = StageSchema.omit({ id: true }).partial({ clusterIds: true })
+
+export const UpdateStageBodySchema = StageSchema.pick({ clusterIds: true, name: true })
 
 export const stageContract = contractInstance.router({
   listStages: {
@@ -23,7 +27,7 @@ export const stageContract = contractInstance.router({
     contentType: 'application/json',
     summary: 'Create stage',
     description: 'Create new stage.',
-    body: StageSchema.omit({ id: true }).partial({ clusterIds: true }),
+    body: CreateStageBodySchema,
     responses: {
       201: StageSchema,
       400: ErrorSchema,
@@ -61,7 +65,7 @@ export const stageContract = contractInstance.router({
       stageId: z.string()
         .uuid(),
     }),
-    body: StageSchema.pick({ clusterIds: true, name: true }),
+    body: UpdateStageBodySchema,
     responses: {
       200: StageSchema,
       500: ErrorSchema,
@@ -88,8 +92,8 @@ export const stageContract = contractInstance.router({
   pathPrefix: `${apiPrefix}/stages`,
 })
 
-export type CreateStageBody = ClientInferRequest<typeof stageContract.createStage>['body']
+export type CreateStageBody = z.infer<typeof CreateStageBodySchema>
 
-export type UpdateStageBody = ClientInferRequest<typeof stageContract.updateStage>['body']
+export type UpdateStageBody = z.infer<typeof UpdateStageBodySchema>
 
 export type StageAssociatedEnvironments = ClientInferResponseBody<typeof stageContract.getStageEnvironments, 200>

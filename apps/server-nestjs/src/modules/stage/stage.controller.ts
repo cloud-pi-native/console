@@ -1,5 +1,5 @@
 import type { CreateStageBody, Stage, StageAssociatedEnvironments, UpdateStageBody } from '@cpn-console/shared'
-import { StageSchema } from '@cpn-console/shared'
+import { CreateStageBodySchema, UpdateStageBodySchema } from '@cpn-console/shared'
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, Post, Put, UseGuards } from '@nestjs/common'
 import { RequireAdminPermission } from '../infrastructure/permission/user/user-admin-permission.decorator'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
@@ -28,7 +28,7 @@ export class StageController {
   @HttpCode(HttpStatus.CREATED)
   @RequireAdminPermission('ManageStages')
   async create(
-    @Body(new ZodValidationPipe(StageSchema.omit({ id: true }).partial({ clusterIds: true }))) data: CreateStageBody,
+    @Body(new ZodValidationPipe(CreateStageBodySchema)) data: CreateStageBody,
   ): Promise<Stage> {
     return this.service.createStage(data)
   }
@@ -37,7 +37,7 @@ export class StageController {
   @RequireAdminPermission('ManageStages')
   async update(
     @Param('stageId') stageId: string,
-    @Body(new ZodValidationPipe(StageSchema.pick({ clusterIds: true, name: true }))) data: UpdateStageBody,
+    @Body(new ZodValidationPipe(UpdateStageBodySchema)) data: UpdateStageBody,
   ): Promise<Stage> {
     return this.service.updateStage(stageId, data)
   }
