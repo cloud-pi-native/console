@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CleanedCluster, Cluster, CreateEnvironment, Environment, EnvironmentWithDeploymentsCount, Repo, Stage, UpdateEnvironment, Zone } from '@cpn-console/shared'
+import type { CleanedCluster, Cluster, CreateEnvironment, Environment, EnvironmentWithDeploymentsCount, Repo, Stage, SyncRepositoryBodyV2, UpdateEnvironment, Zone } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
 import type { RepoFormResult } from '@/utils/repository-utils.js'
 import { logger } from '@cpn-console/logger/browser'
@@ -65,8 +65,8 @@ const canManageEnvs = computed(() => !props.project.locked && props.asProfile ==
 const canManageRepos = computed(() => !props.project.locked && props.asProfile === 'user' && ProjectAuthorized.ManageRepositories({ projectPermissions: props.project.myPerms }))
 const canListDeploy = computed(() => props.asProfile === 'admin' || ProjectAuthorized.ListDeployments({ projectPermissions: props.project.myPerms }))
 
-watch(selectedRepo, async () => {
-  branchName.value = defaultBranchName
+watch(selectedRepo, () => {
+  branchName.value = selectedRepo.value?.branchName ?? defaultBranchName
 })
 
 async function putEnvironment(environment: UpdateEnvironment, envId: Environment['id']) {
@@ -123,12 +123,17 @@ async function syncRepository() {
   const repo = selectedRepo.value
   if (!repo) return
   if (!isAllSyncing.value && !branchName.value) branchName.value = defaultBranchName
-  await props.project.Repositories.sync(
-    repo.id,
-    isAllSyncing.value
-      ? { syncAllBranches: true }
-      : { syncAllBranches: false, branchName: branchName.value },
-  )
+  const syncRequest: SyncRepositoryBodyV2 = isAllSyncing.value
+    ? { syncAllBranches: true }
+    : { syncAllBranches: false, branchName: branchName.value }
+  await props.project.Repositories.sync(repo.id, syncRequest)
+  if (!syncRequest.syncAllBranches) {
+    repositories.value = repositories.value.map(repository =>
+      repository.id === repo.id
+        ? { ...repository, branchName: syncRequest.branchName }
+        : repository,
+    )
+  }
   snackbarStore.setMessage(`Travail de synchronisation lancé pour le dépôt ${repo.internalRepoName}`)
 }
 

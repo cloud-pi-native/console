@@ -83,6 +83,12 @@ describe('toUpdateRepositoryBody', () => {
     expect(body).not.toHaveProperty('isStandalone')
   })
 
+  it('should omit the branch persisted by a synchronization', () => {
+    const body = toUpdateRepositoryBody(makeFormResult({ ...persisted, branchName: 'develop' }))
+
+    expect(body).not.toHaveProperty('branchName')
+  })
+
   it('should omit an unchanged token, signalled by the fakeToken placeholder', () => {
     const body = toUpdateRepositoryBody(makeFormResult({ ...persisted, isPrivate: true, externalUserName: 'this-is-tobi', externalToken: fakeToken }))
 
