@@ -40,65 +40,73 @@ export class StageService {
   }
 
   async createStage({ clusterIds = [], name }: CreateStageBody): Promise<Stage> {
-    const isNameTaken = await getStageByName(this.prisma, name)
-    if (isNameTaken) throw new BadRequestException('Un type d\'environnement portant ce nom existe déjà')
+    return this.prisma.$transaction(async (tx) => {
+      const isNameTaken = await getStageByName(tx, name)
+      if (isNameTaken) throw new BadRequestException('Un type d\'environnement portant ce nom existe déjà')
 
-    const stage = await createStageQuery(this.prisma, { name })
+      const stage = await createStageQuery(tx, { name })
 
-    if (clusterIds.length) {
-      await linkStageToClusters(this.prisma, stage.id, clusterIds)
-    }
+      if (clusterIds.length) {
+        await linkStageToClusters(tx, stage.id, clusterIds)
+      }
 
-    return {
-      id: stage.id,
-      name: stage.name,
-      clusterIds,
-    }
+      return {
+        id: stage.id,
+        name: stage.name,
+        clusterIds,
+      }
+    })
   }
 
   async updateStage(stageId: Stage['id'], { clusterIds, name }: UpdateStageBody): Promise<Stage> {
-    const dbStage = await getStageById(this.prisma, stageId)
-    if (!dbStage) throw new NotFoundException()
+    return this.prisma.$transaction(async (tx) => {
+      const dbStage = await getStageById(tx, stageId)
+      if (!dbStage) throw new NotFoundException()
 
-    if (name !== undefined && name !== dbStage.name) {
-      await updateStageName(this.prisma, stageId, name)
-    }
-
-    const dbClusters = dbStage.clusters
-    if (dbClusters?.length) {
-      const clustersToRemove = dbClusters.filter(dbCluster => !clusterIds.includes(dbCluster.id))
-      for (const clusterToRemove of clustersToRemove) {
-        await disconnectClusterFromStage(this.prisma, clusterToRemove.id, stageId)
+      if (name !== undefined && name !== dbStage.name) {
+        await updateStageName(tx, stageId, name)
       }
-    }
 
-    if (clusterIds.length) {
-      await linkStageToClusters(this.prisma, stageId, clusterIds)
-    }
+      const dbClusters = dbStage.clusters
+      if (dbClusters?.length) {
+        const clustersToRemove = dbClusters.filter(dbCluster => !clusterIds.includes(dbCluster.id))
+        for (const clusterToRemove of clustersToRemove) {
+          await disconnectClusterFromStage(tx, clusterToRemove.id, stageId)
+        }
+      }
 
-    const updated = await getStageById(this.prisma, stageId)
-    if (!updated) throw new NotFoundException()
+      if (clusterIds.length) {
+        await linkStageToClusters(tx, stageId, clusterIds)
+      }
 
-    return {
-      id: stageId,
-      name: updated.name,
-      clusterIds: updated.clusters.map(({ id }) => id),
-    }
+      const updated = await getStageById(tx, stageId)
+      if (!updated) throw new NotFoundException()
+
+      return {
+        id: stageId,
+        name: updated.name,
+        clusterIds: updated.clusters.map(({ id }) => id),
+      }
+    })
   }
 
   async deleteStage(stageId: Stage['id']): Promise<void> {
-    const attachedEnvironmentCount = await getStageAssociatedEnvironmentCount(this.prisma, stageId)
-    if (attachedEnvironmentCount > 0) {
-      throw new BadRequestException('Impossible de supprimer le stage, des environnements en activité y ont souscrit')
-    }
+    await this.prisma.$transaction(async (tx) => {
+      const attachedEnvironmentCount = await getStageAssociatedEnvironmentCount(tx, stageId)
+      if (attachedEnvironmentCount > 0) {
+        throw new BadRequestException('Impossible de supprimer le stage, des environnements en activité y ont souscrit')
+      }
 
-    await deleteStageQuery(this.prisma, stageId)
+      await deleteStageQuery(tx, stageId)
+    })
   }
 
   async linkClusterToStages(clusterId: Cluster['id'], stageIds: Stage['id'][], linkToAll: boolean = false): Promise<void> {
-    if (linkToAll === true) {
-      stageIds = (await getAllStageIds(this.prisma)).map(({ id }) => id)
-    }
-    await linkClusterToStages(this.prisma, clusterId, stageIds)
+    await this.prisma.$transaction(async (tx) => {
+      if (linkToAll === true) {
+        stageIds = (await getAllStageIds(tx)).map(({ id }) => id)
+      }
+      await linkClusterToStages(tx, clusterId, stageIds)
+    })
   }
 }
