@@ -1,4 +1,5 @@
-import type { AllUsers, AllUsersQuery, LettersQuery, MatchingUsers, PatchUsers, PatchUsersBody } from '@cpn-console/shared'
+import type { AllUsers, LettersQuery, MatchingUsers, PatchUsers, PatchUsersBody } from '@cpn-console/shared'
+import type { z } from 'zod'
 import { AllUsersQuerySchema, MatchingUsersQuerySchema, PatchUsersBodySchema } from '@cpn-console/shared'
 import { Body, Controller, Get, Inject, Patch, Query, UseGuards } from '@nestjs/common'
 import { RequireAdminPermission } from '../infrastructure/permission/user/user-admin-permission.decorator'
@@ -15,7 +16,7 @@ export class UserController {
   @Get()
   @RequireAdminPermission('ManageUsers')
   async getAllUsers(
-    @Query(new ZodValidationPipe(AllUsersQuerySchema)) query: AllUsersQuery,
+    @Query(new ZodValidationPipe(AllUsersQuerySchema)) query: z.infer<typeof AllUsersQuerySchema>,
   ): Promise<AllUsers> {
     const relationType = query.relationType ?? 'AND'
     const { relationType: _, ...listQuery } = query

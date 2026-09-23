@@ -85,7 +85,6 @@ export const userContract = contractInstance.router({
 })
 
 export type LettersQuery = ClientInferRequest<typeof userContract.getMatchingUsers>['query']
-export type AllUsersQuery = z.infer<typeof AllUsersQuerySchema>
 export type PatchUsersBody = z.infer<typeof PatchUsersBodySchema>
 
 export type AllUsers = ClientInferResponseBody<typeof userContract.getAllUsers, 200>
