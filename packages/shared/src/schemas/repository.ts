@@ -1,6 +1,6 @@
 import type Zod from 'zod'
 import { z } from 'zod'
-import { forbiddenRepoNames, invalidGitUrl, invalidInternalRepoName, missingCredentials } from '../utils/const.js'
+import { defaultBranchName, forbiddenRepoNames, invalidGitUrl, invalidInternalRepoName, missingCredentials } from '../utils/const.js'
 import { AtDatesToStringExtend } from './_utils.js'
 
 export const RepoSchema = z.object({
@@ -26,6 +26,8 @@ export const RepoSchema = z.object({
     .optional(),
   projectId: z.string()
     .uuid(),
+  branchName: z.string()
+    .default(defaultBranchName),
   // Optional deployment settings for infra repositories
   deployRevision: z.string().optional(),
   deployPath: z.string().optional(),
