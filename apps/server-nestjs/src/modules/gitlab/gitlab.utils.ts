@@ -82,7 +82,7 @@ export function generateAccessLevelMapping(
       if (level !== null && level !== undefined && (highest === null || level > highest)) return level
       return highest
     }, null)
-    acc.set(membership.user.id, highest ?? AccessLevel.GUEST)
+    acc.set(membership.user.id, highest ?? AccessLevel.DEVELOPER)
     return acc
   }, new Map<string, ProjectAccessLevel>())
 }
