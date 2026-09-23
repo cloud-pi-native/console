@@ -8,14 +8,29 @@ import {
 } from '../schemas/index.js'
 import { baseHeaders, ErrorSchema } from './_utils.js'
 
+export const MatchingUsersQuerySchema = z.object({
+  letters: z.string(),
+  notInProjectId: z.string().uuid().optional(),
+})
+
+export const AllUsersQuerySchema = z.object({
+  adminRoles: RoleNameCsvSchema
+    .optional(),
+  adminRoleIds: UuidOrCsvUuidSchema
+    .optional(),
+  memberOfIds: UuidOrCsvUuidSchema
+    .optional(),
+  relationType: z.enum(['OR', 'AND'])
+    .optional(),
+})
+
+export const PatchUsersBodySchema = UserSchema.pick({ adminRoleIds: true, id: true }).array()
+
 export const userContract = contractInstance.router({
   getMatchingUsers: {
     method: 'GET',
     path: `${apiPrefix}/users/matching`,
-    query: z.object({
-      letters: z.string(),
-      notInProjectId: z.string().uuid().optional(),
-    }),
+    query: MatchingUsersQuerySchema,
     summary: 'Get users by letters matching',
     description: 'Retrieved users by letters matching.',
     responses: {
@@ -43,16 +58,7 @@ export const userContract = contractInstance.router({
     path: `${apiPrefix}/users`,
     summary: 'Get all users',
     description: 'Get all users.',
-    query: z.object({
-      adminRoles: RoleNameCsvSchema
-        .optional(),
-      adminRoleIds: UuidOrCsvUuidSchema
-        .optional(),
-      memberOfIds: UuidOrCsvUuidSchema
-        .optional(),
-      relationType: z.enum(['OR', 'AND'])
-        .optional(),
-    }),
+    query: AllUsersQuerySchema,
     responses: {
       200: UserSchema.array(),
       400: ErrorSchema,
@@ -65,7 +71,7 @@ export const userContract = contractInstance.router({
     method: 'PATCH',
     path: `${apiPrefix}/users`,
     summary: 'Patch users',
-    body: UserSchema.pick({ adminRoleIds: true, id: true }).array(),
+    body: PatchUsersBodySchema,
     description: 'Update user admin role.',
     responses: {
       200: UserSchema.array(),
@@ -79,5 +85,9 @@ export const userContract = contractInstance.router({
 })
 
 export type LettersQuery = ClientInferRequest<typeof userContract.getMatchingUsers>['query']
+export type AllUsersQuery = z.infer<typeof AllUsersQuerySchema>
+export type PatchUsersBody = z.infer<typeof PatchUsersBodySchema>
 
 export type AllUsers = ClientInferResponseBody<typeof userContract.getAllUsers, 200>
+export type MatchingUsers = ClientInferResponseBody<typeof userContract.getMatchingUsers, 200>
+export type PatchUsers = ClientInferResponseBody<typeof userContract.patchUsers, 200>
