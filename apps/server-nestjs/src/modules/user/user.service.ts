@@ -1,5 +1,6 @@
-import type { AllUsersQuery, LettersQuery, PatchUsersBody } from '@cpn-console/shared'
+import type { AllUsersQuerySchema, LettersQuery, PatchUsersBody } from '@cpn-console/shared'
 import type { User } from '@prisma/client'
+import type { z } from 'zod'
 import { ConflictException, Inject, Injectable } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { PrismaService } from '../infrastructure/database/prisma.service'
@@ -21,7 +22,7 @@ export class UserService {
   ) {}
 
   async getAllUsers(
-    query: AllUsersQuery,
+    query: z.infer<typeof AllUsersQuerySchema>,
     relationType: 'OR' | 'AND' = 'AND',
   ): Promise<User[]> {
     const where = await buildAllUsersWhere(this.prisma, query, relationType)

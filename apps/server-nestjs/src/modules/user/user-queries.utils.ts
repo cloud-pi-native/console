@@ -1,5 +1,6 @@
-import type { AllUsersQuery, LettersQuery, PatchUsersBody } from '@cpn-console/shared'
+import type { AllUsersQuerySchema, LettersQuery, PatchUsersBody } from '@cpn-console/shared'
 import type { Prisma, User } from '@prisma/client'
+import type { z } from 'zod'
 import type { PrismaService } from '../infrastructure/database/prisma.service'
 import { BadRequestException } from '@nestjs/common'
 
@@ -41,7 +42,7 @@ export function patchUsers(tx: Prisma.TransactionClient, users: PatchUsersBody) 
 
 export async function buildAllUsersWhere(
   prisma: PrismaService,
-  query: AllUsersQuery,
+  query: z.infer<typeof AllUsersQuerySchema>,
   relationType: 'OR' | 'AND',
 ): Promise<Prisma.UserWhereInput> {
   const whereInputs: Prisma.UserWhereInput[] = []
