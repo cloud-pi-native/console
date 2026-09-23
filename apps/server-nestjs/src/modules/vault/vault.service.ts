@@ -215,11 +215,18 @@ export class VaultService {
       },
     }
     const tuneBody = {
+      force_no_cache: true,
       options: {
         version: 2,
       },
     }
     try {
+      const mounts = await this.client.listSysMounts()
+      if (mounts[`${kvName}/`]) {
+        await this.client.tuneSysMount(kvName, tuneBody)
+        this.logger.log(`Vault mount ${kvName} already existed, so it was tuned to the expected settings`)
+        return
+      }
       await this.client.createSysMount(kvName, createBody)
       this.logger.log(`Created Vault mount ${kvName}`)
     } catch (error) {

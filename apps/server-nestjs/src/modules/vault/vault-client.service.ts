@@ -22,6 +22,7 @@ export interface VaultSysMountCreateRequest {
 }
 
 export interface VaultSysMountTuneRequest {
+  force_no_cache: boolean
   options: {
     version: number
   }
@@ -360,6 +361,13 @@ export class VaultClientService {
   async createSysMount(name: string, body: VaultSysMountCreateRequest): Promise<void> {
     this.logger.verbose(`Creating Vault mount ${name} (version=${body.options.version})`)
     await this.http.fetch(`sys/mounts/${name}`, { method: 'POST', body })
+  }
+
+  @StartActiveSpan()
+  async listSysMounts(): Promise<Record<string, unknown>> {
+    this.logger.verbose('Listing Vault mounts')
+    const response = await this.http.fetch<{ data: Record<string, unknown> }>('sys/mounts')
+    return response?.data ?? {}
   }
 
   @StartActiveSpan()
