@@ -37,6 +37,13 @@ export class RepositoryDatastoreService {
     })
   }
 
+  updateBranchName(repositoryId: string, branchName: string): Promise<Repository> {
+    return this.prisma.repository.update({
+      where: { id: repositoryId },
+      data: { branchName },
+    })
+  }
+
   deleteRepository(repositoryId: string): Promise<Repository> {
     return this.prisma.repository.delete({
       where: { id: repositoryId },

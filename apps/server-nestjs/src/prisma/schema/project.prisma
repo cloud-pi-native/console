@@ -75,6 +75,7 @@ model Repository {
   id                             String                          @id @default(uuid()) @db.Uuid
   projectId                      String                          @db.Uuid
   internalRepoName               String
+  branchName                     String                          @default("main")
   externalRepoUrl                String                          @default("")
   externalUserName               String                          @default("")
   isInfra                        Boolean                         @default(false)
