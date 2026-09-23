@@ -81,6 +81,7 @@ export class ProjectController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(ProjectGuard)
   @RequireProjectPermission('Manage')
+  @RequireProjectStatus('initializing', 'created', 'failed', 'warning')
   async archive(
     @Project() project: ProjectContext,
     @AuthUser() user: UserContext,
