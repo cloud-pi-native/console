@@ -1,5 +1,6 @@
 import type { MonitorInfos } from '@cpn-console/shared'
 import type { OnModuleDestroy, OnModuleInit } from '@nestjs/common'
+import type { ProbeOutcome } from './service-monitor.utils'
 import { MonitorStatus } from '@cpn-console/shared'
 import { Inject, Injectable, Optional } from '@nestjs/common'
 import { ArgoCDHealthService } from '../argocd/argocd-health.service'
@@ -11,7 +12,6 @@ import { SonarqubeHealthService } from '../sonarqube/sonarqube-health.service'
 import { VaultHealthService } from '../vault/vault-health.service'
 import { INTERVAL_MS, PENDING_MESSAGE, REQUEST_ERROR_MESSAGE } from './service-monitor.constants'
 import { fromHealthCheck, toCause } from './service-monitor.utils'
-import type { ProbeOutcome } from './service-monitor.utils'
 
 export type ServiceHealth = MonitorInfos & { name: string }
 
