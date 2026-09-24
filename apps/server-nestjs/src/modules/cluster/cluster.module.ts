@@ -11,7 +11,7 @@ import { ClusterService } from './cluster.service'
   imports: [
     AppEventsModule,
     AuthModule,
-    DatabaseModule,
+    DatabaseModule, EventsModule,
     EventsModule,
     UserPermissionModule,
   ],
