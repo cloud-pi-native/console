@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { ConditionalModule } from '@nestjs/config'
 import { ArgoCDModule } from '../argocd/argocd.module'
 import { GitlabModule } from '../gitlab/gitlab.module'
+import { AuthModule } from '../infrastructure/auth/auth.module'
 import { UserPermissionModule } from '../infrastructure/permission/user/user.module'
 import { KeycloakModule } from '../keycloak/keycloak.module'
 import { NexusModule } from '../nexus/nexus.module'
@@ -13,6 +14,7 @@ import { ServiceMonitorService } from './service-monitor.service'
 
 @Module({
   imports: [
+    AuthModule,
     UserPermissionModule,
     KeycloakModule,
     ConditionalModule.registerWhen(ArgoCDModule, 'USE_ARGOCD'),
