@@ -761,36 +761,15 @@ importers:
 
   apps/server-nestjs:
     dependencies:
-      '@cpn-console/argocd-plugin':
-        specifier: workspace:^
-        version: link:../../plugins/argocd
-      '@cpn-console/gitlab-plugin':
-        specifier: workspace:^
-        version: link:../../plugins/gitlab
-      '@cpn-console/harbor-plugin':
-        specifier: workspace:^
-        version: link:../../plugins/harbor
       '@cpn-console/hooks':
         specifier: workspace:^
         version: link:../../packages/hooks
-      '@cpn-console/keycloak-plugin':
-        specifier: workspace:^
-        version: link:../../plugins/keycloak
       '@cpn-console/logger':
         specifier: workspace:^
         version: link:../../packages/logger
-      '@cpn-console/nexus-plugin':
-        specifier: workspace:^
-        version: link:../../plugins/nexus
       '@cpn-console/shared':
         specifier: workspace:^
         version: link:../../packages/shared
-      '@cpn-console/sonarqube-plugin':
-        specifier: workspace:^
-        version: link:../../plugins/sonarqube
-      '@cpn-console/vault-plugin':
-        specifier: workspace:^
-        version: link:../../plugins/vault
       '@gitbeaker/core':
         specifier: catalog:runtime
         version: 40.6.0
