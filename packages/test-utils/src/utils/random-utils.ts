@@ -94,6 +94,7 @@ export function getRandomRepo(projectId = faker.string.uuid()): Repository {
     id: faker.string.uuid(),
     projectId,
     internalRepoName: faker.lorem.word(),
+    branchName: 'main',
     externalRepoUrl: getRandomGitUrl(),
     isPrivate: faker.datatype.boolean(),
     isInfra: faker.datatype.boolean(),

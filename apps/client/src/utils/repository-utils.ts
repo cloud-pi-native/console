@@ -20,7 +20,7 @@ export function toCreateRepositoryBody(repo: RepoFormResult): CreateRepositoryBo
 }
 
 export function toUpdateRepositoryBody(repo: RepoFormResult): UpdateRepositoryBodyV2 {
-  const { externalToken, id: _id, projectId: _projectId, createdAt: _createdAt, updatedAt: _updatedAt, internalRepoName: _internalRepoName, isStandalone: _isStandalone, ...repositoryFields } = repo
+  const { externalToken, id: _id, projectId: _projectId, createdAt: _createdAt, updatedAt: _updatedAt, internalRepoName: _internalRepoName, branchName: _branchName, isStandalone: _isStandalone, ...repositoryFields } = repo
 
   return {
     ...repositoryFields,

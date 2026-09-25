@@ -8,6 +8,7 @@ export function makeRepository(overrides: Partial<Repository> = {}): Repository 
     id: faker.string.uuid(),
     projectId: faker.string.uuid(),
     internalRepoName: faker.string.alphanumeric(8).toLowerCase(),
+    branchName: 'main',
     externalRepoUrl: '',
     externalUserName: '',
     isInfra: false,
