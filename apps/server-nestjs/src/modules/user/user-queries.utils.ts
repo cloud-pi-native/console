@@ -15,10 +15,6 @@ export function getMatchingUsers(tx: Prisma.TransactionClient, where: Prisma.Use
   })
 }
 
-export function getUserByEmail(tx: Prisma.TransactionClient, email: User['email']) {
-  return tx.user.findUnique({ where: { email } })
-}
-
 export function getAdminRolesByName(tx: Prisma.TransactionClient, names: string[]) {
   return tx.adminRole.findMany({ where: { name: { in: names } } })
 }
@@ -28,10 +24,6 @@ export function updateUserAdminRoleIds(tx: Prisma.TransactionClient, id: User['i
     where: { id },
     data: { adminRoleIds },
   })
-}
-
-export function createUser(tx: Prisma.TransactionClient, data: Pick<User, 'id' | 'email' | 'firstName' | 'lastName' | 'type'>) {
-  return tx.user.create({ data })
 }
 
 export function patchUsers(tx: Prisma.TransactionClient, users: PatchUsersBody) {

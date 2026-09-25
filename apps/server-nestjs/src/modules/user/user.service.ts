@@ -1,15 +1,13 @@
 import type { AllUsersQuerySchema, LettersQuery, PatchUsersBody } from '@cpn-console/shared'
 import type { User } from '@prisma/client'
 import type { z } from 'zod'
-import { ConflictException, Inject, Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import {
   buildAllUsersWhere,
   buildMatchingUsersWhere,
-  createUser,
   getMatchingUsers,
-  getUserByEmail,
   getUsers,
   patchUsers,
 } from './user-queries.utils'
@@ -34,12 +32,6 @@ export class UserService {
   ): Promise<User[]> {
     const where = buildMatchingUsersWhere(query)
     return getMatchingUsers(this.prisma, where)
-  }
-
-  async createUser(data: Omit<User, 'createdAt' | 'updatedAt'>): Promise<User> {
-    const existing = await getUserByEmail(this.prisma, data.email)
-    if (existing) throw new ConflictException('Un utilisateur avec cette adresse e-mail existe déjà')
-    return this.prisma.$transaction(tx => createUser(tx, data))
   }
 
   async patchUsers(
