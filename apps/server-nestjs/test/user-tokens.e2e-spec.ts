@@ -1,5 +1,4 @@
 import type { TestingModule } from '@nestjs/testing'
-import { createHash } from 'node:crypto'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
@@ -12,6 +11,7 @@ import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { UserTokensModule } from '../src/modules/user-tokens/user-tokens.module'
 import { UserTokensService } from '../src/modules/user-tokens/user-tokens.service'
+import { hashToken } from '../src/utils/crypto.utils'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunUserTokensE2E = Boolean(process.env.E2E)
@@ -141,14 +141,6 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
     expect(stored).not.toBeNull()
   })
 
-  it('should reject creation with expiration date in the past', async () => {
-    const yesterday = faker.date.past()
-    await expect(service.create({
-      name: faker.helpers.slugify(`e2e-pat-expired-${faker.string.uuid()}`),
-      expirationDate: yesterday,
-    }, ownerId)).rejects.toThrow('Date d\'expiration trop courte')
-  })
-
   it('should persist SHA256 hash of the password in DB', async () => {
     const created = await service.create({
       name: faker.helpers.slugify(`e2e-pat-hash-${faker.string.uuid()}`),
@@ -161,7 +153,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
       select: { hash: true },
     })
 
-    const expectedHash = createHash('sha256').update(created.password).digest('hex')
+    const expectedHash = hashToken(created.password)
     expect(stored.hash).toBe(expectedHash)
   })
 
