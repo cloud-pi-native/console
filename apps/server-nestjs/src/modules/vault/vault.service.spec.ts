@@ -178,7 +178,7 @@ describe('vaultService', () => {
 
   it('should tune the mount without creating it when it already exists on project upsert', async () => {
     const project = makeProjectWithDetails()
-    client.listSysMounts.mockResolvedValue({ [`${project.slug}/`]: {} })
+    client.listSysMounts.mockResolvedValue({ [`${project.slug}/`]: { accessor: `kv-${project.slug}`, type: 'kv' } })
 
     await service.handleUpsert(project)
 
