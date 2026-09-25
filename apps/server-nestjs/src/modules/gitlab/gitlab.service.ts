@@ -91,7 +91,7 @@ export class GitlabService {
 
   @OnEvent('projectMember.upsert')
   async handleProjectMemberUpsert(payload: ProjectMemberEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
-    return capturePluginResult('gitlab', () => this.syncProjectMembers(payload.projectId))
+    return capturePluginResult('gitlab', () => this.syncProjectMembers(payload))
   }
 
   @OnEvent('projectMember.delete')
@@ -131,18 +131,19 @@ export class GitlabService {
   }
 
   @StartActiveSpan()
-  private async syncProjectMembers(projectId: string) {
+  private async syncProjectMembers(payload: ProjectMemberEventPayload) {
     const span = trace.getActiveSpan()
-    span?.setAttribute('project.id', projectId)
-    this.logger.log(`Handling a project member upsert event (projectId=${projectId})`)
-    const project = await this.datastore.getProject(projectId)
+    span?.setAttribute('project.id', payload.projectId)
+    span?.setAttribute('project.member.userId', payload.userId)
+    this.logger.log(`Handling a project member upsert event (projectId=${payload.projectId}, userId=${payload.userId})`)
+    const project = await this.datastore.getProject(payload.projectId)
     if (!project) {
-      throw new Error(`Project not found for member sync (projectId=${projectId})`)
+      throw new Error(`Project not found for member sync (projectId=${payload.projectId})`)
     }
     const group = await this.gitlab.getOrCreateProjectSubGroup(project.slug)
     const members = await this.gitlab.getGroupMembers(group)
     await this.ensureProjectGroupMembers(project, group, members)
-    this.logger.log(`GitLab member sync completed (projectId=${projectId}, slug=${project.slug})`)
+    this.logger.log(`GitLab member sync completed (projectId=${payload.projectId}, slug=${project.slug})`)
   }
 
   @StartActiveSpan()

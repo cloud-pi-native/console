@@ -55,7 +55,7 @@ describe('gitlabService', () => {
     expect(service).toBeDefined()
   })
 
-  describe('projectMember events', () => {
+  describe('handleProjectMemberUpsert', () => {
     it('should reconcile project members on projectMember.upsert', async () => {
       const project = makeProjectWithDetails({
         members: [{ user: { id: 'u1', email: 'member@example.com', firstName: 'New', lastName: 'User', adminRoleIds: [] }, roleIds: [] }],
@@ -85,7 +85,9 @@ describe('gitlabService', () => {
 
       expect(result.gitlab.status).toBe('KO')
     })
+  })
 
+  describe('handleProjectMemberDelete', () => {
     it('should remove the group member on projectMember.delete', async () => {
       const project = makeProjectWithDetails()
       const group = makeGroupSchema({ id: 321, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
