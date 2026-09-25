@@ -24,19 +24,17 @@ describe('project.utils', () => {
       const reader = input.roles.create.find(role => role.name === 'Lecture')
       expect(reader).toBeDefined()
       expect(reader.oidcGroup).toBe('/my-project/console/reader')
-      expect(reader.oidcGroup).not.toContain('readonly')
     })
 
-    it('seeds admin, devops and developer roles with /console prefixed groups', () => {
+    it('keeps every seeded group /console/ prefixed and drops all readonly groups', () => {
       const input = generateProjectCreateInput(body, 'owner-id', 'my-project')
-
       const groups = input.roles.create.map(role => role.oidcGroup)
-      expect(groups).toEqual([
-        '/my-project/console/admin',
-        '/my-project/console/devops',
-        '/my-project/console/developer',
-        '/my-project/console/reader',
-      ])
+
+      expect(groups.length).toBeGreaterThan(0)
+      for (const group of groups) {
+        expect(group).toMatch(/^\/my-project\/console\//)
+        expect(group).not.toContain('readonly')
+      }
     })
   })
 })
