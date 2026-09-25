@@ -1,8 +1,10 @@
 import type { Zone as ZoneType } from './zone-queries.utils'
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
+import { isPluginResults } from '../events/app-events.utils'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { LogService } from '../log/log.service'
+import { getFailedPlugins, mergePluginResults } from '../plugin/plugin.utils'
 import { createZoneWithClusters, deleteZone, getZoneById, listZones, updateZone } from './zone-queries.utils'
 
 interface CreateZoneData {
@@ -18,6 +20,10 @@ interface UpdateZoneData {
   argocdUrl: string
   description?: string | null
 }
+
+type ZoneEventName = 'zone.upsert' | 'zone.delete'
+
+type ZoneLogAction = 'Create zone' | 'Update zone' | 'Delete zone'
 
 @Injectable()
 export class ZoneService {
@@ -42,13 +48,15 @@ export class ZoneService {
       description: data.description ?? null,
     }, data.clusterIds))
 
-    await this.logs.addLog({
-      action: 'Create zone',
-      data: { zone, ...(data.clusterIds ? { clusterIds: data.clusterIds } : {}) },
+    await this.reconcile(
+      'zone.upsert',
+      zone,
+      'Create zone',
       userId,
       requestId,
-    })
-    await this.eventEmitter.emitAsync('zone.upsert', zone)
+      'Echec des services lors de la création de la zone',
+      data.clusterIds ? { clusterIds: data.clusterIds } : {},
+    )
     return zone
   }
 
@@ -62,8 +70,7 @@ export class ZoneService {
       description: data.description ?? null,
     })
 
-    await this.logs.addLog({ action: 'Update zone', data: { zone }, userId, requestId })
-    await this.eventEmitter.emitAsync('zone.upsert', zone)
+    await this.reconcile('zone.upsert', zone, 'Update zone', userId, requestId, 'Echec des services lors de la mise à jour de la zone')
     return zone
   }
 
@@ -75,7 +82,35 @@ export class ZoneService {
 
     const zone = await deleteZone(this.prisma, zoneId)
 
-    await this.logs.addLog({ action: 'Delete zone', data: { zone }, userId, requestId })
-    await this.eventEmitter.emitAsync('zone.delete', zone)
+    await this.reconcile('zone.delete', zone, 'Delete zone', userId, requestId, 'Echec des services lors de la suppression de la zone')
+  }
+
+  /**
+   * Awaits the listeners' results before answering: an unreachable service must fail the
+   * request (legacy v1 returned 422) and stay visible in the admin log, instead of being
+   * swallowed by a bare `emitAsync`.
+   */
+  private async reconcile(
+    event: ZoneEventName,
+    zone: ZoneType,
+    action: ZoneLogAction,
+    userId: string,
+    requestId: string,
+    failureMessage: string,
+    extra: Record<string, unknown> = {},
+  ): Promise<void> {
+    const responses = await this.eventEmitter.emitAsync(event, zone)
+    const results = mergePluginResults(responses.filter(isPluginResults))
+
+    await this.logs.addLog({
+      action,
+      data: { zone, ...extra, ...results },
+      userId,
+      requestId,
+    })
+
+    if (getFailedPlugins(results).length) {
+      throw new UnprocessableEntityException(failureMessage)
+    }
   }
 }

@@ -20,6 +20,7 @@ describe('zoneService', () => {
     prisma = mockDeep<PrismaService>()
     logs = mockDeep<LogService>()
     events = mockDeep<EventEmitter2>()
+    events.emitAsync.mockResolvedValue([])
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -101,6 +102,25 @@ describe('zoneService', () => {
           faker.string.uuid(),
         ),
       ).rejects.toThrow('Une zone portant le nom')
+    })
+
+    it('rejects with 422 and logs the listener result when a plugin fails', async () => {
+      prisma.zone.findUnique.mockResolvedValue(null)
+      const tx = mockDeep<Prisma.TransactionClient>()
+      tx.zone.create.mockResolvedValue(zone)
+      prisma.$transaction.mockImplementation(async cb => cb(tx))
+      events.emitAsync.mockResolvedValue([
+        { vault: { status: 'KO', message: 'Vault unreachable', executionTime: 1, error: new Error('boom') } },
+      ])
+
+      await expect(
+        service.create({ slug: zone.slug, label: zone.label, argocdUrl: zone.argocdUrl }, faker.string.uuid(), faker.string.uuid()),
+      ).rejects.toThrow('Echec des services lors de la création de la zone')
+
+      expect(logs.addLog).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'Create zone',
+        data: expect.objectContaining({ vault: expect.objectContaining({ status: 'KO' }) }),
+      }))
     })
   })
 
