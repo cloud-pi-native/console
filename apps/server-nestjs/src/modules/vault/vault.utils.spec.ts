@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { VaultError } from './vault-http-client.service'
-import { generateSecretGroupPath, isVaultBadRequest, isVaultNotFound } from './vault.utils'
+import { generateAppRoleSecretIdPath, generateSecretGroupPath, isVaultBadRequest, isVaultNotFound } from './vault.utils'
 
 describe('vault path helpers', () => {
   it('scopes a group to the project path', () => {
     expect(generateSecretGroupPath('forge', 'my-project', 'GITLAB')).toBe('forge/my-project/GITLAB')
+  })
+
+  it('scopes the AppRole secret-id to the project path', () => {
+    expect(generateAppRoleSecretIdPath('forge', 'my-project')).toBe('forge/my-project/APPROLE_SECRET_ID')
   })
 })
 

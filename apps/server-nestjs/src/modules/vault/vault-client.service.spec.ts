@@ -187,5 +187,24 @@ describe('vault', () => {
       expect(secretId).toBe('persisted-secret')
       expect(minted).toBe(false)
     })
+
+    it('mints when the persisted entry lacks secret_id', async () => {
+      let minted = false
+      server.use(
+        http.get(`${vaultUrl}/v1/kv/data/*`, () => {
+          return HttpResponse.json({ data: { data: {} } })
+        }),
+        http.post(`${vaultUrl}/v1/auth/approle/role/*/secret-id`, () => {
+          minted = true
+          return HttpResponse.json({ data: { secret_id: 'fresh-secret' } })
+        }),
+        http.post(`${vaultUrl}/v1/kv/data/*`, () => HttpResponse.json({})),
+      )
+
+      const secretId = await service.ensureAuthApproleRoleSecretId('my-project')
+
+      expect(secretId).toBe('fresh-secret')
+      expect(minted).toBe(true)
+    })
   })
 })
