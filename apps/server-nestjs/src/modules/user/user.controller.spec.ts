@@ -1,9 +1,10 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { MockProxy } from 'vitest-mock-extended'
-import { AllUsersQuerySchema } from '@cpn-console/shared'
+import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mock } from 'vitest-mock-extended'
+import { ADMIN_PERMISSIONS_KEY } from '../infrastructure/permission/user/user-admin-permission.decorator'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { makeUser } from './user-testing.utils'
 import { UserController } from './user.controller'
@@ -35,14 +36,20 @@ describe('userController', () => {
     expect(controller).toBeDefined()
   })
 
+  it('guards list and patch with ManageUsers, leaves matching open to logged-in users', () => {
+    expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, UserController.prototype.getAllUsers)).toEqual(['ManageUsers'])
+    expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, UserController.prototype.patchUsers)).toEqual(['ManageUsers'])
+    expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, UserController.prototype.getMatchingUsers)).toBeUndefined()
+  })
+
   it('delegates list with relationType defaulted to AND and stripped from the query', async () => {
     const users = [makeUser()]
     service.getAllUsers.mockResolvedValue(users)
 
-    const result = await controller.getAllUsers(AllUsersQuerySchema.parse({ adminRoleIds: 'd33a4d4a-3543-4bba-b880-d2d4efb9607c', relationType: 'OR' }))
+    const result = await controller.getAllUsers({ adminRoleIds: ['r1'], relationType: 'OR' } as never)
 
     expect(result).toEqual(users.map(toContractUser))
-    expect(service.getAllUsers).toHaveBeenCalledWith(AllUsersQuerySchema.parse({ adminRoleIds: 'd33a4d4a-3543-4bba-b880-d2d4efb9607c', relationType: 'OR' }))
+    expect(service.getAllUsers).toHaveBeenCalledWith({ adminRoleIds: ['r1'] }, 'OR')
   })
 
   it('delegates matching query to the service', async () => {
@@ -59,7 +66,7 @@ describe('userController', () => {
     service.patchUsers.mockResolvedValue(users)
     const body = [{ id: users[0].id, adminRoleIds: ['r1'] }]
 
-    expect(await controller.patchUsers(body)).toEqual(users.map(toContractUser))
+    expect(await controller.patchUsers(body as never)).toEqual(users.map(toContractUser))
     expect(service.patchUsers).toHaveBeenCalledWith(body)
   })
 })
