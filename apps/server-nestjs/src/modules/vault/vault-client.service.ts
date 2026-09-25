@@ -22,6 +22,7 @@ export interface VaultSysMountCreateRequest {
 }
 
 export interface VaultSysMountTuneRequest {
+  force_no_cache: boolean
   options: {
     version: number
   }
@@ -57,6 +58,28 @@ export interface VaultAuthMethod {
 
 export interface VaultSysAuthResponse {
   data: Record<string, VaultAuthMethod>
+}
+
+// `sys/mounts` returns one entry per mount path. Only the fields the console
+// relies on are typed; Vault adds engine-specific keys (plugin_version,
+// running_sha256, ...) that vary with the server version.
+export interface VaultSysMount {
+  accessor: string
+  type: string
+  description?: string
+  config?: {
+    default_lease_ttl: number
+    force_no_cache: boolean
+    max_lease_ttl: number
+  }
+  options?: Record<string, string>
+  local?: boolean
+  seal_wrap?: boolean
+  external_entropy_access?: boolean
+}
+
+export interface VaultSysMountsResponse {
+  data: Record<string, VaultSysMount>
 }
 
 export interface VaultIdentityGroupResponse {
@@ -360,6 +383,13 @@ export class VaultClientService {
   async createSysMount(name: string, body: VaultSysMountCreateRequest): Promise<void> {
     this.logger.verbose(`Creating Vault mount ${name} (version=${body.options.version})`)
     await this.http.fetch(`sys/mounts/${name}`, { method: 'POST', body })
+  }
+
+  @StartActiveSpan()
+  async listSysMounts(): Promise<Record<string, VaultSysMount>> {
+    this.logger.verbose('Listing Vault mounts')
+    const response = await this.http.fetch<VaultSysMountsResponse>('sys/mounts')
+    return response?.data ?? {}
   }
 
   @StartActiveSpan()

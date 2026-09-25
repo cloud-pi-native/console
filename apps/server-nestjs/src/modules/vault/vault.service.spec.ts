@@ -25,6 +25,7 @@ describe('vaultService', () => {
       getAdminPluginConfig: vi.fn().mockResolvedValue(null),
     })
     client = mockDeep<VaultClientService>({
+      listSysMounts: vi.fn().mockResolvedValue({}),
       createSysMount: vi.fn().mockResolvedValue(undefined),
       tuneSysMount: vi.fn().mockResolvedValue(undefined),
       deleteSysMounts: vi.fn().mockResolvedValue(undefined),
@@ -155,5 +156,38 @@ describe('vaultService', () => {
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`)
+  })
+
+  it('should create the mount when absent on project upsert', async () => {
+    const project = makeProjectWithDetails()
+
+    await service.handleUpsert(project)
+
+    expect(client.listSysMounts).toHaveBeenCalledWith()
+    expect(client.createSysMount).toHaveBeenCalledWith(project.slug, {
+      type: 'kv',
+      config: {
+        force_no_cache: true,
+      },
+      options: {
+        version: 2,
+      },
+    })
+    expect(client.tuneSysMount).not.toHaveBeenCalled()
+  })
+
+  it('should tune the mount without creating it when it already exists on project upsert', async () => {
+    const project = makeProjectWithDetails()
+    client.listSysMounts.mockResolvedValue({ [`${project.slug}/`]: { accessor: `kv-${project.slug}`, type: 'kv' } })
+
+    await service.handleUpsert(project)
+
+    expect(client.createSysMount).not.toHaveBeenCalled()
+    expect(client.tuneSysMount).toHaveBeenCalledWith(project.slug, {
+      force_no_cache: true,
+      options: {
+        version: 2,
+      },
+    })
   })
 })
