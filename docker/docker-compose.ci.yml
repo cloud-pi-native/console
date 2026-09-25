@@ -144,7 +144,7 @@ services:
       context: ..
       dockerfile: packages/opencds/Dockerfile
     image: dso-console/opencds-mockoon:ci
-    container_name: dso-opencds_mockoon
+    container_name: dso-console_opencds_mockoon
     user: root
     ports:
       - 3100:3100
