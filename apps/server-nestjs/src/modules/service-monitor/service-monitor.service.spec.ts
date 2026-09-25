@@ -110,5 +110,42 @@ describe('serviceMonitorService', () => {
         { name: 'Keycloak', status: MonitorStatus.ERROR, interval: expect.any(Number), lastUpdateTimestamp: expect.any(Number), message: 'boom', cause: 'boom' },
       ])
     })
+
+    it('reports UNKNOW when the probe payload has no status field', async () => {
+      keycloak.check.mockResolvedValue({ keycloak: {} } as never)
+
+      const health = await service.getServiceHealth()
+
+      expect(health).toEqual([
+        { name: 'Keycloak', status: MonitorStatus.UNKNOW, interval: expect.any(Number), lastUpdateTimestamp: expect.any(Number), message: 'Service en erreur' },
+      ])
+    })
+
+    it('reports ERROR with the probe detail message when status is not up', async () => {
+      keycloak.check.mockResolvedValue({ keycloak: { status: 'down', httpStatus: 503, message: 'connection refused' } })
+
+      const health = await service.getServiceHealth()
+
+      expect(health).toEqual([
+        { name: 'Keycloak', status: MonitorStatus.ERROR, interval: expect.any(Number), lastUpdateTimestamp: expect.any(Number), message: 'connection refused', cause: 'connection refused' },
+      ])
+    })
+
+    it('stringifies non-Error rejection reasons', async () => {
+      keycloak.check.mockRejectedValue('timeout-string')
+
+      const health = await service.getServiceHealth()
+
+      expect(health).toEqual([
+        { name: 'Keycloak', status: MonitorStatus.ERROR, interval: expect.any(Number), lastUpdateTimestamp: expect.any(Number), message: 'timeout-string', cause: 'timeout-string' },
+      ])
+    })
+
+    it('onModuleInit triggers an initial collect', async () => {
+      keycloak.check.mockClear()
+      service.onModuleInit()
+      await new Promise(resolve => setImmediate(resolve))
+      expect(keycloak.check).toHaveBeenCalled()
+    })
   })
 })
