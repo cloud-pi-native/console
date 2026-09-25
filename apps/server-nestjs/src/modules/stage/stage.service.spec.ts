@@ -4,7 +4,8 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { makeCluster, makeStageEnvironmentRecord, makeStageRecord, makeStageWithClusters } from './stage-testing.utils'
+import { makeCluster } from '../environment/environment-testing.utils'
+import { makeStageEnvironmentRecord, makeStageRecord, makeStageWithClusters } from './stage-testing.utils'
 import { StageService } from './stage.service'
 
 describe('stageService', () => {
