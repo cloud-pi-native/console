@@ -1,5 +1,32 @@
 # Changelog
 
+## [9.27.0-rc](https://github.com/cloud-pi-native/console/compare/v9.26.0...v9.27.0-rc) (2026-09-25)
+
+
+### Features
+
+* **nginx-strangler:** route healthz and version to server-nestjs ([4169619](https://github.com/cloud-pi-native/console/commit/41696192388730ca97225111c6788db6726a8232)), closes [#1889](https://github.com/cloud-pi-native/console/issues/1889)
+* **server-nestjs:** register AdminRoleModule ([937c628](https://github.com/cloud-pi-native/console/commit/937c6281d2b1a24dcd11dac1dee5dc8243a8d502)), closes [#1889](https://github.com/cloud-pi-native/console/issues/1889)
+* **skills:** add cpn skill creation guide ([3b5e3e4](https://github.com/cloud-pi-native/console/commit/3b5e3e4e13bcbe35f382919d5e18891930fe73df))
+
+
+### Bug Fixes
+
+* **ci:** give opencds_mockoon container the same prefix as other services ([d562063](https://github.com/cloud-pi-native/console/commit/d562063a70e0f0c4402037444468351ae51afeb9))
+* let console and project admin view project deployments ([785362e](https://github.com/cloud-pi-native/console/commit/785362e49386afa6a6c1a4f6cddddb95438411aa))
+
+
+### Docs
+
+* add cpn-release-notes skill ([ca3925e](https://github.com/cloud-pi-native/console/commit/ca3925e555b0303d2c88dc5b21cb864b9c69a3e2)), closes [#2728](https://github.com/cloud-pi-native/console/issues/2728)
+* add cpn-release-patch skill ([28ac329](https://github.com/cloud-pi-native/console/commit/28ac329f4680a06b47fb7c01a4f1522650652f4c)), closes [#2728](https://github.com/cloud-pi-native/console/issues/2728)
+* add pi transition skill ([64dfcc0](https://github.com/cloud-pi-native/console/commit/64dfcc07019e0c20aba9314a547684eaa971162f))
+* readapt cpn-release-patch skill to plain git ([92e0dff](https://github.com/cloud-pi-native/console/commit/92e0dffc5d789ed3fd20b674446c0617ee1c3085)), closes [#2733](https://github.com/cloud-pi-native/console/issues/2733)
+* **release-patch:** wrap lines over 80 columns ([b6903cd](https://github.com/cloud-pi-native/console/commit/b6903cdd8726f75259c945d7cdc7e4de1ef3bc59))
+* **server-nestjs:** drop dead method link, prune unused graph, date revision ([c24a3dc](https://github.com/cloud-pi-native/console/commit/c24a3dca587c777d4606739c2063ec444f82522d)), closes [#1889](https://github.com/cloud-pi-native/console/issues/1889)
+* **server-nestjs:** reconcile modularisation status ([885847d](https://github.com/cloud-pi-native/console/commit/885847d456f5b136ff0588ac8053d2d7f0148755)), closes [#1889](https://github.com/cloud-pi-native/console/issues/1889)
+* udpate release notes skill ([5da8106](https://github.com/cloud-pi-native/console/commit/5da81060fbf42819a16ab7b47929f9f296766006))
+
 ## [9.26.0](https://github.com/cloud-pi-native/console/compare/v9.25.0...v9.26.0) (2026-09-17)
 
 
