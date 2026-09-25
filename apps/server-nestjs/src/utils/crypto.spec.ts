@@ -1,6 +1,6 @@
 import { generateProjectKey as legacyGenerateProjectKey } from '@cpn-console/hooks'
 import { describe, expect, it } from 'vitest'
-import { generateProjectKey, generateTokenPair } from './crypto.utils'
+import { generateProjectKey, generateTokenPair, hashToken } from './crypto.utils'
 
 describe('generateProjectKey', () => {
   it('matches the legacy @cpn-console/hooks implementation byte-for-byte', () => {
@@ -39,6 +39,7 @@ describe('generateTokenPair', () => {
     expect(password).toHaveLength(48)
     expect(password).toMatch(/^[a-z0-9-]+$/i)
     expect(hash).toMatch(/^[0-9a-f]{64}$/)
+    expect(hash).toBe(hashToken(password))
   })
 
   it('honours a custom length', () => {

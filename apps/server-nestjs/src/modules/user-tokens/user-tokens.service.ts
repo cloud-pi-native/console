@@ -1,6 +1,5 @@
 import type { CreatePersonalAccessTokenBody } from '@cpn-console/shared'
-import { isAtLeastTomorrow } from '@cpn-console/shared'
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { generateTokenPair } from '../../utils/crypto.utils'
 import { PrismaService } from '../infrastructure/database/prisma.service'
@@ -32,10 +31,6 @@ export class UserTokensService {
     span?.setAttribute('userTokens.create.name', data.name)
     span?.setAttribute('userTokens.create.userId', userId)
     this.logger.log(`userTokens.create started (tokenName=${data.name}, userId=${userId})`)
-
-    if (!isAtLeastTomorrow(data.expirationDate)) {
-      throw new BadRequestException('Date d\'expiration trop courte')
-    }
 
     const { password, hash } = generateTokenPair()
 

@@ -95,16 +95,6 @@ describe('userTokensService', () => {
       expect(result.id).toBe(tokenId)
       expect(result.password).toBeTruthy()
     })
-
-    it('rejects an expirationDate that is not at least tomorrow', async () => {
-      const userId = faker.string.uuid()
-      const tokenName = faker.word.noun()
-
-      await expect(
-        service.create({ name: tokenName, expirationDate: faker.date.past() }, userId),
-      ).rejects.toThrow('Date d\'expiration trop courte')
-      expect(prisma.personalAccessToken.create).not.toHaveBeenCalled()
-    })
   })
 
   describe('delete', () => {
