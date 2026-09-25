@@ -24,3 +24,29 @@ WHERE "oidcGroup" = '/readonly';
 UPDATE "AdminRole"
 SET "oidcGroup" = '/console/reader'
 WHERE "oidcGroup" = '/console/readonly';
+
+-- Rename the plugin configuration keys that embedded the old 'readonly'/'read' naming.
+-- Without this, admin overrides stored under the legacy keys would be silently ignored.
+UPDATE "AdminPlugin"
+SET "key" = 'platformReaderGroupPath'
+WHERE "pluginName" = 'argocd' AND "key" = 'platformReadonlyGroupPath';
+
+UPDATE "ProjectPlugin"
+SET "key" = 'projectReaderGroupPathSuffix'
+WHERE "pluginName" = 'argocd' AND "key" = 'projectReadonlyGroupPathSuffix';
+
+UPDATE "AdminPlugin"
+SET "key" = 'readerGroupPath'
+WHERE "pluginName" = 'sonarqube' AND "key" = 'readonlyGroupPath';
+
+UPDATE "ProjectPlugin"
+SET "key" = 'projectReaderSuffix'
+WHERE "pluginName" = 'sonarqube' AND "key" = 'projectReadonlySuffix';
+
+UPDATE "AdminPlugin"
+SET "key" = 'platformReaderGroupPaths'
+WHERE "pluginName" = 'nexus' AND "key" = 'platformReadGroupPaths';
+
+UPDATE "ProjectPlugin"
+SET "key" = 'projectReaderGroupPathSuffixes'
+WHERE "pluginName" = 'nexus' AND "key" = 'projectReadGroupPathSuffixes';
