@@ -186,5 +186,9 @@ describe('appEventsService', () => {
     it('does NOT expose a zone emit entrypoint (zone.* listeners have no emitter yet — legacy owns the route)', () => {
       expect('emitZoneEvent' in service).toBe(false)
     })
+
+    it('does NOT expose an adminRole emit entrypoint (adminRole.* listeners have no emitter yet — cron reconcile owns the route)', () => {
+      expect('emitAdminRoleEvent' in service).toBe(false)
+    })
   })
 })

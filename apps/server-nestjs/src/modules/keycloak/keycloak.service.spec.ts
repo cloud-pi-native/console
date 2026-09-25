@@ -526,34 +526,4 @@ describe('keycloakService', () => {
       expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-2', 'system-managed-id')
     })
   })
-
-  describe('migration parity: admin-role event path (legacy hook.adminRole.*)', () => {
-    const adminRoles: AdminRoleWithDetails[] = [
-      { id: 'admin-role-1', name: 'admin', permissions: 0n, position: 0, oidcGroup: '/admin-group', type: 'managed' },
-    ]
-    const users: UserWithAdminRoles[] = [
-      { id: 'user-1', adminRoleIds: ['admin-role-1'] },
-    ]
-
-    it('syncs admin-role OIDC groups via cron reconcile ONLY (no event path exists)', async () => {
-      datastore.getAllProjects.mockResolvedValue([])
-      datastore.getAllAdminRoles.mockResolvedValue(adminRoles)
-      datastore.getAllUsersWithAdminRoleIds.mockResolvedValue(users)
-
-      const adminGroup = makeGroupRepresentation({ id: 'kc-parity-group-id', name: 'admin', path: '/console/parity-admin' })
-      keycloak.getOrCreateGroupByPath.mockResolvedValue(adminGroup)
-      keycloak.getGroupMembers.mockResolvedValue([])
-
-      await service.handleCron()
-
-      expect(keycloak.getOrCreateGroupByPath).toHaveBeenCalledWith('/admin-group')
-      expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'kc-parity-group-id')
-    })
-
-    it('exposes NO adminRole emit entrypoint on AppEventsService (cutover guard)', async () => {
-      const { AppEventsService } = await import('../events/app-events.service')
-      expect(Object.getOwnPropertyNames(AppEventsService.prototype))
-        .not.toContain('emitAdminRoleEvent')
-    })
-  })
 })
