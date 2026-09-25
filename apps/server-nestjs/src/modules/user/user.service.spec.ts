@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import { BadRequestException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -50,15 +51,19 @@ describe('userService', () => {
     }))
   })
 
-  it('throws when an admin role name is not found', async () => {
+  it('rejects an unknown admin role name with the legacy 400', async () => {
     prisma.adminRole.findMany.mockResolvedValue([])
+
+    await expect(
+      service.getAllUsers({ adminRoles: ['ghost-role'] }, 'AND'),
+    ).rejects.toThrow(BadRequestException)
 
     await expect(
       service.getAllUsers({ adminRoles: ['ghost-role'] }, 'AND'),
     ).rejects.toThrow('Unable to find adminRole ghost-role')
   })
 
-  it('returns matching users by letters', async () => {
+  it('returns matching users by letters, capped at 5 like the legacy query', async () => {
     const users = [makeUser()]
     prisma.user.findMany.mockResolvedValue(users)
 
@@ -66,24 +71,25 @@ describe('userService', () => {
 
     expect(result).toHaveLength(1)
     expect(prisma.user.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      take: 5,
       where: { AND: expect.arrayContaining([expect.objectContaining({ type: 'human' })]) },
     }))
   })
 
-  it('patches users and emits adminRole upsert events', async () => {
-    const users = [makeUser()]
-    prisma.user.update.mockResolvedValue(users[0])
-    prisma.user.findMany.mockResolvedValue(users)
+  it('patches users and emits the union of before and after admin roles', async () => {
+    const user = makeUser({ adminRoleIds: ['role-0'] })
+    prisma.user.findMany.mockResolvedValue([user])
     const tx = mockDeep<Prisma.TransactionClient>()
-    tx.user.update.mockResolvedValue(users[0])
+    tx.user.update.mockResolvedValue(user)
     prisma.$transaction.mockImplementation(async cb => cb(tx))
 
-    const result = await service.patchUsers([{ id: users[0].id, adminRoleIds: ['role-1'] }])
+    const result = await service.patchUsers([{ id: user.id, adminRoleIds: ['role-1'] }])
 
     expect(tx.user.update).toHaveBeenCalledWith({
-      where: { id: users[0].id },
+      where: { id: user.id },
       data: { adminRoleIds: ['role-1'] },
     })
+    expect(events.emitAsync).toHaveBeenCalledWith('adminRole.upsert', { roleId: 'role-0' })
     expect(events.emitAsync).toHaveBeenCalledWith('adminRole.upsert', { roleId: 'role-1' })
     expect(result).toHaveLength(1)
   })

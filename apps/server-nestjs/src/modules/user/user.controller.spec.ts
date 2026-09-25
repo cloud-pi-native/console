@@ -1,6 +1,5 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { MockProxy } from 'vitest-mock-extended'
-import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mock } from 'vitest-mock-extended'
