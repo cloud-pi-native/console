@@ -1,20 +1,26 @@
--- Rename the system-managed 'readonly'/'Lecture seule' role to 'reader'/'Lecteur' across AdminRole and ProjectRole
+-- Rename the system-managed 'readonly'/'Lecture seule' role to 'reader'/'Lecture' across AdminRole and ProjectRole
+-- Each UPDATE only rewrites its own field, so a name match never clobbers a custom oidcGroup and vice versa.
 
--- Rename ProjectRole: 'Lecture seule' -> 'Lecteur', '/console/readonly' -> '/console/reader'
+-- ProjectRole: rename the system-managed name only
 UPDATE "ProjectRole"
-SET
-  "name" = 'Lecteur',
-  "oidcGroup" = REPLACE("oidcGroup", '/console/readonly', '/console/reader')
-WHERE "name" = 'Lecture seule' OR "oidcGroup" LIKE '%/console/readonly';
+SET "name" = 'Lecture'
+WHERE "name" = 'Lecture seule';
 
--- Rename AdminRole: 'Lecture Seule Plateforme' -> 'Lecteur Plateforme', '/readonly' -> '/reader', '/console/readonly' -> '/console/reader'
+-- ProjectRole: rename the OIDC group paths only
+UPDATE "ProjectRole"
+SET "oidcGroup" = REPLACE("oidcGroup", '/console/readonly', '/console/reader')
+WHERE "oidcGroup" LIKE '%/console/readonly';
+
+-- AdminRole: rename the system-managed name only
 UPDATE "AdminRole"
-SET
-  "name" = 'Lecteur Plateforme',
-  "oidcGroup" = '/reader'
-WHERE "name" = 'Lecture Seule Plateforme' OR "oidcGroup" = '/readonly';
+SET "name" = 'Lecteur Plateforme'
+WHERE "name" = 'Lecture Seule Plateforme';
 
--- Ensure any remaining '/console/readonly' paths are renamed to '/console/reader'
+-- AdminRole: rename the OIDC group paths only
+UPDATE "AdminRole"
+SET "oidcGroup" = '/reader'
+WHERE "oidcGroup" = '/readonly';
+
 UPDATE "AdminRole"
 SET "oidcGroup" = '/console/reader'
 WHERE "oidcGroup" = '/console/readonly';
