@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import {
   createUserToken,
+  deleteUserToken,
   listUserTokens,
   userTokenSelect,
 } from './user-tokens-queries.utils'
@@ -41,6 +42,19 @@ describe('user-tokens-queries.utils', () => {
       await createUserToken(tx, data)
 
       expect(tx.personalAccessToken.create).toHaveBeenCalledWith({ data, select: userTokenSelect })
+    })
+  })
+
+  describe('deleteUserToken', () => {
+    it('scopes the delete to both id and userId', async () => {
+      const id = faker.string.uuid()
+      const userId = faker.string.uuid()
+      tx.personalAccessToken.deleteMany.mockResolvedValue({ count: 1 })
+
+      const result = await deleteUserToken(tx, { id, userId })
+
+      expect(result).toEqual({ count: 1 })
+      expect(tx.personalAccessToken.deleteMany).toHaveBeenCalledWith({ where: { id, userId } })
     })
   })
 })
