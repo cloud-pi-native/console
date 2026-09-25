@@ -3,11 +3,11 @@ import type { ServiceInfos } from '@cpn-console/hooks'
 const extraRepositoriesDesc = 'appproject.spec.sourceRepos supplémentaires, séparés par des virgules (https://a.com/repo.git,https://b.com/'
 
 export const DEFAULT_PLATFORM_ADMIN_GROUP_PATH = '/console/admin'
-export const DEFAULT_PLATFORM_READONLY_GROUP_PATH = '/console/readonly'
+export const DEFAULT_PLATFORM_READER_GROUP_PATH = '/console/reader'
 export const DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIX = '/console/admin'
 export const DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX = '/console/devops'
 export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX = '/console/developer'
-export const DEFAULT_PROJECT_READONLY_GROUP_PATH_SUFFIX = '/console/readonly'
+export const DEFAULT_PROJECT_READER_GROUP_PATH_SUFFIX = '/console/reader'
 
 export const DEFAULT_DSO_ENV_CHART_VERSION = 'dso-env-1.6.0'
 export const DEFAULT_DSO_NS_CHART_VERSION = 'dso-ns-1.1.5'
@@ -44,15 +44,15 @@ const infos = {
       value: DEFAULT_PLATFORM_ADMIN_GROUP_PATH,
       description: 'Chemin du groupe administrateur de plateforme',
     }, {
-      key: 'platformReadonlyGroupPath',
+      key: 'platformReaderGroupPath',
       kind: 'text',
       permissions: {
         admin: { read: true, write: true },
         user: { read: false, write: false },
       },
-      title: 'Platform Readonly Group Path',
-      value: DEFAULT_PLATFORM_READONLY_GROUP_PATH,
-      description: 'Chemin du groupe lecture seule de plateforme',
+      title: 'Platform Reader Group Path',
+      value: DEFAULT_PLATFORM_READER_GROUP_PATH,
+      description: 'Chemin du groupe lecteur de plateforme',
     }, {
       key: 'projectAdminGroupPathSuffix',
       kind: 'text',
@@ -84,15 +84,15 @@ const infos = {
       value: DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
       description: 'Suffixe du chemin du groupe développeur de projet',
     }, {
-      key: 'projectReadonlyGroupPathSuffix',
+      key: 'projectReaderGroupPathSuffix',
       kind: 'text',
       permissions: {
         admin: { read: true, write: true },
         user: { read: false, write: false },
       },
-      title: 'Project Readonly Group Path Suffix',
-      value: DEFAULT_PROJECT_READONLY_GROUP_PATH_SUFFIX,
-      description: 'Suffixe du chemin du groupe lecture seule de projet',
+      title: 'Project Reader Group Path Suffix',
+      value: DEFAULT_PROJECT_READER_GROUP_PATH_SUFFIX,
+      description: 'Suffixe du chemin du groupe lecteur de projet',
     }],
     project: [{
       key: 'extraRepositories',
