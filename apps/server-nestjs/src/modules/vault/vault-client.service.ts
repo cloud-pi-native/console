@@ -60,6 +60,28 @@ export interface VaultSysAuthResponse {
   data: Record<string, VaultAuthMethod>
 }
 
+// `sys/mounts` returns one entry per mount path. Only the fields the console
+// relies on are typed; Vault adds engine-specific keys (plugin_version,
+// running_sha256, ...) that vary with the server version.
+export interface VaultSysMount {
+  accessor: string
+  type: string
+  description?: string
+  config?: {
+    default_lease_ttl: number
+    force_no_cache: boolean
+    max_lease_ttl: number
+  }
+  options?: Record<string, string>
+  local?: boolean
+  seal_wrap?: boolean
+  external_entropy_access?: boolean
+}
+
+export interface VaultSysMountsResponse {
+  data: Record<string, VaultSysMount>
+}
+
 export interface VaultIdentityGroupResponse {
   data: {
     id: string
@@ -364,9 +386,9 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  async listSysMounts(): Promise<Record<string, unknown>> {
+  async listSysMounts(): Promise<Record<string, VaultSysMount>> {
     this.logger.verbose('Listing Vault mounts')
-    const response = await this.http.fetch<{ data: Record<string, unknown> }>('sys/mounts')
+    const response = await this.http.fetch<VaultSysMountsResponse>('sys/mounts')
     return response?.data ?? {}
   }
 
