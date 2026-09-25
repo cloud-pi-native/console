@@ -2,7 +2,7 @@ import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
 import { gitlabConfigFactory } from '../../config/gitlab.config'
-import { PLUGIN_NAME } from '../vault/vault.constants'
+import { PLUGIN_NAME } from './gitlab.constants'
 
 @Injectable()
 export class GitlabHealthService {
