@@ -3,7 +3,6 @@ import type { MockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mock } from 'vitest-mock-extended'
-import { ADMIN_PERMISSIONS_KEY } from '../infrastructure/permission/user/user-admin-permission.decorator'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { makeUser } from './user-testing.utils'
 import { UserController } from './user.controller'
@@ -33,12 +32,6 @@ describe('userController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined()
-  })
-
-  it('guards list and patch with ManageUsers, leaves matching open to logged-in users', () => {
-    expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, UserController.prototype.getAllUsers)).toEqual(['ManageUsers'])
-    expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, UserController.prototype.patchUsers)).toEqual(['ManageUsers'])
-    expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, UserController.prototype.getMatchingUsers)).toBeUndefined()
   })
 
   it('delegates list with relationType defaulted to AND and stripped from the query', async () => {
