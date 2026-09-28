@@ -1,4 +1,3 @@
-import fs from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 import {
   vueDsfrAutoimportPreset,
@@ -11,19 +10,27 @@ import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-if (process.env.INTEGRATION === 'true' && fs.existsSync('.env.integ'))
-  process.loadEnvFile('.env.integ')
-
-if (process.env.DOCKER !== 'true' && fs.existsSync('.env'))
-  process.loadEnvFile('.env')
-
 const serverHost = process.env.SERVER_HOST ?? 'localhost'
 const serverPort = process.env.SERVER_PORT ?? 4000
 const clientPort = process.env.CLIENT_PORT ?? 8080
 
+const publicClientEnv = {
+  NODE_ENV: process.env.NODE_ENV,
+  SERVER_HOST: process.env.SERVER_HOST,
+  SERVER_PORT: process.env.SERVER_PORT,
+  CLIENT_PORT: process.env.CLIENT_PORT,
+  KEYCLOAK_PROTOCOL: process.env.KEYCLOAK_PROTOCOL,
+  KEYCLOAK_DOMAIN: process.env.KEYCLOAK_DOMAIN,
+  KEYCLOAK_REALM: process.env.KEYCLOAK_REALM,
+  KEYCLOAK_CLIENT_ID: process.env.KEYCLOAK_CLIENT_ID,
+  KEYCLOAK_REDIRECT_URI: process.env.KEYCLOAK_REDIRECT_URI,
+  OPENCDS_ENABLED: process.env.OPENCDS_ENABLED,
+  CONTACT_EMAIL: process.env.CONTACT_EMAIL,
+}
+
 const define = process.env.NODE_ENV === 'production'
   ? { 'process.env': { APP_VERSION: process.env.APP_VERSION } }
-  : { 'process.env': process.env }
+  : { 'process.env': publicClientEnv }
 
 // https://vitejs.dev/config/
 export default defineConfig({
