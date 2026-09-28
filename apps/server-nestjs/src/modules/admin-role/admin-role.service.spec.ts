@@ -1,7 +1,9 @@
 import type { EventEmitter2 } from '@nestjs/event-emitter'
 import type { PrismaService } from '../infrastructure/database/prisma.service'
+import { adminRoleContract } from '@cpn-console/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { makeUser } from '../project/project-testing.utils'
 import {
   makeAdminRole,
   makeCreateAdminRoleBody,
@@ -91,5 +93,25 @@ describe('adminRoleService', () => {
     const service = new AdminRoleService(prisma, eventEmitter)
     await expect(service.patch([patchedA, patchedB])).resolves.toBeDefined()
     expect(eventEmitter.emitAsync).toHaveBeenCalledTimes(2)
+  })
+
+  it('counts members per managed role, ignoring OIDC role ids', async () => {
+    const managedRole = makeAdminRole({ oidcGroup: '' })
+    const otherManagedRole = makeAdminRole({ oidcGroup: '' })
+    const oidcRole = makeAdminRole({ oidcGroup: '/console/admin' })
+
+    prisma.adminRole.findMany.mockResolvedValue([managedRole, otherManagedRole])
+    prisma.user.findMany.mockResolvedValue([
+      makeUser({ adminRoleIds: [managedRole.id, oidcRole.id] }),
+      makeUser({ adminRoleIds: [managedRole.id, otherManagedRole.id] }),
+    ])
+    prisma.$transaction.mockImplementation(async (cb: (tx: unknown) => unknown) => cb(prisma))
+
+    const service = new AdminRoleService(prisma, eventEmitter)
+    const counts = await service.memberCounts()
+
+    expect(counts).toEqual({ [managedRole.id]: 2, [otherManagedRole.id]: 1 })
+    expect(Object.values(counts).every(Number.isFinite)).toBe(true)
+    expect(adminRoleContract.adminRoleMemberCounts.responses[200].safeParse(counts).success).toBe(true)
   })
 })
