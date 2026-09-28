@@ -1,6 +1,6 @@
 # Registre des variables d’environnement
 
-Ce registre est la source de vérité de la classification des variables hors legacy. Une nouvelle variable doit être ajoutée ici avant d’être exposée par `mise`, `fnox`, Docker Compose ou GitHub Actions. Les noms du tableau sont les contrats des processus ; `mise` préfixe les valeurs propres à un consommateur (`CLIENT_*` ou `NESTJS_*`) et les tâches ou Compose les traduisent explicitement afin d’éviter les collisions frontend/backend.
+Ce registre est la source de vérité de la classification des variables hors legacy. Une nouvelle variable doit être ajoutée ici avant d’être exposée par `mise`, `fnox`, Docker Compose ou GitHub Actions.
 
 | Classe | Variables | Source | Consommateurs |
 | --- | --- | --- | --- |
