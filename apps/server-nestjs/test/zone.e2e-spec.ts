@@ -14,7 +14,6 @@ import { PermissionModule } from '../src/modules/infrastructure/permission/permi
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { VaultService } from '../src/modules/vault/vault.service'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { VAULT_PROVISION_TIMEOUT } from './constants'
 
 const canRunZoneE2E = Boolean(process.env.E2E)
@@ -33,7 +32,7 @@ describeWithZone('Zone lifecycle (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [VaultModule, ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+      imports: [VaultModule, ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()

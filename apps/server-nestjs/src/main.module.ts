@@ -26,12 +26,10 @@ import { SystemSettingsModule } from './modules/system-settings/system-settings.
 import { UserModule } from './modules/user/user.module'
 import { VersionModule } from './modules/version/version.module'
 import { ZoneModule } from './modules/zone/zone.module'
-import { getDotenvPaths } from './utils/dotenv.utils'
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: getDotenvPaths(),
       isGlobal: true,
       load: [baseConfigFactory],
     }),

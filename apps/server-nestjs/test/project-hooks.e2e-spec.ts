@@ -17,7 +17,6 @@ import { ProjectHooksModule } from '../src/modules/project-hooks/project-hooks.m
 import { ProjectHooksService } from '../src/modules/project-hooks/project-hooks.service'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultService } from '../src/modules/vault/vault.service'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunProjectHooksE2E = Boolean(process.env.E2E)
 
@@ -41,7 +40,7 @@ describeWithProjectHooks('ProjectHooksService (e2e)', () => {
     vaultClient = mockDeep<VaultClientService>()
 
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectHooksModule],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectHooksModule],
       providers: [
         { provide: VaultService, useValue: vaultService },
         { provide: VaultClientService, useValue: vaultClient },

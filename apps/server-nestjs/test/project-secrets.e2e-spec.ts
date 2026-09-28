@@ -15,7 +15,6 @@ import { ProjectSecretsModule } from '../src/modules/project-secrets/project-sec
 import { ProjectSecretsService } from '../src/modules/project-secrets/project-secrets.service'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { generateProjectPath } from '../src/modules/vault/vault.utils'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunProjectSecretsE2E
   = Boolean(process.env.E2E)
@@ -44,7 +43,7 @@ describeWithProjectSecrets('ProjectSecretsService (e2e)', () => {
     vi.stubEnv('USE_VAULT', 'true')
 
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectSecretsModule],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectSecretsModule],
     }).compile()
 
     await moduleRef.init()

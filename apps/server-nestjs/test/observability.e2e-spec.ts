@@ -27,7 +27,6 @@ import {
   GRAFANA_SUBGROUP_PROD_RW,
 } from '../src/modules/observability/observability.constants'
 import { ObservabilityModule } from '../src/modules/observability/observability.module'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { KEYCLOAK_GROUP_SYNC_TIMEOUT } from './constants'
 
 const canRunObservabilityE2E
@@ -88,7 +87,7 @@ describeWithObservability('ObservabilityService (e2e)', () => {
     }
 
     moduleRef = await Test.createTestingModule({
-      imports: [ObservabilityModule, ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+      imports: [ObservabilityModule, ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     })
       .overrideProvider(GitlabClientService)
       .useValue(gitlabStub)

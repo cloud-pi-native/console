@@ -21,7 +21,6 @@ import { NexusModule } from '../src/modules/nexus/nexus.module'
 import { generateNexusCredPath } from '../src/modules/nexus/nexus.utils'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultModule } from '../src/modules/vault/vault.module'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { NEXUS_SYNC_TIMEOUT } from './constants'
 
 const canRunNexusE2E
@@ -43,7 +42,7 @@ describeWithNexus('NexusService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [NexusModule, VaultModule, ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+      imports: [NexusModule, VaultModule, ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()

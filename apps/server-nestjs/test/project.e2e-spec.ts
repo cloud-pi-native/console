@@ -16,7 +16,6 @@ import { PermissionModule } from '../src/modules/infrastructure/permission/permi
 import { makeCreateProjectBody } from '../src/modules/project/project-testing.utils'
 import { ProjectModule } from '../src/modules/project/project.module'
 import { ProjectService } from '../src/modules/project/project.service'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunProjectE2E = Boolean(process.env.E2E)
 
@@ -32,7 +31,7 @@ describeWithProject('ProjectService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectModule],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectModule],
     }).compile()
 
     await moduleRef.init()
