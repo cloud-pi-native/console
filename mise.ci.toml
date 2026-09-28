@@ -1,0 +1,11 @@
+[env]
+CI = "true"
+FNOX_PROFILE = "ci"
+NODE_ENV = "production"
+DEV_SETUP = "true"
+CLIENT_SERVER_HOST = "nginx-strangler"
+CLIENT_SERVER_PORT = "8080"
+CLIENT_OPENCDS_ENABLED = "true"
+NESTJS_SERVER_HOST = "0.0.0.0"
+NESTJS_SERVER_PORT = "3001"
+NESTJS_KEYCLOAK_DOMAIN = "keycloak:8080"
