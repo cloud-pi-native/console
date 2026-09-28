@@ -22,12 +22,10 @@ import { RepositoryModule } from './modules/repository/repository.module'
 import { SystemConfigModule } from './modules/system-config/system-config.module'
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module'
 import { VersionModule } from './modules/version/version.module'
-import { getDotenvPaths } from './utils/dotenv.utils'
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: getDotenvPaths(),
       isGlobal: true,
       load: [baseConfigFactory],
     }),

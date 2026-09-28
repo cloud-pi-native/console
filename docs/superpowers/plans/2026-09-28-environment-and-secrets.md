@@ -318,6 +318,7 @@ Create `docs/environment-variables.md` with the following classifications. A val
 - Modify: `apps/server-nestjs/src/main.module.ts`
 - Modify: `apps/server-nestjs/prisma.config.ts`
 - Modify: all 17 files listed by `rg -l 'getDotenvPaths' apps/server-nestjs/test`
+- Modify: `mise.toml` (NestJS test task with CI fixture injection)
 
 - [ ] **Step 1: Write the failing no-dotenv regression check**
 
@@ -371,17 +372,16 @@ Create `docs/environment-variables.md` with the following classifications. A val
   Run:
 
   ```bash
-  mise run setup
-  fnox exec -- pnpm --filter server-nestjs test
-  rg -n 'getDotenvPaths|loadEnvFile|parseEnv|\.env(\.docker|\.integ)?' apps/server-nestjs || true
+  mise run server-nestjs:test
+  rg -n 'getDotenvPaths|loadEnvFile|parseEnv|envFilePath: getDotenvPaths' apps/server-nestjs/src apps/server-nestjs/test || true
   ```
 
-  Expected: tests pass and the final search has no output.
+  Expected: tests pass with CI fixtures injected into the child process and the final search has no output.
 
 - [ ] **Step 7: Commit the NestJS migration**
 
   ```bash
-  git add apps/server-nestjs
+  git add apps/server-nestjs mise.toml docs/superpowers/plans/2026-09-28-environment-and-secrets.md
   git commit -m "refactor(server-nestjs): remove dotenv loading"
   ```
 
