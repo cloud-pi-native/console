@@ -393,6 +393,7 @@ Create `docs/environment-variables.md` with the following classifications. A val
 - Delete: `apps/client/.env.integ-example`
 - Modify: `apps/client/vite.config.ts`
 - Modify: `apps/client/nginx/entrypoint.sh`
+- Modify: `mise.toml` (client build task)
 - Test: `apps/client/vite.config.ts`
 
 - [ ] **Step 1: Write the failing client confidentiality check**
@@ -400,7 +401,7 @@ Create `docs/environment-variables.md` with the following classifications. A val
   Run:
 
   ```bash
-  rg -n "'process\.env': process\.env|loadEnvFile|\.env\.integ|\.env'" apps/client/vite.config.ts
+  rg -n "'process\.env': process\.env|loadEnvFile|existsSync\('\.env" apps/client/vite.config.ts
   ```
 
   Expected before the migration: it finds both file loads and the full `process.env` serialization.
@@ -442,7 +443,7 @@ Create `docs/environment-variables.md` with the following classifications. A val
   Run:
 
   ```bash
-  mise exec -- pnpm --filter client run build
+  mise run client:build
   rg -n 'KEYCLOAK_CLIENT_SECRET|SESSION_SECRET|DB_URL|VAULT_TOKEN|GITLAB_TOKEN' apps/client docker || true
   ```
 
@@ -451,7 +452,7 @@ Create `docs/environment-variables.md` with the following classifications. A val
 - [ ] **Step 6: Commit the client migration**
 
   ```bash
-  git add apps/client
+  git add apps/client mise.toml docs/superpowers/plans/2026-09-28-environment-and-secrets.md
   git commit -m "refactor(client): remove dotenv configuration"
   ```
 

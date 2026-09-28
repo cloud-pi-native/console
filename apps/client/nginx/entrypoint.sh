@@ -11,9 +11,11 @@ make_envsubst_vars() {
   printf '%s\n' "$fmt"
 }
 
+# Browser-visible configuration only; never add a secret here.
 ENV_VARS=$(make_envsubst_vars \
   SERVER_HOST \
   SERVER_PORT \
+  CLIENT_PORT \
   OPENCDS_ENABLED \
   KEYCLOAK_PROTOCOL \
   KEYCLOAK_DOMAIN \
