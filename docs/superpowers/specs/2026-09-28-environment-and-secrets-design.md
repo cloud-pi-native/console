@@ -24,7 +24,7 @@ La cible est `mise` pour les outils, tâches et variables publiques, et `fnox` p
 
 `mise.toml` porte les versions imposées (Node 26, pnpm 11, fnox) et le profil local par défaut. Les fichiers versionnés `mise.<profil>.toml` portent les surcharges non sensibles des profils `docker`, `integ` et `ci`. Ils contiennent aussi les tâches de la stack.
 
-L'inventaire initial classe chaque variable comme publique ou secrète, propriétaire et consommateur. Les valeurs locales sûres sont versionnées ; les surcharges personnelles non secrètes utilisent `mise.local.toml`, ignoré par Git. Toute valeur classée secrète est interdite dans `mise`.
+L'inventaire initial classe chaque variable comme publique ou secrète, propriétaire et consommateur. Les valeurs publiques sont nommées par consommateur dans `mise` (`CLIENT_*`, `NESTJS_*`) puis traduites vers le contrat de chaque processus par sa tâche ou son service Compose : un nom comme `KEYCLOAK_CLIENT_ID` ne peut ainsi pas faire collision entre frontend et backend. Les valeurs locales sûres sont versionnées ; les surcharges personnelles non secrètes utilisent `mise.local.toml`, ignoré par Git. Toute valeur classée secrète est interdite dans `mise`.
 
 ### Secrets
 

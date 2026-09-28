@@ -4,9 +4,9 @@
 
 **Goal:** Replace the client and NestJS `.env*` lifecycle with profile-based `mise` configuration and `fnox` secret injection, while retaining the frozen Fastify legacy path until its deletion.
 
-**Architecture:** `mise.toml` owns pinned developer tools, public configuration and task entry points. `fnox.toml` owns secret names and their providers; local profiles use `pass`, CI resolves already-injected GitHub Actions secrets. Docker Compose receives only explicit process variables for client/NestJS, while `apps/server` keeps its existing `.env*` and `env_file` unchanged.
+**Architecture:** `mise.toml` owns pinned developer tools, public configuration and task entry points. Public `mise` variables are consumer-scoped (`CLIENT_*` and `NESTJS_*`) and each task/Compose service translates them to the application's existing contract, preventing frontend/backend value collisions. `fnox.toml` owns secret names and their providers; local profiles use `pass`, CI resolves already-injected GitHub Actions secrets. Docker Compose receives only explicit process variables for client/NestJS, while `apps/server` keeps its existing `.env*` and `env_file` unchanged.
 
-**Tech Stack:** mise 2026.5.15+, fnox 1.25.1+, pass/GPG, pnpm 11.8.0, Node 26.7.0, Docker Compose, GitHub Actions, Vite, NestJS ConfigModule.
+**Tech Stack:** mise 2026.5.15+, fnox 1.36.0+, pass/GPG, pnpm 11.8.0, Node 26.7.0, Docker Compose, GitHub Actions, Vite, NestJS ConfigModule.
 
 ---
 
@@ -35,6 +35,8 @@ Create `docs/environment-variables.md` with the following classifications. A val
 | Public, client allowlist | `SERVER_HOST`, `SERVER_PORT`, `CLIENT_PORT`, `KEYCLOAK_PROTOCOL`, `KEYCLOAK_DOMAIN`, `KEYCLOAK_REALM`, `KEYCLOAK_CLIENT_ID`, `KEYCLOAK_REDIRECT_URI`, `OPENCDS_ENABLED`, `CONTACT_EMAIL` |
 | Public, service endpoints/features | `USE_ARGOCD`, `USE_GITLAB`, `USE_NEXUS`, `USE_HARBOR`, `USE_SONARQUBE`, `USE_SERVICE_CHAIN`, `USE_VAULT`, `USE_OBSERVABILITY`, `ARGO_NAMESPACE`, `ARGOCD_URL`, `ARGOCD_INTERNAL_URL`, `ARGOCD_EXTRA_REPOSITORIES`, `ARGOCD_SHARED_SOURCE_REPOSITORIES`, `GITLAB_URL`, `GITLAB_INTERNAL_URL`, `GITLAB_MIRROR_TOKEN_EXPIRATION_DAYS`, `GITLAB_MIRROR_TOKEN_ROTATION_THRESHOLD_DAYS`, `HARBOR_URL`, `HARBOR_INTERNAL_URL`, `HARBOR_PROJECT_SLUG_CACHE_TTL_MS`, `HARBOR_RETENTION_CRON`, `HARBOR_ROBOT_EXPIRATION_DAYS`, `HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS`, `HARBOR_RULE_COUNT`, `HARBOR_RULE_TEMPLATE`, `NEXUS_URL`, `NEXUS_INTERNAL_URL`, `NEXUS__SECRET_EXPOSE_INTERNAL_URL`, `SONARQUBE_URL`, `SONARQUBE_INTERNAL_URL`, `GRAFANA_URL`, `DSO_OBSERVABILITY_CHART_VERSION`, `VAULT_URL`, `VAULT_INTERNAL_URL`, `VAULT_KV_NAME`, `VAULT__DEPLOY_VAULT_CONNECTION_IN_NS`, `OPENCDS_URL`, `OPENCDS_INTERNAL_URL`, `OPENCDS_API_TLS_REJECT_UNAUTHORIZED`, `DSO_ENV_CHART_VERSION`, `DSO_NS_CHART_VERSION`, `KUBECONFIG_HOST_PATH`, `KUBECONFIG_PATH`, `KUBECONFIG_CTX`, `EXTERNAL_PLUGINS_DIR_HOST_PATH` |
 | Secrets | `SESSION_SECRET`, `DB_URL`, `KEYCLOAK_CLIENT_SECRET`, `KEYCLOAK_ADMIN`, `KEYCLOAK_ADMIN_PASSWORD`, `GITLAB_TOKEN`, `HARBOR_ADMIN`, `HARBOR_ADMIN_PASSWORD`, `NEXUS_ADMIN`, `NEXUS_ADMIN_PASSWORD`, `SONAR_API_TOKEN`, `VAULT_TOKEN`, `OPENCDS_API_TOKEN` |
+
+`mise` stores a public value under its consumer prefix whenever the client and NestJS can differ. The task or Compose map translates `CLIENT_KEYCLOAK_CLIENT_ID` and `NESTJS_KEYCLOAK_CLIENT_ID`, for example, into the respective process-local `KEYCLOAK_CLIENT_ID` variable. `fnox` secret names retain the application contract because no frontend process receives them.
 
 ### Task 1: Establish the decision record, inventory, and legacy boundary
 
@@ -150,20 +152,28 @@ Create `docs/environment-variables.md` with the following classifications. A val
   [tools]
   node = "26.7.0"
   pnpm = "11.8.0"
-  fnox = "1.25.1"
+  fnox = "1.36.0"
 
   [env]
   NODE_ENV = "development"
-  SERVER_HOST = "localhost"
-  SERVER_PORT = "4000"
+  CLIENT_SERVER_HOST = "localhost"
+  CLIENT_SERVER_PORT = "4000"
   CLIENT_PORT = "8080"
-  KEYCLOAK_PROTOCOL = "http"
-  KEYCLOAK_DOMAIN = "localhost:8090"
-  KEYCLOAK_REALM = "dso"
-  KEYCLOAK_CLIENT_ID = "dso-console-frontend"
-  KEYCLOAK_REDIRECT_URI = "http://localhost:8080"
-  OPENCDS_ENABLED = "false"
-  CONTACT_EMAIL = "cloudpinative-relations@interieur.gouv.fr"
+  CLIENT_KEYCLOAK_PROTOCOL = "http"
+  CLIENT_KEYCLOAK_DOMAIN = "localhost:8090"
+  CLIENT_KEYCLOAK_REALM = "dso"
+  CLIENT_KEYCLOAK_CLIENT_ID = "dso-console-frontend"
+  CLIENT_KEYCLOAK_REDIRECT_URI = "http://localhost:8080"
+  CLIENT_OPENCDS_ENABLED = "false"
+  CLIENT_CONTACT_EMAIL = "cloudpinative-relations@interieur.gouv.fr"
+  NESTJS_SERVER_HOST = "localhost"
+  NESTJS_SERVER_PORT = "3001"
+  NESTJS_KEYCLOAK_PROTOCOL = "http"
+  NESTJS_KEYCLOAK_DOMAIN = "localhost:8090"
+  NESTJS_KEYCLOAK_REALM = "dso"
+  NESTJS_KEYCLOAK_CLIENT_ID = "dso-console-backend"
+  NESTJS_KEYCLOAK_REDIRECT_URI = "http://localhost:8080"
+  NESTJS_CONTACT_EMAIL = "cloudpinative-relations@interieur.gouv.fr"
 
   [tasks.setup]
   run = "./ci/scripts/init-env.sh && ./scripts/bootstrap-secrets.sh"
@@ -172,10 +182,10 @@ Create `docs/environment-variables.md` with the following classifications. A val
   run = "docker compose -f docker/docker-compose.local.yml up -d --remove-orphans"
 
   [tasks.server-nestjs-dev]
-  run = "fnox exec -- pnpm --filter server-nestjs run start:dev"
+  run = "SERVER_HOST=$NESTJS_SERVER_HOST SERVER_PORT=$NESTJS_SERVER_PORT KEYCLOAK_PROTOCOL=$NESTJS_KEYCLOAK_PROTOCOL KEYCLOAK_DOMAIN=$NESTJS_KEYCLOAK_DOMAIN KEYCLOAK_REALM=$NESTJS_KEYCLOAK_REALM KEYCLOAK_CLIENT_ID=$NESTJS_KEYCLOAK_CLIENT_ID KEYCLOAK_REDIRECT_URI=$NESTJS_KEYCLOAK_REDIRECT_URI CONTACT_EMAIL=$NESTJS_CONTACT_EMAIL fnox exec -- pnpm --filter server-nestjs run start:dev"
 
   [tasks.client-dev]
-  run = "pnpm --filter client run dev"
+  run = "SERVER_HOST=$CLIENT_SERVER_HOST SERVER_PORT=$CLIENT_SERVER_PORT CLIENT_PORT=$CLIENT_PORT KEYCLOAK_PROTOCOL=$CLIENT_KEYCLOAK_PROTOCOL KEYCLOAK_DOMAIN=$CLIENT_KEYCLOAK_DOMAIN KEYCLOAK_REALM=$CLIENT_KEYCLOAK_REALM KEYCLOAK_CLIENT_ID=$CLIENT_KEYCLOAK_CLIENT_ID KEYCLOAK_REDIRECT_URI=$CLIENT_KEYCLOAK_REDIRECT_URI OPENCDS_ENABLED=$CLIENT_OPENCDS_ENABLED CONTACT_EMAIL=$CLIENT_CONTACT_EMAIL pnpm --filter client run dev"
 
   [tasks.lint]
   run = "pnpm lint"
@@ -188,7 +198,7 @@ Create `docs/environment-variables.md` with the following classifications. A val
 
 - [ ] **Step 3: Create public profile overlays**
 
-  Create `mise.docker.toml` with `DOCKER = "true"`, `SERVER_HOST = "nginx-strangler"`, `SERVER_PORT = "8080"`, `NESTJS_SERVER_HOST = "0.0.0.0"`, `NESTJS_SERVER_PORT = "3001"`, and `OPENCDS_ENABLED = "true"`. Create `mise.integ.toml` with `INTEGRATION = "true"`, `DEV_SETUP = "false"`, and no credential. Create `mise.ci.toml` with `CI = "true"`, `NODE_ENV = "production"`, `DEV_SETUP = "true"`, `FNOX_PROFILE = "ci"`, `SERVER_HOST = "nginx-strangler"`, `SERVER_PORT = "8080"`, `NESTJS_SERVER_HOST = "0.0.0.0"`, `NESTJS_SERVER_PORT = "3001"`, and the deterministic Keycloak/OpenCDS public endpoints used by `docker/docker-compose.ci.yml`.
+  Create `mise.docker.toml` with `DOCKER = "true"`, `CLIENT_SERVER_HOST = "nginx-strangler"`, `CLIENT_SERVER_PORT = "8080"`, `NESTJS_SERVER_HOST = "0.0.0.0"`, `NESTJS_SERVER_PORT = "3001"`, and `CLIENT_OPENCDS_ENABLED = "true"`. Create `mise.integ.toml` with `INTEGRATION = "true"`, `DEV_SETUP = "false"`, and no credential. Create `mise.ci.toml` with `CI = "true"`, `NODE_ENV = "production"`, `DEV_SETUP = "true"`, `FNOX_PROFILE = "ci"`, `CLIENT_SERVER_HOST = "nginx-strangler"`, `CLIENT_SERVER_PORT = "8080"`, `NESTJS_SERVER_HOST = "0.0.0.0"`, `NESTJS_SERVER_PORT = "3001"`, and the deterministic Keycloak/OpenCDS public endpoints used by `docker/docker-compose.ci.yml`.
 
   Add profile-selecting wrappers to root `mise.toml`:
 
@@ -282,18 +292,18 @@ Create `docs/environment-variables.md` with the following classifications. A val
 
   ```bash
   mise tasks validate
-  mise -E docker env --values | rg '^(DOCKER|SERVER_HOST|SERVER_PORT)='
+  mise -E docker env | rg '^export (DOCKER|CLIENT_SERVER_HOST|CLIENT_SERVER_PORT)='
   fnox config-files
   fnox -P ci config-files
-  fnox check --if-missing error SESSION_SECRET DB_URL KEYCLOAK_CLIENT_SECRET
+  fnox -P ci check --all
   ```
 
-  Expected: task validation succeeds; Docker values are selected; fnox lists the expected profile files; the final command succeeds after `mise run setup` and prints no secret value.
+  Expected: task validation succeeds; Docker values are selected; fnox lists the expected profile files; the CI profile validates without `pass` and prints no secret value.
 
 - [ ] **Step 8: Commit profiles and bootstrap**
 
   ```bash
-  git add mise*.toml fnox*.toml scripts/bootstrap-secrets.sh .gitignore
+  git add mise*.toml fnox*.toml scripts/bootstrap-secrets.sh scripts/bootstrap-secrets.spec.sh .gitignore
   git commit -m "feat: add mise and fnox environment profiles"
   ```
 

@@ -1,0 +1,16 @@
+#:schema https://fnox.jdx.dev/schema.json
+root = true
+env = "exec"
+if_missing = "error"
+
+[providers.pass]
+type = "password-store"
+prefix = "fnox/console/"
+
+[secrets]
+SESSION_SECRET = { provider = "pass", value = "local/SESSION_SECRET" }
+DB_URL = { provider = "pass", value = "local/DB_URL" }
+KEYCLOAK_CLIENT_SECRET = { provider = "pass", value = "local/KEYCLOAK_CLIENT_SECRET" }
+KEYCLOAK_ADMIN = { provider = "pass", value = "local/KEYCLOAK_ADMIN" }
+KEYCLOAK_ADMIN_PASSWORD = { provider = "pass", value = "local/KEYCLOAK_ADMIN_PASSWORD" }
+OPENCDS_API_TOKEN = { provider = "pass", value = "local/OPENCDS_API_TOKEN" }
