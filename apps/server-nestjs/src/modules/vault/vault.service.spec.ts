@@ -184,7 +184,6 @@ describe('vaultService', () => {
 
     expect(client.createSysMount).not.toHaveBeenCalled()
     expect(client.tuneSysMount).toHaveBeenCalledWith(project.slug, {
-      force_no_cache: true,
       options: {
         version: 2,
       },
