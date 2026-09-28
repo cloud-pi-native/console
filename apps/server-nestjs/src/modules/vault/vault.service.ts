@@ -214,8 +214,9 @@ export class VaultService {
         version: 2,
       },
     }
+    // `force_no_cache` is create-time-only in Vault: /tune silently ignores it
+    // (verified against Vault v2.0.3), so existing mounts are not reconciled for it.
     const tuneBody = {
-      force_no_cache: true,
       options: {
         version: 2,
       },

@@ -22,7 +22,6 @@ export interface VaultSysMountCreateRequest {
 }
 
 export interface VaultSysMountTuneRequest {
-  force_no_cache: boolean
   options: {
     version: number
   }
