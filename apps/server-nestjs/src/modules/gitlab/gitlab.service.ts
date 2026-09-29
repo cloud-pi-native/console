@@ -48,6 +48,7 @@ import {
   isOwnedRepo,
   isOwnedUser,
   isSystemRepo,
+  parseGroupPaths,
 } from './gitlab.utils'
 
 type ProjectAccessLevel = Exclude<AccessLevel, (typeof AccessLevel)['ADMIN']>
@@ -165,9 +166,9 @@ export class GitlabService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.verbose(`Reconciling GitLab group members for project ${project.slug} (groupId=${group.id}, members=${members.length})`)
-    const { adminRoleId, auditorRoleId } = await this.getAdminRoleIds(project)
-    await this.addMissingMembers(project, group, members, adminRoleId, auditorRoleId)
-    await this.addMissingOwnerMember(project, group, members, adminRoleId, auditorRoleId)
+    const { adminRoleIds, auditorRoleIds } = await this.getAdminRoleIds(project)
+    await this.addMissingMembers(project, group, members, adminRoleIds, auditorRoleIds)
+    await this.addMissingOwnerMember(project, group, members, adminRoleIds, auditorRoleIds)
     await this.purgeOrphanMembers(project, group, members)
   }
 
@@ -175,8 +176,8 @@ export class GitlabService {
     project: ProjectWithDetails,
     group: GroupSchemaWith<'id'>,
     members: MemberSchema[],
-    adminRoleId?: string,
-    auditorRoleId?: string,
+    adminRoleIds: string[],
+    auditorRoleIds: string[],
   ) {
     const membersById = new Map(members.map(m => [m.id, m]))
     const groupPaths = await this.getProjectRoleGroupPaths(project)
@@ -187,8 +188,8 @@ export class GitlabService {
         email: user.email,
         username: generateUsername(user.email),
         name: generateName(user.firstName, user.lastName),
-        admin: adminRoleFlag(user, adminRoleId),
-        auditor: adminRoleFlag(user, auditorRoleId),
+        admin: adminRoleFlag(user, adminRoleIds),
+        auditor: adminRoleFlag(user, auditorRoleIds),
       }, {
         cpnUserId: user.id,
       })
@@ -230,15 +231,15 @@ export class GitlabService {
     project: ProjectWithDetails,
     group: GroupSchemaWith<'id'>,
     members: MemberSchema[],
-    adminRoleId?: string,
-    auditorRoleId?: string,
+    adminRoleIds: string[],
+    auditorRoleIds: string[],
   ) {
     const gitlabUser = await this.gitlab.upsertUser({
       email: project.owner.email,
       username: generateUsername(project.owner.email),
       name: generateName(project.owner.firstName, project.owner.lastName),
-      admin: adminRoleFlag(project.owner, adminRoleId),
-      auditor: adminRoleFlag(project.owner, auditorRoleId),
+      admin: adminRoleFlag(project.owner, adminRoleIds),
+      auditor: adminRoleFlag(project.owner, auditorRoleIds),
     }, {
       cpnUserId: project.owner.id,
     })
@@ -250,11 +251,11 @@ export class GitlabService {
     await this.ensureGroupMemberAccessLevel(group, gitlabUser.id, AccessLevel.OWNER, membersById)
   }
 
-  private async getAdminRoleIds(project: ProjectWithDetails): Promise<{ adminRoleId?: string, auditorRoleId?: string }> {
-    const adminGroupPath = await this.getAdminGroupPath(project)
-    const auditorGroupPath = await this.getAuditorGroupPath(project)
-    const roles = await this.datastore.getAdminRolesByOidcGroups([adminGroupPath, auditorGroupPath])
-    return generateAdminRoleMapping(roles, adminGroupPath, auditorGroupPath)
+  private async getAdminRoleIds(project: ProjectWithDetails): Promise<{ adminRoleIds: string[], auditorRoleIds: string[] }> {
+    const adminGroupPaths = parseGroupPaths(await this.getAdminGroupPath(project))
+    const auditorGroupPaths = parseGroupPaths(await this.getAuditorGroupPath(project))
+    const roles = await this.datastore.getAdminRolesByOidcGroups([...adminGroupPaths, ...auditorGroupPaths])
+    return generateAdminRoleMapping(roles, adminGroupPaths, auditorGroupPaths)
   }
 
   private async getAdminGroupPath(project: ProjectWithDetails): Promise<string> {

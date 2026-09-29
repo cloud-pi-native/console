@@ -477,6 +477,48 @@ describe('gitlabService', () => {
       )
     })
 
+    it('should resolve auditor flags from the multi-path auditor defaults', async () => {
+      const project = makeProjectWithDetails({
+        members: [
+          { user: { id: 'u1', email: 'security@example.com', firstName: 'Secu', lastName: 'User', adminRoleIds: ['security-role-id'] }, roleIds: [] },
+          { user: { id: 'u2', email: 'auditor@example.com', firstName: 'Auditor', lastName: 'User', adminRoleIds: ['readonly-role-id'] }, roleIds: [] },
+        ],
+      })
+      const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+
+      datastore.getAdminRolesByOidcGroups.mockResolvedValue([
+        { id: 'admin-role-id', oidcGroup: '/console/admin' },
+        { id: 'readonly-role-id', oidcGroup: '/console/readonly' },
+        { id: 'security-role-id', oidcGroup: '/console/security' },
+      ])
+
+      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.upsertUser.mockImplementation(async (user) => {
+        return makeExpandedUserSchema({
+          id: faker.number.int(),
+          email: user.email,
+          username: user.email.split('@')[0],
+          name: user.name,
+        })
+      })
+      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+
+      await service.handleUpsert(project)
+
+      expect(datastore.getAdminRolesByOidcGroups).toHaveBeenCalledWith(['/console/admin', '/console/readonly', '/console/security'])
+      expect(gitlab.upsertUser).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'security@example.com', auditor: true }),
+        expect.objectContaining({ cpnUserId: 'u1' }),
+      )
+      expect(gitlab.upsertUser).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'auditor@example.com', auditor: true }),
+        expect.objectContaining({ cpnUserId: 'u2' }),
+      )
+    })
+
     it('should configure repository mirroring if external url is present', async () => {
       const project = makeProjectWithDetails({
         slug: 'project-1',
