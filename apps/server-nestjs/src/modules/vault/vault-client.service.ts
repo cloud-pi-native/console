@@ -59,9 +59,8 @@ export interface VaultSysAuthResponse {
   data: Record<string, VaultAuthMethod>
 }
 
-// `sys/mounts` returns one entry per mount path. Only the fields the console
-// relies on are typed; Vault adds engine-specific keys (plugin_version,
-// running_sha256, ...) that vary with the server version.
+// Keyed by mount path; only the fields the console relies on are typed, as
+// Vault adds engine-specific keys (plugin_version, ...) that vary by version.
 export interface VaultSysMount {
   accessor: string
   type: string
