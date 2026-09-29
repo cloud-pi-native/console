@@ -5,6 +5,7 @@ import type { DeepMockProxy } from 'vitest-mock-extended'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import { faker } from '@faker-js/faker'
 import {
+  BadRequestException,
   ForbiddenException,
   InternalServerErrorException,
   NotFoundException,
@@ -504,6 +505,24 @@ describe('projectService', () => {
 
       await expect(service.archive(faker.string.uuid()))
         .rejects.toThrow(NotFoundException)
+    })
+
+    it('rejects an already archived project without side effects', async () => {
+      const projectId = faker.string.uuid()
+      const tx = mockDeep<Prisma.TransactionClient>()
+      tx.project.findUnique.mockResolvedValue(
+        makeProjectWithDetails({ id: projectId, status: 'archived', locked: true }),
+      )
+      prisma.$transaction.mockImplementation(async cb => cb(tx))
+
+      await expect(service.archive(projectId))
+        .rejects.toThrow(new BadRequestException('Le projet est archivé'))
+
+      expect(tx.repository.deleteMany).not.toHaveBeenCalled()
+      expect(tx.environment.deleteMany).not.toHaveBeenCalled()
+      expect(tx.deployment.deleteMany).not.toHaveBeenCalled()
+      expect(tx.project.update).not.toHaveBeenCalled()
+      expect(appEvents.emitProjectEvent).not.toHaveBeenCalled()
     })
   })
 
