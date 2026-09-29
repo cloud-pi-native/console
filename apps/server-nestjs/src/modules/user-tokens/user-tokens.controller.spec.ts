@@ -12,6 +12,8 @@ import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { UserTokensController } from './user-tokens.controller'
 import { UserTokensService } from './user-tokens.service'
 
+const ONE_DAY_MS = 24 * 60 * 60 * 1000
+
 describe('userTokensController', () => {
   let module: TestingModule
   let controller: UserTokensController
@@ -34,7 +36,7 @@ describe('userTokensController', () => {
   })
 
   it('delegates creation to the service with the validated body and the caller id', async () => {
-    const expirationDate = faker.date.future({ refDate: new Date(Date.now() + 86_400_000) })
+    const expirationDate = faker.date.future({ refDate: new Date(Date.now() + ONE_DAY_MS) })
     service.create.mockResolvedValueOnce({
       id: faker.string.uuid(),
       name: 'my-token',

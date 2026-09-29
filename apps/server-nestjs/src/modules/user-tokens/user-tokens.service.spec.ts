@@ -8,6 +8,8 @@ import { PrismaService } from '../infrastructure/database/prisma.service'
 import { userTokenSelect } from './user-tokens-queries.utils'
 import { UserTokensService } from './user-tokens.service'
 
+const ONE_DAY_MS = 24 * 60 * 60 * 1000
+
 describe('userTokensService', () => {
   let module: TestingModule
   let service: UserTokensService
@@ -34,7 +36,7 @@ describe('userTokensService', () => {
         id: tokenId,
         name: faker.word.noun(),
         lastUse: null,
-        expirationDate: faker.date.future({ refDate: new Date(Date.now() + 86_400_000) }),
+        expirationDate: faker.date.future({ refDate: new Date(Date.now() + ONE_DAY_MS) }),
         status: 'active' as const,
         createdAt: faker.date.past(),
         userId,
@@ -74,14 +76,14 @@ describe('userTokensService', () => {
         id: tokenId,
         name: tokenName,
         lastUse: null,
-        expirationDate: faker.date.future({ refDate: new Date(Date.now() + 86_400_000) }),
+        expirationDate: faker.date.future({ refDate: new Date(Date.now() + ONE_DAY_MS) }),
         status: 'active' as const,
         createdAt: faker.date.past(),
         userId,
         hash: faker.string.alphanumeric(64),
       })
 
-      const result = await service.create({ name: tokenName, expirationDate: faker.date.future({ refDate: new Date(Date.now() + 86_400_000) }) }, userId)
+      const result = await service.create({ name: tokenName, expirationDate: faker.date.future({ refDate: new Date(Date.now() + ONE_DAY_MS) }) }, userId)
 
       expect(prisma.personalAccessToken.create).toHaveBeenCalledWith(
         expect.objectContaining({
