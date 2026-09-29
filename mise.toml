@@ -77,6 +77,9 @@ run = "pnpm lint"
 [tasks."test:unit"]
 run = "fnox exec -- pnpm test"
 
+[tasks."playwright:test"]
+run = "fnox -P ci exec -- pnpm --dir playwright exec playwright test --grep @e2e"
+
 [tasks."docker:dev"]
 run = "mise -E docker run docker:dev-inner"
 

@@ -61,6 +61,18 @@ Le client et `server-nestjs` migrent vers `mise` pour la configuration publique 
 
 La décision et le registre de variables sont documentés dans [`docs/adr/0001-mise-fnox-environment-management.md`](docs/adr/0001-mise-fnox-environment-management.md) et [`docs/environment-variables.md`](docs/environment-variables.md).
 
+| Cas | Commande |
+| --- | --- |
+| Initialisation locale | `mise run setup` |
+| Infrastructure locale | `mise run dev` |
+| NestJS local | `mise run server-nestjs:dev` |
+| Client local | `mise run client:dev` |
+| Stack Docker locale | `mise run docker:dev` |
+| Intégration hybride | `mise run integ` |
+| CI | `mise -E ci run <tâche>` |
+
+`apps/server` reste la seule exception transitoire à ces commandes, jusqu'à sa suppression.
+
 ## Configuration pour le développement entièrement en local
 
 Le développement entièrement en local suit cette organisation des composants:
