@@ -1,5 +1,56 @@
 # Changelog
 
+## [9.27.0-rc](https://github.com/cloud-pi-native/console/compare/v9.26.0...v9.27.0-rc) (2026-09-29)
+
+
+### Features
+
+* **client:** preload repository sync branch ([d14064e](https://github.com/cloud-pi-native/console/commit/d14064e2353a260fee9752824aef2d04b1ce5e49))
+* **nginx-strangler:** route healthz and version to server-nestjs ([4169619](https://github.com/cloud-pi-native/console/commit/41696192388730ca97225111c6788db6726a8232)), closes [#1889](https://github.com/cloud-pi-native/console/issues/1889)
+* **server-nestjs:** persist repository sync branch ([c44d5a2](https://github.com/cloud-pi-native/console/commit/c44d5a24e1ea71019e2877dd31dddd4e12f9fd29))
+* **server-nestjs:** register AdminRoleModule ([937c628](https://github.com/cloud-pi-native/console/commit/937c6281d2b1a24dcd11dac1dee5dc8243a8d502)), closes [#1889](https://github.com/cloud-pi-native/console/issues/1889)
+* **server-nestjs:** save branch before repository sync ([6c90b94](https://github.com/cloud-pi-native/console/commit/6c90b941fd6ca288bbd174d820db0272708de227))
+* **shared:** expose repository sync branch ([cec1eac](https://github.com/cloud-pi-native/console/commit/cec1eace68146a160041fcf65e327ffa06db9bbe))
+* **skills:** add cpn skill creation guide ([3b5e3e4](https://github.com/cloud-pi-native/console/commit/3b5e3e4e13bcbe35f382919d5e18891930fe73df))
+
+
+### Bug Fixes
+
+* avoid using docker compose --menu flag ([43ddecc](https://github.com/cloud-pi-native/console/commit/43ddeccbe3378d8d5a57462528cef80d7ec3b919))
+* **ci:** fix docker compose having the wrong OPENCDS_URL ([6aa0e66](https://github.com/cloud-pi-native/console/commit/6aa0e664290f3c98edb251a9f54fe52b2ce1c77d))
+* **ci:** fix opencds not having its url set up for server-nestjs ([c72778d](https://github.com/cloud-pi-native/console/commit/c72778d6a5f1f359b55f8af3bce4af7cf2291aac))
+* **ci:** give opencds_mockoon container the same prefix as other services ([d562063](https://github.com/cloud-pi-native/console/commit/d562063a70e0f0c4402037444468351ae51afeb9))
+* **ci:** rename opencds-mockoon container ([0424c57](https://github.com/cloud-pi-native/console/commit/0424c570954c55b15647e198acde1d38ba2e79d3))
+* let console and project admin view project deployments ([785362e](https://github.com/cloud-pi-native/console/commit/785362e49386afa6a6c1a4f6cddddb95438411aa))
+* **project:** reject archiving an already archived project ([2ba94b8](https://github.com/cloud-pi-native/console/commit/2ba94b81892a1e4004b1db531a17d717d22c37ee)), closes [#2757](https://github.com/cloud-pi-native/console/issues/2757)
+* **project:** rejeter l'archivage au niveau du contrôleur ([d8c607e](https://github.com/cloud-pi-native/console/commit/d8c607e57248185d36012527c8c5be476e4d2406)), closes [#2757](https://github.com/cloud-pi-native/console/issues/2757)
+* rename opencds-mockoon container for non-ci docker environments ([1613966](https://github.com/cloud-pi-native/console/commit/161396695bd986a2376b830e937633bfa3be62ec))
+* **server-nestjs:** fix Dockerfile setting wrong permissions ([46db30d](https://github.com/cloud-pi-native/console/commit/46db30d100f61bcdc1217bbca22fe6919ee9c7e0))
+* **server-nestjs:** guard system settings upsert behind ManageSystem ([7bf630f](https://github.com/cloud-pi-native/console/commit/7bf630f9d06fd1b5b57b769c484e5b7a14a8a0ae))
+* **server-nestjs:** provide UserPermissionService to SystemSettingsModule ([502a145](https://github.com/cloud-pi-native/console/commit/502a1450ce00beb929741243e7954394e1b13789))
+* **server-nestjs:** reuse Vault AppRole secret-id instead of minting on every sync ([f58885d](https://github.com/cloud-pi-native/console/commit/f58885d46059fe4ff5359b1971796b796d230290)), closes [#2622](https://github.com/cloud-pi-native/console/issues/2622)
+* **server-nestjs:** use gitlab plugin name in gitlab health indicator ([62e0cac](https://github.com/cloud-pi-native/console/commit/62e0cacd37f707a63b49cb2f73788906356752ca))
+* **server-nestjs:** wire AuthModule into SystemSettingsModule ([3c17b60](https://github.com/cloud-pi-native/console/commit/3c17b6088504c1698083ce6760e6b634bb662eab))
+* **vault:** drop non-tunable force_no_cache from mount tune ([61a236d](https://github.com/cloud-pi-native/console/commit/61a236d4db48038545897c4582d2dfda11945d9b))
+* **vault:** reconcile mount via sys/mounts list and tune force_no_cache ([ada29f3](https://github.com/cloud-pi-native/console/commit/ada29f3b484d803a482c8ab23380f0dc8349cdce)), closes [#2762](https://github.com/cloud-pi-native/console/issues/2762)
+
+
+### Docs
+
+* add cpn-release-notes skill ([ca3925e](https://github.com/cloud-pi-native/console/commit/ca3925e555b0303d2c88dc5b21cb864b9c69a3e2)), closes [#2728](https://github.com/cloud-pi-native/console/issues/2728)
+* add cpn-release-patch skill ([28ac329](https://github.com/cloud-pi-native/console/commit/28ac329f4680a06b47fb7c01a4f1522650652f4c)), closes [#2728](https://github.com/cloud-pi-native/console/issues/2728)
+* add pi transition skill ([64dfcc0](https://github.com/cloud-pi-native/console/commit/64dfcc07019e0c20aba9314a547684eaa971162f))
+* readapt cpn-release-patch skill to plain git ([92e0dff](https://github.com/cloud-pi-native/console/commit/92e0dffc5d789ed3fd20b674446c0617ee1c3085)), closes [#2733](https://github.com/cloud-pi-native/console/issues/2733)
+* **release-patch:** wrap lines over 80 columns ([b6903cd](https://github.com/cloud-pi-native/console/commit/b6903cdd8726f75259c945d7cdc7e4de1ef3bc59))
+* **server-nestjs:** drop dead method link, prune unused graph, date revision ([c24a3dc](https://github.com/cloud-pi-native/console/commit/c24a3dca587c777d4606739c2063ec444f82522d)), closes [#1889](https://github.com/cloud-pi-native/console/issues/1889)
+* **server-nestjs:** reconcile modularisation status ([885847d](https://github.com/cloud-pi-native/console/commit/885847d456f5b136ff0588ac8053d2d7f0148755)), closes [#1889](https://github.com/cloud-pi-native/console/issues/1889)
+* udpate release notes skill ([5da8106](https://github.com/cloud-pi-native/console/commit/5da81060fbf42819a16ab7b47929f9f296766006))
+
+
+### Refactoring
+
+* **vault:** type sys/mounts response instead of unknown ([b767306](https://github.com/cloud-pi-native/console/commit/b767306054aebf8f040caeb8c99ef9d5a19f7c42))
+
 ## [9.26.0](https://github.com/cloud-pi-native/console/compare/v9.25.0...v9.26.0) (2026-09-17)
 
 
