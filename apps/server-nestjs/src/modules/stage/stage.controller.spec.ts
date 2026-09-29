@@ -1,6 +1,6 @@
+import type { Stage } from '@cpn-console/shared'
 import type { TestingModule } from '@nestjs/testing'
 import type { MockProxy } from 'vitest-mock-extended'
-import type { Stage } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -41,15 +41,22 @@ describe('stageController', () => {
     expect(controller).toBeDefined()
   })
 
-  it('exposes GET list without admin permission', () => {
+  it('keeps the stages list public (legacy GET has no auth)', () => {
     expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, StageController.prototype.list)).toBeUndefined()
+    expect(Reflect.getMetadata('__guards__', StageController) ?? []).not.toContain(UserGuard)
+    expect(Reflect.getMetadata('__guards__', StageController.prototype.list) ?? []).not.toContain(UserGuard)
   })
 
-  it('guards stage environments with ListStages', () => {
+  it('guards stage environments behind UserGuard + ListStages', () => {
+    const guards = Reflect.getMetadata('__guards__', StageController.prototype.getStageEnvironments) ?? []
+    expect(guards).toContain(UserGuard)
     expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, StageController.prototype.getStageEnvironments)).toEqual(['ListStages'])
   })
 
-  it('guards mutations with ManageStages', () => {
+  it('guards mutations behind UserGuard + ManageStages', () => {
+    expect(Reflect.getMetadata('__guards__', StageController.prototype.create) ?? []).toContain(UserGuard)
+    expect(Reflect.getMetadata('__guards__', StageController.prototype.update) ?? []).toContain(UserGuard)
+    expect(Reflect.getMetadata('__guards__', StageController.prototype.delete) ?? []).toContain(UserGuard)
     expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, StageController.prototype.create)).toEqual(['ManageStages'])
     expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, StageController.prototype.update)).toEqual(['ManageStages'])
     expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, StageController.prototype.delete)).toEqual(['ManageStages'])

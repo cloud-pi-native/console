@@ -7,7 +7,6 @@ import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { StageService } from './stage.service'
 
 @Controller('api/v1/stages')
-@UseGuards(UserGuard)
 export class StageController {
   constructor(@Inject(StageService) private readonly service: StageService) {}
 
@@ -17,6 +16,7 @@ export class StageController {
   }
 
   @Get(':stageId/environments')
+  @UseGuards(UserGuard)
   @RequireAdminPermission('ListStages')
   async getStageEnvironments(
     @Param('stageId') stageId: string,
@@ -26,6 +26,7 @@ export class StageController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(UserGuard)
   @RequireAdminPermission('ManageStages')
   async create(
     @Body(new ZodValidationPipe(CreateStageBodySchema)) data: CreateStageBody,
@@ -34,6 +35,7 @@ export class StageController {
   }
 
   @Put(':stageId')
+  @UseGuards(UserGuard)
   @RequireAdminPermission('ManageStages')
   async update(
     @Param('stageId') stageId: string,
@@ -44,6 +46,7 @@ export class StageController {
 
   @Delete(':stageId')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(UserGuard)
   @RequireAdminPermission('ManageStages')
   async delete(
     @Param('stageId') stageId: string,
