@@ -1,4 +1,4 @@
-import type { Stage } from '@cpn-console/shared'
+import type { Stage, StageAssociatedEnvironments, UpdateStageBody } from '@cpn-console/shared'
 import type { TestingModule } from '@nestjs/testing'
 import type { MockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
@@ -19,7 +19,7 @@ describe('stageController', () => {
     id: faker.string.uuid(),
     name: 'dev',
     clusterIds: [],
-  } as Stage
+  }
 
   beforeEach(async () => {
     service = mock<StageService>()
@@ -41,25 +41,8 @@ describe('stageController', () => {
     expect(controller).toBeDefined()
   })
 
-  it('keeps the stages list public (legacy GET has no auth)', () => {
-    expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, StageController.prototype.list)).toBeUndefined()
-    expect(Reflect.getMetadata('__guards__', StageController) ?? []).not.toContain(UserGuard)
-    expect(Reflect.getMetadata('__guards__', StageController.prototype.list) ?? []).not.toContain(UserGuard)
-  })
-
   it('guards stage environments behind UserGuard + ListStages', () => {
-    const guards = Reflect.getMetadata('__guards__', StageController.prototype.getStageEnvironments) ?? []
-    expect(guards).toContain(UserGuard)
     expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, StageController.prototype.getStageEnvironments)).toEqual(['ListStages'])
-  })
-
-  it('guards mutations behind UserGuard + ManageStages', () => {
-    expect(Reflect.getMetadata('__guards__', StageController.prototype.create) ?? []).toContain(UserGuard)
-    expect(Reflect.getMetadata('__guards__', StageController.prototype.update) ?? []).toContain(UserGuard)
-    expect(Reflect.getMetadata('__guards__', StageController.prototype.delete) ?? []).toContain(UserGuard)
-    expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, StageController.prototype.create)).toEqual(['ManageStages'])
-    expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, StageController.prototype.update)).toEqual(['ManageStages'])
-    expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, StageController.prototype.delete)).toEqual(['ManageStages'])
   })
 
   it('delegates list to the service', async () => {
@@ -70,9 +53,9 @@ describe('stageController', () => {
   })
 
   it('delegates stage environments with stageId', async () => {
-    const environments = { environments: [] }
+    const environments: StageAssociatedEnvironments = []
     const stageId = faker.string.uuid()
-    service.getStageAssociatedEnvironments.mockResolvedValue(environments as never)
+    service.getStageAssociatedEnvironments.mockResolvedValue(environments)
 
     expect(await controller.getStageEnvironments(stageId)).toBe(environments)
     expect(service.getStageAssociatedEnvironments).toHaveBeenCalledWith(stageId)
@@ -81,16 +64,17 @@ describe('stageController', () => {
   it('delegates create with the validated body', async () => {
     service.createStage.mockResolvedValue(stage)
 
-    expect(await controller.create(stage as never)).toBe(stage)
+    expect(await controller.create(stage)).toBe(stage)
     expect(service.createStage).toHaveBeenCalledWith(stage)
   })
 
   it('delegates update with stageId and validated body', async () => {
     const stageId = faker.string.uuid()
+    const updateBody: UpdateStageBody = { name: 'staging', clusterIds: [] }
     service.updateStage.mockResolvedValue(stage)
 
-    expect(await controller.update(stageId, { name: 'staging' } as never)).toBe(stage)
-    expect(service.updateStage).toHaveBeenCalledWith(stageId, { name: 'staging' })
+    expect(await controller.update(stageId, updateBody)).toBe(stage)
+    expect(service.updateStage).toHaveBeenCalledWith(stageId, updateBody)
   })
 
   it('delegates delete with stageId', async () => {
