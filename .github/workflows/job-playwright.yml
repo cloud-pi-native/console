@@ -37,6 +37,13 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Set up mise tools
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          version: 2026.5.15
+          install: true
+          cache: true
+
       - name: Ensure Playwright browsers
         run: pnpm --dir playwright exec playwright install chromium firefox
 
@@ -53,7 +60,7 @@ jobs:
 
       # See https://playwright.dev/docs/test-sharding for how Playwright handles test sharding
       - name: Run Playwright tests
-        run: pnpm --dir playwright exec playwright test --grep @e2e --shard=${{ matrix.shard }}/4 --reporter=blob
+        run: mise -E ci run playwright:test -- --shard=${{ matrix.shard }}/4 --reporter=blob
 
       - name: Dump docker compose state on failure
         if: ${{ failure() }}
