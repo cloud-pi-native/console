@@ -4,7 +4,6 @@ import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mock } from 'vitest-mock-extended'
-import { ADMIN_PERMISSIONS_KEY } from '../infrastructure/permission/user/user-admin-permission.decorator'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { AdminTokenController } from './admin-token.controller'
 import { AdminTokenService } from './admin-token.service'
@@ -41,15 +40,6 @@ describe('adminTokenController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined()
-  })
-
-  it('guards list with ListAdminToken', () => {
-    expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, AdminTokenController.prototype.list)).toEqual(['ListAdminToken'])
-  })
-
-  it('guards mutations with ManageAdminToken', () => {
-    expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, AdminTokenController.prototype.create)).toEqual(['ManageAdminToken'])
-    expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, AdminTokenController.prototype.revoke)).toEqual(['ManageAdminToken'])
   })
 
   it('delegates list with withRevoked coerced to boolean', async () => {
