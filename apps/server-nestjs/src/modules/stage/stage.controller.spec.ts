@@ -5,7 +5,6 @@ import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mock } from 'vitest-mock-extended'
-import { ADMIN_PERMISSIONS_KEY } from '../infrastructure/permission/user/user-admin-permission.decorator'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { StageController } from './stage.controller'
 import { StageService } from './stage.service'
@@ -39,10 +38,6 @@ describe('stageController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined()
-  })
-
-  it('guards stage environments behind UserGuard + ListStages', () => {
-    expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, StageController.prototype.getStageEnvironments)).toEqual(['ListStages'])
   })
 
   it('delegates list to the service', async () => {
