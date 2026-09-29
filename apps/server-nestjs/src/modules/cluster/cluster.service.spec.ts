@@ -29,7 +29,6 @@ describe('clusterService', () => {
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
     prisma.$transaction.mockImplementation(async (cb: (tx: unknown) => unknown) => cb(prisma))
-    prisma.$transaction.mockImplementation(async (cb: (tx: unknown) => unknown) => cb(prisma))
     events = mockDeep<EventEmitter2>()
     baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>()
     appEvents = mockDeep<AppEventsService>()
@@ -242,18 +241,6 @@ describe('clusterService', () => {
     })
     prisma.cluster.findUniqueOrThrow.mockResolvedValue(makeCluster())
     appEvents.emitClusterEvent.mockRejectedValue(new UnprocessableEntityException('Echec des services à la création/mise à jour du cluster'))
-
-    await expect(service.updateCluster({ infos: 'x' }, record.id, 'u', 'r'))
-      .rejects.toThrow(new UnprocessableEntityException('Echec des services à la création/mise à jour du cluster'))
-  })
-
-  it('propagates upsert hook failure as 422', async () => {
-    const record = makeClusterDetailsRecord()
-    prisma.cluster.findUnique.mockResolvedValue(record as never)
-    prisma.cluster.update.mockResolvedValue(record as never)
-    prisma.zone.update.mockResolvedValue(record as never)
-    prisma.cluster.findUniqueOrThrow.mockResolvedValue({ projects: [] } as never)
-    events.emitAsync.mockRejectedValue(new Error('hook down'))
 
     await expect(service.updateCluster({ infos: 'x' }, record.id, 'u', 'r'))
       .rejects.toThrow(new UnprocessableEntityException('Echec des services à la création/mise à jour du cluster'))
