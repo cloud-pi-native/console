@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { generateClusterWhereInput } from './cluster-queries.utils'
+import { listClustersWhere } from './cluster-queries.utils'
 
-describe('generateClusterWhereInput', () => {
+describe('listClustersWhere', () => {
   it('returns an empty where for anonymous listing', () => {
-    expect(generateClusterWhereInput()).toEqual({})
-    expect(generateClusterWhereInput(undefined)).toEqual({})
+    expect(listClustersWhere()).toEqual({})
+    expect(listClustersWhere(undefined)).toEqual({})
   })
 
   it('returns the four authorization OR arms for a user', () => {
     const userId = 'user-1'
-    const where = generateClusterWhereInput(userId)
+    const where = listClustersWhere(userId)
 
     expect(where.OR).toEqual([
       { privacy: 'public' },
