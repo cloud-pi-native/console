@@ -1,10 +1,10 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
-import { endOfTodayUtc } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { endOfToday } from '../../testing.utils'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { userTokenSelect } from './user-tokens-queries.utils'
 import { UserTokensService } from './user-tokens.service'
@@ -35,7 +35,7 @@ describe('userTokensService', () => {
         id: tokenId,
         name: faker.word.noun(),
         lastUse: null,
-        expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
+        expirationDate: faker.date.soon({ days: 1, refDate: endOfToday().getTime() }),
         status: 'active' as const,
         createdAt: faker.date.past(),
         userId,
@@ -75,14 +75,14 @@ describe('userTokensService', () => {
         id: tokenId,
         name: tokenName,
         lastUse: null,
-        expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
+        expirationDate: faker.date.soon({ days: 1, refDate: endOfToday().getTime() }),
         status: 'active' as const,
         createdAt: faker.date.past(),
         userId,
         hash: faker.string.alphanumeric(64),
       })
 
-      const result = await service.create({ name: tokenName, expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }) }, userId)
+      const result = await service.create({ name: tokenName, expirationDate: faker.date.soon({ days: 1, refDate: endOfToday().getTime() }) }, userId)
 
       expect(prisma.personalAccessToken.create).toHaveBeenCalledWith(
         expect.objectContaining({

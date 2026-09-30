@@ -1,11 +1,11 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
-import { endOfTodayUtc } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { endOfToday } from '../../testing.utils'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { UserTokensController } from './user-tokens.controller'
 import { UserTokensService } from './user-tokens.service'
@@ -32,7 +32,7 @@ describe('userTokensController', () => {
   })
 
   it('delegates creation to the service with the body and the caller id', async () => {
-    const expirationDate = faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() })
+    const expirationDate = faker.date.soon({ days: 1, refDate: endOfToday().getTime() })
     service.create.mockResolvedValueOnce({
       id: faker.string.uuid(),
       name: 'my-token',

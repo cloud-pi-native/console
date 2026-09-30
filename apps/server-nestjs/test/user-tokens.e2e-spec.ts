@@ -1,5 +1,4 @@
 import type { TestingModule } from '@nestjs/testing'
-import { endOfTodayUtc } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
@@ -12,6 +11,7 @@ import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { UserTokensModule } from '../src/modules/user-tokens/user-tokens.module'
 import { UserTokensService } from '../src/modules/user-tokens/user-tokens.service'
+import { endOfToday } from '../src/testing.utils'
 import { hashToken } from '../src/utils/crypto.utils'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
@@ -81,7 +81,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
   it('should create a personal access token with plaintext password', async () => {
     const result = await service.create({
       name: faker.helpers.slugify(`e2e-pat-${faker.string.uuid()}`),
-      expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
+      expirationDate: faker.date.soon({ days: 1, refDate: endOfToday().getTime() }),
     }, ownerId)
 
     expect(result.id).toBeTruthy()
@@ -97,14 +97,14 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
     const tokenName = faker.helpers.slugify(`e2e-pat-list-${faker.string.uuid()}`)
     const created = await service.create({
       name: tokenName,
-      expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
+      expirationDate: faker.date.soon({ days: 1, refDate: endOfToday().getTime() }),
     }, ownerId)
     createdTokenIds.push(created.id)
 
     const otherTokenName = faker.helpers.slugify(`e2e-pat-other-${faker.string.uuid()}`)
     const otherToken = await service.create({
       name: otherTokenName,
-      expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
+      expirationDate: faker.date.soon({ days: 1, refDate: endOfToday().getTime() }),
     }, otherUserId)
     createdTokenIds.push(otherToken.id)
 
@@ -116,7 +116,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
   it('should hard-delete token and remove it from list', async () => {
     const created = await service.create({
       name: faker.helpers.slugify(`e2e-pat-delete-${faker.string.uuid()}`),
-      expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
+      expirationDate: faker.date.soon({ days: 1, refDate: endOfToday().getTime() }),
     }, ownerId)
     createdTokenIds.push(created.id)
 
@@ -132,7 +132,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
   it('should not delete another user\'s token', async () => {
     const otherToken = await service.create({
       name: faker.helpers.slugify(`e2e-pat-foreign-${faker.string.uuid()}`),
-      expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
+      expirationDate: faker.date.soon({ days: 1, refDate: endOfToday().getTime() }),
     }, otherUserId)
     createdTokenIds.push(otherToken.id)
 
@@ -145,7 +145,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
   it('should persist SHA256 hash of the password in DB', async () => {
     const created = await service.create({
       name: faker.helpers.slugify(`e2e-pat-hash-${faker.string.uuid()}`),
-      expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
+      expirationDate: faker.date.soon({ days: 1, refDate: endOfToday().getTime() }),
     }, ownerId)
     createdTokenIds.push(created.id)
 
@@ -161,7 +161,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
   it('should omit hash from API responses', async () => {
     const created = await service.create({
       name: faker.helpers.slugify(`e2e-pat-omit-${faker.string.uuid()}`),
-      expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
+      expirationDate: faker.date.soon({ days: 1, refDate: endOfToday().getTime() }),
     }, ownerId)
     createdTokenIds.push(created.id)
 
