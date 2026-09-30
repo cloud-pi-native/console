@@ -26,7 +26,9 @@ export type AdminTokenRecord = Prisma.AdminTokenGetPayload<{
   select: typeof adminTokenSelect
 }>
 
-export function listAdminTokens(tx: Prisma.TransactionClient, withRevoked: boolean) {
+type AdminTokenTx = Pick<Prisma.TransactionClient, 'adminToken' | 'user'>
+
+export function listAdminTokens(tx: AdminTokenTx, withRevoked: boolean) {
   const where: Prisma.AdminTokenWhereInput = withRevoked
     ? { status: { in: ['active', 'revoked'] } }
     : { status: 'active' }
@@ -38,7 +40,7 @@ export function listAdminTokens(tx: Prisma.TransactionClient, withRevoked: boole
   })
 }
 
-export function createBotUser(tx: Prisma.TransactionClient, data: { botUserId: string, name: string }) {
+export function createBotUser(tx: AdminTokenTx, data: { botUserId: string, name: string }) {
   return tx.user.create({
     data: {
       firstName: 'Bot Admin',
@@ -50,7 +52,7 @@ export function createBotUser(tx: Prisma.TransactionClient, data: { botUserId: s
   })
 }
 
-export function createAdminToken(tx: Prisma.TransactionClient, data: {
+export function createAdminToken(tx: AdminTokenTx, data: {
   name: string
   permissions: bigint
   expirationDate: Date | null
@@ -69,7 +71,7 @@ export function createAdminToken(tx: Prisma.TransactionClient, data: {
   })
 }
 
-export function revokeAdminToken(tx: Prisma.TransactionClient, id: string) {
+export function revokeAdminToken(tx: AdminTokenTx, id: string) {
   return tx.adminToken.updateMany({
     where: { id },
     data: {

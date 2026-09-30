@@ -1,11 +1,37 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { AdminTokenRecord } from './admin-token-queries.utils'
 import { faker } from '@faker-js/faker'
+import { BadRequestException } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { AdminTokenService } from './admin-token.service'
+
+function makeAdminTokenRecord(overrides: Partial<Omit<AdminTokenRecord, 'owner'>> = {}) {
+  const owner: AdminTokenRecord['owner'] = {
+    id: faker.string.uuid(),
+    email: faker.internet.email().toLowerCase(),
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    type: 'bot',
+  }
+  const record: AdminTokenRecord = {
+    id: faker.string.uuid(),
+    name: 'my-token',
+    permissions: 4n,
+    lastUse: null,
+    expirationDate: null,
+    status: 'active',
+    createdAt: faker.date.past(),
+    userId: owner.id,
+    owner,
+  }
+  // ponytail: DeepMockProxy resolves mockResolvedValue against the FULL prisma row
+  // (hash included) while AdminTokenRecord is the selected payload; spread both.
+  return { ...record, hash: faker.string.hexadecimal({ length: 64 }), ...overrides }
+}
 
 describe('adminTokenService', () => {
   let module: TestingModule
@@ -27,25 +53,14 @@ describe('adminTokenService', () => {
 
   describe('list', () => {
     it('returns active tokens with permissions serialized as string', async () => {
-      const tokenId = faker.string.uuid()
-      const userId = faker.string.uuid()
-      prisma.adminToken.findMany.mockResolvedValue([{
-        id: tokenId,
-        name: 'my-token',
-        permissions: 4n,
-        lastUse: null,
-        expirationDate: null,
-        status: 'active' as const,
-        createdAt: faker.date.past(),
-        userId,
-        hash: 'hash-1',
-      }])
+      const token = makeAdminTokenRecord()
+      prisma.adminToken.findMany.mockResolvedValue([token])
 
       const result = await service.list()
 
       expect(prisma.adminToken.findMany).toHaveBeenCalled()
       expect(result).toHaveLength(1)
-      expect(result[0].id).toBe(tokenId)
+      expect(result[0].id).toBe(token.id)
       expect(result[0].permissions).toBe('4')
     })
 
@@ -54,8 +69,9 @@ describe('adminTokenService', () => {
 
       await service.list(true)
 
-      const callArgs = prisma.adminToken.findMany.mock.calls[0]?.[0]
-      expect(callArgs?.where).toEqual({ status: { in: ['active', 'revoked'] } })
+      expect(prisma.adminToken.findMany).toHaveBeenCalledWith(expect.objectContaining({
+        where: { status: { in: ['active', 'revoked'] } },
+      }))
     })
 
     it('filters to active only by default', async () => {
@@ -63,28 +79,38 @@ describe('adminTokenService', () => {
 
       await service.list()
 
-      const callArgs = prisma.adminToken.findMany.mock.calls[0]?.[0]
-      expect(callArgs?.where).toEqual({ status: 'active' })
+      expect(prisma.adminToken.findMany).toHaveBeenCalledWith(expect.objectContaining({
+        where: { status: 'active' },
+      }))
     })
   })
 
   describe('create', () => {
+    it('rejects an expiration date before tomorrow', async () => {
+      await expect(service.create({ name: 'my-token', permissions: '4', expirationDate: new Date() }))
+        .rejects.toThrow(BadRequestException)
+      await expect(service.create({ name: 'my-token', permissions: '4', expirationDate: new Date() }))
+        .rejects.toThrow('Date d\'expiration trop courte')
+      expect(prisma.$transaction).not.toHaveBeenCalled()
+    })
+
     it('returns created token with plaintext password and serialized permissions', async () => {
       const tokenId = faker.string.uuid()
       const botUserId = faker.string.uuid()
       const tx = mockDeep<PrismaService>()
-      tx.user.create.mockResolvedValue({ id: botUserId, firstName: 'Bot Admin', lastName: 'my-token', type: 'bot', email: 'x@bot.io' } as never)
-      tx.adminToken.create.mockResolvedValue({
-        id: tokenId,
-        name: 'my-token',
-        permissions: 2n,
-        lastUse: null,
-        expirationDate: null,
-        status: 'active' as const,
+      tx.user.create.mockResolvedValue({
+        id: botUserId,
+        firstName: 'Bot Admin',
+        lastName: 'my-token',
+        email: `${botUserId}@bot.io`,
         createdAt: faker.date.past(),
-        userId: botUserId,
-        hash: 'hash-2',
+        updatedAt: faker.date.past(),
+        lastLogin: null,
+        adminRoleIds: [],
+        type: 'bot',
       })
+      const created = makeAdminTokenRecord({ id: tokenId, userId: botUserId, permissions: 2n })
+      tx.adminToken.create.mockResolvedValue(created)
       prisma.$transaction.mockImplementation(async fn => fn(tx))
 
       const result = await service.create({ name: 'my-token', permissions: '2', expirationDate: null })
@@ -101,16 +127,13 @@ describe('adminTokenService', () => {
   describe('revoke', () => {
     it('sets status to revoked and expiration date to now', async () => {
       const tokenId = faker.string.uuid()
-      prisma.adminToken.updateMany.mockResolvedValue({ count: 1 } as never)
+      prisma.adminToken.updateMany.mockResolvedValue({ count: 1 })
 
       await service.revoke(tokenId)
 
       expect(prisma.adminToken.updateMany).toHaveBeenCalledWith({
         where: { id: tokenId },
-        data: {
-          status: 'revoked',
-          expirationDate: expect.any(Date) as Date,
-        },
+        data: { status: 'revoked', expirationDate: expect.any(Date) },
       })
     })
   })

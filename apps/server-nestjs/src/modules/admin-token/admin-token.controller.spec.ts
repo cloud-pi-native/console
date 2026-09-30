@@ -1,3 +1,4 @@
+import type { CreateAdminTokenBody } from '@cpn-console/shared'
 import type { TestingModule } from '@nestjs/testing'
 import type { MockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
@@ -8,19 +9,36 @@ import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { AdminTokenController } from './admin-token.controller'
 import { AdminTokenService } from './admin-token.service'
 
+type ListedAdminToken = Awaited<ReturnType<AdminTokenService['list']>>[number]
+type CreatedAdminToken = Awaited<ReturnType<AdminTokenService['create']>>
+
+function makeListedToken(): ListedAdminToken {
+  const ownerId = faker.string.uuid()
+  return {
+    id: faker.string.uuid(),
+    name: 'ci',
+    permissions: '0',
+    lastUse: null,
+    expirationDate: null,
+    status: 'active',
+    createdAt: faker.date.past(),
+    userId: ownerId,
+    owner: {
+      id: ownerId,
+      email: faker.internet.email().toLowerCase(),
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      type: 'bot',
+    },
+  }
+}
+
 describe('adminTokenController', () => {
   let module: TestingModule
   let controller: AdminTokenController
   let service: MockProxy<AdminTokenService>
 
-  const token = {
-    id: faker.string.uuid(),
-    name: 'ci',
-    permissions: '0',
-    ownerId: faker.string.uuid(),
-    createdAt: new Date(),
-    revokedAt: null,
-  } as Awaited<ReturnType<AdminTokenService['list']>>[number]
+  const token = makeListedToken()
 
   beforeEach(async () => {
     service = mock<AdminTokenService>()
@@ -53,11 +71,12 @@ describe('adminTokenController', () => {
   })
 
   it('delegates create with the validated body', async () => {
-    const created = { ...token, password: 'pwd' }
+    const body: CreateAdminTokenBody = { name: 'ci', permissions: '0', expirationDate: null }
+    const created: CreatedAdminToken = { ...token, password: 'pwd' }
     service.create.mockResolvedValue(created)
 
-    expect(await controller.create({ name: 'ci', permissions: '0' } as never)).toBe(created)
-    expect(service.create).toHaveBeenCalledWith({ name: 'ci', permissions: '0' })
+    expect(await controller.create(body)).toBe(created)
+    expect(service.create).toHaveBeenCalledWith(body)
   })
 
   it('delegates revoke with tokenId', async () => {
