@@ -489,7 +489,7 @@ describe('gitlabService', () => {
 
       datastore.getAdminRolesByOidcGroups.mockResolvedValue([
         { id: 'admin-role-id', oidcGroup: '/console/admin' },
-        { id: 'readonly-role-id', oidcGroup: '/console/readonly' },
+        { id: 'readonly-role-id', oidcGroup: '/console/reader' },
         { id: 'security-role-id', oidcGroup: '/console/security' },
       ])
 
@@ -509,7 +509,7 @@ describe('gitlabService', () => {
 
       await service.handleUpsert(project)
 
-      expect(datastore.getAdminRolesByOidcGroups).toHaveBeenCalledWith(['/console/admin', '/console/readonly', '/console/security'])
+      expect(datastore.getAdminRolesByOidcGroups).toHaveBeenCalledWith(['/console/admin', '/console/reader', '/console/security'])
       expect(gitlab.ensureUser).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'security@example.com', auditor: true }),
         expect.objectContaining({ cpnUserId: 'u1' }),

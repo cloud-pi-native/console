@@ -1,3 +1,4 @@
+import type { CreateProjectBody } from '@cpn-console/shared'
 import { describe, expect, it } from 'vitest'
 import { generateProjectCreateInput, generateSlug } from './project.utils'
 
@@ -16,7 +17,13 @@ describe('project.utils', () => {
     const body = {
       name: 'My Project',
       limitless: false,
-    } as never
+      hprodCpu: 0,
+      hprodGpu: 0,
+      hprodMemory: 0,
+      prodCpu: 0,
+      prodGpu: 0,
+      prodMemory: 0,
+    } satisfies CreateProjectBody
 
     it('seeds the reader role with the /console/reader oidcGroup', () => {
       const input = generateProjectCreateInput(body, 'owner-id', 'my-project')
