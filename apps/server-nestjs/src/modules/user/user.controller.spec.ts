@@ -59,7 +59,7 @@ describe('userController', () => {
     service.patchUsers.mockResolvedValue(users)
     const body = [{ id: users[0].id, adminRoleIds: ['r1'] }]
 
-    expect(await controller.patchUsers(body as never)).toEqual(users.map(toContractUser))
+    expect(await controller.patchUsers(body)).toEqual(users.map(toContractUser))
     expect(service.patchUsers).toHaveBeenCalledWith(body)
   })
 })

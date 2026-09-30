@@ -79,8 +79,6 @@ describe('userService', () => {
   it('patches users and emits the union of before and after admin roles', async () => {
     const user = makeUser({ adminRoleIds: ['role-0'] })
     prisma.user.findMany.mockImplementation(async (_args) => {
-      // before-load returns the user with role-0; the after-load must see role-1,
-      // but the members query only needs the selected member fields.
       return [_args.select?.adminRoleIds ? { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, adminRoleIds: ['role-0', 'role-1'] } : user]
     })
     prisma.adminRole.findMany.mockResolvedValue([
