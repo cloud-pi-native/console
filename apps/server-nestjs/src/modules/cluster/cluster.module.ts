@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common'
 import { AppEventsModule } from '../events/app-events.module'
-import { ConfigModule } from '@nestjs/config'
-import { baseConfigFactory } from '../../config/base.config'
+import { AppEventsModule } from '../events/app-events.module'
 import { AuthModule } from '../infrastructure/auth/auth.module'
 import { DatabaseModule } from '../infrastructure/database/database.module'
 import { EventsModule } from '../infrastructure/events/events.module'
@@ -13,7 +12,6 @@ import { ClusterService } from './cluster.service'
   imports: [
     AppEventsModule,
     AuthModule,
-    ConfigModule.forFeature(baseConfigFactory),
     DatabaseModule,
     EventsModule,
     UserPermissionModule,
