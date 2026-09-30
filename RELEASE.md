@@ -112,7 +112,13 @@ Plus concrètement, le cycle est le suivant :
 
 **⚠️NOTE⚠️**: Si jamais, après l'étape `3` (création de la MR pour la version stable) des commits "classiques" sont poussés sur `main` alors **la MR de la version stable sera automatiquement "convertie" en MR de préversion**. Dit autrement: **On ne peut créer une version "stable" qu'à partir d'une préversion**. Tout commit en plus empêche d'avoir une version stable, il faut forcément qu'il y ait ZERO commit après une préversion pour avoir une MR de version stable.
 
-Les différents types de commits (`chore:`, `feat:`, `fix:`, etc.) alimentent les sections du `CHANGELOG.md` selon les deux configurations release-please ci-dessus.
+## Notes de version
+
+`release-please` gère les incréments de version, les requêtes de fusion de release, les tags immuables et les GitHub Releases. Il ne génère pas de fichier `CHANGELOG.md`.
+
+L’historique généré avant cette bascule est conservé, sans modification, dans [`CHANGELOGS/CHANGELOG_ARCHIVE.md`](./CHANGELOGS/CHANGELOG_ARCHIVE.md). Les notes destinées aux utilisateurs sont préparées manuellement avec le skill [`cpn-release-notes`](./.agents/skills/cpn-release-notes/SKILL.md) : il produit `CHANGELOGS/<version>.md` et son audit non publiable `CHANGELOGS/<version>.anomalies.md`.
+
+La procédure collecte la version stable cible, le tag candidat, le milestone exact et la MR Helm. Elle réconcilie ces preuves, présente une prévisualisation et n’écrit les fichiers qu’après validation humaine. L’absence de tag, de milestone ou de MR Helm bloque la préparation. Cette bascule n’ajoute ni contrôle CI ni automatisation par agent.
 
 Lorsqu'une préversion ou une version stable est créée, les images de conteneur des applications (`client`, `server`, etc.) sont publiées dans la [registry GitHub du dépôt](https://github.com/orgs/cloud-pi-native/packages?repo_name=console) avec le tag complet correspondant. Une version stable met aussi à jour les tags partiels `vX` et `vX.Y` ; ⚠️ Les RC ne touchent **jamais** à ces tags "mouvants". Ils sont là explicitement pour traquer la dernière version stable, majeure ou mineure.
 
@@ -219,12 +225,12 @@ Exemple : corriger la version de production `v9.24.5`.
 
 2. Implémenter et valider le correctif, puis pousser la branche.
 
-3. Vérifier que le workflow `Handle next hotfix` crée une MR `release-please` ciblant `hotfix/urgent-<description>` et proposant exactement `v9.24.6`. En cas de version, branche cible, ou liste de changement ("changelog") inattendus, **ne pas fusionner la MR**.
+3. Vérifier que le workflow `Handle next hotfix` crée une MR `release-please` ciblant `hotfix/urgent-<description>` et proposant exactement `v9.24.6`. En cas de version, branche cible ou tag proposé inattendus, **ne pas fusionner la MR**.
 
 4. Fusionner la MR `release-please` après validation. Cela crée le tag et la GitHub Release `v9.24.6`, publie les images OCI taguées `v9.24.6` et déclenche la demande de mise à jour du chart `dso-console` avec `appVersion: 9.24.6`.
 
 5. Déployer le chart mis à jour, puis vérifier que la version déployée est bien `9.24.6`.
 
-6. Créer une MR vers `main` en picorant ("cherry-picking") exclusivement le ou les commits applicatif du correctif d'urgence. Exclure les commits automatiques `release-please`, le `CHANGELOG.md`, les manifestes et les fichiers de version. Le correctif intègre alors normalement le cycle préversion/version stable en cours sur `main`.
+6. Créer une MR vers `main` en picorant ("cherry-picking") exclusivement le ou les commits applicatif du correctif d'urgence. Exclure les commits automatiques `release-please`, les manifestes et les fichiers de version. Le correctif intègre alors normalement le cycle préversion/version stable en cours sur `main`.
 
 > Une préversion en cours sur `main` reste indépendante d'un correctif d'urgence. Par exemple, un correctif d'urgence `9.24.6` ne modifie ni la cible ni le compteur des RC `9.25.0-rc.*`.

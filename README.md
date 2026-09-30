@@ -388,7 +388,7 @@ Il est possible d'ajouter l'[extension VSCode](https://github.com/vivaxy/vscode-
 
 ## Gestion des versions
 
-Se référer à [./RELEASE.md](./RELEASE.md).
+La gestion des versions, des tags et des releases GitHub est décrite dans [RELEASE.md](./RELEASE.md). Les notes de version validées destinées aux utilisateurs sont stockées dans [`CHANGELOGS/`](./CHANGELOGS/) et préparées avec le skill [`cpn-release-notes`](./.agents/skills/cpn-release-notes/SKILL.md).
 
 ## Gestion des dépendances
 
