@@ -1,4 +1,5 @@
 import type { TestingModule } from '@nestjs/testing'
+import { endOfTodayUtc } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
@@ -17,12 +18,6 @@ import { getDotenvPaths } from '../src/utils/dotenv.utils'
 const canRunUserTokensE2E = Boolean(process.env.E2E)
 
 const describeWithUserTokens = describe.runIf(canRunUserTokensE2E)
-
-function endOfTodayUtc() {
-  const end = new Date()
-  end.setUTCHours(23, 59, 59, 999)
-  return end
-}
 
 describeWithUserTokens('UserTokensService (e2e)', () => {
   let moduleRef: TestingModule

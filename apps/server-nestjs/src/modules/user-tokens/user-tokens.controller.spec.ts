@@ -1,6 +1,7 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
+import { endOfTodayUtc } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -8,12 +9,6 @@ import { mockDeep } from 'vitest-mock-extended'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { UserTokensController } from './user-tokens.controller'
 import { UserTokensService } from './user-tokens.service'
-
-function endOfTodayUtc() {
-  const end = new Date()
-  end.setUTCHours(23, 59, 59, 999)
-  return end
-}
 
 describe('userTokensController', () => {
   let module: TestingModule

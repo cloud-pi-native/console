@@ -1,7 +1,7 @@
 import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
-import { ExposedPersonalAccessTokenSchema, PersonalAccessTokenSchema } from '../schemas/token.js'
+import { CreatePersonalAccessTokenBodySchema, ExposedPersonalAccessTokenSchema, PersonalAccessTokenSchema } from '../schemas/token.js'
 import { baseHeaders, ErrorSchema } from './_utils.js'
 
 export const personalAccessTokenContract = contractInstance.router({
@@ -20,7 +20,7 @@ export const personalAccessTokenContract = contractInstance.router({
   createPersonalAccessToken: {
     method: 'POST',
     path: '',
-    body: PersonalAccessTokenSchema.pick({ name: true, expirationDate: true }).required(),
+    body: CreatePersonalAccessTokenBodySchema,
     responses: {
       201: ExposedPersonalAccessTokenSchema,
       400: ErrorSchema,

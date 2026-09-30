@@ -258,6 +258,13 @@ export function isAtLeastTomorrow(actualTime: Date) {
   return actualTime.getTime() > tomorrow.getTime()
 }
 
+export function endOfTodayUtc() {
+  const end = new Date()
+  end.setUTCHours(23, 59, 59, 999)
+
+  return end
+}
+
 export function insert<T>(pseudoArray: T[] | undefined, element: T): T[] {
   if (!pseudoArray) {
     return [element]

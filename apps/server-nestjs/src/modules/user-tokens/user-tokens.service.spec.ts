@@ -1,5 +1,6 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import { endOfTodayUtc } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -7,12 +8,6 @@ import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { userTokenSelect } from './user-tokens-queries.utils'
 import { UserTokensService } from './user-tokens.service'
-
-function endOfTodayUtc() {
-  const end = new Date()
-  end.setUTCHours(23, 59, 59, 999)
-  return end
-}
 
 describe('userTokensService', () => {
   let module: TestingModule
