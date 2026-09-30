@@ -19,11 +19,8 @@ export class UserService {
     @Inject(EventEmitter2) private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  async getAllUsers(
-    query: z.infer<typeof AllUsersQuerySchema>,
-    relationType: 'OR' | 'AND' = 'AND',
-  ): Promise<User[]> {
-    const where = await buildAllUsersWhere(this.prisma, query, relationType)
+  async getAllUsers(query: z.infer<typeof AllUsersQuerySchema>): Promise<User[]> {
+    const where = await buildAllUsersWhere(this.prisma, query)
     return getUsers(this.prisma, where)
   }
 
@@ -52,8 +49,22 @@ export class UserService {
       usersBefore.find(({ id }) => id === user.id)?.adminRoleIds.forEach(roleId => impactedRoleIds.add(roleId))
       user.adminRoleIds?.forEach(roleId => impactedRoleIds.add(roleId))
     }
-    for (const roleId of impactedRoleIds) {
-      await this.eventEmitter.emitAsync('adminRole.upsert', { roleId })
+    const roles = await this.prisma.adminRole.findMany({
+      where: { id: { in: [...impactedRoleIds] } },
+      select: { id: true, oidcGroup: true },
+    })
+    const members = await this.prisma.user.findMany({
+      where: { adminRoleIds: { hasSome: [...impactedRoleIds] } },
+      select: { id: true, email: true, firstName: true, lastName: true, adminRoleIds: true },
+    })
+    for (const role of roles) {
+      await this.eventEmitter.emitAsync('adminRole.upsert', {
+        id: role.id,
+        oidcGroup: role.oidcGroup,
+        members: members
+          .filter(({ adminRoleIds }) => adminRoleIds.includes(role.id))
+          .map(({ id, email, firstName, lastName }) => ({ id, email, firstName, lastName })),
+      })
     }
   }
 }
