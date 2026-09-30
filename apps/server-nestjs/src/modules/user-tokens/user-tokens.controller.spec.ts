@@ -33,7 +33,7 @@ describe('userTokensController', () => {
   })
 
   it('delegates creation to the service with the body and the caller id', async () => {
-    const expirationDate = faker.date.future({ refDate: new Date(Date.now() + ONE_DAY_MS) })
+    const expirationDate = faker.date.soon({ days: 1, refDate: Date.now() + ONE_DAY_MS })
     service.create.mockResolvedValueOnce({
       id: faker.string.uuid(),
       name: 'my-token',

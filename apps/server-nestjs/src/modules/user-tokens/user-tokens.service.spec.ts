@@ -36,7 +36,7 @@ describe('userTokensService', () => {
         id: tokenId,
         name: faker.word.noun(),
         lastUse: null,
-        expirationDate: faker.date.future({ refDate: new Date(Date.now() + ONE_DAY_MS) }),
+        expirationDate: faker.date.soon({ days: 1, refDate: Date.now() + ONE_DAY_MS }),
         status: 'active' as const,
         createdAt: faker.date.past(),
         userId,
@@ -76,14 +76,14 @@ describe('userTokensService', () => {
         id: tokenId,
         name: tokenName,
         lastUse: null,
-        expirationDate: faker.date.future({ refDate: new Date(Date.now() + ONE_DAY_MS) }),
+        expirationDate: faker.date.soon({ days: 1, refDate: Date.now() + ONE_DAY_MS }),
         status: 'active' as const,
         createdAt: faker.date.past(),
         userId,
         hash: faker.string.alphanumeric(64),
       })
 
-      const result = await service.create({ name: tokenName, expirationDate: faker.date.future({ refDate: new Date(Date.now() + ONE_DAY_MS) }) }, userId)
+      const result = await service.create({ name: tokenName, expirationDate: faker.date.soon({ days: 1, refDate: Date.now() + ONE_DAY_MS }) }, userId)
 
       expect(prisma.personalAccessToken.create).toHaveBeenCalledWith(
         expect.objectContaining({
