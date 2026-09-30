@@ -1,6 +1,6 @@
 import type {
   CreateProjectBody,
-  projectContract,
+  ListProjectsQuery,
   ProjectV2,
 } from '@cpn-console/shared'
 import pDebounce from 'p-debounce'
@@ -60,7 +60,7 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   const listProjects = async (
-    query: typeof projectContract.listProjects.query._type = {
+    query: ListProjectsQuery = {
       filter: 'member',
       statusNotIn: 'archived',
     },

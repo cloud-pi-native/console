@@ -182,3 +182,7 @@ export const projectContract = contractInstance.router({
 })
 
 export type CreateProjectBody = ClientInferRequest<typeof projectContract.createProject>['body']
+export type CreateProjectData = z.infer<typeof projectContract.createProject.body>
+export type UpdateProjectBody = ClientInferRequest<typeof projectContract.updateProject>['body']
+export type ListProjectsQuery = ClientInferRequest<typeof projectContract.listProjects>['query']
+export type BulkActionProjectBody = ClientInferRequest<typeof projectContract.bulkActionProject>['body']

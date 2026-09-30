@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { ArrayElement, projectContract, ProjectV2 } from '@cpn-console/shared'
+import type { ArrayElement, BulkActionProjectBody, ListProjectsQuery, ProjectV2 } from '@cpn-console/shared'
 import { bts, statusDict } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
@@ -35,7 +35,7 @@ const title = 'Liste des projets'
 
 const bulkActions: Array<{
   text: string
-  value: typeof projectContract.bulkActionProject.body._type.action
+  value: BulkActionProjectBody['action']
 }> = [
   { text: 'Reprovisionner', value: 'replay' },
   { text: 'Vérrouiller', value: 'lock' },
@@ -45,7 +45,7 @@ const bulkActions: Array<{
 type BulkActions = (typeof bulkActions)[number]['value']
 const selectedAction = ref<BulkActions>('replay')
 
-type FilterMethods = Record<string, typeof projectContract.listProjects.query._type>
+type FilterMethods = Record<string, ListProjectsQuery>
 const filterMethods: FilterMethods = {
   Tous: { filter: 'all' },
   'Non archivés': { filter: 'all', statusNotIn: 'archived' },

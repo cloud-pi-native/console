@@ -109,3 +109,4 @@ export type SystemSettings = ClientInferResponseBody<typeof systemSettingsContra
 export type SystemSetting = SystemSettings[number]
 
 export type UpsertSystemSettingBody = ClientInferRequest<typeof systemSettingsContract.upsertSystemSetting>['body']
+export type ListSystemSettingsQuery = ClientInferRequest<typeof systemSettingsContract.listSystemSettings>['query']

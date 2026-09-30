@@ -1,10 +1,10 @@
-import type { AdminToken, adminTokenContract } from '@cpn-console/shared'
+import type { AdminToken, CreateAdminTokenBody, ListAdminTokensQuery } from '@cpn-console/shared'
 import { defineStore } from 'pinia'
 import { apiClient, extractData } from '../api/xhr-client.js'
 
 export const useAdminTokenStore = defineStore('adminToken', () => {
   const listTokens = async (
-    query: typeof adminTokenContract.listAdminTokens.query._type = {},
+    query: ListAdminTokensQuery = {},
   ) => {
     return apiClient.AdminTokens.listAdminTokens({ query }).then(
       (response: any) => extractData(response, 200),
@@ -12,7 +12,7 @@ export const useAdminTokenStore = defineStore('adminToken', () => {
   }
 
   const createToken = async (
-    body: typeof adminTokenContract.createAdminToken.body._type,
+    body: CreateAdminTokenBody,
   ) => {
     return apiClient.AdminTokens.createAdminToken({ body }).then((res: any) =>
       extractData(res, 201),

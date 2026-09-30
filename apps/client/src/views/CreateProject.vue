@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type {
-  projectContract,
+  CreateProjectData,
 } from '@cpn-console/shared'
 import type { Ref } from 'vue'
 import {
@@ -25,7 +25,7 @@ const buttonState = ref({
   isCreating: false,
 })
 
-const project = ref<typeof projectContract.createProject.body._type>({
+const project = ref<CreateProjectData>({
   name: '',
   description: '',
   limitless: false,
