@@ -1,6 +1,7 @@
 import type { CreateAdminTokenBody } from '@cpn-console/shared'
 import { randomUUID } from 'node:crypto'
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { isAtLeastTomorrow } from '@cpn-console/shared'
+import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { generateTokenPair } from '../../utils/crypto.utils'
 import { PrismaService } from '../infrastructure/database/prisma.service'
@@ -39,6 +40,10 @@ export class AdminTokenService {
     const span = trace.getActiveSpan()
     span?.setAttribute('adminToken.create.name', data.name)
     this.logger.log(`adminToken.create started (tokenName=${data.name})`)
+
+    if (data.expirationDate && !isAtLeastTomorrow(data.expirationDate)) {
+      throw new BadRequestException('Date d\'expiration trop courte')
+    }
 
     try {
       const { password, hash } = generateTokenPair()

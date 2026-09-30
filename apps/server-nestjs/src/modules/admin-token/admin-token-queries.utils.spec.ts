@@ -81,10 +81,10 @@ describe('admin-token-queries.utils', () => {
 
       await revokeAdminToken(tx, id)
 
-      const call = tx.adminToken.updateMany.mock.calls[0]?.[0]
-      expect(call?.where).toEqual({ id })
-      expect(call?.data.status).toBe('revoked')
-      expect(call?.data.expirationDate).toBeInstanceOf(Date)
+      expect(tx.adminToken.updateMany).toHaveBeenCalledWith({
+        where: { id },
+        data: { status: 'revoked', expirationDate: expect.any(Date) },
+      })
     })
   })
 })
