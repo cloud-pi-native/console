@@ -1,5 +1,6 @@
-import type { CreateStageBody, Stage, StageAssociatedEnvironments, UpdateStageBody } from '@cpn-console/shared'
+import type { CreateStageBody, Stage, UpdateStageBody } from '@cpn-console/shared'
 import type { Cluster } from '@prisma/client'
+import type { StageEnvironmentsRecord, StageWithClustersRecord } from './stage-queries.utils'
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import {
@@ -21,22 +22,12 @@ import {
 export class StageService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  async listStages(): Promise<Stage[]> {
-    const stages = await listStagesQuery(this.prisma)
-    return stages.map(({ clusters, ...stage }) => ({
-      ...stage,
-      clusterIds: clusters.map(({ id }) => id),
-    }))
+  async listStages(): Promise<StageWithClustersRecord[]> {
+    return listStagesQuery(this.prisma)
   }
 
-  async getStageAssociatedEnvironments(stageId: Stage['id']): Promise<StageAssociatedEnvironments> {
-    const environments = await getStageAssociatedEnvironments(this.prisma, stageId)
-    return environments.map(env => ({
-      project: env.project.slug,
-      name: env.name,
-      cluster: env.cluster.label,
-      owner: env.project.owner.email,
-    }))
+  async getStageAssociatedEnvironments(stageId: Stage['id']): Promise<StageEnvironmentsRecord[]> {
+    return getStageAssociatedEnvironments(this.prisma, stageId)
   }
 
   async createStage({ clusterIds = [], name }: CreateStageBody): Promise<Stage> {

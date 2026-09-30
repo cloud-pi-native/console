@@ -1,4 +1,4 @@
-import type { Stage, StageAssociatedEnvironments, UpdateStageBody } from '@cpn-console/shared'
+import type { Stage, UpdateStageBody } from '@cpn-console/shared'
 import type { TestingModule } from '@nestjs/testing'
 import type { MockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
@@ -6,8 +6,10 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mock } from 'vitest-mock-extended'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
+import { makeStageEnvironmentRecord, makeStageWithClusters } from './stage-testing.utils'
 import { StageController } from './stage.controller'
 import { StageService } from './stage.service'
+import { toStageAssociatedEnvironments, toStages } from './stage.utils'
 
 describe('stageController', () => {
   let module: TestingModule
@@ -40,19 +42,20 @@ describe('stageController', () => {
     expect(controller).toBeDefined()
   })
 
-  it('delegates list to the service', async () => {
-    service.listStages.mockResolvedValue([stage])
+  it('maps raw stage records to the contract shape', async () => {
+    const records = [makeStageWithClusters()]
+    service.listStages.mockResolvedValue(records)
 
-    expect(await controller.list()).toEqual([stage])
+    expect(await controller.list()).toEqual(toStages(records))
     expect(service.listStages).toHaveBeenCalledTimes(1)
   })
 
-  it('delegates stage environments with stageId', async () => {
-    const environments: StageAssociatedEnvironments = []
+  it('maps stage environments for the contract response', async () => {
+    const records = [makeStageEnvironmentRecord()]
     const stageId = faker.string.uuid()
-    service.getStageAssociatedEnvironments.mockResolvedValue(environments)
+    service.getStageAssociatedEnvironments.mockResolvedValue(records)
 
-    expect(await controller.getStageEnvironments(stageId)).toBe(environments)
+    expect(await controller.getStageEnvironments(stageId)).toEqual(toStageAssociatedEnvironments(records))
     expect(service.getStageAssociatedEnvironments).toHaveBeenCalledWith(stageId)
   })
 

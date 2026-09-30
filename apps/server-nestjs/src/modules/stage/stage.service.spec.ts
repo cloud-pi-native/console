@@ -3,8 +3,8 @@ import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { PrismaService } from '../infrastructure/database/prisma.service'
 import { makeCluster } from '../environment/environment-testing.utils'
+import { PrismaService } from '../infrastructure/database/prisma.service'
 import { makeStageEnvironmentRecord, makeStageRecord, makeStageWithClusters } from './stage-testing.utils'
 import { StageService } from './stage.service'
 
@@ -26,31 +26,18 @@ describe('stageService', () => {
     service = moduleRef.get(StageService)
   })
 
-  it('lists stages with clusterIds', async () => {
+  it('lists raw stage records', async () => {
     const stages = [makeStageWithClusters(), makeStageWithClusters()]
     prisma.stage.findMany.mockResolvedValue(stages)
 
-    const result = await service.listStages()
-
-    expect(result).toEqual(stages.map(stage => ({
-      id: stage.id,
-      name: stage.name,
-      clusterIds: stage.clusters.map(cluster => cluster.id),
-    })))
+    expect(await service.listStages()).toEqual(stages)
   })
 
-  it('maps stage associated environments', async () => {
+  it('returns raw stage environment records', async () => {
     const environment = makeStageEnvironmentRecord()
     prisma.environment.findMany.mockResolvedValue([environment])
 
-    const result = await service.getStageAssociatedEnvironments(faker.string.uuid())
-
-    expect(result).toEqual([{
-      project: environment.project.slug,
-      name: environment.name,
-      cluster: environment.cluster.label,
-      owner: environment.project.owner.email,
-    }])
+    expect(await service.getStageAssociatedEnvironments(faker.string.uuid())).toEqual([environment])
   })
 
   it('creates a stage and links clusters', async () => {
