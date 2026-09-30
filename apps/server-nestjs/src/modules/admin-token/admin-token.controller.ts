@@ -5,6 +5,7 @@ import { RequireAdminPermission } from '../infrastructure/permission/user/user-a
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { AdminTokenService } from './admin-token.service'
+import { toAdminToken } from './admin-token.utils'
 
 @Controller('api/v1/admin/tokens')
 @UseGuards(UserGuard)
@@ -14,7 +15,8 @@ export class AdminTokenController {
   @Get()
   @RequireAdminPermission('ListAdminToken')
   async list(@Query('withRevoked', new ZodValidationPipe(CoerceBooleanSchema.optional())) withRevoked?: boolean) {
-    return this.service.list(withRevoked === true)
+    const tokens = await this.service.list(withRevoked === true)
+    return tokens.map(toAdminToken)
   }
 
   @Post()

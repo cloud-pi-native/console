@@ -29,10 +29,7 @@ export class AdminTokenService {
 
     span?.setAttribute('adminToken.list.count', tokens.length)
     this.logger.log(`adminToken.list completed (count=${tokens.length})`)
-    return tokens.map(({ permissions, ...token }) => ({
-      ...token,
-      permissions: permissions.toString(),
-    }))
+    return tokens
   }
 
   @StartActiveSpan()

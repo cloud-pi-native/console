@@ -52,16 +52,14 @@ describe('adminTokenService', () => {
   })
 
   describe('list', () => {
-    it('returns active tokens with permissions serialized as string', async () => {
+    it('returns raw token records', async () => {
       const token = makeAdminTokenRecord()
       prisma.adminToken.findMany.mockResolvedValue([token])
 
       const result = await service.list()
 
       expect(prisma.adminToken.findMany).toHaveBeenCalled()
-      expect(result).toHaveLength(1)
-      expect(result[0].id).toBe(token.id)
-      expect(result[0].permissions).toBe('4')
+      expect(result).toEqual([token])
     })
 
     it('includes revoked tokens when withRevoked is true', async () => {

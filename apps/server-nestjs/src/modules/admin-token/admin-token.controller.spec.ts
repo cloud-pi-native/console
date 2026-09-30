@@ -17,7 +17,7 @@ function makeListedToken(): ListedAdminToken {
   return {
     id: faker.string.uuid(),
     name: 'ci',
-    permissions: '0',
+    permissions: 0n,
     lastUse: null,
     expirationDate: null,
     status: 'active',
@@ -60,19 +60,20 @@ describe('adminTokenController', () => {
     expect(controller).toBeDefined()
   })
 
-  it('delegates list with withRevoked coerced to boolean', async () => {
+  it('delegates list with withRevoked coerced to boolean and serializes permissions', async () => {
     service.list.mockResolvedValue([token])
 
-    expect(await controller.list(true)).toEqual([token])
+    const [listed] = await controller.list(true)
+    expect(listed.permissions).toBe('0')
     expect(service.list).toHaveBeenCalledWith(true)
 
-    expect(await controller.list(false)).toEqual([token])
+    await controller.list(false)
     expect(service.list).toHaveBeenLastCalledWith(false)
   })
 
   it('delegates create with the validated body', async () => {
     const body: CreateAdminTokenBody = { name: 'ci', permissions: '0', expirationDate: null }
-    const created: CreatedAdminToken = { ...token, password: 'pwd' }
+    const created: CreatedAdminToken = { ...token, password: 'pwd', permissions: '0' }
     service.create.mockResolvedValue(created)
 
     expect(await controller.create(body)).toBe(created)
