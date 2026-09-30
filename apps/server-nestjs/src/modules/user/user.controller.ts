@@ -18,9 +18,7 @@ export class UserController {
   async getAllUsers(
     @Query(new ZodValidationPipe(AllUsersQuerySchema)) query: z.infer<typeof AllUsersQuerySchema>,
   ): Promise<AllUsers> {
-    const relationType = query.relationType ?? 'AND'
-    const { relationType: _, ...listQuery } = query
-    const users = await this.userService.getAllUsers(listQuery, relationType)
+    const users = await this.userService.getAllUsers(query)
     return users.map(toContractUser)
   }
 

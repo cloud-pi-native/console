@@ -34,9 +34,9 @@ export function patchUsers(tx: Prisma.TransactionClient, users: PatchUsersBody) 
 
 export async function buildAllUsersWhere(
   prisma: PrismaService,
-  query: z.infer<typeof AllUsersQuerySchema>,
-  relationType: 'OR' | 'AND',
+  { relationType: relation, ...query }: z.infer<typeof AllUsersQuerySchema>,
 ): Promise<Prisma.UserWhereInput> {
+  const relationType = relation ?? 'AND'
   const whereInputs: Prisma.UserWhereInput[] = []
   if (query.adminRoleIds?.length) {
     whereInputs.push({ adminRoleIds: { hasEvery: query.adminRoleIds } })

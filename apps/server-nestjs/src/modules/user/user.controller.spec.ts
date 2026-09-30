@@ -1,5 +1,6 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { MockProxy } from 'vitest-mock-extended'
+import { AllUsersQuerySchema } from '@cpn-console/shared'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mock } from 'vitest-mock-extended'
@@ -38,10 +39,10 @@ describe('userController', () => {
     const users = [makeUser()]
     service.getAllUsers.mockResolvedValue(users)
 
-    const result = await controller.getAllUsers({ adminRoleIds: ['r1'], relationType: 'OR' } as never)
+    const result = await controller.getAllUsers(AllUsersQuerySchema.parse({ adminRoleIds: 'd33a4d4a-3543-4bba-b880-d2d4efb9607c', relationType: 'OR' }))
 
     expect(result).toEqual(users.map(toContractUser))
-    expect(service.getAllUsers).toHaveBeenCalledWith({ adminRoleIds: ['r1'] }, 'OR')
+    expect(service.getAllUsers).toHaveBeenCalledWith(AllUsersQuerySchema.parse({ adminRoleIds: 'd33a4d4a-3543-4bba-b880-d2d4efb9607c', relationType: 'OR' }))
   })
 
   it('delegates matching query to the service', async () => {
