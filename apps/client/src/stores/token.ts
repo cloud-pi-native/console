@@ -13,7 +13,7 @@ export const useTokenStore = defineStore('token', () => {
   }
 
   const createPersonalAccessToken = async (
-    body: typeof personalAccessTokenContract.createPersonalAccessToken.body._type,
+    body: typeof personalAccessTokenContract.createPersonalAccessToken.body._input,
   ) => {
     return apiClient.PersonalAccessTokens.createPersonalAccessToken({
       body,

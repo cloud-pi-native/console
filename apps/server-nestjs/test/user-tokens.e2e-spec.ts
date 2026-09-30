@@ -11,9 +11,9 @@ import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { UserTokensModule } from '../src/modules/user-tokens/user-tokens.module'
 import { UserTokensService } from '../src/modules/user-tokens/user-tokens.service'
-import { endOfToday } from '../src/testing.utils'
 import { hashToken } from '../src/utils/crypto.utils'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
+import { endOfToday } from '../src/utils/time.utils'
 
 const canRunUserTokensE2E = Boolean(process.env.E2E)
 
