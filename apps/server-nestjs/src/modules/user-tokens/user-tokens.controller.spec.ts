@@ -9,7 +9,11 @@ import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { UserTokensController } from './user-tokens.controller'
 import { UserTokensService } from './user-tokens.service'
 
-const ONE_DAY_MS = 24 * 60 * 60 * 1000
+function endOfTodayUtc() {
+  const end = new Date()
+  end.setUTCHours(23, 59, 59, 999)
+  return end
+}
 
 describe('userTokensController', () => {
   let module: TestingModule
@@ -33,7 +37,7 @@ describe('userTokensController', () => {
   })
 
   it('delegates creation to the service with the body and the caller id', async () => {
-    const expirationDate = faker.date.soon({ days: 1, refDate: Date.now() + ONE_DAY_MS })
+    const expirationDate = faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() })
     service.create.mockResolvedValueOnce({
       id: faker.string.uuid(),
       name: 'my-token',

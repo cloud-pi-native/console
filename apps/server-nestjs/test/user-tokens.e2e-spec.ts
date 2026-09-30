@@ -18,7 +18,11 @@ const canRunUserTokensE2E = Boolean(process.env.E2E)
 
 const describeWithUserTokens = describe.runIf(canRunUserTokensE2E)
 
-const ONE_DAY_MS = 24 * 60 * 60 * 1000
+function endOfTodayUtc() {
+  const end = new Date()
+  end.setUTCHours(23, 59, 59, 999)
+  return end
+}
 
 describeWithUserTokens('UserTokensService (e2e)', () => {
   let moduleRef: TestingModule
@@ -82,7 +86,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
   it('should create a personal access token with plaintext password', async () => {
     const result = await service.create({
       name: faker.helpers.slugify(`e2e-pat-${faker.string.uuid()}`),
-      expirationDate: faker.date.soon({ days: 1, refDate: Date.now() + ONE_DAY_MS }),
+      expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
     }, ownerId)
 
     expect(result.id).toBeTruthy()
@@ -98,14 +102,14 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
     const tokenName = faker.helpers.slugify(`e2e-pat-list-${faker.string.uuid()}`)
     const created = await service.create({
       name: tokenName,
-      expirationDate: faker.date.soon({ days: 1, refDate: Date.now() + ONE_DAY_MS }),
+      expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
     }, ownerId)
     createdTokenIds.push(created.id)
 
     const otherTokenName = faker.helpers.slugify(`e2e-pat-other-${faker.string.uuid()}`)
     const otherToken = await service.create({
       name: otherTokenName,
-      expirationDate: faker.date.soon({ days: 1, refDate: Date.now() + ONE_DAY_MS }),
+      expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
     }, otherUserId)
     createdTokenIds.push(otherToken.id)
 
@@ -117,7 +121,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
   it('should hard-delete token and remove it from list', async () => {
     const created = await service.create({
       name: faker.helpers.slugify(`e2e-pat-delete-${faker.string.uuid()}`),
-      expirationDate: faker.date.soon({ days: 1, refDate: Date.now() + ONE_DAY_MS }),
+      expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
     }, ownerId)
     createdTokenIds.push(created.id)
 
@@ -133,7 +137,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
   it('should not delete another user\'s token', async () => {
     const otherToken = await service.create({
       name: faker.helpers.slugify(`e2e-pat-foreign-${faker.string.uuid()}`),
-      expirationDate: faker.date.soon({ days: 1, refDate: Date.now() + ONE_DAY_MS }),
+      expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
     }, otherUserId)
     createdTokenIds.push(otherToken.id)
 
@@ -146,7 +150,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
   it('should persist SHA256 hash of the password in DB', async () => {
     const created = await service.create({
       name: faker.helpers.slugify(`e2e-pat-hash-${faker.string.uuid()}`),
-      expirationDate: faker.date.soon({ days: 1, refDate: Date.now() + ONE_DAY_MS }),
+      expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
     }, ownerId)
     createdTokenIds.push(created.id)
 
@@ -162,7 +166,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
   it('should omit hash from API responses', async () => {
     const created = await service.create({
       name: faker.helpers.slugify(`e2e-pat-omit-${faker.string.uuid()}`),
-      expirationDate: faker.date.soon({ days: 1, refDate: Date.now() + ONE_DAY_MS }),
+      expirationDate: faker.date.soon({ days: 1, refDate: endOfTodayUtc().getTime() }),
     }, ownerId)
     createdTokenIds.push(created.id)
 
