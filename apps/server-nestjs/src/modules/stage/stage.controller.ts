@@ -5,6 +5,7 @@ import { RequireAdminPermission } from '../infrastructure/permission/user/user-a
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { StageService } from './stage.service'
+import { toStageAssociatedEnvironments, toStages } from './stage.utils'
 
 @Controller('api/v1/stages')
 export class StageController {
@@ -12,7 +13,7 @@ export class StageController {
 
   @Get()
   async list(): Promise<Stage[]> {
-    return this.service.listStages()
+    return toStages(await this.service.listStages())
   }
 
   @Get(':stageId/environments')
@@ -21,7 +22,7 @@ export class StageController {
   async getStageEnvironments(
     @Param('stageId') stageId: string,
   ): Promise<StageAssociatedEnvironments> {
-    return this.service.getStageAssociatedEnvironments(stageId)
+    return toStageAssociatedEnvironments(await this.service.getStageAssociatedEnvironments(stageId))
   }
 
   @Post()
