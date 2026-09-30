@@ -1,3 +1,4 @@
+import type { ClientInferRequest } from '@ts-rest/core'
 import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
@@ -47,3 +48,5 @@ export const personalAccessTokenContract = contractInstance.router({
   baseHeaders,
   pathPrefix: `${apiPrefix}/user/tokens`,
 })
+
+export type CreatePersonalAccessTokenRequest = ClientInferRequest<typeof personalAccessTokenContract.createPersonalAccessToken>['body']
