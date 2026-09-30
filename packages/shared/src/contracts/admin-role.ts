@@ -1,3 +1,4 @@
+import type { ClientInferRequest } from '@ts-rest/core'
 import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
@@ -74,3 +75,5 @@ export const adminRoleContract = contractInstance.router({
   baseHeaders,
   pathPrefix: `${apiPrefix}/admin/roles`,
 })
+
+export type PatchAdminRolesBody = ClientInferRequest<typeof adminRoleContract.patchAdminRoles>['body']

@@ -1,4 +1,4 @@
-import type { AdminRole, adminRoleContract } from '@cpn-console/shared'
+import type { AdminRole, PatchAdminRolesBody } from '@cpn-console/shared'
 import { AdminAuthorized } from '@cpn-console/shared'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
@@ -42,7 +42,7 @@ export const useAdminRoleStore = defineStore('adminRole', () => {
   }
 
   const patchRoles = async (
-    body: typeof adminRoleContract.patchAdminRoles.body._type,
+    body: PatchAdminRolesBody,
   ) => {
     roles.value = await apiClient.AdminRoles.patchAdminRoles({
       body,

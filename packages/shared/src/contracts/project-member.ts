@@ -1,3 +1,4 @@
+import type { ClientInferRequest } from '@ts-rest/core'
 import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
@@ -66,3 +67,5 @@ export const projectMemberContract = contractInstance.router({
   baseHeaders,
   pathPrefix: `${apiPrefix}/projects/:projectId/members`,
 })
+
+export type PatchMembersBody = ClientInferRequest<typeof projectMemberContract.patchMembers>['body']

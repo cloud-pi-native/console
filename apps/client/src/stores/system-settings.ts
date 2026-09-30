@@ -1,6 +1,6 @@
 import type {
+  ListSystemSettingsQuery,
   SystemSettings,
-  systemSettingsContract,
   UpsertSystemSettingBody,
 } from '@cpn-console/shared'
 import {
@@ -13,7 +13,7 @@ export const useSystemSettingsStore = defineStore('systemSettings', () => {
   const systemSettings = ref<SystemSettings>([])
   const systemSettingsByKey = computed(() => resourceListToDictByKey(systemSettings.value))
 
-  const listSystemSettings = async (query: typeof systemSettingsContract.listSystemSettings.query._type = {}) => {
+  const listSystemSettings = async (query: ListSystemSettingsQuery = {}) => {
     systemSettings.value = await apiClient.SystemSettings.listSystemSettings(query)
       .then((response: any) => extractData(response, 200))
   }

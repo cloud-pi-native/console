@@ -1,16 +1,16 @@
 import type {
   CreateDeploymentBody,
   CreateEnvironment,
+  CreateProjectRoleBody,
   CreateRepositoryBodyV2,
   Deployment,
   Environment,
   EnvironmentWithDeploymentsCount,
   GetLogsQuery,
+  PatchMembersBody,
+  PatchProjectRolesBody,
   PermissionTarget,
   PluginsUpdateBody,
-  projectContract,
-  projectMemberContract,
-  projectRoleContract,
   ProjectService,
   ProjectV2,
   Repo,
@@ -18,6 +18,7 @@ import type {
   SyncRepositoryBodyV2,
   UpdateDeploymentBody,
   UpdateEnvironment,
+  UpdateProjectBody,
   UpdateRepositoryBodyV2,
   User,
 } from '@cpn-console/shared'
@@ -147,7 +148,7 @@ export class Project implements ProjectV2 {
   }
 
   Commands = {
-    update: async (data: typeof projectContract.updateProject.body._type) => {
+    update: async (data: UpdateProjectBody) => {
       const callback = this.addOperation('update')
       try {
         const project = await apiClient.Projects.updateProject({ body: data, params: { projectId: this.id } })
@@ -222,7 +223,7 @@ export class Project implements ProjectV2 {
         return this.Members.list()
       } finally { callback() }
     },
-    patch: async (body: typeof projectMemberContract.patchMembers.body._type) => {
+    patch: async (body: PatchMembersBody) => {
       const callback = this.addOperation('teamManagement')
       try {
         await apiClient.ProjectsMembers.patchMembers({ params: { projectId: this.id }, body })
@@ -360,7 +361,7 @@ export class Project implements ProjectV2 {
       this.computePerms()
       return this.roles
     },
-    patch: async (body: typeof projectRoleContract.patchProjectRoles.body._type) => {
+    patch: async (body: PatchProjectRolesBody) => {
       const callback = this.addOperation('roleManagement')
       try {
         this.roles = await apiClient.ProjectsRoles.patchProjectRoles({ body, params: { projectId: this.id } })
@@ -369,7 +370,7 @@ export class Project implements ProjectV2 {
         return this.roles
       } finally { callback() }
     },
-    create: async (body: typeof projectRoleContract.createProjectRole.body._type) => {
+    create: async (body: CreateProjectRoleBody) => {
       this.roles = await apiClient.ProjectsRoles.createProjectRole({ body, params: { projectId: this.id } })
         .then((response: any) => extractData(response, 201))
       this.computePerms()
