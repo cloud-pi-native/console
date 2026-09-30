@@ -1,4 +1,5 @@
 import type { TestingModule } from '@nestjs/testing'
+import { endOfToday } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
@@ -13,7 +14,6 @@ import { UserTokensModule } from '../src/modules/user-tokens/user-tokens.module'
 import { UserTokensService } from '../src/modules/user-tokens/user-tokens.service'
 import { hashToken } from '../src/utils/crypto.utils'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
-import { endOfToday } from '../src/utils/time.utils'
 
 const canRunUserTokensE2E = Boolean(process.env.E2E)
 
