@@ -11,10 +11,14 @@ describe('AdminToken HTTP validation', () => {
   let app: INestApplication
   let baseUrl: string
 
+  let service: ReturnType<typeof mock<AdminTokenService>>
+
   beforeAll(async () => {
+    service = mock<AdminTokenService>()
+    service.list.mockResolvedValue([])
     const moduleRef: TestingModule = await Test.createTestingModule({
       controllers: [AdminTokenController],
-      providers: [{ provide: AdminTokenService, useValue: mock<AdminTokenService>() }],
+      providers: [{ provide: AdminTokenService, useValue: service }],
     })
       .overrideGuard(UserGuard)
       .useValue({ canActivate: () => true })
