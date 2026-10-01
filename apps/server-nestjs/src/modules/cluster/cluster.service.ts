@@ -23,7 +23,7 @@ import {
   linkClusterToStages,
   linkZoneToClusters,
   listClusters as listClustersQuery,
-  listClustersWhere,
+  generateClusterWhereInput,
   listStagesByClusterId,
   removeClusterFromProject,
   removeClusterFromStage,
@@ -45,7 +45,7 @@ export class ClusterService {
   }
 
   private async listClusters(userId?: string): Promise<ClusterListRecord[]> {
-    const where = listClustersWhere(userId)
+    const where = generateClusterWhereInput(userId)
     return listClustersQuery(this.prisma, where)
   }
 

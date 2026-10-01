@@ -30,13 +30,13 @@ export type RepositorySyncEventPayload = {
 
 export type ClusterEventName = 'cluster.upsert' | 'cluster.delete'
 
-/** `zoneId` is the zone the cluster belonged to BEFORE the change (legacy hook semantics). */
+/** `zoneId` is the zone the cluster belonged to BEFORE the change. */
 export interface ClusterEventPayload {
   clusterId: string
   zoneId?: string
 }
 
-/** Admin-log action labels (legacy hooks wording). */
+/** Admin-log action labels. */
 export type EventLogAction
   = | 'Create Project' | 'Update Project' | 'Delete all project resources'
     | 'Replay hooks for Project' | 'Upsert Project Role'
@@ -123,7 +123,7 @@ export class AppEventsService {
   }
 
   /**
-   * Emits a cluster event. Legacy hook parity: pass a failure message so a plugin
+   * Emits a cluster event. Parity with the legacy server: pass a failure message so a listener
    * KO surfaces as a 422, and only emit the delete after every plugin cleaned up
    * successfully (the caller must not have removed the row yet).
    */
@@ -162,7 +162,7 @@ export class AppEventsService {
     return results
   }
 
-  /** Legacy hooks parity: a plugin KO surfaces as a 422 on the caller's request. */
+  /** A listener KO surfaces as a 422 on the caller's request. */
   private throwOnPluginFailure(event: string, results: PluginResults, failureMessage?: string): void {
     const failed = getFailedPlugins(results)
     if (failureMessage && failed.length) {
@@ -172,7 +172,7 @@ export class AppEventsService {
   }
 
   /**
-   * Reflects the listeners' outcome on the project row (legacy hooks behavior):
+   * Reflects the listeners' outcome on the project row:
    * any KO result marks the project `failed`; a fully successful upsert marks it
    * `created` and records the provisioning version. A successful `project.delete`
    * leaves the `archived` status set when the project was archived.
