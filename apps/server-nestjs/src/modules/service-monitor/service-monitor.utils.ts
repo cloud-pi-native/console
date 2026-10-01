@@ -33,3 +33,7 @@ export function fromHealthCheck(result: unknown): ProbeOutcome {
     ...(up ? {} : { cause: detail.message ?? ERROR_MESSAGE }),
   }
 }
+
+export function toCause(cause: unknown): string {
+  return cause instanceof Error ? cause.message : String(cause)
+}
