@@ -1,0 +1,49 @@
+name: 🏗️ Sujet interne Socle
+description: Créer un sujet de maintenance issu de l’équipe ou de ses échanges.
+title: "🏗️ [INTERNAL] - <title>"
+body:
+  - type: textarea
+    id: request_source
+    attributes:
+      label: Contexte et source
+      description: Décrivez le contexte et l'origine de la demande.
+      placeholder: Échange avec un utilisateur, une équipe, un stakeholder ou constat interne...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_result
+    attributes:
+      label: Besoin ou résultat attendu
+      description: Décrivez le besoin à traiter ou le résultat attendu.
+      placeholder: À l'issue du sujet, ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Périmètre
+      description: Indiquez ce qui est concerné, sans présumer d'une solution technique.
+      placeholder: Produit, environnement, configuration, documentation ou autre...
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Références
+      description: Ajoutez les liens, échanges ou documents utiles si vous en avez.
+      placeholder: https://...
+    validations:
+      required: false
+
+  - type: textarea
+    id: definition_of_done
+    attributes:
+      label: Définition du fini
+      description: Listez les conditions qui permettront de considérer le sujet terminé.
+      value: |
+        - [ ] ...
+    validations:
+      required: true
