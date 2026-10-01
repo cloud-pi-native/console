@@ -186,7 +186,7 @@ export class SonarqubeService implements OnModuleInit {
     if (permissionTemplates.some(t => t.name.toLowerCase() === DEFAULT_PERMISSION_TEMPLATE_NAME.toLowerCase())) {
       this.logger.verbose(`SonarQube permission template already exists (name=${DEFAULT_PERMISSION_TEMPLATE_NAME})`)
     } else {
-      await this.client.createPermissionTemplate({ name: DEFAULT_PERMISSION_TEMPLATE_NAME })
+      await this.client.ensurePermissionTemplate({ name: DEFAULT_PERMISSION_TEMPLATE_NAME })
       this.logger.log(`Created SonarQube permission template (name=${DEFAULT_PERMISSION_TEMPLATE_NAME})`)
     }
     await Promise.all(DEFAULT_TEMPLATE_PERMISSIONS.map(permission =>
@@ -208,7 +208,11 @@ export class SonarqubeService implements OnModuleInit {
     if (!user) {
       this.logger.log(`Creating SonarQube user (login=${project.slug}, email=${email})`)
       const password = generateRandomPassword(30)
-      await this.client.createUser({ email, local: 'true', login: project.slug, name: project.slug, password })
+      const adopted = await this.client.ensureUser({ email, local: 'true', login: project.slug, name: project.slug, password })
+      if (adopted) {
+        this.logger.warn(`SonarQube user already exists, applying generated password to adopted account (login=${project.slug})`)
+        await this.client.updateUser({ login: project.slug, password })
+      }
       const token = await this.rotateToken(project.slug)
       newSecret = { SONAR_USERNAME: project.slug, SONAR_PASSWORD: password, SONAR_TOKEN: token }
     } else {
@@ -291,7 +295,7 @@ export class SonarqubeService implements OnModuleInit {
       ...project.repositories.map(async (repository) => {
         const projectKey = generateProjectKey(project.slug, repository.internalRepoName)
         if (!existingSonarProjects.some(sp => sp.repository === repository.internalRepoName)) {
-          await this.client.createProject({
+          await this.client.ensureProject({
             project: projectKey,
             visibility: 'private',
             name: `${project.slug}-${repository.internalRepoName}`,
@@ -361,7 +365,7 @@ export class SonarqubeService implements OnModuleInit {
     if (result.groups.some(g => g.name === groupName)) {
       this.logger.verbose(`SonarQube group already exists (name=${groupName})`)
     } else {
-      await this.client.createUserGroup({ name: groupName })
+      await this.client.ensureUserGroup({ name: groupName })
       this.logger.log(`Created SonarQube group (name=${groupName})`)
     }
   }

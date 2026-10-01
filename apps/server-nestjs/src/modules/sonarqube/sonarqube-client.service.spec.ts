@@ -1,10 +1,11 @@
 import type { ConfigType } from '@nestjs/config'
-import type { AddPermissionGroupParams, CreateUserParams, DeactivateUserParams, RevokeUserTokenParams } from './sonarqube-client.service'
+import type { AddPermissionGroupParams, CreatePermissionTemplateParams, CreateProjectParams, CreateUserGroupParams, CreateUserParams, DeactivateUserParams, RevokeUserTokenParams } from './sonarqube-client.service'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import type { DeepMockProxy } from 'vitest-mock-extended'
 import { mockDeep } from 'vitest-mock-extended'
 import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
 import { getAll } from '../../utils/iterable.utils'
@@ -20,7 +21,7 @@ const server = setupServer()
 
 describe('sonarqubeClientService', () => {
   let service: SonarqubeClientService
-  let config: ReturnType<typeof mockDeep<ConfigType<typeof sonarqubeConfigFactory>>>
+  let config: DeepMockProxy<ConfigType<typeof sonarqubeConfigFactory>>
 
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
   beforeEach(async () => {
@@ -70,7 +71,7 @@ describe('sonarqubeClientService', () => {
           return HttpResponse.json({})
         }),
       )
-      await expect(service.createUserGroup({ name: 'new-group' })).resolves.not.toThrow()
+      await expect(service.ensureUserGroup({ name: 'new-group' })).resolves.not.toThrow()
     })
   })
 
@@ -105,7 +106,7 @@ describe('sonarqubeClientService', () => {
           return HttpResponse.json({})
         }),
       )
-      await service.createUser(user)
+      await service.ensureUser(user)
     })
 
     it('should re-fetch the existing user on a create race instead of throwing', async () => {
@@ -123,7 +124,7 @@ describe('sonarqubeClientService', () => {
         }),
       )
 
-      await expect(service.createUser({ email: `${login}@example.com`, local: 'true', login, name: login, password: faker.internet.password() })).resolves.toMatchObject({ login })
+      await expect(service.ensureUser({ email: `${login}@example.com`, local: 'true', login, name: login, password: faker.internet.password() })).resolves.toMatchObject({ login })
 
       expect(createCalls).toBe(1)
     })
@@ -134,7 +135,7 @@ describe('sonarqubeClientService', () => {
         http.post(`${sonarUrl}/api/users/create`, () => HttpResponse.json({ errors: [{ msg: 'forbidden' }] }, { status: 403 })),
       )
 
-      await expect(service.createUser({ email: `${login}@example.com`, local: 'true', login, name: login, password: faker.internet.password() })).rejects.toThrow()
+      await expect(service.ensureUser({ email: `${login}@example.com`, local: 'true', login, name: login, password: faker.internet.password() })).rejects.toThrow()
     })
   })
 
@@ -202,6 +203,88 @@ describe('sonarqubeClientService', () => {
         }),
       )
       await service.deleteProject({ project: project.key })
+    })
+  })
+
+  describe('projectsCreate', () => {
+    it('should POST projects/create with all params as query string', async () => {
+      const params = {
+        project: 'proj-repo-910b',
+        visibility: 'private',
+        name: 'proj-repo',
+        mainbranch: 'main',
+      } satisfies CreateProjectParams
+      server.use(
+        http.post(`${sonarUrl}/api/projects/create`, ({ request }) => {
+          const query = new URL(request.url).searchParams
+          expect(query.get('project')).toBe(params.project)
+          expect(query.get('name')).toBe(params.name)
+          expect(query.get('mainbranch')).toBe(params.mainbranch)
+          expect(request.headers.get('authorization')).toBe(sonarAuthHeader)
+          return HttpResponse.json({ project: makeSonarqubeProject({ key: params.project }) })
+        }),
+      )
+      await expect(service.ensureProject(params)).resolves.not.toThrow()
+    })
+
+    it('should resolve on a create race when the project already exists (400 similar key)', async () => {
+      const key = 'persistence-toto-910b'
+      let createCalls = 0
+      server.use(
+        http.post(`${sonarUrl}/api/projects/create`, () => {
+          createCalls += 1
+          return HttpResponse.json({ errors: [{ msg: `Could not create Project with key: "${key}". A similar key already exists: "${key}"` }] }, { status: 400 })
+        }),
+        http.get(`${sonarUrl}/api/projects/search`, ({ request }) => {
+          expect(new URL(request.url).searchParams.get('q')).toBe(key)
+          return HttpResponse.json({ paging: makeSonarqubePaging({ total: 1 }), components: [makeSonarqubeProject({ key })] })
+        }),
+      )
+
+      await expect(service.ensureProject({ project: key, visibility: 'private', name: key, mainbranch: 'main' })).resolves.not.toThrow()
+      expect(createCalls).toBe(1)
+    })
+
+    it('should rethrow when the project create fails for a non-collision reason', async () => {
+      server.use(
+        http.post(`${sonarUrl}/api/projects/create`, () => HttpResponse.json({ errors: [{ msg: 'forbidden' }] }, { status: 403 })),
+      )
+      await expect(service.ensureProject({ project: 'proj-repo-910b', visibility: 'private', name: 'proj-repo', mainbranch: 'main' })).rejects.toThrow()
+    })
+  })
+
+  describe('ensure collisions', () => {
+    it('should resolve ensureUserGroup on a create race when the group already exists', async () => {
+      const name = faker.internet.username()
+      const existing = makeSonarqubeGroup({ name })
+      let createCalls = 0
+      server.use(
+        http.post(`${sonarUrl}/api/user_groups/create`, () => {
+          createCalls += 1
+          return HttpResponse.json({ errors: [{ msg: `Group '${name}' already exists` }] }, { status: 400 })
+        }),
+        http.get(`${sonarUrl}/api/user_groups/search`, () =>
+          HttpResponse.json({ paging: makeSonarqubePaging({ total: 1 }), groups: [existing] })),
+      )
+
+      await service.ensureUserGroup({ name } satisfies CreateUserGroupParams)
+      expect(createCalls).toBe(1)
+    })
+
+    it('should resolve ensurePermissionTemplate on a create race when the template already exists', async () => {
+      const name = 'Forge Default'
+      let createCalls = 0
+      server.use(
+        http.post(`${sonarUrl}/api/permissions/create_template`, () => {
+          createCalls += 1
+          return HttpResponse.json({ errors: [{ msg: `Permission template '${name}' already exists` }] }, { status: 400 })
+        }),
+        http.get(`${sonarUrl}/api/permissions/search_templates`, () =>
+          HttpResponse.json({ permissionTemplates: [{ id: '1', name }] })),
+      )
+
+      await service.ensurePermissionTemplate({ name } satisfies CreatePermissionTemplateParams)
+      expect(createCalls).toBe(1)
     })
   })
 
