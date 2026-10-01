@@ -82,8 +82,9 @@ describe('adminRoleFlag', () => {
     expect(adminRoleFlag({ adminRoleIds: ['x'] }, [])).toBeUndefined()
   })
 
-  it('should not claim membership the user lacks', () => {
+  it('transmits resolved-mapping authority: member true, non-member false', () => {
+    expect(adminRoleFlag({ adminRoleIds: ['x'] }, [])).toBeUndefined()
     expect(adminRoleFlag({ adminRoleIds: ['x'] }, ['y', 'x'])).toBe(true)
-    expect(adminRoleFlag({ adminRoleIds: ['z'] }, ['y', 'x'])).toBeUndefined()
+    expect(adminRoleFlag({ adminRoleIds: ['z'] }, ['y', 'x'])).toBe(false)
   })
 })

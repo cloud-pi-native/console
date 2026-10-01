@@ -538,7 +538,7 @@ describe('gitlab-client', () => {
         }))
       })
 
-      it('should not demote an existing admin when the reconcile computes admin false', async () => {
+      it('should demote an existing admin when the reconcile computes admin false', async () => {
         const consoleUser = { id: 'u1', email: 'owner@example.com', firstName: 'Owner', lastName: 'User' }
         const gitlabUser = {
           email: consoleUser.email,
@@ -552,12 +552,12 @@ describe('gitlab-client', () => {
 
         await service.upsertUser({ ...gitlabUser, admin: false }, { cpnUserId: consoleUser.id })
 
-        expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
-          admin: expect.anything(),
+        expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.objectContaining({
+          admin: false,
         }))
       })
 
-      it('should not disable existing admin flag when enabling auditor flag', async () => {
+      it('should not transmit admin true when only the auditor flag changes', async () => {
         const consoleUser = { id: 'u1', email: 'admin-auditor@example.com', firstName: 'Admin', lastName: 'Auditor' }
         const gitlabUser = {
           email: consoleUser.email,

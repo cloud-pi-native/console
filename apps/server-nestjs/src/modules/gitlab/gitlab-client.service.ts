@@ -461,15 +461,17 @@ export class GitlabClientService {
   ) {
     const existing = await this.getUserByEmail(user.email)
 
-    // Falsy `admin`/`auditor` demotes the instance flag (the edit API cannot un-set them):
-    // reconcile promotes only. Revocation, if ever needed, goes through a dedicated admin flow.
+    const gitlabUser = existing ?? await this.createUser({
+      ...user,
+      externUid: user.email,
+      provider: 'openid_connect',
+    })
+
     const editOptions: EditUserOptions = {
-      ...Object.fromEntries(Object.entries(user).filter(([, v]) => v !== false)),
+      ...user,
       externUid: user.email,
       provider: 'openid_connect',
     }
-    const gitlabUser = existing ?? await this.createUser(editOptions)
-
     if (existing) {
       const hasDiff = Object.entries(editOptions).some(([key, value]) => {
         if (value === undefined) return false
