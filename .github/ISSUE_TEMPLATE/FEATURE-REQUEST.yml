@@ -1,6 +1,5 @@
 name: 💡 Demande externe
 description: Proposer une évolution à l’équipe de maintenance.
-title: "💡 [REQUEST] - <title>"
 labels: [user request]
 body:
   - type: textarea
@@ -16,8 +15,8 @@ body:
     id: context
     attributes:
       label: Contexte
-      description: Décrivez le contexte dans lequel ce besoin se présente.
-      placeholder: Pour qui et dans quelle situation ce besoin apparaît-il ?
+      description: Décrivez dans quelle situation le besoin se présente et pour quels utilisateurs ou équipes.
+      placeholder: Lors de ..., les utilisateurs ... ont besoin de ...
     validations:
       required: true
 

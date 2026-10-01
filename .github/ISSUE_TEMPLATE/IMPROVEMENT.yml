@@ -1,0 +1,30 @@
+name: ✨ Amélioration
+description: Proposer une amélioration ou une décision à instruire pour le produit.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Décrivez l'amélioration ou la décision à instruire.
+      placeholder: Nous souhaitons améliorer...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considérées
+      description: Décrivez les alternatives étudiées et les raisons de leur retenue ou de leur écartement.
+      placeholder: "Option A : ... ; option B : ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Contexte additionnel
+      description: Ajoutez les contraintes, références ou éléments utiles si vous en avez.
+      placeholder: https://...
+    validations:
+      required: false
