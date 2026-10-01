@@ -82,7 +82,7 @@ describe('clusterService', () => {
     expect(result).toEqual(usage)
   })
 
-  it('creates a cluster, links projects and stages, and emits the hook', async () => {
+  it('creates a cluster, links projects and stages, and emits the cluster event', async () => {
     const record = makeClusterListRecord()
     const cluster = makeCluster()
     const details = makeClusterDetailsRecord()
@@ -157,7 +157,7 @@ describe('clusterService', () => {
     ).rejects.toThrow('Ce label existe déjà')
   })
 
-  it('updates cluster fields and emits the hook', async () => {
+  it('updates cluster fields and emits the cluster event', async () => {
     const record = makeClusterDetailsRecord()
     prisma.cluster.findUnique.mockResolvedValue(record)
     prisma.cluster.update.mockResolvedValue(record)
@@ -183,7 +183,7 @@ describe('clusterService', () => {
     ).rejects.toThrow('Cluster not found')
   })
 
-  it('deletes a cluster after a successful hook, in the legacy order', async () => {
+  it('deletes a cluster after a successful reconcile, in the legacy order', async () => {
     const record = makeClusterListRecord()
     prisma.environment.findFirst.mockResolvedValue(null)
     prisma.cluster.delete.mockResolvedValue(record)
@@ -226,7 +226,7 @@ describe('clusterService', () => {
     ).rejects.toThrow('Impossible de supprimer le cluster')
   })
 
-  it('propagates upsert hook failure as 422', async () => {
+  it('propagates upsert reconcile failure as 422', async () => {
     const record = makeClusterDetailsRecord()
     prisma.cluster.findUnique.mockResolvedValue(record)
     prisma.cluster.update.mockResolvedValue(record)
