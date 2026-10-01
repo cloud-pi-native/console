@@ -33,20 +33,20 @@ describe('sonarqubeService', () => {
   beforeEach(async () => {
     client = mockDeep<SonarqubeClientService>({
       searchUserGroup: vi.fn().mockResolvedValue(makeEmptyGroupsResponse()),
-      createUserGroup: vi.fn().mockResolvedValue(undefined),
-      createPermissionTemplate: vi.fn().mockResolvedValue(undefined),
+      ensureUserGroup: vi.fn().mockResolvedValue(undefined),
+      ensurePermissionTemplate: vi.fn().mockResolvedValue(undefined),
       searchPermissionTemplates: vi.fn().mockResolvedValue({ permissionTemplates: [] }),
       setPermissionDefaultTemplate: vi.fn().mockResolvedValue(undefined),
       addPermissionGroupToTemplate: vi.fn().mockResolvedValue(undefined),
       addPermissionGroup: vi.fn().mockResolvedValue(undefined),
       addPermissionUser: vi.fn().mockResolvedValue(undefined),
       searchUsers: vi.fn().mockImplementation(async function* () { yield* makeEmptyUsersResponse().users }),
-      createUser: vi.fn().mockResolvedValue(undefined),
+      ensureUser: vi.fn().mockResolvedValue(undefined),
       updateUser: vi.fn().mockResolvedValue(undefined),
       deactivateUser: vi.fn().mockResolvedValue(undefined),
       revokeUserToken: vi.fn().mockResolvedValue(undefined),
       searchProject: vi.fn().mockImplementation(async function* () { yield* makeEmptyProjectsResponse().components }),
-      createProject: vi.fn().mockResolvedValue(undefined),
+      ensureProject: vi.fn().mockResolvedValue(undefined),
       deleteProject: vi.fn().mockResolvedValue(undefined),
     })
     datastore = mockDeep<SonarqubeDatastoreService>({
@@ -87,7 +87,7 @@ describe('sonarqubeService', () => {
   describe('init', () => {
     it('should set up the permission template', async () => {
       await service.init()
-      expect(client.createPermissionTemplate).toHaveBeenCalledWith({ name: 'Forge Default' })
+      expect(client.ensurePermissionTemplate).toHaveBeenCalledWith({ name: 'Forge Default' })
       expect(client.setPermissionDefaultTemplate).toHaveBeenCalledWith({ templateName: 'Forge Default' })
     })
 
@@ -96,20 +96,20 @@ describe('sonarqubeService', () => {
         permissionTemplates: [{ id: '1', name: 'Forge Default' }],
       })
       await service.init()
-      expect(client.createPermissionTemplate).not.toHaveBeenCalled()
+      expect(client.ensurePermissionTemplate).not.toHaveBeenCalled()
       expect(client.setPermissionDefaultTemplate).toHaveBeenCalledWith({ templateName: 'Forge Default' })
     })
 
     it('should create /console/admin group with global permissions when it does not exist', async () => {
       await service.init()
-      expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: '/console/admin' }))
+      expect(client.ensureUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: '/console/admin' }))
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: '/console/admin' }))
     })
 
     it('should create /console/readonly and /console/security platform groups', async () => {
       await service.init()
-      expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: '/console/readonly' }))
-      expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: '/console/security' }))
+      expect(client.ensureUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: '/console/readonly' }))
+      expect(client.ensureUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: '/console/security' }))
     })
 
     it('should not create groups that already exist', async () => {
@@ -118,7 +118,7 @@ describe('sonarqubeService', () => {
         groups: [{ id: '1', name: '/console/admin', description: '', membersCount: 1, default: false }],
       })
       await service.init()
-      expect(client.createUserGroup).not.toHaveBeenCalledWith(expect.objectContaining({ name: '/console/admin' }))
+      expect(client.ensureUserGroup).not.toHaveBeenCalledWith(expect.objectContaining({ name: '/console/admin' }))
     })
 
     it('should use custom group paths from admin plugin config', async () => {
@@ -127,7 +127,7 @@ describe('sonarqubeService', () => {
         return Promise.resolve(null)
       })
       await service.init()
-      expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: '/custom/admin' }))
+      expect(client.ensureUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: '/custom/admin' }))
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: '/custom/admin' }))
     })
   })
@@ -139,11 +139,11 @@ describe('sonarqubeService', () => {
 
       await service.handleUpsert(project)
 
-      expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/admin` }))
-      expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/devops` }))
-      expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/developer` }))
-      expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/security` }))
-      expect(client.createUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/readonly` }))
+      expect(client.ensureUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/admin` }))
+      expect(client.ensureUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/devops` }))
+      expect(client.ensureUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/developer` }))
+      expect(client.ensureUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/security` }))
+      expect(client.ensureUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/readonly` }))
     })
 
     it('should create a new user and write vault credentials', async () => {
@@ -153,9 +153,43 @@ describe('sonarqubeService', () => {
 
       await service.handleUpsert(project)
 
-      expect(client.createUser).toHaveBeenCalledWith(expect.objectContaining({ login: project.slug }))
+      expect(client.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ login: project.slug }))
       expect(client.generateUserToken).toHaveBeenCalledWith(expect.objectContaining({ login: project.slug }))
       expect(vault.writeSonarqubeUser).toHaveBeenCalledWith(project.slug, expect.objectContaining({ SONAR_USERNAME: project.slug, SONAR_TOKEN: userToken.token }))
+    })
+
+    it('should apply the generated password to the adopted account on users/create collision before storing the secret', async () => {
+      const project = makeProjectWithDetails({ slug: 'collided', repositories: [] })
+      const userToken = makeUserToken({ login: project.slug })
+      client.generateUserToken.mockResolvedValue(userToken)
+      client.ensureUser.mockResolvedValue(makeSonarqubeUser({ login: 'collided' }))
+      const getRandomValues = vi.spyOn(Crypto.prototype, 'getRandomValues').mockImplementation((array: Uint32Array) => {
+        array.fill(0)
+        return array
+      })
+      const password = 'a'.repeat(30)
+
+      await service.handleUpsert(project)
+      getRandomValues.mockRestore()
+
+      expect(client.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ login: 'collided', password }))
+      expect(client.updateUser).toHaveBeenCalledWith({ login: 'collided', password })
+      expect(vault.writeSonarqubeUser).toHaveBeenCalledWith('collided', expect.objectContaining({
+        SONAR_USERNAME: 'collided',
+        SONAR_PASSWORD: password,
+        SONAR_TOKEN: userToken.token,
+      }))
+    })
+
+    it('should not call updateUser when users/create succeeds without collision', async () => {
+      const project = makeProjectWithDetails({ slug: 'fresh', repositories: [] })
+      client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
+
+      await service.handleUpsert(project)
+
+      expect(client.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ login: 'fresh' }))
+      expect(client.updateUser).not.toHaveBeenCalled()
+      expect(vault.writeSonarqubeUser).toHaveBeenCalledWith('fresh', expect.objectContaining({ SONAR_USERNAME: 'fresh', SONAR_TOKEN: expect.any(String) }))
     })
 
     it('should set role-based permissions on new repositories', async () => {
@@ -164,7 +198,7 @@ describe('sonarqubeService', () => {
 
       await service.handleUpsert(project)
 
-      expect(client.createProject).toHaveBeenCalledWith(expect.objectContaining({ visibility: 'private', name: `${project.slug}-repo` }))
+      expect(client.ensureProject).toHaveBeenCalledWith(expect.objectContaining({ visibility: 'private', name: `${project.slug}-repo` }))
       expect(client.addPermissionUser).toHaveBeenCalledWith(expect.objectContaining({ login: project.slug }))
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/admin` }))
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/devops` }))
@@ -199,7 +233,7 @@ describe('sonarqubeService', () => {
 
       await service.handleUpsert(project)
 
-      expect(client.createUser).not.toHaveBeenCalled()
+      expect(client.ensureUser).not.toHaveBeenCalled()
       expect(client.generateUserToken).not.toHaveBeenCalled()
       expect(vault.writeSonarqubeUser).not.toHaveBeenCalled()
     })
@@ -211,7 +245,7 @@ describe('sonarqubeService', () => {
 
       await service.handleUpsert(project)
 
-      expect(client.createUser).not.toHaveBeenCalled()
+      expect(client.ensureUser).not.toHaveBeenCalled()
       expect(client.updateUser).toHaveBeenCalledWith(expect.objectContaining({ login: project.slug, password: expect.any(String) }))
       expect(client.generateUserToken).toHaveBeenCalledWith(expect.objectContaining({ login: project.slug }))
       expect(vault.writeSonarqubeUser).toHaveBeenCalledWith(project.slug, expect.objectContaining({ SONAR_USERNAME: project.slug, SONAR_PASSWORD: expect.any(String), SONAR_TOKEN: expect.any(String) }))
@@ -227,7 +261,7 @@ describe('sonarqubeService', () => {
 
       await service.handleUpsert(project)
 
-      expect(client.createUser).not.toHaveBeenCalled()
+      expect(client.ensureUser).not.toHaveBeenCalled()
       expect(client.updateUser).toHaveBeenCalledWith(expect.objectContaining({
         login: 'with-owner',
         email: 'with-owner@cloud-pi-native.fr',
@@ -258,7 +292,7 @@ describe('sonarqubeService', () => {
 
       await service.handleUpsert(project)
 
-      expect(client.createUser).not.toHaveBeenCalled()
+      expect(client.ensureUser).not.toHaveBeenCalled()
       expect(client.updateUser).toHaveBeenCalledWith(expect.objectContaining({
         login: 'stale',
         email: 'stale@cloud-pi-native.fr',
@@ -351,11 +385,11 @@ describe('sonarqubeService', () => {
       // Regression guard for #2510: using the owner's real email on a `local: true` robot account
       // makes the owner's SSO login collide ("already associated with another authentication
       // method"). The email must be derived from the slug, never from the owner identity.
-      expect(client.createUser).toHaveBeenCalledWith(expect.objectContaining({
+      expect(client.ensureUser).toHaveBeenCalledWith(expect.objectContaining({
         login: project.slug,
         email: `${project.slug}@cloud-pi-native.fr`,
       }))
-      expect(client.createUser).not.toHaveBeenCalledWith(expect.objectContaining({ email: project.owner.email }))
+      expect(client.ensureUser).not.toHaveBeenCalledWith(expect.objectContaining({ email: project.owner.email }))
     })
   })
 
@@ -371,7 +405,7 @@ describe('sonarqubeService', () => {
       await service.handleCron()
 
       expect(client.searchProject).toHaveBeenCalledTimes(2)
-      expect(client.createPermissionTemplate).toHaveBeenCalledOnce()
+      expect(client.ensurePermissionTemplate).toHaveBeenCalledOnce()
     })
   })
 })

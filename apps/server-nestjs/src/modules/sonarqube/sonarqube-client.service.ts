@@ -241,13 +241,31 @@ export class SonarqubeClientService {
   }
 
   @StartActiveSpan()
-  async createUserGroup(params: CreateUserGroupParams) {
-    await this.http.fetch('user_groups/create', { method: 'POST', query: params })
+  async ensureUserGroup(params: CreateUserGroupParams): Promise<void> {
+    await ensure<SonarqubeGroup | undefined>({
+      create: async () => {
+        await this.http.fetch('user_groups/create', { method: 'POST', query: params })
+        return undefined
+      },
+      reload: async () => {
+        const { groups } = await this.searchUserGroup({ q: params.name })
+        return groups.find(g => g.name === params.name)
+      },
+    })
   }
 
   @StartActiveSpan()
-  async createPermissionTemplate(params: CreatePermissionTemplateParams) {
-    await this.http.fetch('permissions/create_template', { method: 'POST', query: params })
+  async ensurePermissionTemplate(params: CreatePermissionTemplateParams): Promise<void> {
+    await ensure<SonarqubePermissionTemplate | undefined>({
+      create: async () => {
+        await this.http.fetch('permissions/create_template', { method: 'POST', query: params })
+        return undefined
+      },
+      reload: async () => {
+        const { permissionTemplates } = await this.searchPermissionTemplates({ q: params.name })
+        return permissionTemplates.find(t => t.name.toLowerCase() === params.name.toLowerCase())
+      },
+    })
   }
 
   @StartActiveSpan()
@@ -289,7 +307,7 @@ export class SonarqubeClientService {
   }
 
   @StartActiveSpan()
-  async createUser(params: CreateUserParams): Promise<SonarqubeUser | undefined> {
+  async ensureUser(params: CreateUserParams): Promise<SonarqubeUser | undefined> {
     return ensure<SonarqubeUser | undefined>({
       create: async () => {
         await this.http.fetch('users/create', { method: 'POST', query: params })
@@ -333,8 +351,19 @@ export class SonarqubeClientService {
   }
 
   @StartActiveSpan()
-  async createProject(params: CreateProjectParams) {
-    await this.http.fetch('projects/create', { method: 'POST', query: params })
+  async ensureProject(params: CreateProjectParams): Promise<void> {
+    await ensure<SonarqubeProject | undefined>({
+      create: async () => {
+        await this.http.fetch('projects/create', { method: 'POST', query: params })
+        return undefined
+      },
+      reload: async () => {
+        for await (const project of this.searchProject({ q: params.project })) {
+          if (project.key === params.project) return project
+        }
+        return undefined
+      },
+    })
   }
 
   @StartActiveSpan()
