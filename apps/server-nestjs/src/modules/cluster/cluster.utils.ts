@@ -2,17 +2,15 @@ import type { CleanedCluster, ClusterAssociatedEnvironments, ClusterDetails } fr
 import type { ClusterDetailsRecord, ClusterEnvironmentsRecord, ClusterListRecord } from './cluster-queries.utils'
 import { KubeconfigSchema } from '@cpn-console/shared'
 
-export function toCluster(record: ClusterListRecord): CleanedCluster {
-  const { stages, infos, secretName, kubeConfigId, createdAt, updatedAt, ...cluster } = record
-  return {
-    ...cluster,
-    infos: infos ?? '',
-    stageIds: stages.map(({ id }) => id),
-  }
-}
-
 export function toClusters(records: ClusterListRecord[]): CleanedCluster[] {
-  return records.map(toCluster)
+  return records.map((record) => {
+    const { stages, infos, secretName, kubeConfigId, createdAt, updatedAt, ...cluster } = record
+    return {
+      ...cluster,
+      infos: infos ?? '',
+      stageIds: stages.map(({ id }) => id),
+    }
+  })
 }
 
 export function toClusterDetails(record: ClusterDetailsRecord): ClusterDetails {

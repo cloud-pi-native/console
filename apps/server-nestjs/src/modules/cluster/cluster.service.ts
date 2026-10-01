@@ -11,23 +11,23 @@ import { BadRequestException, ConflictException, Inject, Injectable, NotFoundExc
 import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import {
-  createCluster as createClusterQuery,
-  deleteCluster as deleteClusterQuery,
+  createCluster,
+  deleteCluster,
   getClusterById,
   getClusterByLabel,
-  getClusterDetails as getClusterDetailsQuery,
+  getClusterDetails,
   getClusterEnvironments,
   getClusterUsage,
   getProjectsByClusterId,
   linkClusterToProjects,
   linkClusterToStages,
   linkZoneToClusters,
-  listClusters as listClustersQuery,
+  listClusters,
   generateClusterWhereInput,
   listStagesByClusterId,
   removeClusterFromProject,
   removeClusterFromStage,
-  updateCluster as updateClusterQuery,
+  updateCluster,
 } from './cluster-queries.utils'
 
 const CLUSTER_PUBLIC = ClusterPrivacySchema.enum.public
@@ -46,11 +46,11 @@ export class ClusterService {
 
   private async listClusters(userId?: string): Promise<ClusterListRecord[]> {
     const where = generateClusterWhereInput(userId)
-    return listClustersQuery(this.prisma, where)
+    return listClusters(this.prisma, where)
   }
 
   async getClusterDetailsRecord(clusterId: string): Promise<ClusterDetailsRecord> {
-    return getClusterDetailsQuery(this.prisma, clusterId)
+    return getClusterDetails(this.prisma, clusterId)
   }
 
   async getClusterUsage(clusterId: string): Promise<ClusterUsage> {
@@ -72,7 +72,7 @@ export class ClusterService {
     const { projectIds, stageIds, kubeconfig, zoneId, ...clusterData } = data
 
     const clusterCreated = await this.prisma.$transaction(async (tx) => {
-      const clusterCreated = await createClusterQuery(tx, clusterData, kubeconfig, zoneId)
+      const clusterCreated = await createCluster(tx, clusterData, kubeconfig, zoneId)
 
       if (data.privacy !== CLUSTER_PUBLIC && projectIds?.length) {
         await linkClusterToProjects(tx, clusterCreated.id, projectIds)
@@ -108,7 +108,7 @@ export class ClusterService {
     const { projectIds, stageIds, kubeconfig, zoneId, ...clusterData } = data
 
     await this.prisma.$transaction(async (tx) => {
-      const clusterUpdated = await updateClusterQuery(tx, clusterId, clusterData, kubeconfig)
+      const clusterUpdated = await updateCluster(tx, clusterId, clusterData, kubeconfig)
 
       if (zoneId) {
         await linkZoneToClusters(tx, zoneId, [clusterId])
@@ -155,7 +155,7 @@ export class ClusterService {
       const envs = await this.prisma.environment.deleteMany({ where: { clusterId } })
       forcedCount = envs.count
     }
-    await deleteClusterQuery(this.prisma, clusterId)
+    await deleteCluster(this.prisma, clusterId)
     return forcedCount
   }
 }
@@ -169,7 +169,7 @@ function projectsToRemoveFrom(clusterPrivacy: typeof CLUSTER_PUBLIC | typeof CLU
 
 async function syncClusterProjectLinks(
   tx: Prisma.TransactionClient,
-  clusterUpdated: Awaited<ReturnType<typeof updateClusterQuery>>,
+  clusterUpdated: Awaited<ReturnType<typeof updateCluster>>,
   clusterId: string,
   projectIds: string[] | undefined,
 ) {
@@ -193,7 +193,7 @@ async function syncClusterProjectLinks(
 
 async function syncClusterStageLinks(
   tx: Prisma.TransactionClient,
-  clusterUpdated: Awaited<ReturnType<typeof updateClusterQuery>>,
+  clusterUpdated: Awaited<ReturnType<typeof updateCluster>>,
   clusterId: string,
   stageIds: string[] | undefined,
 ) {

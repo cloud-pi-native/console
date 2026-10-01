@@ -110,18 +110,18 @@ export function generateClusterWhereInput(userId?: string): Prisma.ClusterWhereI
     : {}
 }
 
-export async function getProjectsByClusterId(prisma: Prisma.TransactionClient, id: string) {
-  return (await prisma.cluster.findUniqueOrThrow({
+export function getProjectsByClusterId(prisma: Prisma.TransactionClient, id: string) {
+  return prisma.cluster.findUniqueOrThrow({
     where: { id },
     select: { projects: true },
-  }))?.projects
+  }).then(cluster => cluster.projects)
 }
 
-export async function listStagesByClusterId(prisma: Prisma.TransactionClient, id: string) {
-  return (await prisma.cluster.findUniqueOrThrow({
+export function listStagesByClusterId(prisma: Prisma.TransactionClient, id: string) {
+  return prisma.cluster.findUniqueOrThrow({
     where: { id },
     select: { stages: true },
-  }))?.stages
+  }).then(cluster => cluster.stages)
 }
 
 export function createCluster(
