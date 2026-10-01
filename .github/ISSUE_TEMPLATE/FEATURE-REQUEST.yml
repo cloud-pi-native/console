@@ -1,64 +1,40 @@
-name: 💡 Demande de fonctionnalité
-description: Créer un ticket pour demander une nouvelle fonctionnalité.
+name: 💡 Demande externe
+description: Proposer une évolution à l’équipe de maintenance.
 title: "💡 [REQUEST] - <title>"
-labels: [enhancement]
+labels: [user request]
 body:
   - type: textarea
-    id: summary
+    id: need
     attributes:
-      label: Description
-      description: Veuillez saisir une brève explication de la fonctionnalité.
-      placeholder: Décrivez en quelques lignes la fonctionnalité désirée.
+      label: Besoin
+      description: Expliquez le besoin. Le dépôt de cette demande n'implique ni acceptation ni engagement de l'équipe.
+      placeholder: Quel problème souhaitez-vous résoudre ?
     validations:
       required: true
 
   - type: textarea
-    id: implementation_pr
+    id: context
     attributes:
-      label: PRs liées
-      description: Pull request qui répond à la fonctionnalité.
-      placeholder: "#Pull Request ID"
+      label: Contexte
+      description: Décrivez le contexte dans lequel ce besoin se présente.
+      placeholder: Pour qui et dans quelle situation ce besoin apparaît-il ?
     validations:
-      required: false
+      required: true
 
   - type: textarea
-    id: reference_issues
+    id: value
     attributes:
-      label: Issues liées
-      description: Issues associée à cette demande de fonctionnalité.
-      placeholder: "#Issues IDs"
+      label: Valeur attendue
+      description: Indiquez le bénéfice attendu si cette demande était retenue.
+      placeholder: Quel résultat ou impact attendez-vous ?
     validations:
-      required: false
+      required: true
 
   - type: textarea
-    id: basic_example
+    id: references
     attributes:
-      label: Exemples simples
-      description: Indiquez ici quelques exemples de base de votre fonctionnalité.
-      placeholder: Quelques mots sur votre demande de fonctionnalité.
+      label: Exemples et références
+      description: Ajoutez des exemples, liens ou documents utiles si vous en avez.
+      placeholder: https://...
     validations:
       required: false
-
-  - type: textarea
-    id: tech
-    attributes:
-      label: Spécifications techniques
-      description: Spcifiez les détails techniques liés à votre demande.
-      placeholder: Une description technique de la fonctionnalité.
-    validations:
-      required: false
-
-  - type: checkboxes
-    id: dod
-    attributes:
-      label: Définition du fini
-      description: Cochez les différents élément de la Definition Of Done.
-      options:
-        - label: La fonctionnalité est terminée
-          required: false
-        - label: Les tests liés à cette fonctionnalité ont été ajoutés
-          required: false
-        - label: La documentation liée à cette fonctionnalité a été ajoutée (cf. https://github.com/cloud-pi-native/documentation)
-          required: false
-        - label: La communication avec les autres équipes impliquées par cette fonctionnalité a été faite
-          required: false
