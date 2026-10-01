@@ -157,7 +157,7 @@ describe('serviceMonitorService', () => {
       expect(health).toEqual([
         { name: 'Keycloak', status: MonitorStatus.UNKNOW, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: 'Erreur lors la requête' },
       ])
-      expect(service.getCompleteServiceHealth()).toContainEqual(expect.objectContaining({ name: 'Keycloak', cause: expect.any(Error) }))
+      expect(service.getCompleteServiceHealth()).toContainEqual(expect.objectContaining({ name: 'Keycloak', cause: 'boom' }))
     })
 
     it('reports UNKNOW when the probe payload has no status field', async () => {

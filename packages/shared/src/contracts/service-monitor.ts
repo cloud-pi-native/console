@@ -23,7 +23,7 @@ export const serviceContract = contractInstance.router({
     description: 'Retrieve services health with cause.',
     responses: {
       200: ServiceHealthSchema.extend({
-        cause: z.any().optional(),
+        cause: z.string().optional(),
       }).array(),
       401: ErrorSchema,
       403: ErrorSchema,
