@@ -38,7 +38,8 @@ export class AdminTokenService {
     span?.setAttribute('adminToken.create.name', data.name)
     this.logger.log(`adminToken.create started (tokenName=${data.name})`)
 
-    if (data.expirationDate && !isAtLeastTomorrow(data.expirationDate)) {
+    const expirationDate = data.expirationDate ? new Date(data.expirationDate) : null
+    if (expirationDate && !isAtLeastTomorrow(expirationDate)) {
       throw new BadRequestException('Date d\'expiration trop courte')
     }
 
@@ -51,7 +52,7 @@ export class AdminTokenService {
         return createAdminToken(tx, {
           name: data.name,
           permissions: BigInt(data.permissions),
-          expirationDate: data.expirationDate,
+          expirationDate,
           hash,
           userId: botUserId,
         })
