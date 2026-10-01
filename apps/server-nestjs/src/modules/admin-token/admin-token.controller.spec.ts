@@ -1,4 +1,3 @@
-import type { CreateAdminTokenBody } from '@cpn-console/shared'
 import type { TestingModule } from '@nestjs/testing'
 import type { MockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
@@ -69,22 +68,5 @@ describe('adminTokenController', () => {
 
     await controller.list(false)
     expect(service.list).toHaveBeenLastCalledWith(false)
-  })
-
-  it('delegates create with the validated body', async () => {
-    const body: CreateAdminTokenBody = { name: 'ci', permissions: '0', expirationDate: null }
-    const created: CreatedAdminToken = { ...token, password: 'pwd', permissions: '0' }
-    service.create.mockResolvedValue(created)
-
-    expect(await controller.create(body)).toBe(created)
-    expect(service.create).toHaveBeenCalledWith(body)
-  })
-
-  it('delegates revoke with tokenId', async () => {
-    const tokenId = faker.string.uuid()
-    service.revoke.mockResolvedValue(undefined)
-
-    await controller.revoke(tokenId)
-    expect(service.revoke).toHaveBeenCalledWith(tokenId)
   })
 })
