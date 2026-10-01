@@ -1,9 +1,11 @@
 import type { Stage, UpdateStageBody } from '@cpn-console/shared'
+import type { NestFastifyApplication } from '@nestjs/platform-fastify'
 import type { TestingModule } from '@nestjs/testing'
 import type { MockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
+import { FastifyAdapter } from '@nestjs/platform-fastify'
 import { Test } from '@nestjs/testing'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mock } from 'vitest-mock-extended'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { makeStageEnvironmentRecord, makeStageWithClusters } from './stage-testing.utils'
@@ -81,5 +83,32 @@ describe('stageController', () => {
 
     await controller.delete(stageId)
     expect(service.deleteStage).toHaveBeenCalledWith(stageId)
+  })
+})
+
+describe('stageController http pipeline', () => {
+  it('serves an anonymous GET /api/v1/stages with 200', async () => {
+    const service = mock<StageService>()
+    service.listStages.mockResolvedValue([])
+
+    const testingModule = await Test.createTestingModule({
+      controllers: [StageController],
+      providers: [
+        { provide: StageService, useValue: service },
+      ],
+    })
+      .overrideGuard(UserGuard)
+      .useValue({ canActivate: vi.fn(() => { throw new Error('UserGuard must not run on the public list route') }) })
+      .compile()
+
+    const app = testingModule.createNestApplication<NestFastifyApplication>(new FastifyAdapter())
+    await app.init()
+    await app.getHttpAdapter().getInstance().ready()
+
+    const response = await app.inject({ method: 'GET', url: '/api/v1/stages' })
+
+    expect(response.statusCode).toBe(200)
+
+    await app.close()
   })
 })
