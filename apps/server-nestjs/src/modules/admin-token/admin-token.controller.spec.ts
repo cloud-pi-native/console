@@ -9,7 +9,6 @@ import { AdminTokenController } from './admin-token.controller'
 import { AdminTokenService } from './admin-token.service'
 
 type ListedAdminToken = Awaited<ReturnType<AdminTokenService['list']>>[number]
-type CreatedAdminToken = Awaited<ReturnType<AdminTokenService['create']>>
 
 function makeListedToken(): ListedAdminToken {
   const ownerId = faker.string.uuid()
