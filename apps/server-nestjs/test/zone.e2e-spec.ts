@@ -12,7 +12,6 @@ import { EventsModule } from '../src/modules/infrastructure/events/events.module
 import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
-import { makeZoneWithDetails } from '../src/modules/vault/vault-testing.utils'
 import { VaultModule } from '../src/modules/vault/vault.module'
 import { VaultService } from '../src/modules/vault/vault.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
@@ -63,9 +62,7 @@ describeWithZone('Zone lifecycle (e2e)', () => {
   })
 
   it('should provision zone secrets space in Vault (mount, policy, approle)', async () => {
-    const zone = makeZoneWithDetails({ id: zoneId, slug: zoneSlug })
-
-    await eventEmitter.emitAsync('zone.upsert', zone)
+    await eventEmitter.emitAsync('zone.upsert', { id: zoneId, slug: zoneSlug })
 
     const kvName = `zone-${zoneSlug}`
     const roleId = await vaultClient.getAuthApproleRoleRoleId(kvName)
@@ -73,12 +70,10 @@ describeWithZone('Zone lifecycle (e2e)', () => {
   }, VAULT_PROVISION_TIMEOUT)
 
   it('should remove zone from Vault on delete', async () => {
-    const zone = makeZoneWithDetails({ id: zoneId, slug: zoneSlug })
-
     const kvName = `zone-${zoneSlug}`
     expect(await vaultClient.getAuthApproleRoleRoleId(kvName)).toBeTruthy()
 
-    await eventEmitter.emitAsync('zone.delete', zone)
+    await eventEmitter.emitAsync('zone.delete', { id: zoneId, slug: zoneSlug })
 
     await expect(vaultClient.getAuthApproleRoleRoleId(kvName)).rejects.toThrow()
   }, VAULT_PROVISION_TIMEOUT)

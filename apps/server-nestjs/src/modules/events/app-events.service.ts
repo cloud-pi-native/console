@@ -13,6 +13,12 @@ import { formatEventLogData, isPluginResults } from './app-events.utils'
 export type ProjectEventName = 'project.upsert' | 'project.delete'
 export type ProjectMemberEventName = 'projectMember.upsert' | 'projectMember.delete'
 export type RepositoryEventName = 'repository.sync'
+export type ZoneEventName = 'zone.upsert' | 'zone.delete'
+
+export interface ZoneEventPayload {
+  id: string
+  slug: string
+}
 
 export interface ProjectMemberEventPayload {
   projectId: string
@@ -37,6 +43,7 @@ export type EventLogAction
     | 'Create Environment' | 'Update Environment' | 'Delete Environment'
     | 'Create Repository' | 'Update Repository' | 'Delete Repository' | 'Sync Repository'
     | 'Add Project Member' | 'Update Project Member' | 'Remove Project Member'
+    | 'Create zone' | 'Update zone' | 'Delete zone'
 
 export interface EventContext {
   /** Action label persisted in the admin log. */
@@ -107,6 +114,17 @@ export class AppEventsService {
     context: EventContext,
   ): Promise<PluginResults> {
     return this.emitAndLog(event, payload, payload.projectId, context)
+  }
+
+  // Emits a zone event. Zones have no project row: the log carries no project id
+  // and the caller awaits the merged results to answer 422 on failure (legacy hooks
+  // behavior on `POST`/`PUT`/`DELETE /zones`).
+  async emitZoneEvent(
+    event: ZoneEventName,
+    zone: ZoneEventPayload,
+    context: EventContext,
+  ): Promise<PluginResults> {
+    return this.emitAndLog(event, zone, '', context)
   }
 
   private async emitAndLog(

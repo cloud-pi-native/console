@@ -1,4 +1,5 @@
 import type { ConfigType } from '@nestjs/config'
+import type { ZoneEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
 import { Inject, Injectable, Logger } from '@nestjs/common'
@@ -85,31 +86,31 @@ export class VaultService {
   }
 
   @OnEvent('zone.upsert')
-  async handleUpsertZone(zone: ZoneWithDetails): Promise<RequiredPluginResult<'vault'>> {
-    return capturePluginResult('vault', () => this.syncZone(zone))
+  async handleUpsertZone(payload: ZoneEventPayload): Promise<RequiredPluginResult<'vault'>> {
+    return capturePluginResult('vault', () => this.syncZone(payload.slug))
   }
 
   @StartActiveSpan()
-  private async syncZone(zone: ZoneWithDetails) {
+  private async syncZone(zoneSlug: string) {
     const span = trace.getActiveSpan()
-    span?.setAttribute('zone.slug', zone.slug)
-    this.logger.log(`Handling a zone upsert event for ${zone.slug}`)
-    await this.ensureZone(zone)
-    this.logger.log(`Vault zone sync completed for ${zone.slug}`)
+    span?.setAttribute('zone.slug', zoneSlug)
+    this.logger.log(`Handling a zone upsert event for ${zoneSlug}`)
+    await this.upsertZone(zoneSlug)
+    this.logger.log(`Vault zone sync completed for ${zoneSlug}`)
   }
 
   @OnEvent('zone.delete')
-  async handleDeleteZone(zone: ZoneWithDetails): Promise<RequiredPluginResult<'vault'>> {
-    return capturePluginResult('vault', () => this.cleanupZone(zone))
+  async handleDeleteZone(payload: ZoneEventPayload): Promise<RequiredPluginResult<'vault'>> {
+    return capturePluginResult('vault', () => this.cleanupZone(payload.slug))
   }
 
   @StartActiveSpan()
-  private async cleanupZone(zone: ZoneWithDetails) {
+  private async cleanupZone(zoneSlug: string) {
     const span = trace.getActiveSpan()
-    span?.setAttribute('zone.slug', zone.slug)
-    this.logger.log(`Handling a zone delete event for ${zone.slug}`)
-    await this.deleteZone(zone.slug)
-    this.logger.log(`Vault zone cleanup completed for ${zone.slug}`)
+    span?.setAttribute('zone.slug', zoneSlug)
+    this.logger.log(`Handling a zone delete event for ${zoneSlug}`)
+    await this.deleteZone(zoneSlug)
+    this.logger.log(`Vault zone cleanup completed for ${zoneSlug}`)
   }
 
   // @Cron(CronExpression.EVERY_HOUR)

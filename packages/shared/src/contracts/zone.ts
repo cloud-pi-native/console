@@ -51,7 +51,7 @@ export const zoneContract = contractInstance.router({
     }),
     body: ZoneSchema.omit({ id: true, slug: true }),
     responses: {
-      201: ZoneSchema,
+      200: ZoneSchema,
       400: ErrorSchema,
       403: ErrorSchema,
       404: ErrorSchema,

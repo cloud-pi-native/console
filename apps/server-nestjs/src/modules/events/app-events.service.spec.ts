@@ -2,6 +2,7 @@ import type { ConfigType } from '@nestjs/config'
 import type { EventEmitter2 as EventEmitter2Type } from '@nestjs/event-emitter'
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import { faker } from '@faker-js/faker'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -173,6 +174,28 @@ describe('appEventsService', () => {
       action: 'Add Project Member',
       projectId: 'project-id',
       data: expect.objectContaining({ args: payload }),
+    }))
+  })
+
+  it('emits and logs zone events with the event-log data shape and no project id', async () => {
+    const payload = { id: faker.string.uuid(), slug: faker.string.alpha({ length: 6, casing: 'lower' }) }
+    eventEmitter.emitAsync.mockResolvedValue([
+      { vault: { status: 'KO', message: 'Vault unreachable', executionTime: 5, error: new Error('boom') } },
+    ])
+
+    const results = await service.emitZoneEvent('zone.delete', payload, { action: 'Delete zone', userId: 'user-id', requestId: 'request-id' })
+
+    expect(eventEmitter.emitAsync).toHaveBeenCalledWith('zone.delete', payload)
+    expect(results.vault?.status).toEqual('KO')
+    expect(logs.addLog).toHaveBeenCalledWith(expect.objectContaining({
+      action: 'Delete zone',
+      projectId: '',
+      data: expect.objectContaining({
+        args: payload,
+        failed: ['vault'],
+        results: { vault: expect.objectContaining({ status: expect.objectContaining({ result: 'KO' }) }) },
+        messageResume: expect.stringContaining('vault'),
+      }),
     }))
   })
 })
