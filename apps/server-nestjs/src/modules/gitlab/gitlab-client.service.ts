@@ -461,17 +461,13 @@ export class GitlabClientService {
   ) {
     const existing = await this.getUserByEmail(user.email)
 
-    const gitlabUser = existing ?? await this.createUser({
-      ...user,
-      externUid: user.email,
-      provider: 'openid_connect',
-    })
-
     const editOptions: EditUserOptions = {
       ...user,
       externUid: user.email,
       provider: 'openid_connect',
     }
+    const gitlabUser = existing ?? await this.createUser(editOptions)
+
     if (existing) {
       const hasDiff = Object.entries(editOptions).some(([key, value]) => {
         if (value === undefined) return false

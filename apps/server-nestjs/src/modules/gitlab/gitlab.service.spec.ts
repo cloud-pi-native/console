@@ -444,6 +444,7 @@ describe('gitlabService', () => {
       })
       datastore.getAdminRolesByOidcGroups.mockResolvedValue([
         { id: 'admin-role-id', oidcGroup: '/console/admin' },
+        { id: 'platform-admin-role-id', oidcGroup: '/admin' },
         { id: 'auditor-role-id', oidcGroup: '/console/readonly' },
       ])
 
