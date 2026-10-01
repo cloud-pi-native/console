@@ -22,6 +22,7 @@ import { RepositoryModule } from './modules/repository/repository.module'
 import { SystemConfigModule } from './modules/system-config/system-config.module'
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module'
 import { VersionModule } from './modules/version/version.module'
+import { ZoneModule } from './modules/zone/zone.module'
 import { getDotenvPaths } from './utils/dotenv.utils'
 
 @Module({
@@ -52,6 +53,7 @@ import { getDotenvPaths } from './utils/dotenv.utils'
     SystemConfigModule,
     SystemSettingsModule,
     VersionModule,
+    ZoneModule,
   ],
   controllers: [],
   providers: [],
