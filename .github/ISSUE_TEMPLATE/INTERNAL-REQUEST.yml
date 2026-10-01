@@ -1,6 +1,6 @@
-name: 🏗️ Sujet interne Socle
-description: Créer un sujet de maintenance issu de l’équipe ou de ses échanges.
-title: "🏗️ [INTERNAL] - <title>"
+name: 📋 Tâche interne
+description: Créer un sujet issu de l’équipe de maintenance ou de ses échanges.
+labels: [internal]
 body:
   - type: textarea
     id: request_source

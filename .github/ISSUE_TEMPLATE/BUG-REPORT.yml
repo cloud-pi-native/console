@@ -1,22 +1,12 @@
 name: 🐛 Rapport de bug
 description: Signaler un comportement qui ne correspond pas à ce qui est attendu.
-title: "🐛 [BUG] - <title>"
 labels: [bug]
 body:
   - type: textarea
-    id: expected_behavior
+    id: description
     attributes:
-      label: Comportement attendu
-      description: Décrivez ce qui devait se produire et indiquez la documentation ou toute autre référence pertinente.
-      placeholder: Selon https://..., le produit devrait...
-    validations:
-      required: true
-
-  - type: textarea
-    id: observed_behavior
-    attributes:
-      label: Comportement observé
-      description: Décrivez ce qui s'est effectivement produit.
+      label: Description
+      description: Décrivez le comportement constaté.
       placeholder: Le produit a...
     validations:
       required: true
@@ -34,19 +24,28 @@ body:
       required: true
 
   - type: textarea
-    id: impact_environment
+    id: expected_behavior
     attributes:
-      label: Impact et environnement
-      description: Indiquez les personnes ou services impactés, ainsi que l'environnement concerné.
-      placeholder: Version, navigateur, environnement, fréquence, impact...
+      label: Comportement attendu
+      description: Décrivez ce qui devait se produire et indiquez la documentation ou toute autre référence pertinente.
+      placeholder: Selon https://..., le produit devrait...
     validations:
       required: true
 
   - type: textarea
-    id: evidence
+    id: logs
     attributes:
-      label: Éléments de preuve
-      description: Ajoutez des captures, logs, liens ou tout autre élément utile si vous en avez.
-      placeholder: Capture, log ou lien...
+      label: Logs ou journal
+      description: Ajoutez les logs, captures, liens ou tout autre élément utile si vous en avez.
+      placeholder: Log, capture ou lien...
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environnement
+      description: Indiquez la version, le navigateur ou l'environnement concerné si utile.
+      placeholder: Version, navigateur, environnement...
     validations:
       required: false
