@@ -1,3 +1,5 @@
+import { MonitorStatus } from '@cpn-console/shared'
+
 export const PLUGIN_NAME = 'sonarqube'
 export const DEFAULT_PERMISSION_TEMPLATE_NAME = 'Forge Default'
 
@@ -54,3 +56,12 @@ export const SONARQUBE_PROJECT_QUALIFIER_PROJECT = 'TRK'
 export const SONARQUBE_PROJECT_QUALIFIER_SUB_VIEW = 'SVW'
 export const SONARQUBE_PROJECT_QUALIFIER_UNIT_TEST = 'UTS'
 export const SONARQUBE_PROJECT_QUALIFIER_VIEW = 'VW'
+
+// Health monitor messages
+export const REQUEST_ERROR_MESSAGE = 'Erreur lors la requête'
+
+export const SONARQUBE_HEALTH_STATUS: Record<string, { status: MonitorStatus, message: string }> = {
+  GREEN: { status: MonitorStatus.OK, message: MonitorStatus.OK },
+  YELLOW: { status: MonitorStatus.WARNING, message: 'Service dégradé' },
+  RED: { status: MonitorStatus.ERROR, message: 'Service en panne' },
+}
