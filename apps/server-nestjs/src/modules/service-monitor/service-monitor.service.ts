@@ -10,7 +10,7 @@ import { RegistryHealthService } from '../registry/registry-health.service'
 import { SonarqubeHealthService } from '../sonarqube/sonarqube-health.service'
 import { VaultHealthService } from '../vault/vault-health.service'
 import { INTERVAL_MS, PENDING_MESSAGE, REQUEST_ERROR_MESSAGE } from './service-monitor.constants'
-import { fromHealthCheck } from './service-monitor.utils'
+import { fromHealthCheck, toCause } from './service-monitor.utils'
 import type { ProbeOutcome } from './service-monitor.utils'
 
 export type ServiceHealth = MonitorInfos & { name: string }
@@ -105,7 +105,7 @@ export class ServiceMonitorService implements OnModuleInit, OnModuleDestroy {
   private snapshot(withCause: boolean): ServiceHealth[] {
     return this.services.map(({ name, lastStatus }) => {
       const { cause, ...health } = lastStatus
-      return { name, ...health, ...(withCause && cause !== undefined ? { cause } : {}) }
+      return { name, ...health, ...(withCause && cause !== undefined ? { cause: toCause(cause) } : {}) }
     })
   }
 
