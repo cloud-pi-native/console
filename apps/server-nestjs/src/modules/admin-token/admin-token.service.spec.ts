@@ -1,37 +1,13 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
-import type { AdminTokenRecord } from './admin-token-queries.utils'
 import { faker } from '@faker-js/faker'
 import { BadRequestException } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service'
+import { makeAdminTokenRecord } from './admin-token-testing.utils'
 import { AdminTokenService } from './admin-token.service'
-
-function makeAdminTokenRecord(overrides: Partial<Omit<AdminTokenRecord, 'owner'>> = {}) {
-  const owner: AdminTokenRecord['owner'] = {
-    id: faker.string.uuid(),
-    email: faker.internet.email().toLowerCase(),
-    firstName: faker.person.firstName(),
-    lastName: faker.person.lastName(),
-    type: 'bot',
-  }
-  const record: AdminTokenRecord = {
-    id: faker.string.uuid(),
-    name: 'my-token',
-    permissions: 4n,
-    lastUse: null,
-    expirationDate: null,
-    status: 'active',
-    createdAt: faker.date.past(),
-    userId: owner.id,
-    owner,
-  }
-  // ponytail: DeepMockProxy resolves mockResolvedValue against the FULL prisma row
-  // (hash included) while AdminTokenRecord is the selected payload; spread both.
-  return { ...record, hash: faker.string.hexadecimal({ length: 64 }), ...overrides }
-}
 
 describe('adminTokenService', () => {
   let module: TestingModule
