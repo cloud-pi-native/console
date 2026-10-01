@@ -8,8 +8,8 @@ import {
   EXTRA_REPOSITORIES_PLUGIN_KEY,
   PLATFORM_ADMIN_GROUP_PATH,
   PLATFORM_ADMIN_GROUP_PATH_PLUGIN_KEY,
-  PLATFORM_READONLY_GROUP_PATH,
-  PLATFORM_READONLY_GROUP_PATH_PLUGIN_KEY,
+  PLATFORM_READER_GROUP_PATH,
+  PLATFORM_READER_GROUP_PATH_PLUGIN_KEY,
   PLATFORM_SECURITY_GROUP_PATH,
   PROJECT_ADMIN_GROUP_PATH_SUFFIX,
   PROJECT_ADMIN_GROUP_PATH_SUFFIX_PLUGIN_KEY,
@@ -17,8 +17,8 @@ import {
   PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
   PROJECT_DEVOPS_GROUP_PATH_SUFFIX_PLUGIN_KEY,
-  PROJECT_READONLY_GROUP_PATH_SUFFIX,
-  PROJECT_READONLY_GROUP_PATH_SUFFIX_PLUGIN_KEY,
+  PROJECT_READER_GROUP_PATH_SUFFIX,
+  PROJECT_READER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_SECURITY_GROUP_PATH_SUFFIX,
 } from './argocd.constants'
 
@@ -59,15 +59,15 @@ export class ArgoCDPluginService {
           value: PLATFORM_ADMIN_GROUP_PATH,
           description: 'Chemin du groupe administrateur de plateforme',
         }, {
-          key: PLATFORM_READONLY_GROUP_PATH_PLUGIN_KEY,
+          key: PLATFORM_READER_GROUP_PATH_PLUGIN_KEY,
           kind: 'text',
           permissions: {
             admin: { read: true, write: true },
             user: { read: false, write: false },
           },
-          title: 'Platform Readonly Group Path',
-          value: PLATFORM_READONLY_GROUP_PATH,
-          description: 'Chemin du groupe lecture seule de plateforme',
+          title: 'Platform Reader Group Path',
+          value: PLATFORM_READER_GROUP_PATH,
+          description: 'Chemin du groupe lecteur de plateforme',
         }, {
           key: 'platformSecurityGroupPath',
           kind: 'text',
@@ -109,15 +109,15 @@ export class ArgoCDPluginService {
           value: PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
           description: 'Suffixe du chemin du groupe développeur de projet',
         }, {
-          key: PROJECT_READONLY_GROUP_PATH_SUFFIX_PLUGIN_KEY,
+          key: PROJECT_READER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
           kind: 'text',
           permissions: {
             admin: { read: true, write: true },
             user: { read: false, write: false },
           },
-          title: 'Project Readonly Group Path Suffix',
-          value: PROJECT_READONLY_GROUP_PATH_SUFFIX,
-          description: 'Suffixe du chemin du groupe lecture seule de projet',
+          title: 'Project Reader Group Path Suffix',
+          value: PROJECT_READER_GROUP_PATH_SUFFIX,
+          description: 'Suffixe du chemin du groupe lecteur de projet',
         }, {
           key: 'projectSecurityGroupPathSuffix',
           kind: 'text',
