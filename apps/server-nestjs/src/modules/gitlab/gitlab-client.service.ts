@@ -461,12 +461,8 @@ export class GitlabClientService {
   ) {
     const existing = await this.getUserByEmail(user.email)
 
-    // GitLab's user-edit payload has no way to un-set `admin`/`auditor` — a falsy value
-    // DEMOTES the instance admin/auditor. Reconciles that run for a project's admin-group
-    // mapping (adminRoleFlag: role mapped on the project → true, otherwise false) must not
-    // degrade a platform admin whose DB row lacks that specific role id.
-    // ponytail: write-only positive promotion; explicit revocation (if ever needed) goes
-    // through a dedicated admin-flow API call, never through this reconcile path.
+    // Falsy `admin`/`auditor` demotes the instance flag (the edit API cannot un-set them):
+    // reconcile promotes only. Revocation, if ever needed, goes through a dedicated admin flow.
     const editOptions: EditUserOptions = {
       ...Object.fromEntries(Object.entries(user).filter(([, v]) => v !== false)),
       externUid: user.email,
