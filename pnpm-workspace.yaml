@@ -201,4 +201,3 @@ catalogs:
     typescript-eslint: ^8.57.0
     vue-eslint-parser: ^10.4.0
 catalog:
-  '@effect/vitest': ^0.30.0

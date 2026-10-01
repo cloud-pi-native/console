@@ -86,7 +86,6 @@
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/test-utils": "workspace:^",
     "@cpn-console/ts-config": "workspace:^",
-    "@effect/vitest": "catalog:",
     "@eslint/eslintrc": "catalog:tools",
     "@eslint/js": "catalog:tools",
     "@faker-js/faker": "catalog:test",
