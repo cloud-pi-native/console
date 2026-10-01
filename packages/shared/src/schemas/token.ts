@@ -36,7 +36,6 @@ export const CreateAdminTokenBodySchema = AdminTokenSchema
 
 export type AdminToken = Zod.infer<typeof AdminTokenSchema>
 export type ExposedAdminToken = Zod.infer<typeof ExposedAdminTokenSchema>
-export type CreateAdminTokenBody = Zod.infer<typeof CreateAdminTokenBodySchema>
 
 // PAT section
 export const PersonalAccessTokenSchema = TokenSchema.extend({
