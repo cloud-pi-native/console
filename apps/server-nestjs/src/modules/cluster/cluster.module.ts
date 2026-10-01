@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common'
 import { AppEventsModule } from '../events/app-events.module'
-import { AppEventsModule } from '../events/app-events.module'
 import { AuthModule } from '../infrastructure/auth/auth.module'
 import { DatabaseModule } from '../infrastructure/database/database.module'
 import { EventsModule } from '../infrastructure/events/events.module'
