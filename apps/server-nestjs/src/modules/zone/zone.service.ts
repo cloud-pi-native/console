@@ -67,9 +67,6 @@ export class ZoneService {
     await this.prisma.zone.delete({ where: { id: zoneId } })
   }
 
-  // Awaits the listeners' results before answering: an unreachable service must fail the
-  // request (legacy v1 returned 422) and stay visible in the admin log, instead of being
-  // swallowed by a bare `emitAsync`.
   private async emitZoneEventAndThrowOnFailure(
     event: ZoneEventName,
     payload: ZoneEventPayload,
