@@ -247,7 +247,7 @@ export function daysAgoFromNow(date: Date) {
 
 export function adminRoleFlag(user: Pick<ProjectWithDetails['members'][0]['user'], 'adminRoleIds'>, adminRoleIds: string[]): boolean | undefined {
   if (adminRoleIds.length === 0) return undefined
-  return user.adminRoleIds?.some(id => adminRoleIds.includes(id))
+  return user.adminRoleIds?.some(id => adminRoleIds.includes(id)) ? true : undefined
 }
 
 export function isGitbeakerNotFound(error: unknown): error is GitbeakerRequestError {

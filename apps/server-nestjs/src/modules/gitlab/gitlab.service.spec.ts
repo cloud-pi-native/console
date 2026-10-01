@@ -464,15 +464,15 @@ describe('gitlabService', () => {
       await service.handleUpsert(project)
 
       expect(gitlab.upsertUser).toHaveBeenCalledWith(
-        expect.objectContaining({ email: 'admin@example.com', admin: true, auditor: false }),
+        expect.objectContaining({ email: 'admin@example.com', admin: true, auditor: undefined }),
         expect.objectContaining({ cpnUserId: 'u1' }),
       )
       expect(gitlab.upsertUser).toHaveBeenCalledWith(
-        expect.objectContaining({ email: 'auditor@example.com', admin: false, auditor: true }),
+        expect.objectContaining({ email: 'auditor@example.com', admin: undefined, auditor: true }),
         expect.objectContaining({ cpnUserId: 'u2' }),
       )
       expect(gitlab.upsertUser).toHaveBeenCalledWith(
-        expect.objectContaining({ email: 'owner@example.com', admin: true, auditor: false }),
+        expect.objectContaining({ email: 'owner@example.com', admin: true, auditor: undefined }),
         expect.objectContaining({ cpnUserId: 'o1' }),
       )
     })

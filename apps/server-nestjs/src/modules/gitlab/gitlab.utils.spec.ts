@@ -82,8 +82,8 @@ describe('adminRoleFlag', () => {
     expect(adminRoleFlag({ adminRoleIds: ['x'] }, [])).toBeUndefined()
   })
 
-  it('should match membership against any resolved role id', () => {
+  it('should not claim membership the user lacks', () => {
     expect(adminRoleFlag({ adminRoleIds: ['x'] }, ['y', 'x'])).toBe(true)
-    expect(adminRoleFlag({ adminRoleIds: ['z'] }, ['y', 'x'])).toBe(false)
+    expect(adminRoleFlag({ adminRoleIds: ['z'] }, ['y', 'x'])).toBeUndefined()
   })
 })
