@@ -140,7 +140,7 @@ export class ArgoCDService {
       this.logger.warn(`Couldn't find zone app role (zone=${zoneSlug})`)
       return undefined
     })
-    const secretId = await this.vault.createAuthApproleRoleSecretId(`zone-${zoneSlug}`).catch(() => {
+    const secretId = await this.vault.ensureAuthApproleRoleSecretId(`zone-${zoneSlug}`).catch(() => {
       this.logger.warn(`Couldn't generate zone app role secret (zone=${zoneSlug})`)
       return undefined
     })
