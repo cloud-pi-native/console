@@ -24,8 +24,3 @@ export function makeAdminToken(overrides: Partial<Omit<AdminToken, 'owner'>> = {
   // (hash included) while AdminToken is the selected payload; spread both.
   return { ...record, hash: faker.string.hexadecimal({ length: 64 }), ...overrides }
 }
-
-export function makeListedToken(overrides: Partial<AdminToken> = {}): AdminToken {
-  const { hash: _hash, ...listed } = makeAdminToken()
-  return { ...listed, ...overrides }
-}
