@@ -53,6 +53,18 @@ export function makePersonalAccessToken(overrides: {
   }
 }
 
+export function makeAdminTokenOwner(overrides: {
+  userId?: string
+  adminRoleIds?: string[]
+  type?: User['type']
+} = {}): { id: string, adminRoleIds: string[], type: string } {
+  return {
+    id: overrides.userId ?? 'owner-id',
+    adminRoleIds: overrides.adminRoleIds ?? [],
+    type: overrides.type ?? 'human',
+  }
+}
+
 export function makeAdminToken(overrides: {
   id?: string
   userId?: string
@@ -63,12 +75,10 @@ export function makeAdminToken(overrides: {
   expirationDate?: AdminToken['expirationDate']
   lastUse?: AdminToken['lastUse']
 } = {}): AdminToken & { owner: { id: string, adminRoleIds: string[], type: string } } {
-  const id = overrides.id ?? 'admin-token-id'
   const ownerId = overrides.userId ?? 'owner-id'
-  const type = overrides.type ?? 'human'
 
   return {
-    id,
+    id: overrides.id ?? 'admin-token-id',
     name: 'admin-token',
     status: overrides.status ?? 'active',
     expirationDate: overrides.expirationDate ?? null,
@@ -77,10 +87,6 @@ export function makeAdminToken(overrides: {
     createdAt: faker.date.past(),
     hash: 'hash',
     userId: ownerId,
-    owner: {
-      id: ownerId,
-      adminRoleIds: overrides.adminRoleIds ?? [],
-      type,
-    },
+    owner: makeAdminTokenOwner(overrides),
   }
 }
