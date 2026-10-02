@@ -22,7 +22,7 @@ export const adminTokenSelect = {
   },
 } satisfies Prisma.AdminTokenSelect
 
-export type AdminToken = Prisma.AdminTokenGetPayload<{
+export type AdminTokenRecord = Prisma.AdminTokenGetPayload<{
   select: typeof adminTokenSelect
 }>
 
