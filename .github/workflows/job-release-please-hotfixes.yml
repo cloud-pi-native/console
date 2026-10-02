@@ -56,8 +56,7 @@ jobs:
   # - Upsert a hotfix release MR after a commit has been added to the target branch that triggerd this workflow (e.g: `hotfix/my-urgent-hotfix`)
   # - Create a hotfix release, if this workflow has been triggered by the related MR merge (release-please-hotfit -> hotfix/my-urgent-hotfix)
   # - In both cases "Create" means:
-  #   - Updating the CHANGLOG accordingly (with the related commits)
-  #   - Updating the apps package.json versions
+  #   - Updating the release manifest and application package.json versions
   #   - Generating and push the git tag
   #   - Creating the related GitHub Release
   prepare:
