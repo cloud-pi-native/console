@@ -13,7 +13,7 @@ describe('adminTokenController', () => {
   let controller: AdminTokenController
   let service: MockProxy<AdminTokenService>
 
-  const { hash: _hash, ...token } = makeAdminToken({ permissions: 0n })
+  const token = makeAdminToken({ permissions: 0n })
 
   beforeEach(async () => {
     service = mock<AdminTokenService>()

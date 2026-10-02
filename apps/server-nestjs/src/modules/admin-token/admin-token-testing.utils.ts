@@ -20,7 +20,9 @@ export function makeAdminToken(overrides: Partial<Omit<AdminToken, 'owner'>> = {
     userId: owner.id,
     owner,
   }
-  // DeepMockProxy resolves mockResolvedValue against the FULL prisma row
-  // (hash included) while AdminToken is the selected payload; spread both.
-  return { ...record, hash: faker.string.hexadecimal({ length: 64 }), ...overrides }
+  return { ...record, ...overrides }
+}
+
+export function makeAdminTokenRow(overrides: Partial<Omit<AdminToken, 'owner'>> = {}) {
+  return { ...makeAdminToken(overrides), hash: faker.string.hexadecimal({ length: 64 }) }
 }
