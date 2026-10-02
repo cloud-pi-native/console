@@ -54,7 +54,7 @@ export async function buildAllUsersWhere(
       AND: query.memberOfIds.map(id => ({
         OR: [
           { projectsOwned: { some: { id } } },
-          { ProjectMembers: { some: { project: { id } } } },
+          { projectMembers: { some: { project: { id } } } },
         ],
       })),
     })
