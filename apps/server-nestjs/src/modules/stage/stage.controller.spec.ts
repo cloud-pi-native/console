@@ -113,4 +113,35 @@ describe('stageController http pipeline', () => {
 
     await app.close()
   })
+
+  it.each([
+    ['GET', '/api/v1/stages/not-an-uuid/environments'],
+    ['PUT', '/api/v1/stages/not-an-uuid'],
+    ['DELETE', '/api/v1/stages/not-an-uuid'],
+  ])('rejects non-UUID stage params with 400 on %s %s', async (method, url) => {
+    const service = mock<StageService>()
+
+    const testingModule = await Test.createTestingModule({
+      controllers: [StageController],
+      providers: [
+        { provide: StageService, useValue: service },
+      ],
+    })
+      .overrideGuard(UserGuard)
+      .useValue({ canActivate: () => true })
+      .compile()
+
+    const app = testingModule.createNestApplication<NestFastifyApplication>(new FastifyAdapter())
+    await app.init()
+    await app.getHttpAdapter().getInstance().ready()
+
+    const response = await app.inject({ method, url, payload: method === 'PUT' ? {} : undefined })
+
+    expect(response.statusCode).toBe(400)
+    expect(service.getStageAssociatedEnvironments).not.toHaveBeenCalled()
+    expect(service.updateStage).not.toHaveBeenCalled()
+    expect(service.deleteStage).not.toHaveBeenCalled()
+
+    await app.close()
+  })
 })
