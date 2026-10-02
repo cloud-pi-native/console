@@ -12,6 +12,7 @@ import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { getAll } from '../../utils/iterable.utils'
+import { daysAgo } from '@cpn-console/shared'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -35,7 +36,6 @@ import {
 } from './gitlab.constants'
 import {
   adminRoleFlag,
-  daysAgoFromNow,
   generateAccessLevelMapping,
   generateAdminRoleMapping,
   generateName,
@@ -530,7 +530,7 @@ export class GitlabService {
     const createdTimeRaw = vaultSecret?.metadata?.created_time
     if (!createdTimeRaw) return false
     const createdTime = new Date(createdTimeRaw)
-    return daysAgoFromNow(createdTime) > this.gitlabConfig.mirrorTokenRotationThresholdDays
+    return daysAgo(createdTime) > this.gitlabConfig.mirrorTokenRotationThresholdDays
   }
 
   @StartActiveSpan()

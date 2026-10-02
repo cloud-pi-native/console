@@ -1,6 +1,6 @@
 import type Zod from 'zod'
 import { z } from 'zod'
-import { dateToString, permissionLevelSchema } from './_utils.js'
+import { dateToString, ExpirationDateSchema, permissionLevelSchema } from './_utils.js'
 import { UserSchema } from './user.js'
 
 export const TokenSchema = z.object({
@@ -40,5 +40,11 @@ export const ExposedPersonalAccessTokenSchema = TokenSchema.extend({
   password: z.string(),
 })
 
+export const CreatePersonalAccessTokenBodySchema = PersonalAccessTokenSchema
+  .pick({ name: true, expirationDate: true })
+  .extend({ expirationDate: ExpirationDateSchema })
+  .required()
+
 export type PersonalAccessToken = Zod.infer<typeof PersonalAccessTokenSchema>
 export type ExposedPersonalAccessToken = Zod.infer<typeof ExposedPersonalAccessTokenSchema>
+export type CreatePersonalAccessTokenBody = Zod.infer<typeof CreatePersonalAccessTokenBodySchema>
