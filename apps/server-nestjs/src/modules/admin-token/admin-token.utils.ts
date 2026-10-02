@@ -1,12 +1,12 @@
-import type { AdminTokenRecord } from './admin-token-queries.utils'
+import type { AdminToken } from './admin-token-queries.utils'
 
-export function toAdminToken({ permissions, ...token }: AdminTokenRecord) {
+export function toAdminToken({ permissions, ...token }: AdminToken) {
   return {
     ...token,
     permissions: permissions.toString(),
   }
 }
 
-export function toExposedAdminToken(record: AdminTokenRecord, password: string) {
+export function toExposedAdminToken(record: AdminToken, password: string) {
   return { ...toAdminToken(record), password }
 }
