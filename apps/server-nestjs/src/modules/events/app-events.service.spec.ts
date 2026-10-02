@@ -175,4 +175,13 @@ describe('appEventsService', () => {
       data: expect.objectContaining({ args: payload }),
     }))
   })
+
+  describe('emit surface (migration parity)', () => {
+    const expectedEmitMethods = ['emitProjectEvent', 'emitProjectMemberEvent', 'emitRepositoryEvent'] as const
+
+    it.each(expectedEmitMethods)('exposes %s as a public emit entrypoint', (method) => {
+      expect(typeof service[method]).toBe('function')
+    })
+
+  })
 })
