@@ -3,6 +3,7 @@ import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
 import {
+  UpdateZoneBodySchema,
   ZoneSchema,
 } from '../schemas/index.js'
 import { baseHeaders, ErrorSchema } from './_utils.js'
@@ -49,7 +50,7 @@ export const zoneContract = contractInstance.router({
       zoneId: z.string()
         .uuid(),
     }),
-    body: ZoneSchema.omit({ id: true, slug: true }),
+    body: UpdateZoneBodySchema,
     responses: {
       200: ZoneSchema,
       400: ErrorSchema,
