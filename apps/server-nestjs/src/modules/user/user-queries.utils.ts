@@ -65,21 +65,25 @@ export async function buildAllUsersWhere(
 export function buildMatchingUsersWhere(query: LettersQuery): Prisma.UserWhereInput {
   const AND: Prisma.UserWhereInput[] = []
   if (query.notInProjectId) {
-    AND.push({ projectMembers: { none: { projectId: query.notInProjectId } } })
-    AND.push({ projectsOwned: { none: { id: query.notInProjectId } } })
+    AND.push(
+      { projectMembers: { none: { projectId: query.notInProjectId } } },
+      { projectsOwned: { none: { id: query.notInProjectId } } },
+    )
   }
   const filter = { contains: query.letters, mode: 'insensitive' } as const
   if (query.letters) {
-    AND.push({
-      OR: [{
-        email: filter,
-      }, {
-        firstName: filter,
-      }, {
-        lastName: filter,
-      }],
-    })
-    AND.push({ type: 'human' })
+    AND.push(
+      {
+        OR: [{
+          email: filter,
+        }, {
+          firstName: filter,
+        }, {
+          lastName: filter,
+        }],
+      },
+      { type: 'human' },
+    )
   }
   return { AND }
 }
