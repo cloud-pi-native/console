@@ -51,4 +51,15 @@ describe('zoneController', () => {
     expect(response.json()).toEqual([toZone(zone)])
     await app.close()
   })
+
+  it('rejects non-UUID zone params with 400 before reaching the service', async () => {
+    const app = module.createNestApplication<NestFastifyApplication>(new FastifyAdapter())
+    await app.init()
+
+    for (const method of ['PUT', 'DELETE'] as const) {
+      const response = await app.inject({ method, url: '/api/v1/zones/not-an-uuid' })
+      expect(response.statusCode).toEqual(400)
+    }
+    await app.close()
+  })
 })

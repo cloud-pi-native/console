@@ -189,7 +189,7 @@ describe('appEventsService', () => {
     expect(results.vault?.status).toEqual('KO')
     expect(logs.addLog).toHaveBeenCalledWith(expect.objectContaining({
       action: 'Delete zone',
-      projectId: '',
+      projectId: null,
       data: expect.objectContaining({
         args: payload,
         failed: ['vault'],

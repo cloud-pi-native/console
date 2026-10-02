@@ -124,13 +124,13 @@ export class AppEventsService {
     zone: ZoneEventPayload,
     context: EventContext,
   ): Promise<PluginResults> {
-    return this.emitAndLog(event, zone, '', context)
+    return this.emitAndLog(event, zone, null, context)
   }
 
   private async emitAndLog(
     event: string,
     payload: unknown,
-    projectId: string,
+    projectId: string | null,
     context: EventContext,
   ): Promise<PluginResults> {
     const start = process.hrtime.bigint()
