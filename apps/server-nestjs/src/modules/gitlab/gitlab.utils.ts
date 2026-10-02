@@ -246,8 +246,13 @@ export function daysAgoFromNow(date: Date) {
 }
 
 export function adminRoleFlag(user: Pick<ProjectWithDetails['members'][0]['user'], 'adminRoleIds'>, adminRoleIds: string[]): boolean | undefined {
+  // Never emit a revocation: a role mapped-but-not-held means the user must simply be
+  // removed from the corresponding group, not demoted at the instance level. GitLab's
+  // Users.edit cannot un-set admin/auditor, so a falsy value would strip the flag even
+  // when it was granted for reasons outside this project's mapping (#2804).
+  // Absence of membership is `undefined` (no claim), `true` stays promotion.
   if (adminRoleIds.length === 0) return undefined
-  return user.adminRoleIds?.some(id => adminRoleIds.includes(id)) ?? false
+  return user.adminRoleIds?.some(id => adminRoleIds.includes(id)) ? true : undefined
 }
 
 export function isGitbeakerNotFound(error: unknown): error is GitbeakerRequestError {

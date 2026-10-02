@@ -461,8 +461,12 @@ export class GitlabClientService {
   ) {
     const existing = await this.getUserByEmail(user.email)
 
+    // Boundary: no reconcile path may ever demote an instance-level flag. GitLab's
+    // Users.edit cannot un-set admin/auditor — a falsy value strips them (#2804).
+    // Removal of a role is expressed by removing the user from the mapped group,
+    // never by transmitting the flag here.
     const editOptions: EditUserOptions = {
-      ...user,
+      ...Object.fromEntries(Object.entries(user).filter(([, v]) => v !== false)),
       externUid: user.email,
       provider: 'openid_connect',
     }

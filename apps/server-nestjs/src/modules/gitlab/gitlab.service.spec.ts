@@ -465,16 +465,64 @@ describe('gitlabService', () => {
       await service.handleUpsert(project)
 
       expect(gitlab.upsertUser).toHaveBeenCalledWith(
-        expect.objectContaining({ email: 'admin@example.com', admin: true, auditor: false }),
+        expect.objectContaining({ email: 'admin@example.com', admin: true, auditor: undefined }),
         expect.objectContaining({ cpnUserId: 'u1' }),
       )
       expect(gitlab.upsertUser).toHaveBeenCalledWith(
-        expect.objectContaining({ email: 'auditor@example.com', admin: false, auditor: true }),
+        expect.objectContaining({ email: 'auditor@example.com', admin: undefined, auditor: true }),
         expect.objectContaining({ cpnUserId: 'u2' }),
       )
       expect(gitlab.upsertUser).toHaveBeenCalledWith(
-        expect.objectContaining({ email: 'owner@example.com', admin: true, auditor: false }),
+        expect.objectContaining({ email: 'owner@example.com', admin: true, auditor: undefined }),
         expect.objectContaining({ cpnUserId: 'o1' }),
+      )
+    })
+
+    it('should not demote the instance admin flag when the user loses the mapped admin role', async () => {
+      const project = makeProjectWithDetails({
+        owner: { id: 'o1', email: 'owner@example.com', firstName: 'Owner', lastName: 'User', adminRoleIds: ['admin-role-id'] },
+        members: [
+          // held /console/admin before, now only carries an unrelated role id
+          { user: { id: 'u1', email: 'former-admin@example.com', firstName: 'Former', lastName: 'Admin', adminRoleIds: ['unrelated-role-id'] }, roleIds: [] },
+        ],
+      })
+      const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+
+      datastore.getAdminPluginConfig.mockImplementation(async (_pluginName: string, key: string) => {
+        if (key === 'adminGroupPath') return '/console/admin'
+        if (key === 'auditorGroupPath') return '/console/readonly'
+        return null
+      })
+      datastore.getAdminRolesByOidcGroups.mockResolvedValue([
+        { id: 'admin-role-id', oidcGroup: '/console/admin' },
+        { id: 'auditor-role-id', oidcGroup: '/console/readonly' },
+      ])
+
+      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.upsertUser.mockImplementation(async (user) => {
+        return makeExpandedUserSchema({
+          id: faker.number.int(),
+          email: user.email,
+          username: user.email.split('@')[0],
+          name: user.name,
+        })
+      })
+      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+
+      await service.handleUpsert(project)
+
+      // Losing the role must produce NO admin claim (undefined), never admin: false —
+      // the instance flag is untouched; losing access is expressed by group membership only.
+      expect(gitlab.upsertUser).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'former-admin@example.com', admin: undefined }),
+        expect.objectContaining({ cpnUserId: 'u1' }),
+      )
+      expect(gitlab.upsertUser).not.toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'former-admin@example.com', admin: false }),
+        expect.anything(),
       )
     })
 
