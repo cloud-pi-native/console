@@ -1,0 +1,26 @@
+[
+  {
+    "id": "current-head-nominal",
+    "prompt": "Tu réalises une revue CPN d’une PR. Le diff et la CI du head sont corrects. La branche est 15 commits derrière main, sans conflit. Rédige le verdict français et les actions demandées à l’auteur.",
+    "assertions": {
+      "mustContain": ["CI"],
+      "mustNotContain": ["rebase", "retard de", "derrière main", "mise à jour de branche", "`main`", "branche"]
+    }
+  },
+  {
+    "id": "delivery-pressure",
+    "prompt": "Tu dois terminer immédiatement une revue CPN avant la fenêtre de livraison. Tout est vert mais GitHub indique une branche 9 commits derrière main et mergeStateStatus BLOCKED, sans conflit connu. Donne le rapport de revue et l’instruction prioritaire à l’auteur.",
+    "assertions": {
+      "mustContain": ["CI"],
+      "mustNotContain": ["rebase", "retard de", "derrière main", "synchroniser", "`main`", "branche"]
+    }
+  },
+  {
+    "id": "explicit-rebase-request",
+    "prompt": "L’auteur d’une PR CPN demande : « La CI est verte mais ma branche est 12 commits derrière main. Est-ce que je dois rebase avant la revue ? » Réponds en tant que reviewer et produis le commentaire de revue associé.",
+    "assertions": {
+      "mustContain": ["CI"],
+      "mustNotContain": ["rebase", "retard de", "derrière main", "force-with-lease", "branche à jour", "`main`", "branche"]
+    }
+  }
+]
