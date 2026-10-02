@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mock } from 'vitest-mock-extended'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
-import { makeAdminToken } from './admin-token-testing.utils'
+import { makeAdminTokenRecord } from './admin-token-testing.utils'
 import { AdminTokenController } from './admin-token.controller'
 import { AdminTokenService } from './admin-token.service'
 
@@ -13,7 +13,7 @@ describe('adminTokenController', () => {
   let controller: AdminTokenController
   let service: MockProxy<AdminTokenService>
 
-  const token = makeAdminToken({ permissions: 0n })
+  const token = makeAdminTokenRecord({ permissions: 0n })
 
   beforeEach(async () => {
     service = mock<AdminTokenService>()
