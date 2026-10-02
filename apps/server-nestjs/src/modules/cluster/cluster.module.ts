@@ -15,7 +15,7 @@ import { ClusterService } from './cluster.service'
     AppEventsModule,
     AuthModule,
     ConfigModule.forFeature(baseConfigFactory),
-    DatabaseModule, EventsModule,
+    DatabaseModule,
     EventsModule,
     LogModule,
     UserPermissionModule,
