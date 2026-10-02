@@ -1,6 +1,6 @@
 import type { ProjectWithDetails } from './registry-datastore.service'
 import type { RegistryResponse } from './registry-http-client.service'
-import { removeTrailingSlash } from '@cpn-console/shared'
+import { MonitorStatus, removeTrailingSlash } from '@cpn-console/shared'
 import { HttpStatus } from '@nestjs/common'
 import z from 'zod'
 
@@ -122,5 +122,44 @@ function parseUnit(unit: string) {
       return 4
     default:
       return 0
+  }
+}
+
+export interface RegistryProbeOutcome {
+  status: MonitorStatus
+  message: string
+  cause?: unknown
+}
+
+// Legacy harbor monitor reads /health, not /ping, to split degraded from failed.
+const MONITOR_ERROR_MESSAGE = 'Erreur lors la requête'
+
+const CORE_COMPONENTS = new Set(['core', 'database', 'portal', 'registry', 'registryctl'])
+
+const harborHealthBodySchema = z.object({
+  status: z.string(),
+  components: z.array(z.object({
+    name: z.string(),
+    status: z.string(),
+  })).optional(),
+})
+
+export async function monitorHarborHealth(fetchHealth: () => Promise<Response>): Promise<RegistryProbeOutcome> {
+  try {
+    const response = await fetchHealth()
+    if (response.status !== HttpStatus.OK) return { status: MonitorStatus.ERROR, message: 'Fatal Error' }
+
+    const parsed = harborHealthBodySchema.safeParse(await response.json())
+    if (!parsed.success) return { status: MonitorStatus.UNKNOW, message: MONITOR_ERROR_MESSAGE }
+    if (parsed.data.status === 'healthy') return { status: MonitorStatus.OK, message: MonitorStatus.OK }
+
+    const failedCoreComponent = parsed.data.components?.some(component =>
+      component.status === 'unhealthy'
+      && CORE_COMPONENTS.has(component.name),
+    )
+    if (failedCoreComponent) return { status: MonitorStatus.ERROR, message: 'Service en erreur' }
+    return { status: MonitorStatus.WARNING, message: 'Service dégradé' }
+  } catch (error) {
+    return { status: MonitorStatus.UNKNOW, message: MONITOR_ERROR_MESSAGE, cause: error }
   }
 }
