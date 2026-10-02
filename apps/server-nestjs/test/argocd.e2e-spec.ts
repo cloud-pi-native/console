@@ -19,7 +19,6 @@ import { EventsModule } from '../src/modules/infrastructure/events/events.module
 import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { ARGOCD_RECONCILE_TIMEOUT, GITLAB_SYNC_TIMEOUT } from './constants'
 
 const canRunArgoCDE2E
@@ -57,7 +56,7 @@ describeWithArgoCD('ArgoCDService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ArgoCDModule, ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+      imports: [ArgoCDModule, ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()
