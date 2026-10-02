@@ -45,13 +45,13 @@ export class ServiceMonitorService implements OnModuleInit, OnModuleDestroy {
       vault: vaultHealth,
     } = this
     const probes: Array<[string, (() => Promise<ProbeOutcome>) | undefined]> = [
-      ['ArgoCD', argocdHealth && (() => argocdHealth.check().then(fromHealthCheck))],
-      ['Gitlab', gitlabHealth && (() => gitlabHealth.check().then(fromHealthCheck))],
+      ['ArgoCD', argocdHealth && (() => argocdHealth.check().then(result => fromHealthCheck(result, 'argocd')))],
+      ['Gitlab', gitlabHealth && (() => gitlabHealth.check().then(result => fromHealthCheck(result, 'gitlab')))],
       ['Harbor', harborHealth && (() => harborHealth.monitor())],
-      ['Keycloak', () => this.keycloak.check().then(fromHealthCheck)],
-      ['Nexus', nexusHealth && (() => nexusHealth.check().then(fromHealthCheck))],
+      ['Keycloak', () => this.keycloak.check().then(result => fromHealthCheck(result, 'keycloak'))],
+      ['Nexus', nexusHealth && (() => nexusHealth.check().then(result => fromHealthCheck(result, 'nexus')))],
       ['SonarQube', sonarqubeHealth && (() => sonarqubeHealth.monitor())],
-      ['Vault', vaultHealth && (() => vaultHealth.check().then(fromHealthCheck))],
+      ['Vault', vaultHealth && (() => vaultHealth.check().then(result => fromHealthCheck(result, 'vault')))],
     ]
 
     this.services = probes.flatMap(([name, probe]) => probe ? [this.track(name, probe)] : [])

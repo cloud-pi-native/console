@@ -20,8 +20,8 @@ function isProbeDetail(detail: unknown): detail is ProbeDetail {
   return isRecord(detail) && 'status' in detail && typeof detail.status === 'string'
 }
 
-export function fromHealthCheck(result: unknown): ProbeOutcome {
-  const detail = isRecord(result) ? result[Object.keys(result)[0]] : undefined
+export function fromHealthCheck(result: unknown, key: string): ProbeOutcome {
+  const detail = isRecord(result) ? result[key] : undefined
   if (!isProbeDetail(detail)) {
     return { status: MonitorStatus.UNKNOW, message: ERROR_MESSAGE }
   }
