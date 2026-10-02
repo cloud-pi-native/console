@@ -92,9 +92,9 @@ describe('adminTokenService', () => {
       expect(prisma.$transaction).toHaveBeenCalledWith(expect.any(Function))
       expect(tx.user.create).toHaveBeenCalled()
       expect(tx.adminToken.create).toHaveBeenCalled()
-      expect(result.id).toBe(tokenId)
+      expect(result.token).toEqual(created)
+      expect(result.token.permissions).toBe(2n)
       expect(result.password).toBeTruthy()
-      expect(result.permissions).toBe('2')
     })
   })
 

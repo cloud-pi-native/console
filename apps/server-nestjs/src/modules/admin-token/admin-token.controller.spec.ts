@@ -45,4 +45,14 @@ describe('adminTokenController', () => {
     await controller.list(false)
     expect(service.list).toHaveBeenLastCalledWith(false)
   })
+
+  it('delegates create and assembles the exposed token', async () => {
+    service.create.mockResolvedValue({ token, password: 'plain-password' })
+
+    const result = await controller.create({ name: token.name, permissions: '0', expirationDate: null })
+
+    expect(service.create).toHaveBeenCalledWith({ name: token.name, permissions: '0', expirationDate: null })
+    expect(result.permissions).toBe('0')
+    expect(result.password).toBe('plain-password')
+  })
 })

@@ -6,3 +6,7 @@ export function toAdminToken({ permissions, ...token }: AdminTokenRecord) {
     permissions: permissions.toString(),
   }
 }
+
+export function toExposedAdminToken(record: AdminTokenRecord, password: string) {
+  return { ...toAdminToken(record), password }
+}
