@@ -9,11 +9,11 @@ import { UserService } from './user.service'
 import { toContractUser } from './user.utils'
 
 @Controller('api/v1/users')
-@UseGuards(UserGuard)
 export class UserController {
   constructor(@Inject(UserService) private readonly userService: UserService) {}
 
   @Get()
+  @UseGuards(UserGuard)
   @RequireAdminPermission('ManageUsers')
   async getAllUsers(
     @Query(new ZodValidationPipe(AllUsersQuerySchema)) query: z.infer<typeof AllUsersQuerySchema>,
@@ -31,6 +31,7 @@ export class UserController {
   }
 
   @Patch()
+  @UseGuards(UserGuard)
   @RequireAdminPermission('ManageUsers')
   async patchUsers(
     @Body(new ZodValidationPipe(PatchUsersBodySchema)) users: PatchUsersBody,
