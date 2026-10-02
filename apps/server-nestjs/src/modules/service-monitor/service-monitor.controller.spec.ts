@@ -36,7 +36,7 @@ describe('serviceMonitorController', () => {
     const health = [{ name: 'keycloak', status: 'up' }]
     service.getServiceHealth.mockResolvedValue(health)
 
-    expect(await controller.getServiceHealth()).toBe(health)
+    await expect(controller.getServiceHealth()).resolves.toBe(health)
     expect(service.getServiceHealth).toHaveBeenCalledTimes(1)
   })
 
@@ -44,7 +44,7 @@ describe('serviceMonitorController', () => {
     const health = [{ name: 'keycloak', status: 'up' }]
     service.getCompleteServiceHealth.mockResolvedValue(health)
 
-    expect(await controller.getCompleteServiceHealth()).toBe(health)
+    await expect(controller.getCompleteServiceHealth()).resolves.toBe(health)
     expect(service.getCompleteServiceHealth).toHaveBeenCalledTimes(1)
   })
 
