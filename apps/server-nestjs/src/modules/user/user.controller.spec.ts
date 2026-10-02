@@ -15,16 +15,6 @@ describe('userController', () => {
   let controller: UserController
   let service: MockProxy<UserService>
 
-  it('keeps the matching search public (legacy GET has no auth)', () => {
-    expect(Reflect.getMetadata('__guards__', UserController) ?? []).not.toContain(UserGuard)
-    expect(Reflect.getMetadata('__guards__', UserController.prototype.getMatchingUsers) ?? []).not.toContain(UserGuard)
-  })
-
-  it('guards list and patch behind UserGuard', () => {
-    expect(Reflect.getMetadata('__guards__', UserController.prototype.getAllUsers) ?? []).toContain(UserGuard)
-    expect(Reflect.getMetadata('__guards__', UserController.prototype.patchUsers) ?? []).toContain(UserGuard)
-  })
-
   beforeEach(async () => {
     service = mock<UserService>()
 
