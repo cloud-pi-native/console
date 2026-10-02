@@ -23,6 +23,8 @@ export function makeAdminToken(overrides: Partial<Omit<AdminToken, 'owner'>> = {
   return { ...record, ...overrides }
 }
 
-export function makeAdminTokenRow(overrides: Partial<Omit<AdminToken, 'owner'>> = {}) {
+export type AdminTokenRow = AdminToken & { hash: string }
+
+export function makeAdminTokenRow(overrides: Partial<Omit<AdminToken, 'owner'>> = {}): AdminTokenRow {
   return { ...makeAdminToken(overrides), hash: faker.string.hexadecimal({ length: 64 }) }
 }
