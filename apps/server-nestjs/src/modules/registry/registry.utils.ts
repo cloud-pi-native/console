@@ -134,7 +134,7 @@ export interface RegistryProbeOutcome {
 // Legacy harbor monitor reads /health, not /ping, to split degraded from failed.
 const MONITOR_ERROR_MESSAGE = 'Erreur lors la requête'
 
-const CORE_COMPONENTS = ['core', 'database', 'portal', 'registry', 'registryctl']
+const CORE_COMPONENTS = new Set(['core', 'database', 'portal', 'registry', 'registryctl'])
 
 const harborHealthBodySchema = z.object({
   status: z.string(),
@@ -155,7 +155,7 @@ export async function monitorHarborHealth(fetchHealth: () => Promise<Response>):
 
     const failedCoreComponent = parsed.data.components?.some(component =>
       component.status === 'unhealthy'
-      && CORE_COMPONENTS.includes(component.name),
+      && CORE_COMPONENTS.has(component.name),
     )
     if (failedCoreComponent) return { status: MonitorStatus.ERROR, message: 'Service en erreur' }
     return { status: MonitorStatus.WARNING, message: 'Service dégradé' }
