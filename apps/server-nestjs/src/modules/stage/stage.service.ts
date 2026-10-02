@@ -1,6 +1,6 @@
 import type { CreateStageBody, Stage, UpdateStageBody } from '@cpn-console/shared'
 import type { Cluster } from '@prisma/client'
-import type { StageEnvironmentsRecord, StageWithClustersRecord } from './stage-queries.utils'
+import type { StageEnvironmentsRecord, StageRecord, StageWithClustersRecord } from './stage-queries.utils'
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import {
@@ -30,7 +30,7 @@ export class StageService {
     return getStageAssociatedEnvironments(this.prisma, stageId)
   }
 
-  async createStage({ clusterIds = [], name }: CreateStageBody): Promise<Stage> {
+  async createStage({ clusterIds = [], name }: CreateStageBody): Promise<StageWithClustersRecord> {
     return this.prisma.$transaction(async (tx) => {
       const isNameTaken = await getStageByName(tx, name)
       if (isNameTaken) throw new BadRequestException('Un type d\'environnement portant ce nom existe déjà')
@@ -41,15 +41,13 @@ export class StageService {
         await linkStageToClusters(tx, stage.id, clusterIds)
       }
 
-      return {
-        id: stage.id,
-        name: stage.name,
-        clusterIds,
-      }
+      const created = await getStageById(tx, stage.id)
+      if (!created) throw new NotFoundException()
+      return created
     })
   }
 
-  async updateStage(stageId: Stage['id'], { clusterIds, name }: UpdateStageBody): Promise<Stage> {
+  async updateStage(stageId: Stage['id'], { clusterIds, name }: UpdateStageBody): Promise<StageWithClustersRecord> {
     return this.prisma.$transaction(async (tx) => {
       const dbStage = await getStageById(tx, stageId)
       if (!dbStage) throw new NotFoundException()
@@ -72,12 +70,7 @@ export class StageService {
 
       const updated = await getStageById(tx, stageId)
       if (!updated) throw new NotFoundException()
-
-      return {
-        id: stageId,
-        name: updated.name,
-        clusterIds: updated.clusters.map(({ id }) => id),
-      }
+      return updated
     })
   }
 

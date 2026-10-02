@@ -5,7 +5,7 @@ import { RequireAdminPermission } from '../infrastructure/permission/user/user-a
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { StageService } from './stage.service'
-import { toStageAssociatedEnvironments, toStages } from './stage.utils'
+import { toStage, toStageAssociatedEnvironments, toStages } from './stage.utils'
 
 @Controller('api/v1/stages')
 export class StageController {
@@ -32,7 +32,7 @@ export class StageController {
   async create(
     @Body(new ZodValidationPipe(CreateStageBodySchema)) data: CreateStageBody,
   ): Promise<Stage> {
-    return this.service.createStage(data)
+    return toStage(await this.service.createStage(data))
   }
 
   @Put(':stageId')
@@ -42,7 +42,7 @@ export class StageController {
     @Param('stageId') stageId: string,
     @Body(new ZodValidationPipe(UpdateStageBodySchema)) data: UpdateStageBody,
   ): Promise<Stage> {
-    return this.service.updateStage(stageId, data)
+    return toStage(await this.service.updateStage(stageId, data))
   }
 
   @Delete(':stageId')
