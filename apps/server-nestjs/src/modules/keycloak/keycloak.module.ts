@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config'
 import { TerminusModule } from '@nestjs/terminus'
 import { keycloakConfigFactory } from '../../config/keycloak.config'
 import { DatabaseModule } from '../infrastructure/database/database.module'
+import { VaultModule } from '../vault/vault.module'
 import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
 import { KeycloakHealthService } from './keycloak-health.service'
@@ -12,7 +13,7 @@ import { KeycloakPluginService } from './keycloak-plugin.service'
 import { KeycloakService } from './keycloak.service'
 
 @Module({
-  imports: [ConfigModule.forFeature(keycloakConfigFactory), DatabaseModule, TerminusModule],
+  imports: [ConfigModule.forFeature(keycloakConfigFactory), DatabaseModule, TerminusModule, VaultModule],
   providers: [
     {
       inject: [keycloakConfigFactory.KEY],

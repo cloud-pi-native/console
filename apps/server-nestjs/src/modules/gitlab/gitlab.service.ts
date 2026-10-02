@@ -1,6 +1,6 @@
 import type { MemberSchema } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
-import type { RepositorySyncEventPayload } from '../events/app-events.service'
+import type { RepositorySyncEventPayload, ZoneEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { MirrorUserSecret, VaultSecret } from '../vault/vault-client.service'
 import type { GroupSchemaWith } from './gitlab-client.service'
@@ -88,6 +88,34 @@ export class GitlabService {
   @OnEvent('repository.sync')
   async handleRepositorySync(payload: RepositorySyncEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
     return capturePluginResult('gitlab', () => this.syncRepositoryMirror(payload))
+  }
+
+  @OnEvent('zone.upsert')
+  async handleUpsertZone(payload: ZoneEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', () => this.syncZone(payload))
+  }
+
+  @StartActiveSpan()
+  private async syncZone(payload: ZoneEventPayload) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('zone.slug', payload.slug)
+    this.logger.log(`Handling a zone upsert event for ${payload.slug}`)
+    await this.gitlab.getOrCreateInfraGroupRepo(payload.slug)
+    this.logger.log(`GitLab zone sync completed for ${payload.slug}`)
+  }
+
+  @OnEvent('zone.delete')
+  async handleDeleteZone(payload: ZoneEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', () => this.cleanupZone(payload))
+  }
+
+  @StartActiveSpan()
+  private async cleanupZone(payload: ZoneEventPayload) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('zone.slug', payload.slug)
+    this.logger.log(`Handling a zone delete event for ${payload.slug}`)
+    await this.gitlab.deleteInfraGroupRepo(payload.slug)
+    this.logger.log(`GitLab zone cleanup completed for ${payload.slug}`)
   }
 
   @StartActiveSpan()

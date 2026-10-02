@@ -292,6 +292,39 @@ export class GitlabClientService {
     return repo
   }
 
+  // Non-creating lookup so delete paths stay idempotent (cleanup must never resurrect a repo)
+  async findInfraGroupRepo(subGroupPath: string) {
+    const fullPath = this.config.projectRootDir
+      ? `${this.config.projectRootDir}/${subGroupPath}`
+      : subGroupPath
+    try {
+      return await this.client.Projects.show(fullPath)
+    } catch (error) {
+      if (isGitbeakerNotFound(error)) return undefined
+      throw error
+    }
+  }
+
+  // Zone infra repo cleanup, ported from plugins/gitlab deleteZone
+  async deleteInfraGroupRepo(zoneSlug: string) {
+    const subGroupPath = join(INFRA_GROUP_PATH, zoneSlug)
+    const repo = await this.findInfraGroupRepo(subGroupPath)
+    if (!repo) {
+      this.logger.log(`GitLab infra repository not found for zone ${zoneSlug}; cleanup is a no-op`)
+      return
+    }
+    await this.client.Projects.remove(repo.id)
+    try {
+      // GitLab requires the full path (including the projects root group), not the group-relative one.
+      return await this.client.Projects.remove(repo.id, { permanentlyRemove: true, fullPath: `${repo.path_with_namespace}-deletion_scheduled-${repo.id}` })
+    } catch (error) {
+      // The first remove already marked the project for deletion; treat an
+      // already-scheduled/already-deleted project as a completed cleanup.
+      if (isGitbeakerNotFound(error)) return
+      throw error
+    }
+  }
+
   async createGroupRepo(groupId: number, repoName: string, description?: string) {
     this.logger.log(`Creating a GitLab repository in a standalone group (groupId=${groupId}, repoName=${repoName})`)
     return ensure({

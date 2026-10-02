@@ -178,7 +178,7 @@ describe('appEventsService', () => {
   })
 
   it('emits and logs zone events with the event-log data shape and no project id', async () => {
-    const payload = { id: faker.string.uuid(), slug: faker.string.alpha({ length: 6, casing: 'lower' }) }
+    const payload = { id: faker.string.uuid(), slug: faker.string.alpha({ length: 6, casing: 'lower' }), argocdUrl: faker.internet.url() }
     eventEmitter.emitAsync.mockResolvedValue([
       { vault: { status: 'KO', message: 'Vault unreachable', executionTime: 5, error: new Error('boom') } },
     ])
