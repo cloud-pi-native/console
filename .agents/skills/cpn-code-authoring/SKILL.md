@@ -10,7 +10,7 @@ license: Apache-2.0
 
 # Console code authoring
 
-Conventions ratified across the strangler-fig PR fleet (surveyed 2026-10).
+Conventions ratified across the strangler-fig PR fleet.
 Every rule below was decided in review, with a production reason; when code
 and this skill disagree, fix the code or cite the exception here.
 
@@ -19,6 +19,34 @@ and this skill disagree, fix the code or cite the exception here.
 This skill covers writing and reviewing domain code only. Commits: `cpn-commit`.
 PRs and bodies: `cpn-pr`. Review findings and thread reconciliation: `cpn-review`.
 Repo structure and environment chains stay in `AGENTS.md`.
+
+## Code structure
+
+`apps/server-nestjs/src/` layout:
+
+- `main.ts`, `main.module.ts` — bootstrap and root module.
+- `config/` — one `*.config.ts` per external system (argocd, gitlab, harbor,
+  keycloak, nexus, sonarqube, service-chain, base), each a
+  `registerAs` factory injected as `@Inject(xxxConfigFactory.KEY)`;
+  colocated `*.config.spec.ts`.
+- `modules/<domain>/` — one directory per domain, self-contained. The
+  domain file set: `<domain>.module.ts`, `<domain>.controller.ts` +
+  `.spec.ts`, `<domain>.service.ts` + `.spec.ts`,
+  `<domain>-queries.utils.ts` (Prisma selects + where-builders; record
+  types flow from its selects), `<domain>.utils.ts` (`to<Thing>` mappers,
+  guards), `<domain>.constants.ts` (incl. `PLUGIN_NAME`), and
+  `<domain>-testing.utils.ts` (`makeXxx` factories). Not every domain has
+  every file — add the file when the concern first appears, never before.
+- `modules/infrastructure/` — cross-domain concerns, same file pattern
+  per concern: `auth/` (JWT, DSO token, decorators), `database/` (Prisma),
+  `events/` (event bus + `@OnEvent` bridges), `logger/`, `permission/`
+  (BigInt bitmasks), `pipe/` (ZodValidationPipe), `telemetry/`.
+- `utils/`, `prisma/`, `__mocks__/` — repo-wide helpers, generated client,
+  test doubles.
+
+A new domain is a new `modules/<domain>/` directory following that file
+set; it never reaches into another domain's internals — cross-domain calls
+go through the target's controller-exported service.
 
 ## Layer discipline
 
