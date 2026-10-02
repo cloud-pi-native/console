@@ -28,6 +28,19 @@ export type RepositorySyncEventPayload = {
   | { syncAllBranches: false, branchName: string }
 )
 
+export type AdminRoleEventMember = {
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+}
+
+export type AdminRoleEventPayload = {
+  id: string
+  oidcGroup: string | null
+  members: AdminRoleEventMember[]
+}
+
 /** Admin-log action labels (legacy hooks wording). */
 export type EventLogAction
   = | 'Create Project' | 'Update Project' | 'Delete all project resources'

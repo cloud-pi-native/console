@@ -1,4 +1,5 @@
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
+import type { AdminRoleEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
 import type { GroupRepresentationWith, GroupRepresentationWithIdNamePath } from './keycloak.utils'
@@ -54,6 +55,49 @@ export class KeycloakService {
       await this.keycloak.deleteGroup(group.id)
     }
     this.logger.log(`Keycloak cleanup completed for project ${project.slug}`)
+  }
+
+  @OnEvent('adminRole.upsert')
+  async handleAdminRoleUpsert(role: AdminRoleEventPayload): Promise<RequiredPluginResult<'keycloak'>> {
+    return capturePluginResult('keycloak', () => this.syncAdminRole(role.id))
+  }
+
+  @OnEvent('adminRole.delete')
+  async handleAdminRoleDelete(role: AdminRoleEventPayload): Promise<RequiredPluginResult<'keycloak'>> {
+    return capturePluginResult('keycloak', () => this.revokeAdminRoleGroup(role))
+  }
+
+  @StartActiveSpan()
+  private async revokeAdminRoleGroup(role: AdminRoleEventPayload) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('admin_role.id', role.id)
+    const roleGroupPath = toGroupPath(role.oidcGroup)
+    if (!roleGroupPath) return
+    const roleGroup = await this.keycloak.getGroupByPath(roleGroupPath)
+    if (!roleGroup?.id) {
+      this.logger.warn(`Keycloak group not found for deleted admin role (roleId=${role.id}, path=${roleGroupPath})`)
+      return
+    }
+    for (const member of role.members) {
+      await this.maybeRemoveUserFromGroup(member.id, roleGroup.id, roleGroup.name)
+    }
+  }
+
+  @StartActiveSpan()
+  private async syncAdminRole(roleId: string) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('admin_role.id', roleId)
+    this.logger.log(`Handling an admin role event for ${roleId}`)
+    const [roles, users] = await Promise.all([
+      this.datastore.getAllAdminRoles(),
+      this.datastore.getAllUsersWithAdminRoleIds(),
+    ])
+    const role = roles.find(({ id }) => id === roleId)
+    if (!role) {
+      this.logger.warn(`Admin role not found for event (roleId=${roleId})`)
+      return
+    }
+    await this.ensureAdminRoleGroup(role, users)
   }
 
   // @Cron(CronExpression.EVERY_HOUR)
@@ -147,7 +191,7 @@ export class KeycloakService {
     span?.setAttribute('admin_role.id', role.id)
     span?.setAttribute('admin_role.oidc_group.present', isNonEmptyGroupPath(role.oidcGroup))
     const roleGroupPath = toGroupPath(role.oidcGroup)
-    if (!roleGroupPath) return
+    if (!roleGroupPath || isExternalRoleType(role.type)) return
 
     span?.setAttribute('keycloak.group.path', roleGroupPath)
     const roleGroup = await this.keycloak.getOrCreateGroupByPath(roleGroupPath)
