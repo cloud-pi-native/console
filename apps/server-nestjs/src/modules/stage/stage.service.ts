@@ -4,8 +4,8 @@ import type { StageEnvironmentsRecord, StageRecord, StageWithClustersRecord } fr
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import {
-  createStage as createStageQuery,
-  deleteStage as deleteStageQuery,
+  createStage,
+  deleteStage,
   disconnectClusterFromStage,
   getAllStageIds,
   getStageAssociatedEnvironmentCount,
@@ -14,7 +14,7 @@ import {
   getStageByName,
   linkClusterToStages,
   linkStageToClusters,
-  listStages as listStagesQuery,
+  listStages,
   updateStageName,
 } from './stage-queries.utils'
 
@@ -23,7 +23,7 @@ export class StageService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   async listStages(): Promise<StageWithClustersRecord[]> {
-    return listStagesQuery(this.prisma)
+    return listStages(this.prisma)
   }
 
   async getStageAssociatedEnvironments(stageId: Stage['id']): Promise<StageEnvironmentsRecord[]> {
@@ -35,7 +35,7 @@ export class StageService {
       const isNameTaken = await getStageByName(tx, name)
       if (isNameTaken) throw new BadRequestException('Un type d\'environnement portant ce nom existe déjà')
 
-      const stage = await createStageQuery(tx, { name })
+      const stage = await createStage(tx, { name })
 
       if (clusterIds.length) {
         await linkStageToClusters(tx, stage.id, clusterIds)
@@ -81,7 +81,7 @@ export class StageService {
         throw new BadRequestException('Impossible de supprimer le stage, des environnements en activité y ont souscrit')
       }
 
-      await deleteStageQuery(tx, stageId)
+      await deleteStage(tx, stageId)
     })
   }
 
