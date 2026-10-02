@@ -1,5 +1,93 @@
 # Changelog
 
+## [9.27.0-rc.1](https://github.com/cloud-pi-native/console/compare/v9.27.0-rc...v9.27.0-rc.1) (2026-10-02)
+
+
+### Features
+
+* **server-nestjs:** add Sécurité Plateforme admin role ([e1e6074](https://github.com/cloud-pi-native/console/commit/e1e607458bb1e67c67208e0bc931c173fafaee7e)), closes [#2792](https://github.com/cloud-pi-native/console/issues/2792)
+* **server-nestjs:** migrate stages ([febeee4](https://github.com/cloud-pi-native/console/commit/febeee4f2afcd1f8e0ec399fbdea5aed6afff245))
+
+
+### Bug Fixes
+
+* **admin-token:** coerce contract expirationDate to Date at the service boundary ([53e2616](https://github.com/cloud-pi-native/console/commit/53e26164df3aea79bf762758fbf74a51ca27f9dc))
+* **admin-token:** drop invalid guard metadata specs ([dfcaef1](https://github.com/cloud-pi-native/console/commit/dfcaef11357b347073218657acfc58964e65bcf1))
+* **admin-token:** optional withRevoked, service-level expiration check, module wiring ([dfabc49](https://github.com/cloud-pi-native/console/commit/dfabc491c5de8e5d5356a94c97687038a88be001)), closes [#1889](https://github.com/cloud-pi-native/console/issues/1889)
+* **admin-token:** update fixture import after inlining ([601f1e3](https://github.com/cloud-pi-native/console/commit/601f1e30e2f8d65b15a0fbf63c81470c4b22eeff))
+* **project:** reject already archived projects ([b17a159](https://github.com/cloud-pi-native/console/commit/b17a15959c2b8ad59e0805d5a822cbf7d0f71f8c)), closes [#2757](https://github.com/cloud-pi-native/console/issues/2757)
+* **server-nestjs:** provide UserPermissionService to StageModule ([9ba8cda](https://github.com/cloud-pi-native/console/commit/9ba8cdae96e9fbc161a710c77ccfcc88e53b7a30))
+* **server-nestjs:** resolve multi-path auditor groups in GitLab mapping ([bf68401](https://github.com/cloud-pi-native/console/commit/bf68401c2ec5731e7b087da5aa8fa16e6e80ea6f)), closes [#2792](https://github.com/cloud-pi-native/console/issues/2792)
+* **server-nestjs:** wire AuthModule into StageModule ([2052fe8](https://github.com/cloud-pi-native/console/commit/2052fe81e1a02b45e02920cf0c52a5c5257cb5dc))
+* **stage:** drop invalid guard metadata specs and never casts ([4d048d7](https://github.com/cloud-pi-native/console/commit/4d048d71d4300f9c9a8fcbe370217418cf96862c))
+* **stage:** drop the remaining guard metadata spec ([45024aa](https://github.com/cloud-pi-native/console/commit/45024aa96f174946d8ced54a623d63c04782db98))
+* **stage:** restrict UserGuard to the protected routes ([ae3ded5](https://github.com/cloud-pi-native/console/commit/ae3ded516b1a81a3287c75d4dc5ccc6de8a1a0fd))
+* **stage:** validate stage params as UUIDs before Prisma ([ff8a96e](https://github.com/cloud-pi-native/console/commit/ff8a96e8fb178c40dea4639260970c32bebc8b13))
+* **user:** emit canonical AdminRoleEventPayload and type controller inputs ([88f80c8](https://github.com/cloud-pi-native/console/commit/88f80c847d35f76c14e65eb355f04167d5b645c4))
+* **user:** emit canonical AdminRoleEventPayload and type controller inputs ([dd8e247](https://github.com/cloud-pi-native/console/commit/dd8e247a4e92d9bbbd913c7516d3a39acdccde85))
+* **user:** legacy 400 on unknown admin role, matching take:5, hook union semantics ([ccc6db7](https://github.com/cloud-pi-native/console/commit/ccc6db7290b299eec7176bf1d795481cd496afda))
+* **user:** legacy 400 on unknown admin role, matching take:5, hook union semantics ([d87dfae](https://github.com/cloud-pi-native/console/commit/d87dfae034ba9f01cea6b0b26f76356299dbaa8a))
+* **user:** purge dead create path and lock legacy parity ([d5e0ec9](https://github.com/cloud-pi-native/console/commit/d5e0ec934b30e349346bd3dea41f95cbaa249660))
+* **user:** purge dead create path and lock legacy parity ([4faf39e](https://github.com/cloud-pi-native/console/commit/4faf39e96ca374e131e5444c3f6219edc0dac186))
+* **user:** restrict UserGuard to list and patch routes ([a14eb1f](https://github.com/cloud-pi-native/console/commit/a14eb1f940afca90c436fd069368a0d649798a51))
+* **user:** use the projectMembers relation key in memberOfIds filter ([1fc04ab](https://github.com/cloud-pi-native/console/commit/1fc04ab1b6efe4169b35e530e4055f5f0b5d3fa2))
+* **user:** use the projectMembers relation key in memberOfIds filter ([84b7758](https://github.com/cloud-pi-native/console/commit/84b77584bfca98fbabab6ad10e705744161f38c5))
+* **vault:** avoid double slash in KV list path for Vault 2.0 ([5eeccba](https://github.com/cloud-pi-native/console/commit/5eeccba73ec44be27cebd93fd563e9f3368bda16))
+* **zone:** accept null log projectId and validate zone UUID params ([1062929](https://github.com/cloud-pi-native/console/commit/10629299624430efc51095500dab078e003acb9d))
+
+
+### Miscellaneous Chores
+
+* **admin-token:** drop tooling tag from test comment ([750fdb4](https://github.com/cloud-pi-native/console/commit/750fdb46480f3a974e4e909ce920112a64a582f9))
+* refine GitHub issue templates ([b5d418e](https://github.com/cloud-pi-native/console/commit/b5d418e9ae9749b1cfb566bea9f62d3033cf6e40)), closes [#2239](https://github.com/cloud-pi-native/console/issues/2239)
+* update GitHub issue and MR templates ([f356cab](https://github.com/cloud-pi-native/console/commit/f356cab1c568a28f7415ee1b81c0b339720a651b)), closes [#2239](https://github.com/cloud-pi-native/console/issues/2239)
+* **user:** drop section divider comments ([9d487dc](https://github.com/cloud-pi-native/console/commit/9d487dc082a8a9d6afa4de8dcba31ff6add5b837))
+* **user:** drop section divider comments ([aafa6c1](https://github.com/cloud-pi-native/console/commit/aafa6c16fdf6eceb35e934fe57c33e125d8b3e1a))
+
+
+### Refactoring
+
+* **admin-token:** accept owner overrides in makeAdminToken ([b203914](https://github.com/cloud-pi-native/console/commit/b203914952283f56a2d4ae96ec0d61cb0a1e716c))
+* **admin-token:** align queries types with Record naming ([c8fc77f](https://github.com/cloud-pi-native/console/commit/c8fc77fa20abe4b866afc110d8a9f7679e49efe2))
+* **admin-token:** assemble exposed token in controller ([87a7aef](https://github.com/cloud-pi-native/console/commit/87a7aef37093371fb07e213cbcd7a0adb112e67a))
+* **admin-token:** extract makeAdminTokenOwner from makeAdminToken ([dea84e3](https://github.com/cloud-pi-native/console/commit/dea84e3f34ecf207a2c1cbffadcd674963fc64e7))
+* **admin-token:** extract makeAdminTokenOwner from makeAdminToken ([50a322d](https://github.com/cloud-pi-native/console/commit/50a322dd75e5bb3f5e3d03548fd84c7b804834fa))
+* **admin-token:** extract status filter into helper ([5320207](https://github.com/cloud-pi-native/console/commit/5320207dd91cb977497c2f9b0ba21b861e12f0f9))
+* **admin-token:** inline listed-token fixture at its single call site ([e9804b6](https://github.com/cloud-pi-native/console/commit/e9804b64f417426a86107749e83a4d51e65ae16f))
+* **admin-token:** inline transaction client type ([680806f](https://github.com/cloud-pi-native/console/commit/680806fe09e1f8d8abd448a05befdb1e2bf51436))
+* **admin-token:** move permissions mapping to controller ([740938d](https://github.com/cloud-pi-native/console/commit/740938de9694c01d85b69924c3705abcc92087ed))
+* **admin-token:** name the token row fixture type ([64612d6](https://github.com/cloud-pi-native/console/commit/64612d6be6722b6c4016f238812328387ad3991e))
+* **admin-token:** rename AdminTokenRow to AdminTokenRecordWithHash ([7af2fee](https://github.com/cloud-pi-native/console/commit/7af2feef1b50652b0e4c4bd706912f7318de3c80))
+* **admin-token:** rename record type to AdminToken ([d160220](https://github.com/cloud-pi-native/console/commit/d1602209833ec43fdfc38f2755a0a6348bd2fe75))
+* **admin-token:** rename test factory to makeAdminToken ([1ca89ea](https://github.com/cloud-pi-native/console/commit/1ca89ea15169192b3d949a2588862d6927fcc554))
+* **admin-token:** share spec factories in testing utils, drop ReturnType aliases ([d4964f2](https://github.com/cloud-pi-native/console/commit/d4964f2d26d5c4883173802556b6217e11aa3df3))
+* **admin-token:** simplify makeAdminTokenRecord overrides to Partial ([78ebc6a](https://github.com/cloud-pi-native/console/commit/78ebc6afddb74d51400f9e8aacb7d541e5fe7b3c))
+* **admin-token:** split row and selected-payload token fixtures ([668c42d](https://github.com/cloud-pi-native/console/commit/668c42dcddfcd563cdf229b28883dfccbc26ec97))
+* **client:** type request bodies via shared contract aliases ([5729b71](https://github.com/cloud-pi-native/console/commit/5729b71c2d3ace52ff638fec6f2622881512a5c8))
+* **shared:** drop duplicate CreateAdminTokenBody export in favor of contract alias ([cadd8e2](https://github.com/cloud-pi-native/console/commit/cadd8e277df8d18ad37d3c9ed98fca1220724faf))
+* **sonarqube:** use DeepMockProxy instead of ReturnType alias ([7efc86b](https://github.com/cloud-pi-native/console/commit/7efc86ba0e0ffc6893f115cbf3d0a3ae5274d312))
+* **stage:** aligner le module sur les remarques de revue ([519e87c](https://github.com/cloud-pi-native/console/commit/519e87ca5e56fad136cd8291ddbc36b237489a81)), closes [#2493](https://github.com/cloud-pi-native/console/issues/2493)
+* **stage:** drop redundant Query import aliases ([d256868](https://github.com/cloud-pi-native/console/commit/d256868ca4efc3660f1dcb55faaf08ceb755fb78))
+* **stage:** englober les écritures multi-requêtes dans une transaction ([f26117b](https://github.com/cloud-pi-native/console/commit/f26117b4cda56457f3860f4115e38b454f40b90b)), closes [#2493](https://github.com/cloud-pi-native/console/issues/2493)
+* **stage:** migrate module from server ([1de9ff6](https://github.com/cloud-pi-native/console/commit/1de9ff6fea9360a7ef2180e353d48a8d11dbc3cf))
+* **stage:** move record mappers to controller, service returns records ([fc7923e](https://github.com/cloud-pi-native/console/commit/fc7923e9d2387cd06f48fd93312440dc7810cb96))
+* **stage:** remove unused StageRecord import ([73b6932](https://github.com/cloud-pi-native/console/commit/73b6932f071f9508721649f46ebb9699d0a8043e))
+* **stage:** return records from service, map to contract in controller ([5461b77](https://github.com/cloud-pi-native/console/commit/5461b77406cc383a37cb93bd52873fe805a8d1cf))
+* **stage:** reuse cluster and environment test factories ([e80e46d](https://github.com/cloud-pi-native/console/commit/e80e46d35e6327d75f474cef2b951f0fcf2fba17))
+* **stage:** reuse makeUser for the owner fixture ([00eebae](https://github.com/cloud-pi-native/console/commit/00eebae8f9687e58f84239d55a5d9c6521ee5b5a))
+* **user:** batch AND filters into single pushes ([0cd239c](https://github.com/cloud-pi-native/console/commit/0cd239cf035d2f9e27a471a5f955f26e1241faec))
+* **user:** move the letters filter inside its guard ([1788a22](https://github.com/cloud-pi-native/console/commit/1788a2296795c1145be5b1cfd250a2c4cbfd3d6e))
+* **user:** realigner structure et style du module ([8d222f2](https://github.com/cloud-pi-native/console/commit/8d222f25b4d9059062563fc726f69a9806447733)), closes [#2738](https://github.com/cloud-pi-native/console/issues/2738)
+* **user:** realigner structure et style du module ([358dbbf](https://github.com/cloud-pi-native/console/commit/358dbbfa91c2215692eafa05864cbf43fa4437d4)), closes [#2738](https://github.com/cloud-pi-native/console/issues/2738)
+* **user:** remove reflection-only permissions metadata check ([efaa652](https://github.com/cloud-pi-native/console/commit/efaa652db9675fcac7991ce76cb3a900f2ed4454))
+* **user:** remove reflection-only permissions metadata check ([d500398](https://github.com/cloud-pi-native/console/commit/d50039833be39e97a0264a83548aaaca607c3342))
+* **user:** retirer l'alias AllUsersQuery au profit du schéma ([12f4b22](https://github.com/cloud-pi-native/console/commit/12f4b226bf6b5ef2fb729d233ecde9aa7160754a)), closes [#1889](https://github.com/cloud-pi-native/console/issues/1889)
+* **user:** retirer l'alias AllUsersQuery au profit du schéma ([40025ca](https://github.com/cloud-pi-native/console/commit/40025ca19fe48bbb02d2e45e0c7b4ec240e47124)), closes [#1889](https://github.com/cloud-pi-native/console/issues/1889)
+* **zone:** drop event-helper comment ([58285b3](https://github.com/cloud-pi-native/console/commit/58285b38cd9d6e2571645602a8b5d5608f908ed1))
+* **zone:** map records to contract in controller ([529c44a](https://github.com/cloud-pi-native/console/commit/529c44a73963886cd122877e2aca3bfaaaa2017c))
+* **zone:** name the update body schema in shared ([c296f95](https://github.com/cloud-pi-native/console/commit/c296f959aa90f091dad8fc142540b8e28c7d3563))
+* **zone:** name the zone record type in service specs ([9002da9](https://github.com/cloud-pi-native/console/commit/9002da92949435c140ca0de26fb68760f67c183f))
+
 ## [9.27.0-rc](https://github.com/cloud-pi-native/console/compare/v9.26.0...v9.27.0-rc) (2026-09-29)
 
 
