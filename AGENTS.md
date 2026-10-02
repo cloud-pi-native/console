@@ -64,10 +64,6 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 - **Vitest**: unit tests everywhere (server, client, packages, plugins) — colocated `*.spec.ts` files
 - **Playwright**: E2E in `playwright/` (Chromium + Firefox, parallel)
 - Commands: `pnpm test` (all unit), `pnpm playwright:test`
-- Deterministic tests: a faker draw must never be able to cross a branch
-  threshold (pin the draw window), otherwise CI flakes.
-- Always prefer `mockDeep` for mocks (type safety over plain
-  `vi.fn()`/hand-rolled mocks); no describe-scope calls.
 
 ## Code quality
 
@@ -75,8 +71,6 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 - Stylelint for CSS/Vue in client
 - Husky hooks: pre-commit (lint-staged), commit-msg (commitlint), pre-push (unit tests)
 - Conventional commits enforced: `feat`, `fix`, `chore`, `docs`, `refactor`, `revert`, `build`
-- Fix at the shared source all callers route through, not a guard duplicated in
-  every caller.
 - Before reporting done, format: `pnpm format`, then run the gates — `pnpm lint`
   plus the targeted vitest specs.
 
@@ -93,7 +87,6 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
   data into the most precise type it allows — the returned type is the proof —
   so nothing downstream re-checks; a check-and-throw that returns nothing
   preserves nothing.
-- Helpers return new objects; do not mutate inputs.
 
 ## Main commands
 
