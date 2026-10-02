@@ -60,11 +60,7 @@ export class AdminTokenService {
 
       span?.setAttribute('adminToken.create.tokenId', token.id)
       this.logger.log(`adminToken.create completed (adminTokenId=${token.id}, botUserId=${token.userId}, status=${token.status})`)
-      return {
-        ...token,
-        password,
-        permissions: token.permissions.toString(),
-      }
+      return { token, password }
     } catch (error) {
       this.logger.error(
         `adminToken.create failed (tokenName=${data.name}): ${error instanceof Error ? error.message : String(error)}`,

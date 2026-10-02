@@ -5,7 +5,7 @@ import { RequireAdminPermission } from '../infrastructure/permission/user/user-a
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { AdminTokenService } from './admin-token.service'
-import { toAdminToken } from './admin-token.utils'
+import { toAdminToken, toExposedAdminToken } from './admin-token.utils'
 
 @Controller('api/v1/admin/tokens')
 @UseGuards(UserGuard)
@@ -25,7 +25,8 @@ export class AdminTokenController {
   async create(
     @Body(new ZodValidationPipe(CreateAdminTokenBodySchema)) data: CreateAdminTokenBody,
   ) {
-    return this.service.create(data)
+    const { token, password } = await this.service.create(data)
+    return toExposedAdminToken(token, password)
   }
 
   @Delete(':tokenId')
