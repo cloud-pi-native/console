@@ -28,8 +28,8 @@ export function makeAdminTokenRecord(overrides: Partial<AdminTokenRecord> = {}):
   }
 }
 
-export type AdminTokenRow = AdminTokenRecord & { hash: string }
+export type AdminTokenRecordWithHash = AdminTokenRecord & { hash: string }
 
-export function makeAdminTokenRow(overrides: Partial<AdminTokenRecord> = {}): AdminTokenRow {
+export function makeAdminTokenRecordWithHash(overrides: Partial<AdminTokenRecord> = {}): AdminTokenRecordWithHash {
   return { ...makeAdminTokenRecord(overrides), hash: faker.string.hexadecimal({ length: 64 }) }
 }

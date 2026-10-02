@@ -6,7 +6,7 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { makeAdminTokenRow } from './admin-token-testing.utils'
+import { makeAdminTokenRecordWithHash } from './admin-token-testing.utils'
 import { AdminTokenService } from './admin-token.service'
 
 describe('adminTokenService', () => {
@@ -29,7 +29,7 @@ describe('adminTokenService', () => {
 
   describe('list', () => {
     it('returns raw token records', async () => {
-      const token = makeAdminTokenRow()
+      const token = makeAdminTokenRecordWithHash()
       prisma.adminToken.findMany.mockResolvedValue([token])
 
       const result = await service.list()
@@ -83,7 +83,7 @@ describe('adminTokenService', () => {
         adminRoleIds: [],
         type: 'bot',
       })
-      const created = makeAdminTokenRow({ id: tokenId, userId: botUserId, permissions: 2n })
+      const created = makeAdminTokenRecordWithHash({ id: tokenId, userId: botUserId, permissions: 2n })
       tx.adminToken.create.mockResolvedValue(created)
       prisma.$transaction.mockImplementation(async fn => fn(tx))
 
