@@ -9,6 +9,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Interval } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { keycloakConfigFactory } from '../../config/keycloak.config'
+import { generateRandomPassword } from '../../utils/crypto.utils'
 import { getErrorResponseStatus } from '../../utils/http.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { ADMIN_AUTH_REALM, ADMIN_TOKEN_REFRESH_INTERVAL_MS, CONSOLE_GROUP_NAME, PASSWORD_GRANT_TYPE, REFRESH_TOKEN_GRANT_TYPE, SUBGROUPS_PAGINATE_QUERY_MAX } from './keycloak.constants'
@@ -122,6 +123,46 @@ export class KeycloakClientService implements OnModuleInit {
       max: 1,
     })
     return users[0]
+  }
+
+  // Zone ArgoCD OIDC client bridge, ported from plugins/keycloak upsertZone/deleteZone
+  // Resolves the effective client secret so the caller can always persist it:
+  // create seeds ours, update rotates server-side and returns the new value
+  // (heals a run whose vault write failed after creation).
+  async upsertZoneClient(zoneSlug: string, argocdUrl: string): Promise<{ outcome: 'created' | 'updated', clientSecret: string }> {
+    const clientId = `argocd-${zoneSlug}-zone`
+    const client = {
+      clientId,
+      clientAuthenticatorType: 'client-secret',
+      protocol: 'openid-connect',
+      publicClient: false,
+      defaultClientScopes: ['generic'],
+      redirectUris: [`${argocdUrl}/auth/callback`],
+      webOrigins: [argocdUrl],
+      rootUrl: argocdUrl,
+      adminUrl: argocdUrl,
+      baseUrl: '/applications',
+    }
+    const existing = await this.client.clients.find({ clientId, max: 1 })
+    if (existing.length > 0 && existing[0].id) {
+      await this.client.clients.update({ id: existing[0].id }, client)
+      const credential = await this.client.clients.generateNewClientSecret({ id: existing[0].id })
+      if (!credential.value) {
+        throw new Error(`Keycloak did not return the rotated client secret (clientId=${clientId})`)
+      }
+      return { outcome: 'updated', clientSecret: credential.value }
+    }
+    const clientSecret = generateRandomPassword(30)
+    await this.client.clients.create({ secret: clientSecret, ...client })
+    return { outcome: 'created', clientSecret }
+  }
+
+  async deleteZoneClient(zoneSlug: string): Promise<void> {
+    const clientId = `argocd-${zoneSlug}-zone`
+    const result = await this.client.clients.find({ clientId, max: 1 })
+    if (result.length > 0 && result[0].id) {
+      await this.client.clients.del({ id: result[0].id })
+    }
   }
 
   @StartActiveSpan()

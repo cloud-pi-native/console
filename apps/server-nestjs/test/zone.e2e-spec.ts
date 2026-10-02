@@ -62,7 +62,7 @@ describeWithZone('Zone lifecycle (e2e)', () => {
   })
 
   it('should provision zone secrets space in Vault (mount, policy, approle)', async () => {
-    await eventEmitter.emitAsync('zone.upsert', { id: zoneId, slug: zoneSlug })
+    await eventEmitter.emitAsync('zone.upsert', { id: zoneId, slug: zoneSlug, argocdUrl: faker.internet.url() })
 
     const kvName = `zone-${zoneSlug}`
     const roleId = await vaultClient.getAuthApproleRoleRoleId(kvName)
@@ -73,7 +73,7 @@ describeWithZone('Zone lifecycle (e2e)', () => {
     const kvName = `zone-${zoneSlug}`
     expect(await vaultClient.getAuthApproleRoleRoleId(kvName)).toBeTruthy()
 
-    await eventEmitter.emitAsync('zone.delete', { id: zoneId, slug: zoneSlug })
+    await eventEmitter.emitAsync('zone.delete', { id: zoneId, slug: zoneSlug, argocdUrl: faker.internet.url() })
 
     await expect(vaultClient.getAuthApproleRoleRoleId(kvName)).rejects.toThrow()
   }, VAULT_PROVISION_TIMEOUT)
