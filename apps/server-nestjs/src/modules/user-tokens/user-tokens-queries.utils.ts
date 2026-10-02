@@ -21,6 +21,10 @@ export const userTokenSelect = {
   },
 } satisfies Prisma.PersonalAccessTokenSelect
 
+export type UserToken = Prisma.PersonalAccessTokenGetPayload<{
+  select: typeof userTokenSelect
+}>
+
 export function listUserTokens(tx: Prisma.TransactionClient, userId: string) {
   return tx.personalAccessToken.findMany({
     where: { userId },

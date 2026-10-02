@@ -7,6 +7,7 @@ import { RequireUserType } from '../infrastructure/permission/user/user-type.dec
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { UserTokensService } from './user-tokens.service'
+import { toExposedPersonalAccessToken, toPersonalAccessToken } from './user-tokens.utils'
 
 @Controller('api/v1/user/tokens')
 @UseGuards(UserGuard)
@@ -16,7 +17,8 @@ export class UserTokensController {
 
   @Get()
   async list(@AuthUser() user: UserContext) {
-    return this.service.list(user.userId)
+    const tokens = await this.service.list(user.userId)
+    return tokens.map(toPersonalAccessToken)
   }
 
   @Post()
@@ -25,7 +27,8 @@ export class UserTokensController {
     @Body(new ZodValidationPipe(CreatePersonalAccessTokenBodySchema)) data: CreatePersonalAccessTokenBody,
     @AuthUser() user: UserContext,
   ) {
-    return this.service.create(data, user.userId)
+    const { token, password } = await this.service.create(data, user.userId)
+    return toExposedPersonalAccessToken(token, password)
   }
 
   @Delete(':tokenId')

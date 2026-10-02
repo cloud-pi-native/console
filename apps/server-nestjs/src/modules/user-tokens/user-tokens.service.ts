@@ -43,7 +43,7 @@ export class UserTokensService {
     span?.setAttribute('userTokens.create.tokenId', token.id)
     this.logger.log(`userTokens.create completed (tokenId=${token.id}, userId=${userId})`)
     return {
-      ...token,
+      token,
       password,
     }
   }

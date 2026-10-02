@@ -93,7 +93,7 @@ describe('userTokensService', () => {
           select: userTokenSelect,
         }),
       )
-      expect(result.id).toBe(tokenId)
+      expect(result.token.id).toBe(tokenId)
       expect(result.password).toBeTruthy()
     })
   })
