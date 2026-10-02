@@ -1,7 +1,7 @@
 import type { AdminToken } from './admin-token-queries.utils'
 import { faker } from '@faker-js/faker'
 
-export function makeAdminTokenRecord(overrides: Partial<Omit<AdminToken, 'owner'>> = {}) {
+export function makeAdminToken(overrides: Partial<Omit<AdminToken, 'owner'>> = {}) {
   const owner: AdminToken['owner'] = {
     id: faker.string.uuid(),
     email: faker.internet.email().toLowerCase(),
@@ -26,6 +26,6 @@ export function makeAdminTokenRecord(overrides: Partial<Omit<AdminToken, 'owner'
 }
 
 export function makeListedToken(overrides: Partial<AdminToken> = {}): AdminToken {
-  const { hash: _hash, ...listed } = makeAdminTokenRecord()
+  const { hash: _hash, ...listed } = makeAdminToken()
   return { ...listed, ...overrides }
 }
