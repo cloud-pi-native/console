@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { makeGitbeakerRequestError } from './gitlab-testing.utils'
-import { adminRoleFlag, ensure, generateAdminRoleMapping, isCommitAlreadyApplied, isGitbeakerRace } from './gitlab.utils'
+import { ensure, isCommitAlreadyApplied, isGitbeakerRace } from './gitlab.utils'
 
 describe('isGitbeakerRace', () => {
   it('should match collision errors only', () => {
@@ -54,36 +54,5 @@ describe('ensure', () => {
     await expect(ensure({ create: async () => { throw error }, reload })).rejects.toBe(error)
 
     expect(reload).not.toHaveBeenCalled()
-  })
-})
-
-describe('generateAdminRoleMapping', () => {
-  it('should resolve role ids from every configured group path', () => {
-    const roles = [
-      { id: 'admin-id', oidcGroup: '/console/admin' },
-      { id: 'readonly-id', oidcGroup: '/console/readonly' },
-      { id: 'security-id', oidcGroup: '/console/security' },
-    ]
-
-    expect(generateAdminRoleMapping(roles, ['/console/admin'], ['/console/readonly', '/console/security']))
-      .toEqual({ adminRoleIds: ['admin-id'], auditorRoleIds: ['readonly-id', 'security-id'] })
-  })
-
-  it('should ignore unmatched paths and dedupe resolved ids', () => {
-    const roles = [{ id: 'readonly-id', oidcGroup: '/console/readonly' }]
-
-    expect(generateAdminRoleMapping(roles, ['/console/none'], ['/console/readonly', '/console/readonly']))
-      .toEqual({ adminRoleIds: [], auditorRoleIds: ['readonly-id'] })
-  })
-})
-
-describe('adminRoleFlag', () => {
-  it('should stay undefined when no role id is resolved', () => {
-    expect(adminRoleFlag({ adminRoleIds: ['x'] }, [])).toBeUndefined()
-  })
-
-  it('should match membership against any resolved role id', () => {
-    expect(adminRoleFlag({ adminRoleIds: ['x'] }, ['y', 'x'])).toBe(true)
-    expect(adminRoleFlag({ adminRoleIds: ['z'] }, ['y', 'x'])).toBe(false)
   })
 })

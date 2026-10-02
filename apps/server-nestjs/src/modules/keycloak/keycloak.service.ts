@@ -1,4 +1,5 @@
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
+import type { ZoneEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
 import type { GroupRepresentationWith, GroupRepresentationWithIdNamePath } from './keycloak.utils'
@@ -7,9 +8,11 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
+import { generateRandomPassword } from '../../utils/crypto.utils'
 import { getErrorResponseStatus } from '../../utils/http.utils'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
+import { VaultClientService } from '../vault/vault-client.service'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
 import { isAdminRole, isMember, isNonEmptyGroupPath, isOwnedProjectGroup, splitGroupPath, toGroupPath, toRoleRelativeGroupPath } from './keycloak.utils'
@@ -21,6 +24,7 @@ export class KeycloakService {
   constructor(
     @Inject(KeycloakClientService) private readonly keycloak: KeycloakClientService,
     @Inject(KeycloakDatastoreService) private readonly datastore: KeycloakDatastoreService,
+    @Inject(VaultClientService) private readonly vault: VaultClientService,
   ) {
     this.logger.log('KeycloakService initialized')
   }
@@ -54,6 +58,40 @@ export class KeycloakService {
       await this.keycloak.deleteGroup(group.id)
     }
     this.logger.log(`Keycloak cleanup completed for project ${project.slug}`)
+  }
+
+  @OnEvent('zone.upsert')
+  async handleUpsertZone(payload: ZoneEventPayload): Promise<RequiredPluginResult<'keycloak'>> {
+    return capturePluginResult('keycloak', () => this.syncZone(payload))
+  }
+
+  @StartActiveSpan()
+  private async syncZone(payload: ZoneEventPayload) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('zone.slug', payload.slug)
+    this.logger.log(`Handling a zone upsert event for ${payload.slug}`)
+    const clientSecret = generateRandomPassword(30)
+    const outcome = await this.keycloak.upsertZoneClient(payload.slug, payload.argocdUrl, clientSecret)
+    if (outcome === 'created') {
+      // Legacy wrote the zone ArgoCD client secret into the zone's own KV mount
+      // (zone-<slug>), not the console KV — ArgoCD reads it from there.
+      await this.vault.upsertKvData(`zone-${payload.slug}`, 'keycloak', { data: { clientSecret } })
+    }
+    this.logger.log(`Keycloak zone sync completed for ${payload.slug} (${outcome})`)
+  }
+
+  @OnEvent('zone.delete')
+  async handleDeleteZone(payload: ZoneEventPayload): Promise<RequiredPluginResult<'keycloak'>> {
+    return capturePluginResult('keycloak', () => this.cleanupZone(payload))
+  }
+
+  @StartActiveSpan()
+  private async cleanupZone(payload: ZoneEventPayload) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('zone.slug', payload.slug)
+    this.logger.log(`Handling a zone delete event for ${payload.slug}`)
+    await this.keycloak.deleteZoneClient(payload.slug)
+    this.logger.log(`Keycloak zone cleanup completed for ${payload.slug}`)
   }
 
   // @Cron(CronExpression.EVERY_HOUR)

@@ -1,6 +1,6 @@
 import type { MemberSchema } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
-import type { RepositorySyncEventPayload } from '../events/app-events.service'
+import type { RepositorySyncEventPayload, ZoneEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { MirrorUserSecret, VaultSecret } from '../vault/vault-client.service'
 import type { GroupSchemaWith } from './gitlab-client.service'
@@ -48,7 +48,6 @@ import {
   isOwnedRepo,
   isOwnedUser,
   isSystemRepo,
-  parseGroupPaths,
 } from './gitlab.utils'
 
 type ProjectAccessLevel = Exclude<AccessLevel, (typeof AccessLevel)['ADMIN']>
@@ -88,6 +87,34 @@ export class GitlabService {
   @OnEvent('repository.sync')
   async handleRepositorySync(payload: RepositorySyncEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
     return capturePluginResult('gitlab', () => this.syncRepositoryMirror(payload))
+  }
+
+  @OnEvent('zone.upsert')
+  async handleUpsertZone(payload: ZoneEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', () => this.syncZone(payload))
+  }
+
+  @StartActiveSpan()
+  private async syncZone(payload: ZoneEventPayload) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('zone.slug', payload.slug)
+    this.logger.log(`Handling a zone upsert event for ${payload.slug}`)
+    await this.gitlab.getOrCreateInfraGroupRepo(payload.slug)
+    this.logger.log(`GitLab zone sync completed for ${payload.slug}`)
+  }
+
+  @OnEvent('zone.delete')
+  async handleDeleteZone(payload: ZoneEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', () => this.cleanupZone(payload))
+  }
+
+  @StartActiveSpan()
+  private async cleanupZone(payload: ZoneEventPayload) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('zone.slug', payload.slug)
+    this.logger.log(`Handling a zone delete event for ${payload.slug}`)
+    await this.gitlab.deleteInfraGroupRepo(payload.slug)
+    this.logger.log(`GitLab zone cleanup completed for ${payload.slug}`)
   }
 
   @StartActiveSpan()
@@ -166,9 +193,9 @@ export class GitlabService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.verbose(`Reconciling GitLab group members for project ${project.slug} (groupId=${group.id}, members=${members.length})`)
-    const { adminRoleIds, auditorRoleIds } = await this.getAdminRoleIds(project)
-    await this.addMissingMembers(project, group, members, adminRoleIds, auditorRoleIds)
-    await this.addMissingOwnerMember(project, group, members, adminRoleIds, auditorRoleIds)
+    const { adminRoleId, auditorRoleId } = await this.getAdminRoleIds(project)
+    await this.addMissingMembers(project, group, members, adminRoleId, auditorRoleId)
+    await this.addMissingOwnerMember(project, group, members, adminRoleId, auditorRoleId)
     await this.purgeOrphanMembers(project, group, members)
   }
 
@@ -176,8 +203,8 @@ export class GitlabService {
     project: ProjectWithDetails,
     group: GroupSchemaWith<'id'>,
     members: MemberSchema[],
-    adminRoleIds: string[],
-    auditorRoleIds: string[],
+    adminRoleId?: string,
+    auditorRoleId?: string,
   ) {
     const membersById = new Map(members.map(m => [m.id, m]))
     const groupPaths = await this.getProjectRoleGroupPaths(project)
@@ -188,8 +215,8 @@ export class GitlabService {
         email: user.email,
         username: generateUsername(user.email),
         name: generateName(user.firstName, user.lastName),
-        admin: adminRoleFlag(user, adminRoleIds),
-        auditor: adminRoleFlag(user, auditorRoleIds),
+        admin: adminRoleFlag(user, adminRoleId),
+        auditor: adminRoleFlag(user, auditorRoleId),
       }, {
         cpnUserId: user.id,
       })
@@ -231,15 +258,15 @@ export class GitlabService {
     project: ProjectWithDetails,
     group: GroupSchemaWith<'id'>,
     members: MemberSchema[],
-    adminRoleIds: string[],
-    auditorRoleIds: string[],
+    adminRoleId?: string,
+    auditorRoleId?: string,
   ) {
     const gitlabUser = await this.gitlab.upsertUser({
       email: project.owner.email,
       username: generateUsername(project.owner.email),
       name: generateName(project.owner.firstName, project.owner.lastName),
-      admin: adminRoleFlag(project.owner, adminRoleIds),
-      auditor: adminRoleFlag(project.owner, auditorRoleIds),
+      admin: adminRoleFlag(project.owner, adminRoleId),
+      auditor: adminRoleFlag(project.owner, auditorRoleId),
     }, {
       cpnUserId: project.owner.id,
     })
@@ -251,11 +278,11 @@ export class GitlabService {
     await this.ensureGroupMemberAccessLevel(group, gitlabUser.id, AccessLevel.OWNER, membersById)
   }
 
-  private async getAdminRoleIds(project: ProjectWithDetails): Promise<{ adminRoleIds: string[], auditorRoleIds: string[] }> {
-    const adminGroupPaths = parseGroupPaths(await this.getAdminGroupPath(project))
-    const auditorGroupPaths = parseGroupPaths(await this.getAuditorGroupPath(project))
-    const roles = await this.datastore.getAdminRolesByOidcGroups([...adminGroupPaths, ...auditorGroupPaths])
-    return generateAdminRoleMapping(roles, adminGroupPaths, auditorGroupPaths)
+  private async getAdminRoleIds(project: ProjectWithDetails): Promise<{ adminRoleId?: string, auditorRoleId?: string }> {
+    const adminGroupPath = await this.getAdminGroupPath(project)
+    const auditorGroupPath = await this.getAuditorGroupPath(project)
+    const roles = await this.datastore.getAdminRolesByOidcGroups([adminGroupPath, auditorGroupPath])
+    return generateAdminRoleMapping(roles, adminGroupPath, auditorGroupPath)
   }
 
   private async getAdminGroupPath(project: ProjectWithDetails): Promise<string> {

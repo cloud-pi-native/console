@@ -3,6 +3,7 @@ import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } fro
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { VaultClientService } from '../vault/vault-client.service'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
 import {
@@ -20,6 +21,7 @@ describe('keycloakService', () => {
   let service: KeycloakService
   let keycloak: DeepMockProxy<KeycloakClientService>
   let datastore: DeepMockProxy<KeycloakDatastoreService>
+  let vault: DeepMockProxy<VaultClientService>
 
   beforeEach(async () => {
     keycloak = mockDeep<KeycloakClientService>({
@@ -36,11 +38,13 @@ describe('keycloakService', () => {
       getAllUsersWithAdminRoleIds: vi.fn().mockResolvedValue([]),
     })
 
+    vault = mockDeep<VaultClientService>()
     const moduleRef = await Test.createTestingModule({
       providers: [
         KeycloakService,
         { provide: KeycloakClientService, useValue: keycloak },
         { provide: KeycloakDatastoreService, useValue: datastore },
+        { provide: VaultClientService, useValue: vault },
       ],
     }).compile()
 
