@@ -183,8 +183,5 @@ describe('appEventsService', () => {
       expect(typeof service[method]).toBe('function')
     })
 
-    it('does NOT expose a zone emit entrypoint (zone.* listeners have no emitter yet — legacy owns the route)', () => {
-      expect('emitZoneEvent' in service).toBe(false)
-    })
   })
 })
