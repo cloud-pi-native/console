@@ -42,18 +42,15 @@ describe('stageService', () => {
 
   it('creates a stage and links clusters', async () => {
     const stage = makeStageRecord()
-    prisma.stage.findUnique.mockResolvedValue(null)
+    const created = makeStageWithClusters({ id: stage.id, name: stage.name })
+    prisma.stage.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce(created)
     prisma.stage.create.mockResolvedValue(stage)
     prisma.stage.update.mockResolvedValue(stage)
 
     const clusterIds = [faker.string.uuid()]
     const result = await service.createStage({ name: stage.name, clusterIds })
 
-    expect(result).toEqual({
-      id: stage.id,
-      name: stage.name,
-      clusterIds,
-    })
+    expect(result).toEqual(created)
     expect(prisma.stage.create).toHaveBeenCalledWith({ data: { name: stage.name }, select: expect.anything() })
     expect(prisma.stage.update).toHaveBeenCalled()
   })

@@ -11,7 +11,7 @@ import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { makeStageEnvironmentRecord, makeStageWithClusters } from './stage-testing.utils'
 import { StageController } from './stage.controller'
 import { StageService } from './stage.service'
-import { toStageAssociatedEnvironments, toStages } from './stage.utils'
+import { toStage, toStageAssociatedEnvironments, toStages } from './stage.utils'
 
 describe('stageController', () => {
   let module: TestingModule
@@ -62,18 +62,20 @@ describe('stageController', () => {
   })
 
   it('delegates create with the validated body', async () => {
-    service.createStage.mockResolvedValue(stage)
+    const record = makeStageWithClusters()
+    service.createStage.mockResolvedValue(record)
 
-    expect(await controller.create(stage)).toBe(stage)
+    expect(await controller.create(stage)).toEqual(toStage(record))
     expect(service.createStage).toHaveBeenCalledWith(stage)
   })
 
   it('delegates update with stageId and validated body', async () => {
     const stageId = faker.string.uuid()
     const updateBody: UpdateStageBody = { name: 'staging', clusterIds: [] }
-    service.updateStage.mockResolvedValue(stage)
+    const record = makeStageWithClusters()
+    service.updateStage.mockResolvedValue(record)
 
-    expect(await controller.update(stageId, updateBody)).toBe(stage)
+    expect(await controller.update(stageId, updateBody)).toEqual(toStage(record))
     expect(service.updateStage).toHaveBeenCalledWith(stageId, updateBody)
   })
 
