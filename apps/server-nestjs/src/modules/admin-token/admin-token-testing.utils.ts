@@ -12,7 +12,7 @@ export function makeAdminTokenOwner(overrides: Partial<AdminTokenRecord['owner']
   }
 }
 
-export function makeAdminTokenRecord(overrides: Partial<Omit<AdminTokenRecord, 'owner'>> & { owner?: AdminTokenRecord['owner'] } = {}): AdminTokenRecord {
+export function makeAdminTokenRecord(overrides: Partial<AdminTokenRecord> = {}): AdminTokenRecord {
   const owner = overrides.owner ?? makeAdminTokenOwner()
   return {
     id: faker.string.uuid(),
@@ -30,6 +30,6 @@ export function makeAdminTokenRecord(overrides: Partial<Omit<AdminTokenRecord, '
 
 export type AdminTokenRow = AdminTokenRecord & { hash: string }
 
-export function makeAdminTokenRow(overrides: Partial<Omit<AdminTokenRecord, 'owner'>> = {}): AdminTokenRow {
+export function makeAdminTokenRow(overrides: Partial<AdminTokenRecord> = {}): AdminTokenRow {
   return { ...makeAdminTokenRecord(overrides), hash: faker.string.hexadecimal({ length: 64 }) }
 }
