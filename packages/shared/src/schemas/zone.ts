@@ -21,4 +21,6 @@ export const ZoneSchema = z.object({
     .transform(value => value ?? ''),
 })
 
+export const UpdateZoneBodySchema = ZoneSchema.omit({ id: true, slug: true })
+
 export type Zone = Zod.infer<typeof ZoneSchema>
