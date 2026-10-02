@@ -1,7 +1,7 @@
-import type { Zone as ZoneType } from './zone-queries.utils'
+import type { Zone } from './zone-queries.utils'
 import { faker } from '@faker-js/faker'
 
-export function makeZone(overrides: Partial<ZoneType> = {}): ZoneType {
+export function makeZone(overrides: Partial<Zone> = {}): Zone {
   return {
     id: faker.string.uuid(),
     slug: faker.helpers.slugify(faker.word.sample(5)).toLowerCase(),
@@ -11,5 +11,5 @@ export function makeZone(overrides: Partial<ZoneType> = {}): ZoneType {
     createdAt: faker.date.past(),
     updatedAt: faker.date.past(),
     ...overrides,
-  } satisfies ZoneType
+  } satisfies Zone
 }
