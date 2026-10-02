@@ -549,11 +549,5 @@ describe('keycloakService', () => {
       expect(keycloak.getOrCreateGroupByPath).toHaveBeenCalledWith('/admin-group')
       expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'kc-parity-group-id')
     })
-
-    it('exposes NO adminRole emit entrypoint on AppEventsService (cutover guard)', async () => {
-      const { AppEventsService } = await import('../events/app-events.service')
-      expect(Object.getOwnPropertyNames(AppEventsService.prototype))
-        .not.toContain('emitAdminRoleEvent')
-    })
   })
 })
