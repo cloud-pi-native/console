@@ -124,6 +124,38 @@ export class KeycloakClientService implements OnModuleInit {
     return users[0]
   }
 
+  // Zone ArgoCD OIDC client bridge, ported from plugins/keycloak upsertZone/deleteZone
+  async upsertZoneClient(zoneSlug: string, argocdUrl: string, clientSecret: string): Promise<'created' | 'updated'> {
+    const clientId = `argocd-${zoneSlug}-zone`
+    const client = {
+      clientId,
+      clientAuthenticatorType: 'client-secret',
+      protocol: 'openid-connect',
+      publicClient: false,
+      defaultClientScopes: ['generic'],
+      redirectUris: [`${argocdUrl}/auth/callback`],
+      webOrigins: [argocdUrl],
+      rootUrl: argocdUrl,
+      adminUrl: argocdUrl,
+      baseUrl: '/applications',
+    }
+    const existing = await this.client.clients.find({ clientId, max: 1 })
+    if (existing.length > 0 && existing[0].id) {
+      await this.client.clients.update({ id: existing[0].id }, client)
+      return 'updated'
+    }
+    await this.client.clients.create({ secret: clientSecret, ...client })
+    return 'created'
+  }
+
+  async deleteZoneClient(zoneSlug: string): Promise<void> {
+    const clientId = `argocd-${zoneSlug}-zone`
+    const result = await this.client.clients.find({ clientId, max: 1 })
+    if (result.length > 0 && result[0].id) {
+      await this.client.clients.del({ id: result[0].id })
+    }
+  }
+
   @StartActiveSpan()
   async ensureGroup(name: string) {
     const span = trace.getActiveSpan()

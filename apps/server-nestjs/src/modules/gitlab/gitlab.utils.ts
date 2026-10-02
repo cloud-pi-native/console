@@ -40,27 +40,23 @@ export function generateName(firstName: string | null, lastName: string | null):
   return parts.length > 0 ? parts.join(' ') : 'User'
 }
 
-export function parseGroupPaths(rawGroupPaths: string): string[] {
-  return rawGroupPaths
+export function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes: string): string[] {
+  return rawGroupPathSuffixes
     .split(',')
     .map(path => path.trim())
     .filter(Boolean)
-}
-
-export function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes: string): string[] {
-  return parseGroupPaths(rawGroupPathSuffixes).map(path => `/${projectSlug}${path}`)
+    .map(path => `/${projectSlug}${path}`)
 }
 
 export function generateAdminRoleMapping(
-  roles: { id: string, oidcGroup: string }[],
-  adminGroupPaths: string[],
-  auditorGroupPaths: string[],
-): { adminRoleIds: string[], auditorRoleIds: string[] } {
-  const roleIdByOidcGroup = new Map(roles.map(r => [r.oidcGroup, r.id]))
-  const resolveRoleIds = (paths: string[]) => [...new Set(paths.map(path => roleIdByOidcGroup.get(path)).filter((id): id is string => id !== undefined))]
+  roles: ProjectWithDetails['roles'],
+  adminGroupPath: string,
+  auditorGroupPath: string,
+): { adminRoleId?: string, auditorRoleId?: string } {
+  const roleIdByOidcGroup = new Map<string | null, string>(roles.map(r => [r.oidcGroup, r.id] as [string | null, string]))
   return {
-    adminRoleIds: resolveRoleIds(adminGroupPaths),
-    auditorRoleIds: resolveRoleIds(auditorGroupPaths),
+    adminRoleId: roleIdByOidcGroup.get(adminGroupPath),
+    auditorRoleId: roleIdByOidcGroup.get(auditorGroupPath),
   }
 }
 
@@ -245,9 +241,8 @@ export function daysAgoFromNow(date: Date) {
   return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
 }
 
-export function adminRoleFlag(user: Pick<ProjectWithDetails['members'][0]['user'], 'adminRoleIds'>, adminRoleIds: string[]): boolean | undefined {
-  if (adminRoleIds.length === 0) return undefined
-  return user.adminRoleIds?.some(id => adminRoleIds.includes(id))
+export function adminRoleFlag(user: ProjectWithDetails['members'][0]['user'], adminRoleId?: string) {
+  return adminRoleId ? user.adminRoleIds?.includes(adminRoleId) : undefined
 }
 
 export function isGitbeakerNotFound(error: unknown): error is GitbeakerRequestError {

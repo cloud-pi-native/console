@@ -292,6 +292,13 @@ export class GitlabClientService {
     return repo
   }
 
+  // Zone infra repo cleanup, ported from plugins/gitlab deleteZone
+  async deleteInfraGroupRepo(zoneSlug: string) {
+    const repo = await this.getOrCreateInfraGroupRepo(zoneSlug)
+    await this.client.Projects.remove(repo.id)
+    return this.client.Projects.remove(repo.id, { permanentlyRemove: true, fullPath: `${this.config.projectRootDir}/${repo.path_with_namespace}-deletion_scheduled-${repo.id}` })
+  }
+
   async createGroupRepo(groupId: number, repoName: string, description?: string) {
     this.logger.log(`Creating a GitLab repository in a standalone group (groupId=${groupId}, repoName=${repoName})`)
     return ensure({
