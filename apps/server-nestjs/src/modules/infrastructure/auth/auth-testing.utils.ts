@@ -68,8 +68,11 @@ export function makeAdminTokenOwner(overrides: {
 export function makeAdminToken(overrides: {
   id?: string
   userId?: string
-  adminRoleIds?: string[]
-  type?: User['type']
+  owner?: {
+    id?: string
+    adminRoleIds?: string[]
+    type?: User['type']
+  }
   status?: AdminToken['status']
   permissions?: bigint
   expirationDate?: AdminToken['expirationDate']
@@ -87,6 +90,10 @@ export function makeAdminToken(overrides: {
     createdAt: faker.date.past(),
     hash: 'hash',
     userId: ownerId,
-    owner: makeAdminTokenOwner(overrides),
+    owner: makeAdminTokenOwner({
+      userId: overrides.userId ?? overrides.owner?.id,
+      adminRoleIds: overrides.owner?.adminRoleIds,
+      type: overrides.owner?.type,
+    }),
   }
 }
