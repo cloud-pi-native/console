@@ -1,7 +1,6 @@
-import type { CreateZoneBody, UpdateZoneBody } from '@cpn-console/shared'
+import type { CreateZoneBody, UpdateZoneBody, Zone } from '@cpn-console/shared'
 import type { FastifyRequest } from 'fastify'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
-import type { Zone as ZoneType } from './zone-queries.utils'
 import { zoneContract } from '@cpn-console/shared'
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, Post, Put, Req, UseGuards } from '@nestjs/common'
 import { AuthUser } from '../infrastructure/auth/auth-user.decorator'
@@ -10,14 +9,15 @@ import { RequireUserType } from '../infrastructure/permission/user/user-type.dec
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { ZoneService } from './zone.service'
+import { toZone, toZones } from './zone.utils'
 
 @Controller('api/v1/zones')
 export class ZoneController {
   constructor(@Inject(ZoneService) private readonly zoneService: ZoneService) {}
 
   @Get()
-  async list(): Promise<ZoneType[]> {
-    return this.zoneService.list()
+  async list(): Promise<Zone[]> {
+    return toZones(await this.zoneService.list())
   }
 
   @Post()
@@ -29,8 +29,8 @@ export class ZoneController {
     @Body(new ZodValidationPipe(zoneContract.createZone.body)) body: CreateZoneBody,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
-  ): Promise<ZoneType> {
-    return this.zoneService.create(body, user.userId, request.id)
+  ): Promise<Zone> {
+    return toZone(await this.zoneService.create(body, user.userId, request.id))
   }
 
   @Put(':zoneId')
@@ -42,8 +42,8 @@ export class ZoneController {
     @Body(new ZodValidationPipe(zoneContract.updateZone.body)) body: UpdateZoneBody,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
-  ): Promise<ZoneType> {
-    return this.zoneService.update(zoneId, body, user.userId, request.id)
+  ): Promise<Zone> {
+    return toZone(await this.zoneService.update(zoneId, body, user.userId, request.id))
   }
 
   @Delete(':zoneId')

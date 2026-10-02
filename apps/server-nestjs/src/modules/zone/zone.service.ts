@@ -1,6 +1,6 @@
 import type { CreateZoneBody, UpdateZoneBody } from '@cpn-console/shared'
 import type { EventLogAction, ZoneEventName, ZoneEventPayload } from '../events/app-events.service'
-import type { Zone as ZoneType } from './zone-queries.utils'
+import type { Zone } from './zone-queries.utils'
 import { BadRequestException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
 import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
@@ -14,11 +14,11 @@ export class ZoneService {
     @Inject(AppEventsService) private readonly appEvents: AppEventsService,
   ) {}
 
-  async list(): Promise<ZoneType[]> {
+  async list(): Promise<Zone[]> {
     return listZones(this.prisma)
   }
 
-  async create(data: CreateZoneBody, userId: string, requestId: string): Promise<ZoneType> {
+  async create(data: CreateZoneBody, userId: string, requestId: string): Promise<Zone> {
     const existing = await this.prisma.zone.findUnique({ where: { slug: data.slug } })
     if (existing) throw new BadRequestException(`Une zone portant le nom ${data.slug} existe déjà.`)
 
@@ -40,7 +40,7 @@ export class ZoneService {
     return zone
   }
 
-  async update(zoneId: string, data: UpdateZoneBody, userId: string, requestId: string): Promise<ZoneType> {
+  async update(zoneId: string, data: UpdateZoneBody, userId: string, requestId: string): Promise<Zone> {
     const existing = await getZoneById(this.prisma, zoneId)
     if (!existing) throw new NotFoundException('Zone non trouvée')
 

@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { mock, mockDeep } from 'vitest-mock-extended'
 import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import type { Zone as ZoneType } from './zone-queries.utils'
+import type { Zone } from './zone-queries.utils'
 import { makeZone } from './zone-testing.utils'
 import { ZoneService } from './zone.service'
 
@@ -44,7 +44,7 @@ describe('zoneService', () => {
   })
 
   describe('create', () => {
-    let zone: ZoneType
+    let zone: Zone
 
     beforeEach(() => {
       zone = makeZone()
@@ -116,7 +116,7 @@ describe('zoneService', () => {
   })
 
   describe('update', () => {
-    let zone: ZoneType
+    let zone: Zone
 
     beforeEach(() => {
       zone = makeZone()
@@ -148,7 +148,7 @@ describe('zoneService', () => {
   })
 
   describe('delete', () => {
-    let zone: ZoneType
+    let zone: Zone
 
     beforeEach(() => {
       zone = makeZone()

@@ -8,6 +8,7 @@ import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { makeZone } from './zone-testing.utils'
 import { ZoneController } from './zone.controller'
 import { ZoneService } from './zone.service'
+import { toZone } from './zone.utils'
 
 describe('zoneController', () => {
   let module: TestingModule
@@ -47,7 +48,7 @@ describe('zoneController', () => {
     })
 
     expect(response.statusCode).toEqual(200)
-    expect(response.json()).toEqual([zone].map(z => ({ ...z, createdAt: z.createdAt.toISOString(), updatedAt: z.updatedAt.toISOString() })))
+    expect(response.json()).toEqual([toZone(zone)])
     await app.close()
   })
 })
