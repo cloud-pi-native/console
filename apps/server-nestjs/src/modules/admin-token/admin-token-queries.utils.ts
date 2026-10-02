@@ -26,13 +26,15 @@ export type AdminTokenRecord = Prisma.AdminTokenGetPayload<{
   select: typeof adminTokenSelect
 }>
 
-export function listAdminTokens(tx: Prisma.TransactionClient, withRevoked: boolean) {
-  const where: Prisma.AdminTokenWhereInput = withRevoked
+function adminTokenWhere(withRevoked: boolean): Prisma.AdminTokenWhereInput {
+  return withRevoked
     ? { status: { in: ['active', 'revoked'] } }
     : { status: 'active' }
+}
 
+export function listAdminTokens(tx: Prisma.TransactionClient, withRevoked: boolean) {
   return tx.adminToken.findMany({
-    where,
+    where: adminTokenWhere(withRevoked),
     select: adminTokenSelect,
     orderBy: [{ status: 'asc' }, { createdAt: 'asc' }],
   })
