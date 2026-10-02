@@ -2,7 +2,7 @@ import type { CreateZoneBody, UpdateZoneBody, Zone } from '@cpn-console/shared'
 import type { FastifyRequest } from 'fastify'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import { zoneContract } from '@cpn-console/shared'
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, Post, Put, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseUUIDPipe, Post, Put, Req, UseGuards } from '@nestjs/common'
 import { AuthUser } from '../infrastructure/auth/auth-user.decorator'
 import { RequireAdminPermission } from '../infrastructure/permission/user/user-admin-permission.decorator'
 import { RequireUserType } from '../infrastructure/permission/user/user-type.decorator'
@@ -38,7 +38,7 @@ export class ZoneController {
   @RequireUserType('human')
   @RequireAdminPermission('ManageZones')
   async update(
-    @Param('zoneId') zoneId: string,
+    @Param('zoneId', ParseUUIDPipe) zoneId: string,
     @Body(new ZodValidationPipe(zoneContract.updateZone.body)) body: UpdateZoneBody,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
@@ -52,7 +52,7 @@ export class ZoneController {
   @RequireUserType('human')
   @RequireAdminPermission('ManageZones')
   async delete(
-    @Param('zoneId') zoneId: string,
+    @Param('zoneId', ParseUUIDPipe) zoneId: string,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
   ): Promise<void> {
