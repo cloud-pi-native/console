@@ -1,6 +1,6 @@
 import type { CreateStageBody, Stage, UpdateStageBody } from '@cpn-console/shared'
 import type { Cluster } from '@prisma/client'
-import type { StageEnvironmentsRecord, StageRecord, StageWithClustersRecord } from './stage-queries.utils'
+import type { StageEnvironmentsRecord, StageWithClustersRecord } from './stage-queries.utils'
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import {
