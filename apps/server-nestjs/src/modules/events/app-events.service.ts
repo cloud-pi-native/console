@@ -66,6 +66,7 @@ export type EventLogAction
     | 'Create Repository' | 'Update Repository' | 'Delete Repository' | 'Sync Repository'
     | 'Add Project Member' | 'Update Project Member' | 'Remove Project Member'
     | 'Create zone' | 'Update zone' | 'Delete zone'
+    | 'Create Cluster' | 'Update Cluster' | 'Delete Cluster'
 
 export interface EventContext {
   /** Action label persisted in the admin log. */
