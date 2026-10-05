@@ -1,6 +1,8 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
 import type { ConfigType } from '@nestjs/config'
 import type { Cache } from 'cache-manager'
+import type { ProjectWithDetails } from './registry-datastore.service'
+import { defaultOrNullish, specificallyEnabled } from '@cpn-console/hooks'
 import { DISABLED } from '@cpn-console/shared'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Logger } from '@nestjs/common'
@@ -9,6 +11,7 @@ import { hasEntries } from '../../utils/record.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
+import { PLUGIN_NAME, REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT, ROBOT_NAME_PROJECT } from './registry.constants'
 import { createProjectSlugCacheKey } from './registry.utils'
 
 @Injectable()
@@ -144,15 +147,28 @@ export class RegistryPluginService {
     } as const satisfies ServiceInfos
   }
 
+  private async isProjectRobotEnabled(project: ProjectWithDetails): Promise<boolean | undefined> {
+    const robotDefault = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT)
+    const robotEnabled = project.plugins?.find(p => p.key === REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT)?.value
+    return specificallyEnabled(robotEnabled)
+      || (defaultOrNullish(robotEnabled) && specificallyEnabled(robotDefault ?? undefined))
+  }
+
   async secrets(projectId: string): Promise<Record<string, string>> {
     const project = await this.datastore.getProject(projectId)
     if (!project) return {}
-    const group = await this.vault.readRegistrySecrets(project.slug)
-    if (!hasEntries(group)) return group
     const harborUrl = new URL(`${project.slug}/`, this.harborConfig.url)
+    const registryBasePath = `${harborUrl.host}${harborUrl.pathname}`
+    if (!(await this.isProjectRobotEnabled(project))) {
+      return { 'Registry base path': registryBasePath }
+    }
+    const robot = await this.vault.readRegistrySecrets(project.slug, ROBOT_NAME_PROJECT)
+    if (!hasEntries(robot)) {
+      return { 'Registry base path': registryBasePath, '/!\\': 'Vous n\'avez pas de robot de lecture veuillez reprovisionner' }
+    }
     return {
-      ...group,
-      'Registry base path': `${harborUrl.host}${harborUrl.pathname}`,
+      'Registry base path': registryBasePath,
+      ...robot,
     }
   }
 }
