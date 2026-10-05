@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.26.2](https://github.com/cloud-pi-native/console/compare/v9.26.1...v9.26.2) (2026-10-05)
+
+
+### Bug Fixes
+
+* **server:** tighten role backfill anti-join to the role level ([81e316c](https://github.com/cloud-pi-native/console/commit/81e316ca115d1053789979c61310519e28c9dc84))
+
 ## [9.26.1](https://github.com/cloud-pi-native/console/compare/v9.26.0...v9.26.1) (2026-10-05)
 
 
