@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.26.1](https://github.com/cloud-pi-native/console/compare/v9.26.0...v9.26.1) (2026-10-05)
+
+
+### Bug Fixes
+
+* **server:** backport role backfill migrations to the apps/server tree ([f97e3d0](https://github.com/cloud-pi-native/console/commit/f97e3d00d6e3f567c0eedcca0aba1ea47b3cfd11)), closes [#2812](https://github.com/cloud-pi-native/console/issues/2812)
+
 ## [9.26.0](https://github.com/cloud-pi-native/console/compare/v9.25.0...v9.26.0) (2026-09-17)
 
 
