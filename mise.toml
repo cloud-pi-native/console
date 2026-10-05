@@ -78,7 +78,7 @@ run = "pnpm format"
 run = "pnpm lint"
 
 [tasks."test:unit"]
-run = "fnox exec -- pnpm test"
+run = "./ci/scripts/run-unit-tests.sh"
 
 [tasks."playwright:test"]
 run = "fnox -P ci exec -- pnpm --dir playwright exec playwright test --grep @e2e"

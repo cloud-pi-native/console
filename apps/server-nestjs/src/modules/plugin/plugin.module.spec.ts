@@ -5,9 +5,16 @@ import { PluginModule } from './plugin.module'
 import { PluginService } from './plugin.service'
 
 describe('pluginModule', () => {
-  afterEach(() => vi.unstubAllEnvs())
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.unstubAllGlobals()
+  })
 
   it('resolves PluginService with all plugins enabled', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      issuer: 'https://keycloak.test/realms/dso',
+      jwks_uri: 'https://keycloak.test/realms/dso/protocol/openid-connect/certs',
+    }))))
     vi.stubEnv('USE_ARGOCD', 'true')
     vi.stubEnv('USE_GITLAB', 'true')
     vi.stubEnv('USE_HARBOR', 'true')

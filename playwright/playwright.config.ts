@@ -1,7 +1,4 @@
-import path from 'node:path'
 import { defineConfig, devices } from '@playwright/test'
-
-process.loadEnvFile(path.resolve(__dirname, '..', 'apps/client', '.env.docker'))
 
 const isIntegration = process.env.INTEGRATION === 'true'
 
