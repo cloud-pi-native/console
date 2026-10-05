@@ -4,13 +4,14 @@ import type { Prisma } from '@prisma/client'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import type { ProjectDataExport, ProjectUpdateContext, ProjectWithDetails } from './project-queries.utils'
 import { AdminAuthorized } from '@cpn-console/shared'
-import { BadRequestException, ForbiddenException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { baseConfigFactory } from '../../config/base.config'
 import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { LogService } from '../log/log.service'
+import { getFailedPlugins } from '../plugin/plugin.utils'
 import { createProjectMember, deleteProjectMember } from '../project-members/project-members-queries.utils'
 import {
   createProject,
@@ -189,10 +190,29 @@ export class ProjectService {
     span?.setAttribute('project.id', projectId)
     this.logger.log(`project.archive started (projectId=${projectId})`)
     try {
-      const project = await this.prisma.$transaction(async (tx) => {
+      const project = await getProject(this.prisma, projectId)
+      if (!project) throw new NotFoundException('Projet introuvable')
+      if (project.status === 'archived') throw new BadRequestException('Le projet est archivé')
+
+      // emit before touching the database: listeners clean up resources named after the
+      // intact slug and still see repos and environments; a failed cleanup marks the
+      // project `failed` (AppEventsService) and a new DELETE can retry, listeners are
+      // idempotent (ensure-not-exists), the row was never renamed nor locked
+      const results = await this.appEvents.emitProjectEvent('project.delete', project, {
+        action: 'Delete all project resources',
+        userId: requestorUserId,
+        requestId,
+      })
+      const failed = getFailedPlugins(results)
+      if (failed.length) {
+        this.logger.warn(`project.archive external cleanup failed (projectId=${projectId}, failed=${failed.join(',')})`)
+        throw new UnprocessableEntityException('Echec des services à la suppression du projet')
+      }
+
+      await this.prisma.$transaction(async (tx) => {
         const loaded = await getProject(tx, projectId)
         if (!loaded) throw new NotFoundException('Projet introuvable')
-        if (loaded.status === 'archived') throw new BadRequestException('Le projet est archivé')
+        if (loaded.status === 'archived') return
 
         await deleteProjectDependencies(tx, projectId)
 
@@ -204,15 +224,6 @@ export class ProjectService {
           locked: true,
           clusters: { set: [] },
         })
-
-        return loaded
-      })
-      // pass the pre-archive snapshot: the row was renamed (slug suffixed) in the
-      // transaction above, listeners must clean up resources named after the old slug
-      await this.appEvents.emitProjectEvent('project.delete', project, {
-        action: 'Delete all project resources',
-        userId: requestorUserId,
-        requestId,
       })
       span?.setAttribute('project.slug', project.slug)
       this.logger.log(`project.archive completed (projectId=${projectId}, slug=${project.slug})`)

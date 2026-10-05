@@ -9,6 +9,7 @@ import {
   ForbiddenException,
   InternalServerErrorException,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -462,9 +463,10 @@ describe('projectService', () => {
   })
 
   describe('archive', () => {
-    it('deletes related data, emits event, renames and archives project', async () => {
+    it('emits the delete event on the intact project, then renames and archives', async () => {
       const projectId = faker.string.uuid()
       const pwd = makeProjectWithDetails({ id: projectId, name: 'myproject', slug: 'myproject' })
+      prisma.project.findUnique.mockResolvedValue(pwd)
       const tx = mockDeep<Prisma.TransactionClient>()
       tx.project.findUnique.mockResolvedValue(pwd)
       tx.repository.deleteMany.mockResolvedValue({ count: 2 })
@@ -472,20 +474,21 @@ describe('projectService', () => {
       tx.deployment.deleteMany.mockResolvedValue({ count: 1 })
       tx.project.update.mockResolvedValue(makeProject({ id: projectId }))
       prisma.$transaction.mockImplementation(async cb => cb(tx))
+      appEvents.emitProjectEvent.mockResolvedValue({})
 
       const requestId = faker.string.uuid()
       const requestorId = faker.string.uuid()
 
       await service.archive(projectId, requestorId, requestId)
 
-      expect(tx.repository.deleteMany).toHaveBeenCalledWith({ where: { projectId } })
-      expect(tx.environment.deleteMany).toHaveBeenCalledWith({ where: { projectId } })
-      expect(tx.deployment.deleteMany).toHaveBeenCalledWith({ where: { projectId } })
       expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.delete', pwd, {
         action: 'Delete all project resources',
         userId: requestorId,
         requestId,
       })
+      expect(tx.repository.deleteMany).toHaveBeenCalledWith({ where: { projectId } })
+      expect(tx.environment.deleteMany).toHaveBeenCalledWith({ where: { projectId } })
+      expect(tx.deployment.deleteMany).toHaveBeenCalledWith({ where: { projectId } })
       expect(tx.project.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: projectId },
@@ -498,10 +501,22 @@ describe('projectService', () => {
       )
     })
 
+    it('leaves the project untouched when a listener reports a KO result, so a retry can re-drive cleanup', async () => {
+      const projectId = faker.string.uuid()
+      const pwd = makeProjectWithDetails({ id: projectId })
+      prisma.project.findUnique.mockResolvedValue(pwd)
+      appEvents.emitProjectEvent.mockResolvedValue({
+        gitlab: { status: 'KO', message: 'boom', executionTime: 1 },
+      })
+
+      await expect(service.archive(projectId))
+        .rejects.toThrow(new UnprocessableEntityException('Echec des services à la suppression du projet'))
+
+      expect(prisma.$transaction).not.toHaveBeenCalled()
+    })
+
     it('throws NotFoundException when project does not exist', async () => {
-      const tx = mockDeep<Prisma.TransactionClient>()
-      tx.project.findUnique.mockResolvedValue(null)
-      prisma.$transaction.mockImplementation(async cb => cb(tx))
+      prisma.project.findUnique.mockResolvedValue(null)
 
       await expect(service.archive(faker.string.uuid()))
         .rejects.toThrow(NotFoundException)
@@ -509,19 +524,14 @@ describe('projectService', () => {
 
     it('rejects an already archived project without side effects', async () => {
       const projectId = faker.string.uuid()
-      const tx = mockDeep<Prisma.TransactionClient>()
-      tx.project.findUnique.mockResolvedValue(
+      prisma.project.findUnique.mockResolvedValue(
         makeProjectWithDetails({ id: projectId, status: 'archived', locked: true }),
       )
-      prisma.$transaction.mockImplementation(async cb => cb(tx))
 
       await expect(service.archive(projectId))
         .rejects.toThrow(new BadRequestException('Le projet est archivé'))
 
-      expect(tx.repository.deleteMany).not.toHaveBeenCalled()
-      expect(tx.environment.deleteMany).not.toHaveBeenCalled()
-      expect(tx.deployment.deleteMany).not.toHaveBeenCalled()
-      expect(tx.project.update).not.toHaveBeenCalled()
+      expect(prisma.$transaction).not.toHaveBeenCalled()
       expect(appEvents.emitProjectEvent).not.toHaveBeenCalled()
     })
   })
