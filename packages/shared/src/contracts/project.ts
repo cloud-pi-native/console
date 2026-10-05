@@ -161,6 +161,7 @@ export const projectContract = contractInstance.router({
     body: ContractNoBody,
     responses: {
       204: null,
+      422: ErrorSchema,
       500: ErrorSchema,
     },
   },
