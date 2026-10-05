@@ -1,6 +1,6 @@
 import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
-import { ENABLED } from '@cpn-console/shared'
+import { DEFAULT, ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
@@ -319,6 +319,21 @@ describe('registryService', () => {
       expect(client.updateQuota).toHaveBeenCalledWith(1, 1024 ** 3)
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/ro-robot`)
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/rw-robot`)
+      expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/${ROBOT_NAME_PROJECT}`)
+    })
+
+    it('provisions the project robot from the admin config when the project setting is default', async () => {
+      const project = makeProjectWithDetails({
+        plugins: [
+          { pluginName: PLUGIN_NAME, key: REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT, value: DEFAULT },
+        ],
+      })
+      client.getProjectByName.mockResolvedValue(makeOkResponse({ project_id: 1, metadata: {} }))
+      client.ensureProject.mockResolvedValue({ project_id: 1, metadata: {} })
+      datastore.getAdminPluginConfig.mockResolvedValue('enabled')
+
+      await service.handleUpsert(project)
+
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/${ROBOT_NAME_PROJECT}`)
     })
   })
