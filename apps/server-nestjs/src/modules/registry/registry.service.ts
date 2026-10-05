@@ -11,14 +11,14 @@ import type {
 } from './registry-client.service'
 import type { ProjectWithDetails } from './registry-datastore.service'
 import type { VaultRobotSecret } from './registry.utils'
-import { specificallyEnabled } from '@cpn-console/hooks'
+import { defaultOrNullish, specificallyEnabled } from '@cpn-console/hooks'
+import { daysAgo } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { baseConfigFactory } from '../../config/base.config'
 import { harborConfigFactory } from '../../config/harbor.config'
 import { find } from '../../utils/iterable.utils'
-import { daysAgo } from '@cpn-console/shared'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -301,9 +301,11 @@ export class RegistryService {
     this.logger.log(`Handling project upsert for ${project.slug}`)
     const quotaConfigRaw = getPluginConfig(project, REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT)
     const publishConfig = getPluginConfig(project, REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT)
+    const adminPublishConfig = await this.getAdminPluginConfig(REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT) ?? undefined
     const parsedQuota = quotaConfigRaw ? parseBytes(String(quotaConfigRaw)) : undefined
     const storageLimitBytes = parsedQuota ?? -1
     const publishProjectRobot = specificallyEnabled(publishConfig)
+      || (defaultOrNullish(publishConfig) && specificallyEnabled(adminPublishConfig))
     await this.ensureProject(project, { storageLimitBytes, publishProjectRobot })
   }
 
