@@ -3,10 +3,12 @@ import type { FastifyRequest } from 'fastify'
 import type { IncomingHttpHeaders } from 'node:http'
 import type { UserContext } from '../auth-user.decorator'
 import type { AuthProvider, AuthRequirements } from '../auth.utils'
+import type { UserRecord } from './keycloak-jwt-queries.utils'
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { z } from 'zod'
 import { PrismaService } from '../../database/prisma.service'
+import { listMatchingAdminRoles, makeUserSelect, upsertUser } from './keycloak-jwt-queries.utils'
 
 const KeycloakPayloadSchema = z.object({
   sub: z.string(),
@@ -57,67 +59,26 @@ export class KeycloakJwtService implements AuthProvider {
     payload: KeycloakPayload,
     requirements?: AuthRequirements,
   ): Promise<UserContext> {
-    const authRequirements = normalizeRequirements(requirements)
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: makeUserSelect(authRequirements),
+    return this.prisma.$transaction(async (tx) => {
+      const user = await upsertUser(tx, payload, makeUserSelect(requirements))
+
+      return {
+        userId: payload.sub,
+        adminPermissions: await this.maybeAdminPermissions(tx, payload, user.adminRoleIds ?? [], requirements),
+        userType: this.maybeUserType(user, requirements),
+      }
     })
-    if (!user) {
-      throw new UnauthorizedException('Not authenticated')
-    }
-
-    let adminPermissions: bigint | undefined
-    let mergedRoleIds: string[] | undefined
-
-    if (authRequirements.includeAdminRoleIds) {
-      const adminRoleIds = 'adminRoleIds' in user ? user.adminRoleIds : []
-      const groups = payload.groups
-
-      const matchingAdminRoles = await this.prisma.adminRole.findMany({
-        where: {
-          OR: [
-            { oidcGroup: { in: groups } },
-            { id: { in: adminRoleIds } },
-            { type: 'global' },
-          ],
-        },
-      })
-
-      const activeAdminRoles = matchingAdminRoles.filter(({ oidcGroup, type }) =>
-        type === 'global' || !oidcGroup || groups.includes(oidcGroup),
-      )
-
-      mergedRoleIds = [...new Set(activeAdminRoles.map(({ id }) => id))]
-      adminPermissions = activeAdminRoles.reduce((acc, curr) => acc | curr.permissions, 0n)
-    }
-
-    await this.prisma.user.update({
-      where: { id: payload.sub },
-      data: {
-        ...(mergedRoleIds ? { adminRoleIds: mergedRoleIds } : {}),
-        lastLogin: new Date().toISOString(),
-      },
-    })
-
-    return {
-      userId: payload.sub,
-      adminPermissions,
-      userType: 'type' in user ? user.type : undefined,
-    }
   }
-}
 
-function makeUserSelect(requirements: Required<AuthRequirements>) {
-  return {
-    id: true,
-    ...(requirements.includeAdminRoleIds ? { adminRoleIds: true } : {}),
-    ...(requirements.includeUserType ? { type: true } : {}),
-  } satisfies Prisma.UserSelect
-}
+  private async maybeAdminPermissions(tx: Prisma.TransactionClient, payload: KeycloakPayload, adminRoleIds: string[], requirements?: AuthRequirements) {
+    if (!(requirements?.includeAdminRoleIds ?? true)) {
+      return undefined
+    }
+    const matchingAdminRoles = await listMatchingAdminRoles(tx, payload.groups, adminRoleIds)
+    return matchingAdminRoles.reduce((acc, curr) => acc | curr.permissions, 0n)
+  }
 
-function normalizeRequirements(requirements: AuthRequirements = {}): Required<AuthRequirements> {
-  return {
-    includeAdminRoleIds: requirements.includeAdminRoleIds ?? true,
-    includeUserType: requirements.includeUserType ?? true,
+  private maybeUserType(user: UserRecord, requirements?: AuthRequirements) {
+    return requirements?.includeUserType ?? true ? user.type : undefined
   }
 }
