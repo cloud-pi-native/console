@@ -1,7 +1,6 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
-import { UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -19,6 +18,7 @@ describe('keycloakJwtService', () => {
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
+    prisma.$transaction.mockImplementation(async fn => fn(prisma))
     jwtService = mockDeep<JwtService>()
 
     module = await Test.createTestingModule({
@@ -46,7 +46,7 @@ describe('keycloakJwtService', () => {
         groups: ['/current-group'],
       }
 
-      prisma.user.findUnique.mockResolvedValue(
+      prisma.user.upsert.mockResolvedValue(
         makeMockUser({
           id: payload.sub,
           adminRoleIds: ['stale-oidc-role', 'manual-role'],
@@ -81,21 +81,20 @@ describe('keycloakJwtService', () => {
 
       const result = await service.validatePayload(payload)
 
-      expect(prisma.user.update).toHaveBeenCalledWith({
-        where: { id: payload.sub },
-        data: {
-          adminRoleIds: ['manual-role', 'current-oidc-role', 'global-role'],
-          lastLogin: expect.any(String),
-        },
-      })
+      expect(prisma.user.update).not.toHaveBeenCalled()
+      expect(prisma.user.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          update: expect.objectContaining({ lastLogin: expect.any(String) }),
+        }),
+      )
       expect(result).toEqual({
         userId: payload.sub,
-        adminPermissions: 52n,
+        adminPermissions: 60n,
         userType: 'human',
       })
     })
 
-    it('should reject when the local user is missing', async () => {
+    it('should create the local user when missing (first login)', async () => {
       const payload = {
         sub: faker.string.uuid(),
         email: faker.internet.email().toLowerCase(),
@@ -104,11 +103,36 @@ describe('keycloakJwtService', () => {
         groups: ['/current-group'],
       }
 
-      prisma.user.findUnique.mockResolvedValue(null)
+      prisma.user.upsert.mockResolvedValue(makeMockUser({ id: payload.sub, email: payload.email }))
+      prisma.adminRole.findMany.mockResolvedValue([])
 
-      await expect(service.validatePayload(payload)).rejects.toBeInstanceOf(UnauthorizedException)
-      expect(prisma.adminRole.findMany).not.toHaveBeenCalled()
+      const result = await service.validatePayload(payload)
+
+      expect(prisma.user.upsert).toHaveBeenCalledWith({
+        where: { id: payload.sub },
+        create: {
+          id: payload.sub,
+          email: payload.email,
+          firstName: payload.given_name,
+          lastName: payload.family_name,
+          adminRoleIds: [],
+          type: 'human',
+          lastLogin: expect.any(String),
+        },
+        update: {
+          email: payload.email,
+          firstName: payload.given_name,
+          lastName: payload.family_name,
+          lastLogin: expect.any(String),
+        },
+        select: expect.objectContaining({ id: true, type: true, adminRoleIds: true }),
+      })
       expect(prisma.user.update).not.toHaveBeenCalled()
+      expect(result).toEqual({
+        userId: payload.sub,
+        adminPermissions: 0n,
+        userType: 'human',
+      })
     })
 
     it('should skip admin role resolution when permissions are not required', async () => {
@@ -120,7 +144,7 @@ describe('keycloakJwtService', () => {
         groups: ['/current-group'],
       }
 
-      prisma.user.findUnique.mockResolvedValue(
+      prisma.user.upsert.mockResolvedValue(
         makeMockUser({
           id: payload.sub,
           type: 'human',
@@ -133,16 +157,41 @@ describe('keycloakJwtService', () => {
       )
 
       expect(prisma.adminRole.findMany).not.toHaveBeenCalled()
-      expect(prisma.user.update).toHaveBeenCalledWith({
-        where: { id: payload.sub },
-        data: {
-          lastLogin: expect.any(String),
-        },
-      })
+      expect(prisma.user.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          update: expect.objectContaining({ lastLogin: expect.any(String) }),
+        }),
+      )
       expect(result).toEqual({
         userId: payload.sub,
         adminPermissions: undefined,
         userType: 'human',
+      })
+    })
+  })
+
+  describe('resolveAdminPermissions', () => {
+    it('should match external roles by group, managed roles by persisted ids and globals always (parity with logViaSession)', async () => {
+      prisma.user.upsert.mockResolvedValue(makeMockUser({ adminRoleIds: ['managed-role'] }))
+      prisma.adminRole.findMany.mockResolvedValue([])
+
+      await service.validatePayload({
+        sub: faker.string.uuid(),
+        email: '',
+        given_name: '',
+        family_name: '',
+        groups: ['/admin'],
+      })
+
+      expect(prisma.adminRole.findMany).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { oidcGroup: { in: ['/admin'] } },
+            { id: { in: ['managed-role'] } },
+            { type: 'global' },
+          ],
+        },
+        orderBy: { position: 'asc' },
       })
     })
   })
@@ -156,7 +205,7 @@ describe('keycloakJwtService', () => {
         family_name: faker.person.lastName(),
         groups: [],
       })
-      prisma.user.findUnique.mockResolvedValue(makeMockUser({}))
+      prisma.user.upsert.mockResolvedValue(makeMockUser({}))
       prisma.adminRole.findMany.mockResolvedValue([])
 
       const result = await service.authenticate(
