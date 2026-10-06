@@ -51,11 +51,21 @@ go through the target's controller-exported service.
 ## Layer discipline
 
 - Services return raw Prisma records; the record types come from the selects
-  in `<module>-queries.utils.ts`. No intermediate DTOs in services.
+  in `<module>-queries.utils.ts`. No intermediate DTOs in services. Services
+  are orchestration only (parse, delegate to query functions, fold results,
+  map errors); DB access lives in the queries utils, wrapped in
+  `$transaction` when several queries must be atomic.
 - Controllers map records to contract shapes via `to<Thing>` mappers in
   `<module>.utils.ts`. Controllers contain no business logic.
 - Where-builders are named `generate<Domain><PrismaType>`
   (`generateZoneWhere`, `generateUserWhere`).
+- `*-queries.utils.ts` exports plain functions, never a class or DI: first
+  parameter `tx: Prisma.TransactionClient` (a `PrismaService` satisfies it);
+  verbs `list*` for `findMany`, `upsert*`/`get*` otherwise; private
+  where-builders named `<model>Where`. Services pass their injected Prisma
+  or a `$transaction` client. Select-based record types are named
+  `<Domain>Record` (`UserRecord`, `StageRecord`) and live in the same file,
+  derived from the selects (`Prisma.XGetPayload<{ select: ... }>`).
 - Defaults belong in zod `.default()` at the contract, never as optional
   service arguments.
 - Configuration arrives by injection (`@Inject(xxxConfigFactory.KEY)` +
