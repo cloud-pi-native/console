@@ -84,7 +84,3 @@ author amends.
 4. **Report only** — verdict: ledger N/N · approval state ·
    threads resolved or pending with rationale · CI green/pending/failing.
    Never merge from here.
-
-## Evaluation
-
-`evals/evals.json` covers the branch-drift regression scenarios.
