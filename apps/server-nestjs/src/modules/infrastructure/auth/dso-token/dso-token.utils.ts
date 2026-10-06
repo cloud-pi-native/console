@@ -13,9 +13,17 @@ export function makeAdminTokenSelect(requirements?: AuthRequirements): Prisma.Ad
   return {
     id: true,
     name: true,
-    ...(includeAdminRoleIds ? { owner: { select: { adminRoleIds: true } } } : {}),
-    ...(includeUserType ? { owner: { select: { type: true } } } : {}),
-    ...(includeAdminRoleIds && includeUserType ? { owner: { select: { adminRoleIds: true, type: true } } } : {}),
+    status: true,
+    expirationDate: true,
+    permissions: true,
+    owner: {
+      select: {
+        id: true,
+        ...(includeAdminRoleIds ? { adminRoleIds: true } : {}),
+        ...(includeUserType ? { type: true } : {}),
+        ...(includeAdminRoleIds && includeUserType ? { adminRoleIds: true, type: true } : {}),
+      },
+    },
   } satisfies Prisma.AdminTokenSelect
 }
 
