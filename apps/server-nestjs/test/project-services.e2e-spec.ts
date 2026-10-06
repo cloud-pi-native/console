@@ -16,10 +16,10 @@ import { ProjectServicesModule } from '../src/modules/project-services/project-s
 import { ProjectServicesService } from '../src/modules/project-services/project-services.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
-const canRunServicesE2E = Boolean(process.env.E2E)
-const describeWithServices = describe.runIf(canRunServicesE2E)
+const canRunProjectServicesE2E = Boolean(process.env.E2E)
+const describeWithProjectServices = describe.runIf(canRunProjectServicesE2E)
 
-describeWithServices('ProjectServicesService (e2e)', () => {
+describeWithProjectServices('ProjectServicesService (e2e)', () => {
   let moduleRef: TestingModule
   let prisma: PrismaService
   let service: ProjectServicesService
@@ -28,6 +28,9 @@ describeWithServices('ProjectServicesService (e2e)', () => {
   let projectSlug: string
 
   beforeAll(async () => {
+    vi.stubEnv('USE_GITLAB', 'true')
+    vi.stubEnv('USE_NEXUS', 'true')
+
     moduleRef = await Test.createTestingModule({
       imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectServicesModule],
     }).compile()
