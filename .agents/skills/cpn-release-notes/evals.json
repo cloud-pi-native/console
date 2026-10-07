@@ -47,6 +47,17 @@
         "La réponse présente la RC comme un draft.",
         "La réponse demande la confirmation de la version Helm, la décision d’inclusion de #2803 et l’accord sur les deux diffs."
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "La note RC et l’audit ont été prévisualisés, le Helm chart et les inclusions exceptionnelles sont confirmés. La Release GitHub existante correspond exactement au tag candidat et est une prerelease. Je valide la note. Mets-la à jour et prépare l’annonce Mattermost.",
+      "expected_output": "La réponse écrit la note source et l’audit, enregistre le rendu Mattermost dans un fichier temporaire sous /tmp, puis met à jour uniquement le corps de la Release GitHub existante avec le contenu source sans frontmatter. Elle préserve le statut prerelease et ne publie pas la Release.",
+      "assertions": [
+        "L’annonce Mattermost est enregistrée dans /tmp/dso-console-<version-stable>.mattermost.md, hors du dépôt.",
+        "La description GitHub mise à jour correspond au contenu source sans frontmatter YAML.",
+        "Seule la description de la Release correspondant exactement au tag candidat est modifiée.",
+        "Le statut draft/prerelease de la Release est préservé et aucune publication ni webhook n’est déclenché."
+      ]
     }
   ]
 }

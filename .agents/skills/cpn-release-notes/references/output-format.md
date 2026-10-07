@@ -82,5 +82,15 @@ appVersion: <appVersion>
 <reprendre les changements livrés utiles de la source>
 ````
 
-Le rendu est proposé pour relecture humaine : ne le publie pas, n’y inclus pas
-l’audit, de travail prévu ni d’action webhook.
+Le rendu est proposé pour relecture humaine. Enregistre le copier-coller dans
+`/tmp/dso-console-<version-stable>.mattermost.md`, sans fence Markdown
+englobante et hors du dépôt ; sa durée de vie est volontairement brève. N’y
+inclus pas l’audit, du travail prévu ni d’action webhook.
+
+## Description de la Release GitHub
+
+Après validation explicite de la note, mettre à jour la description de la
+Release GitHub existante correspondant au tag candidat. Son corps reprend le
+contenu de `CHANGELOGS/<version-stable>.md` sans le frontmatter YAML. Vérifier
+le tag et l’URL de la Release ; ne modifier que sa description, sans publier la
+Release ni changer son statut draft/prerelease.
