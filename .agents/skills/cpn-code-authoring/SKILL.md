@@ -85,7 +85,16 @@ External-system client services (`gitlab-`, `keycloak-`, `nexus-`,
   and returns the existing entity. Never deletes.
 - `reconcile*` — level-triggered drift correction over a collection, called
   for effect (no consumed return value); may create, update and delete.
-  Reserve for scheduled sweeps (vault cron `reconcileZones`/`reconcileProjects`).
+  Lives only in `xxx.service.ts`; vault cron `reconcileZones`/`reconcileProjects`.
+
+## Placement
+
+- `ensure*` primitives — single external resource, util-routed, converged
+  entity out — live in `xxx-client.service.ts`.
+- Service-layer `ensure*` are private composition over those primitives
+  (`ensureMavenRepos(project)`): they never re-implement race recovery.
+- `reconcile*` lives only in `xxx.service.ts` — sweeps need DB reads and
+  delete authority, which are orchestration concerns.
 
 External-API verbs are mirrored verbatim (`Upsert*Request` types, vault
 `read`/`write`, nexus `update*`): the client is the API's shadow, not its
