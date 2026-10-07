@@ -90,7 +90,7 @@ export class ClusterService {
       action: 'Create Cluster',
       userId,
       requestId,
-    }, 'Echec des services à la création/mise à jour du cluster')
+    }, 'Echec des services à la création du cluster')
 
     return this.getClusterDetailsRecord(clusterCreated.id)
   }
@@ -101,12 +101,11 @@ export class ClusterService {
     userId: string,
     requestId: string,
   ): Promise<ClusterDetailsRecord> {
-    if (data?.privacy === CLUSTER_PUBLIC) delete data.projectIds
-
     const dbCluster = await getClusterById(this.prisma, clusterId)
     if (!dbCluster) throw new NotFoundException('Cluster not found')
 
     const { projectIds, stageIds, kubeconfig, zoneId, ...clusterData } = data
+    const publicProjectIds = data.privacy === CLUSTER_PUBLIC ? undefined : projectIds
 
     await this.prisma.$transaction(async (tx) => {
       const clusterUpdated = await updateCluster(tx, clusterId, clusterData, kubeconfig)
@@ -115,7 +114,7 @@ export class ClusterService {
         await linkZoneToClusters(tx, zoneId, [clusterId])
       }
 
-      await syncClusterProjectLinks(tx, clusterUpdated, clusterId, projectIds)
+      await syncClusterProjectLinks(tx, clusterUpdated, clusterId, publicProjectIds)
       await syncClusterStageLinks(tx, clusterUpdated, clusterId, stageIds)
     })
 
@@ -123,7 +122,7 @@ export class ClusterService {
       action: 'Update Cluster',
       userId,
       requestId,
-    }, 'Echec des services à la création/mise à jour du cluster')
+    }, 'Echec des services à la mise à jour du cluster')
 
     return this.getClusterDetailsRecord(clusterId)
   }

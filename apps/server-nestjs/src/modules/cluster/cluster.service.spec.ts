@@ -243,6 +243,6 @@ describe('clusterService', () => {
     appEvents.emitClusterEvent.mockResolvedValue({ gitlab: { status: 'KO', message: 'boom', executionTime: 1, error: new Error('boom') } })
 
     await expect(service.updateCluster({ infos: 'x' }, record.id, 'u', 'r'))
-      .rejects.toThrow(new UnprocessableEntityException('Echec des services à la création/mise à jour du cluster'))
+      .rejects.toThrow(new UnprocessableEntityException('Echec des services à la mise à jour du cluster'))
   })
 })
