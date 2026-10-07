@@ -368,7 +368,7 @@ export class VaultClientService {
 
   @StartActiveSpan()
   async ensureSysPoliciesAcl(policyName: string, body: VaultSysPoliciesAclUpsertRequest): Promise<void> {
-    this.logger.verbose(`Upserting Vault ACL policy ${policyName}`)
+    this.logger.verbose(`Ensuring Vault ACL policy ${policyName}`)
     await this.http.fetch(`sys/policies/acl/${policyName}`, { method: 'POST', body })
   }
 
@@ -405,7 +405,7 @@ export class VaultClientService {
 
   @StartActiveSpan()
   async ensureAuthApproleRole(roleName: string, body: VaultAuthApproleRoleUpsertRequest): Promise<void> {
-    this.logger.verbose(`Upserting Vault AppRole ${roleName} (policies=${body.token_policies.length})`)
+    this.logger.verbose(`Ensuring Vault AppRole ${roleName} (policies=${body.token_policies.length})`)
     await this.http.fetch(`auth/approle/role/${roleName}`, {
       method: 'POST',
       body,
@@ -456,7 +456,7 @@ export class VaultClientService {
 
   @StartActiveSpan()
   async ensureIdentityGroupName(groupName: string, body: VaultIdentityGroupUpsertRequest): Promise<void> {
-    this.logger.verbose(`Upserting Vault identity group ${groupName} (policies=${body.policies.length})`)
+    this.logger.verbose(`Ensuring Vault identity group ${groupName} (policies=${body.policies.length})`)
     await this.http.fetch(`identity/group/name/${groupName}`, {
       method: 'POST',
       body,

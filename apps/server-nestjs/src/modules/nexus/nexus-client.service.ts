@@ -213,7 +213,7 @@ export class NexusClientService {
   }
 
   @StartActiveSpan()
-  async putRepositoriesNpmGroup(name: string, body: NexusNpmGroupRepositoryUpsertRequest) {
+  async updateRepositoriesNpmGroup(name: string, body: NexusNpmGroupRepositoryUpsertRequest) {
     await this.http.fetch(`repositories/npm/group/${name}`, { method: 'PUT', body })
   }
 

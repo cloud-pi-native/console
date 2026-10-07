@@ -136,7 +136,7 @@ export class ObservabilityService {
       tenantRbacHProd: generateGrafanaHprodRbacGroupPaths(projectGroupPath),
     })
 
-    await this.client.updateProjectConfig(valuesRepo, project, projectValue)
+    await this.client.ensureProjectConfig(valuesRepo, project, projectValue)
   }
 
   @StartActiveSpan()

@@ -28,7 +28,7 @@ describe('observabilityService', () => {
     datastore = mockDeep<ObservabilityDatastoreService>()
     client = mockDeep<ObservabilityClientService>({
       ensureValuesRepo: vi.fn().mockResolvedValue({ id: 1 }),
-      updateProjectConfig: vi.fn().mockResolvedValue('updated'),
+      ensureProjectConfig: vi.fn().mockResolvedValue('updated'),
       deleteProjectConfig: vi.fn().mockResolvedValue(undefined),
     })
     gitlab = mockDeep<GitlabClientService>({
@@ -85,7 +85,7 @@ describe('observabilityService', () => {
     it('scopes the repository url by project slug with a .git suffix', async () => {
       const project = makeProject({ slug: 'infra-observability' })
       await service.handleUpsert(project)
-      expect(client.updateProjectConfig).toHaveBeenCalledWith(
+      expect(client.ensureProjectConfig).toHaveBeenCalledWith(
         { id: 1 },
         project,
         expect.objectContaining({

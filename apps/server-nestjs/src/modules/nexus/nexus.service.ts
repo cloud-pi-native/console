@@ -236,7 +236,7 @@ export class NexusService {
       await this.client.ensureRepositoriesNpmGroup(body)
       return
     }
-    await this.client.putRepositoriesNpmGroup(repoName, body)
+    await this.client.updateRepositoriesNpmGroup(repoName, body)
   }
 
   private async ensureMavenHostedRepos(args: {
