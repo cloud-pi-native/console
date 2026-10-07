@@ -740,7 +740,7 @@ describe('gitlabService', () => {
     it('should skip roles outside managed group paths', async () => {
       await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({ oidcGroup: '/other' }))
 
-      expect(gitlab.upsertUser).not.toHaveBeenCalled()
+      expect(gitlab.ensureUser).not.toHaveBeenCalled()
     })
 
     it('should flag admin for the admin group and auditor otherwise', async () => {
@@ -748,13 +748,13 @@ describe('gitlabService', () => {
         oidcGroup: '/console/admin',
         members: [makeAdminRoleEventMember({ id: 'u1', email: 'a@b.c' })],
       }))
-      expect(gitlab.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ admin: true }), expect.anything())
+      expect(gitlab.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ admin: true }), expect.anything())
 
       await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({
         oidcGroup: '/console/readonly',
         members: [makeAdminRoleEventMember({ id: 'u1', email: 'a@b.c' })],
       }))
-      expect(gitlab.upsertUser).toHaveBeenLastCalledWith(expect.objectContaining({ auditor: true, admin: undefined }), expect.anything())
+      expect(gitlab.ensureUser).toHaveBeenLastCalledWith(expect.objectContaining({ auditor: true, admin: undefined }), expect.anything())
     })
 
     it('should recognize every configured admin group path', async () => {
@@ -768,7 +768,7 @@ describe('gitlabService', () => {
         vi.mocked(datastore.getAdminPluginConfig).mockResolvedValue(undefined)
       }
 
-      expect(gitlab.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ admin: true }), expect.anything())
+      expect(gitlab.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ admin: true }), expect.anything())
     })
   })
 
@@ -779,7 +779,7 @@ describe('gitlabService', () => {
         members: [makeAdminRoleEventMember({ id: 'u1', email: 'a@b.c' })],
       }))
 
-      expect(gitlab.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ admin: false }), expect.anything())
+      expect(gitlab.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ admin: false }), expect.anything())
     })
 
     it('should provision absent GitLab members on revoke', async () => {
@@ -788,7 +788,7 @@ describe('gitlabService', () => {
         members: [makeAdminRoleEventMember({ id: 'u1', email: 'ghost@b.c' })],
       }))
 
-      expect(gitlab.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ admin: false }), expect.anything())
+      expect(gitlab.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ admin: false }), expect.anything())
     })
   })
 })

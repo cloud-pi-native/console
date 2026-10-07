@@ -108,7 +108,7 @@ export class GitlabService {
     }
 
     for (const member of role.members) {
-      await this.gitlab.upsertUser({
+      await this.gitlab.ensureUser({
         email: member.email,
         username: generateUsername(member.email),
         name: generateName(member.firstName, member.lastName),

@@ -95,7 +95,7 @@ describeWithObservability('ObservabilityService (e2e)', () => {
       .overrideProvider(ObservabilityClientService)
       .useValue({
         ensureValuesRepo: vi.fn(async () => ({ id: 1 })),
-        updateProjectConfig: vi.fn(async () => 'updated'),
+        ensureProjectConfig: vi.fn(async () => 'updated'),
         deleteProjectConfig: vi.fn(async () => undefined),
       })
       .compile()

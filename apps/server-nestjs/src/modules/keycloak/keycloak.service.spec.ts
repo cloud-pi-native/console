@@ -532,12 +532,12 @@ describe('keycloakService', () => {
     it('should sync the impacted role group on adminRole.upsert', async () => {
       datastore.getAllAdminRoles.mockResolvedValue([{ id: 'role-1', oidcGroup: '/console/admin', type: 'global' }])
       datastore.getAllUsersWithAdminRoleIds.mockResolvedValue([{ id: 'user-1', adminRoleIds: ['role-1'] }])
-      keycloak.getOrCreateGroupByPath.mockResolvedValue(makeGroupRepresentation({ id: 'kc-group-id', name: 'admin' }))
+      keycloak.ensureGroupByPath.mockResolvedValue(makeGroupRepresentation({ id: 'kc-group-id', name: 'admin' }))
       keycloak.getGroupMembers.mockResolvedValue([makeUserRepresentation({ id: 'user-2' })])
 
       await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({ id: 'role-1', oidcGroup: '/console/admin', members: [] }))
 
-      expect(keycloak.getOrCreateGroupByPath).toHaveBeenCalledWith('/console/admin')
+      expect(keycloak.ensureGroupByPath).toHaveBeenCalledWith('/console/admin')
       expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'kc-group-id')
       expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-2', 'kc-group-id')
     })
@@ -547,7 +547,7 @@ describe('keycloakService', () => {
     it('should warn and no-op when the role no longer exists', async () => {
       await service.handleAdminRoleDelete(makeAdminRoleEventPayload({ id: 'gone', oidcGroup: '/console/admin', members: [] }))
 
-      expect(keycloak.getOrCreateGroupByPath).not.toHaveBeenCalled()
+      expect(keycloak.ensureGroupByPath).not.toHaveBeenCalled()
     })
   })
 })

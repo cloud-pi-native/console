@@ -74,7 +74,7 @@ export class ObservabilityClientService {
   }
 
   @StartActiveSpan()
-  async updateProjectConfig(
+  async ensureProjectConfig(
     repo: CondensedProjectSchemaWith<'id'>,
     project: { id: string, slug: string },
     projectValue: ObservabilityProject,
