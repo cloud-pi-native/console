@@ -1048,25 +1048,26 @@ describe('gitlab-client', () => {
       }))
     })
 
-    it('should return the existing user on 409 (already auto-provisioned via OIDC)', async () => {
+    it('ensureUser should return the existing user on 409 (already auto-provisioned via OIDC)', async () => {
       const email = 'user@example.com'
       const username = 'user'
       const name = 'User Name'
       const existing = makeExpandedUserSchema({ id: 2, email, username })
 
+      const allMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
+      allMock.mockResolvedValueOnce([])
       gitlabApi.Users.create.mockRejectedValueOnce(
         makeGitbeakerRequestError({ status: 409, description: 'Username has already been taken' }),
       )
-      const allMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
       allMock.mockResolvedValueOnce([existing])
 
-      const result = await service.createUser({ email, username, name })
+      const result = await service.ensureUser({ email, username, name }, { cpnUserId: 'cpn-user-1' })
 
       expect(result).toEqual(existing)
       expect(gitlabApi.Users.create).toHaveBeenCalledTimes(1)
     })
 
-    it('should tolerate a non-string cause.description on 409 (regression: .includes is not a function, #2544)', async () => {
+    it('ensureUser should tolerate a non-string cause.description on 409 (regression: .includes is not a function, #2544)', async () => {
       // GitLab validation errors serialize `message` as an object; gitbeaker copies
       // it verbatim into cause.description despite typing it as string.
       const email = 'user@example.com'
@@ -1084,12 +1085,12 @@ describe('gitlab-client', () => {
       )
 
       const allMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
-      allMock.mockResolvedValueOnce([])
+      allMock.mockResolvedValue([])
       // Race path: the flattened description now matches, so the existing-user
       // lookup runs, finds nothing, and the original error is rethrown.
-      await expect(service.createUser({ email, username, name }))
+      await expect(service.ensureUser({ email, username, name }, { cpnUserId: 'cpn-user-1' }))
         .rejects.toThrow(GitbeakerRequestError)
-      expect(gitlabApi.Users.all).toHaveBeenCalledTimes(1)
+      expect(gitlabApi.Users.all).toHaveBeenCalledTimes(2)
     })
 
     it('should propagate a non-collision error', async () => {
