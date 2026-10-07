@@ -18,6 +18,7 @@ import { trace } from '@opentelemetry/api'
 import { baseConfigFactory } from '../../config/base.config'
 import { harborConfigFactory } from '../../config/harbor.config'
 import { find } from '../../utils/iterable.utils'
+import { daysAgo } from '@cpn-console/shared'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -138,7 +139,7 @@ export class RegistryService {
     const createdTimeRaw = vaultSecret?.metadata?.created_time
     if (!createdTimeRaw) return false
     const createdTime = new Date(createdTimeRaw)
-    return daysAgoFromNow(createdTime) > this.harborConfig.robotRotationThresholdDays
+    return daysAgo(createdTime) > this.harborConfig.robotRotationThresholdDays
   }
 
   private async ensureProjectGroupMember(
@@ -425,10 +426,6 @@ function generateHarborAccessLevelMapping(args: { guest: string[], developer: st
   for (const groupName of args.platformAdmin) byGroupName.set(groupName, HARBOR_ROLE_PROJECT_ADMIN)
   for (const groupName of args.platformGuest) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
   return byGroupName
-}
-
-function daysAgoFromNow(date: Date) {
-  return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
 }
 
 function generateRobotFullName(project: ProjectWithDetails, robotName: string) {
