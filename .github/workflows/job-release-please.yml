@@ -61,8 +61,7 @@ jobs:
   # - Create a prerelease (`X.Y.Z-rc`, `X.Y.Z-rc.1`, `X.Y.Z-rc.2`, etc.), if this workflow has been triggered by the related MR merge
   # - Create a release (`X.Y.Z`), if this workflow has been triggered by the related MR merge
   # - In both cases "Create" means:
-  #   - Updating the CHANGLOG accordingly (with the related commits)
-  #   - Updating the apps package.json versions
+  #   - Updating the release manifest and application package.json versions
   #   - Generating and push the git tag
   #   - Creating the related GitHub Release
   prepare:
